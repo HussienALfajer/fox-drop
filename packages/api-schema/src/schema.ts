@@ -1844,6 +1844,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/customer/orders/{orderId}/answer-ping": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["customerOrdersAnswerPing"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/orders": {
         parameters: {
             query?: never;
@@ -2062,6 +2078,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["adminOrdersAccept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/orders/{orderId}/no-answer/wait": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminOrdersWaitForCustomer"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2510,6 +2542,38 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["captainOrdersWithdrawCannotComplete"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/orders/{orderId}/ping-customer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainOrdersPingCustomer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/orders/{orderId}/customer-not-answering": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainOrdersReportNoAnswer"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4865,6 +4929,14 @@ export interface components {
                 placedAt: string;
                 /** @description «يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows. */
                 promisedAt: string | null;
+                /** @description CU §11.7 (slice 2.13d): the captain's latest «تنبيه الزبون» while at the door. Unanswered and under 30 seconds old, the open app rings full screen «الكابتن عند الباب ويحاول الوصول إليك» (or «… إلى {المستلم}») with «أنا قادم» (or «سأتصل بالمستلم») and «اتصال بالكابتن». Null without one. */
+                doorPing: {
+                    /** Format: date-time */
+                    at: string;
+                    /** @description «أنا قادم», or «سأتصل بالمستلم» for an order with a recipient; null unanswered. */
+                    answer: ("coming" | "contacting_recipient") | null;
+                    answeredAt: string | null;
+                } | null;
                 /** @description CU §11.6: the restaurant reported an item unavailable; the banner «المطعم أبلغ أن صنفاً في طلبك غير متوفر. سيتصل بك فريق FOX DROP الآن.» shows until the report is closed, withdrawn, or the order edited or cancelled. Null otherwise. */
                 itemReport: {
                     /** Format: date-time */
@@ -4937,7 +5009,7 @@ export interface components {
                     nameAr: string;
                     nameEn: string | null;
                 };
-                /** @description The captain card from assignment (CU §11.3, Q14): «الكابتن {الاسم} في طريقه إلى المطعم»; never the phone number or the captain track (CU §11.2). The photo comes with the object storage. */
+                /** @description The captain card from assignment (CU §11.3, Q14): «الكابتن {الاسم} في طريقه إلى المطعم»; never the captain track (CU §11.2). The photo comes with the object storage. */
                 captain: {
                     firstName: string;
                     /**
@@ -4947,6 +5019,8 @@ export interface components {
                     vehicle: "walking" | "bicycle" | "motorbike" | "car";
                     /** @description Before the pickup: «الكابتن {الاسم} وصل إلى المطعم», or «الكابتن يستلم طلبك الآن» once ready (CU §11.2). */
                     atRestaurant: boolean;
+                    /** @description «اتصال بالكابتن» (CU §11.3, §11.7, U12): the number the button dials from the pickup until the order ends; the app never prints it. Null before and after. */
+                    phone: string | null;
                 } | null;
                 currency: string;
                 money: {
@@ -5043,6 +5117,14 @@ export interface components {
                 placedAt: string;
                 /** @description «يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows. */
                 promisedAt: string | null;
+                /** @description CU §11.7 (slice 2.13d): the captain's latest «تنبيه الزبون» while at the door. Unanswered and under 30 seconds old, the open app rings full screen «الكابتن عند الباب ويحاول الوصول إليك» (or «… إلى {المستلم}») with «أنا قادم» (or «سأتصل بالمستلم») and «اتصال بالكابتن». Null without one. */
+                doorPing: {
+                    /** Format: date-time */
+                    at: string;
+                    /** @description «أنا قادم», or «سأتصل بالمستلم» for an order with a recipient; null unanswered. */
+                    answer: ("coming" | "contacting_recipient") | null;
+                    answeredAt: string | null;
+                } | null;
                 /** @description CU §11.6: the restaurant reported an item unavailable; the banner «المطعم أبلغ أن صنفاً في طلبك غير متوفر. سيتصل بك فريق FOX DROP الآن.» shows until the report is closed, withdrawn, or the order edited or cancelled. Null otherwise. */
                 itemReport: {
                     /** Format: date-time */
@@ -5115,7 +5197,7 @@ export interface components {
                     nameAr: string;
                     nameEn: string | null;
                 };
-                /** @description The captain card from assignment (CU §11.3, Q14): «الكابتن {الاسم} في طريقه إلى المطعم»; never the phone number or the captain track (CU §11.2). The photo comes with the object storage. */
+                /** @description The captain card from assignment (CU §11.3, Q14): «الكابتن {الاسم} في طريقه إلى المطعم»; never the captain track (CU §11.2). The photo comes with the object storage. */
                 captain: {
                     firstName: string;
                     /**
@@ -5125,6 +5207,8 @@ export interface components {
                     vehicle: "walking" | "bicycle" | "motorbike" | "car";
                     /** @description Before the pickup: «الكابتن {الاسم} وصل إلى المطعم», or «الكابتن يستلم طلبك الآن» once ready (CU §11.2). */
                     atRestaurant: boolean;
+                    /** @description «اتصال بالكابتن» (CU §11.3, §11.7, U12): the number the button dials from the pickup until the order ends; the app never prints it. Null before and after. */
+                    phone: string | null;
                 } | null;
                 currency: string;
                 money: {
@@ -5769,7 +5853,7 @@ export interface components {
                     captainWaitingAlertAt: string | null;
                 };
                 /** @description AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active. */
-                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency")[];
+                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering")[];
             };
         };
         AdminAcceptDto: {
@@ -5777,6 +5861,10 @@ export interface components {
             prepMin: number;
             /** @description Required (AP §9.3.2). */
             reason: string;
+        };
+        AdminNoAnswerWaitDto: {
+            /** @description Operations' message to the captain at the door (CA §14 #13). */
+            message: string;
         };
         AdminCloseItemReportDto: {
             /** @description Required (AP §9.3.2). */
@@ -6359,7 +6447,7 @@ export interface components {
                     captainWaitingAlertAt: string | null;
                 };
                 /** @description AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active. */
-                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency")[];
+                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering")[];
             }[];
         };
         AdminOrderDto_Output: {
@@ -6435,7 +6523,7 @@ export interface components {
                     captainWaitingAlertAt: string | null;
                 };
                 /** @description AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active. */
-                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency")[];
+                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering")[];
                 promisedAt: string | null;
                 acceptance: {
                     /** Format: date-time */
@@ -6686,6 +6774,31 @@ export interface components {
                     /** Format: date-time */
                     at: string;
                 } | null;
+                /** @description CA §9.9 (slice 2.13d): the customer not answering at the door. */
+                noAnswer: {
+                    /** @description Every «تنبيه الزبون» of the order, oldest first. */
+                    pings: {
+                        /** Format: uuid */
+                        captainId: string;
+                        /** Format: date-time */
+                        at: string;
+                        /** @description «أنا قادم» or «سأتصل بالمستلم»; null unanswered. */
+                        answer: ("coming" | "contacting_recipient") | null;
+                        answeredAt: string | null;
+                    }[];
+                    /** @description Every «الزبون لا يستجيب», oldest first, with operations' «انتظر». */
+                    reports: {
+                        /** Format: uuid */
+                        captainId: string;
+                        /** Format: date-time */
+                        at: string;
+                        waitedAt: string | null;
+                        /** @description Operations' «انتظر» message. */
+                        waitMessage: string | null;
+                    }[];
+                    /** @description «انتظر» is open: the order's captain at the door has a report waiting. */
+                    waitAllowed: boolean;
+                };
                 /** @description RA §8.12: the open item-unavailable report, which blocks the pickup; «إغلاق بلاغ صنف نفد» closes it (POST …/item-report/close). Null otherwise. */
                 itemReport: {
                     /** Format: date-time */
@@ -7266,6 +7379,33 @@ export interface components {
                     /** @description Whether the press sent a fix. */
                     located: boolean;
                 } | null;
+                /** @description CA §9.9 (slice 2.13d): the door, while the order is arrived with this captain at the customer; null otherwise. */
+                noAnswer: {
+                    /** @description «تنبيه الزبون» presses left. */
+                    pingsLeft: number;
+                    /** @description When «تنبيه الزبون» is allowed next (the screen shows it); null with none left. */
+                    nextPingAt: string | null;
+                    /** @description The customer's latest answer to a ping. */
+                    answer: {
+                        /**
+                         * @description «الزبون رأى التنبيه وهو قادم», or «الزبون يتواصل مع المستلم» for an order with a recipient.
+                         * @enum {string}
+                         */
+                        answer: "coming" | "contacting_recipient";
+                        /** Format: date-time */
+                        at: string;
+                    } | null;
+                    /** @description When «الزبون لا يستجيب» appears: after every ping and pings × interval since the arrival or the latest «انتظر»; null while pings are left or a report waits. */
+                    reportableAt: string | null;
+                    /** @description The latest «الزبون لا يستجيب». */
+                    report: {
+                        /** Format: date-time */
+                        at: string;
+                        waitedAt: string | null;
+                        /** @description Operations' «انتظر» message; null while «العمليات تراجع الطلب — انتظر تعليماتهم». */
+                        waitMessage: string | null;
+                    } | null;
+                } | null;
             } | null;
             /** @description The latest order operations cancelled within 12 hours that the captain has not acknowledged (POST …/acknowledge-cancellation); the app plays the cancellation sound when one appears. */
             cancelled: {
@@ -7572,6 +7712,33 @@ export interface components {
                     /** @description Whether the press sent a fix. */
                     located: boolean;
                 } | null;
+                /** @description CA §9.9 (slice 2.13d): the door, while the order is arrived with this captain at the customer; null otherwise. */
+                noAnswer: {
+                    /** @description «تنبيه الزبون» presses left. */
+                    pingsLeft: number;
+                    /** @description When «تنبيه الزبون» is allowed next (the screen shows it); null with none left. */
+                    nextPingAt: string | null;
+                    /** @description The customer's latest answer to a ping. */
+                    answer: {
+                        /**
+                         * @description «الزبون رأى التنبيه وهو قادم», or «الزبون يتواصل مع المستلم» for an order with a recipient.
+                         * @enum {string}
+                         */
+                        answer: "coming" | "contacting_recipient";
+                        /** Format: date-time */
+                        at: string;
+                    } | null;
+                    /** @description When «الزبون لا يستجيب» appears: after every ping and pings × interval since the arrival or the latest «انتظر»; null while pings are left or a report waits. */
+                    reportableAt: string | null;
+                    /** @description The latest «الزبون لا يستجيب». */
+                    report: {
+                        /** Format: date-time */
+                        at: string;
+                        waitedAt: string | null;
+                        /** @description Operations' «انتظر» message; null while «العمليات تراجع الطلب — انتظر تعليماتهم». */
+                        waitMessage: string | null;
+                    } | null;
+                } | null;
             };
         };
         CaptainCannotCompleteDto: {
@@ -7855,7 +8022,7 @@ export interface components {
                  * @description The rule of AP §9.1.3.
                  * @enum {string}
                  */
-                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "restaurant_auto_paused";
+                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused";
                 /**
                  * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
                  * @enum {string}
@@ -7898,7 +8065,7 @@ export interface components {
              * @description The rule of AP §9.1.3.
              * @enum {string}
              */
-            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "restaurant_auto_paused";
+            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused";
             /**
              * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
              * @enum {string}
@@ -10978,6 +11145,31 @@ export interface operations {
             };
         };
     };
+    customerOrdersAnswerPing: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerOrderDto_Output"];
+                };
+            };
+        };
+    };
     merchantOrdersBoard: {
         parameters: {
             query?: never;
@@ -11338,6 +11530,35 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["AdminAcceptDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderCardDto_Output"];
+                };
+            };
+        };
+    };
+    adminOrdersWaitForCustomer: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminNoAnswerWaitDto"];
             };
         };
         responses: {
@@ -12063,6 +12284,64 @@ export interface operations {
         };
     };
     captainOrdersWithdrawCannotComplete: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainArriveDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainOrderDto_Output"];
+                };
+            };
+        };
+    };
+    captainOrdersPingCustomer: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainArriveDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainOrderDto_Output"];
+                };
+            };
+        };
+    };
+    captainOrdersReportNoAnswer: {
         parameters: {
             query?: never;
             header: {

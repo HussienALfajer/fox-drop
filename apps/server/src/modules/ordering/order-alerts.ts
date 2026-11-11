@@ -20,6 +20,7 @@ import { UNTIL_ENDED } from './active-orders.js';
 import { openCannotComplete } from './cannot-complete.js';
 import { type OpenEmergency, openEmergency } from './emergencies.js';
 import { openItemReport } from './item-reports.js';
+import { openNoAnswerReport } from './no-answer.js';
 import { unacknowledgedAdditionAt } from './order-edits.js';
 import { BEFORE_PICKUP } from './order-views.js';
 import { type CaptainTrack, lockOrder } from './order-events.js';
@@ -46,6 +47,7 @@ export const ORDER_ALERT_CODES = [
   'edit_unacknowledged',
   'captain_cannot_complete',
   'captain_emergency',
+  'customer_not_answering',
 ] as const satisfies readonly AlertCode[];
 export type OrderAlertCode = (typeof ORDER_ALERT_CODES)[number];
 
@@ -75,6 +77,9 @@ export interface OrderAlertInput {
   cannotCompleteOpen: boolean;
   // CA §9.11 (slice 2.13c): the captain's open «طوارئ».
   emergencyOpen: boolean;
+  // CA §9.9 (slice 2.13d): the order's captain reported «الزبون لا يستجيب»
+  // and operations have not answered «انتظر».
+  noAnswerOpen: boolean;
   // RA §8.13, AP §9.3.3: the oldest unacknowledged edit that added items,
   // plus order.merchant_accept_alert_min; null with none.
   editAlertAt: Date | null;
@@ -144,6 +149,8 @@ export function orderAlerts(
   if (order.emergencyOpen && UNTIL_ENDED.includes(order.status)) {
     open.push('captain_emergency');
   }
+  // «زبون لا يرد»: only while the captain is at the door.
+  if (order.noAnswerOpen && order.status === 'arrived') open.push('customer_not_answering');
   // «المطعم لم يؤكد التعديل»: only before the pickup.
   from('edit_unacknowledged', BEFORE_PICKUP.includes(order.status), order.editAlertAt);
   const next = ahead.reduce<Date | null>(
@@ -319,6 +326,7 @@ async function readInput(
   const report = await openItemReport(tx, orderId, placedAt);
   const problem = await openCannotComplete(tx, { id: orderId, placedAt });
   const emergency = await openEmergency(tx, { id: orderId, placedAt });
+  const noAnswer = await openNoAnswerReport(tx, { id: orderId, placedAt });
   const edited = await unacknowledgedAdditionAt(tx, orderId, placedAt);
   const row = order!;
   return {
@@ -339,6 +347,7 @@ async function readInput(
     itemReportOpen: report !== null,
     cannotCompleteOpen: problem !== null,
     emergencyOpen: emergency !== null,
+    noAnswerOpen: noAnswer !== null && noAnswer.captainId === row.captainId,
     emergency,
     editAlertAt: edited && new Date(edited.getTime() + editAlertMin * MINUTE_MS),
   };

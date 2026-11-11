@@ -109,6 +109,8 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCaptain
   final CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum vehicle;
   @override
   final bool atRestaurant;
+  @override
+  final String? phone;
 
   factory _$CustomerActiveOrdersDtoOutputOrdersInnerCaptain([
     void Function(CustomerActiveOrdersDtoOutputOrdersInnerCaptainBuilder)?
@@ -122,6 +124,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCaptain
     required this.firstName,
     required this.vehicle,
     required this.atRestaurant,
+    this.phone,
   }) : super._();
   @override
   CustomerActiveOrdersDtoOutputOrdersInnerCaptain rebuild(
@@ -139,7 +142,8 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCaptain
     return other is CustomerActiveOrdersDtoOutputOrdersInnerCaptain &&
         firstName == other.firstName &&
         vehicle == other.vehicle &&
-        atRestaurant == other.atRestaurant;
+        atRestaurant == other.atRestaurant &&
+        phone == other.phone;
   }
 
   @override
@@ -148,6 +152,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCaptain
     _$hash = $jc(_$hash, firstName.hashCode);
     _$hash = $jc(_$hash, vehicle.hashCode);
     _$hash = $jc(_$hash, atRestaurant.hashCode);
+    _$hash = $jc(_$hash, phone.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -159,7 +164,8 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCaptain
           )
           ..add('firstName', firstName)
           ..add('vehicle', vehicle)
-          ..add('atRestaurant', atRestaurant))
+          ..add('atRestaurant', atRestaurant)
+          ..add('phone', phone))
         .toString();
   }
 }
@@ -187,6 +193,10 @@ class CustomerActiveOrdersDtoOutputOrdersInnerCaptainBuilder
   bool? get atRestaurant => _$this._atRestaurant;
   set atRestaurant(bool? atRestaurant) => _$this._atRestaurant = atRestaurant;
 
+  String? _phone;
+  String? get phone => _$this._phone;
+  set phone(String? phone) => _$this._phone = phone;
+
   CustomerActiveOrdersDtoOutputOrdersInnerCaptainBuilder() {
     CustomerActiveOrdersDtoOutputOrdersInnerCaptain._defaults(this);
   }
@@ -197,6 +207,7 @@ class CustomerActiveOrdersDtoOutputOrdersInnerCaptainBuilder
       _firstName = $v.firstName;
       _vehicle = $v.vehicle;
       _atRestaurant = $v.atRestaurant;
+      _phone = $v.phone;
       _$v = null;
     }
     return this;
@@ -237,6 +248,7 @@ class CustomerActiveOrdersDtoOutputOrdersInnerCaptainBuilder
             r'CustomerActiveOrdersDtoOutputOrdersInnerCaptain',
             'atRestaurant',
           ),
+          phone: phone,
         );
     replace(_$result);
     return _$result;

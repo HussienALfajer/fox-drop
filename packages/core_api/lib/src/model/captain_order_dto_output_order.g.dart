@@ -288,6 +288,8 @@ class _$CaptainOrderDtoOutputOrder extends CaptainOrderDtoOutputOrder {
   final CaptainActiveOrderDtoOutputOrderCannotComplete? cannotComplete;
   @override
   final CaptainActiveOrderDtoOutputOrderEmergency? emergency;
+  @override
+  final CaptainActiveOrderDtoOutputOrderNoAnswer? noAnswer;
 
   factory _$CaptainOrderDtoOutputOrder([
     void Function(CaptainOrderDtoOutputOrderBuilder)? updates,
@@ -316,6 +318,7 @@ class _$CaptainOrderDtoOutputOrder extends CaptainOrderDtoOutputOrder {
     this.handover,
     this.cannotComplete,
     this.emergency,
+    this.noAnswer,
   }) : super._();
   @override
   CaptainOrderDtoOutputOrder rebuild(
@@ -351,7 +354,8 @@ class _$CaptainOrderDtoOutputOrder extends CaptainOrderDtoOutputOrder {
         radii == other.radii &&
         handover == other.handover &&
         cannotComplete == other.cannotComplete &&
-        emergency == other.emergency;
+        emergency == other.emergency &&
+        noAnswer == other.noAnswer;
   }
 
   @override
@@ -379,6 +383,7 @@ class _$CaptainOrderDtoOutputOrder extends CaptainOrderDtoOutputOrder {
     _$hash = $jc(_$hash, handover.hashCode);
     _$hash = $jc(_$hash, cannotComplete.hashCode);
     _$hash = $jc(_$hash, emergency.hashCode);
+    _$hash = $jc(_$hash, noAnswer.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -407,7 +412,8 @@ class _$CaptainOrderDtoOutputOrder extends CaptainOrderDtoOutputOrder {
           ..add('radii', radii)
           ..add('handover', handover)
           ..add('cannotComplete', cannotComplete)
-          ..add('emergency', emergency))
+          ..add('emergency', emergency)
+          ..add('noAnswer', noAnswer))
         .toString();
   }
 }
@@ -547,6 +553,12 @@ class CaptainOrderDtoOutputOrderBuilder
   set emergency(CaptainActiveOrderDtoOutputOrderEmergencyBuilder? emergency) =>
       _$this._emergency = emergency;
 
+  CaptainActiveOrderDtoOutputOrderNoAnswerBuilder? _noAnswer;
+  CaptainActiveOrderDtoOutputOrderNoAnswerBuilder get noAnswer =>
+      _$this._noAnswer ??= CaptainActiveOrderDtoOutputOrderNoAnswerBuilder();
+  set noAnswer(CaptainActiveOrderDtoOutputOrderNoAnswerBuilder? noAnswer) =>
+      _$this._noAnswer = noAnswer;
+
   CaptainOrderDtoOutputOrderBuilder() {
     CaptainOrderDtoOutputOrder._defaults(this);
   }
@@ -576,6 +588,7 @@ class CaptainOrderDtoOutputOrderBuilder
       _handover = $v.handover?.toBuilder();
       _cannotComplete = $v.cannotComplete?.toBuilder();
       _emergency = $v.emergency?.toBuilder();
+      _noAnswer = $v.noAnswer?.toBuilder();
       _$v = null;
     }
     return this;
@@ -654,6 +667,7 @@ class CaptainOrderDtoOutputOrderBuilder
             handover: _handover?.build(),
             cannotComplete: _cannotComplete?.build(),
             emergency: _emergency?.build(),
+            noAnswer: _noAnswer?.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -687,6 +701,8 @@ class CaptainOrderDtoOutputOrderBuilder
         _cannotComplete?.build();
         _$failedField = 'emergency';
         _emergency?.build();
+        _$failedField = 'noAnswer';
+        _noAnswer?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'CaptainOrderDtoOutputOrder',

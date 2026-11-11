@@ -33,6 +33,16 @@ import {
   raiseEmergency,
 } from './emergencies.js';
 import { openItemReport } from './item-reports.js';
+import {
+  arrivedAtCustomer,
+  canPing,
+  canReport,
+  noAnswerFacts,
+  type NoAnswerRule,
+  type NoAnswerState,
+  noAnswerState,
+  openNoAnswerReport,
+} from './no-answer.js';
 import { frozenAtPickup, unacknowledgedAdditionAt } from './order-edits.js';
 import {
   CAPTAIN_ACTIVE,
@@ -67,7 +77,9 @@ import {
 import {
   cannotCompleteRequests,
   collections,
+  doorPings,
   handovers,
+  noAnswerReports,
   orderOutcomeRows,
   orders,
   pickupRequests,
@@ -264,6 +276,10 @@ export interface CaptainActiveOrder {
   cannotComplete: Pick<OpenCannotComplete, 'reasonLabel' | 'note' | 'at'> | null;
   // CA §9.11 (slice 2.13c): this captain's open «طوارئ», or null.
   emergency: Pick<OpenEmergency, 'at' | 'location'> | null;
+  // CA §9.9 (slice 2.13d): at the door, the pings left and the next one's
+  // time, the customer's latest answer, when «الزبون لا يستجيب» appears and
+  // the latest report with operations' «انتظر»; null elsewhere.
+  noAnswer: NoAnswerState | null;
 }
 
 // The captain's side of an order (CA §9, §15) and operations' commands on the
@@ -819,6 +835,123 @@ export class CaptainOrders {
     });
     if (!done) throw await this.stateChanged(order);
     return this.answer(order, command.captainId, now);
+  }
+
+  // CA §9.9 «تنبيه الزبون» (CU §11.7, slice 2.13d): the captain at the door
+  // rings every signed-in device of the customer. Up to
+  // customer.no_answer_pings, each customer.no_answer_ping_interval_min after
+  // the one before; a ping not allowed yet (or none left) is
+  // order_state_changed with the order, whose noAnswer gives the next time.
+  async pingCustomer(
+    command: CaptainOrderCommand & { location: CommandLocation },
+    now: Date,
+  ): Promise<CaptainActiveOrder> {
+    const requestHash = commandHash({ verb: 'ping_customer', orderId: command.orderId });
+    return this.atTheDoor(command, requestHash, now, async (tx, locked, state) => {
+      if (!canPing(state, now)) return false;
+      await tx.insert(doorPings).values({
+        orderId: locked.id,
+        orderPlacedAt: locked.placedAt,
+        captainId: command.captainId,
+        sentAt: now,
+      });
+      return 'order.customer_pinged';
+    });
+  }
+
+  // CA §9.9 «الزبون لا يستجيب» (slice 2.13d; owner decisions 2026-11-11):
+  // after every ping and pings × interval since the arrival at the customer,
+  // or since operations' latest «انتظر»; operations get the warning «زبون
+  // لا يرد» until they answer «انتظر». Too early, or one already waiting,
+  // is order_state_changed.
+  async reportNoAnswer(
+    command: CaptainOrderCommand & { location: CommandLocation },
+    now: Date,
+  ): Promise<CaptainActiveOrder> {
+    const requestHash = commandHash({ verb: 'report_no_answer', orderId: command.orderId });
+    return this.atTheDoor(command, requestHash, now, async (tx, locked, state) => {
+      if (!canReport(state, now) || (await openNoAnswerReport(tx, locked)) !== null) return false;
+      await tx.insert(noAnswerReports).values({
+        orderId: locked.id,
+        orderPlacedAt: locked.placedAt,
+        cityId: locked.cityId,
+        captainId: command.captainId,
+        reportedAt: now,
+      });
+      return 'order.customer_not_answering';
+    });
+  }
+
+  // The door's two commands: the captain's own order, arrived with the track
+  // at_customer; under the order's lock the state of the pings decides, and
+  // the change records its event (status to itself) and the key.
+  private async atTheDoor(
+    command: CaptainOrderCommand & { location: CommandLocation },
+    requestHash: string,
+    now: Date,
+    write: (
+      tx: Tx,
+      locked: OrderRow,
+      state: NoAnswerState,
+    ) => Promise<'order.customer_pinged' | 'order.customer_not_answering' | false>,
+  ): Promise<CaptainActiveOrder> {
+    const earlier = await this.replay(command.accountId, command, requestHash, now);
+    if (earlier !== null) return this.answer(earlier, command.captainId, now);
+    const order = await this.captainsOrder(command);
+    if (order.status !== 'arrived' || order.captainTrack !== 'at_customer') {
+      throw await this.refusedState(order, command.accountId, command, requestHash, now);
+    }
+    const rule = await this.noAnswerRule(order.cityId);
+    await this.recordLocation(command.captainId, command.location, now);
+    await this.jobs.ready();
+    const done = await this.database.db.transaction(async (tx) => {
+      const locked = await lockOrder(tx, order.id, order.placedAt);
+      if (!locked) throw new Error(`order ${order.id} not found`);
+      if ((await this.replay(command.accountId, command, requestHash, now, tx)) !== null) {
+        return true;
+      }
+      if (
+        locked.status !== 'arrived' ||
+        locked.captainTrack !== 'at_customer' ||
+        locked.captainId !== command.captainId
+      ) {
+        return false;
+      }
+      const arrivedAt = await arrivedAtCustomer(tx, locked);
+      if (arrivedAt === null) return false;
+      const state = noAnswerState(
+        await noAnswerFacts(tx, locked, command.captainId, arrivedAt),
+        rule,
+      );
+      const type = await write(tx, locked, state);
+      if (type === false) return false;
+      const version = locked.version + 1;
+      await tx
+        .update(orders)
+        .set({ version })
+        .where(and(eq(orders.id, order.id), eq(orders.placedAt, order.placedAt)));
+      await recordTransition(tx, this.jobs, locked, {
+        type,
+        from: locked.status,
+        to: locked.status,
+        version,
+        actor: { type: 'captain', id: command.captainId, device: command.deviceId },
+        reason: null,
+        at: now,
+      });
+      await keepKey(tx, command.accountId, command.idempotencyKey, requestHash, order, now);
+      return true;
+    });
+    if (!done) throw await this.stateChanged(order);
+    return this.answer(order, command.captainId, now);
+  }
+
+  private async noAnswerRule(cityId: string): Promise<NoAnswerRule> {
+    const [pings, intervalMin] = await Promise.all([
+      this.settings.get('customer.no_answer_pings', { cityId }),
+      this.settings.get('customer.no_answer_ping_interval_min', { cityId }),
+    ]);
+    return { pings, intervalMin };
   }
 
   // CA §9.11 «طوارئ» (C15, slice 2.13c): the order's captain pressed the
@@ -1763,6 +1896,7 @@ export class CaptainOrders {
       handover,
       problem,
       emergency,
+      noAnswer,
     ] = await Promise.all([
       pickupRequestsOf(this.database.db, [order]),
       pickupDisputesOf(this.database.db, [order]),
@@ -1772,6 +1906,7 @@ export class CaptainOrders {
       this.handoverOf(order, captainId, now),
       openCannotComplete(this.database.db, order),
       openEmergency(this.database.db, order),
+      this.noAnswerOf(order, captainId),
     ]);
     return {
       order,
@@ -1794,7 +1929,25 @@ export class CaptainOrders {
         emergency?.captainId === captainId && order.captainId === captainId
           ? { at: emergency.at, location: emergency.location }
           : null,
+      noAnswer,
     };
+  }
+
+  // CA §9.9: the door's state, for the order's captain at the customer.
+  private async noAnswerOf(order: OrderView, captainId: string): Promise<NoAnswerState | null> {
+    if (
+      order.status !== 'arrived' ||
+      order.captainTrack !== 'at_customer' ||
+      order.captainId !== captainId ||
+      order.customerArrival === null
+    ) {
+      return null;
+    }
+    const [facts, rule] = await Promise.all([
+      noAnswerFacts(this.database.db, order, captainId, order.customerArrival.at),
+      this.noAnswerRule(order.cityId),
+    ]);
+    return noAnswerState(facts, rule);
   }
 
   // CA §9.10.1: the order's open handover as this captain sees it: the

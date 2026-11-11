@@ -66,6 +66,7 @@ import 'package:core_api/src/model/admin_force_offline_dto.dart';
 import 'package:core_api/src/model/admin_handover_dto.dart';
 import 'package:core_api/src/model/admin_image_set_dto_output.dart';
 import 'package:core_api/src/model/admin_new_upload_dto.dart';
+import 'package:core_api/src/model/admin_no_answer_wait_dto.dart';
 import 'package:core_api/src/model/admin_notification_resent_dto_output.dart';
 import 'package:core_api/src/model/admin_notification_text_dto_output.dart';
 import 'package:core_api/src/model/admin_notification_texts_dto_output.dart';
@@ -107,6 +108,9 @@ import 'package:core_api/src/model/admin_order_dto_output_order_item_report_item
 import 'package:core_api/src/model/admin_order_dto_output_order_lines_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_lines_inner_options_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_money.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_no_answer.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_no_answer_pings_inner.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_no_answer_reports_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_on_behalf.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_on_behalf_prep_time.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_outcome.dart';
@@ -207,6 +211,9 @@ import 'package:core_api/src/model/captain_active_order_dto_output_order_handove
 import 'package:core_api/src/model/captain_active_order_dto_output_order_handover_captain.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_handover_captain_location.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_lines_inner.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_no_answer.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_no_answer_answer.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_no_answer_report.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_outcome_to_collect.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_outcome_to_collect_amount.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_pickup.dart';
@@ -287,6 +294,7 @@ import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inne
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_captain.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_delivery.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_door_ping.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_estimate.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_item_report.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_lines_inner.dart';
@@ -514,6 +522,7 @@ part 'serializers.g.dart';
   AdminHandoverDto,
   AdminImageSetDtoOutput,
   AdminNewUploadDto,
+  AdminNoAnswerWaitDto,
   AdminNotificationResentDtoOutput,
   AdminNotificationTextDtoOutput,
   AdminNotificationTextsDtoOutput,
@@ -555,6 +564,9 @@ part 'serializers.g.dart';
   AdminOrderDtoOutputOrderLinesInner,
   AdminOrderDtoOutputOrderLinesInnerOptionsInner,
   AdminOrderDtoOutputOrderMoney,
+  AdminOrderDtoOutputOrderNoAnswer,
+  AdminOrderDtoOutputOrderNoAnswerPingsInner,
+  AdminOrderDtoOutputOrderNoAnswerReportsInner,
   AdminOrderDtoOutputOrderOnBehalf,
   AdminOrderDtoOutputOrderOnBehalfPrepTime,
   AdminOrderDtoOutputOrderOutcome,
@@ -655,6 +667,9 @@ part 'serializers.g.dart';
   CaptainActiveOrderDtoOutputOrderHandoverCaptain,
   CaptainActiveOrderDtoOutputOrderHandoverCaptainLocation,
   CaptainActiveOrderDtoOutputOrderLinesInner,
+  CaptainActiveOrderDtoOutputOrderNoAnswer,
+  CaptainActiveOrderDtoOutputOrderNoAnswerAnswer,
+  CaptainActiveOrderDtoOutputOrderNoAnswerReport,
   CaptainActiveOrderDtoOutputOrderOutcomeToCollect,
   CaptainActiveOrderDtoOutputOrderOutcomeToCollectAmount,
   CaptainActiveOrderDtoOutputOrderPickup,
@@ -735,6 +750,7 @@ part 'serializers.g.dart';
   CustomerActiveOrdersDtoOutputOrdersInnerCancellation,
   CustomerActiveOrdersDtoOutputOrdersInnerCaptain,
   CustomerActiveOrdersDtoOutputOrdersInnerDelivery,
+  CustomerActiveOrdersDtoOutputOrdersInnerDoorPing,
   CustomerActiveOrdersDtoOutputOrdersInnerEstimate,
   CustomerActiveOrdersDtoOutputOrdersInnerItemReport,
   CustomerActiveOrdersDtoOutputOrdersInnerLinesInner,
@@ -1234,6 +1250,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminOrderDtoOutputOrderNoAnswerPingsInner),
+            ]),
+            () => ListBuilder<AdminOrderDtoOutputOrderNoAnswerPingsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminOrderDtoOutputOrderReassignChoicesReasonsInner),
             ]),
             () =>
@@ -1372,6 +1394,12 @@ Serializers serializers =
               FullType(MerchantOrdersDtoOutputOrdersInner),
             ]),
             () => ListBuilder<MerchantOrdersDtoOutputOrdersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminOrderDtoOutputOrderNoAnswerReportsInner),
+            ]),
+            () => ListBuilder<AdminOrderDtoOutputOrderNoAnswerReportsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

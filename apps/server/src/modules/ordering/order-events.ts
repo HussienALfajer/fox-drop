@@ -120,7 +120,15 @@ export type OrderEventType =
   | 'order.cannot_complete_requested'
   | 'order.cannot_complete_withdrawn'
   // CA §9.11 (slice 2.13c): the captain pressed «طوارئ»; the status stays.
-  | 'order.emergency_raised';
+  | 'order.emergency_raised'
+  // CA §9.9, CU §11.7 (slice 2.13d): the captain at the door pinged the
+  // customer, the customer answered (the answer as the reason), the captain
+  // reported «الزبون لا يستجيب», and operations answered «انتظر» (the
+  // message as the reason, for the captain); the status stays.
+  | 'order.customer_pinged'
+  | 'order.ping_answered'
+  | 'order.customer_not_answering'
+  | 'order.no_answer_waited';
 
 // Architecture §5.5 steps 3 and 5: the order's event row and its outgoing
 // event, in the transition's transaction, with a run of the relay that

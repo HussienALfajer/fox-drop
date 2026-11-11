@@ -201,6 +201,9 @@ const captain: Entry[] = [
   ['cancelled', '11', 'أُلغيت المهمة: {السبب}', 'cancellation', true],
   ['handed_over', '11', 'سلّمت الطلب للكابتن {الاسم}', 'cancellation', true],
   ['cancelled_before_acceptance', '12', 'أُلغي الطلب #{رقم}', 'cancellation', true],
+  // CA §9.9 «انتظر» with operations' message (slice 2.13d; the wording ours,
+  // to confirm with the owner).
+  ['no_answer_wait', '13', 'العمليات: انتظر الزبون. {الرسالة}', 'chime'],
   ['customer_coming', '13a', 'الزبون رأى التنبيه وهو قادم', 'chime'],
   ['customer_contacting_recipient', '13a', 'الزبون يتواصل مع المستلم', 'chime'],
   ['charge', '14', 'خُصم من مستحقاتك {المبلغ}: {السبب}', 'silent'],

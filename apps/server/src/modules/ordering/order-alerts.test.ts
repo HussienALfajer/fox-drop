@@ -25,6 +25,7 @@ const placed: OrderAlertInput = {
   itemReportOpen: false,
   cannotCompleteOpen: false,
   emergencyOpen: false,
+  noAnswerOpen: false,
   editAlertAt: null,
 };
 
@@ -150,6 +151,20 @@ describe('orderAlerts (AP §9.1.3)', () => {
     };
     expect(orderAlerts(pressed, now).open).toEqual(['captain_emergency']);
     expect(orderAlerts({ ...pressed, status: 'cancelled' }, now).open).toEqual([]);
+  });
+
+  it('raises «زبون لا يرد» while the report waits and the captain is at the door (CA §9.9)', () => {
+    const reported = {
+      ...placed,
+      status: 'arrived' as const,
+      acceptAlertAt: null,
+      captainId: 'captain',
+      captainTrack: 'at_customer' as const,
+      noAnswerOpen: true,
+    };
+    expect(orderAlerts(reported, now).open).toEqual(['customer_not_answering']);
+    expect(orderAlerts({ ...reported, status: 'delivered' }, now).open).toEqual([]);
+    expect(orderAlerts({ ...reported, noAnswerOpen: false }, now).open).toEqual([]);
   });
 
   it('raises «المطعم لم يؤكد التعديل» 3 minutes after an unacknowledged addition, before the pickup only (RA §8.13)', () => {

@@ -78,6 +78,7 @@ import {
   type OrderView,
 } from './order-views.js';
 import { commission } from './door-payment.js';
+import { latestPing, noAnswerHistory, openNoAnswerReport } from './no-answer.js';
 import { priceLines, quoteMoney, type QuoteMoney } from './quote.js';
 import {
   type ItemReportNote,
@@ -87,7 +88,9 @@ import {
   type ReportedItem,
 } from './item-reports.js';
 import {
+  doorPings,
   itemReports,
+  noAnswerReports,
   orderEdits,
   orderLines,
   orderOutcomeRows,
@@ -318,7 +321,9 @@ type Transition = {
     | 'edit'
     | 'set_outcome'
     | 'change_outcome'
-    | 'reassign';
+    | 'reassign'
+    | 'answer_ping'
+    | 'no_answer_wait';
   from: OrderView['status'][];
   to: 'accepted' | 'ready' | 'rejected' | 'cancelled' | null;
   event?: OrderEventType;
@@ -1712,6 +1717,90 @@ export class OrderCommands {
   // customer hears the new time (CU §14 #12) and, when the prep time moved,
   // the restaurant the new prep time (RA §16 #12). The note is optional.
   // 400 invalid_time_change; 409 order_state_changed.
+  // CU §11.7, CA §9.9 (slice 2.13d): the customer answers the captain's
+  // latest ping: «أنا قادم», or «سأتصل بالمستلم» for an order with a
+  // recipient (the server decides by the order). The captain hears a chime;
+  // the timer of «الزبون لا يستجيب» runs on. No ping, or the latest already
+  // answered (another device), is order_state_changed.
+  async answerPing(command: CustomerCommand, now: Date): Promise<OrderView> {
+    return this.run(
+      { kind: 'customer', command },
+      { verb: 'answer_ping', from: ['arrived'], to: null, event: 'order.ping_answered' },
+      {},
+      now,
+      async (order) => {
+        const ping = await latestPing(this.database.db, order);
+        if (ping === null || ping.answer !== null) throw await this.stateChanged(order);
+        const answer = ping.forRecipient ? 'contacting_recipient' : 'coming';
+        return {
+          set: {},
+          publicReason: answer,
+          guard: async (tx) => {
+            const now = await latestPing(tx, order);
+            return now?.id === ping.id && now.answer === null;
+          },
+          effects: async (tx) => {
+            await tx
+              .update(doorPings)
+              .set({ answer, answeredAt: now })
+              .where(and(eq(doorPings.id, ping.id), isNull(doorPings.answer)));
+          },
+        };
+      },
+    );
+  }
+
+  // CA §9.9 «انتظر» (slice 2.13d; owner decision 2026-11-11): operations
+  // answer the captain's «الزبون لا يستجيب» with a message the captain sees
+  // and hears (CA §14 #13); «زبون لا يرد» closes, and the captain may report
+  // again pings × interval later. Without a report waiting it is
+  // order_state_changed.
+  async waitForCustomer(command: AdminOrderCommand, now: Date): Promise<OrderView> {
+    return this.run(
+      { kind: 'admin', command },
+      { verb: 'no_answer_wait', from: ['arrived'], to: null, event: 'order.no_answer_waited' },
+      { message: command.reason },
+      now,
+      async (order) => {
+        const open = await openNoAnswerReport(this.database.db, order);
+        if (open === null) throw await this.stateChanged(order);
+        return {
+          set: {},
+          publicReason: command.reason,
+          guard: async (tx) => {
+            const [row] = await tx
+              .select({ captainId: orders.captainId })
+              .from(orders)
+              .where(and(eq(orders.id, order.id), eq(orders.placedAt, order.placedAt)));
+            const report = await openNoAnswerReport(tx, order);
+            return report !== null && report.captainId === row?.captainId;
+          },
+          effects: async (tx) => {
+            await tx
+              .update(noAnswerReports)
+              .set({
+                waitedAt: now,
+                waitMessage: command.reason,
+                waitedBy: command.admin.accountId,
+              })
+              .where(
+                and(
+                  eq(noAnswerReports.orderId, order.id),
+                  eq(noAnswerReports.orderPlacedAt, order.placedAt),
+                  isNull(noAnswerReports.waitedAt),
+                ),
+              );
+          },
+        };
+      },
+    );
+  }
+
+  // AP §9.3.1 (slice 2.13d): the order's pings and reports for the detail.
+  noAnswerOf(order: { id: string; placedAt: Date }) {
+    return noAnswerHistory(this.database.db, order);
+  }
+
   async changeTime(
     command: Omit<AdminOrderCommand, 'reason'> & { reason: string | null; addMin: number },
     now: Date,

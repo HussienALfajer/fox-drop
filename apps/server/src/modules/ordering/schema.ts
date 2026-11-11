@@ -1180,3 +1180,76 @@ export const emergencies = ordering.table(
     ),
   ],
 );
+
+// CA §9.9, CU §11.7 «تنبيه الزبون» (slice 2.13d): each ping the captain at the
+// door sent the customer, and the customer's answer: «أنا قادم» (`coming`),
+// or «سأتصل بالمستلم» (`contacting_recipient`) for an order with a
+// recipient. The application role may update only the answer.
+export const pingAnswers = ['coming', 'contacting_recipient'] as const;
+
+export const doorPings = ordering.table(
+  'door_pings',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    orderId: uuid('order_id').notNull(),
+    orderPlacedAt: timestamp('order_placed_at', { withTimezone: true }).notNull(),
+    captainId: uuid('captain_id').notNull(),
+    sentAt: timestamp('sent_at', { withTimezone: true }).notNull(),
+    answer: text('answer', { enum: pingAnswers }),
+    answeredAt: timestamp('answered_at', { withTimezone: true }),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.orderId, table.orderPlacedAt],
+      foreignColumns: [orders.id, orders.placedAt],
+    }),
+    index('door_pings_order').on(table.orderId, table.orderPlacedAt, table.sentAt),
+    check(
+      'door_pings_answer',
+      sql`(${table.answer} IS NULL) = (${table.answeredAt} IS NULL)
+        AND (${table.answer} IS NULL OR ${table.answer} IN ('coming', 'contacting_recipient'))`,
+    ),
+  ],
+);
+
+// CA §9.9 «الزبون لا يستجيب» (slice 2.13d): the captain told operations the
+// customer does not answer, which opens the warning «زبون لا يرد» until
+// operations answer «انتظر» with a message for the captain (owner decision
+// 2026-11-11: the outcome stays «تحديد النتيجة»). At most one waiting per
+// order (a partial unique index). The application role may update only the
+// wait.
+export const noAnswerReports = ordering.table(
+  'no_answer_reports',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    orderId: uuid('order_id').notNull(),
+    orderPlacedAt: timestamp('order_placed_at', { withTimezone: true }).notNull(),
+    cityId: uuid('city_id').notNull(),
+    captainId: uuid('captain_id').notNull(),
+    reportedAt: timestamp('reported_at', { withTimezone: true }).notNull(),
+    waitedAt: timestamp('waited_at', { withTimezone: true }),
+    waitMessage: text('wait_message'),
+    // The admin account that answered «انتظر».
+    waitedBy: uuid('waited_by'),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.orderId, table.orderPlacedAt],
+      foreignColumns: [orders.id, orders.placedAt],
+    }),
+    uniqueIndex('no_answer_reports_one_open_per_order')
+      .on(table.orderId)
+      .where(sql`${table.waitedAt} IS NULL`),
+    index('no_answer_reports_order').on(table.orderId, table.orderPlacedAt, table.reportedAt),
+    check(
+      'no_answer_reports_wait',
+      sql`(${table.waitedAt} IS NULL) = (${table.waitMessage} IS NULL)
+        AND (${table.waitedAt} IS NULL) = (${table.waitedBy} IS NULL)
+        AND (${table.waitMessage} IS NULL OR length(${table.waitMessage}) BETWEEN 1 AND 300)`,
+    ),
+  ],
+);

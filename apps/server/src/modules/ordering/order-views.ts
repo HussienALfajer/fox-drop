@@ -4,6 +4,12 @@ import { equivalent, type RateSnapshot } from '../fx/index.js';
 import type { Point } from '../geo/index.js';
 import { type OpenCannotComplete, openCannotCompletes } from './cannot-complete.js';
 import { type OpenEmergency, openEmergencies } from './emergencies.js';
+import {
+  type DoorPing,
+  latestPings,
+  type OpenNoAnswerReport,
+  openNoAnswerReports,
+} from './no-answer.js';
 import { type ItemReportNote, type ItemReportUntil, openItemReports } from './item-reports.js';
 import { type PendingEdit, pendingEdits } from './order-edits.js';
 import type { CaptainTrack } from './order-events.js';
@@ -184,6 +190,12 @@ export interface OrderView {
   cannotComplete: OpenCannotComplete | null;
   // CA §9.11 (slice 2.13c): the captain's open «طوارئ», or null.
   emergency: OpenEmergency | null;
+  // CA §9.9 (slice 2.13d): the order's captain's «الزبون لا يستجيب» waiting
+  // for operations' «انتظر», while at the door; null otherwise.
+  noAnswer: OpenNoAnswerReport | null;
+  // CU §11.7 (slice 2.13d): the latest ping of the captain at the door, with
+  // the customer's answer; null without one.
+  doorPing: DoorPing | null;
   // RA §8.6, CU §11.9: the rejection's reason, its label, the customer's text
   // and the items «اطلب بدون الأصناف غير المتوفرة» leaves out.
   rejection: {
@@ -396,6 +408,14 @@ export async function readOrders(
   const emergencies = await openEmergencies(
     executor,
     rows.filter((row) => row.captainId !== null),
+  );
+  const noAnswers = await openNoAnswerReports(
+    executor,
+    rows.filter((row) => row.status === 'arrived'),
+  );
+  const pings = await latestPings(
+    executor,
+    rows.filter((row) => row.status === 'arrived'),
   );
   const edits = await pendingEdits(
     executor,
@@ -621,6 +641,8 @@ export async function readOrders(
         : null,
       cannotComplete: problems.get(row.id) ?? null,
       emergency: emergencies.get(row.id) ?? null,
+      noAnswer: noAnswerOf(noAnswers.get(row.id), row.captainId),
+      doorPing: pings.get(row.id) ?? null,
       rejection:
         row.rejectedAt &&
         row.rejectReason &&
@@ -740,4 +762,12 @@ export function snapshotOf(stored: unknown): RateSnapshot {
       roundingMode: entry.roundingMode,
     })),
   };
+}
+
+// A report of another captain (before a handover) is not this order's now.
+function noAnswerOf(
+  report: OpenNoAnswerReport | undefined,
+  captainId: string | null,
+): OpenNoAnswerReport | null {
+  return report !== undefined && report.captainId === captainId ? report : null;
 }

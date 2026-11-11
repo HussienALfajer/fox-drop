@@ -53,6 +53,10 @@ export const alertCodes = [
   // the location sent, until the order leaves them or ends (no withdrawal,
   // owner decision 2026-11-11).
   'captain_emergency',
+  // «زبون لا يرد»: the captain's «الزبون لا يستجيب» after every ping (CA
+  // §9.9, slice 2.13d), until operations answer «انتظر» or the order leaves
+  // the door.
+  'customer_not_answering',
   // «مطعم أوقف تلقائياً»: merchant.auto_pause_unanswered_count unanswered
   // orders in a business day (AP §9.6.5), until operations resume it.
   'restaurant_auto_paused',
@@ -92,6 +96,7 @@ export const ALERT_RULES: Record<AlertCode, AlertRule> = {
   edit_unacknowledged: rule('critical', OPERATIONS, 'order'),
   captain_cannot_complete: rule('critical', OPERATIONS, 'order'),
   captain_emergency: rule('critical', OPERATIONS, 'order'),
+  customer_not_answering: rule('warning', OPERATIONS, 'order'),
   restaurant_auto_paused: rule('warning', OPERATIONS, 'restaurant'),
 };
 

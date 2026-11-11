@@ -35,7 +35,7 @@ abstract class AdminAlertDtoOutput
   /// The rule of AP §9.1.3.
   @BuiltValueField(wireName: r'code')
   AdminAlertDtoOutputCodeEnum get code;
-  // enum codeEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  captain_cash_limit,  codes_cannot_send,  code_number_stopped,  away_from_address,  item_unavailable,  edit_unacknowledged,  captain_cannot_complete,  captain_emergency,  restaurant_auto_paused,  };
+  // enum codeEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  captain_cash_limit,  codes_cannot_send,  code_number_stopped,  away_from_address,  item_unavailable,  edit_unacknowledged,  captain_cannot_complete,  captain_emergency,  customer_not_answering,  restaurant_auto_paused,  };
 
   /// critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
   @BuiltValueField(wireName: r'severity')
@@ -410,6 +410,9 @@ class AdminAlertDtoOutputCodeEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'captain_emergency')
   static const AdminAlertDtoOutputCodeEnum captainEmergency =
       _$adminAlertDtoOutputCodeEnum_captainEmergency;
+  @BuiltValueEnumConst(wireName: r'customer_not_answering')
+  static const AdminAlertDtoOutputCodeEnum customerNotAnswering =
+      _$adminAlertDtoOutputCodeEnum_customerNotAnswering;
   @BuiltValueEnumConst(wireName: r'restaurant_auto_paused')
   static const AdminAlertDtoOutputCodeEnum restaurantAutoPaused =
       _$adminAlertDtoOutputCodeEnum_restaurantAutoPaused;

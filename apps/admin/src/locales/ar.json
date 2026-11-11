@@ -167,7 +167,8 @@
       "restaurantAutoPaused": "مطعم أوقف تلقائياً",
       "editUnacknowledged": "المطعم لم يؤكد التعديل",
       "captainCannotComplete": "كابتن لا يستطيع إكمال الطلب",
-      "captainEmergency": "طوارئ كابتن"
+      "captainEmergency": "طوارئ كابتن",
+      "customerNotAnswering": "زبون لا يرد"
     },
     "badge": {
       "needsAssignment": "بحاجة لتعيين",
@@ -834,6 +835,7 @@
           "cancelled": "إلغاء المهمة",
           "handed_over": "تسليم الطلب لكابتن آخر",
           "cancelled_before_acceptance": "إلغاء طلب قبل قبول المطعم",
+          "no_answer_wait": "«انتظر» الزبون الذي لا يرد",
           "customer_coming": "الزبون قادم",
           "customer_contacting_recipient": "الزبون يتواصل مع المستلم",
           "charge": "خصم من المستحقات",

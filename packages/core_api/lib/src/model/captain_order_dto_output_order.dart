@@ -11,6 +11,7 @@ import 'package:core_api/src/model/captain_active_order_dto_output_order_prepara
 import 'package:core_api/src/model/captain_active_order_dto_output_order_collect.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_cannot_complete.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_no_answer.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_emergency.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_pickup_payment.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_lines_inner.dart';
@@ -47,6 +48,7 @@ part 'captain_order_dto_output_order.g.dart';
 /// * [handover]
 /// * [cannotComplete]
 /// * [emergency]
+/// * [noAnswer]
 @BuiltValue()
 abstract class CaptainOrderDtoOutputOrder
     implements
@@ -125,6 +127,9 @@ abstract class CaptainOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'emergency')
   CaptainActiveOrderDtoOutputOrderEmergency? get emergency;
+
+  @BuiltValueField(wireName: r'noAnswer')
+  CaptainActiveOrderDtoOutputOrderNoAnswer? get noAnswer;
 
   CaptainOrderDtoOutputOrder._();
 
@@ -292,6 +297,15 @@ class _$CaptainOrderDtoOutputOrderSerializer
             object.emergency,
             specifiedType: const FullType.nullable(
               CaptainActiveOrderDtoOutputOrderEmergency,
+            ),
+          );
+    yield r'noAnswer';
+    yield object.noAnswer == null
+        ? null
+        : serializers.serialize(
+            object.noAnswer,
+            specifiedType: const FullType.nullable(
+              CaptainActiveOrderDtoOutputOrderNoAnswer,
             ),
           );
   }
@@ -548,6 +562,18 @@ class _$CaptainOrderDtoOutputOrderSerializer
                   as CaptainActiveOrderDtoOutputOrderEmergency?;
           if (valueDes == null) continue;
           result.emergency.replace(valueDes);
+          break;
+        case r'noAnswer':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CaptainActiveOrderDtoOutputOrderNoAnswer,
+                    ),
+                  )
+                  as CaptainActiveOrderDtoOutputOrderNoAnswer?;
+          if (valueDes == null) continue;
+          result.noAnswer.replace(valueDes);
           break;
         default:
           unhandled.add(key);

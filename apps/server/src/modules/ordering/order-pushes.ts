@@ -95,12 +95,16 @@ export function orderPushes(
 ): OrderPush[] {
   const number = { رقم: facts.number };
   const order = { target: 'order', orderId: facts.orderId };
-  const customer = (templateKey: string, values: Record<string, string> = {}): OrderPush => ({
+  const customer = (
+    templateKey: string,
+    values: Record<string, string> = {},
+    data: Record<string, string> = order,
+  ): OrderPush => ({
     party: 'customer',
     recipient: { party: 'customer', accountId: facts.customerAccountId },
     templateKey,
     values,
-    data: order,
+    data,
   });
   const merchant = (templateKey: string, values: Record<string, string> = {}): OrderPush => ({
     party: 'merchant',
@@ -296,6 +300,29 @@ export function orderPushes(
       ];
     case 'order.delivered':
       return [customer('customer.delivered')];
+    // CU §11.7, §14 #5 (slice 2.13d): the door ping rings every signed-in
+    // device of the customer, with the recipient's text for an order for
+    // someone else.
+    // The open app takes it as the ring's cue (`kind`), on any screen.
+    case 'order.customer_pinged': {
+      const ring = { ...order, kind: 'door_ping' };
+      return [
+        facts.recipientName
+          ? customer('customer.door_ping_recipient', { المستلم: facts.recipientName }, ring)
+          : customer('customer.door_ping', {}, ring),
+      ];
+    }
+    // CA §9.9, §14 #13a: the customer's answer chimes on the captain's phone.
+    case 'order.ping_answered':
+      return captain(
+        reason === 'contacting_recipient'
+          ? 'captain.customer_contacting_recipient'
+          : 'captain.customer_coming',
+      );
+    // CA §9.9, §14 #13 (owner decision 2026-11-11): operations' «انتظر» with
+    // their message.
+    case 'order.no_answer_waited':
+      return captain('captain.no_answer_wait', { الرسالة: reason ?? '' });
     case 'order.outcome_set': {
       // AP §8.9 (slice 2.11a): the customer's «تعذّر تسليم طلبك: {السبب}» (CU
       // §14 #9) or «تم التسليم» for a free or damaged delivery (CU #6); the

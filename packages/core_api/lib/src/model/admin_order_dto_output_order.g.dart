@@ -183,6 +183,9 @@ _$adminOrderDtoOutputOrderAlertsEnum_captainCannotComplete =
 const AdminOrderDtoOutputOrderAlertsEnum
 _$adminOrderDtoOutputOrderAlertsEnum_captainEmergency =
     const AdminOrderDtoOutputOrderAlertsEnum._('captainEmergency');
+const AdminOrderDtoOutputOrderAlertsEnum
+_$adminOrderDtoOutputOrderAlertsEnum_customerNotAnswering =
+    const AdminOrderDtoOutputOrderAlertsEnum._('customerNotAnswering');
 
 AdminOrderDtoOutputOrderAlertsEnum _$adminOrderDtoOutputOrderAlertsEnumValueOf(
   String name,
@@ -216,6 +219,8 @@ AdminOrderDtoOutputOrderAlertsEnum _$adminOrderDtoOutputOrderAlertsEnumValueOf(
       return _$adminOrderDtoOutputOrderAlertsEnum_captainCannotComplete;
     case 'captainEmergency':
       return _$adminOrderDtoOutputOrderAlertsEnum_captainEmergency;
+    case 'customerNotAnswering':
+      return _$adminOrderDtoOutputOrderAlertsEnum_customerNotAnswering;
     default:
       throw ArgumentError(name);
   }
@@ -239,6 +244,7 @@ _$adminOrderDtoOutputOrderAlertsEnumValues =
         _$adminOrderDtoOutputOrderAlertsEnum_editUnacknowledged,
         _$adminOrderDtoOutputOrderAlertsEnum_captainCannotComplete,
         _$adminOrderDtoOutputOrderAlertsEnum_captainEmergency,
+        _$adminOrderDtoOutputOrderAlertsEnum_customerNotAnswering,
       ],
     );
 
@@ -363,6 +369,7 @@ class _$AdminOrderDtoOutputOrderAlertsEnumSerializer
     'editUnacknowledged': 'edit_unacknowledged',
     'captainCannotComplete': 'captain_cannot_complete',
     'captainEmergency': 'captain_emergency',
+    'customerNotAnswering': 'customer_not_answering',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_not_accepted': 'restaurantNotAccepted',
@@ -379,6 +386,7 @@ class _$AdminOrderDtoOutputOrderAlertsEnumSerializer
     'edit_unacknowledged': 'editUnacknowledged',
     'captain_cannot_complete': 'captainCannotComplete',
     'captain_emergency': 'captainEmergency',
+    'customer_not_answering': 'customerNotAnswering',
   };
 
   @override
@@ -461,6 +469,8 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
   @override
   final AdminOrderDtoOutputOrderEmergency? emergency;
   @override
+  final AdminOrderDtoOutputOrderNoAnswer noAnswer;
+  @override
   final AdminOrderDtoOutputOrderItemReport? itemReport;
   @override
   final AdminOrderDtoOutputOrderTimeChange? timeChange;
@@ -522,6 +532,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
     this.outcomeChoices,
     this.cannotComplete,
     this.emergency,
+    required this.noAnswer,
     this.itemReport,
     this.timeChange,
     this.editChoices,
@@ -578,6 +589,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
         outcomeChoices == other.outcomeChoices &&
         cannotComplete == other.cannotComplete &&
         emergency == other.emergency &&
+        noAnswer == other.noAnswer &&
         itemReport == other.itemReport &&
         timeChange == other.timeChange &&
         editChoices == other.editChoices &&
@@ -625,6 +637,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
     _$hash = $jc(_$hash, outcomeChoices.hashCode);
     _$hash = $jc(_$hash, cannotComplete.hashCode);
     _$hash = $jc(_$hash, emergency.hashCode);
+    _$hash = $jc(_$hash, noAnswer.hashCode);
     _$hash = $jc(_$hash, itemReport.hashCode);
     _$hash = $jc(_$hash, timeChange.hashCode);
     _$hash = $jc(_$hash, editChoices.hashCode);
@@ -674,6 +687,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
           ..add('outcomeChoices', outcomeChoices)
           ..add('cannotComplete', cannotComplete)
           ..add('emergency', emergency)
+          ..add('noAnswer', noAnswer)
           ..add('itemReport', itemReport)
           ..add('timeChange', timeChange)
           ..add('editChoices', editChoices)
@@ -857,6 +871,12 @@ class AdminOrderDtoOutputOrderBuilder
   set emergency(AdminOrderDtoOutputOrderEmergencyBuilder? emergency) =>
       _$this._emergency = emergency;
 
+  AdminOrderDtoOutputOrderNoAnswerBuilder? _noAnswer;
+  AdminOrderDtoOutputOrderNoAnswerBuilder get noAnswer =>
+      _$this._noAnswer ??= AdminOrderDtoOutputOrderNoAnswerBuilder();
+  set noAnswer(AdminOrderDtoOutputOrderNoAnswerBuilder? noAnswer) =>
+      _$this._noAnswer = noAnswer;
+
   AdminOrderDtoOutputOrderItemReportBuilder? _itemReport;
   AdminOrderDtoOutputOrderItemReportBuilder get itemReport =>
       _$this._itemReport ??= AdminOrderDtoOutputOrderItemReportBuilder();
@@ -976,6 +996,7 @@ class AdminOrderDtoOutputOrderBuilder
       _outcomeChoices = $v.outcomeChoices?.toBuilder();
       _cannotComplete = $v.cannotComplete?.toBuilder();
       _emergency = $v.emergency?.toBuilder();
+      _noAnswer = $v.noAnswer.toBuilder();
       _itemReport = $v.itemReport?.toBuilder();
       _timeChange = $v.timeChange?.toBuilder();
       _editChoices = $v.editChoices?.toBuilder();
@@ -1070,6 +1091,7 @@ class AdminOrderDtoOutputOrderBuilder
             outcomeChoices: _outcomeChoices?.build(),
             cannotComplete: _cannotComplete?.build(),
             emergency: _emergency?.build(),
+            noAnswer: noAnswer.build(),
             itemReport: _itemReport?.build(),
             timeChange: _timeChange?.build(),
             editChoices: _editChoices?.build(),
@@ -1125,6 +1147,8 @@ class AdminOrderDtoOutputOrderBuilder
         _cannotComplete?.build();
         _$failedField = 'emergency';
         _emergency?.build();
+        _$failedField = 'noAnswer';
+        noAnswer.build();
         _$failedField = 'itemReport';
         _itemReport?.build();
         _$failedField = 'timeChange';

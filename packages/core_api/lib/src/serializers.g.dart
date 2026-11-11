@@ -88,6 +88,7 @@ Serializers _$serializers =
           ..add(AdminNewUploadDto.serializer)
           ..add(AdminNewUploadDtoContentTypeEnum.serializer)
           ..add(AdminNewUploadDtoPurposeEnum.serializer)
+          ..add(AdminNoAnswerWaitDto.serializer)
           ..add(AdminNotificationResentDtoOutput.serializer)
           ..add(AdminNotificationTextDtoOutput.serializer)
           ..add(AdminNotificationTextDtoOutputAudienceEnum.serializer)
@@ -164,6 +165,10 @@ Serializers _$serializers =
           ..add(AdminOrderDtoOutputOrderLinesInner.serializer)
           ..add(AdminOrderDtoOutputOrderLinesInnerOptionsInner.serializer)
           ..add(AdminOrderDtoOutputOrderMoney.serializer)
+          ..add(AdminOrderDtoOutputOrderNoAnswer.serializer)
+          ..add(AdminOrderDtoOutputOrderNoAnswerPingsInner.serializer)
+          ..add(AdminOrderDtoOutputOrderNoAnswerPingsInnerAnswerEnum.serializer)
+          ..add(AdminOrderDtoOutputOrderNoAnswerReportsInner.serializer)
           ..add(AdminOrderDtoOutputOrderOnBehalf.serializer)
           ..add(AdminOrderDtoOutputOrderOnBehalfPrepTime.serializer)
           ..add(AdminOrderDtoOutputOrderOutcome.serializer)
@@ -333,6 +338,12 @@ Serializers _$serializers =
           )
           ..add(CaptainActiveOrderDtoOutputOrderHandoverRoleEnum.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderLinesInner.serializer)
+          ..add(CaptainActiveOrderDtoOutputOrderNoAnswer.serializer)
+          ..add(CaptainActiveOrderDtoOutputOrderNoAnswerAnswer.serializer)
+          ..add(
+            CaptainActiveOrderDtoOutputOrderNoAnswerAnswerAnswerEnum.serializer,
+          )
+          ..add(CaptainActiveOrderDtoOutputOrderNoAnswerReport.serializer)
           ..add(CaptainActiveOrderDtoOutputOrderOutcomeToCollect.serializer)
           ..add(
             CaptainActiveOrderDtoOutputOrderOutcomeToCollectAmount.serializer,
@@ -454,6 +465,11 @@ Serializers _$serializers =
                 .serializer,
           )
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerDelivery.serializer)
+          ..add(CustomerActiveOrdersDtoOutputOrdersInnerDoorPing.serializer)
+          ..add(
+            CustomerActiveOrdersDtoOutputOrdersInnerDoorPingAnswerEnum
+                .serializer,
+          )
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerEstimate.serializer)
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerItemReport.serializer)
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerLinesInner.serializer)
@@ -957,6 +973,18 @@ Serializers _$serializers =
               const FullType(AdminOrderDtoOutputOrderLinesInnerOptionsInner),
             ]),
             () => ListBuilder<AdminOrderDtoOutputOrderLinesInnerOptionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOrderDtoOutputOrderNoAnswerPingsInner),
+            ]),
+            () => ListBuilder<AdminOrderDtoOutputOrderNoAnswerPingsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOrderDtoOutputOrderNoAnswerReportsInner),
+            ]),
+            () => ListBuilder<AdminOrderDtoOutputOrderNoAnswerReportsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

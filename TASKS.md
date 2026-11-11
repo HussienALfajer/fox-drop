@@ -10,8 +10,13 @@ Slice 2.13d, the customer not answering (`docs/roadmap.md`, Phase 2; 2.13 split 
 - **Specs:** CA §9.9 (`captain-app/09-the-active-order/09-the-customer-does-not-answer.md`), CU §11.7 (`customer-app/11-the-active-order.md`) and its decisions and commands (`customer-app/02-decisions.md`, `customer-app/15-server-commands.md`), AP §9.1.3 row «زبون لا يرد» (`admin-panel/09-modules/01-dashboard.md`), the settings (`captain-app/appendix-a-settings.md`, `customer-app/appendix-a-settings.md`, AP Appendix A; already in `settings/catalogue.ts`), CA §14 and CU §14 for the pushes; the definitions of done CA §19, CU's, AP §14.
 - **Branch:** `feat/customer-no-answer`.
 - **Builds on:** the arrival at the customer (`arrive-at-customer`, the track `at_customer`), the order alerts (`order-alerts.ts`, `alert-rules.ts`), the pushes (`order-pushes.ts`, `outbox-pushes.ts`), the customer app's order screen and the captain app's step 4 and alerts (`alertStep`).
-- **Ask the owner first:** what operations' «انتظر» sends and where the captain sees it; whether «الزبون لا يستجيب» opens anything beyond the alert (the failed outcome stays operations' «تحديد النتيجة»); the full-screen ring over the lock screen on Android (the customer app has no such permission yet); the strings the spec gives no wording for.
-- **Plan:** write it at the start, one step per commit (server rule first, failing test: the pings and their spacing, the customer's answers, the alert after 15 minutes and three pings, «انتظر»; then the customer app; then the captain app; then the panel; then the docs).
+- **Owner decisions 2026-11-11:** «انتظر» sends the captain a push with operations' message and replaces «العمليات تراجع الطلب — انتظر تعليماتهم» on the order screen with it; «الزبون لا يستجيب» comes back pings × interval after the wait. «الزبون لا يستجيب» opens only the alert (the failed outcome stays «تحديد النتيجة»). The 15 minutes count from the arrival at the customer (pings × interval). No full-screen intent over the lock screen: a ringing push while the app is closed, the 30-second full screen while it is open. The strings the spec gives no wording for are proposed and confirmed later.
+- **Plan:**
+  - [x] Server: `ordering.door_pings` and `ordering.no_answer_reports`, the pure rule, «تنبيه الزبون», «الزبون لا يستجيب», the customer's answer, «انتظر», the warning «زبون لا يرد», the pushes, the reads.
+  - [ ] Customer app: the 30-second full-screen ring with «أنا قادم» or «سأتصل بالمستلم» and «اتصال بالكابتن».
+  - [ ] Captain app: «تنبيه الزبون» with the next allowed time, the answer's chime and line, «الزبون لا يستجيب», «العمليات تراجع الطلب — انتظر تعليماتهم» and the «انتظر» card.
+  - [ ] Panel: «انتظر» with its message on the alert and the detail, the pings and reports on the detail, the timeline.
+  - [ ] Review, then hand over to the next slice.
 
 ### Left from 2.13c (`feat/captain-emergency`)
 

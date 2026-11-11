@@ -196,6 +196,18 @@ class AdminCloseItemReportDto extends createZodDto(
   z.object({ reason: z.string().trim().min(1).max(500).describe('Required (AP §9.3.2).') }),
 ) {}
 
+// CA §9.9 «انتظر»: the message the captain sees and hears.
+class AdminNoAnswerWaitDto extends createZodDto(
+  z.object({
+    message: z
+      .string()
+      .trim()
+      .min(1)
+      .max(300)
+      .describe("Operations' message to the captain at the door (CA §14 #13)."),
+  }),
+) {}
+
 class AdminChangeTimeDto extends createZodDto(
   z.object({
     addMin: z
@@ -857,6 +869,36 @@ class AdminOrderDto extends createZodDto(
         .describe(
           "«طوارئ» (CA §9.11, slice 2.13c): the captain's open emergency, until the order leaves them or ends; «سحب وإعادة تعيين» and «تسليم لكابتن آخر» prefill «دون خطأ» while it is open (owner decision 2026-11-11). Null without one.",
         ),
+      noAnswer: z
+        .object({
+          pings: z
+            .array(
+              z.object({
+                captainId: z.uuid(),
+                at: z.iso.datetime(),
+                answer: z
+                  .enum(['coming', 'contacting_recipient'])
+                  .nullable()
+                  .describe('«أنا قادم» or «سأتصل بالمستلم»; null unanswered.'),
+                answeredAt: z.iso.datetime().nullable(),
+              }),
+            )
+            .describe('Every «تنبيه الزبون» of the order, oldest first.'),
+          reports: z
+            .array(
+              z.object({
+                captainId: z.uuid(),
+                at: z.iso.datetime(),
+                waitedAt: z.iso.datetime().nullable(),
+                waitMessage: z.string().nullable().describe("Operations' «انتظر» message."),
+              }),
+            )
+            .describe("Every «الزبون لا يستجيب», oldest first, with operations' «انتظر»."),
+          waitAllowed: z
+            .boolean()
+            .describe("«انتظر» is open: the order's captain at the door has a report waiting."),
+        })
+        .describe('CA §9.9 (slice 2.13d): the customer not answering at the door.'),
       itemReport: z
         .object({
           at: z.iso.datetime(),
@@ -1325,6 +1367,36 @@ export class AdminOrdersController {
           reason: body.reason,
           idempotencyKey,
           prepMin: body.prepMin,
+        },
+        new Date(),
+      ),
+    );
+  }
+
+  // CA §9.9 «انتظر» (slice 2.13d; owner decision 2026-11-11): operations
+  // answer the captain's «الزبون لا يستجيب» with a message the captain sees
+  // and hears; «زبون لا يرد» closes. 409 order_state_changed without a report
+  // waiting; 404 unknown_order; 422 idempotency_key_reused.
+  @Post(':orderId/no-answer/wait')
+  @RequirePermission('operations.manage')
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminOrderCardDto })
+  async waitForCustomer(
+    @Param() params: AdminOrderParamsDto,
+    @Body() body: AdminNoAnswerWaitDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.onBehalf(params.orderId, () =>
+      this.commands.waitForCustomer(
+        {
+          orderId: params.orderId,
+          admin: { accountId: session.accountId, roles: session.roles },
+          context: requestContext(request),
+          reason: body.message,
+          idempotencyKey,
         },
         new Date(),
       ),
@@ -2040,6 +2112,7 @@ export class AdminOrdersController {
       reassignReasons,
       reassignmentRows,
       handoverRows,
+      noAnswer,
     ] = await Promise.all([
       this.customers.profile(order.customerAccountId),
       this.views.timeline(order),
@@ -2062,6 +2135,7 @@ export class AdminOrdersController {
         : null,
       this.commands.reassignmentsOf(order),
       this.commands.handoversOf(order, now),
+      this.commands.noAnswerOf(order),
     ]);
     const { acceptance } = order;
     // The cancellation itself, not its acknowledgement (RA §8.14).
@@ -2165,6 +2239,21 @@ export class AdminOrdersController {
             simulated: order.emergency.location.simulated,
           },
           at: order.emergency.at.toISOString(),
+        },
+        noAnswer: {
+          pings: noAnswer.pings.map((ping) => ({
+            captainId: ping.captainId,
+            at: ping.at.toISOString(),
+            answer: ping.answer,
+            answeredAt: ping.answeredAt?.toISOString() ?? null,
+          })),
+          reports: noAnswer.reports.map((report) => ({
+            captainId: report.captainId,
+            at: report.at.toISOString(),
+            waitedAt: report.waitedAt?.toISOString() ?? null,
+            waitMessage: report.waitMessage,
+          })),
+          waitAllowed: order.noAnswer !== null,
         },
         itemReport: order.itemReport && {
           at: order.itemReport.at.toISOString(),
