@@ -180,6 +180,19 @@ export function useEndHolidayClose(restaurantId: string) {
   );
 }
 
+// RA §12.7, AP §9.6.4: the other currencies the restaurant accepts from the
+// captain at pickup, on its request; the base is always accepted.
+export function useSetPickupCurrencies(restaurantId: string) {
+  return useStatusCommand(restaurantId, async (currencies: string[]) =>
+    outcome(
+      await api.PUT('/v1/admin/restaurants/{restaurantId}/pickup-currencies', {
+        params: { path: { restaurantId } },
+        body: { currencies },
+      }),
+    ),
+  );
+}
+
 // The maximum active orders (RA §7.4): empty is off, else 1 to 50.
 export function maxActiveOrders(value: string): number | null | undefined {
   if (value.trim() === '') return null;
