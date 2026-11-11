@@ -877,6 +877,8 @@
         "captain": {
           "new_offer": "عرض جديد",
           "auto_offline": "إيقاف تلقائي بعد 3 عروض",
+          "peak_started": "بدء نافذة مكافأة الذروة",
+          "peak_started_zones": "بدء نافذة مكافأة الذروة لمناطق محددة",
           "assigned_by_operations": "تعيين من العمليات",
           "order_ready": "الطلب جاهز",
           "order_edited": "تعديل الطلب",

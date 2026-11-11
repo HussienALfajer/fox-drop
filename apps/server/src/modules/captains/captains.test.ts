@@ -230,6 +230,25 @@ describe('CaptainsService.setStatus', () => {
     });
   });
 
+  // CA §14 #23 (slice 2.16): who hears that a peak window started.
+  it('lists the active captains of a city, a suspension past its end included', async () => {
+    const { cityId, id: active } = await captain();
+    const now = new Date();
+    const suspended = await captains.createCaptain(cityId, motorbike, change);
+    const ended = await captains.createCaptain(cityId, motorbike, change);
+    const terminated = await captains.createCaptain(cityId, motorbike, change);
+    await captains.setStatus(suspended, 'suspended', { ...change, reason: 'يوم' }, now);
+    await captains.setStatus(
+      ended,
+      'suspended',
+      { ...change, reason: 'ساعة', until: new Date(now.getTime() + 1000) },
+      now,
+    );
+    await captains.setStatus(terminated, 'terminated', change, now);
+    const later = new Date(now.getTime() + 2000);
+    expect((await captains.activeCaptainIds(cityId, later)).sort()).toEqual([active, ended].sort());
+  });
+
   it('reads a suspension past its end as active, and replaces a suspension', async () => {
     const { id } = await captain();
     const now = new Date();

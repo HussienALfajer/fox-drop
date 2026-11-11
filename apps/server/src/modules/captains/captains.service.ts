@@ -536,6 +536,22 @@ export class CaptainsService implements OnModuleInit {
     return table !== undefined;
   }
 
+  // CA §14 #23 (owner decision 2026-11-12): the city's active captains,
+  // online or not: neither terminated nor in a suspension still running.
+  async activeCaptainIds(cityId: string, now: Date): Promise<string[]> {
+    const rows = await this.database.db
+      .select({ id: captainRecords.id })
+      .from(captainRecords)
+      .where(
+        and(
+          eq(captainRecords.cityId, cityId),
+          sql`(${captainRecords.status} = 'active' OR (${captainRecords.status} = 'suspended'
+                AND ${captainRecords.suspendedUntil} <= ${now}))`,
+        ),
+      );
+    return rows.map((row) => row.id);
+  }
+
   // The captains of a city by name, for the seed.
   async captainIds(cityId: string): Promise<{ id: string; name: string }[]> {
     return this.database.db

@@ -76,10 +76,10 @@ describe('activeWindows', () => {
     const clock = (time: string) => localClock(thursday(time), ZONE);
     expect(activeWindows([evening], clock('19:59'))).toEqual([]);
     expect(activeWindows([evening], clock('20:00'))).toEqual([
-      { window: evening, endsInSeconds: 7200 },
+      { window: evening, startedSecondsAgo: 0, endsInSeconds: 7200 },
     ]);
     expect(activeWindows([evening], clock('21:59'))).toEqual([
-      { window: evening, endsInSeconds: 60 },
+      { window: evening, startedSecondsAgo: 7140, endsInSeconds: 60 },
     ]);
     expect(activeWindows([evening], clock('22:00'))).toEqual([]);
     expect(activeWindows([evening], localClock(at('2026-11-14T20:30:00+03:00'), ZONE))).toEqual([]);
@@ -88,9 +88,11 @@ describe('activeWindows', () => {
   it('runs past midnight into the next day, belonging to the day it starts', () => {
     const late: PeakWindow = { ...evening, days: [4], startMinute: 23 * 60, endMinute: 60 };
     const fridayNight = localClock(at('2026-11-13T00:30:00+03:00'), ZONE);
-    expect(activeWindows([late], fridayNight)).toEqual([{ window: late, endsInSeconds: 1800 }]);
+    expect(activeWindows([late], fridayNight)).toEqual([
+      { window: late, startedSecondsAgo: 5400, endsInSeconds: 1800 },
+    ]);
     expect(activeWindows([late], localClock(thursday('23:30'), ZONE))).toEqual([
-      { window: late, endsInSeconds: 5400 },
+      { window: late, startedSecondsAgo: 1800, endsInSeconds: 5400 },
     ]);
     // Thursday 00:30 belongs to Wednesday's night, not a day of the window.
     expect(activeWindows([late], localClock(thursday('00:30'), ZONE))).toEqual([]);

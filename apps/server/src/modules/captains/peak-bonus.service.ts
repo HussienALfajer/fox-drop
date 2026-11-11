@@ -55,6 +55,8 @@ export interface PeakBonusAmount {
 export interface ActivePeakWindow {
   amount: bigint;
   currency: string;
+  // When this occurrence of the window started (CA §14 #23's push).
+  since: Date;
   until: Date;
   zones: { id: string; name: string }[];
 }
@@ -200,9 +202,11 @@ export class PeakBonusService implements OnModuleInit {
     const running = activeWindows(version.windows, localClock(now, timeZone));
     if (running.length === 0) return [];
     const names = await this.zoneNames(cityId);
-    return running.map(({ window, endsInSeconds }) => ({
+    return running.map(({ window, startedSecondsAgo, endsInSeconds }) => ({
       amount: window.amount,
       currency: version.currency,
+      // The whole minute it started, the same on every read.
+      since: new Date(Math.floor((now.getTime() - startedSecondsAgo * 1000) / 60_000) * 60_000),
       until: new Date(now.getTime() + endsInSeconds * 1000),
       zones: zonesOf(window, names),
     }));

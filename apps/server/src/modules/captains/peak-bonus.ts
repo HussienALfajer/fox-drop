@@ -82,14 +82,14 @@ export function checkPeakWindows(windows: readonly PeakWindow[]): string | null 
 }
 
 // The windows running at a moment of the city's clock, each with the
-// seconds until it ends.
+// seconds since it started and until it ends.
 export function activeWindows(
   windows: readonly PeakWindow[],
   clock: LocalClock,
-): { window: PeakWindow; endsInSeconds: number }[] {
+): { window: PeakWindow; startedSecondsAgo: number; endsInSeconds: number }[] {
   const previousDay = clock.day === 1 ? 7 : clock.day - 1;
   const nowSeconds = clock.minute * 60 + clock.second;
-  const running: { window: PeakWindow; endsInSeconds: number }[] = [];
+  const running: { window: PeakWindow; startedSecondsAgo: number; endsInSeconds: number }[] = [];
   for (const window of windows) {
     const crosses = window.endMinute < window.startMinute;
     // An occurrence that started today.
@@ -99,10 +99,18 @@ export function activeWindows(
       (crosses || clock.minute < window.endMinute)
     ) {
       const end = (crosses ? MINUTES_PER_DAY + window.endMinute : window.endMinute) * 60;
-      running.push({ window, endsInSeconds: end - nowSeconds });
+      running.push({
+        window,
+        startedSecondsAgo: nowSeconds - window.startMinute * 60,
+        endsInSeconds: end - nowSeconds,
+      });
     } else if (crosses && window.days.includes(previousDay) && clock.minute < window.endMinute) {
       // The rest of yesterday's occurrence, past midnight.
-      running.push({ window, endsInSeconds: window.endMinute * 60 - nowSeconds });
+      running.push({
+        window,
+        startedSecondsAgo: nowSeconds + (MINUTES_PER_DAY - window.startMinute) * 60,
+        endsInSeconds: window.endMinute * 60 - nowSeconds,
+      });
     }
   }
   return running;

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { formatMoney, formatTime, orderPushes, type OrderPushFacts } from './order-pushes.js';
+import { formatMoney, formatTime } from '../content/index.js';
+import { orderPushes, type OrderPushFacts } from './order-pushes.js';
 
 // CU §14, RA §16, CA §14: which push each built event sends to whom.
 const facts: OrderPushFacts = {
