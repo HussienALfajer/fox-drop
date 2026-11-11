@@ -10,6 +10,7 @@ import 'content.dart';
 import 'home_screen.dart';
 import 'not_found_screen.dart';
 import 'platform.dart';
+import 'settings/settings_screen.dart';
 import 'starting_screen.dart';
 import 'terms.dart';
 import 'work/work.dart';
@@ -51,6 +52,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const WorkRulesScreen(),
       ),
       GoRoute(path: '/faq', builder: (context, state) => const FaqScreen()),
+      // «الإعدادات» (owner decision 2026-11-11): «العملات التي أحملها».
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
+      ),
       // AP §9.13, K7: the captain terms, accepted before going online.
       GoRoute(
         path: '/terms',

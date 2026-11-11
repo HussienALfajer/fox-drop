@@ -230,6 +230,64 @@ class _AtRestaurant extends ConsumerStatefulWidget {
 class _AtRestaurantState extends ConsumerState<_AtRestaurant> {
   final _ticked = <int>{};
 
+  /// C8: the captain splits or edits the proposed line, one field per
+  /// currency the restaurant accepts; null while the proposal stands.
+  Map<String, TextEditingController>? _split;
+  bool _invalid = false;
+
+  @override
+  void dispose() {
+    for (final field in _split?.values ?? const <TextEditingController>[]) {
+      field.dispose();
+    }
+    super.dispose();
+  }
+
+  /// The restaurant's currencies changed while the split was open: a field
+  /// per currency it accepts now, keeping what was typed in the others.
+  @override
+  void didUpdateWidget(_AtRestaurant old) {
+    super.didUpdateWidget(old);
+    final split = _split;
+    if (split == null) return;
+    final now = {
+      for (final line in widget.order.pickup.currencies.nonNulls) line.currency,
+    };
+    for (final gone in split.keys.where((c) => !now.contains(c)).toList()) {
+      split.remove(gone)!.dispose();
+    }
+    for (final added in now) {
+      split.putIfAbsent(added, TextEditingController.new);
+    }
+  }
+
+  void _startSplit(List<Money> proposed) {
+    setState(() {
+      _split = {
+        for (final line in widget.order.pickup.currencies.nonNulls)
+          line.currency: TextEditingController(
+            text: [
+              for (final p in proposed)
+                if (p.currency == line.currency) majorOf(p.amount),
+            ].firstOrNull,
+          ),
+      };
+    });
+  }
+
+  /// The typed lines, or null when one is not an amount.
+  List<Money>? _typed() {
+    final lines = <Money>[];
+    for (final MapEntry(key: currency, value: field) in _split!.entries) {
+      final text = field.text.trim();
+      if (text.isEmpty || RegExp(r'^0+(?:[.,]0+)?$').hasMatch(text)) continue;
+      final minor = minorOf(text);
+      if (minor == null) return null;
+      lines.add(Money(minor, currency));
+    }
+    return lines.isEmpty ? null : lines;
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -292,13 +350,39 @@ class _AtRestaurantState extends ConsumerState<_AtRestaurant> {
             Text(
               l10n.captainPayRestaurant(proposed.map(l10n.moneyOf).join(' + ')),
             ),
+            if (_split case final split?) ...[
+              for (final line in order.pickup.currencies.nonNulls)
+                TextField(
+                  controller: split[line.currency],
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: l10n.captainPickupIn(
+                      l10n.currencySymbol(line.currency),
+                      l10n.formatMoney(line.amount, line.currency),
+                    ),
+                  ),
+                  onChanged: (_) => setState(() => _invalid = false),
+                ),
+              if (_invalid) Text(l10n.captainInvalidAmount),
+            ] else if (order.pickup.currencies.length > 1)
+              TextButton(
+                onPressed: () => _startSplit(proposed),
+                child: Text(l10n.captainSplitPickup),
+              ),
             _MainButton(
               order: order,
               label: l10n.captainPaidAndPickedUp,
               onPressed: () async {
+                final lines = _split == null ? proposed : _typed();
+                if (lines == null) {
+                  setState(() => _invalid = true);
+                  return;
+                }
                 final notice = await ref
                     .read(commandsProvider.notifier)
-                    .requestPickup(order.id, proposed);
+                    .requestPickup(order.id, lines);
                 if (context.mounted) showNotice(context, notice);
               },
             ),

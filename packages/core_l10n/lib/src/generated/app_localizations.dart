@@ -2548,6 +2548,54 @@ abstract class AppLocalizations {
   /// **'إذا ترك لك الزبون الباقي إكرامية فهو لك، سجّله كأنك أعدته'**
   String get captainTip;
 
+  /// The captain's settings screen and its link on home (CA Appendix B, owner decision 2026-11-11).
+  ///
+  /// In ar, this message translates to:
+  /// **'الإعدادات'**
+  String get captainSettings;
+
+  /// Carried currencies (CA §10.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'العملات التي أحملها'**
+  String get captainCarriedCurrencies;
+
+  /// Under «العملات التي أحملها» (CA §10.5). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'يُقترح عليك دفع المطعم بعملة تحملها ويقبلها المطعم.'**
+  String get captainCarriedCurrenciesExplain;
+
+  /// The base currency's switch (CA §10.5). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'العملة الأساسية'**
+  String get captainBaseCurrency;
+
+  /// A settings change the server did not take. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُحفظ التغيير، حاول مرة أخرى'**
+  String get captainSaveFailed;
+
+  /// Reads the settings again after a failure. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة المحاولة'**
+  String get captainRetry;
+
+  /// Opens one field per currency the restaurant accepts (C8, CA §10.5). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تقسيم المبلغ أو تعديله'**
+  String get captainSplitPickup;
+
+  /// A field of the pickup's split (C8): the currency and the whole pickup payment in it. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'بـ {currency} (المطلوب كاملاً {amount})'**
+  String captainPickupIn(String currency, String amount);
+
   /// An amount that is not a number. The spec gives no wording.
   ///
   /// In ar, this message translates to:

@@ -45,6 +45,10 @@ class HomeScreen extends ConsumerWidget {
             onPressed: () => context.push('/faq'),
             child: Text(l10n.faqTitle),
           ),
+          TextButton(
+            onPressed: () => context.push('/settings'),
+            child: Text(l10n.captainSettings),
+          ),
         ],
       ),
       body: WorkLayer(

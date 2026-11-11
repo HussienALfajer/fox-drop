@@ -1523,6 +1523,33 @@ class AppLocalizationsAr extends AppLocalizations {
       'إذا ترك لك الزبون الباقي إكرامية فهو لك، سجّله كأنك أعدته';
 
   @override
+  String get captainSettings => 'الإعدادات';
+
+  @override
+  String get captainCarriedCurrencies => 'العملات التي أحملها';
+
+  @override
+  String get captainCarriedCurrenciesExplain =>
+      'يُقترح عليك دفع المطعم بعملة تحملها ويقبلها المطعم.';
+
+  @override
+  String get captainBaseCurrency => 'العملة الأساسية';
+
+  @override
+  String get captainSaveFailed => 'لم يُحفظ التغيير، حاول مرة أخرى';
+
+  @override
+  String get captainRetry => 'إعادة المحاولة';
+
+  @override
+  String get captainSplitPickup => 'تقسيم المبلغ أو تعديله';
+
+  @override
+  String captainPickupIn(String currency, String amount) {
+    return 'بـ $currency (المطلوب كاملاً $amount)';
+  }
+
+  @override
   String get captainInvalidAmount => 'أدخل مبلغاً صحيحاً';
 
   @override
