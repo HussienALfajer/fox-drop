@@ -7,7 +7,6 @@ import 'package:core_api/src/model/admin_restaurant_status_dto_output_pickup_bas
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/merchant_status_dto_output_busy_mode.dart';
 import 'package:core_api/src/model/merchant_status_dto_output_holiday.dart';
-import 'package:core_api/src/model/admin_restaurant_status_dto_output_pickup_currency_choices_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -114,7 +113,7 @@ abstract class AdminRestaurantStatusDtoOutput
 
   /// Every other currency the city has enabled, in its display order.
   @BuiltValueField(wireName: r'pickupCurrencyChoices')
-  BuiltList<AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner>
+  BuiltList<AdminRestaurantStatusDtoOutputPickupBaseCurrency?>
   get pickupCurrencyChoices;
 
   AdminRestaurantStatusDtoOutput._();
@@ -279,7 +278,7 @@ class _$AdminRestaurantStatusDtoOutputSerializer
     yield serializers.serialize(
       object.pickupCurrencyChoices,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner),
+        FullType.nullable(AdminRestaurantStatusDtoOutputPickupBaseCurrency),
       ]),
     );
   }
@@ -505,13 +504,13 @@ class _$AdminRestaurantStatusDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner,
+                      FullType.nullable(
+                        AdminRestaurantStatusDtoOutputPickupBaseCurrency,
                       ),
                     ]),
                   )
                   as BuiltList<
-                    AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner
+                    AdminRestaurantStatusDtoOutputPickupBaseCurrency?
                   >;
           result.pickupCurrencyChoices.replace(valueDes);
           break;

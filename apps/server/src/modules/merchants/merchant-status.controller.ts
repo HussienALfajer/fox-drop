@@ -24,6 +24,7 @@ import {
 } from './merchants.service.js';
 import { pauseSources } from './operating-state.js';
 import {
+  type PickupCurrencies,
   type RestaurantHours,
   type RestaurantStatus,
   RestaurantStatusService,
@@ -132,6 +133,39 @@ class MerchantHolidayCloseDto extends createZodDto(
     message: z.string().max(100).nullable().describe('To customers, up to 100 characters.'),
   }),
 ) {}
+
+const pickupCurrencyName = z.object({
+  currency: z.string().length(3),
+  name: z.string().describe('Its Arabic name.'),
+});
+
+// RA §12.7, §14.3 «العملات التي تقبلها من الكابتن», the owners'.
+const merchantPickupCurrenciesSchema = z.object({
+  baseCurrency: pickupCurrencyName
+    .nullable()
+    .describe('Always accepted, fixed; null while the city has none.'),
+  accepted: z
+    .array(z.string().length(3))
+    .describe('The other currencies switched on, in the city’s display order.'),
+  choices: z
+    .array(pickupCurrencyName.describe('A currency the owner may switch on.'))
+    .describe('Every other currency the city has enabled, in its display order.'),
+});
+
+class MerchantPickupCurrenciesDto extends createZodDto(merchantPickupCurrenciesSchema) {}
+
+class MerchantSetPickupCurrenciesDto extends createZodDto(
+  z.object({
+    currencies: z
+      .array(z.string().length(3))
+      .max(10)
+      .describe('The other currencies to accept besides the base; empty for the base only.'),
+  }),
+) {}
+
+function pickupBody(pickup: PickupCurrencies): z.infer<typeof merchantPickupCurrenciesSchema> {
+  return { baseCurrency: pickup.base, accepted: pickup.accepted, choices: pickup.choices };
+}
 
 function hoursBody(hours: RestaurantHours): z.infer<typeof merchantHoursSchema> {
   const { coverage } = hours;
@@ -319,6 +353,34 @@ export class MerchantStatusController {
     return statusBody(await this.status.status(restaurantId));
   }
 
+  // RA §12.7, §14.3 (owner decision 2026-11-11: a small «الإعدادات» screen):
+  // the owners' pickup currencies; a cashier gets 403 owner_only. Sets a
+  // value, so it takes no Idempotency-Key; 400 invalid_pickup_currencies
+  // outside the city's other enabled currencies. Audited with the user and
+  // the device; it applies to the pickups requested after it.
+  @Get('settings/pickup-currencies')
+  @AppSignedIn()
+  @ZodResponse({ status: 200, type: MerchantPickupCurrenciesDto })
+  async pickupCurrencies(@CurrentAppSession() session: AppSession) {
+    const { restaurantId } = await this.notTerminated(ownerOf(session));
+    return pickupBody(await this.status.pickupCurrencies(restaurantId));
+  }
+
+  @Put('settings/pickup-currencies')
+  @AppSignedIn()
+  @ZodResponse({ status: 200, type: MerchantPickupCurrenciesDto })
+  async setPickupCurrencies(
+    @CurrentAppSession() session: AppSession,
+    @Body() body: MerchantSetPickupCurrenciesDto,
+    @Req() request: FastifyRequest,
+  ) {
+    const { restaurantId } = await this.notTerminated(ownerOf(session));
+    await answer(() =>
+      this.status.setPickupCurrencies(restaurantId, body.currencies, changeOf(session, request)),
+    );
+    return pickupBody(await this.status.pickupCurrencies(restaurantId));
+  }
+
   // RA §5.5: a terminated restaurant's owners keep only the money section.
   private async notTerminated(account: MerchantAccount): Promise<MerchantAccount> {
     if ((await this.merchants.accountStatus(account.restaurantId)) === 'terminated') {
@@ -370,6 +432,7 @@ export async function answer(run: () => Promise<void>): Promise<void> {
       case 'invalid_schedule':
       case 'invalid_prep_time':
       case 'invalid_max_active_orders':
+      case 'invalid_pickup_currencies':
         throw new BadRequestException({ ...body(HttpStatus.BAD_REQUEST), message: error.message });
       default:
         throw error;

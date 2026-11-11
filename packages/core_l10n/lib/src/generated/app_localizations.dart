@@ -3813,6 +3813,60 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'العمليات: انتظر الزبون. {message}'**
   String captainOperationsWait(String message);
+
+  /// The restaurant's settings screen and its button on the board, owners only (RA §14.3; owner decision 2026-11-11).
+  ///
+  /// In ar, this message translates to:
+  /// **'الإعدادات'**
+  String get merchantSettings;
+
+  /// Pickup currencies (RA §12.7).
+  ///
+  /// In ar, this message translates to:
+  /// **'العملات التي تقبلها من الكابتن'**
+  String get merchantPickupCurrencies;
+
+  /// Under «العملات التي تقبلها من الكابتن» (RA §12.7: changes apply to pickups requested after the change). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'يُطبَّق التغيير على طلبات الاستلام بعده.'**
+  String get merchantPickupCurrenciesExplain;
+
+  /// Under the base currency, whose switch is fixed on (RA §12.7). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'العملة الأساسية، مقبولة دائماً'**
+  String get merchantBaseCurrencyAlways;
+
+  /// When the city has no currency besides the base (RA §12.7). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا عملات أخرى مفعّلة في المدينة.'**
+  String get merchantNoOtherCurrencies;
+
+  /// A settings change the server did not take. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُحفظ التغيير، حاول مرة أخرى'**
+  String get merchantSaveFailed;
+
+  /// The settings could not be read (no answer, a server error). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل الإعدادات، حاول مرة أخرى'**
+  String get merchantSettingsFailed;
+
+  /// The server refused the settings to this account (403: a cashier, or a terminated restaurant). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذه الإعدادات لمالكي المطعم فقط.'**
+  String get merchantSettingsNotAllowed;
+
+  /// Reads the settings again after a failure. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة المحاولة'**
+  String get merchantRetry;
 }
 
 class _AppLocalizationsDelegate

@@ -11,6 +11,7 @@ import 'device.dart';
 import 'device_name_screen.dart';
 import 'not_found_screen.dart';
 import 'platform.dart';
+import 'settings/settings_screen.dart';
 import 'starting_screen.dart';
 import 'status/hours_screen.dart';
 import 'terms.dart';
@@ -56,6 +57,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/status-and-hours',
         builder: (context, state) => const HoursScreen(),
+      ),
+      // RA §14.3: the owners' settings (a cashier's read is 403 owner_only).
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
       ),
       // AP §9.13, RA §4.10: the restaurant terms, which owners accept.
       GoRoute(

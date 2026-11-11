@@ -2050,6 +2050,66 @@
         ]
       }
     },
+    "/v1/merchant/settings/pickup-currencies": {
+      "get": {
+        "operationId": "merchantStatusPickupCurrencies",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantPickupCurrenciesDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      },
+      "put": {
+        "operationId": "merchantStatusSetPickupCurrencies",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantSetPickupCurrenciesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantPickupCurrenciesDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
     "/v1/admin/restaurants": {
       "get": {
         "operationId": "adminRestaurantImagesList",
@@ -10611,6 +10671,95 @@
           "startsAt",
           "endsAt",
           "message"
+        ]
+      },
+      "MerchantPickupCurrenciesDto_Output": {
+        "type": "object",
+        "properties": {
+          "baseCurrency": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Its Arabic name."
+                  }
+                },
+                "required": [
+                  "currency",
+                  "name"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Always accepted, fixed; null while the city has none."
+          },
+          "accepted": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3
+            },
+            "description": "The other currencies switched on, in the city’s display order."
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "currency": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 3
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Its Arabic name."
+                }
+              },
+              "required": [
+                "currency",
+                "name"
+              ],
+              "additionalProperties": false,
+              "description": "A currency the owner may switch on."
+            },
+            "description": "Every other currency the city has enabled, in its display order."
+          }
+        },
+        "required": [
+          "baseCurrency",
+          "accepted",
+          "choices"
+        ],
+        "additionalProperties": false
+      },
+      "MerchantSetPickupCurrenciesDto": {
+        "type": "object",
+        "properties": {
+          "currencies": {
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3
+            },
+            "description": "The other currencies to accept besides the base; empty for the base only."
+          }
+        },
+        "required": [
+          "currencies"
         ]
       },
       "AdminRestaurantsDto_Output": {

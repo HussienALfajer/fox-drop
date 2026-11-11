@@ -21,6 +21,7 @@ import {
   RestaurantStateRelay,
 } from '../notifications/index.js';
 import { DATABASE } from '../../database/database.module.js';
+import { SettingsService } from '../settings/index.js';
 import { MerchantsService, RestaurantStatusService } from './index.js';
 
 // The restaurant's status sheet (RA §7.1–7.3, §18): pause, resume and busy
@@ -527,5 +528,88 @@ describe('state events and timers (RA §16 #24, #25, §18)', () => {
       { template_key: 'merchant.busy_reminder', body: 'وضع الضغط ما زال مفعّلاً (+20 د)' },
     ]);
     expect(await relay.drain(new Date())).toBe(0);
+  });
+});
+
+// RA §12.7, §14.3: «العملات التي تقبلها من الكابتن» on the owners'
+// «الإعدادات». Last in the file: it enables USD for the city.
+describe('the pickup currencies, the owners’ (RA §12.7)', () => {
+  const pickup = (method: 'GET' | 'PUT', headers: Record<string, string>, payload?: object) =>
+    app.inject({
+      method,
+      url: '/v1/merchant/settings/pickup-currencies',
+      headers,
+      ...(payload === undefined ? {} : { payload }),
+    });
+
+  it('lets an owner switch USD on and off, audited with the user and the device', async () => {
+    const { id, cashier } = await restaurant();
+    const owner = await signedIn(id, 'owner');
+    expect((await pickup('GET', owner.headers)).json()).toEqual({
+      baseCurrency: { currency: 'TRY', name: 'ليرة تركية' },
+      accepted: [],
+      choices: [],
+    });
+
+    const fx = app.get(FxService);
+    const fin = { ...change, actor: { type: 'admin', id: randomUUID(), role: 'FIN' } } as const;
+    await fx.setCityCurrency(azaz, { currency: 'USD', displayOrder: 2, enabled: false }, change);
+    await fx.setRate(azaz, 'USD', { value: '41.20', direction: 'base_per_unit' }, fin);
+    await app
+      .get(SettingsService)
+      .update(
+        'currency.<code>.rounding_unit',
+        { cityId: azaz, parameter: 'USD' },
+        { amountMinor: 50 },
+        { editor: 'system', context: change.context, reason: 'test' },
+      );
+    await fx.setCityCurrency(azaz, { currency: 'USD', displayOrder: 2, enabled: true }, change);
+
+    for (const [method, payload] of [
+      ['GET', undefined],
+      ['PUT', { currencies: ['USD'] }],
+    ] as const) {
+      const refused = await pickup(method, cashier.headers, payload);
+      expect(refused.statusCode).toBe(403);
+      expect(refused.json().error).toBe('owner_only');
+    }
+
+    const on = await pickup('PUT', owner.headers, { currencies: ['USD'] });
+    expect(on.statusCode).toBe(200);
+    expect(on.json()).toEqual({
+      baseCurrency: { currency: 'TRY', name: 'ليرة تركية' },
+      accepted: ['USD'],
+      choices: [{ currency: 'USD', name: 'دولار أمريكي' }],
+    });
+    expect((await merchants.restaurant(id))?.pickupCurrencies).toEqual(['USD']);
+    for (const currencies of [['TRY'], ['SYP'], ['USD', 'USD']]) {
+      const invalid = await pickup('PUT', owner.headers, { currencies });
+      expect(invalid.statusCode).toBe(400);
+      expect(invalid.json().error).toBe('invalid_pickup_currencies');
+    }
+    const off = await pickup('PUT', owner.headers, { currencies: [] });
+    expect(off.json().accepted).toEqual([]);
+
+    const { rows } = await sql.query(
+      "SELECT actor_id, device, changes FROM audit.events WHERE target_id = $1 AND action = 'restaurant.pickup_currencies' ORDER BY id",
+      [id],
+    );
+    expect(rows).toEqual([
+      {
+        actor_id: owner.accountId,
+        device: owner.deviceId,
+        changes: { pickupCurrencies: { before: [], after: ['USD'] } },
+      },
+      {
+        actor_id: owner.accountId,
+        device: owner.deviceId,
+        changes: { pickupCurrencies: { before: ['USD'], after: [] } },
+      },
+    ]);
+
+    await merchants.setAccountStatus(id, 'terminated', change);
+    const terminated = await pickup('GET', owner.headers);
+    expect(terminated.statusCode).toBe(403);
+    expect(terminated.json().error).toBe('restaurant_terminated');
   });
 });

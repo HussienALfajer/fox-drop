@@ -400,7 +400,7 @@ class _$AdminRestaurantStatusDtoOutput extends AdminRestaurantStatusDtoOutput {
   @override
   final BuiltList<String> pickupCurrencies;
   @override
-  final BuiltList<AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner>
+  final BuiltList<AdminRestaurantStatusDtoOutputPickupBaseCurrency?>
   pickupCurrencyChoices;
 
   factory _$AdminRestaurantStatusDtoOutput([
@@ -617,13 +617,13 @@ class AdminRestaurantStatusDtoOutputBuilder
   set pickupCurrencies(ListBuilder<String>? pickupCurrencies) =>
       _$this._pickupCurrencies = pickupCurrencies;
 
-  ListBuilder<AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner>?
+  ListBuilder<AdminRestaurantStatusDtoOutputPickupBaseCurrency?>?
   _pickupCurrencyChoices;
-  ListBuilder<AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner>
+  ListBuilder<AdminRestaurantStatusDtoOutputPickupBaseCurrency?>
   get pickupCurrencyChoices => _$this._pickupCurrencyChoices ??=
-      ListBuilder<AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner>();
+      ListBuilder<AdminRestaurantStatusDtoOutputPickupBaseCurrency?>();
   set pickupCurrencyChoices(
-    ListBuilder<AdminRestaurantStatusDtoOutputPickupCurrencyChoicesInner>?
+    ListBuilder<AdminRestaurantStatusDtoOutputPickupBaseCurrency?>?
     pickupCurrencyChoices,
   ) => _$this._pickupCurrencyChoices = pickupCurrencyChoices;
 
