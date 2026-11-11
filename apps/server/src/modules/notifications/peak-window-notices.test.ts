@@ -66,7 +66,7 @@ describe('the peak window notices (CA §14 #23)', () => {
     ]);
     expect(queued[0]).toMatchObject({
       templateKey: 'captain.peak_started',
-      data: { type: 'captain.peak_bonus' },
+      data: { target: 'peak_bonus' },
       at: started,
       expiresAt: new Date('2026-11-12T19:00:00Z'),
     });

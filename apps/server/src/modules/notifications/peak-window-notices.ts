@@ -84,7 +84,8 @@ export class PeakWindowNotices {
           body: rendered.body,
           level: rendered.level,
           priority: rendered.priority,
-          data: { type: 'captain.peak_bonus' },
+          // Opens home, which shows the window's line.
+          data: { target: 'peak_bonus' },
           at: window.since,
           expiresAt: window.until,
         });

@@ -45,6 +45,10 @@ The captain app «تطبيق الكابتن» (Android, iOS; architecture §11, 
 
 - While the active order's `itemReportOpen` (`pickupBlocked`), the at-restaurant step keeps the item check but shows «بانتظار تعديل الطلب من العمليات» in place of the payment and «دفعت للمطعم واستلمت الطلب»; a pickup request refused with `409 item_report_open` (`ItemReportOpen`) says the same. The order events of slice 2.9 (`order.item_reported`, `order.item_report_withdrawn`, `order.item_report_closed`, `order.time_changed`) carry a newer version, so the feed reads the active order again like any event; `alertStep` compares states only, so they add no chime. Slice 2.10a: while `editUnacknowledged` (operations added items and the restaurant has not acknowledged), `pickupBlocked` holds the pickup with «بانتظار تأكيد المطعم للتعديل» (also for `409 edit_unacknowledged`, `EditUnacknowledged`), and an edit before the pickup that changes the amounts or the lines chimes «تم تعديل الطلب — المبلغ الجديد للمطعم {المبلغ}، للتحصيل {المبلغ}» (`OrderEdited`); the item check shows the new lines. Slice 2.10b: after the pickup an edit that changes the lines chimes «حُذفت أصناف من الطلب — المبلغ الجديد للتحصيل {المبلغ}» (`ItemsRemovedAfterPickup`) and one that only lowers the amount to collect «المبلغ الجديد للتحصيل: {المبلغ}» (`CollectLowered`); the door payment then says «تغيّر المبلغ المطلوب إلى …» as before.
 
+## The peak bonus (slice 2.16; CA §8.2, §9.8, §12.5, §14 #23, AP §9.12.5, D15)
+
+- `peakBonusProvider` (`lib/src/peak_bonus.dart`) reads `GET /v1/captain/peak-bonus` while a screen watches it, and again when a running window ends and every `peakRefresh` (5 minutes). `PeakBonusLine` on home (offline or online, without an order) shows each running window as «مكافأة الذروة الآن: +{المبلغ} لكل طلب حتى {الساعة}» (with «في: {المناطق}» for a window limited to zones) and, while the bonus is on, «أوقات مكافأة الذروة», which opens `/peak-bonus` (`PeakWindowsScreen`: each window's days, Saturday first, its hours on the city's clock, «(تنتهي في اليوم التالي)» past midnight, its amount and zones), until the profile of 2.36. Nothing shows while the bonus is off or the read failed. The offer's `pay` already includes the bonus and `peakBonus` adds «يشمل مكافأة الذروة +{المبلغ}»; the summary shows «مكافأة الذروة: {المبلغ}» when `pay.peak` is above 0. The push of a window that starts (`target: peak_bonus`) opens home. Tests: `peak_bonus_test.dart`.
+
 ## Push (slice 2.3c; CA §14, CA §4.4–4.5; `packages/core_push/CLAUDE.md`)
 
 - `lib/src/push.dart`: `pushTokensProvider` keeps the installation's token registered while signed in (`PUT /v1/captain/push-token`) and `pushTapsProvider` opens a tapped push's target, both watched by `CaptainApp`. `pushTargetPath` maps an offer's or an order's push to home, which shows the open offer or the active order; the other targets come with their slices.
@@ -62,7 +66,7 @@ The captain app «تطبيق الكابتن» (Android, iOS; architecture §11, 
 
 ## Not yet (slice 1.14g)
 
-- The suggestion of «وصلت» when entering the customer's radius (CA §9.6) and the peak bonus lines (with their server fields).
+- The suggestion of «وصلت» when entering the customer's radius (CA §9.6).
 - The map and the route (Phase 2), the ETA to the restaurant, «بدأ احتساب أجر الانتظار», the record of each call or WhatsApp tap (CA §9.2–9.5, with their server fields); the report with a quick reason (2.24), the earnings, custody and support screens.
 - The office hours and map in the hand-in reminder (CA §7.5, with the office fields), the device check and the yellow banner (CA §4.5), the vibration, the full-screen offer over the lock screen and the bundled sounds (`core_alerts`, architecture §14.2), and the iOS behaviour (Android only for now, owner decision 2026-11-07).
 - A batch the server refuses with a `400` (a point past its clock skew) is dropped whole; dropping only the bad points needs the refusal to name them.

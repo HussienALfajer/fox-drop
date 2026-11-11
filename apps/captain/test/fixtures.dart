@@ -78,6 +78,7 @@ Map<String, Object?> offerJson({
   Duration left = const Duration(seconds: 40),
   Map<String, Object?>? handover,
   bool aboveMaxPickup = false,
+  Map<String, Object?>? peakBonus,
 }) => {
   'id': offerId,
   'status': 'open',
@@ -104,6 +105,7 @@ Map<String, Object?> offerJson({
   },
   'handover': handover,
   'aboveMaxPickup': aboveMaxPickup,
+  'peakBonus': peakBonus,
 };
 
 /// Where the first captain of a handover waits, about 110 m from [pin].

@@ -64,7 +64,8 @@ final pushTokensProvider = Provider<PushTokens>((ref) {
 /// receipts, documents) come with their slices; until then such a tap only
 /// opens the app.
 String? pushTargetPath(Map<String, String> data) => switch (data['target']) {
-  'offer' || 'order' => '/',
+  // CA §14 #23 (slice 2.16): home shows the peak window's line.
+  'offer' || 'order' || 'peak_bonus' => '/',
   _ => null,
 };
 

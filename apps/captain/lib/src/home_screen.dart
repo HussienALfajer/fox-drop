@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'api.dart';
+import 'peak_bonus.dart';
 import 'platform.dart';
 import 'settings/max_pickup_form.dart';
 import 'terms.dart';
@@ -173,6 +174,8 @@ class _AvailabilityView extends ConsumerWidget {
           style: Theme.of(context).textTheme.headlineSmall,
         ),
         for (final reason in l10n.noOffersTexts(availability)) Text(reason),
+        // CA §12.5 (slice 2.16): «مكافأة الذروة الآن…» and the windows.
+        PeakBonusLine(onWindows: () => context.push('/peak-bonus')),
         if (l10n.offersExpiredText(availability) case final text?)
           Text(text, key: const Key('offers-expired')),
         if (suspended && state.suspensionReason != null)
@@ -642,6 +645,9 @@ class _SummaryCard extends ConsumerWidget {
             Text(l10n.captainPayTopUp(money(pay.topUp))),
           if (BigInt.parse(pay.waiting) > BigInt.zero)
             Text(l10n.captainPayWaiting(money(pay.waiting))),
+          // AP §9.12.5, D15 (slice 2.16): delivered inside a peak window.
+          if (BigInt.parse(pay.peak) > BigInt.zero)
+            Text(l10n.captainPayPeak(money(pay.peak))),
           Text(
             l10n.captainCustodyChanged(
               l10n.signedMoney(

@@ -67,6 +67,13 @@ class OfferSheet extends ConsumerWidget {
                   : l10n.formatMoney(pay.amount, pay.currency),
               style: Theme.of(context).textTheme.headlineMedium,
             ),
+            // CA §8.2, AP §9.12.5 (slice 2.16): the pay includes it.
+            if (offer.peakBonus case final peak?)
+              Text(
+                l10n.captainOfferPeakBonus(
+                  l10n.formatMoney(peak.amount, peak.currency),
+                ),
+              ),
             // The second captain of a handover earns no waiting (AP §9.3.2).
             if (handover == null) Text(l10n.captainWaitingPayMayApply),
             Text(

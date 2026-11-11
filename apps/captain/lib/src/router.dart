@@ -9,6 +9,7 @@ import 'auth.dart';
 import 'content.dart';
 import 'home_screen.dart';
 import 'not_found_screen.dart';
+import 'peak_bonus.dart';
 import 'platform.dart';
 import 'settings/settings_screen.dart';
 import 'starting_screen.dart';
@@ -52,6 +53,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const WorkRulesScreen(),
       ),
       GoRoute(path: '/faq', builder: (context, state) => const FaqScreen()),
+      // CA §12.5 (slice 2.16): the peak windows, until the profile (2.36).
+      GoRoute(
+        path: '/peak-bonus',
+        builder: (context, state) => const PeakWindowsScreen(),
+      ),
       // «الإعدادات» (owner decision 2026-11-11): «العملات التي أحملها».
       GoRoute(
         path: '/settings',

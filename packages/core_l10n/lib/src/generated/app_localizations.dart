@@ -3921,6 +3921,113 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'إعادة المحاولة'**
   String get merchantRetry;
+
+  /// The offer's peak bonus line (CA §8.2, AP §9.12.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'يشمل مكافأة الذروة +{amount}'**
+  String captainOfferPeakBonus(String amount);
+
+  /// The summary's peak bonus (CA §9.8, AP §8.4). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'مكافأة الذروة: {amount}'**
+  String captainPayPeak(String amount);
+
+  /// The home screen during a peak window (CA §12.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'مكافأة الذروة الآن: +{amount} لكل طلب حتى {time}'**
+  String captainPeakNow(String amount, String time);
+
+  /// The peak windows screen and its link on home (CA §12.5). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'أوقات مكافأة الذروة'**
+  String get captainPeakWindows;
+
+  /// The peak windows screen (CA §12.5, AP §9.12.5). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'يُضاف المبلغ إلى أجرك عن كل طلب تسلّمه داخل النافذة، بحسب منطقة المطعم.'**
+  String get captainPeakExplain;
+
+  /// The peak windows screen while the bonus is off. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا مكافأة ذروة الآن.'**
+  String get captainPeakOff;
+
+  /// One peak window (CA §12.5). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'{days} من {start} إلى {end}: +{amount} لكل طلب'**
+  String captainPeakWindow(
+    String days,
+    String start,
+    String end,
+    String amount,
+  );
+
+  /// A peak window that runs past midnight. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'(تنتهي في اليوم التالي)'**
+  String get captainPeakNextDay;
+
+  /// A peak window for every zone (CA §12.5). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'كل المناطق'**
+  String get captainPeakAllZones;
+
+  /// A peak window limited to zones (CA §12.5). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'في: {zones}'**
+  String captainPeakZones(String zones);
+
+  /// A day of a peak window (CA §12.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'الإثنين'**
+  String get captainPeakDayMonday;
+
+  /// A day of a peak window (CA §12.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'الثلاثاء'**
+  String get captainPeakDayTuesday;
+
+  /// A day of a peak window (CA §12.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'الأربعاء'**
+  String get captainPeakDayWednesday;
+
+  /// A day of a peak window (CA §12.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'الخميس'**
+  String get captainPeakDayThursday;
+
+  /// A day of a peak window (CA §12.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'الجمعة'**
+  String get captainPeakDayFriday;
+
+  /// A day of a peak window (CA §12.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'السبت'**
+  String get captainPeakDaySaturday;
+
+  /// A day of a peak window (CA §12.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'الأحد'**
+  String get captainPeakDaySunday;
 }
 
 class _AppLocalizationsDelegate
