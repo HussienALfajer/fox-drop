@@ -4,10 +4,10 @@
 
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/admin_record_delivery_dto_amount_due.dart';
+import 'package:core_api/src/model/captain_emergency_dto_location.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_received_inner.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_shortfall.dart';
-import 'package:core_api/src/model/captain_outcome_payment_dto_location.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -40,7 +40,7 @@ abstract class CaptainOutcomePaymentDto
   AdminRecordDeliveryDtoShortfall? get shortfall;
 
   @BuiltValueField(wireName: r'location')
-  CaptainOutcomePaymentDtoLocation? get location;
+  CaptainEmergencyDtoLocation? get location;
 
   CaptainOutcomePaymentDto._();
 
@@ -105,9 +105,7 @@ class _$CaptainOutcomePaymentDtoSerializer
         ? null
         : serializers.serialize(
             object.location,
-            specifiedType: const FullType.nullable(
-              CaptainOutcomePaymentDtoLocation,
-            ),
+            specifiedType: const FullType.nullable(CaptainEmergencyDtoLocation),
           );
   }
 
@@ -186,10 +184,10 @@ class _$CaptainOutcomePaymentDtoSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      CaptainOutcomePaymentDtoLocation,
+                      CaptainEmergencyDtoLocation,
                     ),
                   )
-                  as CaptainOutcomePaymentDtoLocation?;
+                  as CaptainEmergencyDtoLocation?;
           if (valueDes == null) continue;
           result.location.replace(valueDes);
           break;

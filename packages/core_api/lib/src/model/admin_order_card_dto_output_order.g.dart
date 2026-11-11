@@ -179,6 +179,9 @@ _$adminOrderCardDtoOutputOrderAlertsEnum_editUnacknowledged =
 const AdminOrderCardDtoOutputOrderAlertsEnum
 _$adminOrderCardDtoOutputOrderAlertsEnum_captainCannotComplete =
     const AdminOrderCardDtoOutputOrderAlertsEnum._('captainCannotComplete');
+const AdminOrderCardDtoOutputOrderAlertsEnum
+_$adminOrderCardDtoOutputOrderAlertsEnum_captainEmergency =
+    const AdminOrderCardDtoOutputOrderAlertsEnum._('captainEmergency');
 
 AdminOrderCardDtoOutputOrderAlertsEnum
 _$adminOrderCardDtoOutputOrderAlertsEnumValueOf(String name) {
@@ -209,6 +212,8 @@ _$adminOrderCardDtoOutputOrderAlertsEnumValueOf(String name) {
       return _$adminOrderCardDtoOutputOrderAlertsEnum_editUnacknowledged;
     case 'captainCannotComplete':
       return _$adminOrderCardDtoOutputOrderAlertsEnum_captainCannotComplete;
+    case 'captainEmergency':
+      return _$adminOrderCardDtoOutputOrderAlertsEnum_captainEmergency;
     default:
       throw ArgumentError(name);
   }
@@ -231,6 +236,7 @@ _$adminOrderCardDtoOutputOrderAlertsEnumValues =
         _$adminOrderCardDtoOutputOrderAlertsEnum_itemUnavailable,
         _$adminOrderCardDtoOutputOrderAlertsEnum_editUnacknowledged,
         _$adminOrderCardDtoOutputOrderAlertsEnum_captainCannotComplete,
+        _$adminOrderCardDtoOutputOrderAlertsEnum_captainEmergency,
       ],
     );
 
@@ -357,6 +363,7 @@ class _$AdminOrderCardDtoOutputOrderAlertsEnumSerializer
     'itemUnavailable': 'item_unavailable',
     'editUnacknowledged': 'edit_unacknowledged',
     'captainCannotComplete': 'captain_cannot_complete',
+    'captainEmergency': 'captain_emergency',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_not_accepted': 'restaurantNotAccepted',
@@ -372,6 +379,7 @@ class _$AdminOrderCardDtoOutputOrderAlertsEnumSerializer
     'item_unavailable': 'itemUnavailable',
     'edit_unacknowledged': 'editUnacknowledged',
     'captain_cannot_complete': 'captainCannotComplete',
+    'captain_emergency': 'captainEmergency',
   };
 
   @override

@@ -118,7 +118,9 @@ export type OrderEventType =
   // reason's code published to operations and the captain) and its «تراجع»;
   // the status stays.
   | 'order.cannot_complete_requested'
-  | 'order.cannot_complete_withdrawn';
+  | 'order.cannot_complete_withdrawn'
+  // CA §9.11 (slice 2.13c): the captain pressed «طوارئ»; the status stays.
+  | 'order.emergency_raised';
 
 // Architecture §5.5 steps 3 and 5: the order's event row and its outgoing
 // event, in the transition's transaction, with a run of the relay that

@@ -49,6 +49,9 @@ const AdminAlertDtoOutputCodeEnum
 _$adminAlertDtoOutputCodeEnum_captainCannotComplete =
     const AdminAlertDtoOutputCodeEnum._('captainCannotComplete');
 const AdminAlertDtoOutputCodeEnum
+_$adminAlertDtoOutputCodeEnum_captainEmergency =
+    const AdminAlertDtoOutputCodeEnum._('captainEmergency');
+const AdminAlertDtoOutputCodeEnum
 _$adminAlertDtoOutputCodeEnum_restaurantAutoPaused =
     const AdminAlertDtoOutputCodeEnum._('restaurantAutoPaused');
 
@@ -86,6 +89,8 @@ AdminAlertDtoOutputCodeEnum _$adminAlertDtoOutputCodeEnumValueOf(String name) {
       return _$adminAlertDtoOutputCodeEnum_editUnacknowledged;
     case 'captainCannotComplete':
       return _$adminAlertDtoOutputCodeEnum_captainCannotComplete;
+    case 'captainEmergency':
+      return _$adminAlertDtoOutputCodeEnum_captainEmergency;
     case 'restaurantAutoPaused':
       return _$adminAlertDtoOutputCodeEnum_restaurantAutoPaused;
     default:
@@ -112,6 +117,7 @@ _$adminAlertDtoOutputCodeEnumValues =
       _$adminAlertDtoOutputCodeEnum_itemUnavailable,
       _$adminAlertDtoOutputCodeEnum_editUnacknowledged,
       _$adminAlertDtoOutputCodeEnum_captainCannotComplete,
+      _$adminAlertDtoOutputCodeEnum_captainEmergency,
       _$adminAlertDtoOutputCodeEnum_restaurantAutoPaused,
     ]);
 
@@ -226,6 +232,7 @@ class _$AdminAlertDtoOutputCodeEnumSerializer
     'itemUnavailable': 'item_unavailable',
     'editUnacknowledged': 'edit_unacknowledged',
     'captainCannotComplete': 'captain_cannot_complete',
+    'captainEmergency': 'captain_emergency',
     'restaurantAutoPaused': 'restaurant_auto_paused',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
@@ -245,6 +252,7 @@ class _$AdminAlertDtoOutputCodeEnumSerializer
     'item_unavailable': 'itemUnavailable',
     'edit_unacknowledged': 'editUnacknowledged',
     'captain_cannot_complete': 'captainCannotComplete',
+    'captain_emergency': 'captainEmergency',
     'restaurant_auto_paused': 'restaurantAutoPaused',
   };
 
@@ -362,6 +370,8 @@ class _$AdminAlertDtoOutput extends AdminAlertDtoOutput {
   @override
   final String? restaurantName;
   @override
+  final AdminAlertsDtoOutputAlertsInnerLocation? location;
+  @override
   final DateTime raisedAt;
   @override
   final AdminAlertsDtoOutputAlertsInnerAcknowledged? acknowledged;
@@ -381,6 +391,7 @@ class _$AdminAlertDtoOutput extends AdminAlertDtoOutput {
     this.orderNumber,
     this.captainName,
     this.restaurantName,
+    this.location,
     required this.raisedAt,
     this.acknowledged,
     this.resolvedAt,
@@ -406,6 +417,7 @@ class _$AdminAlertDtoOutput extends AdminAlertDtoOutput {
         orderNumber == other.orderNumber &&
         captainName == other.captainName &&
         restaurantName == other.restaurantName &&
+        location == other.location &&
         raisedAt == other.raisedAt &&
         acknowledged == other.acknowledged &&
         resolvedAt == other.resolvedAt;
@@ -422,6 +434,7 @@ class _$AdminAlertDtoOutput extends AdminAlertDtoOutput {
     _$hash = $jc(_$hash, orderNumber.hashCode);
     _$hash = $jc(_$hash, captainName.hashCode);
     _$hash = $jc(_$hash, restaurantName.hashCode);
+    _$hash = $jc(_$hash, location.hashCode);
     _$hash = $jc(_$hash, raisedAt.hashCode);
     _$hash = $jc(_$hash, acknowledged.hashCode);
     _$hash = $jc(_$hash, resolvedAt.hashCode);
@@ -440,6 +453,7 @@ class _$AdminAlertDtoOutput extends AdminAlertDtoOutput {
           ..add('orderNumber', orderNumber)
           ..add('captainName', captainName)
           ..add('restaurantName', restaurantName)
+          ..add('location', location)
           ..add('raisedAt', raisedAt)
           ..add('acknowledged', acknowledged)
           ..add('resolvedAt', resolvedAt))
@@ -486,6 +500,12 @@ class AdminAlertDtoOutputBuilder
   set restaurantName(String? restaurantName) =>
       _$this._restaurantName = restaurantName;
 
+  AdminAlertsDtoOutputAlertsInnerLocationBuilder? _location;
+  AdminAlertsDtoOutputAlertsInnerLocationBuilder get location =>
+      _$this._location ??= AdminAlertsDtoOutputAlertsInnerLocationBuilder();
+  set location(AdminAlertsDtoOutputAlertsInnerLocationBuilder? location) =>
+      _$this._location = location;
+
   DateTime? _raisedAt;
   DateTime? get raisedAt => _$this._raisedAt;
   set raisedAt(DateTime? raisedAt) => _$this._raisedAt = raisedAt;
@@ -517,6 +537,7 @@ class AdminAlertDtoOutputBuilder
       _orderNumber = $v.orderNumber;
       _captainName = $v.captainName;
       _restaurantName = $v.restaurantName;
+      _location = $v.location?.toBuilder();
       _raisedAt = $v.raisedAt;
       _acknowledged = $v.acknowledged?.toBuilder();
       _resolvedAt = $v.resolvedAt;
@@ -572,6 +593,7 @@ class AdminAlertDtoOutputBuilder
             orderNumber: orderNumber,
             captainName: captainName,
             restaurantName: restaurantName,
+            location: _location?.build(),
             raisedAt: BuiltValueNullFieldError.checkNotNull(
               raisedAt,
               r'AdminAlertDtoOutput',
@@ -583,6 +605,9 @@ class AdminAlertDtoOutputBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'location';
+        _location?.build();
+
         _$failedField = 'acknowledged';
         _acknowledged?.build();
       } catch (e) {

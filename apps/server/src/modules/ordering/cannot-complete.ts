@@ -1,6 +1,7 @@
 import { and, eq, inArray, isNull } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { CaptainsService } from '../captains/index.js';
+import { closeEmergency } from './emergencies.js';
 import { cannotCompleteRequests, type cannotCompleteHows } from './schema.js';
 
 type Executor = Pick<NodePgDatabase, 'select'>;
@@ -81,10 +82,11 @@ export async function closeCannotComplete(
   return open;
 }
 
-// K17 (slice 2.13b, owner decision 2026-11-11): in the transaction where the
-// order left its captain, whatever way it left (withdrawn, ended, cancelled,
-// delivered by the captain), an open «لا أستطيع إكمال الطلب» of that captain
-// closes and takes them offline; otherwise a last-order mode may end their
+// K17 (slices 2.13b, 2.13c; owner decision 2026-11-11): in the transaction
+// where the order left its captain, whatever way it left (withdrawn, ended,
+// cancelled, delivered by the captain), an open «لا أستطيع إكمال الطلب» and
+// an open «طوارئ» close, and either of that captain takes them offline (the
+// emergency's end reason first); otherwise a last-order mode may end their
 // online period (CA §7.3, K18). The answer runs after the commit.
 export async function leaveCaptain(
   tx: Tx,
@@ -95,8 +97,12 @@ export async function leaveCaptain(
   now: Date,
 ): Promise<() => Promise<void>> {
   const open = await closeCannotComplete(tx, key, how, now);
+  const emergency = await closeEmergency(tx, key, how, now);
+  if (emergency?.captainId === captainId) {
+    return captains.offlineAfterProblem(tx, captainId, 'emergency', now);
+  }
   if (open?.captainId === captainId) {
-    return captains.offlineAfterCannotComplete(tx, captainId, now);
+    return captains.offlineAfterProblem(tx, captainId, 'cannot_complete', now);
   }
   return captains.afterOrderLeft(tx, captainId, now);
 }

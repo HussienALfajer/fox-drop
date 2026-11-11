@@ -104,6 +104,9 @@ const card = z.object({
       .describe(
         "«بانتظار العمليات»: the captain's open «لا أستطيع إكمال الطلب» (CA §9.11, slice 2.13b).",
       ),
+    emergency: z
+      .boolean()
+      .describe("«طوارئ»: the captain's open emergency (CA §9.11, slice 2.13c)."),
   }),
   moments: z
     .object({
@@ -835,6 +838,25 @@ class AdminOrderDto extends createZodDto(
         .describe(
           "«بانتظار العمليات» (CA §9.11, slice 2.13b): the captain's open «لا أستطيع إكمال الطلب»; «سحب وإعادة تعيين» prefills «بخطأ من الكابتن» and «تسليم لكابتن آخر» asks the fault while it is open. Null without one.",
         ),
+      emergency: z
+        .object({
+          captainId: z.uuid(),
+          location: z
+            .object({
+              latitude: z.number(),
+              longitude: z.number(),
+              accuracyMetres: z.number(),
+              recordedAt: z.iso.datetime(),
+              simulated: z.boolean().describe('The device reported a mock location.'),
+            })
+            .nullable()
+            .describe('The fix the app sent, whatever its quality; null without one.'),
+          at: z.iso.datetime(),
+        })
+        .nullable()
+        .describe(
+          "«طوارئ» (CA §9.11, slice 2.13c): the captain's open emergency, until the order leaves them or ends; «سحب وإعادة تعيين» and «تسليم لكابتن آخر» prefill «دون خطأ» while it is open (owner decision 2026-11-11). Null without one.",
+        ),
       itemReport: z
         .object({
           at: z.iso.datetime(),
@@ -1163,6 +1185,7 @@ function cardBody(item: OperationsOrder) {
       awaitingCollection: item.awaitingCollection,
       itemReport: order.itemReport !== null,
       cannotComplete: order.cannotComplete !== null,
+      emergency: order.emergency !== null,
     },
     moments: {
       acceptAlertAt: at(item.moments.acceptAlertAt),
@@ -2131,6 +2154,17 @@ export class AdminOrdersController {
           label: order.cannotComplete.reasonLabel,
           note: order.cannotComplete.note,
           at: order.cannotComplete.at.toISOString(),
+        },
+        emergency: order.emergency && {
+          captainId: order.emergency.captainId,
+          location: order.emergency.location && {
+            latitude: order.emergency.location.latitude,
+            longitude: order.emergency.location.longitude,
+            accuracyMetres: order.emergency.location.accuracyMetres,
+            recordedAt: order.emergency.location.recordedAt.toISOString(),
+            simulated: order.emergency.location.simulated,
+          },
+          at: order.emergency.at.toISOString(),
         },
         itemReport: order.itemReport && {
           at: order.itemReport.at.toISOString(),

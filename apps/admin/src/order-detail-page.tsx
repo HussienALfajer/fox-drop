@@ -7,6 +7,7 @@ import { canReleaseDevice } from './captain-device.js';
 import { ForceOffline } from './captain-offline-page.js';
 import { chosenCity, citiesQuery } from './cities.js';
 import { formatMoney, formatTime } from './format.js';
+import { mapLink } from './map-link.js';
 import { CancelOrder } from './order-cancel-page.js';
 import { ChangeOutcome } from './order-outcome-change-page.js';
 import { canChangeOutcome } from './order-outcome-change.js';
@@ -209,6 +210,29 @@ export function OrderDetailPage() {
           <p>{t('order.cannotComplete.fault')}</p>
         </section>
       )}
+      {detail.emergency && (
+        <section>
+          <h4>{t('order.emergency.title')}</h4>
+          <p>{t('order.emergency.at', { time: time(detail.emergency.at) })}</p>
+          {detail.emergency.location ? (
+            <p>
+              {t('order.emergency.location', {
+                metres: Math.round(detail.emergency.location.accuracyMetres),
+                time: time(detail.emergency.location.recordedAt),
+              })}{' '}
+              <a href={mapLink(detail.emergency.location)} target="_blank" rel="noreferrer">
+                {t('order.emergency.openMap')}
+              </a>
+            </p>
+          ) : (
+            <p>{t('order.emergency.noLocation')}</p>
+          )}
+          {detail.emergency.location?.simulated && (
+            <p role="alert">{t('order.emergency.simulated')}</p>
+          )}
+          <p>{t('order.emergency.actions')}</p>
+        </section>
+      )}
       {detail.itemReport && <ItemReportSection report={detail.itemReport} time={time} />}
       {canCloseItemReport(session, detail) && <CloseItemReport key={orderId} orderId={orderId} />}
       {canChangeTime(session, detail) && (
@@ -285,6 +309,7 @@ export function OrderDetailPage() {
           version={detail.version}
           choices={detail.reassignChoices}
           cannotComplete={detail.cannotComplete !== null}
+          emergency={detail.emergency !== null}
         />
       )}
       {canResend(session) && (

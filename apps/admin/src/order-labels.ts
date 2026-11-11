@@ -47,6 +47,7 @@ export const alertKeys = {
   item_unavailable: 'order.alert.itemUnavailable',
   edit_unacknowledged: 'order.alert.editUnacknowledged',
   captain_cannot_complete: 'order.alert.captainCannotComplete',
+  captain_emergency: 'order.alert.captainEmergency',
 } as const satisfies Record<AlertCode, string>;
 
 export const badgeKeys = {
@@ -57,6 +58,7 @@ export const badgeKeys = {
   awaitingCollection: 'order.badge.awaitingCollection',
   itemReport: 'order.badge.itemReport',
   cannotComplete: 'order.badge.cannotComplete',
+  emergency: 'order.badge.emergency',
 } as const satisfies Record<keyof OrderCard['badges'], string>;
 
 export const vehicleKeys = {

@@ -12,6 +12,9 @@
          service's and the pushes'; the app asks at «متصل» (owner decision
          2026-11-08; permission_handler). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- CA §9.11 «طوارئ» calls operations directly (CA §4.5 check 8),
+         asked at «متصل»; without it the dialer opens with the number. -->
+    <uses-permission android:name="android.permission.CALL_PHONE"/>
     <!-- The offer ring keeps the screen on while online (wakelock_plus). -->
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <application

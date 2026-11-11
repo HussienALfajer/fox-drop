@@ -56,7 +56,7 @@ class AdminHandoverDto extends createZodDto(
       .nullable()
       .default(null)
       .describe(
-        "AP §9.7.6 (slice 2.13b): «بخطأ من الكابتن» (true) or «دون خطأ» (false), kept only while the first captain's «لا أستطيع إكمال الطلب» is open (the detail's cannotComplete), where null counts as true; ignored otherwise.",
+        "AP §9.7.6 (slices 2.13b, 2.13c): «بخطأ من الكابتن» (true) or «دون خطأ» (false), kept only while the first captain's «لا أستطيع إكمال الطلب» (the detail's cannotComplete; null counts as true) or «طوارئ» (the detail's emergency; null counts as false, also when both are open) is open; ignored otherwise.",
       ),
   }),
 ) {}

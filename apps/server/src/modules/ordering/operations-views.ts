@@ -306,6 +306,7 @@ export class OperationsViews {
           shortfall: shortfalls.has(view.id),
           itemReportOpen: view.itemReport !== null,
           cannotCompleteOpen: view.cannotComplete !== null,
+          emergencyOpen: view.emergency !== null,
           editAlertAt: editAlertAt(view, rule.editAlertMin),
         },
         now,

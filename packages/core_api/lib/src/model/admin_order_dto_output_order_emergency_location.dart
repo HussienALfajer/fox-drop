@@ -6,22 +6,22 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'captain_outcome_payment_dto_location.g.dart';
+part 'admin_order_dto_output_order_emergency_location.g.dart';
 
-/// The latest GPS fix.
+/// The fix the app sent, whatever its quality; null without one.
 ///
 /// Properties:
 /// * [latitude]
 /// * [longitude]
 /// * [accuracyMetres]
 /// * [recordedAt]
-/// * [simulated] - The device reports a mock location.
+/// * [simulated] - The device reported a mock location.
 @BuiltValue()
-abstract class CaptainOutcomePaymentDtoLocation
+abstract class AdminOrderDtoOutputOrderEmergencyLocation
     implements
         Built<
-          CaptainOutcomePaymentDtoLocation,
-          CaptainOutcomePaymentDtoLocationBuilder
+          AdminOrderDtoOutputOrderEmergencyLocation,
+          AdminOrderDtoOutputOrderEmergencyLocationBuilder
         > {
   @BuiltValueField(wireName: r'latitude')
   num get latitude;
@@ -35,38 +35,39 @@ abstract class CaptainOutcomePaymentDtoLocation
   @BuiltValueField(wireName: r'recordedAt')
   DateTime get recordedAt;
 
-  /// The device reports a mock location.
+  /// The device reported a mock location.
   @BuiltValueField(wireName: r'simulated')
   bool get simulated;
 
-  CaptainOutcomePaymentDtoLocation._();
+  AdminOrderDtoOutputOrderEmergencyLocation._();
 
-  factory CaptainOutcomePaymentDtoLocation([
-    void updates(CaptainOutcomePaymentDtoLocationBuilder b),
-  ]) = _$CaptainOutcomePaymentDtoLocation;
+  factory AdminOrderDtoOutputOrderEmergencyLocation([
+    void updates(AdminOrderDtoOutputOrderEmergencyLocationBuilder b),
+  ]) = _$AdminOrderDtoOutputOrderEmergencyLocation;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CaptainOutcomePaymentDtoLocationBuilder b) => b;
+  static void _defaults(AdminOrderDtoOutputOrderEmergencyLocationBuilder b) =>
+      b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainOutcomePaymentDtoLocation> get serializer =>
-      _$CaptainOutcomePaymentDtoLocationSerializer();
+  static Serializer<AdminOrderDtoOutputOrderEmergencyLocation> get serializer =>
+      _$AdminOrderDtoOutputOrderEmergencyLocationSerializer();
 }
 
-class _$CaptainOutcomePaymentDtoLocationSerializer
-    implements PrimitiveSerializer<CaptainOutcomePaymentDtoLocation> {
+class _$AdminOrderDtoOutputOrderEmergencyLocationSerializer
+    implements PrimitiveSerializer<AdminOrderDtoOutputOrderEmergencyLocation> {
   @override
   final Iterable<Type> types = const [
-    CaptainOutcomePaymentDtoLocation,
-    _$CaptainOutcomePaymentDtoLocation,
+    AdminOrderDtoOutputOrderEmergencyLocation,
+    _$AdminOrderDtoOutputOrderEmergencyLocation,
   ];
 
   @override
-  final String wireName = r'CaptainOutcomePaymentDtoLocation';
+  final String wireName = r'AdminOrderDtoOutputOrderEmergencyLocation';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    CaptainOutcomePaymentDtoLocation object, {
+    AdminOrderDtoOutputOrderEmergencyLocation object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'latitude';
@@ -99,7 +100,7 @@ class _$CaptainOutcomePaymentDtoLocationSerializer
   @override
   Object serialize(
     Serializers serializers,
-    CaptainOutcomePaymentDtoLocation object, {
+    AdminOrderDtoOutputOrderEmergencyLocation object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -114,7 +115,7 @@ class _$CaptainOutcomePaymentDtoLocationSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required CaptainOutcomePaymentDtoLocationBuilder result,
+    required AdminOrderDtoOutputOrderEmergencyLocationBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -166,12 +167,12 @@ class _$CaptainOutcomePaymentDtoLocationSerializer
   }
 
   @override
-  CaptainOutcomePaymentDtoLocation deserialize(
+  AdminOrderDtoOutputOrderEmergencyLocation deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = CaptainOutcomePaymentDtoLocationBuilder();
+    final result = AdminOrderDtoOutputOrderEmergencyLocationBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

@@ -6421,6 +6421,63 @@
         ]
       }
     },
+    "/v1/captain/orders/{orderId}/emergency": {
+      "post": {
+        "operationId": "captainOrdersEmergency",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaptainEmergencyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainOrderDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
     "/v1/captain/orders/{orderId}/arrive-at-customer": {
       "post": {
         "operationId": "captainOrdersArriveAtCustomer",
@@ -18698,6 +18755,10 @@
                   "cannotComplete": {
                     "type": "boolean",
                     "description": "«بانتظار العمليات»: the captain's open «لا أستطيع إكمال الطلب» (CA §9.11, slice 2.13b)."
+                  },
+                  "emergency": {
+                    "type": "boolean",
+                    "description": "«طوارئ»: the captain's open emergency (CA §9.11, slice 2.13c)."
                   }
                 },
                 "required": [
@@ -18707,7 +18768,8 @@
                   "pickupPending",
                   "awaitingCollection",
                   "itemReport",
-                  "cannotComplete"
+                  "cannotComplete",
+                  "emergency"
                 ],
                 "additionalProperties": false
               },
@@ -18829,7 +18891,8 @@
                     "away_from_address",
                     "item_unavailable",
                     "edit_unacknowledged",
-                    "captain_cannot_complete"
+                    "captain_cannot_complete",
+                    "captain_emergency"
                   ]
                 },
                 "description": "AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active."
@@ -21114,6 +21177,10 @@
                     "cannotComplete": {
                       "type": "boolean",
                       "description": "«بانتظار العمليات»: the captain's open «لا أستطيع إكمال الطلب» (CA §9.11, slice 2.13b)."
+                    },
+                    "emergency": {
+                      "type": "boolean",
+                      "description": "«طوارئ»: the captain's open emergency (CA §9.11, slice 2.13c)."
                     }
                   },
                   "required": [
@@ -21123,7 +21190,8 @@
                     "pickupPending",
                     "awaitingCollection",
                     "itemReport",
-                    "cannotComplete"
+                    "cannotComplete",
+                    "emergency"
                   ],
                   "additionalProperties": false
                 },
@@ -21245,7 +21313,8 @@
                       "away_from_address",
                       "item_unavailable",
                       "edit_unacknowledged",
-                      "captain_cannot_complete"
+                      "captain_cannot_complete",
+                      "captain_emergency"
                     ]
                   },
                   "description": "AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active."
@@ -21461,6 +21530,10 @@
                   "cannotComplete": {
                     "type": "boolean",
                     "description": "«بانتظار العمليات»: the captain's open «لا أستطيع إكمال الطلب» (CA §9.11, slice 2.13b)."
+                  },
+                  "emergency": {
+                    "type": "boolean",
+                    "description": "«طوارئ»: the captain's open emergency (CA §9.11, slice 2.13c)."
                   }
                 },
                 "required": [
@@ -21470,7 +21543,8 @@
                   "pickupPending",
                   "awaitingCollection",
                   "itemReport",
-                  "cannotComplete"
+                  "cannotComplete",
+                  "emergency"
                 ],
                 "additionalProperties": false
               },
@@ -21592,7 +21666,8 @@
                     "away_from_address",
                     "item_unavailable",
                     "edit_unacknowledged",
-                    "captain_cannot_complete"
+                    "captain_cannot_complete",
+                    "captain_emergency"
                   ]
                 },
                 "description": "AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active."
@@ -22613,6 +22688,74 @@
                   }
                 ],
                 "description": "«بانتظار العمليات» (CA §9.11, slice 2.13b): the captain's open «لا أستطيع إكمال الطلب»; «سحب وإعادة تعيين» prefills «بخطأ من الكابتن» and «تسليم لكابتن آخر» asks the fault while it is open. Null without one."
+              },
+              "emergency": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "captainId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "location": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "latitude": {
+                                "type": "number"
+                              },
+                              "longitude": {
+                                "type": "number"
+                              },
+                              "accuracyMetres": {
+                                "type": "number"
+                              },
+                              "recordedAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                              },
+                              "simulated": {
+                                "type": "boolean",
+                                "description": "The device reported a mock location."
+                              }
+                            },
+                            "required": [
+                              "latitude",
+                              "longitude",
+                              "accuracyMetres",
+                              "recordedAt",
+                              "simulated"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "The fix the app sent, whatever its quality; null without one."
+                      },
+                      "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      }
+                    },
+                    "required": [
+                      "captainId",
+                      "location",
+                      "at"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "«طوارئ» (CA §9.11, slice 2.13c): the captain's open emergency, until the order leaves them or ends; «سحب وإعادة تعيين» and «تسليم لكابتن آخر» prefill «دون خطأ» while it is open (owner decision 2026-11-11). Null without one."
               },
               "itemReport": {
                 "anyOf": [
@@ -24237,6 +24380,7 @@
               "outcomeChange",
               "outcomeChoices",
               "cannotComplete",
+              "emergency",
               "itemReport",
               "timeChange",
               "editChoices",
@@ -25106,6 +25250,33 @@
                       }
                     ],
                     "description": "«لا أستطيع إكمال الطلب» (CA §9.11, slice 2.13b): the captain's open request, «بانتظار العمليات» with «تراجع»; every step stays open. Null without one."
+                  },
+                  "emergency": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          },
+                          "located": {
+                            "type": "boolean",
+                            "description": "Whether the press sent a fix."
+                          }
+                        },
+                        "required": [
+                          "at",
+                          "located"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "«طوارئ» (CA §9.11, slice 2.13c): the captain's open emergency; it cannot be withdrawn and every step stays open. Null without one."
                   }
                 },
                 "required": [
@@ -25129,7 +25300,8 @@
                   "customer",
                   "radii",
                   "handover",
-                  "cannotComplete"
+                  "cannotComplete",
+                  "emergency"
                 ],
                 "additionalProperties": false,
                 "description": "The active order (CA §9)."
@@ -26339,6 +26511,33 @@
                   }
                 ],
                 "description": "«لا أستطيع إكمال الطلب» (CA §9.11, slice 2.13b): the captain's open request, «بانتظار العمليات» with «تراجع»; every step stays open. Null without one."
+              },
+              "emergency": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "located": {
+                        "type": "boolean",
+                        "description": "Whether the press sent a fix."
+                      }
+                    },
+                    "required": [
+                      "at",
+                      "located"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "«طوارئ» (CA §9.11, slice 2.13c): the captain's open emergency; it cannot be withdrawn and every step stays open. Null without one."
               }
             },
             "required": [
@@ -26362,7 +26561,8 @@
               "customer",
               "radii",
               "handover",
-              "cannotComplete"
+              "cannotComplete",
+              "emergency"
             ],
             "additionalProperties": false,
             "description": "The active order (CA §9)."
@@ -26435,6 +26635,58 @@
           "location",
           "reason",
           "note"
+        ]
+      },
+      "CaptainEmergencyDto": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "latitude": {
+                    "type": "number",
+                    "minimum": -90,
+                    "maximum": 90
+                  },
+                  "longitude": {
+                    "type": "number",
+                    "minimum": -180,
+                    "maximum": 180
+                  },
+                  "accuracyMetres": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "recordedAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "simulated": {
+                    "type": "boolean",
+                    "description": "The device reports a mock location."
+                  }
+                },
+                "required": [
+                  "latitude",
+                  "longitude",
+                  "accuracyMetres",
+                  "recordedAt",
+                  "simulated"
+                ],
+                "description": "The latest GPS fix."
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The latest GPS fix, whatever its age, accuracy or mock flag; null without one."
+          }
+        },
+        "required": [
+          "location"
         ]
       },
       "CaptainArriveAtCustomerDto": {
@@ -27496,6 +27748,7 @@
                     "item_unavailable",
                     "edit_unacknowledged",
                     "captain_cannot_complete",
+                    "captain_emergency",
                     "restaurant_auto_paused"
                   ],
                   "description": "The rule of AP §9.1.3."
@@ -27543,6 +27796,36 @@
                     "string",
                     "null"
                   ]
+                },
+                "location": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "latitude": {
+                          "type": "number"
+                        },
+                        "longitude": {
+                          "type": "number"
+                        },
+                        "at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        }
+                      },
+                      "required": [
+                        "latitude",
+                        "longitude",
+                        "at"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "«طوارئ كابتن» (AP §9.1.3, CA §9.11): the location the captain sent, for «فتح الخريطة»; null for the others and an emergency without a fix."
                 },
                 "raisedAt": {
                   "type": "string",
@@ -27606,6 +27889,7 @@
                 "orderNumber",
                 "captainName",
                 "restaurantName",
+                "location",
                 "raisedAt",
                 "acknowledged",
                 "resolvedAt"
@@ -27646,6 +27930,7 @@
               "item_unavailable",
               "edit_unacknowledged",
               "captain_cannot_complete",
+              "captain_emergency",
               "restaurant_auto_paused"
             ],
             "description": "The rule of AP §9.1.3."
@@ -27693,6 +27978,36 @@
               "string",
               "null"
             ]
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "latitude": {
+                    "type": "number"
+                  },
+                  "longitude": {
+                    "type": "number"
+                  },
+                  "at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  }
+                },
+                "required": [
+                  "latitude",
+                  "longitude",
+                  "at"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«طوارئ كابتن» (AP §9.1.3, CA §9.11): the location the captain sent, for «فتح الخريطة»; null for the others and an emergency without a fix."
           },
           "raisedAt": {
             "type": "string",
@@ -27756,6 +28071,7 @@
           "orderNumber",
           "captainName",
           "restaurantName",
+          "location",
           "raisedAt",
           "acknowledged",
           "resolvedAt"
@@ -28151,7 +28467,7 @@
           },
           "captainFault": {
             "default": null,
-            "description": "AP §9.7.6 (slice 2.13b): «بخطأ من الكابتن» (true) or «دون خطأ» (false), kept only while the first captain's «لا أستطيع إكمال الطلب» is open (the detail's cannotComplete), where null counts as true; ignored otherwise.",
+            "description": "AP §9.7.6 (slices 2.13b, 2.13c): «بخطأ من الكابتن» (true) or «دون خطأ» (false), kept only while the first captain's «لا أستطيع إكمال الطلب» (the detail's cannotComplete; null counts as true) or «طوارئ» (the detail's emergency; null counts as false, also when both are open) is open; ignored otherwise.",
             "type": [
               "boolean",
               "null"

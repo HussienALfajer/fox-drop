@@ -27,6 +27,7 @@ const card = {
     awaitingCollection: false,
     itemReport: false,
     cannotComplete: false,
+    emergency: false,
   },
   moments: {
     acceptAlertAt: null,
@@ -53,6 +54,7 @@ const detail = {
   reassignments: [],
   handover: { allowed: false, handovers: [] },
   cannotComplete: null,
+  emergency: null,
   outcome: null,
   outcomeChoices: null,
   itemReport: null,
@@ -1077,4 +1079,51 @@ test('shows «لا أستطيع إكمال الطلب» and prefills the captain
   const reassign = page.getByRole('form', { name: 'سحب وإعادة تعيين' });
   await reassign.getByRole('radio', { name: 'عطل في المركبة' }).check();
   await expect(reassign.getByRole('radio', { name: 'بخطأ من الكابتن' })).toBeChecked();
+});
+
+// CA §9.11, AP §9.1.3 (slice 2.13c): the captain's «طوارئ» shows on the
+// detail with «فتح الخريطة» at the location sent, and the withdrawal
+// prefills «دون خطأ» whatever the reason's default.
+test('shows «طوارئ» with its map and prefills no fault', async ({ page }) => {
+  await fakeSession(page, ['operations.read', 'operations.manage']);
+  await fakeOperations(page);
+  const captainId = '01900000-0000-7000-8000-0000000000c1';
+  await page.route(`**/v1/admin/orders/${orderId}`, (route) =>
+    route.fulfill({
+      json: {
+        order: {
+          ...detail,
+          badges: { ...card.badges, emergency: true },
+          alerts: ['captain_emergency'],
+          emergency: {
+            captainId,
+            location: {
+              latitude: 36.5875,
+              longitude: 37.046,
+              accuracyMetres: 12,
+              recordedAt: later(-2),
+              simulated: false,
+            },
+            at: later(-2),
+          },
+          reassignChoices: {
+            reasons: [{ code: 'captain_late', label: 'تأخر الكابتن', captainFault: true }],
+          },
+        },
+      },
+    }),
+  );
+  await page.route(`**/v1/admin/orders/${orderId}/reassign-preview`, (route) =>
+    route.fulfill({ json: { entries: [], cashAsked: false, cashLines: null } }),
+  );
+  await page.goto(`/orders/${orderId}`);
+
+  await expect(page.getByRole('heading', { name: 'طوارئ' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'فتح الخريطة' })).toHaveAttribute(
+    'href',
+    'https://www.google.com/maps/search/?api=1&query=36.5875%2C37.046',
+  );
+  const reassign = page.getByRole('form', { name: 'سحب وإعادة تعيين' });
+  await reassign.getByRole('radio', { name: 'تأخر الكابتن' }).check();
+  await expect(reassign.getByRole('radio', { name: 'دون خطأ' })).toBeChecked();
 });

@@ -16,7 +16,7 @@ class _$CaptainOutcomePaymentDto extends CaptainOutcomePaymentDto {
   @override
   final AdminRecordDeliveryDtoShortfall? shortfall;
   @override
-  final CaptainOutcomePaymentDtoLocation? location;
+  final CaptainEmergencyDtoLocation? location;
 
   factory _$CaptainOutcomePaymentDto([
     void Function(CaptainOutcomePaymentDtoBuilder)? updates,
@@ -102,10 +102,10 @@ class CaptainOutcomePaymentDtoBuilder
   set shortfall(AdminRecordDeliveryDtoShortfallBuilder? shortfall) =>
       _$this._shortfall = shortfall;
 
-  CaptainOutcomePaymentDtoLocationBuilder? _location;
-  CaptainOutcomePaymentDtoLocationBuilder get location =>
-      _$this._location ??= CaptainOutcomePaymentDtoLocationBuilder();
-  set location(CaptainOutcomePaymentDtoLocationBuilder? location) =>
+  CaptainEmergencyDtoLocationBuilder? _location;
+  CaptainEmergencyDtoLocationBuilder get location =>
+      _$this._location ??= CaptainEmergencyDtoLocationBuilder();
+  set location(CaptainEmergencyDtoLocationBuilder? location) =>
       _$this._location = location;
 
   CaptainOutcomePaymentDtoBuilder() {

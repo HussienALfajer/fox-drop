@@ -11,6 +11,7 @@ import 'package:core_api/src/model/captain_active_order_dto_output_order_prepara
 import 'package:core_api/src/model/captain_active_order_dto_output_order_collect.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_cannot_complete.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_emergency.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_pickup_payment.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_lines_inner.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant.dart';
@@ -45,6 +46,7 @@ part 'captain_order_dto_output_order.g.dart';
 /// * [radii]
 /// * [handover]
 /// * [cannotComplete]
+/// * [emergency]
 @BuiltValue()
 abstract class CaptainOrderDtoOutputOrder
     implements
@@ -120,6 +122,9 @@ abstract class CaptainOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'cannotComplete')
   CaptainActiveOrderDtoOutputOrderCannotComplete? get cannotComplete;
+
+  @BuiltValueField(wireName: r'emergency')
+  CaptainActiveOrderDtoOutputOrderEmergency? get emergency;
 
   CaptainOrderDtoOutputOrder._();
 
@@ -278,6 +283,15 @@ class _$CaptainOrderDtoOutputOrderSerializer
             object.cannotComplete,
             specifiedType: const FullType.nullable(
               CaptainActiveOrderDtoOutputOrderCannotComplete,
+            ),
+          );
+    yield r'emergency';
+    yield object.emergency == null
+        ? null
+        : serializers.serialize(
+            object.emergency,
+            specifiedType: const FullType.nullable(
+              CaptainActiveOrderDtoOutputOrderEmergency,
             ),
           );
   }
@@ -522,6 +536,18 @@ class _$CaptainOrderDtoOutputOrderSerializer
                   as CaptainActiveOrderDtoOutputOrderCannotComplete?;
           if (valueDes == null) continue;
           result.cannotComplete.replace(valueDes);
+          break;
+        case r'emergency':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CaptainActiveOrderDtoOutputOrderEmergency,
+                    ),
+                  )
+                  as CaptainActiveOrderDtoOutputOrderEmergency?;
+          if (valueDes == null) continue;
+          result.emergency.replace(valueDes);
           break;
         default:
           unhandled.add(key);

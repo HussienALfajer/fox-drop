@@ -18,6 +18,7 @@ part 'admin_order_card_dto_output_order_badges.g.dart';
 /// * [awaitingCollection] - «بانتظار تسجيل التحصيل»: an outcome with an amount to collect waits for the payment (CA §9.10, K9).
 /// * [itemReport] - «صنف نفد»: an open item-unavailable report (RA §8.12).
 /// * [cannotComplete] - «بانتظار العمليات»: the captain's open «لا أستطيع إكمال الطلب» (CA §9.11, slice 2.13b).
+/// * [emergency] - «طوارئ»: the captain's open emergency (CA §9.11, slice 2.13c).
 @BuiltValue()
 abstract class AdminOrderCardDtoOutputOrderBadges
     implements
@@ -52,6 +53,10 @@ abstract class AdminOrderCardDtoOutputOrderBadges
   /// «بانتظار العمليات»: the captain's open «لا أستطيع إكمال الطلب» (CA §9.11, slice 2.13b).
   @BuiltValueField(wireName: r'cannotComplete')
   bool get cannotComplete;
+
+  /// «طوارئ»: the captain's open emergency (CA §9.11, slice 2.13c).
+  @BuiltValueField(wireName: r'emergency')
+  bool get emergency;
 
   AdminOrderCardDtoOutputOrderBadges._();
 
@@ -116,6 +121,11 @@ class _$AdminOrderCardDtoOutputOrderBadgesSerializer
     yield r'cannotComplete';
     yield serializers.serialize(
       object.cannotComplete,
+      specifiedType: const FullType(bool),
+    );
+    yield r'emergency';
+    yield serializers.serialize(
+      object.emergency,
       specifiedType: const FullType(bool),
     );
   }
@@ -207,6 +217,15 @@ class _$AdminOrderCardDtoOutputOrderBadgesSerializer
                   )
                   as bool;
           result.cannotComplete = valueDes;
+          break;
+        case r'emergency':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.emergency = valueDes;
           break;
         default:
           unhandled.add(key);

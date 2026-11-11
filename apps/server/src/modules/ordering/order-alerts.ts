@@ -18,6 +18,7 @@ import { type AlertCode, AlertsService } from '../notifications/index.js';
 import { SettingsService } from '../settings/index.js';
 import { UNTIL_ENDED } from './active-orders.js';
 import { openCannotComplete } from './cannot-complete.js';
+import { type OpenEmergency, openEmergency } from './emergencies.js';
 import { openItemReport } from './item-reports.js';
 import { unacknowledgedAdditionAt } from './order-edits.js';
 import { BEFORE_PICKUP } from './order-views.js';
@@ -44,6 +45,7 @@ export const ORDER_ALERT_CODES = [
   'item_unavailable',
   'edit_unacknowledged',
   'captain_cannot_complete',
+  'captain_emergency',
 ] as const satisfies readonly AlertCode[];
 export type OrderAlertCode = (typeof ORDER_ALERT_CODES)[number];
 
@@ -71,6 +73,8 @@ export interface OrderAlertInput {
   itemReportOpen: boolean;
   // CA §9.11: the captain's open «لا أستطيع إكمال الطلب».
   cannotCompleteOpen: boolean;
+  // CA §9.11 (slice 2.13c): the captain's open «طوارئ».
+  emergencyOpen: boolean;
   // RA §8.13, AP §9.3.3: the oldest unacknowledged edit that added items,
   // plus order.merchant_accept_alert_min; null with none.
   editAlertAt: Date | null;
@@ -137,6 +141,9 @@ export function orderAlerts(
   if (order.cannotCompleteOpen && UNTIL_ENDED.includes(order.status)) {
     open.push('captain_cannot_complete');
   }
+  if (order.emergencyOpen && UNTIL_ENDED.includes(order.status)) {
+    open.push('captain_emergency');
+  }
   // «المطعم لم يؤكد التعديل»: only before the pickup.
   from('edit_unacknowledged', BEFORE_PICKUP.includes(order.status), order.editAlertAt);
   const next = ahead.reduce<Date | null>(
@@ -190,7 +197,13 @@ export class OrderAlerts {
     await this.database.db.transaction(async (tx) => {
       const order = await lockOrder(tx, job.orderId, placedAt);
       if (!order) return;
-      const input = await readInput(tx, order.id, placedAt, lateMin, editAlertMin);
+      const { emergency, ...input } = await readInput(
+        tx,
+        order.id,
+        placedAt,
+        lateMin,
+        editAlertMin,
+      );
       const { open, next } = orderAlerts(
         {
           ...input,
@@ -207,6 +220,8 @@ export class OrderAlerts {
           id: order.id,
           cityId: order.cityId,
           details: { orderNumber: order.number.toString() },
+          // «طوارئ كابتن» carries the location the captain sent (AP §9.1.3).
+          codeDetails: { captain_emergency: emergencyDetails(emergency) },
         },
         ORDER_ALERT_CODES,
         open,
@@ -257,7 +272,9 @@ async function readInput(
   placedAt: Date,
   deliveryLateMin: number,
   editAlertMin: number,
-): Promise<Omit<OrderAlertInput, 'gpsStaleMin' | 'lastFixAt'>> {
+): Promise<
+  Omit<OrderAlertInput, 'gpsStaleMin' | 'lastFixAt'> & { emergency: OpenEmergency | null }
+> {
   const [order] = await tx
     .select({
       status: orders.status,
@@ -301,6 +318,7 @@ async function readInput(
     .limit(1);
   const report = await openItemReport(tx, orderId, placedAt);
   const problem = await openCannotComplete(tx, { id: orderId, placedAt });
+  const emergency = await openEmergency(tx, { id: orderId, placedAt });
   const edited = await unacknowledgedAdditionAt(tx, orderId, placedAt);
   const row = order!;
   return {
@@ -320,7 +338,20 @@ async function readInput(
     shortfall: short !== undefined,
     itemReportOpen: report !== null,
     cannotCompleteOpen: problem !== null,
+    emergencyOpen: emergency !== null,
+    emergency,
     editAlertAt: edited && new Date(edited.getTime() + editAlertMin * MINUTE_MS),
+  };
+}
+
+// The alert's copy of the emergency's location, as text (the alerts keep
+// strings); none without a fix.
+function emergencyDetails(emergency: OpenEmergency | null): Record<string, string> {
+  if (emergency?.location == null) return {};
+  return {
+    latitude: emergency.location.latitude.toString(),
+    longitude: emergency.location.longitude.toString(),
+    locatedAt: emergency.location.recordedAt.toISOString(),
   };
 }
 

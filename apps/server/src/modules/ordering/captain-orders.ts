@@ -25,6 +25,13 @@ import {
   type OpenCannotComplete,
   openCannotComplete,
 } from './cannot-complete.js';
+import {
+  closeEmergency,
+  type EmergencyLocation,
+  type OpenEmergency,
+  openEmergency,
+  raiseEmergency,
+} from './emergencies.js';
 import { openItemReport } from './item-reports.js';
 import { frozenAtPickup, unacknowledgedAdditionAt } from './order-edits.js';
 import {
@@ -255,6 +262,8 @@ export interface CaptainActiveOrder {
   // CA §9.11 (slice 2.13b): this captain's open «لا أستطيع إكمال الطلب»
   // («بانتظار العمليات» with «تراجع»), or null.
   cannotComplete: Pick<OpenCannotComplete, 'reasonLabel' | 'note' | 'at'> | null;
+  // CA §9.11 (slice 2.13c): this captain's open «طوارئ», or null.
+  emergency: Pick<OpenEmergency, 'at' | 'location'> | null;
 }
 
 // The captain's side of an order (CA §9, §15) and operations' commands on the
@@ -614,6 +623,7 @@ export class CaptainOrders {
       // K17: the first captain goes offline anyway; their open «لا أستطيع
       // إكمال الطلب» closes with the receipt (slice 2.13b).
       await closeCannotComplete(tx, locked, 'handed_over', now);
+      await closeEmergency(tx, locked, 'handed_over', now);
       afterCommit = await this.captains.offlineAfterHandover(tx, handover.fromCaptainId, now);
       await keepKey(tx, command.accountId, command.idempotencyKey, requestHash, order, now);
       return true;
@@ -797,6 +807,77 @@ export class CaptainOrders {
         .where(and(eq(orders.id, order.id), eq(orders.placedAt, order.placedAt)));
       await recordTransition(tx, this.jobs, locked, {
         type: 'order.cannot_complete_withdrawn',
+        from: locked.status,
+        to: locked.status,
+        version,
+        actor: { type: 'captain', id: command.captainId, device: command.deviceId },
+        reason: null,
+        at: now,
+      });
+      await keepKey(tx, command.accountId, command.idempotencyKey, requestHash, order, now);
+      return true;
+    });
+    if (!done) throw await this.stateChanged(order);
+    return this.answer(order, command.captainId, now);
+  }
+
+  // CA §9.11 «طوارئ» (C15, slice 2.13c): the order's captain pressed the
+  // red button; the server records the fix the app sent and marks the order
+  // «طوارئ», and OWN and OPS get the critical alert «طوارئ كابتن» with that
+  // location. The fix is never refused for its quality, age or a mock flag,
+  // and may be missing: an emergency always goes through. It cancels nothing
+  // and the captain cannot withdraw it (owner decision 2026-11-11). One open
+  // per order: a second while one is open is order_state_changed.
+  async emergency(
+    command: CaptainOrderCommand & { location: CommandLocation | null },
+    now: Date,
+  ): Promise<CaptainActiveOrder> {
+    const requestHash = commandHash({ verb: 'emergency', orderId: command.orderId });
+    const earlier = await this.replay(command.accountId, command, requestHash, now);
+    if (earlier !== null) return this.answer(earlier, command.captainId, now);
+    const order = await this.captainsOrder(command);
+    if (
+      !CAPTAIN_ACTIVE.includes(order.status) ||
+      (await openEmergency(this.database.db, order)) !== null
+    ) {
+      throw await this.refusedState(order, command.accountId, command, requestHash, now);
+    }
+    const location: EmergencyLocation | null = command.location && {
+      latitude: command.location.latitude,
+      longitude: command.location.longitude,
+      accuracyMetres: command.location.accuracyMetres,
+      recordedAt: command.location.recordedAt,
+      simulated: command.location.simulated,
+    };
+    if (command.location !== null) {
+      // The point joins the track when the captains module takes it; a
+      // refused one (past the clock skew, offline) still stays on the
+      // emergency.
+      try {
+        await this.captains.recordLocations(command.captainId, [command.location], now);
+      } catch (error) {
+        if (!(error instanceof CaptainsRefusedError)) throw error;
+      }
+    }
+    await this.jobs.ready();
+    const done = await this.database.db.transaction(async (tx) => {
+      const locked = await lockOrder(tx, order.id, order.placedAt);
+      if (!locked) throw new Error(`order ${order.id} not found`);
+      if ((await this.replay(command.accountId, command, requestHash, now, tx)) !== null) {
+        return true;
+      }
+      if (!CAPTAIN_ACTIVE.includes(locked.status) || locked.captainId !== command.captainId) {
+        return false;
+      }
+      if ((await openEmergency(tx, locked)) !== null) return false;
+      await raiseEmergency(tx, locked, command.captainId, location, now);
+      const version = locked.version + 1;
+      await tx
+        .update(orders)
+        .set({ version })
+        .where(and(eq(orders.id, order.id), eq(orders.placedAt, order.placedAt)));
+      await recordTransition(tx, this.jobs, locked, {
+        type: 'order.emergency_raised',
         from: locked.status,
         to: locked.status,
         version,
@@ -1673,16 +1754,25 @@ export class CaptainOrders {
   ): Promise<CaptainActiveOrder> {
     const restaurant = await this.merchants.restaurant(order.restaurantId, now);
     if (!restaurant) throw new Error(`restaurant ${order.restaurantId} not found`);
-    const [requests, disputes, customer, restaurantMetres, customerMetres, handover, problem] =
-      await Promise.all([
-        pickupRequestsOf(this.database.db, [order]),
-        pickupDisputesOf(this.database.db, [order]),
-        this.customerOf(order, captainId),
-        this.settings.get('captain.merchant_arrival_radius_m', { cityId: order.cityId }),
-        this.settings.get('captain.customer_radius_m', { cityId: order.cityId }),
-        this.handoverOf(order, captainId, now),
-        openCannotComplete(this.database.db, order),
-      ]);
+    const [
+      requests,
+      disputes,
+      customer,
+      restaurantMetres,
+      customerMetres,
+      handover,
+      problem,
+      emergency,
+    ] = await Promise.all([
+      pickupRequestsOf(this.database.db, [order]),
+      pickupDisputesOf(this.database.db, [order]),
+      this.customerOf(order, captainId),
+      this.settings.get('captain.merchant_arrival_radius_m', { cityId: order.cityId }),
+      this.settings.get('captain.customer_radius_m', { cityId: order.cityId }),
+      this.handoverOf(order, captainId, now),
+      openCannotComplete(this.database.db, order),
+      openEmergency(this.database.db, order),
+    ]);
     return {
       order,
       customer,
@@ -1699,6 +1789,10 @@ export class CaptainOrders {
       cannotComplete:
         problem?.captainId === captainId && order.captainId === captainId
           ? { reasonLabel: problem.reasonLabel, note: problem.note, at: problem.at }
+          : null,
+      emergency:
+        emergency?.captainId === captainId && order.captainId === captainId
+          ? { at: emergency.at, location: emergency.location }
           : null,
     };
   }

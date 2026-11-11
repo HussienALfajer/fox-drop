@@ -37,6 +37,8 @@ const vehicleValues = sql.raw(vehicles.map((vehicle) => `'${vehicle}'`).join(', 
 // forced: operations' «فصل من الاتصال», at once or after the order (CA §7.6).
 // cannot_complete: K17, the order left the captain while their «لا أستطيع
 // إكمال الطلب» was open (slice 2.13b).
+// emergency: K17, the order left the captain while their «طوارئ» was open
+// (slice 2.13c).
 export const onlineEndReasons = [
   'captain',
   'suspended',
@@ -46,6 +48,7 @@ export const onlineEndReasons = [
   'last_order',
   'forced',
   'cannot_complete',
+  'emergency',
 ] as const;
 const endReasonValues = sql.raw(onlineEndReasons.map((reason) => `'${reason}'`).join(', '));
 const lastOrderValues = sql.raw(lastOrderBy.map((by) => `'${by}'`).join(', '));

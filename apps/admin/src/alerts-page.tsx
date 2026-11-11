@@ -13,6 +13,7 @@ import {
 } from './alerts.js';
 import { type City, chosenCity, citiesQuery } from './cities.js';
 import { formatDateTime } from './format.js';
+import { mapLink } from './map-link.js';
 import { OPERATIONS_READ } from './orders-board.js';
 import { can } from './session.js';
 import { alertKeys } from './order-labels.js';
@@ -136,6 +137,14 @@ function AlertLine({ alert, city }: { alert: AdminAlert; city: City }) {
       {alert.captainName && <span>{t('alerts.captain', { name: alert.captainName })}</span>}{' '}
       {alert.restaurantName && (
         <span>{t('alerts.restaurant', { name: alert.restaurantName })}</span>
+      )}{' '}
+      {alert.location && (
+        <>
+          <span>{t('alerts.locatedAt', { time: time(alert.location.at) })}</span>{' '}
+          <a href={mapLink(alert.location)} target="_blank" rel="noreferrer">
+            {t('alerts.openMap')}
+          </a>
+        </>
       )}{' '}
       <span>{t('alerts.raisedAt', { time: time(alert.raisedAt) })}</span>{' '}
       {alert.acknowledged && (

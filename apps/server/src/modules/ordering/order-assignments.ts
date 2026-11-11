@@ -8,6 +8,7 @@ import { Jobs } from '../../jobs/jobs.module.js';
 import { CaptainsModule, CaptainsService } from '../captains/index.js';
 import type { Point } from '../geo/index.js';
 import { openCannotComplete } from './cannot-complete.js';
+import { openEmergency } from './emergencies.js';
 import { canHandOver, type HandoverRefusal } from './handover.js';
 import { type CaptainTrack, recordTransition } from './order-events.js';
 import { pendingOutcome } from './outcome-facts.js';
@@ -211,6 +212,7 @@ export class OrderAssignments implements OnModuleInit {
   ): Promise<void> {
     if (order.captainId === null) throw new Error(`order ${order.id} has no captain`);
     const problem = await openCannotComplete(tx, order);
+    const emergency = await openEmergency(tx, order);
     await tx.insert(handovers).values({
       orderId: order.id,
       orderPlacedAt: order.placedAt,
@@ -222,7 +224,12 @@ export class OrderAssignments implements OnModuleInit {
       adminId: start.adminId,
       openedAt: now,
       assignedAt: start.offer === null ? now : null,
-      captainFault: problem?.captainId === order.captainId ? (start.captainFault ?? true) : null,
+      captainFault: handoverFault(
+        order.captainId,
+        problem?.captainId ?? null,
+        emergency?.captainId ?? null,
+        start.captainFault,
+      ),
     });
     await this.handoverEvent(
       tx,
@@ -535,3 +542,18 @@ async function selectOrders(
   exports: [OrderAssignments],
 })
 export class OrderAssignmentsModule {}
+
+// AP §9.7.6: the fault a handover keeps, asked only while the first
+// captain's «لا أستطيع إكمال الطلب» (slice 2.13b, null counting as theirs) or
+// «طوارئ» (slice 2.13c, null counting as «دون خطأ», which wins when both are
+// open; owner decision 2026-11-11) is open; null otherwise.
+export function handoverFault(
+  captainId: string,
+  requestBy: string | null,
+  emergencyBy: string | null,
+  chosen: boolean | null,
+): boolean | null {
+  if (emergencyBy === captainId) return chosen ?? false;
+  if (requestBy === captainId) return chosen ?? true;
+  return null;
+}
