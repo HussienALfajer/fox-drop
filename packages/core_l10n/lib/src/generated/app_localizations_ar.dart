@@ -2311,4 +2311,32 @@ class AppLocalizationsAr extends AppLocalizations {
   String captainOperationsWait(String message) {
     return 'العمليات: انتظر الزبون. $message';
   }
+
+  @override
+  String get merchantSettings => 'الإعدادات';
+
+  @override
+  String get merchantPickupCurrencies => 'العملات التي تقبلها من الكابتن';
+
+  @override
+  String get merchantPickupCurrenciesExplain =>
+      'يُطبَّق التغيير على طلبات الاستلام بعده.';
+
+  @override
+  String get merchantBaseCurrencyAlways => 'العملة الأساسية، مقبولة دائماً';
+
+  @override
+  String get merchantNoOtherCurrencies => 'لا عملات أخرى مفعّلة في المدينة.';
+
+  @override
+  String get merchantSaveFailed => 'لم يُحفظ التغيير، حاول مرة أخرى';
+
+  @override
+  String get merchantSettingsFailed => 'تعذّر تحميل الإعدادات، حاول مرة أخرى';
+
+  @override
+  String get merchantSettingsNotAllowed => 'هذه الإعدادات لمالكي المطعم فقط.';
+
+  @override
+  String get merchantRetry => 'إعادة المحاولة';
 }

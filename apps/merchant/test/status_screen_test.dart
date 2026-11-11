@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:core_auth/testing.dart';
@@ -289,6 +290,145 @@ void main() {
     expect(find.byKey(const Key('hours-status')), findsOneWidget);
     expect(find.byKey(const Key('save-schedule')), findsNothing);
     expect(app.server.to('/v1/merchant/restaurant/hours'), isEmpty);
+    await app.done(tester);
+  });
+
+  // RA §12.7, §14.3: the owners' «العملات التي تقبلها من الكابتن».
+  testWidgets('an owner switches USD on in «الإعدادات», the base fixed', (
+    tester,
+  ) async {
+    final app = _App(role: 'owner');
+    Map<String, Object?> currencies(List<String> accepted) => {
+      'baseCurrency': {'currency': 'TRY', 'name': 'ليرة تركية'},
+      'accepted': accepted,
+      'choices': [
+        {'currency': 'USD', 'name': 'دولار أمريكي'},
+      ],
+    };
+    app.server.on('/v1/merchant/settings/pickup-currencies', [
+      FakeAnswer(200, currencies([])),
+      FakeAnswer(200, currencies(['USD'])),
+    ]);
+    await app.pump(tester, [FakeAnswer(200, _open())]);
+    await tester.tap(find.byKey(const Key('open-settings')));
+    await tester.pumpAndSettle();
+    expect(find.text('العملات التي تقبلها من الكابتن'), findsOneWidget);
+    expect(find.text('العملة الأساسية، مقبولة دائماً'), findsOneWidget);
+    final base = tester.widget<SwitchListTile>(
+      find.byKey(const Key('pickup-currency-TRY')),
+    );
+    expect((base.value, base.onChanged), (true, null));
+    expect(
+      tester
+          .widget<SwitchListTile>(find.byKey(const Key('pickup-currency-USD')))
+          .value,
+      isFalse,
+    );
+
+    await tester.tap(find.byKey(const Key('pickup-currency-USD')));
+    await tester.pumpAndSettle();
+    final sent = app.server
+        .to('/v1/merchant/settings/pickup-currencies')
+        .where((r) => r.method == 'PUT')
+        .single;
+    expect(sent.data, {
+      'currencies': ['USD'],
+    });
+    expect(
+      tester
+          .widget<SwitchListTile>(find.byKey(const Key('pickup-currency-USD')))
+          .value,
+      isTrue,
+    );
+    await app.done(tester);
+  });
+
+  testWidgets('a refused change says so and reads the switches again', (
+    tester,
+  ) async {
+    final app = _App(role: 'owner');
+    const read = {
+      'baseCurrency': {'currency': 'TRY', 'name': 'ليرة تركية'},
+      'accepted': <String>[],
+      'choices': [
+        {'currency': 'USD', 'name': 'دولار أمريكي'},
+      ],
+    };
+    app.server.on('/v1/merchant/settings/pickup-currencies', [
+      const FakeAnswer(200, read),
+      const FakeAnswer(400, {'error': 'invalid_pickup_currencies'}),
+      const FakeAnswer(200, read),
+    ]);
+    await app.pump(tester, [FakeAnswer(200, _open())]);
+    await tester.tap(find.byKey(const Key('open-settings')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('pickup-currency-USD')));
+    await tester.pumpAndSettle();
+    expect(find.text('لم يُحفظ التغيير، حاول مرة أخرى'), findsOneWidget);
+    expect(
+      app.server
+          .to('/v1/merchant/settings/pickup-currencies')
+          .map((r) => r.method),
+      ['GET', 'PUT', 'GET'],
+    );
+    expect(
+      tester
+          .widget<SwitchListTile>(find.byKey(const Key('pickup-currency-USD')))
+          .value,
+      isFalse,
+    );
+    await app.done(tester);
+  });
+
+  testWidgets('the switches wait for a save’s answer', (tester) async {
+    final app = _App(role: 'owner');
+    Map<String, Object?> currencies(List<String> accepted) => {
+      'baseCurrency': {'currency': 'TRY', 'name': 'ليرة تركية'},
+      'accepted': accepted,
+      'choices': [
+        {'currency': 'USD', 'name': 'دولار أمريكي'},
+        {'currency': 'SYP', 'name': 'ليرة سورية'},
+      ],
+    };
+    app.server.on('/v1/merchant/settings/pickup-currencies', [
+      FakeAnswer(200, currencies([])),
+      FakeAnswer(200, currencies(['USD'])),
+    ]);
+    await app.pump(tester, [FakeAnswer(200, _open())]);
+    await tester.tap(find.byKey(const Key('open-settings')));
+    await tester.pumpAndSettle();
+    final gate = app.server.gate = Completer<void>();
+    await tester.tap(find.byKey(const Key('pickup-currency-USD')));
+    await tester.pump();
+    SwitchListTile tile(String code) =>
+        tester.widget<SwitchListTile>(find.byKey(Key('pickup-currency-$code')));
+    expect(tile('SYP').onChanged, isNull);
+    app.server.gate = null;
+    gate.complete();
+    await tester.pumpAndSettle();
+    expect((tile('USD').value, tile('SYP').onChanged != null), (true, true));
+    await app.done(tester);
+  });
+
+  testWidgets('a refused read says the settings are the owners’', (
+    tester,
+  ) async {
+    final app = _App(role: 'owner');
+    app.server.on('/v1/merchant/settings/pickup-currencies', [
+      const FakeAnswer(403, {'error': 'restaurant_terminated'}),
+    ]);
+    await app.pump(tester, [FakeAnswer(200, _open())]);
+    await tester.tap(find.byKey(const Key('open-settings')));
+    await tester.pumpAndSettle();
+    expect(find.text('هذه الإعدادات لمالكي المطعم فقط.'), findsOneWidget);
+    expect(find.text('إعادة المحاولة'), findsNothing);
+    await app.done(tester);
+  });
+
+  testWidgets('a cashier has no «الإعدادات»', (tester) async {
+    final app = _App();
+    await app.pump(tester, [FakeAnswer(200, _open())]);
+    expect(find.byKey(const Key('open-settings')), findsNothing);
     await app.done(tester);
   });
 

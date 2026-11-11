@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:core_api/core_api.dart';
 import 'package:core_l10n/core_l10n.dart';
 import 'package:core_platform/core_platform.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import '../content.dart';
 import '../api.dart';
 import '../auth.dart';
+import '../device.dart';
 import '../platform.dart';
 import '../status/status.dart';
 import '../status/status_sheet.dart';
@@ -188,6 +190,19 @@ class _BoardScreenState extends ConsumerState<BoardScreen>
                 onPressed: () => context.push('/status-and-hours'),
                 icon: const Icon(Icons.schedule),
               ),
+              // RA §14.3, owners only, until the navigation of RA §6.2.
+              if (ref.watch(
+                merchantSessionProvider.select(
+                  (s) =>
+                      s.value?.role == MerchantSessionDtoOutputRoleEnum.owner,
+                ),
+              ))
+                IconButton(
+                  key: const Key('open-settings'),
+                  tooltip: l10n.merchantSettings,
+                  onPressed: () => context.push('/settings'),
+                  icon: const Icon(Icons.settings),
+                ),
               IconButton(
                 tooltip: l10n.signOut,
                 onPressed: () =>
