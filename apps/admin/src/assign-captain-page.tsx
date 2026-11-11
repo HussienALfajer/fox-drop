@@ -99,20 +99,26 @@ export function AssignCaptainPage() {
                   ? t('assign.noAcceptanceRate')
                   : t('assign.acceptanceRate', { rate: captain.acceptanceRate })}
               </p>
-              {captain.eligible ? (
-                <button
-                  type="button"
-                  onClick={() => assign.mutate(captain.captainId)}
-                  disabled={assign.isPending}
-                >
-                  {t('assign.submit', { name: captain.name })}
-                </button>
-              ) : (
+              {!captain.eligible && (
                 <ul>
                   {captain.reasons.map((reason) => (
                     <li key={reason}>{t(reasonKeys[reason])}</li>
                   ))}
                 </ul>
+              )}
+              {captain.offerable && (
+                <>
+                  {!captain.eligible && <p>{t('assign.aboveMaxPickup')}</p>}
+                  <button
+                    type="button"
+                    onClick={() => assign.mutate(captain.captainId)}
+                    disabled={assign.isPending}
+                  >
+                    {captain.eligible
+                      ? t('assign.submit', { name: captain.name })
+                      : t('assign.offerAnyway', { name: captain.name })}
+                  </button>
+                </>
               )}
             </li>
           ))}

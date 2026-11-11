@@ -671,8 +671,11 @@
       "simulatedLocation": "موقع وهمي",
       "outOfRange": "خارج النطاق",
       "vehicleNotAllowed": "المركبة غير مسموحة",
+      "aboveMaxPickup": "المبلغ أكبر مما يحمله",
       "offline": "غير متصل"
     },
+    "aboveMaxPickup": "يصل الكابتن عرضٌ يحذّره أن المبلغ أكبر من حدّه، ويقبل أو يرفض.",
+    "offerAnyway": "إرسال عرض إلى {{name}} رغم ذلك",
     "refused": {
       "orderNotAssignable": "لا يمكن تعيين كابتن لهذا الطلب الآن: له كابتن أو عرض مفتوح، أو لم يقبله المطعم بعد.",
       "captainNotEligible": "هذا الكابتن لم يعد متاحًا:",
