@@ -4,14 +4,24 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.13, captain problems (`docs/roadmap.md`, Phase 2).
+Slice 2.13a, last-order mode and force offline (`docs/roadmap.md`, Phase 2; 2.13 split into 2.13a-d, owner approval 2026-11-11).
 
-- **Roadmap line:** «لا أستطيع إكمال الطلب», «طوارئ» with the location, the customer not answering (pings and the 15-minute rule), «أنا قادم» and «سأتصل بالمستلم», last-order mode, force offline, and their alerts (CA §7.3, §9.9, §9.11, CU §11, AP §9.1.3). The captain presses «طوارئ» and the panel rings with the location.
-- **Specs:** CA §7.3 (last-order mode), §7.6, §9.9 (`captain-app/09-the-active-order/09-the-customer-does-not-answer.md`), §9.11 (`11-problems-withdrawal-and-emergencies.md`), K12, K17, K18 and C15 (`captain-app/02-decisions.md`), CA §14 and §15 for their pushes and commands; CU §11 for the customer's side of «أنا قادم» and the pings; AP §9.1.3 (the alerts), AP §9.7.5 «فصل من الاتصال», AP §9.3.2 for operations' actions on such an order; the definitions of done (CA §19, AP §14).
-- **Branch:** to name with the split.
-- **Builds on:** «سحب وإعادة تعيين» (2.12a: K17's offline after «لا أستطيع إكمال الطلب» or an emergency is still missing there), the handover (2.12b), the alerts engine (`order-alerts.ts`), the captains' online periods and `offlineAfterHandover`.
-- **Ask the owner first:** the split of 2.13 into slices (it is larger than one pull request: run the `slice-plan` skill); the emergency procedure and insurance beyond calling operations (CA §18 item 5, an open item the roadmap lists for this slice).
-- **Plan:** write it once the split is approved.
+- **Roadmap line:** «لا أريد طلبات جديدة» in place of the switch during an active order (K13), cancelled by the captain before the order ends, the state «آخر طلب»; OWN or OPS «فصل من الاتصال» with a reason (offline at once, or last-order mode with an active order), and a suspension or termination during an order the same (K18); the captain offline with the reason and the hand-in reminder when the order leaves them, however it leaves, never offered another order in between. The captain turns on «لا أريد طلبات جديدة», delivers, and is offline.
+- **Specs:** CA §7.1 (the state «آخر طلب»), §7.2 (a block that starts while online), §7.3, §7.5 (the hand-in reminder), §7.6, K13, K18 (`captain-app/07-availability.md`, `02-decisions.md`), CA §14 #26 and §15 («Last-order mode on / off»); AP §9.7.5 «فصل من الاتصال» (`admin-panel/09-modules/07-captains.md`), AP §10 (the state with the reason); the definitions of done CA §19 items 20 and 21.
+- **Branch:** `feat/captain-last-order`.
+- **Owner decisions 2026-11-11:** 2.13 split into 2.13a (last-order mode and force offline), 2.13b («مشكلة» and «لا أستطيع إكمال الطلب»), 2.13c («طوارئ»), 2.13d (the customer not answering); the report with a quick reason waits for 2.24; the emergency button calls operations, sends the location, marks the order and rings the panel, and the procedure and insurance stay open (CA §18 item 5).
+- **Design:** the online period carries the mode (who asked: the captain, `forced` with operations' reason, `suspended`, `terminated`); 2.13b and 2.13c add their reasons for K17. Every transition that takes an order from its captain (delivered, an outcome, cancelled, withdrawn, handed over) queues, in its transaction, a job that ends the period when the captain has no active order left; until it runs, dispatch treats a captain in the mode without an order as not available, so no offer slips in.
+- **Builds on:** the online periods and their end reasons (`captains.service.ts`: `endOnline`, `wentOffline`, `offlineAfterHandover`), `setStatus` (which ends the period at once today, even with an order), the availability rules (`availability.ts`), `recordTransition` (`order-events.ts`), the order detail's captain line with «تحرير الجهاز» (2.12c), the captain app's home switch and hand-in sheet.
+- **Panel's place:** «فصل من الاتصال» on the order detail's captain line, beside «تحرير الجهاز», until AP §9.7's captain page (2.36); the route takes any captain.
+
+### Plan
+
+- [ ] Server rule first (failing test): `availability.ts` gives `last_order` (with who asked and operations' reason) while busy in the mode, and a captain in the mode without an order is never eligible; the migration adds the mode's columns to `captains.online_periods` and the end reasons `last_order` and `forced`.
+- [ ] Server: `POST /v1/captain/availability/last-order` (`{ on }`, refused without an active order and to cancel a mode the captain did not ask for); `POST /v1/admin/captains/{captainId}/force-offline` (`captains.manage`, a reason; offline at once, or the mode with an active order); `setStatus` puts a captain with an active order in the mode instead of ending the period (K18); the state's push with the reason (CA §14 #26).
+- [ ] Server: the job queued by every transition that takes an order from its captain, which ends the period with the mode's reason once no active order is left, then removes the live position and tells the listeners; tested for each way an order leaves.
+- [ ] Captain app: «لا أريد طلبات جديدة» in place of the switch during an order, the state «آخر طلب» with operations' reason when forced, cancelling it, and the offline sheet with the reason and the hand-in reminder when the order ends.
+- [ ] Panel: «فصل من الاتصال» on the order detail's captain line with a required reason, and the captain's state there.
+- [ ] Docs: the modules' `CLAUDE.md` (captains, ordering, the apps), the reviewer, the handover to 2.13b.
 
 ### Left from 2.12c (`feat/captain-device-release`)
 
