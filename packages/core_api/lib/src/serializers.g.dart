@@ -113,6 +113,10 @@ Serializers _$serializers =
           ..add(AdminOrderCardDtoOutputOrderBadges.serializer)
           ..add(AdminOrderCardDtoOutputOrderCaptain.serializer)
           ..add(AdminOrderCardDtoOutputOrderCaptainTrackEnum.serializer)
+          ..add(AdminOrderCardDtoOutputOrderDispatch.serializer)
+          ..add(AdminOrderCardDtoOutputOrderDispatchManual.serializer)
+          ..add(AdminOrderCardDtoOutputOrderDispatchManualReasonEnum.serializer)
+          ..add(AdminOrderCardDtoOutputOrderDispatchModeEnum.serializer)
           ..add(AdminOrderCardDtoOutputOrderMoments.serializer)
           ..add(AdminOrderCardDtoOutputOrderRestaurant.serializer)
           ..add(AdminOrderCardDtoOutputOrderStatusEnum.serializer)
@@ -222,6 +226,10 @@ Serializers _$serializers =
           ..add(AdminOrderDtoOutputOrderTimelineInnerItemReport.serializer)
           ..add(AdminOrderDtoOutputOrderTimelineInnerTimeChange.serializer)
           ..add(AdminOrderDtoOutputOrderTimelineInnerToEnum.serializer)
+          ..add(AdminOrderOffersDtoOutput.serializer)
+          ..add(AdminOrderOffersDtoOutputOffersInner.serializer)
+          ..add(AdminOrderOffersDtoOutputOffersInnerKindEnum.serializer)
+          ..add(AdminOrderOffersDtoOutputOffersInnerStatusEnum.serializer)
           ..add(AdminOutcomeChangePreviewAnswerDtoOutput.serializer)
           ..add(AdminOutcomeChangePreviewAnswerDtoOutputDues.serializer)
           ..add(AdminOutcomeChangePreviewAnswerDtoOutputStatusEnum.serializer)
@@ -1037,6 +1045,12 @@ Serializers _$serializers =
                 ListBuilder<
                   AdminOrderDtoOutputOrderReassignChoicesReasonsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOrderOffersDtoOutputOffersInner),
+            ]),
+            () => ListBuilder<AdminOrderOffersDtoOutputOffersInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

@@ -58,6 +58,9 @@ export type OrderEventType =
   | 'order.offered'
   | 'order.offer_closed'
   | 'order.assigned'
+  // AP §9.12.6, §9.3.2 (slice 2.15c): the order left automatic dispatch for
+  // operations; its reason max_offers, no_captain_alert or operations.
+  | 'order.moved_to_manual'
   // CA §9.2: the captain reached the restaurant (track at_merchant).
   | 'order.captain_arrived'
   // RA §8.10, AP §8.1: a pickup request opened (track pickup_pending), a

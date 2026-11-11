@@ -10,8 +10,8 @@ Slice 2.15c, the panel's side of automatic dispatch (`docs/roadmap.md`, Phase 2)
 - **Specs:** AP §9.3.1–9.3.2 (the order detail and its actions), AP §9.2 (the board), AP §9.12.6 (the modes), AP §9.7.4 (the offers log), the dispatch module's `CLAUDE.md` (`dispatch.manual_orders`, automatic offers `kind` `auto`), `apps/admin/CLAUDE.md`.
 - **Branch:** `feat/auto-dispatch-panel`.
 - **Plan:**
-  - [ ] Server: «توزيع يدوي لهذا الطلب» (`POST /v1/admin/orders/{orderId}/manual-dispatch`, `operations.manage`, `Idempotency-Key`): a `manual_orders` row with a new reason `operations` (the `CHECK` widened) and the admin, audited; an open automatic offer keeps its time; tests first.
-  - [ ] Server: the dispatch state on the board and the detail (the mode, automatic or manual and why, «العرض {ن} من {م}» from the automatic offers and `dispatch.max_offers_before_manual`) and the order's offers log (captain, kind, time, answer, response time); whether «بحاجة لتعيين» shows for an order the dispatcher is still offering (today every `searching` order shows it in every mode, `ordering/operations-views.ts`).
+  - [x] Server: «توزيع يدوي لهذا الطلب» (`POST /v1/admin/orders/{orderId}/manual-dispatch`, `operations.manage`, `Idempotency-Key`): a `manual_orders` row with a new reason `operations` (the `CHECK` widened) and the admin, audited; an open automatic offer keeps its time; tests first.
+  - [x] Server: the dispatch state on the board and the detail (the mode, automatic or manual and why, «العرض {ن} من {م}» from the automatic offers and `dispatch.max_offers_before_manual`) and the order's offers log (captain, kind, time, answer, response time); whether «بحاجة لتعيين» shows for an order the dispatcher is still offering (today every `searching` order shows it in every mode, `ordering/operations-views.ts`).
   - [ ] Panel: the button, the dispatch state and the offers log on the detail; the state on the board's card; Playwright smoke.
   - [ ] Review, then hand over.
 

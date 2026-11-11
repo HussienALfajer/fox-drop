@@ -69,7 +69,28 @@ export type AssignmentChange =
       expiresAt: Date;
     }
   | { type: 'order.offer_closed'; captainId: string; reason: 'declined' | 'expired' | 'withdrawn' }
-  | { type: 'order.assigned'; captainId: string };
+  | { type: 'order.assigned'; captainId: string }
+  // AP §9.12.6, §9.3.2 (slice 2.15c): the order left automatic dispatch for
+  // operations («بحاجة لتعيين»): «مختلط»'s fallback or «توزيع يدوي لهذا
+  // الطلب». The track stays.
+  | { type: 'order.moved_to_manual'; reason: ManualReason };
+
+export type ManualReason = 'max_offers' | 'no_captain_alert' | 'operations';
+
+// AP §9.2.1, §9.3.1 (slice 2.15c): an order's dispatch state as dispatch
+// reads it: the city's mode now, whether the order left automatic dispatch
+// (why and when), the automatic offers it got («العرض {ن}») and, in
+// «مختلط», dispatch.max_offers_before_manual («من {م}»).
+export interface DispatchView {
+  mode: 'manual' | 'auto' | 'mixed';
+  manual: { reason: ManualReason; at: Date } | null;
+  autoOffers: number;
+  maxOffers: number | null;
+}
+
+export type DispatchViewReader = (
+  orders: readonly { id: string; cityId: string }[],
+) => Promise<Map<string, DispatchView>>;
 
 // AP §9.3.2 «تسليم لكابتن آخر» (slice 2.12b): an order's open handover, from
 // its captain to a second one: offered (offerId, not yet assigned) or
@@ -143,6 +164,24 @@ export class OrderAssignments implements OnModuleInit {
 
   onCancel(listener: CancelListener): void {
     this.cancelListeners.push(listener);
+  }
+
+  // AP §9.2.1, §9.3.1 (slice 2.15c): dispatch owns the offers and the orders
+  // that left automatic dispatch, so it registers how operations' board and
+  // detail read an order's dispatch state.
+  private dispatchViewReader: DispatchViewReader | null = null;
+
+  useDispatchViews(reader: DispatchViewReader): void {
+    this.dispatchViewReader = reader;
+  }
+
+  async dispatchViews(
+    orders: readonly { id: string; cityId: string }[],
+  ): Promise<Map<string, DispatchView>> {
+    if (this.dispatchViewReader === null) {
+      throw new Error('dispatch has not registered its views of the orders');
+    }
+    return orders.length === 0 ? new Map() : this.dispatchViewReader(orders);
   }
 
   // The locked order is about to end (cancelled, an outcome set, delivered
@@ -402,20 +441,22 @@ export class OrderAssignments implements OnModuleInit {
   ): Promise<DispatchOrder> {
     const version = order.version + 1;
     const captainTrack: CaptainTrack | null =
-      change.type === 'order.offered'
-        ? 'offered'
-        : change.type === 'order.assigned'
-          ? 'assigned'
-          : order.searchStartedAt === null
-            ? null
-            : 'searching';
-    const assigned = change.type === 'order.assigned';
+      change.type === 'order.moved_to_manual'
+        ? order.captainTrack
+        : change.type === 'order.offered'
+          ? 'offered'
+          : change.type === 'order.assigned'
+            ? 'assigned'
+            : order.searchStartedAt === null
+              ? null
+              : 'searching';
+    const assigned = change.type === 'order.assigned' ? change.captainId : null;
     await tx
       .update(orders)
       .set({
         version,
         captainTrack,
-        ...(assigned ? { captainId: change.captainId, assignedAt: now } : {}),
+        ...(assigned !== null ? { captainId: assigned, assignedAt: now } : {}),
       })
       .where(and(eq(orders.id, order.id), eq(orders.placedAt, order.placedAt)));
     await recordTransition(tx, this.jobs, order, {
@@ -424,10 +465,13 @@ export class OrderAssignments implements OnModuleInit {
       to: order.status,
       version,
       actor,
-      reason: change.type === 'order.offer_closed' ? change.reason : null,
+      reason:
+        change.type === 'order.offer_closed' || change.type === 'order.moved_to_manual'
+          ? change.reason
+          : null,
       at: now,
       captainTrack,
-      captainId: change.captainId,
+      captainId: change.type === 'order.moved_to_manual' ? order.captainId : change.captainId,
       ...(change.type === 'order.offered'
         ? { offerPay: change.pay, offerExpiresAt: change.expiresAt }
         : {}),
@@ -436,7 +480,7 @@ export class OrderAssignments implements OnModuleInit {
       ...order,
       version,
       captainTrack,
-      captainId: assigned ? change.captainId : order.captainId,
+      captainId: assigned ?? order.captainId,
     };
   }
 }

@@ -7775,6 +7775,90 @@
         ]
       }
     },
+    "/v1/admin/orders/{orderId}/manual-dispatch": {
+      "post": {
+        "operationId": "adminDispatchManualDispatch",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDispatchStateDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/orders/{orderId}/offers": {
+      "get": {
+        "operationId": "adminDispatchOffers",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderOffersDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/orders/{orderId}/handover": {
       "post": {
         "operationId": "adminDispatchHandover",
@@ -19623,12 +19707,85 @@
                 "additionalProperties": false,
                 "description": "The customer total in the base currency."
               },
+              "dispatch": {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "manual",
+                      "auto",
+                      "mixed"
+                    ],
+                    "description": "The city’s dispatch.mode now."
+                  },
+                  "manual": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "reason": {
+                            "type": "string",
+                            "enum": [
+                              "max_offers",
+                              "no_captain_alert",
+                              "operations"
+                            ],
+                            "description": "«مختلط»’s fallback after dispatch.max_offers_before_manual failed offers or at the no-captain alert, or «توزيع يدوي لهذا الطلب»."
+                          },
+                          "at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          }
+                        },
+                        "required": [
+                          "reason",
+                          "at"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The order left automatic dispatch for operations; null while it has not."
+                  },
+                  "autoOffers": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991,
+                    "description": "The automatic offers sent so far, the open one included: «العرض {ن}»."
+                  },
+                  "maxOffers": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "«مختلط»: dispatch.max_offers_before_manual, «من {م}»; null otherwise."
+                  }
+                },
+                "required": [
+                  "mode",
+                  "manual",
+                  "autoOffers",
+                  "maxOffers"
+                ],
+                "additionalProperties": false,
+                "description": "AP §9.2.1, §9.12.6 (slice 2.15c): how the order is being dispatched."
+              },
               "badges": {
                 "type": "object",
                 "properties": {
                   "needsAssignment": {
                     "type": "boolean",
-                    "description": "«بحاجة لتعيين» (AP §8.3)."
+                    "description": "«بحاجة لتعيين» (AP §8.3): searching in «يدوي», or after leaving automatic dispatch."
                   },
                   "note": {
                     "type": "boolean",
@@ -19810,6 +19967,7 @@
               "captainTrack",
               "captain",
               "total",
+              "dispatch",
               "badges",
               "moments",
               "alerts"
@@ -22060,12 +22218,85 @@
                   "additionalProperties": false,
                   "description": "The customer total in the base currency."
                 },
+                "dispatch": {
+                  "type": "object",
+                  "properties": {
+                    "mode": {
+                      "type": "string",
+                      "enum": [
+                        "manual",
+                        "auto",
+                        "mixed"
+                      ],
+                      "description": "The city’s dispatch.mode now."
+                    },
+                    "manual": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "reason": {
+                              "type": "string",
+                              "enum": [
+                                "max_offers",
+                                "no_captain_alert",
+                                "operations"
+                              ],
+                              "description": "«مختلط»’s fallback after dispatch.max_offers_before_manual failed offers or at the no-captain alert, or «توزيع يدوي لهذا الطلب»."
+                            },
+                            "at": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            }
+                          },
+                          "required": [
+                            "reason",
+                            "at"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The order left automatic dispatch for operations; null while it has not."
+                    },
+                    "autoOffers": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "description": "The automatic offers sent so far, the open one included: «العرض {ن}»."
+                    },
+                    "maxOffers": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "«مختلط»: dispatch.max_offers_before_manual, «من {م}»; null otherwise."
+                    }
+                  },
+                  "required": [
+                    "mode",
+                    "manual",
+                    "autoOffers",
+                    "maxOffers"
+                  ],
+                  "additionalProperties": false,
+                  "description": "AP §9.2.1, §9.12.6 (slice 2.15c): how the order is being dispatched."
+                },
                 "badges": {
                   "type": "object",
                   "properties": {
                     "needsAssignment": {
                       "type": "boolean",
-                      "description": "«بحاجة لتعيين» (AP §8.3)."
+                      "description": "«بحاجة لتعيين» (AP §8.3): searching in «يدوي», or after leaving automatic dispatch."
                     },
                     "note": {
                       "type": "boolean",
@@ -22247,6 +22478,7 @@
                 "captainTrack",
                 "captain",
                 "total",
+                "dispatch",
                 "badges",
                 "moments",
                 "alerts"
@@ -22414,12 +22646,85 @@
                 "additionalProperties": false,
                 "description": "The customer total in the base currency."
               },
+              "dispatch": {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "manual",
+                      "auto",
+                      "mixed"
+                    ],
+                    "description": "The city’s dispatch.mode now."
+                  },
+                  "manual": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "reason": {
+                            "type": "string",
+                            "enum": [
+                              "max_offers",
+                              "no_captain_alert",
+                              "operations"
+                            ],
+                            "description": "«مختلط»’s fallback after dispatch.max_offers_before_manual failed offers or at the no-captain alert, or «توزيع يدوي لهذا الطلب»."
+                          },
+                          "at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          }
+                        },
+                        "required": [
+                          "reason",
+                          "at"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The order left automatic dispatch for operations; null while it has not."
+                  },
+                  "autoOffers": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991,
+                    "description": "The automatic offers sent so far, the open one included: «العرض {ن}»."
+                  },
+                  "maxOffers": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "«مختلط»: dispatch.max_offers_before_manual, «من {م}»; null otherwise."
+                  }
+                },
+                "required": [
+                  "mode",
+                  "manual",
+                  "autoOffers",
+                  "maxOffers"
+                ],
+                "additionalProperties": false,
+                "description": "AP §9.2.1, §9.12.6 (slice 2.15c): how the order is being dispatched."
+              },
               "badges": {
                 "type": "object",
                 "properties": {
                   "needsAssignment": {
                     "type": "boolean",
-                    "description": "«بحاجة لتعيين» (AP §8.3)."
+                    "description": "«بحاجة لتعيين» (AP §8.3): searching in «يدوي», or after leaving automatic dispatch."
                   },
                   "note": {
                     "type": "boolean",
@@ -25410,6 +25715,7 @@
               "captainTrack",
               "captain",
               "total",
+              "dispatch",
               "badges",
               "moments",
               "alerts",
@@ -29811,6 +30117,117 @@
         },
         "required": [
           "order"
+        ],
+        "additionalProperties": false
+      },
+      "AdminOrderOffersDto_Output": {
+        "type": "object",
+        "properties": {
+          "offers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "captain": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name"
+                  ],
+                  "additionalProperties": false
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "manual",
+                    "auto"
+                  ],
+                  "description": "Operations’ («تعيين من العمليات») or the automatic dispatcher’s."
+                },
+                "handover": {
+                  "type": "boolean",
+                  "description": "«استلام من كابتن» (AP §9.3.2, CA §9.10.1)."
+                },
+                "offeredAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "expiresAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "open",
+                    "accepted",
+                    "declined",
+                    "expired",
+                    "withdrawn"
+                  ],
+                  "description": "The answer: accepted, declined, expired («انتهت المهلة»), withdrawn."
+                },
+                "respondedAt": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "responseSec": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Seconds to an acceptance or a decline; null otherwise."
+                }
+              },
+              "required": [
+                "id",
+                "captain",
+                "kind",
+                "handover",
+                "offeredAt",
+                "expiresAt",
+                "status",
+                "respondedAt",
+                "responseSec"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Every offer of the order, oldest first (AP §9.3.1, §9.7.4)."
+          }
+        },
+        "required": [
+          "offers"
         ],
         "additionalProperties": false
       },
