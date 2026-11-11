@@ -289,6 +289,7 @@ describe('LedgerService.post', () => {
           { accountId: custody, currency: 'TRY', amount: 10n },
           { accountId: fxTry, currency: 'TRY', amount: 5n },
         ],
+        rates: [{ currency: 'USD', rateVersionId: randomUUID() }],
       }),
     ).rejects.toThrow(/does not balance to zero in currency USD/);
   });
@@ -402,6 +403,7 @@ describe('LedgerService.post', () => {
     const { cityId, custody, custodyUsd, open } = await setUp();
     const fxTry = await open('platform.fx_rounding');
     const fxUsd = await open('platform.fx_rounding', 'USD');
+    const rate = { currency: 'USD', rateVersionId: randomUUID() };
     const convert = (lines: [string, string, bigint][]) =>
       post({
         cityId,
@@ -409,6 +411,7 @@ describe('LedgerService.post', () => {
         source: null,
         actor: { type: 'admin', id: randomUUID() },
         entries: lines.map(([accountId, currency, amount]) => ({ accountId, currency, amount })),
+        ...(new Set(lines.map((line) => line[1])).size > 1 ? { rates: [rate] } : {}),
       });
 
     await expect(
@@ -427,6 +430,46 @@ describe('LedgerService.post', () => {
     ]);
     expect(await ledger.balance(custody)).toEqual({ currency: 'TRY', amount: 35000n });
     expect(await ledger.balance(custodyUsd)).toEqual({ currency: 'USD', amount: -1000n });
+  });
+
+  it('keeps the rate version of a journal across currencies, and its reversal too (AP §8.6)', async () => {
+    const { cityId, custody, custodyUsd, open } = await setUp();
+    const fxTry = await open('platform.fx_rounding');
+    const fxUsd = await open('platform.fx_rounding', 'USD');
+    const entries = [
+      { accountId: custodyUsd, currency: 'USD', amount: -1000n },
+      { accountId: fxUsd, currency: 'USD', amount: 1000n },
+      { accountId: custody, currency: 'TRY', amount: 35000n },
+      { accountId: fxTry, currency: 'TRY', amount: -35000n },
+    ];
+    const journal = (rates?: { currency: string; rateVersionId: string }[]): PostJournal => ({
+      cityId,
+      type: 'custody.fx_convert',
+      source: null,
+      actor: { type: 'admin', id: randomUUID() },
+      entries,
+      ...(rates ? { rates } : {}),
+    });
+    const usd = { currency: 'USD', rateVersionId: randomUUID() };
+    await expect(post(journal())).rejects.toThrow(/rate of each but the base/);
+    await expect(post(journal([{ ...usd, rateVersionId: 'v1' }]))).rejects.toThrow(/version id/);
+    await expect(post(journal([usd, usd]))).rejects.toThrow(/once/);
+    await expect(post(journal([{ ...usd, currency: 'SYP' }]))).rejects.toThrow(
+      /currency of the journal/,
+    );
+    // A journal in one currency names none.
+    const { clearing } = await setUp();
+    await expect(post({ ...pickup(cityId, custody, clearing), rates: [usd] })).rejects.toThrow(
+      LedgerRefusal,
+    );
+    const id = await post(journal([usd]));
+    const reversal = await db.transaction((tx) =>
+      ledger.reverse(id, { actor: system, reason: 'test' }, tx),
+    );
+    const rows = await pool.query('SELECT id, rates FROM ledger.journals WHERE id = ANY($1)', [
+      [id, reversal],
+    ]);
+    expect(rows.rows.map((row) => row.rates)).toEqual([[usd], [usd]]);
   });
 
   it('refuses a manual bonus without a reason', async () => {

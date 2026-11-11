@@ -5,6 +5,31 @@ import { type ReassignmentFacts, reassignmentEntries } from './reassignment.js';
 // take an order from its captain before the pickup, and what the cash
 // question books.
 
+// TRY the base; USD at 41.20 TRY (AP §8.6).
+const snapshot = {
+  cityId: 'city-1',
+  baseCurrency: 'TRY',
+  takenAt: new Date('2026-11-11T10:00:00Z'),
+  currencies: [
+    {
+      code: 'TRY',
+      decimals: 2,
+      rate: { numerator: 1n, denominator: 1n },
+      rateVersionId: null,
+      roundingUnitMinor: 500n,
+      roundingMode: 'nearest' as const,
+    },
+    {
+      code: 'USD',
+      decimals: 2,
+      rate: { numerator: 412n, denominator: 10n },
+      rateVersionId: '019a0000-0000-7000-8000-000000000001',
+      roundingUnitMinor: 50n,
+      roundingMode: 'nearest' as const,
+    },
+  ],
+};
+
 const assigned: ReassignmentFacts = {
   status: 'accepted',
   restaurantId: 'restaurant-1',
@@ -14,6 +39,7 @@ const assigned: ReassignmentFacts = {
   currency: 'TRY',
   cashLines: [{ currency: 'TRY', amount: 24_000n }],
   cashBase: 24_000n,
+  snapshot,
 };
 
 const atRestaurant: ReassignmentFacts = {

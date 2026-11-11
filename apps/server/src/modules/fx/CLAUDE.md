@@ -15,10 +15,10 @@ Currencies, a city's base and accepted currencies, rate versions, rounding and t
 - **The current value** (`currentValue(cityId)`): a base converter at the current rate of every city currency with a rate, enabled or not, to the nearest base minor unit and with no rounding rule, for balances held in any currency such as a captain's custody (AP §8.5.3–8.5.4). A currency without a rate in the current base is `rate_missing`.
 - **The settings check the city's currencies through fx:** `FxService` registers itself with `SettingsService.useCityCurrencies` when the module starts, since fx reads the rounding settings and settings cannot import fx back. A process that changes settings must import `FxModule` (the API does). Likewise a process that changes a base currency must import every module that registers with `useCityAmounts` (today `GeoModule`; the API does), or fx cannot see their amounts.
 - **Every change** of a city's currencies, base or rates is audited in its transaction (`city_currency.set`, `base_currency.set`, `rate.set`); a change that changes nothing records nothing. Changes of one city's currencies and of its money settings take turns on one advisory lock (`lockCityCurrencies` from the settings module).
+- **Rate versions on journals (slice 2.14a):** a ledger journal whose entries span two currencies names the rate version of each but the base (`ledger.journals.rates`); ordering takes them from the order's snapshot (`journalRates` in `ordering/journal-rates.ts`).
 - **Refusals** throw `FxRefusedError` with its `refusal`; the routes and the ordering module map them to their answers.
 
 ## Not built yet
 
 - The exchange rates routes and screen (AP §9.10.4): the current rates, their history and the rate edit (owner decision 2026-11-05: the service first, the routes with the finance screen). The routes check that the city exists and take a display order of 0 or more.
 - The stale-rate alert for OWN and FIN after `fx.stale_alert_hours` (AP §8.6): `currentRates` gives each rate's `setAt` for it.
-- A rate version (or the base equivalent) on cross-currency ledger journals, so `platform.fx_rounding` can be read in the base currency: with the first journal that spans two currencies.

@@ -18,6 +18,7 @@ import { type OrderRow, recordTransition } from './order-events.js';
 import { orderKey, snapshotOf } from './order-views.js';
 import { postOrderJournals } from './outcome-facts.js';
 import { captainNet, type OutcomeJournal, type SetOutcome } from './outcome.js';
+import { journalRates } from './journal-rates.js';
 import { type PaymentLine, storedLines } from './pickup-booking.js';
 import type { ChosenReason } from '../content/index.js';
 import { collections, orderOutcomeRows, orders } from './schema.js';
@@ -297,7 +298,8 @@ export class DeliveryBooking {
     const post = async (type: JournalType, entries: LedgerEntry[]) => {
       const nonZero = entries.filter((entry) => entry.amount !== 0n);
       if (nonZero.length > 0) {
-        await this.ledger.post({ cityId, type, source, actor, entries: nonZero }, tx);
+        const rates = journalRates(order.snapshot, nonZero);
+        await this.ledger.post({ cityId, type, source, actor, entries: nonZero, rates }, tx);
       }
     };
     return { account, post };

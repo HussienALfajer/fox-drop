@@ -8,7 +8,7 @@ import { Jobs } from '../../jobs/jobs.module.js';
 import { type AuditRequestContext, AuditService } from '../audit/index.js';
 import { CaptainsRefusedError, CaptainsService } from '../captains/index.js';
 import { CustomersService } from '../customers/index.js';
-import { FxService } from '../fx/index.js';
+import { equivalent, FxService } from '../fx/index.js';
 import { LedgerService } from '../ledger/index.js';
 import { type Point, straightLineMetres } from '../geo/index.js';
 import { CaptainAccountsService, CustomerAccountsService, PhoneCipher } from '../identity/index.js';
@@ -63,9 +63,12 @@ import {
 } from './order-views.js';
 import {
   checkLines,
+  pickupCurrencies,
   lockForPickup,
   type PaymentLine,
   type PickupAutoConfirmJob,
+  proposeLines,
+  wholeIn,
   storedLines,
 } from './pickup-booking.js';
 import {
@@ -267,6 +270,13 @@ export interface CaptainActiveOrder {
   // the pickup, if any.
   pickupRequest: PickupRequestView | null;
   pickupDispute: PickupDisputeView | null;
+  // CA §10.5: the one line proposed for the pickup payment, from the
+  // restaurant's and the captain's currencies.
+  proposedLines: PaymentLine[];
+  // C8: the currencies the restaurant accepts (the base first), each with
+  // the whole pickup payment in it as the server takes it (wholeIn), for
+  // the captain's own split.
+  pickupCurrencies: PaymentLine[];
   restaurant: { name: string; address: string | null; phone: string | null; location: Point };
   // C6, K4: the radii the arrival and delivery buttons are enabled within.
   radii: { restaurantMetres: number; customerMetres: number };
@@ -1644,7 +1654,15 @@ export class CaptainOrders {
     if (!requestable(order, command.captainId)) {
       throw await this.refusedState(order, command.accountId, command, requestHash, now);
     }
-    const refusal = checkLines(snapshotOf(order.rateSnapshot), command.lines, order.itemsValue);
+    // RA §12.7: the restaurant's currencies as they are now.
+    const restaurant = await this.merchants.restaurant(order.restaurantId, now);
+    const snapshot = snapshotOf(order.rateSnapshot);
+    const refusal = checkLines(
+      snapshot,
+      command.lines,
+      order.itemsValue,
+      pickupCurrencies(snapshot, restaurant?.pickupCurrencies ?? []),
+    );
     if (refusal !== null) {
       throw new CaptainOrderRefusedError(refusal, 'the payment lines do not match the pickup');
     }
@@ -1890,6 +1908,8 @@ export class CaptainOrders {
   ): Promise<CaptainActiveOrder> {
     const restaurant = await this.merchants.restaurant(order.restaurantId, now);
     if (!restaurant) throw new Error(`restaurant ${order.restaurantId} not found`);
+    const captain = await this.captains.captain(captainId, now);
+    const accepted = pickupCurrencies(order.snapshot, restaurant.pickupCurrencies);
     const [
       requests,
       disputes,
@@ -1916,6 +1936,21 @@ export class CaptainOrders {
       customer,
       pickupRequest: currentRequests(requests.get(order.id), order)[0] ?? null,
       pickupDispute: disputes.get(order.id) ?? null,
+      proposedLines: proposeLines(
+        order.snapshot,
+        accepted,
+        captain?.carriedCurrencies ?? null,
+        order.money.itemsValue,
+      ),
+      // The amounts the server takes whole (wholeIn); a currency the whole
+      // payment cannot be made in alone shows its rounded equivalent.
+      pickupCurrencies: accepted.map(
+        (currency) =>
+          wholeIn(order.snapshot, order.money.itemsValue, currency, accepted) ?? {
+            currency,
+            amount: equivalent(order.snapshot, order.money.itemsValue, currency),
+          },
+      ),
       restaurant: {
         name: restaurant.nameAr,
         address: restaurant.address,

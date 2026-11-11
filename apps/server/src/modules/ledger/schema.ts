@@ -4,6 +4,7 @@ import {
   check,
   foreignKey,
   index,
+  jsonb,
   pgSchema,
   primaryKey,
   text,
@@ -78,6 +79,10 @@ export const journals = ledger.table(
     reason: text('reason'),
     // The journal this one reverses (AP §9.10.7).
     reversesJournalId: uuid('reverses_journal_id'),
+    // A journal whose entries span two or more currencies: the rate version
+    // of each currency but the base, as [{ currency, rateVersionId }], so
+    // platform.fx_rounding reads in the base (AP §8.6, §8.11). Null otherwise.
+    rates: jsonb('rates'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
@@ -89,6 +94,10 @@ export const journals = ledger.table(
       foreignColumns: [table.id, table.cityId],
     }),
     unique('journals_reversed_once').on(table.reversesJournalId),
+    check(
+      'journals_rates_array',
+      sql`${table.rates} IS NULL OR jsonb_typeof(${table.rates}) = 'array'`,
+    ),
     index('journals_by_source').on(table.sourceKind, table.sourceId),
     check('journals_type_values', sql`${table.type} IN (${inList(journalTypeNames)})`),
     check(

@@ -21,6 +21,7 @@ import type { AdminOrderCommand } from './captain-orders.js';
 import {
   type CancellationChoices,
   type CancellationFacts,
+  type CancellationJournal,
   cancellationEntries,
   type CashAnswer,
   type ResponsibleParty,
@@ -1474,7 +1475,7 @@ export class OrderCommands {
       );
       captainPay = parts?.base ?? null;
     }
-    const { cashLines, cashBase } = keptCash(own);
+    const { cashLines, cashBase, snapshot } = keptCash(own);
     return {
       key: own.key,
       customerAccountId: row.customerAccountId,
@@ -1490,6 +1491,7 @@ export class OrderCommands {
         testOrder: row.testOrder,
         cashLines,
         cashBase,
+        snapshot,
         captainPay,
       },
     };
@@ -2303,7 +2305,7 @@ export class OrderCommands {
     tx: Tx,
     order: { id: string; cityId: string },
     actor: { type: 'admin'; id: string },
-    journals: (AfterPickupJournal | OutcomeJournal)[],
+    journals: (AfterPickupJournal | OutcomeJournal | CancellationJournal)[],
   ): Promise<string[]> {
     return postOrderJournals(tx, this.ledger, order, actor, journals);
   }
@@ -3021,5 +3023,6 @@ function keptCash(own: {
         own.request.outcome === 'amount_incorrect' ? own.request.receivedLines : own.request.lines,
       )
     : [{ currency: own.row.currency, amount: own.row.itemsValue }];
-  return { cashLines, cashBase: baseTotal(snapshotOf(own.row.rateSnapshot), cashLines) };
+  const snapshot = snapshotOf(own.row.rateSnapshot);
+  return { cashLines, cashBase: baseTotal(snapshot, cashLines), snapshot };
 }

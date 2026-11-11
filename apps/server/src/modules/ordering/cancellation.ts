@@ -1,5 +1,7 @@
-import type { AccountPurpose, JournalType } from '../ledger/index.js';
+import { type RateSnapshot, toBase } from '../fx/index.js';
+import type { AccountPurpose, JournalRate, JournalType } from '../ledger/index.js';
 import { commission } from './door-payment.js';
+import { journalRates } from './journal-rates.js';
 import type { PaymentLine } from './pickup-booking.js';
 import type { cashAnswers, responsibleParties } from './schema.js';
 
@@ -32,6 +34,8 @@ export interface CancellationFacts {
   // value in the base currency; and their total in the base.
   cashLines: PaymentLine[];
   cashBase: bigint;
+  // The order's rates (AP §8.6), which convert a line in another currency.
+  snapshot: RateSnapshot;
   // The pay table's base pay for the captain's vehicle; null when the order
   // kept no pay table or it has no rate for the vehicle.
   captainPay: bigint | null;
@@ -64,6 +68,8 @@ export interface CancellationJournal {
   type: JournalType;
   reason: string | null;
   entries: CancellationEntry[];
+  // A journal across currencies: the order's rate versions (AP §8.6).
+  rates?: JournalRate[] | undefined;
 }
 
 export interface Cancellation {
@@ -196,38 +202,71 @@ export function cancellationEntries(
 export function keptPaymentJournals(
   facts: Pick<
     CancellationFacts,
-    'restaurantId' | 'captainId' | 'currency' | 'cashLines' | 'cashBase'
+    'restaurantId' | 'captainId' | 'currency' | 'cashLines' | 'cashBase' | 'snapshot'
   >,
 ): CancellationJournal[] {
-  const { currency } = facts;
+  const { currency, snapshot } = facts;
   const platform = { kind: 'platform' as const, id: null };
-  // Phase 1 (owner decision 2026-11-05): the pickup payment is in the base
-  // currency only, so the lines and their base total net the clearing
-  // account. When other currencies arrive (RA §12.7), book the gap between
-  // the lines and their base total on platform.fx_rounding, as
-  // PickupBooking does, before allowing them here.
-  if (facts.cashLines.some((line) => line.currency !== currency)) {
-    throw new Error('a kept payment outside the base currency, not booked yet');
+  // RA §12.7: a line in another currency is brought into the base at the
+  // order's rates, as the pickup does, so the clearing account nets in the
+  // base against the restaurant's debit of the lines' base total.
+  const conversion: CancellationEntry[] = [];
+  let inBase = 0n;
+  for (const line of facts.cashLines) {
+    if (line.currency === currency) continue;
+    conversion.push(
+      {
+        account: 'platform.order_clearing',
+        party: platform,
+        amount: -line.amount,
+        currency: line.currency,
+      },
+      {
+        account: 'platform.fx_rounding',
+        party: platform,
+        amount: line.amount,
+        currency: line.currency,
+      },
+    );
+    inBase += toBase(snapshot, line.amount, line.currency);
   }
+  if (inBase !== 0n) {
+    conversion.push(
+      { account: 'platform.order_clearing', party: platform, amount: inBase, currency },
+      { account: 'platform.fx_rounding', party: platform, amount: -inBase, currency },
+    );
+  }
+  const paid: CancellationEntry[] = facts.cashLines.flatMap((line) => [
+    {
+      account: 'captain.custody' as const,
+      party: { kind: 'captain' as const, id: facts.captainId },
+      amount: -line.amount,
+      currency: line.currency,
+    },
+    {
+      account: 'platform.order_clearing' as const,
+      party: platform,
+      amount: line.amount,
+      currency: line.currency,
+    },
+  ]);
   return [
     {
       type: 'custody.pay_merchant',
       reason: null,
-      entries: facts.cashLines.flatMap((line) => [
-        {
-          account: 'captain.custody' as const,
-          party: { kind: 'captain' as const, id: facts.captainId },
-          amount: -line.amount,
-          currency: line.currency,
-        },
-        {
-          account: 'platform.order_clearing' as const,
-          party: platform,
-          amount: line.amount,
-          currency: line.currency,
-        },
-      ]),
+      entries: paid,
+      rates: journalRates(snapshot, paid),
     },
+    ...(conversion.length > 0
+      ? [
+          {
+            type: 'platform.fx_rounding' as const,
+            reason: null,
+            entries: conversion,
+            rates: journalRates(snapshot, conversion),
+          },
+        ]
+      : []),
     {
       type: 'merchant.debit',
       reason: null,

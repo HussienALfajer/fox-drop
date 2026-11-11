@@ -6,6 +6,7 @@ import type { Database } from '../../database/database.js';
 import { inTransaction, QUEUES } from '../../jobs/job-queue.js';
 import { Jobs } from '../../jobs/jobs.module.js';
 import { AuditService } from '../audit/index.js';
+import { FxService } from '../fx/index.js';
 import { SettingsService } from '../settings/index.js';
 import type { OpeningPeriod } from './hours.js';
 import {
@@ -106,6 +107,22 @@ export interface RestaurantHours {
   settlementWeekday: string;
 }
 
+// RA §12.7: the restaurant's pickup currencies with its choices.
+export interface PickupCurrencies {
+  // With its Arabic name (AP §8.6: currencies are data); null while the
+  // city has no base, with no choices.
+  base: CurrencyName | null;
+  // The other currencies switched on, in the city's display order.
+  accepted: string[];
+  // Every other currency the city has enabled.
+  choices: CurrencyName[];
+}
+
+export interface CurrencyName {
+  currency: string;
+  name: string;
+}
+
 // RA §7, §10, §18: the restaurant's status commands. Each takes the
 // restaurant's row lock, reads the state inside its transaction, and is
 // audited with who set it and from which device (RA §7.1 «Logging»).
@@ -117,6 +134,7 @@ export class RestaurantStatusService {
     private readonly settings: SettingsService,
     private readonly audit: AuditService,
     private readonly jobs: Jobs,
+    private readonly fx: FxService,
   ) {}
 
   async status(restaurantId: string, now = new Date()): Promise<RestaurantStatus> {
@@ -646,6 +664,75 @@ export class RestaurantStatusService {
         .set({ defaultPrepMin, maxActiveOrders, updatedAt: sql`now()` })
         .where(eq(restaurants.id, restaurantId));
       await this.changed(tx, row.cityId, restaurantId, 'order_settings', now);
+    });
+  }
+
+  // RA §12.7 «العملات التي تقبلها من الكابتن»: the base, always accepted;
+  // the other currencies switched on, of those the city has enabled now; and
+  // the choices, every other enabled currency in the city's display order.
+  async pickupCurrencies(restaurantId: string): Promise<PickupCurrencies> {
+    const restaurant = await this.merchants.restaurant(restaurantId);
+    if (!restaurant) throw new MerchantsRefusedError('unknown_restaurant', 'no such restaurant');
+    const [city, currencies] = await Promise.all([
+      this.fx.cityCurrencies(restaurant.cityId),
+      this.fx.currencies(),
+    ]);
+    const named = (currency: string): CurrencyName => ({
+      currency,
+      name: currencies.find((each) => each.code === currency)?.nameAr ?? currency,
+    });
+    const base = city.find((entry) => entry.isBase);
+    if (!base) return { base: null, accepted: [], choices: [] };
+    const choices = city
+      .filter((entry) => entry.enabled && !entry.isBase)
+      .map((entry) => entry.currency);
+    return {
+      base: named(base.currency),
+      accepted: choices.filter((code) => restaurant.pickupCurrencies.includes(code)),
+      choices: choices.map(named),
+    };
+  }
+
+  // RA §12.7, AP §9.6.4: the owner, or operations on the restaurant's
+  // request, switch the other currencies; each an enabled currency of the
+  // city other than the base (invalid_pickup_currencies). It applies to the
+  // pickups requested after it, which read it when the captain asks.
+  async setPickupCurrencies(
+    restaurantId: string,
+    currencies: string[],
+    change: MerchantChange,
+  ): Promise<void> {
+    await this.database.db.transaction(async (tx) => {
+      const row = await this.lock(tx, restaurantId);
+      const city = await this.fx.cityCurrencies(row.cityId, tx);
+      const choices = city
+        .filter((entry) => entry.enabled && !entry.isBase)
+        .map((entry) => entry.currency);
+      if (
+        new Set(currencies).size !== currencies.length ||
+        currencies.some((code) => !choices.includes(code))
+      ) {
+        throw new MerchantsRefusedError(
+          'invalid_pickup_currencies',
+          `the pickup currencies are among ${choices.join(', ') || 'none'}, once each`,
+        );
+      }
+      const [current] = await tx
+        .select({ pickupCurrencies: restaurants.pickupCurrencies })
+        .from(restaurants)
+        .where(eq(restaurants.id, restaurantId));
+      if (!current) return;
+      const after = choices.filter((code) => currencies.includes(code));
+      const before = current.pickupCurrencies;
+      if (before.length === after.length && before.every((code, i) => code === after[i])) return;
+      await this.record(tx, change, row.cityId, restaurantId, 'restaurant.pickup_currencies', {
+        before: { pickupCurrencies: before },
+        after: { pickupCurrencies: after },
+      });
+      await tx
+        .update(restaurants)
+        .set({ pickupCurrencies: after, updatedAt: sql`now()` })
+        .where(eq(restaurants.id, restaurantId));
     });
   }
 

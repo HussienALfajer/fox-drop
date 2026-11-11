@@ -73,6 +73,13 @@ export const restaurants = merchants.table(
     defaultPrepMin: smallint('default_prep_min').notNull(),
     // RA §7.4: off, or 1 to 50.
     maxActiveOrders: smallint('max_active_orders'),
+    // RA §12.7, AP §9.6.4: the city's other currencies the restaurant accepts
+    // from the captain at pickup; the base is always accepted, so it is never
+    // listed. Empty by default (the base only).
+    pickupCurrencies: text('pickup_currencies')
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
     // RA §7.3: busy mode adds minutes until it is turned off or the opening
     // period ends.
     busyExtraMin: smallint('busy_extra_min'),

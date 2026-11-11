@@ -7,6 +7,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Put,
 } from '@nestjs/common';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
@@ -131,6 +132,28 @@ class CaptainLocationsSavedDto extends createZodDto(
   z.object({ accepted: z.int().describe('The new points kept.') }),
 ) {}
 
+const carriedCurrenciesSchema = z.object({
+  baseCurrency: z.string().length(3).nullable().describe('Null while the city has none.'),
+  carried: z
+    .array(z.string().length(3))
+    .describe('«العملات التي أحملها» (CA §10.5), in the city’s display order.'),
+  choices: z
+    .array(z.object({ currency: z.string().length(3), name: z.string() }))
+    .describe('Every currency the city has enabled, the base among them, with its Arabic name.'),
+});
+
+class CaptainCarriedCurrenciesDto extends createZodDto(carriedCurrenciesSchema) {}
+
+class CaptainSetCarriedCurrenciesDto extends createZodDto(
+  z.object({
+    currencies: z
+      .array(z.string().length(3))
+      .min(1)
+      .max(10)
+      .describe('The currencies carried, one at least, the base among them or not.'),
+  }),
+) {}
+
 // CA §7, §4.3: the captain's availability, going online and offline, and the
 // location every 10 seconds while online.
 @CaptainController()
@@ -206,6 +229,37 @@ export class CaptainAvailabilityController {
         ['not_online', 'no_active_order', 'last_order_not_yours'].includes(error.refusal)
       ) {
         throw new ConflictException({ statusCode: HttpStatus.CONFLICT, error: error.refusal });
+      }
+      throw error;
+    }
+  }
+
+  // CA §10.5 «العملات التي أحملها» on «الإعدادات» (owner decision 2026-11-11).
+  @Get('settings/carried-currencies')
+  @AppSignedIn()
+  @ZodResponse({ status: 200, type: CaptainCarriedCurrenciesDto })
+  async carriedCurrencies(@CurrentAppSession() session: AppSession) {
+    return this.captains.carriedCurrencies(captainOf(session));
+  }
+
+  // Sets them to a value, so it takes no Idempotency-Key. 400
+  // invalid_carried_currencies outside the city's enabled currencies.
+  @Put('settings/carried-currencies')
+  @AppSignedIn()
+  @ZodResponse({ status: 200, type: CaptainCarriedCurrenciesDto })
+  async setCarriedCurrencies(
+    @CurrentAppSession() session: AppSession,
+    @Body() body: CaptainSetCarriedCurrenciesDto,
+  ) {
+    try {
+      return await this.captains.setCarriedCurrencies(captainOf(session), body.currencies);
+    } catch (error) {
+      if (error instanceof CaptainsRefusedError && error.refusal === 'invalid_carried_currencies') {
+        throw new BadRequestException({
+          statusCode: HttpStatus.BAD_REQUEST,
+          error: error.refusal,
+          message: error.message,
+        });
       }
       throw error;
     }

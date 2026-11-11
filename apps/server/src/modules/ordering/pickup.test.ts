@@ -399,6 +399,7 @@ describe('POST /v1/captain/orders/{orderId}/pickup-request (CA §9.4, RA §8.10)
     const active = await at.captain.active();
     expect(active.json().order.pickup).toEqual({
       proposedLines: TRY('24000'),
+      currencies: TRY('24000'),
       request: null,
       pickedUpAt: null,
       disputedAt: null,
@@ -831,5 +832,218 @@ describe('who may answer, keys and races (architecture §5.3)', () => {
     expect(repeat.statusCode).toBe(200);
     expect(repeat.json().order.status).toBe('picked_up');
     expect(await custody(at.captain.captainId)).toBe(-24_000n);
+  });
+});
+
+// RA §12.7, CA §10.5, AP §8.6: the restaurant's pickup currencies, the
+// captain's carried currencies, the proposed line and the journals across
+// currencies with their rate versions. Last in the file: it enables USD for
+// the city, which the orders placed after it keep in their snapshot.
+describe('the pickup in another currency (RA §12.7, CA §10.5)', () => {
+  it('proposes and books the dollars both accept, the clearing account in the base', async () => {
+    const fx = app.get(FxService);
+    const fin = { ...change, actor: { type: 'admin', id: randomUUID(), role: 'FIN' } } as const;
+    await fx.setCityCurrency(azaz, { currency: 'USD', displayOrder: 2, enabled: false }, change);
+    await fx.setRate(azaz, 'USD', { value: '41.20', direction: 'base_per_unit' }, fin);
+    await app
+      .get(SettingsService)
+      .update(
+        'currency.<code>.rounding_unit',
+        { cityId: azaz, parameter: 'USD' },
+        { amountMinor: 50 },
+        bySystem,
+      );
+    await fx.setCityCurrency(azaz, { currency: 'USD', displayOrder: 2, enabled: true }, change);
+    const at = await captainAtRestaurant();
+    const USD = [{ currency: 'USD', amount: '600' }];
+    // The restaurant accepts the base only by default, and the captain
+    // carries the base only.
+    expect((await at.captain.active()).json().order.pickup.proposedLines).toEqual(TRY('24000'));
+    const refused = await at.requestPickup(USD);
+    expect(refused.statusCode).toBe(409);
+    expect(refused.json().error).toBe('currency_not_accepted');
+
+    const ops = await admin(['OPS']);
+    const set = await app.inject({
+      method: 'PUT',
+      url: `/v1/admin/restaurants/${restaurant}/pickup-currencies`,
+      cookies: ops.cookies,
+      payload: { currencies: ['USD'] },
+    });
+    expect(set.statusCode).toBe(200);
+    expect(set.json()).toMatchObject({
+      pickupBaseCurrency: { currency: 'TRY', name: 'ليرة تركية' },
+      pickupCurrencies: ['USD'],
+      pickupCurrencyChoices: [{ currency: 'USD', name: 'دولار أمريكي' }],
+    });
+    const unknown = await app.inject({
+      method: 'PUT',
+      url: `/v1/admin/restaurants/${randomUUID()}/pickup-currencies`,
+      cookies: ops.cookies,
+      payload: { currencies: [] },
+    });
+    expect(unknown.statusCode).toBe(404);
+    const invalid = await app.inject({
+      method: 'PUT',
+      url: `/v1/admin/restaurants/${restaurant}/pickup-currencies`,
+      cookies: ops.cookies,
+      payload: { currencies: ['TRY'] },
+    });
+    expect(invalid.statusCode).toBe(400);
+    expect(invalid.json().error).toBe('invalid_pickup_currencies');
+    const audit = await sql.query(
+      "SELECT changes FROM audit.events WHERE action = 'restaurant.pickup_currencies' AND target_id = $1",
+      [restaurant],
+    );
+    expect(audit.rows.map((row) => row.changes)).toEqual([
+      { pickupCurrencies: { before: [], after: ['USD'] } },
+    ]);
+    // Both accept the base: the proposal stays in it.
+    expect((await at.captain.active()).json().order.pickup.proposedLines).toEqual(TRY('24000'));
+
+    const carried = (currencies: string[]) =>
+      app.inject({
+        method: 'PUT',
+        url: '/v1/captain/settings/carried-currencies',
+        headers: at.captain.headers,
+        payload: { currencies },
+      });
+    const read = await app.inject({
+      method: 'GET',
+      url: '/v1/captain/settings/carried-currencies',
+      headers: at.captain.headers,
+    });
+    expect(read.json()).toEqual({
+      baseCurrency: 'TRY',
+      carried: ['TRY'],
+      choices: [
+        { currency: 'TRY', name: 'ليرة تركية' },
+        { currency: 'USD', name: 'دولار أمريكي' },
+      ],
+    });
+    expect((await carried(['EUR'])).json().error).toBe('invalid_carried_currencies');
+    expect((await carried([])).statusCode).toBe(400);
+    expect((await carried(['USD'])).json()).toMatchObject({ carried: ['USD'] });
+    // 240 TRY at 41.20 is 5.83 USD, 6.00 by 0.50 (247.20 TRY): within half
+    // a 0.50 USD unit (10.30 TRY).
+    const pickup = (await at.captain.active()).json().order.pickup;
+    expect(pickup.proposedLines).toEqual(USD);
+    // C8: what the captain may split across, with each equivalent.
+    expect(pickup.currencies).toEqual([...TRY('24000'), ...USD]);
+
+    const custodyUsd = async () => {
+      const ledger = app.get(LedgerService);
+      const id = await ledger.openAccount({
+        cityId: azaz,
+        purpose: 'captain.custody',
+        ownerId: at.captain.captainId,
+        currency: 'USD',
+      });
+      return (await ledger.balance(id)).amount;
+    };
+    const clearingIn = async (currency: string) => {
+      const ledger = app.get(LedgerService);
+      const id = await ledger.openAccount({
+        cityId: azaz,
+        purpose: 'platform.order_clearing',
+        ownerId: null,
+        currency,
+      });
+      return (await ledger.balance(id)).amount;
+    };
+    const [tryBefore, usdBefore] = [await clearing(), await clearingIn('USD')];
+    // The ledger keeps the rates it is given (ledger.test.ts).
+    const posted = vi.spyOn(app.get(LedgerService), 'post');
+    const requested = await at.requestPickup(USD);
+    expect(requested.statusCode).toBe(200);
+    // RA §12.7: the restaurant sees the dollars and their base equivalent.
+    expect((await at.boardOrder()).pickup.request).toMatchObject({
+      lines: USD,
+      baseEquivalent: '24720',
+    });
+    expect((await at.restaurant('confirm')).statusCode).toBe(200);
+    expect(await custodyUsd()).toBe(-600n);
+    // The items value in the base, nothing left in dollars.
+    expect((await clearing()) - tryBefore).toBe(24_000n);
+    expect((await clearingIn('USD')) - usdBefore).toBe(0n);
+    const [usdRate] = (
+      await sql.query(
+        "SELECT id FROM fx.rate_versions WHERE city_id = $1 AND currency = 'USD' ORDER BY id DESC LIMIT 1",
+        [azaz],
+      )
+    ).rows;
+    expect(
+      posted.mock.calls
+        .map(([journal]) => journal)
+        .filter((journal) => journal.source?.id === at.order.id)
+        .map((journal) => ({ type: journal.type, rates: journal.rates })),
+    ).toEqual([
+      { type: 'custody.pay_merchant', rates: undefined },
+      { type: 'platform.fx_rounding', rates: [{ currency: 'USD', rateVersionId: usdRate.id }] },
+    ]);
+
+    // C8: the captain splits it, 3 USD (123.60 TRY) and 116.50 TRY; the
+    // ledger takes the payment across both currencies with its rate.
+    const split = await captainAtRestaurant();
+    const lines = [
+      { currency: 'TRY', amount: '11650' },
+      { currency: 'USD', amount: '300' },
+    ];
+    const tryBeforeSplit = await clearing();
+    expect((await split.requestPickup(lines)).statusCode).toBe(200);
+    expect((await split.restaurant('confirm')).statusCode).toBe(200);
+    expect((await clearing()) - tryBeforeSplit).toBe(24_000n);
+    expect((await clearingIn('USD')) - usdBefore).toBe(0n);
+    expect(
+      posted.mock.calls
+        .map(([journal]) => journal)
+        .filter((journal) => journal.source?.id === split.order.id)
+        .map((journal) => journal.rates),
+    ).toEqual([
+      [{ currency: 'USD', rateVersionId: usdRate.id }],
+      [{ currency: 'USD', rateVersionId: usdRate.id }],
+    ]);
+
+    // AP §8.1: cancelled while the split request waits, the restaurant
+    // keeping the money: debited the lines' base total, 240.10 TRY.
+    const kept = await captainAtRestaurant();
+    expect((await kept.requestPickup(lines)).statusCode).toBe(200);
+    const tryBeforeKept = await clearing();
+    const ledger = app.get(LedgerService);
+    const merchantAccount = await ledger.openAccount({
+      cityId: azaz,
+      purpose: 'merchant.account',
+      ownerId: restaurant,
+      currency: 'TRY',
+    });
+    const owedBefore = (await ledger.balance(merchantAccount)).amount;
+    const cancelled = await app.inject({
+      method: 'POST',
+      url: `/v1/admin/orders/${kept.order.id}/cancel`,
+      cookies: ops.cookies,
+      headers: { 'idempotency-key': randomUUID() },
+      payload: {
+        cancellation: 'emergency',
+        responsible: 'platform',
+        foodPrepared: false,
+        compensateCaptain: false,
+        cash: 'not_returned',
+        reason: 'ملاحظة العمليات',
+      },
+    });
+    expect(cancelled.statusCode).toBe(200);
+    expect((await clearing()) - tryBeforeKept).toBe(0n);
+    expect((await clearingIn('USD')) - usdBefore).toBe(0n);
+    // 116.50 TRY and 3 USD at 41.20: the restaurant owes 240.10 TRY more.
+    expect((await ledger.balance(merchantAccount)).amount - owedBefore).toBe(-24_010n);
+    posted.mockRestore();
+
+    // Back to the base only, for the other files' restaurant.
+    await app.inject({
+      method: 'PUT',
+      url: `/v1/admin/restaurants/${restaurant}/pickup-currencies`,
+      cookies: ops.cookies,
+      payload: { currencies: [] },
+    });
   });
 });

@@ -2562,6 +2562,53 @@
         ]
       }
     },
+    "/v1/admin/restaurants/{restaurantId}/pickup-currencies": {
+      "put": {
+        "operationId": "adminRestaurantStatusSetPickupCurrencies",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminRestaurantPickupCurrenciesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRestaurantStatusDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/cities": {
       "get": {
         "operationId": "adminCitiesList",
@@ -2733,6 +2780,66 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CaptainAvailabilityDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
+    "/v1/captain/settings/carried-currencies": {
+      "get": {
+        "operationId": "captainAvailabilityCarriedCurrencies",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainCarriedCurrenciesDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      },
+      "put": {
+        "operationId": "captainAvailabilitySetCarriedCurrencies",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaptainSetCarriedCurrenciesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainCarriedCurrenciesDto_Output"
                 }
               }
             },
@@ -10862,6 +10969,65 @@
               "maximum": 9007199254740991
             },
             "description": "«15 د», «30 د», «60 د» (AP §9.6.5)."
+          },
+          "pickupBaseCurrency": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Its Arabic name."
+                  }
+                },
+                "required": [
+                  "currency",
+                  "name"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«العملات التي تقبلها من الكابتن» (RA §12.7): the base, always accepted; null while the city has none."
+          },
+          "pickupCurrencies": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3
+            },
+            "description": "The other currencies switched on, in the city’s display order."
+          },
+          "pickupCurrencyChoices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "currency": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 3
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Its Arabic name."
+                }
+              },
+              "required": [
+                "currency",
+                "name"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Every other currency the city has enabled, in its display order."
           }
         },
         "required": [
@@ -10880,7 +11046,10 @@
           "heldPauseUntil",
           "pauseMessage",
           "pauseReason",
-          "pauseChoicesMin"
+          "pauseChoicesMin",
+          "pickupBaseCurrency",
+          "pickupCurrencies",
+          "pickupCurrencyChoices"
         ],
         "additionalProperties": false
       },
@@ -10995,6 +11164,24 @@
         },
         "required": [
           "maxActiveOrders"
+        ]
+      },
+      "AdminRestaurantPickupCurrenciesDto": {
+        "type": "object",
+        "properties": {
+          "currencies": {
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3
+            },
+            "description": "The other currencies to accept at pickup; the base is always accepted."
+          }
+        },
+        "required": [
+          "currencies"
         ]
       },
       "AdminCitiesDto_Output": {
@@ -11371,6 +11558,80 @@
         },
         "required": [
           "on"
+        ]
+      },
+      "CaptainCarriedCurrenciesDto_Output": {
+        "type": "object",
+        "properties": {
+          "baseCurrency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Null while the city has none."
+          },
+          "carried": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3
+            },
+            "description": "«العملات التي أحملها» (CA §10.5), in the city’s display order."
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "currency": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 3
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "currency",
+                "name"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Every currency the city has enabled, the base among them, with its Arabic name."
+          }
+        },
+        "required": [
+          "baseCurrency",
+          "carried",
+          "choices"
+        ],
+        "additionalProperties": false
+      },
+      "CaptainSetCarriedCurrenciesDto": {
+        "type": "object",
+        "properties": {
+          "currencies": {
+            "minItems": 1,
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3
+            },
+            "description": "The currencies carried, one at least, the base among them or not."
+          }
+        },
+        "required": [
+          "currencies"
         ]
       },
       "CaptainLocationsDto": {
@@ -25247,7 +25508,33 @@
                           ],
                           "additionalProperties": false
                         },
-                        "description": "«ادفع للمطعم: {المبلغ}» proposes them (CA §10.5): the whole amount in the base currency in Phase 1."
+                        "description": "«ادفع للمطعم: {المبلغ}» proposes them (CA §10.5): one line, in the base when the restaurant and the captain both have it, else in their first common currency, else in the base."
+                      },
+                      "currencies": {
+                        "minItems": 1,
+                        "maxItems": 5,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "string",
+                              "pattern": "^-?\\d+$",
+                              "description": "Integer minor units (AP §8.6)."
+                            },
+                            "currency": {
+                              "type": "string",
+                              "minLength": 3,
+                              "maxLength": 3
+                            }
+                          },
+                          "required": [
+                            "amount",
+                            "currency"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "description": "C8: the currencies the restaurant accepts, the base first, each with the whole pickup payment in it as the server takes it, for the captain’s own split."
                       },
                       "request": {
                         "anyOf": [
@@ -25439,6 +25726,7 @@
                     },
                     "required": [
                       "proposedLines",
+                      "currencies",
                       "request",
                       "pickedUpAt",
                       "disputedAt"
@@ -26636,7 +26924,33 @@
                       ],
                       "additionalProperties": false
                     },
-                    "description": "«ادفع للمطعم: {المبلغ}» proposes them (CA §10.5): the whole amount in the base currency in Phase 1."
+                    "description": "«ادفع للمطعم: {المبلغ}» proposes them (CA §10.5): one line, in the base when the restaurant and the captain both have it, else in their first common currency, else in the base."
+                  },
+                  "currencies": {
+                    "minItems": 1,
+                    "maxItems": 5,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "amount": {
+                          "type": "string",
+                          "pattern": "^-?\\d+$",
+                          "description": "Integer minor units (AP §8.6)."
+                        },
+                        "currency": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 3
+                        }
+                      },
+                      "required": [
+                        "amount",
+                        "currency"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "description": "C8: the currencies the restaurant accepts, the base first, each with the whole pickup payment in it as the server takes it, for the captain’s own split."
                   },
                   "request": {
                     "anyOf": [
@@ -26828,6 +27142,7 @@
                 },
                 "required": [
                   "proposedLines",
+                  "currencies",
                   "request",
                   "pickedUpAt",
                   "disputedAt"

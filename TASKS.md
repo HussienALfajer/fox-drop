@@ -11,7 +11,14 @@ Slice 2.14, other currencies at pickup (`docs/roadmap.md`, Phase 2).
 - **Branch:** `feat/pickup-currencies`.
 - **Builds on:** the pickup request and its lines (`pickup-booking.ts` `checkLines`, the base currency only since owner decision 2026-11-05), the atomic pickup's `platform.fx_rounding` journal, the order's rate snapshot, the cancellation's and the reassignment's kept-payment journals (`keptPaymentJournals`, which throw on another currency today), the captain app's pickup step and payment form, the restaurant app's pickup prompt.
 - **Ask the owner first:** whether this slice splits (server, the two apps' settings screens, the panel's profile line); where the restaurant owner switches the currencies before the restaurant's settings screen exists (RA §14), and where the captain switches «العملات التي أحملها» before the captain's settings screen; whether «أقصى مبلغ أحمله» (C4, K2) belongs here or with 2.15's automatic dispatch; the strings the spec gives no wording for.
-- **Plan:** write it at the start, one step per commit (the server rule first, failing test: the proposal's three cases, the tolerance by the order's snapshot, the journals with their rate version; then the apps; then the panel; then the docs).
+- **Owner decisions 2026-11-11:** two pull requests: 2.14a the server, the panel's profile line and the captain app; 2.14b the restaurant app's owner setting. The restaurant owner switches the currencies on a small «الإعدادات» screen of the restaurant app (owners only), which grows with RA §14; the captain switches «العملات التي أحملها» on a small «الإعدادات» screen of the captain app, reached from home. «أقصى مبلغ أحمله» (C4, K2) waits for 2.15.
+- **Plan 2.14a (`feat/pickup-currencies-a`):**
+  - [x] Server: `merchants.restaurants.pickup_currencies` and `captains.captains.carried_currencies` (migration); the captain's `GET`/`PUT /v1/captain/settings/carried-currencies` and the panel's `PUT /v1/admin/restaurants/{id}/pickup-currencies`; the proposal's three cases (CA §10.5) on the active order; the lines checked against the restaurant's currencies at the request and at «المبلغ غير صحيح» (failing tests first).
+  - [x] Server: the journals that span two currencies carry their rate versions (a ledger rule); the pickup's foreign lines brought into the base on `platform.fx_rounding`, as at the door; the kept payment in another currency (cancellation and reassignment).
+  - [x] Panel: the restaurant status page's «العملات التي تقبلها من الكابتن» with the change.
+  - [x] Captain app: «الإعدادات» with «العملات التي أحملها»; the pickup step's proposed line with «تقسيم أو تعديل» through the payment form.
+  - [ ] Review, docs, hand over to 2.14b.
+- **Plan 2.14b (`feat/pickup-currencies-b`):** the merchant route `GET`/`PUT /v1/merchant/settings/pickup-currencies` (owners only) and the restaurant app's «الإعدادات» screen.
 
 ### Left from 2.13d (`feat/customer-no-answer`)
 

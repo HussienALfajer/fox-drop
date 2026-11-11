@@ -163,7 +163,10 @@ const activeOrder = z
     pickup: z
       .object({
         proposedLines: paymentLines.describe(
-          '«ادفع للمطعم: {المبلغ}» proposes them (CA §10.5): the whole amount in the base currency in Phase 1.',
+          '«ادفع للمطعم: {المبلغ}» proposes them (CA §10.5): one line, in the base when the restaurant and the captain both have it, else in their first common currency, else in the base.',
+        ),
+        currencies: paymentLines.describe(
+          'C8: the currencies the restaurant accepts, the base first, each with the whole pickup payment in it as the server takes it, for the captain’s own split.',
         ),
         request: pickupRequest.nullable().describe('The latest request, or null.'),
         pickedUpAt: z.iso.datetime().nullable(),
@@ -691,6 +694,8 @@ function activeOrderBody({
   customer,
   pickupRequest,
   pickupDispute,
+  proposedLines,
+  pickupCurrencies,
   radii,
   handover,
   cannotComplete,
@@ -739,7 +744,8 @@ function activeOrderBody({
     pickupPayment: money(handover?.role === 'receiving' ? 0n : order.money.itemsValue),
     collect: money(order.money.total),
     pickup: {
-      proposedLines: [money(order.money.itemsValue)],
+      proposedLines: linesBody(proposedLines),
+      currencies: linesBody(pickupCurrencies),
       request: pickupRequest && pickupRequestBody(pickupRequest),
       pickedUpAt: order.pickup?.at.toISOString() ?? null,
       disputedAt: pickupDispute?.at.toISOString() ?? null,
