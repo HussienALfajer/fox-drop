@@ -60,6 +60,10 @@ export const eventKeys = {
   'order.cannot_complete_requested': 'order.event.cannotCompleteRequested',
   'order.cannot_complete_withdrawn': 'order.event.cannotCompleteWithdrawn',
   'order.emergency_raised': 'order.event.emergencyRaised',
+  'order.customer_pinged': 'order.event.customerPinged',
+  'order.ping_answered': 'order.event.pingAnswered',
+  'order.customer_not_answering': 'order.event.customerNotAnswering',
+  'order.no_answer_waited': 'order.event.noAnswerWaited',
 } as const;
 
 export function eventKey(type: string | null): (typeof eventKeys)[keyof typeof eventKeys] | null {

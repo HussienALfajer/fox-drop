@@ -15,7 +15,7 @@ Slice 2.13d, the customer not answering (`docs/roadmap.md`, Phase 2; 2.13 split 
   - [x] Server: `ordering.door_pings` and `ordering.no_answer_reports`, the pure rule, «تنبيه الزبون», «الزبون لا يستجيب», the customer's answer, «انتظر», the warning «زبون لا يرد», the pushes, the reads.
   - [x] Customer app: the 30-second full-screen ring with «أنا قادم» or «سأتصل بالمستلم» and «اتصال بالكابتن».
   - [x] Captain app: «تنبيه الزبون» with the next allowed time, the answer's chime and line, «الزبون لا يستجيب», «العمليات تراجع الطلب — انتظر تعليماتهم» and the «انتظر» card.
-  - [ ] Panel: «انتظر» with its message on the alert and the detail, the pings and reports on the detail, the timeline.
+  - [x] Panel: «انتظر» with its message on the alert and the detail, the pings and reports on the detail, the timeline.
   - [ ] Review, then hand over to the next slice.
 
 ### Left from 2.13c (`feat/captain-emergency`)

@@ -37,6 +37,8 @@ import { DecideOnBehalf } from './order-on-behalf-page.js';
 import { canDecide } from './order-on-behalf.js';
 import { CloseItemReport, ItemReportSection, ReportedItems } from './order-item-report-page.js';
 import { canCloseItemReport } from './order-item-report.js';
+import { NoAnswerSection, WaitForCustomer } from './order-no-answer-page.js';
+import { canWaitForCustomer } from './order-no-answer.js';
 import { EditChangeText, EditOrder } from './order-edit-page.js';
 import { canEdit } from './order-edit.js';
 import { ChangeTime } from './order-time-change-page.js';
@@ -233,6 +235,9 @@ export function OrderDetailPage() {
           <p>{t('order.emergency.actions')}</p>
         </section>
       )}
+      {/* CA §9.9: the door's pings, answers, reports and «انتظر». */}
+      <NoAnswerSection noAnswer={detail.noAnswer} time={time} />
+      {canWaitForCustomer(session, detail) && <WaitForCustomer key={orderId} orderId={orderId} />}
       {detail.itemReport && <ItemReportSection report={detail.itemReport} time={time} />}
       {canCloseItemReport(session, detail) && <CloseItemReport key={orderId} orderId={orderId} />}
       {canChangeTime(session, detail) && (
