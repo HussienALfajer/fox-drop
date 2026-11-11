@@ -67,6 +67,9 @@ _$adminPickerDtoOutputCaptainsInnerReasonsEnum_outOfRange =
 const AdminPickerDtoOutputCaptainsInnerReasonsEnum
 _$adminPickerDtoOutputCaptainsInnerReasonsEnum_vehicleNotAllowed =
     const AdminPickerDtoOutputCaptainsInnerReasonsEnum._('vehicleNotAllowed');
+const AdminPickerDtoOutputCaptainsInnerReasonsEnum
+_$adminPickerDtoOutputCaptainsInnerReasonsEnum_aboveMaxPickup =
+    const AdminPickerDtoOutputCaptainsInnerReasonsEnum._('aboveMaxPickup');
 
 AdminPickerDtoOutputCaptainsInnerReasonsEnum
 _$adminPickerDtoOutputCaptainsInnerReasonsEnumValueOf(String name) {
@@ -85,6 +88,8 @@ _$adminPickerDtoOutputCaptainsInnerReasonsEnumValueOf(String name) {
       return _$adminPickerDtoOutputCaptainsInnerReasonsEnum_outOfRange;
     case 'vehicleNotAllowed':
       return _$adminPickerDtoOutputCaptainsInnerReasonsEnum_vehicleNotAllowed;
+    case 'aboveMaxPickup':
+      return _$adminPickerDtoOutputCaptainsInnerReasonsEnum_aboveMaxPickup;
     default:
       throw ArgumentError(name);
   }
@@ -101,6 +106,7 @@ _$adminPickerDtoOutputCaptainsInnerReasonsEnumValues =
         _$adminPickerDtoOutputCaptainsInnerReasonsEnum_simulatedLocation,
         _$adminPickerDtoOutputCaptainsInnerReasonsEnum_outOfRange,
         _$adminPickerDtoOutputCaptainsInnerReasonsEnum_vehicleNotAllowed,
+        _$adminPickerDtoOutputCaptainsInnerReasonsEnum_aboveMaxPickup,
       ],
     );
 
@@ -162,6 +168,7 @@ class _$AdminPickerDtoOutputCaptainsInnerReasonsEnumSerializer
     'simulatedLocation': 'simulated_location',
     'outOfRange': 'out_of_range',
     'vehicleNotAllowed': 'vehicle_not_allowed',
+    'aboveMaxPickup': 'above_max_pickup',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'busy': 'busy',
@@ -171,6 +178,7 @@ class _$AdminPickerDtoOutputCaptainsInnerReasonsEnumSerializer
     'simulated_location': 'simulatedLocation',
     'out_of_range': 'outOfRange',
     'vehicle_not_allowed': 'vehicleNotAllowed',
+    'above_max_pickup': 'aboveMaxPickup',
   };
 
   @override

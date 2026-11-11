@@ -45,7 +45,9 @@ export type CaptainsRefusal =
   | 'last_order_not_yours'
   // CA §10.5: the carried currencies are the city's enabled ones, once each,
   // one at least.
-  | 'invalid_carried_currencies';
+  | 'invalid_carried_currencies'
+  // CA §10.5, C4: «أقصى مبلغ أحمله» is above zero, in the city's base.
+  | 'invalid_max_pickup';
 
 // A change the captains module refuses, with the reason the routes map to
 // their own answers; going online carries its blocks (CA §7.2).
@@ -122,6 +124,17 @@ export interface Captain {
   // CA §10.5 «العملات التي أحملها»: null until the captain sets them, the
   // base only. A reader keeps only the ones its snapshot has.
   carriedCurrencies: string[] | null;
+  // CA §10.5, C4 «أقصى مبلغ أحمله»: in the city's base, null for no limit.
+  maxPickup: Money | null;
+}
+
+// CA §10.5, K2 «أقصى مبلغ أحمله»: the limit (null for none), whether the
+// captain has answered yet (the app asks until they do), and the base the
+// amount is in.
+export interface MaxPickup {
+  limit: Money | null;
+  answered: boolean;
+  baseCurrency: string | null;
 }
 
 // CA §10.5: the carried currencies with their choices.
@@ -187,8 +200,7 @@ export type ActiveOrderLookup = (
 ) => Promise<Set<string>>;
 
 // AP §9.3.2: why a captain near the restaurant cannot take an order now; the
-// assignment picker greys them out with it. The maximum pickup amount (C4)
-// joins with its slice.
+// assignment picker greys them out with it.
 export type IneligibleReason =
   | 'busy'
   // CA §7.3, K18: last-order mode, no new orders.
@@ -197,7 +209,10 @@ export type IneligibleReason =
   | 'closed_due'
   | 'simulated_location'
   | 'out_of_range'
-  | 'vehicle_not_allowed';
+  | 'vehicle_not_allowed'
+  // C4, K2: the order's pickup payment is above the captain's «أقصى مبلغ
+  // أحمله»; operations may still send a manual offer (CA §8.4).
+  | 'above_max_pickup';
 
 // An online captain seen from a restaurant (AP §9.3.2, §9.12.6): the live
 // position, the straight-line distance to it and the reasons the captain
@@ -268,6 +283,10 @@ export class CaptainsService implements OnModuleInit {
       const { rows } = await executor.execute<{ key: string; currency: string }>(sql`
         SELECT 'captain.custody_limit' AS key, custody_limit_currency AS currency
           FROM captains.captains WHERE city_id = ${cityId} AND status <> 'terminated'
+        UNION
+        SELECT 'captain.max_pickup_amount' AS key, max_pickup_currency AS currency
+          FROM captains.captains WHERE city_id = ${cityId} AND status <> 'terminated'
+            AND max_pickup_currency IS NOT NULL
         UNION
         SELECT 'captain.pay_table' AS key, currency FROM captains.pay_tables
           WHERE city_id = ${cityId} AND (effective_from > now() OR id = (
@@ -438,6 +457,68 @@ export class CaptainsService implements OnModuleInit {
       })
       .where(eq(captainRecords.id, captainId));
     return this.carriedCurrencies(captainId);
+  }
+
+  // CA §10.5, K2 «أقصى مبلغ أحمله»: the captain's limit and whether they
+  // have answered.
+  async maxPickup(captainId: string): Promise<MaxPickup> {
+    const [row] = await this.database.db
+      .select({
+        cityId: captainRecords.cityId,
+        amount: captainRecords.maxPickupAmount,
+        currency: captainRecords.maxPickupCurrency,
+        setAt: captainRecords.maxPickupSetAt,
+      })
+      .from(captainRecords)
+      .where(eq(captainRecords.id, captainId));
+    if (!row) throw new CaptainsRefusedError('unknown_captain', 'no such captain');
+    return {
+      limit: row.amount === null ? null : { amount: row.amount, currency: row.currency! },
+      answered: row.setAt !== null,
+      baseCurrency: await this.fx.baseCurrency(row.cityId),
+    };
+  }
+
+  // CA §10.5: the captain sets «أقصى مبلغ أحمله» in the city's base, or
+  // none, without an active order (CA §15: 409 active_order); the next offer
+  // uses it. Answering none records the
+  // answer too, so the app stops asking (K2). Refused invalid_max_pickup at
+  // zero or below, not_in_base_currency while the city has no base. The
+  // captain's own preference, so it is not audited.
+  async setMaxPickup(captainId: string, amount: bigint | null): Promise<MaxPickup> {
+    if (amount !== null && (amount <= 0n || amount > 2n ** 63n - 1n)) {
+      throw new CaptainsRefusedError(
+        'invalid_max_pickup',
+        'the maximum pickup amount is above zero',
+      );
+    }
+    await this.database.db.transaction(async (tx) => {
+      const row = await this.lockCaptain(tx, captainId);
+      if ((await this.activeOrders([captainId], tx)).size > 0) {
+        throw new CaptainsRefusedError('active_order', 'the captain has an active order');
+      }
+      let currency: string | null = null;
+      if (amount !== null) {
+        await lockCityCurrencies(tx, row.cityId);
+        currency = await this.fx.baseCurrency(row.cityId, tx);
+        if (currency === null) {
+          throw new CaptainsRefusedError(
+            'not_in_base_currency',
+            'the city has no base currency yet',
+          );
+        }
+      }
+      await tx
+        .update(captainRecords)
+        .set({
+          maxPickupAmount: amount,
+          maxPickupCurrency: currency,
+          maxPickupSetAt: sql`now()`,
+          updatedAt: sql`now()`,
+        })
+        .where(eq(captainRecords.id, captainId));
+    });
+    return this.maxPickup(captainId);
   }
 
   // Whether the city has a pay table, in force or to come, for the seed.
@@ -868,15 +949,18 @@ export class CaptainsService implements OnModuleInit {
   // with the reasons it cannot take an order of this trip now (AP §9.12.6):
   // busy with an active order, at the cash limit, blocked for unhanded cash,
   // a simulated location, beyond dispatch.search_radius_km, or a vehicle
-  // whose dispatch.max_distance_km.<vehicle> is below the trip.
+  // whose dispatch.max_distance_km.<vehicle> is below the trip, or, given
+  // the order's pickup payment, a «أقصى مبلغ أحمله» below it (C4; none for a
+  // handover, CA §9.10.1).
   async candidates(
     cityId: string,
     restaurant: Point,
     tripMetres: number,
     now: Date,
+    pickupPayment: Money | null = null,
   ): Promise<Candidate[]> {
     const radiusMetres = (await this.settings.get('dispatch.search_radius_km', { cityId })) * 1000;
-    return this.scan(cityId, restaurant, tripMetres, now, radiusMetres, false);
+    return this.scan(cityId, restaurant, tripMetres, now, radiusMetres, false, pickupPayment);
   }
 
   // Dispatch's lock on a captain (AP §9.12.6): with the city's rules read
@@ -950,6 +1034,7 @@ export class CaptainsService implements OnModuleInit {
     now: Date,
     radiusMetres: number,
     firstEligible: boolean,
+    pickupPayment: Money | null = null,
   ): Promise<Candidate[]> {
     const listRadius = firstEligible ? radiusMetres : CITY_LIST_RADIUS_METRES;
     const nearby =
@@ -982,6 +1067,7 @@ export class CaptainsService implements OnModuleInit {
         if (state.state === 'not_receiving_offers') reasons.push(...state.reasons);
         if (straightMetres > radiusMetres) reasons.push('out_of_range');
         if (tripMetres > vehicleMax) reasons.push('vehicle_not_allowed');
+        if (pickupPayment && aboveMaxPickup(row, pickupPayment)) reasons.push('above_max_pickup');
         if (firstEligible && reasons.length > 0) continue;
         found.push({
           captainId: row.id,
@@ -1495,7 +1581,21 @@ function captainOf(row: typeof captainRecords.$inferSelect, now: Date): Captain 
       status === 'suspended' ? { reason: row.suspensionReason!, until: row.suspendedUntil } : null,
     custodyLimit: { amount: row.custodyLimit, currency: row.custodyLimitCurrency },
     carriedCurrencies: row.carriedCurrencies,
+    maxPickup:
+      row.maxPickupAmount === null
+        ? null
+        : { amount: row.maxPickupAmount, currency: row.maxPickupCurrency! },
   };
+}
+
+// C4: the base currency cannot change while a captain keeps a limit in it
+// (useCityAmounts), so a limit in another currency never meets an order.
+function aboveMaxPickup(row: typeof captainRecords.$inferSelect, pickupPayment: Money): boolean {
+  return (
+    row.maxPickupAmount !== null &&
+    row.maxPickupCurrency === pickupPayment.currency &&
+    pickupPayment.amount > row.maxPickupAmount
+  );
 }
 
 function checkLimit(limit: Money): void {

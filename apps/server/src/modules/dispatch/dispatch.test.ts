@@ -576,6 +576,139 @@ describe('the assignment picker (AP §9.3.2)', () => {
   });
 });
 
+describe('«أقصى مبلغ أحمله» (C4, K2, CA §8.4, §10.5)', () => {
+  const setMax = (captain: { headers: Record<string, string> }, amount: string | null) =>
+    app.inject({
+      method: 'PUT',
+      url: '/v1/captain/settings/max-pickup-amount',
+      headers: captain.headers,
+      payload: { amount },
+    });
+
+  it('keeps the captain’s answer: none at first, a limit in the base, then no limit', async () => {
+    const captain = await onlineCaptain();
+    const first = await app.inject({
+      method: 'GET',
+      url: '/v1/captain/settings/max-pickup-amount',
+      headers: captain.headers,
+    });
+    expect(first.statusCode).toBe(200);
+    expect(first.json()).toEqual({ limit: null, answered: false, baseCurrency: 'TRY' });
+    const set = await setMax(captain, '50000');
+    expect(set.statusCode).toBe(200);
+    expect(set.json()).toEqual({
+      limit: { amount: '50000', currency: 'TRY' },
+      answered: true,
+      baseCurrency: 'TRY',
+    });
+    const none = await setMax(captain, null);
+    expect(none.json()).toEqual({ limit: null, answered: true, baseCurrency: 'TRY' });
+    expect((await setMax(captain, '0')).statusCode).toBe(400);
+    expect((await setMax(captain, '-5')).statusCode).toBe(400);
+    expect((await setMax(captain, '9223372036854775808')).statusCode).toBe(400);
+  });
+
+  it('greys the captain out in the picker, and lets operations send an offer with the warning', async () => {
+    const order = await acceptedOrder();
+    const captain = await onlineCaptain();
+    const roomy = await onlineCaptain();
+    // The order's items value is 12000 minor units.
+    await setMax(captain, '11999');
+    await setMax(roomy, '12000');
+    const ops = await admin(['OPS']);
+    const picker = await ops.get(`/v1/admin/orders/${order.id}/captains`);
+    const listed = new Map(
+      (picker.json().captains as { captainId: string }[]).map((each) => [each.captainId, each]),
+    );
+    expect(listed.get(captain.captainId)).toMatchObject({
+      eligible: false,
+      reasons: ['above_max_pickup'],
+    });
+    expect(listed.get(roomy.captainId)).toMatchObject({ eligible: true, reasons: [] });
+    expect(picker.json().assignsAsOffer).toBe(true);
+    // A handover, the capacity check and the search start ask with no
+    // pickup payment, so the limit never greys the captain out (CA §9.10.1,
+    // AP §9.12.6).
+    const unpaid = await app.get(CaptainsService).candidates(azaz, centre, 0, new Date(), null);
+    expect(unpaid.find((each) => each.captainId === captain.captainId)?.reasons).toEqual([]);
+
+    const answer = await ops.assign(order.id, captain.captainId);
+    expect(answer.statusCode).toBe(200);
+    const offerId = answer.json().order.offer.id as string;
+    expect((await offerRow(offerId)).above_max_pickup).toBe(true);
+    const current = await captain.call('GET', '/v1/captain/offers/current');
+    expect(current.json().offer).toMatchObject({
+      id: offerId,
+      aboveMaxPickup: true,
+      pickupPayment: { amount: '12000', currency: 'TRY' },
+    });
+    // The captain may accept it (K2).
+    expect((await captain.call('POST', `/v1/captain/offers/${offerId}/accept`)).statusCode).toBe(
+      200,
+    );
+    // CA §10.5, §15: not changed during an order.
+    const during = await setMax(captain, '20000');
+    expect(during.statusCode).toBe(409);
+    expect(during.json()).toMatchObject({ error: 'active_order' });
+  });
+
+  it('keeps the limit and its currency together and above zero (a CHECK)', async () => {
+    const captain = await onlineCaptain();
+    await expect(
+      sql.query(
+        'UPDATE captains.captains SET max_pickup_amount = 0, max_pickup_currency = $2, max_pickup_set_at = now() WHERE id = $1',
+        [captain.captainId, 'TRY'],
+      ),
+    ).rejects.toThrow(/captains_max_pickup/);
+    await expect(
+      sql.query(
+        'UPDATE captains.captains SET max_pickup_amount = 100, max_pickup_set_at = now() WHERE id = $1',
+        [captain.captainId],
+      ),
+    ).rejects.toThrow(/captains_max_pickup/);
+  });
+
+  it('marks no warning on an offer within the limit', async () => {
+    const order = await acceptedOrder();
+    const captain = await onlineCaptain();
+    await setMax(captain, '12000');
+    const answer = await (await admin(['OPS'])).assign(order.id, captain.captainId);
+    const current = await captain.call('GET', '/v1/captain/offers/current');
+    expect(current.json().offer).toMatchObject({
+      id: answer.json().order.offer.id,
+      aboveMaxPickup: false,
+    });
+  });
+
+  it('refuses a direct assignment above the limit, which the captain could not decline', async () => {
+    const settings = app.get(SettingsService);
+    await settings.update(
+      'dispatch.manual_assign_requires_accept',
+      { cityId: azaz },
+      false,
+      bySystem,
+    );
+    try {
+      const order = await acceptedOrder();
+      const captain = await onlineCaptain();
+      await setMax(captain, '100');
+      const answer = await (await admin(['OPS'])).assign(order.id, captain.captainId);
+      expect(answer.statusCode).toBe(409);
+      expect(answer.json()).toMatchObject({
+        error: 'captain_not_eligible',
+        reasons: ['above_max_pickup'],
+      });
+    } finally {
+      await settings.update(
+        'dispatch.manual_assign_requires_accept',
+        { cityId: azaz },
+        true,
+        bySystem,
+      );
+    }
+  });
+});
+
 describe('the operations board and order detail (AP §9.2, §9.3.1)', () => {
   it('shows every live order of the city with its captain, badges and passed alerts', async () => {
     const order = await acceptedOrder();
@@ -786,6 +919,9 @@ describe('dispatch under races and repeats (AP §9.12.6, architecture §5.3)', (
       .offer;
     await expect(
       sql.query('UPDATE dispatch.offers SET pickup_metres = 1 WHERE id = $1', [offer.id]),
+    ).rejects.toThrow(/permission denied/);
+    await expect(
+      sql.query('UPDATE dispatch.offers SET above_max_pickup = true WHERE id = $1', [offer.id]),
     ).rejects.toThrow(/permission denied/);
   });
 

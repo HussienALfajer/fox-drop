@@ -126,6 +126,8 @@ class _$CaptainOfferDtoOutputOffer extends CaptainOfferDtoOutputOffer {
   final CaptainCurrentOfferDtoOutputOfferPreparation preparation;
   @override
   final CaptainCurrentOfferDtoOutputOfferHandover? handover;
+  @override
+  final bool aboveMaxPickup;
 
   factory _$CaptainOfferDtoOutputOffer([
     void Function(CaptainOfferDtoOutputOfferBuilder)? updates,
@@ -146,6 +148,7 @@ class _$CaptainOfferDtoOutputOffer extends CaptainOfferDtoOutputOffer {
     required this.collect,
     required this.preparation,
     this.handover,
+    required this.aboveMaxPickup,
   }) : super._();
   @override
   CaptainOfferDtoOutputOffer rebuild(
@@ -173,7 +176,8 @@ class _$CaptainOfferDtoOutputOffer extends CaptainOfferDtoOutputOffer {
         pickupPayment == other.pickupPayment &&
         collect == other.collect &&
         preparation == other.preparation &&
-        handover == other.handover;
+        handover == other.handover &&
+        aboveMaxPickup == other.aboveMaxPickup;
   }
 
   @override
@@ -193,6 +197,7 @@ class _$CaptainOfferDtoOutputOffer extends CaptainOfferDtoOutputOffer {
     _$hash = $jc(_$hash, collect.hashCode);
     _$hash = $jc(_$hash, preparation.hashCode);
     _$hash = $jc(_$hash, handover.hashCode);
+    _$hash = $jc(_$hash, aboveMaxPickup.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -213,7 +218,8 @@ class _$CaptainOfferDtoOutputOffer extends CaptainOfferDtoOutputOffer {
           ..add('pickupPayment', pickupPayment)
           ..add('collect', collect)
           ..add('preparation', preparation)
-          ..add('handover', handover))
+          ..add('handover', handover)
+          ..add('aboveMaxPickup', aboveMaxPickup))
         .toString();
   }
 }
@@ -301,6 +307,11 @@ class CaptainOfferDtoOutputOfferBuilder
   set handover(CaptainCurrentOfferDtoOutputOfferHandoverBuilder? handover) =>
       _$this._handover = handover;
 
+  bool? _aboveMaxPickup;
+  bool? get aboveMaxPickup => _$this._aboveMaxPickup;
+  set aboveMaxPickup(bool? aboveMaxPickup) =>
+      _$this._aboveMaxPickup = aboveMaxPickup;
+
   CaptainOfferDtoOutputOfferBuilder() {
     CaptainOfferDtoOutputOffer._defaults(this);
   }
@@ -322,6 +333,7 @@ class CaptainOfferDtoOutputOfferBuilder
       _collect = $v.collect.toBuilder();
       _preparation = $v.preparation.toBuilder();
       _handover = $v.handover?.toBuilder();
+      _aboveMaxPickup = $v.aboveMaxPickup;
       _$v = null;
     }
     return this;
@@ -388,6 +400,11 @@ class CaptainOfferDtoOutputOfferBuilder
             collect: collect.build(),
             preparation: preparation.build(),
             handover: _handover?.build(),
+            aboveMaxPickup: BuiltValueNullFieldError.checkNotNull(
+              aboveMaxPickup,
+              r'CaptainOfferDtoOutputOffer',
+              'aboveMaxPickup',
+            ),
           );
     } catch (_) {
       late String _$failedField;

@@ -8,13 +8,18 @@ part of 'admin_picker_dto_output.dart';
 
 class _$AdminPickerDtoOutput extends AdminPickerDtoOutput {
   @override
+  final bool assignsAsOffer;
+  @override
   final BuiltList<AdminPickerDtoOutputCaptainsInner> captains;
 
   factory _$AdminPickerDtoOutput([
     void Function(AdminPickerDtoOutputBuilder)? updates,
   ]) => (AdminPickerDtoOutputBuilder()..update(updates))._build();
 
-  _$AdminPickerDtoOutput._({required this.captains}) : super._();
+  _$AdminPickerDtoOutput._({
+    required this.assignsAsOffer,
+    required this.captains,
+  }) : super._();
   @override
   AdminPickerDtoOutput rebuild(
     void Function(AdminPickerDtoOutputBuilder) updates,
@@ -27,12 +32,15 @@ class _$AdminPickerDtoOutput extends AdminPickerDtoOutput {
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is AdminPickerDtoOutput && captains == other.captains;
+    return other is AdminPickerDtoOutput &&
+        assignsAsOffer == other.assignsAsOffer &&
+        captains == other.captains;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, assignsAsOffer.hashCode);
     _$hash = $jc(_$hash, captains.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -40,15 +48,21 @@ class _$AdminPickerDtoOutput extends AdminPickerDtoOutput {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(
-      r'AdminPickerDtoOutput',
-    )..add('captains', captains)).toString();
+    return (newBuiltValueToStringHelper(r'AdminPickerDtoOutput')
+          ..add('assignsAsOffer', assignsAsOffer)
+          ..add('captains', captains))
+        .toString();
   }
 }
 
 class AdminPickerDtoOutputBuilder
     implements Builder<AdminPickerDtoOutput, AdminPickerDtoOutputBuilder> {
   _$AdminPickerDtoOutput? _$v;
+
+  bool? _assignsAsOffer;
+  bool? get assignsAsOffer => _$this._assignsAsOffer;
+  set assignsAsOffer(bool? assignsAsOffer) =>
+      _$this._assignsAsOffer = assignsAsOffer;
 
   ListBuilder<AdminPickerDtoOutputCaptainsInner>? _captains;
   ListBuilder<AdminPickerDtoOutputCaptainsInner> get captains =>
@@ -63,6 +77,7 @@ class AdminPickerDtoOutputBuilder
   AdminPickerDtoOutputBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _assignsAsOffer = $v.assignsAsOffer;
       _captains = $v.captains.toBuilder();
       _$v = null;
     }
@@ -85,7 +100,16 @@ class AdminPickerDtoOutputBuilder
   _$AdminPickerDtoOutput _build() {
     _$AdminPickerDtoOutput _$result;
     try {
-      _$result = _$v ?? _$AdminPickerDtoOutput._(captains: captains.build());
+      _$result =
+          _$v ??
+          _$AdminPickerDtoOutput._(
+            assignsAsOffer: BuiltValueNullFieldError.checkNotNull(
+              assignsAsOffer,
+              r'AdminPickerDtoOutput',
+              'assignsAsOffer',
+            ),
+            captains: captains.build(),
+          );
     } catch (_) {
       late String _$failedField;
       try {

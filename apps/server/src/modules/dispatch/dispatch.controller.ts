@@ -107,6 +107,11 @@ class AdminDispatchStateDto extends createZodDto(
 
 class AdminPickerDto extends createZodDto(
   z.object({
+    assignsAsOffer: z
+      .boolean()
+      .describe(
+        '«تعيين» reaches the captain as an offer (dispatch.manual_assign_requires_accept), the only way to send one greyed out only for «المبلغ أكبر مما يحمله» (CA §8.4, K2).',
+      ),
     captains: z
       .array(
         z.object({
@@ -124,10 +129,11 @@ class AdminPickerDto extends createZodDto(
                 'simulated_location',
                 'out_of_range',
                 'vehicle_not_allowed',
+                'above_max_pickup',
               ]),
             )
             .describe(
-              'Why it is greyed out: «مشغول», over the cash limit, blocked for unhanded cash, a simulated location, out of range, vehicle not allowed.',
+              'Why it is greyed out: «مشغول», over the cash limit, blocked for unhanded cash, a simulated location, out of range, vehicle not allowed, «المبلغ أكبر مما يحمله» (C4: the pickup payment above the captain’s maximum; alone, operations may still send an offer, CA §8.4).',
             ),
           distanceMetres: z
             .int()
@@ -208,6 +214,11 @@ const offer = z
       .describe(
         '«استلام من كابتن» (CA §9.10.1): the order is taken from this captain; restaurant.distanceMetres is then to them. Null for an ordinary offer.',
       ),
+    aboveMaxPickup: z
+      .boolean()
+      .describe(
+        'CA §8.4, K2: sent by operations above the captain’s «أقصى مبلغ أحمله»: «المبلغ أكبر من الحد الذي حددته — اقبل فقط إذا كان معك ما يكفي».',
+      ),
   })
   .describe('An offer (CA §8.2).');
 
@@ -248,6 +259,7 @@ function offerBody(value: CaptainOffer) {
     restaurant: value.restaurant,
     customer: value.customer,
     pickupPayment: moneyBody(value.pickupPayment),
+    aboveMaxPickup: value.aboveMaxPickup,
     collect: moneyBody(value.collect),
     preparation: {
       ready: value.preparation.ready,
@@ -301,9 +313,13 @@ export class AdminDispatchController {
   @RequirePermission('operations.manage')
   @ZodResponse({ status: 200, type: AdminPickerDto })
   picker(@Param() params: AdminAssignParamsDto) {
-    return refusalsAsHttp(async () => ({
-      captains: (await this.dispatch.picker(params.orderId, new Date())).map(pickerBody),
-    }));
+    return refusalsAsHttp(async () => {
+      const [captains, assignsAsOffer] = await Promise.all([
+        this.dispatch.picker(params.orderId, new Date()),
+        this.dispatch.assignsAsOffer(params.orderId),
+      ]);
+      return { captains: captains.map(pickerBody), assignsAsOffer };
+    });
   }
 
   // An offer to the captain, or the order assigned at once when

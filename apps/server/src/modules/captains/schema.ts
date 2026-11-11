@@ -80,6 +80,13 @@ export const captainRecords = captains.table(
     // carries, the base among them when switched on. Null until the captain
     // sets them: the base only, its default.
     carriedCurrencies: text('carried_currencies').array(),
+    // CA §10.5, C4, K2 «أقصى مبلغ أحمله»: the most the captain pays a
+    // restaurant at pickup, in the city's base currency; null is no limit,
+    // its default. max_pickup_set_at is when the captain last answered,
+    // a limit or none, so the app asks once (K2).
+    maxPickupAmount: bigint('max_pickup_amount', { mode: 'bigint' }),
+    maxPickupCurrency: text('max_pickup_currency'),
+    maxPickupSetAt: timestamp('max_pickup_set_at', { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -97,6 +104,12 @@ export const captainRecords = captains.table(
           AND (${table.suspendedUntil} IS NULL OR ${table.status} = 'suspended')`,
     ),
     check('captains_custody_limit', sql`${table.custodyLimit} > 0`),
+    check(
+      'captains_max_pickup',
+      sql`(${table.maxPickupAmount} IS NULL) = (${table.maxPickupCurrency} IS NULL)
+          AND (${table.maxPickupAmount} IS NULL OR ${table.maxPickupAmount} > 0)
+          AND (${table.maxPickupAmount} IS NULL OR ${table.maxPickupSetAt} IS NOT NULL)`,
+    ),
   ],
 );
 

@@ -13,10 +13,15 @@ part 'admin_picker_dto_output.g.dart';
 /// AdminPickerDtoOutput
 ///
 /// Properties:
+/// * [assignsAsOffer] - «تعيين» reaches the captain as an offer (dispatch.manual_assign_requires_accept), the only way to send one greyed out only for «المبلغ أكبر مما يحمله» (CA §8.4, K2).
 /// * [captains] - Every online captain of the city, nearest to the restaurant first (AP §9.3.2).
 @BuiltValue()
 abstract class AdminPickerDtoOutput
     implements Built<AdminPickerDtoOutput, AdminPickerDtoOutputBuilder> {
+  /// «تعيين» reaches the captain as an offer (dispatch.manual_assign_requires_accept), the only way to send one greyed out only for «المبلغ أكبر مما يحمله» (CA §8.4, K2).
+  @BuiltValueField(wireName: r'assignsAsOffer')
+  bool get assignsAsOffer;
+
   /// Every online captain of the city, nearest to the restaurant first (AP §9.3.2).
   @BuiltValueField(wireName: r'captains')
   BuiltList<AdminPickerDtoOutputCaptainsInner> get captains;
@@ -50,6 +55,11 @@ class _$AdminPickerDtoOutputSerializer
     AdminPickerDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    yield r'assignsAsOffer';
+    yield serializers.serialize(
+      object.assignsAsOffer,
+      specifiedType: const FullType(bool),
+    );
     yield r'captains';
     yield serializers.serialize(
       object.captains,
@@ -84,6 +94,15 @@ class _$AdminPickerDtoOutputSerializer
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'assignsAsOffer':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.assignsAsOffer = valueDes;
+          break;
         case r'captains':
           final valueDes =
               serializers.deserialize(
