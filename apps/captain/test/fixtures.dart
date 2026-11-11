@@ -335,6 +335,7 @@ Map<String, Object?> summaryJson() => {
       'distance': '500',
       'topUp': '0',
       'waiting': '0',
+      'peak': '0',
       'total': '3500',
       'currency': 'TRY',
     },
