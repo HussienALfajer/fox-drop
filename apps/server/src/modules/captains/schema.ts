@@ -121,10 +121,7 @@ export const onlinePeriods = captains.table(
       sql`(${table.endedAt} IS NULL) = (${table.endReason} IS NULL)
           AND (${table.endedAt} IS NULL OR ${table.endedAt} >= ${table.startedAt})`,
     ),
-    check(
-      'online_periods_end_reason_values',
-      sql`${table.endReason} IN (${endReasonValues})`,
-    ),
+    check('online_periods_end_reason_values', sql`${table.endReason} IN (${endReasonValues})`),
     check(
       'online_periods_last_order',
       sql`(${table.lastOrderBy} IS NULL) = (${table.lastOrderAt} IS NULL)

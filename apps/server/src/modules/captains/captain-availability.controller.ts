@@ -55,12 +55,12 @@ const availability = z
       .enum(['captain', 'forced', 'suspended', 'terminated'])
       .nullable()
       .describe(
-        'In last_order: who set it (CA §7.3, §7.6, K18). Only the captain\'s own can be cancelled.',
+        "In last_order: who set it (CA §7.3, §7.6, K18). Only the captain's own can be cancelled.",
       ),
     lastOrderReason: z
       .string()
       .nullable()
-      .describe('In last_order: the reason shown, a force offline\'s or a suspension\'s.'),
+      .describe("In last_order: the reason shown, a force offline's or a suspension's."),
   })
   .describe(
     'CA §7.1: «غير متصل», «متصل متاح», «مشغول» (an active order), «آخر طلب» (last-order mode), «لا تصلك عروض» with its reasons, «موقوف».',
@@ -121,7 +121,9 @@ class CaptainLocationsDto extends createZodDto(
 
 class CaptainLastOrderDto extends createZodDto(
   z.object({
-    on: z.boolean().describe('CA §7.3: «لا أريد طلبات جديدة» on, or cancelled before the order ends.'),
+    on: z
+      .boolean()
+      .describe('CA §7.3: «لا أريد طلبات جديدة» on, or cancelled before the order ends.'),
   }),
 ) {}
 

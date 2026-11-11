@@ -653,7 +653,9 @@ describe('last-order mode and force offline', () => {
     const { id } = await captain();
     await captains.goOnline(id, device, new Date());
     active.add(id);
-    captains.useActiveOrders((ids) => Promise.resolve(new Set(ids.filter((each) => active.has(each)))));
+    captains.useActiveOrders((ids) =>
+      Promise.resolve(new Set(ids.filter((each) => active.has(each)))),
+    );
     return id;
   }
 

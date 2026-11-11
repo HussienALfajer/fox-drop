@@ -1273,9 +1273,7 @@ export class CaptainsService implements OnModuleInit {
         termsPending: false,
         activeOrder: open ? (await this.activeOrders([row.id], executor)).size > 0 : false,
         lastOrder:
-          open?.lastOrderBy == null
-            ? null
-            : { by: open.lastOrderBy, reason: open.lastOrderReason },
+          open?.lastOrderBy == null ? null : { by: open.lastOrderBy, reason: open.lastOrderReason },
       },
       custody,
     };

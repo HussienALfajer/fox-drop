@@ -117,11 +117,15 @@ describe('the availability routes (CA §7)', () => {
   // CA §7.3, §15 (slice 2.13a): without an active order the mode is refused.
   it('refuses last-order mode while offline or without an order', async () => {
     const { headers } = await signedIn();
-    const offline = await call(headers, 'POST', '/v1/captain/availability/last-order', { on: true });
+    const offline = await call(headers, 'POST', '/v1/captain/availability/last-order', {
+      on: true,
+    });
     expect(offline.statusCode).toBe(409);
     expect(offline.json()).toMatchObject({ error: 'not_online' });
     await goOnline(headers);
-    const noOrder = await call(headers, 'POST', '/v1/captain/availability/last-order', { on: true });
+    const noOrder = await call(headers, 'POST', '/v1/captain/availability/last-order', {
+      on: true,
+    });
     expect(noOrder.statusCode).toBe(409);
     expect(noOrder.json()).toMatchObject({ error: 'no_active_order' });
     const off = await call(headers, 'POST', '/v1/captain/availability/last-order', { on: false });
