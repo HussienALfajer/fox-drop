@@ -58,6 +58,8 @@ class OfferSheet extends ConsumerWidget {
             Text(l10n.captainNewOffer),
             if (handover != null) Text(l10n.captainHandoverOffer),
             if (offer.fromOperations) Text(l10n.captainOfferFromOperations),
+            // CA §8.4, K2: operations sent it above «أقصى مبلغ أحمله».
+            if (offer.aboveMaxPickup) Text(l10n.captainOfferAboveMaxPickup),
             Text(l10n.formatCountdown(clock.until(offer.expiresAt))),
             Text(
               pay == null

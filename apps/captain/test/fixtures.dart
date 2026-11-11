@@ -64,10 +64,18 @@ Map<String, Object?> availabilityJson({
   },
 };
 
+/// `GET /v1/captain/settings/max-pickup-amount` (CA §10.5, K2).
+Map<String, Object?> maxPickupJson({String? limit, bool answered = true}) => {
+  'limit': limit == null ? null : moneyJson(limit),
+  'answered': answered,
+  'baseCurrency': 'TRY',
+};
+
 /// An open offer of `GET /v1/captain/offers/current`.
 Map<String, Object?> offerJson({
   Duration left = const Duration(seconds: 40),
   Map<String, Object?>? handover,
+  bool aboveMaxPickup = false,
 }) => {
   'id': offerId,
   'status': 'open',
@@ -93,6 +101,7 @@ Map<String, Object?> offerJson({
     'readyAt': now.add(const Duration(minutes: 8)).toIso8601String(),
   },
   'handover': handover,
+  'aboveMaxPickup': aboveMaxPickup,
 };
 
 /// Where the first captain of a handover waits, about 110 m from [pin].
@@ -459,7 +468,13 @@ class TestApp {
     Map<String, Object?>? withdrawn,
     Map<String, Object?>? ended,
     Map<String, Object?>? handedOver,
+    // K2: whether the captain answered «أقصى مبلغ أحمله», which «متصل» asks
+    // until then.
+    bool maxPickupAnswered = true,
   }) {
+    server.on('/v1/captain/settings/max-pickup-amount', [
+      FakeAnswer(200, maxPickupJson(answered: maxPickupAnswered)),
+    ]);
     server.on('/v1/captain/availability', [
       for (final a in availability) FakeAnswer(200, a),
     ]);
