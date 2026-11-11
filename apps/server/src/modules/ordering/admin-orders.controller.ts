@@ -88,8 +88,38 @@ const card = z.object({
     .nullable()
     .describe('Null shows a red «بلا كابتن».'),
   total: money.describe('The customer total in the base currency.'),
+  dispatch: z
+    .object({
+      mode: z.enum(['manual', 'auto', 'mixed']).describe('The city’s dispatch.mode now.'),
+      manual: z
+        .object({
+          reason: z
+            .enum(['max_offers', 'no_captain_alert', 'operations'])
+            .describe(
+              '«مختلط»’s fallback after dispatch.max_offers_before_manual failed offers or at the no-captain alert, or «توزيع يدوي لهذا الطلب».',
+            ),
+          at: z.iso.datetime(),
+        })
+        .nullable()
+        .describe('The order left automatic dispatch for operations; null while it has not.'),
+      autoOffers: z
+        .int()
+        .describe('The automatic offers sent so far, the open one included: «العرض {ن}».'),
+      autoOfferOpen: z
+        .boolean()
+        .describe('The open offer is the dispatcher’s; false for operations’ own offer.'),
+      maxOffers: z
+        .int()
+        .nullable()
+        .describe('«مختلط»: dispatch.max_offers_before_manual, «من {م}»; null otherwise.'),
+    })
+    .describe('AP §9.2.1, §9.12.6 (slice 2.15c): how the order is being dispatched.'),
   badges: z.object({
-    needsAssignment: z.boolean().describe('«بحاجة لتعيين» (AP §8.3).'),
+    needsAssignment: z
+      .boolean()
+      .describe(
+        '«بحاجة لتعيين» (AP §8.3): searching in «يدوي», or after leaving automatic dispatch.',
+      ),
     note: z.boolean().describe('«ملاحظة».'),
     newCustomer: z.boolean().describe('«زبون جديد»: no delivered order yet.'),
     pickupPending: z.boolean().describe('«بانتظار تأكيد الاستلام» (AP §9.2.1).'),
@@ -1225,6 +1255,13 @@ function cardBody(item: OperationsOrder) {
     captainTrack: item.captainTrack,
     captain: item.captain,
     total: { amount: order.money.total.toString(), currency: order.currency },
+    dispatch: {
+      ...item.dispatch,
+      manual: item.dispatch.manual && {
+        reason: item.dispatch.manual.reason,
+        at: item.dispatch.manual.at.toISOString(),
+      },
+    },
     badges: {
       needsAssignment: item.needsAssignment,
       note: order.note !== null,

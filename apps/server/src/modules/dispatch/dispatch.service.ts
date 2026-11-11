@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
-import { and, count, desc, eq, gt, gte, inArray, lt, ne } from 'drizzle-orm';
+import { and, count, desc, eq, gt, gte, inArray, lt, ne, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -21,6 +21,7 @@ import { MerchantsService } from '../merchants/index.js';
 import {
   type AssignmentActor,
   type DispatchOrder,
+  type DispatchView,
   HANDOVER_FROM,
   type HandoverCloseReason,
   type OpenHandover,
@@ -59,6 +60,9 @@ export type DispatchRefusal =
   // AP §9.3.2 «تسليم لكابتن آخر» (slice 2.12b): not picked up or arrived
   // with a captain, a handover already open, or an outcome waiting.
   | 'order_not_handoverable'
+  // AP §9.3.2 «توزيع يدوي لهذا الطلب» (slice 2.15c): «يدوي», or the order
+  // already left automatic dispatch.
+  | 'order_not_automatic'
   | 'idempotency_key_reused';
 
 // A command dispatch refuses, with the reason the routes answer; a captain
@@ -158,6 +162,28 @@ export interface AdminCommand {
   idempotencyKey: string;
 }
 
+// AP §9.3.2 «توزيع يدوي لهذا الطلب» (slice 2.15c).
+export interface ManualDispatchCommand {
+  orderId: string;
+  admin: { accountId: string; roles: string[] };
+  context: AuditRequestContext;
+  idempotencyKey: string;
+}
+
+// One offer of the order's log (AP §9.3.1, §9.7.4).
+export interface OrderOffer {
+  id: string;
+  captain: { id: string; name: string };
+  kind: OfferRow['kind'];
+  handover: boolean;
+  offeredAt: Date;
+  expiresAt: Date;
+  status: OfferRow['status'];
+  respondedAt: Date | null;
+  // Seconds from the offer to an acceptance or a decline.
+  responseSec: number | null;
+}
+
 export interface CaptainCommand {
   offerId: string;
   captainId: string;
@@ -204,6 +230,190 @@ export class DispatchService implements OnModuleInit {
       // A handover's offer closes its handover as ended (slice 2.12b).
       await this.close(tx, order, open, 'withdrawn', now, actor, 'ended');
     });
+    this.assignments.useDispatchViews((orders) => this.dispatchViews(orders));
+  }
+
+  // AP §9.2.1, §9.3.1 (slice 2.15c): each order's dispatch state for
+  // operations' board and detail: the city's mode now, its manual_orders row,
+  // its automatic offers and, in «مختلط», the limit.
+  async dispatchViews(
+    orders: readonly { id: string; cityId: string }[],
+  ): Promise<Map<string, DispatchView>> {
+    const ids = orders.map((order) => order.id);
+    const cityIds = [...new Set(orders.map((order) => order.cityId))];
+    const [rules, left, sent] = await Promise.all([
+      Promise.all(
+        cityIds.map(async (cityId) => {
+          const mode = await this.settings.get('dispatch.mode', { cityId });
+          const maxOffers =
+            mode === 'mixed'
+              ? await this.settings.get('dispatch.max_offers_before_manual', { cityId })
+              : null;
+          return [cityId, { mode, maxOffers }] as const;
+        }),
+      ).then((entries) => new Map(entries)),
+      this.database.db
+        .select({ orderId: manualOrders.orderId, reason: manualOrders.reason, at: manualOrders.at })
+        .from(manualOrders)
+        .where(inArray(manualOrders.orderId, ids)),
+      this.database.db
+        .select({
+          orderId: offers.orderId,
+          n: count(),
+          open: sql<boolean>`bool_or(${offers.status} = 'open')`,
+        })
+        .from(offers)
+        .where(and(inArray(offers.orderId, ids), eq(offers.kind, 'auto')))
+        .groupBy(offers.orderId),
+    ]);
+    const manual = new Map(left.map((row) => [row.orderId, row]));
+    const autoOffers = new Map(sent.map((row) => [row.orderId, row]));
+    return new Map(
+      orders.map((order) => {
+        const rule = rules.get(order.cityId)!;
+        const row = manual.get(order.id);
+        return [
+          order.id,
+          {
+            mode: rule.mode,
+            manual: row ? { reason: row.reason, at: row.at } : null,
+            autoOffers: autoOffers.get(order.id)?.n ?? 0,
+            autoOfferOpen: autoOffers.get(order.id)?.open ?? false,
+            maxOffers: rule.maxOffers,
+          },
+        ];
+      }),
+    );
+  }
+
+  // AP §9.3.2 «توزيع يدوي لهذا الطلب» (slice 2.15c): operations take an
+  // order not yet assigned out of automatic dispatch, «بحاجة لتعيين» from
+  // then on; an open offer keeps its time (owner decision 2026-11-11) and no
+  // automatic offer follows it. Refused order_not_assignable with a captain
+  // or past ready, order_not_automatic in «يدوي» or when it already left.
+  async manualDispatch(command: ManualDispatchCommand, now: Date): Promise<DispatchState> {
+    const hash = commandHash({ verb: 'manual_dispatch', orderId: command.orderId });
+    const earlier = await this.replay(
+      this.database.db,
+      command.admin.accountId,
+      command,
+      hash,
+      now,
+    );
+    if (earlier !== null) return this.state(earlier.orderId);
+    const order = await this.assignments.find(command.orderId);
+    if (order === null) throw new DispatchRefusedError('unknown_order', 'no such order');
+    const mode = await this.settings.get('dispatch.mode', { cityId: order.cityId });
+    // pg-boss connects before the locks are taken, never while they are held.
+    await this.jobs.ready();
+    await this.database.db.transaction(async (tx) => {
+      const locked = await this.assignments.lock(tx, order.id, order.placedAt);
+      if (!locked) throw new Error(`order ${order.id} not found`);
+      const repeat = await this.replay(tx, command.admin.accountId, command, hash, now);
+      if (repeat !== null) return;
+      if (!beforeAssignment(locked)) throw this.notAssignable();
+      const [left] = await tx
+        .select({ orderId: manualOrders.orderId })
+        .from(manualOrders)
+        .where(eq(manualOrders.orderId, order.id));
+      if (mode === 'manual' || left) {
+        throw new DispatchRefusedError(
+          'order_not_automatic',
+          'the order is not in automatic dispatch',
+        );
+      }
+      const failed = await failedAutoOffers(tx, order.id);
+      await this.moveToManual(tx, locked, 'operations', failed, now, command.admin.accountId);
+      await this.audit.recordWrite(
+        {
+          actor: {
+            type: 'admin',
+            id: command.admin.accountId,
+            role: command.admin.roles.join(','),
+          },
+          context: command.context,
+          cityId: order.cityId,
+          action: 'order.manual_dispatch',
+          target: { type: 'order', id: order.id },
+          before: { mode, manual: false },
+          after: { mode, manual: true, failedOffers: failed },
+          reason: null,
+        },
+        tx,
+      );
+      await keepKey(tx, command.admin.accountId, command.idempotencyKey, hash, order, null, now);
+    });
+    return this.state(order.id, now);
+  }
+
+  // AP §9.3.1, §9.7.4 (slice 2.15c): every offer of the order, oldest
+  // first, with its captain, its kind, its answer and the response time (an
+  // answer's seconds; none for an expired, withdrawn or open offer).
+  async orderOffers(orderId: string, now: Date): Promise<OrderOffer[]> {
+    const order = await this.assignments.find(orderId);
+    if (order === null) throw new DispatchRefusedError('unknown_order', 'no such order');
+    const rows = await this.database.db
+      .select()
+      .from(offers)
+      .where(eq(offers.orderId, orderId))
+      .orderBy(offers.offeredAt);
+    const names = new Map(
+      await Promise.all(
+        [...new Set(rows.map((row) => row.captainId))].map(
+          async (captainId) =>
+            [captainId, (await this.captains.captain(captainId, now))?.name ?? ''] as const,
+        ),
+      ),
+    );
+    return rows.map((row) => ({
+      id: row.id,
+      captain: { id: row.captainId, name: names.get(row.captainId) ?? '' },
+      kind: row.kind,
+      handover: row.handover,
+      offeredAt: row.offeredAt,
+      expiresAt: row.expiresAt,
+      status: row.status,
+      respondedAt: row.respondedAt,
+      responseSec:
+        row.respondedAt !== null && (row.status === 'accepted' || row.status === 'declined')
+          ? Math.round((row.respondedAt.getTime() - row.offeredAt.getTime()) / 1000)
+          : null,
+    }));
+  }
+
+  // The order leaves automatic dispatch, under its lock: the manual_orders
+  // row and order.moved_to_manual (the system's for «مختلط», the admin's for
+  // «توزيع يدوي لهذا الطلب»), so the board hears it. False when it had left.
+  private async moveToManual(
+    tx: Tx,
+    order: DispatchOrder,
+    reason: ManualReason,
+    failedOffers: number,
+    now: Date,
+    adminId: string | null = null,
+  ): Promise<boolean> {
+    const [inserted] = await tx
+      .insert(manualOrders)
+      .values({
+        orderId: order.id,
+        orderPlacedAt: order.placedAt,
+        cityId: order.cityId,
+        reason,
+        failedOffers,
+        at: now,
+        by: adminId,
+      })
+      .onConflictDoNothing()
+      .returning({ orderId: manualOrders.orderId });
+    if (!inserted) return false;
+    await this.assignments.change(
+      tx,
+      order,
+      { type: 'order.moved_to_manual', reason },
+      adminId === null ? { type: 'system', id: null } : { type: 'admin', id: adminId },
+      now,
+    );
+    return true;
   }
 
   // AP §9.3.2 «تعيين كابتن»: with dispatch.manual_assign_requires_accept the
@@ -737,7 +947,7 @@ export class DispatchService implements OnModuleInit {
         const reason: ManualReason | null =
           failed >= maxFailed ? 'max_offers' : alerted ? 'no_captain_alert' : null;
         if (reason !== null) {
-          await insertManual(tx, current, reason, failed, now);
+          await this.moveToManual(tx, current, reason, failed, now);
           return 'manual';
         }
       }
@@ -773,8 +983,7 @@ export class DispatchService implements OnModuleInit {
     const left = await this.database.db.transaction(async (tx) => {
       const locked = await this.assignments.lock(tx, order.id, order.placedAt);
       if (!locked || !this.assignments.assignable(locked)) return false;
-      await insertManual(tx, locked, reason, await failedAutoOffers(tx, order.id), now);
-      return true;
+      return this.moveToManual(tx, locked, reason, await failedAutoOffers(tx, order.id), now);
     });
     if (left) this.logger.log({ orderId: order.id, reason }, 'order left automatic dispatch');
   }
@@ -1348,24 +1557,13 @@ async function failedAutoOffers(executor: Executor, orderId: string): Promise<nu
   return row?.n ?? 0;
 }
 
-async function insertManual(
-  tx: Tx,
-  order: DispatchOrder,
-  reason: ManualReason,
-  failedOffers: number,
-  now: Date,
-): Promise<void> {
-  await tx
-    .insert(manualOrders)
-    .values({
-      orderId: order.id,
-      orderPlacedAt: order.placedAt,
-      cityId: order.cityId,
-      reason,
-      failedOffers,
-      at: now,
-    })
-    .onConflictDoNothing();
+// AP §9.3.2 «توزيع يدوي لهذا الطلب»: before assignment, an order still
+// placed, accepted or ready with no captain (an open offer may run).
+function beforeAssignment(order: DispatchOrder): boolean {
+  return (
+    (order.status === 'placed' || order.status === 'accepted' || order.status === 'ready') &&
+    order.captainId === null
+  );
 }
 
 function manualBy(command: AdminCommand): Offerer {

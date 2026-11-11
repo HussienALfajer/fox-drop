@@ -76,6 +76,8 @@ export 'package:core_api/src/model/admin_order_card_dto_output.dart';
 export 'package:core_api/src/model/admin_order_card_dto_output_order.dart';
 export 'package:core_api/src/model/admin_order_card_dto_output_order_badges.dart';
 export 'package:core_api/src/model/admin_order_card_dto_output_order_captain.dart';
+export 'package:core_api/src/model/admin_order_card_dto_output_order_dispatch.dart';
+export 'package:core_api/src/model/admin_order_card_dto_output_order_dispatch_manual.dart';
 export 'package:core_api/src/model/admin_order_card_dto_output_order_moments.dart';
 export 'package:core_api/src/model/admin_order_card_dto_output_order_restaurant.dart';
 export 'package:core_api/src/model/admin_order_card_dto_output_order_total.dart';
@@ -133,6 +135,8 @@ export 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner.d
 export 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_actor.dart';
 export 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_item_report.dart';
 export 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_time_change.dart';
+export 'package:core_api/src/model/admin_order_offers_dto_output.dart';
+export 'package:core_api/src/model/admin_order_offers_dto_output_offers_inner.dart';
 export 'package:core_api/src/model/admin_outcome_change_preview_answer_dto_output.dart';
 export 'package:core_api/src/model/admin_outcome_change_preview_answer_dto_output_dues.dart';
 export 'package:core_api/src/model/admin_outcome_change_preview_dto.dart';

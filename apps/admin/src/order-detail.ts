@@ -32,6 +32,7 @@ export const eventKeys = {
   'order.ready': 'order.event.ready',
   'order.cancelled': 'order.event.cancelled',
   'order.search_started': 'order.event.searchStarted',
+  'order.moved_to_manual': 'order.event.movedToManual',
   'order.offered': 'order.event.offered',
   'order.offer_closed': 'order.event.offerClosed',
   'order.assigned': 'order.event.assigned',
@@ -122,6 +123,12 @@ const reasonKeysByType = {
     operations: 'order.reason.byOperations',
   },
   'order.cancelled': { merchant_auto_cancel: 'order.reason.merchantAutoCancel' },
+  // AP §9.12.6 (slice 2.15c): why the order left automatic dispatch.
+  'order.moved_to_manual': {
+    max_offers: 'dispatch.manual.max_offers',
+    no_captain_alert: 'dispatch.manual.no_captain_alert',
+    operations: 'dispatch.manual.operations',
+  },
   'order.outcome_set': outcomeReasonKeys(),
   'order.outcome_changed': outcomeReasonKeys(),
 } as const;

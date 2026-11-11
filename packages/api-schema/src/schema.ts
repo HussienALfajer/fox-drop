@@ -2996,6 +2996,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/orders/{orderId}/manual-dispatch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminDispatchManualDispatch"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/orders/{orderId}/offers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminDispatchOffers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/orders/{orderId}/handover": {
         parameters: {
             query?: never;
@@ -5958,8 +5990,32 @@ export interface components {
                     amount: string;
                     currency: string;
                 };
+                /** @description AP §9.2.1, §9.12.6 (slice 2.15c): how the order is being dispatched. */
+                dispatch: {
+                    /**
+                     * @description The city’s dispatch.mode now.
+                     * @enum {string}
+                     */
+                    mode: "manual" | "auto" | "mixed";
+                    /** @description The order left automatic dispatch for operations; null while it has not. */
+                    manual: {
+                        /**
+                         * @description «مختلط»’s fallback after dispatch.max_offers_before_manual failed offers or at the no-captain alert, or «توزيع يدوي لهذا الطلب».
+                         * @enum {string}
+                         */
+                        reason: "max_offers" | "no_captain_alert" | "operations";
+                        /** Format: date-time */
+                        at: string;
+                    } | null;
+                    /** @description The automatic offers sent so far, the open one included: «العرض {ن}». */
+                    autoOffers: number;
+                    /** @description The open offer is the dispatcher’s; false for operations’ own offer. */
+                    autoOfferOpen: boolean;
+                    /** @description «مختلط»: dispatch.max_offers_before_manual, «من {م}»; null otherwise. */
+                    maxOffers: number | null;
+                };
                 badges: {
-                    /** @description «بحاجة لتعيين» (AP §8.3). */
+                    /** @description «بحاجة لتعيين» (AP §8.3): searching in «يدوي», or after leaving automatic dispatch. */
                     needsAssignment: boolean;
                     /** @description «ملاحظة». */
                     note: boolean;
@@ -6552,8 +6608,32 @@ export interface components {
                     amount: string;
                     currency: string;
                 };
+                /** @description AP §9.2.1, §9.12.6 (slice 2.15c): how the order is being dispatched. */
+                dispatch: {
+                    /**
+                     * @description The city’s dispatch.mode now.
+                     * @enum {string}
+                     */
+                    mode: "manual" | "auto" | "mixed";
+                    /** @description The order left automatic dispatch for operations; null while it has not. */
+                    manual: {
+                        /**
+                         * @description «مختلط»’s fallback after dispatch.max_offers_before_manual failed offers or at the no-captain alert, or «توزيع يدوي لهذا الطلب».
+                         * @enum {string}
+                         */
+                        reason: "max_offers" | "no_captain_alert" | "operations";
+                        /** Format: date-time */
+                        at: string;
+                    } | null;
+                    /** @description The automatic offers sent so far, the open one included: «العرض {ن}». */
+                    autoOffers: number;
+                    /** @description The open offer is the dispatcher’s; false for operations’ own offer. */
+                    autoOfferOpen: boolean;
+                    /** @description «مختلط»: dispatch.max_offers_before_manual, «من {م}»; null otherwise. */
+                    maxOffers: number | null;
+                };
                 badges: {
-                    /** @description «بحاجة لتعيين» (AP §8.3). */
+                    /** @description «بحاجة لتعيين» (AP §8.3): searching in «يدوي», or after leaving automatic dispatch. */
                     needsAssignment: boolean;
                     /** @description «ملاحظة». */
                     note: boolean;
@@ -6628,8 +6708,32 @@ export interface components {
                     amount: string;
                     currency: string;
                 };
+                /** @description AP §9.2.1, §9.12.6 (slice 2.15c): how the order is being dispatched. */
+                dispatch: {
+                    /**
+                     * @description The city’s dispatch.mode now.
+                     * @enum {string}
+                     */
+                    mode: "manual" | "auto" | "mixed";
+                    /** @description The order left automatic dispatch for operations; null while it has not. */
+                    manual: {
+                        /**
+                         * @description «مختلط»’s fallback after dispatch.max_offers_before_manual failed offers or at the no-captain alert, or «توزيع يدوي لهذا الطلب».
+                         * @enum {string}
+                         */
+                        reason: "max_offers" | "no_captain_alert" | "operations";
+                        /** Format: date-time */
+                        at: string;
+                    } | null;
+                    /** @description The automatic offers sent so far, the open one included: «العرض {ن}». */
+                    autoOffers: number;
+                    /** @description The open offer is the dispatcher’s; false for operations’ own offer. */
+                    autoOfferOpen: boolean;
+                    /** @description «مختلط»: dispatch.max_offers_before_manual, «من {م}»; null otherwise. */
+                    maxOffers: number | null;
+                };
                 badges: {
-                    /** @description «بحاجة لتعيين» (AP §8.3). */
+                    /** @description «بحاجة لتعيين» (AP §8.3): searching in «يدوي», or after leaving automatic dispatch. */
                     needsAssignment: boolean;
                     /** @description «ملاحظة». */
                     note: boolean;
@@ -8337,6 +8441,37 @@ export interface components {
                     handover: boolean;
                 } | null;
             };
+        };
+        AdminOrderOffersDto_Output: {
+            /** @description Every offer of the order, oldest first (AP §9.3.1, §9.7.4). */
+            offers: {
+                /** Format: uuid */
+                id: string;
+                captain: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                };
+                /**
+                 * @description Operations’ («تعيين من العمليات») or the automatic dispatcher’s.
+                 * @enum {string}
+                 */
+                kind: "manual" | "auto";
+                /** @description «استلام من كابتن» (AP §9.3.2, CA §9.10.1). */
+                handover: boolean;
+                /** Format: date-time */
+                offeredAt: string;
+                /** Format: date-time */
+                expiresAt: string;
+                /**
+                 * @description The answer: accepted, declined, expired («انتهت المهلة»), withdrawn.
+                 * @enum {string}
+                 */
+                status: "open" | "accepted" | "declined" | "expired" | "withdrawn";
+                respondedAt: string | null;
+                /** @description Seconds to an acceptance or a decline; null otherwise. */
+                responseSec: number | null;
+            }[];
         };
         AdminHandoverDto: {
             /**
@@ -13226,6 +13361,53 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminDispatchStateDto_Output"];
+                };
+            };
+        };
+    };
+    adminDispatchManualDispatch: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDispatchStateDto_Output"];
+                };
+            };
+        };
+    };
+    adminDispatchOffers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderOffersDto_Output"];
                 };
             };
         };

@@ -11,7 +11,7 @@ part 'admin_order_card_dto_output_order_badges.g.dart';
 /// AdminOrderCardDtoOutputOrderBadges
 ///
 /// Properties:
-/// * [needsAssignment] - «بحاجة لتعيين» (AP §8.3).
+/// * [needsAssignment] - «بحاجة لتعيين» (AP §8.3): searching in «يدوي», or after leaving automatic dispatch.
 /// * [note] - «ملاحظة».
 /// * [newCustomer] - «زبون جديد»: no delivered order yet.
 /// * [pickupPending] - «بانتظار تأكيد الاستلام» (AP §9.2.1).
@@ -26,7 +26,7 @@ abstract class AdminOrderCardDtoOutputOrderBadges
           AdminOrderCardDtoOutputOrderBadges,
           AdminOrderCardDtoOutputOrderBadgesBuilder
         > {
-  /// «بحاجة لتعيين» (AP §8.3).
+  /// «بحاجة لتعيين» (AP §8.3): searching in «يدوي», or after leaving automatic dispatch.
   @BuiltValueField(wireName: r'needsAssignment')
   bool get needsAssignment;
 

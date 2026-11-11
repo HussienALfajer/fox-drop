@@ -94,9 +94,10 @@ export const offers = dispatch.table(
 
 // AP §9.12.6 «مختلط» (slice 2.15b): an order that left automatic dispatch
 // for operations («بحاجة لتعيين») after dispatch.max_offers_before_manual
-// failed offers or at the no-captain alert; no automatic offer follows. Kept,
-// never updated.
-export const manualReasons = ['max_offers', 'no_captain_alert'] as const;
+// failed offers or at the no-captain alert; AP §9.3.2 «توزيع يدوي لهذا
+// الطلب» (slice 2.15c): operations took it out (operations, with the
+// admin). No automatic offer follows. Kept, never updated.
+export const manualReasons = ['max_offers', 'no_captain_alert', 'operations'] as const;
 
 export const manualOrders = dispatch.table(
   'manual_orders',
@@ -109,12 +110,15 @@ export const manualOrders = dispatch.table(
     // The automatic offers that had failed (declined, expired, withdrawn).
     failedOffers: integer('failed_offers').notNull(),
     at: timestamp('at', { withTimezone: true }).notNull(),
+    // The identity module's admin account of «توزيع يدوي لهذا الطلب».
+    by: uuid('by'),
   },
   (table) => [
     check(
       'manual_orders_reason_values',
-      sql`${table.reason} IN ('max_offers', 'no_captain_alert')`,
+      sql`${table.reason} IN ('max_offers', 'no_captain_alert', 'operations')`,
     ),
+    check('manual_orders_by', sql`(${table.reason} = 'operations') = (${table.by} IS NOT NULL)`),
     check('manual_orders_failed', sql`${table.failedOffers} >= 0`),
   ],
 );

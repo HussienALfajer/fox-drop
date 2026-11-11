@@ -16,6 +16,8 @@ import { canSetOutcome } from './order-outcome.js';
 import { RecordOutcomePayment } from './order-outcome-payment-page.js';
 import { canRecordOutcomePayment } from './order-outcome-payment.js';
 import { canCancel } from './order-cancel.js';
+import { DispatchState, MoveToManual, OffersLog } from './order-dispatch-page.js';
+import { canMoveToManual } from './order-dispatch.js';
 import { ReassignOrder } from './order-reassign-page.js';
 import { canHandOver, handoverState } from './order-handover.js';
 import { canReassign } from './order-reassign.js';
@@ -338,6 +340,8 @@ export function OrderDetailPage() {
         <ForceOffline key={detail.captain.id} captainId={detail.captain.id} />
       )}
       {detail.captainTrack === 'offered' && <p>{t('order.offerOpen')}</p>}
+      <DispatchState card={detail} />
+      {canMoveToManual(session, detail) && <MoveToManual key={orderId} orderId={orderId} />}
       {can(session, OPERATIONS_MANAGE) && canAssign(detail) && (
         <p>
           <Link to="/orders/$orderId/assign" params={{ orderId }} search>
@@ -356,6 +360,7 @@ export function OrderDetailPage() {
         </p>
       )}
       <Outlet />
+      <OffersLog orderId={orderId} cityId={city.id} time={time} />
       {detail.handover.handovers.length > 0 && (
         <section>
           <h4>{t('order.handovers.title')}</h4>

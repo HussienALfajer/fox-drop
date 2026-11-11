@@ -75,6 +75,8 @@ import 'package:core_api/src/model/admin_order_card_dto_output.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_badges.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_captain.dart';
+import 'package:core_api/src/model/admin_order_card_dto_output_order_dispatch.dart';
+import 'package:core_api/src/model/admin_order_card_dto_output_order_dispatch_manual.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_moments.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_restaurant.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_total.dart';
@@ -132,6 +134,8 @@ import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner.d
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_actor.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_item_report.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_time_change.dart';
+import 'package:core_api/src/model/admin_order_offers_dto_output.dart';
+import 'package:core_api/src/model/admin_order_offers_dto_output_offers_inner.dart';
 import 'package:core_api/src/model/admin_outcome_change_preview_answer_dto_output.dart';
 import 'package:core_api/src/model/admin_outcome_change_preview_answer_dto_output_dues.dart';
 import 'package:core_api/src/model/admin_outcome_change_preview_dto.dart';
@@ -542,6 +546,8 @@ part 'serializers.g.dart';
   AdminOrderCardDtoOutputOrder,
   AdminOrderCardDtoOutputOrderBadges,
   AdminOrderCardDtoOutputOrderCaptain,
+  AdminOrderCardDtoOutputOrderDispatch,
+  AdminOrderCardDtoOutputOrderDispatchManual,
   AdminOrderCardDtoOutputOrderMoments,
   AdminOrderCardDtoOutputOrderRestaurant,
   AdminOrderCardDtoOutputOrderTotal,
@@ -599,6 +605,8 @@ part 'serializers.g.dart';
   AdminOrderDtoOutputOrderTimelineInnerActor,
   AdminOrderDtoOutputOrderTimelineInnerItemReport,
   AdminOrderDtoOutputOrderTimelineInnerTimeChange,
+  AdminOrderOffersDtoOutput,
+  AdminOrderOffersDtoOutputOffersInner,
   AdminOutcomeChangePreviewAnswerDtoOutput,
   AdminOutcomeChangePreviewAnswerDtoOutputDues,
   AdminOutcomeChangePreviewDto,
@@ -1139,6 +1147,12 @@ Serializers serializers =
               FullType(MerchantPickupDisputeDtoReceivedLinesInner),
             ]),
             () => ListBuilder<MerchantPickupDisputeDtoReceivedLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminOrderOffersDtoOutputOffersInner),
+            ]),
+            () => ListBuilder<AdminOrderOffersDtoOutputOffersInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

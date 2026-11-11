@@ -88,6 +88,8 @@ const CUSTOMER_SKIPS = new Set([
   'order.search_started',
   'order.offered',
   'order.offer_closed',
+  // AP §9.12.6 (slice 2.15c): for operations' board only.
+  'order.moved_to_manual',
   'order.pickup_requested',
   'order.pickup_rejected',
   'order.pickup_disputed',
@@ -116,6 +118,8 @@ const CUSTOMER_SKIPS = new Set([
 // AP §10: the restaurant hears nothing of a handover but the receipt, which
 // changes the captain its board shows.
 const MERCHANT_SKIPS = new Set([
+  // AP §9.12.6 (slice 2.15c): how operations dispatch the order.
+  'order.moved_to_manual',
   'order.handover_offered',
   'order.handover_assigned',
   'order.handover_closed',
@@ -131,8 +135,9 @@ const MERCHANT_SKIPS = new Set([
   'order.no_answer_waited',
 ]);
 
-// The restaurant's own steps the captain's channel never carries.
-const CAPTAIN_SKIPS = new Set(['order.cancellation_acknowledged']);
+// The restaurant's own steps and operations' dispatch the captain's channel
+// never carries.
+const CAPTAIN_SKIPS = new Set(['order.cancellation_acknowledged', 'order.moved_to_manual']);
 
 // Events whose reason is operations' text for the restaurant (RA §16 #37):
 // the captain's and the customer's channels carry them without it (AP §10).

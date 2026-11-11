@@ -8,6 +8,7 @@ import 'package:core_api/src/model/admin_order_card_dto_output_order_total.dart'
 import 'package:core_api/src/model/admin_order_card_dto_output_order_badges.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_moments.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_captain.dart';
+import 'package:core_api/src/model/admin_order_card_dto_output_order_dispatch.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_restaurant.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -29,6 +30,7 @@ part 'admin_order_card_dto_output_order.g.dart';
 /// * [captainTrack] - AP §8.2; null before the search starts and before any offer.
 /// * [captain]
 /// * [total]
+/// * [dispatch]
 /// * [badges]
 /// * [moments]
 /// * [alerts] - AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active.
@@ -82,6 +84,9 @@ abstract class AdminOrderCardDtoOutputOrder
 
   @BuiltValueField(wireName: r'total')
   AdminOrderCardDtoOutputOrderTotal get total;
+
+  @BuiltValueField(wireName: r'dispatch')
+  AdminOrderCardDtoOutputOrderDispatch get dispatch;
 
   @BuiltValueField(wireName: r'badges')
   AdminOrderCardDtoOutputOrderBadges get badges;
@@ -193,6 +198,11 @@ class _$AdminOrderCardDtoOutputOrderSerializer
     yield serializers.serialize(
       object.total,
       specifiedType: const FullType(AdminOrderCardDtoOutputOrderTotal),
+    );
+    yield r'dispatch';
+    yield serializers.serialize(
+      object.dispatch,
+      specifiedType: const FullType(AdminOrderCardDtoOutputOrderDispatch),
     );
     yield r'badges';
     yield serializers.serialize(
@@ -355,6 +365,17 @@ class _$AdminOrderCardDtoOutputOrderSerializer
                   )
                   as AdminOrderCardDtoOutputOrderTotal;
           result.total.replace(valueDes);
+          break;
+        case r'dispatch':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminOrderCardDtoOutputOrderDispatch,
+                    ),
+                  )
+                  as AdminOrderCardDtoOutputOrderDispatch;
+          result.dispatch.replace(valueDes);
           break;
         case r'badges':
           final valueDes =

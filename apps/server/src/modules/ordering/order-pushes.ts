@@ -430,7 +430,8 @@ export function orderPushes(
         }),
       ];
     default:
-      // The search and an offer closing are silent (CA §14 #2).
+      // The search, an offer closing and the move to manual dispatch are
+      // silent (CA §14 #2).
       return [];
   }
 }

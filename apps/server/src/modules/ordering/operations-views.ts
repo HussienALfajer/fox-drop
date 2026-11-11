@@ -7,6 +7,7 @@ import { MerchantsService } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
 import { UNTIL_ENDED } from './active-orders.js';
 import { orderAlerts, type OrderAlertCode } from './order-alerts.js';
+import { type DispatchView, OrderAssignments } from './order-assignments.js';
 import type { CaptainTrack } from './order-events.js';
 import { orderKey, readOrders, type OrderView } from './order-views.js';
 import {
@@ -44,8 +45,12 @@ export interface OperationsOrder {
     captainWaitingAlertAt: Date | null;
   };
   alerts: OperationsAlert[];
+  // AP §9.2.1, §9.3.1 (slice 2.15c): the order's dispatch state.
+  dispatch: DispatchView;
   // The badges built so far: «بحاجة لتعيين», «ملاحظة», «زبون جديد»,
-  // «بانتظار تأكيد الاستلام» (AP §9.2.1).
+  // «بانتظار تأكيد الاستلام» (AP §9.2.1). «بحاجة لتعيين» is a searching
+  // order in «يدوي» (D6, AP §9.12.6), or one that left automatic dispatch;
+  // the dispatcher offers the others.
   needsAssignment: boolean;
   pickupPending: boolean;
   // K9 (slice 2.11b): «بانتظار تسجيل التحصيل».
@@ -100,6 +105,7 @@ export class OperationsViews {
     private readonly merchants: MerchantsService,
     private readonly captains: CaptainsService,
     private readonly settings: SettingsService,
+    private readonly assignments: OrderAssignments,
   ) {}
 
   // The board: every live order of the city, from placed to arrived, oldest
@@ -254,7 +260,7 @@ export class OperationsViews {
     const names = await this.merchants.names([...new Set(views.map((view) => view.restaurantId))]);
     const captainIds = [...new Set(extras.flatMap((row) => row.captainId ?? []))];
     const cityIds = [...new Set(extras.map((row) => row.cityId))];
-    const [rules, fixes, shortfalls] = await Promise.all([
+    const [rules, fixes, shortfalls, dispatchViews] = await Promise.all([
       Promise.all(
         cityIds.map(async (cityId) => {
           const [lateMin, gpsStaleMin, editAlertMin] = await Promise.all([
@@ -271,6 +277,7 @@ export class OperationsViews {
         .from(collections)
         .where(and(inArray(collections.orderId, ids), gt(collections.shortfall, 0n)))
         .then((rows) => new Set(rows.map((row) => row.orderId))),
+      this.assignments.dispatchViews(extras.map((row) => ({ id: row.id, cityId: row.cityId }))),
     ]);
     const captains = new Map(
       (await Promise.all(captainIds.map((id) => this.captains.captain(id, now)))).flatMap(
@@ -284,6 +291,7 @@ export class OperationsViews {
         ? new Date(view.acceptance.at.getTime() + view.acceptance.prepMin * 60_000)
         : null;
       const rule = rules.get(more.cityId)!;
+      const dispatch = dispatchViews.get(view.id)!;
       const { open } = orderAlerts(
         {
           status: view.status,
@@ -357,7 +365,10 @@ export class OperationsViews {
           captainWaitingAlertAt: view.captainArrival?.waitingAlertAt ?? null,
         },
         alerts,
-        needsAssignment: more.captainTrack === 'searching',
+        dispatch,
+        needsAssignment:
+          more.captainTrack === 'searching' &&
+          (dispatch.mode === 'manual' || dispatch.manual !== null),
         pickupPending: more.captainTrack === 'pickup_pending',
         awaitingCollection: view.outcome?.awaitingCollection ?? false,
         pickupRequests: requests.get(view.id) ?? [],

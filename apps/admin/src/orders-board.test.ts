@@ -29,6 +29,13 @@ function card(overrides: Partial<OrderCard>): OrderCard {
     captainTrack: null,
     captain: null,
     total: { amount: '1000', currency: 'USD' },
+    dispatch: {
+      mode: 'manual',
+      manual: null,
+      autoOffers: 0,
+      autoOfferOpen: false,
+      maxOffers: null,
+    },
     badges: {
       needsAssignment: false,
       note: false,

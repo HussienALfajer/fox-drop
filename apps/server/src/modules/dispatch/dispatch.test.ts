@@ -199,14 +199,23 @@ async function admin(roles: string[]) {
         headers: { 'idempotency-key': key },
         payload: { captainId },
       }),
+    manualDispatch: (orderId: string, key: string = randomUUID()) =>
+      app.inject({
+        method: 'POST',
+        url: `/v1/admin/orders/${orderId}/manual-dispatch`,
+        cookies,
+        headers: { 'idempotency-key': key },
+      }),
   };
 }
 
 // A placed order the restaurant accepted, its search started.
 // At the main restaurant unless another is given (automatic dispatch's,
 // apart from the manual tests' captains).
+// With accept false, the order stays placed.
 async function acceptedOrder(
   at: { restaurant: string; item: string; home: Point } = { restaurant, item, home },
+  { accept = true }: { accept?: boolean } = {},
 ): Promise<{ id: string; placedAt: string }> {
   const customer = await appSignIn('customer', phoneNumber());
   const lines = [
@@ -248,6 +257,7 @@ async function acceptedOrder(
   });
   expect(placed.statusCode).toBe(201);
   const order = placed.json().order;
+  if (!accept) return { id: order.id, placedAt: order.placedAt };
   const phone = phoneNumber();
   await app
     .get(MerchantAccountsService)
@@ -1216,6 +1226,193 @@ describe('automatic dispatch (AP §9.12.6, CA §8.1)', () => {
     expect(assigned.statusCode).toBe(200);
   });
 
+  // The order's card on the board.
+  const cardOf = async (orderId: string) =>
+    (
+      (await (await admin(['SUP'])).get(`/v1/admin/orders?cityId=${azaz}`)).json().orders as {
+        id: string;
+      }[]
+    ).find((each) => each.id === orderId) as Record<string, unknown>;
+
+  it('shows the dispatch state on the card: «بحاجة لتعيين» only once the order left automatic dispatch', async () => {
+    await mode('mixed');
+    await update('dispatch.max_offers_before_manual', 2);
+    const order = await searchingOrder();
+    expect(await cardOf(order.id)).toMatchObject({
+      captainTrack: 'searching',
+      badges: { needsAssignment: false },
+      dispatch: { mode: 'mixed', manual: null, autoOffers: 0, maxOffers: 2 },
+    });
+    const first = await captainNorth(200);
+    const second = await captainNorth(400);
+    await dispatch().autoDispatchCity(azaz, new Date());
+    expect(await cardOf(order.id)).toMatchObject({
+      captainTrack: 'offered',
+      dispatch: { autoOffers: 1, autoOfferOpen: true, maxOffers: 2 },
+    });
+    for (const captain of [first, second]) {
+      if (captain === second) await dispatch().autoDispatchCity(azaz, new Date());
+      await captain.call('POST', `/v1/captain/offers/${(await currentOffer(captain)).id}/decline`);
+    }
+    await dispatch().autoDispatchCity(azaz, new Date());
+    const card = await cardOf(order.id);
+    expect(card).toMatchObject({
+      badges: { needsAssignment: true },
+      dispatch: { mode: 'mixed', manual: { reason: 'max_offers' }, autoOffers: 2 },
+    });
+    // The move is an event of the order, so the board hears it (AP §9.3.1).
+    const event = await sql.query(
+      "SELECT actor_type, reason FROM ordering.order_events WHERE order_id = $1 AND type = 'order.moved_to_manual'",
+      [order.id],
+    );
+    expect(event.rows).toEqual([{ actor_type: 'system', reason: 'max_offers' }]);
+    expect(await outboxTypes(order.id)).toContain('order.moved_to_manual');
+    // In «آلي» there is no limit; in «يدوي» every searching order needs
+    // assignment (D6).
+    const other = await searchingOrder();
+    await mode('auto');
+    expect(await cardOf(other.id)).toMatchObject({
+      badges: { needsAssignment: false },
+      dispatch: { mode: 'auto', manual: null, maxOffers: null },
+    });
+    await mode('manual');
+    expect(await cardOf(other.id)).toMatchObject({
+      badges: { needsAssignment: true },
+      dispatch: { mode: 'manual' },
+    });
+  });
+
+  it('«توزيع يدوي لهذا الطلب»: takes the order out, its open offer keeping its time (AP §9.3.2)', async () => {
+    await mode('auto');
+    const order = await searchingOrder();
+    const first = await captainNorth(200);
+    await captainNorth(400);
+    await dispatch().autoDispatchCity(azaz, new Date());
+    const offer = await currentOffer(first);
+    expect(offer).not.toBeNull();
+
+    const ops = await admin(['OPS']);
+    const key = randomUUID();
+    const moved = await ops.manualDispatch(order.id, key);
+    expect(moved.statusCode).toBe(200);
+    expect(moved.json().order).toMatchObject({
+      captainTrack: 'offered',
+      offer: { id: offer.id, captainId: first.captainId },
+    });
+    const row = await sql.query(
+      'SELECT reason, failed_offers, by FROM dispatch.manual_orders WHERE order_id = $1',
+      [order.id],
+    );
+    expect(row.rows).toEqual([{ reason: 'operations', failed_offers: 0, by: ops.accountId }]);
+    const event = await sql.query(
+      "SELECT actor_type, actor_id, reason FROM ordering.order_events WHERE order_id = $1 AND type = 'order.moved_to_manual'",
+      [order.id],
+    );
+    expect(event.rows).toEqual([
+      { actor_type: 'admin', actor_id: ops.accountId, reason: 'operations' },
+    ]);
+    const audit = await sql.query(
+      "SELECT 1 FROM audit.events WHERE action = 'order.manual_dispatch' AND target_id = $1",
+      [order.id],
+    );
+    expect(audit.rowCount).toBe(1);
+    // A repeat answers again; another key finds it out already.
+    expect((await ops.manualDispatch(order.id, key)).statusCode).toBe(200);
+    const again = await ops.manualDispatch(order.id);
+    expect(again.statusCode).toBe(409);
+    expect(again.json().error).toBe('order_not_automatic');
+
+    // The open offer keeps its time; declined, no automatic offer follows.
+    expect((await offerRow(offer.id)).status).toBe('open');
+    await first.call('POST', `/v1/captain/offers/${offer.id}/decline`);
+    expect(await dispatch().autoDispatchCity(azaz, new Date())).toBe(0);
+    expect(await cardOf(order.id)).toMatchObject({
+      captainTrack: 'searching',
+      badges: { needsAssignment: true },
+      dispatch: { mode: 'auto', manual: { reason: 'operations' }, autoOffers: 1 },
+    });
+  });
+
+  it('«توزيع يدوي لهذا الطلب» in «مختلط» keeps the failed offers, and works on a placed order', async () => {
+    await mode('mixed');
+    const order = await searchingOrder();
+    const first = await captainNorth(200);
+    await dispatch().autoDispatchCity(azaz, new Date());
+    await first.call('POST', `/v1/captain/offers/${(await currentOffer(first)).id}/decline`);
+    const ops = await admin(['OPS']);
+    const key = randomUUID();
+    expect((await ops.manualDispatch(order.id, key)).statusCode).toBe(200);
+    expect(await manualRow(order.id)).toEqual([{ reason: 'operations', failed_offers: 1 }]);
+    expect(await cardOf(order.id)).toMatchObject({
+      badges: { needsAssignment: true },
+      dispatch: { autoOffers: 1, autoOfferOpen: false },
+    });
+    // The key belongs to that order's move (architecture §5.3).
+    const other = await searchingOrder();
+    const reused = await ops.manualDispatch(other.id, key);
+    expect(reused.statusCode).toBe(422);
+    expect(reused.json().error).toBe('idempotency_key_reused');
+
+    // AP §9.3.2 «Before assignment»: an order the restaurant has not
+    // accepted yet leaves too, and its automatic cancellation still runs.
+    const fresh = await acceptedOrder(at, { accept: false });
+    expect((await ops.manualDispatch(fresh.id)).statusCode).toBe(200);
+    expect(await manualRow(fresh.id)).toEqual([{ reason: 'operations', failed_offers: 0 }]);
+    expect(await orderRow(fresh.id)).toMatchObject({ status: 'placed', version: 2 });
+  });
+
+  it('refuses «توزيع يدوي لهذا الطلب» in manual mode, after assignment, and to SUP', async () => {
+    const order = await searchingOrder();
+    const ops = await admin(['OPS']);
+    const manual = await ops.manualDispatch(order.id);
+    expect(manual.statusCode).toBe(409);
+    expect(manual.json().error).toBe('order_not_automatic');
+    await mode('auto');
+    expect((await (await admin(['SUP'])).manualDispatch(order.id)).statusCode).toBe(403);
+    expect((await ops.manualDispatch(randomUUID())).statusCode).toBe(404);
+    const captain = await captainNorth(200);
+    expect((await ops.assign(order.id, captain.captainId)).statusCode).toBe(200);
+    await captain.call('POST', `/v1/captain/offers/${(await currentOffer(captain)).id}/accept`);
+    const assigned = await ops.manualDispatch(order.id);
+    expect(assigned.statusCode).toBe(409);
+    expect(assigned.json().error).toBe('order_not_assignable');
+  });
+
+  it("lists the order's offers with the captain, the answer and the response time (AP §9.7.4)", async () => {
+    await mode('auto');
+    const order = await searchingOrder();
+    const first = await captainNorth(200);
+    const second = await captainNorth(400);
+    await dispatch().autoDispatchCity(azaz, new Date());
+    await first.call('POST', `/v1/captain/offers/${(await currentOffer(first)).id}/decline`);
+    await dispatch().autoDispatchCity(azaz, new Date());
+    const sup = await admin(['SUP']);
+    const log = await sup.get(`/v1/admin/orders/${order.id}/offers`);
+    expect(log.statusCode).toBe(200);
+    const offers = log.json().offers as Record<string, unknown>[];
+    expect(offers).toMatchObject([
+      {
+        captain: { id: first.captainId, name: 'كابتن التوزيع' },
+        kind: 'auto',
+        handover: false,
+        status: 'declined',
+      },
+      {
+        captain: { id: second.captainId },
+        kind: 'auto',
+        status: 'open',
+        respondedAt: null,
+        responseSec: null,
+      },
+    ]);
+    expect(offers[0]!.responseSec).toEqual(expect.any(Number));
+    expect(offers[0]!.respondedAt).toEqual(expect.any(String));
+    expect((await sup.get(`/v1/admin/orders/${randomUUID()}/offers`)).statusCode).toBe(404);
+    expect(
+      (await (await admin(['DATA'])).get(`/v1/admin/orders/${order.id}/offers`)).statusCode,
+    ).toBe(403);
+  });
+
   it('«مختلط»: leaves automatic dispatch at the no-captain alert, while «آلي» keeps searching', async () => {
     const order = await searchingOrder();
     const captain = await captainNorth(200);
@@ -1284,5 +1481,14 @@ describe('the dispatcher role (architecture §4.4)', () => {
     await expect(
       sql.query("UPDATE dispatch.manual_orders SET reason = 'max_offers'"),
     ).rejects.toThrow(/permission denied/);
+    // Operations' move names its admin, and only it does (a CHECK).
+    const insert = (reason: string, by: string | null) =>
+      sql.query(
+        `INSERT INTO dispatch.manual_orders (order_id, order_placed_at, city_id, reason, failed_offers, at, by)
+         VALUES ($1, now(), $2, $3, 0, now(), $4)`,
+        [randomUUID(), azaz, reason, by],
+      );
+    await expect(insert('operations', null)).rejects.toThrow(/manual_orders_by/);
+    await expect(insert('max_offers', randomUUID())).rejects.toThrow(/manual_orders_by/);
   });
 });

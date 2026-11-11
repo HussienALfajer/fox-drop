@@ -4,16 +4,26 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.15c, the panel's side of automatic dispatch (`docs/roadmap.md`, Phase 2).
+Slice 2.16, peak windows and the peak bonus (`docs/roadmap.md`, Phase 2).
 
-- **Roadmap line:** 2.15c The panel: «توزيع يدوي لهذا الطلب» on the order detail (an open automatic offer keeps its time, owner decision 2026-11-11; no automatic offer follows), the dispatch state on the board and the detail («العرض {ن} من {م}», moved to manual), the order's offers log on the detail (each offer's captain, time, answer and response time) (AP §9.3.2, §9.7.4). The captain's «سجل العروض» comes with their profile in 2.36. The owner takes an order out of automatic dispatch and it shows «بحاجة لتعيين».
-- **Specs:** AP §9.3.1–9.3.2 (the order detail and its actions), AP §9.2 (the board), AP §9.12.6 (the modes), AP §9.7.4 (the offers log), the dispatch module's `CLAUDE.md` (`dispatch.manual_orders`, automatic offers `kind` `auto`), `apps/admin/CLAUDE.md`.
-- **Branch:** `feat/auto-dispatch-panel`.
-- **Plan:**
-  - [ ] Server: «توزيع يدوي لهذا الطلب» (`POST /v1/admin/orders/{orderId}/manual-dispatch`, `operations.manage`, `Idempotency-Key`): a `manual_orders` row with a new reason `operations` (the `CHECK` widened) and the admin, audited; an open automatic offer keeps its time; tests first.
-  - [ ] Server: the dispatch state on the board and the detail (the mode, automatic or manual and why, «العرض {ن} من {م}» from the automatic offers and `dispatch.max_offers_before_manual`) and the order's offers log (captain, kind, time, answer, response time); whether «بحاجة لتعيين» shows for an order the dispatcher is still offering (today every `searching` order shows it in every mode, `ordering/operations-views.ts`).
-  - [ ] Panel: the button, the dispatch state and the offers log on the detail; the state on the board's card; Playwright smoke.
+- **Roadmap line:** 2.16 Peak windows and the peak bonus, off by default (D15, AP §9.12.5). The owner turns peak on and the bonus shows on the offer and in the pay.
+- **Specs:** AP §9.12.5 («مكافأة ساعة الذروة»: the switch, the windows, the amount per delivered order optionally by zone, matched on the delivery time and the restaurant's zone, raising at once and lowering or disabling at the end of the current announced window), D15 (AP §2, CA §2: built and off by default), AP §8.4 (the captain's pay), CA §8.2 (the offer's pay), CA §12.5 (the windows on the profile and «مكافأة الذروة الآن: +{المبلغ} لكل طلب حتى {الساعة}» on the home screen), AP §10 (what the panel pushes), docs/domain/ (the pay's journals), the dispatch and ordering modules' `CLAUDE.md` ("Not yet": the peak bonus on the offer and at the delivery).
+- **Branch:** `feat/peak-bonus`.
+- **First:** the slice spans the server, the panel and the captain app; if it is more than one pull request, propose the split to the owner with the `slice-plan` skill before building (as 2.15 was split).
+- **Plan (draft, one step per commit):**
+  - [ ] Server: the peak windows and the bonus setting (off by default; days of the week and hours, the amount, optional zones), the effective rule (a raise or enabling at once, a lowering or disabling at the end of the current announced window), audited; tests first.
+  - [ ] Server: the bonus in the captain's pay at the delivery (matched on the delivery time and the restaurant's zone, with its journal per docs/domain/) and on the offer (CA §8.2); tests first.
+  - [ ] Panel: the peak bonus screen under the zones and pricing (unstyled, design stop).
+  - [ ] Captain app: the windows on the profile, the home line during a window, the offer's bonus.
   - [ ] Review, then hand over.
+
+### Left from 2.15c (`feat/auto-dispatch-panel`)
+
+- **Before deploying to staging:** migration 0061 widens `dispatch.manual_orders` (the column `by` and the reason `operations`; both `CHECK`s added `NOT VALID`, then validated). The board's card and the detail gain the required `dispatch`: deploy the server before the panel (the new panel cannot read an older server's card). The automatic cancellation now acts on any order still `placed`, whatever its version.
+- **To check on staging:** «إعدادات» → `dispatch.mode` «مختلط», `dispatch.max_offers_before_manual` 2; two captains online near a restaurant; place and accept an order: once its search starts, the card shows «توزيع آلي — العرض 1 من 2» and no «بحاجة لتعيين»; in the detail «توزيع يدوي لهذا الطلب»: the open offer runs its time; the captain declines: no next offer, the card shows «بحاجة لتعيين» and «نُقل إلى التوزيع اليدوي بقرار العمليات», the detail's «سجل العروض» lists the offer («آلي»، «رفض»، the seconds) and the timeline «نُقل إلى التوزيع اليدوي». Another order declined twice moves by itself («بعد بلوغ حد العروض»). A placed order moved to manual is still cancelled by «المطعم لم يستجب».
+- **To confirm with the owner:** in «آلي» and «مختلط» «بحاجة لتعيين» shows only once the order left automatic dispatch (AP §9.12.6: manual mode raises it «instead of sending offers»); the button works from `placed` (AP §9.3.2 «Before assignment»); the response time is given for an acceptance or a decline only; the strings the spec gives no wording for: «توزيع آلي — يبحث عن كابتن», «توزيع آلي — العرض {ن} من {م}», «نُقل إلى التوزيع اليدوي بعد بلوغ حد العروض» / «… عند تنبيه «طلب بلا كابتن»» / «… بقرار العمليات», «يبقى العرض المفتوح حتى انتهاء مهلته، ولا يُرسل بعده عرض آلي.», «الطلب ليس في التوزيع الآلي الآن.», «لم يعد الطلب بانتظار كابتن.», «سجل العروض» and its «لم يُرسل أي عرض لهذا الطلب.», «الرد بعد {ث} ث».
+- **Decided by us:** every move to manual writes `order.moved_to_manual` (the panel's channel only, no push), so the board hears «مختلط»'s fallback; the automatic cancellation compares the status only, which also fixes «تعديل الطلب» on a placed order (it moved the version and so stopped the timer).
+- **Not yet:** the captain's «سجل العروض» and acceptance rate (2.36); the dispatcher's background steps move the order's version, so an edit dialog open meanwhile answers `409 order_state_changed`.
 
 ### Left from 2.15b (`feat/auto-dispatch`)
 

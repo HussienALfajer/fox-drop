@@ -105,6 +105,33 @@ class AdminDispatchStateDto extends createZodDto(
   }),
 ) {}
 
+class AdminOrderOffersDto extends createZodDto(
+  z.object({
+    offers: z
+      .array(
+        z.object({
+          id: z.uuid(),
+          captain: z.object({ id: z.uuid(), name: z.string() }),
+          kind: z
+            .enum(['manual', 'auto'])
+            .describe('Operations’ («تعيين من العمليات») or the automatic dispatcher’s.'),
+          handover: z.boolean().describe('«استلام من كابتن» (AP §9.3.2, CA §9.10.1).'),
+          offeredAt: z.iso.datetime(),
+          expiresAt: z.iso.datetime(),
+          status: z
+            .enum(['open', 'accepted', 'declined', 'expired', 'withdrawn'])
+            .describe('The answer: accepted, declined, expired («انتهت المهلة»), withdrawn.'),
+          respondedAt: z.iso.datetime().nullable(),
+          responseSec: z
+            .int()
+            .nullable()
+            .describe('Seconds to an acceptance or a decline; null otherwise.'),
+        }),
+      )
+      .describe('Every offer of the order, oldest first (AP §9.3.1, §9.7.4).'),
+  }),
+) {}
+
 class AdminPickerDto extends createZodDto(
   z.object({
     assignsAsOffer: z
@@ -352,6 +379,51 @@ export class AdminDispatchController {
         ),
       ),
     );
+  }
+
+  // AP §9.3.2 «توزيع يدوي لهذا الطلب» (slice 2.15c): the order leaves
+  // automatic dispatch, «بحاجة لتعيين»; an open offer keeps its time.
+  // Refused 409 order_not_assignable (a captain, or past ready),
+  // order_not_automatic («يدوي», or it already left).
+  @Post(':orderId/manual-dispatch')
+  @RequirePermission('operations.manage')
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminDispatchStateDto })
+  manualDispatch(
+    @Param() params: AdminAssignParamsDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(async () =>
+      stateBody(
+        await this.dispatch.manualDispatch(
+          {
+            orderId: params.orderId,
+            admin: { accountId: session.accountId, roles: session.roles },
+            context: requestContext(request),
+            idempotencyKey,
+          },
+          new Date(),
+        ),
+      ),
+    );
+  }
+
+  // AP §9.3.1, §9.7.4 (slice 2.15c): the order's offers log.
+  @Get(':orderId/offers')
+  @RequirePermission('operations.read')
+  @ZodResponse({ status: 200, type: AdminOrderOffersDto })
+  offers(@Param() params: AdminAssignParamsDto) {
+    return refusalsAsHttp(async () => ({
+      offers: (await this.dispatch.orderOffers(params.orderId, new Date())).map((each) => ({
+        ...each,
+        offeredAt: each.offeredAt.toISOString(),
+        expiresAt: each.expiresAt.toISOString(),
+        respondedAt: each.respondedAt?.toISOString() ?? null,
+      })),
+    }));
   }
 
   // AP §9.3.2 «تسليم لكابتن آخر» (slice 2.12b): a picked-up or arrived

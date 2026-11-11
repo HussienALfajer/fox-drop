@@ -437,6 +437,8 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
   @override
   final AdminOrderCardDtoOutputOrderTotal total;
   @override
+  final AdminOrderCardDtoOutputOrderDispatch dispatch;
+  @override
   final AdminOrderCardDtoOutputOrderBadges badges;
   @override
   final AdminOrderCardDtoOutputOrderMoments moments;
@@ -516,6 +518,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
     this.captainTrack,
     this.captain,
     required this.total,
+    required this.dispatch,
     required this.badges,
     required this.moments,
     required this.alerts,
@@ -573,6 +576,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
         captainTrack == other.captainTrack &&
         captain == other.captain &&
         total == other.total &&
+        dispatch == other.dispatch &&
         badges == other.badges &&
         moments == other.moments &&
         alerts == other.alerts &&
@@ -621,6 +625,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
     _$hash = $jc(_$hash, captainTrack.hashCode);
     _$hash = $jc(_$hash, captain.hashCode);
     _$hash = $jc(_$hash, total.hashCode);
+    _$hash = $jc(_$hash, dispatch.hashCode);
     _$hash = $jc(_$hash, badges.hashCode);
     _$hash = $jc(_$hash, moments.hashCode);
     _$hash = $jc(_$hash, alerts.hashCode);
@@ -671,6 +676,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
           ..add('captainTrack', captainTrack)
           ..add('captain', captain)
           ..add('total', total)
+          ..add('dispatch', dispatch)
           ..add('badges', badges)
           ..add('moments', moments)
           ..add('alerts', alerts)
@@ -768,6 +774,12 @@ class AdminOrderDtoOutputOrderBuilder
       _$this._total ??= AdminOrderCardDtoOutputOrderTotalBuilder();
   set total(AdminOrderCardDtoOutputOrderTotalBuilder? total) =>
       _$this._total = total;
+
+  AdminOrderCardDtoOutputOrderDispatchBuilder? _dispatch;
+  AdminOrderCardDtoOutputOrderDispatchBuilder get dispatch =>
+      _$this._dispatch ??= AdminOrderCardDtoOutputOrderDispatchBuilder();
+  set dispatch(AdminOrderCardDtoOutputOrderDispatchBuilder? dispatch) =>
+      _$this._dispatch = dispatch;
 
   AdminOrderCardDtoOutputOrderBadgesBuilder? _badges;
   AdminOrderCardDtoOutputOrderBadgesBuilder get badges =>
@@ -980,6 +992,7 @@ class AdminOrderDtoOutputOrderBuilder
       _captainTrack = $v.captainTrack;
       _captain = $v.captain?.toBuilder();
       _total = $v.total.toBuilder();
+      _dispatch = $v.dispatch.toBuilder();
       _badges = $v.badges.toBuilder();
       _moments = $v.moments.toBuilder();
       _alerts = $v.alerts.toBuilder();
@@ -1075,6 +1088,7 @@ class AdminOrderDtoOutputOrderBuilder
             captainTrack: captainTrack,
             captain: _captain?.build(),
             total: total.build(),
+            dispatch: dispatch.build(),
             badges: badges.build(),
             moments: moments.build(),
             alerts: alerts.build(),
@@ -1117,6 +1131,8 @@ class AdminOrderDtoOutputOrderBuilder
         _captain?.build();
         _$failedField = 'total';
         total.build();
+        _$failedField = 'dispatch';
+        dispatch.build();
         _$failedField = 'badges';
         badges.build();
         _$failedField = 'moments';
