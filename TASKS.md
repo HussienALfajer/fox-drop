@@ -4,14 +4,25 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.15, automatic and mixed dispatch (`docs/roadmap.md`, Phase 2).
+Slice 2.15a, «أقصى مبلغ أحمله» (`docs/roadmap.md`, Phase 2; 2.15 split into 2.15a, 2.15b and 2.15c, owner decision 2026-11-11).
 
-- **Roadmap line:** 2.15 Automatic and mixed dispatch: eligibility and ranking with the OSRM matrix, one offer at a time, the fallback to manual after 5 failed offers, the maximum pickup amount and its manual override (C4, K2), the C3 message, «توزيع يدوي لهذا الطلب», the offers log (AP §9.12.6, CA §8, AP §14 item 9). An order is offered on its own to the nearest eligible captain. With it, the captain's «أقصى مبلغ أحمله» on «الإعدادات» (owner decision 2026-11-11).
-- **Specs:** AP §9.12.6 (dispatch settings and modes), AP §14 item 9, CA §8 (offers), CA §7 (C3), CA §10.5 and K2 (the maximum pickup amount), CA Appendix A, AP Appendix A (the dispatch settings), the dispatch module's `CLAUDE.md` (manual dispatch, 1.12 and 2.12b).
-- **Branch:** `feat/auto-dispatch-a` (or as the split names it).
+- **Roadmap line:** 2.15a «أقصى مبلغ أحمله» (C4, K2): the captain's maximum pickup amount in the base currency on «الإعدادات» (empty is no limit), asked the first time the captain goes online while it is empty (the activation's ask comes with 2.35), shown greyed «المبلغ أكبر مما يحمله» in the assignment picker with the manual offer still allowed, the offer's warning «المبلغ أكبر من الحد الذي حددته — اقبل فقط إذا كان معك ما يكفي», handover offers ignoring it (CA §8.1, §8.4, §10.5, AP §9.3.2).
+- **Specs:** CA §10.5 and K2, CA §8.1 and §8.4, CA §5.5 (the activation's ask, with 2.35), AP §9.3.2 (the assignment picker), AP §9.12.6 (eligibility; the capacity check ignores it), AP §9.7.4 («التطبيق» shows it, with 2.36), the dispatch and captains modules' `CLAUDE.md`.
+- **Branch:** `feat/max-pickup-amount`.
 - **Plan:**
-  - [ ] Split 2.15 into slices with the `slice-plan` skill and get the owner's approval of the split (it spans the server's dispatcher role, the panel and the captain app).
-  - [ ] Write the first slice's plan here, one step per commit.
+  - [ ] Server, captains: `captains.max_pickup_amount` and its currency (null: no limit) and `max_pickup_set_at` (when the captain last answered, so the app asks once), registered with `FxService.useCityAmounts` like the cash limit; `GET`/`PUT /v1/captain/settings/max-pickup-amount` (an amount above zero in the city's base, or null; no key: it sets a value); the database and route tests.
+  - [ ] Server, dispatch: the picker's reason `above_max_pickup` against the order's pickup payment (the items value, D26); a manual offer or assignment allowed when it is the only reason; the offer keeping `above_max_pickup`, and `GET /v1/captain/offers/current` answering it; handover offers ignoring the limit; the capacity check and the search start unchanged; tests first.
+  - [ ] Panel: the picker's «المبلغ أكبر مما يحمله», greyed but still selectable for an offer; its test.
+  - [ ] Captain app: «أقصى مبلغ أحمله» on «الإعدادات» (an amount or «بلا حد»), asked when going online while never answered, and the offer sheet's warning; widget tests.
+  - [ ] Review, then hand over to 2.15b.
+
+### Owner decisions for 2.15 (2026-11-11)
+
+- The split: 2.15a (this slice), 2.15b (the automatic dispatcher on the server), 2.15c (the panel: «توزيع يدوي لهذا الطلب», the dispatch state, the order's offers log).
+- Automatic mode never offers one order twice to the same captain: a new search every 30 seconds for captains not yet offered, «طلب بلا كابتن» as usual.
+- «توزيع يدوي لهذا الطلب» leaves an open automatic offer until its time; no automatic offer follows.
+- Dispatch's ranking distance follows `pricing.distance_method` (road by OSRM, or the straight line × 1.3, which stays the fallback).
+- Mixed mode counts declined, expired and withdrawn offers as failed (proposed in the split, not contested).
 
 ### Left from 2.14b (`feat/pickup-currencies-b`)
 
