@@ -6,22 +6,20 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'captain_outcome_payment_dto_location.g.dart';
+part 'admin_alerts_dto_output_alerts_inner_location.g.dart';
 
-/// The latest GPS fix.
+/// «طوارئ كابتن» (AP §9.1.3, CA §9.11): the location the captain sent, for «فتح الخريطة»; null for the others and an emergency without a fix.
 ///
 /// Properties:
 /// * [latitude]
 /// * [longitude]
-/// * [accuracyMetres]
-/// * [recordedAt]
-/// * [simulated] - The device reports a mock location.
+/// * [at]
 @BuiltValue()
-abstract class CaptainOutcomePaymentDtoLocation
+abstract class AdminAlertsDtoOutputAlertsInnerLocation
     implements
         Built<
-          CaptainOutcomePaymentDtoLocation,
-          CaptainOutcomePaymentDtoLocationBuilder
+          AdminAlertsDtoOutputAlertsInnerLocation,
+          AdminAlertsDtoOutputAlertsInnerLocationBuilder
         > {
   @BuiltValueField(wireName: r'latitude')
   num get latitude;
@@ -29,44 +27,37 @@ abstract class CaptainOutcomePaymentDtoLocation
   @BuiltValueField(wireName: r'longitude')
   num get longitude;
 
-  @BuiltValueField(wireName: r'accuracyMetres')
-  num get accuracyMetres;
+  @BuiltValueField(wireName: r'at')
+  DateTime get at;
 
-  @BuiltValueField(wireName: r'recordedAt')
-  DateTime get recordedAt;
+  AdminAlertsDtoOutputAlertsInnerLocation._();
 
-  /// The device reports a mock location.
-  @BuiltValueField(wireName: r'simulated')
-  bool get simulated;
-
-  CaptainOutcomePaymentDtoLocation._();
-
-  factory CaptainOutcomePaymentDtoLocation([
-    void updates(CaptainOutcomePaymentDtoLocationBuilder b),
-  ]) = _$CaptainOutcomePaymentDtoLocation;
+  factory AdminAlertsDtoOutputAlertsInnerLocation([
+    void updates(AdminAlertsDtoOutputAlertsInnerLocationBuilder b),
+  ]) = _$AdminAlertsDtoOutputAlertsInnerLocation;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CaptainOutcomePaymentDtoLocationBuilder b) => b;
+  static void _defaults(AdminAlertsDtoOutputAlertsInnerLocationBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainOutcomePaymentDtoLocation> get serializer =>
-      _$CaptainOutcomePaymentDtoLocationSerializer();
+  static Serializer<AdminAlertsDtoOutputAlertsInnerLocation> get serializer =>
+      _$AdminAlertsDtoOutputAlertsInnerLocationSerializer();
 }
 
-class _$CaptainOutcomePaymentDtoLocationSerializer
-    implements PrimitiveSerializer<CaptainOutcomePaymentDtoLocation> {
+class _$AdminAlertsDtoOutputAlertsInnerLocationSerializer
+    implements PrimitiveSerializer<AdminAlertsDtoOutputAlertsInnerLocation> {
   @override
   final Iterable<Type> types = const [
-    CaptainOutcomePaymentDtoLocation,
-    _$CaptainOutcomePaymentDtoLocation,
+    AdminAlertsDtoOutputAlertsInnerLocation,
+    _$AdminAlertsDtoOutputAlertsInnerLocation,
   ];
 
   @override
-  final String wireName = r'CaptainOutcomePaymentDtoLocation';
+  final String wireName = r'AdminAlertsDtoOutputAlertsInnerLocation';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    CaptainOutcomePaymentDtoLocation object, {
+    AdminAlertsDtoOutputAlertsInnerLocation object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'latitude';
@@ -79,27 +70,17 @@ class _$CaptainOutcomePaymentDtoLocationSerializer
       object.longitude,
       specifiedType: const FullType(num),
     );
-    yield r'accuracyMetres';
+    yield r'at';
     yield serializers.serialize(
-      object.accuracyMetres,
-      specifiedType: const FullType(num),
-    );
-    yield r'recordedAt';
-    yield serializers.serialize(
-      object.recordedAt,
+      object.at,
       specifiedType: const FullType(DateTime),
-    );
-    yield r'simulated';
-    yield serializers.serialize(
-      object.simulated,
-      specifiedType: const FullType(bool),
     );
   }
 
   @override
   Object serialize(
     Serializers serializers,
-    CaptainOutcomePaymentDtoLocation object, {
+    AdminAlertsDtoOutputAlertsInnerLocation object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -114,7 +95,7 @@ class _$CaptainOutcomePaymentDtoLocationSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required CaptainOutcomePaymentDtoLocationBuilder result,
+    required AdminAlertsDtoOutputAlertsInnerLocationBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -133,29 +114,14 @@ class _$CaptainOutcomePaymentDtoLocationSerializer
                   as num;
           result.longitude = valueDes;
           break;
-        case r'accuracyMetres':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(num))
-                  as num;
-          result.accuracyMetres = valueDes;
-          break;
-        case r'recordedAt':
+        case r'at':
           final valueDes =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(DateTime),
                   )
                   as DateTime;
-          result.recordedAt = valueDes;
-          break;
-        case r'simulated':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
-          result.simulated = valueDes;
+          result.at = valueDes;
           break;
         default:
           unhandled.add(key);
@@ -166,12 +132,12 @@ class _$CaptainOutcomePaymentDtoLocationSerializer
   }
 
   @override
-  CaptainOutcomePaymentDtoLocation deserialize(
+  AdminAlertsDtoOutputAlertsInnerLocation deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = CaptainOutcomePaymentDtoLocationBuilder();
+    final result = AdminAlertsDtoOutputAlertsInnerLocationBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

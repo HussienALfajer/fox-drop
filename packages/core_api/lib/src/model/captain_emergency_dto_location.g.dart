@@ -1,13 +1,12 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'captain_outcome_payment_dto_location.dart';
+part of 'captain_emergency_dto_location.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$CaptainOutcomePaymentDtoLocation
-    extends CaptainOutcomePaymentDtoLocation {
+class _$CaptainEmergencyDtoLocation extends CaptainEmergencyDtoLocation {
   @override
   final num latitude;
   @override
@@ -19,11 +18,11 @@ class _$CaptainOutcomePaymentDtoLocation
   @override
   final bool simulated;
 
-  factory _$CaptainOutcomePaymentDtoLocation([
-    void Function(CaptainOutcomePaymentDtoLocationBuilder)? updates,
-  ]) => (CaptainOutcomePaymentDtoLocationBuilder()..update(updates))._build();
+  factory _$CaptainEmergencyDtoLocation([
+    void Function(CaptainEmergencyDtoLocationBuilder)? updates,
+  ]) => (CaptainEmergencyDtoLocationBuilder()..update(updates))._build();
 
-  _$CaptainOutcomePaymentDtoLocation._({
+  _$CaptainEmergencyDtoLocation._({
     required this.latitude,
     required this.longitude,
     required this.accuracyMetres,
@@ -31,18 +30,18 @@ class _$CaptainOutcomePaymentDtoLocation
     required this.simulated,
   }) : super._();
   @override
-  CaptainOutcomePaymentDtoLocation rebuild(
-    void Function(CaptainOutcomePaymentDtoLocationBuilder) updates,
+  CaptainEmergencyDtoLocation rebuild(
+    void Function(CaptainEmergencyDtoLocationBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  CaptainOutcomePaymentDtoLocationBuilder toBuilder() =>
-      CaptainOutcomePaymentDtoLocationBuilder()..replace(this);
+  CaptainEmergencyDtoLocationBuilder toBuilder() =>
+      CaptainEmergencyDtoLocationBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is CaptainOutcomePaymentDtoLocation &&
+    return other is CaptainEmergencyDtoLocation &&
         latitude == other.latitude &&
         longitude == other.longitude &&
         accuracyMetres == other.accuracyMetres &&
@@ -64,7 +63,7 @@ class _$CaptainOutcomePaymentDtoLocation
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'CaptainOutcomePaymentDtoLocation')
+    return (newBuiltValueToStringHelper(r'CaptainEmergencyDtoLocation')
           ..add('latitude', latitude)
           ..add('longitude', longitude)
           ..add('accuracyMetres', accuracyMetres)
@@ -74,13 +73,13 @@ class _$CaptainOutcomePaymentDtoLocation
   }
 }
 
-class CaptainOutcomePaymentDtoLocationBuilder
+class CaptainEmergencyDtoLocationBuilder
     implements
         Builder<
-          CaptainOutcomePaymentDtoLocation,
-          CaptainOutcomePaymentDtoLocationBuilder
+          CaptainEmergencyDtoLocation,
+          CaptainEmergencyDtoLocationBuilder
         > {
-  _$CaptainOutcomePaymentDtoLocation? _$v;
+  _$CaptainEmergencyDtoLocation? _$v;
 
   num? _latitude;
   num? get latitude => _$this._latitude;
@@ -103,11 +102,11 @@ class CaptainOutcomePaymentDtoLocationBuilder
   bool? get simulated => _$this._simulated;
   set simulated(bool? simulated) => _$this._simulated = simulated;
 
-  CaptainOutcomePaymentDtoLocationBuilder() {
-    CaptainOutcomePaymentDtoLocation._defaults(this);
+  CaptainEmergencyDtoLocationBuilder() {
+    CaptainEmergencyDtoLocation._defaults(this);
   }
 
-  CaptainOutcomePaymentDtoLocationBuilder get _$this {
+  CaptainEmergencyDtoLocationBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _latitude = $v.latitude;
@@ -121,45 +120,45 @@ class CaptainOutcomePaymentDtoLocationBuilder
   }
 
   @override
-  void replace(CaptainOutcomePaymentDtoLocation other) {
-    _$v = other as _$CaptainOutcomePaymentDtoLocation;
+  void replace(CaptainEmergencyDtoLocation other) {
+    _$v = other as _$CaptainEmergencyDtoLocation;
   }
 
   @override
-  void update(void Function(CaptainOutcomePaymentDtoLocationBuilder)? updates) {
+  void update(void Function(CaptainEmergencyDtoLocationBuilder)? updates) {
     if (updates != null) updates(this);
   }
 
   @override
-  CaptainOutcomePaymentDtoLocation build() => _build();
+  CaptainEmergencyDtoLocation build() => _build();
 
-  _$CaptainOutcomePaymentDtoLocation _build() {
+  _$CaptainEmergencyDtoLocation _build() {
     final _$result =
         _$v ??
-        _$CaptainOutcomePaymentDtoLocation._(
+        _$CaptainEmergencyDtoLocation._(
           latitude: BuiltValueNullFieldError.checkNotNull(
             latitude,
-            r'CaptainOutcomePaymentDtoLocation',
+            r'CaptainEmergencyDtoLocation',
             'latitude',
           ),
           longitude: BuiltValueNullFieldError.checkNotNull(
             longitude,
-            r'CaptainOutcomePaymentDtoLocation',
+            r'CaptainEmergencyDtoLocation',
             'longitude',
           ),
           accuracyMetres: BuiltValueNullFieldError.checkNotNull(
             accuracyMetres,
-            r'CaptainOutcomePaymentDtoLocation',
+            r'CaptainEmergencyDtoLocation',
             'accuracyMetres',
           ),
           recordedAt: BuiltValueNullFieldError.checkNotNull(
             recordedAt,
-            r'CaptainOutcomePaymentDtoLocation',
+            r'CaptainEmergencyDtoLocation',
             'recordedAt',
           ),
           simulated: BuiltValueNullFieldError.checkNotNull(
             simulated,
-            r'CaptainOutcomePaymentDtoLocation',
+            r'CaptainEmergencyDtoLocation',
             'simulated',
           ),
         );

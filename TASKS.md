@@ -11,7 +11,12 @@ Slice 2.13c, «طوارئ» (`docs/roadmap.md`, Phase 2; 2.13 split into 2.13a-d
 - **Branch:** `feat/captain-emergency`.
 - **Builds on:** «لا أستطيع إكمال الطلب» (2.13b): `cannot-complete.ts`'s `leaveCaptain` (every way the order leaves its captain), `CaptainsService.offlineAfterCannotComplete` (add the emergency's own end reason or reuse it), the alert pattern (`order-alerts.ts`, `alert-rules.ts`), the panel's detail section and the captain app's `ProblemBar`; Content's contact info (the operations number).
 - **Ask the owner first:** whether the emergency can be withdrawn (CA §9.11 says nothing, unlike «تراجع»); whether it records a fault as «لا أستطيع إكمال الطلب» does; «فتح الخريطة» before the live map exists (a link to Google Maps at the location?); the strings the spec gives no wording for.
-- **Plan:** write it at the start, one step per commit (server rule first, failing test: the emergency with its location, the order's mark, the alert, the offline when the order leaves; then the captain app's button; then the panel; then the docs).
+- **Owner decisions 2026-11-11:** no withdrawal: the emergency stays on the order until the order leaves its captain or ends, and operations take the alert with «استلام»; a reassignment or a handover while it is open asks the fault with «دون خطأ» prefilled; «فتح الخريطة» opens Google Maps at the location sent (no preference given, the recommended choice); the strings the spec gives no wording for are proposed here and confirmed later.
+- **Plan:**
+  - [x] Server: `ordering.emergencies` (migration 0056, the online end reason `emergency`), `POST /v1/captain/orders/{orderId}/emergency` with the fix (never refused for its quality), the order's mark on the board, the detail and the captain's active read, the critical alert «طوارئ كابتن» with its location, K17 through `leaveCaptain` and the handover's receipt, the handover's fault «دون خطأ» by default; failing tests first.
+  - [ ] Captain app: the red «طوارئ» with its 2-second press and progress ring, the call to operations (Android's `CALL_PHONE`, asked at «متصل»; the dialer without it), the command with the latest fix, «أُبلغت العمليات بالطوارئ» while open.
+  - [ ] Panel: the alert's location and «فتح الخريطة», the board's «طوارئ», the detail's section, «دون خطأ» prefilled in «سحب وإعادة تعيين» and «تسليم لكابتن آخر», the timeline line.
+  - [ ] Docs and hand over to 2.13d.
 
 ### Left from 2.13b (`feat/captain-cannot-complete`)
 

@@ -24,6 +24,9 @@ export interface AlertSubjectRef {
   // Null for the whole platform (the code senders).
   cityId: string | null;
   details?: Record<string, string>;
+  // What one rule's alert adds to `details` when it is raised (the
+  // emergency's location).
+  codeDetails?: Partial<Record<AlertCode, Record<string, string>>>;
 }
 
 export interface Alert {
@@ -114,7 +117,7 @@ export class AlertsService {
           severity: ALERT_RULES[code].severity,
           subjectType: subject.type,
           subjectId: subject.id,
-          details: subject.details ?? {},
+          details: { ...subject.details, ...subject.codeDetails?.[code] },
           raisedAt: now,
         })),
       )

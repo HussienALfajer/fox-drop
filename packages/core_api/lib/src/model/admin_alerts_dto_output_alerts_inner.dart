@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/admin_alerts_dto_output_alerts_inner_location.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_alerts_dto_output_alerts_inner_acknowledged.dart';
 import 'package:built_value/built_value.dart';
@@ -21,6 +22,7 @@ part 'admin_alerts_dto_output_alerts_inner.g.dart';
 /// * [orderNumber] - For an alert about an order.
 /// * [captainName] - For an alert about a captain.
 /// * [restaurantName] - For an alert about a restaurant.
+/// * [location]
 /// * [raisedAt]
 /// * [acknowledged]
 /// * [resolvedAt]
@@ -37,7 +39,7 @@ abstract class AdminAlertsDtoOutputAlertsInner
   /// The rule of AP §9.1.3.
   @BuiltValueField(wireName: r'code')
   AdminAlertsDtoOutputAlertsInnerCodeEnum get code;
-  // enum codeEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  captain_cash_limit,  codes_cannot_send,  code_number_stopped,  away_from_address,  item_unavailable,  edit_unacknowledged,  captain_cannot_complete,  restaurant_auto_paused,  };
+  // enum codeEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  captain_cash_limit,  codes_cannot_send,  code_number_stopped,  away_from_address,  item_unavailable,  edit_unacknowledged,  captain_cannot_complete,  captain_emergency,  restaurant_auto_paused,  };
 
   /// critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
   @BuiltValueField(wireName: r'severity')
@@ -63,6 +65,9 @@ abstract class AdminAlertsDtoOutputAlertsInner
   /// For an alert about a restaurant.
   @BuiltValueField(wireName: r'restaurantName')
   String? get restaurantName;
+
+  @BuiltValueField(wireName: r'location')
+  AdminAlertsDtoOutputAlertsInnerLocation? get location;
 
   @BuiltValueField(wireName: r'raisedAt')
   DateTime get raisedAt;
@@ -152,6 +157,15 @@ class _$AdminAlertsDtoOutputAlertsInnerSerializer
         : serializers.serialize(
             object.restaurantName,
             specifiedType: const FullType.nullable(String),
+          );
+    yield r'location';
+    yield object.location == null
+        ? null
+        : serializers.serialize(
+            object.location,
+            specifiedType: const FullType.nullable(
+              AdminAlertsDtoOutputAlertsInnerLocation,
+            ),
           );
     yield r'raisedAt';
     yield serializers.serialize(
@@ -282,6 +296,18 @@ class _$AdminAlertsDtoOutputAlertsInnerSerializer
           if (valueDes == null) continue;
           result.restaurantName = valueDes;
           break;
+        case r'location':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminAlertsDtoOutputAlertsInnerLocation,
+                    ),
+                  )
+                  as AdminAlertsDtoOutputAlertsInnerLocation?;
+          if (valueDes == null) continue;
+          result.location.replace(valueDes);
+          break;
         case r'raisedAt':
           final valueDes =
               serializers.deserialize(
@@ -392,6 +418,9 @@ class AdminAlertsDtoOutputAlertsInnerCodeEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'captain_cannot_complete')
   static const AdminAlertsDtoOutputAlertsInnerCodeEnum captainCannotComplete =
       _$adminAlertsDtoOutputAlertsInnerCodeEnum_captainCannotComplete;
+  @BuiltValueEnumConst(wireName: r'captain_emergency')
+  static const AdminAlertsDtoOutputAlertsInnerCodeEnum captainEmergency =
+      _$adminAlertsDtoOutputAlertsInnerCodeEnum_captainEmergency;
   @BuiltValueEnumConst(wireName: r'restaurant_auto_paused')
   static const AdminAlertsDtoOutputAlertsInnerCodeEnum restaurantAutoPaused =
       _$adminAlertsDtoOutputAlertsInnerCodeEnum_restaurantAutoPaused;

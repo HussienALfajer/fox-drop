@@ -10,6 +10,7 @@ import {
   jsonb,
   pgSchema,
   primaryKey,
+  real,
   smallint,
   text,
   timestamp,
@@ -1123,6 +1124,59 @@ export const cannotCompleteRequests = ordering.table(
       'cannot_complete_requests_closed',
       sql`(${table.closedAt} IS NULL) = (${table.closedHow} IS NULL)
         AND (${table.closedHow} IS NULL OR ${table.closedHow} IN ('withdrawn', 'reassigned', 'handed_over', 'ended'))`,
+    ),
+  ],
+);
+
+// CA §9.11 «طوارئ» (C15, slice 2.13c): the captain's emergency on their
+// active order, with the fix the app sent (any fix, never refused for its
+// quality; null without one). At most one open per order (a partial unique
+// index). It cancels nothing and the captain cannot withdraw it (owner
+// decision 2026-11-11): it closes when operations reassign the order or
+// another captain receives it, or the order ends. Open when the order leaves
+// the captain, it takes the captain offline (K17). The application role may
+// update only the closing columns.
+export const emergencyHows = ['reassigned', 'handed_over', 'ended'] as const;
+
+export const emergencies = ordering.table(
+  'emergencies',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    orderId: uuid('order_id').notNull(),
+    orderPlacedAt: timestamp('order_placed_at', { withTimezone: true }).notNull(),
+    cityId: uuid('city_id').notNull(),
+    captainId: uuid('captain_id').notNull(),
+    location: point('location'),
+    accuracyMetres: real('accuracy_metres'),
+    locatedAt: timestamp('located_at', { withTimezone: true }),
+    simulated: boolean('simulated'),
+    raisedAt: timestamp('raised_at', { withTimezone: true }).notNull(),
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+    closedHow: text('closed_how', { enum: emergencyHows }),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.orderId, table.orderPlacedAt],
+      foreignColumns: [orders.id, orders.placedAt],
+    }),
+    uniqueIndex('emergencies_one_open_per_order')
+      .on(table.orderId)
+      .where(sql`${table.closedAt} IS NULL`),
+    index('emergencies_order').on(table.orderId, table.orderPlacedAt),
+    index('emergencies_captain').on(table.captainId, table.raisedAt),
+    check(
+      'emergencies_closed',
+      sql`(${table.closedAt} IS NULL) = (${table.closedHow} IS NULL)
+        AND (${table.closedHow} IS NULL OR ${table.closedHow} IN ('reassigned', 'handed_over', 'ended'))`,
+    ),
+    check(
+      'emergencies_location',
+      sql`(${table.location} IS NULL) = (${table.accuracyMetres} IS NULL)
+        AND (${table.location} IS NULL) = (${table.locatedAt} IS NULL)
+        AND (${table.location} IS NULL) = (${table.simulated} IS NULL)
+        AND (${table.accuracyMetres} IS NULL OR ${table.accuracyMetres} >= 0)`,
     ),
   ],
 );

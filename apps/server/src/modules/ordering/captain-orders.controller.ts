@@ -264,6 +264,12 @@ const activeOrder = z
       .describe(
         "«لا أستطيع إكمال الطلب» (CA §9.11, slice 2.13b): the captain's open request, «بانتظار العمليات» with «تراجع»; every step stays open. Null without one.",
       ),
+    emergency: z
+      .object({ at: z.iso.datetime() })
+      .nullable()
+      .describe(
+        "«طوارئ» (CA §9.11, slice 2.13c): the captain's open emergency; it cannot be withdrawn and every step stays open. Null without one.",
+      ),
   })
   .describe('The active order (CA §9).');
 
@@ -492,6 +498,16 @@ class CaptainCannotCompleteDto extends createZodDto(
   }),
 ) {}
 
+// CA §9.11 «طوارئ»: the latest fix, or null when the phone has none; any
+// fix is taken.
+class CaptainEmergencyDto extends createZodDto(
+  z.object({
+    location: commandLocation
+      .nullable()
+      .describe('The latest GPS fix, whatever its age, accuracy or mock flag; null without one.'),
+  }),
+) {}
+
 class CaptainArriveAtCustomerDto extends createZodDto(
   z.object({
     location: commandLocation,
@@ -631,6 +647,7 @@ function activeOrderBody({
   radii,
   handover,
   cannotComplete,
+  emergency,
 }: CaptainActiveOrder) {
   if (order.captainTrack === null) throw new Error(`order ${order.id} has no captain track`);
   if (order.acceptance === null) throw new Error(`order ${order.id} was never accepted`);
@@ -708,6 +725,7 @@ function activeOrderBody({
       note: cannotComplete.note,
       at: cannotComplete.at.toISOString(),
     },
+    emergency: emergency && { at: emergency.at.toISOString() },
   };
 }
 
@@ -951,6 +969,43 @@ export class CaptainOrdersController {
             deviceId: session.deviceId,
             idempotencyKey,
             location: { ...body.location, recordedAt: new Date(body.location.recordedAt) },
+          },
+          new Date(),
+        ),
+      ),
+    }));
+  }
+
+  // CA §9.11 «طوارئ» (C15, K12, slice 2.13c): the order is marked «طوارئ»
+  // and OWN and OPS get the critical alert with the location sent; the phone
+  // calls operations itself. Never refused for its fix. 409
+  // order_state_changed (not the captain's active order, or one already
+  // open); 404 unknown_order; 422 idempotency_key_reused.
+  @Post(':orderId/emergency')
+  @AppSignedIn()
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: CaptainOrderDto })
+  async emergency(
+    @CurrentAppSession() session: AppSession,
+    @IdempotencyKey() idempotencyKey: string,
+    @Param() params: CaptainOrderParamsDto,
+    @Body() body: CaptainEmergencyDto,
+  ) {
+    const captainId = captainOf(session);
+    return refusalsAsHttp(captainId, this.orders, async () => ({
+      order: activeOrderBody(
+        await this.orders.emergency(
+          {
+            orderId: params.orderId,
+            captainId,
+            accountId: session.accountId,
+            deviceId: session.deviceId,
+            idempotencyKey,
+            location: body.location && {
+              ...body.location,
+              recordedAt: new Date(body.location.recordedAt),
+            },
           },
           new Date(),
         ),

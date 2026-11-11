@@ -1094,3 +1094,44 @@ describe('the handover after «لا أستطيع إكمال الطلب» (CA §9
     expect(await faults(plain.order.id)).toEqual([null]);
   });
 });
+
+describe('the handover after «طوارئ» (CA §9.11, AP §9.7.6; slice 2.13c)', () => {
+  const press = (captain: { headers: Record<string, string> }, orderId: string) =>
+    app.inject({
+      method: 'POST',
+      url: `/v1/captain/orders/${orderId}/emergency`,
+      headers: { ...captain.headers, 'idempotency-key': randomUUID() },
+      payload: {
+        location: {
+          ...brokenDown,
+          accuracyMetres: 10,
+          recordedAt: new Date().toISOString(),
+          simulated: false,
+        },
+      },
+    });
+
+  it('counts no fault by default, and the receipt closes it and takes the first captain offline', async () => {
+    const { order, first, ops } = await pickedUpOrder();
+    expect((await press(first, order.id)).statusCode).toBe(200);
+    const second = await onlineCaptain('بعد الطوارئ', besideThem);
+    const handedOver = await ops.post(`/v1/admin/orders/${order.id}/handover`, {
+      captainId: second.captainId,
+      reason: 'حادث',
+      captainFault: null,
+    });
+    expect(handedOver.statusCode).toBe(200);
+    const { rows: faults } = await sql.query(
+      'SELECT captain_fault FROM ordering.handovers WHERE order_id = $1',
+      [order.id],
+    );
+    expect(faults).toEqual([{ captain_fault: false }]);
+    expect((await second.receive(order.id)).statusCode).toBe(200);
+    const { rows } = await sql.query(
+      'SELECT closed_how FROM ordering.emergencies WHERE order_id = $1',
+      [order.id],
+    );
+    expect(rows).toEqual([{ closed_how: 'handed_over' }]);
+    expect((await first.availability()).state).toBe('offline');
+  });
+});

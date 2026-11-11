@@ -27,6 +27,7 @@ const card = {
     awaitingCollection: false,
     itemReport: false,
     cannotComplete: false,
+    emergency: false,
   },
   moments: {
     acceptAlertAt: null,

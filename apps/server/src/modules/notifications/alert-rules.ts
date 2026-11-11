@@ -49,6 +49,10 @@ export const alertCodes = [
   // الطلب» (CA §9.11, slice 2.13b), until they withdraw it, operations
   // reassign or hand over the order, or it ends.
   'captain_cannot_complete',
+  // «طوارئ كابتن»: the captain's open «طوارئ» (CA §9.11, slice 2.13c), with
+  // the location sent, until the order leaves them or ends (no withdrawal,
+  // owner decision 2026-11-11).
+  'captain_emergency',
   // «مطعم أوقف تلقائياً»: merchant.auto_pause_unanswered_count unanswered
   // orders in a business day (AP §9.6.5), until operations resume it.
   'restaurant_auto_paused',
@@ -87,6 +91,7 @@ export const ALERT_RULES: Record<AlertCode, AlertRule> = {
   item_unavailable: rule('critical', OPERATIONS, 'order'),
   edit_unacknowledged: rule('critical', OPERATIONS, 'order'),
   captain_cannot_complete: rule('critical', OPERATIONS, 'order'),
+  captain_emergency: rule('critical', OPERATIONS, 'order'),
   restaurant_auto_paused: rule('warning', OPERATIONS, 'restaurant'),
 };
 

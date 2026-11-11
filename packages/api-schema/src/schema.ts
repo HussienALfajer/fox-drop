@@ -2516,6 +2516,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/captain/orders/{orderId}/emergency": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainOrdersEmergency"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/captain/orders/{orderId}/arrive-at-customer": {
         parameters: {
             query?: never;
@@ -5738,6 +5754,8 @@ export interface components {
                     itemReport: boolean;
                     /** @description «بانتظار العمليات»: the captain's open «لا أستطيع إكمال الطلب» (CA §9.11, slice 2.13b). */
                     cannotComplete: boolean;
+                    /** @description «طوارئ»: the captain's open emergency (CA §9.11, slice 2.13c). */
+                    emergency: boolean;
                 };
                 /** @description The alerts' moments, so the panel raises each when it passes. */
                 moments: {
@@ -5751,7 +5769,7 @@ export interface components {
                     captainWaitingAlertAt: string | null;
                 };
                 /** @description AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active. */
-                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete")[];
+                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency")[];
             };
         };
         AdminAcceptDto: {
@@ -6326,6 +6344,8 @@ export interface components {
                     itemReport: boolean;
                     /** @description «بانتظار العمليات»: the captain's open «لا أستطيع إكمال الطلب» (CA §9.11, slice 2.13b). */
                     cannotComplete: boolean;
+                    /** @description «طوارئ»: the captain's open emergency (CA §9.11, slice 2.13c). */
+                    emergency: boolean;
                 };
                 /** @description The alerts' moments, so the panel raises each when it passes. */
                 moments: {
@@ -6339,7 +6359,7 @@ export interface components {
                     captainWaitingAlertAt: string | null;
                 };
                 /** @description AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active. */
-                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete")[];
+                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency")[];
             }[];
         };
         AdminOrderDto_Output: {
@@ -6400,6 +6420,8 @@ export interface components {
                     itemReport: boolean;
                     /** @description «بانتظار العمليات»: the captain's open «لا أستطيع إكمال الطلب» (CA §9.11, slice 2.13b). */
                     cannotComplete: boolean;
+                    /** @description «طوارئ»: the captain's open emergency (CA §9.11, slice 2.13c). */
+                    emergency: boolean;
                 };
                 /** @description The alerts' moments, so the panel raises each when it passes. */
                 moments: {
@@ -6413,7 +6435,7 @@ export interface components {
                     captainWaitingAlertAt: string | null;
                 };
                 /** @description AP §9.1.3, open now by their conditions (GET /v1/admin/alerts holds the records, with who took each); «تسليم بعيد عن العنوان» only while the order is active. */
-                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete")[];
+                alerts: ("restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency")[];
                 promisedAt: string | null;
                 acceptance: {
                     /** Format: date-time */
@@ -6644,6 +6666,21 @@ export interface components {
                     label: string;
                     /** @description The text of «أخرى». */
                     note: string | null;
+                    /** Format: date-time */
+                    at: string;
+                } | null;
+                /** @description «طوارئ» (CA §9.11, slice 2.13c): the captain's open emergency, until the order leaves them or ends; «سحب وإعادة تعيين» and «تسليم لكابتن آخر» prefill «دون خطأ» while it is open (owner decision 2026-11-11). Null without one. */
+                emergency: {
+                    /** Format: uuid */
+                    captainId: string;
+                    /** @description The fix the app sent, whatever its quality; null without one. */
+                    location: {
+                        latitude: number;
+                        longitude: number;
+                        accuracyMetres: number;
+                        /** Format: date-time */
+                        recordedAt: string;
+                    } | null;
                     /** Format: date-time */
                     at: string;
                 } | null;
@@ -7220,6 +7257,11 @@ export interface components {
                     /** Format: date-time */
                     at: string;
                 } | null;
+                /** @description «طوارئ» (CA §9.11, slice 2.13c): the captain's open emergency; it cannot be withdrawn and every step stays open. Null without one. */
+                emergency: {
+                    /** Format: date-time */
+                    at: string;
+                } | null;
             } | null;
             /** @description The latest order operations cancelled within 12 hours that the captain has not acknowledged (POST …/acknowledge-cancellation); the app plays the cancellation sound when one appears. */
             cancelled: {
@@ -7519,6 +7561,11 @@ export interface components {
                     /** Format: date-time */
                     at: string;
                 } | null;
+                /** @description «طوارئ» (CA §9.11, slice 2.13c): the captain's open emergency; it cannot be withdrawn and every step stays open. Null without one. */
+                emergency: {
+                    /** Format: date-time */
+                    at: string;
+                } | null;
             };
         };
         CaptainCannotCompleteDto: {
@@ -7536,6 +7583,18 @@ export interface components {
             reason: string;
             /** @description The text of a reason that needs one («أخرى»), and only of it. */
             note: string | null;
+        };
+        CaptainEmergencyDto: {
+            /** @description The latest GPS fix, whatever its age, accuracy or mock flag; null without one. */
+            location: {
+                latitude: number;
+                longitude: number;
+                accuracyMetres: number;
+                /** Format: date-time */
+                recordedAt: string;
+                /** @description The device reports a mock location. */
+                simulated: boolean;
+            } | null;
         };
         CaptainArriveAtCustomerDto: {
             /** @description The latest GPS fix. */
@@ -7790,7 +7849,7 @@ export interface components {
                  * @description The rule of AP §9.1.3.
                  * @enum {string}
                  */
-                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "restaurant_auto_paused";
+                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "restaurant_auto_paused";
                 /**
                  * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
                  * @enum {string}
@@ -7806,6 +7865,13 @@ export interface components {
                 captainName: string | null;
                 /** @description For an alert about a restaurant. */
                 restaurantName: string | null;
+                /** @description «طوارئ كابتن» (AP §9.1.3, CA §9.11): the location the captain sent, for «فتح الخريطة»; null for the others and an emergency without a fix. */
+                location: {
+                    latitude: number;
+                    longitude: number;
+                    /** Format: date-time */
+                    at: string;
+                } | null;
                 /** Format: date-time */
                 raisedAt: string;
                 /** @description «استلام»: who took it, which every recipient sees. */
@@ -7826,7 +7892,7 @@ export interface components {
              * @description The rule of AP §9.1.3.
              * @enum {string}
              */
-            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "restaurant_auto_paused";
+            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "restaurant_auto_paused";
             /**
              * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
              * @enum {string}
@@ -7842,6 +7908,13 @@ export interface components {
             captainName: string | null;
             /** @description For an alert about a restaurant. */
             restaurantName: string | null;
+            /** @description «طوارئ كابتن» (AP §9.1.3, CA §9.11): the location the captain sent, for «فتح الخريطة»; null for the others and an emergency without a fix. */
+            location: {
+                latitude: number;
+                longitude: number;
+                /** Format: date-time */
+                at: string;
+            } | null;
             /** Format: date-time */
             raisedAt: string;
             /** @description «استلام»: who took it, which every recipient sees. */
@@ -7950,7 +8023,7 @@ export interface components {
             /** @description Operations’ internal note (AP §9.3.2: required; never shown to the apps). */
             reason: string;
             /**
-             * @description AP §9.7.6 (slice 2.13b): «بخطأ من الكابتن» (true) or «دون خطأ» (false), kept only while the first captain's «لا أستطيع إكمال الطلب» is open (the detail's cannotComplete), where null counts as true; ignored otherwise.
+             * @description AP §9.7.6 (slices 2.13b, 2.13c): «بخطأ من الكابتن» (true) or «دون خطأ» (false), kept only while the first captain's «لا أستطيع إكمال الطلب» (the detail's cannotComplete; null counts as true) or «طوارئ» (the detail's emergency; null counts as false, also when both are open) is open; ignored otherwise.
              * @default null
              */
             captainFault: boolean | null;
@@ -11998,6 +12071,35 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["CaptainArriveDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainOrderDto_Output"];
+                };
+            };
+        };
+    };
+    captainOrdersEmergency: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainEmergencyDto"];
             };
         };
         responses: {

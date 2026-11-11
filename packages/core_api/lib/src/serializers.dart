@@ -20,6 +20,7 @@ import 'package:core_api/src/model/admin_alert_dto_output.dart';
 import 'package:core_api/src/model/admin_alerts_dto_output.dart';
 import 'package:core_api/src/model/admin_alerts_dto_output_alerts_inner.dart';
 import 'package:core_api/src/model/admin_alerts_dto_output_alerts_inner_acknowledged.dart';
+import 'package:core_api/src/model/admin_alerts_dto_output_alerts_inner_location.dart';
 import 'package:core_api/src/model/admin_assign_dto.dart';
 import 'package:core_api/src/model/admin_board_dto_output.dart';
 import 'package:core_api/src/model/admin_cancel_dto.dart';
@@ -97,6 +98,8 @@ import 'package:core_api/src/model/admin_order_dto_output_order_edit_choices_ite
 import 'package:core_api/src/model/admin_order_dto_output_order_edit_choices_items_inner_option_groups_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_edits_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_edits_inner_items_value.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_emergency.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_emergency_location.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_handover.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_handover_handovers_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_item_report.dart';
@@ -199,6 +202,7 @@ import 'package:core_api/src/model/captain_active_order_dto_output_order_custome
 import 'package:core_api/src/model/captain_active_order_dto_output_order_customer_address.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_customer_arrival.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_customer_location.dart';
+import 'package:core_api/src/model/captain_active_order_dto_output_order_emergency.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_handover.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_handover_captain.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_handover_captain_location.dart';
@@ -246,6 +250,8 @@ import 'package:core_api/src/model/captain_delivery_summary_dto_output_summary.d
 import 'package:core_api/src/model/captain_delivery_summary_dto_output_summary_custody_change.dart';
 import 'package:core_api/src/model/captain_delivery_summary_dto_output_summary_hand_in_today.dart';
 import 'package:core_api/src/model/captain_delivery_summary_dto_output_summary_pay.dart';
+import 'package:core_api/src/model/captain_emergency_dto.dart';
+import 'package:core_api/src/model/captain_emergency_dto_location.dart';
 import 'package:core_api/src/model/captain_emergency_stop_dto_output.dart';
 import 'package:core_api/src/model/captain_go_online_dto.dart';
 import 'package:core_api/src/model/captain_last_order_dto.dart';
@@ -261,7 +267,6 @@ import 'package:core_api/src/model/captain_order_dto_output_order_outcome_to_col
 import 'package:core_api/src/model/captain_order_dto_output_order_pickup.dart';
 import 'package:core_api/src/model/captain_order_dto_output_order_pickup_request.dart';
 import 'package:core_api/src/model/captain_outcome_payment_dto.dart';
-import 'package:core_api/src/model/captain_outcome_payment_dto_location.dart';
 import 'package:core_api/src/model/captain_pickup_request_dto.dart';
 import 'package:core_api/src/model/captain_refresh_dto.dart';
 import 'package:core_api/src/model/captain_session_dto_output.dart';
@@ -463,6 +468,7 @@ part 'serializers.g.dart';
   AdminAlertsDtoOutput,
   AdminAlertsDtoOutputAlertsInner,
   AdminAlertsDtoOutputAlertsInnerAcknowledged,
+  AdminAlertsDtoOutputAlertsInnerLocation,
   AdminAssignDto,
   AdminBoardDtoOutput,
   AdminCancelDto,
@@ -540,6 +546,8 @@ part 'serializers.g.dart';
   AdminOrderDtoOutputOrderEditChoicesItemsInnerOptionGroupsInner,
   AdminOrderDtoOutputOrderEditsInner,
   AdminOrderDtoOutputOrderEditsInnerItemsValue,
+  AdminOrderDtoOutputOrderEmergency,
+  AdminOrderDtoOutputOrderEmergencyLocation,
   AdminOrderDtoOutputOrderHandover,
   AdminOrderDtoOutputOrderHandoverHandoversInner,
   AdminOrderDtoOutputOrderItemReport,
@@ -642,6 +650,7 @@ part 'serializers.g.dart';
   CaptainActiveOrderDtoOutputOrderCustomerAddress,
   CaptainActiveOrderDtoOutputOrderCustomerArrival,
   CaptainActiveOrderDtoOutputOrderCustomerLocation,
+  CaptainActiveOrderDtoOutputOrderEmergency,
   CaptainActiveOrderDtoOutputOrderHandover,
   CaptainActiveOrderDtoOutputOrderHandoverCaptain,
   CaptainActiveOrderDtoOutputOrderHandoverCaptainLocation,
@@ -689,6 +698,8 @@ part 'serializers.g.dart';
   CaptainDeliverySummaryDtoOutputSummaryCustodyChange,
   CaptainDeliverySummaryDtoOutputSummaryHandInToday,
   CaptainDeliverySummaryDtoOutputSummaryPay,
+  CaptainEmergencyDto,
+  CaptainEmergencyDtoLocation,
   CaptainEmergencyStopDtoOutput,
   CaptainGoOnlineDto,
   CaptainLastOrderDto,
@@ -704,7 +715,6 @@ part 'serializers.g.dart';
   CaptainOrderDtoOutputOrderPickup,
   CaptainOrderDtoOutputOrderPickupRequest,
   CaptainOutcomePaymentDto,
-  CaptainOutcomePaymentDtoLocation,
   CaptainPickupRequestDto,
   CaptainRefreshDto,
   CaptainSessionDtoOutput,

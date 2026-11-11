@@ -33,6 +33,12 @@ class AdminAlertDto extends createZodDto(
     orderNumber: z.string().nullable().describe('For an alert about an order.'),
     captainName: z.string().nullable().describe('For an alert about a captain.'),
     restaurantName: z.string().nullable().describe('For an alert about a restaurant.'),
+    location: z
+      .object({ latitude: z.number(), longitude: z.number(), at: z.iso.datetime() })
+      .nullable()
+      .describe(
+        '«طوارئ كابتن» (AP §9.1.3, CA §9.11): the location the captain sent, for «فتح الخريطة»; null for the others and an emergency without a fix.',
+      ),
     raisedAt: z.iso.datetime(),
     acknowledged: z
       .object({ at: z.iso.datetime(), byId: z.uuid(), byName: z.string().nullable() })
@@ -96,6 +102,7 @@ export class AdminAlertsController {
       orderNumber: alert.details.orderNumber ?? null,
       captainName: alert.details.captainName ?? null,
       restaurantName: alert.details.restaurantName ?? null,
+      location: locationOf(alert.details),
       raisedAt: alert.raisedAt.toISOString(),
       acknowledged:
         alert.acknowledgedAt && alert.acknowledgedBy
@@ -108,4 +115,12 @@ export class AdminAlertsController {
       resolvedAt: alert.resolvedAt?.toISOString() ?? null,
     }));
   }
+}
+
+function locationOf(
+  details: Record<string, string>,
+): { latitude: number; longitude: number; at: string } | null {
+  const { latitude, longitude, locatedAt } = details;
+  if (latitude === undefined || longitude === undefined || locatedAt === undefined) return null;
+  return { latitude: Number(latitude), longitude: Number(longitude), at: locatedAt };
 }

@@ -37,6 +37,7 @@ function card(overrides: Partial<OrderCard>): OrderCard {
       awaitingCollection: false,
       itemReport: false,
       cannotComplete: false,
+      emergency: false,
     },
     moments: {
       acceptAlertAt: null,

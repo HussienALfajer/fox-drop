@@ -164,7 +164,8 @@
       "codeNumberStopped": "رقم إرسال الرموز متوقف",
       "restaurantAutoPaused": "مطعم أوقف تلقائياً",
       "editUnacknowledged": "المطعم لم يؤكد التعديل",
-      "captainCannotComplete": "كابتن لا يستطيع إكمال الطلب"
+      "captainCannotComplete": "كابتن لا يستطيع إكمال الطلب",
+      "captainEmergency": "طوارئ كابتن"
     },
     "badge": {
       "needsAssignment": "بحاجة لتعيين",
@@ -173,7 +174,8 @@
       "pickupPending": "بانتظار تأكيد الاستلام",
       "itemReport": "صنف نفد",
       "awaitingCollection": "بانتظار تسجيل التحصيل",
-      "cannotComplete": "بانتظار العمليات"
+      "cannotComplete": "بانتظار العمليات",
+      "emergency": "طوارئ"
     },
     "vehicle": {
       "walking": "مشياً",

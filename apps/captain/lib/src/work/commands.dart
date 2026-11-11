@@ -384,7 +384,7 @@ class Commands extends Notifier<Set<String>> {
             (b) => b
               ..location = fix == null
                   ? null
-                  : (CaptainOutcomePaymentDtoLocationBuilder()
+                  : (CaptainEmergencyDtoLocationBuilder()
                       ..latitude = fix.latitude
                       ..longitude = fix.longitude
                       ..accuracyMetres = fix.accuracyMetres
