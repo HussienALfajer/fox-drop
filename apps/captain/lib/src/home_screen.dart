@@ -173,6 +173,8 @@ class _AvailabilityView extends ConsumerWidget {
           style: Theme.of(context).textTheme.headlineSmall,
         ),
         for (final reason in l10n.noOffersTexts(availability)) Text(reason),
+        if (l10n.offersExpiredText(availability) case final text?)
+          Text(text, key: const Key('offers-expired')),
         if (suspended && state.suspensionReason != null)
           Text(
             state.suspendedUntil == null

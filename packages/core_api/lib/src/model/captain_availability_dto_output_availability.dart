@@ -19,6 +19,7 @@ part 'captain_availability_dto_output_availability.g.dart';
 /// * [suspendedUntil] - While suspended: the end, or null until further notice.
 /// * [lastOrderBy] - In last_order: who set it (CA §7.3, §7.6, K18). Only the captain's own can be cancelled.
 /// * [lastOrderReason] - In last_order: the reason shown, a force offline's or a suspension's.
+/// * [offersExpired] - While offline after C3 (CA §7.4): the offers in a row that expired unanswered, for «لم ترد على {العدد} عروض متتالية، فأصبحت غير متصل. اضغط «متصل» عندما تكون جاهزاً.»; null otherwise.
 @BuiltValue()
 abstract class CaptainAvailabilityDtoOutputAvailability
     implements
@@ -54,6 +55,10 @@ abstract class CaptainAvailabilityDtoOutputAvailability
   /// In last_order: the reason shown, a force offline's or a suspension's.
   @BuiltValueField(wireName: r'lastOrderReason')
   String? get lastOrderReason;
+
+  /// While offline after C3 (CA §7.4): the offers in a row that expired unanswered, for «لم ترد على {العدد} عروض متتالية، فأصبحت غير متصل. اضغط «متصل» عندما تكون جاهزاً.»; null otherwise.
+  @BuiltValueField(wireName: r'offersExpired')
+  int? get offersExpired;
 
   CaptainAvailabilityDtoOutputAvailability._();
 
@@ -135,6 +140,13 @@ class _$CaptainAvailabilityDtoOutputAvailabilitySerializer
         : serializers.serialize(
             object.lastOrderReason,
             specifiedType: const FullType.nullable(String),
+          );
+    yield r'offersExpired';
+    yield object.offersExpired == null
+        ? null
+        : serializers.serialize(
+            object.offersExpired,
+            specifiedType: const FullType.nullable(int),
           );
   }
 
@@ -240,6 +252,16 @@ class _$CaptainAvailabilityDtoOutputAvailabilitySerializer
                   as String?;
           if (valueDes == null) continue;
           result.lastOrderReason = valueDes;
+          break;
+        case r'offersExpired':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(int),
+                  )
+                  as int?;
+          if (valueDes == null) continue;
+          result.offersExpired = valueDes;
           break;
         default:
           unhandled.add(key);

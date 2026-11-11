@@ -63,6 +63,14 @@ const availability = z
       .string()
       .nullable()
       .describe("In last_order: the reason shown, a force offline's or a suspension's."),
+    offersExpired: z
+      .number()
+      .int()
+      .positive()
+      .nullable()
+      .describe(
+        'While offline after C3 (CA §7.4): the offers in a row that expired unanswered, for «لم ترد على {العدد} عروض متتالية، فأصبحت غير متصل. اضغط «متصل» عندما تكون جاهزاً.»; null otherwise.',
+      ),
   })
   .describe(
     'CA §7.1: «غير متصل», «متصل متاح», «مشغول» (an active order), «آخر طلب» (last-order mode), «لا تصلك عروض» with its reasons, «موقوف».',
@@ -377,6 +385,7 @@ function availabilityBody(state: Availability) {
     suspendedUntil: state.state === 'suspended' ? (state.until?.toISOString() ?? null) : null,
     lastOrderBy: state.state === 'last_order' ? state.by : null,
     lastOrderReason: state.state === 'last_order' ? state.reason : null,
+    offersExpired: state.state === 'offline' ? state.offersExpired : null,
   };
 }
 

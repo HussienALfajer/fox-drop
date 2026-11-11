@@ -12,6 +12,7 @@ import { LedgerWorkerModule } from '../modules/ledger/index.js';
 import { MerchantsWorkerModule } from '../modules/merchants/index.js';
 import {
   AlertsWorkerModule,
+  CaptainNoticesWorkerModule,
   PlatformRelayWorkerModule,
   PushWorkerModule,
 } from '../modules/notifications/index.js';
@@ -31,6 +32,7 @@ const BACKGROUND_MODULES: Record<BackgroundRole, Type[]> = {
     OrderingWorkerModule,
     DispatchWorkerModule,
     AlertsWorkerModule,
+    CaptainNoticesWorkerModule,
     PushWorkerModule,
     PlatformRelayWorkerModule,
     MerchantsWorkerModule,

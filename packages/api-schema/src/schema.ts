@@ -3970,6 +3970,8 @@ export interface components {
                 lastOrderBy: ("captain" | "forced" | "suspended" | "terminated") | null;
                 /** @description In last_order: the reason shown, a force offline's or a suspension's. */
                 lastOrderReason: string | null;
+                /** @description While offline after C3 (CA §7.4): the offers in a row that expired unanswered, for «لم ترد على {العدد} عروض متتالية، فأصبحت غير متصل. اضغط «متصل» عندما تكون جاهزاً.»; null otherwise. */
+                offersExpired: number | null;
             };
             custody: {
                 /** @description The cash held, in the base currency (AP §8.5.3). */

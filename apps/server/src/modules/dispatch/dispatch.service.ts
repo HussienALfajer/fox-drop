@@ -390,7 +390,7 @@ export class DispatchService implements OnModuleInit {
       .orderBy(desc(offers.offeredAt))
       .limit(count);
     if (last.length === count && last.every((each) => each.status === 'expired')) {
-      if (await this.captains.offlineForUnansweredOffers(offer.captainId, now)) {
+      if (await this.captains.offlineForUnansweredOffers(offer.captainId, now, count)) {
         this.logger.log({ captainId: offer.captainId }, 'offline after unanswered offers (C3)');
       }
     }

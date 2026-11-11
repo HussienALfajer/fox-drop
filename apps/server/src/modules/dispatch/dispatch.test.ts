@@ -451,12 +451,26 @@ describe('POST /v1/admin/orders/{orderId}/assign as an offer (AP §9.3.2, CA §8
       expect(late.json().error).toBe('offer_unavailable');
       const state = (await captain.call('GET', '/v1/captain/availability')).json().availability;
       expect(state.state).toBe(round < 3 ? 'online_available' : 'offline');
+      // CA §7.4: the app says why until the captain is online again.
+      expect(state.offersExpired).toBe(round < 3 ? null : 3);
     }
     const ended = await sql.query(
       'SELECT end_reason FROM captains.online_periods WHERE captain_id = $1',
       [captain.captainId],
     );
     expect(ended.rows).toEqual([{ end_reason: 'offers_expired' }]);
+    // CA §7.4, §14 #3: the push and its chime, once.
+    const { rows: pushes } = await sql.query(
+      `SELECT body, level FROM notifications.push_messages WHERE captain_id = $1
+        AND template_key = 'captain.auto_offline'`,
+      [captain.captainId],
+    );
+    expect(pushes).toEqual([
+      {
+        body: 'لم ترد على 3 عروض متتالية، فأصبحت غير متصل. اضغط «متصل» عندما تكون جاهزاً.',
+        level: 'chime',
+      },
+    ]);
   });
 });
 

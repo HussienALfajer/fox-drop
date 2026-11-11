@@ -1152,6 +1152,11 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String captainOffersExpiredOffline(String count) {
+    return 'لم ترد على $count عروض متتالية، فأصبحت غير متصل. اضغط «متصل» عندما تكون جاهزاً.';
+  }
+
+  @override
   String captainLastOrderSuspended(String reason) {
     return 'حسابك موقوف: $reason. أكمل هذا الطلب ثم تصبح غير متصل.';
   }

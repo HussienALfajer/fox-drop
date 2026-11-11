@@ -100,7 +100,10 @@ export type AvailabilityChange =
       atOnce: boolean;
       at: Date;
     }
-  | { kind: 'offline_after_order'; captainId: string; cityId: string; at: Date };
+  | { kind: 'offline_after_order'; captainId: string; cityId: string; at: Date }
+  // C3, CA §7.4 (slice 2.15b): offline after `count` offers in a row
+  // expired unanswered.
+  | { kind: 'offers_expired'; captainId: string; cityId: string; count: number; at: Date };
 
 type AvailabilityListener = (tx: Tx, change: AvailabilityChange) => Promise<void>;
 
@@ -981,12 +984,23 @@ export class CaptainsService implements OnModuleInit {
 
   // C3, AP §9.7.6: after captain.offer_expiry_offline_count expired offers in
   // a row, the captain goes offline; never with an active order.
-  async offlineForUnansweredOffers(captainId: string, now: Date): Promise<boolean> {
+  async offlineForUnansweredOffers(captainId: string, now: Date, count: number): Promise<boolean> {
     const cityId = (await this.row(this.database.db, captainId)).cityId;
     const ended = await this.database.db.transaction(async (tx) => {
       await this.lockCaptain(tx, captainId);
       if ((await this.activeOrders([captainId], tx)).size > 0) return null;
-      return this.endOnline(tx, captainId, 'offers_expired', now);
+      const period = await this.endOnline(tx, captainId, 'offers_expired', now);
+      // CA §7.4: the push and sound «لم ترد على 3 عروض متتالية…».
+      if (period !== null) {
+        await this.availabilityChanged(tx, {
+          kind: 'offers_expired',
+          captainId,
+          cityId,
+          count,
+          at: now,
+        });
+      }
+      return period;
     });
     if (ended === null) return false;
     await this.positions.remove(cityId, captainId, ended);
@@ -1410,12 +1424,13 @@ export class CaptainsService implements OnModuleInit {
   private async cityRules(cityId: string, now: Date) {
     const timeZone = await this.geo.cityTimeZone(cityId);
     if (timeZone === null) throw new Error(`city ${cityId} does not exist`);
-    const [cutoff, tolerance, graceHours, warnPct, minVersion] = await Promise.all([
+    const [cutoff, tolerance, graceHours, warnPct, minVersion, expiryCount] = await Promise.all([
       this.settings.get('finance.business_day_cutoff', { cityId }),
       this.settings.get('captain.remit_tolerance', { cityId }),
       this.settings.get('captain.remit_online_grace_hours', { cityId }),
       this.settings.get('captain.custody_warn_pct', { cityId }),
       this.settings.get('app.<app>.min_version', { parameter: 'captain' }),
+      this.settings.get('captain.offer_expiry_offline_count', { cityId }),
     ]);
     const [hours, minutes] = cutoff.split(':').map(Number) as [number, number];
     return {
@@ -1424,6 +1439,7 @@ export class CaptainsService implements OnModuleInit {
       graceHours,
       warnPct,
       minVersion,
+      expiryCount,
     };
   }
 
@@ -1444,6 +1460,16 @@ export class CaptainsService implements OnModuleInit {
           .orderBy(desc(locations.recordedAt))
           .limit(1)
       : [];
+    // C3, CA §7.4: offline since the latest period ended for unanswered
+    // offers.
+    const [last] = open
+      ? []
+      : await executor
+          .select({ endReason: onlinePeriods.endReason })
+          .from(onlinePeriods)
+          .where(eq(onlinePeriods.captainId, row.id))
+          .orderBy(desc(onlinePeriods.startedAt))
+          .limit(1);
     return {
       availability: {
         // As stored: the rules read a suspension past its end as active.
@@ -1466,6 +1492,7 @@ export class CaptainsService implements OnModuleInit {
         activeOrder: open ? (await this.activeOrders([row.id], executor)).size > 0 : false,
         lastOrder:
           open?.lastOrderBy == null ? null : { by: open.lastOrderBy, reason: open.lastOrderReason },
+        offersExpired: last?.endReason === 'offers_expired' ? rules.expiryCount : null,
       },
       custody,
     };

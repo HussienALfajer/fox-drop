@@ -138,7 +138,7 @@ describe('the availability routes (CA §7)', () => {
     const { headers } = await signedIn();
     const state = await call(headers, 'GET', '/v1/captain/availability');
     expect(state.json()).toMatchObject({
-      availability: { state: 'offline' },
+      availability: { state: 'offline', offersExpired: null },
       custody: {
         usage: { amount: '0', currency: 'TRY' },
         limit: { amount: '300000', currency: 'TRY' },
@@ -160,6 +160,7 @@ describe('the availability routes (CA §7)', () => {
       suspendedUntil: null,
       lastOrderBy: null,
       lastOrderReason: null,
+      offersExpired: null,
     });
   });
 
@@ -284,6 +285,7 @@ describe('the location route (CA §4.3, architecture §7.3)', () => {
       suspendedUntil: null,
       lastOrderBy: null,
       lastOrderReason: null,
+      offersExpired: null,
     });
     await sendPoints(headers, [point(new Date(Date.now() + 2_000))]);
     expect((await call(headers, 'GET', '/v1/captain/availability')).json().availability.state).toBe(

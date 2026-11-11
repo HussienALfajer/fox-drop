@@ -11576,6 +11576,19 @@
                   "string",
                   "null"
                 ]
+              },
+              "offersExpired": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "While offline after C3 (CA §7.4): the offers in a row that expired unanswered, for «لم ترد على {العدد} عروض متتالية، فأصبحت غير متصل. اضغط «متصل» عندما تكون جاهزاً.»; null otherwise."
               }
             },
             "required": [
@@ -11585,7 +11598,8 @@
               "suspensionReason",
               "suspendedUntil",
               "lastOrderBy",
-              "lastOrderReason"
+              "lastOrderReason",
+              "offersExpired"
             ],
             "additionalProperties": false,
             "description": "CA §7.1: «غير متصل», «متصل متاح», «مشغول» (an active order), «آخر طلب» (last-order mode), «لا تصلك عروض» with its reasons, «موقوف»."

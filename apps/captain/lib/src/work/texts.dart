@@ -58,6 +58,15 @@ extension CaptainTexts on AppLocalizations {
     };
   }
 
+  /// C3, CA §7.4: why the captain is offline, until online again; null
+  /// otherwise.
+  String? offersExpiredText(Availability availability) {
+    final state = availability.availability;
+    final count = state.offersExpired;
+    if (state.state != AvailabilityState.offline || count == null) return null;
+    return captainOffersExpiredOffline('$count');
+  }
+
   /// Why no offers arrive (CA §7.1: the reason is shown).
   List<String> noOffersTexts(Availability availability) {
     final custody = availability.custody;
@@ -183,6 +192,9 @@ extension CaptainTexts on AppLocalizations {
     CollectLowered(:final collect) => captainCollectLowered(moneyOf(collect)),
     CustomerAnswered(:final answer) => pingAnswerText(answer),
     WaitForCustomer(:final message) => captainOperationsWait(message),
+    OfflineAfterUnanswered(:final count) => captainOffersExpiredOffline(
+      '$count',
+    ),
   };
 
   /// CA §9.9: the customer's answer to a ping.

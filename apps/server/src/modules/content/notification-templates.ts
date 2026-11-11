@@ -159,7 +159,13 @@ const merchant: Entry[] = [
 const captain: Entry[] = [
   ['new_offer', '1', 'عرض جديد: {الأجر} — {المطعم}', 'offer', true],
   // AP §10 gives the full text of the row.
-  ['auto_offline', '3', 'لم ترد على 3 عروض متتالية، فأصبحت غير متصل', 'chime'],
+  // CA §7.4 (C3, slice 2.15b): the count is captain.offer_expiry_offline_count.
+  [
+    'auto_offline',
+    '3',
+    'لم ترد على {العدد} عروض متتالية، فأصبحت غير متصل. اضغط «متصل» عندما تكون جاهزاً.',
+    'chime',
+  ],
   ['assigned_by_operations', '4', 'عيّنتك العمليات على طلب #{رقم}', 'chime'],
   ['order_ready', '5', 'الطلب #{رقم} جاهز', 'chime'],
   ['picked_up', '7', 'تم الاستلام — توجّه إلى الزبون', 'chime'],
