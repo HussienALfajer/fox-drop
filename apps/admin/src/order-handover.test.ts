@@ -37,6 +37,7 @@ describe('handoverState', () => {
     closeReason: null,
     note: 'حادث',
     adminId: 'c',
+    captainFault: null,
   };
   it('tells an offer, a wait, a receipt and a close apart', () => {
     expect(handoverState(base)).toEqual({ kind: 'offered' });

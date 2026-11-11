@@ -32,10 +32,13 @@ export function ReassignOrder({
   orderId,
   version,
   choices,
+  cannotComplete,
 }: {
   orderId: string;
   version: number;
   choices: ReassignChoices;
+  // CA §9.11: the captain's «لا أستطيع إكمال الطلب» is open.
+  cannotComplete: boolean;
 }) {
   const { t } = useTranslation();
   const title = useId();
@@ -69,7 +72,7 @@ export function ReassignOrder({
               type="radio"
               name="reassignment"
               checked={form.reassignment === choice.code}
-              onChange={() => setForm(chooseReason(form, choices, choice.code))}
+              onChange={() => setForm(chooseReason(form, choices, choice.code, cannotComplete))}
             />
             {choice.label}
           </label>

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { ineligibleKeys, pickerQuery, secondsLeft } from './assign-captain.js';
 import { useServerNow } from './clock.js';
 import { formatDistance, formatMoney } from './format.js';
+import { orderQuery } from './order-detail.js';
 import { type HandoverRefusal, handoverNote, useHandOver } from './order-handover.js';
 import { vehicleKeys } from './order-labels.js';
 
@@ -27,6 +28,11 @@ export function OrderHandoverPage() {
   const picker = useQuery(pickerQuery(orderId));
   const handOver = useHandOver(orderId);
   const now = useServerNow();
+  // CA §9.11, AP §9.7.6 (slice 2.13b): while the first captain's «لا أستطيع
+  // إكمال الطلب» is open the fault is asked, «بخطأ من الكابتن» prefilled.
+  const order = useQuery({ ...orderQuery(orderId, undefined), refetchInterval: false });
+  const asked = order.data?.cannotComplete != null;
+  const [captainFault, setCaptainFault] = useState(true);
   const [text, setText] = useState('');
   const note = handoverNote(text);
   const back = (
@@ -60,6 +66,29 @@ export function OrderHandoverPage() {
         <textarea value={text} onChange={(event) => setText(event.target.value)} required />
       </label>
       {note === null && <p>{t('handover.noteRequired')}</p>}
+      {asked && (
+        <fieldset>
+          <legend>{t('handover.fault')}</legend>
+          <label>
+            <input
+              type="radio"
+              name="captainFault"
+              checked={captainFault}
+              onChange={() => setCaptainFault(true)}
+            />
+            {t('order.reassign.captainFault')}
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="captainFault"
+              checked={!captainFault}
+              onChange={() => setCaptainFault(false)}
+            />
+            {t('order.reassign.noFault')}
+          </label>
+        </fieldset>
+      )}
       <button type="button" onClick={() => void picker.refetch()} disabled={picker.isFetching}>
         {t('assign.refresh')}
       </button>
@@ -102,7 +131,12 @@ export function OrderHandoverPage() {
                 <button
                   type="button"
                   onClick={() =>
-                    note !== null && handOver.mutate({ captainId: captain.captainId, reason: note })
+                    note !== null &&
+                    handOver.mutate({
+                      captainId: captain.captainId,
+                      reason: note,
+                      captainFault: asked ? captainFault : null,
+                    })
                   }
                   disabled={handOver.isPending || note === null}
                 >
