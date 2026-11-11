@@ -446,6 +446,7 @@ const routeAccess: Record<string, Access> = {
   'GET /v1/captain/availability': 'app_session',
   'POST /v1/captain/availability/online': 'app_session',
   'POST /v1/captain/availability/offline': 'app_session',
+  'POST /v1/captain/availability/last-order': 'app_session',
   'POST /v1/captain/location': 'app_session',
   'GET /v1/captain/offers/current': 'app_session',
   'POST /v1/captain/realtime/token': 'app_session',
