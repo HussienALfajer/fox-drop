@@ -26,6 +26,13 @@ const fakeRoad: RoadDistances = {
     calls.push(args);
     return Promise.resolve(1500.4);
   },
+  table: (sources, to, vehicle) => {
+    calls.push(['table', sources.length, to, vehicle]);
+    // The car has no route from its second point.
+    return Promise.resolve(
+      sources.map((_each, index) => (vehicle === 'car' && index === 1 ? null : 1000.6 + index)),
+    );
+  },
 };
 
 beforeAll(async () => {
@@ -78,6 +85,42 @@ describe('GeoService.distance', () => {
     expect(distance.metres).toBeGreaterThan(700);
     expect(distance.metres).toBeLessThan(900);
     expect(calls).toEqual([]);
+  });
+});
+
+describe('GeoService.distancesTo (AP §9.12.6: the dispatch matrix)', () => {
+  const near = { latitude: 36.5871, longitude: 37.0468 };
+
+  it('asks one matrix per vehicle and answers in the sources order', async () => {
+    await settings.update('pricing.distance_method', {}, 'road', system);
+    calls.length = 0;
+    const distances = await geo.distancesTo(
+      [
+        { point: from, vehicle: 'motorbike' },
+        { point: from, vehicle: 'car' },
+        { point: near, vehicle: 'motorbike' },
+        { point: near, vehicle: 'car' },
+      ],
+      to,
+    );
+    expect(distances[0]).toEqual({ metres: 1001, method: 'road' });
+    expect(distances[2]).toEqual({ metres: 1002, method: 'road' });
+    expect(distances[1]).toEqual({ metres: 1001, method: 'road' });
+    // No route for the car's second point: the straight line × 1.3.
+    expect(distances[3]?.method).toBe('straight_x1.3');
+    expect(calls).toEqual([
+      ['table', 2, to, 'motorbike'],
+      ['table', 2, to, 'car'],
+    ]);
+  });
+
+  it('measures every point by the straight line × 1.3 with straight_line, without asking', async () => {
+    await settings.update('pricing.distance_method', {}, 'straight_line', system);
+    calls.length = 0;
+    const distances = await geo.distancesTo([{ point: from, vehicle: 'car' }], to);
+    expect(distances).toEqual([{ metres: expect.any(Number), method: 'straight_x1.3' }]);
+    expect(calls).toEqual([]);
+    await expect(geo.distancesTo([], to)).resolves.toEqual([]);
   });
 });
 

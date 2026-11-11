@@ -40,6 +40,9 @@ export const ROAD_DISTANCES = Symbol('ROAD_DISTANCES');
 // the vehicle's profile. It rejects when it cannot answer in time.
 export interface RoadDistances {
   metres(from: Point, to: Point, vehicle: Vehicle): Promise<number>;
+  // The distance matrix (OSRM `table`) from each source to one destination,
+  // in the sources' order: null for a source with no route.
+  table(sources: Point[], to: Point, vehicle: Vehicle): Promise<(number | null)[]>;
 }
 
 // A programming error, not a refusal: the routes validate the points they
@@ -72,4 +75,40 @@ export async function measureDistance(
     metres: Math.round(straightLineMetres(from, to) * STRAIGHT_LINE_FACTOR),
     method: 'straight_x1.3',
   };
+}
+
+// The distances from many points to one, for one vehicle, in their order
+// (dispatch's ranking, AP §9.12.6): one matrix call by road, each source
+// without a route, and every source when the call fails, by the straight line
+// × 1.3.
+export async function measureDistances(
+  sources: Point[],
+  to: Point,
+  vehicle: Vehicle,
+  method: 'road' | 'straight_line',
+  road: RoadDistances,
+  onFallback: (error: unknown) => void = () => {},
+): Promise<Distance[]> {
+  sources.forEach(assertCoordinate);
+  assertCoordinate(to);
+  const straight = (from: Point): Distance => ({
+    metres: Math.round(straightLineMetres(from, to) * STRAIGHT_LINE_FACTOR),
+    method: 'straight_x1.3',
+  });
+  if (sources.length === 0) return [];
+  if (method === 'road') {
+    try {
+      const metres = await road.table(sources, to, vehicle);
+      if (metres.length !== sources.length) {
+        throw new Error(`the matrix has ${metres.length} rows for ${sources.length} sources`);
+      }
+      if (metres.some((each) => each === null)) onFallback(new Error('no route for some sources'));
+      return metres.map((each, index) =>
+        each === null ? straight(sources[index]!) : { metres: Math.round(each), method: 'road' },
+      );
+    } catch (error) {
+      onFallback(error);
+    }
+  }
+  return sources.map(straight);
 }

@@ -10,6 +10,7 @@ import { checkDeliveryFeeRule, type DeliveryFeeRule, deliveryFeeFor } from './de
 import {
   type Distance,
   measureDistance,
+  measureDistances,
   type Point,
   ROAD_DISTANCES,
   type RoadDistances,
@@ -139,6 +140,40 @@ export class GeoService implements OnModuleInit {
         'OSRM did not answer: the straight line × 1.3 is used',
       );
     });
+  }
+
+  // The distances from many points, each with its vehicle, to one point, in
+  // their order (dispatch's ranking, AP §9.12.6): one OSRM matrix per
+  // vehicle, following pricing.distance_method, the straight line × 1.3 for
+  // any point OSRM cannot answer.
+  async distancesTo(sources: { point: Point; vehicle: Vehicle }[], to: Point): Promise<Distance[]> {
+    const method = await this.settings.get('pricing.distance_method');
+    const result: Distance[] = new Array<Distance>(sources.length);
+    const byVehicle = new Map<Vehicle, number[]>();
+    sources.forEach((source, index) => {
+      byVehicle.set(source.vehicle, [...(byVehicle.get(source.vehicle) ?? []), index]);
+    });
+    await Promise.all(
+      [...byVehicle].map(async ([vehicle, indexes]) => {
+        const measured = await measureDistances(
+          indexes.map((index) => sources[index]!.point),
+          to,
+          vehicle,
+          method,
+          this.road,
+          (error) => {
+            this.logger.warn(
+              { vehicle, err: error },
+              'OSRM matrix did not answer for every point: the straight line × 1.3 is used',
+            );
+          },
+        );
+        indexes.forEach((index, at) => {
+          result[index] = measured[at]!;
+        });
+      }),
+    );
+    return result;
   }
 
   // The city's zones, active or not, by name.
