@@ -385,7 +385,7 @@ export function useHandIn() {
   return useMutation({
     mutationFn: async (body: {
       captainId: string;
-      conversions: ReturnType<typeof conversionOf>[];
+      conversions?: ReturnType<typeof conversionOf>[];
       lines: CashLine[];
     }): Promise<HandInResult> => {
       const choice = JSON.stringify(body);

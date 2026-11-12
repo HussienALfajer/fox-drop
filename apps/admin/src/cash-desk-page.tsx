@@ -560,7 +560,7 @@ function HandInForm({
     handIn.mutate(
       {
         captainId: custody.id,
-        conversions: quoted ? [conversionOf(quoted)] : [],
+        ...(quoted ? { conversions: [conversionOf(quoted)] } : {}),
         lines: parsed.lines,
       },
       { onSuccess: (result) => result.status === 'recorded' && setTyped({}) },
