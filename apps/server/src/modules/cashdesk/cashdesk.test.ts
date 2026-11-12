@@ -583,6 +583,18 @@ describe('the daily hand-in (AP §9.10.3 «تسليم النقد اليومي»,
   });
 });
 
+// A receipt's journals as posted, its conversions first, read through the
+// ledger's service (the module boundary).
+async function receiptJournals(receiptId: string) {
+  const { rows } = await sql.query<{ journal_id: string }>(
+    `SELECT journal_id FROM cashdesk.receipt_conversions WHERE receipt_id = $1
+     UNION ALL SELECT journal_id FROM cashdesk.receipt_lines WHERE receipt_id = $1`,
+    [receiptId],
+  );
+  const journals = await ledger.journalLines(rows.map((row) => row.journal_id));
+  return rows.map((row) => journals.find((journal) => journal.id === row.journal_id)!);
+}
+
 describe('cross-currency settlement (AP §9.10.3, §8.6)', () => {
   it('converts the custody at the rate shown and takes the cash in the other currency', async () => {
     const { cashier, session } = await openDesk();
@@ -625,15 +637,15 @@ describe('cross-currency settlement (AP §9.10.3, §8.6)', () => {
       { currency: 'USD', expected: 0n },
     ]);
 
-    // One fx_convert journal through platform.fx_rounding, with the rate's
-    // version, sourced from the receipt.
-    const journals = await sql.query(
-      "SELECT id, type, rates FROM ledger.journals WHERE source_kind = 'receipt' AND source_id = $1 ORDER BY type",
+    // One fx_convert journal through platform.fx_rounding, kept with the
+    // receipt, whose audit keeps the rate's version.
+    const [convert, cash] = await receiptJournals(receipt!.id);
+    expect([convert!.type, cash!.type]).toEqual(['custody.fx_convert', 'custody.hand_in']);
+    const audit = await sql.query(
+      "SELECT changes FROM audit.events WHERE action = 'cash_desk.receipt' AND target_id = $1",
       [receipt!.id],
     );
-    expect(journals.rows.map((row) => row.type)).toEqual(['custody.fx_convert', 'custody.hand_in']);
-    expect(journals.rows[0].rates).toEqual(quote.rates);
-    const [convert] = await ledger.journalLines([journals.rows[0].id]);
+    expect(audit.rows[0].changes.conversions.after[0].rates).toEqual(quote.rates);
     expect(convert!.entries).toEqual(
       expect.arrayContaining([
         { purpose: 'captain.custody', ownerId: captainId, currency: 'USD', amount: -2_000n },
@@ -738,11 +750,10 @@ describe('cross-currency settlement (AP §9.10.3, §8.6)', () => {
     const [first] = await desk.handIn(cashier.user, command, new Date());
     const [again] = await desk.handIn(cashier.user, command, new Date());
     expect(again!.id).toBe(first!.id);
-    const journals = await sql.query(
-      "SELECT type FROM ledger.journals WHERE source_kind = 'receipt' AND source_id = $1 ORDER BY type",
-      [first!.id],
-    );
-    expect(journals.rows.map((row) => row.type)).toEqual(['custody.fx_convert', 'custody.hand_in']);
+    expect((await receiptJournals(first!.id)).map((journal) => journal.type)).toEqual([
+      'custody.fx_convert',
+      'custody.hand_in',
+    ]);
     expect(await balances(captainId)).toEqual({ TRY: 0n, USD: 0n });
     // The key with another conversion is refused.
     expect(
