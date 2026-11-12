@@ -9,6 +9,7 @@ import { startTestDatabase, type TestDatabase } from '../../database/test-databa
 import { createApiApp } from '../../http/create-api-app.js';
 import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
 import { CaptainsService } from '../captains/index.js';
+import { formatTime } from '../content/index.js';
 import { FxService } from '../fx/index.js';
 import {
   ADMIN_SESSION_COOKIE,
@@ -16,6 +17,7 @@ import {
   CaptainAccountsService,
 } from '../identity/index.js';
 import { type JournalType, LedgerService } from '../ledger/index.js';
+import { SettingsService } from '../settings/index.js';
 import { CashDeskRefusedError, CashDeskService, type DeskUser } from './index.js';
 
 // The cash desk (AP §9.10.3, §4.8, §8.5.1, §8.5.4; slice 2.17a): drawer
@@ -61,6 +63,19 @@ beforeAll(async () => {
     { ...change, actor: { type: 'admin', id: randomUUID(), role: 'FIN' } },
   );
   await fx.setCityCurrency(azaz, { currency: 'USD', displayOrder: 2, enabled: true }, change);
+  const settings = app.get(SettingsService);
+  const bySystem = { editor: 'system', context: change.context, reason: 'test' } as const;
+  for (const [code, unit] of [
+    ['TRY', 100],
+    ['USD', 50],
+  ] as const) {
+    await settings.update(
+      'currency.<code>.rounding_unit',
+      { cityId: azaz, parameter: code },
+      { amountMinor: unit },
+      bySystem,
+    );
+  }
   desk = app.get(CashDeskService);
   captains = app.get(CaptainsService);
   ledger = app.get(LedgerService);
@@ -568,6 +583,231 @@ describe('the daily hand-in (AP §9.10.3 «تسليم النقد اليومي»,
   });
 });
 
+// A receipt's journals as posted, its conversions first, read through the
+// ledger's service (the module boundary).
+async function receiptJournals(receiptId: string) {
+  const { rows } = await sql.query<{ journal_id: string }>(
+    `SELECT journal_id FROM cashdesk.receipt_conversions WHERE receipt_id = $1
+     UNION ALL SELECT journal_id FROM cashdesk.receipt_lines WHERE receipt_id = $1`,
+    [receiptId],
+  );
+  const journals = await ledger.journalLines(rows.map((row) => row.journal_id));
+  return rows.map((row) => journals.find((journal) => journal.id === row.journal_id)!);
+}
+
+describe('cross-currency settlement (AP §9.10.3, §8.6)', () => {
+  it('converts the custody at the rate shown and takes the cash in the other currency', async () => {
+    const { cashier, session } = await openDesk();
+    const { id: captainId } = await captain();
+    // 20.00 USD collected yesterday; the captain pays in lira.
+    await custody(captainId, 'custody.collect', 2_000n, 'USD');
+    const quote = await desk.quoteConversion(azaz, { from: 'USD', to: 'TRY', amount: 2_000n });
+    expect(quote).toMatchObject({
+      from: 'USD',
+      to: 'TRY',
+      amount: 2_000n,
+      converted: 80_000n,
+      rates: [{ currency: 'USD', rateVersionId: expect.any(String) }],
+      unit: { from: 'USD', to: 'TRY', value: '40' },
+    });
+    const conversion = { from: 'USD', to: 'TRY', amount: 2_000n, converted: 80_000n };
+    const [receipt, ...more] = await desk.handIn(
+      cashier.user,
+      {
+        captainId,
+        conversions: [{ ...conversion, rates: quote.rates }],
+        lines: [{ currency: 'TRY', amount: 80_000n }],
+        idempotencyKey: randomUUID(),
+      },
+      new Date(),
+    );
+    expect(more).toEqual([]);
+    expect(receipt).toMatchObject({
+      type: 'captain_hand_in',
+      conversions: [conversion],
+      // The custody expected after the conversion.
+      lines: [{ currency: 'TRY', expected: 80_000n, amount: 80_000n, remaining: 0n }],
+    });
+    expect(await balances(captainId)).toEqual({ TRY: 0n, USD: 0n });
+    expect(
+      (await captains.state(captainId, new Date(Date.now() + 2 * day))).custody.closedDue.amount,
+    ).toBe(0n);
+    expect((await desk.openSessionOf(cashier.user.accountId))!.currencies).toMatchObject([
+      { currency: 'TRY', expected: 130_000n },
+      { currency: 'USD', expected: 0n },
+    ]);
+
+    // One fx_convert journal through platform.fx_rounding, kept with the
+    // receipt, whose audit keeps the rate's version.
+    const [convert, cash] = await receiptJournals(receipt!.id);
+    expect([convert!.type, cash!.type]).toEqual(['custody.fx_convert', 'custody.hand_in']);
+    const audit = await sql.query(
+      "SELECT changes FROM audit.events WHERE action = 'cash_desk.receipt' AND target_id = $1",
+      [receipt!.id],
+    );
+    expect(audit.rows[0].changes.conversions.after[0].rates).toEqual(quote.rates);
+    expect(convert!.entries).toEqual(
+      expect.arrayContaining([
+        { purpose: 'captain.custody', ownerId: captainId, currency: 'USD', amount: -2_000n },
+        { purpose: 'platform.fx_rounding', ownerId: null, currency: 'USD', amount: 2_000n },
+        { purpose: 'captain.custody', ownerId: captainId, currency: 'TRY', amount: 80_000n },
+        { purpose: 'platform.fx_rounding', ownerId: null, currency: 'TRY', amount: -80_000n },
+      ]),
+    );
+    const pushes = await sql.query(
+      "SELECT body FROM notifications.push_messages WHERE source = 'cashdesk:receipt:' || $1",
+      [receipt!.id],
+    );
+    expect(pushes.rows).toEqual([{ body: `إيصال ${receipt!.number}: تسليم نقد 800 ₺` }]);
+    expect(session.id).toBe(receipt!.sessionId);
+  });
+
+  it('rounds by the target currency and nets what the office owes against what is due', async () => {
+    const { cashier } = await openDesk();
+    const { id: captainId } = await captain();
+    // Owed 10.10 USD back (a pickup payment), due 500 TRY.
+    await custody(captainId, 'custody.pay_merchant', -1_010n, 'USD');
+    await custody(captainId, 'custody.collect', 50_000n);
+    // 10.10 USD = 404 TRY, to the nearest lira.
+    const quote = await desk.quoteConversion(azaz, { from: 'USD', to: 'TRY', amount: 1_010n });
+    expect(quote.converted).toBe(40_400n);
+    const [receipt] = await desk.handIn(
+      cashier.user,
+      {
+        captainId,
+        conversions: [
+          { from: 'USD', to: 'TRY', amount: 1_010n, converted: 40_400n, rates: quote.rates },
+        ],
+        lines: [{ currency: 'TRY', amount: 9_600n }],
+        idempotencyKey: randomUUID(),
+      },
+      new Date(),
+    );
+    expect(receipt!.lines).toEqual([
+      { currency: 'TRY', expected: 9_600n, amount: 9_600n, remaining: 0n },
+    ]);
+    expect(await balances(captainId)).toEqual({ TRY: 0n, USD: 0n });
+  });
+
+  it('refuses a rate or amount other than the one shown, and a conversion past the custody', async () => {
+    const { cashier } = await openDesk();
+    const { id: captainId } = await captain();
+    await custody(captainId, 'custody.collect', 2_000n, 'USD');
+    const quote = await desk.quoteConversion(azaz, { from: 'USD', to: 'TRY', amount: 2_000n });
+    const handIn = (conversion: object, lines = [{ currency: 'TRY', amount: 80_000n }]) =>
+      refusal(
+        desk.handIn(
+          cashier.user,
+          {
+            captainId,
+            conversions: [
+              {
+                from: 'USD',
+                to: 'TRY',
+                amount: 2_000n,
+                converted: 80_000n,
+                rates: quote.rates,
+                ...conversion,
+              },
+            ],
+            lines,
+            idempotencyKey: randomUUID(),
+          },
+          new Date(),
+        ),
+      );
+    expect(await handIn({ converted: 79_900n })).toBe('rate_changed');
+    expect(await handIn({ amount: 2_001n, converted: 80_000n })).toBe('above_custody');
+    expect(await handIn({ from: 'TRY', to: 'TRY' })).toBe('invalid_amounts');
+    expect(await handIn({ from: 'TRY', to: 'USD' })).toBe('nothing_due');
+    // Nothing changes hands: the conversion alone is no receipt.
+    expect(await handIn({}, [])).toBe('invalid_amounts');
+
+    const fx = app.get(FxService);
+    const fin = { ...change, actor: { type: 'admin', id: randomUUID(), role: 'FIN' } } as const;
+    await fx.setRate(azaz, 'USD', { value: '41', direction: 'base_per_unit' }, fin);
+    try {
+      expect(await handIn({})).toBe('rate_changed');
+    } finally {
+      await fx.setRate(azaz, 'USD', { value: '40', direction: 'base_per_unit' }, fin);
+    }
+    expect(await balances(captainId)).toEqual({ USD: 2_000n });
+  });
+
+  it('answers a repeat of a conversion with the same receipt, posting once', async () => {
+    const { cashier } = await openDesk();
+    const { id: captainId } = await captain();
+    await custody(captainId, 'custody.collect', 2_000n, 'USD');
+    const quote = await desk.quoteConversion(azaz, { from: 'USD', to: 'TRY', amount: 2_000n });
+    const command = {
+      captainId,
+      conversions: [
+        { from: 'USD', to: 'TRY', amount: 2_000n, converted: 80_000n, rates: quote.rates },
+      ],
+      lines: [{ currency: 'TRY', amount: 80_000n }],
+      idempotencyKey: randomUUID(),
+    };
+    const [first] = await desk.handIn(cashier.user, command, new Date());
+    const [again] = await desk.handIn(cashier.user, command, new Date());
+    expect(again!.id).toBe(first!.id);
+    expect((await receiptJournals(first!.id)).map((journal) => journal.type)).toEqual([
+      'custody.fx_convert',
+      'custody.hand_in',
+    ]);
+    expect(await balances(captainId)).toEqual({ TRY: 0n, USD: 0n });
+    // The key with another conversion is refused.
+    expect(
+      await refusal(
+        desk.handIn(
+          cashier.user,
+          {
+            ...command,
+            conversions: [{ ...command.conversions[0]!, amount: 1_000n, converted: 40_000n }],
+          },
+          new Date(),
+        ),
+      ),
+    ).toBe('idempotency_key_reused');
+  });
+
+  it('quote and record a conversion through the routes', async () => {
+    const { cashier } = await openDesk();
+    const { id: captainId } = await captain();
+    await custody(captainId, 'custody.collect', 2_000n, 'USD');
+    const quote = await cashier.post(
+      '/v1/admin/cash-desk/conversions/quote',
+      { cityId: azaz, from: 'USD', to: 'TRY', amount: '2000' },
+      null,
+    );
+    expect(quote.statusCode).toBe(200);
+    expect(quote.json()).toMatchObject({
+      converted: '80000',
+      unit: { from: 'USD', to: 'TRY', value: '40' },
+    });
+    const answer = await cashier.post('/v1/admin/cash-desk/hand-ins', {
+      captainId,
+      conversions: [
+        { from: 'USD', to: 'TRY', amount: '2000', converted: '80000', rates: quote.json().rates },
+      ],
+      lines: [{ currency: 'TRY', amount: '80000' }],
+    });
+    expect(answer.statusCode).toBe(201);
+    expect(answer.json().receipts[0]).toMatchObject({
+      conversions: [{ from: 'USD', amount: '2000', to: 'TRY', converted: '80000' }],
+    });
+    const ops = await admin(['OPS']);
+    expect(
+      (
+        await ops.post(
+          '/v1/admin/cash-desk/conversions/quote',
+          { cityId: azaz, from: 'USD', to: 'TRY', amount: '2000' },
+          null,
+        )
+      ).statusCode,
+    ).toBe(403);
+  });
+});
+
 describe('the desk routes', () => {
   it('find a captain by name or number and show the custody split', async () => {
     const { cashier } = await openDesk();
@@ -685,5 +925,116 @@ describe('the desk routes', () => {
     expect((await ops.get(`/v1/admin/cash-desk/sessions/current?cityId=${azaz}`)).statusCode).toBe(
       403,
     );
+  });
+});
+
+describe('the hand-in grace routes (AP §8.5.4, CA §14 #18)', () => {
+  it('grant a grace to one captain or to the city, each by its roles', async () => {
+    const [fin, ops, own] = [await admin(['FIN']), await admin(['OPS']), await admin(['OWN'])];
+    const { id: captainId } = await captain();
+    const one = `/v1/admin/captains/${captainId}/hand-in-grace`;
+    expect((await ops.post(one, { reason: 'المكتب مغلق' }, null)).statusCode).toBe(403);
+    expect((await fin.post(one, { reason: 'المكتب مغلق' }, null)).json()).toMatchObject({
+      statusCode: 409,
+      error: 'nothing_due',
+    });
+    expect((await fin.post(one, { reason: ' ' }, null)).statusCode).toBe(400);
+    const bulk = { cityId: azaz, reason: 'المكتب مغلق' };
+    expect((await fin.post('/v1/admin/captains/hand-in-grace', bulk, null)).statusCode).toBe(403);
+    const granted = await own.post('/v1/admin/captains/hand-in-grace', bulk, null);
+    expect(granted.statusCode).toBe(200);
+    expect(granted.json()).toMatchObject({ grace: { bulk: true, reason: 'المكتب مغلق' } });
+    // A repeat answers the same grace and tells no one.
+    const again = await own.post('/v1/admin/captains/hand-in-grace', bulk, null);
+    expect(again.json()).toEqual({ ...granted.json(), captainIds: [] });
+    expect(
+      (await own.post('/v1/admin/captains/hand-in-grace', { ...bulk, cityId: randomUUID() }, null))
+        .statusCode,
+    ).toBe(404);
+  });
+
+  it('tells the captain «مُنحت مهلة حتى {الساعة}», silently', async () => {
+    const { id: captainId } = await captain();
+    await custody(captainId, 'custody.collect', 41_000n);
+    const later = new Date(Date.now() + 2 * day);
+    const fin = await admin(['FIN']);
+    const grace = await captains.grantGrace(
+      captainId,
+      { actor: fin.user.actor, context: fin.user.context, reason: 'المكتب مغلق' },
+      later,
+    );
+    const pushes = await sql.query(
+      'SELECT body, level FROM notifications.push_messages WHERE source = $1',
+      [`captain:captain.hand_in_grace:${grace.id}:${captainId}`],
+    );
+    const hour = formatTime(grace.until, 'Asia/Damascus');
+    expect(pushes.rows).toEqual([{ body: `مُنحت مهلة حتى ${hour}`, level: 'silent' }]);
+  });
+});
+
+describe('«أرصدة الكباتن» (AP §9.10.2)', () => {
+  it('lists each captain with custody, closed_due, limit, block, grace and last hand-in, by custody', async () => {
+    const { cashier } = await openDesk();
+    const small = await captain();
+    const large = await captain();
+    await custody(small.id, 'custody.collect', 10_000n);
+    await custody(large.id, 'custody.collect', 2_000n, 'USD');
+    await custody(large.id, 'custody.collect', 5_000n);
+    const later = new Date(Date.now() + 2 * day);
+    await desk.handIn(
+      cashier.user,
+      {
+        captainId: small.id,
+        lines: [{ currency: 'TRY', amount: 4_000n }],
+        idempotencyKey: randomUUID(),
+      },
+      new Date(),
+    );
+    await captains.grantGrace(
+      large.id,
+      { actor: cashier.user.actor, context: cashier.user.context, reason: 'المكتب مغلق' },
+      later,
+    );
+
+    const list = await desk.balances(azaz, later);
+    const ours = list.filter((row) => [small.id, large.id].includes(row.captainId));
+    expect(ours.map((row) => row.captainId)).toEqual([large.id, small.id]);
+    expect(ours[0]).toMatchObject({
+      name: expect.stringContaining('كابتن الصندوق'),
+      custody: {
+        usage: { amount: 85_000n, currency: 'TRY' },
+        closedDue: { amount: 85_000n, currency: 'TRY' },
+        limit: { amount: 1_000_000n, currency: 'TRY' },
+      },
+      blocks: [],
+      handInGrace: { bulk: false, reason: 'المكتب مغلق' },
+      earnings: { amount: 0n, currency: 'TRY' },
+      lastHandInAt: null,
+      lastPayoutAt: null,
+    });
+    expect(ours[0]!.custody.currencies.map((line) => line.currency)).toEqual(['TRY', 'USD']);
+    expect(ours[1]).toMatchObject({
+      custody: { closedDue: { amount: 6_000n } },
+      blocks: ['closed_due'],
+      handInGrace: null,
+      lastHandInAt: expect.any(Date),
+    });
+    // Sorted by custody, the highest first, across the whole list.
+    const totals = list.map((row) => row.custodyInBase);
+    expect(totals).toEqual([...totals].sort((a, b) => (a < b ? 1 : a > b ? -1 : 0)));
+  });
+
+  it('serves the list to finance only', async () => {
+    const fin = await admin(['FIN']);
+    const ops = await admin(['OPS']);
+    expect((await ops.get(`/v1/admin/cash-desk/balances?cityId=${azaz}`)).statusCode).toBe(403);
+    const answer = await fin.get(`/v1/admin/cash-desk/balances?cityId=${azaz}`);
+    expect(answer.statusCode).toBe(200);
+    expect(answer.json().captains[0]).toMatchObject({
+      captainId: expect.any(String),
+      custodyInBase: expect.any(String),
+      usage: { currency: 'TRY' },
+      blocks: expect.any(Array),
+    });
   });
 });

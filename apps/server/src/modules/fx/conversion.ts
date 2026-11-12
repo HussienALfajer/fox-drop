@@ -116,6 +116,28 @@ export function toBase(snapshot: RateSnapshot, amountMinor: bigint, code: string
   return roundToUnit(numerator, denominator, 1n, 'nearest');
 }
 
+// An amount of one currency in another (AP §9.10.3 cross-currency
+// settlement): exact at the snapshot's rates, then rounded by the target's
+// rule. The amount is above zero; a balance's sign is the caller's.
+export function exchange(
+  snapshot: RateSnapshot,
+  amountMinor: bigint,
+  fromCode: string,
+  toCode: string,
+): bigint {
+  const target = currencyOf(snapshot, toCode);
+  const [numerator, denominator] = convert(amountMinor, currencyOf(snapshot, fromCode), target);
+  return roundToUnit(numerator, denominator, target.roundingUnitMinor, target.roundingMode);
+}
+
+// One unit of `from` in `to` as an exact fraction of major units, for the
+// rate the desk shows.
+export function unitRate(snapshot: RateSnapshot, fromCode: string, toCode: string): Rate {
+  const from = currencyOf(snapshot, fromCode).rate;
+  const to = currencyOf(snapshot, toCode).rate;
+  return reduce(from.numerator * to.denominator, from.denominator * to.numerator);
+}
+
 // amount × from.rate ÷ to.rate, moved between the two minor units, as an
 // exact fraction of the target's minor units.
 function convert(

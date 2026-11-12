@@ -7,6 +7,7 @@ import 'package:core_api/src/model/admin_desk_custody_dto_output_closed_due.dart
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_desk_custody_dto_output_currencies_inner.dart';
 import 'package:core_api/src/model/admin_desk_custody_dto_output_usage.dart';
+import 'package:core_api/src/model/admin_desk_custody_dto_output_hand_in_grace.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -23,6 +24,8 @@ part 'admin_desk_custody_dto_output.g.dart';
 /// * [closedDue]
 /// * [lastCutoff]
 /// * [currencies]
+/// * [handInGrace]
+/// * [closedDueBlocks] - closed_due above the tolerance with no grace running: what a grace lifts.
 @BuiltValue()
 abstract class AdminDeskCustodyDtoOutput
     implements
@@ -51,6 +54,13 @@ abstract class AdminDeskCustodyDtoOutput
 
   @BuiltValueField(wireName: r'currencies')
   BuiltList<AdminDeskCustodyDtoOutputCurrenciesInner> get currencies;
+
+  @BuiltValueField(wireName: r'handInGrace')
+  AdminDeskCustodyDtoOutputHandInGrace? get handInGrace;
+
+  /// closed_due above the tolerance with no grace running: what a grace lifts.
+  @BuiltValueField(wireName: r'closedDueBlocks')
+  bool get closedDueBlocks;
 
   AdminDeskCustodyDtoOutput._();
 
@@ -123,6 +133,20 @@ class _$AdminDeskCustodyDtoOutputSerializer
       specifiedType: const FullType(BuiltList, [
         FullType(AdminDeskCustodyDtoOutputCurrenciesInner),
       ]),
+    );
+    yield r'handInGrace';
+    yield object.handInGrace == null
+        ? null
+        : serializers.serialize(
+            object.handInGrace,
+            specifiedType: const FullType.nullable(
+              AdminDeskCustodyDtoOutputHandInGrace,
+            ),
+          );
+    yield r'closedDueBlocks';
+    yield serializers.serialize(
+      object.closedDueBlocks,
+      specifiedType: const FullType(bool),
     );
   }
 
@@ -232,6 +256,27 @@ class _$AdminDeskCustodyDtoOutputSerializer
                   )
                   as BuiltList<AdminDeskCustodyDtoOutputCurrenciesInner>;
           result.currencies.replace(valueDes);
+          break;
+        case r'handInGrace':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminDeskCustodyDtoOutputHandInGrace,
+                    ),
+                  )
+                  as AdminDeskCustodyDtoOutputHandInGrace?;
+          if (valueDes == null) continue;
+          result.handInGrace.replace(valueDes);
+          break;
+        case r'closedDueBlocks':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.closedDueBlocks = valueDes;
           break;
         default:
           unhandled.add(key);

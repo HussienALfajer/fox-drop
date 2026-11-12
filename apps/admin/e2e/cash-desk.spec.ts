@@ -34,6 +34,7 @@ const receipt = {
   captainId,
   captainName: 'سامر خالد الحسن',
   createdAt: '2026-11-12T07:00:00.000Z',
+  conversions: [],
   lines: [{ currency: 'TRY', expected: '41000', amount: '40000', remaining: '1000' }],
 };
 
@@ -78,6 +79,8 @@ test('opens the drawer, records a hand-in and shows the receipt', async ({ page 
             balanceInBase: '41000',
           },
         ],
+        handInGrace: null,
+        closedDueBlocks: true,
       },
     }),
   );

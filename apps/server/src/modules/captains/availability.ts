@@ -35,6 +35,10 @@ export interface AvailabilityInput {
   // C3, CA §7.4 (slice 2.15b): while offline, the offers in a row that
   // expired when the latest online period ended for them; null otherwise.
   offersExpired: number | null;
+  // AP §8.5.4 «Hand-in grace»: the end of the latest grace of the captain or
+  // of their city (the next cutoff when granted), or null. While it runs,
+  // closed_due blocks neither going online nor offers; the custody stays due.
+  graceUntil: Date | null;
 }
 
 // CA §7.3, §7.6, K18: who put the captain in last-order mode. The captain
@@ -75,6 +79,12 @@ export type Availability =
   | { state: 'not_receiving_offers'; since: Date; reasons: NoOffersReason[] }
   | { state: 'suspended'; reason: string; until: Date | null };
 
+// closed_due above the tolerance, and no hand-in grace running now.
+function closedDueBlocks(input: AvailabilityInput, now: Date): boolean {
+  const graced = input.graceUntil !== null && now < input.graceUntil;
+  return input.closedDue > input.remitTolerance && !graced;
+}
+
 function suspendedAt(input: AvailabilityInput, now: Date) {
   const { suspension } = input;
   if (input.status !== 'suspended' || suspension === null) return null;
@@ -90,7 +100,7 @@ export function onlineBlocks(input: AvailabilityInput, now: Date): OnlineBlock[]
   if (suspension !== null) {
     blocks.push({ kind: 'suspended', reason: suspension.reason, until: suspension.until });
   }
-  if (input.closedDue > input.remitTolerance) {
+  if (closedDueBlocks(input, now)) {
     blocks.push({ kind: 'closed_due', amount: input.closedDue, cutoff: input.lastCutoff });
   }
   if (input.custodyUsage >= input.custodyLimit) {
@@ -141,7 +151,7 @@ export function availability(input: AvailabilityInput, now: Date): Availability 
   if (input.activeOrder) return { state: 'busy', since };
   const reasons: NoOffersReason[] = [];
   if (input.custodyUsage >= input.custodyLimit) reasons.push('cash_limit');
-  if (input.closedDue > input.remitTolerance) {
+  if (closedDueBlocks(input, now)) {
     const graceEnds = input.lastCutoff.getTime() + input.remitOnlineGraceHours * 3_600_000;
     if (since >= input.lastCutoff || now.getTime() >= graceEnds) reasons.push('closed_due');
   }

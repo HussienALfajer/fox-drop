@@ -25,6 +25,7 @@ const ready: AvailabilityInput = {
   activeOrder: false,
   lastOrder: null,
   offersExpired: null,
+  graceUntil: null,
 };
 
 describe('onlineBlocks', () => {
@@ -68,6 +69,19 @@ describe('onlineBlocks', () => {
     expect(onlineBlocks({ ...ready, closedDue: 1_000n, remitTolerance: 1_000n }, now)).toEqual([]);
     // Positive and negative currencies net in closed_due (AP §8.5.4).
     expect(onlineBlocks({ ...ready, closedDue: -40_000n }, now)).toEqual([]);
+  });
+
+  it('lets a captain with a hand-in grace go online until the next cutoff (AP §8.5.4)', () => {
+    const graceUntil = new Date(cutoff.getTime() + hours(24));
+    const graced = { ...ready, closedDue: 5_000n, graceUntil };
+    expect(onlineBlocks(graced, now)).toEqual([]);
+    expect(onlineBlocks(graced, graceUntil)).toEqual([
+      { kind: 'closed_due', amount: 5_000n, cutoff },
+    ]);
+    // The cash limit still applies.
+    expect(onlineBlocks({ ...graced, custodyUsage: 300_000n }, now)).toEqual([
+      { kind: 'cash_limit', limit: 300_000n },
+    ]);
   });
 
   it('refuses a captain at the cash limit, and lets one just below it', () => {
@@ -152,6 +166,13 @@ describe('availability', () => {
       since: online.onlineSince,
       reasons: ['closed_due'],
     });
+  });
+
+  it('keeps offers for cash due while a hand-in grace runs', () => {
+    const graceUntil = new Date(cutoff.getTime() + hours(24));
+    const graced = { ...online, closedDue: 5_000n, graceUntil };
+    expect(availability(graced, now).state).toBe('online_available');
+    expect(availability(graced, graceUntil)).toMatchObject({ reasons: ['closed_due'] });
   });
 
   it('stops offers while a simulated location is reported', () => {

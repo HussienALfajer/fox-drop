@@ -20,7 +20,7 @@ import { CurrentAdminSession, RequirePermission } from '../../http/access.js';
 import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
-import { CaptainsService, type Custody } from '../captains/index.js';
+import { CaptainsService, type Custody, type HandInGrace } from '../captains/index.js';
 import { type AdminSession, CaptainAccountsService } from '../identity/index.js';
 import {
   CashDeskRefusedError,
@@ -54,22 +54,64 @@ class AdminDeskCaptainsDto extends createZodDto(
 
 class AdminDeskCaptainParamsDto extends createZodDto(z.object({ captainId: z.uuid() })) {}
 
+const custodyFields = {
+  usage: money,
+  limit: money,
+  closedDue: money.describe('Due from closed days, netted in the base currency (AP §8.5.4).'),
+  lastCutoff: z.iso.datetime(),
+  currencies: z.array(
+    z.object({
+      currency,
+      balance: signedMinor.describe('+ the captain hands in, − the office owes them.'),
+      closedDue: signedMinor,
+      today: signedMinor,
+      balanceInBase: signedMinor,
+    }),
+  ),
+};
+
+const grace = z
+  .object({
+    id: z.uuid(),
+    until: z.iso.datetime().describe('The next business-day cutoff when it was granted.'),
+    reason: z.string(),
+    bulk: z.boolean(),
+    grantedAt: z.iso.datetime(),
+  })
+  .nullable()
+  .describe('The hand-in grace running now (AP §8.5.4), or null.');
+
 class AdminDeskCustodyDto extends createZodDto(
   z.object({
     id: z.uuid(),
     name: z.string(),
     status: captainStatus,
-    usage: money,
-    limit: money,
-    closedDue: money.describe('Due from closed days, netted in the base currency (AP §8.5.4).'),
-    lastCutoff: z.iso.datetime(),
-    currencies: z.array(
+    ...custodyFields,
+    handInGrace: grace,
+    closedDueBlocks: z
+      .boolean()
+      .describe('closed_due above the tolerance with no grace running: what a grace lifts.'),
+  }),
+) {}
+
+class AdminCaptainBalancesQueryDto extends createZodDto(z.object({ cityId: z.uuid() })) {}
+
+class AdminCaptainBalancesDto extends createZodDto(
+  z.object({
+    captains: z.array(
       z.object({
-        currency,
-        balance: signedMinor.describe('+ the captain hands in, − the office owes them.'),
-        closedDue: signedMinor,
-        today: signedMinor,
-        balanceInBase: signedMinor,
+        captainId: z.uuid(),
+        name: z.string(),
+        status: captainStatus,
+        custodyInBase: signedMinor.describe('Every currency at the current rate: the sort.'),
+        ...custodyFields,
+        blocks: z
+          .array(z.enum(['closed_due', 'cash_limit']))
+          .describe('Cash due from a closed day with no grace running, or the limit reached.'),
+        handInGrace: grace,
+        earnings: money.describe('+ the platform owes the captain.'),
+        lastHandInAt: z.iso.datetime().nullable(),
+        lastPayoutAt: z.iso.datetime().nullable().describe('None until slice 2.18.'),
       }),
     ),
   }),
@@ -125,8 +167,46 @@ class AdminCloseDrawerSessionDto extends createZodDto(
   }),
 ) {}
 
+const conversionRates = z
+  .array(z.object({ currency, rateVersionId: z.uuid() }))
+  .max(2)
+  .describe('The rate version of each currency but the base, as the quote gave them.');
+
+class AdminConversionQuoteRequestDto extends createZodDto(
+  z.object({ cityId: z.uuid(), from: currency, to: currency, amount: minor }),
+) {}
+
+class AdminConversionQuoteDto extends createZodDto(
+  z.object({
+    from: currency,
+    to: currency,
+    amount: minor,
+    converted: minor.describe("Rounded by the target currency's rule (AP §8.6)."),
+    rates: conversionRates,
+    unit: z
+      .object({ from: currency, to: currency, value: z.string() })
+      .describe('One unit of `from` is `value` of `to`, up to 4 decimal places.'),
+  }),
+) {}
+
 class AdminHandInDto extends createZodDto(
-  z.object({ captainId: z.uuid(), lines: cashLines.min(1) }),
+  z.object({
+    captainId: z.uuid(),
+    conversions: z
+      .array(
+        z.object({
+          from: currency,
+          to: currency,
+          amount: minor.describe('Of `from`, taken off its custody towards zero.'),
+          converted: minor.describe('Of `to`, as the quote showed it.'),
+          rates: conversionRates,
+        }),
+      )
+      .max(10)
+      .optional()
+      .describe('AP §9.10.3 cross-currency settlement, made before the cash lines.'),
+    lines: cashLines.min(1),
+  }),
 ) {}
 
 const receiptBody = z.object({
@@ -140,6 +220,7 @@ const receiptBody = z.object({
   captainId: z.uuid(),
   captainName: z.string(),
   createdAt: z.iso.datetime(),
+  conversions: z.array(z.object({ from: currency, amount: minor, to: currency, converted: minor })),
   lines: z.array(
     z.object({
       currency,
@@ -210,7 +291,38 @@ export class AdminCashDeskController {
       }
       throw error;
     });
-    return { id: found.id, name: found.name, status: found.status, ...custodyBody(found.custody) };
+    return {
+      id: found.id,
+      name: found.name,
+      status: found.status,
+      ...custodyBody(found.custody),
+      handInGrace: graceBodyOf(found.handInGrace),
+      closedDueBlocks: found.closedDueBlocks,
+    };
+  }
+
+  // AP §9.10.2 «أرصدة الكباتن» (finance, OWN and FIN): every captain's
+  // custody, block, grace, earnings and last hand-in, the highest custody
+  // first.
+  @Get('balances')
+  @RequirePermission('finance.read')
+  @ZodResponse({ status: 200, type: AdminCaptainBalancesDto })
+  async balances(@Query() query: AdminCaptainBalancesQueryDto) {
+    const rows = await this.desk.balances(query.cityId, new Date());
+    return {
+      captains: rows.map((row) => ({
+        captainId: row.captainId,
+        name: row.name,
+        status: row.status,
+        custodyInBase: row.custodyInBase.toString(),
+        ...custodyBody(row.custody),
+        blocks: row.blocks,
+        handInGrace: graceBodyOf(row.handInGrace),
+        earnings: { amount: row.earnings.amount.toString(), currency: row.earnings.currency },
+        lastHandInAt: row.lastHandInAt?.toISOString() ?? null,
+        lastPayoutAt: row.lastPayoutAt?.toISOString() ?? null,
+      })),
+    };
   }
 
   // The user's open session, or null, and the city's currencies to count.
@@ -292,8 +404,9 @@ export class AdminCashDeskController {
   }
 
   // «تسليم النقد اليومي»: the receipts it issued, a hand-in and a
-  // reimbursement apart. Refused 409 no_open_session, nothing_due,
-  // above_custody; 404 unknown_captain.
+  // reimbursement apart, after any conversion. Refused 409 no_open_session,
+  // nothing_due, above_custody, drawer_short, rate_changed (the rate or the
+  // rounding is not the quote's), rate_missing; 404 unknown_captain.
   @Post('hand-ins')
   @RequirePermission('cash_desk.record')
   @Idempotent()
@@ -307,10 +420,45 @@ export class AdminCashDeskController {
     return refusalsAsHttp(async () => {
       const issued = await this.desk.handIn(
         deskUser(session, request),
-        { captainId: body.captainId, lines: body.lines.map(cashLine), idempotencyKey },
+        {
+          captainId: body.captainId,
+          conversions: (body.conversions ?? []).map((each) => ({
+            from: each.from,
+            to: each.to,
+            amount: BigInt(each.amount),
+            converted: BigInt(each.converted),
+            rates: each.rates,
+          })),
+          lines: body.lines.map(cashLine),
+          idempotencyKey,
+        },
         new Date(),
       );
       return { receipts: issued.map(receiptBodyOf) };
+    });
+  }
+
+  // AP §9.10.3 cross-currency settlement: the conversion at the current
+  // rate, shown before the confirmation. A read, so no Idempotency-Key.
+  @Post('conversions/quote')
+  @RequirePermission('cash_desk.record')
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminConversionQuoteDto })
+  quote(@Body() body: AdminConversionQuoteRequestDto) {
+    return refusalsAsHttp(async () => {
+      const quote = await this.desk.quoteConversion(body.cityId, {
+        from: body.from,
+        to: body.to,
+        amount: BigInt(body.amount),
+      });
+      return {
+        from: quote.from,
+        to: quote.to,
+        amount: quote.amount.toString(),
+        converted: quote.converted.toString(),
+        rates: quote.rates,
+        unit: quote.unit,
+      };
     });
   }
 
@@ -360,6 +508,18 @@ function custodyBody(custody: Custody) {
   };
 }
 
+function graceBodyOf(found: HandInGrace | null) {
+  return (
+    found && {
+      id: found.id,
+      until: found.until.toISOString(),
+      reason: found.reason,
+      bulk: found.bulk,
+      grantedAt: found.grantedAt.toISOString(),
+    }
+  );
+}
+
 function drawerBody(session: DrawerSession) {
   return {
     id: session.id,
@@ -392,6 +552,12 @@ function receiptBodyOf(receipt: Receipt) {
     captainId: receipt.captainId,
     captainName: receipt.captainName,
     createdAt: receipt.createdAt.toISOString(),
+    conversions: receipt.conversions.map((each) => ({
+      from: each.from,
+      amount: each.amount.toString(),
+      to: each.to,
+      converted: each.converted.toString(),
+    })),
     lines: receipt.lines.map((line) => ({
       currency: line.currency,
       expected: line.expected.toString(),

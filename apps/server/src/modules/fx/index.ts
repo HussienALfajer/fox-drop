@@ -16,6 +16,7 @@ export class FxModule {}
 
 export {
   equivalent,
+  exchange,
   type Rate,
   type RateInput,
   type RateSnapshot,
@@ -23,6 +24,7 @@ export {
   roundToUnit,
   type SnapshotCurrency,
   toBase,
+  unitRate,
 } from './conversion.js';
 export {
   type CityAmountSource,

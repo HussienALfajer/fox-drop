@@ -3121,6 +3121,89 @@
         ]
       }
     },
+    "/v1/admin/captains/{captainId}/hand-in-grace": {
+      "post": {
+        "operationId": "adminCaptainsGrantGrace",
+        "parameters": [
+          {
+            "name": "captainId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminHandInGraceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminHandInGraceAnswerDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/captains/hand-in-grace": {
+      "post": {
+        "operationId": "adminCaptainsGrantBulkGrace",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminBulkHandInGraceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminBulkHandInGraceAnswerDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/peak-bonus": {
       "get": {
         "operationId": "adminPeakBonusState",
@@ -8206,6 +8289,43 @@
         ]
       }
     },
+    "/v1/admin/cash-desk/balances": {
+      "get": {
+        "operationId": "adminCashDeskBalances",
+        "parameters": [
+          {
+            "name": "cityId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCaptainBalancesDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/cash-desk/sessions/current": {
       "get": {
         "operationId": "adminCashDeskCurrent",
@@ -8393,6 +8513,42 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminHandInReceiptsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/cash-desk/conversions/quote": {
+      "post": {
+        "operationId": "adminCashDeskQuote",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminConversionQuoteRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminConversionQuoteDto_Output"
                 }
               }
             },
@@ -12693,6 +12849,131 @@
         "required": [
           "reason"
         ]
+      },
+      "AdminHandInGraceDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Why, such as «المكتب كان مغلقاً»; kept in the audit log (AP §8.5.4)."
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "AdminHandInGraceAnswerDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "until": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "The next business-day cutoff when it was granted."
+          },
+          "reason": {
+            "type": "string"
+          },
+          "bulk": {
+            "type": "boolean",
+            "description": "The city's bulk grace for one business day."
+          },
+          "grantedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "id",
+          "until",
+          "reason",
+          "bulk",
+          "grantedAt"
+        ],
+        "additionalProperties": false
+      },
+      "AdminBulkHandInGraceDto": {
+        "type": "object",
+        "properties": {
+          "cityId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Why, such as «المكتب كان مغلقاً»; kept in the audit log (AP §8.5.4)."
+          }
+        },
+        "required": [
+          "cityId",
+          "reason"
+        ]
+      },
+      "AdminBulkHandInGraceAnswerDto_Output": {
+        "type": "object",
+        "properties": {
+          "grace": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "until": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                "description": "The next business-day cutoff when it was granted."
+              },
+              "reason": {
+                "type": "string"
+              },
+              "bulk": {
+                "type": "boolean",
+                "description": "The city's bulk grace for one business day."
+              },
+              "grantedAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              }
+            },
+            "required": [
+              "id",
+              "until",
+              "reason",
+              "bulk",
+              "grantedAt"
+            ],
+            "additionalProperties": false
+          },
+          "captainIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "description": "The captains blocked by cash due who were told; none on a repeat."
+          }
+        },
+        "required": [
+          "grace",
+          "captainIds"
+        ],
+        "additionalProperties": false
       },
       "AdminPeakBonusDto_Output": {
         "type": "object",
@@ -31972,6 +32253,53 @@
               ],
               "additionalProperties": false
             }
+          },
+          "handInGrace": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "until": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                    "description": "The next business-day cutoff when it was granted."
+                  },
+                  "reason": {
+                    "type": "string"
+                  },
+                  "bulk": {
+                    "type": "boolean"
+                  },
+                  "grantedAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  }
+                },
+                "required": [
+                  "id",
+                  "until",
+                  "reason",
+                  "bulk",
+                  "grantedAt"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The hand-in grace running now (AP §8.5.4), or null."
+          },
+          "closedDueBlocks": {
+            "type": "boolean",
+            "description": "closed_due above the tolerance with no grace running: what a grace lifts."
           }
         },
         "required": [
@@ -31982,7 +32310,259 @@
           "limit",
           "closedDue",
           "lastCutoff",
-          "currencies"
+          "currencies",
+          "handInGrace",
+          "closedDueBlocks"
+        ],
+        "additionalProperties": false
+      },
+      "AdminCaptainBalancesDto_Output": {
+        "type": "object",
+        "properties": {
+          "captains": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "captainId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "active",
+                    "suspended",
+                    "terminated"
+                  ]
+                },
+                "custodyInBase": {
+                  "type": "string",
+                  "pattern": "^-?\\d{1,18}$",
+                  "description": "Every currency at the current rate: the sort."
+                },
+                "usage": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "string",
+                      "pattern": "^-?\\d{1,18}$"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "pattern": "^[A-Z]{3}$"
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "currency"
+                  ],
+                  "additionalProperties": false
+                },
+                "limit": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "string",
+                      "pattern": "^-?\\d{1,18}$"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "pattern": "^[A-Z]{3}$"
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "currency"
+                  ],
+                  "additionalProperties": false
+                },
+                "closedDue": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "string",
+                      "pattern": "^-?\\d{1,18}$"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "pattern": "^[A-Z]{3}$"
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "currency"
+                  ],
+                  "additionalProperties": false,
+                  "description": "Due from closed days, netted in the base currency (AP §8.5.4)."
+                },
+                "lastCutoff": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "currencies": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "pattern": "^[A-Z]{3}$"
+                      },
+                      "balance": {
+                        "type": "string",
+                        "pattern": "^-?\\d{1,18}$",
+                        "description": "+ the captain hands in, − the office owes them."
+                      },
+                      "closedDue": {
+                        "type": "string",
+                        "pattern": "^-?\\d{1,18}$"
+                      },
+                      "today": {
+                        "type": "string",
+                        "pattern": "^-?\\d{1,18}$"
+                      },
+                      "balanceInBase": {
+                        "type": "string",
+                        "pattern": "^-?\\d{1,18}$"
+                      }
+                    },
+                    "required": [
+                      "currency",
+                      "balance",
+                      "closedDue",
+                      "today",
+                      "balanceInBase"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "blocks": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "closed_due",
+                      "cash_limit"
+                    ]
+                  },
+                  "description": "Cash due from a closed day with no grace running, or the limit reached."
+                },
+                "handInGrace": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "until": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                          "description": "The next business-day cutoff when it was granted."
+                        },
+                        "reason": {
+                          "type": "string"
+                        },
+                        "bulk": {
+                          "type": "boolean"
+                        },
+                        "grantedAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "until",
+                        "reason",
+                        "bulk",
+                        "grantedAt"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The hand-in grace running now (AP §8.5.4), or null."
+                },
+                "earnings": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "string",
+                      "pattern": "^-?\\d{1,18}$"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "pattern": "^[A-Z]{3}$"
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "currency"
+                  ],
+                  "additionalProperties": false,
+                  "description": "+ the platform owes the captain."
+                },
+                "lastHandInAt": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "lastPayoutAt": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "None until slice 2.18."
+                }
+              },
+              "required": [
+                "captainId",
+                "name",
+                "status",
+                "custodyInBase",
+                "usage",
+                "limit",
+                "closedDue",
+                "lastCutoff",
+                "currencies",
+                "blocks",
+                "handInGrace",
+                "earnings",
+                "lastHandInAt",
+                "lastPayoutAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "captains"
         ],
         "additionalProperties": false
       },
@@ -32462,6 +33042,64 @@
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           },
+          "conversions": {
+            "description": "AP §9.10.3 cross-currency settlement, made before the cash lines.",
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "from": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                },
+                "to": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                },
+                "amount": {
+                  "type": "string",
+                  "pattern": "^\\d{1,18}$",
+                  "description": "Of `from`, taken off its custody towards zero."
+                },
+                "converted": {
+                  "type": "string",
+                  "pattern": "^\\d{1,18}$",
+                  "description": "Of `to`, as the quote showed it."
+                },
+                "rates": {
+                  "maxItems": 2,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "pattern": "^[A-Z]{3}$"
+                      },
+                      "rateVersionId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      }
+                    },
+                    "required": [
+                      "currency",
+                      "rateVersionId"
+                    ]
+                  },
+                  "description": "The rate version of each currency but the base, as the quote gave them."
+                }
+              },
+              "required": [
+                "from",
+                "to",
+                "amount",
+                "converted",
+                "rates"
+              ]
+            }
+          },
           "lines": {
             "minItems": 1,
             "maxItems": 10,
@@ -32548,6 +33186,37 @@
                   "format": "date-time",
                   "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
                 },
+                "conversions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "pattern": "^[A-Z]{3}$"
+                      },
+                      "amount": {
+                        "type": "string",
+                        "pattern": "^\\d{1,18}$"
+                      },
+                      "to": {
+                        "type": "string",
+                        "pattern": "^[A-Z]{3}$"
+                      },
+                      "converted": {
+                        "type": "string",
+                        "pattern": "^\\d{1,18}$"
+                      }
+                    },
+                    "required": [
+                      "from",
+                      "amount",
+                      "to",
+                      "converted"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
                 "lines": {
                   "type": "array",
                   "items": {
@@ -32593,6 +33262,7 @@
                 "captainId",
                 "captainName",
                 "createdAt",
+                "conversions",
                 "lines"
               ],
               "additionalProperties": false
@@ -32601,6 +33271,112 @@
         },
         "required": [
           "receipts"
+        ],
+        "additionalProperties": false
+      },
+      "AdminConversionQuoteRequestDto": {
+        "type": "object",
+        "properties": {
+          "cityId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "from": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "to": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^\\d{1,18}$"
+          }
+        },
+        "required": [
+          "cityId",
+          "from",
+          "to",
+          "amount"
+        ]
+      },
+      "AdminConversionQuoteDto_Output": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "to": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^\\d{1,18}$"
+          },
+          "converted": {
+            "type": "string",
+            "pattern": "^\\d{1,18}$",
+            "description": "Rounded by the target currency's rule (AP §8.6)."
+          },
+          "rates": {
+            "type": "array",
+            "maxItems": 2,
+            "items": {
+              "type": "object",
+              "properties": {
+                "currency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                },
+                "rateVersionId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                }
+              },
+              "required": [
+                "currency",
+                "rateVersionId"
+              ],
+              "additionalProperties": false
+            },
+            "description": "The rate version of each currency but the base, as the quote gave them."
+          },
+          "unit": {
+            "type": "object",
+            "properties": {
+              "from": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              "to": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              "value": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "from",
+              "to",
+              "value"
+            ],
+            "additionalProperties": false,
+            "description": "One unit of `from` is `value` of `to`, up to 4 decimal places."
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "amount",
+          "converted",
+          "rates",
+          "unit"
         ],
         "additionalProperties": false
       },
@@ -32657,6 +33433,37 @@
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
           },
+          "conversions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "from": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                },
+                "amount": {
+                  "type": "string",
+                  "pattern": "^\\d{1,18}$"
+                },
+                "to": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                },
+                "converted": {
+                  "type": "string",
+                  "pattern": "^\\d{1,18}$"
+                }
+              },
+              "required": [
+                "from",
+                "amount",
+                "to",
+                "converted"
+              ],
+              "additionalProperties": false
+            }
+          },
           "lines": {
             "type": "array",
             "items": {
@@ -32702,6 +33509,7 @@
           "captainId",
           "captainName",
           "createdAt",
+          "conversions",
           "lines"
         ],
         "additionalProperties": false

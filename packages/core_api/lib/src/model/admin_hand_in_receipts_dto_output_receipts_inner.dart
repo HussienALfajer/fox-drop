@@ -5,6 +5,7 @@
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_hand_in_receipts_dto_output_receipts_inner_lines_inner.dart';
+import 'package:core_api/src/model/admin_hand_in_receipts_dto_output_receipts_inner_conversions_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -23,6 +24,7 @@ part 'admin_hand_in_receipts_dto_output_receipts_inner.g.dart';
 /// * [captainId]
 /// * [captainName]
 /// * [createdAt]
+/// * [conversions]
 /// * [lines]
 @BuiltValue()
 abstract class AdminHandInReceiptsDtoOutputReceiptsInner
@@ -62,6 +64,10 @@ abstract class AdminHandInReceiptsDtoOutputReceiptsInner
 
   @BuiltValueField(wireName: r'createdAt')
   DateTime get createdAt;
+
+  @BuiltValueField(wireName: r'conversions')
+  BuiltList<AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner>
+  get conversions;
 
   @BuiltValueField(wireName: r'lines')
   BuiltList<AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner> get lines;
@@ -150,6 +156,13 @@ class _$AdminHandInReceiptsDtoOutputReceiptsInnerSerializer
     yield serializers.serialize(
       object.createdAt,
       specifiedType: const FullType(DateTime),
+    );
+    yield r'conversions';
+    yield serializers.serialize(
+      object.conversions,
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner),
+      ]),
     );
     yield r'lines';
     yield serializers.serialize(
@@ -277,6 +290,21 @@ class _$AdminHandInReceiptsDtoOutputReceiptsInnerSerializer
                   )
                   as DateTime;
           result.createdAt = valueDes;
+          break;
+        case r'conversions':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(
+                        AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner,
+                      ),
+                    ]),
+                  )
+                  as BuiltList<
+                    AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner
+                  >;
+          result.conversions.replace(valueDes);
           break;
         case r'lines':
           final valueDes =
