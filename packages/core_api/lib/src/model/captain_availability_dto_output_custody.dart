@@ -21,6 +21,8 @@ part 'captain_availability_dto_output_custody.g.dart';
 /// * [closedDue]
 /// * [lastCutoff]
 /// * [remitTolerance]
+/// * [handInGraceUntil] - AP §8.5.4, CA §10.3: the end of the hand-in grace running now («مُنحت مهلة حتى {الساعة}»), or null.
+/// * [remitBy] - AP §8.5.4, CA §10.3: online across the last cutoff with cash due from closed days, the moment offers stop unless the captain hands in («سلّم نقد أمس قبل {الساعة} لتستمر العروض»); null otherwise.
 @BuiltValue()
 abstract class CaptainAvailabilityDtoOutputCustody
     implements
@@ -46,6 +48,14 @@ abstract class CaptainAvailabilityDtoOutputCustody
 
   @BuiltValueField(wireName: r'remitTolerance')
   CaptainAvailabilityDtoOutputCustodyRemitTolerance get remitTolerance;
+
+  /// AP §8.5.4, CA §10.3: the end of the hand-in grace running now («مُنحت مهلة حتى {الساعة}»), or null.
+  @BuiltValueField(wireName: r'handInGraceUntil')
+  DateTime? get handInGraceUntil;
+
+  /// AP §8.5.4, CA §10.3: online across the last cutoff with cash due from closed days, the moment offers stop unless the captain hands in («سلّم نقد أمس قبل {الساعة} لتستمر العروض»); null otherwise.
+  @BuiltValueField(wireName: r'remitBy')
+  DateTime? get remitBy;
 
   CaptainAvailabilityDtoOutputCustody._();
 
@@ -111,6 +121,20 @@ class _$CaptainAvailabilityDtoOutputCustodySerializer
         CaptainAvailabilityDtoOutputCustodyRemitTolerance,
       ),
     );
+    yield r'handInGraceUntil';
+    yield object.handInGraceUntil == null
+        ? null
+        : serializers.serialize(
+            object.handInGraceUntil,
+            specifiedType: const FullType.nullable(DateTime),
+          );
+    yield r'remitBy';
+    yield object.remitBy == null
+        ? null
+        : serializers.serialize(
+            object.remitBy,
+            specifiedType: const FullType.nullable(DateTime),
+          );
   }
 
   @override
@@ -199,6 +223,26 @@ class _$CaptainAvailabilityDtoOutputCustodySerializer
                   )
                   as CaptainAvailabilityDtoOutputCustodyRemitTolerance;
           result.remitTolerance.replace(valueDes);
+          break;
+        case r'handInGraceUntil':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(DateTime),
+                  )
+                  as DateTime?;
+          if (valueDes == null) continue;
+          result.handInGraceUntil = valueDes;
+          break;
+        case r'remitBy':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(DateTime),
+                  )
+                  as DateTime?;
+          if (valueDes == null) continue;
+          result.remitBy = valueDes;
           break;
         default:
           unhandled.add(key);

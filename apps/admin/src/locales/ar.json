@@ -899,6 +899,7 @@
           "customer_coming": "الزبون قادم",
           "customer_contacting_recipient": "الزبون يتواصل مع المستلم",
           "charge": "خصم من المستحقات",
+          "custody_warning": "الاقتراب من حد العهدة",
           "hand_in_reminder": "تذكير تسليم النقد",
           "cutoff_passed": "انتهاء مهلة تسليم النقد",
           "hand_in_grace": "منح مهلة",

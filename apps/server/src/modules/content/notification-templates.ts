@@ -222,6 +222,9 @@ const captain: Entry[] = [
   ['customer_coming', '13a', 'الزبون رأى التنبيه وهو قادم', 'chime'],
   ['customer_contacting_recipient', '13a', 'الزبون يتواصل مع المستلم', 'chime'],
   ['charge', '14', 'خُصم من مستحقاتك {المبلغ}: {السبب}', 'silent'],
+  // CA §10.4, §14 #15 (slice 2.17d): the 80% warning; the 100% stop has no
+  // text of its own in the spec (the home's «لا تصلك عروض» says it).
+  ['custody_warning', '15', 'اقتربت من حد العهدة. سلّم النقد قريباً.', 'chime'],
   ['hand_in_reminder', '16', 'عليك تسليم {المبلغ} اليوم. المكتب مفتوح حتى {الساعة}.', 'chime'],
   ['cutoff_passed', '17', 'سلّم نقد أمس قبل {الساعة} لتستمر العروض', 'chime'],
   ['hand_in_grace', '18', 'مُنحت مهلة حتى {الساعة}', 'silent'],

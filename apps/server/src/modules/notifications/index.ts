@@ -20,6 +20,7 @@ import { PlatformRelay, PlatformRelayWorker } from './platform-relay.js';
 import { RestaurantStateRelay, RestaurantStateRelayWorker } from './restaurant-state-relay.js';
 import { PushDevices } from './push-devices.js';
 import { PushQueue } from './push-queue.js';
+import { CaptainCashNotices, CaptainCashNoticesWorker } from './captain-cash-notices.js';
 import { PeakWindowNotices, PeakWindowNoticesWorker } from './peak-window-notices.js';
 import { PushRelay, PushRelayWorker } from './push-relay.js';
 import {
@@ -89,8 +90,9 @@ export class NotificationsModule {}
 export class NotificationsWorkerModule {}
 
 // The worker's side of the captain's availability notices: C3 sets a
-// captain offline from the offer timers (CA §7.4, slice 2.15b); and the
-// push when a peak window starts (CA §14 #23, slice 2.16).
+// captain offline from the offer timers (CA §7.4, slice 2.15b); the push
+// when a peak window starts (CA §14 #23, slice 2.16); and the captain's cash
+// warning and hand-in reminders (CA §10.3–10.4, slice 2.17d).
 @Module({
   imports: [DatabaseModule, CaptainsModule, ContentModule, GeoModule, FxModule],
   providers: [
@@ -99,6 +101,8 @@ export class NotificationsWorkerModule {}
     CaptainAvailabilityNotices,
     PeakWindowNotices,
     PeakWindowNoticesWorker,
+    CaptainCashNotices,
+    CaptainCashNoticesWorker,
   ],
 })
 export class CaptainNoticesWorkerModule {}
