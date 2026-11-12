@@ -19,14 +19,14 @@ dependencies:
   dio: 5.11.1
   flutter:
     sdk: flutter
-  flutter_riverpod: 3.4.3
+  flutter_riverpod: 3.5.0
   flutter_ringtone_player: 4.0.0+4
-  geolocator: 14.0.2
-  go_router: 18.1.3
+  geolocator: 14.1.2
+  go_router: 18.1.4
   package_info_plus: 10.2.2
   # The call permission of «طوارئ» (CA §4.5 check 8); core_push's version.
   permission_handler: 12.0.3
-  wakelock_plus: 1.7.0
+  wakelock_plus: 1.8.2
 
 dev_dependencies:
   core_storage: any
