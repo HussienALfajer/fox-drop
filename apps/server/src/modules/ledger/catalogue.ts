@@ -159,5 +159,5 @@ export type ActorType = (typeof actorTypes)[number];
 
 // The kinds of record a journal comes from. An order's journals are the only
 // ones that touch the order clearing account.
-export const sourceKinds = ['order'] as const;
+export const sourceKinds = ['order', 'receipt'] as const;
 export type SourceKind = (typeof sourceKinds)[number];

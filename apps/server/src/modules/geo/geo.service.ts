@@ -118,6 +118,16 @@ export class GeoService implements OnModuleInit {
     return row?.id ?? null;
   }
 
+  // The city's code and clock, such as AZ and Asia/Damascus, for its receipt
+  // numbers (AP §4.8); null for an unknown city.
+  async cityCode(cityId: string): Promise<{ code: string; timeZone: string } | null> {
+    const [row] = await this.database.db
+      .select({ code: cities.code, timeZone: cities.timeZone })
+      .from(cities)
+      .where(eq(cities.id, cityId));
+    return row ?? null;
+  }
+
   // The city's time zone, such as Asia/Damascus, the clock of its restaurants'
   // hours; null for an unknown city.
   async cityTimeZone(cityId: string): Promise<string | null> {

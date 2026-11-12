@@ -24,8 +24,11 @@ import { HomePage } from './home-page.js';
 import { OrderDetailPage } from './order-detail-page.js';
 import { OPERATIONS_READ } from './orders-board.js';
 import { OrdersBoardPage } from './orders-board-page.js';
+import { CASH_DESK } from './cash-desk.js';
+import { CashDeskPage, CashDeskSessionsPage } from './cash-desk-page.js';
 import { ZONES_READ } from './peak-bonus.js';
 import { PeakBonusPage } from './peak-bonus-page.js';
+import { ReceiptPage } from './receipt-page.js';
 import { CONTENT_FAQS, CONTENT_READ } from './content.js';
 import { ContentPage } from './content-page.js';
 import { canSeeImages } from './restaurant-images.js';
@@ -235,6 +238,38 @@ const peakBonusRoute = createRoute({
   component: PeakBonusPage,
 });
 
+// AP §9.10.3 «الصندوق» (slice 2.17a): the drawer session and the daily
+// hand-in, the sessions with their variances and a receipt to print, for
+// OWN and FIN (cash_desk.record).
+const cashDeskRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/cash-desk',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, CASH_DESK)) throw redirect({ to: '/' });
+  },
+  component: CashDeskPage,
+});
+
+const cashDeskSessionsRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/cash-desk/sessions',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, CASH_DESK)) throw redirect({ to: '/' });
+  },
+  component: CashDeskSessionsPage,
+});
+
+const receiptRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/cash-desk/receipts/$receiptId',
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, CASH_DESK)) throw redirect({ to: '/' });
+  },
+  component: ReceiptPage,
+});
+
 const routeTree = rootRoute.addChildren([
   setupRoute,
   signInRoute,
@@ -245,6 +280,9 @@ const routeTree = rootRoute.addChildren([
     contentRoute,
     appSettingsRoute,
     peakBonusRoute,
+    cashDeskRoute,
+    cashDeskSessionsRoute,
+    receiptRoute,
     imagesRoute,
     restaurantStatusRoute,
     alertsRoute,

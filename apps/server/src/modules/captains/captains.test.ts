@@ -510,6 +510,35 @@ describe('going online and offline (CA §7.2, §7.5)', () => {
     ]);
   });
 
+  it('splits each currency into its part from closed days and from today, for the desk (AP §9.10.3)', async () => {
+    const { cityId, id } = await captain({}, { usd: true });
+    await custody(cityId, id, 'custody.collect', 1_000n, 'USD');
+    await custody(cityId, id, 'custody.collect', 41_000n);
+    const now = new Date();
+    expect((await captains.deskCustody(id, now)).custody.currencies).toEqual([
+      { currency: 'TRY', balance: 41_000n, closedDue: 0n, today: 41_000n, balanceInBase: 41_000n },
+      { currency: 'USD', balance: 1_000n, closedDue: 0n, today: 1_000n, balanceInBase: 40_000n },
+    ]);
+    // After the next cutoff the same cash is due from a closed day.
+    const later = new Date(now.getTime() + 2 * day);
+    const desk = await captains.deskLock(id, later);
+    expect(desk.captain).toMatchObject({ id, cityId, status: 'active' });
+    const locked = await db.transaction((tx) => desk.lock(tx));
+    expect(locked.currencies).toEqual([
+      { currency: 'TRY', balance: 41_000n, closedDue: 41_000n, today: 0n, balanceInBase: 41_000n },
+      { currency: 'USD', balance: 1_000n, closedDue: 1_000n, today: 0n, balanceInBase: 40_000n },
+    ]);
+    expect(locked.closedDue.amount).toBe(81_000n);
+  });
+
+  it('finds the captains of a city by a part of their name', async () => {
+    const { cityId, id } = await captain({ name: 'سامر خالد الحسن' });
+    expect(await captains.findByName(cityId, 'خالد', 10)).toEqual([
+      { id, cityId, name: 'سامر خالد الحسن', status: 'active' },
+    ]);
+    expect(await captains.findByName(cityId, '%', 10)).toEqual([]);
+  });
+
   it('converts a cash limit set in another of the city currencies', async () => {
     const { cityId, id } = await captain(
       { custodyLimit: { amount: 7_500n, currency: 'USD' } },

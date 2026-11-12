@@ -144,6 +144,12 @@ describe('captain accounts (CA §4.9)', () => {
     ]);
     expect(JSON.stringify(stored.rows[0])).not.toContain(phone.slice(1));
   });
+
+  it('finds the captain a number belongs to, for the desk (AP §9.10.3)', async () => {
+    const { captainId, phone } = await captain();
+    expect(await accounts.captainByPhone(phone)).toBe(captainId);
+    expect(await accounts.captainByPhone(newPhone())).toBeNull();
+  });
 });
 
 describe('the captain app sign-in (CA §4.9)', () => {

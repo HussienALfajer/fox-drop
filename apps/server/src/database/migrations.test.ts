@@ -864,3 +864,49 @@ describe('the app sign-in tables (architecture §8.3.2, §15.1)', () => {
     );
   });
 });
+
+describe('the cash desk tables (AP §9.10.3, §4.8)', () => {
+  const azaz = "(SELECT id FROM geo.cities WHERE code = 'AZ')";
+  const session = (accountId: string) =>
+    `INSERT INTO cashdesk.drawer_sessions (city_id, admin_account_id, kind, opened_at) VALUES (${azaz}, '${accountId}', 'office', now()) RETURNING id`;
+
+  it('keep one open office session per user, and a float of zero or more', async () => {
+    const accountId = randomUUID();
+    const { rows } = await appQuery(session(accountId));
+    await expect(appQuery(session(accountId))).rejects.toThrow(/drawer_sessions_one_open/);
+    await expect(
+      appQuery(
+        `INSERT INTO cashdesk.drawer_session_currencies (session_id, currency, opening_float) VALUES ('${rows[0].id}', 'TRY', -1)`,
+      ),
+    ).rejects.toThrow(/drawer_session_currencies_float/);
+    await appQuery(
+      `UPDATE cashdesk.drawer_sessions SET closed_at = now(), close_note = 'ok' WHERE id = '${rows[0].id}'`,
+    );
+    await appQuery(session(accountId));
+    await expect(
+      appQuery(`UPDATE cashdesk.drawer_sessions SET closed_at = NULL WHERE id = '${rows[0].id}'`),
+    ).rejects.toThrow(/a closed drawer session is never changed/);
+  });
+
+  it('number receipts once per city, year and sequence', async () => {
+    const { rows } = await appQuery(session(randomUUID()));
+    const receipt = (number: string, sequence: number) =>
+      `INSERT INTO cashdesk.receipts (city_id, year, sequence, number, type, session_id, admin_account_id, captain_id, captain_name, created_at) VALUES (${azaz}, 2099, ${sequence}, '${number}', 'captain_hand_in', '${rows[0].id}', '${randomUUID()}', '${randomUUID()}', 'كابتن', now())`;
+    await appQuery(receipt('AZ-2099-000001', 1));
+    await expect(appQuery(receipt('AZ-2099-000001b', 1))).rejects.toThrow(
+      /receipts_city_year_sequence/,
+    );
+    await expect(
+      appQuery(receipt('AZ-2099-000002', 2).replace('captain_hand_in', 'x')),
+    ).rejects.toThrow(/receipts_type_values/);
+  });
+
+  it.each([
+    ['change a receipt', "UPDATE cashdesk.receipts SET captain_name = 'x'"],
+    ['change a receipt line', 'UPDATE cashdesk.receipt_lines SET amount = 1'],
+    ['delete a session', 'DELETE FROM cashdesk.drawer_sessions'],
+    ['delete a receipt', 'DELETE FROM cashdesk.receipts'],
+  ])('refuse the application role to %s', async (_, statement) => {
+    await expect(appQuery(statement)).rejects.toThrow(/permission denied/);
+  });
+});

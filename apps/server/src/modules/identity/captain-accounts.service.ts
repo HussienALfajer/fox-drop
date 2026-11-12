@@ -122,6 +122,16 @@ export class CaptainAccountsService {
     return account ?? null;
   }
 
+  // AP §9.10.3 step 1 (slice 2.17a): the captain a number belongs to, for
+  // the desk's search; null when none. Found by its keyed hash.
+  async captainByPhone(phone: string): Promise<string | null> {
+    const [row] = await this.database.db
+      .select({ captainId: captainAccounts.captainId })
+      .from(captainAccounts)
+      .where(eq(captainAccounts.phoneHash, this.secrets.phoneHash(phone)));
+    return row?.captainId ?? null;
+  }
+
   // CA §9.10.1 (slice 2.12b): the captain's number, which the other captain
   // of a handover dials («اتصال»); null without an account.
   async phone(captainId: string): Promise<string | null> {

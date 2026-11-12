@@ -449,6 +449,13 @@
       "when": 1794437035430,
       "tag": "0063_ordering_peak_bonus",
       "breakpoints": true
+    },
+    {
+      "idx": 64,
+      "version": "7",
+      "when": 1794452570042,
+      "tag": "0064_cashdesk_sessions_receipts",
+      "breakpoints": true
     }
   ]
 }

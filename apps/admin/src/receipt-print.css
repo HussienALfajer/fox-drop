@@ -1,0 +1,42 @@
+/* AP §9.10.3: a desk receipt prints on an 80 mm thermal roll or on A4.
+   Only the paper and what prints are set here; the receipt's look waits
+   for the design (owner decision 2026-11-12). */
+/* The roll's length is the printer driver's: only the width is set. */
+@page thermal {
+  margin: 4mm;
+}
+
+@page a4 {
+  size: A4;
+  margin: 15mm;
+}
+
+.paper-thermal {
+  page: thermal;
+  max-inline-size: 72mm;
+}
+
+.paper-a4 {
+  page: a4;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .receipt,
+  .receipt * {
+    visibility: visible;
+  }
+
+  .receipt {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+  }
+
+  .no-print {
+    display: none;
+  }
+}

@@ -35,13 +35,27 @@ import 'package:core_api/src/model/admin_change_outcome_dto.dart';
 import 'package:core_api/src/model/admin_change_time_dto.dart';
 import 'package:core_api/src/model/admin_cities_dto_output.dart';
 import 'package:core_api/src/model/admin_cities_dto_output_cities_inner.dart';
+import 'package:core_api/src/model/admin_close_drawer_session_dto.dart';
 import 'package:core_api/src/model/admin_close_item_report_dto.dart';
 import 'package:core_api/src/model/admin_confirm_pickup_dto.dart';
 import 'package:core_api/src/model/admin_contact_dto_output.dart';
+import 'package:core_api/src/model/admin_current_drawer_session_dto_output.dart';
+import 'package:core_api/src/model/admin_current_drawer_session_dto_output_session.dart';
+import 'package:core_api/src/model/admin_current_drawer_session_dto_output_session_currencies_inner.dart';
+import 'package:core_api/src/model/admin_desk_captain_search_dto.dart';
+import 'package:core_api/src/model/admin_desk_captains_dto_output.dart';
+import 'package:core_api/src/model/admin_desk_captains_dto_output_captains_inner.dart';
+import 'package:core_api/src/model/admin_desk_custody_dto_output.dart';
+import 'package:core_api/src/model/admin_desk_custody_dto_output_closed_due.dart';
+import 'package:core_api/src/model/admin_desk_custody_dto_output_currencies_inner.dart';
+import 'package:core_api/src/model/admin_desk_custody_dto_output_usage.dart';
 import 'package:core_api/src/model/admin_device_released_dto_output.dart';
 import 'package:core_api/src/model/admin_dispatch_state_dto_output.dart';
 import 'package:core_api/src/model/admin_dispatch_state_dto_output_order.dart';
 import 'package:core_api/src/model/admin_dispatch_state_dto_output_order_offer.dart';
+import 'package:core_api/src/model/admin_drawer_session_dto_output.dart';
+import 'package:core_api/src/model/admin_drawer_sessions_dto_output.dart';
+import 'package:core_api/src/model/admin_drawer_sessions_dto_output_sessions_inner.dart';
 import 'package:core_api/src/model/admin_edit_dto.dart';
 import 'package:core_api/src/model/admin_edit_dto_add_inner.dart';
 import 'package:core_api/src/model/admin_edit_dto_keep_inner.dart';
@@ -64,6 +78,10 @@ import 'package:core_api/src/model/admin_faq_dto_output.dart';
 import 'package:core_api/src/model/admin_faqs_dto_output.dart';
 import 'package:core_api/src/model/admin_faqs_dto_output_customer_inner.dart';
 import 'package:core_api/src/model/admin_force_offline_dto.dart';
+import 'package:core_api/src/model/admin_hand_in_dto.dart';
+import 'package:core_api/src/model/admin_hand_in_receipts_dto_output.dart';
+import 'package:core_api/src/model/admin_hand_in_receipts_dto_output_receipts_inner.dart';
+import 'package:core_api/src/model/admin_hand_in_receipts_dto_output_receipts_inner_lines_inner.dart';
 import 'package:core_api/src/model/admin_handover_dto.dart';
 import 'package:core_api/src/model/admin_image_set_dto_output.dart';
 import 'package:core_api/src/model/admin_new_upload_dto.dart';
@@ -72,6 +90,8 @@ import 'package:core_api/src/model/admin_notification_resent_dto_output.dart';
 import 'package:core_api/src/model/admin_notification_text_dto_output.dart';
 import 'package:core_api/src/model/admin_notification_texts_dto_output.dart';
 import 'package:core_api/src/model/admin_notification_texts_dto_output_templates_inner.dart';
+import 'package:core_api/src/model/admin_open_drawer_session_dto.dart';
+import 'package:core_api/src/model/admin_open_drawer_session_dto_floats_inner.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_badges.dart';
@@ -167,6 +187,7 @@ import 'package:core_api/src/model/admin_reassign_dto.dart';
 import 'package:core_api/src/model/admin_reassign_preview_answer_dto_output.dart';
 import 'package:core_api/src/model/admin_reassign_preview_answer_dto_output_entries_inner.dart';
 import 'package:core_api/src/model/admin_reassign_preview_dto.dart';
+import 'package:core_api/src/model/admin_receipt_dto_output.dart';
 import 'package:core_api/src/model/admin_record_arrival_dto.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_amount_due.dart';
@@ -520,13 +541,27 @@ part 'serializers.g.dart';
   AdminChangeTimeDto,
   AdminCitiesDtoOutput,
   AdminCitiesDtoOutputCitiesInner,
+  AdminCloseDrawerSessionDto,
   AdminCloseItemReportDto,
   AdminConfirmPickupDto,
   AdminContactDtoOutput,
+  AdminCurrentDrawerSessionDtoOutput,
+  AdminCurrentDrawerSessionDtoOutputSession,
+  AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner,
+  AdminDeskCaptainSearchDto,
+  AdminDeskCaptainsDtoOutput,
+  AdminDeskCaptainsDtoOutputCaptainsInner,
+  AdminDeskCustodyDtoOutput,
+  AdminDeskCustodyDtoOutputClosedDue,
+  AdminDeskCustodyDtoOutputCurrenciesInner,
+  AdminDeskCustodyDtoOutputUsage,
   AdminDeviceReleasedDtoOutput,
   AdminDispatchStateDtoOutput,
   AdminDispatchStateDtoOutputOrder,
   AdminDispatchStateDtoOutputOrderOffer,
+  AdminDrawerSessionDtoOutput,
+  AdminDrawerSessionsDtoOutput,
+  AdminDrawerSessionsDtoOutputSessionsInner,
   AdminEditDto,
   AdminEditDtoAddInner,
   AdminEditDtoKeepInner,
@@ -549,6 +584,10 @@ part 'serializers.g.dart';
   AdminFaqsDtoOutput,
   AdminFaqsDtoOutputCustomerInner,
   AdminForceOfflineDto,
+  AdminHandInDto,
+  AdminHandInReceiptsDtoOutput,
+  AdminHandInReceiptsDtoOutputReceiptsInner,
+  AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner,
   AdminHandoverDto,
   AdminImageSetDtoOutput,
   AdminNewUploadDto,
@@ -557,6 +596,8 @@ part 'serializers.g.dart';
   AdminNotificationTextDtoOutput,
   AdminNotificationTextsDtoOutput,
   AdminNotificationTextsDtoOutputTemplatesInner,
+  AdminOpenDrawerSessionDto,
+  AdminOpenDrawerSessionDtoFloatsInner,
   AdminOrderCardDtoOutput,
   AdminOrderCardDtoOutputOrder,
   AdminOrderCardDtoOutputOrderBadges,
@@ -652,6 +693,7 @@ part 'serializers.g.dart';
   AdminReassignPreviewAnswerDtoOutput,
   AdminReassignPreviewAnswerDtoOutputEntriesInner,
   AdminReassignPreviewDto,
+  AdminReceiptDtoOutput,
   AdminRecordArrivalDto,
   AdminRecordDeliveryDto,
   AdminRecordDeliveryDtoAmountDue,
@@ -1019,6 +1061,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminDeskCaptainsDtoOutputCaptainsInner),
+            ]),
+            () => ListBuilder<AdminDeskCaptainsDtoOutputCaptainsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(CaptainAvailabilityDtoOutputCustodyLimit),
             ]),
             () => ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>(),
@@ -1054,6 +1102,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminDeskCustodyDtoOutputCurrenciesInner),
+            ]),
+            () => ListBuilder<AdminDeskCustodyDtoOutputCurrenciesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(MerchantContentDtoOutputReasonsMerchantRejectionInner),
             ]),
             () =>
@@ -1073,6 +1127,15 @@ Serializers serializers =
             ]),
             () =>
                 ListBuilder<AdminOrderDtoOutputOrderOutcomeChangeFoodsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -1134,6 +1197,12 @@ Serializers serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, [FullType(MerchantRejectDtoItemsInner)]),
             () => ListBuilder<MerchantRejectDtoItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminOpenDrawerSessionDtoFloatsInner),
+            ]),
+            () => ListBuilder<AdminOpenDrawerSessionDtoFloatsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -1423,6 +1492,17 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(
+                AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminRestaurantsDtoOutputRestaurantsInner),
             ]),
             () => ListBuilder<AdminRestaurantsDtoOutputRestaurantsInner>(),
@@ -1438,6 +1518,12 @@ Serializers serializers =
               FullType(AdminSetPeakBonusDtoWindowsInner),
             ]),
             () => ListBuilder<AdminSetPeakBonusDtoWindowsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminDrawerSessionsDtoOutputSessionsInner),
+            ]),
+            () => ListBuilder<AdminDrawerSessionsDtoOutputSessionsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -1615,6 +1701,12 @@ Serializers serializers =
                 ListBuilder<
                   AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminHandInReceiptsDtoOutputReceiptsInner),
+            ]),
+            () => ListBuilder<AdminHandInReceiptsDtoOutputReceiptsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
