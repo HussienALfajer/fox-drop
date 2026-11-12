@@ -4,13 +4,26 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.17, the cash desk and captain custody (`docs/roadmap.md`, Phase 2, Money).
+Slice 2.17a, the drawer session and the hand-in in the same currency (`docs/roadmap.md`, Phase 2, Money).
 
-- **Roadmap line:** 2.17 Cash desk and captain custody: receipts numbered without gaps and printable, drawer sessions with variance, custody per currency split into previous days and today, the daily hand-in and its grace, the cash limit at 80% and 100%, the hand-in reminders (AP §8.5.4, §9.10.2–9.10.3, CA §10). The desk records a hand-in and the receipt appears in the captain app.
-- **Specs:** AP §8.5 (custody and the desk, `docs/domain/05`), AP §8.5.3–8.5.4 (the cash limit and the daily hand-in, D10, D11), AP §9.10.2 «أرصدة الكباتن», AP §9.10.3 (the cash desk), AP §8.6 (currencies at the desk, `custody.fx_convert`: pass the current rate's version, 2.14a), CA §10.2–10.4 («عهدتي», the daily hand-in, the cash limit), CA §14 #15–#19 (the cash limit, hand-in reminders, grace and receipts), AP §10 (what the panel pushes), the captains, ledger and notifications modules' `CLAUDE.md` ("Not yet": the desk entries, the hand-in grace, the first captain's reimbursement after a handover).
-- **Branch:** `feat/cash-desk`.
-- **First:** the slice spans the server, the panel and the captain app, with money and printing; propose its split into pull requests to the owner with the `slice-plan` skill before building (as 2.15 was split). Ask about the open items it touches (`docs/open-questions.md`).
-- **Plan:** written after the split is approved, one step per commit.
+- **Roadmap line:** 2.17a The drawer session and the hand-in in the same currency, in the server and the panel (the full line is in `docs/roadmap.md`). The owner opens a session, records a hand-in, prints the receipt, the captain's block lifts, and the session closes with a variance.
+- **Specs:** AP §9.10.3 (the cash desk: «تسليم النقد اليومي», drawer sessions), AP §4.8 (receipt numbers), AP §8.5.1 and §8.5.4 (`custody.hand_in`, `custody.reimburse`, `closed_due` and today, `docs/domain/05`), AP §6.3 (`cash_desk.record`: OWN, FIN), AP §14 item 21, CA §14 #19 (the receipt's push), CA §19 item 21 (the first captain's custody reimbursed after a handover), the ledger module's `CLAUDE.md` («Concurrency», «At the desk»: `platform.cash` owned by the drawer).
+- **Branch:** `feat/cash-desk-hand-in`.
+- **Plan:**
+  - [ ] Custody per currency for the desk: `CaptainsService` answers each custody currency's balance, its part from closed days and from today, and their base equivalents, and locks the captain for a desk transaction; identity finds a captain by phone (test first).
+  - [ ] The `cashdesk` module and its schema: drawer sessions with their float per currency, opened one office session per user, closed with the expected and counted cash per currency and the variance with a note; receipts and their lines, numbered without gaps per city and year by a counter row (test first).
+  - [ ] The hand-in: `custody.hand_in` for a positive currency and `custody.reimburse` for a negative one against the session's `platform.cash`, under the captain's and the session's locks, refusing more than the custody, one receipt per kind, the `Idempotency-Key`, the audit, the silent push «إيصال {رقم}: {النوع} {المبلغ}» and `captain.availability_changed` (test first).
+  - [ ] The admin routes, the OpenAPI document and the generated clients, the route table.
+  - [ ] The panel's «الصندوق»: the session bar (open with the float, «إقفال الصندوق» with the counted cash and the note), «تسليم النقد اليومي» (search, the split custody, the received amounts, the confirmation), the receipt page printable on 80 mm and A4, OWN's sessions with their variances.
+  - [ ] The `cashdesk` module's `CLAUDE.md` and the panel's notes.
+
+### Owner decisions for 2.17 (2026-11-12)
+
+- The split: 2.17a (this slice), 2.17b (cross-currency settlement, «أرصدة الكباتن», the grace), 2.17c («عهدتي» and the office), 2.17d (the warnings and reminders).
+- Receipts print as a plain layout (content and paper sizes only, 80 mm and A4 from the browser) until the design system is ready.
+- A drawer's variance and its float are kept in the session only, with a note; no ledger entry.
+- The office location (coordinates until the map) and the desk hours per weekday are entered on a small panel form (2.17c).
+- Proposed with the split and not contested: a hand-in above the custody in a currency is refused; a session cannot close while a desk transaction is running; the 80% push once each time usage rises past it; the 22:00 reminder once a day.
 
 ### Left from 2.16 (`feat/peak-bonus`)
 
