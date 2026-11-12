@@ -7,6 +7,7 @@ import 'package:core_api/src/model/admin_desk_custody_dto_output_closed_due.dart
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_desk_custody_dto_output_currencies_inner.dart';
 import 'package:core_api/src/model/admin_desk_custody_dto_output_usage.dart';
+import 'package:core_api/src/model/admin_desk_custody_dto_output_hand_in_grace.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -23,6 +24,7 @@ part 'admin_desk_custody_dto_output.g.dart';
 /// * [closedDue]
 /// * [lastCutoff]
 /// * [currencies]
+/// * [handInGrace]
 @BuiltValue()
 abstract class AdminDeskCustodyDtoOutput
     implements
@@ -51,6 +53,9 @@ abstract class AdminDeskCustodyDtoOutput
 
   @BuiltValueField(wireName: r'currencies')
   BuiltList<AdminDeskCustodyDtoOutputCurrenciesInner> get currencies;
+
+  @BuiltValueField(wireName: r'handInGrace')
+  AdminDeskCustodyDtoOutputHandInGrace? get handInGrace;
 
   AdminDeskCustodyDtoOutput._();
 
@@ -124,6 +129,15 @@ class _$AdminDeskCustodyDtoOutputSerializer
         FullType(AdminDeskCustodyDtoOutputCurrenciesInner),
       ]),
     );
+    yield r'handInGrace';
+    yield object.handInGrace == null
+        ? null
+        : serializers.serialize(
+            object.handInGrace,
+            specifiedType: const FullType.nullable(
+              AdminDeskCustodyDtoOutputHandInGrace,
+            ),
+          );
   }
 
   @override
@@ -232,6 +246,18 @@ class _$AdminDeskCustodyDtoOutputSerializer
                   )
                   as BuiltList<AdminDeskCustodyDtoOutputCurrenciesInner>;
           result.currencies.replace(valueDes);
+          break;
+        case r'handInGrace':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminDeskCustodyDtoOutputHandInGrace,
+                    ),
+                  )
+                  as AdminDeskCustodyDtoOutputHandInGrace?;
+          if (valueDes == null) continue;
+          result.handInGrace.replace(valueDes);
           break;
         default:
           unhandled.add(key);

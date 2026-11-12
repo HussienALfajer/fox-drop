@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
   equivalent,
+  exchange,
   parseRate,
   type RateSnapshot,
   roundToUnit,
   type SnapshotCurrency,
   toBase,
+  unitRate,
 } from './conversion.js';
 
 // AP §8.6 (D14): amounts are integer minor units, rates exact fractions, and
@@ -169,5 +171,24 @@ describe('a payment line in base minor units', () => {
     // 2^60 cents of USD: a float would lose the last digits.
     const amount = 1n << 60n;
     expect(toBase(snapshot(dollar), amount, 'USD')).toBe((amount * 206n) / 5n);
+  });
+});
+
+describe('an amount in another currency, as the desk converts it (AP §9.10.3)', () => {
+  it('rounds by the target currency rule', () => {
+    // 20.00 USD = 824.00 TRY, to the nearest 5 TRY: 825.
+    expect(exchange(snapshot(dollar), 2000n, 'USD', 'TRY')).toBe(82_500n);
+    // 410.00 TRY = 9.951… USD, to the nearest 0.50: 10.00.
+    expect(exchange(snapshot(dollar), 41_000n, 'TRY', 'USD')).toBe(1000n);
+    // 1.00 USD = 11 948 SYP, to the nearest 500: 12 000, between two non-base currencies.
+    expect(exchange(snapshot(dollar, pound), 100n, 'USD', 'SYP')).toBe(1_200_000n);
+  });
+
+  it('gives one unit of a currency in another as an exact fraction', () => {
+    expect(unitRate(snapshot(dollar), 'USD', 'TRY')).toEqual({ numerator: 206n, denominator: 5n });
+    expect(unitRate(snapshot(dollar, pound), 'USD', 'SYP')).toEqual({
+      numerator: 11_948n,
+      denominator: 1n,
+    });
   });
 });

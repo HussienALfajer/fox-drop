@@ -5,6 +5,7 @@
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_open_drawer_session_dto_floats_inner.dart';
+import 'package:core_api/src/model/admin_hand_in_dto_conversions_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -14,12 +15,17 @@ part 'admin_hand_in_dto.g.dart';
 ///
 /// Properties:
 /// * [captainId]
+/// * [conversions] - AP §9.10.3 cross-currency settlement, made before the cash lines.
 /// * [lines]
 @BuiltValue()
 abstract class AdminHandInDto
     implements Built<AdminHandInDto, AdminHandInDtoBuilder> {
   @BuiltValueField(wireName: r'captainId')
   String get captainId;
+
+  /// AP §9.10.3 cross-currency settlement, made before the cash lines.
+  @BuiltValueField(wireName: r'conversions')
+  BuiltList<AdminHandInDtoConversionsInner>? get conversions;
 
   @BuiltValueField(wireName: r'lines')
   BuiltList<AdminOpenDrawerSessionDtoFloatsInner> get lines;
@@ -55,6 +61,15 @@ class _$AdminHandInDtoSerializer
       object.captainId,
       specifiedType: const FullType(String),
     );
+    if (object.conversions != null) {
+      yield r'conversions';
+      yield serializers.serialize(
+        object.conversions,
+        specifiedType: const FullType(BuiltList, [
+          FullType(AdminHandInDtoConversionsInner),
+        ]),
+      );
+    }
     yield r'lines';
     yield serializers.serialize(
       object.lines,
@@ -97,6 +112,18 @@ class _$AdminHandInDtoSerializer
                   )
                   as String;
           result.captainId = valueDes;
+          break;
+        case r'conversions':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(BuiltList, [
+                      FullType(AdminHandInDtoConversionsInner),
+                    ]),
+                  )
+                  as BuiltList<AdminHandInDtoConversionsInner>?;
+          if (valueDes == null) continue;
+          result.conversions.replace(valueDes);
           break;
         case r'lines':
           final valueDes =

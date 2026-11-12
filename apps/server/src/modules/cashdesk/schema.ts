@@ -185,3 +185,33 @@ export const idempotencyKeys = cashdesk.table(
   },
   (table) => [primaryKey({ columns: [table.accountId, table.key] })],
 );
+
+// AP §9.10.3 cross-currency settlement (slice 2.17b): a conversion of the
+// captain's custody from one currency into another at the current rate,
+// shown on the screen and kept on the receipt it came with. Never changed.
+export const receiptConversions = cashdesk.table(
+  'receipt_conversions',
+  {
+    receiptId: uuid('receipt_id').notNull(),
+    fromCurrency: text('from_currency').notNull(),
+    // Of the from currency, above zero, taken off its balance towards zero.
+    fromAmount: bigint('from_amount', { mode: 'bigint' }).notNull(),
+    toCurrency: text('to_currency').notNull(),
+    // Of the to currency, rounded by its rule (AP §8.6), above zero.
+    toAmount: bigint('to_amount', { mode: 'bigint' }).notNull(),
+    // The custody.fx_convert journal, which keeps the rate versions.
+    journalId: uuid('journal_id').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.receiptId, table.fromCurrency] }),
+    foreignKey({
+      columns: [table.receiptId],
+      foreignColumns: [receipts.id],
+      name: 'receipt_conversions_receipt',
+    }),
+    check(
+      'receipt_conversions_amounts',
+      sql`${table.fromAmount} > 0 AND ${table.toAmount} > 0 AND ${table.fromCurrency} <> ${table.toCurrency}`,
+    ),
+  ],
+);

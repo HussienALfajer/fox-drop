@@ -558,6 +558,97 @@ describe('going online and offline (CA §7.2, §7.5)', () => {
   });
 });
 
+describe('hand-in grace (AP §8.5.4)', () => {
+  const heard: { kind: string; captainId: string; until?: Date }[] = [];
+  beforeAll(() => {
+    captains.onAvailabilityChanged((_tx, change) => {
+      if (change.kind === 'hand_in_grace') heard.push(change);
+      return Promise.resolve();
+    });
+  });
+  const fin: CaptainChange = { ...change, reason: 'المكتب مغلق اليوم' };
+  const blocked = async (id: string, at: Date) =>
+    captains.goOnline(id, device, at).then(
+      () => null,
+      (error: unknown) => (error as CaptainsRefusedError).blocks?.map((block) => block.kind),
+    );
+
+  it('lifts the block of one captain until the next cutoff, the custody staying due', async () => {
+    const { cityId, id } = await captain();
+    await custody(cityId, id, 'custody.collect', 41_000n);
+    const later = new Date(Date.now() + 2 * day);
+    expect(await blocked(id, later)).toEqual(['closed_due']);
+
+    const grace = await captains.grantGrace(id, fin, later);
+    const { lastCutoff } = (await captains.state(id, later)).custody;
+    expect(grace).toMatchObject({ bulk: false, reason: 'المكتب مغلق اليوم' });
+    expect(grace.until.getTime()).toBe(lastCutoff.getTime() + day);
+    expect((await captains.state(id, later)).handInGrace).toEqual(grace);
+    expect((await captains.goOnline(id, device, later)).availability.state).toBe(
+      'online_available',
+    );
+    expect((await captains.state(id, later)).custody.closedDue.amount).toBe(41_000n);
+    expect(heard).toContainEqual(expect.objectContaining({ captainId: id, until: grace.until }));
+    const audit = await sql.query(
+      "SELECT changes FROM audit.events WHERE action = 'captain.hand_in_grace' AND target_id = $1",
+      [id],
+    );
+    expect(audit.rows).toHaveLength(1);
+
+    // A repeat before the cutoff answers the same grace.
+    expect(await captains.grantGrace(id, fin, new Date(later.getTime() + 60_000))).toEqual(grace);
+
+    await captains.goOffline(id, later);
+    const afterCutoff = new Date(grace.until.getTime() + 60_000);
+    expect(await blocked(id, afterCutoff)).toEqual(['closed_due']);
+    expect((await captains.state(id, afterCutoff)).handInGrace).toBeNull();
+  });
+
+  it('needs a reason and cash due from a closed day', async () => {
+    const { cityId, id } = await captain();
+    const refusal = (promise: Promise<unknown>) =>
+      promise.then(
+        () => null,
+        (error: unknown) => (error as CaptainsRefusedError).refusal,
+      );
+    expect(await refusal(captains.grantGrace(id, fin, new Date()))).toBe('nothing_due');
+    await custody(cityId, id, 'custody.collect', 41_000n);
+    const later = new Date(Date.now() + 2 * day);
+    expect(await refusal(captains.grantGrace(id, { ...fin, reason: '  ' }, later))).toBe(
+      'reason_required',
+    );
+    expect(await refusal(captains.grantGrace(randomUUID(), fin, later))).toBe('unknown_captain');
+  });
+
+  it('grants every captain of the city one business day, telling those blocked', async () => {
+    const { cityId, id: first } = await captain();
+    const second = await captains.createCaptain(cityId, { ...motorbike, name: 'ثاني' }, change);
+    const clear = await captains.createCaptain(cityId, { ...motorbike, name: 'ثالث' }, change);
+    await custody(cityId, first, 'custody.collect', 41_000n);
+    await custody(cityId, second, 'custody.collect', 5_000n);
+    const later = new Date(Date.now() + 2 * day);
+
+    const { grace, captainIds } = await captains.grantBulkGrace(cityId, fin, later);
+    expect(grace).toMatchObject({ bulk: true, reason: 'المكتب مغلق اليوم' });
+    expect(new Set(captainIds)).toEqual(new Set([first, second]));
+    expect(heard.filter((each) => each.captainId === clear)).toEqual([]);
+    for (const id of [first, second]) {
+      expect((await captains.goOnline(id, device, later)).availability.state).toBe(
+        'online_available',
+      );
+    }
+    const audit = await sql.query(
+      "SELECT changes FROM audit.events WHERE action = 'captain.bulk_hand_in_grace' AND target_id = $1",
+      [cityId],
+    );
+    expect(audit.rows).toHaveLength(1);
+    // A captain of another city is not covered.
+    const other = await captain();
+    await custody(other.cityId, other.id, 'custody.collect', 1_000n);
+    expect(await blocked(other.id, later)).toEqual(['closed_due']);
+  });
+});
+
 describe('CaptainsService.eligibleNear (AP §9.12.6)', () => {
   const restaurant = { latitude: 36.587, longitude: 37.046 };
   const near = { latitude: 36.588, longitude: 37.047 };

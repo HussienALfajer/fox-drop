@@ -1,5 +1,6 @@
 import {
   Body,
+  ConflictException,
   HttpCode,
   HttpStatus,
   NotFoundException,
@@ -15,7 +16,7 @@ import { CurrentAdminSession, RequirePermission } from '../../http/access.js';
 import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
 import type { AdminSession } from '../identity/index.js';
-import { CaptainsRefusedError, CaptainsService } from './captains.service.js';
+import { CaptainsRefusedError, CaptainsService, type HandInGrace } from './captains.service.js';
 
 class AdminCaptainStateParamsDto extends createZodDto(z.object({ captainId: z.uuid() })) {}
 
@@ -44,6 +45,38 @@ class AdminForceOfflineDto extends createZodDto(
       .min(1)
       .max(500)
       .describe('Shown to the captain and kept in the audit log (AP §9.7.5).'),
+  }),
+) {}
+
+const graceReason = z
+  .string()
+  .trim()
+  .min(1)
+  .max(500)
+  .describe('Why, such as «المكتب كان مغلقاً»; kept in the audit log (AP §8.5.4).');
+
+class AdminHandInGraceDto extends createZodDto(z.object({ reason: graceReason })) {}
+
+class AdminBulkHandInGraceDto extends createZodDto(
+  z.object({ cityId: z.uuid(), reason: graceReason }),
+) {}
+
+const graceBody = z.object({
+  id: z.uuid(),
+  until: z.iso.datetime().describe('The next business-day cutoff when it was granted.'),
+  reason: z.string(),
+  bulk: z.boolean().describe("The city's bulk grace for one business day."),
+  grantedAt: z.iso.datetime(),
+});
+
+class AdminHandInGraceAnswerDto extends createZodDto(graceBody) {}
+
+class AdminBulkHandInGraceAnswerDto extends createZodDto(
+  z.object({
+    grace: graceBody,
+    captainIds: z
+      .array(z.uuid())
+      .describe('The captains blocked by cash due who were told; none on a repeat.'),
   }),
 ) {}
 
@@ -99,11 +132,84 @@ export class AdminCaptainsController {
       throw refused(error);
     }
   }
+
+  // AP §8.5.4 «Hand-in grace» for one captain (OWN, FIN): the closed_due
+  // block lifts until the next cutoff. A repeat before that cutoff answers
+  // the same grace, so no Idempotency-Key. 404 unknown_captain; 409
+  // nothing_due when nothing above the tolerance is due from a closed day.
+  @Post(':captainId/hand-in-grace')
+  @HttpCode(200)
+  @RequirePermission('captains.hand_in_grace')
+  @ZodResponse({ status: 200, type: AdminHandInGraceAnswerDto })
+  async grantGrace(
+    @Param() params: AdminCaptainStateParamsDto,
+    @Body() body: AdminHandInGraceDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    try {
+      return graceBodyOf(
+        await this.captains.grantGrace(
+          params.captainId,
+          changeOf(session, request, body.reason),
+          new Date(),
+        ),
+      );
+    } catch (error) {
+      throw refused(error);
+    }
+  }
+
+  // AP §9.10.3 «Bulk hand-in grace» (OWN), from the daily hand-in tab: every
+  // captain of the city for one business day. A repeat answers the same
+  // grace and tells no one, so no Idempotency-Key. 404 unknown_city.
+  @Post('hand-in-grace')
+  @HttpCode(200)
+  @RequirePermission('captains.bulk_hand_in_grace')
+  @ZodResponse({ status: 200, type: AdminBulkHandInGraceAnswerDto })
+  async grantBulkGrace(
+    @Body() body: AdminBulkHandInGraceDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    try {
+      const { grace, captainIds } = await this.captains.grantBulkGrace(
+        body.cityId,
+        changeOf(session, request, body.reason),
+        new Date(),
+      );
+      return { grace: graceBodyOf(grace), captainIds };
+    } catch (error) {
+      throw refused(error);
+    }
+  }
+}
+
+function changeOf(session: AdminSession, request: FastifyRequest, reason: string) {
+  return {
+    actor: { type: 'admin' as const, id: session.accountId, role: session.roles.join(',') },
+    context: requestContext(request),
+    reason,
+  };
+}
+
+export function graceBodyOf(grace: HandInGrace) {
+  return {
+    id: grace.id,
+    until: grace.until.toISOString(),
+    reason: grace.reason,
+    bulk: grace.bulk,
+    grantedAt: grace.grantedAt.toISOString(),
+  };
 }
 
 function refused(error: unknown): unknown {
-  if (error instanceof CaptainsRefusedError && error.refusal === 'unknown_captain') {
+  if (!(error instanceof CaptainsRefusedError)) return error;
+  if (error.refusal === 'unknown_captain' || error.refusal === 'unknown_city') {
     return new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: error.refusal });
+  }
+  if (error.refusal === 'nothing_due') {
+    return new ConflictException({ statusCode: HttpStatus.CONFLICT, error: error.refusal });
   }
   return error;
 }

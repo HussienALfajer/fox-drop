@@ -456,6 +456,20 @@
       "when": 1794452570042,
       "tag": "0064_cashdesk_sessions_receipts",
       "breakpoints": true
+    },
+    {
+      "idx": 65,
+      "version": "7",
+      "when": 1794459895928,
+      "tag": "0065_cashdesk_receipt_conversions",
+      "breakpoints": true
+    },
+    {
+      "idx": 66,
+      "version": "7",
+      "when": 1794460298777,
+      "tag": "0066_captains_hand_in_graces",
+      "breakpoints": true
     }
   ]
 }

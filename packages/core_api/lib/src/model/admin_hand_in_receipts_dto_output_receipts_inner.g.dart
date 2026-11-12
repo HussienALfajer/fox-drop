@@ -99,6 +99,9 @@ class _$AdminHandInReceiptsDtoOutputReceiptsInner
   @override
   final DateTime createdAt;
   @override
+  final BuiltList<AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner>
+  conversions;
+  @override
   final BuiltList<AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner> lines;
 
   factory _$AdminHandInReceiptsDtoOutputReceiptsInner([
@@ -117,6 +120,7 @@ class _$AdminHandInReceiptsDtoOutputReceiptsInner
     required this.captainId,
     required this.captainName,
     required this.createdAt,
+    required this.conversions,
     required this.lines,
   }) : super._();
   @override
@@ -142,6 +146,7 @@ class _$AdminHandInReceiptsDtoOutputReceiptsInner
         captainId == other.captainId &&
         captainName == other.captainName &&
         createdAt == other.createdAt &&
+        conversions == other.conversions &&
         lines == other.lines;
   }
 
@@ -158,6 +163,7 @@ class _$AdminHandInReceiptsDtoOutputReceiptsInner
     _$hash = $jc(_$hash, captainId.hashCode);
     _$hash = $jc(_$hash, captainName.hashCode);
     _$hash = $jc(_$hash, createdAt.hashCode);
+    _$hash = $jc(_$hash, conversions.hashCode);
     _$hash = $jc(_$hash, lines.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -178,6 +184,7 @@ class _$AdminHandInReceiptsDtoOutputReceiptsInner
           ..add('captainId', captainId)
           ..add('captainName', captainName)
           ..add('createdAt', createdAt)
+          ..add('conversions', conversions)
           ..add('lines', lines))
         .toString();
   }
@@ -232,6 +239,16 @@ class AdminHandInReceiptsDtoOutputReceiptsInnerBuilder
   DateTime? get createdAt => _$this._createdAt;
   set createdAt(DateTime? createdAt) => _$this._createdAt = createdAt;
 
+  ListBuilder<AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner>?
+  _conversions;
+  ListBuilder<AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner>
+  get conversions => _$this._conversions ??=
+      ListBuilder<AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner>();
+  set conversions(
+    ListBuilder<AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner>?
+    conversions,
+  ) => _$this._conversions = conversions;
+
   ListBuilder<AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner>? _lines;
   ListBuilder<AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner> get lines =>
       _$this._lines ??=
@@ -257,6 +274,7 @@ class AdminHandInReceiptsDtoOutputReceiptsInnerBuilder
       _captainId = $v.captainId;
       _captainName = $v.captainName;
       _createdAt = $v.createdAt;
+      _conversions = $v.conversions.toBuilder();
       _lines = $v.lines.toBuilder();
       _$v = null;
     }
@@ -330,11 +348,14 @@ class AdminHandInReceiptsDtoOutputReceiptsInnerBuilder
               r'AdminHandInReceiptsDtoOutputReceiptsInner',
               'createdAt',
             ),
+            conversions: conversions.build(),
             lines: lines.build(),
           );
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'conversions';
+        conversions.build();
         _$failedField = 'lines';
         lines.build();
       } catch (e) {

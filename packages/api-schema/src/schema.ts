@@ -1316,6 +1316,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/captains/{captainId}/hand-in-grace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCaptainsGrantGrace"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captains/hand-in-grace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCaptainsGrantBulkGrace"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/peak-bonus": {
         parameters: {
             query?: never;
@@ -3156,6 +3188,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/cash-desk/balances": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCashDeskBalances"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/cash-desk/sessions/current": {
         parameters: {
             query?: never;
@@ -3214,6 +3262,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["adminCashDeskHandIn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cash-desk/conversions/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCashDeskQuote"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4291,6 +4355,48 @@ export interface components {
         AdminForceOfflineDto: {
             /** @description Shown to the captain and kept in the audit log (AP §9.7.5). */
             reason: string;
+        };
+        AdminHandInGraceDto: {
+            /** @description Why, such as «المكتب كان مغلقاً»; kept in the audit log (AP §8.5.4). */
+            reason: string;
+        };
+        AdminHandInGraceAnswerDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /**
+             * Format: date-time
+             * @description The next business-day cutoff when it was granted.
+             */
+            until: string;
+            reason: string;
+            /** @description The city's bulk grace for one business day. */
+            bulk: boolean;
+            /** Format: date-time */
+            grantedAt: string;
+        };
+        AdminBulkHandInGraceDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description Why, such as «المكتب كان مغلقاً»; kept in the audit log (AP §8.5.4). */
+            reason: string;
+        };
+        AdminBulkHandInGraceAnswerDto_Output: {
+            grace: {
+                /** Format: uuid */
+                id: string;
+                /**
+                 * Format: date-time
+                 * @description The next business-day cutoff when it was granted.
+                 */
+                until: string;
+                reason: string;
+                /** @description The city's bulk grace for one business day. */
+                bulk: boolean;
+                /** Format: date-time */
+                grantedAt: string;
+            };
+            /** @description The captains blocked by cash due who were told; none on a repeat. */
+            captainIds: string[];
         };
         AdminPeakBonusDto_Output: {
             /** @description Null until the owner first saves it: off (D15). */
@@ -8954,6 +9060,78 @@ export interface components {
                 today: string;
                 balanceInBase: string;
             }[];
+            /** @description The hand-in grace running now (AP §8.5.4), or null. */
+            handInGrace: {
+                /** Format: uuid */
+                id: string;
+                /**
+                 * Format: date-time
+                 * @description The next business-day cutoff when it was granted.
+                 */
+                until: string;
+                reason: string;
+                bulk: boolean;
+                /** Format: date-time */
+                grantedAt: string;
+            } | null;
+        };
+        AdminCaptainBalancesDto_Output: {
+            captains: {
+                /** Format: uuid */
+                captainId: string;
+                name: string;
+                /** @enum {string} */
+                status: "active" | "suspended" | "terminated";
+                /** @description Every currency at the current rate: the sort. */
+                custodyInBase: string;
+                usage: {
+                    amount: string;
+                    currency: string;
+                };
+                limit: {
+                    amount: string;
+                    currency: string;
+                };
+                /** @description Due from closed days, netted in the base currency (AP §8.5.4). */
+                closedDue: {
+                    amount: string;
+                    currency: string;
+                };
+                /** Format: date-time */
+                lastCutoff: string;
+                currencies: {
+                    currency: string;
+                    /** @description + the captain hands in, − the office owes them. */
+                    balance: string;
+                    closedDue: string;
+                    today: string;
+                    balanceInBase: string;
+                }[];
+                /** @description Cash due from a closed day with no grace running, or the limit reached. */
+                blocks: ("closed_due" | "cash_limit")[];
+                /** @description The hand-in grace running now (AP §8.5.4), or null. */
+                handInGrace: {
+                    /** Format: uuid */
+                    id: string;
+                    /**
+                     * Format: date-time
+                     * @description The next business-day cutoff when it was granted.
+                     */
+                    until: string;
+                    reason: string;
+                    bulk: boolean;
+                    /** Format: date-time */
+                    grantedAt: string;
+                } | null;
+                /** @description + the platform owes the captain. */
+                earnings: {
+                    amount: string;
+                    currency: string;
+                };
+                lastHandInAt: string | null;
+                /** @description None until slice 2.18. */
+                lastPayoutAt: string | null;
+            }[];
         };
         AdminCurrentDrawerSessionDto_Output: {
             session: {
@@ -9049,6 +9227,21 @@ export interface components {
         AdminHandInDto: {
             /** Format: uuid */
             captainId: string;
+            /** @description AP §9.10.3 cross-currency settlement, made before the cash lines. */
+            conversions?: {
+                from: string;
+                to: string;
+                /** @description Of `from`, taken off its custody towards zero. */
+                amount: string;
+                /** @description Of `to`, as the quote showed it. */
+                converted: string;
+                /** @description The rate version of each currency but the base, as the quote gave them. */
+                rates: {
+                    currency: string;
+                    /** Format: uuid */
+                    rateVersionId: string;
+                }[];
+            }[];
             lines: {
                 currency: string;
                 amount: string;
@@ -9074,6 +9267,12 @@ export interface components {
                 captainName: string;
                 /** Format: date-time */
                 createdAt: string;
+                conversions: {
+                    from: string;
+                    amount: string;
+                    to: string;
+                    converted: string;
+                }[];
                 lines: {
                     currency: string;
                     /** @description The custody before, + to hand in, − owed to the captain. */
@@ -9083,6 +9282,32 @@ export interface components {
                     remaining: string;
                 }[];
             }[];
+        };
+        AdminConversionQuoteRequestDto: {
+            /** Format: uuid */
+            cityId: string;
+            from: string;
+            to: string;
+            amount: string;
+        };
+        AdminConversionQuoteDto_Output: {
+            from: string;
+            to: string;
+            amount: string;
+            /** @description Rounded by the target currency's rule (AP §8.6). */
+            converted: string;
+            /** @description The rate version of each currency but the base, as the quote gave them. */
+            rates: {
+                currency: string;
+                /** Format: uuid */
+                rateVersionId: string;
+            }[];
+            /** @description One unit of `from` is `value` of `to`, up to 4 decimal places. */
+            unit: {
+                from: string;
+                to: string;
+                value: string;
+            };
         };
         AdminReceiptDto_Output: {
             /** Format: uuid */
@@ -9103,6 +9328,12 @@ export interface components {
             captainName: string;
             /** Format: date-time */
             createdAt: string;
+            conversions: {
+                from: string;
+                amount: string;
+                to: string;
+                converted: string;
+            }[];
             lines: {
                 currency: string;
                 /** @description The custody before, + to hand in, − owed to the captain. */
@@ -11148,6 +11379,56 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminCaptainAvailabilityDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainsGrantGrace: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                captainId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminHandInGraceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminHandInGraceAnswerDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainsGrantBulkGrace: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminBulkHandInGraceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBulkHandInGraceAnswerDto_Output"];
                 };
             };
         };
@@ -14096,6 +14377,28 @@ export interface operations {
             };
         };
     };
+    adminCashDeskBalances: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainBalancesDto_Output"];
+                };
+            };
+        };
+    };
     adminCashDeskCurrent: {
         parameters: {
             query: {
@@ -14213,6 +14516,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminHandInReceiptsDto_Output"];
+                };
+            };
+        };
+    };
+    adminCashDeskQuote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminConversionQuoteRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminConversionQuoteDto_Output"];
                 };
             };
         };

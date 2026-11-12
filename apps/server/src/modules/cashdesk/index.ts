@@ -32,10 +32,13 @@ import { CashDeskService } from './cashdesk.service.js';
 export class CashDeskModule {}
 
 export {
+  type BalanceRow,
   type CashDeskRefusal,
   CashDeskRefusedError,
   CashDeskService,
   type CashLine,
+  type Conversion,
+  type ConversionQuote,
   type DeskUser,
   type DrawerSession,
   type Receipt,

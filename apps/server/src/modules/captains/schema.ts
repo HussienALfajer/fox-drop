@@ -285,3 +285,30 @@ export const locations = captains.table(
     check('locations_accuracy', sql`${table.accuracyMetres} >= 0`),
   ],
 );
+
+// AP §8.5.4 «Hand-in grace» (slice 2.17b): a grace for one captain (OWN or
+// FIN) or, with no captain, for every captain of the city for one business
+// day (OWN, from the cash desk), with its reason. It lifts the closed_due
+// block until `until`, the next cutoff when granted; the custody stays due.
+// Never changed: the application role may only insert.
+export const handInGraces = captains.table(
+  'hand_in_graces',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    cityId: uuid('city_id').notNull(),
+    // Null for the bulk grace of the whole city.
+    captainId: uuid('captain_id').references(() => captainRecords.id),
+    until: timestamp('until', { withTimezone: true }).notNull(),
+    reason: text('reason').notNull(),
+    grantedBy: uuid('granted_by').notNull(),
+    grantedAt: timestamp('granted_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index('hand_in_graces_city_until').on(table.cityId, table.until),
+    index('hand_in_graces_captain_until').on(table.captainId, table.until),
+    check('hand_in_graces_reason', sql`length(btrim(${table.reason})) > 0`),
+    check('hand_in_graces_until', sql`${table.until} > ${table.grantedAt}`),
+  ],
+);

@@ -1,11 +1,17 @@
 import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
-import { and, desc, eq, gte, inArray, isNull, lte, max, ne, sql } from 'drizzle-orm';
+import { and, desc, eq, gt, gte, inArray, isNull, lte, max, ne, or, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
 import { FxService } from '../fx/index.js';
-import { GeoService, lastCutoff, type Point, straightLineMetres } from '../geo/index.js';
+import {
+  GeoService,
+  lastCutoff,
+  nextCutoff,
+  type Point,
+  straightLineMetres,
+} from '../geo/index.js';
 import { type JournalType, LedgerService } from '../ledger/index.js';
 import { lockCityCurrencies, SettingsService, type Vehicle, vehicles } from '../settings/index.js';
 import {
@@ -21,6 +27,7 @@ import { LIVE_POSITION_MAX_AGE_MS, LivePositions, type NearbyCaptain } from './l
 import { checkPayRate, orderPay, type PayParts, type PayRate } from './pay.js';
 import {
   captainRecords,
+  handInGraces,
   locations,
   type onlineEndReasons,
   onlinePeriods,
@@ -50,7 +57,9 @@ export type CaptainsRefusal =
   | 'invalid_max_pickup'
   // AP §9.12.5: the peak windows' days, hours, amounts and zones.
   | 'invalid_peak_bonus'
-  | 'unknown_city';
+  | 'unknown_city'
+  // AP §8.5.4: a grace lifts a closed_due block; none is due.
+  | 'nothing_due';
 
 // A change the captains module refuses, with the reason the routes map to
 // their own answers; going online carries its blocks (CA §7.2).
@@ -109,7 +118,43 @@ export type AvailabilityChange =
   | { kind: 'offers_expired'; captainId: string; cityId: string; count: number; at: Date }
   // AP §9.10.3 (slice 2.17a): the desk moved the captain's custody, so the
   // app reads its state again (the block lifts at once).
-  | { kind: 'custody_changed'; captainId: string; cityId: string; at: Date };
+  | { kind: 'custody_changed'; captainId: string; cityId: string; at: Date }
+  // AP §8.5.4, CA §14 #18 (slice 2.17b): a hand-in grace until the next
+  // cutoff, «مُنحت مهلة حتى {الساعة}» on the city's clock.
+  | {
+      kind: 'hand_in_grace';
+      captainId: string;
+      cityId: string;
+      graceId: string;
+      until: Date;
+      timeZone: string;
+      at: Date;
+    };
+
+// AP §9.10.2 «أرصدة الكباتن»: one captain's money as finance lists it.
+export interface CaptainBalance {
+  captainId: string;
+  name: string;
+  status: CaptainStatus;
+  custody: Custody;
+  // What stops the captain now: cash due from a closed day with no grace
+  // running, or the cash limit reached.
+  blocks: ('closed_due' | 'cash_limit')[];
+  handInGrace: HandInGrace | null;
+  // captain.earnings in the base: + the platform owes the captain.
+  earnings: Money;
+}
+
+// AP §8.5.4 «Hand-in grace»: the one in force for a captain, theirs or the
+// city's bulk grace, with the later end.
+export interface HandInGrace {
+  id: string;
+  until: Date;
+  reason: string;
+  // The bulk grace of the whole city (OWN, from the cash desk).
+  bulk: boolean;
+  grantedAt: Date;
+}
 
 // A captain as the desk finds them (AP §9.10.3 step 1).
 export interface DeskCaptain {
@@ -220,6 +265,8 @@ export interface CaptainState {
   // hand-in reminder when the captain goes offline (after a last order too)
   // holding more.
   remitTolerance: Money;
+  // AP §8.5.4: the hand-in grace running now, or null.
+  handInGrace: HandInGrace | null;
 }
 
 type Executor = Pick<NodePgDatabase, 'select' | 'execute'>;
@@ -1046,11 +1093,243 @@ export class CaptainsService implements OnModuleInit {
   }
 
   // AP §9.10.3 step 2: the captain and their custody now, per currency.
-  async deskCustody(captainId: string, now: Date): Promise<DeskCaptain & { custody: Custody }> {
+  async deskCustody(
+    captainId: string,
+    now: Date,
+  ): Promise<DeskCaptain & { custody: Custody; handInGrace: HandInGrace | null }> {
     const row = await this.row(this.database.db, captainId);
     const rules = await this.cityRules(row.cityId, now);
     const custody = await this.custody(this.database.db, row, rules.lastCutoff, rules.warnPct);
-    return { id: row.id, cityId: row.cityId, name: row.name, status: row.status, custody };
+    const handInGrace = await this.graceOf(this.database.db, row.cityId, row.id, now);
+    return {
+      id: row.id,
+      cityId: row.cityId,
+      name: row.name,
+      status: row.status,
+      custody,
+      handInGrace,
+    };
+  }
+
+  // AP §9.10.2 «أرصدة الكباتن»: every captain of the city not terminated,
+  // and a terminated one still holding custody or earnings (to settle).
+  async balances(cityId: string, now: Date): Promise<CaptainBalance[]> {
+    const rows = await this.database.db
+      .select()
+      .from(captainRecords)
+      .where(eq(captainRecords.cityId, cityId))
+      .orderBy(captainRecords.name);
+    if (rows.length === 0) return [];
+    const rules = await this.cityRules(cityId, now);
+    const { base, toBase } = await this.fx.currentValue(cityId);
+    const listed: CaptainBalance[] = [];
+    for (const row of rows) {
+      const executor = this.database.db;
+      const custody = await this.custody(executor, row, rules.lastCutoff, rules.warnPct);
+      let earnings = 0n;
+      for (const account of await this.ledger.ownerAccounts(
+        cityId,
+        row.id,
+        'captain.earnings',
+        executor,
+      )) {
+        const { amount } = await this.ledger.balance(account.id, executor);
+        earnings +=
+          account.currency === base || amount === 0n ? amount : toBase(amount, account.currency);
+      }
+      const held = custody.currencies.some((line) => line.balance !== 0n);
+      if (row.status === 'terminated' && !held && earnings === 0n) continue;
+      const handInGrace = await this.graceOf(executor, cityId, row.id, now);
+      const blocks: CaptainBalance['blocks'] = [];
+      const graced = handInGrace !== null && now < handInGrace.until;
+      if (custody.closedDue.amount > rules.remitTolerance && !graced) blocks.push('closed_due');
+      if (custody.usage.amount >= custody.limit.amount) blocks.push('cash_limit');
+      listed.push({
+        captainId: row.id,
+        name: row.name,
+        status: row.status,
+        custody,
+        blocks,
+        handInGrace,
+        earnings: { amount: earnings, currency: base },
+      });
+    }
+    return listed;
+  }
+
+  // AP §8.5.4 «Hand-in grace» for one captain (OWN or FIN, with a reason):
+  // the closed_due block lifts until the next cutoff, the custody staying
+  // due. Refused while nothing above the tolerance is due (nothing_due). A
+  // repeat while a grace of the captain runs to the same cutoff answers it.
+  async grantGrace(captainId: string, change: CaptainChange, now: Date): Promise<HandInGrace> {
+    if (!hasReason(change)) {
+      throw new CaptainsRefusedError('reason_required', 'a grace needs a reason');
+    }
+    const cityId = (await this.row(this.database.db, captainId)).cityId;
+    const rules = await this.cityRules(cityId, now);
+    return this.database.db.transaction(async (tx) => {
+      const row = await this.lockCaptain(tx, captainId);
+      const custody = await this.custody(tx, row, rules.lastCutoff, rules.warnPct);
+      if (custody.closedDue.amount <= rules.remitTolerance) {
+        throw new CaptainsRefusedError('nothing_due', 'nothing is due from a closed day');
+      }
+      const [same] = await tx
+        .select()
+        .from(handInGraces)
+        .where(
+          and(eq(handInGraces.captainId, captainId), eq(handInGraces.until, rules.nextCutoff)),
+        );
+      if (same) return graceOfRow(same);
+      const grace = await this.insertGrace(tx, cityId, captainId, change, rules.nextCutoff, now);
+      await this.audit.recordWrite(
+        {
+          actor: change.actor,
+          context: change.context,
+          cityId,
+          action: 'captain.hand_in_grace',
+          target: { type: 'captain', id: captainId },
+          before: null,
+          after: { until: grace.until.toISOString(), closedDue: moneyOf(custody.closedDue) },
+          reason: grace.reason,
+        },
+        tx,
+      );
+      await this.graceHeard(tx, cityId, captainId, grace, rules.timeZone, now);
+      return grace;
+    });
+  }
+
+  // AP §8.5.4, §9.10.3 «Bulk hand-in grace» (OWN, with a reason): every
+  // captain of the city for one business day, until the next cutoff. The
+  // captains blocked by closed_due now hear it (CA §14 #18); a repeat while
+  // the city's grace runs to the same cutoff answers it and tells no one.
+  async grantBulkGrace(
+    cityId: string,
+    change: CaptainChange,
+    now: Date,
+  ): Promise<{ grace: HandInGrace; captainIds: string[] }> {
+    if (!hasReason(change)) {
+      throw new CaptainsRefusedError('reason_required', 'a grace needs a reason');
+    }
+    if ((await this.geo.cityTimeZone(cityId)) === null) {
+      throw new CaptainsRefusedError('unknown_city', 'no such city');
+    }
+    const rules = await this.cityRules(cityId, now);
+    const rows = await this.database.db
+      .select()
+      .from(captainRecords)
+      .where(and(eq(captainRecords.cityId, cityId), ne(captainRecords.status, 'terminated')));
+    const due: string[] = [];
+    for (const row of rows) {
+      try {
+        const custody = await this.custody(this.database.db, row, rules.lastCutoff, rules.warnPct);
+        if (custody.closedDue.amount > rules.remitTolerance) due.push(row.id);
+      } catch (error) {
+        this.logger.warn({ err: error, captainId: row.id }, 'closed_due not read for the grace');
+      }
+    }
+    return this.database.db.transaction(async (tx) => {
+      await tx.execute(
+        sql`SELECT pg_advisory_xact_lock(hashtextextended(${`captains.bulk-grace:${cityId}`}, 0))`,
+      );
+      const [same] = await tx
+        .select()
+        .from(handInGraces)
+        .where(
+          and(
+            eq(handInGraces.cityId, cityId),
+            isNull(handInGraces.captainId),
+            eq(handInGraces.until, rules.nextCutoff),
+          ),
+        );
+      if (same) return { grace: graceOfRow(same), captainIds: [] };
+      const grace = await this.insertGrace(tx, cityId, null, change, rules.nextCutoff, now);
+      await this.audit.recordWrite(
+        {
+          actor: change.actor,
+          context: change.context,
+          cityId,
+          action: 'captain.bulk_hand_in_grace',
+          target: { type: 'city', id: cityId },
+          before: null,
+          after: { until: grace.until.toISOString(), captainIds: due },
+          reason: grace.reason,
+        },
+        tx,
+      );
+      for (const captainId of due) {
+        await this.graceHeard(tx, cityId, captainId, grace, rules.timeZone, now);
+      }
+      return { grace, captainIds: due };
+    });
+  }
+
+  private async insertGrace(
+    tx: Tx,
+    cityId: string,
+    captainId: string | null,
+    change: CaptainChange,
+    until: Date,
+    now: Date,
+  ): Promise<HandInGrace> {
+    if (change.actor.type !== 'admin' || change.actor.id === null) {
+      throw new Error('a grace is granted by an admin');
+    }
+    const [row] = await tx
+      .insert(handInGraces)
+      .values({
+        cityId,
+        captainId,
+        until,
+        reason: change.reason!.trim(),
+        grantedBy: change.actor.id,
+        grantedAt: now,
+      })
+      .returning();
+    return graceOfRow(row!);
+  }
+
+  private async graceHeard(
+    tx: Tx,
+    cityId: string,
+    captainId: string,
+    grace: HandInGrace,
+    timeZone: string,
+    now: Date,
+  ): Promise<void> {
+    await this.availabilityChanged(tx, {
+      kind: 'hand_in_grace',
+      captainId,
+      cityId,
+      graceId: grace.id,
+      until: grace.until,
+      timeZone,
+      at: now,
+    });
+  }
+
+  // The grace running now for the captain: theirs or the city's, the later
+  // end first.
+  private async graceOf(
+    executor: Executor,
+    cityId: string,
+    captainId: string,
+    now: Date,
+  ): Promise<HandInGrace | null> {
+    const [row] = await executor
+      .select()
+      .from(handInGraces)
+      .where(
+        and(
+          eq(handInGraces.cityId, cityId),
+          or(eq(handInGraces.captainId, captainId), isNull(handInGraces.captainId)),
+          gt(handInGraces.until, now),
+          lte(handInGraces.grantedAt, now),
+        ),
+      )
+      .orderBy(desc(handInGraces.until), desc(handInGraces.grantedAt))
+      .limit(1);
+    return row ? graceOfRow(row) : null;
   }
 
   // AP §9.10.3, the ledger's «Concurrency»: reads the city's rules, then
@@ -1368,6 +1647,7 @@ export class CaptainsService implements OnModuleInit {
       availability: availability(input.availability, now),
       custody: input.custody,
       remitTolerance: { amount: rules.remitTolerance, currency: input.custody.usage.currency },
+      handInGrace: input.grace,
     };
   }
 
@@ -1406,6 +1686,7 @@ export class CaptainsService implements OnModuleInit {
         availability: availability(input.availability, now),
         custody: input.custody,
         remitTolerance: { amount: rules.remitTolerance, currency: input.custody.usage.currency },
+        handInGrace: input.grace,
       };
     });
   }
@@ -1534,7 +1815,10 @@ export class CaptainsService implements OnModuleInit {
     ]);
     const [hours, minutes] = cutoff.split(':').map(Number) as [number, number];
     return {
+      now,
+      timeZone,
       lastCutoff: lastCutoff(now, hours * 60 + minutes, timeZone),
+      nextCutoff: nextCutoff(now, hours * 60 + minutes, timeZone),
       remitTolerance: BigInt(tolerance.amountMinor),
       graceHours,
       warnPct,
@@ -1547,8 +1831,9 @@ export class CaptainsService implements OnModuleInit {
     executor: Tx | Database['db'],
     row: typeof captainRecords.$inferSelect,
     rules: Awaited<ReturnType<CaptainsService['cityRules']>>,
-  ): Promise<{ availability: AvailabilityInput; custody: Custody }> {
+  ): Promise<{ availability: AvailabilityInput; custody: Custody; grace: HandInGrace | null }> {
     const open = await this.openPeriod(executor, row.id);
+    const grace = await this.graceOf(executor, row.cityId, row.id, rules.now);
     const custody = await this.custody(executor, row, rules.lastCutoff, rules.warnPct);
     // CA §4.3: the newest point of this online period says whether the
     // location is simulated now.
@@ -1593,8 +1878,10 @@ export class CaptainsService implements OnModuleInit {
         lastOrder:
           open?.lastOrderBy == null ? null : { by: open.lastOrderBy, reason: open.lastOrderReason },
         offersExpired: last?.endReason === 'offers_expired' ? rules.expiryCount : null,
+        graceUntil: grace?.until ?? null,
       },
       custody,
+      grace,
     };
   }
 
@@ -1762,5 +2049,15 @@ function rateOf(rate: PayRate) {
     perExtraKm: rate.perExtraKm.toString(),
     waitingPerMinute: rate.waitingPerMinute.toString(),
     minimumPay: rate.minimumPay.toString(),
+  };
+}
+
+function graceOfRow(row: typeof handInGraces.$inferSelect): HandInGrace {
+  return {
+    id: row.id,
+    until: row.until,
+    reason: row.reason,
+    bulk: row.captainId === null,
+    grantedAt: row.grantedAt,
   };
 }

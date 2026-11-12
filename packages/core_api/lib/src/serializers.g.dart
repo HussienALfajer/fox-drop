@@ -28,6 +28,9 @@ Serializers _$serializers =
           ..add(AdminBoardDtoOutputOrdersInnerAlertsEnum.serializer)
           ..add(AdminBoardDtoOutputOrdersInnerCaptainTrackEnum.serializer)
           ..add(AdminBoardDtoOutputOrdersInnerStatusEnum.serializer)
+          ..add(AdminBulkHandInGraceAnswerDtoOutput.serializer)
+          ..add(AdminBulkHandInGraceAnswerDtoOutputGrace.serializer)
+          ..add(AdminBulkHandInGraceDto.serializer)
           ..add(AdminCancelDto.serializer)
           ..add(AdminCancelDtoCashEnum.serializer)
           ..add(AdminCancelDtoResponsibleEnum.serializer)
@@ -39,6 +42,11 @@ Serializers _$serializers =
           ..add(AdminCaptainAvailabilityDtoOutput.serializer)
           ..add(AdminCaptainAvailabilityDtoOutputLastOrderByEnum.serializer)
           ..add(AdminCaptainAvailabilityDtoOutputStateEnum.serializer)
+          ..add(AdminCaptainBalancesDtoOutput.serializer)
+          ..add(AdminCaptainBalancesDtoOutputCaptainsInner.serializer)
+          ..add(AdminCaptainBalancesDtoOutputCaptainsInnerBlocksEnum.serializer)
+          ..add(AdminCaptainBalancesDtoOutputCaptainsInnerEarnings.serializer)
+          ..add(AdminCaptainBalancesDtoOutputCaptainsInnerStatusEnum.serializer)
           ..add(AdminCaptainDeviceDtoOutput.serializer)
           ..add(AdminCaptainDeviceDtoOutputDevice.serializer)
           ..add(AdminChangeOutcomeDto.serializer)
@@ -52,6 +60,10 @@ Serializers _$serializers =
           ..add(AdminCloseItemReportDto.serializer)
           ..add(AdminConfirmPickupDto.serializer)
           ..add(AdminContactDtoOutput.serializer)
+          ..add(AdminConversionQuoteDtoOutput.serializer)
+          ..add(AdminConversionQuoteDtoOutputRatesInner.serializer)
+          ..add(AdminConversionQuoteDtoOutputUnit.serializer)
+          ..add(AdminConversionQuoteRequestDto.serializer)
           ..add(AdminCurrentDrawerSessionDtoOutput.serializer)
           ..add(AdminCurrentDrawerSessionDtoOutputSession.serializer)
           ..add(
@@ -65,6 +77,7 @@ Serializers _$serializers =
           ..add(AdminDeskCustodyDtoOutput.serializer)
           ..add(AdminDeskCustodyDtoOutputClosedDue.serializer)
           ..add(AdminDeskCustodyDtoOutputCurrenciesInner.serializer)
+          ..add(AdminDeskCustodyDtoOutputHandInGrace.serializer)
           ..add(AdminDeskCustodyDtoOutputStatusEnum.serializer)
           ..add(AdminDeskCustodyDtoOutputUsage.serializer)
           ..add(AdminDeviceReleasedDtoOutput.serializer)
@@ -109,8 +122,16 @@ Serializers _$serializers =
           ..add(AdminFaqsDtoOutputCustomerInner.serializer)
           ..add(AdminForceOfflineDto.serializer)
           ..add(AdminHandInDto.serializer)
+          ..add(AdminHandInDtoConversionsInner.serializer)
+          ..add(AdminHandInDtoConversionsInnerRatesInner.serializer)
+          ..add(AdminHandInGraceAnswerDtoOutput.serializer)
+          ..add(AdminHandInGraceDto.serializer)
           ..add(AdminHandInReceiptsDtoOutput.serializer)
           ..add(AdminHandInReceiptsDtoOutputReceiptsInner.serializer)
+          ..add(
+            AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner
+                .serializer,
+          )
           ..add(AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner.serializer)
           ..add(AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum.serializer)
           ..add(AdminHandoverDto.serializer)
@@ -869,9 +890,21 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminCaptainBalancesDtoOutputCaptainsInner),
+            ]),
+            () => ListBuilder<AdminCaptainBalancesDtoOutputCaptainsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminCitiesDtoOutputCitiesInner),
             ]),
             () => ListBuilder<AdminCitiesDtoOutputCitiesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminConversionQuoteDtoOutputRatesInner),
+            ]),
+            () => ListBuilder<AdminConversionQuoteDtoOutputRatesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -917,6 +950,23 @@ Serializers _$serializers =
               const FullType(AdminDeskCustodyDtoOutputCurrenciesInner),
             ]),
             () => ListBuilder<AdminDeskCustodyDtoOutputCurrenciesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminDeskCustodyDtoOutputCurrenciesInner),
+            ]),
+            () => ListBuilder<AdminDeskCustodyDtoOutputCurrenciesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminCaptainBalancesDtoOutputCaptainsInnerBlocksEnum,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminCaptainBalancesDtoOutputCaptainsInnerBlocksEnum
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -998,9 +1048,38 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminHandInDtoConversionsInner),
+            ]),
+            () => ListBuilder<AdminHandInDtoConversionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOpenDrawerSessionDtoFloatsInner),
+            ]),
+            () => ListBuilder<AdminOpenDrawerSessionDtoFloatsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminHandInDtoConversionsInnerRatesInner),
+            ]),
+            () => ListBuilder<AdminHandInDtoConversionsInnerRatesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminHandInReceiptsDtoOutputReceiptsInner),
             ]),
             () => ListBuilder<AdminHandInReceiptsDtoOutputReceiptsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -1011,6 +1090,17 @@ Serializers _$serializers =
             () =>
                 ListBuilder<
                   AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner
                 >(),
           )
           ..addBuilderFactory(
@@ -1029,12 +1119,6 @@ Serializers _$serializers =
               const FullType(AdminNotificationTextsDtoOutputTemplatesInner),
             ]),
             () => ListBuilder<AdminNotificationTextsDtoOutputTemplatesInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(AdminOpenDrawerSessionDtoFloatsInner),
-            ]),
-            () => ListBuilder<AdminOpenDrawerSessionDtoFloatsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -2073,6 +2157,10 @@ Serializers _$serializers =
               const FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
             ]),
             () => ListBuilder<SettingListDtoOutputSettingsInnerEditRolesEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

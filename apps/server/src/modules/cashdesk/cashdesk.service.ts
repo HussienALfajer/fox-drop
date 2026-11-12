@@ -1,12 +1,24 @@
 import { createHash } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
-import { and, asc, desc, eq, inArray, isNull, lt, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, lt, max, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
-import { CaptainsService, type CustodyCurrency, type DeskCaptain } from '../captains/index.js';
+import {
+  type CaptainBalance,
+  CaptainsService,
+  type CustodyCurrency,
+  type DeskCaptain,
+} from '../captains/index.js';
 import { formatMoney, NotificationTexts, receiptTypeLabels } from '../content/index.js';
-import { FxService } from '../fx/index.js';
+import {
+  exchange,
+  FxRefusedError,
+  FxService,
+  type Rate,
+  type RateSnapshot,
+  unitRate,
+} from '../fx/index.js';
 import { GeoService } from '../geo/index.js';
 import { AdminSessionsService } from '../identity/index.js';
 import { type JournalType, LedgerService } from '../ledger/index.js';
@@ -15,6 +27,7 @@ import {
   drawerSessionCurrencies,
   drawerSessions,
   idempotencyKeys,
+  receiptConversions,
   receiptCounters,
   receiptLines,
   receipts,
@@ -34,6 +47,8 @@ export type CashDeskRefusal =
   | 'above_custody'
   | 'drawer_short'
   | 'unknown_city'
+  | 'rate_changed'
+  | 'rate_missing'
   | 'idempotency_key_reused';
 
 export class CashDeskRefusedError extends Error {
@@ -96,6 +111,32 @@ export interface ReceiptLine {
   remaining: bigint;
 }
 
+// AP §9.10.3 cross-currency settlement: the rate version of each currency of
+// a conversion but the base, as the screen showed it.
+export interface ConversionRate {
+  currency: string;
+  rateVersionId: string;
+}
+
+// Custody moved from one currency into another before the cash changes
+// hands: `amount` of `from` taken off its balance towards zero, `converted`
+// of `to` added in the same direction, at the rates shown.
+export interface Conversion {
+  from: string;
+  to: string;
+  amount: bigint;
+  converted: bigint;
+  rates: ConversionRate[];
+}
+
+// What the desk shows before the confirmation (AP §9.10.3: «at the current
+// rate, shown on screen»): the converted amount, rounded by the target's
+// rule (AP §8.6), the rate versions, and one unit of the dearer currency in
+// the other as a decimal of up to 4 places.
+export interface ConversionQuote extends Conversion {
+  unit: { from: string; to: string; value: string };
+}
+
 export interface Receipt {
   id: string;
   cityId: string;
@@ -107,11 +148,26 @@ export interface Receipt {
   captainId: string;
   captainName: string;
   createdAt: Date;
+  // The conversions made before its cash changed hands.
+  conversions: { from: string; amount: bigint; to: string; converted: bigint }[];
   lines: ReceiptLine[];
+}
+
+// AP §9.10.2 «أرصدة الكباتن»: a captain's balance with the desk's dates.
+export interface BalanceRow extends CaptainBalance {
+  // The custody of every currency at the current rate, netted: the sort.
+  custodyInBase: bigint;
+  // The latest «تسليم نقد» receipt.
+  lastHandInAt: Date | null;
+  // The latest payout; none until «تصفية الخميس» (slice 2.18).
+  lastPayoutAt: Date | null;
 }
 
 export interface HandInCommand {
   captainId: string;
+  // AP §9.10.3: converted first, each `from` once (FIN and OWN, who hold
+  // cash_desk.record).
+  conversions?: Conversion[];
   // What is physically received (or paid back) per currency.
   lines: CashLine[];
   idempotencyKey: string;
@@ -381,11 +437,20 @@ export class CashDeskService {
     ) {
       throw new CashDeskRefusedError('invalid_amounts', 'one line per currency, one at least');
     }
+    const conversions = command.conversions ?? [];
+    checkConversions(conversions);
     const requestHash = createHash('sha256')
       .update(
         JSON.stringify({
           captainId: command.captainId,
           lines: command.lines.map((line) => [line.currency, line.amount.toString()]),
+          conversions: conversions.map((each) => [
+            each.from,
+            each.to,
+            each.amount.toString(),
+            each.converted.toString(),
+            each.rates.map((rate) => [rate.currency, rate.rateVersionId]),
+          ]),
         }),
       )
       .digest('hex');
@@ -428,7 +493,8 @@ export class CashDeskService {
       const again = await this.replay(tx, user.accountId, command, requestHash, now);
       if (again) return again;
       const drawer = await this.drawerCash(tx, session);
-      const held = new Map(custody.currencies.map((line) => [line.currency, line]));
+      const held = new Map(custody.currencies.map((line) => [line.currency, { ...line }]));
+      const converting = await this.convertHeld(tx, captain.cityId, conversions, held);
       const grouped = new Map<ReceiptType, { line: CashLine; held: CustodyCurrency }[]>();
       for (const line of command.lines) {
         const position = held.get(line.currency);
@@ -459,6 +525,8 @@ export class CashDeskService {
           session,
           captain,
           type,
+          // The conversions go on the first receipt.
+          conversions: issued.length === 0 ? converting : [],
           lines,
           number: await nextNumber(tx, captain.cityId, city.code, year),
           year,
@@ -474,6 +542,161 @@ export class CashDeskService {
     return this.receiptsOf(ids);
   }
 
+  // AP §9.10.3: the conversion at the current rate, to show before the
+  // confirmation; the hand-in refuses it once the rate or rounding changed.
+  async quoteConversion(
+    cityId: string,
+    asked: { from: string; to: string; amount: bigint },
+  ): Promise<ConversionQuote> {
+    checkConversions([{ ...asked, converted: 1n, rates: [] }]);
+    return quoteOf(await this.snapshotOf(cityId, this.database.db), asked);
+  }
+
+  // Applies the conversions to the custody held (mutated), under the
+  // captain's lock, checking each against its custody and the rate now.
+  private async convertHeld(
+    tx: Tx,
+    cityId: string,
+    conversions: Conversion[],
+    held: Map<string, CustodyCurrency>,
+  ): Promise<(Conversion & { sign: 1n | -1n })[]> {
+    if (conversions.length === 0) return [];
+    const snapshot = await this.snapshotOf(cityId, tx);
+    const converting: (Conversion & { sign: 1n | -1n })[] = [];
+    for (const conversion of conversions) {
+      const position = held.get(conversion.from);
+      if (!position || position.balance === 0n) {
+        throw new CashDeskRefusedError('nothing_due', `no custody in ${conversion.from}`);
+      }
+      const sign = position.balance > 0n ? 1n : -1n;
+      if (conversion.amount > sign * position.balance) {
+        throw new CashDeskRefusedError(
+          'above_custody',
+          `more than the custody in ${conversion.from}`,
+        );
+      }
+      const now = quoteOf(snapshot, conversion);
+      if (now.converted !== conversion.converted || !sameRates(now.rates, conversion.rates)) {
+        throw new CashDeskRefusedError('rate_changed', 'the rate is not the one shown');
+      }
+      position.balance -= sign * conversion.amount;
+      const target = held.get(conversion.to) ?? {
+        currency: conversion.to,
+        balance: 0n,
+        closedDue: 0n,
+        today: 0n,
+        balanceInBase: 0n,
+      };
+      target.balance += sign * conversion.converted;
+      held.set(conversion.to, target);
+      converting.push({ ...conversion, rates: now.rates, sign });
+    }
+    return converting;
+  }
+
+  // custody.fx_convert (AP §8.6, the ledger's rules): the captain's custody
+  // leaves one currency and enters the other through platform.fx_rounding,
+  // which keeps the rounding difference, with the rates' versions.
+  private async postConversion(
+    tx: Tx,
+    user: DeskUser,
+    captain: DeskCaptain,
+    receiptId: string,
+    conversion: Conversion & { sign: 1n | -1n },
+  ): Promise<void> {
+    const account = (purpose: 'captain.custody' | 'platform.fx_rounding', currency: string) =>
+      this.ledger.openAccount(
+        {
+          cityId: captain.cityId,
+          purpose,
+          ownerId: purpose === 'captain.custody' ? captain.id : null,
+          currency,
+        },
+        tx,
+      );
+    const { from, to, amount, converted, sign } = conversion;
+    const entries = [
+      { accountId: await account('captain.custody', from), currency: from, amount: -sign * amount },
+      {
+        accountId: await account('platform.fx_rounding', from),
+        currency: from,
+        amount: sign * amount,
+      },
+      { accountId: await account('captain.custody', to), currency: to, amount: sign * converted },
+      {
+        accountId: await account('platform.fx_rounding', to),
+        currency: to,
+        amount: -sign * converted,
+      },
+    ];
+    const journalId = await this.ledger.post(
+      {
+        cityId: captain.cityId,
+        type: 'custody.fx_convert',
+        source: { kind: 'receipt', id: receiptId },
+        actor: { type: 'admin', id: user.accountId },
+        entries,
+        rates: conversion.rates,
+      },
+      tx,
+    );
+    await tx.insert(receiptConversions).values({
+      receiptId,
+      fromCurrency: from,
+      fromAmount: amount,
+      toCurrency: to,
+      toAmount: converted,
+      journalId,
+    });
+  }
+
+  private async snapshotOf(cityId: string, executor: Executor): Promise<RateSnapshot> {
+    try {
+      return await this.fx.snapshot(cityId, executor);
+    } catch (error) {
+      if (error instanceof FxRefusedError) {
+        throw new CashDeskRefusedError('rate_missing', error.message);
+      }
+      throw error;
+    }
+  }
+
+  // AP §9.10.2: every captain's balance, the highest custody first; «سجّل
+  // تسليماً» opens the desk for one.
+  async balances(cityId: string, now: Date): Promise<BalanceRow[]> {
+    const listed = await this.captains.balances(cityId, now);
+    if (listed.length === 0) return [];
+    const handIns = await this.database.db
+      .select({ captainId: receipts.captainId, at: max(receipts.createdAt) })
+      .from(receipts)
+      .where(
+        and(
+          eq(receipts.cityId, cityId),
+          eq(receipts.type, 'captain_hand_in'),
+          inArray(
+            receipts.captainId,
+            listed.map((row) => row.captainId),
+          ),
+        ),
+      )
+      .groupBy(receipts.captainId);
+    const lastHandIn = new Map(handIns.map((row) => [row.captainId, row.at]));
+    return listed
+      .map((row) => ({
+        ...row,
+        custodyInBase: row.custody.currencies.reduce((sum, line) => sum + line.balanceInBase, 0n),
+        lastHandInAt: lastHandIn.get(row.captainId) ?? null,
+        lastPayoutAt: null,
+      }))
+      .sort((a, b) =>
+        a.custodyInBase === b.custodyInBase
+          ? a.name.localeCompare(b.name, 'ar')
+          : a.custodyInBase > b.custodyInBase
+            ? -1
+            : 1,
+      );
+  }
+
   async receipt(receiptId: string): Promise<Receipt | null> {
     return (await this.receiptsOf([receiptId]))[0] ?? null;
   }
@@ -485,6 +708,7 @@ export class CashDeskService {
       session: typeof drawerSessions.$inferSelect;
       captain: DeskCaptain;
       type: ReceiptType;
+      conversions: (Conversion & { sign: 1n | -1n })[];
       lines: { line: CashLine; held: CustodyCurrency }[];
       number: { sequence: number; number: string };
       year: number;
@@ -508,6 +732,9 @@ export class CashDeskService {
       })
       .returning({ id: receipts.id });
     const receiptId = created!.id;
+    for (const conversion of input.conversions) {
+      await this.postConversion(tx, user, captain, receiptId, conversion);
+    }
     const { journal, sign } = kinds[type];
     for (const { line, held } of lines) {
       const custodyAccount = await this.ledger.openAccount(
@@ -569,6 +796,13 @@ export class CashDeskService {
           type,
           captainId: captain.id,
           sessionId: session.id,
+          conversions: input.conversions.map((each) => ({
+            from: each.from,
+            amount: each.amount.toString(),
+            to: each.to,
+            converted: each.converted.toString(),
+            rates: each.rates,
+          })),
           lines: lines.map(({ line, held }) => ({
             currency: line.currency,
             expected: held.balance.toString(),
@@ -662,11 +896,15 @@ export class CashDeskService {
       .where(inArray(receipts.id, [...ids]))
       .orderBy(asc(receipts.sequence));
     if (rows.length === 0) return [];
-    const [lines, names] = await Promise.all([
+    const [lines, conversions, names] = await Promise.all([
       this.database.db
         .select()
         .from(receiptLines)
         .where(inArray(receiptLines.receiptId, [...ids])),
+      this.database.db
+        .select()
+        .from(receiptConversions)
+        .where(inArray(receiptConversions.receiptId, [...ids])),
       this.admins.names([...new Set(rows.map((row) => row.adminAccountId))]),
     ]);
     const order = await this.currencyOrder(rows[0]!.cityId);
@@ -681,6 +919,15 @@ export class CashDeskService {
       captainId: row.captainId,
       captainName: row.captainName,
       createdAt: row.createdAt,
+      conversions: conversions
+        .filter((each) => each.receiptId === row.id)
+        .sort((a, b) => order(a.fromCurrency) - order(b.fromCurrency))
+        .map((each) => ({
+          from: each.fromCurrency,
+          amount: each.fromAmount,
+          to: each.toCurrency,
+          converted: each.toAmount,
+        })),
       lines: lines
         .filter((line) => line.receiptId === row.id)
         .sort((a, b) => order(a.currency) - order(b.currency))
@@ -780,4 +1027,67 @@ async function keepKey(
 
 function moneyOf(line: CashLine) {
   return { amount: line.amount.toString(), currency: line.currency };
+}
+
+// Each `from` once, never also a `to`, two currencies, amounts above zero.
+function checkConversions(conversions: Conversion[]): void {
+  const from = new Set(conversions.map((each) => each.from));
+  if (
+    from.size !== conversions.length ||
+    conversions.some(
+      (each) =>
+        each.from === each.to || from.has(each.to) || each.amount <= 0n || each.converted <= 0n,
+    )
+  ) {
+    throw new CashDeskRefusedError('invalid_amounts', 'a conversion is refused');
+  }
+}
+
+// The conversion at the snapshot's rates: both currencies enabled in the
+// city, the result above zero once rounded.
+function quoteOf(
+  snapshot: RateSnapshot,
+  asked: { from: string; to: string; amount: bigint },
+): ConversionQuote {
+  const of = (code: string) => snapshot.currencies.find((each) => each.code === code);
+  const from = of(asked.from);
+  const to = of(asked.to);
+  if (!from || !to) {
+    throw new CashDeskRefusedError('invalid_amounts', 'convert between accepted currencies');
+  }
+  const converted = exchange(snapshot, asked.amount, asked.from, asked.to);
+  if (converted <= 0n) {
+    throw new CashDeskRefusedError('invalid_amounts', 'too small to convert');
+  }
+  const rates = [from, to]
+    .filter((each) => each.rateVersionId !== null)
+    .map((each) => ({ currency: each.code, rateVersionId: each.rateVersionId! }));
+  const forward = unitRate(snapshot, asked.from, asked.to);
+  const unit =
+    forward.numerator >= forward.denominator
+      ? { from: asked.from, to: asked.to, value: decimalOf(forward) }
+      : {
+          from: asked.to,
+          to: asked.from,
+          value: decimalOf({ numerator: forward.denominator, denominator: forward.numerator }),
+        };
+  return { from: asked.from, to: asked.to, amount: asked.amount, converted, rates, unit };
+}
+
+// A rate as the screen shows it: up to 4 decimal places, nearest.
+function decimalOf(rate: Rate): string {
+  const scaled = (rate.numerator * 20_000n + rate.denominator) / (2n * rate.denominator);
+  const whole = scaled / 10_000n;
+  const fraction = (scaled % 10_000n).toString().padStart(4, '0').replace(/0+$/, '');
+  return fraction === '' ? whole.toString() : `${whole}.${fraction}`;
+}
+
+function sameRates(a: readonly ConversionRate[], b: readonly ConversionRate[]): boolean {
+  const key = (rates: readonly ConversionRate[]) =>
+    JSON.stringify(
+      [...rates]
+        .map((rate) => [rate.currency, rate.rateVersionId] as const)
+        .sort((x, y) => x[0].localeCompare(y[0])),
+    );
+  return key(a) === key(b);
 }
