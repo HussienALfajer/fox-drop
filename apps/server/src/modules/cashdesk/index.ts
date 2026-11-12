@@ -8,7 +8,9 @@ import { GeoModule } from '../geo/index.js';
 import { IdentityModule } from '../identity/index.js';
 import { LedgerModule } from '../ledger/index.js';
 import { NotificationsModule } from '../notifications/index.js';
+import { OrderingModule } from '../ordering/index.js';
 import { AdminCashDeskController } from './admin-cash-desk.controller.js';
+import { CaptainCustodyController } from './captain-custody.controller.js';
 import { CashDeskService } from './cashdesk.service.js';
 
 // The cashdesk module (architecture §4.2): drawer sessions, receipts and the
@@ -24,8 +26,9 @@ import { CashDeskService } from './cashdesk.service.js';
     IdentityModule,
     ContentModule,
     NotificationsModule,
+    OrderingModule,
   ],
-  controllers: [AdminCashDeskController],
+  controllers: [AdminCashDeskController, CaptainCustodyController],
   providers: [CashDeskService],
   exports: [CashDeskService],
 })

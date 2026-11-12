@@ -94,6 +94,10 @@ void main() {
   test('an offer or an order opens home; the others nothing yet', () {
     expect(pushTargetPath({'target': 'offer', 'orderId': orderId}), '/');
     expect(pushTargetPath({'target': 'order', 'orderId': orderId}), '/');
+    expect(
+      pushTargetPath({'target': 'custody', 'receiptId': orderId}),
+      '/custody',
+    );
     expect(pushTargetPath({'target': 'statement'}), isNull);
     expect(pushTargetPath({}), isNull);
   });

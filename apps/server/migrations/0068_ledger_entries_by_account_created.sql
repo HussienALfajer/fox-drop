@@ -1,0 +1,1 @@
+CREATE INDEX "entries_by_account_created" ON "ledger"."entries" USING btree ("account_id","created_at" DESC NULLS LAST);

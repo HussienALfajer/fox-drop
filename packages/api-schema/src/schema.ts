@@ -1140,6 +1140,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/cities/{cityId}/office": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCitiesOffice"];
+        put: operations["adminCitiesSetOffice"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/uploads": {
         parameters: {
             query?: never;
@@ -3300,6 +3316,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/captain/custody": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainCustodyCustody"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -4173,6 +4205,46 @@ export interface components {
                 timeZone: string;
             }[];
         };
+        AdminCityOfficeDto_Output: {
+            /** @description Null until the owner saves one. */
+            office: {
+                /** @description The office's point, until the map (slice 2.29). */
+                location: {
+                    latitude: number;
+                    longitude: number;
+                };
+                /** @description One period per weekday at most; none is closed. */
+                hours: {
+                    /** @description 0 Sunday to 6 Saturday. */
+                    weekday: number;
+                    /** @description Minutes after midnight, city clock. */
+                    opensAt: number;
+                    /** @description Minutes after midnight; at or before the opening it runs past midnight. */
+                    closesAt: number;
+                }[];
+                /** @description Whether the desk is open now. */
+                open: boolean;
+                /** @description While open: when it closes. */
+                closesAt: string | null;
+                /** @description While closed: when it opens next. */
+                opensAt: string | null;
+            } | null;
+        };
+        AdminSetCityOfficeDto: {
+            /** @description The office's point, until the map (slice 2.29). */
+            location: {
+                latitude: number;
+                longitude: number;
+            };
+            hours: {
+                /** @description 0 Sunday to 6 Saturday. */
+                weekday: number;
+                /** @description Minutes after midnight, city clock. */
+                opensAt: number;
+                /** @description Minutes after midnight; at or before the opening it runs past midnight. */
+                closesAt: number;
+            }[];
+        };
         AdminNewUploadDto: {
             /**
              * @description The record the file is for (architecture §5.8).
@@ -4213,6 +4285,27 @@ export interface components {
                 /** @description While offline after C3 (CA §7.4): the offers in a row that expired unanswered, for «لم ترد على {العدد} عروض متتالية، فأصبحت غير متصل. اضغط «متصل» عندما تكون جاهزاً.»; null otherwise. */
                 offersExpired: number | null;
             };
+            /** @description The city's office; null until the owner sets it (AP §9.12.1). */
+            office: {
+                latitude: number;
+                longitude: number;
+                /** @description The desk hours per weekday; a weekday not listed is closed. */
+                hours: {
+                    /** @description 0 Sunday to 6 Saturday. */
+                    weekday: number;
+                    /** @description Minutes after midnight on the city clock. */
+                    opensAt: number;
+                    /** @description Minutes after midnight; at or before the opening it runs past midnight. */
+                    closesAt: number;
+                }[];
+                /** @description The city's clock, such as Asia/Damascus. */
+                timeZone: string;
+                open: boolean;
+                /** @description While open: when the desk closes. */
+                closesAt: string | null;
+                /** @description While closed: when it opens next; null when no day is open. */
+                opensAt: string | null;
+            } | null;
             custody: {
                 /** @description The cash held, in the base currency (AP §8.5.3). */
                 usage: {
@@ -4254,6 +4347,27 @@ export interface components {
                 /** @description Integer minor units (AP §8.6). */
                 amount: string;
                 currency: string;
+            } | null;
+            /** @description The city's office; null until the owner sets it (AP §9.12.1). */
+            office: {
+                latitude: number;
+                longitude: number;
+                /** @description The desk hours per weekday; a weekday not listed is closed. */
+                hours: {
+                    /** @description 0 Sunday to 6 Saturday. */
+                    weekday: number;
+                    /** @description Minutes after midnight on the city clock. */
+                    opensAt: number;
+                    /** @description Minutes after midnight; at or before the opening it runs past midnight. */
+                    closesAt: number;
+                }[];
+                /** @description The city's clock, such as Asia/Damascus. */
+                timeZone: string;
+                open: boolean;
+                /** @description While open: when the desk closes. */
+                closesAt: string | null;
+                /** @description While closed: when it opens next; null when no day is open. */
+                opensAt: string | null;
             } | null;
         };
         CaptainLastOrderDto: {
@@ -9345,6 +9459,92 @@ export interface components {
                 remaining: string;
             }[];
         };
+        CaptainCustodyDto_Output: {
+            /** @description The cash held, in the base currency (AP §8.5.3). */
+            usage: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            };
+            /** @description The cash limit «حد العهدة» (§10.4). */
+            limit: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            };
+            /** @description At captain.custody_warn_pct of the limit or more. */
+            warn: boolean;
+            /** @description Every currency at the current rate, netted: + «عليك تسليم {المبلغ}», − «لك عند المكتب {المبلغ}». */
+            total: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            };
+            /** @description «من أيام سابقة»: due from closed days, netted (AP §8.5.4). */
+            closedDue: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            };
+            /** Format: date-time */
+            lastCutoff: string;
+            /** @description A hand-in grace running now (AP §8.5.4): until when; null otherwise. */
+            handInGraceUntil: string | null;
+            /** @description Each currency held, the base first (AP §8.6). */
+            currencies: {
+                currency: string;
+                /** @description + to hand in, − the office owes the captain. */
+                balance: string;
+                /** @description «من أيام سابقة». */
+                closedDue: string;
+                /** @description «من اليوم». */
+                today: string;
+                /** @description The balance in the base currency, current rate. */
+                balanceInBase: string;
+            }[];
+            /** @description Every entry, newest first, the latest 100. */
+            entries: {
+                /** @description Null for a kind the app does not name. */
+                kind: ("pay_merchant" | "collect" | "change_given" | "hand_in" | "reimburse" | "fx_convert" | "pickup_correction" | "adjustment") | null;
+                /** @description The order's number, for an order's entry. */
+                orderNumber: string | null;
+                /** @description The receipt, for a desk entry. */
+                receiptNumber: string | null;
+                /** @description + adds to what the captain hands in. */
+                amount: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                };
+                /** Format: date-time */
+                at: string;
+            }[];
+            /** @description Every desk receipt, newest first, the latest 50. */
+            receipts: {
+                /** Format: uuid */
+                id: string;
+                /** @description Such as AZ-2026-000123 (AP §4.8). */
+                number: string;
+                /** @description captain_hand_in «تسليم نقد», captain_reimbursement «صرف للكابتن»; a later type (2.18) the app shows by its number only, so an older app still reads the rest. */
+                type: string;
+                /** Format: date-time */
+                at: string;
+                cashierName: string | null;
+                conversions: {
+                    from: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    to: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    converted: string;
+                }[];
+                lines: {
+                    currency: string;
+                    /** @description The cash that changed hands, above zero. */
+                    amount: string;
+                }[];
+            }[];
+        };
     };
     responses: never;
     parameters: never;
@@ -11089,6 +11289,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminCitiesDto_Output"];
+                };
+            };
+        };
+    };
+    adminCitiesOffice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                cityId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCityOfficeDto_Output"];
+                };
+            };
+        };
+    };
+    adminCitiesSetOffice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                cityId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminSetCityOfficeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCityOfficeDto_Output"];
                 };
             };
         };
@@ -14564,6 +14812,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminReceiptDto_Output"];
+                };
+            };
+        };
+    };
+    captainCustodyCustody: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainCustodyDto_Output"];
                 };
             };
         };

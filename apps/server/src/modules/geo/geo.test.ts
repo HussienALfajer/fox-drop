@@ -471,3 +471,108 @@ describe('GeoService.deliveryFee (AP §9.12.3)', () => {
     expect(refused).toMatchObject({ refusal: 'amounts_in_other_currency' });
   });
 });
+
+describe('GeoService.office (AP §9.12.1, CA C13, §7.5)', () => {
+  const location = { latitude: 36.5862, longitude: 37.0471 };
+  // Saturday to Thursday 09:00–23:00 on the city's clock, Friday closed.
+  const hours = [6, 0, 1, 2, 3, 4].map((weekday) => ({
+    weekday,
+    opensAt: 9 * 60,
+    closesAt: 23 * 60,
+  }));
+
+  it('has no office until one is saved', async () => {
+    const cityId = await city();
+    await expect(geo.office(cityId, new Date())).resolves.toBeNull();
+  });
+
+  it('answers whether the desk is open now, when it closes today, and when it opens next', async () => {
+    const cityId = await city();
+    await geo.setOffice(cityId, { location, hours }, change);
+    // Thursday 22:00 in Azaz (UTC+3): open until 23:00.
+    await expect(geo.office(cityId, new Date('2026-11-12T19:00:00Z'))).resolves.toEqual({
+      location,
+      hours: [0, 1, 2, 3, 4, 6].map((weekday) => ({ weekday, opensAt: 540, closesAt: 1380 })),
+      timeZone: 'Asia/Damascus',
+      open: true,
+      closesAt: new Date('2026-11-12T20:00:00Z'),
+      opensAt: null,
+    });
+    // Friday 00:00: closed until Saturday 09:00.
+    await expect(geo.office(cityId, new Date('2026-11-12T21:00:00Z'))).resolves.toMatchObject({
+      open: false,
+      closesAt: null,
+      opensAt: new Date('2026-11-14T06:00:00Z'),
+    });
+  });
+
+  it('keeps every version, the newest in force, audited, and the application role cannot change one', async () => {
+    const cityId = await city();
+    await geo.setOffice(cityId, { location, hours }, change);
+    const moved = { latitude: 36.59, longitude: 37.05 };
+    await geo.setOffice(cityId, { location: moved, hours: [] }, change);
+    await expect(geo.office(cityId, new Date())).resolves.toMatchObject({
+      location: moved,
+      hours: [],
+      open: false,
+      opensAt: null,
+    });
+    const { rows } = await sql.query(
+      "SELECT action, changes FROM audit.events WHERE city_id = $1 AND action = 'city.office' ORDER BY id",
+      [cityId],
+    );
+    expect(rows).toHaveLength(2);
+    expect(rows[1]).toEqual({
+      action: 'city.office',
+      changes: {
+        location: { before: location, after: moved },
+        hours: {
+          before: [0, 1, 2, 3, 4, 6].map((weekday) => ({ weekday, opensAt: 540, closesAt: 1380 })),
+          after: [],
+        },
+      },
+    });
+    await expect(sql.query('UPDATE geo.offices SET latitude = 0')).rejects.toThrow(
+      /permission denied/,
+    );
+    await expect(sql.query('UPDATE geo.office_periods SET opens_at = 0')).rejects.toThrow(
+      /permission denied/,
+    );
+  });
+
+  it.each([
+    [
+      'two periods on one weekday',
+      [
+        { weekday: 1, opensAt: 540, closesAt: 600 },
+        { weekday: 1, opensAt: 700, closesAt: 800 },
+      ],
+    ],
+    ['a period shorter than 30 minutes', [{ weekday: 1, opensAt: 540, closesAt: 560 }]],
+    ['a weekday out of range', [{ weekday: 7, opensAt: 540, closesAt: 600 }]],
+    [
+      'a period crossing into the next one',
+      [
+        { weekday: 1, opensAt: 1200, closesAt: 600 },
+        { weekday: 2, opensAt: 540, closesAt: 900 },
+      ],
+    ],
+  ])('refuses %s (invalid_office)', async (_, periods) => {
+    const cityId = await city();
+    await expect(geo.setOffice(cityId, { location, hours: periods }, change)).rejects.toMatchObject(
+      {
+        refusal: 'invalid_office',
+      },
+    );
+  });
+
+  it('refuses a point off the map and an unknown city', async () => {
+    const cityId = await city();
+    await expect(
+      geo.setOffice(cityId, { location: { latitude: 91, longitude: 0 }, hours }, change),
+    ).rejects.toMatchObject({ refusal: 'invalid_office' });
+    await expect(
+      geo.setOffice('0190f3a0-0000-7000-8000-00000000ffff', { location, hours }, change),
+    ).rejects.toMatchObject({ refusal: 'unknown_city' });
+  });
+});

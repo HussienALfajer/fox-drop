@@ -14,6 +14,7 @@ import {
   CODE_SENDER,
   type DevelopmentCodeSender,
 } from '../identity/index.js';
+import { GeoService } from '../geo/index.js';
 import { CaptainsService } from './index.js';
 
 // The captain app's availability and location routes (CA §4.3, §7), served
@@ -151,7 +152,7 @@ describe('the availability routes (CA §7)', () => {
     expect(online.statusCode).toBe(200);
     expect(online.json().availability).toMatchObject({ state: 'online_available' });
     const offline = await call(headers, 'POST', '/v1/captain/availability/offline');
-    expect(offline.json()).toEqual({ handIn: null });
+    expect(offline.json()).toEqual({ handIn: null, office: null });
     expect((await call(headers, 'GET', '/v1/captain/availability')).json().availability).toEqual({
       state: 'offline',
       since: null,
@@ -162,6 +163,35 @@ describe('the availability routes (CA §7)', () => {
       lastOrderReason: null,
       offersExpired: null,
     });
+  });
+
+  // CA §7.5, C13: the office and its desk now, for the hand-in reminder.
+  it('answers the office with whether its desk is open, after going offline too', async () => {
+    const { headers } = await signedIn();
+    const geo = app.get(GeoService);
+    const location = { latitude: 36.5862, longitude: 37.0471 };
+    // Open every day, all day: the desk closes at the end of today's period.
+    const hours = [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({ weekday, opensAt: 0, closesAt: 1440 }));
+    await geo.setOffice(
+      azaz,
+      { location, hours },
+      {
+        actor: { type: 'system', id: null, role: null },
+        context: { ipAddress: null, device: null },
+      },
+    );
+    const state = (await call(headers, 'GET', '/v1/captain/availability')).json();
+    expect(state.office).toEqual({
+      ...location,
+      hours,
+      timeZone: 'Asia/Damascus',
+      open: true,
+      closesAt: expect.any(String),
+      opensAt: null,
+    });
+    await goOnline(headers);
+    const offline = await call(headers, 'POST', '/v1/captain/availability/offline');
+    expect(offline.json()).toMatchObject({ handIn: null, office: { open: true, ...location } });
   });
 
   it('waits for the terms in force before going online (K7)', async () => {

@@ -19,6 +19,13 @@ import { roadDistancesFromEnvironment } from './osrm-road-distances.js';
 export class GeoModule {}
 
 export { lastCutoff, nextCutoff } from './business-day.js';
+export {
+  checkWeeklySchedule,
+  currentPeriod,
+  inDailyWindow,
+  nextOpening,
+  type OpeningPeriod,
+} from './weekly-hours.js';
 export { estimateRange, tripMinutes } from './delivery-estimate.js';
 export type { DeliveryFeeRule, DistanceBand } from './delivery-fee.js';
 export { type Distance, type DistanceMethod, type Point, straightLineMetres } from './distance.js';
@@ -28,5 +35,6 @@ export {
   type GeoRefusal,
   GeoRefusedError,
   GeoService,
+  type Office,
   type Zone,
 } from './geo.service.js';

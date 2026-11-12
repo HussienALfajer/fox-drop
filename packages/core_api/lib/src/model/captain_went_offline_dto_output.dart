@@ -4,6 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/captain_went_offline_dto_output_hand_in.dart';
+import 'package:core_api/src/model/captain_availability_dto_output_office.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -13,12 +14,16 @@ part 'captain_went_offline_dto_output.g.dart';
 ///
 /// Properties:
 /// * [handIn]
+/// * [office]
 @BuiltValue()
 abstract class CaptainWentOfflineDtoOutput
     implements
         Built<CaptainWentOfflineDtoOutput, CaptainWentOfflineDtoOutputBuilder> {
   @BuiltValueField(wireName: r'handIn')
   CaptainWentOfflineDtoOutputHandIn? get handIn;
+
+  @BuiltValueField(wireName: r'office')
+  CaptainAvailabilityDtoOutputOffice? get office;
 
   CaptainWentOfflineDtoOutput._();
 
@@ -59,6 +64,15 @@ class _$CaptainWentOfflineDtoOutputSerializer
               CaptainWentOfflineDtoOutputHandIn,
             ),
           );
+    yield r'office';
+    yield object.office == null
+        ? null
+        : serializers.serialize(
+            object.office,
+            specifiedType: const FullType.nullable(
+              CaptainAvailabilityDtoOutputOffice,
+            ),
+          );
   }
 
   @override
@@ -97,6 +111,18 @@ class _$CaptainWentOfflineDtoOutputSerializer
                   as CaptainWentOfflineDtoOutputHandIn?;
           if (valueDes == null) continue;
           result.handIn.replace(valueDes);
+          break;
+        case r'office':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CaptainAvailabilityDtoOutputOffice,
+                    ),
+                  )
+                  as CaptainAvailabilityDtoOutputOffice?;
+          if (valueDes == null) continue;
+          result.office.replace(valueDes);
           break;
         default:
           unhandled.add(key);

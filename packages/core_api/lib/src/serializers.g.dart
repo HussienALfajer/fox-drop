@@ -56,6 +56,10 @@ Serializers _$serializers =
           ..add(AdminChangeTimeDto.serializer)
           ..add(AdminCitiesDtoOutput.serializer)
           ..add(AdminCitiesDtoOutputCitiesInner.serializer)
+          ..add(AdminCityOfficeDtoOutput.serializer)
+          ..add(AdminCityOfficeDtoOutputOffice.serializer)
+          ..add(AdminCityOfficeDtoOutputOfficeHoursInner.serializer)
+          ..add(AdminCityOfficeDtoOutputOfficeLocation.serializer)
           ..add(AdminCloseDrawerSessionDto.serializer)
           ..add(AdminCloseItemReportDto.serializer)
           ..add(AdminConfirmPickupDto.serializer)
@@ -367,6 +371,9 @@ Serializers _$serializers =
           ..add(AdminRestaurantsDtoOutputRestaurantsInner.serializer)
           ..add(AdminResumeEmergencyStopDto.serializer)
           ..add(AdminSessionDtoOutput.serializer)
+          ..add(AdminSetCityOfficeDto.serializer)
+          ..add(AdminSetCityOfficeDtoHoursInner.serializer)
+          ..add(AdminSetCityOfficeDtoLocation.serializer)
           ..add(AdminSetImageDto.serializer)
           ..add(AdminSetOutcomeDto.serializer)
           ..add(AdminSetOutcomeDtoFoodEnum.serializer)
@@ -461,6 +468,8 @@ Serializers _$serializers =
           ..add(CaptainAvailabilityDtoOutputCustodyLimit.serializer)
           ..add(CaptainAvailabilityDtoOutputCustodyRemitTolerance.serializer)
           ..add(CaptainAvailabilityDtoOutputCustodyUsage.serializer)
+          ..add(CaptainAvailabilityDtoOutputOffice.serializer)
+          ..add(CaptainAvailabilityDtoOutputOfficeHoursInner.serializer)
           ..add(CaptainCannotCompleteDto.serializer)
           ..add(CaptainCarriedCurrenciesDtoOutput.serializer)
           ..add(CaptainCarriedCurrenciesDtoOutputChoicesInner.serializer)
@@ -479,6 +488,18 @@ Serializers _$serializers =
           ..add(CaptainCurrentOfferDtoOutputOfferPreparation.serializer)
           ..add(CaptainCurrentOfferDtoOutputOfferRestaurant.serializer)
           ..add(CaptainCurrentOfferDtoOutputOfferStatusEnum.serializer)
+          ..add(CaptainCustodyDtoOutput.serializer)
+          ..add(CaptainCustodyDtoOutputClosedDue.serializer)
+          ..add(CaptainCustodyDtoOutputCurrenciesInner.serializer)
+          ..add(CaptainCustodyDtoOutputEntriesInner.serializer)
+          ..add(CaptainCustodyDtoOutputEntriesInnerAmount.serializer)
+          ..add(CaptainCustodyDtoOutputEntriesInnerKindEnum.serializer)
+          ..add(CaptainCustodyDtoOutputLimit.serializer)
+          ..add(CaptainCustodyDtoOutputReceiptsInner.serializer)
+          ..add(CaptainCustodyDtoOutputReceiptsInnerConversionsInner.serializer)
+          ..add(CaptainCustodyDtoOutputReceiptsInnerLinesInner.serializer)
+          ..add(CaptainCustodyDtoOutputTotal.serializer)
+          ..add(CaptainCustodyDtoOutputUsage.serializer)
           ..add(CaptainDeliverDto.serializer)
           ..add(CaptainDeliverDtoAway.serializer)
           ..add(CaptainDeliverySummaryDtoOutput.serializer)
@@ -899,6 +920,12 @@ Serializers _$serializers =
               const FullType(AdminCitiesDtoOutputCitiesInner),
             ]),
             () => ListBuilder<AdminCitiesDtoOutputCitiesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCityOfficeDtoOutputOfficeHoursInner),
+            ]),
+            () => ListBuilder<AdminCityOfficeDtoOutputOfficeHoursInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -1440,6 +1467,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminSetCityOfficeDtoHoursInner),
+            ]),
+            () => ListBuilder<AdminSetCityOfficeDtoHoursInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminSetPeakBonusDtoWindowsInner),
             ]),
             () => ListBuilder<AdminSetPeakBonusDtoWindowsInner>(),
@@ -1554,6 +1587,47 @@ Serializers _$serializers =
                 ListBuilder<
                   CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainAvailabilityDtoOutputOfficeHoursInner),
+            ]),
+            () => ListBuilder<CaptainAvailabilityDtoOutputOfficeHoursInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainCustodyDtoOutputCurrenciesInner),
+            ]),
+            () => ListBuilder<CaptainCustodyDtoOutputCurrenciesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainCustodyDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<CaptainCustodyDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainCustodyDtoOutputReceiptsInner),
+            ]),
+            () => ListBuilder<CaptainCustodyDtoOutputReceiptsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                CaptainCustodyDtoOutputReceiptsInnerConversionsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CaptainCustodyDtoOutputReceiptsInnerConversionsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainCustodyDtoOutputReceiptsInnerLinesInner),
+            ]),
+            () => ListBuilder<CaptainCustodyDtoOutputReceiptsInnerLinesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

@@ -41,6 +41,10 @@ import 'package:core_api/src/model/admin_change_outcome_dto.dart';
 import 'package:core_api/src/model/admin_change_time_dto.dart';
 import 'package:core_api/src/model/admin_cities_dto_output.dart';
 import 'package:core_api/src/model/admin_cities_dto_output_cities_inner.dart';
+import 'package:core_api/src/model/admin_city_office_dto_output.dart';
+import 'package:core_api/src/model/admin_city_office_dto_output_office.dart';
+import 'package:core_api/src/model/admin_city_office_dto_output_office_hours_inner.dart';
+import 'package:core_api/src/model/admin_city_office_dto_output_office_location.dart';
 import 'package:core_api/src/model/admin_close_drawer_session_dto.dart';
 import 'package:core_api/src/model/admin_close_item_report_dto.dart';
 import 'package:core_api/src/model/admin_confirm_pickup_dto.dart';
@@ -226,6 +230,9 @@ import 'package:core_api/src/model/admin_restaurants_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurants_dto_output_restaurants_inner.dart';
 import 'package:core_api/src/model/admin_resume_emergency_stop_dto.dart';
 import 'package:core_api/src/model/admin_session_dto_output.dart';
+import 'package:core_api/src/model/admin_set_city_office_dto.dart';
+import 'package:core_api/src/model/admin_set_city_office_dto_hours_inner.dart';
+import 'package:core_api/src/model/admin_set_city_office_dto_location.dart';
 import 'package:core_api/src/model/admin_set_image_dto.dart';
 import 'package:core_api/src/model/admin_set_outcome_dto.dart';
 import 'package:core_api/src/model/admin_set_peak_bonus_dto.dart';
@@ -287,6 +294,8 @@ import 'package:core_api/src/model/captain_availability_dto_output_custody_close
 import 'package:core_api/src/model/captain_availability_dto_output_custody_limit.dart';
 import 'package:core_api/src/model/captain_availability_dto_output_custody_remit_tolerance.dart';
 import 'package:core_api/src/model/captain_availability_dto_output_custody_usage.dart';
+import 'package:core_api/src/model/captain_availability_dto_output_office.dart';
+import 'package:core_api/src/model/captain_availability_dto_output_office_hours_inner.dart';
 import 'package:core_api/src/model/captain_cannot_complete_dto.dart';
 import 'package:core_api/src/model/captain_carried_currencies_dto_output.dart';
 import 'package:core_api/src/model/captain_carried_currencies_dto_output_choices_inner.dart';
@@ -303,6 +312,17 @@ import 'package:core_api/src/model/captain_current_offer_dto_output_offer_handov
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_pickup_payment.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_preparation.dart';
 import 'package:core_api/src/model/captain_current_offer_dto_output_offer_restaurant.dart';
+import 'package:core_api/src/model/captain_custody_dto_output.dart';
+import 'package:core_api/src/model/captain_custody_dto_output_closed_due.dart';
+import 'package:core_api/src/model/captain_custody_dto_output_currencies_inner.dart';
+import 'package:core_api/src/model/captain_custody_dto_output_entries_inner.dart';
+import 'package:core_api/src/model/captain_custody_dto_output_entries_inner_amount.dart';
+import 'package:core_api/src/model/captain_custody_dto_output_limit.dart';
+import 'package:core_api/src/model/captain_custody_dto_output_receipts_inner.dart';
+import 'package:core_api/src/model/captain_custody_dto_output_receipts_inner_conversions_inner.dart';
+import 'package:core_api/src/model/captain_custody_dto_output_receipts_inner_lines_inner.dart';
+import 'package:core_api/src/model/captain_custody_dto_output_total.dart';
+import 'package:core_api/src/model/captain_custody_dto_output_usage.dart';
 import 'package:core_api/src/model/captain_deliver_dto.dart';
 import 'package:core_api/src/model/captain_deliver_dto_away.dart';
 import 'package:core_api/src/model/captain_delivery_summary_dto_output.dart';
@@ -563,6 +583,10 @@ part 'serializers.g.dart';
   AdminChangeTimeDto,
   AdminCitiesDtoOutput,
   AdminCitiesDtoOutputCitiesInner,
+  AdminCityOfficeDtoOutput,
+  AdminCityOfficeDtoOutputOffice,
+  AdminCityOfficeDtoOutputOfficeHoursInner,
+  AdminCityOfficeDtoOutputOfficeLocation,
   AdminCloseDrawerSessionDto,
   AdminCloseItemReportDto,
   AdminConfirmPickupDto,
@@ -748,6 +772,9 @@ part 'serializers.g.dart';
   AdminRestaurantsDtoOutputRestaurantsInner,
   AdminResumeEmergencyStopDto,
   AdminSessionDtoOutput,
+  AdminSetCityOfficeDto,
+  AdminSetCityOfficeDtoHoursInner,
+  AdminSetCityOfficeDtoLocation,
   AdminSetImageDto,
   AdminSetOutcomeDto,
   AdminSetPeakBonusDto,
@@ -809,6 +836,8 @@ part 'serializers.g.dart';
   CaptainAvailabilityDtoOutputCustodyLimit,
   CaptainAvailabilityDtoOutputCustodyRemitTolerance,
   CaptainAvailabilityDtoOutputCustodyUsage,
+  CaptainAvailabilityDtoOutputOffice,
+  CaptainAvailabilityDtoOutputOfficeHoursInner,
   CaptainCannotCompleteDto,
   CaptainCarriedCurrenciesDtoOutput,
   CaptainCarriedCurrenciesDtoOutputChoicesInner,
@@ -825,6 +854,17 @@ part 'serializers.g.dart';
   CaptainCurrentOfferDtoOutputOfferPickupPayment,
   CaptainCurrentOfferDtoOutputOfferPreparation,
   CaptainCurrentOfferDtoOutputOfferRestaurant,
+  CaptainCustodyDtoOutput,
+  CaptainCustodyDtoOutputClosedDue,
+  CaptainCustodyDtoOutputCurrenciesInner,
+  CaptainCustodyDtoOutputEntriesInner,
+  CaptainCustodyDtoOutputEntriesInnerAmount,
+  CaptainCustodyDtoOutputLimit,
+  CaptainCustodyDtoOutputReceiptsInner,
+  CaptainCustodyDtoOutputReceiptsInnerConversionsInner,
+  CaptainCustodyDtoOutputReceiptsInnerLinesInner,
+  CaptainCustodyDtoOutputTotal,
+  CaptainCustodyDtoOutputUsage,
   CaptainDeliverDto,
   CaptainDeliverDtoAway,
   CaptainDeliverySummaryDtoOutput,
@@ -1099,6 +1139,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(CaptainCustodyDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<CaptainCustodyDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(CaptainAvailabilityDtoOutputCustodyLimit),
             ]),
             () => ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>(),
@@ -1140,6 +1186,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(CaptainCustodyDtoOutputReceiptsInner),
+            ]),
+            () => ListBuilder<CaptainCustodyDtoOutputReceiptsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(MerchantContentDtoOutputReasonsMerchantRejectionInner),
             ]),
             () =>
@@ -1159,6 +1211,12 @@ Serializers serializers =
             ]),
             () =>
                 ListBuilder<AdminOrderDtoOutputOrderOutcomeChangeFoodsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CaptainAvailabilityDtoOutputOfficeHoursInner),
+            ]),
+            () => ListBuilder<CaptainAvailabilityDtoOutputOfficeHoursInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -1200,6 +1258,12 @@ Serializers serializers =
               FullType(AdminOrderDtoOutputOrderLinesInner),
             ]),
             () => ListBuilder<AdminOrderDtoOutputOrderLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCityOfficeDtoOutputOfficeHoursInner),
+            ]),
+            () => ListBuilder<AdminCityOfficeDtoOutputOfficeHoursInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -1408,6 +1472,21 @@ Serializers serializers =
               FullType(AdminReasonListsDtoOutputListsInner),
             ]),
             () => ListBuilder<AdminReasonListsDtoOutputListsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CaptainCustodyDtoOutputCurrenciesInner),
+            ]),
+            () => ListBuilder<CaptainCustodyDtoOutputCurrenciesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CaptainCustodyDtoOutputReceiptsInnerConversionsInner),
+            ]),
+            () =>
+                ListBuilder<
+                  CaptainCustodyDtoOutputReceiptsInnerConversionsInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -1653,6 +1732,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminSetCityOfficeDtoHoursInner),
+            ]),
+            () => ListBuilder<AdminSetCityOfficeDtoHoursInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(SenderPoolDtoOutputAlertsInner),
             ]),
             () => ListBuilder<SenderPoolDtoOutputAlertsInner>(),
@@ -1774,6 +1859,12 @@ Serializers serializers =
               FullType(AdminHandInReceiptsDtoOutputReceiptsInner),
             ]),
             () => ListBuilder<AdminHandInReceiptsDtoOutputReceiptsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CaptainCustodyDtoOutputReceiptsInnerLinesInner),
+            ]),
+            () => ListBuilder<CaptainCustodyDtoOutputReceiptsInnerLinesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

@@ -60,12 +60,14 @@ final pushTokensProvider = Provider<PushTokens>((ref) {
 });
 
 /// The route a push's data opens (CA §14): an offer or an order opens home,
-/// which shows the open offer or the active order. The others (statements,
-/// receipts, documents) come with their slices; until then such a tap only
+/// which shows the open offer or the active order, and a receipt «عهدتي».
+/// The others (statements, documents) come with their slices; until then such a tap only
 /// opens the app.
 String? pushTargetPath(Map<String, String> data) => switch (data['target']) {
   // CA §14 #23 (slice 2.16): home shows the peak window's line.
   'offer' || 'order' || 'peak_bonus' => '/',
+  // CA §14 #19 (slice 2.17c): a desk receipt opens «عهدتي».
+  'custody' => '/custody',
   _ => null,
 };
 

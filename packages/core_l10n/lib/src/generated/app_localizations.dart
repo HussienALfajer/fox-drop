@@ -4028,6 +4028,227 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'الأحد'**
   String get captainPeakDaySunday;
+
+  /// The custody screen, its link on home and its tab (CA §10.2, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'عهدتي'**
+  String get captainCustodyTitle;
+
+  /// The office owes the captain (CA §10.2, Appendix B, Home).
+  ///
+  /// In ar, this message translates to:
+  /// **'لك عند المكتب {amount}'**
+  String captainCustodyOwed(String amount);
+
+  /// No custody in any currency (CA §10.2; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا نقد معك للمنصة الآن.'**
+  String get captainCustodyNothing;
+
+  /// One currency held with its base equivalent (CA §10.2, AP §8.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'{amount} (بالعملة الأساسية {base})'**
+  String captainCustodyCurrency(String amount, String base);
+
+  /// The part due from closed days, which blocks going online (CA §10.2, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'من أيام سابقة: {amount}'**
+  String captainCustodyPrevious(String amount);
+
+  /// Today's part (CA §10.2, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'من اليوم: {amount}'**
+  String captainCustodyToday(String amount);
+
+  /// The cash limit and its usage, over its bar, on «عهدتي» and home (CA §10.2, §10.4, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'حد العهدة: {usage} من {limit}'**
+  String captainCustodyLimit(String usage, String limit);
+
+  /// The custody's entries (CA §10.2; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'الحركات'**
+  String get captainCustodyEntries;
+
+  /// No custody entry yet (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا حركات بعد.'**
+  String get captainCustodyNoEntries;
+
+  /// An entry: the pickup payment (CA §10.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'دفع للمطعم'**
+  String get captainCustodyEntryPayMerchant;
+
+  /// An entry: the collection (CA §10.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'تحصيل من الزبون'**
+  String get captainCustodyEntryCollect;
+
+  /// An entry: the change given (CA §10.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'باقٍ للزبون'**
+  String get captainCustodyEntryChange;
+
+  /// An entry: a hand-in at the desk (CA §10.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'تسليم نقد'**
+  String get captainCustodyEntryHandIn;
+
+  /// An entry: the office paid the captain back (CA §10.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'صرف للكابتن'**
+  String get captainCustodyEntryReimburse;
+
+  /// An entry: a cross-currency settlement (CA §10.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'تحويل عملة'**
+  String get captainCustodyEntryConversion;
+
+  /// An entry: a correction (CA §10.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'تصحيح'**
+  String get captainCustodyEntryCorrection;
+
+  /// An entry of a kind the app does not name.
+  ///
+  /// In ar, this message translates to:
+  /// **'حركة'**
+  String get captainCustodyEntryOther;
+
+  /// An order's entry with its number (CA §10.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'{kind} — الطلب #{number}: {amount}'**
+  String captainCustodyEntryOrder(String kind, String number, String amount);
+
+  /// A desk entry with its receipt's number (CA §10.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'{kind} — {receipt}: {amount}'**
+  String captainCustodyEntryReceipt(String kind, String receipt, String amount);
+
+  /// An entry with no order or receipt (CA §10.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'{kind}: {amount}'**
+  String captainCustodyEntryPlain(String kind, String amount);
+
+  /// The desk receipts (CA §10.2, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'الإيصالات'**
+  String get captainCustodyReceipts;
+
+  /// No receipt yet (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا إيصالات بعد.'**
+  String get captainCustodyNoReceipts;
+
+  /// A receipt's number, type and time (CA §10.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'{number} — {type} — {date} {time}'**
+  String captainCustodyReceipt(
+    String number,
+    String type,
+    String date,
+    String time,
+  );
+
+  /// The receipt's cashier (CA §10.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'أمين الصندوق: {name}'**
+  String captainCustodyReceiptCashier(String name);
+
+  /// A receipt's conversion, as the panel prints it (AP §9.10.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'تحويل {amount} من العهدة إلى {converted}'**
+  String captainCustodyReceiptConversion(String amount, String converted);
+
+  /// The office section of «عهدتي» (CA §10.2, C13).
+  ///
+  /// In ar, this message translates to:
+  /// **'المكتب'**
+  String get captainOffice;
+
+  /// The desk is open now (CA Appendix B, Custody).
+  ///
+  /// In ar, this message translates to:
+  /// **'المكتب مفتوح حتى {time}'**
+  String captainOfficeOpenUntil(String time);
+
+  /// The desk is closed now and when it opens (CA §7.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'المكتب مغلق الآن، يفتح {day} {time}.'**
+  String captainOfficeClosed(String day, String time);
+
+  /// The desk is closed and no day is open (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'المكتب مغلق الآن.'**
+  String get captainOfficeClosedAlways;
+
+  /// The office is not set yet (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُحدَّد موقع المكتب بعد.'**
+  String get captainOfficeUnset;
+
+  /// One weekday's desk hours (CA §10.2, C13).
+  ///
+  /// In ar, this message translates to:
+  /// **'{day}: من {from} إلى {to}'**
+  String captainOfficeDay(String day, String from, String to);
+
+  /// A weekday the desk is closed (CA §10.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'{day}: مغلق'**
+  String captainOfficeDayClosed(String day);
+
+  /// The map button of the office (CA §7.5, §10.2, C13).
+  ///
+  /// In ar, this message translates to:
+  /// **'موقع المكتب على الخريطة'**
+  String get captainOfficeMap;
+
+  /// The hand-in reminder while the desk is open (CA §7.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'عليك تسليم {amount}. المكتب مفتوح حتى {time}.'**
+  String captainHandInOpen(String amount, String time);
+
+  /// The hand-in reminder while the desk is closed (CA §7.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'عليك تسليم {amount}. المكتب مغلق الآن، يفتح {day} {time}.'**
+  String captainHandInClosed(String amount, String day, String time);
+
+  /// The hand-in reminder while no day of the desk is open (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'عليك تسليم {amount}. المكتب مغلق الآن.'**
+  String captainHandInClosedAlways(String amount);
 }
 
 class _AppLocalizationsDelegate

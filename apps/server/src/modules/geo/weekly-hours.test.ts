@@ -5,7 +5,7 @@ import {
   inDailyWindow,
   nextOpening,
   type OpeningPeriod,
-} from './hours.js';
+} from './weekly-hours.js';
 
 // The weekly schedule of RA §10: periods per weekday, one may cross midnight
 // and belongs to the day it starts, none overlap, each lasts 30 minutes or

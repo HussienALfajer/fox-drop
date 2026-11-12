@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/captain_availability_dto_output_office.dart';
 import 'package:core_api/src/model/captain_availability_dto_output_custody.dart';
 import 'package:core_api/src/model/captain_availability_dto_output_availability.dart';
 import 'package:built_value/built_value.dart';
@@ -14,6 +15,7 @@ part 'captain_availability_dto_output.g.dart';
 ///
 /// Properties:
 /// * [availability]
+/// * [office]
 /// * [custody]
 @BuiltValue()
 abstract class CaptainAvailabilityDtoOutput
@@ -24,6 +26,9 @@ abstract class CaptainAvailabilityDtoOutput
         > {
   @BuiltValueField(wireName: r'availability')
   CaptainAvailabilityDtoOutputAvailability get availability;
+
+  @BuiltValueField(wireName: r'office')
+  CaptainAvailabilityDtoOutputOffice? get office;
 
   @BuiltValueField(wireName: r'custody')
   CaptainAvailabilityDtoOutputCustody get custody;
@@ -63,6 +68,15 @@ class _$CaptainAvailabilityDtoOutputSerializer
       object.availability,
       specifiedType: const FullType(CaptainAvailabilityDtoOutputAvailability),
     );
+    yield r'office';
+    yield object.office == null
+        ? null
+        : serializers.serialize(
+            object.office,
+            specifiedType: const FullType.nullable(
+              CaptainAvailabilityDtoOutputOffice,
+            ),
+          );
     yield r'custody';
     yield serializers.serialize(
       object.custody,
@@ -105,6 +119,18 @@ class _$CaptainAvailabilityDtoOutputSerializer
                   )
                   as CaptainAvailabilityDtoOutputAvailability;
           result.availability.replace(valueDes);
+          break;
+        case r'office':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CaptainAvailabilityDtoOutputOffice,
+                    ),
+                  )
+                  as CaptainAvailabilityDtoOutputOffice?;
+          if (valueDes == null) continue;
+          result.office.replace(valueDes);
           break;
         case r'custody':
           final valueDes =

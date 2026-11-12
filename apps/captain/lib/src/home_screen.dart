@@ -8,6 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'api.dart';
+import 'custody.dart';
+import 'custody_screen.dart';
 import 'peak_bonus.dart';
 import 'platform.dart';
 import 'settings/max_pickup_form.dart';
@@ -46,6 +48,10 @@ class HomeScreen extends ConsumerWidget {
           TextButton(
             onPressed: () => context.push('/faq'),
             child: Text(l10n.faqTitle),
+          ),
+          TextButton(
+            onPressed: () => context.push('/custody'),
+            child: Text(l10n.captainCustodyTitle),
           ),
           TextButton(
             onPressed: () => context.push('/settings'),
@@ -191,6 +197,12 @@ class _AvailabilityView extends ConsumerWidget {
           Text(
             l10n.captainOwes(l10n.formatMoney(usage.amount, usage.currency)),
           ),
+        // CA §10.4: the cash limit's bar.
+        CustodyLimitBar(
+          usage: usage.amount,
+          limit: availability.custody.limit.amount,
+          currency: availability.custody.limit.currency,
+        ),
         // K7: a new version waits for acceptance before going online; an
         // online captain keeps the offers (CA §7.2).
         if (!work.online && ref.watch(termsPendingProvider))
@@ -393,8 +405,8 @@ class _WorkLayerState extends ConsumerState<WorkLayer>
   }
 }
 
-/// CA §7.5: the cash to hand in after going offline. The office's hours and
-/// location come with the city's office fields.
+/// CA §7.5, C13: the cash to hand in after going offline, with the office's
+/// closing time or when it opens, and the office on the map.
 class _HandInCard extends ConsumerWidget {
   const _HandInCard({required this.amount});
 
@@ -403,12 +415,16 @@ class _HandInCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final office = ref.watch(
+      workProvider.select((live) => live.value?.value?.availability.office),
+    );
     return Material(
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(l10n.captainOwes(l10n.moneyOf(amount))),
+            Text(l10n.handInText(amount, office), key: const Key('hand-in')),
+            if (office != null) OfficeMapButton(office: office),
             FilledButton(
               onPressed: () => ref.read(handInProvider.notifier).show(null),
               child: Text(l10n.captainOk),

@@ -15,7 +15,13 @@ import {
   ROAD_DISTANCES,
   type RoadDistances,
 } from './distance.js';
-import { cities, feeBands, feeRules, zones, zoneVotes } from './schema.js';
+import { cities, feeBands, feeRules, officePeriods, offices, zones, zoneVotes } from './schema.js';
+import {
+  checkWeeklySchedule,
+  currentPeriod,
+  nextOpening,
+  type OpeningPeriod,
+} from './weekly-hours.js';
 
 export type GeoRefusal =
   | 'invalid_area'
@@ -26,7 +32,9 @@ export type GeoRefusal =
   | 'invalid_fee_rule'
   | 'fee_not_in_base_currency'
   | 'no_fee_rule'
-  | 'inside_zone';
+  | 'inside_zone'
+  | 'invalid_office'
+  | 'unknown_city';
 
 // A change or a fee geo refuses, with the reason the routes and the ordering
 // module map to their own answers.
@@ -63,6 +71,18 @@ export interface DeliveryFee {
   freeDeliveryFrom: bigint | null;
   // The distance of a distance-band rule; null for a flat one.
   distance: Distance | null;
+}
+
+// AP §9.12.1, CA C13: the city's office and its desk hours, with whether the
+// desk is open at the moment asked: open, until when today (CA §7.5 «المكتب
+// مفتوح حتى {الساعة}»); closed, when it opens next (null with no hours).
+export interface Office {
+  location: Point;
+  hours: OpeningPeriod[];
+  timeZone: string;
+  open: boolean;
+  closesAt: Date | null;
+  opensAt: Date | null;
 }
 
 // Owner decision 2026-11-06: the fee is priced before a captain is known, by
@@ -136,6 +156,118 @@ export class GeoService implements OnModuleInit {
       .from(cities)
       .where(eq(cities.id, cityId));
     return row?.timeZone ?? null;
+  }
+
+  // The city's office in force (the newest version) and the desk's state at
+  // this moment on the city's clock; null until one is saved.
+  async office(cityId: string, now: Date): Promise<Office | null> {
+    const [row] = await this.database.db
+      .select({
+        id: offices.id,
+        latitude: offices.latitude,
+        longitude: offices.longitude,
+        timeZone: cities.timeZone,
+      })
+      .from(offices)
+      .innerJoin(cities, eq(cities.id, offices.cityId))
+      .where(eq(offices.cityId, cityId))
+      .orderBy(desc(offices.id))
+      .limit(1);
+    if (!row) return null;
+    const hours = await this.officeHours(this.database.db, row.id);
+    const period = currentPeriod(hours, now, row.timeZone);
+    return {
+      location: { latitude: row.latitude, longitude: row.longitude },
+      hours,
+      timeZone: row.timeZone,
+      open: period !== null,
+      closesAt: period?.endsAt ?? null,
+      opensAt: period === null ? nextOpening(hours, now, row.timeZone) : null,
+    };
+  }
+
+  // Saves a new version of the city's office (AP §9.12.1; owner decision
+  // 2026-11-12: coordinates until the map, one desk period per weekday at
+  // most, the rules of a restaurant's week: 30 minutes or more, no overlap,
+  // one may cross midnight). Audited city.office with the version before.
+  async setOffice(
+    cityId: string,
+    office: { location: Point; hours: OpeningPeriod[] },
+    change: GeoChange,
+  ): Promise<void> {
+    const { latitude, longitude } = office.location;
+    if (
+      !Number.isFinite(latitude) ||
+      !Number.isFinite(longitude) ||
+      Math.abs(latitude) > 90 ||
+      Math.abs(longitude) > 180
+    ) {
+      throw new GeoRefusedError('invalid_office', 'the office is a point on the map');
+    }
+    const hours = [...office.hours].sort((a, b) => a.weekday - b.weekday);
+    const problem =
+      new Set(hours.map((period) => period.weekday)).size < hours.length
+        ? 'one desk period per weekday'
+        : checkWeeklySchedule(hours);
+    if (problem !== null) throw new GeoRefusedError('invalid_office', problem);
+
+    await this.database.db.transaction(async (tx) => {
+      // The city row, locked, so two saves take turns.
+      const [city] = await tx
+        .select({ id: cities.id })
+        .from(cities)
+        .where(eq(cities.id, cityId))
+        .for('update');
+      if (!city) throw new GeoRefusedError('unknown_city', 'no such city');
+      const [before] = await tx
+        .select({ id: offices.id, latitude: offices.latitude, longitude: offices.longitude })
+        .from(offices)
+        .where(eq(offices.cityId, cityId))
+        .orderBy(desc(offices.id))
+        .limit(1);
+      const [{ id }] = (await tx
+        .insert(offices)
+        .values({
+          cityId,
+          latitude,
+          longitude,
+          editorId: change.actor.type === 'admin' ? change.actor.id : null,
+        })
+        .returning({ id: offices.id })) as [{ id: string }];
+      if (hours.length > 0) {
+        await tx.insert(officePeriods).values(hours.map((period) => ({ officeId: id, ...period })));
+      }
+      await this.audit.recordWrite(
+        {
+          actor: change.actor,
+          context: change.context,
+          cityId,
+          action: 'city.office',
+          target: { type: 'city', id: cityId },
+          before: before
+            ? {
+                location: { latitude: before.latitude, longitude: before.longitude },
+                hours: await this.officeHours(tx, before.id),
+              }
+            : null,
+          after: { location: { latitude, longitude }, hours },
+          reason: change.reason ?? null,
+        },
+        tx,
+      );
+    });
+  }
+
+  private async officeHours(executor: Executor, officeId: string): Promise<OpeningPeriod[]> {
+    return executor
+      .select({
+        weekday: officePeriods.weekday,
+        opensAt: officePeriods.opensAt,
+        closesAt: officePeriods.closesAt,
+      })
+      .from(officePeriods)
+      .where(eq(officePeriods.officeId, officeId))
+      .orderBy(asc(officePeriods.weekday));
   }
 
   // The distance between two points for a vehicle, in whole metres: by road

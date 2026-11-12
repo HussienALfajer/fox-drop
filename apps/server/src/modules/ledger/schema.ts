@@ -153,6 +153,8 @@ export const entries = ledger.table(
       foreignColumns: [accounts.id, accounts.cityId, accounts.currency],
     }),
     index('entries_by_account').on(table.accountId),
+    // An account's newest entries first (CA §10.2 «عهدتي»).
+    index('entries_by_account_created').on(table.accountId, table.createdAt.desc()),
     index('entries_by_journal').on(table.journalId),
     check('entries_amount_not_zero', sql`${table.amount} <> 0`),
   ],
