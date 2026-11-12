@@ -36,6 +36,7 @@ const sessionRefusalKeys = {
 } as const satisfies Record<SessionRefusal, string>;
 
 const handInRefusalKeys = {
+  drawer_short: 'cashDesk.refusal.drawer_short',
   no_open_session: 'cashDesk.refusal.no_open_session',
   nothing_due: 'cashDesk.refusal.nothing_due',
   above_custody: 'cashDesk.refusal.above_custody',

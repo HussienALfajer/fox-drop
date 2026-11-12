@@ -58,6 +58,7 @@ Serializers _$serializers =
             AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner.serializer,
           )
           ..add(AdminCurrentDrawerSessionDtoOutputSessionKindEnum.serializer)
+          ..add(AdminDeskCaptainSearchDto.serializer)
           ..add(AdminDeskCaptainsDtoOutput.serializer)
           ..add(AdminDeskCaptainsDtoOutputCaptainsInner.serializer)
           ..add(AdminDeskCaptainsDtoOutputCaptainsInnerStatusEnum.serializer)

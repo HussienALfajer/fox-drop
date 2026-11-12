@@ -389,7 +389,7 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/admin/captains/{captainId}/force-offline': 'captains.manage',
   'GET /v1/admin/peak-bonus': 'zones.read',
   'PUT /v1/admin/peak-bonus': 'pricing.edit_pay_tables',
-  'GET /v1/admin/cash-desk/captains': 'cash_desk.record',
+  'POST /v1/admin/cash-desk/captains/search': 'cash_desk.record',
   'GET /v1/admin/cash-desk/captains/{captainId}': 'cash_desk.record',
   'GET /v1/admin/cash-desk/sessions/current': 'cash_desk.record',
   'GET /v1/admin/cash-desk/sessions': 'cash_desk.record',

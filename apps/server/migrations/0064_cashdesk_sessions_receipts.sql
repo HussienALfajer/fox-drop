@@ -86,4 +86,24 @@ CREATE INDEX "receipts_captain_created" ON "cashdesk"."receipts" USING btree ("c
 ALTER TABLE "ledger"."journals" ADD CONSTRAINT "journals_source_kind_values" CHECK ("ledger"."journals"."source_kind" IS NULL OR "ledger"."journals"."source_kind" IN ('order', 'receipt')) NOT VALID;--> statement-breakpoint
 ALTER TABLE "ledger"."journals" VALIDATE CONSTRAINT "journals_source_kind_values";--> statement-breakpoint
 -- AP §9.10.3: a receipt and its lines are never changed.
-REVOKE UPDATE ON "cashdesk"."receipts", "cashdesk"."receipt_lines" FROM fox_drop_app;
+REVOKE UPDATE ON "cashdesk"."receipts", "cashdesk"."receipt_lines" FROM fox_drop_app;--> statement-breakpoint
+-- OWN reads a closed session's counts and variance as they were: a closed
+-- session and a counted currency are never changed.
+CREATE FUNCTION "cashdesk"."refuse_closed_session_change"() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF OLD.closed_at IS NOT NULL THEN
+    RAISE EXCEPTION 'a closed drawer session is never changed' USING ERRCODE = 'check_violation';
+  END IF;
+  RETURN NEW;
+END $$;--> statement-breakpoint
+CREATE TRIGGER "drawer_sessions_closed" BEFORE UPDATE ON "cashdesk"."drawer_sessions"
+  FOR EACH ROW EXECUTE FUNCTION "cashdesk"."refuse_closed_session_change"();--> statement-breakpoint
+CREATE FUNCTION "cashdesk"."refuse_counted_currency_change"() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  IF OLD.counted IS NOT NULL THEN
+    RAISE EXCEPTION 'a counted drawer currency is never changed' USING ERRCODE = 'check_violation';
+  END IF;
+  RETURN NEW;
+END $$;--> statement-breakpoint
+CREATE TRIGGER "drawer_session_currencies_counted" BEFORE UPDATE ON "cashdesk"."drawer_session_currencies"
+  FOR EACH ROW EXECUTE FUNCTION "cashdesk"."refuse_counted_currency_change"();

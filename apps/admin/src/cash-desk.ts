@@ -192,8 +192,9 @@ export function useCaptainSearch(cityId: string | undefined, text: string) {
     enabled: cityId !== undefined && phoneOrName(q),
     placeholderData: keepPreviousData,
     queryFn: async () => {
-      const { data } = await api.GET('/v1/admin/cash-desk/captains', {
-        params: { query: { cityId: cityId!, q } },
+      // A POST, so a number never sits in a URL.
+      const { data } = await api.POST('/v1/admin/cash-desk/captains/search', {
+        body: { cityId: cityId!, q },
       });
       if (!data) throw new Error('The captain search failed.');
       return data.captains;
@@ -217,8 +218,14 @@ export function useDeskCustody(captainId: string | undefined) {
 }
 
 export type HandInRefusal =
-  'no_open_session' | 'nothing_due' | 'above_custody' | 'unknown_captain' | 'invalid_amounts';
+  | 'drawer_short'
+  | 'no_open_session'
+  | 'nothing_due'
+  | 'above_custody'
+  | 'unknown_captain'
+  | 'invalid_amounts';
 const handInRefusals: readonly string[] = [
+  'drawer_short',
   'no_open_session',
   'nothing_due',
   'above_custody',

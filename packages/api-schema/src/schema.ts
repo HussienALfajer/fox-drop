@@ -3124,16 +3124,16 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/admin/cash-desk/captains": {
+    "/v1/admin/cash-desk/captains/search": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["adminCashDeskFindCaptains"];
+        get?: never;
         put?: never;
-        post?: never;
+        post: operations["adminCashDeskFindCaptains"];
         delete?: never;
         options?: never;
         head?: never;
@@ -8910,6 +8910,12 @@ export interface components {
                 aboveMaxPickup: boolean;
             };
         };
+        AdminDeskCaptainSearchDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description A part of the name, or the number in E.164. */
+            q: string;
+        };
         AdminDeskCaptainsDto_Output: {
             captains: {
                 /** Format: uuid */
@@ -14046,16 +14052,16 @@ export interface operations {
     };
     adminCashDeskFindCaptains: {
         parameters: {
-            query: {
-                cityId: string;
-                /** @description A part of the name, or the number in E.164. */
-                q: string;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminDeskCaptainSearchDto"];
+            };
+        };
         responses: {
             200: {
                 headers: {

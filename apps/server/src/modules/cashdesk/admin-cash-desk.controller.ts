@@ -39,7 +39,7 @@ const cashLines = z.array(z.object({ currency, amount: minor })).max(10);
 
 const captainStatus = z.enum(['active', 'suspended', 'terminated']);
 
-class AdminDeskCaptainsQueryDto extends createZodDto(
+class AdminDeskCaptainSearchDto extends createZodDto(
   z.object({
     cityId: z.uuid(),
     q: z.string().trim().min(2).max(100).describe('A part of the name, or the number in E.164.'),
@@ -156,7 +156,15 @@ class AdminHandInReceiptsDto extends createZodDto(z.object({ receipts: z.array(r
 
 class AdminReceiptParamsDto extends createZodDto(z.object({ receiptId: z.uuid() })) {}
 
-const phonePattern = /^(\+|00)\d{8,15}$/;
+// A number as the desk types it: international (+ or 00), or the local
+// Syrian 09… and Turkish 05… mobiles the captains sign in with.
+export function phoneOf(text: string): string | null {
+  const compact = text.replace(/[\s-]/g, '');
+  if (/^(\+|00)\d{8,15}$/.test(compact)) return compact.replace(/^00/, '+');
+  if (/^09\d{8}$/.test(compact)) return `+963${compact.slice(1)}`;
+  if (/^05\d{9}$/.test(compact)) return `+90${compact.slice(1)}`;
+  return null;
+}
 
 // AP §9.10.3 «الصندوق» (slice 2.17a): the drawer sessions and the daily
 // hand-in, for OWN and FIN (AP §6.3 `cash_desk.record`).
@@ -168,14 +176,17 @@ export class AdminCashDeskController {
     private readonly accounts: CaptainAccountsService,
   ) {}
 
-  // Step 1: by a part of the name, or by the number.
-  @Get('captains')
+  // Step 1: by a part of the name, or by the number. A read, sent as a POST
+  // so a number never sits in a URL (access logs, history); it changes
+  // nothing, so no Idempotency-Key.
+  @Post('captains/search')
   @RequirePermission('cash_desk.record')
+  @HttpCode(200)
   @ZodResponse({ status: 200, type: AdminDeskCaptainsDto })
-  async findCaptains(@Query() query: AdminDeskCaptainsQueryDto) {
-    const compact = query.q.replace(/[\s-]/g, '');
-    if (phonePattern.test(compact)) {
-      const id = await this.accounts.captainByPhone(compact.replace(/^00/, '+'));
+  async findCaptains(@Body() query: AdminDeskCaptainSearchDto) {
+    const phone = phoneOf(query.q);
+    if (phone !== null) {
+      const id = await this.accounts.captainByPhone(phone);
       const found = id ? await this.captains.captain(id, new Date()) : null;
       return {
         captains:
@@ -401,6 +412,7 @@ async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
     switch (refusal) {
       case 'unknown_session':
       case 'unknown_captain':
+      case 'unknown_city':
         throw new NotFoundException(body(HttpStatus.NOT_FOUND));
       case 'not_your_session':
         throw new ForbiddenException(body(HttpStatus.FORBIDDEN));

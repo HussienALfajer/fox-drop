@@ -54,7 +54,7 @@ test('opens the drawer, records a hand-in and shows the receipt', async ({ page 
     open = true;
     return route.fulfill({ status: 201, json: drawer });
   });
-  await page.route('**/v1/admin/cash-desk/captains?*', (route) =>
+  await page.route('**/v1/admin/cash-desk/captains/search', (route) =>
     route.fulfill({
       json: { captains: [{ id: captainId, name: 'سامر خالد الحسن', status: 'active' }] },
     }),

@@ -198,6 +198,9 @@ describe('drawer sessions (AP §9.10.3 «جلسة الصندوق»)', () => {
       'session_open',
     );
     expect(await desk.openSessionOf(cashier.user.accountId)).toMatchObject({ id: session.id });
+    expect(await refusal(desk.openSession(cashier.user, randomUUID(), [], new Date()))).toBe(
+      'unknown_city',
+    );
     const other = await admin(['FIN']);
     expect(
       await refusal(
@@ -442,6 +445,106 @@ describe('the daily hand-in (AP §9.10.3 «تسليم النقد اليومي»,
     ).toBe('idempotency_key_reused');
   });
 
+  it('pays back only what the drawer holds in that currency', async () => {
+    const { cashier } = await openDesk();
+    const { id: captainId } = await captain();
+    await custody(captainId, 'custody.pay_merchant', -60_000n);
+    const payBack = (amount: bigint) =>
+      desk.handIn(
+        cashier.user,
+        { captainId, lines: [{ currency: 'TRY', amount }], idempotencyKey: randomUUID() },
+        new Date(),
+      );
+    // The float is 500 ₺.
+    expect(await refusal(payBack(60_000n))).toBe('drawer_short');
+    await payBack(50_000n);
+    expect(await balances(captainId)).toEqual({ TRY: -10_000n });
+  });
+
+  it('settles one balance once when two desks record it at the same moment', async () => {
+    const [first, second] = await Promise.all([openDesk(), openDesk()]);
+    const { id: captainId } = await captain();
+    await custody(captainId, 'custody.collect', 41_000n);
+    const handIn = (user: DeskUser) =>
+      refusal(
+        desk.handIn(
+          user,
+          {
+            captainId,
+            lines: [{ currency: 'TRY', amount: 41_000n }],
+            idempotencyKey: randomUUID(),
+          },
+          new Date(),
+        ),
+      );
+    const answers = await Promise.all([handIn(first.cashier.user), handIn(second.cashier.user)]);
+    expect(answers.sort()).toEqual(['nothing_due', null]);
+    expect(await balances(captainId)).toEqual({ TRY: 0n });
+  });
+
+  it('answers a hand-in sent twice at once with the same receipts', async () => {
+    const { cashier } = await openDesk();
+    const { id: captainId } = await captain();
+    await custody(captainId, 'custody.collect', 41_000n);
+    const command = {
+      captainId,
+      lines: [{ currency: 'TRY', amount: 41_000n }],
+      idempotencyKey: randomUUID(),
+    };
+    const [one, two] = await Promise.all([
+      desk.handIn(cashier.user, command, new Date()),
+      desk.handIn(cashier.user, command, new Date()),
+    ]);
+    expect(two.map((receipt) => receipt.id)).toEqual(one.map((receipt) => receipt.id));
+    expect(await balances(captainId)).toEqual({ TRY: 0n });
+  });
+
+  it('closes a session only once a running hand-in is done, and refuses one behind a close', async () => {
+    const { cashier, session } = await openDesk();
+    const { id: captainId } = await captain();
+    await custody(captainId, 'custody.collect', 1_000n);
+    const counted = [
+      { currency: 'TRY', amount: 50_000n },
+      { currency: 'USD', amount: 0n },
+    ];
+    // A hand-in still running holds the session FOR SHARE.
+    const running = await sql.connect();
+    await running.query('BEGIN');
+    await running.query('SELECT id FROM cashdesk.drawer_sessions WHERE id = $1 FOR SHARE', [
+      session.id,
+    ]);
+    let closed = false;
+    const close = desk
+      .closeSession(cashier.user, session.id, counted, null, new Date())
+      .then(() => (closed = true));
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    expect(closed).toBe(false);
+    await running.query('COMMIT');
+    running.release();
+    await close;
+    expect(closed).toBe(true);
+
+    // A close holding the session: the hand-in waiting behind it finds none.
+    const other = await openDesk();
+    const closing = await sql.connect();
+    await closing.query('BEGIN');
+    await closing.query('UPDATE cashdesk.drawer_sessions SET closed_at = now() WHERE id = $1', [
+      other.session.id,
+    ]);
+    const handIn = refusal(
+      desk.handIn(
+        other.cashier.user,
+        { captainId, lines: [{ currency: 'TRY', amount: 1_000n }], idempotencyKey: randomUUID() },
+        new Date(),
+      ),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    await closing.query('COMMIT');
+    closing.release();
+    expect(await handIn).toBe('no_open_session');
+    expect(await balances(captainId)).toEqual({ TRY: 1_000n });
+  });
+
   it('needs an open session and a known captain', async () => {
     const cashier = await admin(['FIN']);
     const { id: captainId } = await captain();
@@ -470,17 +573,20 @@ describe('the desk routes', () => {
     const { cashier } = await openDesk();
     const { id: captainId, phone } = await captain();
     await custody(captainId, 'custody.collect', 41_000n);
-    const byPhone = await cashier.get(
-      `/v1/admin/cash-desk/captains?cityId=${azaz}&q=${encodeURIComponent(phone)}`,
-    );
+    const search = (q: string) =>
+      cashier.post('/v1/admin/cash-desk/captains/search', { cityId: azaz, q }, null);
+    const byPhone = await search(phone);
     expect(byPhone.statusCode).toBe(200);
     expect(byPhone.json().captains).toEqual([
       expect.objectContaining({ id: captainId, status: 'active' }),
     ]);
+    // As the counter types a Syrian mobile: 09…, with spaces.
+    const local = `0${phone.slice(4, 7)} ${phone.slice(7)}`;
+    expect((await search(local)).json().captains).toEqual([
+      expect.objectContaining({ id: captainId }),
+    ]);
     const name = (await captains.captain(captainId, new Date()))!.name;
-    const byName = await cashier.get(
-      `/v1/admin/cash-desk/captains?cityId=${azaz}&q=${encodeURIComponent(name)}`,
-    );
+    const byName = await search(name);
     expect(byName.json().captains.map((each: { id: string }) => each.id)).toEqual([captainId]);
     const detail = await cashier.get(`/v1/admin/cash-desk/captains/${captainId}`);
     expect(detail.statusCode).toBe(200);

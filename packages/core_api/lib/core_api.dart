@@ -43,6 +43,7 @@ export 'package:core_api/src/model/admin_contact_dto_output.dart';
 export 'package:core_api/src/model/admin_current_drawer_session_dto_output.dart';
 export 'package:core_api/src/model/admin_current_drawer_session_dto_output_session.dart';
 export 'package:core_api/src/model/admin_current_drawer_session_dto_output_session_currencies_inner.dart';
+export 'package:core_api/src/model/admin_desk_captain_search_dto.dart';
 export 'package:core_api/src/model/admin_desk_captains_dto_output.dart';
 export 'package:core_api/src/model/admin_desk_captains_dto_output_captains_inner.dart';
 export 'package:core_api/src/model/admin_desk_custody_dto_output.dart';

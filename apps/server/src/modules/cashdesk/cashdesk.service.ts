@@ -32,6 +32,8 @@ export type CashDeskRefusal =
   | 'unknown_captain'
   | 'nothing_due'
   | 'above_custody'
+  | 'drawer_short'
+  | 'unknown_city'
   | 'idempotency_key_reused';
 
 export class CashDeskRefusedError extends Error {
@@ -153,6 +155,9 @@ export class CashDeskService {
     floats: CashLine[],
     now: Date,
   ): Promise<DrawerSession> {
+    if (!(await this.geo.cityCode(cityId))) {
+      throw new CashDeskRefusedError('unknown_city', 'no such city');
+    }
     const enabled = await this.deskCurrencies(cityId);
     checkLines(floats, enabled, 0n);
     const id = await this.database.db.transaction(async (tx) => {
@@ -406,9 +411,6 @@ export class CashDeskService {
     );
 
     const ids = await this.database.db.transaction(async (tx) => {
-      // Within the transaction too: two requests with one key at once.
-      const again = await this.replay(tx, user.accountId, command, requestHash, now);
-      if (again) return again;
       const [session] = await tx
         .select()
         .from(drawerSessions)
@@ -421,6 +423,11 @@ export class CashDeskService {
         throw new CashDeskRefusedError('unknown_captain', 'the captain is of another city');
       }
       const custody = await deskLock.lock(tx);
+      // Again under the captain's lock (a key names one captain): a request
+      // sent twice at once waits for the first and answers its receipts.
+      const again = await this.replay(tx, user.accountId, command, requestHash, now);
+      if (again) return again;
+      const drawer = await this.drawerCash(tx, session);
       const held = new Map(custody.currencies.map((line) => [line.currency, line]));
       const grouped = new Map<ReceiptType, { line: CashLine; held: CustodyCurrency }[]>();
       for (const line of command.lines) {
@@ -435,6 +442,10 @@ export class CashDeskService {
             'above_custody',
             `more than the custody in ${line.currency}`,
           );
+        }
+        // The drawer pays back only the cash it holds in that currency.
+        if (type === 'captain_reimbursement' && line.amount > (drawer.get(line.currency) ?? 0n)) {
+          throw new CashDeskRefusedError('drawer_short', `the drawer lacks ${line.currency}`);
         }
         grouped.set(type, [...(grouped.get(type) ?? []), { line, held: position }]);
       }
@@ -607,6 +618,26 @@ export class CashDeskService {
     );
   }
 
+  // The cash in the session's drawer now, per currency: the float plus
+  // what its transactions moved.
+  private async drawerCash(
+    tx: Tx,
+    session: typeof drawerSessions.$inferSelect,
+  ): Promise<Map<string, bigint>> {
+    const [floats, cash] = await Promise.all([
+      tx
+        .select()
+        .from(drawerSessionCurrencies)
+        .where(eq(drawerSessionCurrencies.sessionId, session.id)),
+      this.cash(tx, session.cityId, session.id),
+    ]);
+    const drawer = new Map(cash);
+    for (const row of floats) {
+      drawer.set(row.currency, row.openingFloat + (drawer.get(row.currency) ?? 0n));
+    }
+    return drawer;
+  }
+
   // The cash each currency of the session's drawer took in, net.
   private async cash(executor: Executor, cityId: string, sessionId: string) {
     const accounts = await this.ledger.ownerAccounts(cityId, sessionId, 'platform.cash', executor);
@@ -678,7 +709,7 @@ export class CashDeskService {
           eq(idempotencyKeys.key, command.idempotencyKey),
         ),
       );
-    if (!row || now.getTime() - row.createdAt.getTime() >= KEY_LIFETIME_MS) return null;
+    if (!row || row.createdAt.getTime() < now.getTime() - KEY_LIFETIME_MS) return null;
     if (row.requestHash !== requestHash) {
       throw new CashDeskRefusedError('idempotency_key_reused', 'the key came with another command');
     }

@@ -28,6 +28,7 @@ import 'package:core_api/src/model/admin_close_item_report_dto.dart';
 import 'package:core_api/src/model/admin_confirm_pickup_dto.dart';
 import 'package:core_api/src/model/admin_contact_dto_output.dart';
 import 'package:core_api/src/model/admin_current_drawer_session_dto_output.dart';
+import 'package:core_api/src/model/admin_desk_captain_search_dto.dart';
 import 'package:core_api/src/model/admin_desk_captains_dto_output.dart';
 import 'package:core_api/src/model/admin_desk_custody_dto_output.dart';
 import 'package:core_api/src/model/admin_device_released_dto_output.dart';
@@ -1167,8 +1168,7 @@ class AdminApi {
   ///
   ///
   /// Parameters:
-  /// * [cityId]
-  /// * [q] - A part of the name, or the number in E.164.
+  /// * [adminDeskCaptainSearchDto]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1179,8 +1179,7 @@ class AdminApi {
   /// Returns a [Future] containing a [Response] with a [AdminDeskCaptainsDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
   Future<Response<AdminDeskCaptainsDtoOutput>> adminCashDeskFindCaptains({
-    required String cityId,
-    required String q,
+    required AdminDeskCaptainSearchDto adminDeskCaptainSearchDto,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -1188,27 +1187,36 @@ class AdminApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/admin/cash-desk/captains';
+    final _path = r'/v1/admin/cash-desk/captains/search';
     final _options = Options(
-      method: r'GET',
+      method: r'POST',
       headers: <String, dynamic>{...?headers},
       extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
       validateStatus: validateStatus,
     );
 
-    final _queryParameters = <String, dynamic>{
-      r'cityId': encodeQueryParameter(
-        _serializers,
-        cityId,
-        const FullType(String),
-      ),
-      r'q': encodeQueryParameter(_serializers, q, const FullType(String)),
-    };
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminDeskCaptainSearchDto);
+      _bodyData = _serializers.serialize(
+        adminDeskCaptainSearchDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
 
     final _response = await _dio.request<Object>(
       _path,
+      data: _bodyData,
       options: _options,
-      queryParameters: _queryParameters,
       cancelToken: cancelToken,
       onSendProgress: onSendProgress,
       onReceiveProgress: onReceiveProgress,

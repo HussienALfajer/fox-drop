@@ -883,6 +883,9 @@ describe('the cash desk tables (AP §9.10.3, §4.8)', () => {
       `UPDATE cashdesk.drawer_sessions SET closed_at = now(), close_note = 'ok' WHERE id = '${rows[0].id}'`,
     );
     await appQuery(session(accountId));
+    await expect(
+      appQuery(`UPDATE cashdesk.drawer_sessions SET closed_at = NULL WHERE id = '${rows[0].id}'`),
+    ).rejects.toThrow(/a closed drawer session is never changed/);
   });
 
   it('number receipts once per city, year and sequence', async () => {
