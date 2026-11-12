@@ -468,6 +468,8 @@ Serializers _$serializers =
           ..add(CaptainAvailabilityDtoOutputCustodyLimit.serializer)
           ..add(CaptainAvailabilityDtoOutputCustodyRemitTolerance.serializer)
           ..add(CaptainAvailabilityDtoOutputCustodyUsage.serializer)
+          ..add(CaptainAvailabilityDtoOutputOffice.serializer)
+          ..add(CaptainAvailabilityDtoOutputOfficeHoursInner.serializer)
           ..add(CaptainCannotCompleteDto.serializer)
           ..add(CaptainCarriedCurrenciesDtoOutput.serializer)
           ..add(CaptainCarriedCurrenciesDtoOutputChoicesInner.serializer)
@@ -486,6 +488,19 @@ Serializers _$serializers =
           ..add(CaptainCurrentOfferDtoOutputOfferPreparation.serializer)
           ..add(CaptainCurrentOfferDtoOutputOfferRestaurant.serializer)
           ..add(CaptainCurrentOfferDtoOutputOfferStatusEnum.serializer)
+          ..add(CaptainCustodyDtoOutput.serializer)
+          ..add(CaptainCustodyDtoOutputClosedDue.serializer)
+          ..add(CaptainCustodyDtoOutputCurrenciesInner.serializer)
+          ..add(CaptainCustodyDtoOutputEntriesInner.serializer)
+          ..add(CaptainCustodyDtoOutputEntriesInnerAmount.serializer)
+          ..add(CaptainCustodyDtoOutputEntriesInnerKindEnum.serializer)
+          ..add(CaptainCustodyDtoOutputLimit.serializer)
+          ..add(CaptainCustodyDtoOutputReceiptsInner.serializer)
+          ..add(CaptainCustodyDtoOutputReceiptsInnerConversionsInner.serializer)
+          ..add(CaptainCustodyDtoOutputReceiptsInnerLinesInner.serializer)
+          ..add(CaptainCustodyDtoOutputReceiptsInnerTypeEnum.serializer)
+          ..add(CaptainCustodyDtoOutputTotal.serializer)
+          ..add(CaptainCustodyDtoOutputUsage.serializer)
           ..add(CaptainDeliverDto.serializer)
           ..add(CaptainDeliverDtoAway.serializer)
           ..add(CaptainDeliverySummaryDtoOutput.serializer)
@@ -1573,6 +1588,47 @@ Serializers _$serializers =
                 ListBuilder<
                   CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainAvailabilityDtoOutputOfficeHoursInner),
+            ]),
+            () => ListBuilder<CaptainAvailabilityDtoOutputOfficeHoursInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainCustodyDtoOutputCurrenciesInner),
+            ]),
+            () => ListBuilder<CaptainCustodyDtoOutputCurrenciesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainCustodyDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<CaptainCustodyDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainCustodyDtoOutputReceiptsInner),
+            ]),
+            () => ListBuilder<CaptainCustodyDtoOutputReceiptsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                CaptainCustodyDtoOutputReceiptsInnerConversionsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CaptainCustodyDtoOutputReceiptsInnerConversionsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainCustodyDtoOutputReceiptsInnerLinesInner),
+            ]),
+            () => ListBuilder<CaptainCustodyDtoOutputReceiptsInnerLinesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

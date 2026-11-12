@@ -24,6 +24,7 @@ export {
   type SourceKind,
 } from './catalogue.js';
 export {
+  type AccountEntry,
   type Balance,
   type LedgerAccount,
   type JournalRate,

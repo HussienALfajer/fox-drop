@@ -9,10 +9,11 @@ import {
   GeoService,
   lastCutoff,
   nextCutoff,
+  type Office,
   type Point,
   straightLineMetres,
 } from '../geo/index.js';
-import { type JournalType, LedgerService } from '../ledger/index.js';
+import { type AccountEntry, type JournalType, LedgerService } from '../ledger/index.js';
 import { lockCityCurrencies, SettingsService, type Vehicle, vehicles } from '../settings/index.js';
 import {
   type Availability,
@@ -483,6 +484,25 @@ export class CaptainsService implements OnModuleInit {
       .from(captainRecords)
       .where(eq(captainRecords.id, captainId));
     return row ? captainOf(row, now) : null;
+  }
+
+  // CA §7.5, C13: the office of the captain's city and whether its desk is
+  // open now, for the hand-in reminder and «عهدتي»; null until one is set.
+  async office(captainId: string, now: Date): Promise<Office | null> {
+    const row = await this.row(this.database.db, captainId);
+    return this.geo.office(row.cityId, now);
+  }
+
+  // CA §10.2: the newest entries of the captain's custody, every currency,
+  // newest first, at most `limit`, + what they must hand in.
+  async custodyEntries(captainId: string, limit: number): Promise<AccountEntry[]> {
+    const row = await this.row(this.database.db, captainId);
+    const accounts = await this.ledger.ownerAccounts(row.cityId, row.id, 'captain.custody');
+    return this.ledger.accountEntries(
+      accounts.map((account) => account.id),
+      'captain.custody',
+      limit,
+    );
   }
 
   // CA §10.5 «العملات التي أحملها»: what the captain carries of the city's

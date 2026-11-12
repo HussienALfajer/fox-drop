@@ -10,6 +10,8 @@ class _$CaptainAvailabilityDtoOutput extends CaptainAvailabilityDtoOutput {
   @override
   final CaptainAvailabilityDtoOutputAvailability availability;
   @override
+  final CaptainAvailabilityDtoOutputOffice? office;
+  @override
   final CaptainAvailabilityDtoOutputCustody custody;
 
   factory _$CaptainAvailabilityDtoOutput([
@@ -18,6 +20,7 @@ class _$CaptainAvailabilityDtoOutput extends CaptainAvailabilityDtoOutput {
 
   _$CaptainAvailabilityDtoOutput._({
     required this.availability,
+    this.office,
     required this.custody,
   }) : super._();
   @override
@@ -34,6 +37,7 @@ class _$CaptainAvailabilityDtoOutput extends CaptainAvailabilityDtoOutput {
     if (identical(other, this)) return true;
     return other is CaptainAvailabilityDtoOutput &&
         availability == other.availability &&
+        office == other.office &&
         custody == other.custody;
   }
 
@@ -41,6 +45,7 @@ class _$CaptainAvailabilityDtoOutput extends CaptainAvailabilityDtoOutput {
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, availability.hashCode);
+    _$hash = $jc(_$hash, office.hashCode);
     _$hash = $jc(_$hash, custody.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -50,6 +55,7 @@ class _$CaptainAvailabilityDtoOutput extends CaptainAvailabilityDtoOutput {
   String toString() {
     return (newBuiltValueToStringHelper(r'CaptainAvailabilityDtoOutput')
           ..add('availability', availability)
+          ..add('office', office)
           ..add('custody', custody))
         .toString();
   }
@@ -71,6 +77,12 @@ class CaptainAvailabilityDtoOutputBuilder
     CaptainAvailabilityDtoOutputAvailabilityBuilder? availability,
   ) => _$this._availability = availability;
 
+  CaptainAvailabilityDtoOutputOfficeBuilder? _office;
+  CaptainAvailabilityDtoOutputOfficeBuilder get office =>
+      _$this._office ??= CaptainAvailabilityDtoOutputOfficeBuilder();
+  set office(CaptainAvailabilityDtoOutputOfficeBuilder? office) =>
+      _$this._office = office;
+
   CaptainAvailabilityDtoOutputCustodyBuilder? _custody;
   CaptainAvailabilityDtoOutputCustodyBuilder get custody =>
       _$this._custody ??= CaptainAvailabilityDtoOutputCustodyBuilder();
@@ -85,6 +97,7 @@ class CaptainAvailabilityDtoOutputBuilder
     final $v = _$v;
     if ($v != null) {
       _availability = $v.availability.toBuilder();
+      _office = $v.office?.toBuilder();
       _custody = $v.custody.toBuilder();
       _$v = null;
     }
@@ -111,6 +124,7 @@ class CaptainAvailabilityDtoOutputBuilder
           _$v ??
           _$CaptainAvailabilityDtoOutput._(
             availability: availability.build(),
+            office: _office?.build(),
             custody: custody.build(),
           );
     } catch (_) {
@@ -118,6 +132,8 @@ class CaptainAvailabilityDtoOutputBuilder
       try {
         _$failedField = 'availability';
         availability.build();
+        _$failedField = 'office';
+        _office?.build();
         _$failedField = 'custody';
         custody.build();
       } catch (e) {

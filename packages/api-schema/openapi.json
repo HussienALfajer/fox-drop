@@ -8682,6 +8682,32 @@
           "admin"
         ]
       }
+    },
+    "/v1/captain/custody": {
+      "get": {
+        "operationId": "captainCustodyCustody",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainCustodyDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
     }
   },
   "info": {
@@ -12511,6 +12537,101 @@
             "additionalProperties": false,
             "description": "CA §7.1: «غير متصل», «متصل متاح», «مشغول» (an active order), «آخر طلب» (last-order mode), «لا تصلك عروض» with its reasons, «موقوف»."
           },
+          "office": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "latitude": {
+                    "type": "number"
+                  },
+                  "longitude": {
+                    "type": "number"
+                  },
+                  "hours": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "weekday": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991,
+                          "description": "0 Sunday to 6 Saturday."
+                        },
+                        "opensAt": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991,
+                          "description": "Minutes after midnight on the city clock."
+                        },
+                        "closesAt": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991,
+                          "description": "Minutes after midnight; at or before the opening it runs past midnight."
+                        }
+                      },
+                      "required": [
+                        "weekday",
+                        "opensAt",
+                        "closesAt"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "description": "The desk hours per weekday; a weekday not listed is closed."
+                  },
+                  "timeZone": {
+                    "type": "string",
+                    "description": "The city's clock, such as Asia/Damascus."
+                  },
+                  "open": {
+                    "type": "boolean"
+                  },
+                  "closesAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "While open: when the desk closes."
+                  },
+                  "opensAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "While closed: when it opens next; null when no day is open."
+                  }
+                },
+                "required": [
+                  "latitude",
+                  "longitude",
+                  "hours",
+                  "timeZone",
+                  "open",
+                  "closesAt",
+                  "opensAt"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The city's office; null until the owner sets it (AP §9.12.1)."
+          },
           "custody": {
             "type": "object",
             "properties": {
@@ -12620,6 +12741,7 @@
         },
         "required": [
           "availability",
+          "office",
           "custody"
         ],
         "additionalProperties": false
@@ -12671,10 +12793,106 @@
               }
             ],
             "description": "CA §7.5: the cash to hand in, above captain.remit_tolerance, or null."
+          },
+          "office": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "latitude": {
+                    "type": "number"
+                  },
+                  "longitude": {
+                    "type": "number"
+                  },
+                  "hours": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "weekday": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991,
+                          "description": "0 Sunday to 6 Saturday."
+                        },
+                        "opensAt": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991,
+                          "description": "Minutes after midnight on the city clock."
+                        },
+                        "closesAt": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991,
+                          "description": "Minutes after midnight; at or before the opening it runs past midnight."
+                        }
+                      },
+                      "required": [
+                        "weekday",
+                        "opensAt",
+                        "closesAt"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "description": "The desk hours per weekday; a weekday not listed is closed."
+                  },
+                  "timeZone": {
+                    "type": "string",
+                    "description": "The city's clock, such as Asia/Damascus."
+                  },
+                  "open": {
+                    "type": "boolean"
+                  },
+                  "closesAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "While open: when the desk closes."
+                  },
+                  "opensAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "While closed: when it opens next; null when no day is open."
+                  }
+                },
+                "required": [
+                  "latitude",
+                  "longitude",
+                  "hours",
+                  "timeZone",
+                  "open",
+                  "closesAt",
+                  "opensAt"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The city's office; null until the owner sets it (AP §9.12.1)."
           }
         },
         "required": [
-          "handIn"
+          "handIn",
+          "office"
         ],
         "additionalProperties": false
       },
@@ -33769,6 +33987,354 @@
           "createdAt",
           "conversions",
           "lines"
+        ],
+        "additionalProperties": false
+      },
+      "CaptainCustodyDto_Output": {
+        "type": "object",
+        "properties": {
+          "usage": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "string",
+                "pattern": "^-?\\d{1,19}$",
+                "description": "Integer minor units (AP §8.6)."
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              }
+            },
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "additionalProperties": false,
+            "description": "The cash held, in the base currency (AP §8.5.3)."
+          },
+          "limit": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "string",
+                "pattern": "^-?\\d{1,19}$",
+                "description": "Integer minor units (AP §8.6)."
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              }
+            },
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "additionalProperties": false,
+            "description": "The cash limit «حد العهدة» (§10.4)."
+          },
+          "warn": {
+            "type": "boolean",
+            "description": "At captain.custody_warn_pct of the limit or more."
+          },
+          "total": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "string",
+                "pattern": "^-?\\d{1,19}$",
+                "description": "Integer minor units (AP §8.6)."
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              }
+            },
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "additionalProperties": false,
+            "description": "Every currency at the current rate, netted: + «عليك تسليم {المبلغ}», − «لك عند المكتب {المبلغ}»."
+          },
+          "closedDue": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "string",
+                "pattern": "^-?\\d{1,19}$",
+                "description": "Integer minor units (AP §8.6)."
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              }
+            },
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "additionalProperties": false,
+            "description": "«من أيام سابقة»: due from closed days, netted (AP §8.5.4)."
+          },
+          "lastCutoff": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "handInGraceUntil": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A hand-in grace running now (AP §8.5.4): until when; null otherwise."
+          },
+          "currencies": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "currency": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 3
+                },
+                "balance": {
+                  "type": "string",
+                  "pattern": "^-?\\d{1,19}$",
+                  "description": "+ to hand in, − the office owes the captain."
+                },
+                "closedDue": {
+                  "type": "string",
+                  "pattern": "^-?\\d{1,19}$",
+                  "description": "«من أيام سابقة»."
+                },
+                "today": {
+                  "type": "string",
+                  "pattern": "^-?\\d{1,19}$",
+                  "description": "«من اليوم»."
+                },
+                "balanceInBase": {
+                  "type": "string",
+                  "pattern": "^-?\\d{1,19}$",
+                  "description": "The balance in the base currency, current rate."
+                }
+              },
+              "required": [
+                "currency",
+                "balance",
+                "closedDue",
+                "today",
+                "balanceInBase"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Each currency held, the base first (AP §8.6)."
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "pay_merchant",
+                        "collect",
+                        "change_given",
+                        "hand_in",
+                        "reimburse",
+                        "fx_convert",
+                        "pickup_correction",
+                        "adjustment"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Null for a kind the app does not name."
+                },
+                "orderNumber": {
+                  "description": "The order's number, for an order's entry.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "receiptNumber": {
+                  "description": "The receipt, for a desk entry.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "amount": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "string",
+                      "pattern": "^-?\\d{1,19}$",
+                      "description": "Integer minor units (AP §8.6)."
+                    },
+                    "currency": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "currency"
+                  ],
+                  "additionalProperties": false,
+                  "description": "+ adds to what the captain hands in."
+                },
+                "at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "kind",
+                "orderNumber",
+                "receiptNumber",
+                "amount",
+                "at"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Every entry, newest first, the latest 100."
+          },
+          "receipts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "number": {
+                  "type": "string",
+                  "description": "Such as AZ-2026-000123 (AP §4.8)."
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "captain_hand_in",
+                    "captain_reimbursement"
+                  ]
+                },
+                "at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "cashierName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "conversions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 3
+                      },
+                      "amount": {
+                        "type": "string",
+                        "pattern": "^-?\\d{1,19}$",
+                        "description": "Integer minor units (AP §8.6)."
+                      },
+                      "to": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 3
+                      },
+                      "converted": {
+                        "type": "string",
+                        "pattern": "^-?\\d{1,19}$",
+                        "description": "Integer minor units (AP §8.6)."
+                      }
+                    },
+                    "required": [
+                      "from",
+                      "amount",
+                      "to",
+                      "converted"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "lines": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 3
+                      },
+                      "amount": {
+                        "type": "string",
+                        "pattern": "^-?\\d{1,19}$",
+                        "description": "The cash that changed hands, above zero."
+                      }
+                    },
+                    "required": [
+                      "currency",
+                      "amount"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "number",
+                "type",
+                "at",
+                "cashierName",
+                "conversions",
+                "lines"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Every desk receipt, newest first, the latest 50."
+          }
+        },
+        "required": [
+          "usage",
+          "limit",
+          "warn",
+          "total",
+          "closedDue",
+          "lastCutoff",
+          "handInGraceUntil",
+          "currencies",
+          "entries",
+          "receipts"
         ],
         "additionalProperties": false
       }

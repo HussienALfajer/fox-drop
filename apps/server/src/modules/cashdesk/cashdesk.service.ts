@@ -888,6 +888,29 @@ export class CashDeskService {
     return (currency) => order.get(currency) ?? city.length;
   }
 
+  // CA §10.2, AP §9.10.3: the captain's newest receipts, newest first, at
+  // most `limit`, for «عهدتي».
+  async captainReceipts(captainId: string, limit: number): Promise<Receipt[]> {
+    const rows = await this.database.db
+      .select({ id: receipts.id })
+      .from(receipts)
+      .where(eq(receipts.captainId, captainId))
+      .orderBy(desc(receipts.createdAt), desc(receipts.id))
+      .limit(limit);
+    return (await this.receiptsOf(rows.map((row) => row.id))).reverse();
+  }
+
+  // The numbers of some receipts, such as AZ-2026-000123; an unknown id is
+  // left out.
+  async receiptNumbers(receiptIds: readonly string[]): Promise<Map<string, string>> {
+    if (receiptIds.length === 0) return new Map();
+    const rows = await this.database.db
+      .select({ id: receipts.id, number: receipts.number })
+      .from(receipts)
+      .where(inArray(receipts.id, [...new Set(receiptIds)]));
+    return new Map(rows.map((row) => [row.id, row.number]));
+  }
+
   private async receiptsOf(ids: readonly string[]): Promise<Receipt[]> {
     if (ids.length === 0) return [];
     const rows = await this.database.db

@@ -471,6 +471,7 @@ const routeAccess: Record<string, Access> = {
   'PUT /v1/captain/settings/carried-currencies': 'app_session',
   'GET /v1/captain/settings/max-pickup-amount': 'app_session',
   'GET /v1/captain/peak-bonus': 'app_session',
+  'GET /v1/captain/custody': 'app_session',
   'PUT /v1/captain/settings/max-pickup-amount': 'app_session',
   'POST /v1/captain/location': 'app_session',
   'GET /v1/captain/offers/current': 'app_session',

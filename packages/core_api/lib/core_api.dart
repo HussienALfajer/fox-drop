@@ -295,6 +295,8 @@ export 'package:core_api/src/model/captain_availability_dto_output_custody_close
 export 'package:core_api/src/model/captain_availability_dto_output_custody_limit.dart';
 export 'package:core_api/src/model/captain_availability_dto_output_custody_remit_tolerance.dart';
 export 'package:core_api/src/model/captain_availability_dto_output_custody_usage.dart';
+export 'package:core_api/src/model/captain_availability_dto_output_office.dart';
+export 'package:core_api/src/model/captain_availability_dto_output_office_hours_inner.dart';
 export 'package:core_api/src/model/captain_cannot_complete_dto.dart';
 export 'package:core_api/src/model/captain_carried_currencies_dto_output.dart';
 export 'package:core_api/src/model/captain_carried_currencies_dto_output_choices_inner.dart';
@@ -311,6 +313,17 @@ export 'package:core_api/src/model/captain_current_offer_dto_output_offer_handov
 export 'package:core_api/src/model/captain_current_offer_dto_output_offer_pickup_payment.dart';
 export 'package:core_api/src/model/captain_current_offer_dto_output_offer_preparation.dart';
 export 'package:core_api/src/model/captain_current_offer_dto_output_offer_restaurant.dart';
+export 'package:core_api/src/model/captain_custody_dto_output.dart';
+export 'package:core_api/src/model/captain_custody_dto_output_closed_due.dart';
+export 'package:core_api/src/model/captain_custody_dto_output_currencies_inner.dart';
+export 'package:core_api/src/model/captain_custody_dto_output_entries_inner.dart';
+export 'package:core_api/src/model/captain_custody_dto_output_entries_inner_amount.dart';
+export 'package:core_api/src/model/captain_custody_dto_output_limit.dart';
+export 'package:core_api/src/model/captain_custody_dto_output_receipts_inner.dart';
+export 'package:core_api/src/model/captain_custody_dto_output_receipts_inner_conversions_inner.dart';
+export 'package:core_api/src/model/captain_custody_dto_output_receipts_inner_lines_inner.dart';
+export 'package:core_api/src/model/captain_custody_dto_output_total.dart';
+export 'package:core_api/src/model/captain_custody_dto_output_usage.dart';
 export 'package:core_api/src/model/captain_deliver_dto.dart';
 export 'package:core_api/src/model/captain_deliver_dto_away.dart';
 export 'package:core_api/src/model/captain_delivery_summary_dto_output.dart';

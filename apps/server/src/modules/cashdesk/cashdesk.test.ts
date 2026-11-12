@@ -15,6 +15,8 @@ import {
   ADMIN_SESSION_COOKIE,
   AdminSessionsService,
   CaptainAccountsService,
+  CODE_SENDER,
+  type DevelopmentCodeSender,
 } from '../identity/index.js';
 import { type JournalType, LedgerService } from '../ledger/index.js';
 import { SettingsService } from '../settings/index.js';
@@ -925,6 +927,89 @@ describe('the desk routes', () => {
     expect((await ops.get(`/v1/admin/cash-desk/sessions/current?cityId=${azaz}`)).statusCode).toBe(
       403,
     );
+  });
+});
+
+// The captain app's calls, signed in on a new device.
+async function captainHeaders(phone: string) {
+  const deviceId = randomUUID();
+  await app.inject({ method: 'POST', url: '/v1/captain/auth/code', payload: { phone, deviceId } });
+  const code = app.get<DevelopmentCodeSender>(CODE_SENDER).lastCode(phone);
+  const answer = await app.inject({
+    method: 'POST',
+    url: '/v1/captain/auth/sign-in',
+    payload: { phone, deviceId, code },
+  });
+  return { authorization: `Bearer ${answer.json().accessToken}` };
+}
+
+describe('«عهدتي» (CA §10.2, AP §9.10.3: receipts appear at once)', () => {
+  it('shows the custody per currency, every entry and the receipt the desk just issued', async () => {
+    const { id: captainId, phone } = await captain();
+    await custody(captainId, 'custody.pay_merchant', -40_000n);
+    await custody(captainId, 'custody.collect', 41_000n);
+    await custody(captainId, 'custody.collect', 500n, 'USD');
+    const headers = await captainHeaders(phone);
+    const read = () => app.inject({ method: 'GET', url: '/v1/captain/custody', headers });
+
+    const before = (await read()).json();
+    expect(before).toMatchObject({
+      limit: { amount: '1000000', currency: 'TRY' },
+      warn: false,
+      handInGraceUntil: null,
+      receipts: [],
+    });
+    expect(before.currencies.map((each: { currency: string }) => each.currency)).toEqual([
+      'TRY',
+      'USD',
+    ]);
+    expect(before.currencies[0]).toEqual({
+      currency: 'TRY',
+      balance: '1000',
+      closedDue: '0',
+      today: '1000',
+      balanceInBase: '1000',
+    });
+    expect(before.entries.map((entry: { kind: string }) => entry.kind)).toEqual([
+      'collect',
+      'collect',
+      'pay_merchant',
+    ]);
+    expect(before.entries[2]).toMatchObject({
+      amount: { amount: '-40000', currency: 'TRY' },
+      receiptNumber: null,
+    });
+
+    const { cashier } = await openDesk();
+    const [receipt] = await desk.handIn(
+      cashier.user,
+      { captainId, lines: [{ currency: 'TRY', amount: 1_000n }], idempotencyKey: randomUUID() },
+      new Date(),
+    );
+    const after = (await read()).json();
+    expect(after.currencies[0]).toMatchObject({ currency: 'TRY', balance: '0' });
+    expect(after.entries[0]).toMatchObject({
+      kind: 'hand_in',
+      orderNumber: null,
+      receiptNumber: receipt!.number,
+      amount: { amount: '-1000', currency: 'TRY' },
+    });
+    expect(after.receipts).toEqual([
+      {
+        id: receipt!.id,
+        number: receipt!.number,
+        type: 'captain_hand_in',
+        at: receipt!.createdAt.toISOString(),
+        cashierName: expect.any(String),
+        conversions: [],
+        lines: [{ currency: 'TRY', amount: '1000' }],
+      },
+    ]);
+  });
+
+  it('needs a captain sign-in', async () => {
+    const response = await app.inject({ method: 'GET', url: '/v1/captain/custody' });
+    expect(response.statusCode).toBe(401);
   });
 });
 

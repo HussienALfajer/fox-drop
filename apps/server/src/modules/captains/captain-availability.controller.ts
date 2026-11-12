@@ -14,6 +14,7 @@ import { z } from 'zod';
 import { AppSignedIn, CurrentAppSession } from '../../http/access.js';
 import { CaptainController } from '../../http/route-groups.js';
 import { TermsService } from '../content/index.js';
+import type { Office } from '../geo/index.js';
 import type { AppSession } from '../identity/index.js';
 import type { Availability, OnlineBlock } from './availability.js';
 import {
@@ -76,9 +77,40 @@ const availability = z
     'CA §7.1: «غير متصل», «متصل متاح», «مشغول» (an active order), «آخر طلب» (last-order mode), «لا تصلك عروض» with its reasons, «موقوف».',
   );
 
+// CA §7.5, C13: the office and its desk now, for the hand-in reminder
+// («عليك تسليم {المبلغ}. المكتب مفتوح حتى {الساعة}.» or «المكتب مغلق الآن،
+// يفتح {اليوم} {الساعة}.») and «عهدتي», with a button to the map.
+const office = z
+  .object({
+    latitude: z.number(),
+    longitude: z.number(),
+    hours: z
+      .array(
+        z.object({
+          weekday: z.number().int().describe('0 Sunday to 6 Saturday.'),
+          opensAt: z.number().int().describe('Minutes after midnight on the city clock.'),
+          closesAt: z
+            .number()
+            .int()
+            .describe('Minutes after midnight; at or before the opening it runs past midnight.'),
+        }),
+      )
+      .describe('The desk hours per weekday; a weekday not listed is closed.'),
+    timeZone: z.string().describe("The city's clock, such as Asia/Damascus."),
+    open: z.boolean(),
+    closesAt: z.iso.datetime().nullable().describe('While open: when the desk closes.'),
+    opensAt: z.iso
+      .datetime()
+      .nullable()
+      .describe('While closed: when it opens next; null when no day is open.'),
+  })
+  .nullable()
+  .describe("The city's office; null until the owner sets it (AP §9.12.1).");
+
 class CaptainAvailabilityDto extends createZodDto(
   z.object({
     availability,
+    office,
     custody: z.object({
       usage: money.describe('The cash held, in the base currency (AP §8.5.3).'),
       limit: money,
@@ -108,6 +140,7 @@ class CaptainWentOfflineDto extends createZodDto(
     handIn: money
       .nullable()
       .describe('CA §7.5: the cash to hand in, above captain.remit_tolerance, or null.'),
+    office,
   }),
 ) {}
 
@@ -198,7 +231,12 @@ export class CaptainAvailabilityController {
   @AppSignedIn()
   @ZodResponse({ status: 200, type: CaptainAvailabilityDto })
   async state(@CurrentAppSession() session: AppSession) {
-    return stateBody(await this.captains.state(captainOf(session), new Date()));
+    const captainId = captainOf(session);
+    const now = new Date();
+    return stateBody(
+      await this.captains.state(captainId, now),
+      await this.captains.office(captainId, now),
+    );
   }
 
   // CA §7.2: refused with 409 online_blocked and every block, so the app shows
@@ -211,8 +249,10 @@ export class CaptainAvailabilityController {
     try {
       const captainId = captainOf(session);
       const termsPending = await this.terms.pending('captain', session.accountId);
+      const now = new Date();
       return stateBody(
-        await this.captains.goOnline(captainId, { ...body, termsPending }, new Date()),
+        await this.captains.goOnline(captainId, { ...body, termsPending }, now),
+        await this.captains.office(captainId, now),
       );
     } catch (error) {
       if (error instanceof CaptainsRefusedError && error.refusal === 'online_blocked') {
@@ -232,8 +272,13 @@ export class CaptainAvailabilityController {
   @ZodResponse({ status: 200, type: CaptainWentOfflineDto })
   async offline(@CurrentAppSession() session: AppSession) {
     try {
-      const { handIn } = await this.captains.goOffline(captainOf(session), new Date());
-      return { handIn: handIn === null ? null : moneyBody(handIn) };
+      const captainId = captainOf(session);
+      const now = new Date();
+      const { handIn } = await this.captains.goOffline(captainId, now);
+      return {
+        handIn: handIn === null ? null : moneyBody(handIn),
+        office: officeBody(await this.captains.office(captainId, now)),
+      };
     } catch (error) {
       // CA §15: not with an active order.
       if (error instanceof CaptainsRefusedError && error.refusal === 'active_order') {
@@ -253,7 +298,12 @@ export class CaptainAvailabilityController {
   @ZodResponse({ status: 200, type: CaptainAvailabilityDto })
   async lastOrder(@CurrentAppSession() session: AppSession, @Body() body: CaptainLastOrderDto) {
     try {
-      return stateBody(await this.captains.setLastOrder(captainOf(session), body.on, new Date()));
+      const captainId = captainOf(session);
+      const now = new Date();
+      return stateBody(
+        await this.captains.setLastOrder(captainId, body.on, now),
+        await this.captains.office(captainId, now),
+      );
     } catch (error) {
       if (
         error instanceof CaptainsRefusedError &&
@@ -389,9 +439,27 @@ function availabilityBody(state: Availability) {
   };
 }
 
-function stateBody({ availability: state, custody, remitTolerance }: CaptainState) {
+function officeBody(value: Office | null) {
+  return (
+    value && {
+      latitude: value.location.latitude,
+      longitude: value.location.longitude,
+      hours: value.hours,
+      timeZone: value.timeZone,
+      open: value.open,
+      closesAt: value.closesAt?.toISOString() ?? null,
+      opensAt: value.opensAt?.toISOString() ?? null,
+    }
+  );
+}
+
+function stateBody(
+  { availability: state, custody, remitTolerance }: CaptainState,
+  office: Office | null,
+) {
   return {
     availability: availabilityBody(state),
+    office: officeBody(office),
     custody: {
       usage: moneyBody(custody.usage),
       limit: moneyBody(custody.limit),

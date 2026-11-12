@@ -12,7 +12,7 @@ Slice 2.17c, «عهدتي» in the captain app, with the office (`docs/roadmap.m
 - **First:** read `apps/server/src/modules/cashdesk/CLAUDE.md` (receipts, their conversions since 2.17b) and the captain app's money screens under `apps/captain/`; decide where the office (location, hours per weekday) lives (a geo or cashdesk table, read by the captain app and the reminder). The design stop applies to the new screen: keep logic and presentation apart and ask the owner before styling.
 - **Plan:**
   - [x] The office: location and desk hours per weekday per city, stored and audited, with the admin route and a small unstyled panel form (owner decision 2026-11-12) (test first for the hours: open now, closing time today).
-  - [ ] The captain's custody read: the custody per currency with its base equivalent, closed days and today, the limit and usage, the entries and the receipts (with their conversions), the office and its hours today, for `GET /v1/captain/...`; the OpenAPI document and the clients.
+  - [x] The captain's custody read: the custody per currency with its base equivalent, closed days and today, the limit and usage, the entries and the receipts (with their conversions), the office and its hours today, for `GET /v1/captain/...`; the OpenAPI document and the clients.
   - [ ] «عهدتي» in the captain app (CA §10.2): the screen's logic and an unstyled layout, live on the captain channel (`captain.availability_changed` and the receipt push), the map button.
   - [ ] The limit bar on home and the office's closing time in the hand-in reminder (CA §7.5, C13).
   - [ ] The modules' and the apps' notes.

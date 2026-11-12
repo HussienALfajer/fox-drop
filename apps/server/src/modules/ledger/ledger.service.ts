@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq, gte, inArray, lt, or, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, lt, or, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -14,6 +14,18 @@ import {
   type SourceKind,
 } from './catalogue.js';
 import { accounts, entries, journals } from './schema.js';
+
+// One entry on an account, from the party's view, with its journal's type
+// and source: a line of the captain's «عهدتي» (CA §10.2).
+export interface AccountEntry {
+  journalId: string;
+  type: JournalType;
+  sourceKind: SourceKind | null;
+  sourceId: string | null;
+  currency: string;
+  amount: bigint;
+  createdAt: Date;
+}
 
 // A money movement the ledger refuses: the caller's bug, never the user's.
 export class LedgerRefusal extends Error {
@@ -251,6 +263,41 @@ export class LedgerService {
           eq(accounts.ownerId, ownerId),
         ),
       );
+  }
+
+  // The newest entries of some accounts of one purpose, newest first, at
+  // most `limit`, from the party's view (CA §10.2: every entry of the
+  // custody).
+  async accountEntries(
+    accountIds: readonly string[],
+    purpose: AccountPurpose,
+    limit: number,
+    executor: LedgerExecutor = this.database.db,
+  ): Promise<AccountEntry[]> {
+    if (accountIds.length === 0) return [];
+    const rows = await executor
+      .select({
+        journalId: entries.journalId,
+        type: journals.type,
+        sourceKind: journals.sourceKind,
+        sourceId: journals.sourceId,
+        currency: entries.currency,
+        amount: entries.amount,
+        createdAt: entries.createdAt,
+      })
+      .from(entries)
+      .innerJoin(journals, eq(journals.id, entries.journalId))
+      .innerJoin(accounts, eq(accounts.id, entries.accountId))
+      .where(and(inArray(entries.accountId, [...accountIds]), eq(accounts.purpose, purpose)))
+      .orderBy(desc(entries.createdAt), desc(entries.id))
+      .limit(limit);
+    const sign = accountPurposes[purpose].sign;
+    return rows.map((row) => ({
+      ...row,
+      type: row.type as JournalType,
+      sourceKind: row.sourceKind as SourceKind | null,
+      amount: row.amount * sign,
+    }));
   }
 
   // The balance at a moment, plus the entries of the given types posted since,

@@ -317,6 +317,17 @@ export class OrdersService implements OnModuleInit {
     return order;
   }
 
+  // The numbers of some orders (AP §4.8), for the captain's custody lines
+  // (CA §10.2); an unknown id is left out.
+  async orderNumbers(orderIds: readonly string[]): Promise<Map<string, bigint>> {
+    if (orderIds.length === 0) return new Map();
+    const rows = await this.database.db
+      .select({ id: orders.id, number: orders.number })
+      .from(orders)
+      .where(inArray(orders.id, [...new Set(orderIds)]));
+    return new Map(rows.map((row) => [row.id, row.number]));
+  }
+
   // CU §11: the customer's own order, or null for another's or an unknown
   // one.
   async customerOrder(accountId: string, orderId: string): Promise<OrderView | null> {
