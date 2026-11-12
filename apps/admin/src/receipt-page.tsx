@@ -83,11 +83,23 @@ function ReceiptView({
       <p>{formatDateTime(receipt.createdAt, timeZone)}</p>
       <p>{t('cashDesk.receipt.captain', { name: receipt.captainName })}</p>
       <p>{t('cashDesk.receipt.cashier', { name: receipt.cashierName ?? '' })}</p>
+      {receipt.conversions.map((each) => (
+        <p key={each.from}>
+          {t('cashDesk.receipt.conversion', {
+            amount: formatMoney({ amount: each.amount, currency: each.from }),
+            converted: formatMoney({ amount: each.converted, currency: each.to }),
+          })}
+        </p>
+      ))}
       <table>
         <thead>
           <tr>
             <th scope="col">{t('cashDesk.currency')}</th>
-            <th scope="col">{t('cashDesk.receipt.expected')}</th>
+            <th scope="col">
+              {receipt.conversions.length > 0
+                ? t('cashDesk.receipt.expectedAfterConversion')
+                : t('cashDesk.receipt.expected')}
+            </th>
             <th scope="col">
               {receipt.type === 'captain_hand_in'
                 ? t('cashDesk.receipt.received')

@@ -100,6 +100,8 @@ class _$AdminDeskCustodyDtoOutput extends AdminDeskCustodyDtoOutput {
   final BuiltList<AdminDeskCustodyDtoOutputCurrenciesInner> currencies;
   @override
   final AdminDeskCustodyDtoOutputHandInGrace? handInGrace;
+  @override
+  final bool closedDueBlocks;
 
   factory _$AdminDeskCustodyDtoOutput([
     void Function(AdminDeskCustodyDtoOutputBuilder)? updates,
@@ -115,6 +117,7 @@ class _$AdminDeskCustodyDtoOutput extends AdminDeskCustodyDtoOutput {
     required this.lastCutoff,
     required this.currencies,
     this.handInGrace,
+    required this.closedDueBlocks,
   }) : super._();
   @override
   AdminDeskCustodyDtoOutput rebuild(
@@ -137,7 +140,8 @@ class _$AdminDeskCustodyDtoOutput extends AdminDeskCustodyDtoOutput {
         closedDue == other.closedDue &&
         lastCutoff == other.lastCutoff &&
         currencies == other.currencies &&
-        handInGrace == other.handInGrace;
+        handInGrace == other.handInGrace &&
+        closedDueBlocks == other.closedDueBlocks;
   }
 
   @override
@@ -152,6 +156,7 @@ class _$AdminDeskCustodyDtoOutput extends AdminDeskCustodyDtoOutput {
     _$hash = $jc(_$hash, lastCutoff.hashCode);
     _$hash = $jc(_$hash, currencies.hashCode);
     _$hash = $jc(_$hash, handInGrace.hashCode);
+    _$hash = $jc(_$hash, closedDueBlocks.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -167,7 +172,8 @@ class _$AdminDeskCustodyDtoOutput extends AdminDeskCustodyDtoOutput {
           ..add('closedDue', closedDue)
           ..add('lastCutoff', lastCutoff)
           ..add('currencies', currencies)
-          ..add('handInGrace', handInGrace))
+          ..add('handInGrace', handInGrace)
+          ..add('closedDueBlocks', closedDueBlocks))
         .toString();
   }
 }
@@ -226,6 +232,11 @@ class AdminDeskCustodyDtoOutputBuilder
   set handInGrace(AdminDeskCustodyDtoOutputHandInGraceBuilder? handInGrace) =>
       _$this._handInGrace = handInGrace;
 
+  bool? _closedDueBlocks;
+  bool? get closedDueBlocks => _$this._closedDueBlocks;
+  set closedDueBlocks(bool? closedDueBlocks) =>
+      _$this._closedDueBlocks = closedDueBlocks;
+
   AdminDeskCustodyDtoOutputBuilder() {
     AdminDeskCustodyDtoOutput._defaults(this);
   }
@@ -242,6 +253,7 @@ class AdminDeskCustodyDtoOutputBuilder
       _lastCutoff = $v.lastCutoff;
       _currencies = $v.currencies.toBuilder();
       _handInGrace = $v.handInGrace?.toBuilder();
+      _closedDueBlocks = $v.closedDueBlocks;
       _$v = null;
     }
     return this;
@@ -291,6 +303,11 @@ class AdminDeskCustodyDtoOutputBuilder
             ),
             currencies: currencies.build(),
             handInGrace: _handInGrace?.build(),
+            closedDueBlocks: BuiltValueNullFieldError.checkNotNull(
+              closedDueBlocks,
+              r'AdminDeskCustodyDtoOutput',
+              'closedDueBlocks',
+            ),
           );
     } catch (_) {
       late String _$failedField;

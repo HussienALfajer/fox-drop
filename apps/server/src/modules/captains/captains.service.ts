@@ -1096,12 +1096,17 @@ export class CaptainsService implements OnModuleInit {
   async deskCustody(
     captainId: string,
     now: Date,
-  ): Promise<DeskCaptain & { custody: Custody; handInGrace: HandInGrace | null }> {
+  ): Promise<
+    DeskCaptain & { custody: Custody; handInGrace: HandInGrace | null; closedDueBlocks: boolean }
+  > {
     const row = await this.row(this.database.db, captainId);
     const rules = await this.cityRules(row.cityId, now);
     const custody = await this.custody(this.database.db, row, rules.lastCutoff, rules.warnPct);
     const handInGrace = await this.graceOf(this.database.db, row.cityId, row.id, now);
+    // AP §8.5.4: what a grace would lift (above the tolerance, none running).
+    const closedDueBlocks = custody.closedDue.amount > rules.remitTolerance && handInGrace === null;
     return {
+      closedDueBlocks,
       id: row.id,
       cityId: row.cityId,
       name: row.name,
@@ -1125,7 +1130,15 @@ export class CaptainsService implements OnModuleInit {
     const listed: CaptainBalance[] = [];
     for (const row of rows) {
       const executor = this.database.db;
-      const custody = await this.custody(executor, row, rules.lastCutoff, rules.warnPct);
+      // A captain whose cash cannot be read now (a currency without a rate)
+      // is logged and left out, as cashLimits does, so the list still shows.
+      const custody = await this.custody(executor, row, rules.lastCutoff, rules.warnPct).catch(
+        (error: unknown) => {
+          this.logger.warn({ err: error, captainId: row.id }, 'balance not read');
+          return null;
+        },
+      );
+      if (custody === null) continue;
       let earnings = 0n;
       for (const account of await this.ledger.ownerAccounts(
         cityId,

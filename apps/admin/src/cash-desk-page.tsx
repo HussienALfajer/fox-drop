@@ -87,13 +87,12 @@ export function CashDeskPage() {
       ) : (
         <>
           <SessionSection current={current.data} city={city} />
-          {current.data.session && (
-            <HandInSection
-              city={city}
-              currencies={current.data.currencies}
-              initialCaptain={search.captain}
-            />
-          )}
+          <HandInSection
+            city={city}
+            currencies={current.data.currencies}
+            initialCaptain={search.captain}
+            sessionOpen={current.data.session !== null}
+          />
         </>
       )}
     </main>
@@ -291,10 +290,13 @@ function HandInSection({
   city,
   currencies,
   initialCaptain,
+  sessionOpen,
 }: {
   city: City;
   currencies: string[];
   initialCaptain: string | undefined;
+  // A grace needs no drawer (the office may be closed); the hand-in does.
+  sessionOpen: boolean;
 }) {
   const { t } = useTranslation();
   const { session } = signedIn.useRouteContext();
@@ -326,7 +328,13 @@ function HandInSection({
         </ul>
       )}
       {captainId && (
-        <CaptainCustody key={captainId} captainId={captainId} city={city} currencies={currencies} />
+        <CaptainCustody
+          key={captainId}
+          captainId={captainId}
+          city={city}
+          currencies={currencies}
+          sessionOpen={sessionOpen}
+        />
       )}
     </section>
   );
@@ -336,10 +344,12 @@ function CaptainCustody({
   captainId,
   city,
   currencies,
+  sessionOpen,
 }: {
   captainId: string;
   city: City;
   currencies: string[];
+  sessionOpen: boolean;
 }) {
   const { t } = useTranslation();
   const custody = useDeskCustody(captainId);
@@ -348,7 +358,11 @@ function CaptainCustody({
   return (
     <>
       <Grace custody={custody.data} city={city} />
-      <HandInForm custody={custody.data} city={city} currencies={currencies} />
+      {sessionOpen ? (
+        <HandInForm custody={custody.data} city={city} currencies={currencies} />
+      ) : (
+        <p>{t('cashDesk.handIn.openFirst')}</p>
+      )}
     </>
   );
 }
@@ -370,7 +384,7 @@ function Grace({ custody, city }: { custody: DeskCustody; city: City }) {
       </p>
     );
   }
-  if (BigInt(custody.closedDue.amount) <= 0n || !can(session, HAND_IN_GRACE)) return null;
+  if (!custody.closedDueBlocks || !can(session, HAND_IN_GRACE)) return null;
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -404,10 +418,18 @@ function BulkGrace({ city }: { city: City }) {
   const { t } = useTranslation();
   const grant = useBulkGrace(city.id);
   const [reason, setReason] = useState('');
+  // Every captain of the city at once: a second press confirms.
+  const [confirming, setConfirming] = useState(false);
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    if (reason.trim() !== '') grant.mutate(reason.trim());
+    if (reason.trim() === '') return;
+    if (!confirming) {
+      setConfirming(true);
+      return;
+    }
+    setConfirming(false);
+    grant.mutate(reason.trim());
   }
 
   return (
@@ -420,11 +442,14 @@ function BulkGrace({ city }: { city: City }) {
           <input
             value={reason}
             maxLength={500}
-            onChange={(event) => setReason(event.target.value)}
+            onChange={(event) => {
+              setConfirming(false);
+              setReason(event.target.value);
+            }}
           />
         </label>{' '}
         <button type="submit" disabled={reason.trim() === '' || grant.isPending}>
-          {t('cashDesk.grace.bulkGrant')}
+          {confirming ? t('cashDesk.grace.bulkConfirm') : t('cashDesk.grace.bulkGrant')}
         </button>
       </p>
       {grant.isError && <p role="alert">{t('common.failed')}</p>}

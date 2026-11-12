@@ -29,6 +29,7 @@ const custody: DeskCustody = {
     { currency: 'SYP', balance: '0', closedDue: '0', today: '0', balanceInBase: '0' },
   ],
   handInGrace: null,
+  closedDueBlocks: true,
 };
 const [lira, dollar, pound] = custody.currencies as [
   DeskCustody['currencies'][number],

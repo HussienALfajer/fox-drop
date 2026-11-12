@@ -722,6 +722,43 @@ describe('cross-currency settlement (AP §9.10.3, §8.6)', () => {
     expect(await balances(captainId)).toEqual({ USD: 2_000n });
   });
 
+  it('answers a repeat of a conversion with the same receipt, posting once', async () => {
+    const { cashier } = await openDesk();
+    const { id: captainId } = await captain();
+    await custody(captainId, 'custody.collect', 2_000n, 'USD');
+    const quote = await desk.quoteConversion(azaz, { from: 'USD', to: 'TRY', amount: 2_000n });
+    const command = {
+      captainId,
+      conversions: [
+        { from: 'USD', to: 'TRY', amount: 2_000n, converted: 80_000n, rates: quote.rates },
+      ],
+      lines: [{ currency: 'TRY', amount: 80_000n }],
+      idempotencyKey: randomUUID(),
+    };
+    const [first] = await desk.handIn(cashier.user, command, new Date());
+    const [again] = await desk.handIn(cashier.user, command, new Date());
+    expect(again!.id).toBe(first!.id);
+    const journals = await sql.query(
+      "SELECT type FROM ledger.journals WHERE source_kind = 'receipt' AND source_id = $1 ORDER BY type",
+      [first!.id],
+    );
+    expect(journals.rows.map((row) => row.type)).toEqual(['custody.fx_convert', 'custody.hand_in']);
+    expect(await balances(captainId)).toEqual({ TRY: 0n, USD: 0n });
+    // The key with another conversion is refused.
+    expect(
+      await refusal(
+        desk.handIn(
+          cashier.user,
+          {
+            ...command,
+            conversions: [{ ...command.conversions[0]!, amount: 1_000n, converted: 40_000n }],
+          },
+          new Date(),
+        ),
+      ),
+    ).toBe('idempotency_key_reused');
+  });
+
   it('quote and record a conversion through the routes', async () => {
     const { cashier } = await openDesk();
     const { id: captainId } = await captain();

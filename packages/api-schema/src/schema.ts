@@ -9074,6 +9074,8 @@ export interface components {
                 /** Format: date-time */
                 grantedAt: string;
             } | null;
+            /** @description closed_due above the tolerance with no grace running: what a grace lifts. */
+            closedDueBlocks: boolean;
         };
         AdminCaptainBalancesDto_Output: {
             captains: {

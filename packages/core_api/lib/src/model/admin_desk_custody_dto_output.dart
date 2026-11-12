@@ -25,6 +25,7 @@ part 'admin_desk_custody_dto_output.g.dart';
 /// * [lastCutoff]
 /// * [currencies]
 /// * [handInGrace]
+/// * [closedDueBlocks] - closed_due above the tolerance with no grace running: what a grace lifts.
 @BuiltValue()
 abstract class AdminDeskCustodyDtoOutput
     implements
@@ -56,6 +57,10 @@ abstract class AdminDeskCustodyDtoOutput
 
   @BuiltValueField(wireName: r'handInGrace')
   AdminDeskCustodyDtoOutputHandInGrace? get handInGrace;
+
+  /// closed_due above the tolerance with no grace running: what a grace lifts.
+  @BuiltValueField(wireName: r'closedDueBlocks')
+  bool get closedDueBlocks;
 
   AdminDeskCustodyDtoOutput._();
 
@@ -138,6 +143,11 @@ class _$AdminDeskCustodyDtoOutputSerializer
               AdminDeskCustodyDtoOutputHandInGrace,
             ),
           );
+    yield r'closedDueBlocks';
+    yield serializers.serialize(
+      object.closedDueBlocks,
+      specifiedType: const FullType(bool),
+    );
   }
 
   @override
@@ -258,6 +268,15 @@ class _$AdminDeskCustodyDtoOutputSerializer
                   as AdminDeskCustodyDtoOutputHandInGrace?;
           if (valueDes == null) continue;
           result.handInGrace.replace(valueDes);
+          break;
+        case r'closedDueBlocks':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.closedDueBlocks = valueDes;
           break;
         default:
           unhandled.add(key);

@@ -88,6 +88,9 @@ class AdminDeskCustodyDto extends createZodDto(
     status: captainStatus,
     ...custodyFields,
     handInGrace: grace,
+    closedDueBlocks: z
+      .boolean()
+      .describe('closed_due above the tolerance with no grace running: what a grace lifts.'),
   }),
 ) {}
 
@@ -294,6 +297,7 @@ export class AdminCashDeskController {
       status: found.status,
       ...custodyBody(found.custody),
       handInGrace: graceBodyOf(found.handInGrace),
+      closedDueBlocks: found.closedDueBlocks,
     };
   }
 

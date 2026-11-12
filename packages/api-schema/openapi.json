@@ -32296,6 +32296,10 @@
               }
             ],
             "description": "The hand-in grace running now (AP §8.5.4), or null."
+          },
+          "closedDueBlocks": {
+            "type": "boolean",
+            "description": "closed_due above the tolerance with no grace running: what a grace lifts."
           }
         },
         "required": [
@@ -32307,7 +32311,8 @@
           "closedDue",
           "lastCutoff",
           "currencies",
-          "handInGrace"
+          "handInGrace",
+          "closedDueBlocks"
         ],
         "additionalProperties": false
       },
