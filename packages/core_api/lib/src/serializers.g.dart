@@ -48,9 +48,24 @@ Serializers _$serializers =
           ..add(AdminChangeTimeDto.serializer)
           ..add(AdminCitiesDtoOutput.serializer)
           ..add(AdminCitiesDtoOutputCitiesInner.serializer)
+          ..add(AdminCloseDrawerSessionDto.serializer)
           ..add(AdminCloseItemReportDto.serializer)
           ..add(AdminConfirmPickupDto.serializer)
           ..add(AdminContactDtoOutput.serializer)
+          ..add(AdminCurrentDrawerSessionDtoOutput.serializer)
+          ..add(AdminCurrentDrawerSessionDtoOutputSession.serializer)
+          ..add(
+            AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner.serializer,
+          )
+          ..add(AdminCurrentDrawerSessionDtoOutputSessionKindEnum.serializer)
+          ..add(AdminDeskCaptainsDtoOutput.serializer)
+          ..add(AdminDeskCaptainsDtoOutputCaptainsInner.serializer)
+          ..add(AdminDeskCaptainsDtoOutputCaptainsInnerStatusEnum.serializer)
+          ..add(AdminDeskCustodyDtoOutput.serializer)
+          ..add(AdminDeskCustodyDtoOutputClosedDue.serializer)
+          ..add(AdminDeskCustodyDtoOutputCurrenciesInner.serializer)
+          ..add(AdminDeskCustodyDtoOutputStatusEnum.serializer)
+          ..add(AdminDeskCustodyDtoOutputUsage.serializer)
           ..add(AdminDeviceReleasedDtoOutput.serializer)
           ..add(AdminDeviceReleasedDtoOutputStatusEnum.serializer)
           ..add(AdminDispatchStateDtoOutput.serializer)
@@ -58,6 +73,11 @@ Serializers _$serializers =
           ..add(AdminDispatchStateDtoOutputOrderCaptainTrackEnum.serializer)
           ..add(AdminDispatchStateDtoOutputOrderOffer.serializer)
           ..add(AdminDispatchStateDtoOutputOrderStatusEnum.serializer)
+          ..add(AdminDrawerSessionDtoOutput.serializer)
+          ..add(AdminDrawerSessionDtoOutputKindEnum.serializer)
+          ..add(AdminDrawerSessionsDtoOutput.serializer)
+          ..add(AdminDrawerSessionsDtoOutputSessionsInner.serializer)
+          ..add(AdminDrawerSessionsDtoOutputSessionsInnerKindEnum.serializer)
           ..add(AdminEditDto.serializer)
           ..add(AdminEditDtoAddInner.serializer)
           ..add(AdminEditDtoKeepInner.serializer)
@@ -87,6 +107,11 @@ Serializers _$serializers =
           ..add(AdminFaqsDtoOutput.serializer)
           ..add(AdminFaqsDtoOutputCustomerInner.serializer)
           ..add(AdminForceOfflineDto.serializer)
+          ..add(AdminHandInDto.serializer)
+          ..add(AdminHandInReceiptsDtoOutput.serializer)
+          ..add(AdminHandInReceiptsDtoOutputReceiptsInner.serializer)
+          ..add(AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner.serializer)
+          ..add(AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum.serializer)
           ..add(AdminHandoverDto.serializer)
           ..add(AdminImageSetDtoOutput.serializer)
           ..add(AdminNewUploadDto.serializer)
@@ -111,6 +136,8 @@ Serializers _$serializers =
             AdminNotificationTextsDtoOutputTemplatesInnerPriorityEnum
                 .serializer,
           )
+          ..add(AdminOpenDrawerSessionDto.serializer)
+          ..add(AdminOpenDrawerSessionDtoFloatsInner.serializer)
           ..add(AdminOrderCardDtoOutput.serializer)
           ..add(AdminOrderCardDtoOutputOrder.serializer)
           ..add(AdminOrderCardDtoOutputOrderAlertsEnum.serializer)
@@ -286,6 +313,8 @@ Serializers _$serializers =
           ..add(AdminReassignPreviewAnswerDtoOutputEntriesInner.serializer)
           ..add(AdminReassignPreviewDto.serializer)
           ..add(AdminReassignPreviewDtoCashEnum.serializer)
+          ..add(AdminReceiptDtoOutput.serializer)
+          ..add(AdminReceiptDtoOutputTypeEnum.serializer)
           ..add(AdminRecordArrivalDto.serializer)
           ..add(AdminRecordDeliveryDto.serializer)
           ..add(AdminRecordDeliveryDtoAmountDue.serializer)
@@ -845,6 +874,57 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(
+                AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminDeskCaptainsDtoOutputCaptainsInner),
+            ]),
+            () => ListBuilder<AdminDeskCaptainsDtoOutputCaptainsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminDeskCustodyDtoOutputCurrenciesInner),
+            ]),
+            () => ListBuilder<AdminDeskCustodyDtoOutputCurrenciesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminDrawerSessionsDtoOutputSessionsInner),
+            ]),
+            () => ListBuilder<AdminDrawerSessionsDtoOutputSessionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminEditDtoKeepInner),
             ]),
             () => ListBuilder<AdminEditDtoKeepInner>(),
@@ -917,9 +997,55 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminHandInReceiptsDtoOutputReceiptsInner),
+            ]),
+            () => ListBuilder<AdminHandInReceiptsDtoOutputReceiptsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminNotificationTextsDtoOutputTemplatesInner),
             ]),
             () => ListBuilder<AdminNotificationTextsDtoOutputTemplatesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOpenDrawerSessionDtoFloatsInner),
+            ]),
+            () => ListBuilder<AdminOpenDrawerSessionDtoFloatsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOpenDrawerSessionDtoFloatsInner),
+            ]),
+            () => ListBuilder<AdminOpenDrawerSessionDtoFloatsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOpenDrawerSessionDtoFloatsInner),
+            ]),
+            () => ListBuilder<AdminOpenDrawerSessionDtoFloatsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

@@ -3124,6 +3124,118 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/cash-desk/captains": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCashDeskFindCaptains"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cash-desk/captains/{captainId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCashDeskCustody"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cash-desk/sessions/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCashDeskCurrent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cash-desk/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCashDeskSessions"];
+        put?: never;
+        post: operations["adminCashDeskOpen"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cash-desk/sessions/{sessionId}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCashDeskClose"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cash-desk/hand-ins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCashDeskHandIn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cash-desk/receipts/{receiptId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCashDeskReceipt"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -8798,6 +8910,200 @@ export interface components {
                 aboveMaxPickup: boolean;
             };
         };
+        AdminDeskCaptainsDto_Output: {
+            captains: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                /** @enum {string} */
+                status: "active" | "suspended" | "terminated";
+            }[];
+        };
+        AdminDeskCustodyDto_Output: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @enum {string} */
+            status: "active" | "suspended" | "terminated";
+            usage: {
+                amount: string;
+                currency: string;
+            };
+            limit: {
+                amount: string;
+                currency: string;
+            };
+            /** @description Due from closed days, netted in the base currency (AP §8.5.4). */
+            closedDue: {
+                amount: string;
+                currency: string;
+            };
+            /** Format: date-time */
+            lastCutoff: string;
+            currencies: {
+                currency: string;
+                /** @description + the captain hands in, − the office owes them. */
+                balance: string;
+                closedDue: string;
+                today: string;
+                balanceInBase: string;
+            }[];
+        };
+        AdminCurrentDrawerSessionDto_Output: {
+            session: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                cityId: string;
+                /** Format: uuid */
+                adminAccountId: string;
+                adminName: string | null;
+                /** @enum {string} */
+                kind: "office";
+                /** Format: date-time */
+                openedAt: string;
+                closedAt: string | null;
+                closeNote: string | null;
+                currencies: {
+                    currency: string;
+                    openingFloat: string;
+                    /** @description The float plus the cash moved; as at the close once closed. */
+                    expected: string;
+                    counted: string | null;
+                    variance: string | null;
+                }[];
+            } | null;
+        };
+        AdminDrawerSessionsDto_Output: {
+            sessions: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                cityId: string;
+                /** Format: uuid */
+                adminAccountId: string;
+                adminName: string | null;
+                /** @enum {string} */
+                kind: "office";
+                /** Format: date-time */
+                openedAt: string;
+                closedAt: string | null;
+                closeNote: string | null;
+                currencies: {
+                    currency: string;
+                    openingFloat: string;
+                    /** @description The float plus the cash moved; as at the close once closed. */
+                    expected: string;
+                    counted: string | null;
+                    variance: string | null;
+                }[];
+            }[];
+        };
+        AdminOpenDrawerSessionDto: {
+            /** Format: uuid */
+            cityId: string;
+            floats: {
+                currency: string;
+                amount: string;
+            }[];
+        };
+        AdminDrawerSessionDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            cityId: string;
+            /** Format: uuid */
+            adminAccountId: string;
+            adminName: string | null;
+            /** @enum {string} */
+            kind: "office";
+            /** Format: date-time */
+            openedAt: string;
+            closedAt: string | null;
+            closeNote: string | null;
+            currencies: {
+                currency: string;
+                openingFloat: string;
+                /** @description The float plus the cash moved; as at the close once closed. */
+                expected: string;
+                counted: string | null;
+                variance: string | null;
+            }[];
+        };
+        AdminCloseDrawerSessionDto: {
+            counted: {
+                currency: string;
+                amount: string;
+            }[];
+            /** @description Required when any currency has a variance. */
+            note: string | null;
+        };
+        AdminHandInDto: {
+            /** Format: uuid */
+            captainId: string;
+            lines: {
+                currency: string;
+                amount: string;
+            }[];
+        };
+        AdminHandInReceiptsDto_Output: {
+            receipts: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                cityId: string;
+                /** @description Such as AZ-2026-000123 (AP §4.8). */
+                number: string;
+                /** @enum {string} */
+                type: "captain_hand_in" | "captain_reimbursement";
+                /** Format: uuid */
+                sessionId: string;
+                /** Format: uuid */
+                cashierId: string;
+                cashierName: string | null;
+                /** Format: uuid */
+                captainId: string;
+                captainName: string;
+                /** Format: date-time */
+                createdAt: string;
+                lines: {
+                    currency: string;
+                    /** @description The custody before, + to hand in, − owed to the captain. */
+                    expected: string;
+                    amount: string;
+                    /** @description What stays open after it. */
+                    remaining: string;
+                }[];
+            }[];
+        };
+        AdminReceiptDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            cityId: string;
+            /** @description Such as AZ-2026-000123 (AP §4.8). */
+            number: string;
+            /** @enum {string} */
+            type: "captain_hand_in" | "captain_reimbursement";
+            /** Format: uuid */
+            sessionId: string;
+            /** Format: uuid */
+            cashierId: string;
+            cashierName: string | null;
+            /** Format: uuid */
+            captainId: string;
+            captainName: string;
+            /** Format: date-time */
+            createdAt: string;
+            lines: {
+                currency: string;
+                /** @description The custody before, + to hand in, − owed to the captain. */
+                expected: string;
+                amount: string;
+                /** @description What stays open after it. */
+                remaining: string;
+            }[];
+        };
     };
     responses: never;
     parameters: never;
@@ -13732,6 +14038,193 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptainOfferDto_Output"];
+                };
+            };
+        };
+    };
+    adminCashDeskFindCaptains: {
+        parameters: {
+            query: {
+                cityId: string;
+                /** @description A part of the name, or the number in E.164. */
+                q: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDeskCaptainsDto_Output"];
+                };
+            };
+        };
+    };
+    adminCashDeskCustody: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                captainId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDeskCustodyDto_Output"];
+                };
+            };
+        };
+    };
+    adminCashDeskCurrent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCurrentDrawerSessionDto_Output"];
+                };
+            };
+        };
+    };
+    adminCashDeskSessions: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDrawerSessionsDto_Output"];
+                };
+            };
+        };
+    };
+    adminCashDeskOpen: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminOpenDrawerSessionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDrawerSessionDto_Output"];
+                };
+            };
+        };
+    };
+    adminCashDeskClose: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sessionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCloseDrawerSessionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDrawerSessionDto_Output"];
+                };
+            };
+        };
+    };
+    adminCashDeskHandIn: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminHandInDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminHandInReceiptsDto_Output"];
+                };
+            };
+        };
+    };
+    adminCashDeskReceipt: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                receiptId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminReceiptDto_Output"];
                 };
             };
         };

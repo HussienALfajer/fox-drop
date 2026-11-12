@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { STATUS_CONTROLLERS } from './http/status.js';
 import { CaptainsModule } from './modules/captains/index.js';
+import { CashDeskModule } from './modules/cashdesk/index.js';
 import { ContentModule } from './modules/content/index.js';
 import { CustomersModule } from './modules/customers/index.js';
 import { DispatchModule } from './modules/dispatch/index.js';
@@ -33,6 +34,7 @@ import { PlaceholderSeedModule } from './seed/placeholder-seed.js';
     CustomersModule,
     OrderingModule,
     DispatchModule,
+    CashDeskModule,
     NotificationsModule,
     ContentModule,
     FilesModule,

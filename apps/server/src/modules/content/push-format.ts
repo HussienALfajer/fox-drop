@@ -32,3 +32,11 @@ export function formatTime(moment: Date, timeZone: string): string {
   const hour = Number(parts.hour) % 24;
   return `${hour % 12 === 0 ? 12 : hour % 12}:${parts.minute} ${hour < 12 ? 'ص' : 'م'}`;
 }
+
+// AP §9.10.3, CA §14 #19 «إيصال {رقم}: {النوع} {المبلغ}»: the type printed on a
+// desk receipt and named in its push (slice 2.17a; the wording is ours, to
+// confirm with the owner).
+export const receiptTypeLabels = {
+  captain_hand_in: 'تسليم نقد',
+  captain_reimbursement: 'صرف للكابتن',
+} as const;
