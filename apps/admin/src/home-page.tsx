@@ -1,6 +1,7 @@
 import { getRouteApi, Link, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { SETTINGS_READ } from './app-settings.js';
+import { CASH_DESK } from './cash-desk.js';
 import { CONTENT_FAQS, CONTENT_READ } from './content.js';
 import { EMERGENCY_CODE_PERMISSION } from './emergency-code.js';
 import { OPERATIONS_READ } from './orders-board.js';
@@ -60,6 +61,11 @@ export function HomePage() {
           {can(session, ZONES_READ) && (
             <li>
               <Link to="/peak-bonus">{t('peakBonus.title')}</Link>
+            </li>
+          )}
+          {can(session, CASH_DESK) && (
+            <li>
+              <Link to="/cash-desk">{t('cashDesk.title')}</Link>
             </li>
           )}
           {can(session, SETTINGS_READ) && (

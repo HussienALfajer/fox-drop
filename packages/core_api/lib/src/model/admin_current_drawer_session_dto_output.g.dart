@@ -10,12 +10,17 @@ class _$AdminCurrentDrawerSessionDtoOutput
     extends AdminCurrentDrawerSessionDtoOutput {
   @override
   final AdminCurrentDrawerSessionDtoOutputSession? session;
+  @override
+  final BuiltList<String> currencies;
 
   factory _$AdminCurrentDrawerSessionDtoOutput([
     void Function(AdminCurrentDrawerSessionDtoOutputBuilder)? updates,
   ]) => (AdminCurrentDrawerSessionDtoOutputBuilder()..update(updates))._build();
 
-  _$AdminCurrentDrawerSessionDtoOutput._({this.session}) : super._();
+  _$AdminCurrentDrawerSessionDtoOutput._({
+    this.session,
+    required this.currencies,
+  }) : super._();
   @override
   AdminCurrentDrawerSessionDtoOutput rebuild(
     void Function(AdminCurrentDrawerSessionDtoOutputBuilder) updates,
@@ -29,22 +34,25 @@ class _$AdminCurrentDrawerSessionDtoOutput
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is AdminCurrentDrawerSessionDtoOutput &&
-        session == other.session;
+        session == other.session &&
+        currencies == other.currencies;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, session.hashCode);
+    _$hash = $jc(_$hash, currencies.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(
-      r'AdminCurrentDrawerSessionDtoOutput',
-    )..add('session', session)).toString();
+    return (newBuiltValueToStringHelper(r'AdminCurrentDrawerSessionDtoOutput')
+          ..add('session', session)
+          ..add('currencies', currencies))
+        .toString();
   }
 }
 
@@ -62,6 +70,12 @@ class AdminCurrentDrawerSessionDtoOutputBuilder
   set session(AdminCurrentDrawerSessionDtoOutputSessionBuilder? session) =>
       _$this._session = session;
 
+  ListBuilder<String>? _currencies;
+  ListBuilder<String> get currencies =>
+      _$this._currencies ??= ListBuilder<String>();
+  set currencies(ListBuilder<String>? currencies) =>
+      _$this._currencies = currencies;
+
   AdminCurrentDrawerSessionDtoOutputBuilder() {
     AdminCurrentDrawerSessionDtoOutput._defaults(this);
   }
@@ -70,6 +84,7 @@ class AdminCurrentDrawerSessionDtoOutputBuilder
     final $v = _$v;
     if ($v != null) {
       _session = $v.session?.toBuilder();
+      _currencies = $v.currencies.toBuilder();
       _$v = null;
     }
     return this;
@@ -95,12 +110,17 @@ class AdminCurrentDrawerSessionDtoOutputBuilder
     try {
       _$result =
           _$v ??
-          _$AdminCurrentDrawerSessionDtoOutput._(session: _session?.build());
+          _$AdminCurrentDrawerSessionDtoOutput._(
+            session: _session?.build(),
+            currencies: currencies.build(),
+          );
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'session';
         _session?.build();
+        _$failedField = 'currencies';
+        currencies.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminCurrentDrawerSessionDtoOutput',

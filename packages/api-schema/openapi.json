@@ -8221,7 +8221,18 @@
     "/v1/admin/cash-desk/sessions/current": {
       "get": {
         "operationId": "adminCashDeskCurrent",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "cityId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -32094,10 +32105,19 @@
                 "type": "null"
               }
             ]
+          },
+          "currencies": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z]{3}$"
+            },
+            "description": "The city's enabled currencies in display order: the float's fields."
           }
         },
         "required": [
-          "session"
+          "session",
+          "currencies"
         ],
         "additionalProperties": false
       },

@@ -1110,5 +1110,90 @@
       "6": "السبت",
       "7": "الأحد"
     }
+  },
+  "cashDesk": {
+    "title": "الصندوق",
+    "currency": "العملة",
+    "status": {
+      "active": "نشط",
+      "suspended": "موقوف",
+      "terminated": "منتهي العقد"
+    },
+    "session": {
+      "title": "جلسة الصندوق",
+      "none": "لا جلسة مفتوحة. افتح الصندوق بعدّ المبلغ الافتتاحي لتسجّل أي عملية.",
+      "floatIn": "المبلغ الافتتاحي ({{currency}})",
+      "open": "فتح الصندوق",
+      "openSince": "مفتوحة منذ {{at}}",
+      "float": "المبلغ الافتتاحي",
+      "expected": "المتوقع",
+      "counted": "المعدود",
+      "variance": "الفرق",
+      "close": "إقفال الصندوق",
+      "countedIn": "النقد المعدود ({{currency}})",
+      "varianceNote": "المعدود يختلف عن المتوقع: اكتب ملاحظة بالفرق.",
+      "note": "ملاحظة"
+    },
+    "handIn": {
+      "title": "تسليم النقد اليومي",
+      "search": "ابحث عن الكابتن بالاسم أو الرقم",
+      "noneFound": "لا كابتن بهذا الاسم أو الرقم.",
+      "closedDue": "المستحق من أيام سابقة: {{amount}} (حتى {{cutoff}})",
+      "noCustody": "لا عهدة لدى هذا الكابتن.",
+      "previousDays": "من أيام سابقة",
+      "today": "من اليوم",
+      "expected": "المتوقع",
+      "baseEquivalent": "بالعملة الأساسية",
+      "toReceive": "يسلّم {{amount}}",
+      "toPay": "يُصرف له {{amount}}",
+      "nothing": "لا شيء",
+      "receivedIn": "المستلَم من الكابتن ({{currency}})",
+      "paidIn": "المصروف للكابتن ({{currency}})",
+      "review": "مراجعة",
+      "confirmTitle": "تأكيد العملية",
+      "willReceive": "استلام {{amount}}.",
+      "willPay": "صرف {{amount}} للكابتن.",
+      "settled": "تُسوّى العهدة بهذه العملة.",
+      "remaining": "يبقى مفتوحاً: {{amount}}.",
+      "confirm": "تأكيد وإصدار الإيصال",
+      "issued": "صدر الإيصال {{number}}"
+    },
+    "problem": {
+      "amount": "اكتب مبلغاً صحيحاً بعملة {{currency}}.",
+      "above": "المبلغ أكبر من العهدة بعملة {{currency}}."
+    },
+    "refusal": {
+      "session_open": "لديك جلسة مفتوحة.",
+      "session_closed": "الجلسة مقفلة.",
+      "note_required": "اكتب ملاحظة بالفرق.",
+      "invalid_amounts": "مبلغ غير مقبول.",
+      "no_open_session": "افتح الصندوق أولاً.",
+      "nothing_due": "لا عهدة بهذه العملة الآن.",
+      "above_custody": "المبلغ أكبر من العهدة الآن.",
+      "unknown_captain": "الكابتن غير موجود في هذه المدينة."
+    },
+    "receiptType": {
+      "captain_hand_in": "تسليم نقد",
+      "captain_reimbursement": "صرف للكابتن"
+    },
+    "receipt": {
+      "printThermal": "طباعة 80 مم",
+      "printA4": "طباعة A4",
+      "number": "إيصال {{number}}",
+      "captain": "الكابتن: {{name}}",
+      "cashier": "أمين الصندوق: {{name}}",
+      "expected": "العهدة قبل",
+      "received": "المستلَم",
+      "paid": "المصروف",
+      "remaining": "المتبقي"
+    },
+    "sessions": {
+      "title": "جلسات الصندوق",
+      "none": "لا جلسات بعد.",
+      "line": "{{name}} — فُتحت {{opened}}",
+      "closedAt": "أُقفلت {{at}}",
+      "stillOpen": "ما زالت مفتوحة.",
+      "note": "الملاحظة: {{note}}"
+    }
   }
 }

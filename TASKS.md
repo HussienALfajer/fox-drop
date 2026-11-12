@@ -14,8 +14,8 @@ Slice 2.17a, the drawer session and the hand-in in the same currency (`docs/road
   - [x] The `cashdesk` module and its schema: drawer sessions with their float per currency, opened one office session per user, closed with the expected and counted cash per currency and the variance with a note; receipts and their lines, numbered without gaps per city and year by a counter row (test first).
   - [x] The hand-in: `custody.hand_in` for a positive currency and `custody.reimburse` for a negative one against the session's `platform.cash`, under the captain's and the session's locks, refusing more than the custody, one receipt per kind, the `Idempotency-Key`, the audit, the silent push «إيصال {رقم}: {النوع} {المبلغ}» and `captain.availability_changed` (test first).
   - [x] The admin routes, the OpenAPI document and the generated clients, the route table.
-  - [ ] The panel's «الصندوق»: the session bar (open with the float, «إقفال الصندوق» with the counted cash and the note), «تسليم النقد اليومي» (search, the split custody, the received amounts, the confirmation), the receipt page printable on 80 mm and A4, OWN's sessions with their variances.
-  - [ ] The `cashdesk` module's `CLAUDE.md` and the panel's notes.
+  - [x] The panel's «الصندوق»: the session bar (open with the float, «إقفال الصندوق» with the counted cash and the note), «تسليم النقد اليومي» (search, the split custody, the received amounts, the confirmation), the receipt page printable on 80 mm and A4, OWN's sessions with their variances.
+  - [x] The `cashdesk` module's `CLAUDE.md` and the panel's notes.
 
 ### Owner decisions for 2.17 (2026-11-12)
 

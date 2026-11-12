@@ -8973,6 +8973,8 @@ export interface components {
                     variance: string | null;
                 }[];
             } | null;
+            /** @description The city's enabled currencies in display order: the float's fields. */
+            currencies: string[];
         };
         AdminDrawerSessionsDto_Output: {
             sessions: {
@@ -14090,7 +14092,9 @@ export interface operations {
     };
     adminCashDeskCurrent: {
         parameters: {
-            query?: never;
+            query: {
+                cityId: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;

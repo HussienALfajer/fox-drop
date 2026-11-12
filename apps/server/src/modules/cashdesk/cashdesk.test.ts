@@ -538,7 +538,7 @@ describe('the desk routes', () => {
       null,
     );
     expect(opened.statusCode).toBe(201);
-    const current = await cashier.get('/v1/admin/cash-desk/sessions/current');
+    const current = await cashier.get(`/v1/admin/cash-desk/sessions/current?cityId=${azaz}`);
     expect(current.json().session).toMatchObject({ id: opened.json().id });
     const closed = await cashier.post(
       `/v1/admin/cash-desk/sessions/${opened.json().id}/close`,
@@ -553,8 +553,9 @@ describe('the desk routes', () => {
     );
     expect(closed.statusCode).toBe(200);
     expect(closed.json().currencies[0]).toMatchObject({ variance: '0' });
-    expect((await cashier.get('/v1/admin/cash-desk/sessions/current')).json()).toEqual({
+    expect((await cashier.get(`/v1/admin/cash-desk/sessions/current?cityId=${azaz}`)).json()).toEqual({
       session: null,
+      currencies: ['TRY', 'USD'],
     });
 
     const finList = await cashier.get(`/v1/admin/cash-desk/sessions?cityId=${azaz}`);
@@ -573,6 +574,6 @@ describe('the desk routes', () => {
       ).size,
     ).toBeGreaterThan(1);
     const ops = await admin(['OPS']);
-    expect((await ops.get('/v1/admin/cash-desk/sessions/current')).statusCode).toBe(403);
+    expect((await ops.get(`/v1/admin/cash-desk/sessions/current?cityId=${azaz}`)).statusCode).toBe(403);
   });
 });

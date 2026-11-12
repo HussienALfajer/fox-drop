@@ -1003,6 +1003,7 @@ class AdminApi {
   ///
   ///
   /// Parameters:
+  /// * [cityId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1013,6 +1014,7 @@ class AdminApi {
   /// Returns a [Future] containing a [Response] with a [AdminCurrentDrawerSessionDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
   Future<Response<AdminCurrentDrawerSessionDtoOutput>> adminCashDeskCurrent({
+    required String cityId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -1028,9 +1030,18 @@ class AdminApi {
       validateStatus: validateStatus,
     );
 
+    final _queryParameters = <String, dynamic>{
+      r'cityId': encodeQueryParameter(
+        _serializers,
+        cityId,
+        const FullType(String),
+      ),
+    };
+
     final _response = await _dio.request<Object>(
       _path,
       options: _options,
+      queryParameters: _queryParameters,
       cancelToken: cancelToken,
       onSendProgress: onSendProgress,
       onReceiveProgress: onReceiveProgress,

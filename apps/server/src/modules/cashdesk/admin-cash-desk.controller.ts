@@ -97,8 +97,15 @@ const sessionBody = z.object({
 
 class AdminDrawerSessionDto extends createZodDto(sessionBody) {}
 
+class AdminCurrentDrawerSessionQueryDto extends createZodDto(z.object({ cityId: z.uuid() })) {}
+
 class AdminCurrentDrawerSessionDto extends createZodDto(
-  z.object({ session: sessionBody.nullable() }),
+  z.object({
+    session: sessionBody.nullable(),
+    currencies: z
+      .array(currency)
+      .describe("The city's enabled currencies in display order: the float's fields."),
+  }),
 ) {}
 
 class AdminDrawerSessionsQueryDto extends createZodDto(z.object({ cityId: z.uuid() })) {}
@@ -195,13 +202,19 @@ export class AdminCashDeskController {
     return { id: found.id, name: found.name, status: found.status, ...custodyBody(found.custody) };
   }
 
-  // The user's open session, or null.
+  // The user's open session, or null, and the city's currencies to count.
   @Get('sessions/current')
   @RequirePermission('cash_desk.record')
   @ZodResponse({ status: 200, type: AdminCurrentDrawerSessionDto })
-  async current(@CurrentAdminSession() session: AdminSession) {
-    const open = await this.desk.openSessionOf(session.accountId);
-    return { session: open && drawerBody(open) };
+  async current(
+    @Query() query: AdminCurrentDrawerSessionQueryDto,
+    @CurrentAdminSession() session: AdminSession,
+  ) {
+    const [open, currencies] = await Promise.all([
+      this.desk.openSessionOf(session.accountId),
+      this.desk.deskCurrencies(query.cityId),
+    ]);
+    return { session: open && drawerBody(open), currencies };
   }
 
   // The city's sessions with their variances, newest first: every user's

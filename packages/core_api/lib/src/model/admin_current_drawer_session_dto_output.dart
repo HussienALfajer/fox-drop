@@ -4,6 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/admin_current_drawer_session_dto_output_session.dart';
+import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -13,6 +14,7 @@ part 'admin_current_drawer_session_dto_output.g.dart';
 ///
 /// Properties:
 /// * [session]
+/// * [currencies] - The city's enabled currencies in display order: the float's fields.
 @BuiltValue()
 abstract class AdminCurrentDrawerSessionDtoOutput
     implements
@@ -22,6 +24,10 @@ abstract class AdminCurrentDrawerSessionDtoOutput
         > {
   @BuiltValueField(wireName: r'session')
   AdminCurrentDrawerSessionDtoOutputSession? get session;
+
+  /// The city's enabled currencies in display order: the float's fields.
+  @BuiltValueField(wireName: r'currencies')
+  BuiltList<String> get currencies;
 
   AdminCurrentDrawerSessionDtoOutput._();
 
@@ -62,6 +68,11 @@ class _$AdminCurrentDrawerSessionDtoOutputSerializer
               AdminCurrentDrawerSessionDtoOutputSession,
             ),
           );
+    yield r'currencies';
+    yield serializers.serialize(
+      object.currencies,
+      specifiedType: const FullType(BuiltList, [FullType(String)]),
+    );
   }
 
   @override
@@ -100,6 +111,17 @@ class _$AdminCurrentDrawerSessionDtoOutputSerializer
                   as AdminCurrentDrawerSessionDtoOutputSession?;
           if (valueDes == null) continue;
           result.session.replace(valueDes);
+          break;
+        case r'currencies':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltList<String>;
+          result.currencies.replace(valueDes);
           break;
         default:
           unhandled.add(key);

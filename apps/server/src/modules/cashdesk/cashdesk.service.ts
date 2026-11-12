@@ -153,9 +153,7 @@ export class CashDeskService {
     floats: CashLine[],
     now: Date,
   ): Promise<DrawerSession> {
-    const enabled = (await this.fx.cityCurrencies(cityId))
-      .filter((entry) => entry.enabled)
-      .map((entry) => entry.currency);
+    const enabled = await this.deskCurrencies(cityId);
     checkLines(floats, enabled, 0n);
     const id = await this.database.db.transaction(async (tx) => {
       await tx.execute(
@@ -198,6 +196,13 @@ export class CashDeskService {
       return sessionId;
     });
     return (await this.session(id))!;
+  }
+
+  // The city's enabled currencies in display order: what a float counts.
+  async deskCurrencies(cityId: string): Promise<string[]> {
+    return (await this.fx.cityCurrencies(cityId))
+      .filter((entry) => entry.enabled)
+      .map((entry) => entry.currency);
   }
 
   // The user's open office session, or null.
