@@ -13,9 +13,9 @@ Slice 2.17c, «عهدتي» in the captain app, with the office (`docs/roadmap.m
 - **Plan:**
   - [x] The office: location and desk hours per weekday per city, stored and audited, with the admin route and a small unstyled panel form (owner decision 2026-11-12) (test first for the hours: open now, closing time today).
   - [x] The captain's custody read: the custody per currency with its base equivalent, closed days and today, the limit and usage, the entries and the receipts (with their conversions), the office and its hours today, for `GET /v1/captain/...`; the OpenAPI document and the clients.
-  - [ ] «عهدتي» in the captain app (CA §10.2): the screen's logic and an unstyled layout, live on the captain channel (`captain.availability_changed` and the receipt push), the map button.
-  - [ ] The limit bar on home and the office's closing time in the hand-in reminder (CA §7.5, C13).
-  - [ ] The modules' and the apps' notes.
+  - [x] «عهدتي» in the captain app (CA §10.2): the screen's logic and an unstyled layout, live on the captain channel (`captain.availability_changed` and the receipt push), the map button.
+  - [x] The limit bar on home and the office's closing time in the hand-in reminder (CA §7.5, C13).
+  - [x] The modules' and the apps' notes.
 
 ### Left from 2.17b (`feat/cash-desk-currencies-grace`)
 

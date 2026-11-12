@@ -45,7 +45,9 @@ Map<String, Object?> availabilityJson({
   String? lastOrderBy,
   String? lastOrderReason,
   int? offersExpired,
+  Map<String, Object?>? office,
 }) => {
+  'office': office,
   'availability': {
     'state': state,
     'since': state == 'offline' ? null : now.toIso8601String(),
@@ -64,6 +66,24 @@ Map<String, Object?> availabilityJson({
     'lastCutoff': now.toIso8601String(),
     'remitTolerance': moneyJson('0'),
   },
+};
+
+/// The city's office (CA §7.5, C13): Saturday to Thursday 09:00–23:00 on
+/// the city's clock, open until 23:00 today unless closed (then it opens
+/// on Sunday at 09:00).
+Map<String, Object?> officeJson({bool open = true}) => {
+  'latitude': 36.5862,
+  'longitude': 37.0471,
+  'hours': [
+    for (final weekday in [6, 0, 1, 2, 3, 4])
+      {'weekday': weekday, 'opensAt': 540, 'closesAt': 1380},
+  ],
+  'timeZone': 'Asia/Damascus',
+  'open': open,
+  // On Saturday 7 November: 23:00 in Azaz is 20:00 UTC; Sunday 09:00 is
+  // 06:00 UTC.
+  'closesAt': open ? '2026-11-07T20:00:00.000Z' : null,
+  'opensAt': open ? null : '2026-11-08T06:00:00.000Z',
 };
 
 /// `GET /v1/captain/settings/max-pickup-amount` (CA §10.5, K2).

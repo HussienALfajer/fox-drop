@@ -2439,4 +2439,147 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get captainPeakDaySunday => 'الأحد';
+
+  @override
+  String get captainCustodyTitle => 'عهدتي';
+
+  @override
+  String captainCustodyOwed(String amount) {
+    return 'لك عند المكتب $amount';
+  }
+
+  @override
+  String get captainCustodyNothing => 'لا نقد معك للمنصة الآن.';
+
+  @override
+  String captainCustodyCurrency(String amount, String base) {
+    return '$amount (بالعملة الأساسية $base)';
+  }
+
+  @override
+  String captainCustodyPrevious(String amount) {
+    return 'من أيام سابقة: $amount';
+  }
+
+  @override
+  String captainCustodyToday(String amount) {
+    return 'من اليوم: $amount';
+  }
+
+  @override
+  String captainCustodyLimit(String usage, String limit) {
+    return 'حد العهدة: $usage من $limit';
+  }
+
+  @override
+  String get captainCustodyEntries => 'الحركات';
+
+  @override
+  String get captainCustodyNoEntries => 'لا حركات بعد.';
+
+  @override
+  String get captainCustodyEntryPayMerchant => 'دفع للمطعم';
+
+  @override
+  String get captainCustodyEntryCollect => 'تحصيل من الزبون';
+
+  @override
+  String get captainCustodyEntryChange => 'باقٍ للزبون';
+
+  @override
+  String get captainCustodyEntryHandIn => 'تسليم نقد';
+
+  @override
+  String get captainCustodyEntryReimburse => 'صرف للكابتن';
+
+  @override
+  String get captainCustodyEntryConversion => 'تحويل عملة';
+
+  @override
+  String get captainCustodyEntryCorrection => 'تصحيح';
+
+  @override
+  String get captainCustodyEntryOther => 'حركة';
+
+  @override
+  String captainCustodyEntryOrder(String kind, String number, String amount) {
+    return '$kind — الطلب $number: $amount';
+  }
+
+  @override
+  String captainCustodyEntryReceipt(
+    String kind,
+    String receipt,
+    String amount,
+  ) {
+    return '$kind — $receipt: $amount';
+  }
+
+  @override
+  String captainCustodyEntryPlain(String kind, String amount) {
+    return '$kind: $amount';
+  }
+
+  @override
+  String get captainCustodyReceipts => 'الإيصالات';
+
+  @override
+  String get captainCustodyNoReceipts => 'لا إيصالات بعد.';
+
+  @override
+  String captainCustodyReceipt(
+    String number,
+    String type,
+    String date,
+    String time,
+  ) {
+    return '$number — $type — $date $time';
+  }
+
+  @override
+  String captainCustodyReceiptCashier(String name) {
+    return 'أمين الصندوق: $name';
+  }
+
+  @override
+  String captainCustodyReceiptConversion(String amount, String converted) {
+    return 'تحويل $amount من العهدة إلى $converted';
+  }
+
+  @override
+  String get captainOffice => 'المكتب';
+
+  @override
+  String captainOfficeOpenUntil(String time) {
+    return 'المكتب مفتوح حتى $time';
+  }
+
+  @override
+  String captainOfficeClosed(String day, String time) {
+    return 'المكتب مغلق الآن، يفتح $day $time.';
+  }
+
+  @override
+  String get captainOfficeClosedAlways => 'المكتب مغلق الآن.';
+
+  @override
+  String get captainOfficeUnset => 'لم يُحدَّد موقع المكتب بعد.';
+
+  @override
+  String captainOfficeDay(String day, String from, String to) {
+    return '$day: من $from إلى $to';
+  }
+
+  @override
+  String captainOfficeDayClosed(String day) {
+    return '$day: مغلق';
+  }
+
+  @override
+  String get captainOfficeMap => 'موقع المكتب على الخريطة';
+
+  @override
+  String captainHandInOpen(String amount, String time) {
+    return 'عليك تسليم $amount. المكتب مفتوح حتى $time.';
+  }
 }
