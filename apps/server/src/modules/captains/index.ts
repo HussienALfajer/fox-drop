@@ -67,6 +67,8 @@ export {
   CaptainsRefusedError,
   CaptainsService,
   type Custody,
+  type CustodyCurrency,
+  type DeskCaptain,
   type IneligibleReason,
   type LocationPoint,
   type Money,

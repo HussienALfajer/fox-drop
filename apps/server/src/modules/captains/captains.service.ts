@@ -106,7 +106,18 @@ export type AvailabilityChange =
   | { kind: 'offline_after_order'; captainId: string; cityId: string; at: Date }
   // C3, CA §7.4 (slice 2.15b): offline after `count` offers in a row
   // expired unanswered.
-  | { kind: 'offers_expired'; captainId: string; cityId: string; count: number; at: Date };
+  | { kind: 'offers_expired'; captainId: string; cityId: string; count: number; at: Date }
+  // AP §9.10.3 (slice 2.17a): the desk moved the captain's custody, so the
+  // app reads its state again (the block lifts at once).
+  | { kind: 'custody_changed'; captainId: string; cityId: string; at: Date };
+
+// A captain as the desk finds them (AP §9.10.3 step 1).
+export interface DeskCaptain {
+  id: string;
+  cityId: string;
+  name: string;
+  status: CaptainStatus;
+}
 
 type AvailabilityListener = (tx: Tx, change: AvailabilityChange) => Promise<void>;
 
@@ -171,6 +182,22 @@ export interface Custody {
   // Counted at the last business-day cutoff.
   closedDue: Money;
   lastCutoff: Date;
+  // Each custody currency as the desk shows it (AP §9.10.3 step 2), in the
+  // city's display order of its accounts; a currency never held is absent.
+  currencies: CustodyCurrency[];
+}
+
+// One custody currency (AP §8.5.4), in its own minor units, from the
+// captain's side: + the captain must hand in, − the office owes them.
+export interface CustodyCurrency {
+  currency: string;
+  balance: bigint;
+  // The balance at the last cutoff plus the desk entries since.
+  closedDue: bigint;
+  // The rest: today's collections and pickup payments.
+  today: bigint;
+  // The balance at the current rate.
+  balanceInBase: bigint;
 }
 
 // One point the app sends while online (CA §4.3), every 10 seconds, or
@@ -1001,6 +1028,60 @@ export class CaptainsService implements OnModuleInit {
     };
   }
 
+  // AP §9.10.3 step 1: the city's captains whose name contains the text,
+  // terminated ones included (their custody is still settled), by name.
+  async findByName(cityId: string, text: string, limit: number): Promise<DeskCaptain[]> {
+    const pattern = `%${text.replace(/[\\%_]/g, (character) => `\\${character}`)}%`;
+    return this.database.db
+      .select({
+        id: captainRecords.id,
+        cityId: captainRecords.cityId,
+        name: captainRecords.name,
+        status: captainRecords.status,
+      })
+      .from(captainRecords)
+      .where(and(eq(captainRecords.cityId, cityId), sql`${captainRecords.name} ILIKE ${pattern}`))
+      .orderBy(captainRecords.name)
+      .limit(limit);
+  }
+
+  // AP §9.10.3 step 2: the captain and their custody now, per currency.
+  async deskCustody(captainId: string, now: Date): Promise<DeskCaptain & { custody: Custody }> {
+    const row = await this.row(this.database.db, captainId);
+    const rules = await this.cityRules(row.cityId, now);
+    const custody = await this.custody(this.database.db, row, rules.lastCutoff, rules.warnPct);
+    return { id: row.id, cityId: row.cityId, name: row.name, status: row.status, custody };
+  }
+
+  // AP §9.10.3, the ledger's «Concurrency»: reads the city's rules, then
+  // gives the function that locks the captain row in the desk's transaction
+  // and answers their custody, so two desks never settle one balance twice.
+  async deskLock(
+    captainId: string,
+    now: Date,
+  ): Promise<{ captain: DeskCaptain; lock: (tx: Tx) => Promise<Custody> }> {
+    const row = await this.row(this.database.db, captainId);
+    const rules = await this.cityRules(row.cityId, now);
+    return {
+      captain: { id: row.id, cityId: row.cityId, name: row.name, status: row.status },
+      lock: async (tx) => {
+        const locked = await this.lockCaptain(tx, captainId);
+        return this.custody(tx, locked, rules.lastCutoff, rules.warnPct);
+      },
+    };
+  }
+
+  // In the desk's transaction, after its journals: the listeners hear it,
+  // so the app reads its state again.
+  async custodyChanged(tx: Tx, captain: DeskCaptain, now: Date): Promise<void> {
+    await this.availabilityChanged(tx, {
+      kind: 'custody_changed',
+      captainId: captain.id,
+      cityId: captain.cityId,
+      at: now,
+    });
+  }
+
   // C3, AP §9.7.6: after captain.offer_expiry_offline_count expired offers in
   // a row, the captain goes offline; never with an active order.
   async offlineForUnansweredOffers(captainId: string, now: Date, count: number): Promise<boolean> {
@@ -1539,18 +1620,33 @@ export class CaptainsService implements OnModuleInit {
     const limit = inBase(row.custodyLimit, row.custodyLimitCurrency);
     let usage = 0n;
     let closedDue = 0n;
+    const currencies: CustodyCurrency[] = [];
     for (const account of accounts) {
       const balance = await this.ledger.balance(account.id, executor);
-      if (balance.amount > 0n) usage += inBase(balance.amount, account.currency);
+      const balanceInBase = inBase(balance.amount, account.currency);
+      if (balance.amount > 0n) usage += balanceInBase;
       const closed = await this.ledger.balanceAt(account.id, cutoff, deskTypes, executor);
       closedDue += inBase(closed.amount, account.currency);
+      currencies.push({
+        currency: account.currency,
+        balance: balance.amount,
+        closedDue: closed.amount,
+        today: balance.amount - closed.amount,
+        balanceInBase,
+      });
     }
+    currencies.sort(
+      (a, b) =>
+        Number(b.currency === base) - Number(a.currency === base) ||
+        a.currency.localeCompare(b.currency),
+    );
     return {
       usage: { amount: usage, currency: base },
       limit: { amount: limit, currency: base },
       warn: usage * 100n >= limit * BigInt(warnPct),
       closedDue: { amount: closedDue, currency: base },
       lastCutoff: cutoff,
+      currencies,
     };
   }
 
