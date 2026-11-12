@@ -1140,6 +1140,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/cities/{cityId}/office": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCitiesOffice"];
+        put: operations["adminCitiesSetOffice"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/uploads": {
         parameters: {
             query?: never;
@@ -4171,6 +4187,46 @@ export interface components {
                 name: string;
                 /** @description The city's clock, such as Asia/Damascus. */
                 timeZone: string;
+            }[];
+        };
+        AdminCityOfficeDto_Output: {
+            /** @description Null until the owner saves one. */
+            office: {
+                /** @description The office's point, until the map (slice 2.29). */
+                location: {
+                    latitude: number;
+                    longitude: number;
+                };
+                /** @description One period per weekday at most; none is closed. */
+                hours: {
+                    /** @description 0 Sunday to 6 Saturday. */
+                    weekday: number;
+                    /** @description Minutes after midnight, city clock. */
+                    opensAt: number;
+                    /** @description Minutes after midnight; at or before the opening it runs past midnight. */
+                    closesAt: number;
+                }[];
+                /** @description Whether the desk is open now. */
+                open: boolean;
+                /** @description While open: when it closes. */
+                closesAt: string | null;
+                /** @description While closed: when it opens next. */
+                opensAt: string | null;
+            } | null;
+        };
+        AdminSetCityOfficeDto: {
+            /** @description The office's point, until the map (slice 2.29). */
+            location: {
+                latitude: number;
+                longitude: number;
+            };
+            hours: {
+                /** @description 0 Sunday to 6 Saturday. */
+                weekday: number;
+                /** @description Minutes after midnight, city clock. */
+                opensAt: number;
+                /** @description Minutes after midnight; at or before the opening it runs past midnight. */
+                closesAt: number;
             }[];
         };
         AdminNewUploadDto: {
@@ -11089,6 +11145,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminCitiesDto_Output"];
+                };
+            };
+        };
+    };
+    adminCitiesOffice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                cityId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCityOfficeDto_Output"];
+                };
+            };
+        };
+    };
+    adminCitiesSetOffice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                cityId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminSetCityOfficeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCityOfficeDto_Output"];
                 };
             };
         };

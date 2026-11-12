@@ -63,6 +63,11 @@ export function HomePage() {
               <Link to="/peak-bonus">{t('peakBonus.title')}</Link>
             </li>
           )}
+          {can(session, ZONES_READ) && (
+            <li>
+              <Link to="/office">{t('office.title')}</Link>
+            </li>
+          )}
           {can(session, CASH_DESK) && (
             <li>
               <Link to="/cash-desk">{t('cashDesk.title')}</Link>

@@ -152,7 +152,7 @@ export const weeklySchedules = merchants.table(
   ],
 );
 
-// One opening period of a schedule version (hours.ts): weekday 0 is Sunday;
+// One opening period of a schedule version (geo's weekly-hours.ts): weekday 0 is Sunday;
 // the times are minutes after midnight on the city's clock.
 export const openingPeriods = merchants.table(
   'opening_periods',

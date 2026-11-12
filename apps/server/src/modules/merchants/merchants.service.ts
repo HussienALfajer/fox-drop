@@ -8,16 +8,18 @@ import { Jobs } from '../../jobs/jobs.module.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
 import { FilesService } from '../files/index.js';
 import { FxService } from '../fx/index.js';
-import { GeoService, nextCutoff, type Point } from '../geo/index.js';
-import { lockCityCurrencies, SettingsService } from '../settings/index.js';
-import { commissionAt } from './commission.js';
 import {
   checkWeeklySchedule,
   currentPeriod,
+  GeoService,
   inDailyWindow,
+  nextCutoff,
   nextOpening,
   type OpeningPeriod,
-} from './hours.js';
+  type Point,
+} from '../geo/index.js';
+import { lockCityCurrencies, SettingsService } from '../settings/index.js';
+import { commissionAt } from './commission.js';
 import { type AccountStatus, type OperatingState, operatingState } from './operating-state.js';
 import { recordStateChange } from './state-events.js';
 import {

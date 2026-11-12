@@ -41,6 +41,10 @@ import 'package:core_api/src/model/admin_change_outcome_dto.dart';
 import 'package:core_api/src/model/admin_change_time_dto.dart';
 import 'package:core_api/src/model/admin_cities_dto_output.dart';
 import 'package:core_api/src/model/admin_cities_dto_output_cities_inner.dart';
+import 'package:core_api/src/model/admin_city_office_dto_output.dart';
+import 'package:core_api/src/model/admin_city_office_dto_output_office.dart';
+import 'package:core_api/src/model/admin_city_office_dto_output_office_hours_inner.dart';
+import 'package:core_api/src/model/admin_city_office_dto_output_office_location.dart';
 import 'package:core_api/src/model/admin_close_drawer_session_dto.dart';
 import 'package:core_api/src/model/admin_close_item_report_dto.dart';
 import 'package:core_api/src/model/admin_confirm_pickup_dto.dart';
@@ -226,6 +230,9 @@ import 'package:core_api/src/model/admin_restaurants_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurants_dto_output_restaurants_inner.dart';
 import 'package:core_api/src/model/admin_resume_emergency_stop_dto.dart';
 import 'package:core_api/src/model/admin_session_dto_output.dart';
+import 'package:core_api/src/model/admin_set_city_office_dto.dart';
+import 'package:core_api/src/model/admin_set_city_office_dto_hours_inner.dart';
+import 'package:core_api/src/model/admin_set_city_office_dto_location.dart';
 import 'package:core_api/src/model/admin_set_image_dto.dart';
 import 'package:core_api/src/model/admin_set_outcome_dto.dart';
 import 'package:core_api/src/model/admin_set_peak_bonus_dto.dart';
@@ -563,6 +570,10 @@ part 'serializers.g.dart';
   AdminChangeTimeDto,
   AdminCitiesDtoOutput,
   AdminCitiesDtoOutputCitiesInner,
+  AdminCityOfficeDtoOutput,
+  AdminCityOfficeDtoOutputOffice,
+  AdminCityOfficeDtoOutputOfficeHoursInner,
+  AdminCityOfficeDtoOutputOfficeLocation,
   AdminCloseDrawerSessionDto,
   AdminCloseItemReportDto,
   AdminConfirmPickupDto,
@@ -748,6 +759,9 @@ part 'serializers.g.dart';
   AdminRestaurantsDtoOutputRestaurantsInner,
   AdminResumeEmergencyStopDto,
   AdminSessionDtoOutput,
+  AdminSetCityOfficeDto,
+  AdminSetCityOfficeDtoHoursInner,
+  AdminSetCityOfficeDtoLocation,
   AdminSetImageDto,
   AdminSetOutcomeDto,
   AdminSetPeakBonusDto,
@@ -1203,6 +1217,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminCityOfficeDtoOutputOfficeHoursInner),
+            ]),
+            () => ListBuilder<AdminCityOfficeDtoOutputOfficeHoursInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(CustomerQuoteDtoOutputRatesInner),
             ]),
             () => ListBuilder<CustomerQuoteDtoOutputRatesInner>(),
@@ -1650,6 +1670,12 @@ Serializers serializers =
               FullType(AdminAlertsDtoOutputAlertsInner),
             ]),
             () => ListBuilder<AdminAlertsDtoOutputAlertsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminSetCityOfficeDtoHoursInner),
+            ]),
+            () => ListBuilder<AdminSetCityOfficeDtoHoursInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

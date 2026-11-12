@@ -8,7 +8,7 @@ export type PauseSource = (typeof pauseSources)[number];
 
 // What the state is computed from at a moment. Each part is the one in
 // force, or null: the holiday close and pause that have not ended, the
-// opening period of the schedule the moment is in (hours.ts), and busy mode.
+// opening period of the schedule the moment is in (geo's weekly-hours.ts), and busy mode.
 export interface OperatingInput {
   accountStatus: AccountStatus;
   holiday: { endsAt: Date } | null;

@@ -56,6 +56,10 @@ Serializers _$serializers =
           ..add(AdminChangeTimeDto.serializer)
           ..add(AdminCitiesDtoOutput.serializer)
           ..add(AdminCitiesDtoOutputCitiesInner.serializer)
+          ..add(AdminCityOfficeDtoOutput.serializer)
+          ..add(AdminCityOfficeDtoOutputOffice.serializer)
+          ..add(AdminCityOfficeDtoOutputOfficeHoursInner.serializer)
+          ..add(AdminCityOfficeDtoOutputOfficeLocation.serializer)
           ..add(AdminCloseDrawerSessionDto.serializer)
           ..add(AdminCloseItemReportDto.serializer)
           ..add(AdminConfirmPickupDto.serializer)
@@ -367,6 +371,9 @@ Serializers _$serializers =
           ..add(AdminRestaurantsDtoOutputRestaurantsInner.serializer)
           ..add(AdminResumeEmergencyStopDto.serializer)
           ..add(AdminSessionDtoOutput.serializer)
+          ..add(AdminSetCityOfficeDto.serializer)
+          ..add(AdminSetCityOfficeDtoHoursInner.serializer)
+          ..add(AdminSetCityOfficeDtoLocation.serializer)
           ..add(AdminSetImageDto.serializer)
           ..add(AdminSetOutcomeDto.serializer)
           ..add(AdminSetOutcomeDtoFoodEnum.serializer)
@@ -899,6 +906,12 @@ Serializers _$serializers =
               const FullType(AdminCitiesDtoOutputCitiesInner),
             ]),
             () => ListBuilder<AdminCitiesDtoOutputCitiesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCityOfficeDtoOutputOfficeHoursInner),
+            ]),
+            () => ListBuilder<AdminCityOfficeDtoOutputOfficeHoursInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -1437,6 +1450,12 @@ Serializers _$serializers =
               const FullType(AdminRestaurantsDtoOutputRestaurantsInner),
             ]),
             () => ListBuilder<AdminRestaurantsDtoOutputRestaurantsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminSetCityOfficeDtoHoursInner),
+            ]),
+            () => ListBuilder<AdminSetCityOfficeDtoHoursInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

@@ -29,6 +29,7 @@ import { CaptainBalancesPage } from './captain-balances-page.js';
 import { CashDeskPage, CashDeskSessionsPage } from './cash-desk-page.js';
 import { ZONES_READ } from './peak-bonus.js';
 import { PeakBonusPage } from './peak-bonus-page.js';
+import { OfficePage } from './office-page.js';
 import { ReceiptPage } from './receipt-page.js';
 import { CONTENT_FAQS, CONTENT_READ } from './content.js';
 import { ContentPage } from './content-page.js';
@@ -239,6 +240,19 @@ const peakBonusRoute = createRoute({
   component: PeakBonusPage,
 });
 
+// AP §9.12.1 «المكتب» (slice 2.17c; owner decision 2026-11-12): the city's
+// office and desk hours, read with the zones (zones.read); only OWN saves
+// them (zones.manage, checked by the page and the server), until the map.
+const officeRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/office',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, ZONES_READ)) throw redirect({ to: '/' });
+  },
+  component: OfficePage,
+});
+
 // AP §9.10.3 «الصندوق» (slice 2.17a): the drawer session and the daily
 // hand-in, the sessions with their variances and a receipt to print, for
 // OWN and FIN (cash_desk.record).
@@ -296,6 +310,7 @@ const routeTree = rootRoute.addChildren([
     contentRoute,
     appSettingsRoute,
     peakBonusRoute,
+    officeRoute,
     cashDeskRoute,
     cashDeskSessionsRoute,
     captainBalancesRoute,

@@ -1,4 +1,4 @@
-import { currentPeriod, nextOpening, type OpeningPeriod } from '../merchants/index.js';
+import { currentPeriod, nextOpening, type OpeningPeriod } from '../geo/index.js';
 
 // The weekdays of platform.hours, by the numbers of OpeningPeriod (0 Sunday).
 const weekdayNumbers: Record<string, number> = {

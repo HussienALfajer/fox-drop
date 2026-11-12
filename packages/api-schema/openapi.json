@@ -2695,6 +2695,88 @@
         ]
       }
     },
+    "/v1/admin/cities/{cityId}/office": {
+      "get": {
+        "operationId": "adminCitiesOffice",
+        "parameters": [
+          {
+            "name": "cityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCityOfficeDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      },
+      "put": {
+        "operationId": "adminCitiesSetOffice",
+        "parameters": [
+          {
+            "name": "cityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminSetCityOfficeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCityOfficeDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/uploads": {
       "post": {
         "operationId": "adminUploadsCreate",
@@ -12082,6 +12164,182 @@
           "cities"
         ],
         "additionalProperties": false
+      },
+      "AdminCityOfficeDto_Output": {
+        "type": "object",
+        "properties": {
+          "office": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "location": {
+                    "type": "object",
+                    "properties": {
+                      "latitude": {
+                        "type": "number",
+                        "minimum": -90,
+                        "maximum": 90
+                      },
+                      "longitude": {
+                        "type": "number",
+                        "minimum": -180,
+                        "maximum": 180
+                      }
+                    },
+                    "required": [
+                      "latitude",
+                      "longitude"
+                    ],
+                    "additionalProperties": false,
+                    "description": "The office's point, until the map (slice 2.29)."
+                  },
+                  "hours": {
+                    "maxItems": 7,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "weekday": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 6,
+                          "description": "0 Sunday to 6 Saturday."
+                        },
+                        "opensAt": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1439,
+                          "description": "Minutes after midnight, city clock."
+                        },
+                        "closesAt": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1440,
+                          "description": "Minutes after midnight; at or before the opening it runs past midnight."
+                        }
+                      },
+                      "required": [
+                        "weekday",
+                        "opensAt",
+                        "closesAt"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "description": "One period per weekday at most; none is closed."
+                  },
+                  "open": {
+                    "type": "boolean",
+                    "description": "Whether the desk is open now."
+                  },
+                  "closesAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "While open: when it closes."
+                  },
+                  "opensAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "While closed: when it opens next."
+                  }
+                },
+                "required": [
+                  "location",
+                  "hours",
+                  "open",
+                  "closesAt",
+                  "opensAt"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Null until the owner saves one."
+          }
+        },
+        "required": [
+          "office"
+        ],
+        "additionalProperties": false
+      },
+      "AdminSetCityOfficeDto": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "object",
+            "properties": {
+              "latitude": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "longitude": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              }
+            },
+            "required": [
+              "latitude",
+              "longitude"
+            ],
+            "description": "The office's point, until the map (slice 2.29)."
+          },
+          "hours": {
+            "maxItems": 7,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "weekday": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 6,
+                  "description": "0 Sunday to 6 Saturday."
+                },
+                "opensAt": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1439,
+                  "description": "Minutes after midnight, city clock."
+                },
+                "closesAt": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1440,
+                  "description": "Minutes after midnight; at or before the opening it runs past midnight."
+                }
+              },
+              "required": [
+                "weekday",
+                "opensAt",
+                "closesAt"
+              ]
+            }
+          }
+        },
+        "required": [
+          "location",
+          "hours"
+        ]
       },
       "AdminNewUploadDto": {
         "type": "object",

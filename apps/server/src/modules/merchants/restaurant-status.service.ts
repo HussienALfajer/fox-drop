@@ -8,7 +8,7 @@ import { Jobs } from '../../jobs/jobs.module.js';
 import { AuditService } from '../audit/index.js';
 import { FxService } from '../fx/index.js';
 import { SettingsService } from '../settings/index.js';
-import type { OpeningPeriod } from './hours.js';
+import type { OpeningPeriod } from '../geo/index.js';
 import {
   type Coverage,
   type MerchantChange,

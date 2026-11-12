@@ -4,6 +4,7 @@ import {
   boolean,
   check,
   customType,
+  doublePrecision,
   index,
   integer,
   pgSchema,
@@ -147,5 +148,52 @@ export const zoneVotes = geo.table(
     index('zone_votes_city').on(table.cityId, table.createdAt),
     index('zone_votes_device').on(table.deviceId),
     index('zone_votes_location').using('gist', table.location),
+  ],
+);
+
+// AP §9.12.1, CA C13: the city's office «المكتب», where captains hand in
+// cash, with its desk hours. A change adds a version, the newest in force;
+// the application role may only insert (owner decision 2026-11-12: the
+// coordinates and the hours per weekday on a small panel form until the map,
+// slice 2.29).
+export const offices = geo.table(
+  'offices',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    cityId: uuid('city_id')
+      .notNull()
+      .references(() => cities.id),
+    latitude: doublePrecision('latitude').notNull(),
+    longitude: doublePrecision('longitude').notNull(),
+    editorId: uuid('editor_id'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('offices_current').on(table.cityId, table.id.desc()),
+    check('offices_latitude', sql`${table.latitude} BETWEEN -90 AND 90`),
+    check('offices_longitude', sql`${table.longitude} BETWEEN -180 AND 180`),
+  ],
+);
+
+// One desk period of an office version (weekly-hours.ts): weekday 0 is
+// Sunday; the times are minutes after midnight on the city's clock, one
+// period per weekday at most. A weekday without one is closed.
+export const officePeriods = geo.table(
+  'office_periods',
+  {
+    officeId: uuid('office_id')
+      .notNull()
+      .references(() => offices.id),
+    weekday: smallint('weekday').notNull(),
+    opensAt: smallint('opens_at').notNull(),
+    closesAt: smallint('closes_at').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.officeId, table.weekday] }),
+    check('office_periods_weekday', sql`${table.weekday} BETWEEN 0 AND 6`),
+    check('office_periods_opens_at', sql`${table.opensAt} BETWEEN 0 AND 1439`),
+    check('office_periods_closes_at', sql`${table.closesAt} BETWEEN 0 AND 1440`),
   ],
 );
