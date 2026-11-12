@@ -498,7 +498,6 @@ Serializers _$serializers =
           ..add(CaptainCustodyDtoOutputReceiptsInner.serializer)
           ..add(CaptainCustodyDtoOutputReceiptsInnerConversionsInner.serializer)
           ..add(CaptainCustodyDtoOutputReceiptsInnerLinesInner.serializer)
-          ..add(CaptainCustodyDtoOutputReceiptsInnerTypeEnum.serializer)
           ..add(CaptainCustodyDtoOutputTotal.serializer)
           ..add(CaptainCustodyDtoOutputUsage.serializer)
           ..add(CaptainDeliverDto.serializer)

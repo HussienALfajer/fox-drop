@@ -2503,7 +2503,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String captainCustodyEntryOrder(String kind, String number, String amount) {
-    return '$kind — الطلب $number: $amount';
+    return '$kind — الطلب #$number: $amount';
   }
 
   @override
@@ -2581,5 +2581,15 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String captainHandInOpen(String amount, String time) {
     return 'عليك تسليم $amount. المكتب مفتوح حتى $time.';
+  }
+
+  @override
+  String captainHandInClosed(String amount, String day, String time) {
+    return 'عليك تسليم $amount. المكتب مغلق الآن، يفتح $day $time.';
+  }
+
+  @override
+  String captainHandInClosedAlways(String amount) {
+    return 'عليك تسليم $amount. المكتب مغلق الآن.';
   }
 }

@@ -97,12 +97,15 @@ export class AdminCitiesController {
   @RequirePermission('zones.read')
   @ZodResponse({ status: 200, type: AdminCityOfficeDto })
   async office(@Param() params: AdminCityParamsDto) {
+    if ((await this.geo.cityTimeZone(params.cityId)) === null) {
+      throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: 'unknown_city' });
+    }
     const office = await this.geo.office(params.cityId, new Date());
     return { office: office && officeView(office) };
   }
 
   // Sets the office to the value sent, so no Idempotency-Key.
-  // 400 invalid_office; 404 unknown_city.
+  // 400 invalid_office; 404 unknown_city (the read too).
   @Put(':cityId/office')
   @RequirePermission('zones.manage')
   @ZodResponse({ status: 200, type: AdminCityOfficeDto })

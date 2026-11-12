@@ -34235,10 +34235,7 @@
                 },
                 "type": {
                   "type": "string",
-                  "enum": [
-                    "captain_hand_in",
-                    "captain_reimbursement"
-                  ]
+                  "description": "captain_hand_in «تسليم نقد», captain_reimbursement «صرف للكابتن»; a later type (2.18) the app shows by its number only, so an older app still reads the rest."
                 },
                 "at": {
                   "type": "string",

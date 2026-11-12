@@ -119,6 +119,7 @@ async function admin(roles: string[]) {
   return {
     user,
     get: (url: string) => app.inject({ method: 'GET', url, cookies }),
+    put: (url: string, payload: object) => app.inject({ method: 'PUT', url, cookies, payload }),
     post: (url: string, payload: object, key: string | null = randomUUID()) =>
       app.inject({
         method: 'POST',
@@ -1007,9 +1008,64 @@ describe('«عهدتي» (CA §10.2, AP §9.10.3: receipts appear at once)', () 
     ]);
   });
 
+  it("keeps another captain's entries and receipts out", async () => {
+    const { id: captainId } = await captain();
+    await custody(captainId, 'custody.collect', 2_000n);
+    const { cashier } = await openDesk();
+    await desk.handIn(
+      cashier.user,
+      { captainId, lines: [{ currency: 'TRY', amount: 2_000n }], idempotencyKey: randomUUID() },
+      new Date(),
+    );
+    const other = await captain();
+    const answer = await app.inject({
+      method: 'GET',
+      url: '/v1/captain/custody',
+      headers: await captainHeaders(other.phone),
+    });
+    expect(answer.json()).toMatchObject({ entries: [], receipts: [], currencies: [] });
+  });
+
   it('needs a captain sign-in', async () => {
     const response = await app.inject({ method: 'GET', url: '/v1/captain/custody' });
     expect(response.statusCode).toBe(401);
+  });
+});
+
+// The office the captains hand in at (geo, AP §9.12.1, CA C13), here beside
+// the desk's other routes on the whole API.
+describe('the office routes (AP §9.12.1; owner decision 2026-11-12)', () => {
+  const body = {
+    location: { latitude: 36.5862, longitude: 37.0471 },
+    hours: [{ weekday: 6, opensAt: 540, closesAt: 1380 }],
+  };
+
+  it('save and read the office, refuse bad hours and an unknown city', async () => {
+    const owner = await admin(['OWN']);
+    const url = `/v1/admin/cities/${azaz}/office`;
+    const saved = await owner.put(url, body);
+    expect(saved.statusCode).toBe(200);
+    expect(saved.json().office).toMatchObject({ ...body, open: expect.any(Boolean) });
+    expect((await owner.get(url)).json()).toEqual(saved.json());
+    const short = await owner.put(url, {
+      ...body,
+      hours: [{ weekday: 6, opensAt: 540, closesAt: 550 }],
+    });
+    expect(short.statusCode).toBe(400);
+    expect(short.json()).toMatchObject({ error: 'invalid_office' });
+    const unknown = `/v1/admin/cities/${randomUUID()}/office`;
+    expect((await owner.put(unknown, body)).json()).toMatchObject({
+      statusCode: 404,
+      error: 'unknown_city',
+    });
+    expect((await owner.get(unknown)).statusCode).toBe(404);
+  });
+
+  it('let operations read it and only the owner save it', async () => {
+    const ops = await admin(['OPS']);
+    const url = `/v1/admin/cities/${azaz}/office`;
+    expect((await ops.get(url)).statusCode).toBe(200);
+    expect((await ops.put(url, body)).statusCode).toBe(403);
   });
 });
 

@@ -1344,7 +1344,7 @@
   "@captainCustodyEntryCorrection": {"description": "An entry: a correction (CA §10.2)."},
   "captainCustodyEntryOther": "حركة",
   "@captainCustodyEntryOther": {"description": "An entry of a kind the app does not name."},
-  "captainCustodyEntryOrder": "{kind} — الطلب {number}: {amount}",
+  "captainCustodyEntryOrder": "{kind} — الطلب #{number}: {amount}",
   "@captainCustodyEntryOrder": {"description": "An order's entry with its number (CA §10.2).", "placeholders": {"kind": {"type": "String"}, "number": {"type": "String"}, "amount": {"type": "String"}}},
   "captainCustodyEntryReceipt": "{kind} — {receipt}: {amount}",
   "@captainCustodyEntryReceipt": {"description": "A desk entry with its receipt's number (CA §10.2).", "placeholders": {"kind": {"type": "String"}, "receipt": {"type": "String"}, "amount": {"type": "String"}}},
@@ -1377,5 +1377,9 @@
   "captainOfficeMap": "موقع المكتب على الخريطة",
   "@captainOfficeMap": {"description": "The map button of the office (CA §7.5, §10.2, C13)."},
   "captainHandInOpen": "عليك تسليم {amount}. المكتب مفتوح حتى {time}.",
-  "@captainHandInOpen": {"description": "The hand-in reminder while the desk is open (CA §7.5).", "placeholders": {"amount": {"type": "String"}, "time": {"type": "String"}}}
+  "@captainHandInOpen": {"description": "The hand-in reminder while the desk is open (CA §7.5).", "placeholders": {"amount": {"type": "String"}, "time": {"type": "String"}}},
+  "captainHandInClosed": "عليك تسليم {amount}. المكتب مغلق الآن، يفتح {day} {time}.",
+  "@captainHandInClosed": {"description": "The hand-in reminder while the desk is closed (CA §7.5).", "placeholders": {"amount": {"type": "String"}, "day": {"type": "String"}, "time": {"type": "String"}}},
+  "captainHandInClosedAlways": "عليك تسليم {amount}. المكتب مغلق الآن.",
+  "@captainHandInClosedAlways": {"description": "The hand-in reminder while no day of the desk is open (no wording in the spec).", "placeholders": {"amount": {"type": "String"}}}
 }

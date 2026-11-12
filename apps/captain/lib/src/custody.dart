@@ -10,7 +10,6 @@ typedef Custody = CaptainCustodyDtoOutput;
 typedef CustodyEntry = CaptainCustodyDtoOutputEntriesInner;
 typedef EntryKind = CaptainCustodyDtoOutputEntriesInnerKindEnum;
 typedef Receipt = CaptainCustodyDtoOutputReceiptsInner;
-typedef ReceiptType = CaptainCustodyDtoOutputReceiptsInnerTypeEnum;
 typedef Office = CaptainAvailabilityDtoOutputOffice;
 
 /// CA §10.2 «عهدتي»: `GET /v1/captain/custody`, read while the screen shows
@@ -76,9 +75,12 @@ extension CustodyTexts on AppLocalizations {
     return captainCustodyEntryPlain(kind, amount);
   }
 
-  String receiptTypeText(ReceiptType type) => type == ReceiptType.captainHandIn
-      ? captainCustodyEntryHandIn
-      : captainCustodyEntryReimburse;
+  /// A receipt's type; a later one (2.18) has no name yet.
+  String? receiptTypeText(String type) => switch (type) {
+    'captain_hand_in' => captainCustodyEntryHandIn,
+    'captain_reimbursement' => captainCustodyEntryReimburse,
+    _ => null,
+  };
 
   /// CA §7.5, C13: the desk now: open until when, or when it opens next.
   String officeNowText(Office office) {
@@ -113,7 +115,10 @@ extension CustodyTexts on AppLocalizations {
     if (office.open && office.closesAt != null) {
       return captainHandInOpen(owed, formatTime(office.closesAt!));
     }
-    return '${captainOwes(owed)}. ${officeNowText(office)}';
+    if (office.opensAt case final opens?) {
+      return captainHandInClosed(owed, weekdayOf(opens), formatTime(opens));
+    }
+    return captainHandInClosedAlways(owed);
   }
 }
 

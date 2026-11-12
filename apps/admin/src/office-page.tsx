@@ -105,7 +105,7 @@ function OfficeView({ office, city }: { office: CityOffice; city: City }) {
       {can(session, ZONES_MANAGE) && (
         <OfficeFormSection
           // The form starts again from each saved version.
-          key={JSON.stringify(current)}
+          key={JSON.stringify(current && { location: current.location, hours: current.hours })}
           initial={officeFormOf(current)}
           save={save}
         />

@@ -897,7 +897,10 @@ export class CashDeskService {
       .where(eq(receipts.captainId, captainId))
       .orderBy(desc(receipts.createdAt), desc(receipts.id))
       .limit(limit);
-    return (await this.receiptsOf(rows.map((row) => row.id))).reverse();
+    // By time, newest first: the numbers start again each year (AP §4.8).
+    return (await this.receiptsOf(rows.map((row) => row.id))).sort(
+      (a, b) => b.createdAt.getTime() - a.createdAt.getTime() || b.id.localeCompare(a.id),
+    );
   }
 
   // The numbers of some receipts, such as AZ-2026-000123; an unknown id is

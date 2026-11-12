@@ -44,6 +44,24 @@ describe('officeRequestOf', () => {
     });
   });
 
+  it('saves 00:00 to 00:00 as the whole day, and reads it back', () => {
+    const form = officeFormOf(office);
+    const whole = {
+      ...form,
+      days: { ...form.days, 1: { open: true, from: '00:00', to: '00:00' } },
+    };
+    const request = officeRequestOf(whole);
+    expect(request).toMatchObject({
+      body: { hours: expect.arrayContaining([{ weekday: 1, opensAt: 0, closesAt: 1440 }]) },
+    });
+    if (!('body' in request)) throw new Error('refused');
+    expect(officeFormOf({ ...office, ...request.body }).days[1]).toEqual({
+      open: true,
+      from: '00:00',
+      to: '00:00',
+    });
+  });
+
   it('names a point off the map and the first day without its hours', () => {
     const form = officeFormOf(office);
     expect(officeRequestOf({ ...form, latitude: '91' })).toEqual({ problem: 'location' });

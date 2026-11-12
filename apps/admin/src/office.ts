@@ -74,12 +74,14 @@ export function officeRequestOf(
     const each = form.days[day];
     if (!each.open) continue;
     const opensAt = minuteOf(each.from);
-    const closesAt = minuteOf(each.to);
+    const typed = minuteOf(each.to);
+    // 00:00 as the end is the day's end, so 00:00 to 00:00 is the whole day;
+    // another end at or before the start runs past midnight.
+    const closesAt = typed === 0 ? 1440 : typed;
     if (opensAt === null || closesAt === null || opensAt === closesAt) {
       return { problem: 'hours', day };
     }
-    // An end at or before the start runs past midnight; 00:00 is the day's end.
-    hours.push({ weekday: day, opensAt, closesAt: closesAt === 0 ? 1440 : closesAt });
+    hours.push({ weekday: day, opensAt, closesAt });
   }
   return { body: { location: { latitude, longitude }, hours } };
 }

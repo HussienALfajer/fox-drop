@@ -6,76 +6,6 @@ part of 'captain_custody_dto_output_receipts_inner.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const CaptainCustodyDtoOutputReceiptsInnerTypeEnum
-_$captainCustodyDtoOutputReceiptsInnerTypeEnum_captainHandIn =
-    const CaptainCustodyDtoOutputReceiptsInnerTypeEnum._('captainHandIn');
-const CaptainCustodyDtoOutputReceiptsInnerTypeEnum
-_$captainCustodyDtoOutputReceiptsInnerTypeEnum_captainReimbursement =
-    const CaptainCustodyDtoOutputReceiptsInnerTypeEnum._(
-      'captainReimbursement',
-    );
-
-CaptainCustodyDtoOutputReceiptsInnerTypeEnum
-_$captainCustodyDtoOutputReceiptsInnerTypeEnumValueOf(String name) {
-  switch (name) {
-    case 'captainHandIn':
-      return _$captainCustodyDtoOutputReceiptsInnerTypeEnum_captainHandIn;
-    case 'captainReimbursement':
-      return _$captainCustodyDtoOutputReceiptsInnerTypeEnum_captainReimbursement;
-    default:
-      throw ArgumentError(name);
-  }
-}
-
-final BuiltSet<CaptainCustodyDtoOutputReceiptsInnerTypeEnum>
-_$captainCustodyDtoOutputReceiptsInnerTypeEnumValues =
-    BuiltSet<CaptainCustodyDtoOutputReceiptsInnerTypeEnum>(
-      const <CaptainCustodyDtoOutputReceiptsInnerTypeEnum>[
-        _$captainCustodyDtoOutputReceiptsInnerTypeEnum_captainHandIn,
-        _$captainCustodyDtoOutputReceiptsInnerTypeEnum_captainReimbursement,
-      ],
-    );
-
-Serializer<CaptainCustodyDtoOutputReceiptsInnerTypeEnum>
-_$captainCustodyDtoOutputReceiptsInnerTypeEnumSerializer =
-    _$CaptainCustodyDtoOutputReceiptsInnerTypeEnumSerializer();
-
-class _$CaptainCustodyDtoOutputReceiptsInnerTypeEnumSerializer
-    implements
-        PrimitiveSerializer<CaptainCustodyDtoOutputReceiptsInnerTypeEnum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'captainHandIn': 'captain_hand_in',
-    'captainReimbursement': 'captain_reimbursement',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'captain_hand_in': 'captainHandIn',
-    'captain_reimbursement': 'captainReimbursement',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    CaptainCustodyDtoOutputReceiptsInnerTypeEnum,
-  ];
-  @override
-  final String wireName = 'CaptainCustodyDtoOutputReceiptsInnerTypeEnum';
-
-  @override
-  Object serialize(
-    Serializers serializers,
-    CaptainCustodyDtoOutputReceiptsInnerTypeEnum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
-
-  @override
-  CaptainCustodyDtoOutputReceiptsInnerTypeEnum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => CaptainCustodyDtoOutputReceiptsInnerTypeEnum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
-}
-
 class _$CaptainCustodyDtoOutputReceiptsInner
     extends CaptainCustodyDtoOutputReceiptsInner {
   @override
@@ -83,7 +13,7 @@ class _$CaptainCustodyDtoOutputReceiptsInner
   @override
   final String number;
   @override
-  final CaptainCustodyDtoOutputReceiptsInnerTypeEnum type;
+  final String type;
   @override
   final DateTime at;
   @override
@@ -174,10 +104,9 @@ class CaptainCustodyDtoOutputReceiptsInnerBuilder
   String? get number => _$this._number;
   set number(String? number) => _$this._number = number;
 
-  CaptainCustodyDtoOutputReceiptsInnerTypeEnum? _type;
-  CaptainCustodyDtoOutputReceiptsInnerTypeEnum? get type => _$this._type;
-  set type(CaptainCustodyDtoOutputReceiptsInnerTypeEnum? type) =>
-      _$this._type = type;
+  String? _type;
+  String? get type => _$this._type;
+  set type(String? type) => _$this._type = type;
 
   DateTime? _at;
   DateTime? get at => _$this._at;

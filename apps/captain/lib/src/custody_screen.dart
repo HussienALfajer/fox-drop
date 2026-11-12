@@ -94,7 +94,8 @@ class _CustodyView extends ConsumerWidget {
             title: Text(
               l10n.captainCustodyReceipt(
                 receipt.number,
-                l10n.receiptTypeText(receipt.type),
+                l10n.receiptTypeText(receipt.type) ??
+                    l10n.captainCustodyEntryOther,
                 l10n.formatDate(receipt.at),
                 l10n.formatTime(receipt.at),
               ),

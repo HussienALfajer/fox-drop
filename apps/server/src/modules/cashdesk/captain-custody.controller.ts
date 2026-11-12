@@ -87,7 +87,11 @@ class CaptainCustodyDto extends createZodDto(
         z.object({
           id: z.uuid(),
           number: z.string().describe('Such as AZ-2026-000123 (AP §4.8).'),
-          type: z.enum(['captain_hand_in', 'captain_reimbursement']),
+          type: z
+            .string()
+            .describe(
+              'captain_hand_in «تسليم نقد», captain_reimbursement «صرف للكابتن»; a later type (2.18) the app shows by its number only, so an older app still reads the rest.',
+            ),
           at: z.iso.datetime(),
           cashierName: z.string().nullable(),
           conversions: z.array(

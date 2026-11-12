@@ -16,7 +16,7 @@ part 'captain_custody_dto_output_receipts_inner.g.dart';
 /// Properties:
 /// * [id]
 /// * [number] - Such as AZ-2026-000123 (AP §4.8).
-/// * [type]
+/// * [type] - captain_hand_in «تسليم نقد», captain_reimbursement «صرف للكابتن»; a later type (2.18) the app shows by its number only, so an older app still reads the rest.
 /// * [at]
 /// * [cashierName]
 /// * [conversions]
@@ -35,9 +35,9 @@ abstract class CaptainCustodyDtoOutputReceiptsInner
   @BuiltValueField(wireName: r'number')
   String get number;
 
+  /// captain_hand_in «تسليم نقد», captain_reimbursement «صرف للكابتن»; a later type (2.18) the app shows by its number only, so an older app still reads the rest.
   @BuiltValueField(wireName: r'type')
-  CaptainCustodyDtoOutputReceiptsInnerTypeEnum get type;
-  // enum typeEnum {  captain_hand_in,  captain_reimbursement,  };
+  String get type;
 
   @BuiltValueField(wireName: r'at')
   DateTime get at;
@@ -95,9 +95,7 @@ class _$CaptainCustodyDtoOutputReceiptsInnerSerializer
     yield r'type';
     yield serializers.serialize(
       object.type,
-      specifiedType: const FullType(
-        CaptainCustodyDtoOutputReceiptsInnerTypeEnum,
-      ),
+      specifiedType: const FullType(String),
     );
     yield r'at';
     yield serializers.serialize(
@@ -174,11 +172,9 @@ class _$CaptainCustodyDtoOutputReceiptsInnerSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(
-                      CaptainCustodyDtoOutputReceiptsInnerTypeEnum,
-                    ),
+                    specifiedType: const FullType(String),
                   )
-                  as CaptainCustodyDtoOutputReceiptsInnerTypeEnum;
+                  as String;
           result.type = valueDes;
           break;
         case r'at':
@@ -253,25 +249,4 @@ class _$CaptainCustodyDtoOutputReceiptsInnerSerializer
     );
     return result.build();
   }
-}
-
-class CaptainCustodyDtoOutputReceiptsInnerTypeEnum extends EnumClass {
-  @BuiltValueEnumConst(wireName: r'captain_hand_in')
-  static const CaptainCustodyDtoOutputReceiptsInnerTypeEnum captainHandIn =
-      _$captainCustodyDtoOutputReceiptsInnerTypeEnum_captainHandIn;
-  @BuiltValueEnumConst(wireName: r'captain_reimbursement')
-  static const CaptainCustodyDtoOutputReceiptsInnerTypeEnum
-  captainReimbursement =
-      _$captainCustodyDtoOutputReceiptsInnerTypeEnum_captainReimbursement;
-
-  static Serializer<CaptainCustodyDtoOutputReceiptsInnerTypeEnum>
-  get serializer => _$captainCustodyDtoOutputReceiptsInnerTypeEnumSerializer;
-
-  const CaptainCustodyDtoOutputReceiptsInnerTypeEnum._(String name)
-    : super(name);
-
-  static BuiltSet<CaptainCustodyDtoOutputReceiptsInnerTypeEnum> get values =>
-      _$captainCustodyDtoOutputReceiptsInnerTypeEnumValues;
-  static CaptainCustodyDtoOutputReceiptsInnerTypeEnum valueOf(String name) =>
-      _$captainCustodyDtoOutputReceiptsInnerTypeEnumValueOf(name);
 }

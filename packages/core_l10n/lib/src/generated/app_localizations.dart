@@ -4134,7 +4134,7 @@ abstract class AppLocalizations {
   /// An order's entry with its number (CA §10.2).
   ///
   /// In ar, this message translates to:
-  /// **'{kind} — الطلب {number}: {amount}'**
+  /// **'{kind} — الطلب #{number}: {amount}'**
   String captainCustodyEntryOrder(String kind, String number, String amount);
 
   /// A desk entry with its receipt's number (CA §10.2).
@@ -4237,6 +4237,18 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'عليك تسليم {amount}. المكتب مفتوح حتى {time}.'**
   String captainHandInOpen(String amount, String time);
+
+  /// The hand-in reminder while the desk is closed (CA §7.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'عليك تسليم {amount}. المكتب مغلق الآن، يفتح {day} {time}.'**
+  String captainHandInClosed(String amount, String day, String time);
+
+  /// The hand-in reminder while no day of the desk is open (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'عليك تسليم {amount}. المكتب مغلق الآن.'**
+  String captainHandInClosedAlways(String amount);
 }
 
 class _AppLocalizationsDelegate

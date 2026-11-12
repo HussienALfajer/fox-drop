@@ -9525,8 +9525,8 @@ export interface components {
                 id: string;
                 /** @description Such as AZ-2026-000123 (AP §4.8). */
                 number: string;
-                /** @enum {string} */
-                type: "captain_hand_in" | "captain_reimbursement";
+                /** @description captain_hand_in «تسليم نقد», captain_reimbursement «صرف للكابتن»; a later type (2.18) the app shows by its number only, so an older app still reads the rest. */
+                type: string;
                 /** Format: date-time */
                 at: string;
                 cashierName: string | null;
