@@ -589,4 +589,25 @@ void main() {
       },
     );
   });
+
+  test('the cash lines turn at the next cutoff, the end of the offers or the '
+      'grace, whichever is first (CA §10.3)', () {
+    Availability read(Map<String, Object?> json) =>
+        standardSerializers.deserializeWith(Availability.serializer, json)!;
+    expect(
+      nextCashTurn(read(availabilityJson())),
+      now.add(const Duration(days: 1)),
+    );
+    expect(
+      nextCashTurn(
+        read(
+          availabilityJson(
+            remitBy: now.add(const Duration(hours: 4)),
+            handInGraceUntil: now.add(const Duration(hours: 9)),
+          ),
+        ),
+      ),
+      now.add(const Duration(hours: 4)),
+    );
+  });
 }

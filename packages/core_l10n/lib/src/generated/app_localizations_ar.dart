@@ -1194,6 +1194,19 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get captainCustodyWarning => 'اقتربت من حد العهدة. سلّم النقد قريباً.';
+
+  @override
+  String captainRemitBy(String time) {
+    return 'سلّم نقد أمس قبل $time لتستمر العروض';
+  }
+
+  @override
+  String captainHandInGrace(String time) {
+    return 'مُنحت مهلة حتى $time';
+  }
+
+  @override
   String get captainStopMockLocation =>
       'أوقف تطبيقات تغيير الموقع لتتمكن من الاتصال.';
 

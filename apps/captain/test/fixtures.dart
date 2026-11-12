@@ -46,6 +46,10 @@ Map<String, Object?> availabilityJson({
   String? lastOrderReason,
   int? offersExpired,
   Map<String, Object?>? office,
+  bool warn = false,
+  String closedDue = '0',
+  DateTime? handInGraceUntil,
+  DateTime? remitBy,
 }) => {
   'office': office,
   'availability': {
@@ -61,10 +65,12 @@ Map<String, Object?> availabilityJson({
   'custody': {
     'usage': moneyJson(usage),
     'limit': moneyJson('500000'),
-    'warn': false,
-    'closedDue': moneyJson('0'),
+    'warn': warn,
+    'closedDue': moneyJson(closedDue),
     'lastCutoff': now.toIso8601String(),
     'remitTolerance': moneyJson('0'),
+    'handInGraceUntil': handInGraceUntil?.toIso8601String(),
+    'remitBy': remitBy?.toIso8601String(),
   },
 };
 

@@ -165,6 +165,18 @@ final tickProvider = StreamProvider.autoDispose<int>(
   (ref) => Stream.periodic(const Duration(seconds: 1), (count) => count),
 );
 
+/// CA §10.3 (slice 2.17d): the next moment the home's cash lines change
+/// with no event to tell it: the next cutoff (a day after the last one), the
+/// end of the offers after a cutoff, or the end of a grace.
+DateTime nextCashTurn(Availability availability) {
+  final custody = availability.custody;
+  var turn = custody.lastCutoff.add(const Duration(days: 1));
+  for (final end in [custody.remitBy, custody.handInGraceUntil]) {
+    if (end != null && end.isBefore(turn)) turn = end;
+  }
+  return turn;
+}
+
 /// CA §7.3, §7.5: the cash to hand in once a last order took the captain
 /// offline (held above `captain.remit_tolerance`), or null.
 Money? handInAfterLastOrder(Work? before, Work after) {

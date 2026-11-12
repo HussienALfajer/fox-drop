@@ -68,6 +68,7 @@ class HomeScreen extends ConsumerWidget {
                 : const Center(child: CircularProgressIndicator()),
           Work(order: final order?) => Column(
             children: [
+              CashLines(availability: work.availability),
               _LastOrderBar(work: work),
               ProblemBar(order: order),
               EmergencyButton(order: order),
@@ -133,6 +134,42 @@ class _LastOrderBar extends ConsumerWidget {
   }
 }
 
+/// CA §10.3–10.4 (slice 2.17d): the amber banner at
+/// captain.custody_warn_pct («اقتربت من حد العهدة…», amber being the spec's
+/// colour; otherwise unstyled until the design), and the hand-in lines: the
+/// end of the offers after a cutoff the captain was online across, or the
+/// grace running.
+class CashLines extends StatelessWidget {
+  const CashLines({super.key, required this.availability});
+
+  final Availability availability;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final lines = l10n.cashLines(availability);
+    final warn = availability.custody.warn;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final (index, line) in lines.indexed)
+          if (index == 0 && warn)
+            ColoredBox(
+              key: const Key('custody-warning'),
+              color: Colors.amber,
+              child: Padding(
+                padding: const EdgeInsetsDirectional.all(8),
+                child: Text(line),
+              ),
+            )
+          else
+            Text(line, key: Key('cash-line-$index')),
+      ],
+    );
+  }
+}
+
 /// CA §7: the state, why no offers come, the cash held, and «متصل».
 class _AvailabilityView extends ConsumerWidget {
   const _AvailabilityView({required this.work});
@@ -175,6 +212,7 @@ class _AvailabilityView extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsetsDirectional.all(16),
       children: [
+        CashLines(availability: availability),
         Text(
           l10n.stateText(state.state),
           style: Theme.of(context).textTheme.headlineSmall,
@@ -247,6 +285,7 @@ class _WorkLayerState extends ConsumerState<WorkLayer>
   Timer? _tick;
   Timer? _offlineChime;
   String? _expiredFetched;
+  DateTime? _cashFetched;
   late final Ringer _ringer = ref.read(ringerProvider);
   late final void Function(bool on) _keepScreenOn = ref.read(
     keepScreenOnProvider,
@@ -298,6 +337,16 @@ class _WorkLayerState extends ConsumerState<WorkLayer>
         _expiredFetched != offer.id) {
       _expiredFetched = offer.id;
       unawaited(ref.read(workFeedProvider)?.refresh());
+    }
+    // CA §10.3 (slice 2.17d): no event marks the cutoff, the end of the
+    // offers after it or the grace's end, so the state is read again then.
+    final work = _work;
+    if (work != null) {
+      final turn = nextCashTurn(work.availability);
+      if (!now.isBefore(turn) && _cashFetched != turn) {
+        _cashFetched = turn;
+        unawaited(ref.read(workFeedProvider)?.refresh());
+      }
     }
   }
 
