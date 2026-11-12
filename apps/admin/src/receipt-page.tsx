@@ -73,7 +73,10 @@ function ReceiptView({
 }) {
   const { t } = useTranslation();
   return (
-    <article className={['receipt', paperClasses[paper]].join(' ')} aria-labelledby="receipt-number">
+    <article
+      className={['receipt', paperClasses[paper]].join(' ')}
+      aria-labelledby="receipt-number"
+    >
       <h1>{t('app.name')}</h1>
       <h2 id="receipt-number">{t('cashDesk.receipt.number', { number: receipt.number })}</h2>
       <p>{t(receiptTypeKeys[receipt.type])}</p>

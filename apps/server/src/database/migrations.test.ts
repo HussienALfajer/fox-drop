@@ -893,9 +893,9 @@ describe('the cash desk tables (AP §9.10.3, §4.8)', () => {
     await expect(appQuery(receipt('AZ-2099-000001b', 1))).rejects.toThrow(
       /receipts_city_year_sequence/,
     );
-    await expect(appQuery(receipt('AZ-2099-000002', 2).replace('captain_hand_in', 'x'))).rejects.toThrow(
-      /receipts_type_values/,
-    );
+    await expect(
+      appQuery(receipt('AZ-2099-000002', 2).replace('captain_hand_in', 'x')),
+    ).rejects.toThrow(/receipts_type_values/);
   });
 
   it.each([

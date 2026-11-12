@@ -553,7 +553,9 @@ describe('the desk routes', () => {
     );
     expect(closed.statusCode).toBe(200);
     expect(closed.json().currencies[0]).toMatchObject({ variance: '0' });
-    expect((await cashier.get(`/v1/admin/cash-desk/sessions/current?cityId=${azaz}`)).json()).toEqual({
+    expect(
+      (await cashier.get(`/v1/admin/cash-desk/sessions/current?cityId=${azaz}`)).json(),
+    ).toEqual({
       session: null,
       currencies: ['TRY', 'USD'],
     });
@@ -574,6 +576,8 @@ describe('the desk routes', () => {
       ).size,
     ).toBeGreaterThan(1);
     const ops = await admin(['OPS']);
-    expect((await ops.get(`/v1/admin/cash-desk/sessions/current?cityId=${azaz}`)).statusCode).toBe(403);
+    expect((await ops.get(`/v1/admin/cash-desk/sessions/current?cityId=${azaz}`)).statusCode).toBe(
+      403,
+    );
   });
 });
