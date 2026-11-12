@@ -158,4 +158,67 @@ void main() {
     await app.settle(tester);
     await app.done(tester);
   });
+
+  testWidgets('home warns near the cash limit and says until when the '
+      'offers continue after the cutoff, then the grace (CA §10.3–10.4)', (
+    tester,
+  ) async {
+    final app = TestApp();
+    app.work(
+      availability: [
+        availabilityJson(
+          state: 'online_available',
+          usage: '410000',
+          warn: true,
+          closedDue: '41000',
+          remitBy: now.add(const Duration(hours: 1)),
+        ),
+      ],
+    );
+    await app.pump(tester);
+    await app.live(tester);
+    expect(find.byKey(const Key('custody-warning')), findsOneWidget);
+    expect(
+      find.text('اقتربت من حد العهدة. سلّم النقد قريباً.'),
+      findsOneWidget,
+    );
+    expect(find.text('سلّم نقد أمس قبل 4:00 م لتستمر العروض'), findsOneWidget);
+
+    // A grace granted meanwhile: its line, and no warning below the limit.
+    app.work(
+      availability: [
+        availabilityJson(
+          state: 'online_available',
+          usage: '41000',
+          closedDue: '41000',
+          handInGraceUntil: now.add(const Duration(hours: 15)),
+        ),
+      ],
+    );
+    app.transport.signal('captain.availability_changed');
+    await app.settle(tester);
+    expect(find.byKey(const Key('custody-warning')), findsNothing);
+    expect(find.text('مُنحت مهلة حتى 6:00 ص'), findsOneWidget);
+
+    // No event marks the grace's end: the app reads the state again then.
+    app.work(
+      availability: [
+        availabilityJson(state: 'online_available', usage: '41000'),
+      ],
+    );
+    await app.advance(tester, const Duration(hours: 15));
+    await app.settle(tester);
+    expect(find.text('مُنحت مهلة حتى 6:00 ص'), findsNothing);
+
+    // A bulk grace with nothing due shows nothing.
+    app.work(
+      availability: [
+        availabilityJson(handInGraceUntil: now.add(const Duration(hours: 15))),
+      ],
+    );
+    app.transport.signal('captain.availability_changed');
+    await app.settle(tester);
+    expect(find.text('مُنحت مهلة حتى 6:00 ص'), findsNothing);
+    await app.done(tester);
+  });
 }

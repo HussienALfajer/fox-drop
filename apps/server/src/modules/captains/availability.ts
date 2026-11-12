@@ -85,6 +85,17 @@ function closedDueBlocks(input: AvailabilityInput, now: Date): boolean {
   return input.closedDue > input.remitTolerance && !graced;
 }
 
+// AP §8.5.4, CA §10.3: a captain online when the last cutoff passed, with
+// closed_due above the tolerance and no grace running, keeps offers until
+// captain.remit_online_grace_hours after it («سلّم نقد أمس قبل {الساعة}
+// لتستمر العروض»); that end while it is ahead, null otherwise.
+export function remitOnlineUntil(input: AvailabilityInput, now: Date): Date | null {
+  if (input.onlineSince === null || input.onlineSince >= input.lastCutoff) return null;
+  if (!closedDueBlocks(input, now)) return null;
+  const ends = new Date(input.lastCutoff.getTime() + input.remitOnlineGraceHours * 3_600_000);
+  return now < ends ? ends : null;
+}
+
 function suspendedAt(input: AvailabilityInput, now: Date) {
   const { suspension } = input;
   if (input.status !== 'suspended' || suspension === null) return null;
@@ -151,9 +162,8 @@ export function availability(input: AvailabilityInput, now: Date): Availability 
   if (input.activeOrder) return { state: 'busy', since };
   const reasons: NoOffersReason[] = [];
   if (input.custodyUsage >= input.custodyLimit) reasons.push('cash_limit');
-  if (closedDueBlocks(input, now)) {
-    const graceEnds = input.lastCutoff.getTime() + input.remitOnlineGraceHours * 3_600_000;
-    if (since >= input.lastCutoff || now.getTime() >= graceEnds) reasons.push('closed_due');
+  if (closedDueBlocks(input, now) && remitOnlineUntil(input, now) === null) {
+    reasons.push('closed_due');
   }
   if (input.simulatedLocation) reasons.push('simulated_location');
   return reasons.length === 0

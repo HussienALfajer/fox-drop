@@ -4334,6 +4334,10 @@ export interface components {
                     amount: string;
                     currency: string;
                 };
+                /** @description AP §8.5.4, CA §10.3: the end of the hand-in grace running now («مُنحت مهلة حتى {الساعة}»), or null. */
+                handInGraceUntil: string | null;
+                /** @description AP §8.5.4, CA §10.3: online across the last cutoff with cash due from closed days, the moment offers stop unless the captain hands in («سلّم نقد أمس قبل {الساعة} لتستمر العروض»); null otherwise. */
+                remitBy: string | null;
             };
         };
         CaptainGoOnlineDto: {

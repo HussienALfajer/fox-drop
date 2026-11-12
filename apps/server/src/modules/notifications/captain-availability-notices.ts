@@ -30,6 +30,9 @@ export class CaptainAvailabilityNotices implements OnModuleInit {
       if (change.kind === 'hand_in_grace') {
         await this.pushes.enqueue(tx, [await this.gracePush(tx, change)], change.at);
       }
+      if (change.kind === 'custody_warning') {
+        await this.pushes.enqueue(tx, [await this.warningPush(tx, change)], change.at);
+      }
       await this.broadcasts.enqueue(tx, {
         type: 'captain.availability_changed',
         cityId: change.cityId,
@@ -77,6 +80,27 @@ export class CaptainAvailabilityNotices implements OnModuleInit {
       level: rendered.level,
       priority: rendered.priority,
       data: { type: 'captain.availability' },
+      at: change.at,
+    };
+  }
+
+  // CA §10.4, §14 #15 (slice 2.17d): «اقتربت من حد العهدة. سلّم النقد
+  // قريباً.» with the chime, once per warning (its moment names it); a tap
+  // opens «عهدتي».
+  private async warningPush(
+    tx: Parameters<Parameters<CaptainsService['onAvailabilityChanged']>[0]>[0],
+    change: Extract<AvailabilityChange, { kind: 'custody_warning' }>,
+  ) {
+    const templateKey = 'captain.custody_warning';
+    const rendered = await this.texts.render(templateKey, {}, tx);
+    return {
+      source: `captain:${templateKey}:${change.captainId}:${change.at.toISOString()}`,
+      recipient: { party: 'captain' as const, captainId: change.captainId },
+      templateKey,
+      body: rendered.body,
+      level: rendered.level,
+      priority: rendered.priority,
+      data: { target: 'custody' },
       at: change.at,
     };
   }

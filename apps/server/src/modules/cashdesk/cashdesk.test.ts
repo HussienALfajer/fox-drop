@@ -1111,6 +1111,27 @@ describe('the hand-in grace routes (AP §8.5.4, CA §14 #18)', () => {
     const hour = formatTime(grace.until, 'Asia/Damascus');
     expect(pushes.rows).toEqual([{ body: `مُنحت مهلة حتى ${hour}`, level: 'silent' }]);
   });
+
+  // CA §10.4, §14 #15 (slice 2.17d): the sweep queues the warning's push in
+  // the warning's transaction, once while usage stays past it.
+  it('tells the captain «اقتربت من حد العهدة…» with the chime, once', async () => {
+    const { id: captainId } = await captain();
+    await custody(captainId, 'custody.collect', 800_000n);
+    const at = Date.now();
+    await captains.sweepCustodyWarnings(azaz, new Date(at));
+    await captains.sweepCustodyWarnings(azaz, new Date(at + 60_000));
+    const pushes = await sql.query(
+      "SELECT body, level, data FROM notifications.push_messages WHERE source LIKE 'captain:captain.custody_warning:' || $1 || ':%'",
+      [captainId],
+    );
+    expect(pushes.rows).toEqual([
+      {
+        body: 'اقتربت من حد العهدة. سلّم النقد قريباً.',
+        level: 'chime',
+        data: expect.objectContaining({ target: 'custody' }),
+      },
+    ]);
+  });
 });
 
 describe('«أرصدة الكباتن» (AP §9.10.2)', () => {

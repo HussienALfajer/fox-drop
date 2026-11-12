@@ -67,6 +67,24 @@ extension CaptainTexts on AppLocalizations {
     return captainOffersExpiredOffline('$count');
   }
 
+  /// CA §10.3–10.4: the cash lines of home, in this order: the warning at
+  /// captain.custody_warn_pct, the end of the offers for a captain online
+  /// across the cutoff with cash due, and a grace running while cash from a
+  /// closed day is due.
+  List<String> cashLines(Availability availability) {
+    final custody = availability.custody;
+    final due =
+        BigInt.parse(custody.closedDue.amount) >
+        BigInt.parse(custody.remitTolerance.amount);
+    return [
+      if (custody.warn) captainCustodyWarning,
+      if (custody.remitBy case final until?)
+        captainRemitBy(formatTime(until))
+      else if (custody.handInGraceUntil case final until? when due)
+        captainHandInGrace(formatTime(until)),
+    ];
+  }
+
   /// Why no offers arrive (CA §7.1: the reason is shown).
   List<String> noOffersTexts(Availability availability) {
     final custody = availability.custody;

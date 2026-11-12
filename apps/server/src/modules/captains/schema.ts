@@ -312,3 +312,31 @@ export const handInGraces = captains.table(
     check('hand_in_graces_until', sql`${table.until} > ${table.grantedAt}`),
   ],
 );
+
+// CA §10.4, AP §8.5.3 (slice 2.17d): each time usage rose past
+// captain.custody_warn_pct, the warning pushed once; cleared when usage fell
+// below it again, so the next rise warns again. One open row per captain.
+export const custodyWarnings = captains.table(
+  'custody_warnings',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    cityId: uuid('city_id').notNull(),
+    captainId: uuid('captain_id')
+      .notNull()
+      .references(() => captainRecords.id),
+    warnedAt: timestamp('warned_at', { withTimezone: true }).notNull(),
+    clearedAt: timestamp('cleared_at', { withTimezone: true }),
+  },
+  (table) => [
+    index('custody_warnings_captain').on(table.captainId, table.warnedAt),
+    uniqueIndex('custody_warnings_one_open')
+      .on(table.captainId)
+      .where(sql`${table.clearedAt} IS NULL`),
+    check(
+      'custody_warnings_cleared',
+      sql`${table.clearedAt} IS NULL OR ${table.clearedAt} >= ${table.warnedAt}`,
+    ),
+  ],
+);

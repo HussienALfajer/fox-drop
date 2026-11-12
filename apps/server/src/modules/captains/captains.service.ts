@@ -23,11 +23,13 @@ import {
   type LastOrderBy,
   type OnlineBlock,
   onlineBlocks,
+  remitOnlineUntil,
 } from './availability.js';
 import { LIVE_POSITION_MAX_AGE_MS, LivePositions, type NearbyCaptain } from './live-positions.js';
 import { checkPayRate, orderPay, type PayParts, type PayRate } from './pay.js';
 import {
   captainRecords,
+  custodyWarnings,
   handInGraces,
   locations,
   type onlineEndReasons,
@@ -130,7 +132,23 @@ export type AvailabilityChange =
       until: Date;
       timeZone: string;
       at: Date;
-    };
+    }
+  // CA §10.4, §14 #15 (slice 2.17d): usage rose past captain.custody_warn_pct
+  // («اقتربت من حد العهدة. سلّم النقد قريباً.»), once each time.
+  | { kind: 'custody_warning'; captainId: string; cityId: string; at: Date };
+
+// CA §10.3, §14 #16–#17 (slice 2.17d): what the hand-in reminders of one
+// captain read.
+export interface CashReminder {
+  captainId: string;
+  // The cash to hand in above captain.remit_tolerance, or null.
+  handIn: Money | null;
+  // Some currency holds cash collected since the last cutoff.
+  heldToday: boolean;
+  // Online across the last cutoff with closed_due due: offers continue
+  // until then (AP §8.5.4); null otherwise.
+  remitBy: Date | null;
+}
 
 // AP §9.10.2 «أرصدة الكباتن»: one captain's money as finance lists it.
 export interface CaptainBalance {
@@ -268,6 +286,9 @@ export interface CaptainState {
   remitTolerance: Money;
   // AP §8.5.4: the hand-in grace running now, or null.
   handInGrace: HandInGrace | null;
+  // AP §8.5.4, CA §10.3: online across the last cutoff with closed_due due,
+  // the moment offers stop unless the captain hands in; null otherwise.
+  remitBy: Date | null;
 }
 
 type Executor = Pick<NodePgDatabase, 'select' | 'execute'>;
@@ -1584,6 +1605,113 @@ export class CaptainsService implements OnModuleInit {
     return states.flat();
   }
 
+  // CA §10.4, AP §8.5.3 (slice 2.17d): the worker's sweep of the city's
+  // captains not terminated. One whose usage is at captain.custody_warn_pct
+  // with no open warning gets one, and the listeners hear custody_warning in
+  // its transaction (the push); one below it with an open warning has it
+  // cleared, so the next rise warns again. Every way usage moves (an order,
+  // the desk, a correction, a rate) is seen within one sweep. A captain whose
+  // cash cannot be read is logged and left as they were.
+  async sweepCustodyWarnings(cityId: string, now: Date): Promise<void> {
+    const rows = await this.database.db
+      .select()
+      .from(captainRecords)
+      .where(and(eq(captainRecords.cityId, cityId), ne(captainRecords.status, 'terminated')));
+    if (rows.length === 0) return;
+    const rules = await this.cityRules(cityId, now);
+    const open = new Set(
+      (
+        await this.database.db
+          .select({ captainId: custodyWarnings.captainId })
+          .from(custodyWarnings)
+          .where(and(eq(custodyWarnings.cityId, cityId), isNull(custodyWarnings.clearedAt)))
+      ).map((row) => row.captainId),
+    );
+    for (const row of rows) {
+      let warn: boolean;
+      try {
+        warn = (await this.custody(this.database.db, row, rules.lastCutoff, rules.warnPct)).warn;
+      } catch (error) {
+        this.logger.warn({ err: error, captainId: row.id }, 'custody warning not read');
+        continue;
+      }
+      try {
+        await this.warnOrClear(cityId, row.id, warn, open.has(row.id), now);
+      } catch (error) {
+        this.logger.error({ err: error, captainId: row.id }, 'custody warning not written');
+      }
+    }
+  }
+
+  // One captain's warning row: a new one with its push in one transaction,
+  // or the open one cleared (never before it was raised, whatever the order
+  // of two sweeps).
+  private async warnOrClear(
+    cityId: string,
+    captainId: string,
+    warn: boolean,
+    open: boolean,
+    now: Date,
+  ): Promise<void> {
+    if (warn && !open) {
+      await this.database.db.transaction(async (tx) => {
+        const inserted = await tx
+          .insert(custodyWarnings)
+          .values({ cityId, captainId, warnedAt: now })
+          .onConflictDoNothing()
+          .returning({ id: custodyWarnings.id });
+        if (inserted.length === 0) return;
+        await this.availabilityChanged(tx, { kind: 'custody_warning', captainId, cityId, at: now });
+      });
+    }
+    if (!warn && open) {
+      await this.database.db
+        .update(custodyWarnings)
+        .set({
+          clearedAt: sql`greatest(${now.toISOString()}::timestamptz, ${custodyWarnings.warnedAt})`,
+        })
+        .where(and(eq(custodyWarnings.captainId, captainId), isNull(custodyWarnings.clearedAt)));
+    }
+  }
+
+  // CA §10.3, §14 #16–#17 (slice 2.17d): for the worker's reminders, each
+  // captain of the city who may hear one (neither terminated nor in a
+  // suspension still running) with the cash to hand in, whether some is
+  // today's, and the end of the offers after a cutoff they were online
+  // across. A captain whose cash cannot be read is logged and left out.
+  // Read only when a reminder can apply: in the evening's window (the
+  // caller's) or while offers still continue after the last cutoff.
+  async cashReminders(
+    cityId: string,
+    now: Date,
+    { evening }: { evening: boolean },
+  ): Promise<CashReminder[]> {
+    const rules = await this.cityRules(cityId, now);
+    const afterCutoff = now.getTime() < rules.lastCutoff.getTime() + rules.graceHours * 3_600_000;
+    if (!evening && !afterCutoff) return [];
+    const ids = await this.activeCaptainIds(cityId, now);
+    if (ids.length === 0) return [];
+    const rows = await this.database.db
+      .select()
+      .from(captainRecords)
+      .where(inArray(captainRecords.id, ids));
+    const reminders: CashReminder[] = [];
+    for (const row of rows) {
+      try {
+        const input = await this.input(this.database.db, row, rules);
+        reminders.push({
+          captainId: row.id,
+          handIn: handInOf(input.custody, rules.remitTolerance),
+          heldToday: input.custody.currencies.some((line) => line.today > 0n),
+          remitBy: remitOnlineUntil(input.availability, now),
+        });
+      } catch (error) {
+        this.logger.warn({ err: error, captainId: row.id }, 'cash reminder not read');
+      }
+    }
+    return reminders;
+  }
+
   // AP §9.1.3 «انقطع اتصال كابتن أثناء طلب»: when each captain's newest
   // point since a moment was recorded (simulated ones included: the app is
   // still sending); a captain with none since is left out.
@@ -1676,12 +1804,7 @@ export class CaptainsService implements OnModuleInit {
     const row = await this.row(this.database.db, captainId);
     const rules = await this.cityRules(row.cityId, now);
     const input = await this.input(this.database.db, row, rules);
-    return {
-      availability: availability(input.availability, now),
-      custody: input.custody,
-      remitTolerance: { amount: rules.remitTolerance, currency: input.custody.usage.currency },
-      handInGrace: input.grace,
-    };
+    return stateOf(input, rules.remitTolerance, now);
   }
 
   // CA §7.2: going online, refused with every block that applies. Already
@@ -1715,12 +1838,7 @@ export class CaptainsService implements OnModuleInit {
           .values({ captainId, startedAt: now, appVersion: device.appVersion });
         input.availability.onlineSince = now;
       }
-      return {
-        availability: availability(input.availability, now),
-        custody: input.custody,
-        remitTolerance: { amount: rules.remitTolerance, currency: input.custody.usage.currency },
-        handInGrace: input.grace,
-      };
+      return stateOf(input, rules.remitTolerance, now);
     });
   }
 
@@ -2022,6 +2140,20 @@ export class CaptainsService implements OnModuleInit {
       );
     }
   }
+}
+
+function stateOf(
+  input: { availability: AvailabilityInput; custody: Custody; grace: HandInGrace | null },
+  tolerance: bigint,
+  now: Date,
+): CaptainState {
+  return {
+    availability: availability(input.availability, now),
+    custody: input.custody,
+    remitTolerance: { amount: tolerance, currency: input.custody.usage.currency },
+    handInGrace: input.grace,
+    remitBy: remitOnlineUntil(input.availability, now),
+  };
 }
 
 function handInOf(custody: Custody, tolerance: bigint): Money | null {

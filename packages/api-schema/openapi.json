@@ -12726,6 +12726,32 @@
                 ],
                 "additionalProperties": false,
                 "description": "CA §7.5: captain.remit_tolerance; the hand-in reminder shows when usage is above it."
+              },
+              "handInGraceUntil": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "AP §8.5.4, CA §10.3: the end of the hand-in grace running now («مُنحت مهلة حتى {الساعة}»), or null."
+              },
+              "remitBy": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "AP §8.5.4, CA §10.3: online across the last cutoff with cash due from closed days, the moment offers stop unless the captain hands in («سلّم نقد أمس قبل {الساعة} لتستمر العروض»); null otherwise."
               }
             },
             "required": [
@@ -12734,7 +12760,9 @@
               "warn",
               "closedDue",
               "lastCutoff",
-              "remitTolerance"
+              "remitTolerance",
+              "handInGraceUntil",
+              "remitBy"
             ],
             "additionalProperties": false
           }

@@ -2020,6 +2020,24 @@ abstract class AppLocalizations {
   /// **'لديك نقد غير مسلّم: {amount}. سلّمه في المكتب لتصلك العروض.'**
   String captainNoOffersClosedDue(String amount);
 
+  /// The amber banner on home at captain.custody_warn_pct of the cash limit (CA §10.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'اقتربت من حد العهدة. سلّم النقد قريباً.'**
+  String get captainCustodyWarning;
+
+  /// Home line while online across the cutoff with cash due, until the offers stop (CA §10.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'سلّم نقد أمس قبل {time} لتستمر العروض'**
+  String captainRemitBy(String time);
+
+  /// Home line while a hand-in grace runs and cash from a closed day is due (CA §10.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'مُنحت مهلة حتى {time}'**
+  String captainHandInGrace(String time);
+
   /// A simulated location is active (CA §7.2, Appendix B).
   ///
   /// In ar, this message translates to:

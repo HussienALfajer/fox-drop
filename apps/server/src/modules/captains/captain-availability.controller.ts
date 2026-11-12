@@ -120,6 +120,18 @@ class CaptainAvailabilityDto extends createZodDto(
       remitTolerance: money.describe(
         'CA §7.5: captain.remit_tolerance; the hand-in reminder shows when usage is above it.',
       ),
+      handInGraceUntil: z.iso
+        .datetime()
+        .nullable()
+        .describe(
+          'AP §8.5.4, CA §10.3: the end of the hand-in grace running now («مُنحت مهلة حتى {الساعة}»), or null.',
+        ),
+      remitBy: z.iso
+        .datetime()
+        .nullable()
+        .describe(
+          'AP §8.5.4, CA §10.3: online across the last cutoff with cash due from closed days, the moment offers stop unless the captain hands in («سلّم نقد أمس قبل {الساعة} لتستمر العروض»); null otherwise.',
+        ),
     }),
   }),
 ) {}
@@ -454,7 +466,7 @@ function officeBody(value: Office | null) {
 }
 
 function stateBody(
-  { availability: state, custody, remitTolerance }: CaptainState,
+  { availability: state, custody, remitTolerance, handInGrace, remitBy }: CaptainState,
   office: Office | null,
 ) {
   return {
@@ -467,6 +479,8 @@ function stateBody(
       closedDue: moneyBody(custody.closedDue),
       lastCutoff: custody.lastCutoff.toISOString(),
       remitTolerance: moneyBody(remitTolerance),
+      handInGraceUntil: handInGrace?.until.toISOString() ?? null,
+      remitBy: remitBy?.toISOString() ?? null,
     },
   };
 }

@@ -59,6 +59,7 @@ export { localClock, type PeakWindow } from './peak-bonus.js';
 export {
   type ActiveOrderLookup,
   type AvailabilityChange,
+  type CashReminder,
   type Candidate,
   type Captain,
   type CaptainBalance,

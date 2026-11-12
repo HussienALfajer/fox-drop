@@ -558,6 +558,105 @@ describe('going online and offline (CA §7.2, §7.5)', () => {
   });
 });
 
+describe('the cash limit warning (CA §10.4, AP §8.5.3)', () => {
+  const warned: string[] = [];
+  beforeAll(() => {
+    captains.onAvailabilityChanged((_tx, change) => {
+      if (change.kind === 'custody_warning') warned.push(change.captainId);
+      return Promise.resolve();
+    });
+  });
+  const warningsOf = (id: string) => warned.filter((captainId) => captainId === id).length;
+
+  it('warns once each time usage rises past captain.custody_warn_pct', async () => {
+    // The limit is 3 000 ₺, so the warning is at 2 400 ₺.
+    const { cityId, id } = await captain();
+    let at = Date.now();
+    const sweep = () => captains.sweepCustodyWarnings(cityId, new Date((at += 60_000)));
+    await custody(cityId, id, 'custody.collect', 230_000n);
+    await sweep();
+    expect(warningsOf(id)).toBe(0);
+
+    await custody(cityId, id, 'custody.collect', 20_000n);
+    await sweep();
+    expect(warningsOf(id)).toBe(1);
+    expect((await captains.state(id, new Date(at))).custody.warn).toBe(true);
+
+    // Up again, still past it: no second warning.
+    await custody(cityId, id, 'custody.collect', 10_000n);
+    await sweep();
+    await sweep();
+    expect(warningsOf(id)).toBe(1);
+
+    // Down below it, then up past it again: a second warning.
+    await custody(cityId, id, 'custody.hand_in', -100_000n);
+    await sweep();
+    expect(warningsOf(id)).toBe(1);
+    await custody(cityId, id, 'custody.collect', 100_000n);
+    await sweep();
+    expect(warningsOf(id)).toBe(2);
+    const { rows } = await sql.query<{ cleared: boolean }>(
+      'SELECT cleared_at IS NOT NULL AS cleared FROM captains.custody_warnings WHERE captain_id = $1 ORDER BY warned_at',
+      [id],
+    );
+    expect(rows).toEqual([{ cleared: true }, { cleared: false }]);
+  });
+
+  it('leaves out a terminated captain', async () => {
+    const { cityId, id } = await captain();
+    await custody(cityId, id, 'custody.collect', 290_000n);
+    await captains.setStatus(id, 'terminated', change, new Date());
+    await captains.sweepCustodyWarnings(cityId, new Date());
+    expect(warningsOf(id)).toBe(0);
+  });
+});
+
+describe('the hand-in reminders (CA §10.3, AP §8.5.4)', () => {
+  it('names the cash to hand in, whether some is from today, and the end of the offers after the cutoff', async () => {
+    const { cityId, id } = await captain();
+    const quiet = await captains.createCaptain(cityId, { ...motorbike, name: 'ثاني' }, change);
+    const start = new Date();
+    await captains.goOnline(id, device, start);
+    await custody(cityId, id, 'custody.collect', 41_000n);
+    const today = await captains.cashReminders(cityId, start, { evening: true });
+    expect(today.find((reminder) => reminder.captainId === id)).toEqual({
+      captainId: id,
+      handIn: { amount: 41_000n, currency: 'TRY' },
+      heldToday: true,
+      remitBy: null,
+    });
+    expect(today.find((reminder) => reminder.captainId === quiet)).toEqual({
+      captainId: quiet,
+      handIn: null,
+      heldToday: false,
+      remitBy: null,
+    });
+
+    // Online across the next cutoff with that cash due: offers continue for
+    // captain.remit_online_grace_hours (4), then stop.
+    const cutoff = (await captains.state(id, new Date(start.getTime() + day))).custody.lastCutoff;
+    const after = new Date(cutoff.getTime() + 60_000);
+    const [reminder] = (await captains.cashReminders(cityId, after, { evening: false })).filter(
+      (line) => line.captainId === id,
+    );
+    expect(reminder).toEqual({
+      captainId: id,
+      handIn: { amount: 41_000n, currency: 'TRY' },
+      heldToday: false,
+      remitBy: new Date(cutoff.getTime() + 4 * 3_600_000),
+    });
+    expect((await captains.state(id, after)).remitBy).toEqual(reminder!.remitBy);
+    const late = new Date(cutoff.getTime() + 4 * 3_600_000);
+    expect((await captains.state(id, late)).remitBy).toBeNull();
+    // Outside the evening's window and the offers after a cutoff: nothing read.
+    expect(await captains.cashReminders(cityId, late, { evening: false })).toEqual([]);
+    expect((await captains.state(id, late)).availability).toMatchObject({
+      state: 'not_receiving_offers',
+      reasons: ['closed_due'],
+    });
+  });
+});
+
 describe('hand-in grace (AP §8.5.4)', () => {
   const heard: { kind: string; captainId: string; until?: Date }[] = [];
   beforeAll(() => {

@@ -20,6 +20,10 @@ class _$CaptainAvailabilityDtoOutputCustody
   final DateTime lastCutoff;
   @override
   final CaptainAvailabilityDtoOutputCustodyRemitTolerance remitTolerance;
+  @override
+  final DateTime? handInGraceUntil;
+  @override
+  final DateTime? remitBy;
 
   factory _$CaptainAvailabilityDtoOutputCustody([
     void Function(CaptainAvailabilityDtoOutputCustodyBuilder)? updates,
@@ -33,6 +37,8 @@ class _$CaptainAvailabilityDtoOutputCustody
     required this.closedDue,
     required this.lastCutoff,
     required this.remitTolerance,
+    this.handInGraceUntil,
+    this.remitBy,
   }) : super._();
   @override
   CaptainAvailabilityDtoOutputCustody rebuild(
@@ -52,7 +58,9 @@ class _$CaptainAvailabilityDtoOutputCustody
         warn == other.warn &&
         closedDue == other.closedDue &&
         lastCutoff == other.lastCutoff &&
-        remitTolerance == other.remitTolerance;
+        remitTolerance == other.remitTolerance &&
+        handInGraceUntil == other.handInGraceUntil &&
+        remitBy == other.remitBy;
   }
 
   @override
@@ -64,6 +72,8 @@ class _$CaptainAvailabilityDtoOutputCustody
     _$hash = $jc(_$hash, closedDue.hashCode);
     _$hash = $jc(_$hash, lastCutoff.hashCode);
     _$hash = $jc(_$hash, remitTolerance.hashCode);
+    _$hash = $jc(_$hash, handInGraceUntil.hashCode);
+    _$hash = $jc(_$hash, remitBy.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -76,7 +86,9 @@ class _$CaptainAvailabilityDtoOutputCustody
           ..add('warn', warn)
           ..add('closedDue', closedDue)
           ..add('lastCutoff', lastCutoff)
-          ..add('remitTolerance', remitTolerance))
+          ..add('remitTolerance', remitTolerance)
+          ..add('handInGraceUntil', handInGraceUntil)
+          ..add('remitBy', remitBy))
         .toString();
   }
 }
@@ -125,6 +137,15 @@ class CaptainAvailabilityDtoOutputCustodyBuilder
     CaptainAvailabilityDtoOutputCustodyRemitToleranceBuilder? remitTolerance,
   ) => _$this._remitTolerance = remitTolerance;
 
+  DateTime? _handInGraceUntil;
+  DateTime? get handInGraceUntil => _$this._handInGraceUntil;
+  set handInGraceUntil(DateTime? handInGraceUntil) =>
+      _$this._handInGraceUntil = handInGraceUntil;
+
+  DateTime? _remitBy;
+  DateTime? get remitBy => _$this._remitBy;
+  set remitBy(DateTime? remitBy) => _$this._remitBy = remitBy;
+
   CaptainAvailabilityDtoOutputCustodyBuilder() {
     CaptainAvailabilityDtoOutputCustody._defaults(this);
   }
@@ -138,6 +159,8 @@ class CaptainAvailabilityDtoOutputCustodyBuilder
       _closedDue = $v.closedDue.toBuilder();
       _lastCutoff = $v.lastCutoff;
       _remitTolerance = $v.remitTolerance.toBuilder();
+      _handInGraceUntil = $v.handInGraceUntil;
+      _remitBy = $v.remitBy;
       _$v = null;
     }
     return this;
@@ -178,6 +201,8 @@ class CaptainAvailabilityDtoOutputCustodyBuilder
               'lastCutoff',
             ),
             remitTolerance: remitTolerance.build(),
+            handInGraceUntil: handInGraceUntil,
+            remitBy: remitBy,
           );
     } catch (_) {
       late String _$failedField;

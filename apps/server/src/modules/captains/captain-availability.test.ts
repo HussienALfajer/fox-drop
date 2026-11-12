@@ -146,6 +146,8 @@ describe('the availability routes (CA §7)', () => {
         warn: false,
         closedDue: { amount: '0', currency: 'TRY' },
         remitTolerance: { amount: '0', currency: 'TRY' },
+        handInGraceUntil: null,
+        remitBy: null,
       },
     });
     const online = await goOnline(headers);
