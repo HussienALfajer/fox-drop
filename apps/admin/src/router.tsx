@@ -24,7 +24,8 @@ import { HomePage } from './home-page.js';
 import { OrderDetailPage } from './order-detail-page.js';
 import { OPERATIONS_READ } from './orders-board.js';
 import { OrdersBoardPage } from './orders-board-page.js';
-import { CASH_DESK } from './cash-desk.js';
+import { CASH_DESK, FINANCE_READ } from './cash-desk.js';
+import { CaptainBalancesPage } from './captain-balances-page.js';
 import { CashDeskPage, CashDeskSessionsPage } from './cash-desk-page.js';
 import { ZONES_READ } from './peak-bonus.js';
 import { PeakBonusPage } from './peak-bonus-page.js';
@@ -244,7 +245,11 @@ const peakBonusRoute = createRoute({
 const cashDeskRoute = createRoute({
   getParentRoute: () => signedInRoute,
   path: '/cash-desk',
-  validateSearch: citySearch,
+  // `captain`: the captain «سجّل تسليماً» chose in «أرصدة الكباتن».
+  validateSearch: (search: Record<string, unknown>): { city?: string; captain?: string } => ({
+    ...citySearch(search),
+    ...(typeof search.captain === 'string' ? { captain: search.captain } : {}),
+  }),
   beforeLoad: ({ context }) => {
     if (!can(context.session, CASH_DESK)) throw redirect({ to: '/' });
   },
@@ -259,6 +264,17 @@ const cashDeskSessionsRoute = createRoute({
     if (!can(context.session, CASH_DESK)) throw redirect({ to: '/' });
   },
   component: CashDeskSessionsPage,
+});
+
+// AP §9.10.2 «أرصدة الكباتن» (slice 2.17b), finance's (OWN, FIN).
+const captainBalancesRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/captain-balances',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, FINANCE_READ)) throw redirect({ to: '/' });
+  },
+  component: CaptainBalancesPage,
 });
 
 const receiptRoute = createRoute({
@@ -282,6 +298,7 @@ const routeTree = rootRoute.addChildren([
     peakBonusRoute,
     cashDeskRoute,
     cashDeskSessionsRoute,
+    captainBalancesRoute,
     receiptRoute,
     imagesRoute,
     restaurantStatusRoute,

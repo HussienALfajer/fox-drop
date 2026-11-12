@@ -4,8 +4,13 @@ import { useRef } from 'react';
 import { api } from './api.js';
 import { minorOf } from './format.js';
 
-// AP §6.3: OWN and FIN record at the cash desk.
+// AP §6.3: OWN and FIN record at the cash desk; OWN and FIN grant one
+// captain a hand-in grace, OWN alone the bulk grace (AP §8.5.4).
 export const CASH_DESK = 'cash_desk.record';
+export const HAND_IN_GRACE = 'captains.hand_in_grace';
+export const BULK_HAND_IN_GRACE = 'captains.bulk_hand_in_grace';
+// AP §9.10.2 «أرصدة الكباتن» sits in finance (OWN, FIN).
+export const FINANCE_READ = 'finance.read';
 
 export type DrawerSession = components['schemas']['AdminDrawerSessionDto_Output'];
 export type CurrentSession = components['schemas']['AdminCurrentDrawerSessionDto_Output'];
@@ -14,6 +19,10 @@ export type DeskCustody = components['schemas']['AdminDeskCustodyDto_Output'];
 export type CustodyLine = DeskCustody['currencies'][number];
 export type Receipt = components['schemas']['AdminReceiptDto_Output'];
 export type ReceiptType = Receipt['type'];
+export type ConversionQuote = components['schemas']['AdminConversionQuoteDto_Output'];
+export type HandInGrace = NonNullable<DeskCustody['handInGrace']>;
+export type CaptainBalance =
+  components['schemas']['AdminCaptainBalancesDto_Output']['captains'][number];
 
 // What a field typed per currency becomes: «40» or «40.50» in major units.
 export type Typed = Record<string, string>;
@@ -82,6 +91,65 @@ export function remainingOf(line: CustodyLine, amount: string): string {
   const balance = BigInt(line.balance);
   const moved = BigInt(amount);
   return (balance > 0n ? balance - moved : balance + moved).toString();
+}
+
+// AP §9.10.3 cross-currency settlement: the conversion asked, from a
+// currency the captain holds (either way) into another of the city's, the
+// amount typed in the major units of `from` and never above its custody;
+// null while incomplete.
+export type ConversionAsked = { from: string; to: string; amount: string };
+
+export function conversionAskedOf(
+  custody: DeskCustody,
+  from: string,
+  to: string,
+  typed: string,
+): ConversionAsked | { problem: 'invalid' | 'above' } | null {
+  const line = custody.currencies.find((each) => each.currency === from);
+  if (!line || directionOf(line) === 'none' || to === '' || to === from) return null;
+  if (typed.trim() === '') return null;
+  const amount = minorOf(typed.trim(), from);
+  if (amount === null || BigInt(amount) === 0n) return { problem: 'invalid' };
+  if (BigInt(amount) > BigInt(maximumOf(line))) return { problem: 'above' };
+  return { from, to, amount };
+}
+
+// The custody once the quoted conversion is made: `from` moves towards zero
+// by the amount, `to` the same way by the converted amount. The desk then
+// takes the cash against it.
+export function afterConversion(custody: DeskCustody, quote: ConversionQuote): DeskCustody {
+  const from = custody.currencies.find((line) => line.currency === quote.from);
+  if (!from) return custody;
+  const sign = BigInt(from.balance) > 0n ? 1n : -1n;
+  const move = (balance: string, by: bigint) => (BigInt(balance) + by).toString();
+  const currencies = custody.currencies.map((line) =>
+    line.currency === quote.from
+      ? { ...line, balance: move(line.balance, -sign * BigInt(quote.amount)) }
+      : line.currency === quote.to
+        ? { ...line, balance: move(line.balance, sign * BigInt(quote.converted)) }
+        : line,
+  );
+  if (!currencies.some((line) => line.currency === quote.to)) {
+    currencies.push({
+      currency: quote.to,
+      balance: (sign * BigInt(quote.converted)).toString(),
+      closedDue: '0',
+      today: '0',
+      balanceInBase: '0',
+    });
+  }
+  return { ...custody, currencies };
+}
+
+// The body's conversion, as the quote gave it.
+export function conversionOf(quote: ConversionQuote) {
+  return {
+    from: quote.from,
+    to: quote.to,
+    amount: quote.amount,
+    converted: quote.converted,
+    rates: quote.rates,
+  };
 }
 
 export function phoneOrName(text: string): boolean {
@@ -217,7 +285,78 @@ export function useDeskCustody(captainId: string | undefined) {
   });
 }
 
+// The conversion at the current rate, shown before the confirmation.
+export function useConversionQuote(cityId: string, asked: ConversionAsked | null) {
+  return useQuery({
+    queryKey: ['cash-desk', 'quote', cityId, asked],
+    enabled: asked !== null,
+    queryFn: async (): Promise<ConversionQuote | 'refused'> => {
+      const { data, response } = await api.POST('/v1/admin/cash-desk/conversions/quote', {
+        body: { cityId, ...asked! },
+      });
+      if (data) return data;
+      if (response.status === 400 || response.status === 409) return 'refused';
+      throw new Error(`The conversion quote failed with ${response.status}.`);
+    },
+  });
+}
+
+export type GraceResult = { status: 'granted'; grace: HandInGrace } | { status: 'nothing_due' };
+
+// AP §8.5.4: a grace for one captain until the next cutoff. A repeat
+// answers the same grace, so no key.
+export function useGrantGrace(captainId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (reason: string): Promise<GraceResult> => {
+      const { data, error, response } = await api.POST(
+        '/v1/admin/captains/{captainId}/hand-in-grace',
+        { params: { path: { captainId } }, body: { reason } },
+      );
+      if (data) return { status: 'granted', grace: data };
+      if (response.status === 409 && (error as { error?: unknown }).error === 'nothing_due') {
+        return { status: 'nothing_due' };
+      }
+      throw new Error(`The grace failed with ${response.status}.`);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['cash-desk'] }),
+  });
+}
+
+// AP §9.10.3 «Bulk hand-in grace» (OWN): every captain of the city for one
+// business day; the answer names how many were blocked and told.
+export function useBulkGrace(cityId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (reason: string) => {
+      const { data, response } = await api.POST('/v1/admin/captains/hand-in-grace', {
+        body: { cityId, reason },
+      });
+      if (!data) throw new Error(`The bulk grace failed with ${response.status}.`);
+      return data;
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['cash-desk'] }),
+  });
+}
+
+// AP §9.10.2 «أرصدة الكباتن», the highest custody first (the server sorts).
+export function useBalances(cityId: string | undefined) {
+  return useQuery({
+    queryKey: ['cash-desk', 'balances', cityId ?? ''],
+    enabled: cityId !== undefined,
+    queryFn: async () => {
+      const { data } = await api.GET('/v1/admin/cash-desk/balances', {
+        params: { query: { cityId: cityId! } },
+      });
+      if (!data) throw new Error('The captain balances read failed.');
+      return data.captains;
+    },
+  });
+}
+
 export type HandInRefusal =
+  | 'rate_changed'
+  | 'rate_missing'
   | 'drawer_short'
   | 'no_open_session'
   | 'nothing_due'
@@ -225,6 +364,8 @@ export type HandInRefusal =
   | 'unknown_captain'
   | 'invalid_amounts';
 const handInRefusals: readonly string[] = [
+  'rate_changed',
+  'rate_missing',
   'drawer_short',
   'no_open_session',
   'nothing_due',
@@ -242,7 +383,11 @@ export function useHandIn() {
   const queryClient = useQueryClient();
   const keys = useRef(new Map<string, string>());
   return useMutation({
-    mutationFn: async (body: { captainId: string; lines: CashLine[] }): Promise<HandInResult> => {
+    mutationFn: async (body: {
+      captainId: string;
+      conversions: ReturnType<typeof conversionOf>[];
+      lines: CashLine[];
+    }): Promise<HandInResult> => {
       const choice = JSON.stringify(body);
       let key = keys.current.get(choice);
       if (key === undefined) {

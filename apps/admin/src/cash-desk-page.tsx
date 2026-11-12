@@ -3,10 +3,16 @@ import { getRouteApi, Link } from '@tanstack/react-router';
 import { type FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  afterConversion,
+  BULK_HAND_IN_GRACE,
+  type ConversionQuote,
+  conversionAskedOf,
+  conversionOf,
   type CurrentSession,
   type CustodyLine,
   cashLinesOf,
   type DeskCustody,
+  HAND_IN_GRACE,
   type DrawerSession,
   directionOf,
   type HandInRefusal,
@@ -14,18 +20,23 @@ import {
   remainingOf,
   type SessionRefusal,
   type Typed,
+  useBulkGrace,
   useCaptainSearch,
   useCloseSession,
+  useConversionQuote,
   useCurrentSession,
   useDeskCustody,
+  useGrantGrace,
   useHandIn,
   useOpenSession,
   useSessions,
 } from './cash-desk.js';
 import { type City, chosenCity, citiesQuery } from './cities.js';
-import { formatDateTime, formatMoney } from './format.js';
+import { formatDateTime, formatMoney, formatTime } from './format.js';
+import { can } from './session.js';
 
 const route = getRouteApi('/signed-in/cash-desk');
+const signedIn = getRouteApi('/signed-in');
 const sessionsRoute = getRouteApi('/signed-in/cash-desk/sessions');
 
 const sessionRefusalKeys = {
@@ -36,6 +47,8 @@ const sessionRefusalKeys = {
 } as const satisfies Record<SessionRefusal, string>;
 
 const handInRefusalKeys = {
+  rate_changed: 'cashDesk.refusal.rate_changed',
+  rate_missing: 'cashDesk.refusal.rate_missing',
   drawer_short: 'cashDesk.refusal.drawer_short',
   no_open_session: 'cashDesk.refusal.no_open_session',
   nothing_due: 'cashDesk.refusal.nothing_due',
@@ -74,7 +87,13 @@ export function CashDeskPage() {
       ) : (
         <>
           <SessionSection current={current.data} city={city} />
-          {current.data.session && <HandInSection city={city} />}
+          {current.data.session && (
+            <HandInSection
+              city={city}
+              currencies={current.data.currencies}
+              initialCaptain={search.captain}
+            />
+          )}
         </>
       )}
     </main>
@@ -266,15 +285,26 @@ function CloseSession({ session }: { session: DrawerSession }) {
   );
 }
 
-// «تسليم النقد اليومي»: find the captain, see the custody, record.
-function HandInSection({ city }: { city: City }) {
+// «تسليم النقد اليومي»: find the captain, see the custody, record. A
+// captain chosen in «أرصدة الكباتن» comes as the `captain` parameter.
+function HandInSection({
+  city,
+  currencies,
+  initialCaptain,
+}: {
+  city: City;
+  currencies: string[];
+  initialCaptain: string | undefined;
+}) {
   const { t } = useTranslation();
+  const { session } = signedIn.useRouteContext();
   const [text, setText] = useState('');
-  const [captainId, setCaptainId] = useState<string | undefined>();
+  const [captainId, setCaptainId] = useState<string | undefined>(initialCaptain);
   const found = useCaptainSearch(city.id, text);
   return (
     <section aria-labelledby="hand-in">
       <h2 id="hand-in">{t('cashDesk.handIn.title')}</h2>
+      {can(session, BULK_HAND_IN_GRACE) && <BulkGrace city={city} />}
       <p>
         <label>
           {t('cashDesk.handIn.search')}{' '}
@@ -295,24 +325,227 @@ function HandInSection({ city }: { city: City }) {
           ))}
         </ul>
       )}
-      {captainId && <CaptainCustody key={captainId} captainId={captainId} city={city} />}
+      {captainId && (
+        <CaptainCustody key={captainId} captainId={captainId} city={city} currencies={currencies} />
+      )}
     </section>
   );
 }
 
-function CaptainCustody({ captainId, city }: { captainId: string; city: City }) {
+function CaptainCustody({
+  captainId,
+  city,
+  currencies,
+}: {
+  captainId: string;
+  city: City;
+  currencies: string[];
+}) {
   const { t } = useTranslation();
   const custody = useDeskCustody(captainId);
   if (custody.isError) return <p role="alert">{t('common.failed')}</p>;
   if (!custody.data) return <p role="status">{t('status.loading')}</p>;
-  return <HandInForm custody={custody.data} city={city} />;
+  return (
+    <>
+      <Grace custody={custody.data} city={city} />
+      <HandInForm custody={custody.data} city={city} currencies={currencies} />
+    </>
+  );
 }
 
-function HandInForm({ custody, city }: { custody: DeskCustody; city: City }) {
+// AP §8.5.4: the grace running now, or «منح مهلة» while cash from a closed
+// day is due (OWN, FIN).
+function Grace({ custody, city }: { custody: DeskCustody; city: City }) {
+  const { t } = useTranslation();
+  const { session } = signedIn.useRouteContext();
+  const grant = useGrantGrace(custody.id);
+  const [reason, setReason] = useState('');
+  if (custody.handInGrace) {
+    return (
+      <p>
+        {t('cashDesk.grace.running', {
+          until: formatDateTime(custody.handInGrace.until, city.timeZone),
+          reason: custody.handInGrace.reason,
+        })}
+      </p>
+    );
+  }
+  if (BigInt(custody.closedDue.amount) <= 0n || !can(session, HAND_IN_GRACE)) return null;
+
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    if (reason.trim() !== '') grant.mutate(reason.trim());
+  }
+
+  return (
+    <form onSubmit={submit}>
+      <p>
+        <label>
+          {t('cashDesk.grace.reason')}{' '}
+          <input
+            value={reason}
+            maxLength={500}
+            onChange={(event) => setReason(event.target.value)}
+          />
+        </label>{' '}
+        <button type="submit" disabled={reason.trim() === '' || grant.isPending}>
+          {t('cashDesk.grace.grant')}
+        </button>
+      </p>
+      <p>{t('cashDesk.grace.explain')}</p>
+      {grant.isError && <p role="alert">{t('common.failed')}</p>}
+      {grant.data?.status === 'nothing_due' && <p role="alert">{t('cashDesk.grace.nothingDue')}</p>}
+    </form>
+  );
+}
+
+// AP §9.10.3 «Bulk hand-in grace» (OWN): every captain for one business day.
+function BulkGrace({ city }: { city: City }) {
+  const { t } = useTranslation();
+  const grant = useBulkGrace(city.id);
+  const [reason, setReason] = useState('');
+
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    if (reason.trim() !== '') grant.mutate(reason.trim());
+  }
+
+  return (
+    <form onSubmit={submit}>
+      <h3>{t('cashDesk.grace.bulkTitle')}</h3>
+      <p>{t('cashDesk.grace.bulkExplain')}</p>
+      <p>
+        <label>
+          {t('cashDesk.grace.reason')}{' '}
+          <input
+            value={reason}
+            maxLength={500}
+            onChange={(event) => setReason(event.target.value)}
+          />
+        </label>{' '}
+        <button type="submit" disabled={reason.trim() === '' || grant.isPending}>
+          {t('cashDesk.grace.bulkGrant')}
+        </button>
+      </p>
+      {grant.isError && <p role="alert">{t('common.failed')}</p>}
+      {grant.data && (
+        <p role="status">
+          {t('cashDesk.grace.bulkGranted', {
+            until: formatTime(grant.data.grace.until, city.timeZone),
+            count: grant.data.captainIds.length,
+          })}
+        </p>
+      )}
+    </form>
+  );
+}
+
+// AP §9.10.3 cross-currency settlement: one currency the captain holds
+// converted into another of the city's at the current rate, shown before the
+// confirmation; the hand-in then takes the cash against the converted
+// custody.
+function Conversion({
+  custody,
+  currencies,
+  quote,
+  onChange,
+}: {
+  custody: DeskCustody;
+  currencies: string[];
+  quote: ConversionQuote | 'refused' | undefined;
+  onChange: (asked: { from: string; to: string; typed: string }) => void;
+}) {
+  const { t } = useTranslation();
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
+  const [typed, setTyped] = useState('');
+  const held = custody.currencies.filter((line) => directionOf(line) !== 'none');
+  const asked = conversionAskedOf(custody, from, to, typed);
+  const change = (next: { from?: string; to?: string; typed?: string }) => {
+    const value = { from, to, typed, ...next };
+    setFrom(value.from);
+    setTo(value.to);
+    setTyped(value.typed);
+    onChange(value);
+  };
+  if (held.length === 0) return null;
+  return (
+    <fieldset>
+      <legend>{t('cashDesk.conversion.title')}</legend>
+      <p>
+        <label>
+          {t('cashDesk.conversion.from')}{' '}
+          <select value={from} onChange={(event) => change({ from: event.target.value })}>
+            <option value="">{t('cashDesk.conversion.none')}</option>
+            {held.map((line) => (
+              <option key={line.currency} value={line.currency}>
+                {line.currency}
+              </option>
+            ))}
+          </select>
+        </label>{' '}
+        <label>
+          {t('cashDesk.conversion.to')}{' '}
+          <select value={to} onChange={(event) => change({ to: event.target.value })}>
+            <option value="">{t('cashDesk.conversion.none')}</option>
+            {currencies
+              .filter((currency) => currency !== from)
+              .map((currency) => (
+                <option key={currency} value={currency}>
+                  {currency}
+                </option>
+              ))}
+          </select>
+        </label>{' '}
+        <label>
+          {t('cashDesk.conversion.amount', { currency: from })}{' '}
+          <input
+            inputMode="decimal"
+            value={typed}
+            onChange={(event) => change({ typed: event.target.value })}
+          />
+        </label>
+      </p>
+      {asked && 'problem' in asked && (
+        <p role="alert">
+          {asked.problem === 'above'
+            ? t('cashDesk.problem.above', { currency: from })
+            : t('cashDesk.problem.amount', { currency: from })}
+        </p>
+      )}
+      {quote === 'refused' && <p role="alert">{t('cashDesk.conversion.refused')}</p>}
+      {quote && quote !== 'refused' && (
+        <p role="status">
+          {t('cashDesk.conversion.quote', {
+            amount: formatMoney({ amount: quote.amount, currency: quote.from }),
+            converted: formatMoney({ amount: quote.converted, currency: quote.to }),
+          })}{' '}
+          {t('cashDesk.conversion.rate', quote.unit)}
+        </p>
+      )}
+    </fieldset>
+  );
+}
+
+function HandInForm({
+  custody: held,
+  city,
+  currencies,
+}: {
+  custody: DeskCustody;
+  city: City;
+  currencies: string[];
+}) {
   const { t } = useTranslation();
   const handIn = useHandIn();
   const [typed, setTyped] = useState<Typed>({});
   const [confirming, setConfirming] = useState(false);
+  const [asking, setAsking] = useState({ from: '', to: '', typed: '' });
+  const asked = conversionAskedOf(held, asking.from, asking.to, asking.typed);
+  const quote = useConversionQuote(city.id, asked && 'amount' in asked ? asked : null);
+  const quoted = quote.data && quote.data !== 'refused' && asked ? quote.data : null;
+  // The custody the cash is taken against: after the conversion, if any.
+  const custody = quoted ? afterConversion(held, quoted) : held;
   const parsed = handInLinesOf(typed, custody);
   const active = custody.currencies.filter((line) => directionOf(line) !== 'none');
   const byCurrency = new Map(custody.currencies.map((line) => [line.currency, line]));
@@ -325,7 +558,11 @@ function HandInForm({ custody, city }: { custody: DeskCustody; city: City }) {
       return;
     }
     handIn.mutate(
-      { captainId: custody.id, lines: parsed.lines },
+      {
+        captainId: custody.id,
+        conversions: quoted ? [conversionOf(quoted)] : [],
+        lines: parsed.lines,
+      },
       { onSuccess: (result) => result.status === 'recorded' && setTyped({}) },
     );
     setConfirming(false);
@@ -356,7 +593,7 @@ function HandInForm({ custody, city }: { custody: DeskCustody; city: City }) {
             </tr>
           </thead>
           <tbody>
-            {custody.currencies.map((line) => (
+            {held.currencies.map((line) => (
               <tr key={line.currency}>
                 <th scope="row">{line.currency}</th>
                 <td>{money(line.closedDue, line.currency)}</td>
@@ -369,6 +606,24 @@ function HandInForm({ custody, city }: { custody: DeskCustody; city: City }) {
             ))}
           </tbody>
         </table>
+      )}
+      <Conversion
+        custody={held}
+        currencies={currencies}
+        quote={asked && 'amount' in asked ? quote.data : undefined}
+        onChange={(next) => {
+          setConfirming(false);
+          setAsking(next);
+        }}
+      />
+      {quoted && (
+        <ul>
+          {active.map((line) => (
+            <li key={line.currency}>
+              {t('cashDesk.conversion.after', { currency: line.currency })} <Expected line={line} />
+            </li>
+          ))}
+        </ul>
       )}
       {active.map((line) => (
         <p key={line.currency}>
@@ -397,6 +652,14 @@ function HandInForm({ custody, city }: { custody: DeskCustody; city: City }) {
       {confirming && parsed && 'lines' in parsed && (
         <section aria-labelledby="hand-in-confirm">
           <h4 id="hand-in-confirm">{t('cashDesk.handIn.confirmTitle')}</h4>
+          {quoted && (
+            <p>
+              {t('cashDesk.conversion.willConvert', {
+                amount: money(quoted.amount, quoted.from),
+                converted: money(quoted.converted, quoted.to),
+              })}
+            </p>
+          )}
           <ul>
             {parsed.lines.map((each) => {
               const line = byCurrency.get(each.currency)!;

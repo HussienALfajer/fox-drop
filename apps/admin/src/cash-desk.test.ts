@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  afterConversion,
   cashLinesOf,
+  type ConversionQuote,
+  conversionAskedOf,
   type DeskCustody,
   directionOf,
   handInLinesOf,
@@ -25,6 +28,7 @@ const custody: DeskCustody = {
     { currency: 'USD', balance: '-1000', closedDue: '-1000', today: '0', balanceInBase: '-40000' },
     { currency: 'SYP', balance: '0', closedDue: '0', today: '0', balanceInBase: '0' },
   ],
+  handInGrace: null,
 };
 const [lira, dollar, pound] = custody.currencies as [
   DeskCustody['currencies'][number],
@@ -79,5 +83,39 @@ describe('the float and the counted cash', () => {
       lines: [{ currency: 'TRY', amount: '50000' }],
     });
     expect(cashLinesOf({ USD: '1,5' }, ['TRY', 'USD'])).toEqual({ problem: 'USD' });
+  });
+});
+
+describe('cross-currency settlement (AP §9.10.3)', () => {
+  it('asks a conversion of a currency held, never above its custody', () => {
+    expect(conversionAskedOf(custody, 'USD', 'TRY', '10')).toEqual({
+      from: 'USD',
+      to: 'TRY',
+      amount: '1000',
+    });
+    expect(conversionAskedOf(custody, 'USD', 'TRY', '10.01')).toEqual({ problem: 'above' });
+    expect(conversionAskedOf(custody, 'USD', 'TRY', 'x')).toEqual({ problem: 'invalid' });
+    expect(conversionAskedOf(custody, 'SYP', 'TRY', '10')).toBeNull();
+    expect(conversionAskedOf(custody, 'TRY', 'TRY', '10')).toBeNull();
+    expect(conversionAskedOf(custody, 'TRY', 'USD', '')).toBeNull();
+  });
+
+  it('moves the custody of both currencies the same way, a new currency included', () => {
+    const quote: ConversionQuote = {
+      from: 'USD',
+      to: 'TRY',
+      amount: '1000',
+      converted: '40000',
+      rates: [],
+      unit: { from: 'USD', to: 'TRY', value: '40' },
+    };
+    // Owed 10 USD back, due 410 TRY: 400 TRY of the due nets against it.
+    expect(afterConversion(custody, quote).currencies.map((line) => line.balance)).toEqual([
+      '1000',
+      '0',
+      '0',
+    ]);
+    const intoPounds = afterConversion(custody, { ...quote, from: 'TRY', to: 'GBP' });
+    expect(intoPounds.currencies.at(-1)).toMatchObject({ currency: 'GBP', balance: '40000' });
   });
 });

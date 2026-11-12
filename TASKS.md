@@ -11,12 +11,12 @@ Slice 2.17b, cross-currency settlement, «أرصدة الكباتن» and the gr
 - **Branch:** `feat/cash-desk-currencies-grace`.
 - **First:** read `apps/server/src/modules/cashdesk/CLAUDE.md`; the conversion moves custody between two currencies of one captain through `platform.fx_rounding` (the ledger's counter-accounts), then the hand-in takes the converted currency as 2.17a does.
 - **Plan:**
-  - [ ] `custody.fx_convert` at the desk: the current rate and its version shown before the confirmation, the converted amount rounded as AP §8.6 says, FIN and OWN only (both hold `cash_desk.record`), in the hand-in's transaction and receipt (test first).
-  - [ ] The grace: a grant for one captain (reason, OWN or FIN) and a bulk grant for one business day (reason, OWN), kept in the captains module, read by `availability` so `closed_due` blocks neither going online nor offers until the next cutoff, the custody staying due; audited; the push «مُنحت مهلة حتى {الساعة}» (test first).
-  - [ ] «أرصدة الكباتن»: the server's list (custody per currency and in base, `closed_due`, the limit and usage %, blocked and any grace, the earnings balance, the last hand-in, the last payout), sorted by custody.
-  - [ ] The admin routes, the OpenAPI document and the generated clients, the route table.
-  - [ ] The panel: the conversion in «تسليم النقد اليومي», «منح مهلة» for one captain and the bulk grace on the hand-in tab, «أرصدة الكباتن» with «سجّل تسليماً» opening the desk for that captain.
-  - [ ] The modules' and the panel's notes.
+  - [x] `custody.fx_convert` at the desk: the current rate and its version shown before the confirmation, the converted amount rounded as AP §8.6 says, FIN and OWN only (both hold `cash_desk.record`), in the hand-in's transaction and receipt (test first).
+  - [x] The grace: a grant for one captain (reason, OWN or FIN) and a bulk grant for one business day (reason, OWN), kept in the captains module, read by `availability` so `closed_due` blocks neither going online nor offers until the next cutoff, the custody staying due; audited; the push «مُنحت مهلة حتى {الساعة}» (test first).
+  - [x] «أرصدة الكباتن»: the server's list (custody per currency and in base, `closed_due`, the limit and usage %, blocked and any grace, the earnings balance, the last hand-in, the last payout), sorted by custody.
+  - [x] The admin routes, the OpenAPI document and the generated clients, the route table.
+  - [x] The panel: the conversion in «تسليم النقد اليومي», «منح مهلة» for one captain and the bulk grace on the hand-in tab, «أرصدة الكباتن» with «سجّل تسليماً» opening the desk for that captain.
+  - [x] The modules' and the panel's notes.
 
 ### Left from 2.17a (`feat/cash-desk-hand-in`)
 
