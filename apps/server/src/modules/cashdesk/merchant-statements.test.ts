@@ -149,6 +149,12 @@ async function rows(restaurantId: string) {
   ).rows;
 }
 
+// A cutoff from the database clock: entries carry their transaction's time,
+// and the test's clock can differ from it by a few milliseconds (Docker
+// Desktop's virtual machine), enough to put an entry on the wrong side.
+const databaseNow = async () =>
+  (await sql.query<{ now: Date }>('SELECT clock_timestamp() AS now')).rows[0]!.now;
+
 async function pushes(restaurantId: string) {
   return (
     await sql.query(
@@ -167,7 +173,7 @@ describe('the restaurant weekly statement at the cutoff', () => {
       orderId: randomUUID(),
       reason: 'استرداد مبلغ الاستلام',
     });
-    const cutoff = new Date();
+    const cutoff = await databaseNow();
     // Posted after the cutoff: next week's.
     await post(id, 'merchant.commission', 5_700n);
 
@@ -203,11 +209,11 @@ describe('the restaurant weekly statement at the cutoff', () => {
   it('carries the earlier unpaid balance less the payments since into the next', async () => {
     const id = await restaurant();
     await post(id, 'merchant.commission', 8_000n);
-    const first = new Date();
+    const first = await databaseNow();
     await statements.closeAt(azaz, first, first, { notify: false });
     await post(id, 'merchant.settlement', -5_000n);
     await post(id, 'merchant.commission', 6_000n);
-    const second = new Date();
+    const second = await databaseNow();
     await statements.closeAt(azaz, second, second, { notify: false });
 
     const [, next] = await rows(id);
@@ -238,11 +244,11 @@ describe('the restaurant weekly statement at the cutoff', () => {
       await held;
     });
     await written;
-    const first = new Date();
+    const first = await databaseNow();
     await statements.closeAt(azaz, first, first, { notify: false });
     release();
     await late;
-    const second = new Date();
+    const second = await databaseNow();
     await statements.closeAt(azaz, second, second, { notify: false });
 
     const [one, two] = await rows(id);
@@ -256,7 +262,7 @@ describe('the restaurant weekly statement at the cutoff', () => {
 
   it('takes no statement for a restaurant with nothing in the period and nothing due', async () => {
     const id = await restaurant();
-    const cutoff = new Date();
+    const cutoff = await databaseNow();
     await statements.closeAt(azaz, cutoff, cutoff, { notify: true });
     expect(await rows(id)).toEqual([]);
   });
@@ -264,7 +270,7 @@ describe('the restaurant weekly statement at the cutoff', () => {
   it('pushes nothing when the platform owes the restaurant', async () => {
     const id = await restaurant();
     await post(id, 'merchant.credit', -3_400n);
-    const cutoff = new Date();
+    const cutoff = await databaseNow();
     await statements.closeAt(azaz, cutoff, cutoff, { notify: true });
     expect((await rows(id))[0]).toMatchObject({ total_due: '-3400' });
     expect(await pushes(id)).toEqual([]);
@@ -288,10 +294,10 @@ describe('the restaurant weekly statement at the cutoff', () => {
   it('dates the overdue from the oldest statement still unpaid', async () => {
     const id = await restaurant();
     await post(id, 'merchant.commission', 1_000n);
-    const first = new Date();
+    const first = await databaseNow();
     await statements.closeAt(azaz, first, first, { notify: false });
     await post(id, 'merchant.commission', 2_000n);
-    const second = new Date();
+    const second = await databaseNow();
     await statements.closeAt(azaz, second, second, { notify: false });
 
     const list = await statements.restaurants(azaz, new Date(second.getTime() + 3 * DAY));
@@ -306,7 +312,7 @@ describe('the restaurant weekly statement at the cutoff', () => {
     const late = await restaurant();
     await post(paid, 'merchant.commission', 90_000n);
     await post(late, 'merchant.commission', 1_000n);
-    const cutoff = new Date();
+    const cutoff = await databaseNow();
     await statements.closeAt(azaz, cutoff, cutoff, { notify: false });
     await post(paid, 'merchant.settlement', -90_000n);
     await post(paid, 'merchant.commission', 500n);
@@ -348,7 +354,7 @@ describe('the routes of «تسوية المطاعم»', () => {
   it('answers the list and a statement to FIN, money as strings', async () => {
     const id = await restaurant();
     await post(id, 'merchant.commission', 2_500n);
-    const cutoff = new Date();
+    const cutoff = await databaseNow();
     await statements.closeAt(azaz, cutoff, cutoff, { notify: false });
     const get = await admin(['FIN']);
 

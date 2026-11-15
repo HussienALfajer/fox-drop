@@ -137,9 +137,9 @@ function newPhone(): string {
 
 const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function until(check: () => boolean): Promise<void> {
-  for (let attempt = 0; attempt < 100 && !check(); attempt += 1) await pause(20);
-  expect(check()).toBe(true);
+async function until(check: () => boolean | Promise<boolean>): Promise<void> {
+  for (let attempt = 0; attempt < 100 && !(await check()); attempt += 1) await pause(20);
+  expect(await check()).toBe(true);
 }
 
 // Pairs a number, as the pairing command does: its session names its phone.
@@ -195,7 +195,9 @@ describe('without an otp-sender', () => {
     const queued = new QueuedCodeSender(valkey, secrets, 300);
     const phone = newPhone();
     const answer = queued.send(phone, '482913');
-    await pause(50);
+    // The first send subscribes before it queues; a request stays on the
+    // list after its timeout.
+    await until(async () => (await valkey.llen(SEND_REQUESTS_KEY)) === 1);
     const [request] = await valkey.lrange(SEND_REQUESTS_KEY, 0, -1);
     expect(request).toBeDefined();
     expect(request).not.toContain('482913');
@@ -206,22 +208,25 @@ describe('without an otp-sender', () => {
   });
 
   it('answers unavailable at once beyond three waiting requests, or while Valkey is away', async () => {
-    const queued = new QueuedCodeSender(valkey, secrets, 500);
+    // «At once» is measured against the timeout: far below it, never a
+    // fixed few milliseconds a loaded machine can miss.
+    const queued = new QueuedCodeSender(valkey, secrets, 10_000);
     const waiting = [1, 2, 3].map(() => queued.send(newPhone(), '482913'));
-    await pause(50);
+    await until(async () => (await valkey.llen(SEND_REQUESTS_KEY)) === MAX_WAITING_SENDS);
     const started = Date.now();
     expect(await queued.send(newPhone(), '482913')).toBe('unavailable');
-    expect(Date.now() - started).toBeLessThan(100);
-    expect(await Promise.all(waiting)).toEqual(['unavailable', 'unavailable', 'unavailable']);
+    expect(Date.now() - started).toBeLessThan(1_000);
     expect(await valkey.llen(SEND_REQUESTS_KEY)).toBe(MAX_WAITING_SENDS);
+    // The shutdown answers the waiting ones, so the test never waits the timeout.
     await queued.onApplicationShutdown();
+    expect(await Promise.all(waiting)).toEqual(['unavailable', 'unavailable', 'unavailable']);
     await valkey.del(SEND_REQUESTS_KEY);
 
     const away = new Valkey(cache.url, { lazyConnect: true, enableOfflineQueue: false });
     const offline = new QueuedCodeSender(away, secrets);
     const before = Date.now();
     expect(await offline.send(newPhone(), '482913')).toBe('unavailable');
-    expect(Date.now() - before).toBeLessThan(100);
+    expect(Date.now() - before).toBeLessThan(1_000);
     away.disconnect();
   });
 
