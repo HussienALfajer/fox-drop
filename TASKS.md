@@ -4,16 +4,15 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.18a, «تصفية الخميس» at the desk (`docs/roadmap.md`, Phase 2, Money).
+Slice 2.18b, «أرباحي» and the bottom navigation (`docs/roadmap.md`, Phase 2, Money).
 
-- **Roadmap line:** 2.18a in `docs/roadmap.md`.
-- **Specs:** AP §8.5.2, §8.5.5 (`docs/domain/05`), AP §9.10.2–9.10.3 («تصفية الخميس», «أرصدة الكباتن»), AP §9.7 (earnings settled by FIN on Thursday or by OWN off-cycle), AP §14 #19, CA §10.7, CA §14 #19–#20, Appendix A (`captain.payout_weekday`, `captain.negative_earnings_policy`), the cashdesk, captains, ledger and notifications modules' `CLAUDE.md`, `apps/admin/CLAUDE.md`.
-- **Branch:** `feat/thursday-settlement`.
+- **Roadmap line:** 2.18b in `docs/roadmap.md`.
+- **Specs:** CA §6.1–6.2 (the screen map and the bottom navigation «الرئيسية» · «أرباحي» · «عهدتي» · «المزيد»), CA §10.6 («أرباحي»), CA §10.7 (the negative balance explained), CA §10.1, AP §8.5.2, §8.5.5 (`docs/domain/05`), Appendix A (`captain.payout_weekday`, `captain.negative_earnings_policy`), the cashdesk, captains and ledger modules' `CLAUDE.md`, `apps/customer/CLAUDE.md` (the Flutter apps' rules) and `packages/core_l10n/CLAUDE.md`.
+- **Branch:** `feat/captain-earnings-screen`.
 - **Plan:**
-  - [ ] Failing tests first: the settlement nets custody against the payout per currency and posts `custody.hand_in`/`custody.reimburse` and `earn.payout` apart; a payout in another currency at the current rate; a negative balance carried forward or collected; refused on another day unless OWN with a reason; a repeat with the same key answers the first receipts.
-  - [ ] The statement table (migration with `db-migration`): a snapshot per payout with the period, orders, pay by part, bonuses, charges, instalments and the net paid.
-  - [ ] The server: the settlement list and command in cashdesk, the receipt type «صرف المستحقات», the statement, the push «كشف الأسبوع جاهز: قبضت {المبلغ}», the audit, `lastPayoutAt` in the balances; `pnpm generate:api`.
-  - [ ] The panel: the «تصفية الخميس» tab (read-only on other days except OWN), the settlement screen with the net per currency, the receipt and the printable statement.
+  - [ ] Failing tests first: «هذا الأسبوع» is the payout cycle since the last payout weekday by business day (owner decision 2026-11-15); today and the week sum earnings, orders and online hours; each order with its pay parts and total; bonuses, charges with their order, instalments and payouts with their receipt, each with its reason; the balance and the next payout date; a negative balance and the policy.
+  - [ ] The server: `GET /v1/captain/earnings` (`@AppSignedIn()`) from the earnings ledger entries, the collections' pay parts, the online periods and the payout receipts; `pnpm generate:api`.
+  - [ ] The captain app: the bottom navigation «الرئيسية» · «أرباحي» · «عهدتي» · «المزيد» (CA §6.2), the «أرباحي» screen (today, this week, the orders, the other lines, «رصيدك المستحق: {المبلغ}», «موعد القبض: الخميس {التاريخ}», the negative balance explained); plain layout until the design.
   - [ ] `checker`, `reviewer`, the pull request.
 
 ### Owner decisions for 2.18 (2026-11-15)
@@ -25,6 +24,14 @@ Slice 2.18a, «تصفية الخميس» at the desk (`docs/roadmap.md`, Phase 2
 - No deposit instalment is posted until the kit (2.35); the statement shows the line at zero.
 - Deferred: the manual bonus and its push «مكافأة {المبلغ}: {السبب}» (2.36 or 2.20), the pay table link (2.36), the panel's captain «المستحقات» tab (2.36).
 - Screens use the plain layout until the design system, the printed statement and the shared image included.
+
+### Left from 2.18a (`feat/thursday-settlement`)
+
+- **Before deploying to staging:** migration 0070 adds `cashdesk.statements` (a new table, never updated by the application role), the receipt types `captain_payout` and `captain_earnings_collection` (the `receipts_type_values` check replaced) and `idempotency_keys.statement_id` (nullable). Server only; no app change. «عهدتي» now lists custody receipts only.
+- **To check on staging:** on a Thursday (Azaz business day, from 06:00), open the drawer, give a captain 300 ₺ of custody and 500 ₺ of earnings, open «الصندوق» → «تصفية الخميس»: the captain is listed; «تصفية» shows «يستلم الكابتن 200 ₺»; «تأكيد التصفية» issues «تسليم نقد» and «صرف المستحقات», the drawer's expected lira drops by 200 ₺, the phone gets both receipts and «كشف الأسبوع جاهز: قبضت 500 ₺», and «كشف الأسبوع» prints on A4. On another day the tab is read-only for FIN, and OWN settles with a reason. «أرصدة الكباتن» shows «آخر صرف».
+- **To confirm with the owner:** the label «تحصيل رصيد سالب» of the collection receipt; a collection (`collect_at_desk`) counts as a payout for the next statement's period; the push «كشف الأسبوع جاهز: قبضت {المبلغ}» is sent only when something was paid (not after a collection or a custody-only settlement); a payout in another currency is rounded by that currency's cash unit, so the captain gains or loses up to half a unit (AP §8.6 says the captain bears no exchange risk; the same question as 2.17b's conversions).
+- **Decided by us:** the settlement settles every custody currency whole and takes no conversion (the daily hand-in has it); the confirmation carries what the screen showed and is refused `balance_changed` or `rate_changed` when it moved; the statement's period is read on the ledger's transaction clock, an hour back from the previous payout without the journals it covered.
+- **Not yet:** an order paid by an outcome («تحديد النتيجة») has no collection row, so its distance part shows as base pay on the statement; the captain app opens nothing for the statement push until 2.18c.
 
 ### Left from 2.17d (`feat/cash-warnings-reminders`)
 
