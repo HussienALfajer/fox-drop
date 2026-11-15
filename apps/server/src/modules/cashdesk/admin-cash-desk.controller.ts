@@ -23,6 +23,7 @@ import { AdminController } from '../../http/route-groups.js';
 import { CaptainsService, type Custody, type HandInGrace } from '../captains/index.js';
 import { type AdminSession, CaptainAccountsService } from '../identity/index.js';
 import {
+  type BalanceRow,
   CashDeskRefusedError,
   CashDeskService,
   type DeskUser,
@@ -30,6 +31,7 @@ import {
   type Receipt,
 } from './cashdesk.service.js';
 import { receiptTypes } from './schema.js';
+import { type SettlementPreview, SettlementService, type Statement } from './settlement.service.js';
 
 const minor = z.string().regex(/^\d{1,18}$/);
 const signedMinor = z.string().regex(/^-?\d{1,18}$/);
@@ -96,24 +98,109 @@ class AdminDeskCustodyDto extends createZodDto(
 
 class AdminCaptainBalancesQueryDto extends createZodDto(z.object({ cityId: z.uuid() })) {}
 
-class AdminCaptainBalancesDto extends createZodDto(
+const balanceRow = z.object({
+  captainId: z.uuid(),
+  name: z.string(),
+  status: captainStatus,
+  custodyInBase: signedMinor.describe('Every currency at the current rate: the sort.'),
+  ...custodyFields,
+  blocks: z
+    .array(z.enum(['closed_due', 'cash_limit']))
+    .describe('Cash due from a closed day with no grace running, or the limit reached.'),
+  handInGrace: grace,
+  earnings: money.describe('+ the platform owes the captain.'),
+  lastHandInAt: z.iso.datetime().nullable(),
+  lastPayoutAt: z.iso
+    .datetime()
+    .nullable()
+    .describe('The latest «صرف المستحقات» receipt (slice 2.18a).'),
+});
+
+class AdminCaptainBalancesDto extends createZodDto(z.object({ captains: z.array(balanceRow) })) {}
+
+const weekday = z.enum([
+  'saturday',
+  'sunday',
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+]);
+const dayFields = {
+  payoutDay: z.boolean().describe('Today is captain.payout_weekday on the business day.'),
+  payoutWeekday: weekday,
+  policy: z
+    .enum(['carry_forward', 'collect_at_desk'])
+    .describe('captain.negative_earnings_policy.'),
+};
+
+class AdminSettlementsQueryDto extends createZodDto(z.object({ cityId: z.uuid() })) {}
+
+class AdminSettlementsDto extends createZodDto(
   z.object({
-    captains: z.array(
+    ...dayFields,
+    captains: z
+      .array(balanceRow)
+      .describe('Every captain with an earnings balance or open custody, highest custody first.'),
+  }),
+) {}
+
+class AdminSettlementPreviewRequestDto extends createZodDto(
+  z.object({
+    captainId: z.uuid(),
+    payoutCurrency: currency.nullable().describe('Null for the base currency.'),
+  }),
+) {}
+
+const payoutRates = z
+  .array(z.object({ currency, rateVersionId: z.uuid() }))
+  .max(2)
+  .describe('The rate version of each currency but the base, as the preview gave them.');
+
+class AdminSettlementPreviewDto extends createZodDto(
+  z.object({
+    captainId: z.uuid(),
+    name: z.string(),
+    cityId: z.uuid(),
+    ...dayFields,
+    custody: z.array(
       z.object({
-        captainId: z.uuid(),
-        name: z.string(),
-        status: captainStatus,
-        custodyInBase: signedMinor.describe('Every currency at the current rate: the sort.'),
-        ...custodyFields,
-        blocks: z
-          .array(z.enum(['closed_due', 'cash_limit']))
-          .describe('Cash due from a closed day with no grace running, or the limit reached.'),
-        handInGrace: grace,
-        earnings: money.describe('+ the platform owes the captain.'),
-        lastHandInAt: z.iso.datetime().nullable(),
-        lastPayoutAt: z.iso.datetime().nullable().describe('None until slice 2.18.'),
+        currency,
+        balance: signedMinor.describe('+ the captain hands in, − the office owes them.'),
+        balanceInBase: signedMinor,
       }),
     ),
+    earnings: money.describe('+ the platform owes the captain.'),
+    payout: z
+      .object({
+        currency,
+        amount: minor,
+        rates: payoutRates,
+        unit: z.object({ from: currency, to: currency, value: z.string() }).nullable(),
+      })
+      .nullable()
+      .describe('The whole positive balance in the currency asked, at the current rate.'),
+    collect: minor.nullable().describe('A negative balance collected (collect_at_desk).'),
+    net: z
+      .array(z.object({ currency, amount: signedMinor }))
+      .describe('The cash per currency: + the captain gives, − the desk pays.'),
+  }),
+) {}
+
+class AdminSettleDto extends createZodDto(
+  z.object({
+    captainId: z.uuid(),
+    custody: z
+      .array(z.object({ currency, balance: signedMinor }))
+      .max(10)
+      .describe('The custody the preview showed, every currency settled to zero.'),
+    earnings: signedMinor.describe('The earnings the preview showed.'),
+    payout: z
+      .object({ currency, amount: minor, rates: payoutRates })
+      .nullable()
+      .describe("The preview's payout, null when the balance is not above zero."),
+    reason: z.string().max(500).nullable().describe('Required off the payout day (OWN only).'),
   }),
 ) {}
 
@@ -237,6 +324,44 @@ class AdminHandInReceiptsDto extends createZodDto(z.object({ receipts: z.array(r
 
 class AdminReceiptParamsDto extends createZodDto(z.object({ receiptId: z.uuid() })) {}
 
+const statementBody = z.object({
+  id: z.uuid(),
+  cityId: z.uuid(),
+  captainId: z.uuid(),
+  captainName: z.string(),
+  sessionId: z.uuid(),
+  cashierId: z.uuid(),
+  periodFrom: z.iso.datetime().nullable().describe('The previous statement, null for the first.'),
+  createdAt: z.iso.datetime(),
+  currency,
+  orders: z.number().int(),
+  basePay: signedMinor.describe('With the minimum top-up and the pay of orders not delivered.'),
+  distancePay: minor,
+  waitingPay: signedMinor,
+  peakBonus: signedMinor,
+  bonuses: signedMinor,
+  charges: signedMinor,
+  instalments: signedMinor,
+  adjustments: signedMinor,
+  carriedIn: signedMinor.describe('The balance the period started from.'),
+  balance: signedMinor.describe('Before the payout.'),
+  paid: minor.describe('In the base.'),
+  payout: z.object({ currency, amount: minor }).nullable(),
+  collected: minor,
+  carriedOut: signedMinor.describe('Carried to the next week.'),
+  offCycle: z.boolean(),
+  reason: z.string().nullable(),
+  receiptIds: z.array(z.uuid()),
+});
+
+class AdminStatementDto extends createZodDto(statementBody) {}
+
+class AdminSettlementDto extends createZodDto(
+  z.object({ statement: statementBody, receipts: z.array(receiptBody) }),
+) {}
+
+class AdminStatementParamsDto extends createZodDto(z.object({ statementId: z.uuid() })) {}
+
 // A number as the desk types it: international (+ or 00), or the local
 // Syrian 09… and Turkish 05… mobiles the captains sign in with.
 export function phoneOf(text: string): string | null {
@@ -255,6 +380,7 @@ export class AdminCashDeskController {
     private readonly desk: CashDeskService,
     private readonly captains: CaptainsService,
     private readonly accounts: CaptainAccountsService,
+    private readonly settlements: SettlementService,
   ) {}
 
   // Step 1: by a part of the name, or by the number. A read, sent as a POST
@@ -309,20 +435,91 @@ export class AdminCashDeskController {
   @ZodResponse({ status: 200, type: AdminCaptainBalancesDto })
   async balances(@Query() query: AdminCaptainBalancesQueryDto) {
     const rows = await this.desk.balances(query.cityId, new Date());
-    return {
-      captains: rows.map((row) => ({
-        captainId: row.captainId,
-        name: row.name,
-        status: row.status,
-        custodyInBase: row.custodyInBase.toString(),
-        ...custodyBody(row.custody),
-        blocks: row.blocks,
-        handInGrace: graceBodyOf(row.handInGrace),
-        earnings: { amount: row.earnings.amount.toString(), currency: row.earnings.currency },
-        lastHandInAt: row.lastHandInAt?.toISOString() ?? null,
-        lastPayoutAt: row.lastPayoutAt?.toISOString() ?? null,
-      })),
-    };
+    return { captains: rows.map(balanceRowBody) };
+  }
+
+  // «تصفية الخميس» (AP §9.10.3): the payout day, the policy and every
+  // captain with an earnings balance or open custody. Every desk user reads
+  // it; on another day only OWN settles.
+  @Get('settlements')
+  @RequirePermission('cash_desk.record')
+  @ZodResponse({ status: 200, type: AdminSettlementsDto })
+  async settlementList(@Query() query: AdminSettlementsQueryDto) {
+    return refusalsAsHttp(async () => {
+      const list = await this.settlements.list(query.cityId, new Date());
+      return {
+        payoutDay: list.payoutDay,
+        payoutWeekday: list.payoutWeekday,
+        policy: list.policy,
+        captains: list.captains.map(balanceRowBody),
+      };
+    });
+  }
+
+  // What the settlement screen shows before the confirmation: the custody,
+  // the earnings, the payout at the current rate and the net per currency.
+  // A read, so no Idempotency-Key.
+  @Post('settlements/preview')
+  @RequirePermission('cash_desk.record')
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminSettlementPreviewDto })
+  previewSettlement(@Body() body: AdminSettlementPreviewRequestDto) {
+    return refusalsAsHttp(async () =>
+      previewBody(await this.settlements.preview(body.captainId, body.payoutCurrency, new Date())),
+    );
+  }
+
+  // «تأكيد التصفية» (AP §8.5.5): the receipts and the weekly statement.
+  // Refused 403 not_payout_day (FIN on another day), 400 reason_required (OWN
+  // without a reason), 409 balance_changed (the balances moved since the
+  // preview), rate_changed, nothing_due, drawer_short, no_open_session.
+  @Post('settlements')
+  @RequirePermission('cash_desk.record')
+  @Idempotent()
+  @ZodResponse({ status: 201, type: AdminSettlementDto })
+  settle(
+    @Body() body: AdminSettleDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(async () => {
+      const settled = await this.settlements.settle(
+        deskUser(session, request),
+        {
+          captainId: body.captainId,
+          custody: body.custody.map((line) => ({
+            currency: line.currency,
+            balance: BigInt(line.balance),
+          })),
+          earnings: BigInt(body.earnings),
+          payout: body.payout && {
+            currency: body.payout.currency,
+            amount: BigInt(body.payout.amount),
+            rates: body.payout.rates,
+          },
+          reason: body.reason,
+          idempotencyKey,
+        },
+        new Date(),
+      );
+      return {
+        statement: statementBodyOf(settled.statement),
+        receipts: settled.receipts.map(receiptBodyOf),
+      };
+    });
+  }
+
+  // The weekly statement to show and print.
+  @Get('statements/:statementId')
+  @RequirePermission('cash_desk.record')
+  @ZodResponse({ status: 200, type: AdminStatementDto })
+  async statement(@Param() params: AdminStatementParamsDto) {
+    const found = await this.settlements.statement(params.statementId);
+    if (!found) {
+      throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: 'unknown_statement' });
+    }
+    return statementBodyOf(found);
   }
 
   // The user's open session, or null, and the city's currencies to count.
@@ -508,6 +705,81 @@ function custodyBody(custody: Custody) {
   };
 }
 
+function balanceRowBody(row: BalanceRow) {
+  return {
+    captainId: row.captainId,
+    name: row.name,
+    status: row.status,
+    custodyInBase: row.custodyInBase.toString(),
+    ...custodyBody(row.custody),
+    blocks: row.blocks,
+    handInGrace: graceBodyOf(row.handInGrace),
+    earnings: { amount: row.earnings.amount.toString(), currency: row.earnings.currency },
+    lastHandInAt: row.lastHandInAt?.toISOString() ?? null,
+    lastPayoutAt: row.lastPayoutAt?.toISOString() ?? null,
+  };
+}
+
+function previewBody(preview: SettlementPreview) {
+  return {
+    captainId: preview.captainId,
+    name: preview.name,
+    cityId: preview.cityId,
+    payoutDay: preview.payoutDay,
+    payoutWeekday: preview.payoutWeekday,
+    policy: preview.policy,
+    custody: preview.custody.map((line) => ({
+      currency: line.currency,
+      balance: line.balance.toString(),
+      balanceInBase: line.balanceInBase.toString(),
+    })),
+    earnings: { amount: preview.earnings.amount.toString(), currency: preview.earnings.currency },
+    payout: preview.payout && {
+      currency: preview.payout.currency,
+      amount: preview.payout.amount.toString(),
+      rates: preview.payout.rates,
+      unit: preview.payout.unit,
+    },
+    collect: preview.collect?.toString() ?? null,
+    net: preview.net.map((line) => ({ currency: line.currency, amount: line.amount.toString() })),
+  };
+}
+
+function statementBodyOf(statement: Statement) {
+  return {
+    id: statement.id,
+    cityId: statement.cityId,
+    captainId: statement.captainId,
+    captainName: statement.captainName,
+    sessionId: statement.sessionId,
+    cashierId: statement.cashierId,
+    periodFrom: statement.periodFrom?.toISOString() ?? null,
+    createdAt: statement.createdAt.toISOString(),
+    currency: statement.currency,
+    orders: statement.orders,
+    basePay: statement.basePay.toString(),
+    distancePay: statement.distancePay.toString(),
+    waitingPay: statement.waitingPay.toString(),
+    peakBonus: statement.peakBonus.toString(),
+    bonuses: statement.bonuses.toString(),
+    charges: statement.charges.toString(),
+    instalments: statement.instalments.toString(),
+    adjustments: statement.adjustments.toString(),
+    carriedIn: statement.carriedIn.toString(),
+    balance: statement.balance.toString(),
+    paid: statement.paid.toString(),
+    payout: statement.payout && {
+      currency: statement.payout.currency,
+      amount: statement.payout.amount.toString(),
+    },
+    collected: statement.collected.toString(),
+    carriedOut: statement.carriedOut.toString(),
+    offCycle: statement.offCycle,
+    reason: statement.reason,
+    receiptIds: statement.receiptIds,
+  };
+}
+
 function graceBodyOf(found: HandInGrace | null) {
   return (
     found && {
@@ -581,9 +853,11 @@ async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
       case 'unknown_city':
         throw new NotFoundException(body(HttpStatus.NOT_FOUND));
       case 'not_your_session':
+      case 'not_payout_day':
         throw new ForbiddenException(body(HttpStatus.FORBIDDEN));
       case 'invalid_amounts':
       case 'note_required':
+      case 'reason_required':
         throw new BadRequestException(body(HttpStatus.BAD_REQUEST));
       case 'idempotency_key_reused':
         throw new UnprocessableEntityException(body(HttpStatus.UNPROCESSABLE_ENTITY));

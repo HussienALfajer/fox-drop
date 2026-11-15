@@ -30,7 +30,7 @@ part 'admin_captain_balances_dto_output_captains_inner.g.dart';
 /// * [handInGrace]
 /// * [earnings]
 /// * [lastHandInAt]
-/// * [lastPayoutAt] - None until slice 2.18.
+/// * [lastPayoutAt] - The latest «صرف المستحقات» receipt (slice 2.18a).
 @BuiltValue()
 abstract class AdminCaptainBalancesDtoOutputCaptainsInner
     implements
@@ -81,7 +81,7 @@ abstract class AdminCaptainBalancesDtoOutputCaptainsInner
   @BuiltValueField(wireName: r'lastHandInAt')
   DateTime? get lastHandInAt;
 
-  /// None until slice 2.18.
+  /// The latest «صرف المستحقات» receipt (slice 2.18a).
   @BuiltValueField(wireName: r'lastPayoutAt')
   DateTime? get lastPayoutAt;
 

@@ -49,7 +49,11 @@ export type CashDeskRefusal =
   | 'unknown_city'
   | 'rate_changed'
   | 'rate_missing'
-  | 'idempotency_key_reused';
+  | 'idempotency_key_reused'
+  // «تصفية الخميس» (slice 2.18a).
+  | 'not_payout_day'
+  | 'reason_required'
+  | 'balance_changed';
 
 export class CashDeskRefusedError extends Error {
   override readonly name = 'CashDeskRefusedError';
@@ -159,7 +163,7 @@ export interface BalanceRow extends CaptainBalance {
   custodyInBase: bigint;
   // The latest «تسليم نقد» receipt.
   lastHandInAt: Date | null;
-  // The latest payout; none until «تصفية الخميس» (slice 2.18).
+  // The latest «صرف المستحقات» receipt (slice 2.18a).
   lastPayoutAt: Date | null;
 }
 
@@ -173,18 +177,31 @@ export interface HandInCommand {
   idempotencyKey: string;
 }
 
-type Tx = Parameters<Parameters<Database['db']['transaction']>[0]>[0];
-type Executor = Tx | Database['db'];
+export type Tx = Parameters<Parameters<Database['db']['transaction']>[0]>[0];
+export type Executor = Tx | Database['db'];
 
 // A key is answered again for 24 hours (architecture §5.3).
-const KEY_LIFETIME_MS = 24 * 3_600_000;
+export const KEY_LIFETIME_MS = 24 * 3_600_000;
 
-// The journal of each receipt type and its sign on the captain's custody:
-// a hand-in lowers it, a reimbursement raises a negative one to zero.
+// The journal of each receipt type and the sign of its cash from the
+// captain's side: a hand-in lowers their custody and a reimbursement raises
+// a negative one to zero; a payout pays the earnings the platform owes them
+// (the line's expected is that amount, below zero) and a collection takes
+// a negative balance back (above zero).
 const kinds: Record<ReceiptType, { journal: JournalType; sign: 1n | -1n }> = {
   captain_hand_in: { journal: 'custody.hand_in', sign: 1n },
   captain_reimbursement: { journal: 'custody.reimburse', sign: -1n },
+  captain_payout: { journal: 'earn.payout', sign: -1n },
+  captain_earnings_collection: { journal: 'earn.payout', sign: 1n },
 };
+
+// What an earnings receipt moves in the base (the payout's value when paid
+// in another currency, with the rate versions shown).
+export interface EarningsMove {
+  base: bigint;
+  baseCurrency: string;
+  rates: ConversionRate[];
+}
 
 // The cash desk (AP §9.10.3): drawer sessions and the daily hand-in, each
 // transaction a numbered receipt (AP §4.8) whose money is posted through the
@@ -455,7 +472,7 @@ export class CashDeskService {
       )
       .digest('hex');
     const replayed = await this.replay(this.database.db, user.accountId, command, requestHash, now);
-    if (replayed) return this.receiptsOf(replayed);
+    if (replayed) return this.receiptsOf(replayed.receiptIds);
 
     const deskLock = await this.captains
       .deskLock(command.captainId, now)
@@ -491,7 +508,7 @@ export class CashDeskService {
       // Again under the captain's lock (a key names one captain): a request
       // sent twice at once waits for the first and answers its receipts.
       const again = await this.replay(tx, user.accountId, command, requestHash, now);
-      if (again) return again;
+      if (again) return again.receiptIds;
       const drawer = await this.drawerCash(tx, session);
       const held = new Map(custody.currencies.map((line) => [line.currency, { ...line }]));
       const converting = await this.convertHeld(tx, captain.cityId, conversions, held);
@@ -536,7 +553,7 @@ export class CashDeskService {
         issued.push(receipt.id);
       }
       await this.captains.custodyChanged(tx, captain, now);
-      await keepKey(tx, user.accountId, command.idempotencyKey, requestHash, issued, now);
+      await keepKey(tx, user.accountId, command.idempotencyKey, requestHash, issued, null, now);
       return issued;
     });
     return this.receiptsOf(ids);
@@ -650,7 +667,7 @@ export class CashDeskService {
     });
   }
 
-  private async snapshotOf(cityId: string, executor: Executor): Promise<RateSnapshot> {
+  async snapshotOf(cityId: string, executor: Executor): Promise<RateSnapshot> {
     try {
       return await this.fx.snapshot(cityId, executor);
     } catch (error) {
@@ -681,12 +698,27 @@ export class CashDeskService {
       )
       .groupBy(receipts.captainId);
     const lastHandIn = new Map(handIns.map((row) => [row.captainId, row.at]));
+    const payouts = await this.database.db
+      .select({ captainId: receipts.captainId, at: max(receipts.createdAt) })
+      .from(receipts)
+      .where(
+        and(
+          eq(receipts.cityId, cityId),
+          eq(receipts.type, 'captain_payout'),
+          inArray(
+            receipts.captainId,
+            listed.map((row) => row.captainId),
+          ),
+        ),
+      )
+      .groupBy(receipts.captainId);
+    const lastPayout = new Map(payouts.map((row) => [row.captainId, row.at]));
     return listed
       .map((row) => ({
         ...row,
         custodyInBase: row.custody.currencies.reduce((sum, line) => sum + line.balanceInBase, 0n),
         lastHandInAt: lastHandIn.get(row.captainId) ?? null,
-        lastPayoutAt: null,
+        lastPayoutAt: lastPayout.get(row.captainId) ?? null,
       }))
       .sort((a, b) =>
         a.custodyInBase === b.custodyInBase
@@ -701,7 +733,9 @@ export class CashDeskService {
     return (await this.receiptsOf([receiptId]))[0] ?? null;
   }
 
-  private async issue(
+  // A receipt with its lines, each posted as its type's journal, and the
+  // audit. Earnings receipts take `earnings`.
+  async issue(
     tx: Tx,
     input: {
       user: DeskUser;
@@ -713,6 +747,7 @@ export class CashDeskService {
       number: { sequence: number; number: string };
       year: number;
       now: Date;
+      earnings?: EarningsMove;
     },
   ): Promise<{ id: string; number: string; type: ReceiptType }> {
     const { user, session, captain, type, lines, now } = input;
@@ -737,6 +772,19 @@ export class CashDeskService {
     }
     const { journal, sign } = kinds[type];
     for (const { line, held } of lines) {
+      if (journal === 'earn.payout') {
+        const journalId = await this.postEarnings(tx, {
+          user,
+          session,
+          captain,
+          receiptId,
+          sign,
+          line,
+          earnings: input.earnings!,
+        });
+        await this.keepLine(tx, session.id, receiptId, line, held.balance, journalId);
+        continue;
+      }
       const custodyAccount = await this.ledger.openAccount(
         {
           cityId: captain.cityId,
@@ -770,18 +818,7 @@ export class CashDeskService {
         },
         tx,
       );
-      await tx.insert(receiptLines).values({
-        receiptId,
-        currency: line.currency,
-        expected: held.balance,
-        amount: line.amount,
-        journalId,
-      });
-      // A currency enabled after the session opened starts at a zero float.
-      await tx
-        .insert(drawerSessionCurrencies)
-        .values({ sessionId: session.id, currency: line.currency, openingFloat: 0n })
-        .onConflictDoNothing();
+      await this.keepLine(tx, session.id, receiptId, line, held.balance, journalId);
     }
     await this.audit.recordWrite(
       {
@@ -815,8 +852,106 @@ export class CashDeskService {
     return { id: receiptId, number: input.number.number, type };
   }
 
+  private async keepLine(
+    tx: Tx,
+    sessionId: string,
+    receiptId: string,
+    line: CashLine,
+    expected: bigint,
+    journalId: string,
+  ): Promise<void> {
+    await tx.insert(receiptLines).values({
+      receiptId,
+      currency: line.currency,
+      expected,
+      amount: line.amount,
+      journalId,
+    });
+    // A currency enabled after the session opened starts at a zero float.
+    await tx
+      .insert(drawerSessionCurrencies)
+      .values({ sessionId, currency: line.currency, openingFloat: 0n })
+      .onConflictDoNothing();
+  }
+
+  // earn.payout (AP §8.5.2, §8.5.5): the earnings the platform owes paid
+  // from the drawer (sign −1), in the base or in another currency through
+  // platform.fx_rounding at the rate shown; or a negative balance collected
+  // into it (sign +1, captain.negative_earnings_policy collect_at_desk), in
+  // the base. Amounts from the platform's side.
+  private async postEarnings(
+    tx: Tx,
+    input: {
+      user: DeskUser;
+      session: typeof drawerSessions.$inferSelect;
+      captain: DeskCaptain;
+      receiptId: string;
+      sign: 1n | -1n;
+      line: CashLine;
+      earnings: EarningsMove;
+    },
+  ): Promise<string> {
+    const { user, session, captain, receiptId, sign, line, earnings } = input;
+    const account = (
+      purpose: 'captain.earnings' | 'platform.cash' | 'platform.fx_rounding',
+      currency: string,
+    ) =>
+      this.ledger.openAccount(
+        {
+          cityId: captain.cityId,
+          purpose,
+          ownerId:
+            purpose === 'captain.earnings'
+              ? captain.id
+              : purpose === 'platform.cash'
+                ? session.id
+                : null,
+          currency,
+        },
+        tx,
+      );
+    const base = earnings.baseCurrency;
+    const entries = [
+      {
+        accountId: await account('captain.earnings', base),
+        currency: base,
+        amount: -sign * earnings.base,
+      },
+      {
+        accountId: await account('platform.cash', line.currency),
+        currency: line.currency,
+        amount: sign * line.amount,
+      },
+    ];
+    if (line.currency !== base) {
+      entries.push(
+        {
+          accountId: await account('platform.fx_rounding', base),
+          currency: base,
+          amount: sign * earnings.base,
+        },
+        {
+          accountId: await account('platform.fx_rounding', line.currency),
+          currency: line.currency,
+          amount: -sign * line.amount,
+        },
+      );
+    }
+    return this.ledger.post(
+      {
+        cityId: captain.cityId,
+        type: 'earn.payout',
+        source: { kind: 'receipt', id: receiptId },
+        actor: { type: 'admin', id: user.accountId },
+        entries,
+        ...(line.currency === base ? {} : { rates: earnings.rates }),
+      },
+      tx,
+    );
+  }
+
   // CA §14 #19: «إيصال {رقم}: {النوع} {المبلغ}», silent, to the captain.
-  private async notify(
+  async notify(
     tx: Tx,
     captainId: string,
     receipt: { id: string; number: string; type: ReceiptType },
@@ -854,7 +989,7 @@ export class CashDeskService {
 
   // The cash in the session's drawer now, per currency: the float plus
   // what its transactions moved.
-  private async drawerCash(
+  async drawerCash(
     tx: Tx,
     session: typeof drawerSessions.$inferSelect,
   ): Promise<Map<string, bigint>> {
@@ -882,19 +1017,25 @@ export class CashDeskService {
     return cash;
   }
 
-  private async currencyOrder(cityId: string): Promise<(currency: string) => number> {
+  async currencyOrder(cityId: string): Promise<(currency: string) => number> {
     const city = await this.fx.cityCurrencies(cityId);
     const order = new Map(city.map((entry, index) => [entry.currency, index]));
     return (currency) => order.get(currency) ?? city.length;
   }
 
-  // CA §10.2, AP §9.10.3: the captain's newest receipts, newest first, at
-  // most `limit`, for «عهدتي».
+  // CA §10.2, AP §9.10.3: the captain's newest custody receipts, newest
+  // first, at most `limit`, for «عهدتي»; a payout belongs to «أرباحي» (CA
+  // §10.6, slice 2.18b).
   async captainReceipts(captainId: string, limit: number): Promise<Receipt[]> {
     const rows = await this.database.db
       .select({ id: receipts.id })
       .from(receipts)
-      .where(eq(receipts.captainId, captainId))
+      .where(
+        and(
+          eq(receipts.captainId, captainId),
+          inArray(receipts.type, ['captain_hand_in', 'captain_reimbursement']),
+        ),
+      )
       .orderBy(desc(receipts.createdAt), desc(receipts.id))
       .limit(limit);
     // By time, newest first: the numbers start again each year (AP §4.8).
@@ -914,7 +1055,7 @@ export class CashDeskService {
     return new Map(rows.map((row) => [row.id, row.number]));
   }
 
-  private async receiptsOf(ids: readonly string[]): Promise<Receipt[]> {
+  async receiptsOf(ids: readonly string[]): Promise<Receipt[]> {
     if (ids.length === 0) return [];
     const rows = await this.database.db
       .select()
@@ -966,13 +1107,15 @@ export class CashDeskService {
     }));
   }
 
-  private async replay(
+  // The kept answer of a key used again within 24 hours with the same
+  // command; another command is refused.
+  async replay(
     executor: Executor,
     accountId: string,
     command: { idempotencyKey: string },
     requestHash: string,
     now: Date,
-  ): Promise<string[] | null> {
+  ): Promise<{ receiptIds: string[]; statementId: string | null } | null> {
     const [row] = await executor
       .select()
       .from(idempotencyKeys)
@@ -986,7 +1129,7 @@ export class CashDeskService {
     if (row.requestHash !== requestHash) {
       throw new CashDeskRefusedError('idempotency_key_reused', 'the key came with another command');
     }
-    return row.receiptIds;
+    return { receiptIds: row.receiptIds, statementId: row.statementId };
   }
 }
 
@@ -1004,7 +1147,7 @@ function checkLines(lines: CashLine[], allowed: readonly string[], minimum: bigi
 // AP §4.8: the next number of the city's year, {CITY}-{YYYY}-{000001}. The
 // counter row is updated in the receipt's transaction, so a rollback gives
 // the number back and the sequence keeps no gap.
-async function nextNumber(
+export async function nextNumber(
   tx: Tx,
   cityId: string,
   code: string,
@@ -1022,21 +1165,22 @@ async function nextNumber(
   return { sequence, number: `${code}-${year}-${sequence.toString().padStart(6, '0')}` };
 }
 
-function cityYear(now: Date, timeZone: string): number {
+export function cityYear(now: Date, timeZone: string): number {
   return Number(new Intl.DateTimeFormat('en-US', { timeZone, year: 'numeric' }).format(now));
 }
 
 // Keeps the key with its receipts, in the command's transaction, so a
 // refused command keeps none. A key older than 24 hours is used again.
-async function keepKey(
+export async function keepKey(
   tx: Tx,
   accountId: string,
   key: string,
   requestHash: string,
   receiptIds: string[],
+  statementId: string | null,
   now: Date,
 ): Promise<void> {
-  const kept = { requestHash, receiptIds, createdAt: now };
+  const kept = { requestHash, receiptIds, statementId, createdAt: now };
   const [taken] = await tx
     .insert(idempotencyKeys)
     .values({ accountId, key, ...kept })
@@ -1071,7 +1215,7 @@ function checkConversions(conversions: Conversion[]): void {
 
 // The conversion at the snapshot's rates: both currencies enabled in the
 // city, the result above zero once rounded.
-function quoteOf(
+export function quoteOf(
   snapshot: RateSnapshot,
   asked: { from: string; to: string; amount: bigint },
 ): ConversionQuote {

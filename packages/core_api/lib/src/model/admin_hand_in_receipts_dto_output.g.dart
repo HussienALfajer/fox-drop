@@ -8,7 +8,7 @@ part of 'admin_hand_in_receipts_dto_output.dart';
 
 class _$AdminHandInReceiptsDtoOutput extends AdminHandInReceiptsDtoOutput {
   @override
-  final BuiltList<AdminHandInReceiptsDtoOutputReceiptsInner> receipts;
+  final BuiltList<AdminSettlementDtoOutputReceiptsInner> receipts;
 
   factory _$AdminHandInReceiptsDtoOutput([
     void Function(AdminHandInReceiptsDtoOutputBuilder)? updates,
@@ -54,13 +54,11 @@ class AdminHandInReceiptsDtoOutputBuilder
         > {
   _$AdminHandInReceiptsDtoOutput? _$v;
 
-  ListBuilder<AdminHandInReceiptsDtoOutputReceiptsInner>? _receipts;
-  ListBuilder<AdminHandInReceiptsDtoOutputReceiptsInner> get receipts =>
-      _$this._receipts ??=
-          ListBuilder<AdminHandInReceiptsDtoOutputReceiptsInner>();
-  set receipts(
-    ListBuilder<AdminHandInReceiptsDtoOutputReceiptsInner>? receipts,
-  ) => _$this._receipts = receipts;
+  ListBuilder<AdminSettlementDtoOutputReceiptsInner>? _receipts;
+  ListBuilder<AdminSettlementDtoOutputReceiptsInner> get receipts =>
+      _$this._receipts ??= ListBuilder<AdminSettlementDtoOutputReceiptsInner>();
+  set receipts(ListBuilder<AdminSettlementDtoOutputReceiptsInner>? receipts) =>
+      _$this._receipts = receipts;
 
   AdminHandInReceiptsDtoOutputBuilder() {
     AdminHandInReceiptsDtoOutput._defaults(this);

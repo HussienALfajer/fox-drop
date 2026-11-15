@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq, gte, inArray, lt, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, gte, inArray, lt, or, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -304,6 +304,46 @@ export class LedgerService {
   // from the party's view: the cash due from closed days is the custody at the
   // last cutoff plus the desk entries after it (AP §8.5.4). An entry's moment
   // is its transaction's.
+  // The entries of some accounts of one purpose posted after a time (the
+  // ledger's own: an entry's transaction time), oldest first, from the
+  // party's view: a period of the captain's weekly statement (AP §8.5.5).
+  async periodEntries(
+    accountIds: readonly string[],
+    purpose: AccountPurpose,
+    after: Date | null,
+    executor: LedgerExecutor = this.database.db,
+  ): Promise<AccountEntry[]> {
+    if (accountIds.length === 0) return [];
+    const rows = await executor
+      .select({
+        journalId: entries.journalId,
+        type: journals.type,
+        sourceKind: journals.sourceKind,
+        sourceId: journals.sourceId,
+        currency: entries.currency,
+        amount: entries.amount,
+        createdAt: entries.createdAt,
+      })
+      .from(entries)
+      .innerJoin(journals, eq(journals.id, entries.journalId))
+      .innerJoin(accounts, eq(accounts.id, entries.accountId))
+      .where(
+        and(
+          inArray(entries.accountId, [...accountIds]),
+          eq(accounts.purpose, purpose),
+          after === null ? undefined : gt(entries.createdAt, after),
+        ),
+      )
+      .orderBy(asc(entries.createdAt), asc(entries.id));
+    const sign = accountPurposes[purpose].sign;
+    return rows.map((row) => ({
+      ...row,
+      type: row.type as JournalType,
+      sourceKind: row.sourceKind as SourceKind | null,
+      amount: row.amount * sign,
+    }));
+  }
+
   async balanceAt(
     accountId: string,
     at: Date,

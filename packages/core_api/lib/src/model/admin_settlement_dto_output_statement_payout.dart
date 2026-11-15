@@ -6,54 +6,54 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_conversion_quote_dto_output_rates_inner.g.dart';
+part 'admin_settlement_dto_output_statement_payout.g.dart';
 
-/// AdminConversionQuoteDtoOutputRatesInner
+/// AdminSettlementDtoOutputStatementPayout
 ///
 /// Properties:
 /// * [currency]
-/// * [rateVersionId]
+/// * [amount]
 @BuiltValue()
-abstract class AdminConversionQuoteDtoOutputRatesInner
+abstract class AdminSettlementDtoOutputStatementPayout
     implements
         Built<
-          AdminConversionQuoteDtoOutputRatesInner,
-          AdminConversionQuoteDtoOutputRatesInnerBuilder
+          AdminSettlementDtoOutputStatementPayout,
+          AdminSettlementDtoOutputStatementPayoutBuilder
         > {
   @BuiltValueField(wireName: r'currency')
   String get currency;
 
-  @BuiltValueField(wireName: r'rateVersionId')
-  String get rateVersionId;
+  @BuiltValueField(wireName: r'amount')
+  String get amount;
 
-  AdminConversionQuoteDtoOutputRatesInner._();
+  AdminSettlementDtoOutputStatementPayout._();
 
-  factory AdminConversionQuoteDtoOutputRatesInner([
-    void updates(AdminConversionQuoteDtoOutputRatesInnerBuilder b),
-  ]) = _$AdminConversionQuoteDtoOutputRatesInner;
+  factory AdminSettlementDtoOutputStatementPayout([
+    void updates(AdminSettlementDtoOutputStatementPayoutBuilder b),
+  ]) = _$AdminSettlementDtoOutputStatementPayout;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminConversionQuoteDtoOutputRatesInnerBuilder b) => b;
+  static void _defaults(AdminSettlementDtoOutputStatementPayoutBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminConversionQuoteDtoOutputRatesInner> get serializer =>
-      _$AdminConversionQuoteDtoOutputRatesInnerSerializer();
+  static Serializer<AdminSettlementDtoOutputStatementPayout> get serializer =>
+      _$AdminSettlementDtoOutputStatementPayoutSerializer();
 }
 
-class _$AdminConversionQuoteDtoOutputRatesInnerSerializer
-    implements PrimitiveSerializer<AdminConversionQuoteDtoOutputRatesInner> {
+class _$AdminSettlementDtoOutputStatementPayoutSerializer
+    implements PrimitiveSerializer<AdminSettlementDtoOutputStatementPayout> {
   @override
   final Iterable<Type> types = const [
-    AdminConversionQuoteDtoOutputRatesInner,
-    _$AdminConversionQuoteDtoOutputRatesInner,
+    AdminSettlementDtoOutputStatementPayout,
+    _$AdminSettlementDtoOutputStatementPayout,
   ];
 
   @override
-  final String wireName = r'AdminConversionQuoteDtoOutputRatesInner';
+  final String wireName = r'AdminSettlementDtoOutputStatementPayout';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminConversionQuoteDtoOutputRatesInner object, {
+    AdminSettlementDtoOutputStatementPayout object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'currency';
@@ -61,9 +61,9 @@ class _$AdminConversionQuoteDtoOutputRatesInnerSerializer
       object.currency,
       specifiedType: const FullType(String),
     );
-    yield r'rateVersionId';
+    yield r'amount';
     yield serializers.serialize(
-      object.rateVersionId,
+      object.amount,
       specifiedType: const FullType(String),
     );
   }
@@ -71,7 +71,7 @@ class _$AdminConversionQuoteDtoOutputRatesInnerSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminConversionQuoteDtoOutputRatesInner object, {
+    AdminSettlementDtoOutputStatementPayout object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -86,7 +86,7 @@ class _$AdminConversionQuoteDtoOutputRatesInnerSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminConversionQuoteDtoOutputRatesInnerBuilder result,
+    required AdminSettlementDtoOutputStatementPayoutBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -102,14 +102,14 @@ class _$AdminConversionQuoteDtoOutputRatesInnerSerializer
                   as String;
           result.currency = valueDes;
           break;
-        case r'rateVersionId':
+        case r'amount':
           final valueDes =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(String),
                   )
                   as String;
-          result.rateVersionId = valueDes;
+          result.amount = valueDes;
           break;
         default:
           unhandled.add(key);
@@ -120,12 +120,12 @@ class _$AdminConversionQuoteDtoOutputRatesInnerSerializer
   }
 
   @override
-  AdminConversionQuoteDtoOutputRatesInner deserialize(
+  AdminSettlementDtoOutputStatementPayout deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminConversionQuoteDtoOutputRatesInnerBuilder();
+    final result = AdminSettlementDtoOutputStatementPayoutBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

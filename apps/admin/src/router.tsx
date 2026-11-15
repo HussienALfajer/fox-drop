@@ -31,6 +31,7 @@ import { ZONES_READ } from './peak-bonus.js';
 import { PeakBonusPage } from './peak-bonus-page.js';
 import { OfficePage } from './office-page.js';
 import { ReceiptPage } from './receipt-page.js';
+import { SettleCaptainPage, SettlementsPage, StatementPage } from './settlement-page.js';
 import { CONTENT_FAQS, CONTENT_READ } from './content.js';
 import { ContentPage } from './content-page.js';
 import { canSeeImages } from './restaurant-images.js';
@@ -300,6 +301,37 @@ const receiptRoute = createRoute({
   component: ReceiptPage,
 });
 
+// AP §9.10.3 «تصفية الخميس» (slice 2.18a): the list, one captain's
+// settlement and the weekly statement to print (cash_desk.record).
+const settlementsRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/cash-desk/settlements',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, CASH_DESK)) throw redirect({ to: '/' });
+  },
+  component: SettlementsPage,
+});
+
+const settleCaptainRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/cash-desk/settlements/$captainId',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, CASH_DESK)) throw redirect({ to: '/' });
+  },
+  component: SettleCaptainPage,
+});
+
+const statementRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/cash-desk/statements/$statementId',
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, CASH_DESK)) throw redirect({ to: '/' });
+  },
+  component: StatementPage,
+});
+
 const routeTree = rootRoute.addChildren([
   setupRoute,
   signInRoute,
@@ -315,6 +347,9 @@ const routeTree = rootRoute.addChildren([
     cashDeskSessionsRoute,
     captainBalancesRoute,
     receiptRoute,
+    settlementsRoute,
+    settleCaptainRoute,
+    statementRoute,
     imagesRoute,
     restaurantStatusRoute,
     alertsRoute,

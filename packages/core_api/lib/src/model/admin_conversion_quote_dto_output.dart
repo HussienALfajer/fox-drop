@@ -3,8 +3,8 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/admin_settlement_preview_dto_output_payout_rates_inner.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_conversion_quote_dto_output_rates_inner.dart';
 import 'package:core_api/src/model/admin_conversion_quote_dto_output_unit.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -42,7 +42,7 @@ abstract class AdminConversionQuoteDtoOutput
 
   /// The rate version of each currency but the base, as the quote gave them.
   @BuiltValueField(wireName: r'rates')
-  BuiltList<AdminConversionQuoteDtoOutputRatesInner> get rates;
+  BuiltList<AdminSettlementPreviewDtoOutputPayoutRatesInner> get rates;
 
   @BuiltValueField(wireName: r'unit')
   AdminConversionQuoteDtoOutputUnit get unit;
@@ -101,7 +101,7 @@ class _$AdminConversionQuoteDtoOutputSerializer
     yield serializers.serialize(
       object.rates,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminConversionQuoteDtoOutputRatesInner),
+        FullType(AdminSettlementPreviewDtoOutputPayoutRatesInner),
       ]),
     );
     yield r'unit';
@@ -177,10 +177,10 @@ class _$AdminConversionQuoteDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(AdminConversionQuoteDtoOutputRatesInner),
+                      FullType(AdminSettlementPreviewDtoOutputPayoutRatesInner),
                     ]),
                   )
-                  as BuiltList<AdminConversionQuoteDtoOutputRatesInner>;
+                  as BuiltList<AdminSettlementPreviewDtoOutputPayoutRatesInner>;
           result.rates.replace(valueDes);
           break;
         case r'unit':

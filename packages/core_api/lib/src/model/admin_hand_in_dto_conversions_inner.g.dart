@@ -16,7 +16,7 @@ class _$AdminHandInDtoConversionsInner extends AdminHandInDtoConversionsInner {
   @override
   final String converted;
   @override
-  final BuiltList<AdminHandInDtoConversionsInnerRatesInner> rates;
+  final BuiltList<AdminSettleDtoPayoutRatesInner> rates;
 
   factory _$AdminHandInDtoConversionsInner([
     void Function(AdminHandInDtoConversionsInnerBuilder)? updates,
@@ -97,10 +97,10 @@ class AdminHandInDtoConversionsInnerBuilder
   String? get converted => _$this._converted;
   set converted(String? converted) => _$this._converted = converted;
 
-  ListBuilder<AdminHandInDtoConversionsInnerRatesInner>? _rates;
-  ListBuilder<AdminHandInDtoConversionsInnerRatesInner> get rates =>
-      _$this._rates ??= ListBuilder<AdminHandInDtoConversionsInnerRatesInner>();
-  set rates(ListBuilder<AdminHandInDtoConversionsInnerRatesInner>? rates) =>
+  ListBuilder<AdminSettleDtoPayoutRatesInner>? _rates;
+  ListBuilder<AdminSettleDtoPayoutRatesInner> get rates =>
+      _$this._rates ??= ListBuilder<AdminSettleDtoPayoutRatesInner>();
+  set rates(ListBuilder<AdminSettleDtoPayoutRatesInner>? rates) =>
       _$this._rates = rates;
 
   AdminHandInDtoConversionsInnerBuilder() {

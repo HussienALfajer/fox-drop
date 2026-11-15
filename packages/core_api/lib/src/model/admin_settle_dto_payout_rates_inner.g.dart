@@ -1,40 +1,38 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'admin_conversion_quote_dto_output_rates_inner.dart';
+part of 'admin_settle_dto_payout_rates_inner.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$AdminConversionQuoteDtoOutputRatesInner
-    extends AdminConversionQuoteDtoOutputRatesInner {
+class _$AdminSettleDtoPayoutRatesInner extends AdminSettleDtoPayoutRatesInner {
   @override
   final String currency;
   @override
   final String rateVersionId;
 
-  factory _$AdminConversionQuoteDtoOutputRatesInner([
-    void Function(AdminConversionQuoteDtoOutputRatesInnerBuilder)? updates,
-  ]) => (AdminConversionQuoteDtoOutputRatesInnerBuilder()..update(updates))
-      ._build();
+  factory _$AdminSettleDtoPayoutRatesInner([
+    void Function(AdminSettleDtoPayoutRatesInnerBuilder)? updates,
+  ]) => (AdminSettleDtoPayoutRatesInnerBuilder()..update(updates))._build();
 
-  _$AdminConversionQuoteDtoOutputRatesInner._({
+  _$AdminSettleDtoPayoutRatesInner._({
     required this.currency,
     required this.rateVersionId,
   }) : super._();
   @override
-  AdminConversionQuoteDtoOutputRatesInner rebuild(
-    void Function(AdminConversionQuoteDtoOutputRatesInnerBuilder) updates,
+  AdminSettleDtoPayoutRatesInner rebuild(
+    void Function(AdminSettleDtoPayoutRatesInnerBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  AdminConversionQuoteDtoOutputRatesInnerBuilder toBuilder() =>
-      AdminConversionQuoteDtoOutputRatesInnerBuilder()..replace(this);
+  AdminSettleDtoPayoutRatesInnerBuilder toBuilder() =>
+      AdminSettleDtoPayoutRatesInnerBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is AdminConversionQuoteDtoOutputRatesInner &&
+    return other is AdminSettleDtoPayoutRatesInner &&
         currency == other.currency &&
         rateVersionId == other.rateVersionId;
   }
@@ -50,22 +48,20 @@ class _$AdminConversionQuoteDtoOutputRatesInner
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(
-            r'AdminConversionQuoteDtoOutputRatesInner',
-          )
+    return (newBuiltValueToStringHelper(r'AdminSettleDtoPayoutRatesInner')
           ..add('currency', currency)
           ..add('rateVersionId', rateVersionId))
         .toString();
   }
 }
 
-class AdminConversionQuoteDtoOutputRatesInnerBuilder
+class AdminSettleDtoPayoutRatesInnerBuilder
     implements
         Builder<
-          AdminConversionQuoteDtoOutputRatesInner,
-          AdminConversionQuoteDtoOutputRatesInnerBuilder
+          AdminSettleDtoPayoutRatesInner,
+          AdminSettleDtoPayoutRatesInnerBuilder
         > {
-  _$AdminConversionQuoteDtoOutputRatesInner? _$v;
+  _$AdminSettleDtoPayoutRatesInner? _$v;
 
   String? _currency;
   String? get currency => _$this._currency;
@@ -76,11 +72,11 @@ class AdminConversionQuoteDtoOutputRatesInnerBuilder
   set rateVersionId(String? rateVersionId) =>
       _$this._rateVersionId = rateVersionId;
 
-  AdminConversionQuoteDtoOutputRatesInnerBuilder() {
-    AdminConversionQuoteDtoOutputRatesInner._defaults(this);
+  AdminSettleDtoPayoutRatesInnerBuilder() {
+    AdminSettleDtoPayoutRatesInner._defaults(this);
   }
 
-  AdminConversionQuoteDtoOutputRatesInnerBuilder get _$this {
+  AdminSettleDtoPayoutRatesInnerBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _currency = $v.currency;
@@ -91,32 +87,30 @@ class AdminConversionQuoteDtoOutputRatesInnerBuilder
   }
 
   @override
-  void replace(AdminConversionQuoteDtoOutputRatesInner other) {
-    _$v = other as _$AdminConversionQuoteDtoOutputRatesInner;
+  void replace(AdminSettleDtoPayoutRatesInner other) {
+    _$v = other as _$AdminSettleDtoPayoutRatesInner;
   }
 
   @override
-  void update(
-    void Function(AdminConversionQuoteDtoOutputRatesInnerBuilder)? updates,
-  ) {
+  void update(void Function(AdminSettleDtoPayoutRatesInnerBuilder)? updates) {
     if (updates != null) updates(this);
   }
 
   @override
-  AdminConversionQuoteDtoOutputRatesInner build() => _build();
+  AdminSettleDtoPayoutRatesInner build() => _build();
 
-  _$AdminConversionQuoteDtoOutputRatesInner _build() {
+  _$AdminSettleDtoPayoutRatesInner _build() {
     final _$result =
         _$v ??
-        _$AdminConversionQuoteDtoOutputRatesInner._(
+        _$AdminSettleDtoPayoutRatesInner._(
           currency: BuiltValueNullFieldError.checkNotNull(
             currency,
-            r'AdminConversionQuoteDtoOutputRatesInner',
+            r'AdminSettleDtoPayoutRatesInner',
             'currency',
           ),
           rateVersionId: BuiltValueNullFieldError.checkNotNull(
             rateVersionId,
-            r'AdminConversionQuoteDtoOutputRatesInner',
+            r'AdminSettleDtoPayoutRatesInner',
             'rateVersionId',
           ),
         );

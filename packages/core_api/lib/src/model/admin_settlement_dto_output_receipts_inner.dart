@@ -3,15 +3,15 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/admin_settlement_dto_output_receipts_inner_conversions_inner.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_hand_in_receipts_dto_output_receipts_inner_lines_inner.dart';
-import 'package:core_api/src/model/admin_hand_in_receipts_dto_output_receipts_inner_conversions_inner.dart';
+import 'package:core_api/src/model/admin_settlement_dto_output_receipts_inner_lines_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_hand_in_receipts_dto_output_receipts_inner.g.dart';
+part 'admin_settlement_dto_output_receipts_inner.g.dart';
 
-/// AdminHandInReceiptsDtoOutputReceiptsInner
+/// AdminSettlementDtoOutputReceiptsInner
 ///
 /// Properties:
 /// * [id]
@@ -27,11 +27,11 @@ part 'admin_hand_in_receipts_dto_output_receipts_inner.g.dart';
 /// * [conversions]
 /// * [lines]
 @BuiltValue()
-abstract class AdminHandInReceiptsDtoOutputReceiptsInner
+abstract class AdminSettlementDtoOutputReceiptsInner
     implements
         Built<
-          AdminHandInReceiptsDtoOutputReceiptsInner,
-          AdminHandInReceiptsDtoOutputReceiptsInnerBuilder
+          AdminSettlementDtoOutputReceiptsInner,
+          AdminSettlementDtoOutputReceiptsInnerBuilder
         > {
   @BuiltValueField(wireName: r'id')
   String get id;
@@ -44,8 +44,8 @@ abstract class AdminHandInReceiptsDtoOutputReceiptsInner
   String get number;
 
   @BuiltValueField(wireName: r'type')
-  AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum get type;
-  // enum typeEnum {  captain_hand_in,  captain_reimbursement,  };
+  AdminSettlementDtoOutputReceiptsInnerTypeEnum get type;
+  // enum typeEnum {  captain_hand_in,  captain_reimbursement,  captain_payout,  captain_earnings_collection,  };
 
   @BuiltValueField(wireName: r'sessionId')
   String get sessionId;
@@ -66,41 +66,40 @@ abstract class AdminHandInReceiptsDtoOutputReceiptsInner
   DateTime get createdAt;
 
   @BuiltValueField(wireName: r'conversions')
-  BuiltList<AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner>
+  BuiltList<AdminSettlementDtoOutputReceiptsInnerConversionsInner>
   get conversions;
 
   @BuiltValueField(wireName: r'lines')
-  BuiltList<AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner> get lines;
+  BuiltList<AdminSettlementDtoOutputReceiptsInnerLinesInner> get lines;
 
-  AdminHandInReceiptsDtoOutputReceiptsInner._();
+  AdminSettlementDtoOutputReceiptsInner._();
 
-  factory AdminHandInReceiptsDtoOutputReceiptsInner([
-    void updates(AdminHandInReceiptsDtoOutputReceiptsInnerBuilder b),
-  ]) = _$AdminHandInReceiptsDtoOutputReceiptsInner;
+  factory AdminSettlementDtoOutputReceiptsInner([
+    void updates(AdminSettlementDtoOutputReceiptsInnerBuilder b),
+  ]) = _$AdminSettlementDtoOutputReceiptsInner;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminHandInReceiptsDtoOutputReceiptsInnerBuilder b) =>
-      b;
+  static void _defaults(AdminSettlementDtoOutputReceiptsInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminHandInReceiptsDtoOutputReceiptsInner> get serializer =>
-      _$AdminHandInReceiptsDtoOutputReceiptsInnerSerializer();
+  static Serializer<AdminSettlementDtoOutputReceiptsInner> get serializer =>
+      _$AdminSettlementDtoOutputReceiptsInnerSerializer();
 }
 
-class _$AdminHandInReceiptsDtoOutputReceiptsInnerSerializer
-    implements PrimitiveSerializer<AdminHandInReceiptsDtoOutputReceiptsInner> {
+class _$AdminSettlementDtoOutputReceiptsInnerSerializer
+    implements PrimitiveSerializer<AdminSettlementDtoOutputReceiptsInner> {
   @override
   final Iterable<Type> types = const [
-    AdminHandInReceiptsDtoOutputReceiptsInner,
-    _$AdminHandInReceiptsDtoOutputReceiptsInner,
+    AdminSettlementDtoOutputReceiptsInner,
+    _$AdminSettlementDtoOutputReceiptsInner,
   ];
 
   @override
-  final String wireName = r'AdminHandInReceiptsDtoOutputReceiptsInner';
+  final String wireName = r'AdminSettlementDtoOutputReceiptsInner';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminHandInReceiptsDtoOutputReceiptsInner object, {
+    AdminSettlementDtoOutputReceiptsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'id';
@@ -122,7 +121,7 @@ class _$AdminHandInReceiptsDtoOutputReceiptsInnerSerializer
     yield serializers.serialize(
       object.type,
       specifiedType: const FullType(
-        AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum,
+        AdminSettlementDtoOutputReceiptsInnerTypeEnum,
       ),
     );
     yield r'sessionId';
@@ -161,14 +160,14 @@ class _$AdminHandInReceiptsDtoOutputReceiptsInnerSerializer
     yield serializers.serialize(
       object.conversions,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner),
+        FullType(AdminSettlementDtoOutputReceiptsInnerConversionsInner),
       ]),
     );
     yield r'lines';
     yield serializers.serialize(
       object.lines,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner),
+        FullType(AdminSettlementDtoOutputReceiptsInnerLinesInner),
       ]),
     );
   }
@@ -176,7 +175,7 @@ class _$AdminHandInReceiptsDtoOutputReceiptsInnerSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminHandInReceiptsDtoOutputReceiptsInner object, {
+    AdminSettlementDtoOutputReceiptsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -191,7 +190,7 @@ class _$AdminHandInReceiptsDtoOutputReceiptsInnerSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminHandInReceiptsDtoOutputReceiptsInnerBuilder result,
+    required AdminSettlementDtoOutputReceiptsInnerBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -230,10 +229,10 @@ class _$AdminHandInReceiptsDtoOutputReceiptsInnerSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(
-                      AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum,
+                      AdminSettlementDtoOutputReceiptsInnerTypeEnum,
                     ),
                   )
-                  as AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum;
+                  as AdminSettlementDtoOutputReceiptsInnerTypeEnum;
           result.type = valueDes;
           break;
         case r'sessionId':
@@ -297,12 +296,12 @@ class _$AdminHandInReceiptsDtoOutputReceiptsInnerSerializer
                     value,
                     specifiedType: const FullType(BuiltList, [
                       FullType(
-                        AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner,
+                        AdminSettlementDtoOutputReceiptsInnerConversionsInner,
                       ),
                     ]),
                   )
                   as BuiltList<
-                    AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner
+                    AdminSettlementDtoOutputReceiptsInnerConversionsInner
                   >;
           result.conversions.replace(valueDes);
           break;
@@ -311,14 +310,10 @@ class _$AdminHandInReceiptsDtoOutputReceiptsInnerSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner,
-                      ),
+                      FullType(AdminSettlementDtoOutputReceiptsInnerLinesInner),
                     ]),
                   )
-                  as BuiltList<
-                    AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner
-                  >;
+                  as BuiltList<AdminSettlementDtoOutputReceiptsInnerLinesInner>;
           result.lines.replace(valueDes);
           break;
         default:
@@ -330,12 +325,12 @@ class _$AdminHandInReceiptsDtoOutputReceiptsInnerSerializer
   }
 
   @override
-  AdminHandInReceiptsDtoOutputReceiptsInner deserialize(
+  AdminSettlementDtoOutputReceiptsInner deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminHandInReceiptsDtoOutputReceiptsInnerBuilder();
+    final result = AdminSettlementDtoOutputReceiptsInnerBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(
@@ -350,25 +345,30 @@ class _$AdminHandInReceiptsDtoOutputReceiptsInnerSerializer
   }
 }
 
-class AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum extends EnumClass {
+class AdminSettlementDtoOutputReceiptsInnerTypeEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'captain_hand_in')
-  static const AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum captainHandIn =
-      _$adminHandInReceiptsDtoOutputReceiptsInnerTypeEnum_captainHandIn;
+  static const AdminSettlementDtoOutputReceiptsInnerTypeEnum captainHandIn =
+      _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainHandIn;
   @BuiltValueEnumConst(wireName: r'captain_reimbursement')
-  static const AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum
+  static const AdminSettlementDtoOutputReceiptsInnerTypeEnum
   captainReimbursement =
-      _$adminHandInReceiptsDtoOutputReceiptsInnerTypeEnum_captainReimbursement;
+      _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainReimbursement;
+  @BuiltValueEnumConst(wireName: r'captain_payout')
+  static const AdminSettlementDtoOutputReceiptsInnerTypeEnum captainPayout =
+      _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainPayout;
+  @BuiltValueEnumConst(wireName: r'captain_earnings_collection')
+  static const AdminSettlementDtoOutputReceiptsInnerTypeEnum
+  captainEarningsCollection =
+      _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainEarningsCollection;
 
-  static Serializer<AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum>
-  get serializer =>
-      _$adminHandInReceiptsDtoOutputReceiptsInnerTypeEnumSerializer;
+  static Serializer<AdminSettlementDtoOutputReceiptsInnerTypeEnum>
+  get serializer => _$adminSettlementDtoOutputReceiptsInnerTypeEnumSerializer;
 
-  const AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum._(String name)
+  const AdminSettlementDtoOutputReceiptsInnerTypeEnum._(String name)
     : super(name);
 
-  static BuiltSet<AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum>
-  get values => _$adminHandInReceiptsDtoOutputReceiptsInnerTypeEnumValues;
-  static AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum valueOf(
-    String name,
-  ) => _$adminHandInReceiptsDtoOutputReceiptsInnerTypeEnumValueOf(name);
+  static BuiltSet<AdminSettlementDtoOutputReceiptsInnerTypeEnum> get values =>
+      _$adminSettlementDtoOutputReceiptsInnerTypeEnumValues;
+  static AdminSettlementDtoOutputReceiptsInnerTypeEnum valueOf(String name) =>
+      _$adminSettlementDtoOutputReceiptsInnerTypeEnumValueOf(name);
 }
