@@ -65,8 +65,11 @@ export function useSettlementPreview(captainId: string, payoutCurrency: string |
         body: { captainId, payoutCurrency },
       });
       if (data) return data;
-      // A currency without a rate, or a captain of no city.
-      if (response.status === 404 || response.status === 409) return 'refused';
+      // A currency without a rate, a payout too small to convert, or a
+      // captain of no city.
+      if (response.status === 400 || response.status === 404 || response.status === 409) {
+        return 'refused';
+      }
       throw new Error(`The settlement preview failed with ${response.status}.`);
     },
   });

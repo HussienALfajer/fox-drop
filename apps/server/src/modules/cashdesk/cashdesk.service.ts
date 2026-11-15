@@ -1023,13 +1023,19 @@ export class CashDeskService {
     return (currency) => order.get(currency) ?? city.length;
   }
 
-  // CA §10.2, AP §9.10.3: the captain's newest receipts, newest first, at
-  // most `limit`, for «عهدتي».
+  // CA §10.2, AP §9.10.3: the captain's newest custody receipts, newest
+  // first, at most `limit`, for «عهدتي»; a payout belongs to «أرباحي» (CA
+  // §10.6, slice 2.18b).
   async captainReceipts(captainId: string, limit: number): Promise<Receipt[]> {
     const rows = await this.database.db
       .select({ id: receipts.id })
       .from(receipts)
-      .where(eq(receipts.captainId, captainId))
+      .where(
+        and(
+          eq(receipts.captainId, captainId),
+          inArray(receipts.type, ['captain_hand_in', 'captain_reimbursement']),
+        ),
+      )
       .orderBy(desc(receipts.createdAt), desc(receipts.id))
       .limit(limit);
     // By time, newest first: the numbers start again each year (AP §4.8).

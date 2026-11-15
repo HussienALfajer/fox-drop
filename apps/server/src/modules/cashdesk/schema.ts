@@ -276,9 +276,13 @@ export const statements = cashdesk.table(
     offCycle: boolean('off_cycle').notNull(),
     reason: text('reason'),
     receiptIds: uuid('receipt_ids').array().notNull(),
+    // The earnings journals the statement covered, so the next one, read
+    // from a little before this one's ledger_to, leaves them out.
+    journalIds: uuid('journal_ids').array().notNull(),
   },
   (table) => [
     index('statements_captain_created').on(table.captainId, table.createdAt),
+    index('statements_session').on(table.sessionId),
     foreignKey({
       columns: [table.sessionId],
       foreignColumns: [drawerSessions.id],
@@ -286,7 +290,8 @@ export const statements = cashdesk.table(
     }),
     check(
       'statements_money',
-      sql`${table.orders} >= 0 AND ${table.basePay} + ${table.distancePay} >= 0 AND ${table.distancePay} >= 0 AND ${table.peakBonus} >= 0 AND ${table.paid} >= 0 AND ${table.collected} >= 0`,
+      // A pay line may be below zero: a reversal of an earlier week's pay.
+      sql`${table.orders} >= 0 AND ${table.distancePay} >= 0 AND ${table.paid} >= 0 AND ${table.collected} >= 0`,
     ),
     check(
       'statements_sums',

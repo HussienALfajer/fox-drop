@@ -451,7 +451,15 @@ describe('«تصفية الخميس» (AP §8.5.5, §9.10.3)', () => {
       commandOf(await settlements.preview(carried, null, thursday)),
       thursday,
     );
-    expect(next.statement).toMatchObject({ carriedIn: -20_000n, basePay: 25_000n, paid: 5_000n });
+    // A statement covers the period since the previous actual payout, so
+    // the week carried forward is in it (owner decision 2026-11-15).
+    expect(next.statement).toMatchObject({
+      periodFrom: null,
+      carriedIn: 0n,
+      basePay: 35_000n,
+      charges: 30_000n,
+      paid: 5_000n,
+    });
 
     await settings.update(
       'captain.negative_earnings_policy',
@@ -554,6 +562,86 @@ describe('«تصفية الخميس» (AP §8.5.5, §9.10.3)', () => {
     expect(
       await refusal(settlements.settle(cashier.user, { ...command, earnings: 1n }, thursday)),
     ).toBe('idempotency_key_reused');
+  });
+
+  it("settles after an earlier week's pay was reversed, the pay line below zero", async () => {
+    const { cashier } = await openDesk();
+    const captainId = await captain();
+    const orderId = randomUUID();
+    await post(captainId, 'earn.order_pay', 50_000n, { orderId });
+    await settlements.settle(
+      cashier.user,
+      commandOf(await settlements.preview(captainId, null, thursday)),
+      thursday,
+    );
+    // «تغيير النتيجة» makes the captain responsible: the pay comes back.
+    await post(captainId, 'earn.order_pay', -50_000n, { orderId });
+    await post(captainId, 'earn.order_pay', 10_000n);
+    const settled = await settlements.settle(
+      cashier.user,
+      commandOf(await settlements.preview(captainId, null, thursday)),
+      thursday,
+    );
+    expect(settled.statement).toMatchObject({
+      orders: 1,
+      basePay: -40_000n,
+      balance: -40_000n,
+      paid: 0n,
+      carriedOut: -40_000n,
+    });
+  });
+
+  it('refuses a confirmation that names a currency twice', async () => {
+    const { cashier } = await openDesk(['FIN'], [{ currency: 'TRY', amount: 100_000n }]);
+    const captainId = await captain();
+    await post(captainId, 'custody.collect', 30_000n);
+    await post(captainId, 'custody.collect', 1_000n, { currency: 'USD' });
+    const shown = commandOf(await settlements.preview(captainId, null, thursday));
+    const twice = { ...shown, custody: [shown.custody[0]!, shown.custody[0]!] };
+    expect(await refusal(settlements.settle(cashier.user, twice, thursday))).toBe(
+      'balance_changed',
+    );
+  });
+
+  it('settles over HTTP and serves the statement', async () => {
+    const owner = await admin(['OWN']);
+    await desk.openSession(owner.user, azaz, [{ currency: 'TRY', amount: 100_000n }], new Date());
+    const captainId = await captain();
+    await post(captainId, 'earn.order_pay', 20_000n);
+    const body = {
+      captainId,
+      custody: [],
+      earnings: '20000',
+      payout: { currency: 'TRY', amount: '20000', rates: [] },
+      reason: 'إنهاء التعاقد',
+    };
+    const moved = await owner.post('/v1/admin/cash-desk/settlements', {
+      ...body,
+      earnings: '1',
+    });
+    expect(moved.statusCode).toBe(409);
+    expect(moved.json().error).toBe('balance_changed');
+    expect((await owner.post('/v1/admin/cash-desk/settlements', body, null)).statusCode).toBe(400);
+    const key = randomUUID();
+    const settled = await owner.post('/v1/admin/cash-desk/settlements', body, key);
+    expect(settled.statusCode).toBe(201);
+    expect(settled.json()).toMatchObject({
+      statement: { captainId, paid: '20000', payout: { currency: 'TRY', amount: '20000' } },
+      receipts: [{ type: 'captain_payout', lines: [{ amount: '20000', expected: '-20000' }] }],
+    });
+    const again = await owner.post(
+      '/v1/admin/cash-desk/settlements',
+      { ...body, reason: 'سبب آخر' },
+      key,
+    );
+    expect(again.statusCode).toBe(422);
+    const id = settled.json().statement.id;
+    const read = await owner.get(`/v1/admin/cash-desk/statements/${id}`);
+    expect(read.statusCode).toBe(200);
+    expect(read.json()).toEqual(settled.json().statement);
+    const unknown = await owner.get(`/v1/admin/cash-desk/statements/${randomUUID()}`);
+    expect(unknown.statusCode).toBe(404);
+    expect(unknown.json().error).toBe('unknown_statement');
   });
 
   it('lists the captains to settle, and serves the routes', async () => {

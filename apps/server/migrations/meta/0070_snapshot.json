@@ -1,5 +1,5 @@
 {
-  "id": "e0304c3c-1913-4e27-859b-a6697c16e63a",
+  "id": "4680e446-8f01-4248-825b-53a05a69a842",
   "prevId": "8818bbad-4ec1-4630-9c01-3e7874246904",
   "version": "7",
   "dialect": "postgresql",
@@ -1886,6 +1886,12 @@
           "type": "uuid[]",
           "primaryKey": false,
           "notNull": true
+        },
+        "journal_ids": {
+          "name": "journal_ids",
+          "type": "uuid[]",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {
@@ -1900,6 +1906,21 @@
             },
             {
               "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "statements_session": {
+          "name": "statements_session",
+          "columns": [
+            {
+              "expression": "session_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1933,7 +1954,7 @@
       "checkConstraints": {
         "statements_money": {
           "name": "statements_money",
-          "value": "\"cashdesk\".\"statements\".\"orders\" >= 0 AND \"cashdesk\".\"statements\".\"base_pay\" + \"cashdesk\".\"statements\".\"distance_pay\" >= 0 AND \"cashdesk\".\"statements\".\"distance_pay\" >= 0 AND \"cashdesk\".\"statements\".\"peak_bonus\" >= 0 AND \"cashdesk\".\"statements\".\"paid\" >= 0 AND \"cashdesk\".\"statements\".\"collected\" >= 0"
+          "value": "\"cashdesk\".\"statements\".\"orders\" >= 0 AND \"cashdesk\".\"statements\".\"distance_pay\" >= 0 AND \"cashdesk\".\"statements\".\"paid\" >= 0 AND \"cashdesk\".\"statements\".\"collected\" >= 0"
         },
         "statements_sums": {
           "name": "statements_sums",

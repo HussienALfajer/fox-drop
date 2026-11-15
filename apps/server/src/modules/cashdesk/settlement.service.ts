@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq, isNull, sql } from 'drizzle-orm';
+import { and, desc, eq, gt, isNull, or, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { AuditService } from '../audit/index.js';
@@ -8,7 +8,7 @@ import { CaptainsService, type CustodyCurrency, type DeskCaptain } from '../capt
 import { formatMoney, NotificationTexts } from '../content/index.js';
 import { FxService } from '../fx/index.js';
 import { GeoService, lastCutoff } from '../geo/index.js';
-import { LedgerService } from '../ledger/index.js';
+import { type AccountEntry, LedgerService } from '../ledger/index.js';
 import { PushQueue } from '../notifications/index.js';
 import { OrdersService } from '../ordering/index.js';
 import { SettingsService } from '../settings/index.js';
@@ -117,6 +117,10 @@ export interface SettlementList {
   captains: Awaited<ReturnType<CashDeskService['balances']>>;
 }
 
+// How long a transaction may run: an entry stamped before a statement's
+// ledger_to by more than this was committed when the statement read.
+const PERIOD_OVERLAP_MS = 3_600_000;
+
 const WEEKDAYS: Record<string, PayoutWeekday> = {
   Saturday: 'saturday',
   Sunday: 'sunday',
@@ -203,7 +207,7 @@ export class SettlementService {
         balance,
         balanceInBase,
       })),
-      earnings,
+      earnings: { amount: earnings.amount, currency: earnings.currency },
       payout,
       collect,
       net: netOf(
@@ -275,7 +279,22 @@ export class SettlementService {
       const custody = await deskLock.lock(tx);
       const again = await this.desk.replay(tx, user.accountId, command, requestHash, now);
       if (again?.statementId) return again.statementId;
-      const earnings = await this.earnings(tx, captain.cityId, captain.id);
+      // The period's earnings since the previous actual payout, read with
+      // the balance before anything is posted (owner decision 2026-11-15).
+      const [anchor] = await tx
+        .select()
+        .from(statements)
+        .where(
+          and(
+            eq(statements.captainId, captain.id),
+            or(gt(statements.paid, 0n), gt(statements.collected, 0n)),
+          ),
+        )
+        .orderBy(desc(statements.ledgerTo))
+        .limit(1);
+      const period = await this.period(tx, captain, anchor ?? null);
+      const ledgerTo = await transactionTime(tx);
+      const earnings = { amount: period.balance, currency: period.currency };
       const held = custody.currencies.filter((line) => line.balance !== 0n);
       if (held.length === 0 && earnings.amount === 0n) {
         throw new CashDeskRefusedError('nothing_due', 'no custody and no earnings to settle');
@@ -300,16 +319,6 @@ export class SettlementService {
           throw new CashDeskRefusedError('drawer_short', `the drawer lacks ${line.currency}`);
         }
       }
-
-      // The period's earnings, read before the payout is posted.
-      const [previous] = await tx
-        .select()
-        .from(statements)
-        .where(eq(statements.captainId, captain.id))
-        .orderBy(desc(statements.createdAt))
-        .limit(1);
-      const period = await this.period(tx, captain, previous?.ledgerTo ?? null, earnings.amount);
-      const ledgerTo = await transactionTime(tx);
 
       const year = cityYear(now, city.timeZone);
       const issued: string[] = [];
@@ -374,12 +383,14 @@ export class SettlementService {
           captainName: captain.name,
           sessionId: session.id,
           adminAccountId: user.accountId,
-          periodFrom: previous?.createdAt ?? null,
+          periodFrom: anchor?.createdAt ?? null,
           createdAt: now,
-          ledgerFrom: previous?.ledgerTo ?? null,
+          ledgerFrom: anchor?.ledgerTo ?? null,
           ledgerTo,
           currency: earnings.currency,
-          ...period,
+          ...period.lines,
+          carriedIn: period.carriedIn,
+          journalIds: period.journalIds,
           balance: earnings.amount,
           paid,
           payoutCurrency: payout?.currency ?? null,
@@ -414,7 +425,9 @@ export class SettlementService {
         },
         tx,
       );
-      await this.notifyStatement(tx, captain.id, id, payout, earnings.currency, known, now);
+      // CA §14 #20 «قبضت {المبلغ}»: only when something was paid; the
+      // statement itself is kept either way.
+      if (payout) await this.notifyStatement(tx, captain.id, id, payout, known, now);
       if (held.length > 0) await this.captains.custodyChanged(tx, captain, now);
       await keepKey(tx, user.accountId, command.idempotencyKey, requestHash, issued, id, now);
       return id;
@@ -466,15 +479,17 @@ export class SettlementService {
     return { currency: asked.currency, amount: quote.converted, rates: quote.rates };
   }
 
-  // The captain's earnings now (AP §8.5.2), in the base: + owed to them.
+  // The captain's earnings now (AP §8.5.2), in the base: + owed to them,
+  // with the base account (none before the first entry).
   private async earnings(
     executor: Executor,
     cityId: string,
     captainId: string,
-  ): Promise<{ amount: bigint; currency: string }> {
+  ): Promise<{ amount: bigint; currency: string; accountId: string | null }> {
     const base = await this.fx.baseCurrency(cityId, executor);
     if (base === null) throw new CashDeskRefusedError('rate_missing', 'the city has no base');
     let amount = 0n;
+    let accountId: string | null = null;
     for (const account of await this.ledger.ownerAccounts(
       cityId,
       captainId,
@@ -486,27 +501,49 @@ export class SettlementService {
         if (balance.amount !== 0n) throw new Error(`earnings held in ${account.currency}`);
         continue;
       }
+      accountId = account.id;
       amount += balance.amount;
     }
-    return { amount, currency: base };
+    return { amount, currency: base, accountId };
   }
 
   // AP §8.5.5 step 4: the period's earnings by kind since the previous
-  // statement. What the period's entries do not explain is the balance it
-  // started from (a negative one carried forward).
-  private async period(tx: Tx, captain: DeskCaptain, after: Date | null, balance: bigint) {
-    const accounts = await this.ledger.ownerAccounts(
-      captain.cityId,
-      captain.id,
-      'captain.earnings',
-      tx,
-    );
-    const entries = await this.ledger.periodEntries(
-      accounts.map((account) => account.id),
-      'captain.earnings',
-      after,
-      tx,
-    );
+  // actual payout (`anchor`, a statement that paid or collected). The
+  // ledger stamps an entry with its transaction's start, so one committed
+  // after the anchor read the ledger may carry an earlier time: the period
+  // reads from PERIOD_OVERLAP_MS before the anchor's ledger_to and leaves
+  // out the journals the anchor covered and its own receipts' journals. The
+  // entries and the balance are separate reads, so they are read again
+  // while a commit between them leaves them apart; what the entries still
+  // do not explain is the balance carried in.
+  private async period(
+    tx: Tx,
+    captain: DeskCaptain,
+    anchor: typeof statements.$inferSelect | null,
+  ) {
+    const covered = new Set(anchor?.journalIds ?? []);
+    const anchorReceipts = new Set(anchor?.receiptIds ?? []);
+    const after = anchor ? new Date(anchor.ledgerTo.getTime() - PERIOD_OVERLAP_MS) : null;
+    const opening = anchor?.carriedOut ?? 0n;
+    let entries: AccountEntry[] = [];
+    let now = await this.earnings(tx, captain.cityId, captain.id);
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      entries = (
+        now.accountId === null
+          ? []
+          : await this.ledger.periodEntries([now.accountId], 'captain.earnings', after, tx)
+      ).filter(
+        (entry) =>
+          !covered.has(entry.journalId) &&
+          !(entry.sourceKind === 'receipt' && entry.sourceId && anchorReceipts.has(entry.sourceId)),
+      );
+      const balance = await this.earnings(tx, captain.cityId, captain.id);
+      const explained = entries.reduce((total, entry) => total + entry.amount, opening);
+      const settled = balance.amount === now.amount && balance.amount === explained;
+      now = balance;
+      if (settled) break;
+    }
+    const balance = now.amount;
     const sum = (type: string) =>
       entries
         .filter((entry) => entry.type === type)
@@ -545,7 +582,13 @@ export class SettlementService {
       lines.charges -
       lines.instalments +
       lines.adjustments;
-    return { ...lines, carriedIn: balance - moved };
+    return {
+      currency: now.currency,
+      balance,
+      lines,
+      carriedIn: balance - moved,
+      journalIds: [...new Set(entries.map((entry) => entry.journalId))],
+    };
   }
 
   // CA §14 #20: «كشف الأسبوع جاهز: قبضت {المبلغ}», silent.
@@ -553,19 +596,14 @@ export class SettlementService {
     tx: Tx,
     captainId: string,
     statementId: string,
-    payout: { currency: string; amount: bigint } | null,
-    base: string,
+    payout: { currency: string; amount: bigint },
     known: ReadonlyMap<string, { symbol: string; decimals: number }>,
     now: Date,
   ): Promise<void> {
     const templateKey = 'captain.weekly_statement';
     const rendered = await this.texts.render(
       templateKey,
-      {
-        المبلغ: payout
-          ? formatMoney(payout.amount, payout.currency, known)
-          : formatMoney(0n, base, known),
-      },
+      { المبلغ: formatMoney(payout.amount, payout.currency, known) },
       tx,
     );
     await this.pushes.enqueue(
@@ -630,6 +668,7 @@ function sameCustody(
 ): boolean {
   const asShown = shown.filter((line) => line.balance !== 0n);
   return (
+    new Set(asShown.map((line) => line.currency)).size === asShown.length &&
     asShown.length === held.length &&
     asShown.every((line) =>
       held.some((each) => each.currency === line.currency && each.balance === line.balance),
