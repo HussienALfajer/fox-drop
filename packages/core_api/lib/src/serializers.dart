@@ -99,6 +99,8 @@ import 'package:core_api/src/model/admin_hand_in_grace_dto.dart';
 import 'package:core_api/src/model/admin_hand_in_receipts_dto_output.dart';
 import 'package:core_api/src/model/admin_handover_dto.dart';
 import 'package:core_api/src/model/admin_image_set_dto_output.dart';
+import 'package:core_api/src/model/admin_merchant_statement_dto_output.dart';
+import 'package:core_api/src/model/admin_merchant_statement_dto_output_lines_inner.dart';
 import 'package:core_api/src/model/admin_new_upload_dto.dart';
 import 'package:core_api/src/model/admin_no_answer_wait_dto.dart';
 import 'package:core_api/src/model/admin_notification_resent_dto_output.dart';
@@ -219,6 +221,9 @@ import 'package:core_api/src/model/admin_restaurant_images_dto_output_categories
 import 'package:core_api/src/model/admin_restaurant_max_active_orders_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_pause_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_pickup_currencies_dto.dart';
+import 'package:core_api/src/model/admin_restaurant_settlements_dto_output.dart';
+import 'package:core_api/src/model/admin_restaurant_settlements_dto_output_restaurants_inner.dart';
+import 'package:core_api/src/model/admin_restaurant_settlements_dto_output_restaurants_inner_latest.dart';
 import 'package:core_api/src/model/admin_restaurant_status_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_status_dto_output_pickup_base_currency.dart';
 import 'package:core_api/src/model/admin_restaurants_dto_output.dart';
@@ -664,6 +669,8 @@ part 'serializers.g.dart';
   AdminHandInReceiptsDtoOutput,
   AdminHandoverDto,
   AdminImageSetDtoOutput,
+  AdminMerchantStatementDtoOutput,
+  AdminMerchantStatementDtoOutputLinesInner,
   AdminNewUploadDto,
   AdminNoAnswerWaitDto,
   AdminNotificationResentDtoOutput,
@@ -784,6 +791,9 @@ part 'serializers.g.dart';
   AdminRestaurantMaxActiveOrdersDto,
   AdminRestaurantPauseDto,
   AdminRestaurantPickupCurrenciesDto,
+  AdminRestaurantSettlementsDtoOutput,
+  AdminRestaurantSettlementsDtoOutputRestaurantsInner,
+  AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatest,
   AdminRestaurantStatusDtoOutput,
   AdminRestaurantStatusDtoOutputPickupBaseCurrency,
   AdminRestaurantsDtoOutput,
@@ -1505,6 +1515,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminMerchantStatementDtoOutputLinesInner),
+            ]),
+            () => ListBuilder<AdminMerchantStatementDtoOutputLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminOrderDtoOutputOrderNoAnswerReportsInner),
             ]),
             () => ListBuilder<AdminOrderDtoOutputOrderNoAnswerReportsInner>(),
@@ -1575,6 +1591,15 @@ Serializers serializers =
               FullType(CustomerActiveOrdersDtoOutputOrdersInner),
             ]),
             () => ListBuilder<CustomerActiveOrdersDtoOutputOrdersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminRestaurantSettlementsDtoOutputRestaurantsInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminRestaurantSettlementsDtoOutputRestaurantsInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

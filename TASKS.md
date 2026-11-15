@@ -10,10 +10,10 @@ Slice 2.19a, the weekly statement at the cutoff (`docs/roadmap.md`, Phase 2, Mon
 - **Specs:** `docs/domain/07-restaurant-account.md` (AP §8.7), AP §9.10.3 tab 3 «تسوية المطاعم», RA §12.3 and §12.5 (the statement's contents and the exceptions' labels), RA §16 #30, the cashdesk, ledger, merchants, ordering and notifications modules' `CLAUDE.md`, `apps/admin/CLAUDE.md`.
 - **Branch:** `feat/restaurant-weekly-statement`.
 - **Plan:**
-  - [ ] Migration: `cashdesk.merchant_statements` and their lines (never changed by the application role), with the database test.
-  - [ ] The statement at the cutoff (test first): one per restaurant and cutoff, the period since the previous statement (entries committed late go next week), each order with its items value and currency lines, commission and discount share, the exceptions with the order and reason, the earlier unpaid balance and the payments since, the total due; a repeat closes nothing twice.
-  - [ ] The worker's sweep and the owners' push «كشف الأسبوع جاهز: المستحق {المبلغ}. التسوية اليوم في المكتب أو عند زيارة موظفنا.»
-  - [ ] The admin routes (the restaurants with a non-zero balance, overdue first; a statement), the OpenAPI document and the clients.
+  - [x] Migration: `cashdesk.merchant_statements` and their lines (never changed by the application role), with the database test.
+  - [x] The statement at the cutoff (test first): one per restaurant and cutoff, the period since the previous statement (entries committed late go next week), each order with its items value and currency lines, commission and discount share, the exceptions with the order and reason, the earlier unpaid balance and the payments since, the total due; a repeat closes nothing twice.
+  - [x] The worker's sweep and the owners' push «كشف الأسبوع جاهز: المستحق {المبلغ}. التسوية اليوم في المكتب أو عند زيارة موظفنا.»
+  - [x] The admin routes (the restaurants with a non-zero balance, overdue first; a statement), the OpenAPI document and the clients.
   - [ ] The panel's «تسوية المطاعم» tab: the list and the statement entry by entry, printable as a plain layout.
   - [ ] The module's `CLAUDE.md`, the reviewer, the hand-over to 2.19b.
 

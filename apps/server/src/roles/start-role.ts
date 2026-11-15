@@ -5,6 +5,7 @@ import { ApiModule } from '../api.module.js';
 import { createApiApp } from '../http/create-api-app.js';
 import { LoggingModule } from '../logging/logging.module.js';
 import { AuditWorkerModule } from '../modules/audit/index.js';
+import { CashDeskWorkerModule } from '../modules/cashdesk/index.js';
 import { CaptainsWorkerModule } from '../modules/captains/index.js';
 import { DispatcherModule, DispatchWorkerModule } from '../modules/dispatch/index.js';
 import { OtpSenderModule } from '../modules/identity/index.js';
@@ -36,6 +37,7 @@ const BACKGROUND_MODULES: Record<BackgroundRole, Type[]> = {
     PushWorkerModule,
     PlatformRelayWorkerModule,
     MerchantsWorkerModule,
+    CashDeskWorkerModule,
   ],
   dispatcher: [DispatcherModule],
   'otp-sender': [OtpSenderModule],

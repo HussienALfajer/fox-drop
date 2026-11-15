@@ -3364,6 +3364,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/cash-desk/restaurants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRestaurantSettlementRestaurants"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cash-desk/merchant-statements/{statementId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRestaurantSettlementStatement"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/captain/custody": {
         parameters: {
             query?: never;
@@ -9831,6 +9863,73 @@ export interface components {
                 remaining: string;
             }[];
         };
+        AdminRestaurantSettlementsDto_Output: {
+            currency: string | null;
+            /** @enum {string} */
+            settlementWeekday: "saturday" | "sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday";
+            /** Format: date-time */
+            nextCutoff: string;
+            restaurants: {
+                /** Format: uuid */
+                restaurantId: string;
+                restaurantName: string;
+                currency: string;
+                /** @description + the restaurant owes, − the platform owes it. */
+                balance: string;
+                latest: {
+                    /** Format: uuid */
+                    id: string;
+                    /** Format: date-time */
+                    cutoff: string;
+                    totalDue: string;
+                } | null;
+                /** @description What is left of the latest statement after the payments. */
+                unpaid: string;
+                overdueSince: string | null;
+            }[];
+        };
+        AdminMerchantStatementDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            restaurantId: string;
+            restaurantName: string;
+            /** Format: date-time */
+            cutoff: string;
+            periodFrom: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            currency: string;
+            orders: number;
+            itemsValue: string;
+            commission: string;
+            discountShare: string;
+            exceptions: string;
+            weekTotal: string;
+            previousDue: string;
+            paid: string;
+            earlierUnpaid: string;
+            totalDue: string;
+            lines: {
+                position: number;
+                /** @enum {string} */
+                kind: "order" | "exception" | "payment";
+                /** Format: date-time */
+                at: string;
+                orderId: string | null;
+                orderNumber: string | null;
+                itemsValue: string | null;
+                pickupLines: {
+                    currency: string;
+                    amount: string;
+                }[] | null;
+                commission: string | null;
+                discountShare: string | null;
+                cause: ("food_credit" | "credit" | "pickup_refund" | "items_removed" | "debit" | "commission_reversal" | "discount_reversal" | "adjustment") | null;
+                amount: string | null;
+                reason: string | null;
+            }[];
+        };
         CaptainCustodyDto_Output: {
             /** @description The cash held, in the base currency (AP §8.5.3). */
             usage: {
@@ -15425,6 +15524,50 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminReceiptDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantSettlementRestaurants: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantSettlementsDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantSettlementStatement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMerchantStatementDto_Output"];
                 };
             };
         };

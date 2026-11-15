@@ -142,6 +142,7 @@ export {
 } from './order-assignments.js';
 export {
   type OrderPayParts,
+  type OrderPickup,
   type OrderRefusal,
   OrderRefusedError,
   OrdersService,
@@ -159,3 +160,4 @@ export {
 } from './quote.service.js';
 export type { CartLine, PricedLine, QuoteMoney } from './quote.js';
 export { HANDOVER_FROM } from './handover.js';
+export { FOOD_CREDIT_REASON } from './cancellation.js';

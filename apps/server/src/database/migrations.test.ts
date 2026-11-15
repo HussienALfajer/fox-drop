@@ -903,11 +903,29 @@ describe('the cash desk tables (AP §9.10.3, §4.8)', () => {
     ).rejects.toThrow(/receipts_type_values/);
   });
 
+  it('keeps a restaurant statement sums and one per restaurant and cutoff', async () => {
+    const restaurant = randomUUID();
+    const statement = (cutoff: string, totalDue: number) =>
+      `INSERT INTO cashdesk.merchant_statements (city_id, restaurant_id, restaurant_name, cutoff, created_at, currency, orders, items_value, commission, discount_share, exceptions, week_total, previous_due, paid, earlier_unpaid, total_due, journal_ids) VALUES (${azaz}, '${restaurant}', 'مطعم', '${cutoff}', now(), 'TRY', 1, 40000, 6000, 0, 0, 6000, 1000, 1000, 0, ${totalDue}, '{}')`;
+    await appQuery(statement('2099-01-03T03:00:00Z', 6000));
+    await expect(appQuery(statement('2099-01-03T03:00:00Z', 6000))).rejects.toThrow(
+      /merchant_statements_restaurant_cutoff/,
+    );
+    await expect(appQuery(statement('2099-01-10T03:00:00Z', 5000))).rejects.toThrow(
+      /merchant_statements_sums/,
+    );
+  });
+
   it.each([
     ['change a receipt', "UPDATE cashdesk.receipts SET captain_name = 'x'"],
     ['change a receipt line', 'UPDATE cashdesk.receipt_lines SET amount = 1'],
     ['change a receipt conversion', 'UPDATE cashdesk.receipt_conversions SET to_amount = 1'],
     ['change a statement', 'UPDATE cashdesk.statements SET paid = 1'],
+    ['change a restaurant statement', 'UPDATE cashdesk.merchant_statements SET paid = 1'],
+    [
+      'change a restaurant statement line',
+      'UPDATE cashdesk.merchant_statement_lines SET amount = 1',
+    ],
     ['delete a session', 'DELETE FROM cashdesk.drawer_sessions'],
     ['delete a receipt', 'DELETE FROM cashdesk.receipts'],
   ])('refuse the application role to %s', async (_, statement) => {
