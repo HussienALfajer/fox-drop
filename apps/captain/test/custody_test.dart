@@ -102,6 +102,7 @@ void main() {
     expect(find.text('المكتب مفتوح حتى 11:00 م'), findsOneWidget);
     expect(find.text('السبت: من 9:00 ص إلى 11:00 م'), findsOneWidget);
     expect(find.text('الجمعة: مغلق'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('لا إيصالات بعد.'), 200);
     expect(find.text('لا إيصالات بعد.'), findsOneWidget);
     final collected = find.text('تحصيل من الزبون — الطلب #10001: 410 ₺');
     await tester.scrollUntilVisible(collected, 200);

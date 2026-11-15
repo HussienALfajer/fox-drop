@@ -526,6 +526,50 @@ export class CaptainsService implements OnModuleInit {
     );
   }
 
+  // CA §10.6 «أرباحي» (slice 2.18b): the captain's earnings balance in the
+  // city's base and the entries of their earnings accounts posted after a
+  // moment, oldest first, + what the platform owes them. Earnings live in
+  // the base only (AP §8.5.2).
+  async earnings(
+    captainId: string,
+    after: Date,
+  ): Promise<{ cityId: string; balance: Money; entries: AccountEntry[] }> {
+    const row = await this.row(this.database.db, captainId);
+    const base = await this.fx.baseCurrency(row.cityId);
+    if (base === null) throw new Error(`city ${row.cityId} has no base currency`);
+    const accounts = (
+      await this.ledger.ownerAccounts(row.cityId, row.id, 'captain.earnings')
+    ).filter((account) => account.currency === base);
+    let amount = 0n;
+    for (const account of accounts) amount += (await this.ledger.balance(account.id)).amount;
+    const entries = await this.ledger.periodEntries(
+      accounts.map((account) => account.id),
+      'captain.earnings',
+      after,
+    );
+    return { cityId: row.cityId, balance: { amount, currency: base }, entries };
+  }
+
+  // CA §10.6: the whole minutes the captain was online between two moments,
+  // the open period counted up to `to`.
+  async onlineMinutes(captainId: string, from: Date, to: Date): Promise<number> {
+    const end = sql`least(coalesce(${onlinePeriods.endedAt}, ${to.toISOString()}::timestamptz), ${to.toISOString()}::timestamptz)`;
+    const start = sql`greatest(${onlinePeriods.startedAt}, ${from.toISOString()}::timestamptz)`;
+    const [total] = await this.database.db
+      .select({
+        seconds: sql<string>`coalesce(sum(greatest(extract(epoch FROM ${end} - ${start}), 0)), 0)::text`,
+      })
+      .from(onlinePeriods)
+      .where(
+        and(
+          eq(onlinePeriods.captainId, captainId),
+          lte(onlinePeriods.startedAt, to),
+          or(isNull(onlinePeriods.endedAt), gt(onlinePeriods.endedAt, from)),
+        ),
+      );
+    return Math.floor(Number(total?.seconds ?? '0') / 60);
+  }
+
   // CA §10.5 «العملات التي أحملها»: what the captain carries of the city's
   // enabled currencies (the base until they set them), and the choices.
   async carriedCurrencies(captainId: string): Promise<CarriedCurrencies> {

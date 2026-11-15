@@ -880,6 +880,15 @@ describe('POST /v1/captain/orders/{orderId}/deliver (CA §9.7–9.8)', () => {
     // AP §8.5: the captain's custody keeps the 40 gained, the pay is owed.
     expect(await owned(door.captain.captainId, 'captain.custody')).toBe(4_000n);
     expect(await owned(door.captain.captainId, 'captain.earnings')).toBe(2_500n);
+    // CA §10.6 «أرباحي» (slice 2.18b): the pay by part, as recorded.
+    expect(await app.get(OrdersService).payParts([door.order.id, randomUUID()])).toEqual(
+      new Map([
+        [
+          door.order.id,
+          { basePay: 2_500n, distancePay: 0n, topUpPay: 0n, waitingPay: 0n, peakBonus: 0n },
+        ],
+      ]),
+    );
     // AP §8.7: the restaurant owes its 15% commission on 240.
     expect((await owned(restaurant, 'merchant.account')) - restaurantBefore).toBe(-3_600n);
     // The order's clearing returns to zero; the fee, commission and pay land.

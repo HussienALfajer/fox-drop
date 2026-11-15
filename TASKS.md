@@ -4,15 +4,15 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.18b, «أرباحي» and the bottom navigation (`docs/roadmap.md`, Phase 2, Money).
+Slice 2.18c, the weekly statement in the captain app (`docs/roadmap.md`, Phase 2, Money).
 
-- **Roadmap line:** 2.18b in `docs/roadmap.md`.
-- **Specs:** CA §6.1–6.2 (the screen map and the bottom navigation «الرئيسية» · «أرباحي» · «عهدتي» · «المزيد»), CA §10.6 («أرباحي»), CA §10.7 (the negative balance explained), CA §10.1, AP §8.5.2, §8.5.5 (`docs/domain/05`), Appendix A (`captain.payout_weekday`, `captain.negative_earnings_policy`), the cashdesk, captains and ledger modules' `CLAUDE.md`, `apps/customer/CLAUDE.md` (the Flutter apps' rules) and `packages/core_l10n/CLAUDE.md`.
-- **Branch:** `feat/captain-earnings-screen`.
+- **Roadmap line:** 2.18c in `docs/roadmap.md`.
+- **Specs:** CA §10.7 (the weekly statement: the orders, pay by part, bonuses, charges, instalments, the net paid; «مشاركة كصورة»), CA §14 #20 (the push «كشف الأسبوع جاهز: قبضت {المبلغ}», `target: statement`, `statementId`), AP §8.5.5 step 4, the cashdesk module's `CLAUDE.md` («The weekly statement»), `apps/captain/CLAUDE.md`, `apps/customer/CLAUDE.md` (the Flutter apps' rules) and `packages/core_l10n/CLAUDE.md`.
+- **Branch:** `feat/captain-weekly-statement`.
 - **Plan:**
-  - [ ] Failing tests first: «هذا الأسبوع» is the payout cycle since the last payout weekday by business day (owner decision 2026-11-15); today and the week sum earnings, orders and online hours; each order with its pay parts and total; bonuses, charges with their order, instalments and payouts with their receipt, each with its reason; the balance and the next payout date; a negative balance and the policy.
-  - [ ] The server: `GET /v1/captain/earnings` (`@AppSignedIn()`) from the earnings ledger entries, the collections' pay parts, the online periods and the payout receipts; `pnpm generate:api`.
-  - [ ] The captain app: the bottom navigation «الرئيسية» · «أرباحي» · «عهدتي» · «المزيد» (CA §6.2), the «أرباحي» screen (today, this week, the orders, the other lines, «رصيدك المستحق: {المبلغ}», «موعد القبض: الخميس {التاريخ}», the negative balance explained); plain layout until the design.
+  - [ ] Failing tests first: the captain reads only their own statements, newest first, and one statement by id (another captain's is `404`); the lines add up as the desk's statement does.
+  - [ ] The server: `GET /v1/captain/statements` and `GET /v1/captain/statements/{statementId}` (`@AppSignedIn()`) from `cashdesk.statements`; `pnpm generate:api`.
+  - [ ] The captain app: the list of statements (reached from «أرباحي»), the statement screen, «مشاركة كصورة» (the screen rendered to an image and shared, plain layout until the design), and the push `target: statement` opening it.
   - [ ] `checker`, `reviewer`, the pull request.
 
 ### Owner decisions for 2.18 (2026-11-15)
@@ -24,6 +24,14 @@ Slice 2.18b, «أرباحي» and the bottom navigation (`docs/roadmap.md`, Phas
 - No deposit instalment is posted until the kit (2.35); the statement shows the line at zero.
 - Deferred: the manual bonus and its push «مكافأة {المبلغ}: {السبب}» (2.36 or 2.20), the pay table link (2.36), the panel's captain «المستحقات» tab (2.36).
 - Screens use the plain layout until the design system, the printed statement and the shared image included.
+
+### Left from 2.18b (`feat/captain-earnings-screen`)
+
+- **Before deploying to staging:** no migration. A new route `GET /v1/captain/earnings`; the ledger's entries carry their journal's reason (internal). The captain app gains the bottom navigation: the home app bar's links moved to «المزيد». Deploy the server before the captain APK (a new APK reads `/earnings`).
+- **To check on staging:** in the captain app the tabs «الرئيسية» · «أرباحي» · «عهدتي» · «المزيد». Deliver an order, open «أرباحي»: «رصيدك المستحق» grows by the order's pay, the order shows with «الأجر الأساسي» and its other parts, today and this week count it, and «ساعات الاتصال» the time online. With an offer coming while «أرباحي» is open, it rings and shows there. Settle the captain at «الصندوق» → «تصفية الخميس»: with «أرباحي» open, the balance turns 0 ₺ at once and «صرف المستحقات» shows with «إيصال AZ-…», and «موعد القبض» moves to next Thursday. A captain charged more than they earned sees the negative balance with «رصيدك سالب، ويُخصم من أرباحك في الأسبوع القادم.»
+- **To confirm with the owner:** the wording the spec does not give: «اليوم», «هذا الأسبوع», «الأرباح: {المبلغ}», «الطلبات: {العدد}», «ساعات الاتصال: {س} س {د} د», «طلبات هذا الأسبوع», «حركات أخرى», «لا حركات هذا الأسبوع بعد.», the line kinds «مكافأة», «خصم», «قسط تأمين العدة», «صرف المستحقات», «تحصيل رصيد سالب», «تصحيح», the negative balance's two sentences, «الطلب الجاري» and «المزيد»'s contents (`captainEarnings*`, `captainHomeTab`, `captainMoreTab`, `captainActiveOrderBar` in `packages/core_l10n/lib/src/arb/app_ar.arb`); «موعد القبض» names the setting's weekday («الخميس» by default) rather than a fixed «الخميس»; on the payout day it shows today until the captain is paid, then next week.
+- **Decided by us:** «هذا الأسبوع» starts at the start of the latest business day on `captain.payout_weekday`, today included, so a Thursday's payout opens its week and Thursday's work after it is in the new week; the earnings of a window are every entry but the payouts (charges and instalments taken off); an order counts when its pay nets above zero (as the statement); an order's parts come from its collection and show only when they add up to the ledger's pay (an order ended by an outcome shows its total only); the screen reads again after every read of the captain's state; the route lives in cashdesk with the statement, beside «عهدتي».
+- **Not yet:** the pay table link on «أرباحي» (CA §10.6, §12.5; 2.36); the bar «الطلب الجاري» and the offer on the screens pushed above the tabs («الإعدادات», «قواعد العمل», «الأسئلة الشائعة», the peak windows, the terms): the offer still rings under them, as before; the performance, profile, history and support screens in «المزيد» with their slices.
 
 ### Left from 2.18a (`feat/thursday-settlement`)
 

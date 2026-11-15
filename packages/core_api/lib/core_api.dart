@@ -344,6 +344,12 @@ export 'package:core_api/src/model/captain_delivery_summary_dto_output_summary.d
 export 'package:core_api/src/model/captain_delivery_summary_dto_output_summary_custody_change.dart';
 export 'package:core_api/src/model/captain_delivery_summary_dto_output_summary_hand_in_today.dart';
 export 'package:core_api/src/model/captain_delivery_summary_dto_output_summary_pay.dart';
+export 'package:core_api/src/model/captain_earnings_dto_output.dart';
+export 'package:core_api/src/model/captain_earnings_dto_output_lines_inner.dart';
+export 'package:core_api/src/model/captain_earnings_dto_output_orders_inner.dart';
+export 'package:core_api/src/model/captain_earnings_dto_output_orders_inner_parts.dart';
+export 'package:core_api/src/model/captain_earnings_dto_output_today.dart';
+export 'package:core_api/src/model/captain_earnings_dto_output_week.dart';
 export 'package:core_api/src/model/captain_emergency_dto.dart';
 export 'package:core_api/src/model/captain_emergency_dto_location.dart';
 export 'package:core_api/src/model/captain_emergency_stop_dto_output.dart';

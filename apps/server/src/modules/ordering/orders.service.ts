@@ -51,6 +51,15 @@ export class OrderRefusedError extends Error {
   }
 }
 
+// CA §9.8, §10.6: a delivered order's pay as the collection recorded it.
+export interface OrderPayParts {
+  basePay: bigint;
+  distancePay: bigint;
+  topUpPay: bigint;
+  waitingPay: bigint;
+  peakBonus: bigint;
+}
+
 // CU §10.7 item 5: the command carries the quote version, the address, the
 // notes and the pay-in currency; the delivery point is the address pin.
 export interface PlaceOrder {
@@ -338,6 +347,25 @@ export class OrdersService implements OnModuleInit {
       .from(collections)
       .where(inArray(collections.orderId, [...new Set(orderIds)]));
     return new Map(rows.map((row) => [row.orderId, row.distancePay]));
+  }
+
+  // CA §10.6 (slice 2.18b): each delivered order's pay in its parts, as the
+  // collection recorded it (CA §9.8), for «أرباحي»; an order without a
+  // collection (ended by an outcome without one) is left out.
+  async payParts(orderIds: readonly string[]): Promise<Map<string, OrderPayParts>> {
+    if (orderIds.length === 0) return new Map();
+    const rows = await this.database.db
+      .select({
+        orderId: collections.orderId,
+        basePay: collections.basePay,
+        distancePay: collections.distancePay,
+        topUpPay: collections.topUpPay,
+        waitingPay: collections.waitingPay,
+        peakBonus: collections.peakBonus,
+      })
+      .from(collections)
+      .where(inArray(collections.orderId, [...new Set(orderIds)]));
+    return new Map(rows.map(({ orderId, ...parts }) => [orderId, parts]));
   }
 
   // CU §11: the customer's own order, or null for another's or an unknown

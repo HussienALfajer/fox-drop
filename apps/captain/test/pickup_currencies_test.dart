@@ -31,6 +31,8 @@ void main() {
     ]);
     await app.pump(tester);
     await app.live(tester);
+    await tester.tap(find.text('المزيد'));
+    await app.settle(tester);
     await tester.tap(find.text('الإعدادات'));
     await app.settle(tester);
     expect(find.text('العملات التي أحملها'), findsOneWidget);

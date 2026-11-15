@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { randomBytes, randomUUID } from 'node:crypto';
+import { randomBytes, randomInt, randomUUID } from 'node:crypto';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
@@ -10,7 +10,13 @@ import { createApiApp } from '../../http/create-api-app.js';
 import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
 import { CaptainsService } from '../captains/index.js';
 import { FxService } from '../fx/index.js';
-import { ADMIN_SESSION_COOKIE, AdminSessionsService } from '../identity/index.js';
+import {
+  ADMIN_SESSION_COOKIE,
+  AdminSessionsService,
+  CaptainAccountsService,
+  CODE_SENDER,
+  type DevelopmentCodeSender,
+} from '../identity/index.js';
 import { type AccountPurpose, type JournalType, LedgerService } from '../ledger/index.js';
 import { SettingsService } from '../settings/index.js';
 import {
@@ -184,7 +190,11 @@ async function post(
   captainId: string,
   type: JournalType,
   amount: bigint,
-  { currency = 'TRY', orderId = randomUUID() } = {},
+  {
+    currency = 'TRY',
+    orderId = randomUUID(),
+    reason = type === 'earn.bonus' || type === 'earn.adjustment' ? 'test' : null,
+  }: { currency?: string; orderId?: string; reason?: string | null } = {},
 ) {
   const custody = type.startsWith('custody.');
   const counter: AccountPurpose = custody
@@ -223,7 +233,7 @@ async function post(
         type,
         source: { kind: 'order', id: orderId },
         actor: { type: 'system', id: null },
-        reason: type === 'earn.bonus' || type === 'earn.adjustment' ? 'test' : null,
+        reason,
         entries: [
           { accountId: own, currency, amount: signed },
           { accountId: other, currency, amount: -signed },
@@ -663,5 +673,123 @@ describe('«تصفية الخميس» (AP §8.5.5, §9.10.3)', () => {
       earnings: { amount: '20000', currency: 'TRY' },
       payout: { currency: 'TRY', amount: '20000' },
     });
+  });
+});
+
+// The captain app's calls, signed in on a new device.
+async function signedIn(captainId: string) {
+  const phone = `+9639${randomInt(100_000_000).toString().padStart(8, '0')}`;
+  await app.get(CaptainAccountsService).addAccount(captainId, phone, change);
+  const deviceId = randomUUID();
+  await app.inject({ method: 'POST', url: '/v1/captain/auth/code', payload: { phone, deviceId } });
+  const code = app.get<DevelopmentCodeSender>(CODE_SENDER).lastCode(phone);
+  const answer = await app.inject({
+    method: 'POST',
+    url: '/v1/captain/auth/sign-in',
+    payload: { phone, deviceId, code },
+  });
+  const headers = { authorization: `Bearer ${answer.json().accessToken}` };
+  return () => app.inject({ method: 'GET', url: '/v1/captain/earnings', headers });
+}
+
+describe('«أرباحي» (CA §10.6, slice 2.18b)', () => {
+  it('shows today and the week, the orders, the other lines and the balance', async () => {
+    const captainId = await captain();
+    const read = await signedIn(captainId);
+    const orderId = randomUUID();
+    await post(captainId, 'earn.order_pay', 3_500n, { orderId });
+    await post(captainId, 'earn.peak_bonus', 500n, { orderId });
+    await post(captainId, 'earn.bonus', 1_000n, { reason: 'مساعدة في الذروة' });
+    await post(captainId, 'earn.charge', -700n, { orderId, reason: 'تالف' });
+    // An hour online that ended ten minutes ago, counted from the window's
+    // start when it began before it (the cutoff may fall inside it).
+    const started = new Date(Date.now() - 70 * 60_000);
+    const ended = new Date(Date.now() - 10 * 60_000);
+    await sql.query(
+      `INSERT INTO captains.online_periods (captain_id, started_at, ended_at, end_reason)
+       VALUES ($1, $2, $3, 'captain')`,
+      [captainId, started, ended],
+    );
+    const minutesFrom = (from: string) =>
+      Math.max(
+        0,
+        Math.floor(
+          (ended.getTime() - Math.max(started.getTime(), new Date(from).getTime())) / 60_000,
+        ),
+      );
+
+    const answer = await read();
+    expect(answer.statusCode).toBe(200);
+    const body = answer.json();
+    expect(body.today.onlineMinutes).toBe(minutesFrom(body.today.from));
+    expect(body.week.onlineMinutes).toBe(minutesFrom(body.week.from));
+    expect(body).toMatchObject({
+      currency: 'TRY',
+      today: { earnings: '4300', orders: 1 },
+      week: { earnings: '4300', orders: 1 },
+      balance: '4300',
+      payoutWeekday: 'thursday',
+      negativePolicy: 'carry_forward',
+    });
+    expect(body.nextPayout).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    // An order with no collection shows its total only.
+    expect(body.orders).toEqual([
+      { orderNumber: null, at: expect.any(String), parts: null, total: '4000' },
+    ]);
+    expect(
+      body.lines.map((line: { kind: string; amount: string; reason: string | null }) => [
+        line.kind,
+        line.amount,
+        line.reason,
+      ]),
+    ).toEqual(
+      expect.arrayContaining([
+        ['bonus', '1000', 'مساعدة في الذروة'],
+        ['charge', '-700', 'تالف'],
+      ]),
+    );
+
+    // After the settlement the balance is zero, with the payout and its receipt.
+    const { cashier } = await openDesk(['OWN']);
+    const preview = await settlements.preview(captainId, null, new Date());
+    const settled = await settlements.settle(
+      cashier.user,
+      commandOf(preview, { reason: 'خارج الدورة' }),
+      new Date(),
+    );
+    const after = (await read()).json();
+    expect(after.balance).toBe('0');
+    expect(after.week.earnings).toBe('4300');
+    expect(after.lines[0]).toMatchObject({
+      kind: 'payout',
+      amount: '-4300',
+      receiptNumber: settled.receipts[0]!.number,
+      orderNumber: null,
+    });
+  });
+
+  it('explains a negative balance with the policy', async () => {
+    const captainId = await captain();
+    const read = await signedIn(captainId);
+    await post(captainId, 'earn.charge', -1_200n, { reason: 'تالف' });
+    expect((await read()).json()).toMatchObject({
+      balance: '-1200',
+      today: { earnings: '-1200', orders: 0, onlineMinutes: 0 },
+      negativePolicy: 'carry_forward',
+    });
+  });
+
+  it("keeps another captain's earnings out, and needs a captain sign-in", async () => {
+    const captainId = await captain();
+    await post(captainId, 'earn.order_pay', 2_000n);
+    const other = await signedIn(await captain());
+    expect((await other()).json()).toMatchObject({
+      balance: '0',
+      orders: [],
+      lines: [],
+      week: { earnings: '0', orders: 0 },
+    });
+    const response = await app.inject({ method: 'GET', url: '/v1/captain/earnings' });
+    expect(response.statusCode).toBe(401);
   });
 });

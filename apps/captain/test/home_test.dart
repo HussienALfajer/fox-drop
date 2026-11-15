@@ -659,6 +659,8 @@ void main() {
     app.work(availability: [availabilityJson()]);
     await app.pump(tester);
     await app.live(tester);
+    await tester.tap(find.text('المزيد'));
+    await app.settle(tester);
     await tester.tap(find.text('قواعد العمل'));
     await app.settle(tester);
     expect(find.text('العمل حر.'), findsOneWidget);
@@ -1435,8 +1437,7 @@ void main() {
       orders: [pinged],
     );
     final ping = find.byKey(const Key('ping-customer'));
-    await tester.ensureVisible(ping);
-    await tester.tap(ping);
+    await app.tapVisible(tester, ping);
     await app.settle(tester);
     expect(
       app.server.to('/v1/captain/orders/$orderId/ping-customer'),

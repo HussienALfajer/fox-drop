@@ -141,6 +141,7 @@ export {
   OrderAssignmentsModule,
 } from './order-assignments.js';
 export {
+  type OrderPayParts,
   type OrderRefusal,
   OrderRefusedError,
   OrdersService,

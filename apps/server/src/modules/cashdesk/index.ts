@@ -12,7 +12,9 @@ import { OrderingModule } from '../ordering/index.js';
 import { SettingsModule } from '../settings/index.js';
 import { AdminCashDeskController } from './admin-cash-desk.controller.js';
 import { CaptainCustodyController } from './captain-custody.controller.js';
+import { CaptainEarningsController } from './captain-earnings.controller.js';
 import { CashDeskService } from './cashdesk.service.js';
+import { EarningsService } from './earnings.service.js';
 import { SettlementService } from './settlement.service.js';
 
 // The cashdesk module (architecture §4.2): drawer sessions, receipts and the
@@ -31,8 +33,8 @@ import { SettlementService } from './settlement.service.js';
     OrderingModule,
     SettingsModule,
   ],
-  controllers: [AdminCashDeskController, CaptainCustodyController],
-  providers: [CashDeskService, SettlementService],
+  controllers: [AdminCashDeskController, CaptainCustodyController, CaptainEarningsController],
+  providers: [CashDeskService, EarningsService, SettlementService],
   exports: [CashDeskService, SettlementService],
 })
 export class CashDeskModule {}

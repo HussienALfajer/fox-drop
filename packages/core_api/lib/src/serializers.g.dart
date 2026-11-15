@@ -523,6 +523,15 @@ Serializers _$serializers =
           ..add(CaptainDeliverySummaryDtoOutputSummaryCustodyChange.serializer)
           ..add(CaptainDeliverySummaryDtoOutputSummaryHandInToday.serializer)
           ..add(CaptainDeliverySummaryDtoOutputSummaryPay.serializer)
+          ..add(CaptainEarningsDtoOutput.serializer)
+          ..add(CaptainEarningsDtoOutputLinesInner.serializer)
+          ..add(CaptainEarningsDtoOutputLinesInnerKindEnum.serializer)
+          ..add(CaptainEarningsDtoOutputNegativePolicyEnum.serializer)
+          ..add(CaptainEarningsDtoOutputOrdersInner.serializer)
+          ..add(CaptainEarningsDtoOutputOrdersInnerParts.serializer)
+          ..add(CaptainEarningsDtoOutputPayoutWeekdayEnum.serializer)
+          ..add(CaptainEarningsDtoOutputToday.serializer)
+          ..add(CaptainEarningsDtoOutputWeek.serializer)
           ..add(CaptainEmergencyDto.serializer)
           ..add(CaptainEmergencyDtoLocation.serializer)
           ..add(CaptainEmergencyStopDtoOutput.serializer)
@@ -1680,6 +1689,18 @@ Serializers _$serializers =
               const FullType(CaptainCustodyDtoOutputReceiptsInnerLinesInner),
             ]),
             () => ListBuilder<CaptainCustodyDtoOutputReceiptsInnerLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainEarningsDtoOutputOrdersInner),
+            ]),
+            () => ListBuilder<CaptainEarningsDtoOutputOrdersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainEarningsDtoOutputLinesInner),
+            ]),
+            () => ListBuilder<CaptainEarningsDtoOutputLinesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

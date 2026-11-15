@@ -8,11 +8,13 @@ import 'package:go_router/go_router.dart';
 import 'auth.dart';
 import 'content.dart';
 import 'custody_screen.dart';
+import 'earnings_screen.dart';
 import 'home_screen.dart';
 import 'not_found_screen.dart';
 import 'peak_bonus.dart';
 import 'platform.dart';
 import 'settings/settings_screen.dart';
+import 'shell.dart';
 import 'starting_screen.dart';
 import 'terms.dart';
 import 'work/work.dart';
@@ -48,7 +50,28 @@ final routerProvider = Provider<GoRouter>((ref) {
       return at == '/sign-in' || at == '/starting' ? '/' : null;
     },
     routes: [
-      GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
+      // CA §6.2: the bottom navigation's tabs.
+      ShellRoute(
+        builder: (context, state, child) =>
+            CaptainShell(location: state.matchedLocation, child: child),
+        routes: [
+          GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
+          // CA §10.6 «أرباحي» (slice 2.18b).
+          GoRoute(
+            path: '/earnings',
+            builder: (context, state) => const EarningsScreen(),
+          ),
+          // CA §10.2 «عهدتي» (slice 2.17c).
+          GoRoute(
+            path: '/custody',
+            builder: (context, state) => const CustodyScreen(),
+          ),
+          GoRoute(
+            path: '/more',
+            builder: (context, state) => const MoreScreen(),
+          ),
+        ],
+      ),
       GoRoute(
         path: '/work-rules',
         builder: (context, state) => const WorkRulesScreen(),
@@ -58,11 +81,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/peak-bonus',
         builder: (context, state) => const PeakWindowsScreen(),
-      ),
-      // CA §10.2 «عهدتي» (slice 2.17c), until the bottom navigation.
-      GoRoute(
-        path: '/custody',
-        builder: (context, state) => const CustodyScreen(),
       ),
       // «الإعدادات» (owner decision 2026-11-11): «العملات التي أحملها».
       GoRoute(

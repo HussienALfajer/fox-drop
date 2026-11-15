@@ -25,6 +25,8 @@ export interface AccountEntry {
   currency: string;
   amount: bigint;
   createdAt: Date;
+  // The journal's reason, when it has one (a charge, a bonus, a correction).
+  reason: string | null;
 }
 
 // A money movement the ledger refuses: the caller's bug, never the user's.
@@ -281,6 +283,7 @@ export class LedgerService {
         type: journals.type,
         sourceKind: journals.sourceKind,
         sourceId: journals.sourceId,
+        reason: journals.reason,
         currency: entries.currency,
         amount: entries.amount,
         createdAt: entries.createdAt,
@@ -320,6 +323,7 @@ export class LedgerService {
         type: journals.type,
         sourceKind: journals.sourceKind,
         sourceId: journals.sourceId,
+        reason: journals.reason,
         currency: entries.currency,
         amount: entries.amount,
         createdAt: entries.createdAt,

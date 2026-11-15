@@ -2605,4 +2605,107 @@ class AppLocalizationsAr extends AppLocalizations {
   String captainHandInClosedAlways(String amount) {
     return 'عليك تسليم $amount. المكتب مغلق الآن.';
   }
+
+  @override
+  String get captainHomeTab => 'الرئيسية';
+
+  @override
+  String get captainEarningsTitle => 'أرباحي';
+
+  @override
+  String get captainMoreTab => 'المزيد';
+
+  @override
+  String get captainActiveOrderBar => 'الطلب الجاري';
+
+  @override
+  String get captainEarningsToday => 'اليوم';
+
+  @override
+  String get captainEarningsWeek => 'هذا الأسبوع';
+
+  @override
+  String captainEarningsSoFar(String amount) {
+    return 'الأرباح: $amount';
+  }
+
+  @override
+  String captainEarningsOrderCount(int count) {
+    return 'الطلبات: $count';
+  }
+
+  @override
+  String captainEarningsOnline(int hours, int minutes) {
+    return 'ساعات الاتصال: $hours س $minutes د';
+  }
+
+  @override
+  String captainEarningsBalance(String amount) {
+    return 'رصيدك المستحق: $amount';
+  }
+
+  @override
+  String captainEarningsPayoutDate(String day, String date) {
+    return 'موعد القبض: $day $date';
+  }
+
+  @override
+  String get captainEarningsNegativeCarry =>
+      'رصيدك سالب، ويُخصم من أرباحك في الأسبوع القادم.';
+
+  @override
+  String get captainEarningsNegativeCollect =>
+      'رصيدك سالب، وتسدّده نقداً في المكتب يوم القبض.';
+
+  @override
+  String get captainEarningsOrders => 'طلبات هذا الأسبوع';
+
+  @override
+  String captainEarningsOrder(String number, String amount) {
+    return 'الطلب #$number: $amount';
+  }
+
+  @override
+  String captainEarningsOrderUnnumbered(String amount) {
+    return 'طلب: $amount';
+  }
+
+  @override
+  String get captainEarningsOther => 'حركات أخرى';
+
+  @override
+  String get captainEarningsNothing => 'لا حركات هذا الأسبوع بعد.';
+
+  @override
+  String get captainEarningsBonus => 'مكافأة';
+
+  @override
+  String get captainEarningsCharge => 'خصم';
+
+  @override
+  String get captainEarningsInstalment => 'قسط تأمين العدة';
+
+  @override
+  String get captainEarningsPayout => 'صرف المستحقات';
+
+  @override
+  String get captainEarningsCollection => 'تحصيل رصيد سالب';
+
+  @override
+  String get captainEarningsAdjustment => 'تصحيح';
+
+  @override
+  String captainEarningsLine(String kind, String amount) {
+    return '$kind: $amount';
+  }
+
+  @override
+  String captainEarningsLineOrder(String number) {
+    return 'الطلب #$number';
+  }
+
+  @override
+  String captainEarningsLineReceipt(String number) {
+    return 'إيصال $number';
+  }
 }
