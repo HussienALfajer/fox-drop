@@ -307,7 +307,7 @@ export class LedgerService {
   // The entries of some accounts of one purpose posted after a time (the
   // ledger's own: an entry's transaction time), oldest first, from the
   // party's view: a period of the captain's weekly statement (AP §8.5.5).
-  async entriesAfter(
+  async periodEntries(
     accountIds: readonly string[],
     purpose: AccountPurpose,
     after: Date | null,

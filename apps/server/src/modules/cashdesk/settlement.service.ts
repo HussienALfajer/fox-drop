@@ -501,7 +501,7 @@ export class SettlementService {
       'captain.earnings',
       tx,
     );
-    const entries = await this.ledger.entriesAfter(
+    const entries = await this.ledger.periodEntries(
       accounts.map((account) => account.id),
       'captain.earnings',
       after,
