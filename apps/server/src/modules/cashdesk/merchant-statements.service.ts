@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { desc, eq } from 'drizzle-orm';
+import { desc, eq, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { reportError } from '../../observability/error-tracking.js';
@@ -8,11 +8,16 @@ import { FxService } from '../fx/index.js';
 import { GeoService, nextCutoff } from '../geo/index.js';
 import { type AccountEntry, LedgerService } from '../ledger/index.js';
 import { MerchantsService } from '../merchants/index.js';
-import { FOOD_CREDIT_REASON, OrdersService } from '../ordering/index.js';
+import { merchantEntryCause, OrdersService } from '../ordering/index.js';
 import { PushQueue } from '../notifications/index.js';
 import { SettingsService } from '../settings/index.js';
 import { payoutCycle } from './earnings.js';
-import { buildStatement, type ExceptionCause, type StatementLine } from './merchant-statement.js';
+import {
+  buildStatement,
+  type ExceptionCause,
+  oldestUnpaid,
+  type StatementLine,
+} from './merchant-statement.js';
 import { merchantStatementLines, merchantStatements } from './schema.js';
 import type { PayoutWeekday } from './settlement.service.js';
 
@@ -24,6 +29,8 @@ export const STATEMENT_OVERLAP_MS = 60 * 60_000;
 // The owners hear of the statement only on the settlement day itself: a
 // worker back after days, or the first deploy, takes the statement quietly.
 const DAY_MS = 24 * 60 * 60_000;
+// The statements read back to find the oldest one still unpaid: a year.
+const OVERDUE_LOOKBACK = 52;
 
 export interface MerchantStatement {
   id: string;
@@ -58,7 +65,14 @@ export interface RestaurantSettlementRow {
   restaurantName: string;
   currency: string;
   balance: bigint;
-  latest: { id: string; cutoff: Date; totalDue: bigint } | null;
+  latest: {
+    id: string;
+    cutoff: Date;
+    commission: bigint;
+    discountShare: bigint;
+    exceptions: bigint;
+    totalDue: bigint;
+  } | null;
   unpaid: bigint;
   overdueSince: Date | null;
 }
@@ -78,6 +92,7 @@ export interface RestaurantSettlementList {
 @Injectable()
 export class MerchantStatementsService {
   private readonly logger = new Logger('MerchantStatements');
+  private readonly reported = new Set<string>();
 
   constructor(
     @Inject(DATABASE) private readonly database: Database,
@@ -126,24 +141,33 @@ export class MerchantStatementsService {
     now: Date,
     { notify }: { notify: boolean },
   ): Promise<boolean> {
+    // No base yet: no restaurant account either; the sweep tries again.
     const currency = await this.fx.baseCurrency(cityId);
-    if (currency === null) return true;
+    if (currency === null) return false;
     let complete = true;
     for (const restaurant of await this.merchants.restaurantIds(cityId)) {
       try {
         await this.closeOne(cityId, restaurant, currency, cutoff, now, notify);
       } catch (error) {
         complete = false;
+        // The sweep tries again every minute: one report per restaurant and
+        // cutoff, the rest logged.
+        const key = `${restaurant.id}:${cutoff.getTime()}`;
+        if (!this.reported.has(key)) {
+          this.reported.add(key);
+          reportError(error);
+        }
         this.logger.error(
           { err: error, cityId, restaurantId: restaurant.id },
           'restaurant statement failed',
         );
-        reportError(error);
       }
     }
     return complete;
   }
 
+  // One restaurant's statement, under its advisory lock, so two workers
+  // never build two statements from the same previous one.
   private async closeOne(
     cityId: string,
     restaurant: { id: string; nameAr: string },
@@ -152,50 +176,54 @@ export class MerchantStatementsService {
     now: Date,
     notify: boolean,
   ): Promise<void> {
-    const [previous] = await this.database.db
-      .select({
-        cutoff: merchantStatements.cutoff,
-        totalDue: merchantStatements.totalDue,
-        journalIds: merchantStatements.journalIds,
-      })
-      .from(merchantStatements)
-      .where(eq(merchantStatements.restaurantId, restaurant.id))
-      .orderBy(desc(merchantStatements.cutoff))
-      .limit(1);
-    if (previous && previous.cutoff.getTime() >= cutoff.getTime()) return;
-    const accounts = await this.ledger.ownerAccounts(cityId, restaurant.id, 'merchant.account');
-    const others = accounts.filter((account) => account.currency !== currency);
-    if (others.length > 0) {
-      throw new Error(`restaurant ${restaurant.id} has an account outside the base ${currency}`);
-    }
-    const covered = new Set(previous?.journalIds ?? []);
-    const entries = (
-      await this.ledger.periodEntries(
-        accounts.map((account) => account.id),
-        'merchant.account',
-        previous ? new Date(previous.cutoff.getTime() - STATEMENT_OVERLAP_MS) : null,
-      )
-    ).filter(
-      (entry: AccountEntry) =>
-        entry.createdAt.getTime() < cutoff.getTime() && !covered.has(entry.journalId),
-    );
-    const previousDue = previous?.totalDue ?? 0n;
-    if (entries.length === 0 && previousDue === 0n) return;
-    const orderIds = entries.flatMap((entry) =>
-      entry.sourceKind === 'order' && entry.sourceId !== null ? [entry.sourceId] : [],
-    );
-    const built = buildStatement(
-      entries,
-      previousDue,
-      await this.orders.pickups(orderIds),
-      FOOD_CREDIT_REASON,
-    );
-    const rendered = notify
-      ? await this.texts.render('merchant.weekly_statement', {
-          المبلغ: formatMoney(built.totals.totalDue, currency, await this.knownCurrencies()),
-        })
-      : null;
+    const known = notify ? await this.knownCurrencies() : null;
     await this.database.db.transaction(async (tx) => {
+      await tx.execute(
+        sql`SELECT pg_advisory_xact_lock(hashtext(${`merchant-statement:${restaurant.id}`}))`,
+      );
+      const [previous] = await tx
+        .select({
+          cutoff: merchantStatements.cutoff,
+          totalDue: merchantStatements.totalDue,
+          journalIds: merchantStatements.journalIds,
+        })
+        .from(merchantStatements)
+        .where(eq(merchantStatements.restaurantId, restaurant.id))
+        .orderBy(desc(merchantStatements.cutoff))
+        .limit(1);
+      if (previous && previous.cutoff.getTime() >= cutoff.getTime()) return;
+      const accounts = await this.ledger.ownerAccounts(
+        cityId,
+        restaurant.id,
+        'merchant.account',
+        tx,
+      );
+      if (accounts.some((account) => account.currency !== currency)) {
+        throw new Error(`restaurant ${restaurant.id} has an account outside the base ${currency}`);
+      }
+      const covered = new Set(previous?.journalIds ?? []);
+      const entries = (
+        await this.ledger.periodEntries(
+          accounts.map((account) => account.id),
+          'merchant.account',
+          previous ? new Date(previous.cutoff.getTime() - STATEMENT_OVERLAP_MS) : null,
+          tx,
+        )
+      ).filter(
+        (entry: AccountEntry) =>
+          entry.createdAt.getTime() < cutoff.getTime() && !covered.has(entry.journalId),
+      );
+      const previousDue = previous?.totalDue ?? 0n;
+      if (entries.length === 0 && previousDue === 0n) return;
+      const orderIds = entries.flatMap((entry) =>
+        entry.sourceKind === 'order' && entry.sourceId !== null ? [entry.sourceId] : [],
+      );
+      const built = buildStatement(
+        entries,
+        previousDue,
+        await this.orders.pickups(orderIds),
+        merchantEntryCause,
+      );
       const [inserted] = await tx
         .insert(merchantStatements)
         .values({
@@ -209,10 +237,8 @@ export class MerchantStatementsService {
           ...built.totals,
           journalIds: built.journalIds,
         })
-        .onConflictDoNothing()
         .returning({ id: merchantStatements.id });
-      // Another worker took it first.
-      if (!inserted) return;
+      if (!inserted) throw new Error('the statement was not inserted');
       if (built.lines.length > 0) {
         await tx.insert(merchantStatementLines).values(
           built.lines.map((line, position) =>
@@ -247,9 +273,14 @@ export class MerchantStatementsService {
           ),
         );
       }
-      // RA §16 #30: only when something is due (a statement that owes the
-      // restaurant waits for the desk to pay it).
-      if (rendered && built.totals.totalDue > 0n) {
+      // RA §16 #30: only when something is due (to confirm with the owner: a
+      // statement that owes the restaurant waits for the desk to pay it).
+      if (known && built.totals.totalDue > 0n) {
+        const rendered = await this.texts.render(
+          'merchant.weekly_statement',
+          { المبلغ: formatMoney(built.totals.totalDue, currency, known) },
+          tx,
+        );
         await this.pushes.enqueue(
           tx,
           [
@@ -287,17 +318,24 @@ export class MerchantStatementsService {
       // The party's view is − the restaurant owes.
       const balance = -(await this.ledger.balance(account.id)).amount;
       if (balance === 0n) continue;
-      const [latest] = await this.database.db
+      // Newest first: the latest is the one paid against, the older ones
+      // tell which statement the unpaid amount is from.
+      const statements = await this.database.db
         .select({
           id: merchantStatements.id,
           cutoff: merchantStatements.cutoff,
+          commission: merchantStatements.commission,
+          discountShare: merchantStatements.discountShare,
+          exceptions: merchantStatements.exceptions,
+          weekTotal: merchantStatements.weekTotal,
           totalDue: merchantStatements.totalDue,
           journalIds: merchantStatements.journalIds,
         })
         .from(merchantStatements)
         .where(eq(merchantStatements.restaurantId, restaurant.id))
         .orderBy(desc(merchantStatements.cutoff))
-        .limit(1);
+        .limit(OVERDUE_LOOKBACK);
+      const latest = statements[0];
       let unpaid = 0n;
       if (latest && latest.totalDue > 0n) {
         const covered = new Set(latest.journalIds);
@@ -312,15 +350,25 @@ export class MerchantStatementsService {
           .reduce((sum, entry) => sum + entry.amount, 0n);
         unpaid = latest.totalDue - paidSince > 0n ? latest.totalDue - paidSince : 0n;
       }
-      const overdueAt = latest ? new Date(latest.cutoff.getTime() + overdueDays * DAY_MS) : null;
+      const oldest = oldestUnpaid(statements, unpaid);
+      const overdueAt = oldest ? new Date(oldest.cutoff.getTime() + overdueDays * DAY_MS) : null;
       rows.push({
         restaurantId: restaurant.id,
         restaurantName: restaurant.nameAr,
         currency: account.currency,
         balance,
-        latest: latest ? { id: latest.id, cutoff: latest.cutoff, totalDue: latest.totalDue } : null,
+        latest: latest
+          ? {
+              id: latest.id,
+              cutoff: latest.cutoff,
+              commission: latest.commission,
+              discountShare: latest.discountShare,
+              exceptions: latest.exceptions,
+              totalDue: latest.totalDue,
+            }
+          : null,
         unpaid,
-        overdueSince: unpaid > 0n && overdueAt && overdueAt <= now ? overdueAt : null,
+        overdueSince: overdueAt && overdueAt <= now ? overdueAt : null,
       });
     }
     rows.sort(

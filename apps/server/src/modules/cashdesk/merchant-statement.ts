@@ -56,40 +56,23 @@ export interface BuiltStatement {
   journalIds: string[];
 }
 
-// RA §12.5: what an exception is, from its journal.
-export function causeOf(
-  entry: AccountEntry,
+// RA §12.5: what an entry is, from its type, reason and side (ordering's
+// merchantEntryCause, which owns the reasons it posts with).
+export type CauseOf = (
+  type: string,
+  reason: string | null,
   owes: bigint,
-  foodCreditReason: string,
-): ExceptionCause {
-  switch (entry.type) {
-    case 'merchant.credit':
-      return entry.reason === foodCreditReason ? 'food_credit' : 'credit';
-    case 'merchant.debit':
-      // The failed order's return of the pickup payment carries no reason;
-      // items removed after pickup carry theirs. A ticket's comes with 2.23.
-      if (entry.sourceKind !== 'order') return 'debit';
-      return entry.reason === null ? 'pickup_refund' : 'items_removed';
-    case 'merchant.commission':
-      return 'commission_reversal';
-    case 'merchant.discount_share':
-      return 'discount_reversal';
-    case 'merchant.adjustment':
-      return 'adjustment';
-    default:
-      throw new Error(`${entry.type} (${owes}) is not a restaurant exception`);
-  }
-}
+) => 'order' | ExceptionCause;
 
-// The statement of a period: each order with a commission or a discount
-// share raising what is owed, in the order of its first such entry; every
-// other entry an exception (a credit, a debit, a reversal, a correction) or a
-// payment (merchant.settlement), in the ledger's order.
+// The statement of a period: each order with its own commission or discount
+// share (cause `order`), in the order of its first such entry; every other
+// entry an exception (a credit, a debit, a reversal, a restored commission,
+// a correction) or a payment (merchant.settlement), in the ledger's order.
 export function buildStatement(
   entries: readonly AccountEntry[],
   previousDue: bigint,
   pickups: ReadonlyMap<string, OrderPickup>,
-  foodCreditReason: string,
+  causeOf: CauseOf,
 ): BuiltStatement {
   const lines: StatementLine[] = [];
   const orderLines = new Map<string, StatementOrderLine>();
@@ -100,8 +83,9 @@ export function buildStatement(
   for (const entry of entries) {
     const owes = -entry.amount;
     const orderId = entry.sourceKind === 'order' ? entry.sourceId : null;
-    const charge = entry.type === 'merchant.commission' || entry.type === 'merchant.discount_share';
-    if (charge && owes > 0n && orderId !== null) {
+    const payment = entry.type === 'merchant.settlement';
+    const cause = payment ? null : causeOf(entry.type, entry.reason, owes);
+    if (cause === 'order' && orderId !== null) {
       let line = orderLines.get(orderId);
       if (!line) {
         const pickup = pickups.get(orderId);
@@ -127,7 +111,6 @@ export function buildStatement(
       }
       continue;
     }
-    const payment = entry.type === 'merchant.settlement';
     if (payment) paid -= owes;
     else exceptions += owes;
     lines.push({
@@ -135,7 +118,7 @@ export function buildStatement(
       at: entry.createdAt,
       orderId,
       orderNumber: orderId === null ? null : (pickups.get(orderId)?.number ?? null),
-      cause: payment ? null : causeOf(entry, owes, foodCreditReason),
+      cause: cause === 'order' ? 'debit' : cause,
       amount: owes,
       reason: entry.reason,
       journalId: entry.journalId,
@@ -163,4 +146,24 @@ export function buildStatement(
     lines,
     journalIds: [...new Set(entries.map((entry) => entry.journalId))],
   };
+}
+
+// AP §8.7, owner decision 2026-11-16: a payment settles the oldest statement
+// first, so what is still unpaid is the newest weeks' totals. The statement
+// the unpaid amount reaches back to, its overdue time counting from its
+// cutoff; null when nothing is unpaid. Newest first; a week whose total
+// lowered what was owed adds nothing (it already lowered the unpaid amount).
+export function oldestUnpaid<Statement extends { weekTotal: bigint }>(
+  newestFirst: readonly Statement[],
+  unpaid: bigint,
+): Statement | null {
+  if (unpaid <= 0n || newestFirst.length === 0) return null;
+  let left = unpaid;
+  for (const statement of newestFirst) {
+    const week = statement.weekTotal > 0n ? statement.weekTotal : 0n;
+    if (left <= week) return statement;
+    left -= week;
+  }
+  // Older than the statements read: the oldest of them.
+  return newestFirst[newestFirst.length - 1]!;
 }

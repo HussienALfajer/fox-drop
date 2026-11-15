@@ -870,6 +870,7 @@
           "busy_reminder": "تذكير وضع الضغط",
           "no_receiving_device": "لا جهاز يستقبل الطلبات",
           "ticket_resolved": "حل بلاغ",
+          "weekly_statement": "كشف الأسبوع",
           "settlement_receipt": "إيصال تسوية",
           "commission_change": "تغيير العمولة",
           "item_report_closed": "إغلاق بلاغ صنف"
@@ -1379,10 +1380,15 @@
       "food_credit": "تعويض عن طلب أُلغي بعد التحضير",
       "credit": "تصحيح مبلغ الاستلام",
       "pickup_refund": "استرداد مبلغ الاستلام",
+      "pickup_kept": "مبلغ استلام لطلب لم يكتمل",
       "items_removed": "أصناف حُذفت بعد الاستلام",
+      "fee_lowered": "خُفّضت أجرة التوصيل بعد الاستلام",
+      "fee_cut_returned": "إلغاء خصم أجرة التوصيل",
       "debit": "مشكلة بعد التسليم",
       "commission_reversal": "إلغاء عمولة",
+      "commission_restored": "إلغاء استرداد العمولة",
       "discount_reversal": "إلغاء خصم يموّله المطعم",
+      "outcome_changed": "تغيير النتيجة",
       "adjustment": "تسوية يدوية"
     },
     "statement": {

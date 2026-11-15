@@ -50,8 +50,19 @@ const AdminMerchantStatementDtoOutputLinesInnerCauseEnum
 _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_pickupRefund =
     const AdminMerchantStatementDtoOutputLinesInnerCauseEnum._('pickupRefund');
 const AdminMerchantStatementDtoOutputLinesInnerCauseEnum
+_$adminMerchantStatementDtoOutputLinesInnerCauseEnum_pickupKept =
+    const AdminMerchantStatementDtoOutputLinesInnerCauseEnum._('pickupKept');
+const AdminMerchantStatementDtoOutputLinesInnerCauseEnum
 _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_itemsRemoved =
     const AdminMerchantStatementDtoOutputLinesInnerCauseEnum._('itemsRemoved');
+const AdminMerchantStatementDtoOutputLinesInnerCauseEnum
+_$adminMerchantStatementDtoOutputLinesInnerCauseEnum_feeLowered =
+    const AdminMerchantStatementDtoOutputLinesInnerCauseEnum._('feeLowered');
+const AdminMerchantStatementDtoOutputLinesInnerCauseEnum
+_$adminMerchantStatementDtoOutputLinesInnerCauseEnum_feeCutReturned =
+    const AdminMerchantStatementDtoOutputLinesInnerCauseEnum._(
+      'feeCutReturned',
+    );
 const AdminMerchantStatementDtoOutputLinesInnerCauseEnum
 _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_debit =
     const AdminMerchantStatementDtoOutputLinesInnerCauseEnum._('debit');
@@ -61,9 +72,19 @@ _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_commissionReversal =
       'commissionReversal',
     );
 const AdminMerchantStatementDtoOutputLinesInnerCauseEnum
+_$adminMerchantStatementDtoOutputLinesInnerCauseEnum_commissionRestored =
+    const AdminMerchantStatementDtoOutputLinesInnerCauseEnum._(
+      'commissionRestored',
+    );
+const AdminMerchantStatementDtoOutputLinesInnerCauseEnum
 _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_discountReversal =
     const AdminMerchantStatementDtoOutputLinesInnerCauseEnum._(
       'discountReversal',
+    );
+const AdminMerchantStatementDtoOutputLinesInnerCauseEnum
+_$adminMerchantStatementDtoOutputLinesInnerCauseEnum_outcomeChanged =
+    const AdminMerchantStatementDtoOutputLinesInnerCauseEnum._(
+      'outcomeChanged',
     );
 const AdminMerchantStatementDtoOutputLinesInnerCauseEnum
 _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_adjustment =
@@ -78,14 +99,24 @@ _$adminMerchantStatementDtoOutputLinesInnerCauseEnumValueOf(String name) {
       return _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_credit;
     case 'pickupRefund':
       return _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_pickupRefund;
+    case 'pickupKept':
+      return _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_pickupKept;
     case 'itemsRemoved':
       return _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_itemsRemoved;
+    case 'feeLowered':
+      return _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_feeLowered;
+    case 'feeCutReturned':
+      return _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_feeCutReturned;
     case 'debit':
       return _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_debit;
     case 'commissionReversal':
       return _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_commissionReversal;
+    case 'commissionRestored':
+      return _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_commissionRestored;
     case 'discountReversal':
       return _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_discountReversal;
+    case 'outcomeChanged':
+      return _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_outcomeChanged;
     case 'adjustment':
       return _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_adjustment;
     default:
@@ -100,10 +131,15 @@ _$adminMerchantStatementDtoOutputLinesInnerCauseEnumValues =
         _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_foodCredit,
         _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_credit,
         _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_pickupRefund,
+        _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_pickupKept,
         _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_itemsRemoved,
+        _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_feeLowered,
+        _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_feeCutReturned,
         _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_debit,
         _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_commissionReversal,
+        _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_commissionRestored,
         _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_discountReversal,
+        _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_outcomeChanged,
         _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_adjustment,
       ],
     );
@@ -162,20 +198,30 @@ class _$AdminMerchantStatementDtoOutputLinesInnerCauseEnumSerializer
     'foodCredit': 'food_credit',
     'credit': 'credit',
     'pickupRefund': 'pickup_refund',
+    'pickupKept': 'pickup_kept',
     'itemsRemoved': 'items_removed',
+    'feeLowered': 'fee_lowered',
+    'feeCutReturned': 'fee_cut_returned',
     'debit': 'debit',
     'commissionReversal': 'commission_reversal',
+    'commissionRestored': 'commission_restored',
     'discountReversal': 'discount_reversal',
+    'outcomeChanged': 'outcome_changed',
     'adjustment': 'adjustment',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'food_credit': 'foodCredit',
     'credit': 'credit',
     'pickup_refund': 'pickupRefund',
+    'pickup_kept': 'pickupKept',
     'items_removed': 'itemsRemoved',
+    'fee_lowered': 'feeLowered',
+    'fee_cut_returned': 'feeCutReturned',
     'debit': 'debit',
     'commission_reversal': 'commissionReversal',
+    'commission_restored': 'commissionRestored',
     'discount_reversal': 'discountReversal',
+    'outcome_changed': 'outcomeChanged',
     'adjustment': 'adjustment',
   };
 

@@ -22,10 +22,15 @@ const causeKeys = {
   food_credit: 'restaurantSettlement.cause.food_credit',
   credit: 'restaurantSettlement.cause.credit',
   pickup_refund: 'restaurantSettlement.cause.pickup_refund',
+  pickup_kept: 'restaurantSettlement.cause.pickup_kept',
   items_removed: 'restaurantSettlement.cause.items_removed',
+  fee_lowered: 'restaurantSettlement.cause.fee_lowered',
+  fee_cut_returned: 'restaurantSettlement.cause.fee_cut_returned',
   debit: 'restaurantSettlement.cause.debit',
   commission_reversal: 'restaurantSettlement.cause.commission_reversal',
+  commission_restored: 'restaurantSettlement.cause.commission_restored',
   discount_reversal: 'restaurantSettlement.cause.discount_reversal',
+  outcome_changed: 'restaurantSettlement.cause.outcome_changed',
   adjustment: 'restaurantSettlement.cause.adjustment',
 } as const satisfies Record<ExceptionCause, string>;
 
@@ -81,6 +86,9 @@ export function RestaurantSettlementsPage() {
                   <th scope="col">{t('restaurantSettlement.restaurant')}</th>
                   <th scope="col">{t('restaurantSettlement.balance')}</th>
                   <th scope="col">{t('restaurantSettlement.latest')}</th>
+                  <th scope="col">{t('restaurantSettlement.statement.commission')}</th>
+                  <th scope="col">{t('restaurantSettlement.statement.discountShare')}</th>
+                  <th scope="col">{t('restaurantSettlement.statement.exceptions')}</th>
                   <th scope="col">{t('restaurantSettlement.unpaid')}</th>
                   <th scope="col">{t('restaurantSettlement.state')}</th>
                 </tr>
@@ -110,6 +118,13 @@ export function RestaurantSettlementsPage() {
                         t('restaurantSettlement.noStatement')
                       )}
                     </td>
+                    {(['commission', 'discountShare', 'exceptions'] as const).map((part) => (
+                      <td key={part}>
+                        {row.latest
+                          ? formatMoney({ amount: row.latest[part], currency: row.currency })
+                          : '—'}
+                      </td>
+                    ))}
                     <td>{formatMoney({ amount: row.unpaid, currency: row.currency })}</td>
                     <td>
                       {row.overdueSince

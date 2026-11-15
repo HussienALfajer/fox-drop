@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { AccountEntry } from '../ledger/index.js';
-import type { OrderPickup } from '../ordering/index.js';
-import { buildStatement } from './merchant-statement.js';
+import { merchantEntryCause, merchantEntryCauses, type OrderPickup } from '../ordering/index.js';
+import { buildStatement, oldestUnpaid } from './merchant-statement.js';
+import { merchantExceptionCauses } from './schema.js';
 
 // AP §8.7, RA §12.3, §12.5 (slice 2.19a): the restaurant's weekly statement
 // from its period's entries. Amounts are minor units of TRY; the ledger's
 // party view is − the restaurant owes.
 const FOOD = 'تعويض عن طلب أُلغي بعد التحضير';
+const causeOf = merchantEntryCause;
 let journal = 0;
 const at = (minute: number) => new Date(Date.UTC(2026, 10, 10, 9, minute));
 function entry(
@@ -66,7 +68,7 @@ describe('the restaurant weekly statement', () => {
       ],
       0n,
       pickups,
-      FOOD,
+      causeOf,
     );
     expect(built.lines).toEqual([
       expect.objectContaining({
@@ -108,14 +110,24 @@ describe('the restaurant weekly statement', () => {
     const built = buildStatement(
       [
         entry('merchant.credit', -3_400n, { orderId: 'o3', reason: FOOD }),
-        entry('merchant.debit', 40_000n, { orderId: 'o1' }),
+        entry('merchant.debit', 40_000n, { orderId: 'o1', reason: 'استرداد مبلغ الاستلام' }),
         entry('merchant.debit', 1_000n, { orderId: 'o2', reason: 'أصناف حُذفت بعد الاستلام' }),
         entry('merchant.commission', -150n, { orderId: 'o2', reason: 'إلغاء عمولة' }),
         entry('merchant.adjustment', -500n, { reason: 'خطأ في الكشف' }),
+        entry('merchant.debit', 40_000n, { orderId: 'o3' }),
+        entry('merchant.commission', 600n, {
+          orderId: 'o1',
+          reason: 'إلغاء استرداد العمولة: المطعم مسؤول عن الطلب',
+        }),
+        entry('merchant.debit', -40_000n, { orderId: 'o1', reason: 'تغيير النتيجة' }),
+        entry('merchant.debit', 500n, {
+          orderId: 'o2',
+          reason: 'خُفّضت أجرة التوصيل بعد الاستلام',
+        }),
       ],
       0n,
       pickups,
-      FOOD,
+      causeOf,
     );
     expect(built.lines.map((line) => line.kind === 'order' || [line.cause, line.amount])).toEqual([
       ['food_credit', -3_400n],
@@ -123,9 +135,13 @@ describe('the restaurant weekly statement', () => {
       ['items_removed', 1_000n],
       ['commission_reversal', -150n],
       ['adjustment', -500n],
+      ['pickup_kept', 40_000n],
+      ['commission_restored', 600n],
+      ['outcome_changed', -40_000n],
+      ['fee_lowered', 500n],
     ]);
     expect(built.lines[0]).toMatchObject({ orderNumber: 10003n, reason: FOOD });
-    expect(built.totals).toMatchObject({ orders: 0, exceptions: 36_950n, totalDue: 36_950n });
+    expect(built.totals).toMatchObject({ orders: 0, exceptions: 38_050n, totalDue: 38_050n });
   });
 
   it('carries the earlier unpaid balance less the payments since', () => {
@@ -136,7 +152,7 @@ describe('the restaurant weekly statement', () => {
       ],
       8_000n,
       pickups,
-      FOOD,
+      causeOf,
     );
     expect(built.lines[0]).toMatchObject({ kind: 'payment', amount: -5_000n, cause: null });
     expect(built.totals).toMatchObject({
@@ -154,8 +170,38 @@ describe('the restaurant weekly statement', () => {
       [entry('merchant.credit', -3_400n, { orderId: 'o3', reason: FOOD })],
       0n,
       pickups,
-      FOOD,
+      causeOf,
     );
     expect(built.totals.totalDue).toBe(-3_400n);
+  });
+});
+
+describe('the causes of the restaurant entries', () => {
+  it('keeps the statement lines and ordering on the same causes', () => {
+    expect([...merchantExceptionCauses].sort()).toEqual(
+      merchantEntryCauses.filter((cause) => cause !== 'order').sort(),
+    );
+  });
+});
+
+// Owner decision 2026-11-16: a payment settles the oldest statement first.
+describe('the oldest statement still unpaid', () => {
+  const weeks = [
+    { id: 'w3', weekTotal: 2_000n },
+    { id: 'w2', weekTotal: -500n },
+    { id: 'w1', weekTotal: 3_000n },
+  ];
+
+  it('is the newest week while the unpaid amount fits in it', () => {
+    expect(oldestUnpaid(weeks, 2_000n)?.id).toBe('w3');
+  });
+
+  it('reaches back past the newer weeks, a credit week adding nothing', () => {
+    expect(oldestUnpaid(weeks, 2_001n)?.id).toBe('w1');
+  });
+
+  it('is none when nothing is unpaid', () => {
+    expect(oldestUnpaid(weeks, 0n)).toBeNull();
+    expect(oldestUnpaid([], 100n)).toBeNull();
   });
 });

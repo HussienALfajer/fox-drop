@@ -79,7 +79,8 @@ async function restaurant() {
 }
 
 // One journal on the restaurant's account: + the restaurant owes.
-async function post(
+async function postWith(
+  tx: Parameters<Parameters<Database['db']['transaction']>[0]>[0],
   restaurantId: string,
   type: JournalType,
   owes: bigint,
@@ -93,7 +94,7 @@ async function post(
         : type === 'merchant.adjustment'
           ? 'platform.adjustments'
           : 'platform.order_clearing';
-  await db.db.transaction(async (tx) => {
+  {
     const own = await ledger.openAccount(
       { cityId: azaz, purpose: 'merchant.account', ownerId: restaurantId, currency: 'TRY' },
       tx,
@@ -127,7 +128,16 @@ async function post(
       },
       tx,
     );
-  });
+  }
+}
+
+async function post(
+  restaurantId: string,
+  type: JournalType,
+  owes: bigint,
+  options: { orderId?: string; reason?: string | null } = {},
+) {
+  await db.db.transaction((tx) => postWith(tx, restaurantId, type, owes, options));
 }
 
 async function rows(restaurantId: string) {
@@ -153,7 +163,10 @@ describe('the restaurant weekly statement at the cutoff', () => {
     const id = await restaurant();
     const order = randomUUID();
     await post(id, 'merchant.commission', 6_000n, { orderId: order });
-    await post(id, 'merchant.debit', 40_000n, { orderId: randomUUID() });
+    await post(id, 'merchant.debit', 40_000n, {
+      orderId: randomUUID(),
+      reason: 'استرداد مبلغ الاستلام',
+    });
     const cutoff = new Date();
     // Posted after the cutoff: next week's.
     await post(id, 'merchant.commission', 5_700n);
@@ -211,6 +224,36 @@ describe('the restaurant weekly statement at the cutoff', () => {
     expect(await pushes(id)).toEqual([]);
   });
 
+  it('leaves an entry committed after the statement to the next one', async () => {
+    const id = await restaurant();
+    await post(id, 'merchant.commission', 1_000n);
+    let posted!: () => void;
+    let release!: () => void;
+    const written = new Promise<void>((resolve) => (posted = resolve));
+    const held = new Promise<void>((resolve) => (release = resolve));
+    // Stamped before the cutoff (its transaction's start), committed after.
+    const late = db.db.transaction(async (tx) => {
+      await postWith(tx, id, 'merchant.commission', 700n);
+      posted();
+      await held;
+    });
+    await written;
+    const first = new Date();
+    await statements.closeAt(azaz, first, first, { notify: false });
+    release();
+    await late;
+    const second = new Date();
+    await statements.closeAt(azaz, second, second, { notify: false });
+
+    const [one, two] = await rows(id);
+    expect(one).toMatchObject({ total_due: '1000' });
+    expect(await statements.statement(two.id)).toMatchObject({
+      previousDue: 1_000n,
+      weekTotal: 700n,
+      totalDue: 1_700n,
+    });
+  });
+
   it('takes no statement for a restaurant with nothing in the period and nothing due', async () => {
     const id = await restaurant();
     const cutoff = new Date();
@@ -240,6 +283,22 @@ describe('the restaurant weekly statement at the cutoff', () => {
     expect(local.format(last)).toBe('Saturday 06:00');
     expect(next.getTime() - last.getTime()).toBe(7 * DAY);
     expect(last.getTime()).toBeLessThanOrEqual(Date.now());
+  });
+
+  it('dates the overdue from the oldest statement still unpaid', async () => {
+    const id = await restaurant();
+    await post(id, 'merchant.commission', 1_000n);
+    const first = new Date();
+    await statements.closeAt(azaz, first, first, { notify: false });
+    await post(id, 'merchant.commission', 2_000n);
+    const second = new Date();
+    await statements.closeAt(azaz, second, second, { notify: false });
+
+    const list = await statements.restaurants(azaz, new Date(second.getTime() + 3 * DAY));
+    const row = list.restaurants.find((each) => each.restaurantId === id);
+    expect(row).toMatchObject({ unpaid: 3_000n });
+    expect(row?.latest).toMatchObject({ commission: 2_000n, totalDue: 3_000n });
+    expect(row?.overdueSince).toEqual(new Date(first.getTime() + 2 * DAY));
   });
 
   it('lists the restaurants with a balance, the overdue first', async () => {

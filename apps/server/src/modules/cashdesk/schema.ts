@@ -367,22 +367,21 @@ export const merchantStatements = cashdesk.table(
 
 export const merchantStatementLineKinds = ['order', 'exception', 'payment'] as const;
 
-// RA §12.5: what an exception is, for its label.
+// RA §12.5: what an exception is, for its label: ordering's
+// merchantEntryCauses but `order` (merchant-statement.test.ts compares them).
 export const merchantExceptionCauses = [
-  // merchant.credit: an order cancelled after the food was prepared.
   'food_credit',
-  // merchant.credit otherwise (a pickup dispute, slice 2.23).
   'credit',
-  // merchant.debit: the pickup payment returned for a failed or refused
-  // order with the restaurant responsible.
   'pickup_refund',
-  // merchant.debit with a reason: items removed after pickup.
+  'pickup_kept',
   'items_removed',
-  // merchant.debit of a ticket (slice 2.23).
+  'fee_lowered',
+  'fee_cut_returned',
   'debit',
-  // merchant.commission or discount_share lowering what is owed.
   'commission_reversal',
+  'commission_restored',
   'discount_reversal',
+  'outcome_changed',
   'adjustment',
 ] as const;
 
@@ -425,7 +424,7 @@ export const merchantStatementLines = cashdesk.table(
     ),
     check(
       'merchant_statement_lines_cause_values',
-      sql`${table.cause} IS NULL OR ${table.cause} IN ('food_credit', 'credit', 'pickup_refund', 'items_removed', 'debit', 'commission_reversal', 'discount_reversal', 'adjustment')`,
+      sql`${table.cause} IS NULL OR ${table.cause} IN ('food_credit', 'credit', 'pickup_refund', 'pickup_kept', 'items_removed', 'fee_lowered', 'fee_cut_returned', 'debit', 'commission_reversal', 'commission_restored', 'discount_reversal', 'outcome_changed', 'adjustment')`,
     ),
     check(
       'merchant_statement_lines_shape',

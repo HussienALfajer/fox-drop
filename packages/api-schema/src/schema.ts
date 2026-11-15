@@ -9881,6 +9881,9 @@ export interface components {
                     id: string;
                     /** Format: date-time */
                     cutoff: string;
+                    commission: string;
+                    discountShare: string;
+                    exceptions: string;
                     totalDue: string;
                 } | null;
                 /** @description What is left of the latest statement after the payments. */
@@ -9927,7 +9930,7 @@ export interface components {
                 }[] | null;
                 commission: string | null;
                 discountShare: string | null;
-                cause: ("food_credit" | "credit" | "pickup_refund" | "items_removed" | "debit" | "commission_reversal" | "discount_reversal" | "adjustment") | null;
+                cause: ("food_credit" | "credit" | "pickup_refund" | "pickup_kept" | "items_removed" | "fee_lowered" | "fee_cut_returned" | "debit" | "commission_reversal" | "commission_restored" | "discount_reversal" | "outcome_changed" | "adjustment") | null;
                 amount: string | null;
                 reason: string | null;
             }[];

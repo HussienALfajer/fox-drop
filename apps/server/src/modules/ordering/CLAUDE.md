@@ -69,6 +69,8 @@ The quote, the order, its state machine, edits and outcomes (architecture §4.2)
 - **The restaurant's active orders:** `OrdersService` registers its count with `MerchantsService.countActiveOrders`, so the restaurant's state is `busy` at its maximum everywhere (the restaurant app, the browsing, the quote) without `merchants` reading `ordering`.
 - **The estimate (docs/domain/03, CU §8.4):** `estimateRange` and `tripMinutes` from `geo`, which the customers' browsing uses too (in `ordering` they made an import cycle once `ordering` imported `customers`). The trip is the motorbike's distance, as the fee's is; a distance-band fee's distance is reused. The order keeps the trip of the estimate shown (`trip_seconds`, rounded up, and `trip_metres`), which the promised time and the search start use; an order placed before slice 1.10 has none and counts it as 0.
 
+- **The restaurant's statement reads (AP §8.7, RA §12.3, §12.5; slice 2.19a):** `OrdersService.pickups(orderIds)` gives each order's number and its confirmed pickup (the amount in the order's currency and the lines booked, else the captain's), null without one. `merchantEntryCause(type, reason, owes)` (`merchant-causes.ts`) names what an entry on a restaurant's account is from the reason constants this module posts with (`merchantEntryCauses`); a new reason on a `merchant.*` journal goes there with its cause and the panel's label.
+
 ## Not yet
 
 - The capacity check's lost-demand log once per checkout session (AP §9.12.6, AP §9.17); cancelling the timer job when the restaurant accepts is not needed, since the job finds the order moved on.

@@ -160,4 +160,8 @@ export {
 } from './quote.service.js';
 export type { CartLine, PricedLine, QuoteMoney } from './quote.js';
 export { HANDOVER_FROM } from './handover.js';
-export { FOOD_CREDIT_REASON } from './cancellation.js';
+export {
+  type MerchantEntryCause,
+  merchantEntryCause,
+  merchantEntryCauses,
+} from './merchant-causes.js';

@@ -35,7 +35,14 @@ class AdminRestaurantSettlementsDto extends createZodDto(
         currency,
         balance: signedMinor.describe('+ the restaurant owes, − the platform owes it.'),
         latest: z
-          .object({ id: z.uuid(), cutoff: z.iso.datetime(), totalDue: signedMinor })
+          .object({
+            id: z.uuid(),
+            cutoff: z.iso.datetime(),
+            commission: signedMinor,
+            discountShare: signedMinor,
+            exceptions: signedMinor,
+            totalDue: signedMinor,
+          })
           .nullable(),
         unpaid: signedMinor.describe('What is left of the latest statement after the payments.'),
         overdueSince: z.iso.datetime().nullable(),
@@ -168,6 +175,9 @@ export class AdminRestaurantSettlementController {
         latest: row.latest && {
           id: row.latest.id,
           cutoff: row.latest.cutoff.toISOString(),
+          commission: row.latest.commission.toString(),
+          discountShare: row.latest.discountShare.toString(),
+          exceptions: row.latest.exceptions.toString(),
           totalDue: row.latest.totalDue.toString(),
         },
         unpaid: row.unpaid.toString(),

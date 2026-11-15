@@ -58,7 +58,7 @@ const statement = {
       discountShare: null,
       cause: 'pickup_refund',
       amount: '40000',
-      reason: null,
+      reason: 'استرداد مبلغ الاستلام',
     },
   ],
 };
@@ -80,7 +80,14 @@ test('lists the restaurants and shows a weekly statement', async ({ page }) => {
             restaurantName: 'مطعم الشام',
             currency: 'TRY',
             balance: '46000',
-            latest: { id: statementId, cutoff: '2026-11-14T03:00:00.000Z', totalDue: '46000' },
+            latest: {
+              id: statementId,
+              cutoff: '2026-11-14T03:00:00.000Z',
+              commission: '6000',
+              discountShare: '0',
+              exceptions: '40000',
+              totalDue: '46000',
+            },
             unpaid: '46000',
             overdueSince: '2026-11-16T03:00:00.000Z',
           },
@@ -109,7 +116,7 @@ test('lists the restaurants and shows a weekly statement', async ({ page }) => {
   await expect(rows.nth(2)).toContainText(/له/);
   await page.getByRole('link', { name: /كشف .*: المستحق/ }).click();
   await expect(page.getByRole('heading', { name: 'كشف الأسبوع' })).toBeVisible();
-  await expect(page.getByText('استرداد مبلغ الاستلام')).toBeVisible();
+  await expect(page.getByRole('cell', { name: 'استرداد مبلغ الاستلام' }).first()).toBeVisible();
   await expect(page.getByRole('rowheader', { name: '#10001' })).toBeVisible();
   await expect(page.getByRole('row', { name: /المجموع المستحق/ })).toBeVisible();
   await expect(page.getByRole('button', { name: 'طباعة A4' })).toBeVisible();

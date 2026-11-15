@@ -13,6 +13,9 @@ part 'admin_restaurant_settlements_dto_output_restaurants_inner_latest.g.dart';
 /// Properties:
 /// * [id]
 /// * [cutoff]
+/// * [commission]
+/// * [discountShare]
+/// * [exceptions]
 /// * [totalDue]
 @BuiltValue()
 abstract class AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatest
@@ -26,6 +29,15 @@ abstract class AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatest
 
   @BuiltValueField(wireName: r'cutoff')
   DateTime get cutoff;
+
+  @BuiltValueField(wireName: r'commission')
+  String get commission;
+
+  @BuiltValueField(wireName: r'discountShare')
+  String get discountShare;
+
+  @BuiltValueField(wireName: r'exceptions')
+  String get exceptions;
 
   @BuiltValueField(wireName: r'totalDue')
   String get totalDue;
@@ -79,6 +91,21 @@ class _$AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestSerializer
       object.cutoff,
       specifiedType: const FullType(DateTime),
     );
+    yield r'commission';
+    yield serializers.serialize(
+      object.commission,
+      specifiedType: const FullType(String),
+    );
+    yield r'discountShare';
+    yield serializers.serialize(
+      object.discountShare,
+      specifiedType: const FullType(String),
+    );
+    yield r'exceptions';
+    yield serializers.serialize(
+      object.exceptions,
+      specifiedType: const FullType(String),
+    );
     yield r'totalDue';
     yield serializers.serialize(
       object.totalDue,
@@ -129,6 +156,33 @@ class _$AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestSerializer
                   )
                   as DateTime;
           result.cutoff = valueDes;
+          break;
+        case r'commission':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.commission = valueDes;
+          break;
+        case r'discountShare':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.discountShare = valueDes;
+          break;
+        case r'exceptions':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.exceptions = valueDes;
           break;
         case r'totalDue':
           final valueDes =

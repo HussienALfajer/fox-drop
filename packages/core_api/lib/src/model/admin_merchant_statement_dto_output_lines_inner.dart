@@ -62,7 +62,7 @@ abstract class AdminMerchantStatementDtoOutputLinesInner
 
   @BuiltValueField(wireName: r'cause')
   AdminMerchantStatementDtoOutputLinesInnerCauseEnum? get cause;
-  // enum causeEnum {  food_credit,  credit,  pickup_refund,  items_removed,  debit,  commission_reversal,  discount_reversal,  adjustment,  };
+  // enum causeEnum {  food_credit,  credit,  pickup_refund,  pickup_kept,  items_removed,  fee_lowered,  fee_cut_returned,  debit,  commission_reversal,  commission_restored,  discount_reversal,  outcome_changed,  adjustment,  };
 
   @BuiltValueField(wireName: r'amount')
   String? get amount;
@@ -396,9 +396,19 @@ class AdminMerchantStatementDtoOutputLinesInnerCauseEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'pickup_refund')
   static const AdminMerchantStatementDtoOutputLinesInnerCauseEnum pickupRefund =
       _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_pickupRefund;
+  @BuiltValueEnumConst(wireName: r'pickup_kept')
+  static const AdminMerchantStatementDtoOutputLinesInnerCauseEnum pickupKept =
+      _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_pickupKept;
   @BuiltValueEnumConst(wireName: r'items_removed')
   static const AdminMerchantStatementDtoOutputLinesInnerCauseEnum itemsRemoved =
       _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_itemsRemoved;
+  @BuiltValueEnumConst(wireName: r'fee_lowered')
+  static const AdminMerchantStatementDtoOutputLinesInnerCauseEnum feeLowered =
+      _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_feeLowered;
+  @BuiltValueEnumConst(wireName: r'fee_cut_returned')
+  static const AdminMerchantStatementDtoOutputLinesInnerCauseEnum
+  feeCutReturned =
+      _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_feeCutReturned;
   @BuiltValueEnumConst(wireName: r'debit')
   static const AdminMerchantStatementDtoOutputLinesInnerCauseEnum debit =
       _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_debit;
@@ -406,10 +416,18 @@ class AdminMerchantStatementDtoOutputLinesInnerCauseEnum extends EnumClass {
   static const AdminMerchantStatementDtoOutputLinesInnerCauseEnum
   commissionReversal =
       _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_commissionReversal;
+  @BuiltValueEnumConst(wireName: r'commission_restored')
+  static const AdminMerchantStatementDtoOutputLinesInnerCauseEnum
+  commissionRestored =
+      _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_commissionRestored;
   @BuiltValueEnumConst(wireName: r'discount_reversal')
   static const AdminMerchantStatementDtoOutputLinesInnerCauseEnum
   discountReversal =
       _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_discountReversal;
+  @BuiltValueEnumConst(wireName: r'outcome_changed')
+  static const AdminMerchantStatementDtoOutputLinesInnerCauseEnum
+  outcomeChanged =
+      _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_outcomeChanged;
   @BuiltValueEnumConst(wireName: r'adjustment')
   static const AdminMerchantStatementDtoOutputLinesInnerCauseEnum adjustment =
       _$adminMerchantStatementDtoOutputLinesInnerCauseEnum_adjustment;
