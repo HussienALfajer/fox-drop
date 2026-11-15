@@ -4,14 +4,27 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.18, captain earnings and the Thursday settlement (`docs/roadmap.md`, Phase 2, Money).
+Slice 2.18a, «تصفية الخميس» at the desk (`docs/roadmap.md`, Phase 2, Money).
 
-- **Roadmap line:** 2.18 Captain earnings and the Thursday settlement: the earnings screen, instalments, the weekly statement to share, off-cycle payouts with OWN's approval (AP §8.5, CA §10). The owner runs a settlement and the statement appears.
-- **Specs:** AP §8.5 (§8.5.2 the earnings entries, §8.5.5 the Thursday settlement, the off-cycle payout), AP §9.10.3 («تصفية الحساب الكامل» at the desk), CA §10.6 «أرباحي», CA §10.7 the Thursday settlement, CA §14 #20 (the weekly statement's push), the captains, cashdesk, ledger and notifications modules' `CLAUDE.md`, `apps/captain/CLAUDE.md`, `apps/admin/CLAUDE.md`.
-- **Branch:** `feat/captain-earnings-settlement` (or one per part once split).
-- **First:** larger than one pull request: split it with the `slice-plan` skill (for example the desk's «تصفية الخميس» and the weekly statement, «أرباحي» in the captain app, the off-cycle payout with OWN's approval) and get the owner's approval of the split before building. The deposit instalments wait for the kit (2.35); check what the settlement posts without them.
+- **Roadmap line:** 2.18a in `docs/roadmap.md`.
+- **Specs:** AP §8.5.2, §8.5.5 (`docs/domain/05`), AP §9.10.2–9.10.3 («تصفية الخميس», «أرصدة الكباتن»), AP §9.7 (earnings settled by FIN on Thursday or by OWN off-cycle), AP §14 #19, CA §10.7, CA §14 #19–#20, Appendix A (`captain.payout_weekday`, `captain.negative_earnings_policy`), the cashdesk, captains, ledger and notifications modules' `CLAUDE.md`, `apps/admin/CLAUDE.md`.
+- **Branch:** `feat/thursday-settlement`.
 - **Plan:**
-  - [ ] Split 2.18 into slices with the owner (`slice-plan`).
+  - [ ] Failing tests first: the settlement nets custody against the payout per currency and posts `custody.hand_in`/`custody.reimburse` and `earn.payout` apart; a payout in another currency at the current rate; a negative balance carried forward or collected; refused on another day unless OWN with a reason; a repeat with the same key answers the first receipts.
+  - [ ] The statement table (migration with `db-migration`): a snapshot per payout with the period, orders, pay by part, bonuses, charges, instalments and the net paid.
+  - [ ] The server: the settlement list and command in cashdesk, the receipt type «صرف المستحقات», the statement, the push «كشف الأسبوع جاهز: قبضت {المبلغ}», the audit, `lastPayoutAt` in the balances; `pnpm generate:api`.
+  - [ ] The panel: the «تصفية الخميس» tab (read-only on other days except OWN), the settlement screen with the net per currency, the receipt and the printable statement.
+  - [ ] `checker`, `reviewer`, the pull request.
+
+### Owner decisions for 2.18 (2026-11-15)
+
+- The split: 2.18a (the desk's «تصفية الخميس» and the statement), 2.18b («أرباحي» and the bottom navigation), 2.18c (the statement in the app and sharing it as an image).
+- Custody nets against the payout on screen (owing 300 ₺ custody with 500 ₺ earnings, the captain receives 200 ₺); the ledger keeps the hand-in and the payout as separate entries.
+- «هذا الأسبوع» in «أرباحي» is the payout cycle since the last payout weekday, by business day; a statement covers the period since the previous actual payout.
+- The off-cycle payout is done by OWN directly, with a reason, as the same full settlement (no approval request from FIN, no partial payout).
+- No deposit instalment is posted until the kit (2.35); the statement shows the line at zero.
+- Deferred: the manual bonus and its push «مكافأة {المبلغ}: {السبب}» (2.36 or 2.20), the pay table link (2.36), the panel's captain «المستحقات» tab (2.36).
+- Screens use the plain layout until the design system, the printed statement and the shared image included.
 
 ### Left from 2.17d (`feat/cash-warnings-reminders`)
 
