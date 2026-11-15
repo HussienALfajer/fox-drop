@@ -14,8 +14,10 @@ concurrency:
 
 jobs:
   # What a change touches. Markdown and docs/ only: Prettier alone checks
-  # them (no test reads them). The Android builds run only for a change to a
-  # Flutter app, a Dart package or this workflow.
+  # them. The specs (docs/product, docs/domain) count as code, since tests
+  # check the code against them (catalogue.test.ts reads AP Appendix A). The
+  # Android builds run only for a change to a Flutter app, a Dart package or
+  # this workflow.
   changes:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -37,12 +39,16 @@ jobs:
             echo "flutter=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          files=$(git diff --name-only "$BASE" HEAD)
+          # Without renames, a file moved into docs/ counts at its old path too.
+          files=$(git diff --name-only --no-renames "$BASE" HEAD)
           printf '%s\n' "$files"
           code=false
           flutter=false
-          if printf '%s\n' "$files" | grep -qvE '(\.md$|^docs/)'; then code=true; fi
-          if printf '%s\n' "$files" | grep -qE '^(apps/(customer|captain|merchant)/|packages/core_|pubspec\.(yaml|lock)$|\.fvmrc$|analysis_options\.yaml$|\.github/workflows/ci\.yml$)'; then flutter=true; fi
+          # Here-strings, not pipes: under pipefail an early grep -q exit
+          # could fail the pipe on a long list.
+          if grep -qvE '(\.md$|^docs/)' <<<"$files"; then code=true; fi
+          if grep -qE '^docs/(product|domain)/' <<<"$files"; then code=true; fi
+          if grep -qE '^(apps/(customer|captain|merchant)/|packages/core_|pubspec\.(yaml|lock)$|\.fvmrc$|analysis_options\.yaml$|\.github/workflows/ci\.yml$)' <<<"$files"; then flutter=true; fi
           echo "code=$code" >> "$GITHUB_OUTPUT"
           echo "flutter=$flutter" >> "$GITHUB_OUTPUT"
 
@@ -304,8 +310,8 @@ jobs:
           SSH_HOST: ${{ vars.STAGING_SSH_HOST }}
           SSH_KNOWN_HOSTS: ${{ vars.STAGING_SSH_KNOWN_HOSTS }}
 
-  # Slice 1.14b (owner decisions 2026-11-07): every merge to main builds the
-  # three apps' staging APKs (Android only), signed with each app's staging
+  # Slice 1.14b (owner decisions 2026-11-07): every merge to main (but one of
+  # docs only) builds the three apps' staging APKs (Android only), signed with each app's staging
   # key, as artifacts of the run (the deploy skill). The keys are secrets of
   # the staging environment, which only main may use.
   # The release build of each Android app on every pull request that touches
@@ -357,8 +363,8 @@ jobs:
         run: flutter build apk --flavor staging --release
 
   staging-apks:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [verify]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.code == 'true'
+    needs: [changes, verify]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment: staging

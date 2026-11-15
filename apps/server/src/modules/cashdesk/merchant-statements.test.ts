@@ -151,9 +151,15 @@ async function rows(restaurantId: string) {
 
 // A cutoff from the database clock: entries carry their transaction's time,
 // and the test's clock can differ from it by a few milliseconds (Docker
-// Desktop's virtual machine), enough to put an entry on the wrong side.
-const databaseNow = async () =>
-  (await sql.query<{ now: Date }>('SELECT clock_timestamp() AS now')).rows[0]!.now;
+// Desktop's virtual machine), enough to put an entry on the wrong side. The
+// pauses keep it 2 ms from the entries on either side, since times reach
+// JavaScript cut to the millisecond.
+async function databaseNow(): Promise<Date> {
+  await sql.query('SELECT pg_sleep(0.002)');
+  const { rows } = await sql.query<{ now: Date }>('SELECT clock_timestamp() AS now');
+  await sql.query('SELECT pg_sleep(0.002)');
+  return rows[0]!.now;
+}
 
 async function pushes(restaurantId: string) {
   return (
