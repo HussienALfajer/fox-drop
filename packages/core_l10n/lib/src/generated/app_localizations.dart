@@ -4267,6 +4267,168 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'عليك تسليم {amount}. المكتب مغلق الآن.'**
   String captainHandInClosedAlways(String amount);
+
+  /// The bottom navigation's home tab (CA §6.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'الرئيسية'**
+  String get captainHomeTab;
+
+  /// The earnings screen and its tab (CA §6.2, §10.6, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'أرباحي'**
+  String get captainEarningsTitle;
+
+  /// The bottom navigation's tab that holds the other screens (CA §6.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'المزيد'**
+  String get captainMoreTab;
+
+  /// The bar on every tab that returns to the active order (CA §6.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلب الجاري'**
+  String get captainActiveOrderBar;
+
+  /// The business day now on «أرباحي» (CA §10.6; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'اليوم'**
+  String get captainEarningsToday;
+
+  /// The payout cycle since the latest payout weekday on «أرباحي» (CA §10.6; owner decision 2026-11-15).
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا الأسبوع'**
+  String get captainEarningsWeek;
+
+  /// The earnings so far of today or this week (CA §10.6; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'الأرباح: {amount}'**
+  String captainEarningsSoFar(String amount);
+
+  /// The orders of today or this week (CA §10.6; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلبات: {count}'**
+  String captainEarningsOrderCount(int count);
+
+  /// The time online of today or this week (CA §10.6; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'ساعات الاتصال: {hours} س {minutes} د'**
+  String captainEarningsOnline(int hours, int minutes);
+
+  /// The earnings balance (CA §10.6, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'رصيدك المستحق: {amount}'**
+  String captainEarningsBalance(String amount);
+
+  /// The next payout day and date, «الخميس» by default (CA §10.6, Appendix B: «موعد القبض: الخميس {التاريخ}»).
+  ///
+  /// In ar, this message translates to:
+  /// **'موعد القبض: {day} {date}'**
+  String captainEarningsPayoutDate(String day, String date);
+
+  /// A negative balance under carry_forward (CA §10.7: the app explains it; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'رصيدك سالب، ويُخصم من أرباحك في الأسبوع القادم.'**
+  String get captainEarningsNegativeCarry;
+
+  /// A negative balance under collect_at_desk (CA §10.7; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'رصيدك سالب، وتسدّده نقداً في المكتب يوم القبض.'**
+  String get captainEarningsNegativeCollect;
+
+  /// The heading of this week's orders (CA §10.6; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'طلبات هذا الأسبوع'**
+  String get captainEarningsOrders;
+
+  /// One order and its total pay (CA §10.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلب #{number}: {amount}'**
+  String captainEarningsOrder(String number, String amount);
+
+  /// An order whose number was not read, and its total pay (CA §10.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'طلب: {amount}'**
+  String captainEarningsOrderUnnumbered(String amount);
+
+  /// The heading of the bonuses, charges, instalments and payouts (CA §10.6; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'حركات أخرى'**
+  String get captainEarningsOther;
+
+  /// No order and no other line this week (CA §10.6; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا حركات هذا الأسبوع بعد.'**
+  String get captainEarningsNothing;
+
+  /// A bonus line, earn.bonus (CA §10.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'مكافأة'**
+  String get captainEarningsBonus;
+
+  /// A charge line, earn.charge (CA §10.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'خصم'**
+  String get captainEarningsCharge;
+
+  /// A kit deposit instalment line, earn.deposit_instalment (CA §10.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'قسط تأمين العدة'**
+  String get captainEarningsInstalment;
+
+  /// A payout line, earn.payout paid to the captain (CA §10.6; the receipt's label).
+  ///
+  /// In ar, this message translates to:
+  /// **'صرف المستحقات'**
+  String get captainEarningsPayout;
+
+  /// A negative balance collected at the desk (CA §10.7; the receipt's label, to confirm with the owner).
+  ///
+  /// In ar, this message translates to:
+  /// **'تحصيل رصيد سالب'**
+  String get captainEarningsCollection;
+
+  /// A correction line, earn.adjustment (AP §8.5.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'تصحيح'**
+  String get captainEarningsAdjustment;
+
+  /// One other line: its kind and amount (CA §10.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'{kind}: {amount}'**
+  String captainEarningsLine(String kind, String amount);
+
+  /// The order of a charge (CA §10.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلب #{number}'**
+  String captainEarningsLineOrder(String number);
+
+  /// The receipt of a payout (CA §10.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'إيصال {number}'**
+  String captainEarningsLineReceipt(String number);
 }
 
 class _AppLocalizationsDelegate

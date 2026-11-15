@@ -34,6 +34,8 @@ void main() {
       FakeAnswer(200, maxPickupJson(limit: '50000')),
       FakeAnswer(200, maxPickupJson()),
     ]);
+    await tester.tap(find.text('المزيد'));
+    await app.settle(tester);
     await tester.tap(find.text('الإعدادات'));
     await app.settle(tester);
     expect(find.text('أقصى مبلغ أحمله'), findsOneWidget);

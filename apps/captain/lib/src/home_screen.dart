@@ -26,7 +26,7 @@ import 'work/texts.dart';
 import 'work/work.dart';
 
 /// The captain's home (CA §6, §7): the availability and «متصل», or the
-/// active order; the offer over either. Unstyled until the design (the design
+/// active order; `WorkLayer` in `CaptainShell` puts the offer over every tab. Unstyled until the design (the design
 /// stop in the root CLAUDE.md).
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -37,47 +37,23 @@ class HomeScreen extends ConsumerWidget {
     final live = ref.watch(workProvider).value;
     final work = live?.value;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.captainAppName),
-        // CA §11.4: the work rules always one tap away; CA §13: the FAQ.
-        actions: [
-          TextButton(
-            onPressed: () => context.push('/work-rules'),
-            child: Text(l10n.captainWorkRules),
-          ),
-          TextButton(
-            onPressed: () => context.push('/faq'),
-            child: Text(l10n.faqTitle),
-          ),
-          TextButton(
-            onPressed: () => context.push('/custody'),
-            child: Text(l10n.captainCustodyTitle),
-          ),
-          TextButton(
-            onPressed: () => context.push('/settings'),
-            child: Text(l10n.captainSettings),
-          ),
-        ],
-      ),
-      body: WorkLayer(
-        live: live,
-        child: switch (work) {
-          null =>
-            live?.failed == true
-                ? Center(child: Text(l10n.statusError))
-                : const Center(child: CircularProgressIndicator()),
-          Work(order: final order?) => Column(
-            children: [
-              CashLines(availability: work.availability),
-              _LastOrderBar(work: work),
-              ProblemBar(order: order),
-              EmergencyButton(order: order),
-              Expanded(child: OrderView(order: order)),
-            ],
-          ),
-          _ => _AvailabilityView(work: work),
-        },
-      ),
+      appBar: AppBar(title: Text(l10n.captainAppName)),
+      body: switch (work) {
+        null =>
+          live?.failed == true
+              ? Center(child: Text(l10n.statusError))
+              : const Center(child: CircularProgressIndicator()),
+        Work(order: final order?) => Column(
+          children: [
+            CashLines(availability: work.availability),
+            _LastOrderBar(work: work),
+            ProblemBar(order: order),
+            EmergencyButton(order: order),
+            Expanded(child: OrderView(order: order)),
+          ],
+        ),
+        _ => _AvailabilityView(work: work),
+      },
     );
   }
 }
