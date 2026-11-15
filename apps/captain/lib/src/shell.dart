@@ -23,7 +23,10 @@ class CaptainShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final live = ref.watch(workProvider).value;
-    final index = captainTabs.indexOf(location);
+    // A tab's own screens («كشف الأسبوع» under «أرباحي») keep its tab.
+    final index = captainTabs.lastIndexWhere(
+      (tab) => location == tab || (tab != '/' && location.startsWith('$tab/')),
+    );
     final ordering = live?.value?.order != null && location != '/';
     // The tabs other than home go back home, as «عهدتي» did when pushed.
     return PopScope(

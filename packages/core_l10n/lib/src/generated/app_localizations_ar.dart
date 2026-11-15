@@ -2708,4 +2708,93 @@ class AppLocalizationsAr extends AppLocalizations {
   String captainEarningsLineReceipt(String number) {
     return 'إيصال $number';
   }
+
+  @override
+  String get captainStatementTitle => 'كشف الأسبوع';
+
+  @override
+  String get captainStatementsTitle => 'كشوف الأسبوع';
+
+  @override
+  String get captainStatementsNone => 'لا كشوف بعد.';
+
+  @override
+  String captainStatementPaid(String amount) {
+    return 'قبضت $amount';
+  }
+
+  @override
+  String captainStatementCarried(String amount) {
+    return 'لم تقبض شيئاً، يُرحَّل $amount';
+  }
+
+  @override
+  String captainStatementCaptain(String name) {
+    return 'الكابتن: $name';
+  }
+
+  @override
+  String captainStatementPeriod(String from, String to) {
+    return 'من $from إلى $to';
+  }
+
+  @override
+  String captainStatementPeriodFirst(String to) {
+    return 'حتى $to';
+  }
+
+  @override
+  String captainStatementOrders(int count) {
+    return 'عدد الطلبات: $count';
+  }
+
+  @override
+  String get captainStatementCarriedIn => 'رصيد مُرحَّل';
+
+  @override
+  String get captainStatementBasePay => 'الأجر الأساسي';
+
+  @override
+  String get captainStatementDistancePay => 'أجر المسافة';
+
+  @override
+  String get captainStatementWaitingPay => 'أجر الانتظار';
+
+  @override
+  String get captainStatementPeakBonus => 'مكافأة الذروة';
+
+  @override
+  String get captainStatementBonuses => 'المكافآت';
+
+  @override
+  String get captainStatementCharges => 'الخصومات';
+
+  @override
+  String get captainStatementInstalments => 'أقساط التأمين';
+
+  @override
+  String get captainStatementAdjustments => 'قيود تصحيحية';
+
+  @override
+  String get captainStatementBalance => 'الرصيد قبل الصرف';
+
+  @override
+  String get captainStatementPaidLine => 'المبلغ المصروف';
+
+  @override
+  String get captainStatementCollected => 'المحصَّل من رصيد سالب';
+
+  @override
+  String get captainStatementCarriedOut => 'يُرحَّل إلى الأسبوع التالي';
+
+  @override
+  String captainStatementLine(String label, String amount) {
+    return '$label: $amount';
+  }
+
+  @override
+  String get captainStatementShare => 'مشاركة كصورة';
+
+  @override
+  String get captainStatementShareFailed => 'تعذّرت مشاركة الكشف.';
 }

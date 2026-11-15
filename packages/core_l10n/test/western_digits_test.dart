@@ -87,6 +87,7 @@ void main() {
     expect(l10n.captainLine(2, 'شاورما'), '2 × شاورما');
     expect(l10n.captainEarningsOrderCount(12), 'الطلبات: 12');
     expect(l10n.captainEarningsOnline(3, 25), 'ساعات الاتصال: 3 س 25 د');
+    expect(l10n.captainStatementOrders(12), 'عدد الطلبات: 12');
     expect(l10n.formatDistance(850), '850 م');
     expect(l10n.formatDistance(2400), '2.4 كم');
     for (final text in [
