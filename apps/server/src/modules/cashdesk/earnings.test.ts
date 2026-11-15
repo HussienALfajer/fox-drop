@@ -32,6 +32,12 @@ describe('payoutCycle (CA §10.6, owner decision 2026-11-15)', () => {
     expect(cycle.nextPayout).toBe('2026-11-19');
   });
 
+  it('moves the payout a week on once the captain was paid today', () => {
+    const cycle = payoutCycle(new Date('2026-11-19T09:00:00Z'), six, azaz, 'thursday', true);
+    expect(cycle.weekFrom).toEqual(cycle.todayFrom);
+    expect(cycle.nextPayout).toBe('2026-11-26');
+  });
+
   it('follows another payout weekday', () => {
     // Wednesday 2026-11-18 12:00 in Azaz, paid on Saturdays.
     const cycle = payoutCycle(new Date('2026-11-18T09:00:00Z'), six, azaz, 'saturday');

@@ -12,7 +12,8 @@ export interface PayoutCycle {
   // 2026-11-15).
   weekFrom: Date;
   // «موعد القبض»: the date of the next business day on the payout weekday,
-  // today when it is one, on the city's clock (YYYY-MM-DD).
+  // today when it is one and the captain was not paid yet today, on the
+  // city's clock (YYYY-MM-DD).
   nextPayout: string;
 }
 
@@ -24,6 +25,8 @@ export function payoutCycle(
   cutoffMinutes: number,
   timeZone: string,
   weekday: PayoutWeekday,
+  // A payout already made today moves «موعد القبض» to the next week.
+  paidToday = false,
 ): PayoutCycle {
   const todayFrom = lastCutoff(now, cutoffMinutes, timeZone);
   const weekdayOf = (dayStart: Date) =>
@@ -32,7 +35,7 @@ export function payoutCycle(
   for (let step = 0; step < WEEK && weekdayOf(weekFrom) !== weekday; step += 1) {
     weekFrom = lastCutoff(new Date(weekFrom.getTime() - 1), cutoffMinutes, timeZone);
   }
-  let payout = todayFrom;
+  let payout = paidToday ? nextCutoff(todayFrom, cutoffMinutes, timeZone) : todayFrom;
   for (let step = 0; step < WEEK && weekdayOf(payout) !== weekday; step += 1) {
     payout = nextCutoff(payout, cutoffMinutes, timeZone);
   }

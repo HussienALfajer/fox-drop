@@ -4388,7 +4388,7 @@ abstract class AppLocalizations {
   /// **'خصم'**
   String get captainEarningsCharge;
 
-  /// A kit deposit instalment line, earn.deposit_instalment (CA §10.6).
+  /// A kit deposit instalment line, earn.deposit_instalment (CA §10.6; no wording in the spec: the domain's «التأمين», to confirm with the owner).
   ///
   /// In ar, this message translates to:
   /// **'قسط تأمين العدة'**

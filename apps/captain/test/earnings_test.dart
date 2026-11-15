@@ -80,6 +80,7 @@ void main() {
     await app.settle(tester);
     expect(find.text('رصيدك المستحق: 43 ₺'), findsOneWidget);
     expect(find.text('موعد القبض: الخميس 12/11/2026'), findsOneWidget);
+    expect(find.text('اليوم'), findsOneWidget);
     expect(find.byKey(const Key('earnings-negative')), findsNothing);
     expect(find.text('ساعات الاتصال: 1 س 35 د'), findsOneWidget);
     expect(find.text('ساعات الاتصال: 2 س 5 د'), findsOneWidget);
@@ -99,9 +100,8 @@ void main() {
     app.server.on('/v1/captain/earnings', [
       FakeAnswer(200, earningsJson(paid: true)),
     ]);
-    app.work(
-      availability: [availabilityJson(usage: '0', closedDue: '1')],
-    );
+    // Only the earnings moved: the custody reads the same.
+    app.work(availability: [availabilityJson()]);
     app.transport.signal('captain.availability_changed');
     await app.settle(tester);
     await tester.scrollUntilVisible(find.text('صرف المستحقات: -43 ₺'), -200);
@@ -143,6 +143,46 @@ void main() {
     await tester.tap(find.text('الرئيسية'));
     await app.settle(tester);
     expect(find.byKey(const Key('online-switch')), findsOneWidget);
+    await app.done(tester);
+  });
+
+  testWidgets('an offer rings and shows over another tab, and the bar '
+      'returns to the active order (CA §6.2, §8.2)', (tester) async {
+    final app = TestApp();
+    app.work(availability: [availabilityJson(state: 'online_available')]);
+    app.server.on('/v1/captain/earnings', [FakeAnswer(200, earningsJson())]);
+    await app.pump(tester);
+    await app.live(tester);
+    await tester.tap(find.text('أرباحي'));
+    await app.settle(tester);
+
+    app.work(
+      availability: [availabilityJson(state: 'online_available')],
+      offers: [offerJson()],
+    );
+    app.transport.signal('captain.availability_changed');
+    await app.settle(tester);
+    expect(find.text('قبول'), findsOneWidget);
+    expect(app.ringer.ringing, isTrue);
+
+    app.server.on('/v1/captain/offers/$offerId/accept', [
+      FakeAnswer(200, {'offer': offerJson()}),
+    ]);
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [orderJson()],
+    );
+    await tester.tap(find.text('قبول'));
+    await app.settle(tester);
+    // The ring stops at the next second's check.
+    await app.advance(tester, const Duration(seconds: 1));
+    await app.settle(tester);
+    expect(app.ringer.ringing, isFalse);
+    expect(find.byKey(const Key('earnings')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('active-order-bar')));
+    await app.settle(tester);
+    expect(find.byKey(const Key('active-order-bar')), findsNothing);
+    expect(find.byKey(const Key('earnings')), findsNothing);
     await app.done(tester);
   });
 }

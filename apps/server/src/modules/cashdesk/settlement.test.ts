@@ -701,20 +701,32 @@ describe('«أرباحي» (CA §10.6, slice 2.18b)', () => {
     await post(captainId, 'earn.peak_bonus', 500n, { orderId });
     await post(captainId, 'earn.bonus', 1_000n, { reason: 'مساعدة في الذروة' });
     await post(captainId, 'earn.charge', -700n, { orderId, reason: 'تالف' });
-    // An hour online that ended ten minutes ago.
+    // An hour online that ended ten minutes ago, counted from the window's
+    // start when it began before it (the cutoff may fall inside it).
+    const started = new Date(Date.now() - 70 * 60_000);
+    const ended = new Date(Date.now() - 10 * 60_000);
     await sql.query(
       `INSERT INTO captains.online_periods (captain_id, started_at, ended_at, end_reason)
-       VALUES ($1, now() - interval '70 minutes', now() - interval '10 minutes', 'captain')`,
-      [captainId],
+       VALUES ($1, $2, $3, 'captain')`,
+      [captainId, started, ended],
     );
+    const minutesFrom = (from: string) =>
+      Math.max(
+        0,
+        Math.floor(
+          (ended.getTime() - Math.max(started.getTime(), new Date(from).getTime())) / 60_000,
+        ),
+      );
 
     const answer = await read();
     expect(answer.statusCode).toBe(200);
     const body = answer.json();
+    expect(body.today.onlineMinutes).toBe(minutesFrom(body.today.from));
+    expect(body.week.onlineMinutes).toBe(minutesFrom(body.week.from));
     expect(body).toMatchObject({
       currency: 'TRY',
-      today: { earnings: '4300', orders: 1, onlineMinutes: 60 },
-      week: { earnings: '4300', orders: 1, onlineMinutes: 60 },
+      today: { earnings: '4300', orders: 1 },
+      week: { earnings: '4300', orders: 1 },
       balance: '4300',
       payoutWeekday: 'thursday',
       negativePolicy: 'carry_forward',

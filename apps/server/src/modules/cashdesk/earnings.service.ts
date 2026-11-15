@@ -72,12 +72,23 @@ export class EarningsService {
     ]);
     if (timeZone === null) throw new Error(`city ${cityId} has no clock`);
     const [hours, minutes] = cutoff.split(':').map(Number) as [number, number];
-    const cycle = payoutCycle(now, hours * 60 + minutes, timeZone, payoutWeekday);
+    const cutoffMinutes = hours * 60 + minutes;
+    const found = payoutCycle(now, cutoffMinutes, timeZone, payoutWeekday);
     const [{ balance, entries }, todayOnline, weekOnline] = await Promise.all([
-      this.captains.earnings(captainId, cycle.weekFrom),
-      this.captains.onlineMinutes(captainId, cycle.todayFrom, now),
-      this.captains.onlineMinutes(captainId, cycle.weekFrom, now),
+      this.captains.earnings(captainId, found.weekFrom),
+      this.captains.onlineMinutes(captainId, found.todayFrom, now),
+      this.captains.onlineMinutes(captainId, found.weekFrom, now),
     ]);
+    // On the payout day, a payout made today means the next is a week on.
+    const paidToday =
+      found.weekFrom.getTime() === found.todayFrom.getTime() &&
+      entries.some(
+        (entry) =>
+          entry.type === 'earn.payout' && entry.amount < 0n && entry.createdAt >= found.todayFrom,
+      );
+    const cycle = paidToday
+      ? payoutCycle(now, cutoffMinutes, timeZone, payoutWeekday, true)
+      : found;
     const paid = orderLines(entries);
     const other = otherLines(entries);
     const orderIds = [

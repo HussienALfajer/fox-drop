@@ -1429,7 +1429,7 @@
   "captainEarningsCharge": "خصم",
   "@captainEarningsCharge": {"description": "A charge line, earn.charge (CA §10.6)."},
   "captainEarningsInstalment": "قسط تأمين العدة",
-  "@captainEarningsInstalment": {"description": "A kit deposit instalment line, earn.deposit_instalment (CA §10.6)."},
+  "@captainEarningsInstalment": {"description": "A kit deposit instalment line, earn.deposit_instalment (CA §10.6; no wording in the spec: the domain's «التأمين», to confirm with the owner)."},
   "captainEarningsPayout": "صرف المستحقات",
   "@captainEarningsPayout": {"description": "A payout line, earn.payout paid to the captain (CA §10.6; the receipt's label)."},
   "captainEarningsCollection": "تحصيل رصيد سالب",

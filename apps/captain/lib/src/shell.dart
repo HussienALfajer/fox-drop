@@ -25,45 +25,52 @@ class CaptainShell extends ConsumerWidget {
     final live = ref.watch(workProvider).value;
     final index = captainTabs.indexOf(location);
     final ordering = live?.value?.order != null && location != '/';
-    return Scaffold(
-      body: WorkLayer(
-        live: live,
-        child: Column(
-          children: [
-            if (ordering)
-              Material(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                child: ListTile(
-                  key: const Key('active-order-bar'),
-                  title: Text(l10n.captainActiveOrderBar),
-                  onTap: () => context.go('/'),
-                ),
-              ),
-            Expanded(child: child),
+    // The tabs other than home go back home, as «عهدتي» did when pushed.
+    return PopScope(
+      canPop: location == '/',
+      onPopInvokedWithResult: (popped, _) {
+        if (!popped) context.go('/');
+      },
+      child: Scaffold(
+        body: SafeArea(
+          bottom: false,
+          child: WorkLayer(
+            live: live,
+            child: Column(
+              children: [
+                if (ordering)
+                  ListTile(
+                    key: const Key('active-order-bar'),
+                    title: Text(l10n.captainActiveOrderBar),
+                    onTap: () => context.go('/'),
+                  ),
+                Expanded(child: child),
+              ],
+            ),
+          ),
+        ),
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: index < 0 ? 0 : index,
+          onDestinationSelected: (tab) => context.go(captainTabs[tab]),
+          destinations: [
+            NavigationDestination(
+              icon: const Icon(Icons.home_outlined),
+              label: l10n.captainHomeTab,
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.payments_outlined),
+              label: l10n.captainEarningsTitle,
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.account_balance_wallet_outlined),
+              label: l10n.captainCustodyTitle,
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.more_horiz),
+              label: l10n.captainMoreTab,
+            ),
           ],
         ),
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: index < 0 ? 0 : index,
-        onDestinationSelected: (tab) => context.go(captainTabs[tab]),
-        destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.home_outlined),
-            label: l10n.captainHomeTab,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.payments_outlined),
-            label: l10n.captainEarningsTitle,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.account_balance_wallet_outlined),
-            label: l10n.captainCustodyTitle,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.more_horiz),
-            label: l10n.captainMoreTab,
-          ),
-        ],
       ),
     );
   }

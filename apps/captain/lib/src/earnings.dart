@@ -12,19 +12,13 @@ typedef EarningsKind = CaptainEarningsDtoOutputLinesInnerKindEnum;
 typedef NegativePolicy = CaptainEarningsDtoOutputNegativePolicyEnum;
 
 /// CA §10.6 «أرباحي»: `GET /v1/captain/earnings`, read while the tab shows
-/// and again whenever the captain's state is read with another custody or
-/// order: a delivery ends the order, and every desk receipt (the payout
-/// among them) sends `captain.availability_changed`, which reads the state
-/// again.
+/// and again after every read of the captain's state: a delivery ends the
+/// order, and every desk receipt (the payout among them) sends
+/// `captain.availability_changed`, which reads the state again, even when
+/// only the earnings moved.
 final earningsProvider = FutureProvider.autoDispose<Earnings>((ref) async {
-  ref.watch(
-    workProvider.select(
-      (live) => (
-        live.value?.value?.availability.custody,
-        live.value?.value?.order?.id,
-      ),
-    ),
-  );
+  // Each read of the state is a new `Work`.
+  ref.watch(workProvider.select((live) => live.value?.value));
   final answer = await ref
       .read(coreApiProvider)
       .getCaptainApi()
@@ -37,8 +31,10 @@ final earningsProvider = FutureProvider.autoDispose<Earnings>((ref) async {
 DateTime noonOf(Date date) => DateTime.utc(date.year, date.month, date.day, 9);
 
 extension EarningsTexts on AppLocalizations {
-  /// A moment of the week: its weekday and time on the city's clock.
-  String momentText(DateTime at) => '${weekdayOf(at)} ${formatTime(at)}';
+  /// A moment of the cycle: its weekday, date and time on the city's clock
+  /// (a cycle holds two Thursdays).
+  String momentText(DateTime at) =>
+      '${weekdayOf(at)} ${formatDate(at)} ${formatTime(at)}';
 
   /// «ساعات الاتصال: {hours} س {minutes} د».
   String onlineText(int minutes) =>

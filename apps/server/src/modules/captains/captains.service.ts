@@ -536,6 +536,7 @@ export class CaptainsService implements OnModuleInit {
   ): Promise<{ cityId: string; balance: Money; entries: AccountEntry[] }> {
     const row = await this.row(this.database.db, captainId);
     const base = await this.fx.baseCurrency(row.cityId);
+    if (base === null) throw new Error(`city ${row.cityId} has no base currency`);
     const accounts = (
       await this.ledger.ownerAccounts(row.cityId, row.id, 'captain.earnings')
     ).filter((account) => account.currency === base);
@@ -546,7 +547,7 @@ export class CaptainsService implements OnModuleInit {
       'captain.earnings',
       after,
     );
-    return { cityId: row.cityId, balance: { amount, currency: base ?? '' }, entries };
+    return { cityId: row.cityId, balance: { amount, currency: base }, entries };
   }
 
   // CA §10.6: the whole minutes the captain was online between two moments,
