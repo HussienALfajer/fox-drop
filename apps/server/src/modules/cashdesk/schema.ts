@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import {
   bigint,
+  boolean,
   check,
   foreignKey,
   index,
@@ -106,7 +107,14 @@ export const receiptCounters = cashdesk.table(
 // AP §9.10.3, CA §14 #19: the type printed on the receipt. A captain's
 // hand-in «تسليم نقد» (custody.hand_in) or the desk paying a negative
 // custody back «صرف للكابتن» (custody.reimburse).
-export const receiptTypes = ['captain_hand_in', 'captain_reimbursement'] as const;
+export const receiptTypes = [
+  'captain_hand_in',
+  'captain_reimbursement',
+  // «تصفية الخميس» (AP §8.5.5, slice 2.18a): the earnings paid out, and a
+  // negative balance collected under captain.negative_earnings_policy.
+  'captain_payout',
+  'captain_earnings_collection',
+] as const;
 
 // A desk receipt (AP §9.10.3), never changed: the application role may only
 // insert. Its money is the journals of its lines.
@@ -143,7 +151,7 @@ export const receipts = cashdesk.table(
     check('receipts_sequence', sql`${table.sequence} > 0`),
     check(
       'receipts_type_values',
-      sql`${table.type} IN ('captain_hand_in', 'captain_reimbursement')`,
+      sql`${table.type} IN ('captain_hand_in', 'captain_reimbursement', 'captain_payout', 'captain_earnings_collection')`,
     ),
   ],
 );
@@ -181,6 +189,8 @@ export const idempotencyKeys = cashdesk.table(
     // A hash of the command, so a key sent again with another is refused.
     requestHash: text('request_hash').notNull(),
     receiptIds: uuid('receipt_ids').array().notNull(),
+    // The settlement's statement (slice 2.18a), which names its receipts.
+    statementId: uuid('statement_id'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
   },
   (table) => [primaryKey({ columns: [table.accountId, table.key] })],
@@ -212,6 +222,83 @@ export const receiptConversions = cashdesk.table(
     check(
       'receipt_conversions_amounts',
       sql`${table.fromAmount} > 0 AND ${table.toAmount} > 0 AND ${table.fromCurrency} <> ${table.toCurrency}`,
+    ),
+  ],
+);
+
+// «تصفية الخميس» (AP §8.5.5 step 4, CA §10.7; slice 2.18a): the weekly
+// statement, a snapshot taken by each settlement of the captain's earnings
+// since the previous one, in the base currency. Never changed.
+export const statements = cashdesk.table(
+  'statements',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    cityId: uuid('city_id').notNull(),
+    captainId: uuid('captain_id').notNull(),
+    captainName: text('captain_name').notNull(),
+    sessionId: uuid('session_id').notNull(),
+    adminAccountId: uuid('admin_account_id').notNull(),
+    // The previous statement's time (null for the first), and this one's.
+    periodFrom: timestamp('period_from', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    // The ledger's own times the period's entries were read between: the
+    // previous statement's ledger_to, and this transaction's.
+    ledgerFrom: timestamp('ledger_from', { withTimezone: true }),
+    ledgerTo: timestamp('ledger_to', { withTimezone: true }).notNull(),
+    currency: text('currency').notNull(),
+    // The orders paid in the period.
+    orders: integer('orders').notNull(),
+    // Pay by part (base, distance, waiting, peak); the base includes the
+    // minimum pay's top-up and the pay of an order that was not delivered.
+    basePay: bigint('base_pay', { mode: 'bigint' }).notNull(),
+    distancePay: bigint('distance_pay', { mode: 'bigint' }).notNull(),
+    waitingPay: bigint('waiting_pay', { mode: 'bigint' }).notNull(),
+    peakBonus: bigint('peak_bonus', { mode: 'bigint' }).notNull(),
+    bonuses: bigint('bonuses', { mode: 'bigint' }).notNull(),
+    // Taken off: charges and deposit instalments.
+    charges: bigint('charges', { mode: 'bigint' }).notNull(),
+    instalments: bigint('instalments', { mode: 'bigint' }).notNull(),
+    adjustments: bigint('adjustments', { mode: 'bigint' }).notNull(),
+    // The balance the period started from (a negative one carried forward),
+    // the balance before the payout, what was paid (its base value), what
+    // was collected of a negative one, and what is carried to the next.
+    carriedIn: bigint('carried_in', { mode: 'bigint' }).notNull(),
+    balance: bigint('balance', { mode: 'bigint' }).notNull(),
+    paid: bigint('paid', { mode: 'bigint' }).notNull(),
+    // The cash paid, in the currency the cashier recorded.
+    payoutCurrency: text('payout_currency'),
+    payoutAmount: bigint('payout_amount', { mode: 'bigint' }),
+    collected: bigint('collected', { mode: 'bigint' }).notNull(),
+    carriedOut: bigint('carried_out', { mode: 'bigint' }).notNull(),
+    // Another day than captain.payout_weekday: OWN, with a reason.
+    offCycle: boolean('off_cycle').notNull(),
+    reason: text('reason'),
+    receiptIds: uuid('receipt_ids').array().notNull(),
+  },
+  (table) => [
+    index('statements_captain_created').on(table.captainId, table.createdAt),
+    foreignKey({
+      columns: [table.sessionId],
+      foreignColumns: [drawerSessions.id],
+      name: 'statements_session_fk',
+    }),
+    check(
+      'statements_money',
+      sql`${table.orders} >= 0 AND ${table.basePay} + ${table.distancePay} >= 0 AND ${table.distancePay} >= 0 AND ${table.peakBonus} >= 0 AND ${table.paid} >= 0 AND ${table.collected} >= 0`,
+    ),
+    check(
+      'statements_sums',
+      sql`${table.balance} = ${table.carriedIn} + ${table.basePay} + ${table.distancePay} + ${table.waitingPay} + ${table.peakBonus} + ${table.bonuses} - ${table.charges} - ${table.instalments} + ${table.adjustments} AND ${table.carriedOut} = ${table.balance} - ${table.paid} + ${table.collected}`,
+    ),
+    check(
+      'statements_payout',
+      sql`(${table.paid} > 0) = (${table.payoutCurrency} IS NOT NULL) AND (${table.payoutCurrency} IS NULL) = (${table.payoutAmount} IS NULL) AND (${table.payoutAmount} IS NULL OR ${table.payoutAmount} > 0)`,
+    ),
+    check(
+      'statements_reason',
+      sql`${table.offCycle} = (${table.reason} IS NOT NULL) AND (${table.reason} IS NULL OR char_length(${table.reason}) BETWEEN 1 AND 500)`,
     ),
   ],
 );

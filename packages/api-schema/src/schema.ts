@@ -3220,6 +3220,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/cash-desk/settlements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCashDeskSettlementList"];
+        put?: never;
+        post: operations["adminCashDeskSettle"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cash-desk/settlements/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCashDeskPreviewSettlement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cash-desk/statements/{statementId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCashDeskStatement"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/cash-desk/sessions/current": {
         parameters: {
             query?: never;
@@ -9249,9 +9297,281 @@ export interface components {
                     currency: string;
                 };
                 lastHandInAt: string | null;
-                /** @description None until slice 2.18. */
+                /** @description The latest «صرف المستحقات» receipt (slice 2.18a). */
                 lastPayoutAt: string | null;
             }[];
+        };
+        AdminSettlementsDto_Output: {
+            /** @description Today is captain.payout_weekday on the business day. */
+            payoutDay: boolean;
+            /** @enum {string} */
+            payoutWeekday: "saturday" | "sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday";
+            /**
+             * @description captain.negative_earnings_policy.
+             * @enum {string}
+             */
+            policy: "carry_forward" | "collect_at_desk";
+            /** @description Every captain with an earnings balance or open custody, highest custody first. */
+            captains: {
+                /** Format: uuid */
+                captainId: string;
+                name: string;
+                /** @enum {string} */
+                status: "active" | "suspended" | "terminated";
+                /** @description Every currency at the current rate: the sort. */
+                custodyInBase: string;
+                usage: {
+                    amount: string;
+                    currency: string;
+                };
+                limit: {
+                    amount: string;
+                    currency: string;
+                };
+                /** @description Due from closed days, netted in the base currency (AP §8.5.4). */
+                closedDue: {
+                    amount: string;
+                    currency: string;
+                };
+                /** Format: date-time */
+                lastCutoff: string;
+                currencies: {
+                    currency: string;
+                    /** @description + the captain hands in, − the office owes them. */
+                    balance: string;
+                    closedDue: string;
+                    today: string;
+                    balanceInBase: string;
+                }[];
+                /** @description Cash due from a closed day with no grace running, or the limit reached. */
+                blocks: ("closed_due" | "cash_limit")[];
+                /** @description The hand-in grace running now (AP §8.5.4), or null. */
+                handInGrace: {
+                    /** Format: uuid */
+                    id: string;
+                    /**
+                     * Format: date-time
+                     * @description The next business-day cutoff when it was granted.
+                     */
+                    until: string;
+                    reason: string;
+                    bulk: boolean;
+                    /** Format: date-time */
+                    grantedAt: string;
+                } | null;
+                /** @description + the platform owes the captain. */
+                earnings: {
+                    amount: string;
+                    currency: string;
+                };
+                lastHandInAt: string | null;
+                /** @description The latest «صرف المستحقات» receipt (slice 2.18a). */
+                lastPayoutAt: string | null;
+            }[];
+        };
+        AdminSettlementPreviewRequestDto: {
+            /** Format: uuid */
+            captainId: string;
+            /** @description Null for the base currency. */
+            payoutCurrency: string | null;
+        };
+        AdminSettlementPreviewDto_Output: {
+            /** Format: uuid */
+            captainId: string;
+            name: string;
+            /** Format: uuid */
+            cityId: string;
+            /** @description Today is captain.payout_weekday on the business day. */
+            payoutDay: boolean;
+            /** @enum {string} */
+            payoutWeekday: "saturday" | "sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday";
+            /**
+             * @description captain.negative_earnings_policy.
+             * @enum {string}
+             */
+            policy: "carry_forward" | "collect_at_desk";
+            custody: {
+                currency: string;
+                /** @description + the captain hands in, − the office owes them. */
+                balance: string;
+                balanceInBase: string;
+            }[];
+            /** @description + the platform owes the captain. */
+            earnings: {
+                amount: string;
+                currency: string;
+            };
+            /** @description The whole positive balance in the currency asked, at the current rate. */
+            payout: {
+                currency: string;
+                amount: string;
+                /** @description The rate version of each currency but the base, as the preview gave them. */
+                rates: {
+                    currency: string;
+                    /** Format: uuid */
+                    rateVersionId: string;
+                }[];
+                unit: {
+                    from: string;
+                    to: string;
+                    value: string;
+                } | null;
+            } | null;
+            /** @description A negative balance collected (collect_at_desk). */
+            collect: string | null;
+            /** @description The cash per currency: + the captain gives, − the desk pays. */
+            net: {
+                currency: string;
+                amount: string;
+            }[];
+        };
+        AdminSettleDto: {
+            /** Format: uuid */
+            captainId: string;
+            /** @description The custody the preview showed, every currency settled to zero. */
+            custody: {
+                currency: string;
+                balance: string;
+            }[];
+            /** @description The earnings the preview showed. */
+            earnings: string;
+            /** @description The preview's payout, null when the balance is not above zero. */
+            payout: {
+                currency: string;
+                amount: string;
+                /** @description The rate version of each currency but the base, as the preview gave them. */
+                rates: {
+                    currency: string;
+                    /** Format: uuid */
+                    rateVersionId: string;
+                }[];
+            } | null;
+            /** @description Required off the payout day (OWN only). */
+            reason: string | null;
+        };
+        AdminSettlementDto_Output: {
+            statement: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                cityId: string;
+                /** Format: uuid */
+                captainId: string;
+                captainName: string;
+                /** Format: uuid */
+                sessionId: string;
+                /** Format: uuid */
+                cashierId: string;
+                /** @description The previous statement, null for the first. */
+                periodFrom: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                currency: string;
+                orders: number;
+                /** @description With the minimum top-up and the pay of orders not delivered. */
+                basePay: string;
+                distancePay: string;
+                waitingPay: string;
+                peakBonus: string;
+                bonuses: string;
+                charges: string;
+                instalments: string;
+                adjustments: string;
+                /** @description The balance the period started from. */
+                carriedIn: string;
+                /** @description Before the payout. */
+                balance: string;
+                /** @description In the base. */
+                paid: string;
+                payout: {
+                    currency: string;
+                    amount: string;
+                } | null;
+                collected: string;
+                /** @description Carried to the next week. */
+                carriedOut: string;
+                offCycle: boolean;
+                reason: string | null;
+                receiptIds: string[];
+            };
+            receipts: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                cityId: string;
+                /** @description Such as AZ-2026-000123 (AP §4.8). */
+                number: string;
+                /** @enum {string} */
+                type: "captain_hand_in" | "captain_reimbursement" | "captain_payout" | "captain_earnings_collection";
+                /** Format: uuid */
+                sessionId: string;
+                /** Format: uuid */
+                cashierId: string;
+                cashierName: string | null;
+                /** Format: uuid */
+                captainId: string;
+                captainName: string;
+                /** Format: date-time */
+                createdAt: string;
+                conversions: {
+                    from: string;
+                    amount: string;
+                    to: string;
+                    converted: string;
+                }[];
+                lines: {
+                    currency: string;
+                    /** @description The custody before, + to hand in, − owed to the captain. */
+                    expected: string;
+                    amount: string;
+                    /** @description What stays open after it. */
+                    remaining: string;
+                }[];
+            }[];
+        };
+        AdminStatementDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            cityId: string;
+            /** Format: uuid */
+            captainId: string;
+            captainName: string;
+            /** Format: uuid */
+            sessionId: string;
+            /** Format: uuid */
+            cashierId: string;
+            /** @description The previous statement, null for the first. */
+            periodFrom: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            currency: string;
+            orders: number;
+            /** @description With the minimum top-up and the pay of orders not delivered. */
+            basePay: string;
+            distancePay: string;
+            waitingPay: string;
+            peakBonus: string;
+            bonuses: string;
+            charges: string;
+            instalments: string;
+            adjustments: string;
+            /** @description The balance the period started from. */
+            carriedIn: string;
+            /** @description Before the payout. */
+            balance: string;
+            /** @description In the base. */
+            paid: string;
+            payout: {
+                currency: string;
+                amount: string;
+            } | null;
+            collected: string;
+            /** @description Carried to the next week. */
+            carriedOut: string;
+            offCycle: boolean;
+            reason: string | null;
+            receiptIds: string[];
         };
         AdminCurrentDrawerSessionDto_Output: {
             session: {
@@ -9376,7 +9696,7 @@ export interface components {
                 /** @description Such as AZ-2026-000123 (AP §4.8). */
                 number: string;
                 /** @enum {string} */
-                type: "captain_hand_in" | "captain_reimbursement";
+                type: "captain_hand_in" | "captain_reimbursement" | "captain_payout" | "captain_earnings_collection";
                 /** Format: uuid */
                 sessionId: string;
                 /** Format: uuid */
@@ -9437,7 +9757,7 @@ export interface components {
             /** @description Such as AZ-2026-000123 (AP §4.8). */
             number: string;
             /** @enum {string} */
-            type: "captain_hand_in" | "captain_reimbursement";
+            type: "captain_hand_in" | "captain_reimbursement" | "captain_payout" | "captain_earnings_collection";
             /** Format: uuid */
             sessionId: string;
             /** Format: uuid */
@@ -14649,6 +14969,101 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminCaptainBalancesDto_Output"];
+                };
+            };
+        };
+    };
+    adminCashDeskSettlementList: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminSettlementsDto_Output"];
+                };
+            };
+        };
+    };
+    adminCashDeskSettle: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminSettleDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminSettlementDto_Output"];
+                };
+            };
+        };
+    };
+    adminCashDeskPreviewSettlement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminSettlementPreviewRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminSettlementPreviewDto_Output"];
+                };
+            };
+        };
+    };
+    adminCashDeskStatement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminStatementDto_Output"];
                 };
             };
         };

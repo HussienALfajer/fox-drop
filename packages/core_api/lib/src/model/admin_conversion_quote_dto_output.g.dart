@@ -16,7 +16,7 @@ class _$AdminConversionQuoteDtoOutput extends AdminConversionQuoteDtoOutput {
   @override
   final String converted;
   @override
-  final BuiltList<AdminConversionQuoteDtoOutputRatesInner> rates;
+  final BuiltList<AdminSettlementPreviewDtoOutputPayoutRatesInner> rates;
   @override
   final AdminConversionQuoteDtoOutputUnit unit;
 
@@ -103,11 +103,13 @@ class AdminConversionQuoteDtoOutputBuilder
   String? get converted => _$this._converted;
   set converted(String? converted) => _$this._converted = converted;
 
-  ListBuilder<AdminConversionQuoteDtoOutputRatesInner>? _rates;
-  ListBuilder<AdminConversionQuoteDtoOutputRatesInner> get rates =>
-      _$this._rates ??= ListBuilder<AdminConversionQuoteDtoOutputRatesInner>();
-  set rates(ListBuilder<AdminConversionQuoteDtoOutputRatesInner>? rates) =>
-      _$this._rates = rates;
+  ListBuilder<AdminSettlementPreviewDtoOutputPayoutRatesInner>? _rates;
+  ListBuilder<AdminSettlementPreviewDtoOutputPayoutRatesInner> get rates =>
+      _$this._rates ??=
+          ListBuilder<AdminSettlementPreviewDtoOutputPayoutRatesInner>();
+  set rates(
+    ListBuilder<AdminSettlementPreviewDtoOutputPayoutRatesInner>? rates,
+  ) => _$this._rates = rates;
 
   AdminConversionQuoteDtoOutputUnitBuilder? _unit;
   AdminConversionQuoteDtoOutputUnitBuilder get unit =>

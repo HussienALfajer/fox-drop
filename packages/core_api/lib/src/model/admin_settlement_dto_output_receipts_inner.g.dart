@@ -1,83 +1,101 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'admin_hand_in_receipts_dto_output_receipts_inner.dart';
+part of 'admin_settlement_dto_output_receipts_inner.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-const AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum
-_$adminHandInReceiptsDtoOutputReceiptsInnerTypeEnum_captainHandIn =
-    const AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum._('captainHandIn');
-const AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum
-_$adminHandInReceiptsDtoOutputReceiptsInnerTypeEnum_captainReimbursement =
-    const AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum._(
+const AdminSettlementDtoOutputReceiptsInnerTypeEnum
+_$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainHandIn =
+    const AdminSettlementDtoOutputReceiptsInnerTypeEnum._('captainHandIn');
+const AdminSettlementDtoOutputReceiptsInnerTypeEnum
+_$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainReimbursement =
+    const AdminSettlementDtoOutputReceiptsInnerTypeEnum._(
       'captainReimbursement',
     );
+const AdminSettlementDtoOutputReceiptsInnerTypeEnum
+_$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainPayout =
+    const AdminSettlementDtoOutputReceiptsInnerTypeEnum._('captainPayout');
+const AdminSettlementDtoOutputReceiptsInnerTypeEnum
+_$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainEarningsCollection =
+    const AdminSettlementDtoOutputReceiptsInnerTypeEnum._(
+      'captainEarningsCollection',
+    );
 
-AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum
-_$adminHandInReceiptsDtoOutputReceiptsInnerTypeEnumValueOf(String name) {
+AdminSettlementDtoOutputReceiptsInnerTypeEnum
+_$adminSettlementDtoOutputReceiptsInnerTypeEnumValueOf(String name) {
   switch (name) {
     case 'captainHandIn':
-      return _$adminHandInReceiptsDtoOutputReceiptsInnerTypeEnum_captainHandIn;
+      return _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainHandIn;
     case 'captainReimbursement':
-      return _$adminHandInReceiptsDtoOutputReceiptsInnerTypeEnum_captainReimbursement;
+      return _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainReimbursement;
+    case 'captainPayout':
+      return _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainPayout;
+    case 'captainEarningsCollection':
+      return _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainEarningsCollection;
     default:
       throw ArgumentError(name);
   }
 }
 
-final BuiltSet<AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum>
-_$adminHandInReceiptsDtoOutputReceiptsInnerTypeEnumValues =
-    BuiltSet<AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum>(const <
-      AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum
+final BuiltSet<AdminSettlementDtoOutputReceiptsInnerTypeEnum>
+_$adminSettlementDtoOutputReceiptsInnerTypeEnumValues =
+    BuiltSet<AdminSettlementDtoOutputReceiptsInnerTypeEnum>(const <
+      AdminSettlementDtoOutputReceiptsInnerTypeEnum
     >[
-      _$adminHandInReceiptsDtoOutputReceiptsInnerTypeEnum_captainHandIn,
-      _$adminHandInReceiptsDtoOutputReceiptsInnerTypeEnum_captainReimbursement,
+      _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainHandIn,
+      _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainReimbursement,
+      _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainPayout,
+      _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainEarningsCollection,
     ]);
 
-Serializer<AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum>
-_$adminHandInReceiptsDtoOutputReceiptsInnerTypeEnumSerializer =
-    _$AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnumSerializer();
+Serializer<AdminSettlementDtoOutputReceiptsInnerTypeEnum>
+_$adminSettlementDtoOutputReceiptsInnerTypeEnumSerializer =
+    _$AdminSettlementDtoOutputReceiptsInnerTypeEnumSerializer();
 
-class _$AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnumSerializer
+class _$AdminSettlementDtoOutputReceiptsInnerTypeEnumSerializer
     implements
-        PrimitiveSerializer<AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum> {
+        PrimitiveSerializer<AdminSettlementDtoOutputReceiptsInnerTypeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'captainHandIn': 'captain_hand_in',
     'captainReimbursement': 'captain_reimbursement',
+    'captainPayout': 'captain_payout',
+    'captainEarningsCollection': 'captain_earnings_collection',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'captain_hand_in': 'captainHandIn',
     'captain_reimbursement': 'captainReimbursement',
+    'captain_payout': 'captainPayout',
+    'captain_earnings_collection': 'captainEarningsCollection',
   };
 
   @override
   final Iterable<Type> types = const <Type>[
-    AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum,
+    AdminSettlementDtoOutputReceiptsInnerTypeEnum,
   ];
   @override
-  final String wireName = 'AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum';
+  final String wireName = 'AdminSettlementDtoOutputReceiptsInnerTypeEnum';
 
   @override
   Object serialize(
     Serializers serializers,
-    AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum object, {
+    AdminSettlementDtoOutputReceiptsInnerTypeEnum object, {
     FullType specifiedType = FullType.unspecified,
   }) => _toWire[object.name] ?? object.name;
 
   @override
-  AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum deserialize(
+  AdminSettlementDtoOutputReceiptsInnerTypeEnum deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
-  }) => AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum.valueOf(
+  }) => AdminSettlementDtoOutputReceiptsInnerTypeEnum.valueOf(
     _fromWire[serialized] ?? (serialized is String ? serialized : ''),
   );
 }
 
-class _$AdminHandInReceiptsDtoOutputReceiptsInner
-    extends AdminHandInReceiptsDtoOutputReceiptsInner {
+class _$AdminSettlementDtoOutputReceiptsInner
+    extends AdminSettlementDtoOutputReceiptsInner {
   @override
   final String id;
   @override
@@ -85,7 +103,7 @@ class _$AdminHandInReceiptsDtoOutputReceiptsInner
   @override
   final String number;
   @override
-  final AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum type;
+  final AdminSettlementDtoOutputReceiptsInnerTypeEnum type;
   @override
   final String sessionId;
   @override
@@ -99,17 +117,17 @@ class _$AdminHandInReceiptsDtoOutputReceiptsInner
   @override
   final DateTime createdAt;
   @override
-  final BuiltList<AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner>
+  final BuiltList<AdminSettlementDtoOutputReceiptsInnerConversionsInner>
   conversions;
   @override
-  final BuiltList<AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner> lines;
+  final BuiltList<AdminSettlementDtoOutputReceiptsInnerLinesInner> lines;
 
-  factory _$AdminHandInReceiptsDtoOutputReceiptsInner([
-    void Function(AdminHandInReceiptsDtoOutputReceiptsInnerBuilder)? updates,
-  ]) => (AdminHandInReceiptsDtoOutputReceiptsInnerBuilder()..update(updates))
+  factory _$AdminSettlementDtoOutputReceiptsInner([
+    void Function(AdminSettlementDtoOutputReceiptsInnerBuilder)? updates,
+  ]) => (AdminSettlementDtoOutputReceiptsInnerBuilder()..update(updates))
       ._build();
 
-  _$AdminHandInReceiptsDtoOutputReceiptsInner._({
+  _$AdminSettlementDtoOutputReceiptsInner._({
     required this.id,
     required this.cityId,
     required this.number,
@@ -124,18 +142,18 @@ class _$AdminHandInReceiptsDtoOutputReceiptsInner
     required this.lines,
   }) : super._();
   @override
-  AdminHandInReceiptsDtoOutputReceiptsInner rebuild(
-    void Function(AdminHandInReceiptsDtoOutputReceiptsInnerBuilder) updates,
+  AdminSettlementDtoOutputReceiptsInner rebuild(
+    void Function(AdminSettlementDtoOutputReceiptsInnerBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  AdminHandInReceiptsDtoOutputReceiptsInnerBuilder toBuilder() =>
-      AdminHandInReceiptsDtoOutputReceiptsInnerBuilder()..replace(this);
+  AdminSettlementDtoOutputReceiptsInnerBuilder toBuilder() =>
+      AdminSettlementDtoOutputReceiptsInnerBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is AdminHandInReceiptsDtoOutputReceiptsInner &&
+    return other is AdminSettlementDtoOutputReceiptsInner &&
         id == other.id &&
         cityId == other.cityId &&
         number == other.number &&
@@ -172,7 +190,7 @@ class _$AdminHandInReceiptsDtoOutputReceiptsInner
   @override
   String toString() {
     return (newBuiltValueToStringHelper(
-            r'AdminHandInReceiptsDtoOutputReceiptsInner',
+            r'AdminSettlementDtoOutputReceiptsInner',
           )
           ..add('id', id)
           ..add('cityId', cityId)
@@ -190,13 +208,13 @@ class _$AdminHandInReceiptsDtoOutputReceiptsInner
   }
 }
 
-class AdminHandInReceiptsDtoOutputReceiptsInnerBuilder
+class AdminSettlementDtoOutputReceiptsInnerBuilder
     implements
         Builder<
-          AdminHandInReceiptsDtoOutputReceiptsInner,
-          AdminHandInReceiptsDtoOutputReceiptsInnerBuilder
+          AdminSettlementDtoOutputReceiptsInner,
+          AdminSettlementDtoOutputReceiptsInnerBuilder
         > {
-  _$AdminHandInReceiptsDtoOutputReceiptsInner? _$v;
+  _$AdminSettlementDtoOutputReceiptsInner? _$v;
 
   String? _id;
   String? get id => _$this._id;
@@ -210,9 +228,9 @@ class AdminHandInReceiptsDtoOutputReceiptsInnerBuilder
   String? get number => _$this._number;
   set number(String? number) => _$this._number = number;
 
-  AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum? _type;
-  AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum? get type => _$this._type;
-  set type(AdminHandInReceiptsDtoOutputReceiptsInnerTypeEnum? type) =>
+  AdminSettlementDtoOutputReceiptsInnerTypeEnum? _type;
+  AdminSettlementDtoOutputReceiptsInnerTypeEnum? get type => _$this._type;
+  set type(AdminSettlementDtoOutputReceiptsInnerTypeEnum? type) =>
       _$this._type = type;
 
   String? _sessionId;
@@ -239,29 +257,29 @@ class AdminHandInReceiptsDtoOutputReceiptsInnerBuilder
   DateTime? get createdAt => _$this._createdAt;
   set createdAt(DateTime? createdAt) => _$this._createdAt = createdAt;
 
-  ListBuilder<AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner>?
+  ListBuilder<AdminSettlementDtoOutputReceiptsInnerConversionsInner>?
   _conversions;
-  ListBuilder<AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner>
+  ListBuilder<AdminSettlementDtoOutputReceiptsInnerConversionsInner>
   get conversions => _$this._conversions ??=
-      ListBuilder<AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner>();
+      ListBuilder<AdminSettlementDtoOutputReceiptsInnerConversionsInner>();
   set conversions(
-    ListBuilder<AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner>?
+    ListBuilder<AdminSettlementDtoOutputReceiptsInnerConversionsInner>?
     conversions,
   ) => _$this._conversions = conversions;
 
-  ListBuilder<AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner>? _lines;
-  ListBuilder<AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner> get lines =>
+  ListBuilder<AdminSettlementDtoOutputReceiptsInnerLinesInner>? _lines;
+  ListBuilder<AdminSettlementDtoOutputReceiptsInnerLinesInner> get lines =>
       _$this._lines ??=
-          ListBuilder<AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner>();
+          ListBuilder<AdminSettlementDtoOutputReceiptsInnerLinesInner>();
   set lines(
-    ListBuilder<AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner>? lines,
+    ListBuilder<AdminSettlementDtoOutputReceiptsInnerLinesInner>? lines,
   ) => _$this._lines = lines;
 
-  AdminHandInReceiptsDtoOutputReceiptsInnerBuilder() {
-    AdminHandInReceiptsDtoOutputReceiptsInner._defaults(this);
+  AdminSettlementDtoOutputReceiptsInnerBuilder() {
+    AdminSettlementDtoOutputReceiptsInner._defaults(this);
   }
 
-  AdminHandInReceiptsDtoOutputReceiptsInnerBuilder get _$this {
+  AdminSettlementDtoOutputReceiptsInnerBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _id = $v.id;
@@ -282,70 +300,70 @@ class AdminHandInReceiptsDtoOutputReceiptsInnerBuilder
   }
 
   @override
-  void replace(AdminHandInReceiptsDtoOutputReceiptsInner other) {
-    _$v = other as _$AdminHandInReceiptsDtoOutputReceiptsInner;
+  void replace(AdminSettlementDtoOutputReceiptsInner other) {
+    _$v = other as _$AdminSettlementDtoOutputReceiptsInner;
   }
 
   @override
   void update(
-    void Function(AdminHandInReceiptsDtoOutputReceiptsInnerBuilder)? updates,
+    void Function(AdminSettlementDtoOutputReceiptsInnerBuilder)? updates,
   ) {
     if (updates != null) updates(this);
   }
 
   @override
-  AdminHandInReceiptsDtoOutputReceiptsInner build() => _build();
+  AdminSettlementDtoOutputReceiptsInner build() => _build();
 
-  _$AdminHandInReceiptsDtoOutputReceiptsInner _build() {
-    _$AdminHandInReceiptsDtoOutputReceiptsInner _$result;
+  _$AdminSettlementDtoOutputReceiptsInner _build() {
+    _$AdminSettlementDtoOutputReceiptsInner _$result;
     try {
       _$result =
           _$v ??
-          _$AdminHandInReceiptsDtoOutputReceiptsInner._(
+          _$AdminSettlementDtoOutputReceiptsInner._(
             id: BuiltValueNullFieldError.checkNotNull(
               id,
-              r'AdminHandInReceiptsDtoOutputReceiptsInner',
+              r'AdminSettlementDtoOutputReceiptsInner',
               'id',
             ),
             cityId: BuiltValueNullFieldError.checkNotNull(
               cityId,
-              r'AdminHandInReceiptsDtoOutputReceiptsInner',
+              r'AdminSettlementDtoOutputReceiptsInner',
               'cityId',
             ),
             number: BuiltValueNullFieldError.checkNotNull(
               number,
-              r'AdminHandInReceiptsDtoOutputReceiptsInner',
+              r'AdminSettlementDtoOutputReceiptsInner',
               'number',
             ),
             type: BuiltValueNullFieldError.checkNotNull(
               type,
-              r'AdminHandInReceiptsDtoOutputReceiptsInner',
+              r'AdminSettlementDtoOutputReceiptsInner',
               'type',
             ),
             sessionId: BuiltValueNullFieldError.checkNotNull(
               sessionId,
-              r'AdminHandInReceiptsDtoOutputReceiptsInner',
+              r'AdminSettlementDtoOutputReceiptsInner',
               'sessionId',
             ),
             cashierId: BuiltValueNullFieldError.checkNotNull(
               cashierId,
-              r'AdminHandInReceiptsDtoOutputReceiptsInner',
+              r'AdminSettlementDtoOutputReceiptsInner',
               'cashierId',
             ),
             cashierName: cashierName,
             captainId: BuiltValueNullFieldError.checkNotNull(
               captainId,
-              r'AdminHandInReceiptsDtoOutputReceiptsInner',
+              r'AdminSettlementDtoOutputReceiptsInner',
               'captainId',
             ),
             captainName: BuiltValueNullFieldError.checkNotNull(
               captainName,
-              r'AdminHandInReceiptsDtoOutputReceiptsInner',
+              r'AdminSettlementDtoOutputReceiptsInner',
               'captainName',
             ),
             createdAt: BuiltValueNullFieldError.checkNotNull(
               createdAt,
-              r'AdminHandInReceiptsDtoOutputReceiptsInner',
+              r'AdminSettlementDtoOutputReceiptsInner',
               'createdAt',
             ),
             conversions: conversions.build(),
@@ -360,7 +378,7 @@ class AdminHandInReceiptsDtoOutputReceiptsInnerBuilder
         lines.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-          r'AdminHandInReceiptsDtoOutputReceiptsInner',
+          r'AdminSettlementDtoOutputReceiptsInner',
           _$failedField,
           e.toString(),
         );

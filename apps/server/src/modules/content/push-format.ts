@@ -39,4 +39,7 @@ export function formatTime(moment: Date, timeZone: string): string {
 export const receiptTypeLabels = {
   captain_hand_in: 'تسليم نقد',
   captain_reimbursement: 'صرف للكابتن',
+  // «تصفية الخميس» (slice 2.18a): the payout and a negative balance collected.
+  captain_payout: 'صرف المستحقات',
+  captain_earnings_collection: 'تحصيل رصيد سالب',
 } as const;

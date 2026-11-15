@@ -6,76 +6,78 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_hand_in_receipts_dto_output_receipts_inner_conversions_inner.g.dart';
+part 'admin_settlement_dto_output_receipts_inner_lines_inner.g.dart';
 
-/// AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner
+/// AdminSettlementDtoOutputReceiptsInnerLinesInner
 ///
 /// Properties:
-/// * [from]
+/// * [currency]
+/// * [expected] - The custody before, + to hand in, − owed to the captain.
 /// * [amount]
-/// * [to]
-/// * [converted]
+/// * [remaining] - What stays open after it.
 @BuiltValue()
-abstract class AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner
+abstract class AdminSettlementDtoOutputReceiptsInnerLinesInner
     implements
         Built<
-          AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner,
-          AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInnerBuilder
+          AdminSettlementDtoOutputReceiptsInnerLinesInner,
+          AdminSettlementDtoOutputReceiptsInnerLinesInnerBuilder
         > {
-  @BuiltValueField(wireName: r'from')
-  String get from;
+  @BuiltValueField(wireName: r'currency')
+  String get currency;
+
+  /// The custody before, + to hand in, − owed to the captain.
+  @BuiltValueField(wireName: r'expected')
+  String get expected;
 
   @BuiltValueField(wireName: r'amount')
   String get amount;
 
-  @BuiltValueField(wireName: r'to')
-  String get to;
+  /// What stays open after it.
+  @BuiltValueField(wireName: r'remaining')
+  String get remaining;
 
-  @BuiltValueField(wireName: r'converted')
-  String get converted;
+  AdminSettlementDtoOutputReceiptsInnerLinesInner._();
 
-  AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner._();
-
-  factory AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner([
-    void updates(
-      AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInnerBuilder b,
-    ),
-  ]) = _$AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner;
+  factory AdminSettlementDtoOutputReceiptsInnerLinesInner([
+    void updates(AdminSettlementDtoOutputReceiptsInnerLinesInnerBuilder b),
+  ]) = _$AdminSettlementDtoOutputReceiptsInnerLinesInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(
-    AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInnerBuilder b,
+    AdminSettlementDtoOutputReceiptsInnerLinesInnerBuilder b,
   ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner>
+  static Serializer<AdminSettlementDtoOutputReceiptsInnerLinesInner>
   get serializer =>
-      _$AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInnerSerializer();
+      _$AdminSettlementDtoOutputReceiptsInnerLinesInnerSerializer();
 }
 
-class _$AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInnerSerializer
+class _$AdminSettlementDtoOutputReceiptsInnerLinesInnerSerializer
     implements
-        PrimitiveSerializer<
-          AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner
-        > {
+        PrimitiveSerializer<AdminSettlementDtoOutputReceiptsInnerLinesInner> {
   @override
   final Iterable<Type> types = const [
-    AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner,
-    _$AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner,
+    AdminSettlementDtoOutputReceiptsInnerLinesInner,
+    _$AdminSettlementDtoOutputReceiptsInnerLinesInner,
   ];
 
   @override
-  final String wireName =
-      r'AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner';
+  final String wireName = r'AdminSettlementDtoOutputReceiptsInnerLinesInner';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner object, {
+    AdminSettlementDtoOutputReceiptsInnerLinesInner object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'from';
+    yield r'currency';
     yield serializers.serialize(
-      object.from,
+      object.currency,
+      specifiedType: const FullType(String),
+    );
+    yield r'expected';
+    yield serializers.serialize(
+      object.expected,
       specifiedType: const FullType(String),
     );
     yield r'amount';
@@ -83,14 +85,9 @@ class _$AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInnerSerializer
       object.amount,
       specifiedType: const FullType(String),
     );
-    yield r'to';
+    yield r'remaining';
     yield serializers.serialize(
-      object.to,
-      specifiedType: const FullType(String),
-    );
-    yield r'converted';
-    yield serializers.serialize(
-      object.converted,
+      object.remaining,
       specifiedType: const FullType(String),
     );
   }
@@ -98,7 +95,7 @@ class _$AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInnerSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner object, {
+    AdminSettlementDtoOutputReceiptsInnerLinesInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -113,22 +110,30 @@ class _$AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInnerSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInnerBuilder
-    result,
+    required AdminSettlementDtoOutputReceiptsInnerLinesInnerBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'from':
+        case r'currency':
           final valueDes =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(String),
                   )
                   as String;
-          result.from = valueDes;
+          result.currency = valueDes;
+          break;
+        case r'expected':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.expected = valueDes;
           break;
         case r'amount':
           final valueDes =
@@ -139,23 +144,14 @@ class _$AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInnerSerializer
                   as String;
           result.amount = valueDes;
           break;
-        case r'to':
+        case r'remaining':
           final valueDes =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(String),
                   )
                   as String;
-          result.to = valueDes;
-          break;
-        case r'converted':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
-          result.converted = valueDes;
+          result.remaining = valueDes;
           break;
         default:
           unhandled.add(key);
@@ -166,13 +162,12 @@ class _$AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInnerSerializer
   }
 
   @override
-  AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner deserialize(
+  AdminSettlementDtoOutputReceiptsInnerLinesInner deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result =
-        AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInnerBuilder();
+    final result = AdminSettlementDtoOutputReceiptsInnerLinesInnerBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

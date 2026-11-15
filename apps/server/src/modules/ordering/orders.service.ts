@@ -23,7 +23,7 @@ import { EmergencyStops } from './emergency-stop.js';
 import { type Quote, type QuoteRequest, QuoteRefusedError, QuoteService } from './quote.service.js';
 import { CANCELLED_AFTER_PLACING_MS, orderKey, readOrders, type OrderView } from './order-views.js';
 import { commandHash, IdempotencyKeyReusedError, keepKey, replayKey } from './idempotency-keys.js';
-import { orderLines, orderNumbers, orders } from './schema.js';
+import { collections, orderLines, orderNumbers, orders } from './schema.js';
 
 type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
 type Executor = Pick<NodePgDatabase, 'select'>;
@@ -326,6 +326,18 @@ export class OrdersService implements OnModuleInit {
       .from(orders)
       .where(inArray(orders.id, [...new Set(orderIds)]));
     return new Map(rows.map((row) => [row.id, row.number]));
+  }
+
+  // AP §8.5.5 (slice 2.18a): the distance part of each delivered order's pay,
+  // as the collection recorded it, for the captain's weekly statement; an
+  // order without a collection is left out.
+  async distancePay(orderIds: readonly string[]): Promise<Map<string, bigint>> {
+    if (orderIds.length === 0) return new Map();
+    const rows = await this.database.db
+      .select({ orderId: collections.orderId, distancePay: collections.distancePay })
+      .from(collections)
+      .where(inArray(collections.orderId, [...new Set(orderIds)]));
+    return new Map(rows.map((row) => [row.orderId, row.distancePay]));
   }
 
   // CU §11: the customer's own order, or null for another's or an unknown

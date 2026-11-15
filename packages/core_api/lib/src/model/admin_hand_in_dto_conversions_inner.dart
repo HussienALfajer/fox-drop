@@ -3,8 +3,8 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/admin_settle_dto_payout_rates_inner.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_hand_in_dto_conversions_inner_rates_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -41,7 +41,7 @@ abstract class AdminHandInDtoConversionsInner
 
   /// The rate version of each currency but the base, as the quote gave them.
   @BuiltValueField(wireName: r'rates')
-  BuiltList<AdminHandInDtoConversionsInnerRatesInner> get rates;
+  BuiltList<AdminSettleDtoPayoutRatesInner> get rates;
 
   AdminHandInDtoConversionsInner._();
 
@@ -97,7 +97,7 @@ class _$AdminHandInDtoConversionsInnerSerializer
     yield serializers.serialize(
       object.rates,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminHandInDtoConversionsInnerRatesInner),
+        FullType(AdminSettleDtoPayoutRatesInner),
       ]),
     );
   }
@@ -168,10 +168,10 @@ class _$AdminHandInDtoConversionsInnerSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(AdminHandInDtoConversionsInnerRatesInner),
+                      FullType(AdminSettleDtoPayoutRatesInner),
                     ]),
                   )
-                  as BuiltList<AdminHandInDtoConversionsInnerRatesInner>;
+                  as BuiltList<AdminSettleDtoPayoutRatesInner>;
           result.rates.replace(valueDes);
           break;
         default:

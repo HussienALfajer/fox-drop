@@ -3,57 +3,59 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/admin_settle_dto_payout_rates_inner.dart';
+import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_hand_in_dto_conversions_inner_rates_inner.g.dart';
+part 'admin_settle_dto_payout.g.dart';
 
-/// AdminHandInDtoConversionsInnerRatesInner
+/// The preview's payout, null when the balance is not above zero.
 ///
 /// Properties:
 /// * [currency]
-/// * [rateVersionId]
+/// * [amount]
+/// * [rates] - The rate version of each currency but the base, as the preview gave them.
 @BuiltValue()
-abstract class AdminHandInDtoConversionsInnerRatesInner
-    implements
-        Built<
-          AdminHandInDtoConversionsInnerRatesInner,
-          AdminHandInDtoConversionsInnerRatesInnerBuilder
-        > {
+abstract class AdminSettleDtoPayout
+    implements Built<AdminSettleDtoPayout, AdminSettleDtoPayoutBuilder> {
   @BuiltValueField(wireName: r'currency')
   String get currency;
 
-  @BuiltValueField(wireName: r'rateVersionId')
-  String get rateVersionId;
+  @BuiltValueField(wireName: r'amount')
+  String get amount;
 
-  AdminHandInDtoConversionsInnerRatesInner._();
+  /// The rate version of each currency but the base, as the preview gave them.
+  @BuiltValueField(wireName: r'rates')
+  BuiltList<AdminSettleDtoPayoutRatesInner> get rates;
 
-  factory AdminHandInDtoConversionsInnerRatesInner([
-    void updates(AdminHandInDtoConversionsInnerRatesInnerBuilder b),
-  ]) = _$AdminHandInDtoConversionsInnerRatesInner;
+  AdminSettleDtoPayout._();
+
+  factory AdminSettleDtoPayout([void updates(AdminSettleDtoPayoutBuilder b)]) =
+      _$AdminSettleDtoPayout;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminHandInDtoConversionsInnerRatesInnerBuilder b) => b;
+  static void _defaults(AdminSettleDtoPayoutBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminHandInDtoConversionsInnerRatesInner> get serializer =>
-      _$AdminHandInDtoConversionsInnerRatesInnerSerializer();
+  static Serializer<AdminSettleDtoPayout> get serializer =>
+      _$AdminSettleDtoPayoutSerializer();
 }
 
-class _$AdminHandInDtoConversionsInnerRatesInnerSerializer
-    implements PrimitiveSerializer<AdminHandInDtoConversionsInnerRatesInner> {
+class _$AdminSettleDtoPayoutSerializer
+    implements PrimitiveSerializer<AdminSettleDtoPayout> {
   @override
   final Iterable<Type> types = const [
-    AdminHandInDtoConversionsInnerRatesInner,
-    _$AdminHandInDtoConversionsInnerRatesInner,
+    AdminSettleDtoPayout,
+    _$AdminSettleDtoPayout,
   ];
 
   @override
-  final String wireName = r'AdminHandInDtoConversionsInnerRatesInner';
+  final String wireName = r'AdminSettleDtoPayout';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminHandInDtoConversionsInnerRatesInner object, {
+    AdminSettleDtoPayout object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'currency';
@@ -61,17 +63,24 @@ class _$AdminHandInDtoConversionsInnerRatesInnerSerializer
       object.currency,
       specifiedType: const FullType(String),
     );
-    yield r'rateVersionId';
+    yield r'amount';
     yield serializers.serialize(
-      object.rateVersionId,
+      object.amount,
       specifiedType: const FullType(String),
+    );
+    yield r'rates';
+    yield serializers.serialize(
+      object.rates,
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminSettleDtoPayoutRatesInner),
+      ]),
     );
   }
 
   @override
   Object serialize(
     Serializers serializers,
-    AdminHandInDtoConversionsInnerRatesInner object, {
+    AdminSettleDtoPayout object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -86,7 +95,7 @@ class _$AdminHandInDtoConversionsInnerRatesInnerSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminHandInDtoConversionsInnerRatesInnerBuilder result,
+    required AdminSettleDtoPayoutBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -102,14 +111,25 @@ class _$AdminHandInDtoConversionsInnerRatesInnerSerializer
                   as String;
           result.currency = valueDes;
           break;
-        case r'rateVersionId':
+        case r'amount':
           final valueDes =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(String),
                   )
                   as String;
-          result.rateVersionId = valueDes;
+          result.amount = valueDes;
+          break;
+        case r'rates':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminSettleDtoPayoutRatesInner),
+                    ]),
+                  )
+                  as BuiltList<AdminSettleDtoPayoutRatesInner>;
+          result.rates.replace(valueDes);
           break;
         default:
           unhandled.add(key);
@@ -120,12 +140,12 @@ class _$AdminHandInDtoConversionsInnerRatesInnerSerializer
   }
 
   @override
-  AdminHandInDtoConversionsInnerRatesInner deserialize(
+  AdminSettleDtoPayout deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminHandInDtoConversionsInnerRatesInnerBuilder();
+    final result = AdminSettleDtoPayoutBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

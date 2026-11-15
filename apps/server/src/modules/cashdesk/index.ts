@@ -9,9 +9,11 @@ import { IdentityModule } from '../identity/index.js';
 import { LedgerModule } from '../ledger/index.js';
 import { NotificationsModule } from '../notifications/index.js';
 import { OrderingModule } from '../ordering/index.js';
+import { SettingsModule } from '../settings/index.js';
 import { AdminCashDeskController } from './admin-cash-desk.controller.js';
 import { CaptainCustodyController } from './captain-custody.controller.js';
 import { CashDeskService } from './cashdesk.service.js';
+import { SettlementService } from './settlement.service.js';
 
 // The cashdesk module (architecture §4.2): drawer sessions, receipts and the
 // desk's transactions (AP §9.10.3). Its money moves through the ledger.
@@ -27,10 +29,11 @@ import { CashDeskService } from './cashdesk.service.js';
     ContentModule,
     NotificationsModule,
     OrderingModule,
+    SettingsModule,
   ],
   controllers: [AdminCashDeskController, CaptainCustodyController],
-  providers: [CashDeskService],
-  exports: [CashDeskService],
+  providers: [CashDeskService, SettlementService],
+  exports: [CashDeskService, SettlementService],
 })
 export class CashDeskModule {}
 
@@ -47,3 +50,13 @@ export {
   type Receipt,
   type ReceiptType,
 } from './cashdesk.service.js';
+export {
+  type NegativeEarningsPolicy,
+  type PayoutWeekday,
+  type SettleCommand,
+  type Settlement,
+  type SettlementList,
+  type SettlementPreview,
+  SettlementService,
+  type Statement,
+} from './settlement.service.js';

@@ -3,9 +3,9 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/admin_settlement_dto_output_receipts_inner_conversions_inner.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_hand_in_receipts_dto_output_receipts_inner_lines_inner.dart';
-import 'package:core_api/src/model/admin_hand_in_receipts_dto_output_receipts_inner_conversions_inner.dart';
+import 'package:core_api/src/model/admin_settlement_dto_output_receipts_inner_lines_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -41,7 +41,7 @@ abstract class AdminReceiptDtoOutput
 
   @BuiltValueField(wireName: r'type')
   AdminReceiptDtoOutputTypeEnum get type;
-  // enum typeEnum {  captain_hand_in,  captain_reimbursement,  };
+  // enum typeEnum {  captain_hand_in,  captain_reimbursement,  captain_payout,  captain_earnings_collection,  };
 
   @BuiltValueField(wireName: r'sessionId')
   String get sessionId;
@@ -62,11 +62,11 @@ abstract class AdminReceiptDtoOutput
   DateTime get createdAt;
 
   @BuiltValueField(wireName: r'conversions')
-  BuiltList<AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner>
+  BuiltList<AdminSettlementDtoOutputReceiptsInnerConversionsInner>
   get conversions;
 
   @BuiltValueField(wireName: r'lines')
-  BuiltList<AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner> get lines;
+  BuiltList<AdminSettlementDtoOutputReceiptsInnerLinesInner> get lines;
 
   AdminReceiptDtoOutput._();
 
@@ -154,14 +154,14 @@ class _$AdminReceiptDtoOutputSerializer
     yield serializers.serialize(
       object.conversions,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner),
+        FullType(AdminSettlementDtoOutputReceiptsInnerConversionsInner),
       ]),
     );
     yield r'lines';
     yield serializers.serialize(
       object.lines,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner),
+        FullType(AdminSettlementDtoOutputReceiptsInnerLinesInner),
       ]),
     );
   }
@@ -290,12 +290,12 @@ class _$AdminReceiptDtoOutputSerializer
                     value,
                     specifiedType: const FullType(BuiltList, [
                       FullType(
-                        AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner,
+                        AdminSettlementDtoOutputReceiptsInnerConversionsInner,
                       ),
                     ]),
                   )
                   as BuiltList<
-                    AdminHandInReceiptsDtoOutputReceiptsInnerConversionsInner
+                    AdminSettlementDtoOutputReceiptsInnerConversionsInner
                   >;
           result.conversions.replace(valueDes);
           break;
@@ -304,14 +304,10 @@ class _$AdminReceiptDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner,
-                      ),
+                      FullType(AdminSettlementDtoOutputReceiptsInnerLinesInner),
                     ]),
                   )
-                  as BuiltList<
-                    AdminHandInReceiptsDtoOutputReceiptsInnerLinesInner
-                  >;
+                  as BuiltList<AdminSettlementDtoOutputReceiptsInnerLinesInner>;
           result.lines.replace(valueDes);
           break;
         default:
@@ -350,6 +346,12 @@ class AdminReceiptDtoOutputTypeEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'captain_reimbursement')
   static const AdminReceiptDtoOutputTypeEnum captainReimbursement =
       _$adminReceiptDtoOutputTypeEnum_captainReimbursement;
+  @BuiltValueEnumConst(wireName: r'captain_payout')
+  static const AdminReceiptDtoOutputTypeEnum captainPayout =
+      _$adminReceiptDtoOutputTypeEnum_captainPayout;
+  @BuiltValueEnumConst(wireName: r'captain_earnings_collection')
+  static const AdminReceiptDtoOutputTypeEnum captainEarningsCollection =
+      _$adminReceiptDtoOutputTypeEnum_captainEarningsCollection;
 
   static Serializer<AdminReceiptDtoOutputTypeEnum> get serializer =>
       _$adminReceiptDtoOutputTypeEnumSerializer;

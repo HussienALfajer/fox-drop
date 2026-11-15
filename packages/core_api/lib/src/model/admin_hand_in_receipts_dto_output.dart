@@ -3,8 +3,8 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/admin_hand_in_receipts_dto_output_receipts_inner.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/admin_settlement_dto_output_receipts_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -22,7 +22,7 @@ abstract class AdminHandInReceiptsDtoOutput
           AdminHandInReceiptsDtoOutputBuilder
         > {
   @BuiltValueField(wireName: r'receipts')
-  BuiltList<AdminHandInReceiptsDtoOutputReceiptsInner> get receipts;
+  BuiltList<AdminSettlementDtoOutputReceiptsInner> get receipts;
 
   AdminHandInReceiptsDtoOutput._();
 
@@ -58,7 +58,7 @@ class _$AdminHandInReceiptsDtoOutputSerializer
     yield serializers.serialize(
       object.receipts,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminHandInReceiptsDtoOutputReceiptsInner),
+        FullType(AdminSettlementDtoOutputReceiptsInner),
       ]),
     );
   }
@@ -93,10 +93,10 @@ class _$AdminHandInReceiptsDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(AdminHandInReceiptsDtoOutputReceiptsInner),
+                      FullType(AdminSettlementDtoOutputReceiptsInner),
                     ]),
                   )
-                  as BuiltList<AdminHandInReceiptsDtoOutputReceiptsInner>;
+                  as BuiltList<AdminSettlementDtoOutputReceiptsInner>;
           result.receipts.replace(valueDes);
           break;
         default:
