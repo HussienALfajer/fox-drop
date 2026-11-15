@@ -6,6 +6,7 @@ import {
   foreignKey,
   index,
   integer,
+  jsonb,
   pgSchema,
   primaryKey,
   text,
@@ -304,6 +305,130 @@ export const statements = cashdesk.table(
     check(
       'statements_reason',
       sql`${table.offCycle} = (${table.reason} IS NOT NULL) AND (${table.reason} IS NULL OR char_length(${table.reason}) BETWEEN 1 AND 500)`,
+    ),
+  ],
+);
+
+// «كشف الأسبوع» of a restaurant (AP §8.7, RA §12.3; slice 2.19a): a snapshot
+// taken at the business-day cutoff that starts merchant.settlement_weekday,
+// covering every merchant.account entry since the previous statement closed,
+// in the base currency. Every amount is from the restaurant's side as the
+// statement reads: + the restaurant owes, − the platform owes it. Never
+// changed.
+export const merchantStatements = cashdesk.table(
+  'merchant_statements',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    cityId: uuid('city_id').notNull(),
+    restaurantId: uuid('restaurant_id').notNull(),
+    // As the statement was taken.
+    restaurantName: text('restaurant_name').notNull(),
+    // The cutoff that closed it, and the previous statement's (null for the
+    // first).
+    cutoff: timestamp('cutoff', { withTimezone: true }).notNull(),
+    periodFrom: timestamp('period_from', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    currency: text('currency').notNull(),
+    // The orders with a commission or a discount share in the period, and
+    // the items value the captains paid for them.
+    orders: integer('orders').notNull(),
+    itemsValue: bigint('items_value', { mode: 'bigint' }).notNull(),
+    commission: bigint('commission', { mode: 'bigint' }).notNull(),
+    discountShare: bigint('discount_share', { mode: 'bigint' }).notNull(),
+    // Credits, debits, reversals and manual corrections (RA §12.5).
+    exceptions: bigint('exceptions', { mode: 'bigint' }).notNull(),
+    // The week's own total.
+    weekTotal: bigint('week_total', { mode: 'bigint' }).notNull(),
+    // The previous statement's total due, the payments since (+ the
+    // restaurant paid, − it was paid), what is left of it, and the total due.
+    previousDue: bigint('previous_due', { mode: 'bigint' }).notNull(),
+    paid: bigint('paid', { mode: 'bigint' }).notNull(),
+    earlierUnpaid: bigint('earlier_unpaid', { mode: 'bigint' }).notNull(),
+    totalDue: bigint('total_due', { mode: 'bigint' }).notNull(),
+    // The journals it covered, so the next one, read from a little before
+    // this cutoff, leaves them out.
+    journalIds: uuid('journal_ids').array().notNull(),
+  },
+  (table) => [
+    uniqueIndex('merchant_statements_restaurant_cutoff').on(table.restaurantId, table.cutoff),
+    index('merchant_statements_city_cutoff').on(table.cityId, table.cutoff),
+    check(
+      'merchant_statements_sums',
+      sql`${table.orders} >= 0 AND ${table.itemsValue} >= 0 AND ${table.weekTotal} = ${table.commission} + ${table.discountShare} + ${table.exceptions} AND ${table.earlierUnpaid} = ${table.previousDue} - ${table.paid} AND ${table.totalDue} = ${table.earlierUnpaid} + ${table.weekTotal}`,
+    ),
+    check(
+      'merchant_statements_period',
+      sql`${table.periodFrom} IS NULL OR ${table.periodFrom} < ${table.cutoff}`,
+    ),
+  ],
+);
+
+export const merchantStatementLineKinds = ['order', 'exception', 'payment'] as const;
+
+// RA §12.5: what an exception is, for its label: ordering's
+// merchantEntryCauses but `order` (merchant-statement.test.ts compares them).
+export const merchantExceptionCauses = [
+  'food_credit',
+  'credit',
+  'pickup_refund',
+  'pickup_kept',
+  'items_removed',
+  'fee_lowered',
+  'fee_cut_returned',
+  'debit',
+  'commission_reversal',
+  'commission_restored',
+  'discount_reversal',
+  'outcome_changed',
+  'adjustment',
+] as const;
+
+// A line of a restaurant's statement, in the order shown: an order (its
+// items value with the currency lines the captain paid, commission and
+// discount share), an exception (one journal, with its order and reason) or
+// a payment (a merchant.settlement journal). Never changed.
+export const merchantStatementLines = cashdesk.table(
+  'merchant_statement_lines',
+  {
+    statementId: uuid('statement_id').notNull(),
+    position: integer('position').notNull(),
+    kind: text('kind', { enum: merchantStatementLineKinds }).notNull(),
+    at: timestamp('at', { withTimezone: true }).notNull(),
+    orderId: uuid('order_id'),
+    orderNumber: bigint('order_number', { mode: 'bigint' }),
+    // An order: the pickup payment in the base currency and its lines
+    // [{ currency, amount }] (amounts as strings of minor units), null when
+    // no confirmed pickup is found.
+    itemsValue: bigint('items_value', { mode: 'bigint' }),
+    pickupLines: jsonb('pickup_lines'),
+    commission: bigint('commission', { mode: 'bigint' }),
+    discountShare: bigint('discount_share', { mode: 'bigint' }),
+    // An exception or a payment: + the restaurant owes more.
+    cause: text('cause', { enum: merchantExceptionCauses }),
+    amount: bigint('amount', { mode: 'bigint' }),
+    reason: text('reason'),
+    journalId: uuid('journal_id'),
+  },
+  (table) => [
+    primaryKey({ columns: [table.statementId, table.position] }),
+    foreignKey({
+      columns: [table.statementId],
+      foreignColumns: [merchantStatements.id],
+      name: 'merchant_statement_lines_statement',
+    }),
+    check(
+      'merchant_statement_lines_kind_values',
+      sql`${table.kind} IN ('order', 'exception', 'payment')`,
+    ),
+    check(
+      'merchant_statement_lines_cause_values',
+      sql`${table.cause} IS NULL OR ${table.cause} IN ('food_credit', 'credit', 'pickup_refund', 'pickup_kept', 'items_removed', 'fee_lowered', 'fee_cut_returned', 'debit', 'commission_reversal', 'commission_restored', 'discount_reversal', 'outcome_changed', 'adjustment')`,
+    ),
+    check(
+      'merchant_statement_lines_shape',
+      sql`CASE ${table.kind} WHEN 'order' THEN ${table.orderId} IS NOT NULL AND ${table.commission} IS NOT NULL AND ${table.discountShare} IS NOT NULL AND ${table.amount} IS NULL AND ${table.cause} IS NULL WHEN 'exception' THEN ${table.cause} IS NOT NULL AND ${table.amount} IS NOT NULL AND ${table.journalId} IS NOT NULL ELSE ${table.cause} IS NULL AND ${table.amount} IS NOT NULL AND ${table.journalId} IS NOT NULL END`,
     ),
   ],
 );

@@ -81,6 +81,9 @@ export function CashDeskPage() {
         </Link>{' '}
         <Link to="/cash-desk/settlements" search={search.city ? { city: search.city } : {}}>
           {t('settlement.title')}
+        </Link>{' '}
+        <Link to="/cash-desk/restaurants" search={search.city ? { city: search.city } : {}}>
+          {t('restaurantSettlement.title')}
         </Link>
       </p>
       {cities.isError || current.isError ? (

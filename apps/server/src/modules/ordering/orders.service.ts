@@ -23,7 +23,7 @@ import { EmergencyStops } from './emergency-stop.js';
 import { type Quote, type QuoteRequest, QuoteRefusedError, QuoteService } from './quote.service.js';
 import { CANCELLED_AFTER_PLACING_MS, orderKey, readOrders, type OrderView } from './order-views.js';
 import { commandHash, IdempotencyKeyReusedError, keepKey, replayKey } from './idempotency-keys.js';
-import { collections, orderLines, orderNumbers, orders } from './schema.js';
+import { collections, orderLines, orderNumbers, orders, pickupRequests } from './schema.js';
 
 type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
 type Executor = Pick<NodePgDatabase, 'select'>;
@@ -52,6 +52,17 @@ export class OrderRefusedError extends Error {
 }
 
 // CA §9.8, §10.6: a delivered order's pay as the collection recorded it.
+// The restaurant's weekly statement (slice 2.19a): an order's number and
+// its confirmed pickup payment, null without one.
+export interface OrderPickup {
+  number: bigint;
+  pickup: {
+    currency: string;
+    amount: bigint;
+    lines: { currency: string; amount: bigint }[];
+  } | null;
+}
+
 export interface OrderPayParts {
   basePay: bigint;
   distancePay: bigint;
@@ -366,6 +377,47 @@ export class OrdersService implements OnModuleInit {
       .from(collections)
       .where(inArray(collections.orderId, [...new Set(orderIds)]));
     return new Map(rows.map(({ orderId, ...parts }) => [orderId, parts]));
+  }
+
+  // AP §8.7, RA §12.3 (slice 2.19a): each order's number and its confirmed
+  // pickup payment, the full items value in the order's currency with the
+  // currency lines booked (the captain's when none were), for the
+  // restaurant's weekly statement; an order without a confirmed pickup has
+  // `pickup` null.
+  async pickups(orderIds: readonly string[]): Promise<Map<string, OrderPickup>> {
+    if (orderIds.length === 0) return new Map();
+    const ids = [...new Set(orderIds)];
+    const [numbers, rows] = await Promise.all([
+      this.orderNumbers(ids),
+      this.database.db
+        .select({
+          orderId: pickupRequests.orderId,
+          currency: pickupRequests.currency,
+          amount: pickupRequests.amount,
+          lines: pickupRequests.lines,
+          bookedLines: pickupRequests.bookedLines,
+        })
+        .from(pickupRequests)
+        .where(and(inArray(pickupRequests.orderId, ids), eq(pickupRequests.status, 'confirmed'))),
+    ]);
+    const confirmed = new Map(rows.map((row) => [row.orderId, row]));
+    const pickups = new Map<string, OrderPickup>();
+    for (const [orderId, number] of numbers) {
+      const row = confirmed.get(orderId);
+      pickups.set(orderId, {
+        number,
+        pickup: row
+          ? {
+              currency: row.currency,
+              amount: row.amount,
+              lines: ((row.bookedLines ?? row.lines) as { currency: string; amount: string }[]).map(
+                (line) => ({ currency: line.currency, amount: BigInt(line.amount) }),
+              ),
+            }
+          : null,
+      });
+    }
+    return pickups;
   }
 
   // CU §11: the customer's own order, or null for another's or an unknown

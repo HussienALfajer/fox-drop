@@ -1,0 +1,376 @@
+import 'reflect-metadata';
+import { randomBytes, randomUUID } from 'node:crypto';
+import type { NestFastifyApplication } from '@nestjs/platform-fastify';
+import pg from 'pg';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { ApiModule } from '../../api.module.js';
+import { createDatabase, type Database } from '../../database/database.js';
+import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
+import { createApiApp } from '../../http/create-api-app.js';
+import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
+import { FxService } from '../fx/index.js';
+import { ADMIN_SESSION_COOKIE, AdminSessionsService } from '../identity/index.js';
+import { type AccountPurpose, type JournalType, LedgerService } from '../ledger/index.js';
+import { MerchantsService } from '../merchants/index.js';
+import { MerchantStatementsService } from './index.js';
+
+// The restaurant's weekly statement at the cutoff (AP §8.7, AP §9.10.3 tab 3,
+// RA §12.3, §16 #30; slice 2.19a): each period since the previous statement,
+// the earlier unpaid balance less the payments since, one statement per
+// cutoff, the owners' push, and «تسوية المطاعم».
+vi.setConfig({ testTimeout: 30_000 });
+
+let database: TestDatabase;
+let cache: TestValkey;
+let app: NestFastifyApplication;
+let sql: pg.Pool;
+let db: Database;
+let azaz: string;
+let statements: MerchantStatementsService;
+let ledger: LedgerService;
+let merchants: MerchantsService;
+
+const system = { type: 'system', id: null, role: null } as const;
+const change = { actor: system, context: { ipAddress: null, device: null }, reason: 'test' };
+const DAY = 86_400_000;
+
+beforeAll(async () => {
+  [database, cache] = await Promise.all([startTestDatabase(), startTestValkey()]);
+  process.env.DATABASE_URL = database.appUrl;
+  process.env.VALKEY_URL = cache.url;
+  process.env.IDENTITY_ENCRYPTION_KEY = randomBytes(32).toString('base64');
+  process.env.FOX_DROP_ENVIRONMENT = 'development';
+  sql = new pg.Pool({ connectionString: database.appUrl });
+  db = createDatabase(database.appUrl);
+  app = await createApiApp(ApiModule);
+  await app.init();
+  await app.getHttpAdapter().getInstance().ready();
+  azaz = (await sql.query("SELECT id FROM geo.cities WHERE code = 'AZ'")).rows[0].id;
+  const fx = app.get(FxService);
+  await fx.setCityCurrency(azaz, { currency: 'TRY', displayOrder: 1, enabled: true }, change);
+  await fx.setBaseCurrency(azaz, 'TRY', change);
+  statements = app.get(MerchantStatementsService);
+  ledger = app.get(LedgerService);
+  merchants = app.get(MerchantsService);
+}, 300_000);
+
+afterAll(async () => {
+  await app?.close();
+  await db?.pool.end();
+  await sql?.end();
+  await Promise.all([database?.stop(), cache?.stop()]);
+});
+
+async function restaurant() {
+  const id = await merchants.createRestaurant(
+    azaz,
+    {
+      nameAr: `مطعم ${randomUUID()}`,
+      location: { latitude: 36.5866, longitude: 37.0463 },
+      coverage: { kind: 'radius', radiusMetres: 3000 },
+      minimumOrder: { amount: 10_000n, currency: 'TRY' },
+      commissionBp: 1500,
+      defaultPrepMin: 20,
+    },
+    change,
+  );
+  await merchants.setAccountStatus(id, 'active', change);
+  return id;
+}
+
+// One journal on the restaurant's account: + the restaurant owes.
+async function postWith(
+  tx: Parameters<Parameters<Database['db']['transaction']>[0]>[0],
+  restaurantId: string,
+  type: JournalType,
+  owes: bigint,
+  { orderId = randomUUID(), reason = null }: { orderId?: string; reason?: string | null } = {},
+) {
+  const counter: AccountPurpose =
+    type === 'merchant.commission'
+      ? 'platform.revenue_commission'
+      : type === 'merchant.settlement'
+        ? 'platform.cash'
+        : type === 'merchant.adjustment'
+          ? 'platform.adjustments'
+          : 'platform.order_clearing';
+  {
+    const own = await ledger.openAccount(
+      { cityId: azaz, purpose: 'merchant.account', ownerId: restaurantId, currency: 'TRY' },
+      tx,
+    );
+    const other = await ledger.openAccount(
+      {
+        cityId: azaz,
+        purpose: counter,
+        ownerId: counter === 'platform.cash' ? randomUUID() : null,
+        currency: 'TRY',
+      },
+      tx,
+    );
+    await ledger.post(
+      {
+        cityId: azaz,
+        type,
+        source:
+          type === 'merchant.settlement'
+            ? { kind: 'receipt', id: randomUUID() }
+            : type === 'merchant.adjustment'
+              ? null
+              : { kind: 'order', id: orderId },
+        actor: { type: 'system', id: null },
+        reason,
+        // The platform's side: + the restaurant owes.
+        entries: [
+          { accountId: own, currency: 'TRY', amount: owes },
+          { accountId: other, currency: 'TRY', amount: -owes },
+        ],
+      },
+      tx,
+    );
+  }
+}
+
+async function post(
+  restaurantId: string,
+  type: JournalType,
+  owes: bigint,
+  options: { orderId?: string; reason?: string | null } = {},
+) {
+  await db.db.transaction((tx) => postWith(tx, restaurantId, type, owes, options));
+}
+
+async function rows(restaurantId: string) {
+  return (
+    await sql.query(
+      'SELECT id, cutoff, total_due::text, previous_due::text, paid::text FROM cashdesk.merchant_statements WHERE restaurant_id = $1 ORDER BY cutoff',
+      [restaurantId],
+    )
+  ).rows;
+}
+
+async function pushes(restaurantId: string) {
+  return (
+    await sql.query(
+      "SELECT body, owners_only, data FROM notifications.push_messages WHERE restaurant_id = $1 AND template_key = 'merchant.weekly_statement'",
+      [restaurantId],
+    )
+  ).rows;
+}
+
+describe('the restaurant weekly statement at the cutoff', () => {
+  it('covers the entries before the cutoff, once, and tells the owners', async () => {
+    const id = await restaurant();
+    const order = randomUUID();
+    await post(id, 'merchant.commission', 6_000n, { orderId: order });
+    await post(id, 'merchant.debit', 40_000n, {
+      orderId: randomUUID(),
+      reason: 'استرداد مبلغ الاستلام',
+    });
+    const cutoff = new Date();
+    // Posted after the cutoff: next week's.
+    await post(id, 'merchant.commission', 5_700n);
+
+    await statements.closeAt(azaz, cutoff, cutoff, { notify: true });
+    await statements.closeAt(azaz, cutoff, cutoff, { notify: true });
+
+    const [first, ...others] = await rows(id);
+    expect(others).toEqual([]);
+    expect(first).toMatchObject({ total_due: '46000', previous_due: '0', paid: '0' });
+    const statement = await statements.statement(first.id);
+    expect(statement).toMatchObject({
+      restaurantId: id,
+      orders: 1,
+      commission: 6_000n,
+      exceptions: 40_000n,
+      weekTotal: 46_000n,
+      totalDue: 46_000n,
+      periodFrom: null,
+    });
+    expect(statement?.lines).toEqual([
+      expect.objectContaining({ kind: 'order', orderId: order, commission: 6_000n, position: 0 }),
+      expect.objectContaining({ kind: 'exception', cause: 'pickup_refund', amount: 40_000n }),
+    ]);
+    expect(await pushes(id)).toEqual([
+      {
+        body: 'كشف الأسبوع جاهز: المستحق 460 ₺. التسوية اليوم في المكتب أو عند زيارة موظفنا.',
+        owners_only: true,
+        data: { target: 'statement', statementId: first.id },
+      },
+    ]);
+  });
+
+  it('carries the earlier unpaid balance less the payments since into the next', async () => {
+    const id = await restaurant();
+    await post(id, 'merchant.commission', 8_000n);
+    const first = new Date();
+    await statements.closeAt(azaz, first, first, { notify: false });
+    await post(id, 'merchant.settlement', -5_000n);
+    await post(id, 'merchant.commission', 6_000n);
+    const second = new Date();
+    await statements.closeAt(azaz, second, second, { notify: false });
+
+    const [, next] = await rows(id);
+    const statement = await statements.statement(next.id);
+    expect(statement).toMatchObject({
+      periodFrom: first,
+      previousDue: 8_000n,
+      paid: 5_000n,
+      earlierUnpaid: 3_000n,
+      weekTotal: 6_000n,
+      totalDue: 9_000n,
+    });
+    expect(statement?.lines.map((line) => line.kind)).toEqual(['payment', 'order']);
+    expect(await pushes(id)).toEqual([]);
+  });
+
+  it('leaves an entry committed after the statement to the next one', async () => {
+    const id = await restaurant();
+    await post(id, 'merchant.commission', 1_000n);
+    let posted!: () => void;
+    let release!: () => void;
+    const written = new Promise<void>((resolve) => (posted = resolve));
+    const held = new Promise<void>((resolve) => (release = resolve));
+    // Stamped before the cutoff (its transaction's start), committed after.
+    const late = db.db.transaction(async (tx) => {
+      await postWith(tx, id, 'merchant.commission', 700n);
+      posted();
+      await held;
+    });
+    await written;
+    const first = new Date();
+    await statements.closeAt(azaz, first, first, { notify: false });
+    release();
+    await late;
+    const second = new Date();
+    await statements.closeAt(azaz, second, second, { notify: false });
+
+    const [one, two] = await rows(id);
+    expect(one).toMatchObject({ total_due: '1000' });
+    expect(await statements.statement(two.id)).toMatchObject({
+      previousDue: 1_000n,
+      weekTotal: 700n,
+      totalDue: 1_700n,
+    });
+  });
+
+  it('takes no statement for a restaurant with nothing in the period and nothing due', async () => {
+    const id = await restaurant();
+    const cutoff = new Date();
+    await statements.closeAt(azaz, cutoff, cutoff, { notify: true });
+    expect(await rows(id)).toEqual([]);
+  });
+
+  it('pushes nothing when the platform owes the restaurant', async () => {
+    const id = await restaurant();
+    await post(id, 'merchant.credit', -3_400n);
+    const cutoff = new Date();
+    await statements.closeAt(azaz, cutoff, cutoff, { notify: true });
+    expect((await rows(id))[0]).toMatchObject({ total_due: '-3400' });
+    expect(await pushes(id)).toEqual([]);
+  });
+
+  it('closes at the business-day cutoff that starts the settlement day', async () => {
+    const { last, next, weekday } = await statements.cutoffs(azaz, new Date());
+    expect(weekday).toBe('saturday');
+    const local = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Damascus',
+      weekday: 'long',
+      hour: 'numeric',
+      minute: 'numeric',
+      hourCycle: 'h23',
+    });
+    expect(local.format(last)).toBe('Saturday 06:00');
+    expect(next.getTime() - last.getTime()).toBe(7 * DAY);
+    expect(last.getTime()).toBeLessThanOrEqual(Date.now());
+  });
+
+  it('dates the overdue from the oldest statement still unpaid', async () => {
+    const id = await restaurant();
+    await post(id, 'merchant.commission', 1_000n);
+    const first = new Date();
+    await statements.closeAt(azaz, first, first, { notify: false });
+    await post(id, 'merchant.commission', 2_000n);
+    const second = new Date();
+    await statements.closeAt(azaz, second, second, { notify: false });
+
+    const list = await statements.restaurants(azaz, new Date(second.getTime() + 3 * DAY));
+    const row = list.restaurants.find((each) => each.restaurantId === id);
+    expect(row).toMatchObject({ unpaid: 3_000n });
+    expect(row?.latest).toMatchObject({ commission: 2_000n, totalDue: 3_000n });
+    expect(row?.overdueSince).toEqual(new Date(first.getTime() + 2 * DAY));
+  });
+
+  it('lists the restaurants with a balance, the overdue first', async () => {
+    const paid = await restaurant();
+    const late = await restaurant();
+    await post(paid, 'merchant.commission', 90_000n);
+    await post(late, 'merchant.commission', 1_000n);
+    const cutoff = new Date();
+    await statements.closeAt(azaz, cutoff, cutoff, { notify: false });
+    await post(paid, 'merchant.settlement', -90_000n);
+    await post(paid, 'merchant.commission', 500n);
+
+    const now = new Date(cutoff.getTime() + 3 * DAY);
+    const list = await statements.restaurants(azaz, now);
+    const mine = list.restaurants.filter((row) => [paid, late].includes(row.restaurantId));
+    expect(mine.map((row) => row.restaurantId)).toEqual([late, paid]);
+    expect(mine[0]).toMatchObject({ balance: 1_000n, unpaid: 1_000n });
+    expect(mine[0]?.overdueSince).toEqual(new Date(cutoff.getTime() + 2 * DAY));
+    expect(mine[1]).toMatchObject({ balance: 500n, unpaid: 0n, overdueSince: null });
+    expect(list.currency).toBe('TRY');
+  });
+});
+
+describe('the routes of «تسوية المطاعم»', () => {
+  let accounts = 0;
+  async function admin(roles: string[]) {
+    accounts += 1;
+    const { rows: created } = await sql.query(
+      `INSERT INTO identity.admin_accounts (name, email, status, password_hash, totp_secret_encrypted)
+       VALUES ($1, $2, 'active', 'not used', 'not used') RETURNING id`,
+      [`Statements ${accounts}`, `statements${accounts}@example.test`],
+    );
+    const accountId: string = created[0].id;
+    for (const role of roles) {
+      await sql.query(
+        'INSERT INTO identity.admin_account_roles (account_id, role_code) VALUES ($1, $2)',
+        [accountId, role],
+      );
+    }
+    const { token } = await app
+      .get(AdminSessionsService)
+      .start(db.db, accountId, { ipAddress: '203.0.113.9', device: 'test' }, new Date());
+    return (url: string) =>
+      app.inject({ method: 'GET', url, cookies: { [ADMIN_SESSION_COOKIE]: token } });
+  }
+
+  it('answers the list and a statement to FIN, money as strings', async () => {
+    const id = await restaurant();
+    await post(id, 'merchant.commission', 2_500n);
+    const cutoff = new Date();
+    await statements.closeAt(azaz, cutoff, cutoff, { notify: false });
+    const get = await admin(['FIN']);
+
+    const list = await get(`/v1/admin/cash-desk/restaurants?cityId=${azaz}`);
+    expect(list.statusCode).toBe(200);
+    const row = list
+      .json()
+      .restaurants.find((each: { restaurantId: string }) => each.restaurantId === id);
+    expect(row).toMatchObject({ balance: '2500', unpaid: '2500', overdueSince: null });
+
+    const statement = await get(`/v1/admin/cash-desk/merchant-statements/${row.latest.id}`);
+    expect(statement.statusCode).toBe(200);
+    expect(statement.json()).toMatchObject({ restaurantId: id, totalDue: '2500' });
+    expect(statement.json().lines[0]).toMatchObject({ kind: 'order', commission: '2500' });
+
+    const unknown = await get(`/v1/admin/cash-desk/merchant-statements/${randomUUID()}`);
+    expect(unknown.statusCode).toBe(404);
+    expect(unknown.json()).toMatchObject({ error: 'unknown_statement' });
+  });
+
+  it('refuses a user without the desk', async () => {
+    const get = await admin(['SUP']);
+    expect((await get(`/v1/admin/cash-desk/restaurants?cityId=${azaz}`)).statusCode).toBe(403);
+  });
+});

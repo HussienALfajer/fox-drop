@@ -131,6 +131,10 @@ Serializers _$serializers =
           ..add(AdminHandInReceiptsDtoOutput.serializer)
           ..add(AdminHandoverDto.serializer)
           ..add(AdminImageSetDtoOutput.serializer)
+          ..add(AdminMerchantStatementDtoOutput.serializer)
+          ..add(AdminMerchantStatementDtoOutputLinesInner.serializer)
+          ..add(AdminMerchantStatementDtoOutputLinesInnerCauseEnum.serializer)
+          ..add(AdminMerchantStatementDtoOutputLinesInnerKindEnum.serializer)
           ..add(AdminNewUploadDto.serializer)
           ..add(AdminNewUploadDtoContentTypeEnum.serializer)
           ..add(AdminNewUploadDtoPurposeEnum.serializer)
@@ -352,6 +356,15 @@ Serializers _$serializers =
           ..add(AdminRestaurantMaxActiveOrdersDto.serializer)
           ..add(AdminRestaurantPauseDto.serializer)
           ..add(AdminRestaurantPickupCurrenciesDto.serializer)
+          ..add(AdminRestaurantSettlementsDtoOutput.serializer)
+          ..add(AdminRestaurantSettlementsDtoOutputRestaurantsInner.serializer)
+          ..add(
+            AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatest
+                .serializer,
+          )
+          ..add(
+            AdminRestaurantSettlementsDtoOutputSettlementWeekdayEnum.serializer,
+          )
           ..add(AdminRestaurantStatusDtoOutput.serializer)
           ..add(AdminRestaurantStatusDtoOutputAccountStatusEnum.serializer)
           ..add(AdminRestaurantStatusDtoOutputHeldPauseSourceEnum.serializer)
@@ -1026,6 +1039,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminDeskCustodyDtoOutputUsage),
+            ]),
+            () => ListBuilder<AdminDeskCustodyDtoOutputUsage>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminDrawerSessionsDtoOutputSessionsInner),
             ]),
             () => ListBuilder<AdminDrawerSessionsDtoOutputSessionsInner>(),
@@ -1113,6 +1132,12 @@ Serializers _$serializers =
               const FullType(AdminOpenDrawerSessionDtoFloatsInner),
             ]),
             () => ListBuilder<AdminOpenDrawerSessionDtoFloatsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminMerchantStatementDtoOutputLinesInner),
+            ]),
+            () => ListBuilder<AdminMerchantStatementDtoOutputLinesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -1430,6 +1455,17 @@ Serializers _$serializers =
             () =>
                 ListBuilder<
                   AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminRestaurantSettlementsDtoOutputRestaurantsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminRestaurantSettlementsDtoOutputRestaurantsInner
                 >(),
           )
           ..addBuilderFactory(

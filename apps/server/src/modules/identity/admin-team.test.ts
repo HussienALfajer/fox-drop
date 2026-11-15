@@ -407,6 +407,8 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/admin/cash-desk/settlements/preview': 'cash_desk.record',
   'POST /v1/admin/cash-desk/settlements': 'cash_desk.record',
   'GET /v1/admin/cash-desk/statements/{statementId}': 'cash_desk.record',
+  'GET /v1/admin/cash-desk/restaurants': 'cash_desk.record',
+  'GET /v1/admin/cash-desk/merchant-statements/{statementId}': 'cash_desk.record',
   'GET /v1/admin/settings': { editRoles: ['OWN', 'OPS', 'FIN'] },
   'PUT /v1/admin/settings/{key}': settingRoles,
   'POST /v1/admin/settings/{key}/reset': settingRoles,

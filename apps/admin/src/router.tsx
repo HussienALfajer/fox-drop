@@ -32,6 +32,7 @@ import { PeakBonusPage } from './peak-bonus-page.js';
 import { OfficePage } from './office-page.js';
 import { ReceiptPage } from './receipt-page.js';
 import { SettleCaptainPage, SettlementsPage, StatementPage } from './settlement-page.js';
+import { MerchantStatementPage, RestaurantSettlementsPage } from './restaurant-settlement-page.js';
 import { CONTENT_FAQS, CONTENT_READ } from './content.js';
 import { ContentPage } from './content-page.js';
 import { canSeeImages } from './restaurant-images.js';
@@ -332,6 +333,27 @@ const statementRoute = createRoute({
   component: StatementPage,
 });
 
+// AP §9.10.3 «تسوية المطاعم» (slice 2.19a): the restaurants with a balance
+// and their weekly statements to print (cash_desk.record).
+const restaurantSettlementsRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/cash-desk/restaurants',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, CASH_DESK)) throw redirect({ to: '/' });
+  },
+  component: RestaurantSettlementsPage,
+});
+
+const merchantStatementRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/cash-desk/merchant-statements/$statementId',
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, CASH_DESK)) throw redirect({ to: '/' });
+  },
+  component: MerchantStatementPage,
+});
+
 const routeTree = rootRoute.addChildren([
   setupRoute,
   signInRoute,
@@ -350,6 +372,8 @@ const routeTree = rootRoute.addChildren([
     settlementsRoute,
     settleCaptainRoute,
     statementRoute,
+    restaurantSettlementsRoute,
+    merchantStatementRoute,
     imagesRoute,
     restaurantStatusRoute,
     alertsRoute,
