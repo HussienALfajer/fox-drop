@@ -1214,7 +1214,9 @@
     },
     "receiptType": {
       "captain_hand_in": "تسليم نقد",
-      "captain_reimbursement": "صرف للكابتن"
+      "captain_reimbursement": "صرف للكابتن",
+      "captain_payout": "صرف المستحقات",
+      "captain_earnings_collection": "تحصيل رصيد سالب"
     },
     "receipt": {
       "printThermal": "طباعة 80 مم",
@@ -1227,7 +1229,8 @@
       "paid": "المصروف",
       "remaining": "المتبقي",
       "conversion": "تحويل {{amount}} من العهدة إلى {{converted}} بسعر الصرف الحالي.",
-      "expectedAfterConversion": "العهدة بعد التحويل"
+      "expectedAfterConversion": "العهدة بعد التحويل",
+      "expectedEarnings": "المستحقات"
     },
     "sessions": {
       "title": "جلسات الصندوق",
@@ -1286,5 +1289,74 @@
     "grace": "(مهلة حتى {{until}})",
     "never": "—",
     "record": "سجّل تسليماً"
+  },
+  "settlement": {
+    "title": "تصفية الخميس",
+    "back": "كل الكباتن",
+    "none": "لا كابتن له مستحقات أو عهدة مفتوحة.",
+    "open": "تصفية",
+    "view": "عرض",
+    "payoutDay": "اليوم يوم الصرف ({{day}}).",
+    "readOnly": "اليوم ليس يوم الصرف ({{day}}). العرض للقراءة فقط.",
+    "offCycleOwner": "اليوم ليس يوم الصرف ({{day}}). الصرف خارج الموعد للمالك فقط، مع ذكر السبب.",
+    "weekday": {
+      "saturday": "السبت",
+      "sunday": "الأحد",
+      "monday": "الاثنين",
+      "tuesday": "الثلاثاء",
+      "wednesday": "الأربعاء",
+      "thursday": "الخميس",
+      "friday": "الجمعة"
+    },
+    "policy": {
+      "carry_forward": "الرصيد السالب يُرحَّل إلى الأسبوع التالي.",
+      "collect_at_desk": "الرصيد السالب يُحصَّل نقداً في المكتب."
+    },
+    "custody": "العهدة (تُسوّى بالكامل بكل عملة)",
+    "custodyHandIn": "يسلّم {{amount}}",
+    "custodyReimburse": "يُصرف له {{amount}}",
+    "earnings": "رصيد المستحقات",
+    "payoutCurrency": "عملة الصرف",
+    "payout": "يُصرف كامل الرصيد: {{amount}}",
+    "collect": "رصيد سالب يُحصَّل من الكابتن: {{amount}}",
+    "carryForward": "رصيد سالب {{amount}} يُرحَّل إلى الأسبوع التالي.",
+    "net": "الصافي بكل عملة",
+    "netNone": "لا نقد يتبادل اليد.",
+    "netGives": "يسلّم الكابتن {{amount}}",
+    "netReceives": "يستلم الكابتن {{amount}}",
+    "ledgerApart": "يُسجَّل التسليم والصرف كلٌّ في إيصاله وقيده، ويتبادل اليد الصافي فقط.",
+    "openFirst": "افتح الصندوق أولاً لتسجيل التصفية.",
+    "reason": "سبب الصرف خارج الموعد",
+    "confirm": "تأكيد التصفية",
+    "done": "تمت التصفية",
+    "receiptLink": "إيصال {{number}}: {{type}}",
+    "statementLink": "كشف الأسبوع",
+    "previewRefused": "لا يمكن عرض التصفية: لا سعر صرف لعملة الصرف، أو الكابتن ليس في هذه المدينة.",
+    "refusal": {
+      "not_payout_day": "اليوم ليس يوم الصرف. الصرف خارج الموعد للمالك فقط.",
+      "reason_required": "اكتب سبب الصرف خارج الموعد.",
+      "balance_changed": "تغيّرت العهدة أو المستحقات منذ عرضها. راجع الأرقام الجديدة ثم أكّد.",
+      "nothing_due": "لا عهدة ولا مستحقات لتصفيتها."
+    },
+    "statement": {
+      "title": "كشف الأسبوع",
+      "period": "من {{from}} إلى {{to}}",
+      "periodFirst": "حتى {{to}}",
+      "orders": "عدد الطلبات: {{orders}}",
+      "offCycle": "صرف خارج الموعد: {{reason}}",
+      "carriedIn": "رصيد مُرحَّل",
+      "basePay": "الأجر الأساسي",
+      "distancePay": "أجر المسافة",
+      "waitingPay": "أجر الانتظار",
+      "peakBonus": "مكافأة الذروة",
+      "bonuses": "المكافآت",
+      "charges": "الخصومات",
+      "instalments": "أقساط التأمين",
+      "adjustments": "قيود تصحيحية",
+      "balance": "الرصيد قبل الصرف",
+      "paid": "المبلغ المصروف",
+      "collected": "المحصَّل من رصيد سالب",
+      "carriedOut": "يُرحَّل إلى الأسبوع التالي"
+    }
   }
 }
