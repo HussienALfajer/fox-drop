@@ -3396,6 +3396,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/captain/statements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainStatementsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/statements/{statementId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainStatementsRead"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -9961,6 +9993,74 @@ export interface components {
             /** @enum {string} */
             negativePolicy: "carry_forward" | "collect_at_desk";
         };
+        CaptainStatementListDto_Output: {
+            /** @description Newest first. */
+            statements: {
+                /** Format: uuid */
+                id: string;
+                /** Format: date-time */
+                createdAt: string;
+                /** @description The previous payout, null for the first. */
+                periodFrom: string | null;
+                /** @description The city's base currency. */
+                currency: string;
+                orders: number;
+                /** @description In the base. */
+                paid: string;
+                /** @description The cash paid, in the currency the desk paid it. */
+                payout: {
+                    currency: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                } | null;
+                /** @description Carried to the next week. */
+                carriedOut: string;
+            }[];
+        };
+        CaptainStatementDto_Output: {
+            /** Format: uuid */
+            id: string;
+            captainName: string;
+            /** @description The previous payout, null for the first. */
+            periodFrom: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** @description The city's base currency. */
+            currency: string;
+            orders: number;
+            /** @description With the minimum top-up and the pay of orders not delivered. */
+            basePay: string;
+            /** @description Integer minor units (AP §8.6). */
+            distancePay: string;
+            /** @description Integer minor units (AP §8.6). */
+            waitingPay: string;
+            /** @description Integer minor units (AP §8.6). */
+            peakBonus: string;
+            /** @description Integer minor units (AP §8.6). */
+            bonuses: string;
+            /** @description Taken off the balance. */
+            charges: string;
+            /** @description Taken off the balance. */
+            instalments: string;
+            /** @description Integer minor units (AP §8.6). */
+            adjustments: string;
+            /** @description The balance the period started from. */
+            carriedIn: string;
+            /** @description Before the payout. */
+            balance: string;
+            /** @description In the base. */
+            paid: string;
+            /** @description The cash paid, in the currency the desk paid it. */
+            payout: {
+                currency: string;
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+            } | null;
+            /** @description A negative balance collected at the desk. */
+            collected: string;
+            /** @description Carried to the next week. */
+            carriedOut: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -15363,6 +15463,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptainEarningsDto_Output"];
+                };
+            };
+        };
+    };
+    captainStatementsList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainStatementListDto_Output"];
+                };
+            };
+        };
+    };
+    captainStatementsRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainStatementDto_Output"];
                 };
             };
         };

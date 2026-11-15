@@ -574,6 +574,10 @@ Serializers _$serializers =
           ..add(CaptainSignedInDtoOutput.serializer)
           ..add(CaptainSignedOutDtoOutput.serializer)
           ..add(CaptainSignedOutDtoOutputStatusEnum.serializer)
+          ..add(CaptainStatementDtoOutput.serializer)
+          ..add(CaptainStatementListDtoOutput.serializer)
+          ..add(CaptainStatementListDtoOutputStatementsInner.serializer)
+          ..add(CaptainStatementListDtoOutputStatementsInnerPayout.serializer)
           ..add(CaptainTokensDtoOutput.serializer)
           ..add(CaptainWentOfflineDtoOutput.serializer)
           ..add(CaptainWentOfflineDtoOutputHandIn.serializer)
@@ -1726,6 +1730,12 @@ Serializers _$serializers =
             ]),
             () =>
                 ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainStatementListDtoOutputStatementsInner),
+            ]),
+            () => ListBuilder<CaptainStatementListDtoOutputStatementsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

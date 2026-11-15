@@ -10,8 +10,8 @@ Slice 2.18c, the weekly statement in the captain app (`docs/roadmap.md`, Phase 2
 - **Specs:** CA §10.7 (the weekly statement: the orders, pay by part, bonuses, charges, instalments, the net paid; «مشاركة كصورة»), CA §14 #20 (the push «كشف الأسبوع جاهز: قبضت {المبلغ}», `target: statement`, `statementId`), AP §8.5.5 step 4, the cashdesk module's `CLAUDE.md` («The weekly statement»), `apps/captain/CLAUDE.md`, `apps/customer/CLAUDE.md` (the Flutter apps' rules) and `packages/core_l10n/CLAUDE.md`.
 - **Branch:** `feat/captain-weekly-statement`.
 - **Plan:**
-  - [ ] Failing tests first: the captain reads only their own statements, newest first, and one statement by id (another captain's is `404`); the lines add up as the desk's statement does.
-  - [ ] The server: `GET /v1/captain/statements` and `GET /v1/captain/statements/{statementId}` (`@AppSignedIn()`) from `cashdesk.statements`; `pnpm generate:api`.
+  - [x] Failing tests first: the captain reads only their own statements, newest first, and one statement by id (another captain's is `404`); the lines add up as the desk's statement does.
+  - [x] The server: `GET /v1/captain/statements` and `GET /v1/captain/statements/{statementId}` (`@AppSignedIn()`) from `cashdesk.statements`; `pnpm generate:api`.
   - [ ] The captain app: the list of statements (reached from «أرباحي»), the statement screen, «مشاركة كصورة» (the screen rendered to an image and shared, plain layout until the design), and the push `target: statement` opening it.
   - [ ] `checker`, `reviewer`, the pull request.
 

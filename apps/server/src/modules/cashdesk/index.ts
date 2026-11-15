@@ -13,6 +13,7 @@ import { SettingsModule } from '../settings/index.js';
 import { AdminCashDeskController } from './admin-cash-desk.controller.js';
 import { CaptainCustodyController } from './captain-custody.controller.js';
 import { CaptainEarningsController } from './captain-earnings.controller.js';
+import { CaptainStatementsController } from './captain-statements.controller.js';
 import { CashDeskService } from './cashdesk.service.js';
 import { EarningsService } from './earnings.service.js';
 import { SettlementService } from './settlement.service.js';
@@ -33,7 +34,12 @@ import { SettlementService } from './settlement.service.js';
     OrderingModule,
     SettingsModule,
   ],
-  controllers: [AdminCashDeskController, CaptainCustodyController, CaptainEarningsController],
+  controllers: [
+    AdminCashDeskController,
+    CaptainCustodyController,
+    CaptainEarningsController,
+    CaptainStatementsController,
+  ],
   providers: [CashDeskService, EarningsService, SettlementService],
   exports: [CashDeskService, SettlementService],
 })

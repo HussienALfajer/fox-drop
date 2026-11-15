@@ -8889,6 +8889,69 @@
           "captain"
         ]
       }
+    },
+    "/v1/captain/statements": {
+      "get": {
+        "operationId": "captainStatementsList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainStatementListDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
+    "/v1/captain/statements/{statementId}": {
+      "get": {
+        "operationId": "captainStatementsRead",
+        "parameters": [
+          {
+            "name": "statementId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainStatementDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
     }
   },
   "info": {
@@ -35957,6 +36020,265 @@
           "payoutWeekday",
           "nextPayout",
           "negativePolicy"
+        ],
+        "additionalProperties": false
+      },
+      "CaptainStatementListDto_Output": {
+        "type": "object",
+        "properties": {
+          "statements": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "periodFrom": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The previous payout, null for the first."
+                },
+                "currency": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 3,
+                  "description": "The city's base currency."
+                },
+                "orders": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "paid": {
+                  "type": "string",
+                  "pattern": "^\\d{1,19}$",
+                  "description": "In the base."
+                },
+                "payout": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "currency": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 3
+                        },
+                        "amount": {
+                          "type": "string",
+                          "pattern": "^\\d{1,19}$",
+                          "description": "Integer minor units (AP §8.6)."
+                        }
+                      },
+                      "required": [
+                        "currency",
+                        "amount"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The cash paid, in the currency the desk paid it."
+                },
+                "carriedOut": {
+                  "type": "string",
+                  "pattern": "^-?\\d{1,19}$",
+                  "description": "Carried to the next week."
+                }
+              },
+              "required": [
+                "id",
+                "createdAt",
+                "periodFrom",
+                "currency",
+                "orders",
+                "paid",
+                "payout",
+                "carriedOut"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Newest first."
+          }
+        },
+        "required": [
+          "statements"
+        ],
+        "additionalProperties": false
+      },
+      "CaptainStatementDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "captainName": {
+            "type": "string"
+          },
+          "periodFrom": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The previous payout, null for the first."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3,
+            "description": "The city's base currency."
+          },
+          "orders": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "basePay": {
+            "type": "string",
+            "pattern": "^-?\\d{1,19}$",
+            "description": "With the minimum top-up and the pay of orders not delivered."
+          },
+          "distancePay": {
+            "type": "string",
+            "pattern": "^\\d{1,19}$",
+            "description": "Integer minor units (AP §8.6)."
+          },
+          "waitingPay": {
+            "type": "string",
+            "pattern": "^-?\\d{1,19}$",
+            "description": "Integer minor units (AP §8.6)."
+          },
+          "peakBonus": {
+            "type": "string",
+            "pattern": "^-?\\d{1,19}$",
+            "description": "Integer minor units (AP §8.6)."
+          },
+          "bonuses": {
+            "type": "string",
+            "pattern": "^-?\\d{1,19}$",
+            "description": "Integer minor units (AP §8.6)."
+          },
+          "charges": {
+            "type": "string",
+            "pattern": "^-?\\d{1,19}$",
+            "description": "Taken off the balance."
+          },
+          "instalments": {
+            "type": "string",
+            "pattern": "^-?\\d{1,19}$",
+            "description": "Taken off the balance."
+          },
+          "adjustments": {
+            "type": "string",
+            "pattern": "^-?\\d{1,19}$",
+            "description": "Integer minor units (AP §8.6)."
+          },
+          "carriedIn": {
+            "type": "string",
+            "pattern": "^-?\\d{1,19}$",
+            "description": "The balance the period started from."
+          },
+          "balance": {
+            "type": "string",
+            "pattern": "^-?\\d{1,19}$",
+            "description": "Before the payout."
+          },
+          "paid": {
+            "type": "string",
+            "pattern": "^\\d{1,19}$",
+            "description": "In the base."
+          },
+          "payout": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  },
+                  "amount": {
+                    "type": "string",
+                    "pattern": "^\\d{1,19}$",
+                    "description": "Integer minor units (AP §8.6)."
+                  }
+                },
+                "required": [
+                  "currency",
+                  "amount"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The cash paid, in the currency the desk paid it."
+          },
+          "collected": {
+            "type": "string",
+            "pattern": "^\\d{1,19}$",
+            "description": "A negative balance collected at the desk."
+          },
+          "carriedOut": {
+            "type": "string",
+            "pattern": "^-?\\d{1,19}$",
+            "description": "Carried to the next week."
+          }
+        },
+        "required": [
+          "id",
+          "captainName",
+          "periodFrom",
+          "createdAt",
+          "currency",
+          "orders",
+          "basePay",
+          "distancePay",
+          "waitingPay",
+          "peakBonus",
+          "bonuses",
+          "charges",
+          "instalments",
+          "adjustments",
+          "carriedIn",
+          "balance",
+          "paid",
+          "payout",
+          "collected",
+          "carriedOut"
         ],
         "additionalProperties": false
       }

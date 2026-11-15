@@ -443,6 +443,26 @@ export class SettlementService {
     return row ? statementOf(row) : null;
   }
 
+  // CA §10.7 (slice 2.18c): the captain's own statements, newest first.
+  async captainStatements(captainId: string, limit: number): Promise<Statement[]> {
+    const rows = await this.database.db
+      .select()
+      .from(statements)
+      .where(eq(statements.captainId, captainId))
+      .orderBy(desc(statements.createdAt), desc(statements.id))
+      .limit(limit);
+    return rows.map(statementOf);
+  }
+
+  // One of the captain's own statements; another captain's is null.
+  async captainStatement(captainId: string, statementId: string): Promise<Statement | null> {
+    const [row] = await this.database.db
+      .select()
+      .from(statements)
+      .where(and(eq(statements.id, statementId), eq(statements.captainId, captainId)));
+    return row ? statementOf(row) : null;
+  }
+
   private async settlementOf(statementId: string): Promise<Settlement> {
     const statement = (await this.statement(statementId))!;
     return { statement, receipts: await this.desk.receiptsOf(statement.receiptIds) };
