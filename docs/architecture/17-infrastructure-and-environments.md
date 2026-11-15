@@ -24,7 +24,7 @@ Each environment has its own database, Firebase project, storage buckets, secret
 
 ## 17.3 Deployment
 
-- **V1: Docker Compose over SSH.** GitHub Actions builds the images, pushes them to the GitHub container registry, then on the server pulls them and restarts the environment's Compose project: on every merge to `main` (staging) and on a release tag (production). A deploy restarts each container briefly, so production deploys happen outside peak hours.
+- **V1: Docker Compose over SSH.** GitHub Actions builds the images, pushes them to the GitHub container registry, then on the server pulls them and restarts the environment's Compose project: on every merge to `main` but one of Markdown and `docs/` only (staging) and on a release tag (production). A deploy restarts each container briefly, so production deploys happen outside peak hours.
 - The Compose files, the nginx configuration and the deploy scripts live in `infra/`. No Terraform in V1: the only resources are the one server and the DNS records, which `infra/` documents.
 - **Database migrations** run as a separate step before the new version starts; every migration is backward compatible with the running version (expand, then contract).
 - Forced app updates are published outside peak hours (RA §4.2).

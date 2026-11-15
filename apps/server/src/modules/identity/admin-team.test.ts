@@ -587,13 +587,20 @@ describe('every route with every role (architecture §15.2, AP §14 item 2)', ()
     }
   });
 
-  it('answers 401 without a session, 403 without the permission, and lets the rest through', async () => {
-    const callers = [null, ...adminRoles.map((role) => [role]), ['OPS', 'FIN']];
-    const azaz: string = (await sql.query("SELECT id FROM geo.cities WHERE code = 'AZ'")).rows[0]
-      .id;
-    const outcomes: string[] = [];
-    const expected: string[] = [];
-    for (const roles of callers) {
+  // One test per caller, so each has its own time budget as routes are added
+  // and a failure names the caller.
+  const callers = [null, ...adminRoles.map((role) => [role]), ['OPS', 'FIN']].map((roles) => ({
+    caller: roles?.join('+') ?? 'nobody',
+    roles,
+  }));
+
+  it.each(callers)(
+    'answers $caller 401 without a session, 403 without the permission, and lets the rest through',
+    async ({ caller, roles }) => {
+      const azaz: string = (await sql.query("SELECT id FROM geo.cities WHERE code = 'AZ'")).rows[0]
+        .id;
+      const outcomes: string[] = [];
+      const expected: string[] = [];
       for (const route of routes(azaz)) {
         const access = routeAccess[`${route.method} ${route.path}`]!;
         // A fresh session per call, so a sign-out route ends only its own.
@@ -625,13 +632,13 @@ describe('every route with every role (architecture §15.2, AP §14 item 2)', ()
                     : '403';
         const got =
           response.statusCode === 401 ? '401' : response.statusCode === 403 ? '403' : 'through';
-        const caller = roles?.join('+') ?? 'nobody';
         outcomes.push(`${caller} ${route.method} ${route.path}: ${got}`);
         expected.push(`${caller} ${route.method} ${route.path}: ${want}`);
       }
-    }
-    expect(outcomes).toEqual(expected);
-  }, 120_000);
+      expect(outcomes).toEqual(expected);
+    },
+    60_000,
+  );
 });
 
 describe('the admin team (AP §5.2–5.3, §9.15)', () => {

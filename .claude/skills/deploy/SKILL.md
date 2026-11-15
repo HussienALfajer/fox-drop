@@ -22,7 +22,7 @@ Read `infra/CLAUDE.md` for the layout and rules, and the `vertex-server` skill b
 
 ## Deploy
 
-Every merge to `main` deploys staging: the `deploy-staging` job in `.github/workflows/ci.yml` builds and pushes both images tagged with the commit, then runs `ssh foxdrop-deploy@<host> "staging <commit>"`. The key (the `staging` GitHub environment, `main` only) can run nothing but `infra/server/deploy-ssh.sh`, which calls `foxdrop-deploy` through sudo.
+Every merge to `main` that changes more than Markdown and `docs/` deploys staging: the `deploy-staging` job in `.github/workflows/ci.yml` builds and pushes both images tagged with the commit, then runs `ssh foxdrop-deploy@<host> "staging <commit>"`. The key (the `staging` GitHub environment, `main` only) can run nothing but `infra/server/deploy-ssh.sh`, which calls `foxdrop-deploy` through sudo.
 
 `foxdrop-deploy` (`infra/server/deploy.sh`) takes the commit's `infra/` and `apps/server/db/` from the mirror, pulls the images, starts the database, runs the migrations, starts the release and waits for it to be healthy. If it is not, it starts the previous release again and fails. By hand, as root on the server:
 
@@ -107,7 +107,7 @@ The same with `--party captain --from +963900000003` for the captain. To move a 
 
 ## The staging APKs
 
-Every merge to `main` runs the `staging-apks` job of `.github/workflows/ci.yml` after `verify`: it builds the customer, restaurant and captain apps with `flutter build apk --flavor staging --release`, pointed at `https://<API_HOST of infra/environments/staging.env>`, and keeps each as an artifact of the run for 30 days (`foxdrop-<app>-staging-<run number>`, Android only; owner decisions 2026-11-07). Download them from the run's page (Actions › CI › the run › Artifacts) or with `gh run download <run id> --repo HussienALfajer/fox-drop`. The staging apps have their own IDs (`com.foxdrop.<app>.staging`), so they install beside development builds (`.dev`); Android asks to allow installs from unknown sources.
+Every merge to `main` but one of docs only runs the `staging-apks` job of `.github/workflows/ci.yml` after `verify`: it builds the customer, restaurant and captain apps with `flutter build apk --flavor staging --release`, pointed at `https://<API_HOST of infra/environments/staging.env>`, and keeps each as an artifact of the run for 30 days (`foxdrop-<app>-staging-<run number>`, Android only; owner decisions 2026-11-07). Download them from the run's page (Actions › CI › the run › Artifacts) or with `gh run download <run id> --repo HussienALfajer/fox-drop`. The staging apps have their own IDs (`com.foxdrop.<app>.staging`), so they install beside development builds (`.dev`); Android asks to allow installs from unknown sources.
 
 Each app has its own staging key (architecture §11.4): the secrets `STAGING_<APP>_KEYSTORE` (the PKCS12 key store in base64) and `STAGING_<APP>_KEYSTORE_PASSWORD` of the GitHub `staging` environment, alias `foxdrop`. The owner keeps a copy outside the repository. A new key cannot update an installed app: uninstall the staging app first. A build of the same flavor on a machine without the key is signed with the debug key; never hand it out.
 
