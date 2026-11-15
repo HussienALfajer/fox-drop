@@ -13,9 +13,46 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  verify:
+  # What a change touches. Markdown and docs/ only: Prettier alone checks
+  # them (no test reads them). The Android builds run only for a change to a
+  # Flutter app, a Dart package or this workflow.
+  changes:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.paths.outputs.code }}
+      flutter: ${{ steps.paths.outputs.flutter }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - id: paths
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            # No commit to compare with (a new branch): check everything.
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            echo "flutter=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          files=$(git diff --name-only "$BASE" HEAD)
+          printf '%s\n' "$files"
+          code=false
+          flutter=false
+          if printf '%s\n' "$files" | grep -qvE '(\.md$|^docs/)'; then code=true; fi
+          if printf '%s\n' "$files" | grep -qE '^(apps/(customer|captain|merchant)/|packages/core_|pubspec\.(yaml|lock)$|\.fvmrc$|analysis_options\.yaml$|\.github/workflows/ci\.yml$)'; then flutter=true; fi
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "flutter=$flutter" >> "$GITHUB_OUTPUT"
+
+  # The parts of pnpm verify run as parallel jobs (scripts/verify.mjs). The
+  # `verify` job below is the one check main requires.
+  contract:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
 
@@ -54,16 +91,52 @@ jobs:
 
       - run: dart pub get --enforce-lockfile
 
+      - run: node scripts/verify.mjs contract
+
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: node scripts/verify.mjs format
+
+  typescript:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
       # The web apps' smoke tests run in Chromium (architecture §18.2).
       - uses: actions/cache@v5
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ hashFiles('pnpm-lock.yaml') }}
 
-      # Chromium's system libraries, once; pnpm verify installs the browser for each app.
+      # Chromium's system libraries, once; verify installs the browser for each app.
       - run: pnpm --filter @fox-drop/admin exec playwright install-deps chromium
 
-      - run: pnpm verify
+      - run: node scripts/verify.mjs typescript
 
       # The traces of a failed smoke test (playwright.config.ts).
       - if: failure()
@@ -73,8 +146,84 @@ jobs:
           path: apps/*/test-results/
           if-no-files-found: ignore
 
+  # The server's tests start PostGIS and Valkey with Testcontainers, in three
+  # shards (Vitest's split of the files).
+  server:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: node scripts/verify.mjs server --shard=${{ matrix.shard }}/3
+
+  dart:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      # Runs scripts/verify.mjs.
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+
+      - name: Read the pinned Flutter version
+        id: flutter
+        run: |
+          version=$(jq -er .flutter .fvmrc)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          flutter-version: ${{ steps.flutter.outputs.version }}
+          cache: true
+
+      - run: dart pub get --enforce-lockfile
+
+      - run: node scripts/verify.mjs dart
+
+  # The check main requires: every part passed, or was skipped for a change
+  # of docs only.
+  verify:
+    if: always()
+    needs: [changes, contract, format, typescript, server, dart]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Every part passed or was skipped
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "$RESULTS"
+          for result in $RESULTS; do
+            case "$result" in
+              success | skipped) ;;
+              *) exit 1 ;;
+            esac
+          done
+
   # Architecture §4.4: one image runs the four server roles.
   server-image:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -90,6 +239,8 @@ jobs:
 
   # The panel and the portal in one image (infra/web), checked as it runs on the server.
   web-image:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -103,8 +254,9 @@ jobs:
 
       - run: node infra/web/smoke-image.mjs fox-drop-web:ci
 
-  # Architecture §17.3: every merge to main builds the images, pushes them to
-  # the GitHub container registry and deploys staging over SSH. The key can
+  # Architecture §17.3: every merge to main (but one of docs only) builds the
+  # images, pushes them to the GitHub container registry and deploys staging
+  # over SSH. The key can
   # only run infra/server/deploy-ssh.sh on the server (the deploy skill); it
   # is a secret of the staging environment, which only main may use.
   deploy-staging:
@@ -156,12 +308,14 @@ jobs:
   # three apps' staging APKs (Android only), signed with each app's staging
   # key, as artifacts of the run (the deploy skill). The keys are secrets of
   # the staging environment, which only main may use.
-  # The release build of each Android app on every pull request, so a plugin
-  # that breaks it (a compileSdk, an AAR metadata check, R8) fails before the
-  # merge and not in staging-apks. No secret: signed with the debug key and
+  # The release build of each Android app on every pull request that touches
+  # a Flutter app, a Dart package or this workflow (the changes job), so a
+  # plugin that breaks it (a compileSdk, an AAR metadata check, R8) fails
+  # before the merge and not in staging-apks. No secret: signed with the debug key and
   # never kept (the deploy skill, «The staging APKs»).
   android-release:
-    if: github.event_name == 'pull_request'
+    needs: changes
+    if: github.event_name == 'pull_request' && needs.changes.outputs.flutter == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:

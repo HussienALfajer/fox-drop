@@ -22,7 +22,7 @@ Read `infra/CLAUDE.md` for the layout and rules, and the `vertex-server` skill b
 
 ## Deploy
 
-Every merge to `main` deploys staging: the `deploy-staging` job in `.github/workflows/ci.yml` builds and pushes both images tagged with the commit, then runs `ssh foxdrop-deploy@<host> "staging <commit>"`. The key (the `staging` GitHub environment, `main` only) can run nothing but `infra/server/deploy-ssh.sh`, which calls `foxdrop-deploy` through sudo.
+Every merge to `main` that changes more than Markdown and `docs/` deploys staging: the `deploy-staging` job in `.github/workflows/ci.yml` builds and pushes both images tagged with the commit, then runs `ssh foxdrop-deploy@<host> "staging <commit>"`. The key (the `staging` GitHub environment, `main` only) can run nothing but `infra/server/deploy-ssh.sh`, which calls `foxdrop-deploy` through sudo.
 
 `foxdrop-deploy` (`infra/server/deploy.sh`) takes the commit's `infra/` and `apps/server/db/` from the mirror, pulls the images, starts the database, runs the migrations, starts the release and waits for it to be healthy. If it is not, it starts the previous release again and fails. By hand, as root on the server:
 

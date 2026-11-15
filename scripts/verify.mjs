@@ -1,5 +1,9 @@
 // The single check command (architecture §18.4): TypeScript through Turborepo,
 // then Dart through Melos. Stops at the first failing step.
+//
+// `pnpm verify` runs every part. CI runs each part as its own job, in
+// parallel: `node scripts/verify.mjs <part>...`, and `--shard=<i>/<n>` splits
+// the server's tests (Vitest's shards) across jobs.
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
@@ -118,27 +122,64 @@ function checkLocalizations() {
   fail('Flutter localizations');
 }
 
-checkApiContract();
-step('Prettier', 'pnpm exec prettier --check .');
-// The web apps' smoke tests run in Chromium; this downloads it once.
-step(
-  'Playwright browser',
-  // One app at a time: two installs at once race on the shared browser cache.
-  'pnpm --workspace-concurrency=1 --filter @fox-drop/admin --filter @fox-drop/merchant-portal exec playwright install chromium',
-);
-step(
-  'Lint, type check, test, build and smoke test (Turborepo)',
-  'pnpm exec turbo run lint:root lint typecheck test build test:e2e',
-);
+const PARTS = ['contract', 'format', 'typescript', 'server', 'dart'];
+const args = process.argv.slice(2);
+const shard = args.find((arg) => arg.startsWith('--shard='))?.slice('--shard='.length);
+const named = args.filter((arg) => arg !== `--shard=${shard}`);
+const unknown = named.filter((arg) => !PARTS.includes(arg));
+if (unknown.length > 0 || (shard !== undefined && !/^\d+\/\d+$/.test(shard))) {
+  console.error(
+    `verify: unknown argument ${[...unknown, ...(shard ? [`--shard=${shard}`] : [])].join(' ')}.` +
+      ` Usage: node scripts/verify.mjs [${PARTS.join('|')}]... [--shard=<index>/<count>]`,
+  );
+  process.exit(1);
+}
+const parts = new Set(named.length > 0 ? named : PARTS);
 
-checkFlutterVersion();
-checkDartWorkspace();
-checkLocalizations();
-step('Dart analyze', 'dart run melos run analyze --no-select');
-step('Dart format', 'dart run melos run format:check --no-select');
-if (dartPackagesWithTests('--no-flutter'))
-  step('Dart tests', 'dart run melos run test:dart --no-select');
-if (dartPackagesWithTests('--flutter'))
-  step('Flutter tests', 'dart run melos run test:flutter --no-select');
+if (parts.has('contract')) checkApiContract();
+if (parts.has('format')) step('Prettier', 'pnpm exec prettier --check .');
 
-console.log('\nverify: all checks passed');
+const turboTasks = 'lint:root lint typecheck build test:e2e';
+if (parts.has('typescript')) {
+  // The web apps' smoke tests run in Chromium; this downloads it once.
+  step(
+    'Playwright browser',
+    // One app at a time: two installs at once race on the shared browser cache.
+    'pnpm --workspace-concurrency=1 --filter @fox-drop/admin --filter @fox-drop/merchant-portal exec playwright install chromium',
+  );
+}
+if (parts.has('typescript') && parts.has('server') && shard === undefined) {
+  // One Turborepo run, so the server's tests overlap the rest.
+  step(
+    'Lint, type check, test, build and smoke test (Turborepo)',
+    `pnpm exec turbo run ${turboTasks} test`,
+  );
+} else {
+  if (parts.has('typescript')) {
+    step('Lint, type check, build and smoke test (Turborepo)', `pnpm exec turbo run ${turboTasks}`);
+    step(
+      "Tests other than the server's (Turborepo)",
+      'pnpm exec turbo run test --filter="!@fox-drop/server"',
+    );
+  }
+  if (parts.has('server')) {
+    step(
+      `Server tests${shard ? `, shard ${shard}` : ''}`,
+      `pnpm --filter @fox-drop/server test${shard ? ` --shard=${shard}` : ''}`,
+    );
+  }
+}
+
+if (parts.has('dart')) {
+  checkFlutterVersion();
+  checkDartWorkspace();
+  checkLocalizations();
+  step('Dart analyze', 'dart run melos run analyze --no-select');
+  step('Dart format', 'dart run melos run format:check --no-select');
+  if (dartPackagesWithTests('--no-flutter'))
+    step('Dart tests', 'dart run melos run test:dart --no-select');
+  if (dartPackagesWithTests('--flutter'))
+    step('Flutter tests', 'dart run melos run test:flutter --no-select');
+}
+
+console.log(`\nverify: ${named.length > 0 ? [...parts].join(', ') : 'all checks'} passed`);
