@@ -9892,6 +9892,8 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** Format: uuid */
+            cityId: string;
+            /** Format: uuid */
             restaurantId: string;
             restaurantName: string;
             /** Format: date-time */

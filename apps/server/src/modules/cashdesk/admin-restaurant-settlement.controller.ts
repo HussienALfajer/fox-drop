@@ -49,6 +49,7 @@ class AdminMerchantStatementParamsDto extends createZodDto(z.object({ statementI
 class AdminMerchantStatementDto extends createZodDto(
   z.object({
     id: z.uuid(),
+    cityId: z.uuid(),
     restaurantId: z.uuid(),
     restaurantName: z.string(),
     cutoff: z.iso.datetime(),
@@ -88,6 +89,7 @@ class AdminMerchantStatementDto extends createZodDto(
 function statementBody(found: MerchantStatementView) {
   return {
     id: found.id,
+    cityId: found.cityId,
     restaurantId: found.restaurantId,
     restaurantName: found.restaurantName,
     cutoff: found.cutoff.toISOString(),

@@ -14,6 +14,7 @@ part 'admin_merchant_statement_dto_output.g.dart';
 ///
 /// Properties:
 /// * [id]
+/// * [cityId]
 /// * [restaurantId]
 /// * [restaurantName]
 /// * [cutoff]
@@ -40,6 +41,9 @@ abstract class AdminMerchantStatementDtoOutput
         > {
   @BuiltValueField(wireName: r'id')
   String get id;
+
+  @BuiltValueField(wireName: r'cityId')
+  String get cityId;
 
   @BuiltValueField(wireName: r'restaurantId')
   String get restaurantId;
@@ -125,6 +129,11 @@ class _$AdminMerchantStatementDtoOutputSerializer
     yield r'id';
     yield serializers.serialize(
       object.id,
+      specifiedType: const FullType(String),
+    );
+    yield r'cityId';
+    yield serializers.serialize(
+      object.cityId,
       specifiedType: const FullType(String),
     );
     yield r'restaurantId';
@@ -251,6 +260,15 @@ class _$AdminMerchantStatementDtoOutputSerializer
                   )
                   as String;
           result.id = valueDes;
+          break;
+        case r'cityId':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.cityId = valueDes;
           break;
         case r'restaurantId':
           final valueDes =

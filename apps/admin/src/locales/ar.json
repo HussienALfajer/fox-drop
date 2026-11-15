@@ -1358,5 +1358,56 @@
       "collected": "المحصَّل من رصيد سالب",
       "carriedOut": "يُرحَّل إلى الأسبوع التالي"
     }
+  },
+  "restaurantSettlement": {
+    "title": "تسوية المطاعم",
+    "nextCutoff": "يُغلق كشف الأسبوع التالي في {{at}}.",
+    "none": "لا مطعم له رصيد.",
+    "restaurant": "المطعم",
+    "balance": "الرصيد الآن",
+    "latest": "آخر كشف",
+    "latestLine": "كشف {{at}}: المستحق {{amount}}",
+    "noStatement": "لا كشف بعد",
+    "unpaid": "غير المسدّد من آخر كشف",
+    "state": "الحالة",
+    "overdue": "متأخر منذ {{at}}",
+    "onTime": "غير متأخر",
+    "owes": "عليه {{amount}}",
+    "owed": "له {{amount}}",
+    "settled": "لا رصيد",
+    "cause": {
+      "food_credit": "تعويض عن طلب أُلغي بعد التحضير",
+      "credit": "تصحيح مبلغ الاستلام",
+      "pickup_refund": "استرداد مبلغ الاستلام",
+      "items_removed": "أصناف حُذفت بعد الاستلام",
+      "debit": "مشكلة بعد التسليم",
+      "commission_reversal": "إلغاء عمولة",
+      "discount_reversal": "إلغاء خصم يموّله المطعم",
+      "adjustment": "تسوية يدوية"
+    },
+    "statement": {
+      "title": "كشف الأسبوع",
+      "period": "من {{from}} إلى {{to}}",
+      "periodFirst": "حتى {{to}}",
+      "orders": "الطلبات: {{orders}}",
+      "noOrders": "لا طلبات في هذا الكشف.",
+      "order": "الطلب",
+      "itemsValue": "قيمة الأصناف المقبوضة من الكباتن",
+      "pickupLines": "({{lines}})",
+      "commission": "العمولة",
+      "discountShare": "خصم يموّله المطعم",
+      "exceptionsTitle": "الاستثناءات",
+      "noExceptions": "لا استثناءات.",
+      "entry": "البند",
+      "reason": "السبب",
+      "amount": "المبلغ",
+      "paymentsTitle": "الدفعات منذ الكشف السابق",
+      "exceptions": "صافي الاستثناءات",
+      "weekTotal": "مستحق هذا الأسبوع",
+      "previousDue": "المستحق في الكشف السابق",
+      "paid": "المدفوع منذ الكشف السابق",
+      "earlierUnpaid": "الرصيد السابق غير المسدّد",
+      "totalDue": "المجموع المستحق"
+    }
   }
 }

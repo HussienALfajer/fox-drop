@@ -14,7 +14,7 @@ Slice 2.19a, the weekly statement at the cutoff (`docs/roadmap.md`, Phase 2, Mon
   - [x] The statement at the cutoff (test first): one per restaurant and cutoff, the period since the previous statement (entries committed late go next week), each order with its items value and currency lines, commission and discount share, the exceptions with the order and reason, the earlier unpaid balance and the payments since, the total due; a repeat closes nothing twice.
   - [x] The worker's sweep and the owners' push «كشف الأسبوع جاهز: المستحق {المبلغ}. التسوية اليوم في المكتب أو عند زيارة موظفنا.»
   - [x] The admin routes (the restaurants with a non-zero balance, overdue first; a statement), the OpenAPI document and the clients.
-  - [ ] The panel's «تسوية المطاعم» tab: the list and the statement entry by entry, printable as a plain layout.
+  - [x] The panel's «تسوية المطاعم» tab: the list and the statement entry by entry, printable as a plain layout.
   - [ ] The module's `CLAUDE.md`, the reviewer, the hand-over to 2.19b.
 
 ### Owner decisions for 2.19 (2026-11-16)

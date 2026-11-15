@@ -11,6 +11,8 @@ class _$AdminMerchantStatementDtoOutput
   @override
   final String id;
   @override
+  final String cityId;
+  @override
   final String restaurantId;
   @override
   final String restaurantName;
@@ -51,6 +53,7 @@ class _$AdminMerchantStatementDtoOutput
 
   _$AdminMerchantStatementDtoOutput._({
     required this.id,
+    required this.cityId,
     required this.restaurantId,
     required this.restaurantName,
     required this.cutoff,
@@ -83,6 +86,7 @@ class _$AdminMerchantStatementDtoOutput
     if (identical(other, this)) return true;
     return other is AdminMerchantStatementDtoOutput &&
         id == other.id &&
+        cityId == other.cityId &&
         restaurantId == other.restaurantId &&
         restaurantName == other.restaurantName &&
         cutoff == other.cutoff &&
@@ -106,6 +110,7 @@ class _$AdminMerchantStatementDtoOutput
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, id.hashCode);
+    _$hash = $jc(_$hash, cityId.hashCode);
     _$hash = $jc(_$hash, restaurantId.hashCode);
     _$hash = $jc(_$hash, restaurantName.hashCode);
     _$hash = $jc(_$hash, cutoff.hashCode);
@@ -131,6 +136,7 @@ class _$AdminMerchantStatementDtoOutput
   String toString() {
     return (newBuiltValueToStringHelper(r'AdminMerchantStatementDtoOutput')
           ..add('id', id)
+          ..add('cityId', cityId)
           ..add('restaurantId', restaurantId)
           ..add('restaurantName', restaurantName)
           ..add('cutoff', cutoff)
@@ -163,6 +169,10 @@ class AdminMerchantStatementDtoOutputBuilder
   String? _id;
   String? get id => _$this._id;
   set id(String? id) => _$this._id = id;
+
+  String? _cityId;
+  String? get cityId => _$this._cityId;
+  set cityId(String? cityId) => _$this._cityId = cityId;
 
   String? _restaurantId;
   String? get restaurantId => _$this._restaurantId;
@@ -246,6 +256,7 @@ class AdminMerchantStatementDtoOutputBuilder
     final $v = _$v;
     if ($v != null) {
       _id = $v.id;
+      _cityId = $v.cityId;
       _restaurantId = $v.restaurantId;
       _restaurantName = $v.restaurantName;
       _cutoff = $v.cutoff;
@@ -291,6 +302,11 @@ class AdminMerchantStatementDtoOutputBuilder
               id,
               r'AdminMerchantStatementDtoOutput',
               'id',
+            ),
+            cityId: BuiltValueNullFieldError.checkNotNull(
+              cityId,
+              r'AdminMerchantStatementDtoOutput',
+              'cityId',
             ),
             restaurantId: BuiltValueNullFieldError.checkNotNull(
               restaurantId,
