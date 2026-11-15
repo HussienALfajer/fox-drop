@@ -27,7 +27,7 @@ dependencies:
   # «مشاركة كصورة» (CA §10.7, slice 2.18c): the statement shared as an image.
   share_plus: 13.3.1
   # The call permission of «طوارئ» (CA §4.5 check 8); core_push's version.
-  permission_handler: 12.0.3
+  permission_handler: 13.0.2
   wakelock_plus: 1.7.0
 
 dev_dependencies:
