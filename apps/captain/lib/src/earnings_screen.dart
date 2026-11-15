@@ -1,6 +1,7 @@
 import 'package:core_l10n/core_l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'earnings.dart';
 
@@ -62,6 +63,15 @@ class _EarningsView extends StatelessWidget {
         Text(l10n.payoutText(earnings.nextPayout)),
         if (negative != null)
           Text(negative, key: const Key('earnings-negative')),
+        // CA §10.7: the statements the desk issued.
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: TextButton(
+            key: const Key('earnings-statements'),
+            onPressed: () => context.push('/earnings/statements'),
+            child: Text(l10n.captainStatementTitle),
+          ),
+        ),
         const SizedBox(height: 16),
         Text(l10n.captainEarningsToday, style: title),
         Text(l10n.captainEarningsSoFar(money(earnings.today.earnings))),

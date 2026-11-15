@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:captain/src/api.dart';
 import 'package:captain/src/app.dart';
 import 'package:captain/src/auth.dart';
 import 'package:captain/src/push.dart';
+import 'package:captain/src/statements.dart';
 import 'package:captain/src/work/alerts.dart';
 import 'package:captain/src/work/call.dart';
 import 'package:captain/src/work/commands.dart';
@@ -483,6 +485,8 @@ class TestApp {
   // The phone allows notifications unless a test says otherwise.
   final permission = FakeNotificationPermission(allowed: true);
   final caller = FakeCaller();
+  // The images shared through the share sheet, by name (CA §10.7).
+  final shared = <String, Uint8List>{};
   late final ProviderContainer container;
 
   /// The server's clock in the test, which [advance] moves.
@@ -591,6 +595,9 @@ class TestApp {
         pushProvider.overrideWithValue(push),
         notificationPermissionProvider.overrideWithValue(permission),
         operationsCallerProvider.overrideWithValue(caller),
+        imageSharerProvider.overrideWithValue((png, name) async {
+          shared[name] = png;
+        }),
         serverClockProvider.overrideWithValue(
           ServerClock(deviceNow: () => clockNow),
         ),

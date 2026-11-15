@@ -4429,6 +4429,168 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'إيصال {number}'**
   String captainEarningsLineReceipt(String number);
+
+  /// The weekly statement screen and its link on «أرباحي» (CA §10.7, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'كشف الأسبوع'**
+  String get captainStatementTitle;
+
+  /// The list of weekly statements (CA §10.7; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'كشوف الأسبوع'**
+  String get captainStatementsTitle;
+
+  /// No statement yet (CA §10.7; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا كشوف بعد.'**
+  String get captainStatementsNone;
+
+  /// A statement in the list that paid (CA §10.7, as the push «كشف الأسبوع جاهز: قبضت {المبلغ}», CA §14 #20).
+  ///
+  /// In ar, this message translates to:
+  /// **'قبضت {amount}'**
+  String captainStatementPaid(String amount);
+
+  /// A statement in the list that paid nothing (CA §10.7; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم تقبض شيئاً، يُرحَّل {amount}'**
+  String captainStatementCarried(String amount);
+
+  /// The captain on the statement, as on the printed one (CA §10.7).
+  ///
+  /// In ar, this message translates to:
+  /// **'الكابتن: {name}'**
+  String captainStatementCaptain(String name);
+
+  /// The period since the previous payout, as on the printed statement (CA §10.7).
+  ///
+  /// In ar, this message translates to:
+  /// **'من {from} إلى {to}'**
+  String captainStatementPeriod(String from, String to);
+
+  /// The period of the first statement, as on the printed one (CA §10.7).
+  ///
+  /// In ar, this message translates to:
+  /// **'حتى {to}'**
+  String captainStatementPeriodFirst(String to);
+
+  /// The number of orders (CA §10.7), as on the printed statement.
+  ///
+  /// In ar, this message translates to:
+  /// **'عدد الطلبات: {count}'**
+  String captainStatementOrders(int count);
+
+  /// The balance the period started from, as on the printed statement (CA §10.7).
+  ///
+  /// In ar, this message translates to:
+  /// **'رصيد مُرحَّل'**
+  String get captainStatementCarriedIn;
+
+  /// Pay by part (CA §10.7), as on the printed statement.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأجر الأساسي'**
+  String get captainStatementBasePay;
+
+  /// Pay by part (CA §10.7), as on the printed statement.
+  ///
+  /// In ar, this message translates to:
+  /// **'أجر المسافة'**
+  String get captainStatementDistancePay;
+
+  /// Pay by part (CA §10.7), as on the printed statement.
+  ///
+  /// In ar, this message translates to:
+  /// **'أجر الانتظار'**
+  String get captainStatementWaitingPay;
+
+  /// Pay by part (CA §10.7), as on the printed statement.
+  ///
+  /// In ar, this message translates to:
+  /// **'مكافأة الذروة'**
+  String get captainStatementPeakBonus;
+
+  /// The bonuses (CA §10.7), as on the printed statement.
+  ///
+  /// In ar, this message translates to:
+  /// **'المكافآت'**
+  String get captainStatementBonuses;
+
+  /// The charges taken off (CA §10.7), as on the printed statement.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخصومات'**
+  String get captainStatementCharges;
+
+  /// The deposit instalments taken off (CA §10.7), as on the printed statement.
+  ///
+  /// In ar, this message translates to:
+  /// **'أقساط التأمين'**
+  String get captainStatementInstalments;
+
+  /// The corrections (CA §10.7), as on the printed statement.
+  ///
+  /// In ar, this message translates to:
+  /// **'قيود تصحيحية'**
+  String get captainStatementAdjustments;
+
+  /// The balance before the payout, as on the printed statement (CA §10.7).
+  ///
+  /// In ar, this message translates to:
+  /// **'الرصيد قبل الصرف'**
+  String get captainStatementBalance;
+
+  /// The net amount paid (CA §10.7), as on the printed statement.
+  ///
+  /// In ar, this message translates to:
+  /// **'المبلغ المصروف'**
+  String get captainStatementPaidLine;
+
+  /// A negative balance collected at the desk, as on the printed statement (CA §10.7).
+  ///
+  /// In ar, this message translates to:
+  /// **'المحصَّل من رصيد سالب'**
+  String get captainStatementCollected;
+
+  /// Carried to the next week, as on the printed statement (CA §10.7).
+  ///
+  /// In ar, this message translates to:
+  /// **'يُرحَّل إلى الأسبوع التالي'**
+  String get captainStatementCarriedOut;
+
+  /// One line of the statement and its amount (CA §10.7).
+  ///
+  /// In ar, this message translates to:
+  /// **'{label}: {amount}'**
+  String captainStatementLine(String label, String amount);
+
+  /// Shares the statement as an image (CA §10.7).
+  ///
+  /// In ar, this message translates to:
+  /// **'مشاركة كصورة'**
+  String get captainStatementShare;
+
+  /// The statement could not be shared (CA §10.7; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّرت مشاركة الكشف.'**
+  String get captainStatementShareFailed;
+
+  /// A statement in the list where the desk collected a negative balance (CA §10.7; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'سدّدت {amount} من رصيد سالب'**
+  String captainStatementCollectedSummary(String amount);
+
+  /// A statement that is not this captain's or no longer exists (CA §10.7; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُعثر على هذا الكشف.'**
+  String get captainStatementNotFound;
 }
 
 class _AppLocalizationsDelegate

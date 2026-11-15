@@ -4,16 +4,22 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.18c, the weekly statement in the captain app (`docs/roadmap.md`, Phase 2, Money).
+Slice 2.19, the restaurant account and the Saturday settlement (`docs/roadmap.md`, Phase 2, Money).
 
-- **Roadmap line:** 2.18c in `docs/roadmap.md`.
-- **Specs:** CA §10.7 (the weekly statement: the orders, pay by part, bonuses, charges, instalments, the net paid; «مشاركة كصورة»), CA §14 #20 (the push «كشف الأسبوع جاهز: قبضت {المبلغ}», `target: statement`, `statementId`), AP §8.5.5 step 4, the cashdesk module's `CLAUDE.md` («The weekly statement»), `apps/captain/CLAUDE.md`, `apps/customer/CLAUDE.md` (the Flutter apps' rules) and `packages/core_l10n/CLAUDE.md`.
-- **Branch:** `feat/captain-weekly-statement`.
+- **Roadmap line:** 2.19 Restaurant account and the Saturday settlement: the owner-only money lines, today's pickups and the running balance, the statement, settlement at the office or by visit, partial payments, receipts, the overdue alert and banner (AP §8.7, §9.10.5, RA §12). The statement appears at the cutoff and a partial payment is recorded.
+- **Specs:** AP §8.7 (the restaurant's balance, the weekly statement, the settlement), AP §9.10.5 (the panel's restaurant settlement), AP §9.10.3 (the desk and the field session of a visit), RA §12 (the restaurant app's money screens, owner only), `docs/domain/` (the restaurant entries), the cashdesk, ledger, merchants and notifications modules' `CLAUDE.md`, `apps/admin/CLAUDE.md`, `apps/customer/CLAUDE.md` (the Flutter apps' rules) and `packages/core_l10n/CLAUDE.md`.
+- **Branch:** `feat/restaurant-settlement` (or one per part once split).
+- **First:** larger than one pull request (server, panel and restaurant app): split it with the `slice-plan` skill (for example the restaurant's running balance and the weekly statement at the cutoff, the settlement at the office desk with partial payments and receipts, the field session of a visit, the restaurant app's money screens, the overdue alert and banner) and get the owner's approval of the split before building. The cashdesk's `session_kinds` has `office` only; the field session joins here.
 - **Plan:**
-  - [ ] Failing tests first: the captain reads only their own statements, newest first, and one statement by id (another captain's is `404`); the lines add up as the desk's statement does.
-  - [ ] The server: `GET /v1/captain/statements` and `GET /v1/captain/statements/{statementId}` (`@AppSignedIn()`) from `cashdesk.statements`; `pnpm generate:api`.
-  - [ ] The captain app: the list of statements (reached from «أرباحي»), the statement screen, «مشاركة كصورة» (the screen rendered to an image and shared, plain layout until the design), and the push `target: statement` opening it.
-  - [ ] `checker`, `reviewer`, the pull request.
+  - [ ] Split 2.19 into slices with the owner (`slice-plan`).
+
+### Left from 2.18c (`feat/captain-weekly-statement`)
+
+- **Before deploying to staging:** no migration. New routes `GET /v1/captain/statements` and `GET /v1/captain/statements/{statementId}`. The captain app gains «كشف الأسبوع» from «أرباحي», and `share_plus` 13.3.1 (the share sheet). Deploy the server before the captain APK (a new APK reads `/statements`).
+- **To check on staging:** settle a captain at «الصندوق» → «تصفية الخميس»: the phone gets «كشف الأسبوع جاهز: قبضت {المبلغ}»; tap it: the statement opens with the period, «عدد الطلبات», pay by part, «المكافآت», «الخصومات», «أقساط التأمين», «المبلغ المصروف» and «يُرحَّل إلى الأسبوع التالي», the same amounts as the printed statement. «مشاركة كصورة» opens the share sheet; send it on WhatsApp: the image shows the statement. Back goes to «كشوف الأسبوع», then «أرباحي». In «أرباحي», «كشف الأسبوع» lists every statement, newest first.
+- **To confirm with the owner:** the wording the spec does not give: «كشوف الأسبوع», «لا كشوف بعد.», «{التاريخ}: قبضت {المبلغ}», «لم تقبض شيئاً، يُرحَّل {المبلغ}», «سدّدت {المبلغ} من رصيد سالب», «لم يُعثر على هذا الكشف.», «تعذّرت مشاركة الكشف.» (`captainStatement*` in `packages/core_l10n/lib/src/arb/app_ar.arb`); the statement's lines take the panel's printed labels; the list shows the latest 52 statements (a year), not every one ever.
+- **Decided by us:** the captain's statement leaves out the cashier, the session, the receipts and an off-cycle reason (internal); a payout in another currency shows its base value beside it, so the lines add up; the statement screens sit above the tabs, so an offer rings under them but shows only back on a tab (as «الإعدادات»); the image is the screen's statement as laid out, plain until the design.
+- **Not yet:** the image's own layout with the design system; iPad's share position (iOS waits).
 
 ### Owner decisions for 2.18 (2026-11-15)
 

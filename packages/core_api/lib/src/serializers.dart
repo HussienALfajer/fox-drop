@@ -382,6 +382,10 @@ import 'package:core_api/src/model/captain_set_max_pickup_dto.dart';
 import 'package:core_api/src/model/captain_sign_in_dto.dart';
 import 'package:core_api/src/model/captain_signed_in_dto_output.dart';
 import 'package:core_api/src/model/captain_signed_out_dto_output.dart';
+import 'package:core_api/src/model/captain_statement_dto_output.dart';
+import 'package:core_api/src/model/captain_statement_list_dto_output.dart';
+import 'package:core_api/src/model/captain_statement_list_dto_output_statements_inner.dart';
+import 'package:core_api/src/model/captain_statement_list_dto_output_statements_inner_payout.dart';
 import 'package:core_api/src/model/captain_tokens_dto_output.dart';
 import 'package:core_api/src/model/captain_went_offline_dto_output.dart';
 import 'package:core_api/src/model/captain_went_offline_dto_output_hand_in.dart';
@@ -943,6 +947,10 @@ part 'serializers.g.dart';
   CaptainSignInDto,
   CaptainSignedInDtoOutput,
   CaptainSignedOutDtoOutput,
+  CaptainStatementDtoOutput,
+  CaptainStatementListDtoOutput,
+  CaptainStatementListDtoOutputStatementsInner,
+  CaptainStatementListDtoOutputStatementsInnerPayout,
   CaptainTokensDtoOutput,
   CaptainWentOfflineDtoOutput,
   CaptainWentOfflineDtoOutputHandIn,
@@ -1198,6 +1206,12 @@ Serializers serializers =
               FullType(CaptainAvailabilityDtoOutputCustodyLimit),
             ]),
             () => ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CaptainStatementListDtoOutputStatementsInner),
+            ]),
+            () => ListBuilder<CaptainStatementListDtoOutputStatementsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

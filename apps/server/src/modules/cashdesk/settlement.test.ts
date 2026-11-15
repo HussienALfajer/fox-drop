@@ -689,7 +689,7 @@ async function signedIn(captainId: string) {
     payload: { phone, deviceId, code },
   });
   const headers = { authorization: `Bearer ${answer.json().accessToken}` };
-  return () => app.inject({ method: 'GET', url: '/v1/captain/earnings', headers });
+  return (url = '/v1/captain/earnings') => app.inject({ method: 'GET', url, headers });
 }
 
 describe('«أرباحي» (CA §10.6, slice 2.18b)', () => {
@@ -790,6 +790,107 @@ describe('«أرباحي» (CA §10.6, slice 2.18b)', () => {
       week: { earnings: '0', orders: 0 },
     });
     const response = await app.inject({ method: 'GET', url: '/v1/captain/earnings' });
+    expect(response.statusCode).toBe(401);
+  });
+});
+
+describe('the weekly statement in the captain app (CA §10.7, slice 2.18c)', () => {
+  it("lists the captain's own statements newest first and reads one as the desk's", async () => {
+    const owner = await admin(['OWN']);
+    await desk.openSession(owner.user, azaz, [{ currency: 'TRY', amount: 100_000n }], new Date());
+    const captainId = await captain();
+    const read = await signedIn(captainId);
+    expect((await read('/v1/captain/statements')).json()).toEqual({ statements: [] });
+    await post(captainId, 'earn.order_pay', 20_000n);
+    await post(captainId, 'earn.charge', -1_500n, { reason: 'تالف' });
+    const first = await settlements.settle(
+      owner.user,
+      commandOf(await settlements.preview(captainId, null, thursday)),
+      thursday,
+    );
+    await post(captainId, 'earn.order_pay', 4_000n);
+    const second = await settlements.settle(
+      owner.user,
+      commandOf(await settlements.preview(captainId, null, thursday)),
+      thursday,
+    );
+    const listed = await read('/v1/captain/statements');
+    expect(listed.statusCode).toBe(200);
+    expect(listed.json().statements).toEqual([
+      {
+        id: second.statement.id,
+        createdAt: second.statement.createdAt.toISOString(),
+        periodFrom: second.statement.periodFrom!.toISOString(),
+        currency: 'TRY',
+        orders: 1,
+        paid: '4000',
+        payout: { currency: 'TRY', amount: '4000' },
+        collected: '0',
+        carriedOut: '0',
+      },
+      {
+        id: first.statement.id,
+        createdAt: first.statement.createdAt.toISOString(),
+        periodFrom: null,
+        currency: 'TRY',
+        orders: 1,
+        paid: '18500',
+        payout: { currency: 'TRY', amount: '18500' },
+        collected: '0',
+        carriedOut: '0',
+      },
+    ]);
+
+    // The lines add up as the desk's statement does.
+    const one = await read(`/v1/captain/statements/${first.statement.id}`);
+    expect(one.statusCode).toBe(200);
+    const desks = (await owner.get(`/v1/admin/cash-desk/statements/${first.statement.id}`)).json();
+    const lines = [
+      'captainName',
+      'periodFrom',
+      'createdAt',
+      'currency',
+      'orders',
+      'basePay',
+      'distancePay',
+      'waitingPay',
+      'peakBonus',
+      'bonuses',
+      'charges',
+      'instalments',
+      'adjustments',
+      'carriedIn',
+      'balance',
+      'paid',
+      'payout',
+      'collected',
+      'carriedOut',
+    ];
+    expect(one.json()).toEqual({
+      id: first.statement.id,
+      ...Object.fromEntries(lines.map((key) => [key, desks[key]])),
+    });
+    expect(one.json()).toMatchObject({ basePay: '20000', charges: '1500', paid: '18500' });
+  });
+
+  it("answers 404 for another captain's statement, and needs a captain sign-in", async () => {
+    const owner = await admin(['OWN']);
+    await desk.openSession(owner.user, azaz, [{ currency: 'TRY', amount: 100_000n }], new Date());
+    const captainId = await captain();
+    await post(captainId, 'earn.order_pay', 3_000n);
+    const settled = await settlements.settle(
+      owner.user,
+      commandOf(await settlements.preview(captainId, null, thursday)),
+      thursday,
+    );
+    const other = await signedIn(await captain());
+    expect((await other('/v1/captain/statements')).json()).toEqual({ statements: [] });
+    for (const id of [settled.statement.id, randomUUID()]) {
+      const answer = await other(`/v1/captain/statements/${id}`);
+      expect(answer.statusCode).toBe(404);
+      expect(answer.json().error).toBe('unknown_statement');
+    }
+    const response = await app.inject({ method: 'GET', url: '/v1/captain/statements' });
     expect(response.statusCode).toBe(401);
   });
 });

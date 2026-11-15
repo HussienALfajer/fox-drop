@@ -16,6 +16,7 @@ import 'platform.dart';
 import 'settings/settings_screen.dart';
 import 'shell.dart';
 import 'starting_screen.dart';
+import 'statements_screen.dart';
 import 'terms.dart';
 import 'work/work.dart';
 
@@ -32,7 +33,10 @@ final routerProvider = Provider<GoRouter>((ref) {
     fireImmediately: true,
   );
   final platform = ref.watch(platformCheckProvider);
+  // The root navigator, which shows a tab's screens above the tabs.
+  final root = GlobalKey<NavigatorState>();
   final router = GoRouter(
+    navigatorKey: root,
     refreshListenable: Listenable.merge([session, work, platform]),
     redirect: (context, state) {
       final current = session.value;
@@ -60,6 +64,25 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/earnings',
             builder: (context, state) => const EarningsScreen(),
+            // CA §10.7 «كشف الأسبوع» (slice 2.18c), above the tabs: a
+            // statement its push opens sits over the list and «أرباحي», so
+            // back returns through them.
+            routes: [
+              GoRoute(
+                path: 'statements',
+                parentNavigatorKey: root,
+                builder: (context, state) => const StatementsScreen(),
+                routes: [
+                  GoRoute(
+                    path: ':statementId',
+                    parentNavigatorKey: root,
+                    builder: (context, state) => StatementScreen(
+                      statementId: state.pathParameters['statementId']!,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
           // CA §10.2 «عهدتي» (slice 2.17c).
           GoRoute(

@@ -91,14 +91,20 @@ void main() {
     await app.done(tester);
   });
 
-  test('an offer or an order opens home; the others nothing yet', () {
+  test('an offer or an order opens home, a receipt «عهدتي», a statement '
+      'the statement; the others nothing yet', () {
     expect(pushTargetPath({'target': 'offer', 'orderId': orderId}), '/');
     expect(pushTargetPath({'target': 'order', 'orderId': orderId}), '/');
     expect(
       pushTargetPath({'target': 'custody', 'receiptId': orderId}),
       '/custody',
     );
-    expect(pushTargetPath({'target': 'statement'}), isNull);
+    expect(
+      pushTargetPath({'target': 'statement', 'statementId': orderId}),
+      '/earnings/statements/$orderId',
+    );
+    expect(pushTargetPath({'target': 'statement'}), '/earnings/statements');
+    expect(pushTargetPath({'target': 'document'}), isNull);
     expect(pushTargetPath({}), isNull);
   });
 }
