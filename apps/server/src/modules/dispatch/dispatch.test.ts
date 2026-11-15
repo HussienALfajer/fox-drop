@@ -1505,8 +1505,10 @@ describe('the dispatcher role (architecture §4.4)', () => {
       expect(passes).toEqual(['first', 'first', 'second']);
       // The leader's session ends on the server: it connects again and
       // takes the free lock at its next tick, so the city keeps one leader.
+      // Only this file's database: the run's other test files share the
+      // server and the role.
       await sql.query(
-        "SELECT pg_terminate_backend(pid) FROM pg_locks WHERE locktype = 'advisory' AND pid <> pg_backend_pid()",
+        "SELECT pg_terminate_backend(pid) FROM pg_locks WHERE locktype = 'advisory' AND pid <> pg_backend_pid() AND database = (SELECT oid FROM pg_database WHERE datname = current_database())",
       );
       await second.tick();
       await second.tick();
