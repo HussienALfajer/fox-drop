@@ -4,14 +4,27 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.19, the restaurant account and the Saturday settlement (`docs/roadmap.md`, Phase 2, Money).
+Slice 2.19a, the weekly statement at the cutoff (`docs/roadmap.md`, Phase 2, Money, under 2.19).
 
-- **Roadmap line:** 2.19 Restaurant account and the Saturday settlement: the owner-only money lines, today's pickups and the running balance, the statement, settlement at the office or by visit, partial payments, receipts, the overdue alert and banner (AP §8.7, §9.10.5, RA §12). The statement appears at the cutoff and a partial payment is recorded.
-- **Specs:** AP §8.7 (the restaurant's balance, the weekly statement, the settlement), AP §9.10.5 (the panel's restaurant settlement), AP §9.10.3 (the desk and the field session of a visit), RA §12 (the restaurant app's money screens, owner only), `docs/domain/` (the restaurant entries), the cashdesk, ledger, merchants and notifications modules' `CLAUDE.md`, `apps/admin/CLAUDE.md`, `apps/customer/CLAUDE.md` (the Flutter apps' rules) and `packages/core_l10n/CLAUDE.md`.
-- **Branch:** `feat/restaurant-settlement` (or one per part once split).
-- **First:** larger than one pull request (server, panel and restaurant app): split it with the `slice-plan` skill (for example the restaurant's running balance and the weekly statement at the cutoff, the settlement at the office desk with partial payments and receipts, the field session of a visit, the restaurant app's money screens, the overdue alert and banner) and get the owner's approval of the split before building. The cashdesk's `session_kinds` has `office` only; the field session joins here.
+- **Roadmap line:** 2.19a The weekly statement at the cutoff, in the server and the panel: at the business-day cutoff that starts `merchant.settlement_weekday` (Saturday 06:00) a statement kept as a snapshot for each restaurant with entries in the period or an unpaid balance, covering every `merchant.account` entry since the previous statement closed: each order with its items value received from the captain (with the currency lines), commission and restaurant-funded discount, the exceptions with the order and reason, the earlier unpaid balance (the previous statement's due less the payments since) and the total due; the owners' push (RA §16 #30); the desk's «تسوية المطاعم» tab, read-only, listing every restaurant with a non-zero balance, overdue first, and its statement entry by entry, printable as a plain layout (AP §8.7, §9.10.3, RA §12.3). After the Saturday cutoff the statement shows in the panel and the owners get the push.
+- **Specs:** `docs/domain/07-restaurant-account.md` (AP §8.7), AP §9.10.3 tab 3 «تسوية المطاعم», RA §12.3 and §12.5 (the statement's contents and the exceptions' labels), RA §16 #30, the cashdesk, ledger, merchants, ordering and notifications modules' `CLAUDE.md`, `apps/admin/CLAUDE.md`.
+- **Branch:** `feat/restaurant-weekly-statement`.
 - **Plan:**
-  - [ ] Split 2.19 into slices with the owner (`slice-plan`).
+  - [ ] Migration: `cashdesk.merchant_statements` and their lines (never changed by the application role), with the database test.
+  - [ ] The statement at the cutoff (test first): one per restaurant and cutoff, the period since the previous statement (entries committed late go next week), each order with its items value and currency lines, commission and discount share, the exceptions with the order and reason, the earlier unpaid balance and the payments since, the total due; a repeat closes nothing twice.
+  - [ ] The worker's sweep and the owners' push «كشف الأسبوع جاهز: المستحق {المبلغ}. التسوية اليوم في المكتب أو عند زيارة موظفنا.»
+  - [ ] The admin routes (the restaurants with a non-zero balance, overdue first; a statement), the OpenAPI document and the clients.
+  - [ ] The panel's «تسوية المطاعم» tab: the list and the statement entry by entry, printable as a plain layout.
+  - [ ] The module's `CLAUDE.md`, the reviewer, the hand-over to 2.19b.
+
+### Owner decisions for 2.19 (2026-11-16)
+
+- The split: 2.19a (the statement at the cutoff), 2.19b (the office settlement, partial payments, receipts), 2.19c (the field visit), 2.19d («الحساب» and the order's owner lines in the restaurant app), 2.19e («الكشوف» and «الإيصالات» in the app), 2.19f (the overdue alert and banner), 2.19g («كشوف المطاعم» for any period with Excel).
+- A restaurant that does not pay: the alert and the reminders only in V1, never an automatic pause (AP §13 item 2 closed).
+- A payment settles the oldest unpaid statement first; each statement's status and the overdue amount follow from it.
+- The restaurant app shares a statement as an image only; PDF and Excel come with the owner portal (2.45).
+- Screens, the printed statement and the receipt use the plain layout until the design system.
+- Deferred: «لدي استفسار» (tickets, 2.23–2.24), the commission change push (2.30), the portal's exports (2.45).
 
 ### Left from 2.18c (`feat/captain-weekly-statement`)
 
