@@ -36098,6 +36098,11 @@
                   ],
                   "description": "The cash paid, in the currency the desk paid it."
                 },
+                "collected": {
+                  "type": "string",
+                  "pattern": "^\\d{1,19}$",
+                  "description": "A negative balance collected at the desk."
+                },
                 "carriedOut": {
                   "type": "string",
                   "pattern": "^-?\\d{1,19}$",
@@ -36112,6 +36117,7 @@
                 "orders",
                 "paid",
                 "payout",
+                "collected",
                 "carriedOut"
               ],
               "additionalProperties": false

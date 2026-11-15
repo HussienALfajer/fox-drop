@@ -10013,6 +10013,8 @@ export interface components {
                     /** @description Integer minor units (AP §8.6). */
                     amount: string;
                 } | null;
+                /** @description A negative balance collected at the desk. */
+                collected: string;
                 /** @description Carried to the next week. */
                 carriedOut: string;
             }[];

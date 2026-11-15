@@ -39,6 +39,7 @@ class CaptainStatementListDto extends createZodDto(
           orders: z.int().min(0),
           paid: minor.describe('In the base.'),
           payout,
+          collected: minor.describe('A negative balance collected at the desk.'),
           carriedOut: signedMinor.describe('Carried to the next week.'),
         }),
       )
@@ -94,6 +95,7 @@ export class CaptainStatementsController {
         orders: statement.orders,
         paid: statement.paid.toString(),
         payout: payoutOf(statement),
+        collected: statement.collected.toString(),
         carriedOut: statement.carriedOut.toString(),
       })),
     };

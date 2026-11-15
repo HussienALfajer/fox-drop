@@ -43,6 +43,7 @@ Map<String, Object?> listJson() => {
       'orders': 3,
       'paid': '11100',
       'payout': {'currency': 'TRY', 'amount': '11100'},
+      'collected': '0',
       'carriedOut': '0',
     },
     {
@@ -53,7 +54,19 @@ Map<String, Object?> listJson() => {
       'orders': 0,
       'paid': '0',
       'payout': null,
+      'collected': '0',
       'carriedOut': '-1200',
+    },
+    {
+      'id': '0190e0d8-0000-7000-8000-000000000003',
+      'createdAt': '2026-10-29T09:00:00.000Z',
+      'periodFrom': null,
+      'currency': 'TRY',
+      'orders': 0,
+      'paid': '0',
+      'payout': null,
+      'collected': '500',
+      'carriedOut': '0',
     },
   ],
 };
@@ -89,6 +102,7 @@ void main() {
       find.text('05/11/2026: لم تقبض شيئاً، يُرحَّل -12 ₺'),
       findsOneWidget,
     );
+    expect(find.text('29/10/2026: سدّدت 5 ₺ من رصيد سالب'), findsOneWidget);
     expect(find.text('عدد الطلبات: 3'), findsOneWidget);
 
     await tester.tap(find.text('12/11/2026: قبضت 111 ₺'));
@@ -121,6 +135,35 @@ void main() {
     app.container.read(routerProvider).pop();
     await app.settle(tester);
     expect(find.byKey(const Key('earnings')), findsOneWidget);
+    await app.done(tester);
+  });
+
+  testWidgets('a payout in another currency shows its base value, and an '
+      'unknown statement says so', (tester) async {
+    final app = TestApp();
+    app.work(availability: [availabilityJson()]);
+    app.server.on('/v1/captain/earnings', [FakeAnswer(200, earningsJson())]);
+    app.server.on('/v1/captain/statements/$statementId', [
+      FakeAnswer(200, {
+        ...statementJson(),
+        'payout': {'currency': 'USD', 'amount': '277'},
+      }),
+    ]);
+    app.server.on('/v1/captain/statements/$firstId', [
+      FakeAnswer(404, {'statusCode': 404, 'error': 'unknown_statement'}),
+    ]);
+    await app.pump(tester);
+    await app.live(tester);
+    app.container.read(routerProvider).go('/earnings/statements/$statementId');
+    await app.settle(tester);
+    expect(
+      find.text('المبلغ المصروف: 2.77 \$ (بالعملة الأساسية 111 ₺)'),
+      findsOneWidget,
+    );
+    app.container.read(routerProvider).go('/earnings/statements/$firstId');
+    await app.settle(tester);
+    expect(find.text('لم يُعثر على هذا الكشف.'), findsOneWidget);
+    expect(find.text('إعادة المحاولة'), findsNothing);
     await app.done(tester);
   });
 

@@ -2797,4 +2797,12 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get captainStatementShareFailed => 'تعذّرت مشاركة الكشف.';
+
+  @override
+  String captainStatementCollectedSummary(String amount) {
+    return 'سدّدت $amount من رصيد سالب';
+  }
+
+  @override
+  String get captainStatementNotFound => 'لم يُعثر على هذا الكشف.';
 }

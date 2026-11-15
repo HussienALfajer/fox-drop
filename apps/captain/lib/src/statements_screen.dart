@@ -121,6 +121,9 @@ class _StatementScreenState extends ConsumerState<StatementScreen> {
             ],
           ),
         ),
+        AsyncError(:final error) when statementNotFound(error) => Center(
+          child: Text(l10n.captainStatementNotFound),
+        ),
         AsyncError() => _Retry(
           onRetry: () => ref.invalidate(statementProvider(widget.statementId)),
         ),

@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:core_api/core_api.dart';
 import 'package:core_l10n/core_l10n.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -53,16 +54,24 @@ final imageSharerProvider = Provider<ImageSharer>(
   },
 );
 
+/// A statement the server does not know for this captain (`404`, `400`): a
+/// push of another captain on this phone, or a bad id. Retrying never helps.
+bool statementNotFound(Object error) =>
+    error is DioException &&
+    (error.response?.statusCode == 404 || error.response?.statusCode == 400);
+
 extension StatementTexts on AppLocalizations {
   /// A statement in the list: when, and what was paid or carried.
   String summaryText(StatementSummary statement) {
     final when = formatDate(statement.createdAt);
     final payout = statement.payout;
+    String money(String amount) => formatMoney(amount, statement.currency);
     final what = payout != null
         ? captainStatementPaid(formatMoney(payout.amount, payout.currency))
-        : captainStatementCarried(
-            formatMoney(statement.carriedOut, statement.currency),
-          );
+        // A negative balance the desk collected (`collect_at_desk`).
+        : BigInt.parse(statement.collected) > BigInt.zero
+        ? captainStatementCollectedSummary(money(statement.collected))
+        : captainStatementCarried(money(statement.carriedOut));
     return '$when: $what';
   }
 
@@ -76,10 +85,21 @@ extension StatementTexts on AppLocalizations {
     };
   }
 
+  /// The net paid in the payout's currency; paid in another than the base,
+  /// with its base value, so the lines still add up.
+  String paidText(Statement statement) {
+    final base = formatMoney(statement.paid, statement.currency);
+    final payout = statement.payout;
+    if (payout == null || payout.currency == statement.currency) return base;
+    return captainCustodyCurrency(
+      formatMoney(payout.amount, payout.currency),
+      base,
+    );
+  }
+
   /// CA §10.7: the statement's lines, as the desk prints them (AP §8.5.5).
   List<String> statementLines(Statement statement) {
     String money(String amount) => formatMoney(amount, statement.currency);
-    final payout = statement.payout;
     return [
       for (final (label, amount) in [
         (captainStatementCarriedIn, money(statement.carriedIn)),
@@ -92,12 +112,7 @@ extension StatementTexts on AppLocalizations {
         (captainStatementInstalments, money(statement.instalments)),
         (captainStatementAdjustments, money(statement.adjustments)),
         (captainStatementBalance, money(statement.balance)),
-        (
-          captainStatementPaidLine,
-          payout == null
-              ? money('0')
-              : formatMoney(payout.amount, payout.currency),
-        ),
+        (captainStatementPaidLine, paidText(statement)),
         (captainStatementCollected, money(statement.collected)),
         (captainStatementCarriedOut, money(statement.carriedOut)),
       ])

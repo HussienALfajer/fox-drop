@@ -19,6 +19,7 @@ part 'captain_statement_list_dto_output_statements_inner.g.dart';
 /// * [orders]
 /// * [paid] - In the base.
 /// * [payout]
+/// * [collected] - A negative balance collected at the desk.
 /// * [carriedOut] - Carried to the next week.
 @BuiltValue()
 abstract class CaptainStatementListDtoOutputStatementsInner
@@ -50,6 +51,10 @@ abstract class CaptainStatementListDtoOutputStatementsInner
 
   @BuiltValueField(wireName: r'payout')
   CaptainStatementListDtoOutputStatementsInnerPayout? get payout;
+
+  /// A negative balance collected at the desk.
+  @BuiltValueField(wireName: r'collected')
+  String get collected;
 
   /// Carried to the next week.
   @BuiltValueField(wireName: r'carriedOut')
@@ -129,6 +134,11 @@ class _$CaptainStatementListDtoOutputStatementsInnerSerializer
               CaptainStatementListDtoOutputStatementsInnerPayout,
             ),
           );
+    yield r'collected';
+    yield serializers.serialize(
+      object.collected,
+      specifiedType: const FullType(String),
+    );
     yield r'carriedOut';
     yield serializers.serialize(
       object.carriedOut,
@@ -224,6 +234,15 @@ class _$CaptainStatementListDtoOutputStatementsInnerSerializer
                   as CaptainStatementListDtoOutputStatementsInnerPayout?;
           if (valueDes == null) continue;
           result.payout.replace(valueDes);
+          break;
+        case r'collected':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.collected = valueDes;
           break;
         case r'carriedOut':
           final valueDes =

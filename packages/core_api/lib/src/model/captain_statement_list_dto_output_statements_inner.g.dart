@@ -23,6 +23,8 @@ class _$CaptainStatementListDtoOutputStatementsInner
   @override
   final CaptainStatementListDtoOutputStatementsInnerPayout? payout;
   @override
+  final String collected;
+  @override
   final String carriedOut;
 
   factory _$CaptainStatementListDtoOutputStatementsInner([
@@ -38,6 +40,7 @@ class _$CaptainStatementListDtoOutputStatementsInner
     required this.orders,
     required this.paid,
     this.payout,
+    required this.collected,
     required this.carriedOut,
   }) : super._();
   @override
@@ -60,6 +63,7 @@ class _$CaptainStatementListDtoOutputStatementsInner
         orders == other.orders &&
         paid == other.paid &&
         payout == other.payout &&
+        collected == other.collected &&
         carriedOut == other.carriedOut;
   }
 
@@ -73,6 +77,7 @@ class _$CaptainStatementListDtoOutputStatementsInner
     _$hash = $jc(_$hash, orders.hashCode);
     _$hash = $jc(_$hash, paid.hashCode);
     _$hash = $jc(_$hash, payout.hashCode);
+    _$hash = $jc(_$hash, collected.hashCode);
     _$hash = $jc(_$hash, carriedOut.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -90,6 +95,7 @@ class _$CaptainStatementListDtoOutputStatementsInner
           ..add('orders', orders)
           ..add('paid', paid)
           ..add('payout', payout)
+          ..add('collected', collected)
           ..add('carriedOut', carriedOut))
         .toString();
   }
@@ -135,6 +141,10 @@ class CaptainStatementListDtoOutputStatementsInnerBuilder
     CaptainStatementListDtoOutputStatementsInnerPayoutBuilder? payout,
   ) => _$this._payout = payout;
 
+  String? _collected;
+  String? get collected => _$this._collected;
+  set collected(String? collected) => _$this._collected = collected;
+
   String? _carriedOut;
   String? get carriedOut => _$this._carriedOut;
   set carriedOut(String? carriedOut) => _$this._carriedOut = carriedOut;
@@ -153,6 +163,7 @@ class CaptainStatementListDtoOutputStatementsInnerBuilder
       _orders = $v.orders;
       _paid = $v.paid;
       _payout = $v.payout?.toBuilder();
+      _collected = $v.collected;
       _carriedOut = $v.carriedOut;
       _$v = null;
     }
@@ -207,6 +218,11 @@ class CaptainStatementListDtoOutputStatementsInnerBuilder
               'paid',
             ),
             payout: _payout?.build(),
+            collected: BuiltValueNullFieldError.checkNotNull(
+              collected,
+              r'CaptainStatementListDtoOutputStatementsInner',
+              'collected',
+            ),
             carriedOut: BuiltValueNullFieldError.checkNotNull(
               carriedOut,
               r'CaptainStatementListDtoOutputStatementsInner',

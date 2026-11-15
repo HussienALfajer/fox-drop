@@ -1491,5 +1491,9 @@
   "captainStatementShare": "مشاركة كصورة",
   "@captainStatementShare": {"description": "Shares the statement as an image (CA §10.7)."},
   "captainStatementShareFailed": "تعذّرت مشاركة الكشف.",
-  "@captainStatementShareFailed": {"description": "The statement could not be shared (CA §10.7; no wording in the spec)."}
+  "@captainStatementShareFailed": {"description": "The statement could not be shared (CA §10.7; no wording in the spec)."},
+  "captainStatementCollectedSummary": "سدّدت {amount} من رصيد سالب",
+  "@captainStatementCollectedSummary": {"description": "A statement in the list where the desk collected a negative balance (CA §10.7; no wording in the spec).", "placeholders": {"amount": {"type": "String"}}},
+  "captainStatementNotFound": "لم يُعثر على هذا الكشف.",
+  "@captainStatementNotFound": {"description": "A statement that is not this captain's or no longer exists (CA §10.7; no wording in the spec)."}
 }

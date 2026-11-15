@@ -4579,6 +4579,18 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'تعذّرت مشاركة الكشف.'**
   String get captainStatementShareFailed;
+
+  /// A statement in the list where the desk collected a negative balance (CA §10.7; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'سدّدت {amount} من رصيد سالب'**
+  String captainStatementCollectedSummary(String amount);
+
+  /// A statement that is not this captain's or no longer exists (CA §10.7; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُعثر على هذا الكشف.'**
+  String get captainStatementNotFound;
 }
 
 class _AppLocalizationsDelegate

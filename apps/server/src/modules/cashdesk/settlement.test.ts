@@ -825,6 +825,7 @@ describe('the weekly statement in the captain app (CA §10.7, slice 2.18c)', () 
         orders: 1,
         paid: '4000',
         payout: { currency: 'TRY', amount: '4000' },
+        collected: '0',
         carriedOut: '0',
       },
       {
@@ -835,6 +836,7 @@ describe('the weekly statement in the captain app (CA §10.7, slice 2.18c)', () 
         orders: 1,
         paid: '18500',
         payout: { currency: 'TRY', amount: '18500' },
+        collected: '0',
         carriedOut: '0',
       },
     ]);
@@ -842,9 +844,7 @@ describe('the weekly statement in the captain app (CA §10.7, slice 2.18c)', () 
     // The lines add up as the desk's statement does.
     const one = await read(`/v1/captain/statements/${first.statement.id}`);
     expect(one.statusCode).toBe(200);
-    const desks = (
-      await owner.get(`/v1/admin/cash-desk/statements/${first.statement.id}`)
-    ).json();
+    const desks = (await owner.get(`/v1/admin/cash-desk/statements/${first.statement.id}`)).json();
     const lines = [
       'captainName',
       'periodFrom',
