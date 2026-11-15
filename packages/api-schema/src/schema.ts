@@ -3380,6 +3380,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/captain/earnings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainEarningsRead"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -9869,6 +9885,82 @@ export interface components {
                 }[];
             }[];
         };
+        CaptainEarningsDto_Output: {
+            /** @description The city's base currency. */
+            currency: string;
+            /** @description The business day now. */
+            today: {
+                /**
+                 * Format: date-time
+                 * @description The start of the window: a business-day cutoff.
+                 */
+                from: string;
+                /** @description Every earning since, the payouts left out. */
+                earnings: string;
+                /** @description The orders whose pay nets above zero. */
+                orders: number;
+                onlineMinutes: number;
+            };
+            /** @description «هذا الأسبوع»: the payout cycle since the latest payout weekday, by business day. */
+            week: {
+                /**
+                 * Format: date-time
+                 * @description The start of the window: a business-day cutoff.
+                 */
+                from: string;
+                /** @description Every earning since, the payouts left out. */
+                earnings: string;
+                /** @description The orders whose pay nets above zero. */
+                orders: number;
+                onlineMinutes: number;
+            };
+            /** @description This week's orders, newest first. */
+            orders: {
+                orderNumber: string | null;
+                /** Format: date-time */
+                at: string;
+                /** @description Null when only the total is known (an order ended by an outcome). */
+                parts: {
+                    /** @description Including the first km. */
+                    base: string;
+                    /** @description Integer minor units of the base currency (AP §8.6). */
+                    distance: string;
+                    /** @description «إكمال للحد الأدنى». */
+                    topUp: string;
+                    /** @description Integer minor units of the base currency (AP §8.6). */
+                    waiting: string;
+                    /** @description Integer minor units of the base currency (AP §8.6). */
+                    peak: string;
+                } | null;
+                /** @description Integer minor units of the base currency (AP §8.6). */
+                total: string;
+            }[];
+            /** @description This week's bonuses, charges, instalments, payouts and corrections, newest first. */
+            lines: {
+                /** @enum {string} */
+                kind: "bonus" | "charge" | "instalment" | "payout" | "adjustment";
+                /** @description + to the captain, − taken off. */
+                amount: string;
+                reason: string | null;
+                /** @description A charge's order. */
+                orderNumber: string | null;
+                /** @description A payout's receipt. */
+                receiptNumber: string | null;
+                /** Format: date-time */
+                at: string;
+            }[];
+            /** @description «رصيدك المستحق»: + the platform owes the captain, − carried or collected by the policy. */
+            balance: string;
+            /** @enum {string} */
+            payoutWeekday: "saturday" | "sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday";
+            /**
+             * Format: date
+             * @description «موعد القبض»: today on a payout day, on the city clock.
+             */
+            nextPayout: string;
+            /** @enum {string} */
+            negativePolicy: "carry_forward" | "collect_at_desk";
+        };
     };
     responses: never;
     parameters: never;
@@ -15251,6 +15343,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptainCustodyDto_Output"];
+                };
+            };
+        };
+    };
+    captainEarningsRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainEarningsDto_Output"];
                 };
             };
         };

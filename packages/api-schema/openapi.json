@@ -8863,6 +8863,32 @@
           "captain"
         ]
       }
+    },
+    "/v1/captain/earnings": {
+      "get": {
+        "operationId": "captainEarningsRead",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainEarningsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
     }
   },
   "info": {
@@ -35672,6 +35698,265 @@
           "currencies",
           "entries",
           "receipts"
+        ],
+        "additionalProperties": false
+      },
+      "CaptainEarningsDto_Output": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3,
+            "description": "The city's base currency."
+          },
+          "today": {
+            "type": "object",
+            "properties": {
+              "from": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                "description": "The start of the window: a business-day cutoff."
+              },
+              "earnings": {
+                "type": "string",
+                "pattern": "^-?\\d{1,19}$",
+                "description": "Every earning since, the payouts left out."
+              },
+              "orders": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "description": "The orders whose pay nets above zero."
+              },
+              "onlineMinutes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "from",
+              "earnings",
+              "orders",
+              "onlineMinutes"
+            ],
+            "additionalProperties": false,
+            "description": "The business day now."
+          },
+          "week": {
+            "type": "object",
+            "properties": {
+              "from": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                "description": "The start of the window: a business-day cutoff."
+              },
+              "earnings": {
+                "type": "string",
+                "pattern": "^-?\\d{1,19}$",
+                "description": "Every earning since, the payouts left out."
+              },
+              "orders": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "description": "The orders whose pay nets above zero."
+              },
+              "onlineMinutes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "from",
+              "earnings",
+              "orders",
+              "onlineMinutes"
+            ],
+            "additionalProperties": false,
+            "description": "«هذا الأسبوع»: the payout cycle since the latest payout weekday, by business day."
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "orderNumber": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "parts": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "base": {
+                          "type": "string",
+                          "pattern": "^-?\\d{1,19}$",
+                          "description": "Including the first km."
+                        },
+                        "distance": {
+                          "type": "string",
+                          "pattern": "^-?\\d{1,19}$",
+                          "description": "Integer minor units of the base currency (AP §8.6)."
+                        },
+                        "topUp": {
+                          "type": "string",
+                          "pattern": "^-?\\d{1,19}$",
+                          "description": "«إكمال للحد الأدنى»."
+                        },
+                        "waiting": {
+                          "type": "string",
+                          "pattern": "^-?\\d{1,19}$",
+                          "description": "Integer minor units of the base currency (AP §8.6)."
+                        },
+                        "peak": {
+                          "type": "string",
+                          "pattern": "^-?\\d{1,19}$",
+                          "description": "Integer minor units of the base currency (AP §8.6)."
+                        }
+                      },
+                      "required": [
+                        "base",
+                        "distance",
+                        "topUp",
+                        "waiting",
+                        "peak"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Null when only the total is known (an order ended by an outcome)."
+                },
+                "total": {
+                  "type": "string",
+                  "pattern": "^-?\\d{1,19}$",
+                  "description": "Integer minor units of the base currency (AP §8.6)."
+                }
+              },
+              "required": [
+                "orderNumber",
+                "at",
+                "parts",
+                "total"
+              ],
+              "additionalProperties": false
+            },
+            "description": "This week's orders, newest first."
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "bonus",
+                    "charge",
+                    "instalment",
+                    "payout",
+                    "adjustment"
+                  ]
+                },
+                "amount": {
+                  "type": "string",
+                  "pattern": "^-?\\d{1,19}$",
+                  "description": "+ to the captain, − taken off."
+                },
+                "reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "orderNumber": {
+                  "description": "A charge's order.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "receiptNumber": {
+                  "description": "A payout's receipt.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "kind",
+                "amount",
+                "reason",
+                "orderNumber",
+                "receiptNumber",
+                "at"
+              ],
+              "additionalProperties": false
+            },
+            "description": "This week's bonuses, charges, instalments, payouts and corrections, newest first."
+          },
+          "balance": {
+            "type": "string",
+            "pattern": "^-?\\d{1,19}$",
+            "description": "«رصيدك المستحق»: + the platform owes the captain, − carried or collected by the policy."
+          },
+          "payoutWeekday": {
+            "type": "string",
+            "enum": [
+              "saturday",
+              "sunday",
+              "monday",
+              "tuesday",
+              "wednesday",
+              "thursday",
+              "friday"
+            ]
+          },
+          "nextPayout": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+            "description": "«موعد القبض»: today on a payout day, on the city clock."
+          },
+          "negativePolicy": {
+            "type": "string",
+            "enum": [
+              "carry_forward",
+              "collect_at_desk"
+            ]
+          }
+        },
+        "required": [
+          "currency",
+          "today",
+          "week",
+          "orders",
+          "lines",
+          "balance",
+          "payoutWeekday",
+          "nextPayout",
+          "negativePolicy"
         ],
         "additionalProperties": false
       }

@@ -343,6 +343,12 @@ import 'package:core_api/src/model/captain_delivery_summary_dto_output_summary.d
 import 'package:core_api/src/model/captain_delivery_summary_dto_output_summary_custody_change.dart';
 import 'package:core_api/src/model/captain_delivery_summary_dto_output_summary_hand_in_today.dart';
 import 'package:core_api/src/model/captain_delivery_summary_dto_output_summary_pay.dart';
+import 'package:core_api/src/model/captain_earnings_dto_output.dart';
+import 'package:core_api/src/model/captain_earnings_dto_output_lines_inner.dart';
+import 'package:core_api/src/model/captain_earnings_dto_output_orders_inner.dart';
+import 'package:core_api/src/model/captain_earnings_dto_output_orders_inner_parts.dart';
+import 'package:core_api/src/model/captain_earnings_dto_output_today.dart';
+import 'package:core_api/src/model/captain_earnings_dto_output_week.dart';
 import 'package:core_api/src/model/captain_emergency_dto.dart';
 import 'package:core_api/src/model/captain_emergency_dto_location.dart';
 import 'package:core_api/src/model/captain_emergency_stop_dto_output.dart';
@@ -898,6 +904,12 @@ part 'serializers.g.dart';
   CaptainDeliverySummaryDtoOutputSummaryCustodyChange,
   CaptainDeliverySummaryDtoOutputSummaryHandInToday,
   CaptainDeliverySummaryDtoOutputSummaryPay,
+  CaptainEarningsDtoOutput,
+  CaptainEarningsDtoOutputLinesInner,
+  CaptainEarningsDtoOutputOrdersInner,
+  CaptainEarningsDtoOutputOrdersInnerParts,
+  CaptainEarningsDtoOutputToday,
+  CaptainEarningsDtoOutputWeek,
   CaptainEmergencyDto,
   CaptainEmergencyDtoLocation,
   CaptainEmergencyStopDtoOutput,
@@ -1162,6 +1174,12 @@ Serializers serializers =
               FullType(AdminDeskCaptainsDtoOutputCaptainsInner),
             ]),
             () => ListBuilder<AdminDeskCaptainsDtoOutputCaptainsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CaptainEarningsDtoOutputOrdersInner),
+            ]),
+            () => ListBuilder<CaptainEarningsDtoOutputOrdersInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -1458,6 +1476,12 @@ Serializers serializers =
             ]),
             () =>
                 ListBuilder<CustomerNotificationsDtoOutputNotificationsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CaptainEarningsDtoOutputLinesInner),
+            ]),
+            () => ListBuilder<CaptainEarningsDtoOutputLinesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
