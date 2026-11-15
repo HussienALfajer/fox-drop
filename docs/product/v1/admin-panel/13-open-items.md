@@ -3,7 +3,7 @@
 > Part of the [admin panel spec](README.md) (AP). A bare "§n" here means AP §n.
 
 1. **Early exit from a captain's contract.** _Decided_ (captain-app spec C17): no financial penalty in V1, the kit is returned or the deposit is withheld, and rehiring needs OWN's approval (§9.7.2).
-2. **A restaurant that does not pay on Saturday.** With D26 the platform collects commission from restaurants after the fact, so a restaurant can fall behind. The panel raises the overdue alert (§8.7) and leaves the action to OWN. Still to decide: should the restaurant be paused automatically after a number of days, or above a maximum unpaid amount?
+2. **A restaurant that does not pay on Saturday.** With D26 the platform collects commission from restaurants after the fact, so a restaurant can fall behind. The panel raises the overdue alert (§8.7) and leaves the action to OWN. Decided for V1 (owner decision 2026-11-16): the alert and the reminders only, never an automatic pause; OWN decides. An automatic pause after some days or above an amount can return in a later version.
 3. **Captain cash at pickup.** _Decided_ (captain-app spec C4): each captain sets the most they can pay a restaurant, and dispatch does not offer them larger orders (§9.12.6). Operations should still brief captains on carrying enough cash.
 4. **Azaz base currency.** Chosen when the city is created (D25). Verify on the ground which currency restaurants price in. Until then the development and staging seeds use a value marked as a placeholder; the production value is set after the field check (owner, 2026-11-04).
 5. **Values to enter before launch:**
