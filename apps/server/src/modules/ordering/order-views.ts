@@ -62,6 +62,10 @@ export interface OrderView {
   customerAccountId: string;
   restaurantId: string;
   status: OrderStatus;
+  // AP §9.6.5, §9.6.3: the commission in force at placing, and a test order
+  // (no commission), for the owners' money lines (RA §8.4).
+  commissionBp: number;
+  testOrder: boolean;
   // Architecture §5.3, RA §4.3: every transition increments it; the apps
   // ignore an event not newer than the version they show.
   version: number;
@@ -274,6 +278,8 @@ export async function readOrders(
       number: orders.number,
       customerAccountId: orders.customerAccountId,
       restaurantId: orders.restaurantId,
+      commissionBp: orders.commissionBp,
+      testOrder: orders.testOrder,
       status: orders.status,
       version: orders.version,
       placedAt: orders.placedAt,
@@ -504,6 +510,8 @@ export async function readOrders(
       number: row.number,
       customerAccountId: row.customerAccountId,
       restaurantId: row.restaurantId,
+      commissionBp: row.commissionBp,
+      testOrder: row.testOrder,
       status: row.status,
       version: row.version,
       placedAt: row.placedAt,

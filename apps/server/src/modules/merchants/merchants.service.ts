@@ -536,6 +536,32 @@ export class MerchantsService implements OnModuleInit {
     });
   }
 
+  // RA §12.2, AP §9.6.5, D16 (slice 2.19d): the commission in force now and
+  // the next version scheduled after now, if any («تتغيّر عمولتك…»).
+  async commissionSchedule(
+    restaurantId: string,
+    now: Date,
+  ): Promise<{ rateBp: number | null; next: { rateBp: number; from: Date } | null }> {
+    const rates = await this.database.db
+      .select({
+        id: commissionRates.id,
+        rateBp: commissionRates.rateBp,
+        effectiveFrom: commissionRates.effectiveFrom,
+      })
+      .from(commissionRates)
+      .where(eq(commissionRates.restaurantId, restaurantId));
+    const ahead = rates.filter((rate) => rate.effectiveFrom.getTime() > now.getTime());
+    const firstStart = Math.min(...ahead.map((rate) => rate.effectiveFrom.getTime()));
+    const next = commissionAt(
+      ahead.filter((rate) => rate.effectiveFrom.getTime() === firstStart),
+      new Date(firstStart),
+    );
+    return {
+      rateBp: commissionAt(rates, now)?.rateBp ?? null,
+      next: next && { rateBp: next.rateBp, from: next.effectiveFrom },
+    };
+  }
+
   // AP §9.6.5, D16: a new commission for new orders, at once or from a time.
   async setCommission(
     restaurantId: string,

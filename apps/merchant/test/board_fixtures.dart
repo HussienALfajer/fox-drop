@@ -29,6 +29,7 @@ Map<String, Object?> orderJson({
   Map<String, Object?>? cancellation,
   Map<String, Object?>? itemReport,
   List<Map<String, Object?>> edits = const [],
+  Map<String, Object?>? owner,
 }) {
   final at = placed ?? placedAt;
   final accepted = acceptedAfter == null ? null : at.add(acceptedAfter);
@@ -78,6 +79,7 @@ Map<String, Object?> orderJson({
     ],
     'currency': 'TRY',
     'itemsValue': '24000',
+    'owner': owner,
     'captainTrack': captainTrack,
     'captain': captainName == null
         ? null

@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'account/account_screen.dart';
 import 'auth.dart';
 import 'board/board_screen.dart';
 import 'board/order_screen.dart';
@@ -62,6 +63,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/settings',
         builder: (context, state) => const SettingsScreen(),
+      ),
+      // RA §12.2, R10: «الحساب», the owners' (a cashier's read is 403
+      // owner_only).
+      GoRoute(
+        path: '/account',
+        builder: (context, state) => const AccountScreen(),
       ),
       // AP §9.13, RA §4.10: the restaurant terms, which owners accept.
       GoRoute(

@@ -1,5 +1,5 @@
 import { Inject, Injectable, type OnModuleInit } from '@nestjs/common';
-import { and, eq, gt, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm';
+import { and, desc, eq, gt, gte, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -23,6 +23,8 @@ import { EmergencyStops } from './emergency-stop.js';
 import { type Quote, type QuoteRequest, QuoteRefusedError, QuoteService } from './quote.service.js';
 import { CANCELLED_AFTER_PLACING_MS, orderKey, readOrders, type OrderView } from './order-views.js';
 import { commandHash, IdempotencyKeyReusedError, keepKey, replayKey } from './idempotency-keys.js';
+import { frozenAtPickup } from './order-edits.js';
+import { ownerMoney, type OwnerMoney } from './owner-money.js';
 import { collections, orderLines, orderNumbers, orders, pickupRequests } from './schema.js';
 
 type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
@@ -50,6 +52,22 @@ export class OrderRefusedError extends Error {
     super(message);
   }
 }
+
+// RA §12.2 «قبضت اليوم من الكباتن» (slice 2.19d): a pickup confirmed since a
+// moment, with the lines booked (the captain's when none were).
+export interface RestaurantPickup {
+  orderId: string;
+  number: bigint;
+  at: Date;
+  captainId: string;
+  currency: string;
+  amount: bigint;
+  lines: { currency: string; amount: bigint }[];
+}
+
+// An order is picked up within days of its placing: the read bounds
+// `placed_at` by this much before the moment, so the partitions prune.
+const PICKED_UP_AFTER_PLACING_MS = 2 * 24 * 60 * 60_000;
 
 // CA §9.8, §10.6: a delivered order's pay as the collection recorded it.
 // The restaurant's weekly statement (slice 2.19a): an order's number and
@@ -418,6 +436,93 @@ export class OrdersService implements OnModuleInit {
       });
     }
     return pickups;
+  }
+
+  // RA §8.4, R10 (slice 2.19d): the owners' money lines of the board's
+  // orders, null for a test order; a cancelled or rejected order has none.
+  // After the pickup they read the edits that froze its values.
+  async ownerMoney(views: readonly OrderView[]): Promise<Map<string, OwnerMoney | null>> {
+    const shown = views.filter(
+      (order) => order.status !== 'cancelled' && order.status !== 'rejected',
+    );
+    const lines = await Promise.all(
+      shown.map(async (order) => {
+        const frozen =
+          order.pickup === null
+            ? null
+            : await frozenAtPickup(this.database.db, {
+                id: order.id,
+                placedAt: order.placedAt,
+                itemsValue: order.money.itemsValue,
+                deliveryFee: order.money.deliveryFee,
+              });
+        // AP §8.9: an outcome the restaurant bears takes the pickup payment
+        // back; without its debit kept, the pickup less its own edits.
+        const outcome = order.outcome?.responsible === 'restaurant' ? order.outcome : null;
+        const debit =
+          outcome === null || frozen === null
+            ? null
+            : (outcome.merchantDebit ??
+              frozen.itemsValue - frozen.restaurantCharge + frozen.restaurantCommissionCut);
+        return [
+          order.id,
+          ownerMoney(
+            {
+              itemsValue: order.money.itemsValue,
+              commissionBp: order.commissionBp,
+              testOrder: order.testOrder,
+            },
+            frozen,
+            debit,
+          ),
+        ] as const;
+      }),
+    );
+    return new Map(lines);
+  }
+
+  // RA §12.2 (slice 2.19d): the restaurant's pickups confirmed since a
+  // moment, newest first.
+  async restaurantPickups(restaurantId: string, since: Date): Promise<RestaurantPickup[]> {
+    const rows = await this.database.db
+      .select({
+        orderId: orders.id,
+        number: orders.number,
+        at: pickupRequests.closedAt,
+        captainId: pickupRequests.captainId,
+        currency: pickupRequests.currency,
+        amount: pickupRequests.amount,
+        lines: pickupRequests.lines,
+        bookedLines: pickupRequests.bookedLines,
+      })
+      .from(orders)
+      .innerJoin(
+        pickupRequests,
+        and(
+          eq(pickupRequests.orderId, orders.id),
+          eq(pickupRequests.orderPlacedAt, orders.placedAt),
+          eq(pickupRequests.status, 'confirmed'),
+        ),
+      )
+      .where(
+        and(
+          eq(orders.restaurantId, restaurantId),
+          gte(orders.pickedUpAt, since),
+          gt(orders.placedAt, new Date(since.getTime() - PICKED_UP_AFTER_PLACING_MS)),
+        ),
+      )
+      .orderBy(desc(orders.pickedUpAt));
+    return rows.map((row) => ({
+      orderId: row.orderId,
+      number: row.number,
+      at: row.at!,
+      captainId: row.captainId,
+      currency: row.currency,
+      amount: row.amount,
+      lines: ((row.bookedLines ?? row.lines) as { currency: string; amount: string }[]).map(
+        (line) => ({ currency: line.currency, amount: BigInt(line.amount) }),
+      ),
+    }));
   }
 
   // CU §11: the customer's own order, or null for another's or an unknown

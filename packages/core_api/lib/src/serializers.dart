@@ -488,6 +488,11 @@ import 'package:core_api/src/model/done_dto_output.dart';
 import 'package:core_api/src/model/emergency_sign_in_code_dto_output.dart';
 import 'package:core_api/src/model/emergency_sign_in_code_request_dto.dart';
 import 'package:core_api/src/model/merchant_accept_dto.dart';
+import 'package:core_api/src/model/merchant_account_dto_output.dart';
+import 'package:core_api/src/model/merchant_account_dto_output_next_commission.dart';
+import 'package:core_api/src/model/merchant_account_dto_output_pickups_inner.dart';
+import 'package:core_api/src/model/merchant_account_dto_output_pickups_inner_lines_inner.dart';
+import 'package:core_api/src/model/merchant_account_dto_output_week_lines_inner.dart';
 import 'package:core_api/src/model/merchant_acknowledge_edit_dto.dart';
 import 'package:core_api/src/model/merchant_availability_dto.dart';
 import 'package:core_api/src/model/merchant_availability_saved_dto_output.dart';
@@ -531,6 +536,7 @@ import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_report_items_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_report_note.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner.dart';
+import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_owner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_pickup.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_pickup_request.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_prep_time.dart';
@@ -1066,6 +1072,11 @@ part 'serializers.g.dart';
   EmergencySignInCodeDtoOutput,
   EmergencySignInCodeRequestDto,
   MerchantAcceptDto,
+  MerchantAccountDtoOutput,
+  MerchantAccountDtoOutputNextCommission,
+  MerchantAccountDtoOutputPickupsInner,
+  MerchantAccountDtoOutputPickupsInnerLinesInner,
+  MerchantAccountDtoOutputWeekLinesInner,
   MerchantAcknowledgeEditDto,
   MerchantAvailabilityDto,
   MerchantAvailabilitySavedDtoOutput,
@@ -1109,6 +1120,7 @@ part 'serializers.g.dart';
   MerchantOrdersDtoOutputOrdersInnerItemReportItemsInner,
   MerchantOrdersDtoOutputOrdersInnerItemReportNote,
   MerchantOrdersDtoOutputOrdersInnerLinesInner,
+  MerchantOrdersDtoOutputOrdersInnerOwner,
   MerchantOrdersDtoOutputOrdersInnerPickup,
   MerchantOrdersDtoOutputOrdersInnerPickupRequest,
   MerchantOrdersDtoOutputPrepTime,
@@ -1574,6 +1586,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(MerchantAccountDtoOutputPickupsInnerLinesInner),
+            ]),
+            () => ListBuilder<MerchantAccountDtoOutputPickupsInnerLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminReasonListsDtoOutputListsInner),
             ]),
             () => ListBuilder<AdminReasonListsDtoOutputListsInner>(),
@@ -1814,6 +1832,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(MerchantAccountDtoOutputWeekLinesInner),
+            ]),
+            () => ListBuilder<MerchantAccountDtoOutputWeekLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(CustomerQuoteDtoOutputLinesInner),
             ]),
             () => ListBuilder<CustomerQuoteDtoOutputLinesInner>(),
@@ -1998,6 +2022,12 @@ Serializers serializers =
                 ListBuilder<
                   AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(MerchantAccountDtoOutputPickupsInner),
+            ]),
+            () => ListBuilder<MerchantAccountDtoOutputPickupsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

@@ -6,6 +6,7 @@
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_cancellation.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_report.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_acceptance.dart';
+import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_owner.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_captain.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_pickup.dart';
@@ -35,6 +36,7 @@ part 'merchant_orders_dto_output_orders_inner.g.dart';
 /// * [lines]
 /// * [currency]
 /// * [itemsValue] - «قيمة الأصناف — يدفعها لك الكابتن نقداً عند الاستلام» (RA §8.4); the delivery fee and the customer total are never shown (R11).
+/// * [owner]
 /// * [captainTrack] - The captain line (RA §8.1): searching or offered «بانتظار كابتن», assigned «الكابتن {الاسم} في الطريق»; null before the search starts.
 /// * [captain]
 /// * [captainArrival]
@@ -99,6 +101,9 @@ abstract class MerchantOrdersDtoOutputOrdersInner
   /// «قيمة الأصناف — يدفعها لك الكابتن نقداً عند الاستلام» (RA §8.4); the delivery fee and the customer total are never shown (R11).
   @BuiltValueField(wireName: r'itemsValue')
   String get itemsValue;
+
+  @BuiltValueField(wireName: r'owner')
+  MerchantOrdersDtoOutputOrdersInnerOwner? get owner;
 
   /// The captain line (RA §8.1): searching or offered «بانتظار كابتن», assigned «الكابتن {الاسم} في الطريق»; null before the search starts.
   @BuiltValueField(wireName: r'captainTrack')
@@ -240,6 +245,15 @@ class _$MerchantOrdersDtoOutputOrdersInnerSerializer
       object.itemsValue,
       specifiedType: const FullType(String),
     );
+    yield r'owner';
+    yield object.owner == null
+        ? null
+        : serializers.serialize(
+            object.owner,
+            specifiedType: const FullType.nullable(
+              MerchantOrdersDtoOutputOrdersInnerOwner,
+            ),
+          );
     yield r'captainTrack';
     yield object.captainTrack == null
         ? null
@@ -459,6 +473,18 @@ class _$MerchantOrdersDtoOutputOrdersInnerSerializer
                   )
                   as String;
           result.itemsValue = valueDes;
+          break;
+        case r'owner':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      MerchantOrdersDtoOutputOrdersInnerOwner,
+                    ),
+                  )
+                  as MerchantOrdersDtoOutputOrdersInnerOwner?;
+          if (valueDes == null) continue;
+          result.owner.replace(valueDes);
           break;
         case r'captainTrack':
           final valueDes =

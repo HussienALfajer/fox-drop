@@ -2805,4 +2805,147 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get captainStatementNotFound => 'لم يُعثر على هذا الكشف.';
+
+  @override
+  String get merchantAccount => 'الحساب';
+
+  @override
+  String merchantAccountOwed(String amount) {
+    return 'المستحق عليك حتى الآن: $amount';
+  }
+
+  @override
+  String merchantAccountCredit(String amount) {
+    return 'لك عند FOX DROP: $amount';
+  }
+
+  @override
+  String get merchantAccountSettled => 'لا مستحقات عليك الآن.';
+
+  @override
+  String merchantAccountSettlement(String weekday, String date) {
+    return 'موعد التسوية: $weekday $date';
+  }
+
+  @override
+  String merchantAccountCommission(String rate) {
+    return 'عمولتك الحالية: $rate%';
+  }
+
+  @override
+  String merchantAccountCommissionChange(String rate, String date) {
+    return 'تتغيّر عمولتك إلى $rate% اعتباراً من $date';
+  }
+
+  @override
+  String merchantAccountToday(String amount, String count) {
+    return 'قبضت اليوم من الكباتن: $amount ($count طلباً)';
+  }
+
+  @override
+  String merchantAccountPickup(String number, String time, String captain) {
+    return '#$number · $time · $captain';
+  }
+
+  @override
+  String get merchantAccountWeek => 'هذا الأسبوع';
+
+  @override
+  String get merchantAccountWeekEmpty => 'لا قيود منذ آخر كشف.';
+
+  @override
+  String merchantAccountOrder(String number, String amount) {
+    return '#$number: العمولة $amount';
+  }
+
+  @override
+  String merchantAccountOrderDiscount(String amount) {
+    return 'خصم يموّله المطعم: $amount';
+  }
+
+  @override
+  String merchantAccountPayment(String amount) {
+    return 'دفعة مسدّدة: $amount';
+  }
+
+  @override
+  String merchantAccountPayout(String amount) {
+    return 'صُرف لك: $amount';
+  }
+
+  @override
+  String merchantAccountException(String label, String amount) {
+    return '$label: $amount';
+  }
+
+  @override
+  String merchantAccountExceptionOrder(String number) {
+    return 'الطلب #$number';
+  }
+
+  @override
+  String get merchantAccountRaises => 'يزيد المستحق عليك';
+
+  @override
+  String get merchantAccountLowers => 'يُنقص المستحق عليك';
+
+  @override
+  String get merchantAccountFailed => 'تعذّر تحميل الحساب.';
+
+  @override
+  String get merchantAccountNotAllowed => 'الحساب للمالكين فقط.';
+
+  @override
+  String get merchantCauseFoodCredit => 'تعويض عن طلب أُلغي بعد التحضير';
+
+  @override
+  String get merchantCauseCredit => 'تصحيح مبلغ الاستلام';
+
+  @override
+  String get merchantCausePickupRefund => 'استرداد مبلغ الاستلام';
+
+  @override
+  String get merchantCausePickupKept => 'مبلغ استلام لطلب لم يكتمل';
+
+  @override
+  String get merchantCauseItemsRemoved => 'أصناف حُذفت بعد الاستلام';
+
+  @override
+  String get merchantCauseFeeLowered => 'خُفّضت أجرة التوصيل بعد الاستلام';
+
+  @override
+  String get merchantCauseFeeCutReturned => 'إلغاء خصم أجرة التوصيل';
+
+  @override
+  String get merchantCauseDebit => 'مشكلة بعد التسليم';
+
+  @override
+  String get merchantCauseCommissionReversal => 'إلغاء عمولة';
+
+  @override
+  String get merchantCauseCommissionRestored => 'إلغاء استرداد العمولة';
+
+  @override
+  String get merchantCauseDiscountReversal => 'إلغاء خصم يموّله المطعم';
+
+  @override
+  String get merchantCauseOutcomeChanged => 'تغيير النتيجة';
+
+  @override
+  String merchantCauseAdjustment(String reason) {
+    return 'تسوية يدوية: $reason';
+  }
+
+  @override
+  String merchantOrderCommission(String rate, String amount) {
+    return 'العمولة $rate% — تُسدَّد يوم السبت: $amount';
+  }
+
+  @override
+  String merchantOrderNet(String amount) {
+    return 'صافيك من الطلب: $amount';
+  }
+
+  @override
+  String get merchantOrderTestNoCommission => 'طلب تجريبي — لا عمولة';
 }

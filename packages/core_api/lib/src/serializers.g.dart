@@ -765,6 +765,13 @@ Serializers _$serializers =
           ..add(EmergencySignInCodeRequestDto.serializer)
           ..add(EmergencySignInCodeRequestDtoPartyEnum.serializer)
           ..add(MerchantAcceptDto.serializer)
+          ..add(MerchantAccountDtoOutput.serializer)
+          ..add(MerchantAccountDtoOutputNextCommission.serializer)
+          ..add(MerchantAccountDtoOutputPickupsInner.serializer)
+          ..add(MerchantAccountDtoOutputPickupsInnerLinesInner.serializer)
+          ..add(MerchantAccountDtoOutputWeekLinesInner.serializer)
+          ..add(MerchantAccountDtoOutputWeekLinesInnerCauseEnum.serializer)
+          ..add(MerchantAccountDtoOutputWeekLinesInnerKindEnum.serializer)
           ..add(MerchantAcknowledgeEditDto.serializer)
           ..add(MerchantAvailabilityDto.serializer)
           ..add(MerchantAvailabilityDtoTypeEnum.serializer)
@@ -845,6 +852,7 @@ Serializers _$serializers =
           )
           ..add(MerchantOrdersDtoOutputOrdersInnerItemReportNote.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInnerLinesInner.serializer)
+          ..add(MerchantOrdersDtoOutputOrdersInnerOwner.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInnerPickup.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInnerPickupRequest.serializer)
           ..add(
@@ -1995,6 +2003,24 @@ Serializers _$serializers =
               const FullType(CustomerRestaurantPageDtoOutputMenuInner),
             ]),
             () => ListBuilder<CustomerRestaurantPageDtoOutputMenuInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantAccountDtoOutputPickupsInner),
+            ]),
+            () => ListBuilder<MerchantAccountDtoOutputPickupsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantAccountDtoOutputWeekLinesInner),
+            ]),
+            () => ListBuilder<MerchantAccountDtoOutputWeekLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantAccountDtoOutputPickupsInnerLinesInner),
+            ]),
+            () => ListBuilder<MerchantAccountDtoOutputPickupsInnerLinesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

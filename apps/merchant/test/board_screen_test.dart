@@ -28,6 +28,9 @@ const _orderId = '00000000-0000-4000-8000-0000000000a1';
 // The board on a phone (RA §4.3–4.7, §8.2–8.10), signed in, against a fake
 // server and a fake real-time channel.
 class _Board {
+  _Board({this.role = 'cashier'});
+
+  final String role;
   final server = FakeServer();
   final transport = FakeTransport();
   final ringer = FakeRinger();
@@ -35,10 +38,10 @@ class _Board {
 
   Future<void> pump(WidgetTester tester, List<FakeAnswer> boards) async {
     server.on('/v1/merchant/auth/session', [
-      const FakeAnswer(200, {
+      FakeAnswer(200, {
         'accountId': _accountId,
         'restaurantId': _restaurantId,
-        'role': 'cashier',
+        'role': role,
         'name': 'ليلى',
         'deviceNamed': true,
         'sessionId': '00000000-0000-4000-8000-000000000003',
@@ -472,6 +475,144 @@ void main() {
     expect(find.text('#10001'), findsWidgets);
     expect(find.byKey(const Key('ringing-prompt')), findsWidgets);
     expect(find.byKey(const Key('offline')), findsWidgets);
+    await app.done(tester);
+  });
+
+  // RA §8.4, R10 (slice 2.19d): an owner's detail shows the commission and
+  // the net, a test order «طلب تجريبي — لا عمولة»; a cashier neither.
+  testWidgets('the detail shows the owners their money lines', (tester) async {
+    final app = _Board(role: 'owner');
+    await app.pump(tester, [
+      FakeAnswer(
+        200,
+        boardJson([
+          orderJson(
+            owner: {
+              'testOrder': false,
+              'commissionBp': 1500,
+              'commission': '3600',
+              'merchantNet': '20400',
+            },
+          ),
+        ]),
+      ),
+    ]);
+    app.container.read(routerProvider).push('/orders/$_orderId');
+    await tester.pumpAndSettle();
+    expect(find.text('العمولة 15% — تُسدَّد يوم السبت: 36 ₺'), findsOneWidget);
+    expect(find.text('صافيك من الطلب: 204 ₺'), findsOneWidget);
+    await app.done(tester);
+  });
+
+  testWidgets('a test order shows «لا عمولة» to the owners', (tester) async {
+    final app = _Board(role: 'owner');
+    await app.pump(tester, [
+      FakeAnswer(
+        200,
+        boardJson([
+          orderJson(
+            owner: {
+              'testOrder': true,
+              'commissionBp': null,
+              'commission': null,
+              'merchantNet': null,
+            },
+          ),
+        ]),
+      ),
+    ]);
+    app.container.read(routerProvider).push('/orders/$_orderId');
+    await tester.pumpAndSettle();
+    expect(find.text('طلب تجريبي — لا عمولة'), findsOneWidget);
+    expect(find.byKey(const Key('owner-commission')), findsNothing);
+    await app.done(tester);
+  });
+
+  testWidgets('a cashier sees no money lines and no «الحساب»', (tester) async {
+    final app = _Board();
+    await app.pump(tester, [
+      FakeAnswer(200, boardJson([orderJson()])),
+    ]);
+    expect(find.byKey(const Key('open-account')), findsNothing);
+    app.container.read(routerProvider).push('/orders/$_orderId');
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('owner-commission')), findsNothing);
+    expect(find.byKey(const Key('owner-net')), findsNothing);
+    await app.done(tester);
+  });
+
+  // RA §12.2, §12.5 (slice 2.19d): «الحساب» from the owners' button.
+  testWidgets('an owner opens «الحساب»: balance, today and the week', (
+    tester,
+  ) async {
+    final app = _Board(role: 'owner');
+    app.server.on('/v1/merchant/account', [
+      const FakeAnswer(200, {
+        'currency': 'TRY',
+        'balance': '7700',
+        'settlementDate': '2026-11-14',
+        'commissionBp': 1500,
+        'nextCommission': {'rateBp': 1250, 'from': '2026-12-01T03:00:00.000Z'},
+        'todayFrom': '2026-11-07T03:00:00.000Z',
+        'pickups': [
+          {
+            'orderId': _orderId,
+            'orderNumber': '10001',
+            'at': '2026-11-07T12:20:00.000Z',
+            'captainName': 'سامر',
+            'amount': '40000',
+            'lines': [
+              {'currency': 'TRY', 'amount': '40000'},
+            ],
+          },
+        ],
+        'weekFrom': '2026-10-31T03:00:00.000Z',
+        'weekLines': [
+          {
+            'day': '2026-11-07',
+            'kind': 'order',
+            'at': '2026-11-07T12:40:00.000Z',
+            'orderId': _orderId,
+            'orderNumber': '10001',
+            'itemsValue': '40000',
+            'commission': '5700',
+            'discountShare': '2000',
+            'cause': null,
+            'amount': null,
+            'reason': null,
+          },
+          {
+            'day': '2026-11-06',
+            'kind': 'exception',
+            'at': '2026-11-06T10:00:00.000Z',
+            'orderId': null,
+            'orderNumber': '10000',
+            'itemsValue': null,
+            'commission': null,
+            'discountShare': null,
+            'cause': 'food_credit',
+            'amount': '-1500',
+            'reason': 'تعويض عن طلب أُلغي بعد التحضير',
+          },
+        ],
+      }),
+    ]);
+    await app.pump(tester, [FakeAnswer(200, boardJson([]))]);
+    await tester.tap(find.byKey(const Key('open-account')));
+    await tester.pumpAndSettle();
+    expect(find.text('المستحق عليك حتى الآن: 77 ₺'), findsOneWidget);
+    expect(find.text('موعد التسوية: السبت 14/11/2026'), findsOneWidget);
+    expect(find.text('عمولتك الحالية: 15%'), findsOneWidget);
+    expect(
+      find.text('تتغيّر عمولتك إلى 12.5% اعتباراً من 01/12/2026'),
+      findsOneWidget,
+    );
+    expect(find.text('قبضت اليوم من الكباتن: 400 ₺ (1 طلباً)'), findsOneWidget);
+    expect(find.text('#10001 · 3:20 م · سامر'), findsOneWidget);
+    expect(find.text('#10001: العمولة 57 ₺'), findsOneWidget);
+    expect(find.text('خصم يموّله المطعم: 20 ₺'), findsOneWidget);
+    expect(find.text('تعويض عن طلب أُلغي بعد التحضير: 15 ₺'), findsOneWidget);
+    expect(find.text('الطلب #10000 · يُنقص المستحق عليك'), findsOneWidget);
     await app.done(tester);
   });
 
