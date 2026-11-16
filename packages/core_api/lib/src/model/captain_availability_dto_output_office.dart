@@ -13,20 +13,15 @@ part 'captain_availability_dto_output_office.g.dart';
 /// The city's office; null until the owner sets it (AP §9.12.1).
 ///
 /// Properties:
-/// * [latitude]
-/// * [longitude]
+/// * [latitude] 
+/// * [longitude] 
 /// * [hours] - The desk hours per weekday; a weekday not listed is closed.
 /// * [timeZone] - The city's clock, such as Asia/Damascus.
-/// * [open]
+/// * [open] 
 /// * [closesAt] - While open: when the desk closes.
 /// * [opensAt] - While closed: when it opens next; null when no day is open.
 @BuiltValue()
-abstract class CaptainAvailabilityDtoOutputOffice
-    implements
-        Built<
-          CaptainAvailabilityDtoOutputOffice,
-          CaptainAvailabilityDtoOutputOfficeBuilder
-        > {
+abstract class CaptainAvailabilityDtoOutputOffice implements Built<CaptainAvailabilityDtoOutputOffice, CaptainAvailabilityDtoOutputOfficeBuilder> {
   @BuiltValueField(wireName: r'latitude')
   num get latitude;
 
@@ -54,25 +49,18 @@ abstract class CaptainAvailabilityDtoOutputOffice
 
   CaptainAvailabilityDtoOutputOffice._();
 
-  factory CaptainAvailabilityDtoOutputOffice([
-    void updates(CaptainAvailabilityDtoOutputOfficeBuilder b),
-  ]) = _$CaptainAvailabilityDtoOutputOffice;
+  factory CaptainAvailabilityDtoOutputOffice([void updates(CaptainAvailabilityDtoOutputOfficeBuilder b)]) = _$CaptainAvailabilityDtoOutputOffice;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainAvailabilityDtoOutputOfficeBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainAvailabilityDtoOutputOffice> get serializer =>
-      _$CaptainAvailabilityDtoOutputOfficeSerializer();
+  static Serializer<CaptainAvailabilityDtoOutputOffice> get serializer => _$CaptainAvailabilityDtoOutputOfficeSerializer();
 }
 
-class _$CaptainAvailabilityDtoOutputOfficeSerializer
-    implements PrimitiveSerializer<CaptainAvailabilityDtoOutputOffice> {
+class _$CaptainAvailabilityDtoOutputOfficeSerializer implements PrimitiveSerializer<CaptainAvailabilityDtoOutputOffice> {
   @override
-  final Iterable<Type> types = const [
-    CaptainAvailabilityDtoOutputOffice,
-    _$CaptainAvailabilityDtoOutputOffice,
-  ];
+  final Iterable<Type> types = const [CaptainAvailabilityDtoOutputOffice, _$CaptainAvailabilityDtoOutputOffice];
 
   @override
   final String wireName = r'CaptainAvailabilityDtoOutputOffice';
@@ -95,9 +83,7 @@ class _$CaptainAvailabilityDtoOutputOfficeSerializer
     yield r'hours';
     yield serializers.serialize(
       object.hours,
-      specifiedType: const FullType(BuiltList, [
-        FullType(CaptainAvailabilityDtoOutputOfficeHoursInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(CaptainAvailabilityDtoOutputOfficeHoursInner)]),
     );
     yield r'timeZone';
     yield serializers.serialize(
@@ -110,19 +96,15 @@ class _$CaptainAvailabilityDtoOutputOfficeSerializer
       specifiedType: const FullType(bool),
     );
     yield r'closesAt';
-    yield object.closesAt == null
-        ? null
-        : serializers.serialize(
-            object.closesAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.closesAt == null ? null : serializers.serialize(
+      object.closesAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
     yield r'opensAt';
-    yield object.opensAt == null
-        ? null
-        : serializers.serialize(
-            object.opensAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.opensAt == null ? null : serializers.serialize(
+      object.opensAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
   }
 
   @override
@@ -131,11 +113,7 @@ class _$CaptainAvailabilityDtoOutputOfficeSerializer
     CaptainAvailabilityDtoOutputOffice object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -151,63 +129,53 @@ class _$CaptainAvailabilityDtoOutputOfficeSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'latitude':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(num))
-                  as num;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(num),
+          ) as num;
           result.latitude = valueDes;
           break;
         case r'longitude':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(num))
-                  as num;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(num),
+          ) as num;
           result.longitude = valueDes;
           break;
         case r'hours':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(BuiltList, [
-                      FullType(CaptainAvailabilityDtoOutputOfficeHoursInner),
-                    ]),
-                  )
-                  as BuiltList<CaptainAvailabilityDtoOutputOfficeHoursInner>;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(CaptainAvailabilityDtoOutputOfficeHoursInner)]),
+          ) as BuiltList<CaptainAvailabilityDtoOutputOfficeHoursInner>;
           result.hours.replace(valueDes);
           break;
         case r'timeZone':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.timeZone = valueDes;
           break;
         case r'open':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.open = valueDes;
           break;
         case r'closesAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(DateTime),
-                  )
-                  as DateTime?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
           if (valueDes == null) continue;
           result.closesAt = valueDes;
           break;
         case r'opensAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(DateTime),
-                  )
-                  as DateTime?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
           if (valueDes == null) continue;
           result.opensAt = valueDes;
           break;
@@ -239,3 +207,5 @@ class _$CaptainAvailabilityDtoOutputOfficeSerializer
     return result.build();
   }
 }
+
+

@@ -11,15 +11,10 @@ part 'captain_carried_currencies_dto_output_choices_inner.g.dart';
 /// CaptainCarriedCurrenciesDtoOutputChoicesInner
 ///
 /// Properties:
-/// * [currency]
-/// * [name]
+/// * [currency] 
+/// * [name] 
 @BuiltValue()
-abstract class CaptainCarriedCurrenciesDtoOutputChoicesInner
-    implements
-        Built<
-          CaptainCarriedCurrenciesDtoOutputChoicesInner,
-          CaptainCarriedCurrenciesDtoOutputChoicesInnerBuilder
-        > {
+abstract class CaptainCarriedCurrenciesDtoOutputChoicesInner implements Built<CaptainCarriedCurrenciesDtoOutputChoicesInner, CaptainCarriedCurrenciesDtoOutputChoicesInnerBuilder> {
   @BuiltValueField(wireName: r'currency')
   String get currency;
 
@@ -28,28 +23,18 @@ abstract class CaptainCarriedCurrenciesDtoOutputChoicesInner
 
   CaptainCarriedCurrenciesDtoOutputChoicesInner._();
 
-  factory CaptainCarriedCurrenciesDtoOutputChoicesInner([
-    void updates(CaptainCarriedCurrenciesDtoOutputChoicesInnerBuilder b),
-  ]) = _$CaptainCarriedCurrenciesDtoOutputChoicesInner;
+  factory CaptainCarriedCurrenciesDtoOutputChoicesInner([void updates(CaptainCarriedCurrenciesDtoOutputChoicesInnerBuilder b)]) = _$CaptainCarriedCurrenciesDtoOutputChoicesInner;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    CaptainCarriedCurrenciesDtoOutputChoicesInnerBuilder b,
-  ) => b;
+  static void _defaults(CaptainCarriedCurrenciesDtoOutputChoicesInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainCarriedCurrenciesDtoOutputChoicesInner>
-  get serializer => _$CaptainCarriedCurrenciesDtoOutputChoicesInnerSerializer();
+  static Serializer<CaptainCarriedCurrenciesDtoOutputChoicesInner> get serializer => _$CaptainCarriedCurrenciesDtoOutputChoicesInnerSerializer();
 }
 
-class _$CaptainCarriedCurrenciesDtoOutputChoicesInnerSerializer
-    implements
-        PrimitiveSerializer<CaptainCarriedCurrenciesDtoOutputChoicesInner> {
+class _$CaptainCarriedCurrenciesDtoOutputChoicesInnerSerializer implements PrimitiveSerializer<CaptainCarriedCurrenciesDtoOutputChoicesInner> {
   @override
-  final Iterable<Type> types = const [
-    CaptainCarriedCurrenciesDtoOutputChoicesInner,
-    _$CaptainCarriedCurrenciesDtoOutputChoicesInner,
-  ];
+  final Iterable<Type> types = const [CaptainCarriedCurrenciesDtoOutputChoicesInner, _$CaptainCarriedCurrenciesDtoOutputChoicesInner];
 
   @override
   final String wireName = r'CaptainCarriedCurrenciesDtoOutputChoicesInner';
@@ -77,11 +62,7 @@ class _$CaptainCarriedCurrenciesDtoOutputChoicesInnerSerializer
     CaptainCarriedCurrenciesDtoOutputChoicesInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -97,21 +78,17 @@ class _$CaptainCarriedCurrenciesDtoOutputChoicesInnerSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'currency':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.currency = valueDes;
           break;
         case r'name':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.name = valueDes;
           break;
         default:
@@ -142,3 +119,5 @@ class _$CaptainCarriedCurrenciesDtoOutputChoicesInnerSerializer
     return result.build();
   }
 }
+
+

@@ -13,12 +13,10 @@ part 'captain_arrive_at_customer_dto.g.dart';
 /// CaptainArriveAtCustomerDto
 ///
 /// Properties:
-/// * [location]
-/// * [away]
+/// * [location] 
+/// * [away] 
 @BuiltValue()
-abstract class CaptainArriveAtCustomerDto
-    implements
-        Built<CaptainArriveAtCustomerDto, CaptainArriveAtCustomerDtoBuilder> {
+abstract class CaptainArriveAtCustomerDto implements Built<CaptainArriveAtCustomerDto, CaptainArriveAtCustomerDtoBuilder> {
   @BuiltValueField(wireName: r'location')
   CaptainArriveDtoLocation get location;
 
@@ -27,25 +25,18 @@ abstract class CaptainArriveAtCustomerDto
 
   CaptainArriveAtCustomerDto._();
 
-  factory CaptainArriveAtCustomerDto([
-    void updates(CaptainArriveAtCustomerDtoBuilder b),
-  ]) = _$CaptainArriveAtCustomerDto;
+  factory CaptainArriveAtCustomerDto([void updates(CaptainArriveAtCustomerDtoBuilder b)]) = _$CaptainArriveAtCustomerDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainArriveAtCustomerDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainArriveAtCustomerDto> get serializer =>
-      _$CaptainArriveAtCustomerDtoSerializer();
+  static Serializer<CaptainArriveAtCustomerDto> get serializer => _$CaptainArriveAtCustomerDtoSerializer();
 }
 
-class _$CaptainArriveAtCustomerDtoSerializer
-    implements PrimitiveSerializer<CaptainArriveAtCustomerDto> {
+class _$CaptainArriveAtCustomerDtoSerializer implements PrimitiveSerializer<CaptainArriveAtCustomerDto> {
   @override
-  final Iterable<Type> types = const [
-    CaptainArriveAtCustomerDto,
-    _$CaptainArriveAtCustomerDto,
-  ];
+  final Iterable<Type> types = const [CaptainArriveAtCustomerDto, _$CaptainArriveAtCustomerDto];
 
   @override
   final String wireName = r'CaptainArriveAtCustomerDto';
@@ -61,14 +52,10 @@ class _$CaptainArriveAtCustomerDtoSerializer
       specifiedType: const FullType(CaptainArriveDtoLocation),
     );
     yield r'away';
-    yield object.away == null
-        ? null
-        : serializers.serialize(
-            object.away,
-            specifiedType: const FullType.nullable(
-              CaptainArriveAtCustomerDtoAway,
-            ),
-          );
+    yield object.away == null ? null : serializers.serialize(
+      object.away,
+      specifiedType: const FullType.nullable(CaptainArriveAtCustomerDtoAway),
+    );
   }
 
   @override
@@ -77,11 +64,7 @@ class _$CaptainArriveAtCustomerDtoSerializer
     CaptainArriveAtCustomerDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -97,23 +80,17 @@ class _$CaptainArriveAtCustomerDtoSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'location':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(CaptainArriveDtoLocation),
-                  )
-                  as CaptainArriveDtoLocation;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CaptainArriveDtoLocation),
+          ) as CaptainArriveDtoLocation;
           result.location.replace(valueDes);
           break;
         case r'away':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(
-                      CaptainArriveAtCustomerDtoAway,
-                    ),
-                  )
-                  as CaptainArriveAtCustomerDtoAway?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(CaptainArriveAtCustomerDtoAway),
+          ) as CaptainArriveAtCustomerDtoAway?;
           if (valueDes == null) continue;
           result.away.replace(valueDes);
           break;
@@ -145,3 +122,5 @@ class _$CaptainArriveAtCustomerDtoSerializer
     return result.build();
   }
 }
+
+

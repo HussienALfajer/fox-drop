@@ -49,7 +49,6 @@ import 'package:core_api/src/model/terms_accepted_dto_output.dart';
 import 'package:core_api/src/model/terms_dto_output.dart';
 
 class CustomerApi {
-
   final Dio _dio;
 
   final Serializers _serializers;
@@ -57,7 +56,7 @@ class CustomerApi {
   const CustomerApi(this._dio, this._serializers);
 
   /// customerAuthCurrent
-  /// 
+  ///
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -69,7 +68,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerSessionDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerSessionDtoOutput>> customerAuthCurrent({ 
+  Future<Response<CustomerSessionDtoOutput>> customerAuthCurrent({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -80,13 +79,8 @@ class CustomerApi {
     final _path = r'/v1/customer/auth/session';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       validateStatus: validateStatus,
     );
 
@@ -102,11 +96,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CustomerSessionDtoOutput),
-      ) as CustomerSessionDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CustomerSessionDtoOutput),
+                )
+                as CustomerSessionDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -130,10 +126,10 @@ class CustomerApi {
   }
 
   /// customerAuthRefresh
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [customerRefreshDto] 
+  /// * [customerRefreshDto]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -143,7 +139,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerTokensDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerTokensDtoOutput>> customerAuthRefresh({ 
+  Future<Response<CustomerTokensDtoOutput>> customerAuthRefresh({
     required CustomerRefreshDto customerRefreshDto,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -155,13 +151,8 @@ class CustomerApi {
     final _path = r'/v1/customer/auth/refresh';
     final _options = Options(
       method: r'POST',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -170,14 +161,13 @@ class CustomerApi {
 
     try {
       const _type = FullType(CustomerRefreshDto);
-      _bodyData = _serializers.serialize(customerRefreshDto, specifiedType: _type);
-
-    } catch(error, stackTrace) {
+      _bodyData = _serializers.serialize(
+        customerRefreshDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
       throw DioException(
-         requestOptions: _options.compose(
-          _dio.options,
-          _path,
-        ),
+        requestOptions: _options.compose(_dio.options, _path),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -197,11 +187,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CustomerTokensDtoOutput),
-      ) as CustomerTokensDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CustomerTokensDtoOutput),
+                )
+                as CustomerTokensDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -225,10 +217,10 @@ class CustomerApi {
   }
 
   /// customerAuthRequestCode
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [customerCodeRequestDto] 
+  /// * [customerCodeRequestDto]
   /// * [xFirebaseAppCheck] - The Firebase App Check token. Refused with 403 app_check_failed when missing or invalid while the server requires it (otp.app_check_required).
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -239,7 +231,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerCodeSentDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerCodeSentDtoOutput>> customerAuthRequestCode({ 
+  Future<Response<CustomerCodeSentDtoOutput>> customerAuthRequestCode({
     required CustomerCodeRequestDto customerCodeRequestDto,
     String? xFirebaseAppCheck,
     CancelToken? cancelToken,
@@ -253,13 +245,11 @@ class CustomerApi {
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
-        if (xFirebaseAppCheck != null) r'X-Firebase-AppCheck': xFirebaseAppCheck,
+        if (xFirebaseAppCheck != null)
+          r'X-Firebase-AppCheck': xFirebaseAppCheck,
         ...?headers,
       },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -268,14 +258,13 @@ class CustomerApi {
 
     try {
       const _type = FullType(CustomerCodeRequestDto);
-      _bodyData = _serializers.serialize(customerCodeRequestDto, specifiedType: _type);
-
-    } catch(error, stackTrace) {
+      _bodyData = _serializers.serialize(
+        customerCodeRequestDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
       throw DioException(
-         requestOptions: _options.compose(
-          _dio.options,
-          _path,
-        ),
+        requestOptions: _options.compose(_dio.options, _path),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -295,11 +284,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CustomerCodeSentDtoOutput),
-      ) as CustomerCodeSentDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CustomerCodeSentDtoOutput),
+                )
+                as CustomerCodeSentDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -323,10 +314,10 @@ class CustomerApi {
   }
 
   /// customerAuthSignIn
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [customerSignInDto] 
+  /// * [customerSignInDto]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -336,7 +327,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerSignedInDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerSignedInDtoOutput>> customerAuthSignIn({ 
+  Future<Response<CustomerSignedInDtoOutput>> customerAuthSignIn({
     required CustomerSignInDto customerSignInDto,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -348,13 +339,8 @@ class CustomerApi {
     final _path = r'/v1/customer/auth/sign-in';
     final _options = Options(
       method: r'POST',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -363,14 +349,13 @@ class CustomerApi {
 
     try {
       const _type = FullType(CustomerSignInDto);
-      _bodyData = _serializers.serialize(customerSignInDto, specifiedType: _type);
-
-    } catch(error, stackTrace) {
+      _bodyData = _serializers.serialize(
+        customerSignInDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
       throw DioException(
-         requestOptions: _options.compose(
-          _dio.options,
-          _path,
-        ),
+        requestOptions: _options.compose(_dio.options, _path),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -390,11 +375,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CustomerSignedInDtoOutput),
-      ) as CustomerSignedInDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CustomerSignedInDtoOutput),
+                )
+                as CustomerSignedInDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -418,7 +405,7 @@ class CustomerApi {
   }
 
   /// customerAuthSignOut
-  /// 
+  ///
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -430,7 +417,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerSignedOutDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerSignedOutDtoOutput>> customerAuthSignOut({ 
+  Future<Response<CustomerSignedOutDtoOutput>> customerAuthSignOut({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -441,13 +428,8 @@ class CustomerApi {
     final _path = r'/v1/customer/auth/sign-out';
     final _options = Options(
       method: r'POST',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       validateStatus: validateStatus,
     );
 
@@ -463,11 +445,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CustomerSignedOutDtoOutput),
-      ) as CustomerSignedOutDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CustomerSignedOutDtoOutput),
+                )
+                as CustomerSignedOutDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -491,7 +475,7 @@ class CustomerApi {
   }
 
   /// customerAuthSignOutEverywhere
-  /// 
+  ///
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -503,7 +487,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerSignedOutDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerSignedOutDtoOutput>> customerAuthSignOutEverywhere({ 
+  Future<Response<CustomerSignedOutDtoOutput>> customerAuthSignOutEverywhere({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -514,13 +498,8 @@ class CustomerApi {
     final _path = r'/v1/customer/auth/sign-out-everywhere';
     final _options = Options(
       method: r'POST',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       validateStatus: validateStatus,
     );
 
@@ -536,11 +515,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CustomerSignedOutDtoOutput),
-      ) as CustomerSignedOutDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CustomerSignedOutDtoOutput),
+                )
+                as CustomerSignedOutDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -564,11 +545,11 @@ class CustomerApi {
   }
 
   /// customerBrowsingList
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [latitude] 
-  /// * [longitude] 
+  /// * [latitude]
+  /// * [longitude]
   /// * [similarTo] - CU §11.9: under a rejected or unanswered order, at its pin: up to 5 open restaurants of this restaurant's category, without it; empty when it has no category.
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -579,7 +560,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerRestaurantListDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerRestaurantListDtoOutput>> customerBrowsingList({ 
+  Future<Response<CustomerRestaurantListDtoOutput>> customerBrowsingList({
     required String latitude,
     required String longitude,
     String? similarTo,
@@ -593,20 +574,28 @@ class CustomerApi {
     final _path = r'/v1/customer/restaurants';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       validateStatus: validateStatus,
     );
 
     final _queryParameters = <String, dynamic>{
-      r'latitude': encodeQueryParameter(_serializers, latitude, const FullType(String)),
-      r'longitude': encodeQueryParameter(_serializers, longitude, const FullType(String)),
-      if (similarTo != null) r'similarTo': encodeQueryParameter(_serializers, similarTo, const FullType(String)),
+      r'latitude': encodeQueryParameter(
+        _serializers,
+        latitude,
+        const FullType(String),
+      ),
+      r'longitude': encodeQueryParameter(
+        _serializers,
+        longitude,
+        const FullType(String),
+      ),
+      if (similarTo != null)
+        r'similarTo': encodeQueryParameter(
+          _serializers,
+          similarTo,
+          const FullType(String),
+        ),
     };
 
     final _response = await _dio.request<Object>(
@@ -622,11 +611,15 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CustomerRestaurantListDtoOutput),
-      ) as CustomerRestaurantListDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(
+                    CustomerRestaurantListDtoOutput,
+                  ),
+                )
+                as CustomerRestaurantListDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -650,12 +643,12 @@ class CustomerApi {
   }
 
   /// customerBrowsingPage
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [restaurantId] 
-  /// * [latitude] 
-  /// * [longitude] 
+  /// * [restaurantId]
+  /// * [latitude]
+  /// * [longitude]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -665,7 +658,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerRestaurantPageDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerRestaurantPageDtoOutput>> customerBrowsingPage({ 
+  Future<Response<CustomerRestaurantPageDtoOutput>> customerBrowsingPage({
     required String restaurantId,
     required String latitude,
     required String longitude,
@@ -676,22 +669,34 @@ class CustomerApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/customer/restaurants/{restaurantId}'.replaceAll('{' r'restaurantId' '}', encodeQueryParameter(_serializers, restaurantId, const FullType(String)).toString());
+    final _path = r'/v1/customer/restaurants/{restaurantId}'.replaceAll(
+      '{'
+      r'restaurantId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        restaurantId,
+        const FullType(String),
+      ).toString(),
+    );
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       validateStatus: validateStatus,
     );
 
     final _queryParameters = <String, dynamic>{
-      r'latitude': encodeQueryParameter(_serializers, latitude, const FullType(String)),
-      r'longitude': encodeQueryParameter(_serializers, longitude, const FullType(String)),
+      r'latitude': encodeQueryParameter(
+        _serializers,
+        latitude,
+        const FullType(String),
+      ),
+      r'longitude': encodeQueryParameter(
+        _serializers,
+        longitude,
+        const FullType(String),
+      ),
     };
 
     final _response = await _dio.request<Object>(
@@ -707,11 +712,15 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CustomerRestaurantPageDtoOutput),
-      ) as CustomerRestaurantPageDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(
+                    CustomerRestaurantPageDtoOutput,
+                  ),
+                )
+                as CustomerRestaurantPageDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -735,7 +744,7 @@ class CustomerApi {
   }
 
   /// customerContactGet
-  /// 
+  ///
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -747,7 +756,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [ContactDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ContactDtoOutput>> customerContactGet({ 
+  Future<Response<ContactDtoOutput>> customerContactGet({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -758,13 +767,8 @@ class CustomerApi {
     final _path = r'/v1/customer/contact';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       validateStatus: validateStatus,
     );
 
@@ -780,11 +784,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(ContactDtoOutput),
-      ) as ContactDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(ContactDtoOutput),
+                )
+                as ContactDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -808,7 +814,7 @@ class CustomerApi {
   }
 
   /// customerContentGet
-  /// 
+  ///
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -820,7 +826,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerContentDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerContentDtoOutput>> customerContentGet({ 
+  Future<Response<CustomerContentDtoOutput>> customerContentGet({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -831,13 +837,8 @@ class CustomerApi {
     final _path = r'/v1/customer/content';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       validateStatus: validateStatus,
     );
 
@@ -853,11 +854,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CustomerContentDtoOutput),
-      ) as CustomerContentDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CustomerContentDtoOutput),
+                )
+                as CustomerContentDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -881,11 +884,11 @@ class CustomerApi {
   }
 
   /// customerEmergencyStopRead
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [latitude] 
-  /// * [longitude] 
+  /// * [latitude]
+  /// * [longitude]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -895,7 +898,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerEmergencyStopDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerEmergencyStopDtoOutput>> customerEmergencyStopRead({ 
+  Future<Response<CustomerEmergencyStopDtoOutput>> customerEmergencyStopRead({
     required String latitude,
     required String longitude,
     CancelToken? cancelToken,
@@ -908,19 +911,22 @@ class CustomerApi {
     final _path = r'/v1/customer/emergency-stop';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       validateStatus: validateStatus,
     );
 
     final _queryParameters = <String, dynamic>{
-      r'latitude': encodeQueryParameter(_serializers, latitude, const FullType(String)),
-      r'longitude': encodeQueryParameter(_serializers, longitude, const FullType(String)),
+      r'latitude': encodeQueryParameter(
+        _serializers,
+        latitude,
+        const FullType(String),
+      ),
+      r'longitude': encodeQueryParameter(
+        _serializers,
+        longitude,
+        const FullType(String),
+      ),
     };
 
     final _response = await _dio.request<Object>(
@@ -936,11 +942,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CustomerEmergencyStopDtoOutput),
-      ) as CustomerEmergencyStopDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CustomerEmergencyStopDtoOutput),
+                )
+                as CustomerEmergencyStopDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -964,7 +972,7 @@ class CustomerApi {
   }
 
   /// customerNotificationsList
-  /// 
+  ///
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -976,7 +984,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerNotificationsDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerNotificationsDtoOutput>> customerNotificationsList({ 
+  Future<Response<CustomerNotificationsDtoOutput>> customerNotificationsList({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -987,13 +995,8 @@ class CustomerApi {
     final _path = r'/v1/customer/notifications';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       validateStatus: validateStatus,
     );
 
@@ -1009,11 +1012,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CustomerNotificationsDtoOutput),
-      ) as CustomerNotificationsDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CustomerNotificationsDtoOutput),
+                )
+                as CustomerNotificationsDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1037,7 +1042,7 @@ class CustomerApi {
   }
 
   /// customerOrdersActive
-  /// 
+  ///
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -1049,7 +1054,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerActiveOrdersDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerActiveOrdersDtoOutput>> customerOrdersActive({ 
+  Future<Response<CustomerActiveOrdersDtoOutput>> customerOrdersActive({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -1060,13 +1065,8 @@ class CustomerApi {
     final _path = r'/v1/customer/orders/active';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       validateStatus: validateStatus,
     );
 
@@ -1082,11 +1082,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CustomerActiveOrdersDtoOutput),
-      ) as CustomerActiveOrdersDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CustomerActiveOrdersDtoOutput),
+                )
+                as CustomerActiveOrdersDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1110,10 +1112,10 @@ class CustomerApi {
   }
 
   /// customerOrdersAnswerPing
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [orderId] 
+  /// * [orderId]
   /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -1124,7 +1126,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerOrderDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerOrderDtoOutput>> customerOrdersAnswerPing({ 
+  Future<Response<CustomerOrderDtoOutput>> customerOrdersAnswerPing({
     required String orderId,
     required String idempotencyKey,
     CancelToken? cancelToken,
@@ -1134,17 +1136,23 @@ class CustomerApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/customer/orders/{orderId}/answer-ping'.replaceAll('{' r'orderId' '}', encodeQueryParameter(_serializers, orderId, const FullType(String)).toString());
+    final _path = r'/v1/customer/orders/{orderId}/answer-ping'.replaceAll(
+      '{'
+      r'orderId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        orderId,
+        const FullType(String),
+      ).toString(),
+    );
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
         r'Idempotency-Key': idempotencyKey,
         ...?headers,
       },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       validateStatus: validateStatus,
     );
 
@@ -1160,11 +1168,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CustomerOrderDtoOutput),
-      ) as CustomerOrderDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CustomerOrderDtoOutput),
+                )
+                as CustomerOrderDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1188,12 +1198,12 @@ class CustomerApi {
   }
 
   /// customerOrdersCancel
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [orderId] 
+  /// * [orderId]
   /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
-  /// * [customerCancelOrderDto] 
+  /// * [customerCancelOrderDto]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1203,7 +1213,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerOrderDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerOrderDtoOutput>> customerOrdersCancel({ 
+  Future<Response<CustomerOrderDtoOutput>> customerOrdersCancel({
     required String orderId,
     required String idempotencyKey,
     required CustomerCancelOrderDto customerCancelOrderDto,
@@ -1214,17 +1224,23 @@ class CustomerApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/customer/orders/{orderId}/cancel'.replaceAll('{' r'orderId' '}', encodeQueryParameter(_serializers, orderId, const FullType(String)).toString());
+    final _path = r'/v1/customer/orders/{orderId}/cancel'.replaceAll(
+      '{'
+      r'orderId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        orderId,
+        const FullType(String),
+      ).toString(),
+    );
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
         r'Idempotency-Key': idempotencyKey,
         ...?headers,
       },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -1233,14 +1249,13 @@ class CustomerApi {
 
     try {
       const _type = FullType(CustomerCancelOrderDto);
-      _bodyData = _serializers.serialize(customerCancelOrderDto, specifiedType: _type);
-
-    } catch(error, stackTrace) {
+      _bodyData = _serializers.serialize(
+        customerCancelOrderDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
       throw DioException(
-         requestOptions: _options.compose(
-          _dio.options,
-          _path,
-        ),
+        requestOptions: _options.compose(_dio.options, _path),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -1260,11 +1275,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CustomerOrderDtoOutput),
-      ) as CustomerOrderDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CustomerOrderDtoOutput),
+                )
+                as CustomerOrderDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1288,10 +1305,10 @@ class CustomerApi {
   }
 
   /// customerOrdersOrder
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [orderId] 
+  /// * [orderId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1301,7 +1318,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerOrderDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerOrderDtoOutput>> customerOrdersOrder({ 
+  Future<Response<CustomerOrderDtoOutput>> customerOrdersOrder({
     required String orderId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -1310,16 +1327,20 @@ class CustomerApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/customer/orders/{orderId}'.replaceAll('{' r'orderId' '}', encodeQueryParameter(_serializers, orderId, const FullType(String)).toString());
+    final _path = r'/v1/customer/orders/{orderId}'.replaceAll(
+      '{'
+      r'orderId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        orderId,
+        const FullType(String),
+      ).toString(),
+    );
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       validateStatus: validateStatus,
     );
 
@@ -1335,11 +1356,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CustomerOrderDtoOutput),
-      ) as CustomerOrderDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CustomerOrderDtoOutput),
+                )
+                as CustomerOrderDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1363,11 +1386,11 @@ class CustomerApi {
   }
 
   /// customerOrdersPlace
-  /// 
+  ///
   ///
   /// Parameters:
   /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
-  /// * [customerPlaceOrderDto] 
+  /// * [customerPlaceOrderDto]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1377,7 +1400,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerOrderDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerOrderDtoOutput>> customerOrdersPlace({ 
+  Future<Response<CustomerOrderDtoOutput>> customerOrdersPlace({
     required String idempotencyKey,
     required CustomerPlaceOrderDto customerPlaceOrderDto,
     CancelToken? cancelToken,
@@ -1394,10 +1417,7 @@ class CustomerApi {
         r'Idempotency-Key': idempotencyKey,
         ...?headers,
       },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -1406,14 +1426,13 @@ class CustomerApi {
 
     try {
       const _type = FullType(CustomerPlaceOrderDto);
-      _bodyData = _serializers.serialize(customerPlaceOrderDto, specifiedType: _type);
-
-    } catch(error, stackTrace) {
+      _bodyData = _serializers.serialize(
+        customerPlaceOrderDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
       throw DioException(
-         requestOptions: _options.compose(
-          _dio.options,
-          _path,
-        ),
+        requestOptions: _options.compose(_dio.options, _path),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -1433,11 +1452,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CustomerOrderDtoOutput),
-      ) as CustomerOrderDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CustomerOrderDtoOutput),
+                )
+                as CustomerOrderDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1461,7 +1482,7 @@ class CustomerApi {
   }
 
   /// customerPlatformGet
-  /// 
+  ///
   ///
   /// Parameters:
   /// * [version] - The app version, such as 1.4.0.
@@ -1474,7 +1495,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [PlatformDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PlatformDtoOutput>> customerPlatformGet({ 
+  Future<Response<PlatformDtoOutput>> customerPlatformGet({
     required String version,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -1486,18 +1507,17 @@ class CustomerApi {
     final _path = r'/v1/customer/platform';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       validateStatus: validateStatus,
     );
 
     final _queryParameters = <String, dynamic>{
-      r'version': encodeQueryParameter(_serializers, version, const FullType(String)),
+      r'version': encodeQueryParameter(
+        _serializers,
+        version,
+        const FullType(String),
+      ),
     };
 
     final _response = await _dio.request<Object>(
@@ -1513,11 +1533,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(PlatformDtoOutput),
-      ) as PlatformDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(PlatformDtoOutput),
+                )
+                as PlatformDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1541,10 +1563,10 @@ class CustomerApi {
   }
 
   /// customerProfileAddAddress
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [customerNewAddressDto] 
+  /// * [customerNewAddressDto]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1554,7 +1576,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerAddressDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerAddressDtoOutput>> customerProfileAddAddress({ 
+  Future<Response<CustomerAddressDtoOutput>> customerProfileAddAddress({
     required CustomerNewAddressDto customerNewAddressDto,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -1566,13 +1588,8 @@ class CustomerApi {
     final _path = r'/v1/customer/addresses';
     final _options = Options(
       method: r'POST',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -1581,14 +1598,13 @@ class CustomerApi {
 
     try {
       const _type = FullType(CustomerNewAddressDto);
-      _bodyData = _serializers.serialize(customerNewAddressDto, specifiedType: _type);
-
-    } catch(error, stackTrace) {
+      _bodyData = _serializers.serialize(
+        customerNewAddressDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
       throw DioException(
-         requestOptions: _options.compose(
-          _dio.options,
-          _path,
-        ),
+        requestOptions: _options.compose(_dio.options, _path),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -1608,11 +1624,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CustomerAddressDtoOutput),
-      ) as CustomerAddressDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CustomerAddressDtoOutput),
+                )
+                as CustomerAddressDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1636,7 +1654,7 @@ class CustomerApi {
   }
 
   /// customerProfileAddresses
-  /// 
+  ///
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -1648,7 +1666,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerAddressListDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerAddressListDtoOutput>> customerProfileAddresses({ 
+  Future<Response<CustomerAddressListDtoOutput>> customerProfileAddresses({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -1659,13 +1677,8 @@ class CustomerApi {
     final _path = r'/v1/customer/addresses';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       validateStatus: validateStatus,
     );
 
@@ -1681,11 +1694,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CustomerAddressListDtoOutput),
-      ) as CustomerAddressListDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CustomerAddressListDtoOutput),
+                )
+                as CustomerAddressListDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1709,10 +1724,10 @@ class CustomerApi {
   }
 
   /// customerProfileDeleteAddress
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [addressId] 
+  /// * [addressId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1722,7 +1737,8 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerAddressDeletedDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerAddressDeletedDtoOutput>> customerProfileDeleteAddress({ 
+  Future<Response<CustomerAddressDeletedDtoOutput>>
+  customerProfileDeleteAddress({
     required String addressId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -1731,16 +1747,20 @@ class CustomerApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/customer/addresses/{addressId}'.replaceAll('{' r'addressId' '}', encodeQueryParameter(_serializers, addressId, const FullType(String)).toString());
+    final _path = r'/v1/customer/addresses/{addressId}'.replaceAll(
+      '{'
+      r'addressId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        addressId,
+        const FullType(String),
+      ).toString(),
+    );
     final _options = Options(
       method: r'DELETE',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       validateStatus: validateStatus,
     );
 
@@ -1756,11 +1776,15 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CustomerAddressDeletedDtoOutput),
-      ) as CustomerAddressDeletedDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(
+                    CustomerAddressDeletedDtoOutput,
+                  ),
+                )
+                as CustomerAddressDeletedDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1784,11 +1808,11 @@ class CustomerApi {
   }
 
   /// customerProfileLocation
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [latitude] 
-  /// * [longitude] 
+  /// * [latitude]
+  /// * [longitude]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1798,7 +1822,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerLocationDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerLocationDtoOutput>> customerProfileLocation({ 
+  Future<Response<CustomerLocationDtoOutput>> customerProfileLocation({
     required String latitude,
     required String longitude,
     CancelToken? cancelToken,
@@ -1811,19 +1835,22 @@ class CustomerApi {
     final _path = r'/v1/customer/location';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       validateStatus: validateStatus,
     );
 
     final _queryParameters = <String, dynamic>{
-      r'latitude': encodeQueryParameter(_serializers, latitude, const FullType(String)),
-      r'longitude': encodeQueryParameter(_serializers, longitude, const FullType(String)),
+      r'latitude': encodeQueryParameter(
+        _serializers,
+        latitude,
+        const FullType(String),
+      ),
+      r'longitude': encodeQueryParameter(
+        _serializers,
+        longitude,
+        const FullType(String),
+      ),
     };
 
     final _response = await _dio.request<Object>(
@@ -1839,11 +1866,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CustomerLocationDtoOutput),
-      ) as CustomerLocationDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CustomerLocationDtoOutput),
+                )
+                as CustomerLocationDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1867,7 +1896,7 @@ class CustomerApi {
   }
 
   /// customerProfileProfile
-  /// 
+  ///
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -1879,7 +1908,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerProfileDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerProfileDtoOutput>> customerProfileProfile({ 
+  Future<Response<CustomerProfileDtoOutput>> customerProfileProfile({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -1890,13 +1919,8 @@ class CustomerApi {
     final _path = r'/v1/customer/profile';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       validateStatus: validateStatus,
     );
 
@@ -1912,11 +1936,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CustomerProfileDtoOutput),
-      ) as CustomerProfileDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CustomerProfileDtoOutput),
+                )
+                as CustomerProfileDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1940,10 +1966,10 @@ class CustomerApi {
   }
 
   /// customerProfileSaveProfile
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [customerSaveProfileDto] 
+  /// * [customerSaveProfileDto]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1953,7 +1979,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerProfileDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerProfileDtoOutput>> customerProfileSaveProfile({ 
+  Future<Response<CustomerProfileDtoOutput>> customerProfileSaveProfile({
     required CustomerSaveProfileDto customerSaveProfileDto,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -1965,13 +1991,8 @@ class CustomerApi {
     final _path = r'/v1/customer/profile';
     final _options = Options(
       method: r'PUT',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -1980,14 +2001,13 @@ class CustomerApi {
 
     try {
       const _type = FullType(CustomerSaveProfileDto);
-      _bodyData = _serializers.serialize(customerSaveProfileDto, specifiedType: _type);
-
-    } catch(error, stackTrace) {
+      _bodyData = _serializers.serialize(
+        customerSaveProfileDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
       throw DioException(
-         requestOptions: _options.compose(
-          _dio.options,
-          _path,
-        ),
+        requestOptions: _options.compose(_dio.options, _path),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -2007,11 +2027,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CustomerProfileDtoOutput),
-      ) as CustomerProfileDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CustomerProfileDtoOutput),
+                )
+                as CustomerProfileDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2035,10 +2057,10 @@ class CustomerApi {
   }
 
   /// customerProfileSetDefaultAddress
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [addressId] 
+  /// * [addressId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2048,7 +2070,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerAddressDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerAddressDtoOutput>> customerProfileSetDefaultAddress({ 
+  Future<Response<CustomerAddressDtoOutput>> customerProfileSetDefaultAddress({
     required String addressId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -2057,16 +2079,20 @@ class CustomerApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/customer/addresses/{addressId}/default'.replaceAll('{' r'addressId' '}', encodeQueryParameter(_serializers, addressId, const FullType(String)).toString());
+    final _path = r'/v1/customer/addresses/{addressId}/default'.replaceAll(
+      '{'
+      r'addressId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        addressId,
+        const FullType(String),
+      ).toString(),
+    );
     final _options = Options(
       method: r'PUT',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       validateStatus: validateStatus,
     );
 
@@ -2082,11 +2108,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CustomerAddressDtoOutput),
-      ) as CustomerAddressDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CustomerAddressDtoOutput),
+                )
+                as CustomerAddressDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2110,11 +2138,11 @@ class CustomerApi {
   }
 
   /// customerProfileUpdateAddress
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [addressId] 
-  /// * [customerAddressFieldsDto] 
+  /// * [addressId]
+  /// * [customerAddressFieldsDto]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2124,7 +2152,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerAddressDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerAddressDtoOutput>> customerProfileUpdateAddress({ 
+  Future<Response<CustomerAddressDtoOutput>> customerProfileUpdateAddress({
     required String addressId,
     required CustomerAddressFieldsDto customerAddressFieldsDto,
     CancelToken? cancelToken,
@@ -2134,16 +2162,20 @@ class CustomerApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/customer/addresses/{addressId}'.replaceAll('{' r'addressId' '}', encodeQueryParameter(_serializers, addressId, const FullType(String)).toString());
+    final _path = r'/v1/customer/addresses/{addressId}'.replaceAll(
+      '{'
+      r'addressId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        addressId,
+        const FullType(String),
+      ).toString(),
+    );
     final _options = Options(
       method: r'PUT',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -2152,14 +2184,13 @@ class CustomerApi {
 
     try {
       const _type = FullType(CustomerAddressFieldsDto);
-      _bodyData = _serializers.serialize(customerAddressFieldsDto, specifiedType: _type);
-
-    } catch(error, stackTrace) {
+      _bodyData = _serializers.serialize(
+        customerAddressFieldsDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
       throw DioException(
-         requestOptions: _options.compose(
-          _dio.options,
-          _path,
-        ),
+        requestOptions: _options.compose(_dio.options, _path),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -2179,11 +2210,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CustomerAddressDtoOutput),
-      ) as CustomerAddressDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CustomerAddressDtoOutput),
+                )
+                as CustomerAddressDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2207,10 +2240,10 @@ class CustomerApi {
   }
 
   /// customerProfileVote
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [customerZoneVoteDto] 
+  /// * [customerZoneVoteDto]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2220,7 +2253,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerZoneVotedDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerZoneVotedDtoOutput>> customerProfileVote({ 
+  Future<Response<CustomerZoneVotedDtoOutput>> customerProfileVote({
     required CustomerZoneVoteDto customerZoneVoteDto,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -2232,13 +2265,8 @@ class CustomerApi {
     final _path = r'/v1/customer/zone-votes';
     final _options = Options(
       method: r'POST',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -2247,14 +2275,13 @@ class CustomerApi {
 
     try {
       const _type = FullType(CustomerZoneVoteDto);
-      _bodyData = _serializers.serialize(customerZoneVoteDto, specifiedType: _type);
-
-    } catch(error, stackTrace) {
+      _bodyData = _serializers.serialize(
+        customerZoneVoteDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
       throw DioException(
-         requestOptions: _options.compose(
-          _dio.options,
-          _path,
-        ),
+        requestOptions: _options.compose(_dio.options, _path),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -2274,11 +2301,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CustomerZoneVotedDtoOutput),
-      ) as CustomerZoneVotedDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CustomerZoneVotedDtoOutput),
+                )
+                as CustomerZoneVotedDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2302,10 +2331,10 @@ class CustomerApi {
   }
 
   /// customerPushTokenRegister
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [pushTokenDto] 
+  /// * [pushTokenDto]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2315,7 +2344,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [PushTokenRegisteredDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PushTokenRegisteredDtoOutput>> customerPushTokenRegister({ 
+  Future<Response<PushTokenRegisteredDtoOutput>> customerPushTokenRegister({
     required PushTokenDto pushTokenDto,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -2327,13 +2356,8 @@ class CustomerApi {
     final _path = r'/v1/customer/push-token';
     final _options = Options(
       method: r'PUT',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -2343,13 +2367,9 @@ class CustomerApi {
     try {
       const _type = FullType(PushTokenDto);
       _bodyData = _serializers.serialize(pushTokenDto, specifiedType: _type);
-
-    } catch(error, stackTrace) {
+    } catch (error, stackTrace) {
       throw DioException(
-         requestOptions: _options.compose(
-          _dio.options,
-          _path,
-        ),
+        requestOptions: _options.compose(_dio.options, _path),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -2369,11 +2389,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(PushTokenRegisteredDtoOutput),
-      ) as PushTokenRegisteredDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(PushTokenRegisteredDtoOutput),
+                )
+                as PushTokenRegisteredDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2397,10 +2419,10 @@ class CustomerApi {
   }
 
   /// customerQuoteQuote
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [customerQuoteRequestDto] 
+  /// * [customerQuoteRequestDto]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2410,7 +2432,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerQuoteDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerQuoteDtoOutput>> customerQuoteQuote({ 
+  Future<Response<CustomerQuoteDtoOutput>> customerQuoteQuote({
     required CustomerQuoteRequestDto customerQuoteRequestDto,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -2422,13 +2444,8 @@ class CustomerApi {
     final _path = r'/v1/customer/quote';
     final _options = Options(
       method: r'POST',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -2437,14 +2454,13 @@ class CustomerApi {
 
     try {
       const _type = FullType(CustomerQuoteRequestDto);
-      _bodyData = _serializers.serialize(customerQuoteRequestDto, specifiedType: _type);
-
-    } catch(error, stackTrace) {
+      _bodyData = _serializers.serialize(
+        customerQuoteRequestDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
       throw DioException(
-         requestOptions: _options.compose(
-          _dio.options,
-          _path,
-        ),
+        requestOptions: _options.compose(_dio.options, _path),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -2464,11 +2480,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CustomerQuoteDtoOutput),
-      ) as CustomerQuoteDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CustomerQuoteDtoOutput),
+                )
+                as CustomerQuoteDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2492,7 +2510,7 @@ class CustomerApi {
   }
 
   /// customerRealtimeToken
-  /// 
+  ///
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -2504,7 +2522,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [RealtimeTokenDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<RealtimeTokenDtoOutput>> customerRealtimeToken({ 
+  Future<Response<RealtimeTokenDtoOutput>> customerRealtimeToken({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -2515,13 +2533,8 @@ class CustomerApi {
     final _path = r'/v1/customer/realtime/token';
     final _options = Options(
       method: r'POST',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       validateStatus: validateStatus,
     );
 
@@ -2537,11 +2550,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(RealtimeTokenDtoOutput),
-      ) as RealtimeTokenDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(RealtimeTokenDtoOutput),
+                )
+                as RealtimeTokenDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2565,7 +2580,7 @@ class CustomerApi {
   }
 
   /// customerStatusGet
-  /// 
+  ///
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -2577,7 +2592,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [StatusDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<StatusDtoOutput>> customerStatusGet({ 
+  Future<Response<StatusDtoOutput>> customerStatusGet({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -2588,13 +2603,8 @@ class CustomerApi {
     final _path = r'/v1/customer/status';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       validateStatus: validateStatus,
     );
 
@@ -2610,11 +2620,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(StatusDtoOutput),
-      ) as StatusDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(StatusDtoOutput),
+                )
+                as StatusDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2638,10 +2650,10 @@ class CustomerApi {
   }
 
   /// customerTermsAccept
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [termsAcceptDto] 
+  /// * [termsAcceptDto]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2651,7 +2663,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [TermsAcceptedDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<TermsAcceptedDtoOutput>> customerTermsAccept({ 
+  Future<Response<TermsAcceptedDtoOutput>> customerTermsAccept({
     required TermsAcceptDto termsAcceptDto,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -2663,13 +2675,8 @@ class CustomerApi {
     final _path = r'/v1/customer/terms/accept';
     final _options = Options(
       method: r'POST',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -2679,13 +2686,9 @@ class CustomerApi {
     try {
       const _type = FullType(TermsAcceptDto);
       _bodyData = _serializers.serialize(termsAcceptDto, specifiedType: _type);
-
-    } catch(error, stackTrace) {
+    } catch (error, stackTrace) {
       throw DioException(
-         requestOptions: _options.compose(
-          _dio.options,
-          _path,
-        ),
+        requestOptions: _options.compose(_dio.options, _path),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -2705,11 +2708,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(TermsAcceptedDtoOutput),
-      ) as TermsAcceptedDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(TermsAcceptedDtoOutput),
+                )
+                as TermsAcceptedDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2733,7 +2738,7 @@ class CustomerApi {
   }
 
   /// customerTermsGet
-  /// 
+  ///
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -2745,7 +2750,7 @@ class CustomerApi {
   ///
   /// Returns a [Future] containing a [Response] with a [TermsDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<TermsDtoOutput>> customerTermsGet({ 
+  Future<Response<TermsDtoOutput>> customerTermsGet({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -2756,13 +2761,8 @@ class CustomerApi {
     final _path = r'/v1/customer/terms';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       validateStatus: validateStatus,
     );
 
@@ -2778,11 +2778,13 @@ class CustomerApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(TermsDtoOutput),
-      ) as TermsDtoOutput;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(TermsDtoOutput),
+                )
+                as TermsDtoOutput;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2804,5 +2806,4 @@ class CustomerApi {
       extra: _response.extra,
     );
   }
-
 }

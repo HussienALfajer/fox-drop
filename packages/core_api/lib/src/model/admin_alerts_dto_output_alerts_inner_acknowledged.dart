@@ -11,11 +11,16 @@ part 'admin_alerts_dto_output_alerts_inner_acknowledged.g.dart';
 /// «استلام»: who took it, which every recipient sees.
 ///
 /// Properties:
-/// * [at] 
-/// * [byId] 
-/// * [byName] 
+/// * [at]
+/// * [byId]
+/// * [byName]
 @BuiltValue()
-abstract class AdminAlertsDtoOutputAlertsInnerAcknowledged implements Built<AdminAlertsDtoOutputAlertsInnerAcknowledged, AdminAlertsDtoOutputAlertsInnerAcknowledgedBuilder> {
+abstract class AdminAlertsDtoOutputAlertsInnerAcknowledged
+    implements
+        Built<
+          AdminAlertsDtoOutputAlertsInnerAcknowledged,
+          AdminAlertsDtoOutputAlertsInnerAcknowledgedBuilder
+        > {
   @BuiltValueField(wireName: r'at')
   DateTime get at;
 
@@ -27,18 +32,27 @@ abstract class AdminAlertsDtoOutputAlertsInnerAcknowledged implements Built<Admi
 
   AdminAlertsDtoOutputAlertsInnerAcknowledged._();
 
-  factory AdminAlertsDtoOutputAlertsInnerAcknowledged([void updates(AdminAlertsDtoOutputAlertsInnerAcknowledgedBuilder b)]) = _$AdminAlertsDtoOutputAlertsInnerAcknowledged;
+  factory AdminAlertsDtoOutputAlertsInnerAcknowledged([
+    void updates(AdminAlertsDtoOutputAlertsInnerAcknowledgedBuilder b),
+  ]) = _$AdminAlertsDtoOutputAlertsInnerAcknowledged;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminAlertsDtoOutputAlertsInnerAcknowledgedBuilder b) => b;
+  static void _defaults(AdminAlertsDtoOutputAlertsInnerAcknowledgedBuilder b) =>
+      b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminAlertsDtoOutputAlertsInnerAcknowledged> get serializer => _$AdminAlertsDtoOutputAlertsInnerAcknowledgedSerializer();
+  static Serializer<AdminAlertsDtoOutputAlertsInnerAcknowledged>
+  get serializer => _$AdminAlertsDtoOutputAlertsInnerAcknowledgedSerializer();
 }
 
-class _$AdminAlertsDtoOutputAlertsInnerAcknowledgedSerializer implements PrimitiveSerializer<AdminAlertsDtoOutputAlertsInnerAcknowledged> {
+class _$AdminAlertsDtoOutputAlertsInnerAcknowledgedSerializer
+    implements
+        PrimitiveSerializer<AdminAlertsDtoOutputAlertsInnerAcknowledged> {
   @override
-  final Iterable<Type> types = const [AdminAlertsDtoOutputAlertsInnerAcknowledged, _$AdminAlertsDtoOutputAlertsInnerAcknowledged];
+  final Iterable<Type> types = const [
+    AdminAlertsDtoOutputAlertsInnerAcknowledged,
+    _$AdminAlertsDtoOutputAlertsInnerAcknowledged,
+  ];
 
   @override
   final String wireName = r'AdminAlertsDtoOutputAlertsInnerAcknowledged';
@@ -59,10 +73,12 @@ class _$AdminAlertsDtoOutputAlertsInnerAcknowledgedSerializer implements Primiti
       specifiedType: const FullType(String),
     );
     yield r'byName';
-    yield object.byName == null ? null : serializers.serialize(
-      object.byName,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.byName == null
+        ? null
+        : serializers.serialize(
+            object.byName,
+            specifiedType: const FullType.nullable(String),
+          );
   }
 
   @override
@@ -71,7 +87,11 @@ class _$AdminAlertsDtoOutputAlertsInnerAcknowledgedSerializer implements Primiti
     AdminAlertsDtoOutputAlertsInnerAcknowledged object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -87,24 +107,30 @@ class _$AdminAlertsDtoOutputAlertsInnerAcknowledgedSerializer implements Primiti
       final value = serializedList[i + 1];
       switch (key) {
         case r'at':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.at = valueDes;
           break;
         case r'byId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.byId = valueDes;
           break;
         case r'byName':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.byName = valueDes;
           break;
@@ -136,5 +162,3 @@ class _$AdminAlertsDtoOutputAlertsInnerAcknowledgedSerializer implements Primiti
     return result.build();
   }
 }
-
-

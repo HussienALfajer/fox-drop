@@ -13,26 +13,33 @@ part 'admin_alerts_dto_output.g.dart';
 /// AdminAlertsDtoOutput
 ///
 /// Properties:
-/// * [alerts] 
+/// * [alerts]
 @BuiltValue()
-abstract class AdminAlertsDtoOutput implements Built<AdminAlertsDtoOutput, AdminAlertsDtoOutputBuilder> {
+abstract class AdminAlertsDtoOutput
+    implements Built<AdminAlertsDtoOutput, AdminAlertsDtoOutputBuilder> {
   @BuiltValueField(wireName: r'alerts')
   BuiltList<AdminAlertsDtoOutputAlertsInner> get alerts;
 
   AdminAlertsDtoOutput._();
 
-  factory AdminAlertsDtoOutput([void updates(AdminAlertsDtoOutputBuilder b)]) = _$AdminAlertsDtoOutput;
+  factory AdminAlertsDtoOutput([void updates(AdminAlertsDtoOutputBuilder b)]) =
+      _$AdminAlertsDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminAlertsDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminAlertsDtoOutput> get serializer => _$AdminAlertsDtoOutputSerializer();
+  static Serializer<AdminAlertsDtoOutput> get serializer =>
+      _$AdminAlertsDtoOutputSerializer();
 }
 
-class _$AdminAlertsDtoOutputSerializer implements PrimitiveSerializer<AdminAlertsDtoOutput> {
+class _$AdminAlertsDtoOutputSerializer
+    implements PrimitiveSerializer<AdminAlertsDtoOutput> {
   @override
-  final Iterable<Type> types = const [AdminAlertsDtoOutput, _$AdminAlertsDtoOutput];
+  final Iterable<Type> types = const [
+    AdminAlertsDtoOutput,
+    _$AdminAlertsDtoOutput,
+  ];
 
   @override
   final String wireName = r'AdminAlertsDtoOutput';
@@ -45,7 +52,9 @@ class _$AdminAlertsDtoOutputSerializer implements PrimitiveSerializer<AdminAlert
     yield r'alerts';
     yield serializers.serialize(
       object.alerts,
-      specifiedType: const FullType(BuiltList, [FullType(AdminAlertsDtoOutputAlertsInner)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminAlertsDtoOutputAlertsInner),
+      ]),
     );
   }
 
@@ -55,7 +64,11 @@ class _$AdminAlertsDtoOutputSerializer implements PrimitiveSerializer<AdminAlert
     AdminAlertsDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -71,10 +84,14 @@ class _$AdminAlertsDtoOutputSerializer implements PrimitiveSerializer<AdminAlert
       final value = serializedList[i + 1];
       switch (key) {
         case r'alerts':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(AdminAlertsDtoOutputAlertsInner)]),
-          ) as BuiltList<AdminAlertsDtoOutputAlertsInner>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminAlertsDtoOutputAlertsInner),
+                    ]),
+                  )
+                  as BuiltList<AdminAlertsDtoOutputAlertsInner>;
           result.alerts.replace(valueDes);
           break;
         default:
@@ -105,5 +122,3 @@ class _$AdminAlertsDtoOutputSerializer implements PrimitiveSerializer<AdminAlert
     return result.build();
   }
 }
-
-

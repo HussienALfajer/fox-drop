@@ -12,13 +12,11 @@ part 'captain_cannot_complete_dto.g.dart';
 /// CaptainCannotCompleteDto
 ///
 /// Properties:
-/// * [location]
+/// * [location] 
 /// * [reason] - A code of the captain_cannot_complete list (GET /v1/captain/content): «عطل في المركبة», «حادث», «ظرف طارئ», «لا أملك المبلغ المطلوب للمطعم», «أخرى» (with note).
 /// * [note] - The text of a reason that needs one («أخرى»), and only of it.
 @BuiltValue()
-abstract class CaptainCannotCompleteDto
-    implements
-        Built<CaptainCannotCompleteDto, CaptainCannotCompleteDtoBuilder> {
+abstract class CaptainCannotCompleteDto implements Built<CaptainCannotCompleteDto, CaptainCannotCompleteDtoBuilder> {
   @BuiltValueField(wireName: r'location')
   CaptainArriveDtoLocation get location;
 
@@ -32,25 +30,18 @@ abstract class CaptainCannotCompleteDto
 
   CaptainCannotCompleteDto._();
 
-  factory CaptainCannotCompleteDto([
-    void updates(CaptainCannotCompleteDtoBuilder b),
-  ]) = _$CaptainCannotCompleteDto;
+  factory CaptainCannotCompleteDto([void updates(CaptainCannotCompleteDtoBuilder b)]) = _$CaptainCannotCompleteDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainCannotCompleteDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainCannotCompleteDto> get serializer =>
-      _$CaptainCannotCompleteDtoSerializer();
+  static Serializer<CaptainCannotCompleteDto> get serializer => _$CaptainCannotCompleteDtoSerializer();
 }
 
-class _$CaptainCannotCompleteDtoSerializer
-    implements PrimitiveSerializer<CaptainCannotCompleteDto> {
+class _$CaptainCannotCompleteDtoSerializer implements PrimitiveSerializer<CaptainCannotCompleteDto> {
   @override
-  final Iterable<Type> types = const [
-    CaptainCannotCompleteDto,
-    _$CaptainCannotCompleteDto,
-  ];
+  final Iterable<Type> types = const [CaptainCannotCompleteDto, _$CaptainCannotCompleteDto];
 
   @override
   final String wireName = r'CaptainCannotCompleteDto';
@@ -71,12 +62,10 @@ class _$CaptainCannotCompleteDtoSerializer
       specifiedType: const FullType(String),
     );
     yield r'note';
-    yield object.note == null
-        ? null
-        : serializers.serialize(
-            object.note,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.note == null ? null : serializers.serialize(
+      object.note,
+      specifiedType: const FullType.nullable(String),
+    );
   }
 
   @override
@@ -85,11 +74,7 @@ class _$CaptainCannotCompleteDtoSerializer
     CaptainCannotCompleteDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -105,30 +90,24 @@ class _$CaptainCannotCompleteDtoSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'location':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(CaptainArriveDtoLocation),
-                  )
-                  as CaptainArriveDtoLocation;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(CaptainArriveDtoLocation),
+          ) as CaptainArriveDtoLocation;
           result.location.replace(valueDes);
           break;
         case r'reason':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.reason = valueDes;
           break;
         case r'note':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.note = valueDes;
           break;
@@ -160,3 +139,5 @@ class _$CaptainCannotCompleteDtoSerializer
     return result.build();
   }
 }
+
+

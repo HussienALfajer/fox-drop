@@ -12,14 +12,9 @@ part 'captain_availability_dto_output_custody_limit.g.dart';
 ///
 /// Properties:
 /// * [amount] - Integer minor units (AP §8.6).
-/// * [currency]
+/// * [currency] 
 @BuiltValue()
-abstract class CaptainAvailabilityDtoOutputCustodyLimit
-    implements
-        Built<
-          CaptainAvailabilityDtoOutputCustodyLimit,
-          CaptainAvailabilityDtoOutputCustodyLimitBuilder
-        > {
+abstract class CaptainAvailabilityDtoOutputCustodyLimit implements Built<CaptainAvailabilityDtoOutputCustodyLimit, CaptainAvailabilityDtoOutputCustodyLimitBuilder> {
   /// Integer minor units (AP §8.6).
   @BuiltValueField(wireName: r'amount')
   String get amount;
@@ -29,25 +24,18 @@ abstract class CaptainAvailabilityDtoOutputCustodyLimit
 
   CaptainAvailabilityDtoOutputCustodyLimit._();
 
-  factory CaptainAvailabilityDtoOutputCustodyLimit([
-    void updates(CaptainAvailabilityDtoOutputCustodyLimitBuilder b),
-  ]) = _$CaptainAvailabilityDtoOutputCustodyLimit;
+  factory CaptainAvailabilityDtoOutputCustodyLimit([void updates(CaptainAvailabilityDtoOutputCustodyLimitBuilder b)]) = _$CaptainAvailabilityDtoOutputCustodyLimit;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainAvailabilityDtoOutputCustodyLimitBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainAvailabilityDtoOutputCustodyLimit> get serializer =>
-      _$CaptainAvailabilityDtoOutputCustodyLimitSerializer();
+  static Serializer<CaptainAvailabilityDtoOutputCustodyLimit> get serializer => _$CaptainAvailabilityDtoOutputCustodyLimitSerializer();
 }
 
-class _$CaptainAvailabilityDtoOutputCustodyLimitSerializer
-    implements PrimitiveSerializer<CaptainAvailabilityDtoOutputCustodyLimit> {
+class _$CaptainAvailabilityDtoOutputCustodyLimitSerializer implements PrimitiveSerializer<CaptainAvailabilityDtoOutputCustodyLimit> {
   @override
-  final Iterable<Type> types = const [
-    CaptainAvailabilityDtoOutputCustodyLimit,
-    _$CaptainAvailabilityDtoOutputCustodyLimit,
-  ];
+  final Iterable<Type> types = const [CaptainAvailabilityDtoOutputCustodyLimit, _$CaptainAvailabilityDtoOutputCustodyLimit];
 
   @override
   final String wireName = r'CaptainAvailabilityDtoOutputCustodyLimit';
@@ -75,11 +63,7 @@ class _$CaptainAvailabilityDtoOutputCustodyLimitSerializer
     CaptainAvailabilityDtoOutputCustodyLimit object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -95,21 +79,17 @@ class _$CaptainAvailabilityDtoOutputCustodyLimitSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'amount':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.amount = valueDes;
           break;
         case r'currency':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.currency = valueDes;
           break;
         default:
@@ -140,3 +120,5 @@ class _$CaptainAvailabilityDtoOutputCustodyLimitSerializer
     return result.build();
   }
 }
+
+

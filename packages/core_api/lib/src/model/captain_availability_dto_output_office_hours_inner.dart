@@ -15,12 +15,7 @@ part 'captain_availability_dto_output_office_hours_inner.g.dart';
 /// * [opensAt] - Minutes after midnight on the city clock.
 /// * [closesAt] - Minutes after midnight; at or before the opening it runs past midnight.
 @BuiltValue()
-abstract class CaptainAvailabilityDtoOutputOfficeHoursInner
-    implements
-        Built<
-          CaptainAvailabilityDtoOutputOfficeHoursInner,
-          CaptainAvailabilityDtoOutputOfficeHoursInnerBuilder
-        > {
+abstract class CaptainAvailabilityDtoOutputOfficeHoursInner implements Built<CaptainAvailabilityDtoOutputOfficeHoursInner, CaptainAvailabilityDtoOutputOfficeHoursInnerBuilder> {
   /// 0 Sunday to 6 Saturday.
   @BuiltValueField(wireName: r'weekday')
   int get weekday;
@@ -35,28 +30,18 @@ abstract class CaptainAvailabilityDtoOutputOfficeHoursInner
 
   CaptainAvailabilityDtoOutputOfficeHoursInner._();
 
-  factory CaptainAvailabilityDtoOutputOfficeHoursInner([
-    void updates(CaptainAvailabilityDtoOutputOfficeHoursInnerBuilder b),
-  ]) = _$CaptainAvailabilityDtoOutputOfficeHoursInner;
+  factory CaptainAvailabilityDtoOutputOfficeHoursInner([void updates(CaptainAvailabilityDtoOutputOfficeHoursInnerBuilder b)]) = _$CaptainAvailabilityDtoOutputOfficeHoursInner;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    CaptainAvailabilityDtoOutputOfficeHoursInnerBuilder b,
-  ) => b;
+  static void _defaults(CaptainAvailabilityDtoOutputOfficeHoursInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainAvailabilityDtoOutputOfficeHoursInner>
-  get serializer => _$CaptainAvailabilityDtoOutputOfficeHoursInnerSerializer();
+  static Serializer<CaptainAvailabilityDtoOutputOfficeHoursInner> get serializer => _$CaptainAvailabilityDtoOutputOfficeHoursInnerSerializer();
 }
 
-class _$CaptainAvailabilityDtoOutputOfficeHoursInnerSerializer
-    implements
-        PrimitiveSerializer<CaptainAvailabilityDtoOutputOfficeHoursInner> {
+class _$CaptainAvailabilityDtoOutputOfficeHoursInnerSerializer implements PrimitiveSerializer<CaptainAvailabilityDtoOutputOfficeHoursInner> {
   @override
-  final Iterable<Type> types = const [
-    CaptainAvailabilityDtoOutputOfficeHoursInner,
-    _$CaptainAvailabilityDtoOutputOfficeHoursInner,
-  ];
+  final Iterable<Type> types = const [CaptainAvailabilityDtoOutputOfficeHoursInner, _$CaptainAvailabilityDtoOutputOfficeHoursInner];
 
   @override
   final String wireName = r'CaptainAvailabilityDtoOutputOfficeHoursInner';
@@ -89,11 +74,7 @@ class _$CaptainAvailabilityDtoOutputOfficeHoursInnerSerializer
     CaptainAvailabilityDtoOutputOfficeHoursInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -109,21 +90,24 @@ class _$CaptainAvailabilityDtoOutputOfficeHoursInnerSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'weekday':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.weekday = valueDes;
           break;
         case r'opensAt':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.opensAt = valueDes;
           break;
         case r'closesAt':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(int))
-                  as int;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
           result.closesAt = valueDes;
           break;
         default:
@@ -154,3 +138,5 @@ class _$CaptainAvailabilityDtoOutputOfficeHoursInnerSerializer
     return result.build();
   }
 }
+
+

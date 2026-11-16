@@ -13,10 +13,15 @@ part 'admin_bulk_hand_in_grace_answer_dto_output.g.dart';
 /// AdminBulkHandInGraceAnswerDtoOutput
 ///
 /// Properties:
-/// * [grace] 
+/// * [grace]
 /// * [captainIds] - The captains blocked by cash due who were told; none on a repeat.
 @BuiltValue()
-abstract class AdminBulkHandInGraceAnswerDtoOutput implements Built<AdminBulkHandInGraceAnswerDtoOutput, AdminBulkHandInGraceAnswerDtoOutputBuilder> {
+abstract class AdminBulkHandInGraceAnswerDtoOutput
+    implements
+        Built<
+          AdminBulkHandInGraceAnswerDtoOutput,
+          AdminBulkHandInGraceAnswerDtoOutputBuilder
+        > {
   @BuiltValueField(wireName: r'grace')
   AdminBulkHandInGraceAnswerDtoOutputGrace get grace;
 
@@ -26,18 +31,25 @@ abstract class AdminBulkHandInGraceAnswerDtoOutput implements Built<AdminBulkHan
 
   AdminBulkHandInGraceAnswerDtoOutput._();
 
-  factory AdminBulkHandInGraceAnswerDtoOutput([void updates(AdminBulkHandInGraceAnswerDtoOutputBuilder b)]) = _$AdminBulkHandInGraceAnswerDtoOutput;
+  factory AdminBulkHandInGraceAnswerDtoOutput([
+    void updates(AdminBulkHandInGraceAnswerDtoOutputBuilder b),
+  ]) = _$AdminBulkHandInGraceAnswerDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminBulkHandInGraceAnswerDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminBulkHandInGraceAnswerDtoOutput> get serializer => _$AdminBulkHandInGraceAnswerDtoOutputSerializer();
+  static Serializer<AdminBulkHandInGraceAnswerDtoOutput> get serializer =>
+      _$AdminBulkHandInGraceAnswerDtoOutputSerializer();
 }
 
-class _$AdminBulkHandInGraceAnswerDtoOutputSerializer implements PrimitiveSerializer<AdminBulkHandInGraceAnswerDtoOutput> {
+class _$AdminBulkHandInGraceAnswerDtoOutputSerializer
+    implements PrimitiveSerializer<AdminBulkHandInGraceAnswerDtoOutput> {
   @override
-  final Iterable<Type> types = const [AdminBulkHandInGraceAnswerDtoOutput, _$AdminBulkHandInGraceAnswerDtoOutput];
+  final Iterable<Type> types = const [
+    AdminBulkHandInGraceAnswerDtoOutput,
+    _$AdminBulkHandInGraceAnswerDtoOutput,
+  ];
 
   @override
   final String wireName = r'AdminBulkHandInGraceAnswerDtoOutput';
@@ -65,7 +77,11 @@ class _$AdminBulkHandInGraceAnswerDtoOutputSerializer implements PrimitiveSerial
     AdminBulkHandInGraceAnswerDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -81,17 +97,25 @@ class _$AdminBulkHandInGraceAnswerDtoOutputSerializer implements PrimitiveSerial
       final value = serializedList[i + 1];
       switch (key) {
         case r'grace':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(AdminBulkHandInGraceAnswerDtoOutputGrace),
-          ) as AdminBulkHandInGraceAnswerDtoOutputGrace;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminBulkHandInGraceAnswerDtoOutputGrace,
+                    ),
+                  )
+                  as AdminBulkHandInGraceAnswerDtoOutputGrace;
           result.grace.replace(valueDes);
           break;
         case r'captainIds':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(String)]),
-          ) as BuiltList<String>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltList<String>;
           result.captainIds.replace(valueDes);
           break;
         default:
@@ -122,5 +146,3 @@ class _$AdminBulkHandInGraceAnswerDtoOutputSerializer implements PrimitiveSerial
     return result.build();
   }
 }
-
-
