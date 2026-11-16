@@ -95,8 +95,7 @@ export async function startTestPostgres(): Promise<TestPostgres & { stop(): Prom
   return { ...where, stop: async () => void (await container.stop()) };
 }
 
-// A fresh, migrated database for one test file: a copy of the template, with
-// the database grants of bootstrap.sql, which a copy does not take.
+// A fresh, migrated database for one test file: a copy of the template.
 export async function startTestDatabase(): Promise<TestDatabase> {
   const where = inject('testPostgres');
   const database = `test_${randomBytes(8).toString('hex')}`;
@@ -104,31 +103,63 @@ export async function startTestDatabase(): Promise<TestDatabase> {
   await admin.connect();
   try {
     await admin.query(`CREATE DATABASE ${database} TEMPLATE ${TEMPLATE}`);
+    // A copy does not take the database's own grants: give it the template's,
+    // as bootstrap.sql set them, so migrations.test.ts still proves those.
     await admin.query(`REVOKE ALL ON DATABASE ${database} FROM PUBLIC`);
-    await admin.query(`GRANT CONNECT, CREATE ON DATABASE ${database} TO fox_drop_migrator`);
-    await admin.query(`GRANT CONNECT ON DATABASE ${database} TO fox_drop_app`);
+    const { rows } = await admin.query<{ privilege: string; grantee: string | null }>(
+      `SELECT acl.privilege_type AS privilege, role.rolname AS grantee
+         FROM pg_database template,
+              aclexplode(coalesce(template.datacl, acldefault('d', template.datdba))) acl
+         LEFT JOIN pg_roles role ON role.oid = acl.grantee
+        WHERE template.datname = $1`,
+      [TEMPLATE],
+    );
+    for (const { privilege, grantee } of rows) {
+      const to = grantee === null ? 'PUBLIC' : `"${grantee}"`;
+      await admin.query(`GRANT ${privilege} ON DATABASE ${database} TO ${to}`);
+    }
   } finally {
     await admin.end();
   }
+  const migratorUrl = url(where, 'fox_drop_migrator', passwords.migrator, database);
+  await monthPartitionsNow(migratorUrl);
   return {
-    migratorUrl: url(where, 'fox_drop_migrator', passwords.migrator, database),
+    migratorUrl,
     appUrl: url(where, 'fox_drop_app', passwords.app, database),
     stop: () => dropDatabase(where, database),
   };
+}
+
+// The template's month partitions date from the run's start; a run across
+// the turn of a month still gives each file this month's and the next.
+async function monthPartitionsNow(migratorUrl: string): Promise<void> {
+  const client = new pg.Client({ connectionString: migratorUrl });
+  await client.connect();
+  try {
+    const { rows } = await client.query<{ name: string }>(
+      `SELECT format('%I.%I', namespace.nspname, routine.proname) AS name
+         FROM pg_proc routine JOIN pg_namespace namespace ON namespace.oid = routine.pronamespace
+        WHERE routine.proname = 'create_month_partitions'`,
+    );
+    for (const { name } of rows) await client.query(`SELECT ${name}()`);
+  } finally {
+    await client.end();
+  }
 }
 
 // A pool's end() resolves before its clients' sockets close. Dropping the
 // database while they close sends each one 57P01 («terminating connection
 // due to administrator command»), an uncaught error in a pool without an
 // error listener that fails the whole test run. So the drop waits, up to 5
-// seconds, until no client is connected to it.
+// seconds, until no client is connected to it (autovacuum may stay: the drop
+// ends it).
 async function dropDatabase(where: TestPostgres, database: string): Promise<void> {
   const admin = new pg.Client({ connectionString: adminUrl(where) });
   await admin.connect();
   try {
     for (let attempt = 0; attempt < 50; attempt += 1) {
       const { rows } = await admin.query<{ connected: number }>(
-        'SELECT count(*)::int AS connected FROM pg_stat_activity WHERE datname = $1',
+        "SELECT count(*)::int AS connected FROM pg_stat_activity WHERE datname = $1 AND backend_type = 'client backend'",
         [database],
       );
       if (rows[0]!.connected === 0) break;

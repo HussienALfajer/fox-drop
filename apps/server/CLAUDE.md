@@ -32,7 +32,7 @@ The FOX DROP server: one NestJS on Fastify application, strict TypeScript, ES mo
 
 From the repository root:
 
-- `pnpm --filter @fox-drop/server test` (or `lint`, `typecheck`, `build`).
+- `pnpm --filter @fox-drop/server test` (or `lint`, `typecheck`, `build`). Every test run, even of one file that needs no database, starts the run's PostGIS first, so Docker must be running.
 - `docker compose up --detach` (after copying `.env.example` to `.env`), then `pnpm --filter @fox-drop/server db:migrate`: the local services and database.
 - `pnpm --filter @fox-drop/server db:generate --name <module>_<change>`: the SQL migration for a schema change.
 - `docker build -f apps/server/Dockerfile -t fox-drop-server .`, then `node apps/server/scripts/smoke-image.mjs fox-drop-server`: starts the image in each role (the `server-image` CI job).
