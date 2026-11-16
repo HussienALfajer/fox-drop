@@ -4,12 +4,22 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.22, compensation (`docs/roadmap.md`, Phase 2, Money).
+Slice 2.22a, «تعويض الزبون» in the server and the panel (`docs/roadmap.md`, Phase 2, Money; the first of 2.22a–d).
 
-- **Roadmap line:** 2.22 Compensation: «تعويض الزبون» as a next-order code, the cumulative cap per role, OWN's approval above it, the late-delivery code (AP §9.3.2, §9.10.6, CU §11.6). Support asks above its cap and the owner gets the approval request.
-- **Specs:** AP §9.3.2 «تعويض الزبون» (`docs/product/v1/admin-panel/09-modules/03-order-detail-and-order-actions.md`), AP §6.4 compensation caps and approvals, D4 (`06-roles-and-permissions.md`), AP §9.10.6 compensation and discount costs (`09-modules/10-finance.md`), AP §9.11.1 «A personal code (compensation, late code) follows the same rule», CU §11.6 (the late code, `11-the-active-order.md`), CU §12.4 (personal codes in «أكوادي»), CU §14 #15 and #16; `apps/server/CLAUDE.md`, `apps/server/src/modules/marketing/CLAUDE.md`, `apps/admin/CLAUDE.md`, `apps/customer/CLAUDE.md`, `packages/core_l10n/CLAUDE.md`. A personal code joins `marketing.promo_codes` and its uses as 2.21 built them; «أكوادي» (`PromoCodeUsesService.mine`) lists only visible codes so far.
+- **Roadmap line:** 2.22a «تعويض الزبون» in the server and the panel: the personal code (one customer, linked to an order, an amount or a percentage with a maximum, valid `support.personal_code_valid_days` (30) days), the reason from the new «تعويض الزبون» list with an optional note, the cumulative cap per order and role, «طلبات الموافقة» where OWN approves, edits or rejects a request above the cap, the alert «طلب موافقة تعويض» and the approvals count in «المهام», the push «لك كود تعويض {القيمة}: {الكود}» (CU §14 #16) once issued. Support compensates within its cap, asks above it, and the owner approves.
+- **Specs:** AP §6.4 and D4 (`06-roles-and-permissions.md`), AP §9.3.2 «تعويض الزبون» (`09-modules/03-order-detail-and-order-actions.md`), AP §9.1.3 «طلب موافقة تعويض» and §9.1.4 «المهام» (`09-modules/01-dashboard.md`), AP §10 (the compensation push), AP Appendix A (`support.compensation_cap_pct.*`, `support.personal_code_valid_days`), AP Appendix B («تعويض الزبون» reasons), CU §14 #16, `docs/domain/10` and `11` (`platform.compensation_cost`, booked in 2.22b when a code is used); `apps/server/CLAUDE.md`, `apps/server/src/modules/marketing/CLAUDE.md`, `apps/admin/CLAUDE.md`, the `db-migration` skill.
 - **Branch:** `feat/compensation-codes`.
-- **Plan:** none yet. The roadmap line spans the server, the panel (the dialog, the caps, the approval) and the customer app (personal codes in «أكوادي», the pushes), so first run the `slice-plan` skill and ask the owner how it splits into pull requests, then write the plan here as a checklist, one step per commit.
+- **Plan:**
+  - [ ] The server: personal codes in `marketing` (the customer and the order on a code, issued only through compensation), the compensation requests with their reason, note, cap check (the order's customer total, the sum of the order's compensations by anyone, a percentage counted at its maximum) and status (issued, waiting, rejected), OWN's approve, edit and reject, the setting, the reason list, the push, the alert and the approvals count, the audit, the routes, the OpenAPI document and the clients.
+  - [ ] The panel: «تعويض الزبون» on the order detail (amount or percentage with a maximum, the reason, the note, what is left of the role's cap, «أُرسل الكود» or «أُرسل الطلب إلى المالك للموافقة»), the order's compensations on the detail, «طلبات الموافقة» for OWN with approve, edit and reject, and the dashboard's alert and count.
+  - [ ] Review, then hand over to 2.22b.
+
+### Owner decisions for 2.22 (2026-11-17)
+
+- 2.22 splits into 2.22a (issuing, the caps and the approvals, in the server and the panel), 2.22b (using a personal code in the order and the customer app, and the cancel dialog's compensation), 2.22c (the late code) and 2.22d (the cost report of AP §9.10.6).
+- A compensation or late code stays valid `support.personal_code_valid_days` (30, editable) days from its issue.
+- The late code is issued when the order is still not delivered at the promised time + 45 minutes; the timer moves with the promised time, and an order that ends before it gets none.
+- Every compensation carries a reason from a new editable list «تعويض الزبون» (AP Appendix B) and an optional note; AP §9.10.6 splits the cost by it.
 
 ### Left from 2.21d (`feat/promo-codes-picking`)
 
