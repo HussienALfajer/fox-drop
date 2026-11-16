@@ -1,4 +1,7 @@
+import 'package:core_api/core_api.dart';
 import 'package:core_auth/testing.dart';
+import 'package:core_l10n/core_l10n.dart';
+import 'package:customer/src/checkout/problems.dart';
 import 'package:customer/src/location/position.dart';
 import 'package:customer/src/checkout/quote.dart';
 import 'package:customer/src/profile/profile.dart';
@@ -1077,6 +1080,131 @@ void main() {
       expect(find.text('تأكيد الطلب — 10 ₺'), findsOneWidget);
       await app.done(tester);
     });
+
+    testWidgets('a refused code blocks the order until «إزالة»', (
+      tester,
+    ) async {
+      final app = await _checkout(
+        tester,
+        quotes: [
+          FakeAnswer(200, _quote()),
+          FakeAnswer(
+            200,
+            _quote(
+              version: 'v2',
+              problems: [
+                {
+                  'code': 'promo_code',
+                  'line': null,
+                  'opensAt': null,
+                  'refusal': 'below_minimum',
+                  'amount': {'amount': '2000', 'currency': 'TRY'},
+                },
+              ],
+            ),
+          ),
+          FakeAnswer(200, _quote(version: 'v3')),
+        ],
+      );
+      await apply(tester, 'FOX20');
+
+      expect(find.text('أضف 20 ₺ لاستخدام هذا الكود'), findsOneWidget);
+      final confirm = tester.widget<FilledButton>(
+        find.byKey(const Key('confirm-order')),
+      );
+      expect(confirm.onPressed, isNull);
+      expect(find.text('الخصم (FOX20)'), findsNothing);
+
+      await tester.tap(find.text('إزالة').first);
+      await tester.pumpAndSettle();
+      final quotes = app.server.to('/v1/customer/quote').length;
+      expect(
+        app.bodyOf('/v1/customer/quote', index: quotes - 1)['code'],
+        isNull,
+      );
+      expect(find.text('أضف 20 ₺ لاستخدام هذا الكود'), findsNothing);
+      expect(find.text('أدخل الكود'), findsOneWidget);
+      await app.done(tester);
+    });
+
+    testWidgets('a code that stopped working at confirmation shows why', (
+      tester,
+    ) async {
+      final app = await _checkout(
+        tester,
+        quotes: [
+          FakeAnswer(200, _quote()),
+          FakeAnswer(
+            200,
+            _quote(
+              version: 'v2',
+              discount: '3000',
+              total: '11000',
+              promoCode: {
+                'code': 'FOX10',
+                'kind': 'percentage',
+                'discount': '3000',
+                'fixedAmountAboveItems': false,
+              },
+            ),
+          ),
+          FakeAnswer(
+            200,
+            _quote(
+              version: 'v3',
+              problems: [
+                {
+                  'code': 'promo_code',
+                  'line': null,
+                  'opensAt': null,
+                  'refusal': 'budget_reached',
+                },
+              ],
+            ),
+          ),
+        ],
+        before: (app) => app.server.on('/v1/customer/orders', [
+          const FakeAnswer(409, {'error': 'order_blocked'}),
+        ]),
+      );
+      await apply(tester, 'FOX10');
+      await _fillAddress(tester);
+      await _confirm(tester);
+
+      expect(
+        find.text('لم نتمكن من إرسال طلبك. راجع المشكلة أعلاه.'),
+        findsOne,
+      );
+      expect(find.text('الكود غير متاح اليوم'), findsOneWidget);
+      expect(find.text('الخصم (FOX10)'), findsNothing);
+      expect(find.text('تأكيد الطلب — 140 ₺'), findsOneWidget);
+      expect(app.device.values['cart'], contains('FOX10'));
+      await app.done(tester);
+    });
+  });
+
+  test('every code refusal has its text (CU Appendix C)', () {
+    final l10n = lookupAppLocalizations(const Locale('ar'));
+    String text(String refusal, [Map<String, Object?>? amount]) =>
+        codeRefusalText(
+          l10n,
+          standardSerializers.deserializeWith(QuoteProblem.serializer, {
+            'code': 'promo_code',
+            'refusal': refusal,
+            'amount': amount,
+          })!,
+        );
+    expect(text('unknown_code'), 'الكود غير صحيح');
+    expect(text('not_valid_now'), 'الكود غير صالح الآن');
+    expect(
+      text('below_minimum', {'amount': '2050', 'currency': 'TRY'}),
+      'أضف 20.50 ₺ لاستخدام هذا الكود',
+    );
+    expect(text('not_for_restaurant'), 'هذا الكود لا يعمل مع هذا المطعم');
+    expect(text('first_order_only'), 'هذا الكود للطلب الأول فقط');
+    expect(text('used_before'), 'استخدمت هذا الكود من قبل');
+    expect(text('uses_ended'), 'انتهت استخدامات هذا الكود');
+    expect(text('budget_reached'), 'الكود غير متاح اليوم');
   });
 }
 

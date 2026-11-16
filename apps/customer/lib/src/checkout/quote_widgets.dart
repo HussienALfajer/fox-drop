@@ -63,6 +63,10 @@ class ProblemTile extends ConsumerWidget {
           ref.invalidate(quoteProvider);
         },
       ),
+      ProblemAction.removeCode => (
+        l10n.customerCodeRemove,
+        () => cart.setCode(null),
+      ),
       _ => (null, null),
     };
     return ListTile(
