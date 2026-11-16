@@ -166,7 +166,9 @@ test('opens a field session on a phone and closes it at the office', async ({ pa
     { cityId, kind: 'field', floats: [] },
     { counted: [{ currency: 'TRY', amount: '20000' }], note: null },
   ]);
-  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+  expect(await page.evaluate<number>('document.documentElement.scrollWidth')).toBeLessThanOrEqual(
+    375,
+  );
 });
 
 test('keeps the desk from a role that does not record at it', async ({ page }) => {
