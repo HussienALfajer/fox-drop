@@ -505,6 +505,13 @@
       "when": 1794780205997,
       "tag": "0071_cashdesk_merchant_statements",
       "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "7",
+      "when": 1794808398082,
+      "tag": "0072_cashdesk_restaurant_receipts",
+      "breakpoints": true
     }
   ]
 }

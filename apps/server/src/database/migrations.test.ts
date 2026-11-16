@@ -898,9 +898,45 @@ describe('the cash desk tables (AP §9.10.3, §4.8)', () => {
     await expect(appQuery(receipt('AZ-2099-000001b', 1))).rejects.toThrow(
       /receipts_city_year_sequence/,
     );
+  });
+
+  it("names exactly one party on a receipt, and a restaurant's line its base value", async () => {
+    const { rows } = await appQuery(session(randomUUID()));
+    const restaurantReceipt = (sequence: number, columns: string, values: string) =>
+      `INSERT INTO cashdesk.receipts (city_id, year, sequence, number, type, session_id, admin_account_id, ${columns}, created_at) VALUES (${azaz}, 2098, ${sequence}, 'AZ-2098-${sequence}', 'merchant_settlement', '${rows[0].id}', '${randomUUID()}', ${values}, now()) RETURNING id`;
+    const restaurant = 'restaurant_id, restaurant_name, due_before, due_currency';
+    const { rows: issued } = await appQuery(
+      restaurantReceipt(1, restaurant, `'${randomUUID()}', 'مطعم', 6000, 'TRY'`),
+    );
     await expect(
-      appQuery(receipt('AZ-2099-000002', 2).replace('captain_hand_in', 'x')),
+      appQuery(
+        restaurantReceipt(
+          2,
+          `captain_id, captain_name, ${restaurant}`,
+          `'${randomUUID()}', 'كابتن', '${randomUUID()}', 'مطعم', 6000, 'TRY'`,
+        ),
+      ),
+    ).rejects.toThrow(/receipts_party/);
+    await expect(
+      appQuery(restaurantReceipt(3, 'captain_id, captain_name', `'${randomUUID()}', 'كابتن'`)),
+    ).rejects.toThrow(/receipts_party/);
+    await expect(
+      appQuery(
+        restaurantReceipt(4, restaurant, `'${randomUUID()}', 'مطعم', 6000, 'TRY'`).replace(
+          'merchant_settlement',
+          'x',
+        ),
+      ),
     ).rejects.toThrow(/receipts_type_values/);
+    const line = (values: string) =>
+      `INSERT INTO cashdesk.receipt_lines (receipt_id, currency, expected, base_amount, amount, journal_id) VALUES ('${issued[0].id}', ${values}, '${randomUUID()}')`;
+    await appQuery(line("'USD', NULL, 3000, 2"));
+    await expect(appQuery(line("'TRY', NULL, NULL, 3000"))).rejects.toThrow(
+      /receipt_lines_expected_or_base/,
+    );
+    await expect(appQuery(line("'EUR', 3000, 3000, 3000"))).rejects.toThrow(
+      /receipt_lines_expected_or_base/,
+    );
   });
 
   it('keeps a restaurant statement sums and one per restaurant and cutoff', async () => {

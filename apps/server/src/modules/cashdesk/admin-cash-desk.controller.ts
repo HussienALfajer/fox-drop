@@ -30,7 +30,7 @@ import {
   type DrawerSession,
   type Receipt,
 } from './cashdesk.service.js';
-import { receiptTypes } from './schema.js';
+import { captainReceiptTypes } from './schema.js';
 import { type SettlementPreview, SettlementService, type Statement } from './settlement.service.js';
 
 const minor = z.string().regex(/^\d{1,18}$/);
@@ -300,7 +300,7 @@ const receiptBody = z.object({
   id: z.uuid(),
   cityId: z.uuid(),
   number: z.string().describe('Such as AZ-2026-000123 (AP §4.8).'),
-  type: z.enum(receiptTypes),
+  type: z.enum(captainReceiptTypes),
   sessionId: z.uuid(),
   cashierId: z.uuid(),
   cashierName: z.string().nullable(),

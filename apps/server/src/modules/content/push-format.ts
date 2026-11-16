@@ -42,4 +42,8 @@ export const receiptTypeLabels = {
   // «تصفية الخميس» (slice 2.18a): the payout and a negative balance collected.
   captain_payout: 'صرف المستحقات',
   captain_earnings_collection: 'تحصيل رصيد سالب',
+  // «تسوية المطاعم» (slice 2.19b): the restaurant's payment, and the desk
+  // paying a restaurant the platform owes.
+  merchant_settlement: 'تسوية حساب المطعم',
+  merchant_payout: 'صرف للمطعم',
 } as const;
