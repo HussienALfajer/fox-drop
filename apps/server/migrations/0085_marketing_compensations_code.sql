@@ -1,0 +1,1 @@
+CREATE INDEX "compensations_code" ON "marketing"."compensations" USING btree ("code_id");

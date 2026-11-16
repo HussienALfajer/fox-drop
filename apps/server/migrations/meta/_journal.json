@@ -596,6 +596,13 @@
       "when": 1794863819720,
       "tag": "0084_notifications_compensation_alerts",
       "breakpoints": true
+    },
+    {
+      "idx": 85,
+      "version": "7",
+      "when": 1794867236828,
+      "tag": "0085_marketing_compensations_code",
+      "breakpoints": true
     }
   ]
 }

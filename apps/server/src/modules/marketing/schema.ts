@@ -293,6 +293,7 @@ export const compensations = marketing.table(
     uniqueIndex('compensations_key').on(table.requestedBy, table.idempotencyKey),
     index('compensations_order').on(table.orderId),
     index('compensations_city_status').on(table.cityId, table.status),
+    index('compensations_code').on(table.codeId),
     check('compensations_kind_values', sql`${table.kind} IN ('fixed_amount', 'percentage')`),
     check(
       'compensations_value',

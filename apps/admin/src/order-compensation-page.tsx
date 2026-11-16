@@ -30,6 +30,8 @@ const problemKeys = {
 const refusalKeys = {
   invalid_value: 'compensation.refusal.invalidValue',
   unknown_reason: 'compensation.refusal.unknownReason',
+  reason_note_required: 'compensation.refusal.noteRequired',
+  reason_note_not_allowed: 'compensation.refusal.noteNotAllowed',
   unknown_order: 'compensation.refusal.unknownOrder',
   no_base_currency: 'compensation.refusal.noBaseCurrency',
   currency_changed: 'compensation.refusal.currencyChanged',

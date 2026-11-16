@@ -155,6 +155,9 @@ export class CompensationsService {
       // One compensation of an order at a time, so two never pass its cap
       // together.
       await lock(tx, `marketing.compensation:${order.id}`);
+      // The city's codes, then its currencies: PromoCodesService.create's
+      // order, so the two never deadlock.
+      await lock(tx, `marketing.codes:${order.cityId}`);
       await lockCityCurrencies(tx, order.cityId);
       const currency = await this.fx.baseCurrency(order.cityId, tx);
       if (currency === null) {
@@ -192,6 +195,9 @@ export class CompensationsService {
           requestHash,
         })
         .returning()) as [CompensationRow];
+      const answer = within
+        ? await this.issue(tx, row, admin.accountId, now)
+        : { ...row, code: null, codeValidTo: null };
       await this.audit.recordWrite(
         {
           actor: admin.actor,
@@ -200,14 +206,13 @@ export class CompensationsService {
           action: within ? 'compensation.issue' : 'compensation.request',
           target: { type: 'compensation', id: row.id },
           before: null,
-          after: { orderNumber: order.number.toString(), ...auditOf(row) },
+          after: { orderNumber: order.number.toString(), code: answer.code, ...auditOf(answer) },
           reason: chosen.note,
         },
         tx,
       );
-      if (within) return this.issue(tx, row, admin.accountId, now);
-      await this.syncAlert(tx, row, true, now);
-      return { ...row, code: null, codeValidTo: null };
+      if (!within) await this.syncAlert(tx, row, true, now);
+      return answer;
     });
   }
 
@@ -224,8 +229,17 @@ export class CompensationsService {
   ): Promise<Compensation> {
     return this.database.db.transaction(async (tx) => {
       const before = await this.lockedWaiting(tx, cityId, id);
+      // The order's lock, so a request on it meanwhile counts this one (AP
+      // §6.4: every compensation of the order by anyone); then the codes and
+      // the currencies, in request's order.
+      await lock(tx, `marketing.compensation:${before.orderId}`);
+      await lock(tx, `marketing.codes:${cityId}`);
       await lockCityCurrencies(tx, cityId);
-      if ((await this.fx.baseCurrency(cityId, tx)) !== before.currency) {
+      const currency = await this.fx.baseCurrency(cityId, tx);
+      if (currency === null) {
+        throw new CompensationRefusedError('no_base_currency', 'the city has no base currency');
+      }
+      if (currency !== before.currency) {
         throw new CompensationRefusedError('currency_changed', 'the base currency changed');
       }
       const row: CompensationRow = {
@@ -291,10 +305,10 @@ export class CompensationsService {
     createdBy: string,
     now: Date,
   ): Promise<Compensation> {
+    // The caller holds the city's codes lock (`marketing.codes:<cityId>`).
     const days = await this.settings.get('support.personal_code_valid_days', {
       cityId: row.cityId,
     });
-    await lock(tx, `marketing.codes:${row.cityId}`);
     let code: string | null = null;
     for (let i = 0; i < DRAWS && code === null; i += 1) {
       const candidate = generatedCode('');
@@ -369,6 +383,8 @@ export class CompensationsService {
           priority: rendered.priority,
           data: { target: 'codes' },
           at: now,
+          // A phone off for a while still gets the code it can use.
+          expiresAt: validTo,
         },
       ],
       now,
@@ -471,14 +487,15 @@ function capAmount(total: bigint, pct: number): bigint {
   return (total * BigInt(Math.round(pct * 100))) / 10000n;
 }
 
-// «{القيمة}» of the push: «25 ₺», or «20% حتى 50 ₺» (the wording is ours).
+// «{القيمة}» of the push: «25 ₺», or «20% بحد أقصى 50 ₺», as the panel
+// and «أكواد الخصم» say it (the wording is ours, to confirm with the owner).
 function valueText(
   row: CompensationRow,
   known: ReadonlyMap<string, { symbol: string; decimals: number }>,
 ): string {
   if (row.kind === 'fixed_amount') return formatMoney(row.amount!, row.currency, known);
   const pct = row.percentBp! / 100;
-  return `${pct}% حتى ${formatMoney(row.maxDiscount!, row.currency, known)}`;
+  return `${pct}% بحد أقصى ${formatMoney(row.maxDiscount!, row.currency, known)}`;
 }
 
 function auditOf(row: CompensationRow) {

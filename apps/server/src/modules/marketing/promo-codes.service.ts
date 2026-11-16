@@ -69,7 +69,16 @@ export class PromoCodesService implements OnModuleInit {
       const rows = await executor
         .select({ code: promoCodes.code, currency: promoCodes.currency })
         .from(promoCodes)
-        .where(and(eq(promoCodes.cityId, cityId), gt(promoCodes.validTo, sql`now()`)));
+        .where(
+          and(
+            eq(promoCodes.cityId, cityId),
+            gt(promoCodes.validTo, sql`now()`),
+            // A personal code would hold the base for good once support
+            // compensates every few days (slice 2.22a); one saved in an
+            // earlier base is refused as not_valid_now.
+            ne(promoCodes.visibility, 'personal'),
+          ),
+        );
       return rows.map((row) => ({ key: `promo_code:${row.code}`, currency: row.currency }));
     });
   }

@@ -108,7 +108,13 @@ export function valueParts(
 }
 
 export type CompensateRefusal =
-  'invalid_value' | 'unknown_reason' | 'unknown_order' | 'no_base_currency' | 'currency_changed';
+  | 'invalid_value'
+  | 'unknown_reason'
+  | 'reason_note_required'
+  | 'reason_note_not_allowed'
+  | 'unknown_order'
+  | 'no_base_currency'
+  | 'currency_changed';
 
 export type CompensateResult =
   | { status: 'done'; compensation: Compensation }
@@ -117,6 +123,8 @@ export type CompensateResult =
 const refusals: readonly string[] = [
   'invalid_value',
   'unknown_reason',
+  'reason_note_required',
+  'reason_note_not_allowed',
   'unknown_order',
   'no_base_currency',
   'currency_changed',
