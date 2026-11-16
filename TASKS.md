@@ -4,16 +4,24 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.20c, «القيود التصحيحية» (`docs/roadmap.md`, Phase 2, Money; the third of 2.20's four sub-slices).
+Slice 2.20d, «التقرير اليومي» (`docs/roadmap.md`, Phase 2, Money; the last of 2.20's four sub-slices).
 
-- **Roadmap line:** 2.20c «القيود التصحيحية» in the server and the panel, OWN and FIN (`ledger.manual_adjustment`): a manual entry with a reason on a captain's custody or earnings, a restaurant account or a customer's dues (`dues.adjustment`, owner decision 2026-11-16, brought forward from 2.25), the reversal of an existing entry linked to it, and the list of every manual entry with who, when, why and what it corrects; nothing deleted (AP §9.10.7). The owner adjusts a captain's earnings, reverses it, and sees both linked in the list.
-- **Specs:** AP §9.10.7 (`docs/product/v1/admin-panel/09-modules/10-finance.md`), AP §8.8 (`docs/domain/08-customer-trust-strikes-and-dues.md`, `dues.adjustment`), the ledger module's `CLAUDE.md` (journals, reversals, accounts), `apps/server/src/modules/cashdesk/CLAUDE.md` if the routes live there, `apps/admin/CLAUDE.md`.
-- **Branch:** `feat/manual-adjustments`.
+- **Roadmap line:** 2.20d «التقرير اليومي» in the server and the panel: per business day the orders, GMV and items value, fees, discounts by funder, commissions, captain pay by part, compensation and operating costs, rounding and FX, the platform margin, the captains' cash per currency, what restaurants owe and the overdue ones, compared with previous days, exported to Excel through the reporting module's exports (AP §9.10.1, architecture §5.9); figures whose slices are not built yet (codes, compensation) show zero. The owner opens today's report, checks it against the orders and exports it.
+- **Specs:** AP §9.10.1 (`docs/product/v1/admin-panel/09-modules/10-finance.md`), AP §8.11 (the platform accounts), architecture §5.9 (reports and exports), the ledger's, cashdesk's and reporting's `CLAUDE.md` (business days, `rangeEntries`, exports), `apps/admin/CLAUDE.md`.
+- **Branch:** `feat/daily-report`.
 - **Plan:**
-  - [x] The rule and its entries, test first: a manual adjustment on one party account (captain custody per currency, captain earnings, restaurant account, customer dues) against its platform counter-account, with the required reason, the admin and the audit; the reversal of an existing journal linked to it (once); nothing deleted.
-  - [x] The routes (`ledger.manual_adjustment`, `Idempotency-Key`): create, reverse, and the list of every manual entry with who, when, why and what it corrects; the generated clients.
-  - [x] The panel: «القيود التصحيحية» for OWN and FIN, the form (the party, the account, the amount and its sign, the reason), the reversal of an entry, and the list with the links.
-  - [ ] Review, then hand over to 2.20d.
+  - [ ] The report's figures, test first: one business day's orders and their money from the ledger and ordering (GMV, items value, fees, discounts by funder, commissions, captain pay by part, compensation and operating costs, rounding and FX, the margin), the captains' cash per currency, what restaurants owe and the overdue ones; the previous days to compare.
+  - [ ] The routes (`finance.read`) and the Excel export through the reporting module's exports; the generated clients.
+  - [ ] The panel: «التقرير اليومي» for OWN and FIN, the day, the comparison and «تصدير Excel».
+  - [ ] Review, then hand over to 2.21.
+
+### Left from 2.20c (`feat/manual-adjustments`)
+
+- **Before deploying to staging:** migration 0077 adds `cashdesk.manual_entries` (never changed: the application role has no `UPDATE`), `cashdesk.idempotency_keys.manual_entry_id`, and `dues.adjustment` to the ledger's `CHECK`s (added `NOT VALID`, then validated). New routes under `/v1/admin/manual-entries` (`ledger.manual_adjustment`): the list, create, `reversals`, `parties/search` and `account`. Deploy the server before the panel.
+- **To check on staging:** as OWN or FIN, the home page's «القيود التصحيحية»: choose «كابتن», search by name, choose them and «المستحقات»; the balance and latest entries show. «يزيد مستحقات الكابتن», 500, a reason, «مراجعة», «تأكيد القيد»: «سُجّل القيد.», the balance grows by 500 and the list shows «قيد يدوي» with the captain, the reason and «بواسطة {الاسم}». «عكس القيد» on it with a reason, «تأكيد العكس»: the list shows «عكس قيد» with «يعكس:» and «القيد الأصلي», and the first entry «عُكس في …» with «قيد العكس»; the captain's «أرباحي» shows both lines. A customer with dues from a fake order: «زبون», their number, «مستحقات الزبون», «ينقص ما على الزبون» by the whole amount: the checkout's dues block lifts. As OPS the page is not offered.
+- **To confirm with the owner:** only manual entries (journals with no order or receipt) are reversed here; an order's journals are corrected by «تغيير النتيجة» or by an adjustment, since a manual reversal would make a later «تغيير النتيجة» fail, and a receipt's by a new desk transaction; a customer's dues are adjusted only in a city where they already have dues; nothing is pushed to the captain, the restaurant or the customer for a manual entry (AP §9.10.7 names none; the captain's app reads its custody and earnings again); the list shows the latest 100 entries and an account its latest 50; the panel's words (`manualEntries.*` in `apps/admin/src/locales/ar.json`): «القيود التصحيحية», «قيد يدوي», «عكس قيد», «يعكس:», «القيد الأصلي», «قيد العكس», «عُكس في …», the directions («يزيد ما على الكابتن تسليمه», «يزيد مستحقات الكابتن», «يزيد ما للمطعم», «يزيد ما على المطعم», «يزيد ما على الزبون» and their opposites), the entry types' labels and the refusals.
+- **Decided by us:** an adjustment of custody takes any enabled city currency, the other accounts the base only; the party's desk lock is taken before posting (the captain's row, the restaurant's account lock), so a hand-in, a settlement or a statement never reads a balance a manual entry is changing; a customer is found by number only and the number is never answered.
+- **Not yet:** a desk lock on a customer's dues (with the dues payment, 2.25); «لدي استفسار» on a manual entry (tickets); a manual entry on a captain's deposit (with the kit, 2.35).
 
 ### Left from 2.20b (`feat/resolve-shortfall`)
 
