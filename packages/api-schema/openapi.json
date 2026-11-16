@@ -9198,6 +9198,132 @@
           "merchant"
         ]
       }
+    },
+    "/v1/merchant/statements": {
+      "get": {
+        "operationId": "merchantRecordsStatements",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantStatementListDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/statements/{statementId}": {
+      "get": {
+        "operationId": "merchantRecordsStatement",
+        "parameters": [
+          {
+            "name": "statementId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantStatementDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/receipts": {
+      "get": {
+        "operationId": "merchantRecordsReceipts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantReceiptListDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/receipts/{receiptId}": {
+      "get": {
+        "operationId": "merchantRecordsReceipt",
+        "parameters": [
+          {
+            "name": "receiptId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantReceiptDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
     }
   },
   "info": {
@@ -37992,6 +38118,617 @@
           "pickups",
           "weekFrom",
           "weekLines"
+        ],
+        "additionalProperties": false
+      },
+      "MerchantStatementListDto_Output": {
+        "type": "object",
+        "properties": {
+          "statements": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "cutoff": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                  "description": "The settlement day’s cutoff that closed it."
+                },
+                "periodFrom": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The previous statement’s cutoff, null for the first."
+                },
+                "currency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                },
+                "weekTotal": {
+                  "type": "string",
+                  "pattern": "^-?\\d{1,19}$",
+                  "description": "Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7)."
+                },
+                "totalDue": {
+                  "type": "string",
+                  "pattern": "^-?\\d{1,19}$",
+                  "description": "Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7)."
+                },
+                "status": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "unpaid",
+                        "partly_paid",
+                        "paid"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "unpaid": {
+                  "type": "string",
+                  "pattern": "^-?\\d{1,19}$",
+                  "description": "What of the total due is still unpaid, oldest first."
+                }
+              },
+              "required": [
+                "id",
+                "cutoff",
+                "periodFrom",
+                "currency",
+                "weekTotal",
+                "totalDue",
+                "status",
+                "unpaid"
+              ],
+              "additionalProperties": false
+            },
+            "description": "The latest statements (a year), newest first."
+          }
+        },
+        "required": [
+          "statements"
+        ],
+        "additionalProperties": false
+      },
+      "MerchantStatementDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "restaurantName": {
+            "type": "string"
+          },
+          "cutoff": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "periodFrom": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "orders": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "itemsValue": {
+            "type": "string",
+            "pattern": "^-?\\d{1,19}$",
+            "description": "Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7)."
+          },
+          "commission": {
+            "type": "string",
+            "pattern": "^-?\\d{1,19}$",
+            "description": "Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7)."
+          },
+          "discountShare": {
+            "type": "string",
+            "pattern": "^-?\\d{1,19}$",
+            "description": "Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7)."
+          },
+          "exceptions": {
+            "type": "string",
+            "pattern": "^-?\\d{1,19}$",
+            "description": "Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7)."
+          },
+          "weekTotal": {
+            "type": "string",
+            "pattern": "^-?\\d{1,19}$",
+            "description": "Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7)."
+          },
+          "previousDue": {
+            "type": "string",
+            "pattern": "^-?\\d{1,19}$",
+            "description": "Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7)."
+          },
+          "paid": {
+            "type": "string",
+            "pattern": "^-?\\d{1,19}$",
+            "description": "Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7)."
+          },
+          "earlierUnpaid": {
+            "type": "string",
+            "pattern": "^-?\\d{1,19}$",
+            "description": "Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7)."
+          },
+          "totalDue": {
+            "type": "string",
+            "pattern": "^-?\\d{1,19}$",
+            "description": "Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7)."
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "unpaid",
+                  "partly_paid",
+                  "paid"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "unpaid": {
+            "type": "string",
+            "pattern": "^-?\\d{1,19}$",
+            "description": "What of the total due is still unpaid, oldest first."
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "order",
+                    "exception",
+                    "payment"
+                  ]
+                },
+                "at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "orderId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "orderNumber": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "itemsValue": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^-?\\d{1,19}$",
+                      "description": "Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7)."
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "An order: its pickup payment."
+                },
+                "pickupLines": {
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "currency": {
+                            "type": "string",
+                            "pattern": "^[A-Z]{3}$"
+                          },
+                          "amount": {
+                            "type": "string",
+                            "pattern": "^-?\\d{1,19}$",
+                            "description": "Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7)."
+                          }
+                        },
+                        "required": [
+                          "currency",
+                          "amount"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "An order: the currency lines the captain paid."
+                },
+                "commission": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^-?\\d{1,19}$",
+                      "description": "Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7)."
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "discountShare": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^-?\\d{1,19}$",
+                      "description": "Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7)."
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "cause": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "food_credit",
+                        "credit",
+                        "pickup_refund",
+                        "pickup_kept",
+                        "items_removed",
+                        "fee_lowered",
+                        "fee_cut_returned",
+                        "debit",
+                        "commission_reversal",
+                        "commission_restored",
+                        "discount_reversal",
+                        "outcome_changed",
+                        "adjustment"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "An exception (RA §12.5)."
+                },
+                "amount": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^-?\\d{1,19}$",
+                      "description": "Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7)."
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "An exception or a payment."
+                },
+                "reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "decidedBy": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "admin",
+                        "merchant",
+                        "captain",
+                        "customer",
+                        "system"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "«من قرّر» on an exception (RA §12.5): who posted it."
+                },
+                "decidedByName": {
+                  "description": "The FOX DROP staff member, by name.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "at",
+                "orderId",
+                "orderNumber",
+                "itemsValue",
+                "pickupLines",
+                "commission",
+                "discountShare",
+                "cause",
+                "amount",
+                "reason",
+                "decidedBy",
+                "decidedByName"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "restaurantName",
+          "cutoff",
+          "periodFrom",
+          "currency",
+          "orders",
+          "itemsValue",
+          "commission",
+          "discountShare",
+          "exceptions",
+          "weekTotal",
+          "previousDue",
+          "paid",
+          "earlierUnpaid",
+          "totalDue",
+          "status",
+          "unpaid",
+          "lines"
+        ],
+        "additionalProperties": false
+      },
+      "MerchantReceiptListDto_Output": {
+        "type": "object",
+        "properties": {
+          "receipts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "number": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "merchant_settlement",
+                    "merchant_payout"
+                  ],
+                  "description": "The restaurant paid, or FOX DROP paid it."
+                },
+                "method": {
+                  "type": "string",
+                  "enum": [
+                    "office",
+                    "field"
+                  ],
+                  "description": "«في المكتب» or «زيارة ميدانية»."
+                },
+                "staffName": {
+                  "description": "The staff member: the visitor on a field visit, else the cashier.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "currency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$",
+                  "description": "The account's base currency."
+                },
+                "total": {
+                  "type": "string",
+                  "pattern": "^\\d{1,19}$",
+                  "description": "In the base."
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "lines": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "pattern": "^[A-Z]{3}$"
+                      },
+                      "amount": {
+                        "type": "string",
+                        "pattern": "^\\d{1,19}$",
+                        "description": "Integer minor units (AP §8.6)."
+                      },
+                      "base": {
+                        "type": "string",
+                        "pattern": "^\\d{1,19}$",
+                        "description": "Integer minor units (AP §8.6)."
+                      }
+                    },
+                    "required": [
+                      "currency",
+                      "amount",
+                      "base"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "number",
+                "type",
+                "method",
+                "staffName",
+                "currency",
+                "total",
+                "createdAt",
+                "lines"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Newest first."
+          }
+        },
+        "required": [
+          "receipts"
+        ],
+        "additionalProperties": false
+      },
+      "MerchantReceiptDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "number": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "merchant_settlement",
+              "merchant_payout"
+            ],
+            "description": "The restaurant paid, or FOX DROP paid it."
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "office",
+              "field"
+            ],
+            "description": "«في المكتب» or «زيارة ميدانية»."
+          },
+          "staffName": {
+            "description": "The staff member: the visitor on a field visit, else the cashier.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "description": "The account's base currency."
+          },
+          "total": {
+            "type": "string",
+            "pattern": "^\\d{1,19}$",
+            "description": "In the base."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "currency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                },
+                "amount": {
+                  "type": "string",
+                  "pattern": "^\\d{1,19}$",
+                  "description": "Integer minor units (AP §8.6)."
+                },
+                "base": {
+                  "type": "string",
+                  "pattern": "^\\d{1,19}$",
+                  "description": "Integer minor units (AP §8.6)."
+                }
+              },
+              "required": [
+                "currency",
+                "amount",
+                "base"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "dueBefore": {
+            "type": "string",
+            "pattern": "^-?\\d{1,19}$",
+            "description": "Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7)."
+          },
+          "dueAfter": {
+            "type": "string",
+            "pattern": "^-?\\d{1,19}$",
+            "description": "Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7)."
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "type",
+          "method",
+          "staffName",
+          "currency",
+          "total",
+          "createdAt",
+          "lines",
+          "dueBefore",
+          "dueAfter"
         ],
         "additionalProperties": false
       }

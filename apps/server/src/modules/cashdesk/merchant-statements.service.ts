@@ -438,6 +438,8 @@ export class MerchantStatementsService {
       .select({
         id: merchantStatements.id,
         cutoff: merchantStatements.cutoff,
+        periodFrom: merchantStatements.periodFrom,
+        currency: merchantStatements.currency,
         commission: merchantStatements.commission,
         discountShare: merchantStatements.discountShare,
         exceptions: merchantStatements.exceptions,

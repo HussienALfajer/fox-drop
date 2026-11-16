@@ -232,6 +232,19 @@ export class LedgerService {
     });
   }
 
+  // Who posted each journal (AP D27): «من قرّر» on a restaurant's exception
+  // (RA §12.5). A journal not found is left out.
+  async journalActors(journalIds: readonly string[]): Promise<Map<string, LedgerActor>> {
+    if (journalIds.length === 0) return new Map();
+    const rows = await this.database.db
+      .select({ id: journals.id, type: journals.actorType, actorId: journals.actorId })
+      .from(journals)
+      .where(inArray(journals.id, [...new Set(journalIds)]));
+    return new Map(
+      rows.map((row) => [row.id, { type: row.type as ActorType, id: row.actorId }] as const),
+    );
+  }
+
   // The sum of the account's entries, shown from the party's view.
   async balance(accountId: string, executor: LedgerExecutor = this.database.db): Promise<Balance> {
     const [account] = await executor
