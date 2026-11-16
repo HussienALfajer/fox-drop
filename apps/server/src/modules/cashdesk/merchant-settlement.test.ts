@@ -314,6 +314,47 @@ describe('the restaurant settlement at the office', () => {
     expect(await statements.statement(statementId)).toMatchObject({ status: 'paid', unpaid: 0n });
   });
 
+  it('records one payment for the same key sent twice at once', async () => {
+    const { cashier } = await openDesk();
+    const id = await restaurant();
+    await owes(id, 5_000n);
+    const command: MerchantSettleCommand = {
+      restaurantId: id,
+      due: 5_000n,
+      lines: [{ currency: 'TRY', amount: 2_000n, base: 2_000n, rates: [] }],
+      idempotencyKey: randomUUID(),
+    };
+    const [one, two] = await Promise.all([
+      settlements.settle(cashier.user, command, new Date()),
+      settlements.settle(cashier.user, command, new Date()),
+    ]);
+    expect(one.id).toBe(two.id);
+    expect(await due(id)).toBe(3_000n);
+  });
+
+  it('lets two desks settle one balance once', async () => {
+    const first = await openDesk();
+    const second = await openDesk();
+    const id = await restaurant();
+    await owes(id, 5_000n);
+    const command = (key: string): MerchantSettleCommand => ({
+      restaurantId: id,
+      due: 5_000n,
+      lines: [{ currency: 'TRY', amount: 5_000n, base: 5_000n, rates: [] }],
+      idempotencyKey: key,
+    });
+    const results = await Promise.allSettled([
+      settlements.settle(first.cashier.user, command(randomUUID()), new Date()),
+      settlements.settle(second.cashier.user, command(randomUUID()), new Date()),
+    ]);
+    expect(results.filter((each) => each.status === 'fulfilled')).toHaveLength(1);
+    const refused = results.find((each) => each.status === 'rejected');
+    expect((refused as PromiseRejectedResult).reason).toMatchObject({
+      refusal: 'nothing_due',
+    });
+    expect(await due(id)).toBe(0n);
+  });
+
   it('takes several currencies, each at the current rate', async () => {
     const { cashier } = await openDesk();
     const id = await restaurant();
@@ -449,6 +490,20 @@ describe('the routes of the restaurant settlement', () => {
     });
     expect(above.statusCode).toBe(409);
     expect(above.json()).toMatchObject({ error: 'above_balance' });
+  });
+
+  it('answers 401 without a session and 404 for a receipt not found', async () => {
+    for (const [method, url] of [
+      ['POST', '/v1/admin/cash-desk/restaurant-settlements/preview'],
+      ['POST', '/v1/admin/cash-desk/restaurant-settlements'],
+      ['GET', `/v1/admin/cash-desk/restaurant-receipts/${randomUUID()}`],
+    ] as const) {
+      expect((await app.inject({ method, url, payload: {} })).statusCode).toBe(401);
+    }
+    const cashier = await admin(['FIN']);
+    const missing = await cashier.get(`/v1/admin/cash-desk/restaurant-receipts/${randomUUID()}`);
+    expect(missing.statusCode).toBe(404);
+    expect(missing.json()).toMatchObject({ error: 'unknown_receipt' });
   });
 
   it('refuses a user without the desk', async () => {

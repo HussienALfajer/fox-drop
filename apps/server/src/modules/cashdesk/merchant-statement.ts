@@ -111,7 +111,10 @@ export function buildStatement(
       }
       continue;
     }
-    if (payment) paid -= owes;
+    // A payment lowers what the restaurant owes; the desk paying it what the
+    // platform owed (a payout, slice 2.19b) raises it in its own week, as an
+    // exception would, never a negative payment.
+    if (payment && owes < 0n) paid -= owes;
     else exceptions += owes;
     lines.push({
       kind: payment ? 'payment' : 'exception',

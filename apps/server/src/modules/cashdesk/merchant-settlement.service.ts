@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
-import { and, asc, eq, inArray, isNotNull, isNull } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { AuditService } from '../audit/index.js';
@@ -197,7 +197,12 @@ export class MerchantSettlementService {
       if (total > owed) throw new CashDeskRefusedError('above_balance', 'more than is owed');
       const collect = account.due > 0n;
       if (!collect) {
-        // The drawer pays out only the cash it holds in that currency.
+        // The drawer pays out only the cash it holds in that currency; two
+        // payouts of one session to two restaurants take turns, so both
+        // never read the same cash.
+        await tx.execute(
+          sql`SELECT pg_advisory_xact_lock(hashtext(${`cashdesk.drawer:${session.id}`}))`,
+        );
         const drawer = await this.desk.drawerCash(tx, session);
         for (const line of quoted) {
           if (line.amount > (drawer.get(line.currency) ?? 0n)) {

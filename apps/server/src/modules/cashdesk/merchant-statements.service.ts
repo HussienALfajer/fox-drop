@@ -428,8 +428,11 @@ export class MerchantStatementsService {
 
   // The restaurant's latest statements, newest first (the latest is the one
   // paid against, the older ones tell which statement the unpaid amount is
-  // from), and what is still unpaid of the latest: its total due less the
-  // payments since its cutoff.
+  // from), and what is still unpaid of the latest. A payment and a credit
+  // since its cutoff settle the oldest first (owner decision 2026-11-16),
+  // while what raised the balance since (a commission, a payout) is next
+  // week's: so the unpaid part is the balance now less what the entries
+  // since its cutoff raised, between zero and its total due.
   private async standing(restaurantId: string, accountId: string) {
     const statements = await this.database.db
       .select({
@@ -449,17 +452,24 @@ export class MerchantStatementsService {
     const latest = statements[0];
     let unpaid = 0n;
     if (latest && latest.totalDue > 0n) {
-      const covered = new Set(latest.journalIds);
-      const paidSince = (
-        await this.ledger.periodEntries(
-          [accountId],
-          'merchant.account',
-          new Date(latest.cutoff.getTime() - STATEMENT_OVERLAP_MS),
+      // Read from before the cutoff: the journals of any statement taken.
+      const covered = new Set(statements.flatMap((statement) => statement.journalIds));
+      const entries = await this.ledger.periodEntries(
+        [accountId],
+        'merchant.account',
+        new Date(latest.cutoff.getTime() - STATEMENT_OVERLAP_MS),
+      );
+      // The party's view is − the restaurant owes.
+      const balance = -(await this.ledger.balance(accountId)).amount;
+      const raised = entries
+        .filter(
+          (entry) =>
+            !covered.has(entry.journalId) &&
+            !(entry.type === 'merchant.settlement' && entry.amount > 0n),
         )
-      )
-        .filter((entry) => entry.type === 'merchant.settlement' && !covered.has(entry.journalId))
-        .reduce((sum, entry) => sum + entry.amount, 0n);
-      unpaid = latest.totalDue - paidSince > 0n ? latest.totalDue - paidSince : 0n;
+        .reduce((sum, entry) => sum - entry.amount, 0n);
+      const left = balance - (raised > 0n ? raised : 0n);
+      unpaid = left <= 0n ? 0n : left < latest.totalDue ? left : latest.totalDue;
     }
     return { statements, unpaid };
   }
