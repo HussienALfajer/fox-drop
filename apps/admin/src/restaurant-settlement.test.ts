@@ -109,12 +109,12 @@ describe('the restaurant settlement form', () => {
   });
 });
 
-// AP §9.10.3 tab 3 (slice 2.19c): the office session by default, the field
-// one when only it is open.
+// AP §9.10.3 tab 3 (slice 2.19c): the field session while a visit is open,
+// the office one otherwise.
 describe('the session a settlement goes to', () => {
-  it('takes the office session first, then the field one, else none', () => {
-    expect(defaultSession({ office: true, field: true })).toBe('office');
-    expect(defaultSession({ office: false, field: true })).toBe('field');
+  it('takes the field session first, then the office one, else none', () => {
+    expect(defaultSession({ office: true, field: true })).toBe('field');
+    expect(defaultSession({ office: true, field: false })).toBe('office');
     expect(defaultSession({ office: false, field: false })).toBeNull();
   });
 });

@@ -62,7 +62,10 @@ export type CashDeskRefusal =
   // The field visit (slice 2.19c): a visitor not on the team, or one named
   // in a field session, whose visitor is its own user.
   | 'unknown_visitor'
-  | 'invalid_visitor';
+  | 'invalid_visitor'
+  // A field visit's receipt names its visitor: an account without a name
+  // (the first OWN) cannot hold a field session.
+  | 'name_required';
 
 export class CashDeskRefusedError extends Error {
   override readonly name = 'CashDeskRefusedError';
@@ -248,8 +251,13 @@ export class CashDeskService {
     }
     const enabled = await this.deskCurrencies(cityId);
     checkLines(floats, enabled, 0n);
-    if (kind === 'field' && floats.some((line) => line.amount !== 0n)) {
-      throw new CashDeskRefusedError('invalid_amounts', 'a field session opens with zero');
+    if (kind === 'field') {
+      if (floats.some((line) => line.amount !== 0n)) {
+        throw new CashDeskRefusedError('invalid_amounts', 'a field session opens with zero');
+      }
+      if (!(await this.admins.names([user.accountId])).get(user.accountId)) {
+        throw new CashDeskRefusedError('name_required', 'the visitor is named on the receipt');
+      }
     }
     const id = await this.database.db.transaction(async (tx) => {
       await tx.execute(

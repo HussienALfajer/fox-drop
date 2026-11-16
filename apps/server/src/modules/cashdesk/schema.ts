@@ -190,7 +190,7 @@ export const receipts = cashdesk.table(
     check('receipts_method_values', sql`${table.method} IN ('office', 'field')`),
     check(
       'receipts_visitor',
-      sql`CASE WHEN ${table.method} = 'field' THEN ${table.restaurantId} IS NOT NULL AND ${table.visitorId} IS NOT NULL AND ${table.visitorName} IS NOT NULL ELSE ${table.visitorId} IS NULL AND ${table.visitorName} IS NULL END`,
+      sql`CASE WHEN ${table.method} = 'field' THEN ${table.restaurantId} IS NOT NULL AND ${table.visitorId} IS NOT NULL AND COALESCE(${table.visitorName}, '') <> '' ELSE ${table.visitorId} IS NULL AND ${table.visitorName} IS NULL END`,
     ),
   ],
 );

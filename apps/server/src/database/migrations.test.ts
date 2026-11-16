@@ -963,6 +963,15 @@ describe('the cash desk tables (AP §9.10.3, §4.8)', () => {
       /receipts_visitor/,
     );
     await expect(
+      appQuery(
+        restaurantReceipt(
+          7,
+          ', method, visitor_id, visitor_name',
+          `, 'field', '${randomUUID()}', ''`,
+        ),
+      ),
+    ).rejects.toThrow(/receipts_visitor/);
+    await expect(
       appQuery(restaurantReceipt(4, ', visitor_id, visitor_name', visitor)),
     ).rejects.toThrow(/receipts_visitor/);
     await expect(appQuery(restaurantReceipt(5, ', method', ", 'phone'"))).rejects.toThrow(

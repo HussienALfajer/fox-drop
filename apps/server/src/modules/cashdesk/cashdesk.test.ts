@@ -573,6 +573,13 @@ describe('the daily hand-in (AP §9.10.3 «تسليم النقد اليومي»,
         desk.handIn(cashier.user, { captainId, lines, idempotencyKey: randomUUID() }, new Date()),
       ),
     ).toBe('no_open_session');
+    // A field session (slice 2.19c) is a restaurant visit's, never a hand-in's.
+    await desk.openSession(cashier.user, azaz, [], new Date(), 'field');
+    expect(
+      await refusal(
+        desk.handIn(cashier.user, { captainId, lines, idempotencyKey: randomUUID() }, new Date()),
+      ),
+    ).toBe('no_open_session');
     const { cashier: open } = await openDesk();
     expect(
       await refusal(

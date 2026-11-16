@@ -367,12 +367,13 @@ export class AdminRestaurantSettlementController {
     );
   }
 
-  // The team members a desk can name as the visitor of a field visit.
+  // The team members a desk can name as the visitor of a field visit: the
+  // active ones without the desk (an OWN or FIN visitor uses a field session).
   @Get('visitors')
   @RequirePermission('cash_desk.record')
   @ZodResponse({ status: 200, type: AdminFieldVisitorsDto })
   async visitors() {
-    return { visitors: await this.admins.team() };
+    return { visitors: await this.admins.teamWithout('cash_desk.record') };
   }
 
   // A restaurant's receipt, to print on 80 mm or A4.

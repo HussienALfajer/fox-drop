@@ -190,12 +190,13 @@ export function useSessions(cityId: string | undefined) {
 }
 
 export type SessionRefusal =
-  'session_open' | 'session_closed' | 'note_required' | 'invalid_amounts';
+  'session_open' | 'session_closed' | 'note_required' | 'invalid_amounts' | 'name_required';
 const sessionRefusals: readonly string[] = [
   'session_open',
   'session_closed',
   'note_required',
   'invalid_amounts',
+  'name_required',
 ];
 
 export type SessionResult =

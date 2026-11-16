@@ -494,6 +494,14 @@ describe('the field visit', () => {
     expect(await refusal(desk.openSession(cashier.user, azaz, [], new Date(), 'field'))).toBe(
       'session_open',
     );
+    // The receipt names the visitor: an account without a name opens none.
+    const unnamed = await admin(['OWN']);
+    await sql.query('UPDATE identity.admin_accounts SET name = NULL WHERE id = $1', [
+      unnamed.user.accountId,
+    ]);
+    expect(await refusal(desk.openSession(unnamed.user, azaz, [], new Date(), 'field'))).toBe(
+      'name_required',
+    );
     expect((await desk.openSessionOf(cashier.user.accountId))?.id).toBe(session.id);
     expect((await desk.openSessionOf(cashier.user.accountId, 'field'))?.id).toBe(field.id);
   });
@@ -597,6 +605,17 @@ describe('the field visit', () => {
         }),
       ),
     ).toBe('invalid_visitor');
+    // An OWN or FIN visitor records the visit in their own field session.
+    for (const desker of [cashier, await admin(['OWN'])]) {
+      expect(
+        await refusal(
+          settle(cashier.user, id, lines, randomUUID(), {
+            session: 'office',
+            visitorId: desker.user.accountId,
+          }),
+        ),
+      ).toBe('unknown_visitor');
+    }
     expect(await due(id)).toBe(9_000n);
   });
 
@@ -619,6 +638,9 @@ describe('the field visit', () => {
       id: visitor.user.accountId,
       name: visitor.name,
     });
+    expect(team.json().visitors.map((each: { id: string }) => each.id)).not.toContain(
+      cashier.user.accountId,
+    );
 
     const id = await restaurant();
     await owes(id, 5_000n);

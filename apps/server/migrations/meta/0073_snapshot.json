@@ -1,5 +1,5 @@
 {
-  "id": "86950b1b-7ebf-4581-bb56-9f873e5493f1",
+  "id": "aab3a466-bad5-48d9-9782-21f3effd72a9",
   "prevId": "474623fd-29c9-4ef9-a340-899ef38ea794",
   "version": "7",
   "dialect": "postgresql",
@@ -2096,7 +2096,7 @@
         },
         "receipts_visitor": {
           "name": "receipts_visitor",
-          "value": "CASE WHEN \"cashdesk\".\"receipts\".\"method\" = 'field' THEN \"cashdesk\".\"receipts\".\"restaurant_id\" IS NOT NULL AND \"cashdesk\".\"receipts\".\"visitor_id\" IS NOT NULL AND \"cashdesk\".\"receipts\".\"visitor_name\" IS NOT NULL ELSE \"cashdesk\".\"receipts\".\"visitor_id\" IS NULL AND \"cashdesk\".\"receipts\".\"visitor_name\" IS NULL END"
+          "value": "CASE WHEN \"cashdesk\".\"receipts\".\"method\" = 'field' THEN \"cashdesk\".\"receipts\".\"restaurant_id\" IS NOT NULL AND \"cashdesk\".\"receipts\".\"visitor_id\" IS NOT NULL AND COALESCE(\"cashdesk\".\"receipts\".\"visitor_name\", '') <> '' ELSE \"cashdesk\".\"receipts\".\"visitor_id\" IS NULL AND \"cashdesk\".\"receipts\".\"visitor_name\" IS NULL END"
         }
       },
       "isRLSEnabled": false

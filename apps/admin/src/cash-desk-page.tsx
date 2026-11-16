@@ -44,6 +44,7 @@ const sessionRefusalKeys = {
   session_closed: 'cashDesk.refusal.session_closed',
   note_required: 'cashDesk.refusal.note_required',
   invalid_amounts: 'cashDesk.refusal.invalid_amounts',
+  name_required: 'cashDesk.refusal.name_required',
 } as const satisfies Record<SessionRefusal, string>;
 
 const handInRefusalKeys = {

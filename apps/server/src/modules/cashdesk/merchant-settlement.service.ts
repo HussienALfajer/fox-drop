@@ -144,8 +144,10 @@ export class MerchantSettlementService {
       .update(
         JSON.stringify({
           restaurantSettlement: command.restaurantId,
-          session: command.session,
-          visitorId: command.visitorId,
+          // Left out at the office without a visitor, as a 2.19b key hashed.
+          ...(command.session === 'office' && command.visitorId === null
+            ? {}
+            : { session: command.session, visitorId: command.visitorId }),
           due: command.due.toString(),
           lines: command.lines.map((line) => [
             line.currency,
@@ -378,11 +380,14 @@ export class MerchantSettlementService {
       if (command.visitorId !== null) {
         throw new CashDeskRefusedError('invalid_visitor', "a field session is its user's visit");
       }
-      const names = await this.admins.names([user.accountId]);
-      return { id: user.accountId, name: names.get(user.accountId) ?? '' };
+      const name = (await this.admins.names([user.accountId])).get(user.accountId);
+      if (!name) throw new CashDeskRefusedError('name_required', 'the visitor is named');
+      return { id: user.accountId, name };
     }
     if (command.visitorId === null) return null;
-    const found = (await this.admins.team()).find((member) => member.id === command.visitorId);
+    const found = (await this.admins.teamWithout('cash_desk.record')).find(
+      (member) => member.id === command.visitorId,
+    );
     if (!found) throw new CashDeskRefusedError('unknown_visitor', 'not an active team member');
     return found;
   }

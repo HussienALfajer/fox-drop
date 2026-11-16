@@ -24,13 +24,14 @@ export type FieldVisitor =
 export type SettleVia =
   { session: 'office'; visitorId: string | null } | { session: 'field'; visitorId: null };
 
-// The session a settlement goes to by default: the field session when only
-// it is open, the office one otherwise; null when neither is.
+// The session a settlement goes to by default: the field session whenever
+// it is open (it exists only during a visit), else the office one; null
+// when neither is.
 export function defaultSession(open: {
   office: boolean;
   field: boolean;
 }): SettleVia['session'] | null {
-  return open.office ? 'office' : open.field ? 'field' : null;
+  return open.field ? 'field' : open.office ? 'office' : null;
 }
 
 // AP §8.7: + the restaurant owes the platform, − the platform owes it.
@@ -156,7 +157,8 @@ export type RestaurantSettleRefusal =
   | 'unknown_restaurant'
   | 'invalid_amounts'
   | 'unknown_visitor'
-  | 'invalid_visitor';
+  | 'invalid_visitor'
+  | 'name_required';
 export const restaurantSettleRefusals = [
   'above_balance',
   'balance_changed',
@@ -169,6 +171,7 @@ export const restaurantSettleRefusals = [
   'invalid_amounts',
   'unknown_visitor',
   'invalid_visitor',
+  'name_required',
 ] as const satisfies readonly RestaurantSettleRefusal[];
 
 export type RestaurantSettleResult =

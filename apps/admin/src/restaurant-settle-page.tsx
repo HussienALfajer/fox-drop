@@ -107,16 +107,17 @@ function SettleForm({
   first: SettleVia['session'];
 }) {
   const { t } = useTranslation();
-  const [chosen, setChosen] = useState<SettleVia['session']>(first);
+  const [picked, setPicked] = useState<SettleVia['session']>(first);
+  // A session closed elsewhere since: back to the one still open.
+  const chosen = (picked === 'field' ? current.field : current.session) ? picked : first;
   const [visitorId, setVisitorId] = useState('');
   const visitors = useFieldVisitors();
   const via: SettleVia =
     chosen === 'field'
       ? { session: 'field', visitorId: null }
       : { session: 'office', visitorId: visitorId || null };
-  const currencies = (chosen === 'field' ? current.field : current.session)!.currencies.map(
-    (each) => each.currency,
-  );
+  const open = chosen === 'field' ? current.field : current.session;
+  const currencies = open ? open.currencies.map((each) => each.currency) : [];
   const [typed, setTyped] = useState<Record<string, string>>({});
   const [reviewed, setReviewed] = useState<CashLine[] | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
@@ -149,7 +150,7 @@ function SettleForm({
                   name="session"
                   checked={chosen === kind}
                   onChange={() => {
-                    setChosen(kind);
+                    setPicked(kind);
                     setReviewed(null);
                   }}
                 />{' '}
