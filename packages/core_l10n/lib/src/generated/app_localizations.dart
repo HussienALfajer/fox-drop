@@ -4813,6 +4813,342 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'طلب تجريبي — لا عمولة'**
   String get merchantOrderTestNoCommission;
+
+  /// The owners' weekly statements (RA §12.2–12.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'الكشوف'**
+  String get merchantStatements;
+
+  /// No statement yet (RA §12.3; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا كشوف بعد.'**
+  String get merchantStatementsNone;
+
+  /// A statement in the list: its settlement day and total due (the panel's wording).
+  ///
+  /// In ar, this message translates to:
+  /// **'كشف {date}: المستحق {amount}'**
+  String merchantStatementSummary(String date, String amount);
+
+  /// A statement's status (RA §12.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'غير مسدّد'**
+  String get merchantStatementUnpaid;
+
+  /// A statement's status (RA §12.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'مسدّد جزئياً'**
+  String get merchantStatementPartlyPaid;
+
+  /// A statement's status (RA §12.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'مسدّد'**
+  String get merchantStatementPaid;
+
+  /// The weekly statement (RA §12.3), as printed.
+  ///
+  /// In ar, this message translates to:
+  /// **'كشف الأسبوع'**
+  String get merchantStatementTitle;
+
+  /// The period since the previous statement, as printed.
+  ///
+  /// In ar, this message translates to:
+  /// **'من {from} إلى {to}'**
+  String merchantStatementPeriod(String from, String to);
+
+  /// The period of the first statement, as printed.
+  ///
+  /// In ar, this message translates to:
+  /// **'حتى {to}'**
+  String merchantStatementPeriodFirst(String to);
+
+  /// The number of orders, as printed.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلبات: {count}'**
+  String merchantStatementOrders(int count);
+
+  /// An order of the statement and its commission (RA §12.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'#{number}: العمولة {commission}'**
+  String merchantStatementOrderLine(String number, String commission);
+
+  /// An order's items value received from the captain with the currency lines (RA §12.3, §12.7).
+  ///
+  /// In ar, this message translates to:
+  /// **'قيمة الأصناف {amount} ({lines})'**
+  String merchantStatementPickup(String amount, String lines);
+
+  /// The statement's exceptions (RA §12.5), as printed.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاستثناءات'**
+  String get merchantStatementExceptionsTitle;
+
+  /// A statement without exceptions, as printed.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا استثناءات.'**
+  String get merchantStatementNoExceptions;
+
+  /// Who decided an exception (RA §12.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'من قرّر: {who}'**
+  String merchantStatementDecidedBy(String who);
+
+  /// An exception a staff member without a name decided (RA §12.5; ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'FOX DROP'**
+  String get merchantDeciderPlatform;
+
+  /// An exception the system posted (RA §12.5; ours, to confirm with the owner).
+  ///
+  /// In ar, this message translates to:
+  /// **'تلقائياً'**
+  String get merchantDeciderSystem;
+
+  /// An exception the restaurant's own action posted (RA §12.5; ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'المطعم'**
+  String get merchantDeciderRestaurant;
+
+  /// An exception a captain's action posted (RA §12.5; ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'الكابتن'**
+  String get merchantDeciderCaptain;
+
+  /// An exception a customer's action posted (RA §12.5; ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'الزبون'**
+  String get merchantDeciderCustomer;
+
+  /// The payments the statement counts, as printed.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدفعات منذ الكشف السابق'**
+  String get merchantStatementPaymentsTitle;
+
+  /// A total of the statement, as printed.
+  ///
+  /// In ar, this message translates to:
+  /// **'قيمة الأصناف المقبوضة من الكباتن'**
+  String get merchantStatementItemsValue;
+
+  /// A total of the statement, as printed.
+  ///
+  /// In ar, this message translates to:
+  /// **'العمولة'**
+  String get merchantStatementCommission;
+
+  /// A total of the statement, as printed.
+  ///
+  /// In ar, this message translates to:
+  /// **'خصم يموّله المطعم'**
+  String get merchantStatementDiscountShare;
+
+  /// A total of the statement, as printed.
+  ///
+  /// In ar, this message translates to:
+  /// **'صافي الاستثناءات'**
+  String get merchantStatementExceptions;
+
+  /// A total of the statement, as printed.
+  ///
+  /// In ar, this message translates to:
+  /// **'مستحق هذا الأسبوع'**
+  String get merchantStatementWeekTotal;
+
+  /// A total of the statement, as printed.
+  ///
+  /// In ar, this message translates to:
+  /// **'المستحق في الكشف السابق'**
+  String get merchantStatementPreviousDue;
+
+  /// A total of the statement, as printed.
+  ///
+  /// In ar, this message translates to:
+  /// **'المدفوع منذ الكشف السابق'**
+  String get merchantStatementPaidSince;
+
+  /// The earlier unpaid balance (RA §12.3), as printed.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرصيد السابق غير المسدّد'**
+  String get merchantStatementEarlierUnpaid;
+
+  /// The total due (RA §12.3), as printed.
+  ///
+  /// In ar, this message translates to:
+  /// **'المجموع المستحق'**
+  String get merchantStatementTotalDue;
+
+  /// A total of the statement and its amount.
+  ///
+  /// In ar, this message translates to:
+  /// **'{label}: {amount}'**
+  String merchantStatementLine(String label, String amount);
+
+  /// The statement's status (RA §12.3), as printed.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحالة: {status}'**
+  String merchantStatementStatus(String status);
+
+  /// What of the total due is still unpaid, as printed.
+  ///
+  /// In ar, this message translates to:
+  /// **'غير المسدّد منه: {amount}'**
+  String merchantStatementUnpaidPart(String amount);
+
+  /// Shares the statement as an image (RA §12.3; owner decision 2026-11-16).
+  ///
+  /// In ar, this message translates to:
+  /// **'مشاركة كصورة'**
+  String get merchantStatementShare;
+
+  /// The statement could not be shared (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّرت مشاركة الكشف.'**
+  String get merchantStatementShareFailed;
+
+  /// A statement that is not this restaurant's (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُعثر على هذا الكشف.'**
+  String get merchantStatementNotFound;
+
+  /// A receipt that is not this restaurant's (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُعثر على هذا الإيصال.'**
+  String get merchantReceiptNotFound;
+
+  /// The owners' settlement receipts (RA §12.2, §12.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'الإيصالات'**
+  String get merchantReceipts;
+
+  /// No receipt yet (RA §12.4; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا إيصالات بعد.'**
+  String get merchantReceiptsNone;
+
+  /// The safety note of the receipts (RA §12.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا تسلّم المبلغ إلا لموظف FOX DROP معروف لديك، وتأكد من وصول الإيصال إلى التطبيق.'**
+  String get merchantReceiptsSafety;
+
+  /// A payment's receipt in the list, as its push (RA §16 #31).
+  ///
+  /// In ar, this message translates to:
+  /// **'إيصال {number}: استلمنا منك {amount}'**
+  String merchantReceiptPayment(String number, String amount);
+
+  /// A receipt of FOX DROP paying the restaurant (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'إيصال {number}: صُرف لك {amount}'**
+  String merchantReceiptPayout(String number, String amount);
+
+  /// A settlement receipt (RA §12.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'الإيصال'**
+  String get merchantReceiptTitle;
+
+  /// The receipt's number (RA §12.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'إيصال {number}'**
+  String merchantReceiptNumber(String number);
+
+  /// The receipt's method (RA §12.4), as printed.
+  ///
+  /// In ar, this message translates to:
+  /// **'طريقة التسوية: {method}'**
+  String merchantReceiptMethod(String method);
+
+  /// Settled at the office (RA §12.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'في المكتب'**
+  String get merchantReceiptMethodOffice;
+
+  /// Settled on a staff member's visit (RA §12.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'زيارة ميدانية'**
+  String get merchantReceiptMethodField;
+
+  /// The staff member who took or paid the money (RA §12.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'الموظف: {name}'**
+  String merchantReceiptStaff(String name);
+
+  /// A currency line in another currency than the base, with its base value.
+  ///
+  /// In ar, this message translates to:
+  /// **'{amount} (القيمة بالعملة الأساسية {base})'**
+  String merchantReceiptLineBase(String amount, String base);
+
+  /// The receipt's total in the base, as printed.
+  ///
+  /// In ar, this message translates to:
+  /// **'المجموع: {amount}'**
+  String merchantReceiptTotal(String amount);
+
+  /// What was owed before the receipt, as printed.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرصيد قبل: {due}'**
+  String merchantReceiptDueBefore(String due);
+
+  /// What is owed after the receipt, as printed.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرصيد بعد: {due}'**
+  String merchantReceiptDueAfter(String due);
+
+  /// What the restaurant owes.
+  ///
+  /// In ar, this message translates to:
+  /// **'عليك {amount}'**
+  String merchantReceiptDueOwed(String amount);
+
+  /// Nothing owed either way.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا رصيد'**
+  String get merchantReceiptDueNone;
+
+  /// A cashier opened the statements or receipts (R10; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'الكشوف والإيصالات للمالكين فقط.'**
+  String get merchantRecordsNotAllowed;
+
+  /// The statements or receipts could not be read (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر التحميل.'**
+  String get merchantRecordsFailed;
 }
 
 class _AppLocalizationsDelegate

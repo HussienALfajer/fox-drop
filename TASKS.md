@@ -11,7 +11,7 @@ Slice 2.19e, «الكشوف» and «الإيصالات» in the restaurant app (
 - **Branch:** `feat/restaurant-statements-receipts`.
 - **Plan:**
   - [x] The server, test first: owners only (`403 owner_only`): `GET /v1/merchant/statements` (the latest statements, newest first, with their period, total due and status) and `GET /v1/merchant/statements/{statementId}` (the lines with the exceptions' causes and «من قرّر», the totals, the status; another restaurant's is `404 unknown_statement`); `GET /v1/merchant/receipts` and `GET /v1/merchant/receipts/{receiptId}` (number, amounts per currency, method «في المكتب» or «زيارة ميدانية», staff member, time).
-  - [ ] The restaurant app: «الكشوف» and «الإيصالات» from «الحساب», the statement screen with «مشاركة كصورة», the receipts with the safety note «لا تسلّم المبلغ إلا لموظف FOX DROP معروف لديك، وتأكد من وصول الإيصال إلى التطبيق.»; the pushes `merchant.weekly_statement` and `merchant.settlement_receipt` open them (`pushTargetPath`); plain layout.
+  - [x] The restaurant app: «الكشوف» and «الإيصالات» from «الحساب», the statement screen with «مشاركة كصورة», the receipts with the safety note «لا تسلّم المبلغ إلا لموظف FOX DROP معروف لديك، وتأكد من وصول الإيصال إلى التطبيق.»; the pushes `merchant.weekly_statement` and `merchant.settlement_receipt` open them (`pushTargetPath`); plain layout.
   - [ ] The modules' `CLAUDE.md`, the reviewer, the hand-over to 2.19f.
 
 ### Left from 2.19d (`feat/restaurant-account-screen`)

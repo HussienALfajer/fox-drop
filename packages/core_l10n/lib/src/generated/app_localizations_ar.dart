@@ -2948,4 +2948,213 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get merchantOrderTestNoCommission => 'طلب تجريبي — لا عمولة';
+
+  @override
+  String get merchantStatements => 'الكشوف';
+
+  @override
+  String get merchantStatementsNone => 'لا كشوف بعد.';
+
+  @override
+  String merchantStatementSummary(String date, String amount) {
+    return 'كشف $date: المستحق $amount';
+  }
+
+  @override
+  String get merchantStatementUnpaid => 'غير مسدّد';
+
+  @override
+  String get merchantStatementPartlyPaid => 'مسدّد جزئياً';
+
+  @override
+  String get merchantStatementPaid => 'مسدّد';
+
+  @override
+  String get merchantStatementTitle => 'كشف الأسبوع';
+
+  @override
+  String merchantStatementPeriod(String from, String to) {
+    return 'من $from إلى $to';
+  }
+
+  @override
+  String merchantStatementPeriodFirst(String to) {
+    return 'حتى $to';
+  }
+
+  @override
+  String merchantStatementOrders(int count) {
+    return 'الطلبات: $count';
+  }
+
+  @override
+  String merchantStatementOrderLine(String number, String commission) {
+    return '#$number: العمولة $commission';
+  }
+
+  @override
+  String merchantStatementPickup(String amount, String lines) {
+    return 'قيمة الأصناف $amount ($lines)';
+  }
+
+  @override
+  String get merchantStatementExceptionsTitle => 'الاستثناءات';
+
+  @override
+  String get merchantStatementNoExceptions => 'لا استثناءات.';
+
+  @override
+  String merchantStatementDecidedBy(String who) {
+    return 'من قرّر: $who';
+  }
+
+  @override
+  String get merchantDeciderPlatform => 'FOX DROP';
+
+  @override
+  String get merchantDeciderSystem => 'تلقائياً';
+
+  @override
+  String get merchantDeciderRestaurant => 'المطعم';
+
+  @override
+  String get merchantDeciderCaptain => 'الكابتن';
+
+  @override
+  String get merchantDeciderCustomer => 'الزبون';
+
+  @override
+  String get merchantStatementPaymentsTitle => 'الدفعات منذ الكشف السابق';
+
+  @override
+  String get merchantStatementItemsValue => 'قيمة الأصناف المقبوضة من الكباتن';
+
+  @override
+  String get merchantStatementCommission => 'العمولة';
+
+  @override
+  String get merchantStatementDiscountShare => 'خصم يموّله المطعم';
+
+  @override
+  String get merchantStatementExceptions => 'صافي الاستثناءات';
+
+  @override
+  String get merchantStatementWeekTotal => 'مستحق هذا الأسبوع';
+
+  @override
+  String get merchantStatementPreviousDue => 'المستحق في الكشف السابق';
+
+  @override
+  String get merchantStatementPaidSince => 'المدفوع منذ الكشف السابق';
+
+  @override
+  String get merchantStatementEarlierUnpaid => 'الرصيد السابق غير المسدّد';
+
+  @override
+  String get merchantStatementTotalDue => 'المجموع المستحق';
+
+  @override
+  String merchantStatementLine(String label, String amount) {
+    return '$label: $amount';
+  }
+
+  @override
+  String merchantStatementStatus(String status) {
+    return 'الحالة: $status';
+  }
+
+  @override
+  String merchantStatementUnpaidPart(String amount) {
+    return 'غير المسدّد منه: $amount';
+  }
+
+  @override
+  String get merchantStatementShare => 'مشاركة كصورة';
+
+  @override
+  String get merchantStatementShareFailed => 'تعذّرت مشاركة الكشف.';
+
+  @override
+  String get merchantStatementNotFound => 'لم يُعثر على هذا الكشف.';
+
+  @override
+  String get merchantReceiptNotFound => 'لم يُعثر على هذا الإيصال.';
+
+  @override
+  String get merchantReceipts => 'الإيصالات';
+
+  @override
+  String get merchantReceiptsNone => 'لا إيصالات بعد.';
+
+  @override
+  String get merchantReceiptsSafety =>
+      'لا تسلّم المبلغ إلا لموظف FOX DROP معروف لديك، وتأكد من وصول الإيصال إلى التطبيق.';
+
+  @override
+  String merchantReceiptPayment(String number, String amount) {
+    return 'إيصال $number: استلمنا منك $amount';
+  }
+
+  @override
+  String merchantReceiptPayout(String number, String amount) {
+    return 'إيصال $number: صُرف لك $amount';
+  }
+
+  @override
+  String get merchantReceiptTitle => 'الإيصال';
+
+  @override
+  String merchantReceiptNumber(String number) {
+    return 'إيصال $number';
+  }
+
+  @override
+  String merchantReceiptMethod(String method) {
+    return 'طريقة التسوية: $method';
+  }
+
+  @override
+  String get merchantReceiptMethodOffice => 'في المكتب';
+
+  @override
+  String get merchantReceiptMethodField => 'زيارة ميدانية';
+
+  @override
+  String merchantReceiptStaff(String name) {
+    return 'الموظف: $name';
+  }
+
+  @override
+  String merchantReceiptLineBase(String amount, String base) {
+    return '$amount (القيمة بالعملة الأساسية $base)';
+  }
+
+  @override
+  String merchantReceiptTotal(String amount) {
+    return 'المجموع: $amount';
+  }
+
+  @override
+  String merchantReceiptDueBefore(String due) {
+    return 'الرصيد قبل: $due';
+  }
+
+  @override
+  String merchantReceiptDueAfter(String due) {
+    return 'الرصيد بعد: $due';
+  }
+
+  @override
+  String merchantReceiptDueOwed(String amount) {
+    return 'عليك $amount';
+  }
+
+  @override
+  String get merchantReceiptDueNone => 'لا رصيد';
+
+  @override
+  String get merchantRecordsNotAllowed => 'الكشوف والإيصالات للمالكين فقط.';
+
+  @override
+  String get merchantRecordsFailed => 'تعذّر التحميل.';
 }

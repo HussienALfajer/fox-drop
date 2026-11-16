@@ -7,7 +7,9 @@ import 'package:core_storage/core_storage.dart';
 import 'package:core_time/core_time.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:merchant/src/account/records.dart';
 import 'package:merchant/src/api.dart';
 import 'package:merchant/src/app.dart';
 import 'package:merchant/src/auth.dart';
@@ -24,6 +26,87 @@ const _accountId = '00000000-0000-4000-8000-000000000001';
 const _restaurantId = '00000000-0000-4000-8000-000000000002';
 const _channel = 'merchant:$_restaurantId';
 const _orderId = '00000000-0000-4000-8000-0000000000a1';
+const _statementId = '00000000-0000-4000-8000-0000000000b1';
+const _receiptId = '00000000-0000-4000-8000-0000000000c1';
+
+Map<String, Object?> _accountJson() => {
+  'currency': 'TRY',
+  'balance': '7700',
+  'settlementDate': '2026-11-14',
+  'commissionBp': 1500,
+  'nextCommission': null,
+  'todayFrom': '2026-11-07T03:00:00.000Z',
+  'pickups': <Object>[],
+  'weekFrom': '2026-11-14T03:00:00.000Z',
+  'weekLines': <Object>[],
+};
+
+Map<String, Object?> _statementLine(String kind, Map<String, Object?> fields) =>
+    {
+      'kind': kind,
+      'at': '2026-11-10T09:00:00.000Z',
+      'orderId': null,
+      'orderNumber': null,
+      'itemsValue': null,
+      'pickupLines': null,
+      'commission': null,
+      'discountShare': null,
+      'cause': null,
+      'amount': null,
+      'reason': null,
+      'decidedBy': null,
+      'decidedByName': null,
+      ...fields,
+    };
+
+Map<String, Object?> _statementJson() => {
+  'id': _statementId,
+  'restaurantName': 'مطعم الاختبار',
+  'cutoff': '2026-11-14T03:00:00.000Z',
+  'periodFrom': '2026-11-07T03:00:00.000Z',
+  'currency': 'TRY',
+  'orders': 1,
+  'itemsValue': '40000',
+  'commission': '5700',
+  'discountShare': '2000',
+  'exceptions': '-500',
+  'weekTotal': '7200',
+  'previousDue': '1000',
+  'paid': '500',
+  'earlierUnpaid': '500',
+  'totalDue': '7700',
+  'status': 'partly_paid',
+  'unpaid': '5000',
+  'lines': [
+    _statementLine('order', {
+      'orderId': _orderId,
+      'orderNumber': '10001',
+      'itemsValue': '40000',
+      'pickupLines': [
+        {'currency': 'TRY', 'amount': '30000'},
+        {'currency': 'USD', 'amount': '250'},
+      ],
+      'commission': '5700',
+      'discountShare': '2000',
+    }),
+    _statementLine('exception', {
+      'orderNumber': '10000',
+      'cause': 'adjustment',
+      'amount': '1000',
+      'reason': 'فرق جرد',
+      'decidedBy': 'admin',
+      'decidedByName': 'سارة',
+    }),
+    _statementLine('exception', {
+      'orderNumber': '9999',
+      'cause': 'food_credit',
+      'amount': '-1500',
+      'reason': 'تعويض عن طلب أُلغي بعد التحضير',
+      'decidedBy': 'system',
+    }),
+    _statementLine('payment', {'amount': '-500'}),
+  ],
+};
 
 // The board on a phone (RA §4.3–4.7, §8.2–8.10), signed in, against a fake
 // server and a fake real-time channel.
@@ -36,7 +119,11 @@ class _Board {
   final ringer = FakeRinger();
   late final ProviderContainer container;
 
-  Future<void> pump(WidgetTester tester, List<FakeAnswer> boards) async {
+  Future<void> pump(
+    WidgetTester tester,
+    List<FakeAnswer> boards, {
+    List<Override> overrides = const [],
+  }) async {
     server.on('/v1/merchant/auth/session', [
       FakeAnswer(200, {
         'accountId': _accountId,
@@ -103,6 +190,7 @@ class _Board {
             deviceNow: () => placedAt.add(const Duration(minutes: 1)),
           ),
         ),
+        ...overrides,
       ],
       retry: (retryCount, error) => null,
     );
@@ -613,6 +701,172 @@ void main() {
     expect(find.text('خصم يموّله المطعم: 20 ₺'), findsOneWidget);
     expect(find.text('تعويض عن طلب أُلغي بعد التحضير: 15 ₺'), findsOneWidget);
     expect(find.text('الطلب #10000 · يُنقص المستحق عليك'), findsOneWidget);
+    await app.done(tester);
+  });
+
+  // RA §12.3–12.5 (slice 2.19e): «الكشوف» from «الحساب», the statement with
+  // «من قرّر» and «مشاركة كصورة».
+  testWidgets('an owner opens a statement from «الكشوف» and shares it', (
+    tester,
+  ) async {
+    final app = _Board(role: 'owner');
+    final shared = <String, List<int>>{};
+    app.server.on('/v1/merchant/account', [FakeAnswer(200, _accountJson())]);
+    app.server.on('/v1/merchant/statements', [
+      const FakeAnswer(200, {
+        'statements': [
+          {
+            'id': _statementId,
+            'cutoff': '2026-11-14T03:00:00.000Z',
+            'periodFrom': '2026-11-07T03:00:00.000Z',
+            'currency': 'TRY',
+            'weekTotal': '7200',
+            'totalDue': '7700',
+            'status': 'partly_paid',
+            'unpaid': '5000',
+          },
+        ],
+      }),
+    ]);
+    app.server.on('/v1/merchant/statements/$_statementId', [
+      FakeAnswer(200, _statementJson()),
+    ]);
+    await app.pump(
+      tester,
+      [FakeAnswer(200, boardJson([]))],
+      overrides: [
+        imageSharerProvider.overrideWithValue(
+          (png, name) async => shared[name] = png,
+        ),
+      ],
+    );
+    await tester.tap(find.byKey(const Key('open-account')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('account-statements')));
+    await tester.pumpAndSettle();
+    expect(find.text('كشف 14/11/2026: المستحق 77 ₺'), findsOneWidget);
+    expect(find.text('مسدّد جزئياً'), findsOneWidget);
+
+    await tester.tap(find.text('كشف 14/11/2026: المستحق 77 ₺'));
+    await tester.pumpAndSettle();
+    for (final line in [
+      'مطعم الاختبار',
+      'من 07/11/2026 6:00 ص إلى 14/11/2026 6:00 ص',
+      'الطلبات: 1',
+      '#10001: العمولة 57 ₺',
+      'قيمة الأصناف 400 ₺ (300 ₺ + 2.50 \$)',
+      'تسوية يدوية: فرق جرد: 10 ₺',
+      'الطلب #10000 · يزيد المستحق عليك · من قرّر: سارة',
+      'تعويض عن طلب أُلغي بعد التحضير: 15 ₺',
+      'الطلب #9999 · يُنقص المستحق عليك · من قرّر: تلقائياً',
+      'دفعة مسدّدة: 5 ₺',
+      'مستحق هذا الأسبوع: 72 ₺',
+      'الرصيد السابق غير المسدّد: 5 ₺',
+      'المجموع المستحق: 77 ₺',
+      'الحالة: مسدّد جزئياً',
+      'غير المسدّد منه: 50 ₺',
+    ]) {
+      expect(find.text(line), findsOneWidget, reason: line);
+    }
+    // The order's discount and the statement's total.
+    expect(find.text('خصم يموّله المطعم: 20 ₺'), findsNWidgets(2));
+    await tester.ensureVisible(find.byKey(const Key('statement-share')));
+    // Rendering the image runs outside the test's fake clock.
+    await tester.runAsync(() async {
+      await tester.tap(find.byKey(const Key('statement-share')));
+      for (var i = 0; i < 40 && shared.isEmpty; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      }
+    });
+    await tester.pumpAndSettle();
+    final png = shared['statement-$_statementId.png'];
+    expect(png, isNotNull);
+    // The PNG signature.
+    expect(png!.sublist(0, 4), [0x89, 0x50, 0x4E, 0x47]);
+
+    // Back returns to «الكشوف», then to «الحساب».
+    app.container.read(routerProvider).pop();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('statements')), findsOneWidget);
+    app.container.read(routerProvider).pop();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('account-balance')), findsOneWidget);
+    await app.done(tester);
+  });
+
+  // RA §12.4 (slice 2.19e): «الإيصالات» with the safety note, and a receipt.
+  testWidgets('an owner reads the receipts and opens one', (tester) async {
+    final app = _Board(role: 'owner');
+    final receipt = {
+      'id': _receiptId,
+      'number': 'AZ-2026-000042',
+      'type': 'merchant_settlement',
+      'method': 'field',
+      'staffName': 'سارة',
+      'currency': 'TRY',
+      'total': '22000',
+      'createdAt': '2026-11-14T09:30:00.000Z',
+      'lines': [
+        {'currency': 'TRY', 'amount': '12000', 'base': '12000'},
+        {'currency': 'USD', 'amount': '250', 'base': '10000'},
+      ],
+    };
+    app.server.on('/v1/merchant/receipts', [
+      FakeAnswer(200, {
+        'receipts': [receipt],
+      }),
+    ]);
+    app.server.on('/v1/merchant/receipts/$_receiptId', [
+      FakeAnswer(200, {...receipt, 'dueBefore': '30000', 'dueAfter': '8000'}),
+    ]);
+    await app.pump(tester, [FakeAnswer(200, boardJson([]))]);
+    app.container.read(routerProvider).go('/account/receipts');
+    await tester.pumpAndSettle();
+    expect(
+      find.text(
+        'لا تسلّم المبلغ إلا لموظف FOX DROP معروف لديك، وتأكد من وصول الإيصال إلى التطبيق.',
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.text('إيصال AZ-2026-000042: استلمنا منك 220 ₺'),
+      findsOneWidget,
+    );
+    expect(find.text('14/11/2026 12:30 م · زيارة ميدانية'), findsOneWidget);
+    await tester.tap(find.text('إيصال AZ-2026-000042: استلمنا منك 220 ₺'));
+    await tester.pumpAndSettle();
+    for (final line in [
+      'إيصال AZ-2026-000042',
+      'طريقة التسوية: زيارة ميدانية',
+      'الموظف: سارة',
+      '120 ₺',
+      '2.50 \$ (القيمة بالعملة الأساسية 100 ₺)',
+      'المجموع: 220 ₺',
+      'الرصيد قبل: عليك 300 ₺',
+      'الرصيد بعد: عليك 80 ₺',
+    ]) {
+      expect(find.text(line), findsOneWidget, reason: line);
+    }
+    await app.done(tester);
+  });
+
+  testWidgets('a statement of another restaurant says so, and a cashier is '
+      'told the records are the owners\'', (tester) async {
+    final app = _Board(role: 'owner');
+    app.server.on('/v1/merchant/statements/$_statementId', [
+      const FakeAnswer(404, {'statusCode': 404, 'error': 'unknown_statement'}),
+    ]);
+    app.server.on('/v1/merchant/receipts', [
+      const FakeAnswer(403, {'statusCode': 403, 'error': 'owner_only'}),
+    ]);
+    await app.pump(tester, [FakeAnswer(200, boardJson([]))]);
+    app.container.read(routerProvider).go('/account/statements/$_statementId');
+    await tester.pumpAndSettle();
+    expect(find.text('لم يُعثر على هذا الكشف.'), findsOneWidget);
+    expect(find.text('إعادة المحاولة'), findsNothing);
+    app.container.read(routerProvider).go('/account/receipts');
+    await tester.pumpAndSettle();
+    expect(find.text('الكشوف والإيصالات للمالكين فقط.'), findsOneWidget);
     await app.done(tester);
   });
 
