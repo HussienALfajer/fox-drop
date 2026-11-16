@@ -14,4 +14,4 @@ Promo codes «أكواد الخصم» (architecture §4.2; AP §9.11.1). Banners
 
 ## Not yet
 
-- Using a code in an order (2.21b): `uses` and `costToDate` read 0 until then. Picking and suggesting codes, «أكوادي» and the code report with pause, resume and extend from it (2.21c). Compensation and late codes (2.22). The list answers every code ever made, unpaged, and a batch shows only its count after creation (group by `batch_id` or page when the codes grow).
+- Using a code in an order (2.21b): `uses` and `costToDate` read 0 until then. Picking and suggesting codes, «أكوادي» and the code report with pause, resume and extend from it (2.21d). Compensation and late codes (2.22). The list answers every code ever made, unpaged, and a batch shows only its count after creation (group by `batch_id` or page when the codes grow).
