@@ -15,6 +15,7 @@ import {
 } from '../customers/index.js';
 import { FxRefusedError, FxService, type RateSnapshot } from '../fx/index.js';
 import { MerchantsService } from '../merchants/index.js';
+import { PromoCodeUsesService } from '../marketing/index.js';
 import { SettingsService } from '../settings/index.js';
 import { ActiveOrders, UNTIL_ENDED } from './active-orders.js';
 import { recordTransition } from './order-events.js';
@@ -137,6 +138,7 @@ export class OrdersService implements OnModuleInit {
     private readonly settings: SettingsService,
     private readonly jobs: Jobs,
     private readonly emergencyStops: EmergencyStops,
+    private readonly promoCodes: PromoCodeUsesService,
   ) {}
 
   // RA §7.4: the restaurant is busy at its maximum active orders.
@@ -237,6 +239,21 @@ export class OrdersService implements OnModuleInit {
         });
         if (rateKey(kept) !== rateKey(snapshot)) throw new Requote('the rates changed');
 
+        // CU §10.4, §10.7: the code is held again under its lock; one that
+        // stopped working since the quote (its last use or its day's budget
+        // taken) refuses the order with the new quote.
+        const code = priced.code;
+        const held = code === null ? null : await this.promoCodes.hold(tx, code.cart, now);
+        if (
+          code !== null &&
+          (held === null ||
+            !held.applied ||
+            held.code.discount.total !== code.applied.discount.total ||
+            held.code.discount.merchant !== code.applied.discount.merchant)
+        ) {
+          throw new Requote('the code stopped working');
+        }
+
         // Last, so the city's number row is held briefly and a refused order
         // leaves no gap.
         const [{ number }] = (await tx
@@ -262,6 +279,12 @@ export class OrdersService implements OnModuleInit {
             captainId: null,
             currency: snapshot.baseCurrency,
             ...quote.money,
+            ...(code && {
+              discountMerchant: code.applied.discount.merchant,
+              promoCodeId: code.applied.codeId,
+              promoCode: code.applied.code,
+              promoTerms: plain(code.applied.terms),
+            }),
             deliveryFree: quote.deliveryFree,
             feeRuleId,
             commissionBp,
@@ -307,6 +330,7 @@ export class OrdersService implements OnModuleInit {
             note: line.note,
           })),
         );
+        await held?.record?.({ id, placedAt: now });
         await recordTransition(
           tx,
           this.jobs,

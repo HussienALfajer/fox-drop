@@ -18,6 +18,8 @@ class _$CustomerQuoteRequestDto extends CustomerQuoteRequestDto {
   @override
   final String appVersion;
   @override
+  final String? code;
+  @override
   final bool? openedCheckout;
 
   factory _$CustomerQuoteRequestDto([
@@ -30,6 +32,7 @@ class _$CustomerQuoteRequestDto extends CustomerQuoteRequestDto {
     required this.lines,
     this.payIn,
     required this.appVersion,
+    this.code,
     this.openedCheckout,
   }) : super._();
   @override
@@ -50,6 +53,7 @@ class _$CustomerQuoteRequestDto extends CustomerQuoteRequestDto {
         lines == other.lines &&
         payIn == other.payIn &&
         appVersion == other.appVersion &&
+        code == other.code &&
         openedCheckout == other.openedCheckout;
   }
 
@@ -61,6 +65,7 @@ class _$CustomerQuoteRequestDto extends CustomerQuoteRequestDto {
     _$hash = $jc(_$hash, lines.hashCode);
     _$hash = $jc(_$hash, payIn.hashCode);
     _$hash = $jc(_$hash, appVersion.hashCode);
+    _$hash = $jc(_$hash, code.hashCode);
     _$hash = $jc(_$hash, openedCheckout.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -74,6 +79,7 @@ class _$CustomerQuoteRequestDto extends CustomerQuoteRequestDto {
           ..add('lines', lines)
           ..add('payIn', payIn)
           ..add('appVersion', appVersion)
+          ..add('code', code)
           ..add('openedCheckout', openedCheckout))
         .toString();
   }
@@ -108,6 +114,10 @@ class CustomerQuoteRequestDtoBuilder
   String? get appVersion => _$this._appVersion;
   set appVersion(String? appVersion) => _$this._appVersion = appVersion;
 
+  String? _code;
+  String? get code => _$this._code;
+  set code(String? code) => _$this._code = code;
+
   bool? _openedCheckout;
   bool? get openedCheckout => _$this._openedCheckout;
   set openedCheckout(bool? openedCheckout) =>
@@ -125,6 +135,7 @@ class CustomerQuoteRequestDtoBuilder
       _lines = $v.lines.toBuilder();
       _payIn = $v.payIn;
       _appVersion = $v.appVersion;
+      _code = $v.code;
       _openedCheckout = $v.openedCheckout;
       _$v = null;
     }
@@ -163,6 +174,7 @@ class CustomerQuoteRequestDtoBuilder
               r'CustomerQuoteRequestDto',
               'appVersion',
             ),
+            code: code,
             openedCheckout: openedCheckout,
           );
     } catch (_) {

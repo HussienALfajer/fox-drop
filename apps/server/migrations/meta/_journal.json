@@ -568,6 +568,13 @@
       "when": 1794848201484,
       "tag": "0080_marketing_promo_code_uses",
       "breakpoints": true
+    },
+    {
+      "idx": 81,
+      "version": "7",
+      "when": 1794848550872,
+      "tag": "0081_ordering_promo_code",
+      "breakpoints": true
     }
   ]
 }

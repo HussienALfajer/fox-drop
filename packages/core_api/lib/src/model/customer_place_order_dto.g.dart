@@ -16,6 +16,8 @@ class _$CustomerPlaceOrderDto extends CustomerPlaceOrderDto {
   @override
   final String appVersion;
   @override
+  final String? code;
+  @override
   final String quoteVersion;
   @override
   final String? addressId;
@@ -33,6 +35,7 @@ class _$CustomerPlaceOrderDto extends CustomerPlaceOrderDto {
     required this.lines,
     this.payIn,
     required this.appVersion,
+    this.code,
     required this.quoteVersion,
     this.addressId,
     this.unsavedAddress,
@@ -55,6 +58,7 @@ class _$CustomerPlaceOrderDto extends CustomerPlaceOrderDto {
         lines == other.lines &&
         payIn == other.payIn &&
         appVersion == other.appVersion &&
+        code == other.code &&
         quoteVersion == other.quoteVersion &&
         addressId == other.addressId &&
         unsavedAddress == other.unsavedAddress &&
@@ -68,6 +72,7 @@ class _$CustomerPlaceOrderDto extends CustomerPlaceOrderDto {
     _$hash = $jc(_$hash, lines.hashCode);
     _$hash = $jc(_$hash, payIn.hashCode);
     _$hash = $jc(_$hash, appVersion.hashCode);
+    _$hash = $jc(_$hash, code.hashCode);
     _$hash = $jc(_$hash, quoteVersion.hashCode);
     _$hash = $jc(_$hash, addressId.hashCode);
     _$hash = $jc(_$hash, unsavedAddress.hashCode);
@@ -83,6 +88,7 @@ class _$CustomerPlaceOrderDto extends CustomerPlaceOrderDto {
           ..add('lines', lines)
           ..add('payIn', payIn)
           ..add('appVersion', appVersion)
+          ..add('code', code)
           ..add('quoteVersion', quoteVersion)
           ..add('addressId', addressId)
           ..add('unsavedAddress', unsavedAddress)
@@ -112,6 +118,10 @@ class CustomerPlaceOrderDtoBuilder
   String? _appVersion;
   String? get appVersion => _$this._appVersion;
   set appVersion(String? appVersion) => _$this._appVersion = appVersion;
+
+  String? _code;
+  String? get code => _$this._code;
+  set code(String? code) => _$this._code = code;
 
   String? _quoteVersion;
   String? get quoteVersion => _$this._quoteVersion;
@@ -143,6 +153,7 @@ class CustomerPlaceOrderDtoBuilder
       _lines = $v.lines.toBuilder();
       _payIn = $v.payIn;
       _appVersion = $v.appVersion;
+      _code = $v.code;
       _quoteVersion = $v.quoteVersion;
       _addressId = $v.addressId;
       _unsavedAddress = $v.unsavedAddress?.toBuilder();
@@ -183,6 +194,7 @@ class CustomerPlaceOrderDtoBuilder
               r'CustomerPlaceOrderDto',
               'appVersion',
             ),
+            code: code,
             quoteVersion: BuiltValueNullFieldError.checkNotNull(
               quoteVersion,
               r'CustomerPlaceOrderDto',

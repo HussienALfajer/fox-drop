@@ -18,6 +18,7 @@ part 'customer_quote_dto_output_problems_inner.g.dart';
 /// * [opensAt] - platform_closed: «FOX DROP يستقبل الطلبات من الساعة {الساعة}».
 /// * [message] - emergency_stop: the browsing message (AP §9.1.6).
 /// * [amount]
+/// * [refusal] - promo_code: why the code does not apply (CU Appendix C «Code refusals»).
 @BuiltValue()
 abstract class CustomerQuoteDtoOutputProblemsInner
     implements
@@ -27,7 +28,7 @@ abstract class CustomerQuoteDtoOutputProblemsInner
         > {
   @BuiltValueField(wireName: r'code')
   CustomerQuoteDtoOutputProblemsInnerCodeEnum get code;
-  // enum codeEnum {  update_required,  maintenance,  platform_closed,  outside_zones,  not_covered,  restaurant_closed,  below_minimum_order,  minimum_not_in_base_currency,  delivery_unpriced,  rates_unavailable,  captain_pay_unset,  one_order_at_a_time,  active_order_limit,  no_captain_nearby,  terms_pending,  emergency_stop,  review_stop,  dues_unpaid,  item_not_found,  item_unavailable,  option_not_found,  option_unavailable,  options_invalid,  price_not_in_base_currency,  price_changed,  };
+  // enum codeEnum {  update_required,  maintenance,  platform_closed,  outside_zones,  not_covered,  restaurant_closed,  below_minimum_order,  minimum_not_in_base_currency,  delivery_unpriced,  rates_unavailable,  captain_pay_unset,  one_order_at_a_time,  active_order_limit,  no_captain_nearby,  terms_pending,  emergency_stop,  review_stop,  dues_unpaid,  promo_code,  item_not_found,  item_unavailable,  option_not_found,  option_unavailable,  options_invalid,  price_not_in_base_currency,  price_changed,  };
 
   /// The cart line, for a line problem.
   @BuiltValueField(wireName: r'line')
@@ -43,6 +44,11 @@ abstract class CustomerQuoteDtoOutputProblemsInner
 
   @BuiltValueField(wireName: r'amount')
   CaptainWentOfflineDtoOutputHandIn? get amount;
+
+  /// promo_code: why the code does not apply (CU Appendix C «Code refusals»).
+  @BuiltValueField(wireName: r'refusal')
+  CustomerQuoteDtoOutputProblemsInnerRefusalEnum? get refusal;
+  // enum refusalEnum {  unknown_code,  not_valid_now,  below_minimum,  not_for_restaurant,  first_order_only,  used_before,  uses_ended,  budget_reached,  };
 
   CustomerQuoteDtoOutputProblemsInner._();
 
@@ -109,6 +115,15 @@ class _$CustomerQuoteDtoOutputProblemsInnerSerializer
             object.amount,
             specifiedType: const FullType.nullable(
               CaptainWentOfflineDtoOutputHandIn,
+            ),
+          );
+    yield r'refusal';
+    yield object.refusal == null
+        ? null
+        : serializers.serialize(
+            object.refusal,
+            specifiedType: const FullType.nullable(
+              CustomerQuoteDtoOutputProblemsInnerRefusalEnum,
             ),
           );
   }
@@ -190,6 +205,18 @@ class _$CustomerQuoteDtoOutputProblemsInnerSerializer
                   as CaptainWentOfflineDtoOutputHandIn?;
           if (valueDes == null) continue;
           result.amount.replace(valueDes);
+          break;
+        case r'refusal':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CustomerQuoteDtoOutputProblemsInnerRefusalEnum,
+                    ),
+                  )
+                  as CustomerQuoteDtoOutputProblemsInnerRefusalEnum?;
+          if (valueDes == null) continue;
+          result.refusal = valueDes;
           break;
         default:
           unhandled.add(key);
@@ -276,6 +303,9 @@ class CustomerQuoteDtoOutputProblemsInnerCodeEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'dues_unpaid')
   static const CustomerQuoteDtoOutputProblemsInnerCodeEnum duesUnpaid =
       _$customerQuoteDtoOutputProblemsInnerCodeEnum_duesUnpaid;
+  @BuiltValueEnumConst(wireName: r'promo_code')
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum promoCode =
+      _$customerQuoteDtoOutputProblemsInnerCodeEnum_promoCode;
   @BuiltValueEnumConst(wireName: r'item_not_found')
   static const CustomerQuoteDtoOutputProblemsInnerCodeEnum itemNotFound =
       _$customerQuoteDtoOutputProblemsInnerCodeEnum_itemNotFound;
@@ -309,4 +339,43 @@ class CustomerQuoteDtoOutputProblemsInnerCodeEnum extends EnumClass {
       _$customerQuoteDtoOutputProblemsInnerCodeEnumValues;
   static CustomerQuoteDtoOutputProblemsInnerCodeEnum valueOf(String name) =>
       _$customerQuoteDtoOutputProblemsInnerCodeEnumValueOf(name);
+}
+
+/// promo_code: why the code does not apply (CU Appendix C «Code refusals»).
+class CustomerQuoteDtoOutputProblemsInnerRefusalEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'unknown_code')
+  static const CustomerQuoteDtoOutputProblemsInnerRefusalEnum unknownCode =
+      _$customerQuoteDtoOutputProblemsInnerRefusalEnum_unknownCode;
+  @BuiltValueEnumConst(wireName: r'not_valid_now')
+  static const CustomerQuoteDtoOutputProblemsInnerRefusalEnum notValidNow =
+      _$customerQuoteDtoOutputProblemsInnerRefusalEnum_notValidNow;
+  @BuiltValueEnumConst(wireName: r'below_minimum')
+  static const CustomerQuoteDtoOutputProblemsInnerRefusalEnum belowMinimum =
+      _$customerQuoteDtoOutputProblemsInnerRefusalEnum_belowMinimum;
+  @BuiltValueEnumConst(wireName: r'not_for_restaurant')
+  static const CustomerQuoteDtoOutputProblemsInnerRefusalEnum notForRestaurant =
+      _$customerQuoteDtoOutputProblemsInnerRefusalEnum_notForRestaurant;
+  @BuiltValueEnumConst(wireName: r'first_order_only')
+  static const CustomerQuoteDtoOutputProblemsInnerRefusalEnum firstOrderOnly =
+      _$customerQuoteDtoOutputProblemsInnerRefusalEnum_firstOrderOnly;
+  @BuiltValueEnumConst(wireName: r'used_before')
+  static const CustomerQuoteDtoOutputProblemsInnerRefusalEnum usedBefore =
+      _$customerQuoteDtoOutputProblemsInnerRefusalEnum_usedBefore;
+  @BuiltValueEnumConst(wireName: r'uses_ended')
+  static const CustomerQuoteDtoOutputProblemsInnerRefusalEnum usesEnded =
+      _$customerQuoteDtoOutputProblemsInnerRefusalEnum_usesEnded;
+  @BuiltValueEnumConst(wireName: r'budget_reached')
+  static const CustomerQuoteDtoOutputProblemsInnerRefusalEnum budgetReached =
+      _$customerQuoteDtoOutputProblemsInnerRefusalEnum_budgetReached;
+
+  static Serializer<CustomerQuoteDtoOutputProblemsInnerRefusalEnum>
+  get serializer => _$customerQuoteDtoOutputProblemsInnerRefusalEnumSerializer;
+
+  const CustomerQuoteDtoOutputProblemsInnerRefusalEnum._(String name)
+    : super(name);
+
+  static BuiltSet<CustomerQuoteDtoOutputProblemsInnerRefusalEnum> get values =>
+      _$customerQuoteDtoOutputProblemsInnerRefusalEnumValues;
+  static CustomerQuoteDtoOutputProblemsInnerRefusalEnum valueOf(String name) =>
+      _$customerQuoteDtoOutputProblemsInnerRefusalEnumValueOf(name);
 }

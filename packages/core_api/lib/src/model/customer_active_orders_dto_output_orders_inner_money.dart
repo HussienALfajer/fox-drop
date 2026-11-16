@@ -14,7 +14,7 @@ part 'customer_active_orders_dto_output_orders_inner_money.g.dart';
 /// * [itemsValue] - Integer minor units (AP §8.6).
 /// * [deliveryFee] - Integer minor units (AP §8.6).
 /// * [deliveryFree]
-/// * [discount] - Integer minor units (AP §8.6).
+/// * [discount] - «الخصم»; 0 without a code.
 /// * [rounding] - Integer minor units (AP §8.6).
 /// * [total] - Integer minor units (AP §8.6).
 @BuiltValue()
@@ -35,7 +35,7 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInnerMoney
   @BuiltValueField(wireName: r'deliveryFree')
   bool get deliveryFree;
 
-  /// Integer minor units (AP §8.6).
+  /// «الخصم»; 0 without a code.
   @BuiltValueField(wireName: r'discount')
   String get discount;
 

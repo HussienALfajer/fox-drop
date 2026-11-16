@@ -29,7 +29,9 @@ export class CustomerAccountsService {
   // AP §9.11.1 (slice 2.21b): the keyed hash of the account's number and
   // every account the number has had (a closed account's included, §8.8), so
   // a new-user code works once per number; null for an unknown account.
-  async phoneAccounts(accountId: string): Promise<{ phoneHash: string; accountIds: string[] } | null> {
+  async phoneAccounts(
+    accountId: string,
+  ): Promise<{ phoneHash: string; accountIds: string[] } | null> {
     const [row] = await this.database.db
       .select({ phoneHash: customerAccounts.phoneHash })
       .from(customerAccounts)

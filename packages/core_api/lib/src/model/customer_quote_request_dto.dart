@@ -19,6 +19,7 @@ part 'customer_quote_request_dto.g.dart';
 /// * [lines]
 /// * [payIn] - «سأدفع بـ»: an accepted currency, or null for «لم أحدد» (CU §10.5); one no longer accepted gives payIn null.
 /// * [appVersion]
+/// * [code] - The code typed («تطبيق»), or null; validated by every rule of AP §9.11.1.
 /// * [openedCheckout] - True on the quote asked on opening checkout: a signed-in customer then counts once per emergency stop (AP §9.1.6).
 @BuiltValue()
 abstract class CustomerQuoteRequestDto
@@ -38,6 +39,10 @@ abstract class CustomerQuoteRequestDto
 
   @BuiltValueField(wireName: r'appVersion')
   String get appVersion;
+
+  /// The code typed («تطبيق»), or null; validated by every rule of AP §9.11.1.
+  @BuiltValueField(wireName: r'code')
+  String? get code;
 
   /// True on the quote asked on opening checkout: a signed-in customer then counts once per emergency stop (AP §9.1.6).
   @BuiltValueField(wireName: r'openedCheckout')
@@ -103,6 +108,13 @@ class _$CustomerQuoteRequestDtoSerializer
       object.appVersion,
       specifiedType: const FullType(String),
     );
+    if (object.code != null) {
+      yield r'code';
+      yield serializers.serialize(
+        object.code,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
     if (object.openedCheckout != null) {
       yield r'openedCheckout';
       yield serializers.serialize(
@@ -186,6 +198,16 @@ class _$CustomerQuoteRequestDtoSerializer
                   )
                   as String;
           result.appVersion = valueDes;
+          break;
+        case r'code':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.code = valueDes;
           break;
         case r'openedCheckout':
           final valueDes =

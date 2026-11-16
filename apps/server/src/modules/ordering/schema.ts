@@ -103,6 +103,17 @@ export const orders = ordering.table(
     itemsValue: bigint('items_value', { mode: 'bigint' }).notNull(),
     deliveryFee: bigint('delivery_fee', { mode: 'bigint' }).notNull(),
     discount: bigint('discount', { mode: 'bigint' }).notNull(),
+    // AP §8.4, §9.11.1 (slice 2.21b): the restaurant-funded part of the
+    // discount (merchant_funded_discount), and the code it came from: the
+    // marketing module's id, the code as typed and its terms when placed
+    // (marketing's CodeTerms, bigints as strings), so an edit recomputes the
+    // discount by them (AP §9.3.3). No code, no discount.
+    discountMerchant: bigint('discount_merchant', { mode: 'bigint' })
+      .notNull()
+      .default(sql`0`),
+    promoCodeId: uuid('promo_code_id'),
+    promoCode: text('promo_code'),
+    promoTerms: jsonb('promo_terms'),
     rounding: bigint('rounding', { mode: 'bigint' }).notNull(),
     total: bigint('total', { mode: 'bigint' }).notNull(),
     deliveryFree: boolean('delivery_free').notNull(),
@@ -281,6 +292,10 @@ export const orders = ordering.table(
     check(
       'orders_money',
       sql`${table.itemsValue} >= 0 AND ${table.deliveryFee} >= 0 AND ${table.discount} >= 0 AND ${table.total} >= 0 AND ${table.total} = ${table.itemsValue} + ${table.deliveryFee} - ${table.discount} + ${table.rounding}`,
+    ),
+    check(
+      'orders_promo_code',
+      sql`(${table.promoCodeId} IS NULL) = (${table.promoCode} IS NULL) AND (${table.promoCodeId} IS NULL) = (${table.promoTerms} IS NULL) AND (${table.promoCodeId} IS NOT NULL OR ${table.discount} = 0) AND ${table.discountMerchant} BETWEEN 0 AND ${table.discount}`,
     ),
     check('orders_note', sql`char_length(${table.note}) BETWEEN 1 AND 200`),
     check(

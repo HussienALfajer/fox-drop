@@ -166,7 +166,8 @@ export function promoDiscount(
   let total: bigint;
   if (terms.kind === 'free_delivery') total = deliveryFee;
   else {
-    let value = terms.kind === 'percentage' ? half(itemsValue, terms.percentBp ?? 0) : terms.amount!;
+    let value =
+      terms.kind === 'percentage' ? half(itemsValue, terms.percentBp ?? 0) : terms.amount!;
     if (terms.maxDiscount !== null && value > terms.maxDiscount) value = terms.maxDiscount;
     total = value > itemsValue ? itemsValue : value;
   }
@@ -261,8 +262,7 @@ export function codeRefusal(
   }
   if (
     (code.restaurantIds.length > 0 && !code.restaurantIds.includes(context.restaurantId)) ||
-    (code.zoneIds.length > 0 &&
-      (context.zoneId === null || !code.zoneIds.includes(context.zoneId)))
+    (code.zoneIds.length > 0 && (context.zoneId === null || !code.zoneIds.includes(context.zoneId)))
   ) {
     return refuse('not_for_restaurant');
   }
