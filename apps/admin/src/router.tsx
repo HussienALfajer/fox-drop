@@ -27,6 +27,8 @@ import { OrdersBoardPage } from './orders-board-page.js';
 import { CASH_DESK, FINANCE_READ } from './cash-desk.js';
 import { CaptainBalancesPage } from './captain-balances-page.js';
 import { ExchangeRatesPage } from './exchange-rates-page.js';
+import { MANUAL_ADJUSTMENT } from './manual-entries.js';
+import { ManualEntriesPage } from './manual-entries-page.js';
 import { CashDeskPage, CashDeskSessionsPage } from './cash-desk-page.js';
 import { ZONES_READ } from './peak-bonus.js';
 import { PeakBonusPage } from './peak-bonus-page.js';
@@ -308,6 +310,17 @@ const exchangeRatesRoute = createRoute({
   component: ExchangeRatesPage,
 });
 
+// AP §9.10.7 «القيود التصحيحية» (slice 2.20c), OWN and FIN.
+const manualEntriesRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/manual-entries',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, MANUAL_ADJUSTMENT)) throw redirect({ to: '/' });
+  },
+  component: ManualEntriesPage,
+});
+
 const receiptRoute = createRoute({
   getParentRoute: () => signedInRoute,
   path: '/cash-desk/receipts/$receiptId',
@@ -423,6 +436,7 @@ const routeTree = rootRoute.addChildren([
     cashDeskSessionsRoute,
     captainBalancesRoute,
     exchangeRatesRoute,
+    manualEntriesRoute,
     receiptRoute,
     settlementsRoute,
     settleCaptainRoute,

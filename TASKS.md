@@ -12,7 +12,7 @@ Slice 2.20c, «القيود التصحيحية» (`docs/roadmap.md`, Phase 2, Mo
 - **Plan:**
   - [x] The rule and its entries, test first: a manual adjustment on one party account (captain custody per currency, captain earnings, restaurant account, customer dues) against its platform counter-account, with the required reason, the admin and the audit; the reversal of an existing journal linked to it (once); nothing deleted.
   - [x] The routes (`ledger.manual_adjustment`, `Idempotency-Key`): create, reverse, and the list of every manual entry with who, when, why and what it corrects; the generated clients.
-  - [ ] The panel: «القيود التصحيحية» for OWN and FIN, the form (the party, the account, the amount and its sign, the reason), the reversal of an entry, and the list with the links.
+  - [x] The panel: «القيود التصحيحية» for OWN and FIN, the form (the party, the account, the amount and its sign, the reason), the reversal of an entry, and the list with the links.
   - [ ] Review, then hand over to 2.20d.
 
 ### Left from 2.20b (`feat/resolve-shortfall`)
