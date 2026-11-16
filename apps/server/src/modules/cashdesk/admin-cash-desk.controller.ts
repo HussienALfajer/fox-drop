@@ -1,8 +1,5 @@
 import {
-  BadRequestException,
   Body,
-  ConflictException,
-  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -11,26 +8,23 @@ import {
   Post,
   Query,
   Req,
-  UnprocessableEntityException,
 } from '@nestjs/common';
 import type { FastifyRequest } from 'fastify';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
 import { CurrentAdminSession, RequirePermission } from '../../http/access.js';
 import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
-import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
 import { CaptainsService, type Custody, type HandInGrace } from '../captains/index.js';
 import { type AdminSession, CaptainAccountsService } from '../identity/index.js';
 import {
   type BalanceRow,
-  CashDeskRefusedError,
   CashDeskService,
-  type DeskUser,
   type DrawerSession,
   type Receipt,
 } from './cashdesk.service.js';
-import { receiptTypes } from './schema.js';
+import { deskUser, refusalsAsHttp } from './desk-http.js';
+import { captainReceiptTypes } from './schema.js';
 import { type SettlementPreview, SettlementService, type Statement } from './settlement.service.js';
 
 const minor = z.string().regex(/^\d{1,18}$/);
@@ -300,7 +294,7 @@ const receiptBody = z.object({
   id: z.uuid(),
   cityId: z.uuid(),
   number: z.string().describe('Such as AZ-2026-000123 (AP §4.8).'),
-  type: z.enum(receiptTypes),
+  type: z.enum(captainReceiptTypes),
   sessionId: z.uuid(),
   cashierId: z.uuid(),
   cashierName: z.string().nullable(),
@@ -672,15 +666,6 @@ export class AdminCashDeskController {
   }
 }
 
-function deskUser(session: AdminSession, request: FastifyRequest): DeskUser {
-  return {
-    accountId: session.accountId,
-    roles: session.roles,
-    actor: { type: 'admin', id: session.accountId, role: session.roles.join(',') },
-    context: requestContext(request),
-  };
-}
-
 function cashLine(line: { currency: string; amount: string }) {
   return { currency: line.currency, amount: BigInt(line.amount) };
 }
@@ -837,32 +822,4 @@ function receiptBodyOf(receipt: Receipt) {
       remaining: line.remaining.toString(),
     })),
   };
-}
-
-// The refusals as HTTP answers.
-async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
-  try {
-    return await run();
-  } catch (error) {
-    if (!(error instanceof CashDeskRefusedError)) throw error;
-    const { refusal, message } = error;
-    const body = (statusCode: number) => ({ statusCode, error: refusal, message });
-    switch (refusal) {
-      case 'unknown_session':
-      case 'unknown_captain':
-      case 'unknown_city':
-        throw new NotFoundException(body(HttpStatus.NOT_FOUND));
-      case 'not_your_session':
-      case 'not_payout_day':
-        throw new ForbiddenException(body(HttpStatus.FORBIDDEN));
-      case 'invalid_amounts':
-      case 'note_required':
-      case 'reason_required':
-        throw new BadRequestException(body(HttpStatus.BAD_REQUEST));
-      case 'idempotency_key_reused':
-        throw new UnprocessableEntityException(body(HttpStatus.UNPROCESSABLE_ENTITY));
-      default:
-        throw new ConflictException(body(HttpStatus.CONFLICT));
-    }
-  }
 }

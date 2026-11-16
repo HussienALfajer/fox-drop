@@ -3364,6 +3364,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/cash-desk/restaurant-settlements/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminRestaurantSettlementPreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cash-desk/restaurant-settlements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminRestaurantSettlementSettle"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cash-desk/restaurant-receipts/{receiptId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRestaurantSettlementReceipt"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/cash-desk/restaurants": {
         parameters: {
             query?: never;
@@ -9863,6 +9911,92 @@ export interface components {
                 remaining: string;
             }[];
         };
+        AdminRestaurantSettlementPreviewRequestDto: {
+            /** Format: uuid */
+            restaurantId: string;
+            /** @description The cash per currency; none to read the balance alone. */
+            lines: {
+                currency: string;
+                amount: string;
+            }[];
+        };
+        AdminRestaurantSettlementPreviewDto_Output: {
+            /** Format: uuid */
+            restaurantId: string;
+            restaurantName: string;
+            /** Format: uuid */
+            cityId: string;
+            currency: string;
+            /** @description + the restaurant owes, − the platform owes it. */
+            due: string;
+            lines: {
+                currency: string;
+                amount: string;
+                /** @description The value in the base at the current rate. */
+                base: string;
+                /** @description The rate version of each currency but the base, as the quote gave it. */
+                rates: {
+                    currency: string;
+                    /** Format: uuid */
+                    rateVersionId: string;
+                }[];
+                unit: {
+                    from: string;
+                    to: string;
+                    value: string;
+                } | null;
+            }[];
+            total: string;
+            /** @description What stays on the account, of the sign of due. */
+            remaining: string;
+        };
+        AdminRestaurantSettleDto: {
+            /** Format: uuid */
+            restaurantId: string;
+            /** @description The balance the screen showed. */
+            due: string;
+            lines: {
+                currency: string;
+                amount: string;
+                base: string;
+                /** @description The rate version of each currency but the base, as the quote gave it. */
+                rates: {
+                    currency: string;
+                    /** Format: uuid */
+                    rateVersionId: string;
+                }[];
+            }[];
+        };
+        AdminRestaurantReceiptDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            cityId: string;
+            number: string;
+            /** @enum {string} */
+            type: "merchant_settlement" | "merchant_payout";
+            /** Format: uuid */
+            sessionId: string;
+            /** @enum {string} */
+            method: "office";
+            /** Format: uuid */
+            cashierId: string;
+            cashierName: string | null;
+            /** Format: uuid */
+            restaurantId: string;
+            restaurantName: string;
+            currency: string;
+            dueBefore: string;
+            total: string;
+            dueAfter: string;
+            /** Format: date-time */
+            createdAt: string;
+            lines: {
+                currency: string;
+                amount: string;
+                base: string;
+            }[];
+        };
         AdminRestaurantSettlementsDto_Output: {
             currency: string | null;
             /** @enum {string} */
@@ -9885,6 +10019,7 @@ export interface components {
                     discountShare: string;
                     exceptions: string;
                     totalDue: string;
+                    status: ("unpaid" | "partly_paid" | "paid") | null;
                 } | null;
                 /** @description What is left of the latest statement after the payments. */
                 unpaid: string;
@@ -9915,6 +10050,9 @@ export interface components {
             paid: string;
             earlierUnpaid: string;
             totalDue: string;
+            status: ("unpaid" | "partly_paid" | "paid") | null;
+            /** @description What of the total due is still unpaid, oldest first. */
+            unpaid: string;
             lines: {
                 position: number;
                 /** @enum {string} */
@@ -15529,6 +15667,79 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminReceiptDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantSettlementPreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRestaurantSettlementPreviewRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantSettlementPreviewDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantSettlementSettle: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRestaurantSettleDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantReceiptDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantSettlementReceipt: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                receiptId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantReceiptDto_Output"];
                 };
             };
         };

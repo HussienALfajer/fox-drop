@@ -25,7 +25,7 @@ import {
   nextNumber,
   quoteOf,
   type Receipt,
-  type ReceiptType,
+  type CaptainReceiptType,
   type Tx,
 } from './cashdesk.service.js';
 import { drawerSessions, statements } from './schema.js';
@@ -323,7 +323,7 @@ export class SettlementService {
       const year = cityYear(now, city.timeZone);
       const issued: string[] = [];
       const issue = async (
-        type: ReceiptType,
+        type: CaptainReceiptType,
         lines: { line: CashLine; held: CustodyCurrency }[],
         move?: EarningsMove,
       ) => {

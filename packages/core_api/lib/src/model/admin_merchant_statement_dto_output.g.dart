@@ -6,6 +6,81 @@ part of 'admin_merchant_statement_dto_output.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const AdminMerchantStatementDtoOutputStatusEnum
+_$adminMerchantStatementDtoOutputStatusEnum_unpaid =
+    const AdminMerchantStatementDtoOutputStatusEnum._('unpaid');
+const AdminMerchantStatementDtoOutputStatusEnum
+_$adminMerchantStatementDtoOutputStatusEnum_partlyPaid =
+    const AdminMerchantStatementDtoOutputStatusEnum._('partlyPaid');
+const AdminMerchantStatementDtoOutputStatusEnum
+_$adminMerchantStatementDtoOutputStatusEnum_paid =
+    const AdminMerchantStatementDtoOutputStatusEnum._('paid');
+
+AdminMerchantStatementDtoOutputStatusEnum
+_$adminMerchantStatementDtoOutputStatusEnumValueOf(String name) {
+  switch (name) {
+    case 'unpaid':
+      return _$adminMerchantStatementDtoOutputStatusEnum_unpaid;
+    case 'partlyPaid':
+      return _$adminMerchantStatementDtoOutputStatusEnum_partlyPaid;
+    case 'paid':
+      return _$adminMerchantStatementDtoOutputStatusEnum_paid;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<AdminMerchantStatementDtoOutputStatusEnum>
+_$adminMerchantStatementDtoOutputStatusEnumValues =
+    BuiltSet<AdminMerchantStatementDtoOutputStatusEnum>(
+      const <AdminMerchantStatementDtoOutputStatusEnum>[
+        _$adminMerchantStatementDtoOutputStatusEnum_unpaid,
+        _$adminMerchantStatementDtoOutputStatusEnum_partlyPaid,
+        _$adminMerchantStatementDtoOutputStatusEnum_paid,
+      ],
+    );
+
+Serializer<AdminMerchantStatementDtoOutputStatusEnum>
+_$adminMerchantStatementDtoOutputStatusEnumSerializer =
+    _$AdminMerchantStatementDtoOutputStatusEnumSerializer();
+
+class _$AdminMerchantStatementDtoOutputStatusEnumSerializer
+    implements PrimitiveSerializer<AdminMerchantStatementDtoOutputStatusEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'unpaid': 'unpaid',
+    'partlyPaid': 'partly_paid',
+    'paid': 'paid',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'unpaid': 'unpaid',
+    'partly_paid': 'partlyPaid',
+    'paid': 'paid',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    AdminMerchantStatementDtoOutputStatusEnum,
+  ];
+  @override
+  final String wireName = 'AdminMerchantStatementDtoOutputStatusEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    AdminMerchantStatementDtoOutputStatusEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  AdminMerchantStatementDtoOutputStatusEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => AdminMerchantStatementDtoOutputStatusEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
 class _$AdminMerchantStatementDtoOutput
     extends AdminMerchantStatementDtoOutput {
   @override
@@ -45,6 +120,10 @@ class _$AdminMerchantStatementDtoOutput
   @override
   final String totalDue;
   @override
+  final AdminMerchantStatementDtoOutputStatusEnum? status;
+  @override
+  final String unpaid;
+  @override
   final BuiltList<AdminMerchantStatementDtoOutputLinesInner> lines;
 
   factory _$AdminMerchantStatementDtoOutput([
@@ -70,6 +149,8 @@ class _$AdminMerchantStatementDtoOutput
     required this.paid,
     required this.earlierUnpaid,
     required this.totalDue,
+    this.status,
+    required this.unpaid,
     required this.lines,
   }) : super._();
   @override
@@ -103,6 +184,8 @@ class _$AdminMerchantStatementDtoOutput
         paid == other.paid &&
         earlierUnpaid == other.earlierUnpaid &&
         totalDue == other.totalDue &&
+        status == other.status &&
+        unpaid == other.unpaid &&
         lines == other.lines;
   }
 
@@ -127,6 +210,8 @@ class _$AdminMerchantStatementDtoOutput
     _$hash = $jc(_$hash, paid.hashCode);
     _$hash = $jc(_$hash, earlierUnpaid.hashCode);
     _$hash = $jc(_$hash, totalDue.hashCode);
+    _$hash = $jc(_$hash, status.hashCode);
+    _$hash = $jc(_$hash, unpaid.hashCode);
     _$hash = $jc(_$hash, lines.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -153,6 +238,8 @@ class _$AdminMerchantStatementDtoOutput
           ..add('paid', paid)
           ..add('earlierUnpaid', earlierUnpaid)
           ..add('totalDue', totalDue)
+          ..add('status', status)
+          ..add('unpaid', unpaid)
           ..add('lines', lines))
         .toString();
   }
@@ -241,6 +328,15 @@ class AdminMerchantStatementDtoOutputBuilder
   String? get totalDue => _$this._totalDue;
   set totalDue(String? totalDue) => _$this._totalDue = totalDue;
 
+  AdminMerchantStatementDtoOutputStatusEnum? _status;
+  AdminMerchantStatementDtoOutputStatusEnum? get status => _$this._status;
+  set status(AdminMerchantStatementDtoOutputStatusEnum? status) =>
+      _$this._status = status;
+
+  String? _unpaid;
+  String? get unpaid => _$this._unpaid;
+  set unpaid(String? unpaid) => _$this._unpaid = unpaid;
+
   ListBuilder<AdminMerchantStatementDtoOutputLinesInner>? _lines;
   ListBuilder<AdminMerchantStatementDtoOutputLinesInner> get lines =>
       _$this._lines ??=
@@ -273,6 +369,8 @@ class AdminMerchantStatementDtoOutputBuilder
       _paid = $v.paid;
       _earlierUnpaid = $v.earlierUnpaid;
       _totalDue = $v.totalDue;
+      _status = $v.status;
+      _unpaid = $v.unpaid;
       _lines = $v.lines.toBuilder();
       _$v = null;
     }
@@ -383,6 +481,12 @@ class AdminMerchantStatementDtoOutputBuilder
               totalDue,
               r'AdminMerchantStatementDtoOutput',
               'totalDue',
+            ),
+            status: status,
+            unpaid: BuiltValueNullFieldError.checkNotNull(
+              unpaid,
+              r'AdminMerchantStatementDtoOutput',
+              'unpaid',
             ),
             lines: lines.build(),
           );

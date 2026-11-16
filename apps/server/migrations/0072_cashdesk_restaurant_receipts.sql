@@ -1,0 +1,13 @@
+ALTER TABLE "cashdesk"."receipts" DROP CONSTRAINT "receipts_type_values";--> statement-breakpoint
+ALTER TABLE "cashdesk"."receipt_lines" ALTER COLUMN "expected" DROP NOT NULL;--> statement-breakpoint
+ALTER TABLE "cashdesk"."receipts" ALTER COLUMN "captain_id" DROP NOT NULL;--> statement-breakpoint
+ALTER TABLE "cashdesk"."receipts" ALTER COLUMN "captain_name" DROP NOT NULL;--> statement-breakpoint
+ALTER TABLE "cashdesk"."receipt_lines" ADD COLUMN "base_amount" bigint;--> statement-breakpoint
+ALTER TABLE "cashdesk"."receipts" ADD COLUMN "restaurant_id" uuid;--> statement-breakpoint
+ALTER TABLE "cashdesk"."receipts" ADD COLUMN "restaurant_name" text;--> statement-breakpoint
+ALTER TABLE "cashdesk"."receipts" ADD COLUMN "due_before" bigint;--> statement-breakpoint
+ALTER TABLE "cashdesk"."receipts" ADD COLUMN "due_currency" text;--> statement-breakpoint
+CREATE INDEX "receipts_restaurant_created" ON "cashdesk"."receipts" USING btree ("restaurant_id","created_at");--> statement-breakpoint
+ALTER TABLE "cashdesk"."receipt_lines" ADD CONSTRAINT "receipt_lines_expected_or_base" CHECK (("cashdesk"."receipt_lines"."expected" IS NULL) <> ("cashdesk"."receipt_lines"."base_amount" IS NULL) AND ("cashdesk"."receipt_lines"."base_amount" IS NULL OR "cashdesk"."receipt_lines"."base_amount" > 0));--> statement-breakpoint
+ALTER TABLE "cashdesk"."receipts" ADD CONSTRAINT "receipts_party" CHECK (CASE WHEN "cashdesk"."receipts"."type" IN ('captain_hand_in', 'captain_reimbursement', 'captain_payout', 'captain_earnings_collection') THEN "cashdesk"."receipts"."captain_id" IS NOT NULL AND "cashdesk"."receipts"."captain_name" IS NOT NULL AND "cashdesk"."receipts"."restaurant_id" IS NULL AND "cashdesk"."receipts"."restaurant_name" IS NULL AND "cashdesk"."receipts"."due_before" IS NULL AND "cashdesk"."receipts"."due_currency" IS NULL ELSE "cashdesk"."receipts"."captain_id" IS NULL AND "cashdesk"."receipts"."captain_name" IS NULL AND "cashdesk"."receipts"."restaurant_id" IS NOT NULL AND "cashdesk"."receipts"."restaurant_name" IS NOT NULL AND "cashdesk"."receipts"."due_before" IS NOT NULL AND "cashdesk"."receipts"."due_currency" IS NOT NULL END);--> statement-breakpoint
+ALTER TABLE "cashdesk"."receipts" ADD CONSTRAINT "receipts_type_values" CHECK ("cashdesk"."receipts"."type" IN ('captain_hand_in', 'captain_reimbursement', 'captain_payout', 'captain_earnings_collection', 'merchant_settlement', 'merchant_payout'));

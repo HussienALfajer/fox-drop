@@ -313,6 +313,60 @@ describe('the restaurant weekly statement at the cutoff', () => {
     expect(row?.overdueSince).toEqual(new Date(first.getTime() + 2 * DAY));
   });
 
+  // Slice 2.19b's review: a payout to the restaurant raises what it owes in
+  // its week, never a negative payment, and a credit since the cutoff
+  // settles the oldest statement first, as a payment does.
+  it('counts a payout in its week, not as a payment', async () => {
+    const id = await restaurant();
+    await post(id, 'merchant.commission', 1_000n);
+    const first = await databaseNow();
+    await statements.closeAt(azaz, first, first, { notify: false });
+    await post(id, 'merchant.settlement', -1_000n);
+    await post(id, 'merchant.credit', -300n);
+    await post(id, 'merchant.settlement', 300n);
+    await post(id, 'merchant.commission', 50n);
+    const second = await databaseNow();
+    await statements.closeAt(azaz, second, second, { notify: false });
+
+    const [one, two] = await rows(id);
+    expect(await statements.statement(two.id)).toMatchObject({
+      paid: 1_000n,
+      earlierUnpaid: 0n,
+      weekTotal: 50n,
+      totalDue: 50n,
+      status: 'unpaid',
+    });
+    expect(await statements.statement(one.id)).toMatchObject({ status: 'paid', unpaid: 0n });
+    const row = (
+      await statements.restaurants(azaz, new Date(second.getTime() + DAY))
+    ).restaurants.find((each) => each.restaurantId === id);
+    expect(row).toMatchObject({ unpaid: 50n, overdueSince: null });
+  });
+
+  it('lets a credit since the cutoff settle the statement, a payout after it too', async () => {
+    const owed = await restaurant();
+    const even = await restaurant();
+    for (const id of [owed, even]) await post(id, 'merchant.commission', 1_000n);
+    const cutoff = await databaseNow();
+    await statements.closeAt(azaz, cutoff, cutoff, { notify: false });
+    for (const id of [owed, even]) await post(id, 'merchant.credit', -1_500n);
+    await post(even, 'merchant.settlement', 500n);
+
+    const list = await statements.restaurants(azaz, new Date(cutoff.getTime() + 3 * DAY));
+    expect(list.restaurants.find((each) => each.restaurantId === owed)).toMatchObject({
+      balance: -500n,
+      unpaid: 0n,
+      overdueSince: null,
+    });
+    for (const id of [owed, even]) {
+      const [statement] = await rows(id);
+      expect(await statements.statement(statement.id)).toMatchObject({
+        status: 'paid',
+        unpaid: 0n,
+      });
+    }
+  });
+
   it('lists the restaurants with a balance, the overdue first', async () => {
     const paid = await restaurant();
     const late = await restaurant();

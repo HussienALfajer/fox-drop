@@ -1217,7 +1217,9 @@
       "captain_hand_in": "تسليم نقد",
       "captain_reimbursement": "صرف للكابتن",
       "captain_payout": "صرف المستحقات",
-      "captain_earnings_collection": "تحصيل رصيد سالب"
+      "captain_earnings_collection": "تحصيل رصيد سالب",
+      "merchant_settlement": "تسوية حساب المطعم",
+      "merchant_payout": "صرف للمطعم"
     },
     "receipt": {
       "printThermal": "طباعة 80 مم",
@@ -1413,7 +1415,55 @@
       "previousDue": "المستحق في الكشف السابق",
       "paid": "المدفوع منذ الكشف السابق",
       "earlierUnpaid": "الرصيد السابق غير المسدّد",
-      "totalDue": "المجموع المستحق"
+      "totalDue": "المجموع المستحق",
+      "status": "الحالة: {{status}}",
+      "unpaid": "غير المسدّد منه: {{amount}}"
+    },
+    "settle": "تسوية",
+    "statusLabel": {
+      "unpaid": "غير مسدّد",
+      "partly_paid": "مسدّد جزئياً",
+      "paid": "مسدّد"
+    },
+    "form": {
+      "title": "تسوية {{name}}",
+      "due": "الرصيد الآن:",
+      "nothingDue": "لا مستحق على هذا المطعم ولا له.",
+      "noSession": "افتح الصندوق لتسجيل التسوية.",
+      "collectHint": "المبلغ المستلم من المطعم بكل عملة، كله أو بعضه، ويُحسب بسعر الصرف الحالي.",
+      "payHint": "المبلغ المصروف للمطعم بكل عملة، كله أو بعضه، ويُحسب بسعر الصرف الحالي.",
+      "amount": "المبلغ ({{currency}})",
+      "review": "مراجعة",
+      "invalid": "مبلغ غير صالح في {{currency}}.",
+      "empty": "أدخل مبلغاً في عملة واحدة على الأقل.",
+      "line": "{{amount}} = {{base}}",
+      "rate": "السعر: 1 {{from}} = {{value}} {{to}}",
+      "total": "المجموع: {{amount}}",
+      "remaining": "يبقى بعد التسوية:",
+      "above": "المبلغ أكبر من المستحق.",
+      "quoteRefused": "تعذّر حساب المبلغ بسعر الصرف الحالي.",
+      "confirm": "تأكيد وإصدار الإيصال",
+      "done": "صدر الإيصال {{number}}.",
+      "refused": {
+        "above_balance": "المبلغ أكبر من المستحق.",
+        "balance_changed": "تغيّر رصيد المطعم منذ المراجعة. راجع المبلغ من جديد.",
+        "rate_changed": "تغيّر سعر الصرف منذ المراجعة. راجع المبلغ من جديد.",
+        "rate_missing": "لا سعر صرف لهذه العملة.",
+        "nothing_due": "لا مستحق على هذا المطعم ولا له.",
+        "drawer_short": "لا يكفي النقد في الصندوق لهذا الصرف.",
+        "no_open_session": "افتح الصندوق لتسجيل التسوية.",
+        "unknown_restaurant": "المطعم ليس من مدينة صندوقك.",
+        "invalid_amounts": "مبلغ غير صالح."
+      }
+    },
+    "receipt": {
+      "restaurant": "المطعم: {{name}}",
+      "method": "طريقة التسوية: في المكتب",
+      "base": "القيمة بـ{{currency}}",
+      "amount": "المبلغ",
+      "total": "المجموع: {{amount}}",
+      "dueBefore": "الرصيد قبل:",
+      "dueAfter": "الرصيد بعد:"
     }
   }
 }

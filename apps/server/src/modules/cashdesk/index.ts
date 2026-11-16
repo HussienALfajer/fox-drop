@@ -18,6 +18,7 @@ import { CaptainEarningsController } from './captain-earnings.controller.js';
 import { CaptainStatementsController } from './captain-statements.controller.js';
 import { CashDeskService } from './cashdesk.service.js';
 import { EarningsService } from './earnings.service.js';
+import { MerchantSettlementService } from './merchant-settlement.service.js';
 import { MerchantStatementsService } from './merchant-statements.service.js';
 import { MerchantStatementsWorker } from './merchant-statements.worker.js';
 import { SettlementService } from './settlement.service.js';
@@ -46,7 +47,13 @@ import { SettlementService } from './settlement.service.js';
     CaptainEarningsController,
     CaptainStatementsController,
   ],
-  providers: [CashDeskService, EarningsService, SettlementService, MerchantStatementsService],
+  providers: [
+    CashDeskService,
+    EarningsService,
+    SettlementService,
+    MerchantStatementsService,
+    MerchantSettlementService,
+  ],
   exports: [CashDeskService, SettlementService],
 })
 export class CashDeskModule {}
@@ -82,6 +89,12 @@ export {
   type Receipt,
   type ReceiptType,
 } from './cashdesk.service.js';
+export {
+  type MerchantReceipt,
+  type MerchantSettleCommand,
+  type MerchantSettlementPreview,
+  MerchantSettlementService,
+} from './merchant-settlement.service.js';
 export {
   type MerchantStatement,
   type MerchantStatementView,

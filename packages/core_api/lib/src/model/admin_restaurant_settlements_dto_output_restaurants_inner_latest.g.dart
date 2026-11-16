@@ -6,6 +6,100 @@ part of 'admin_restaurant_settlements_dto_output_restaurants_inner_latest.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum
+_$adminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum_unpaid =
+    const AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum._(
+      'unpaid',
+    );
+const AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum
+_$adminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum_partlyPaid =
+    const AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum._(
+      'partlyPaid',
+    );
+const AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum
+_$adminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum_paid =
+    const AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum._(
+      'paid',
+    );
+
+AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum
+_$adminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnumValueOf(
+  String name,
+) {
+  switch (name) {
+    case 'unpaid':
+      return _$adminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum_unpaid;
+    case 'partlyPaid':
+      return _$adminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum_partlyPaid;
+    case 'paid':
+      return _$adminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum_paid;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<
+  AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum
+>
+_$adminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnumValues =
+    BuiltSet<
+      AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum
+    >(const <
+      AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum
+    >[
+      _$adminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum_unpaid,
+      _$adminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum_partlyPaid,
+      _$adminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum_paid,
+    ]);
+
+Serializer<AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum>
+_$adminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnumSerializer =
+    _$AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnumSerializer();
+
+class _$AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnumSerializer
+    implements
+        PrimitiveSerializer<
+          AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum
+        > {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'unpaid': 'unpaid',
+    'partlyPaid': 'partly_paid',
+    'paid': 'paid',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'unpaid': 'unpaid',
+    'partly_paid': 'partlyPaid',
+    'paid': 'paid',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum,
+  ];
+  @override
+  final String wireName =
+      'AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum
+    object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum
+  deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) =>
+      AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum.valueOf(
+        _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+      );
+}
+
 class _$AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatest
     extends AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatest {
   @override
@@ -20,6 +114,9 @@ class _$AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatest
   final String exceptions;
   @override
   final String totalDue;
+  @override
+  final AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum?
+  status;
 
   factory _$AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatest([
     void Function(
@@ -38,6 +135,7 @@ class _$AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatest
     required this.discountShare,
     required this.exceptions,
     required this.totalDue,
+    this.status,
   }) : super._();
   @override
   AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatest rebuild(
@@ -62,7 +160,8 @@ class _$AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatest
         commission == other.commission &&
         discountShare == other.discountShare &&
         exceptions == other.exceptions &&
-        totalDue == other.totalDue;
+        totalDue == other.totalDue &&
+        status == other.status;
   }
 
   @override
@@ -74,6 +173,7 @@ class _$AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatest
     _$hash = $jc(_$hash, discountShare.hashCode);
     _$hash = $jc(_$hash, exceptions.hashCode);
     _$hash = $jc(_$hash, totalDue.hashCode);
+    _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -88,7 +188,8 @@ class _$AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatest
           ..add('commission', commission)
           ..add('discountShare', discountShare)
           ..add('exceptions', exceptions)
-          ..add('totalDue', totalDue))
+          ..add('totalDue', totalDue)
+          ..add('status', status))
         .toString();
   }
 }
@@ -126,6 +227,13 @@ class AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestBuilder
   String? get totalDue => _$this._totalDue;
   set totalDue(String? totalDue) => _$this._totalDue = totalDue;
 
+  AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum? _status;
+  AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum?
+  get status => _$this._status;
+  set status(
+    AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum? status,
+  ) => _$this._status = status;
+
   AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestBuilder() {
     AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatest._defaults(this);
   }
@@ -139,6 +247,7 @@ class AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestBuilder
       _discountShare = $v.discountShare;
       _exceptions = $v.exceptions;
       _totalDue = $v.totalDue;
+      _status = $v.status;
       _$v = null;
     }
     return this;
@@ -198,6 +307,7 @@ class AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestBuilder
             r'AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatest',
             'totalDue',
           ),
+          status: status,
         );
     replace(_$result);
     return _$result;

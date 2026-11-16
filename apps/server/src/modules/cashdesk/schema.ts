@@ -108,7 +108,7 @@ export const receiptCounters = cashdesk.table(
 // AP §9.10.3, CA §14 #19: the type printed on the receipt. A captain's
 // hand-in «تسليم نقد» (custody.hand_in) or the desk paying a negative
 // custody back «صرف للكابتن» (custody.reimburse).
-export const receiptTypes = [
+export const captainReceiptTypes = [
   'captain_hand_in',
   'captain_reimbursement',
   // «تصفية الخميس» (AP §8.5.5, slice 2.18a): the earnings paid out, and a
@@ -117,8 +117,18 @@ export const receiptTypes = [
   'captain_earnings_collection',
 ] as const;
 
+export const receiptTypes = [
+  ...captainReceiptTypes,
+  // «تسوية المطاعم» (AP §8.7, §9.10.3, slice 2.19b): what the restaurant paid
+  // against its account (merchant.settlement), or what the desk paid it when
+  // the platform owed it.
+  'merchant_settlement',
+  'merchant_payout',
+] as const;
+
 // A desk receipt (AP §9.10.3), never changed: the application role may only
-// insert. Its money is the journals of its lines.
+// insert. Its money is the journals of its lines. Its party is a captain or,
+// from slice 2.19b, a restaurant, exactly one.
 export const receipts = cashdesk.table(
   'receipts',
   {
@@ -134,9 +144,15 @@ export const receipts = cashdesk.table(
     sessionId: uuid('session_id').notNull(),
     // The cashier: the session's user.
     adminAccountId: uuid('admin_account_id').notNull(),
-    captainId: uuid('captain_id').notNull(),
+    captainId: uuid('captain_id'),
     // As the receipt was issued.
-    captainName: text('captain_name').notNull(),
+    captainName: text('captain_name'),
+    restaurantId: uuid('restaurant_id'),
+    restaurantName: text('restaurant_name'),
+    // A restaurant's receipt: what it owed before (+ it owes, − the platform
+    // owes it), in the base currency of its account.
+    dueBefore: bigint('due_before', { mode: 'bigint' }),
+    dueCurrency: text('due_currency'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
   },
   (table) => [
@@ -144,6 +160,7 @@ export const receipts = cashdesk.table(
     uniqueIndex('receipts_number').on(table.number),
     index('receipts_session').on(table.sessionId),
     index('receipts_captain_created').on(table.captainId, table.createdAt),
+    index('receipts_restaurant_created').on(table.restaurantId, table.createdAt),
     foreignKey({
       columns: [table.sessionId],
       foreignColumns: [drawerSessions.id],
@@ -152,20 +169,26 @@ export const receipts = cashdesk.table(
     check('receipts_sequence', sql`${table.sequence} > 0`),
     check(
       'receipts_type_values',
-      sql`${table.type} IN ('captain_hand_in', 'captain_reimbursement', 'captain_payout', 'captain_earnings_collection')`,
+      sql`${table.type} IN ('captain_hand_in', 'captain_reimbursement', 'captain_payout', 'captain_earnings_collection', 'merchant_settlement', 'merchant_payout')`,
+    ),
+    check(
+      'receipts_party',
+      sql`CASE WHEN ${table.type} IN ('captain_hand_in', 'captain_reimbursement', 'captain_payout', 'captain_earnings_collection') THEN ${table.captainId} IS NOT NULL AND ${table.captainName} IS NOT NULL AND ${table.restaurantId} IS NULL AND ${table.restaurantName} IS NULL AND ${table.dueBefore} IS NULL AND ${table.dueCurrency} IS NULL ELSE ${table.captainId} IS NULL AND ${table.captainName} IS NULL AND ${table.restaurantId} IS NOT NULL AND ${table.restaurantName} IS NOT NULL AND ${table.dueBefore} IS NOT NULL AND ${table.dueCurrency} IS NOT NULL END`,
     ),
   ],
 );
 
-// One currency of a receipt: the custody the desk expected (from the
-// captain's side, + to hand in, − owed to them), the cash that changed hands
-// (above zero) and the journal that moved it.
+// One currency of a receipt: the custody the desk expected (a captain's,
+// from their side, + to hand in, − owed to them) or the line's value in the
+// account's base at the rate of the receipt (a restaurant's), the cash that
+// changed hands (above zero) and the journal that moved it.
 export const receiptLines = cashdesk.table(
   'receipt_lines',
   {
     receiptId: uuid('receipt_id').notNull(),
     currency: text('currency').notNull(),
-    expected: bigint('expected', { mode: 'bigint' }).notNull(),
+    expected: bigint('expected', { mode: 'bigint' }),
+    baseAmount: bigint('base_amount', { mode: 'bigint' }),
     amount: bigint('amount', { mode: 'bigint' }).notNull(),
     journalId: uuid('journal_id').notNull(),
   },
@@ -177,6 +200,10 @@ export const receiptLines = cashdesk.table(
       name: 'receipt_lines_receipt',
     }),
     check('receipt_lines_amount', sql`${table.amount} > 0`),
+    check(
+      'receipt_lines_expected_or_base',
+      sql`(${table.expected} IS NULL) <> (${table.baseAmount} IS NULL) AND (${table.baseAmount} IS NULL OR ${table.baseAmount} > 0)`,
+    ),
   ],
 );
 

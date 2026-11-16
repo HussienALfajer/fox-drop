@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
-import { and, asc, desc, eq, inArray, isNull, lt, max, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNotNull, isNull, lt, max, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
@@ -31,6 +31,7 @@ import {
   receiptCounters,
   receiptLines,
   receipts,
+  type captainReceiptTypes,
   type receiptTypes,
 } from './schema.js';
 
@@ -53,7 +54,10 @@ export type CashDeskRefusal =
   // «تصفية الخميس» (slice 2.18a).
   | 'not_payout_day'
   | 'reason_required'
-  | 'balance_changed';
+  | 'balance_changed'
+  // «تسوية المطاعم» (slice 2.19b).
+  | 'unknown_restaurant'
+  | 'above_balance';
 
 export class CashDeskRefusedError extends Error {
   override readonly name = 'CashDeskRefusedError';
@@ -103,6 +107,8 @@ export interface DrawerSession {
 }
 
 export type ReceiptType = (typeof receiptTypes)[number];
+// A captain's receipt; a restaurant's is merchant-settlement.service.ts's.
+export type CaptainReceiptType = (typeof captainReceiptTypes)[number];
 
 export interface ReceiptLine {
   currency: string;
@@ -145,7 +151,7 @@ export interface Receipt {
   id: string;
   cityId: string;
   number: string;
-  type: ReceiptType;
+  type: CaptainReceiptType;
   sessionId: string;
   cashierId: string;
   cashierName: string | null;
@@ -188,7 +194,7 @@ export const KEY_LIFETIME_MS = 24 * 3_600_000;
 // a negative one to zero; a payout pays the earnings the platform owes them
 // (the line's expected is that amount, below zero) and a collection takes
 // a negative balance back (above zero).
-const kinds: Record<ReceiptType, { journal: JournalType; sign: 1n | -1n }> = {
+const kinds: Record<CaptainReceiptType, { journal: JournalType; sign: 1n | -1n }> = {
   captain_hand_in: { journal: 'custody.hand_in', sign: 1n },
   captain_reimbursement: { journal: 'custody.reimburse', sign: -1n },
   captain_payout: { journal: 'earn.payout', sign: -1n },
@@ -741,7 +747,7 @@ export class CashDeskService {
       user: DeskUser;
       session: typeof drawerSessions.$inferSelect;
       captain: DeskCaptain;
-      type: ReceiptType;
+      type: CaptainReceiptType;
       conversions: (Conversion & { sign: 1n | -1n })[];
       lines: { line: CashLine; held: CustodyCurrency }[];
       number: { sequence: number; number: string };
@@ -749,7 +755,7 @@ export class CashDeskService {
       now: Date;
       earnings?: EarningsMove;
     },
-  ): Promise<{ id: string; number: string; type: ReceiptType }> {
+  ): Promise<{ id: string; number: string; type: CaptainReceiptType }> {
     const { user, session, captain, type, lines, now } = input;
     const [created] = await tx
       .insert(receipts)
@@ -782,7 +788,7 @@ export class CashDeskService {
           line,
           earnings: input.earnings!,
         });
-        await this.keepLine(tx, session.id, receiptId, line, held.balance, journalId);
+        await this.keepLine(tx, session.id, receiptId, line, { expected: held.balance }, journalId);
         continue;
       }
       const custodyAccount = await this.ledger.openAccount(
@@ -818,7 +824,7 @@ export class CashDeskService {
         },
         tx,
       );
-      await this.keepLine(tx, session.id, receiptId, line, held.balance, journalId);
+      await this.keepLine(tx, session.id, receiptId, line, { expected: held.balance }, journalId);
     }
     await this.audit.recordWrite(
       {
@@ -852,18 +858,20 @@ export class CashDeskService {
     return { id: receiptId, number: input.number.number, type };
   }
 
-  private async keepLine(
+  // A receipt's line: a captain's with the custody expected, a restaurant's
+  // with its value in the base.
+  async keepLine(
     tx: Tx,
     sessionId: string,
     receiptId: string,
     line: CashLine,
-    expected: bigint,
+    kept: { expected: bigint } | { baseAmount: bigint },
     journalId: string,
   ): Promise<void> {
     await tx.insert(receiptLines).values({
       receiptId,
       currency: line.currency,
-      expected,
+      ...kept,
       amount: line.amount,
       journalId,
     });
@@ -954,7 +962,7 @@ export class CashDeskService {
   async notify(
     tx: Tx,
     captainId: string,
-    receipt: { id: string; number: string; type: ReceiptType },
+    receipt: { id: string; number: string; type: CaptainReceiptType },
     lines: { line: CashLine }[],
     known: ReadonlyMap<string, { symbol: string; decimals: number }>,
     now: Date,
@@ -1060,7 +1068,8 @@ export class CashDeskService {
     const rows = await this.database.db
       .select()
       .from(receipts)
-      .where(inArray(receipts.id, [...ids]))
+      // A captain's: a restaurant's receipt has its own reader.
+      .where(and(inArray(receipts.id, [...ids]), isNotNull(receipts.captainId)))
       .orderBy(asc(receipts.sequence));
     if (rows.length === 0) return [];
     const [lines, conversions, names] = await Promise.all([
@@ -1079,12 +1088,13 @@ export class CashDeskService {
       id: row.id,
       cityId: row.cityId,
       number: row.number,
-      type: row.type,
+      type: row.type as CaptainReceiptType,
       sessionId: row.sessionId,
       cashierId: row.adminAccountId,
       cashierName: names.get(row.adminAccountId) ?? null,
-      captainId: row.captainId,
-      captainName: row.captainName,
+      // receipts_party: a captain's receipt names the captain.
+      captainId: row.captainId!,
+      captainName: row.captainName!,
       createdAt: row.createdAt,
       conversions: conversions
         .filter((each) => each.receiptId === row.id)
@@ -1098,12 +1108,16 @@ export class CashDeskService {
       lines: lines
         .filter((line) => line.receiptId === row.id)
         .sort((a, b) => order(a.currency) - order(b.currency))
-        .map((line) => ({
-          currency: line.currency,
-          expected: line.expected,
-          amount: line.amount,
-          remaining: line.expected - kinds[row.type].sign * line.amount,
-        })),
+        .map((line) => {
+          // receipt_lines_expected_or_base: a captain's line has expected.
+          const expected = line.expected!;
+          return {
+            currency: line.currency,
+            expected,
+            amount: line.amount,
+            remaining: expected - kinds[row.type as CaptainReceiptType].sign * line.amount,
+          };
+        }),
     }));
   }
 
