@@ -227,6 +227,7 @@ describe('quoteVersion (CU §10.6)', () => {
     equivalents: [{ currency: 'USD', amount: 400n }],
     rateVersions: [{ currency: 'USD', rateVersionId: 'r1' }],
     problems: [],
+    promoCode: null,
   };
 
   it('stays the same for the same money, rates and problems', () => {
@@ -234,13 +235,25 @@ describe('quoteVersion (CU §10.6)', () => {
     expect(quoteVersion(parts)).toMatch(/^[0-9a-f]{32}$/);
   });
 
-  it('changes with a money line, an equivalent, a rate version or a blocking problem', () => {
+  it('changes with a money line, an equivalent, a rate version, a blocking problem or the code', () => {
     const versions = [
       quoteVersion(parts),
       quoteVersion({ ...parts, money: { ...parts.money, deliveryFee: 3_000n, total: 15_000n } }),
       quoteVersion({ ...parts, equivalents: [{ currency: 'USD', amount: 450n }] }),
       quoteVersion({ ...parts, rateVersions: [{ currency: 'USD', rateVersionId: 'r2' }] }),
-      quoteVersion({ ...parts, problems: [{ code: 'below_minimum_order', line: null }] }),
+      quoteVersion({
+        ...parts,
+        problems: [{ code: 'below_minimum_order', line: null, refusal: null }],
+      }),
+      quoteVersion({
+        ...parts,
+        problems: [{ code: 'promo_code', line: null, refusal: 'used_before' }],
+      }),
+      quoteVersion({
+        ...parts,
+        problems: [{ code: 'promo_code', line: null, refusal: 'uses_ended' }],
+      }),
+      quoteVersion({ ...parts, promoCode: 'FOX20' }),
     ];
     expect(new Set(versions).size).toBe(versions.length);
   });

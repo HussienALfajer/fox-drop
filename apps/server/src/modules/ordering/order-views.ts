@@ -1,3 +1,4 @@
+import { storedTerms } from './order-discount.js';
 import { and, asc, desc, eq, inArray, ne, or, type SQL, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { equivalent, type RateSnapshot } from '../fx/index.js';
@@ -228,6 +229,12 @@ export interface OrderView {
   } | null;
   currency: string;
   money: QuoteMoney;
+  // CU §10.4, AP §8.4 (slice 2.21b): the code the discount came from, and
+  // its restaurant-funded part; null and 0 without one.
+  promoCode: string | null;
+  discountMerchant: bigint;
+  // A free-delivery code: the discount is on the fee.
+  discountOnDelivery: boolean;
   deliveryFree: boolean;
   // The total in the city's other accepted currencies, by the order's own
   // rates (AP §8.6), each by its own rounding.
@@ -335,6 +342,9 @@ export async function readOrders(
       itemsValue: orders.itemsValue,
       deliveryFee: orders.deliveryFee,
       discount: orders.discount,
+      discountMerchant: orders.discountMerchant,
+      promoCode: orders.promoCode,
+      promoTerms: orders.promoTerms,
       rounding: orders.rounding,
       total: orders.total,
       deliveryFree: orders.deliveryFree,
@@ -712,6 +722,9 @@ export async function readOrders(
         rounding: row.rounding,
         total: row.total,
       },
+      promoCode: row.promoCode,
+      discountMerchant: row.discountMerchant,
+      discountOnDelivery: storedTerms(row.promoTerms)?.kind === 'free_delivery',
       deliveryFree: row.deliveryFree,
       equivalents: snapshot.currencies
         .filter((entry) => entry.code !== snapshot.baseCurrency)

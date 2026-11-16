@@ -14,7 +14,7 @@ part 'customer_quote_dto_output_money.g.dart';
 /// * [itemsValue] - «قيمة الأصناف».
 /// * [deliveryFee] - «رسوم التوصيل».
 /// * [deliveryFree] - «مجاني».
-/// * [discount] - «الخصم»; 0 until codes arrive.
+/// * [discount] - «الخصم», with the code; 0 without one.
 /// * [rounding] - «تقريب», shown only when not 0.
 /// * [total] - «المجموع».
 @BuiltValue()
@@ -33,7 +33,7 @@ abstract class CustomerQuoteDtoOutputMoney
   @BuiltValueField(wireName: r'deliveryFree')
   bool get deliveryFree;
 
-  /// «الخصم»; 0 until codes arrive.
+  /// «الخصم», with the code; 0 without one.
   @BuiltValueField(wireName: r'discount')
   String get discount;
 

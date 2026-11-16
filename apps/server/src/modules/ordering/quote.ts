@@ -120,7 +120,8 @@ export interface QuoteMoney {
 
 // AP §8.4: customer_total = items_value + delivery_fee − discount_total +
 // rounding_adjustment, never below 0. A discount is capped by its code
-// (Phase 2), so the total is capped here only as the last guard.
+// (marketing's promoDiscount), so the total is capped here only as the last
+// guard.
 export function quoteMoney({
   itemsValue,
   deliveryFee,
@@ -170,7 +171,9 @@ export function quoteVersion(parts: {
   money: QuoteMoney;
   equivalents: { currency: string; amount: bigint }[];
   rateVersions: { currency: string; rateVersionId: string | null }[];
-  problems: { code: string; line: number | null }[];
+  problems: { code: string; line: number | null; refusal: string | null }[];
+  // The code that applied (CU §10.4).
+  promoCode: string | null;
 }): string {
   const canonical = JSON.stringify(parts, (_key, value: unknown) =>
     typeof value === 'bigint' ? value.toString() : value,

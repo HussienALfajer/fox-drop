@@ -26,6 +26,7 @@ import {
   minor,
   noPhone,
   payInCurrency,
+  promoCodeInput,
   quoteBody,
 } from './customer-quote.controller.js';
 import { OrderCommandRefusedError, OrderCommands } from './order-commands.js';
@@ -40,6 +41,7 @@ class CustomerPlaceOrderDto extends createZodDto(
       lines: cartLines,
       payIn: payInCurrency,
       appVersion,
+      code: promoCodeInput,
       quoteVersion: z
         .string()
         .min(1)
@@ -199,10 +201,11 @@ const customerOrder = z.object({
     itemsValue: minor,
     deliveryFee: minor,
     deliveryFree: z.boolean(),
-    discount: minor,
+    discount: minor.describe('«الخصم»; 0 without a code.'),
     rounding: minor,
     total: minor,
   }),
+  promoCode: z.string().nullable().describe('The code of «الخصم» (CU §10.4); null without one.'),
   equivalents: z
     .array(z.object({ currency: z.string().length(3), amount: minor }))
     .describe("The total in the city's other currencies, by the order's own rates (CU §11.1)."),
@@ -346,6 +349,8 @@ export class CustomerOrdersController {
             })),
             payIn: body.payIn,
             appVersion: body.appVersion,
+            code: body.code,
+            deviceId: session.deviceId,
           },
           address:
             body.addressId === null
@@ -587,6 +592,7 @@ function orderBody(
       rounding: text(order.money.rounding),
       total: text(order.money.total),
     },
+    promoCode: order.promoCode,
     equivalents: order.equivalents.map((entry) => ({
       currency: entry.currency,
       amount: text(entry.amount),

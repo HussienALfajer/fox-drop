@@ -163,6 +163,8 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
   @override
   final CustomerActiveOrdersDtoOutputOrdersInnerMoney money;
   @override
+  final String? promoCode;
+  @override
   final BuiltList<CaptainAvailabilityDtoOutputCustodyLimit> equivalents;
   @override
   final BuiltList<CustomerActiveOrdersDtoOutputOrdersInnerLinesInner> lines;
@@ -201,6 +203,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
     this.captain,
     required this.currency,
     required this.money,
+    this.promoCode,
     required this.equivalents,
     required this.lines,
     required this.removedLines,
@@ -239,6 +242,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
         captain == other.captain &&
         currency == other.currency &&
         money == other.money &&
+        promoCode == other.promoCode &&
         equivalents == other.equivalents &&
         lines == other.lines &&
         removedLines == other.removedLines &&
@@ -268,6 +272,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
     _$hash = $jc(_$hash, captain.hashCode);
     _$hash = $jc(_$hash, currency.hashCode);
     _$hash = $jc(_$hash, money.hashCode);
+    _$hash = $jc(_$hash, promoCode.hashCode);
     _$hash = $jc(_$hash, equivalents.hashCode);
     _$hash = $jc(_$hash, lines.hashCode);
     _$hash = $jc(_$hash, removedLines.hashCode);
@@ -299,6 +304,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
           ..add('captain', captain)
           ..add('currency', currency)
           ..add('money', money)
+          ..add('promoCode', promoCode)
           ..add('equivalents', equivalents)
           ..add('lines', lines)
           ..add('removedLines', removedLines)
@@ -416,6 +422,10 @@ class CustomerOrderDtoOutputOrderBuilder
   set money(CustomerActiveOrdersDtoOutputOrdersInnerMoneyBuilder? money) =>
       _$this._money = money;
 
+  String? _promoCode;
+  String? get promoCode => _$this._promoCode;
+  set promoCode(String? promoCode) => _$this._promoCode = promoCode;
+
   ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>? _equivalents;
   ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit> get equivalents =>
       _$this._equivalents ??=
@@ -493,6 +503,7 @@ class CustomerOrderDtoOutputOrderBuilder
       _captain = $v.captain?.toBuilder();
       _currency = $v.currency;
       _money = $v.money.toBuilder();
+      _promoCode = $v.promoCode;
       _equivalents = $v.equivalents.toBuilder();
       _lines = $v.lines.toBuilder();
       _removedLines = $v.removedLines.toBuilder();
@@ -565,6 +576,7 @@ class CustomerOrderDtoOutputOrderBuilder
               'currency',
             ),
             money: money.build(),
+            promoCode: promoCode,
             equivalents: equivalents.build(),
             lines: lines.build(),
             removedLines: removedLines.build(),
@@ -600,6 +612,7 @@ class CustomerOrderDtoOutputOrderBuilder
 
         _$failedField = 'money';
         money.build();
+
         _$failedField = 'equivalents';
         equivalents.build();
         _$failedField = 'lines';

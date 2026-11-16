@@ -67,6 +67,8 @@ describe('the owners’ lines of an order (RA §8.4)', () => {
       testOrder: false,
       commissionBp: 1500,
       commission: '3600',
+      discountShare: '0',
+      discountOnDelivery: false,
       merchantNet: '20400',
     });
     const cashiers = (await board(order.cashier)).json().orders;

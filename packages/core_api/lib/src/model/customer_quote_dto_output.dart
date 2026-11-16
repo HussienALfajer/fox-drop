@@ -5,6 +5,7 @@
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/captain_went_offline_dto_output_hand_in.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_problems_inner.dart';
+import 'package:core_api/src/model/customer_quote_dto_output_promo_code.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_restaurant.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_money.dart';
@@ -32,6 +33,7 @@ part 'customer_quote_dto_output.g.dart';
 /// * [minimumOrder]
 /// * [freeDelivery]
 /// * [rates] - The exchange-rate version: null for the base currency.
+/// * [promoCode]
 /// * [problems] - CU §10.6: every one blocks ordering; the texts are in Appendix C.
 @BuiltValue()
 abstract class CustomerQuoteDtoOutput
@@ -72,6 +74,9 @@ abstract class CustomerQuoteDtoOutput
   /// The exchange-rate version: null for the base currency.
   @BuiltValueField(wireName: r'rates')
   BuiltList<CustomerQuoteDtoOutputRatesInner> get rates;
+
+  @BuiltValueField(wireName: r'promoCode')
+  CustomerQuoteDtoOutputPromoCode? get promoCode;
 
   /// CU §10.6: every one blocks ordering; the texts are in Appendix C.
   @BuiltValueField(wireName: r'problems')
@@ -176,6 +181,15 @@ class _$CustomerQuoteDtoOutputSerializer
         FullType(CustomerQuoteDtoOutputRatesInner),
       ]),
     );
+    yield r'promoCode';
+    yield object.promoCode == null
+        ? null
+        : serializers.serialize(
+            object.promoCode,
+            specifiedType: const FullType.nullable(
+              CustomerQuoteDtoOutputPromoCode,
+            ),
+          );
     yield r'problems';
     yield serializers.serialize(
       object.problems,
@@ -326,6 +340,18 @@ class _$CustomerQuoteDtoOutputSerializer
                   )
                   as BuiltList<CustomerQuoteDtoOutputRatesInner>;
           result.rates.replace(valueDes);
+          break;
+        case r'promoCode':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CustomerQuoteDtoOutputPromoCode,
+                    ),
+                  )
+                  as CustomerQuoteDtoOutputPromoCode?;
+          if (valueDes == null) continue;
+          result.promoCode.replace(valueDes);
           break;
         case r'problems':
           final valueDes =

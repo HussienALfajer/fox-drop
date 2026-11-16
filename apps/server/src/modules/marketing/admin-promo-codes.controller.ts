@@ -24,6 +24,7 @@ import { FxService } from '../fx/index.js';
 import { GeoService } from '../geo/index.js';
 import type { AdminSession } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
+import { PromoCodeUsesService } from './promo-code-uses.service.js';
 import { promoCodeState, type PromoFields } from './promo-codes.js';
 import {
   type PromoChange,
@@ -79,10 +80,10 @@ const promoCodeBody = z.object({
   state: z
     .enum(['active', 'paused', 'scheduled', 'expired'])
     .describe('What the list shows: paused, not started, ended or running.'),
-  uses: z.number().int().describe('Uses held or spent; 0 until codes are used in orders (2.21b).'),
+  uses: z.number().int().describe('Uses held or spent (not given back).'),
   costToDate: minor
     .nullable()
-    .describe('Null without marketing.read_costs; 0 until codes are used in orders (2.21b).'),
+    .describe('The discounts of the uses not given back; null without marketing.read_costs.'),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 });
@@ -143,6 +144,7 @@ type FieldsBody = z.infer<z.ZodObject<typeof fields>>;
 export class AdminPromoCodesController {
   constructor(
     private readonly codes: PromoCodesService,
+    private readonly uses: PromoCodeUsesService,
     private readonly geo: GeoService,
     private readonly merchants: MerchantsService,
     private readonly fx: FxService,
@@ -162,9 +164,10 @@ export class AdminPromoCodesController {
       this.geo.zones(query.cityId),
       this.fx.baseCurrency(query.cityId),
     ]);
+    const totals = await this.uses.totals(codes.map((code) => code.id));
     const now = new Date();
     return {
-      codes: codes.map((code) => codeBody(code, session, now)),
+      codes: codes.map((code) => codeBody(code, session, now, totals.get(code.id))),
       restaurants: restaurants.map(({ id, nameAr }) => ({ id, name: nameAr })),
       zones,
       baseCurrency,
@@ -322,7 +325,12 @@ function fieldsOf(body: FieldsBody): PromoFields {
   };
 }
 
-function codeBody(code: PromoCode, session: AdminSession, now: Date) {
+function codeBody(
+  code: PromoCode,
+  session: AdminSession,
+  now: Date,
+  totals: { uses: number; cost: bigint } = { uses: 0, cost: 0n },
+) {
   const text = (value: bigint | null) => (value === null ? null : value.toString());
   const seesCosts =
     session.permissions.includes('marketing.read_costs') ||
@@ -352,8 +360,8 @@ function codeBody(code: PromoCode, session: AdminSession, now: Date) {
     currency: code.currency,
     status: code.status,
     state: promoCodeState(code, now),
-    uses: 0,
-    costToDate: seesCosts ? '0' : null,
+    uses: totals.uses,
+    costToDate: seesCosts ? totals.cost.toString() : null,
     createdAt: code.createdAt.toISOString(),
     updatedAt: code.updatedAt.toISOString(),
   };

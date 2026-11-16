@@ -7,7 +7,7 @@ describe('ownerMoney', () => {
 
   it('takes the commission on the items value and leaves the restaurant the rest', () => {
     // RA §12.1: 400 at 15% is 60 of commission; the restaurant keeps 340.
-    expect(ownerMoney(order, null)).toEqual({
+    expect(ownerMoney(order, null)).toMatchObject({
       commissionBp: 1500,
       commission: 6_000n,
       merchantNet: 34_000n,
@@ -18,6 +18,30 @@ describe('ownerMoney', () => {
     expect(ownerMoney({ ...order, itemsValue: 10_001n }, null)?.commission).toBe(1_500n);
     expect(ownerMoney({ ...order, itemsValue: 10_003n }, null)?.commission).toBe(1_500n);
     expect(ownerMoney({ ...order, itemsValue: 10_004n }, null)?.commission).toBe(1_501n);
+  });
+
+  it('shows a restaurant-funded code as its own line (RA S18, slice 2.21b)', () => {
+    // 30 off the items: commission 15% of 370; the restaurant keeps
+    // 400 − 55.50 − 30.
+    expect(
+      ownerMoney({ ...order, discount: { merchant: 3_000n, onDelivery: false } }, null),
+    ).toEqual({
+      commissionBp: 1500,
+      commission: 5_550n,
+      discountShare: 3_000n,
+      discountOnDelivery: false,
+      merchantNet: 31_450n,
+    });
+    // A free delivery of 40 it funds leaves the commission's base.
+    expect(
+      ownerMoney({ ...order, discount: { merchant: 4_000n, onDelivery: true } }, null),
+    ).toEqual({
+      commissionBp: 1500,
+      commission: 6_000n,
+      discountShare: 4_000n,
+      discountOnDelivery: true,
+      merchantNet: 30_000n,
+    });
   });
 
   it('shows no commission on a test order', () => {
@@ -32,7 +56,7 @@ describe('ownerMoney', () => {
         { ...order, itemsValue: 32_000n },
         { itemsValue: 40_000n, restaurantCommissionCut: 1_200n, restaurantCharge: 8_000n },
       ),
-    ).toEqual({ commissionBp: 1500, commission: 4_800n, merchantNet: 27_200n });
+    ).toMatchObject({ commissionBp: 1500, commission: 4_800n, merchantNet: 27_200n });
   });
 
   it('leaves the restaurant its pickup net when another party bore the edit', () => {
@@ -41,7 +65,7 @@ describe('ownerMoney', () => {
         { ...order, itemsValue: 32_000n },
         { itemsValue: 40_000n, restaurantCommissionCut: 0n, restaurantCharge: 0n },
       ),
-    ).toEqual({ commissionBp: 1500, commission: 6_000n, merchantNet: 34_000n });
+    ).toMatchObject({ commissionBp: 1500, commission: 6_000n, merchantNet: 34_000n });
   });
 
   it('shows no commission and the net after the debit when the restaurant is responsible', () => {
@@ -52,7 +76,7 @@ describe('ownerMoney', () => {
       restaurantCommissionCut: 1_200n,
       restaurantCharge: 8_000n,
     };
-    expect(ownerMoney({ ...order, itemsValue: 32_000n }, frozen, 33_200n)).toEqual({
+    expect(ownerMoney({ ...order, itemsValue: 32_000n }, frozen, 33_200n)).toMatchObject({
       commissionBp: 1500,
       commission: 0n,
       merchantNet: 0n,

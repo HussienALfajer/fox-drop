@@ -42,6 +42,7 @@ part 'customer_active_orders_dto_output_orders_inner.g.dart';
 /// * [captain]
 /// * [currency]
 /// * [money]
+/// * [promoCode] - The code of «الخصم» (CU §10.4); null without one.
 /// * [equivalents] - The total in the city's other currencies, by the order's own rates (CU §11.1).
 /// * [lines]
 /// * [removedLines] - Lines an edit of FOX DROP removed, struck through as «حُذف» (CU §11.6).
@@ -109,6 +110,10 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInner
 
   @BuiltValueField(wireName: r'money')
   CustomerActiveOrdersDtoOutputOrdersInnerMoney get money;
+
+  /// The code of «الخصم» (CU §10.4); null without one.
+  @BuiltValueField(wireName: r'promoCode')
+  String? get promoCode;
 
   /// The total in the city's other currencies, by the order's own rates (CU §11.1).
   @BuiltValueField(wireName: r'equivalents')
@@ -285,6 +290,13 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerSerializer
         CustomerActiveOrdersDtoOutputOrdersInnerMoney,
       ),
     );
+    yield r'promoCode';
+    yield object.promoCode == null
+        ? null
+        : serializers.serialize(
+            object.promoCode,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'equivalents';
     yield serializers.serialize(
       object.equivalents,
@@ -534,6 +546,16 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerSerializer
                   )
                   as CustomerActiveOrdersDtoOutputOrdersInnerMoney;
           result.money.replace(valueDes);
+          break;
+        case r'promoCode':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.promoCode = valueDes;
           break;
         case r'equivalents':
           final valueDes =

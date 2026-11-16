@@ -809,6 +809,9 @@ Serializers _$serializers =
           ..add(CustomerQuoteDtoOutputMoney.serializer)
           ..add(CustomerQuoteDtoOutputProblemsInner.serializer)
           ..add(CustomerQuoteDtoOutputProblemsInnerCodeEnum.serializer)
+          ..add(CustomerQuoteDtoOutputProblemsInnerRefusalEnum.serializer)
+          ..add(CustomerQuoteDtoOutputPromoCode.serializer)
+          ..add(CustomerQuoteDtoOutputPromoCodeKindEnum.serializer)
           ..add(CustomerQuoteDtoOutputRatesInner.serializer)
           ..add(CustomerQuoteDtoOutputRestaurant.serializer)
           ..add(CustomerQuoteDtoOutputRestaurantStateEnum.serializer)
@@ -1631,10 +1634,14 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
-              const FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+              const FullType.nullable(
+                AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+              ),
             ]),
             () =>
-                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>(),
+                ListBuilder<
+                  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -2087,6 +2094,13 @@ Serializers _$serializers =
               const FullType(CaptainPeakBonusDtoOutputActiveInner),
             ]),
             () => ListBuilder<CaptainPeakBonusDtoOutputActiveInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+            ]),
+            () =>
+                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -3011,17 +3025,6 @@ Serializers _$serializers =
               const FullType.nullable(AdminCurrentDrawerSessionDtoOutputField),
             ]),
             () => ListBuilder<AdminCurrentDrawerSessionDtoOutputField?>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType.nullable(
-                AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
-              ),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
-                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

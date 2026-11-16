@@ -45,6 +45,15 @@ export const payInCurrency = z
     '«سأدفع بـ»: an accepted currency, or null for «لم أحدد» (CU §10.5); one no longer accepted gives payIn null.',
   );
 
+// CU §10.4: «أدخل الكود»; trimmed and upper-cased by the server.
+export const promoCodeInput = z
+  .string()
+  .trim()
+  .max(40)
+  .nullable()
+  .default(null)
+  .describe('The code typed («تطبيق»), or null; validated by every rule of AP §9.11.1.');
+
 export const appVersion = z.string().regex(/^\d+\.\d+\.\d+$/, 'expected a version such as 1.4.0');
 
 class CustomerQuoteRequestDto extends createZodDto(
@@ -56,6 +65,7 @@ class CustomerQuoteRequestDto extends createZodDto(
     lines: cartLines,
     payIn: payInCurrency,
     appVersion,
+    code: promoCodeInput,
     openedCheckout: z
       .boolean()
       .default(false)
@@ -98,7 +108,7 @@ class CustomerQuoteDto extends createZodDto(
       itemsValue: minor.describe('«قيمة الأصناف».'),
       deliveryFee: minor.describe('«رسوم التوصيل».'),
       deliveryFree: z.boolean().describe('«مجاني».'),
-      discount: minor.describe('«الخصم»; 0 until codes arrive.'),
+      discount: minor.describe('«الخصم», with the code; 0 without one.'),
       rounding: minor.describe('«تقريب», shown only when not 0.'),
       total: minor.describe('«المجموع».'),
     }),
@@ -125,6 +135,17 @@ class CustomerQuoteDto extends createZodDto(
     rates: z
       .array(z.object({ currency: z.string().length(3), rateVersionId: z.uuid().nullable() }))
       .describe('The exchange-rate version: null for the base currency.'),
+    promoCode: z
+      .object({
+        code: z.string(),
+        kind: z.enum(['percentage', 'fixed_amount', 'free_delivery']),
+        discount: minor,
+        fixedAmountAboveItems: z
+          .boolean()
+          .describe('«قيمة الكود أكبر من قيمة الأصناف، ولا يُستعاد الفرق» before confirming.'),
+      })
+      .nullable()
+      .describe('The code that applies (CU §10.4); null without one or when refused.'),
     problems: z
       .array(
         z.object({
@@ -147,6 +168,7 @@ class CustomerQuoteDto extends createZodDto(
             'emergency_stop',
             'review_stop',
             'dues_unpaid',
+            'promo_code',
             'item_not_found',
             'item_unavailable',
             'option_not_found',
@@ -166,7 +188,22 @@ class CustomerQuoteDto extends createZodDto(
             .describe('emergency_stop: the browsing message (AP §9.1.6).'),
           amount: amount
             .nullable()
-            .describe('dues_unpaid: what the customer owes (CU §5.5, AP §8.8).'),
+            .describe(
+              'dues_unpaid: what the customer owes (CU §5.5, AP §8.8); promo_code below_minimum: «أضف {المبلغ} لاستخدام هذا الكود».',
+            ),
+          refusal: z
+            .enum([
+              'unknown_code',
+              'not_valid_now',
+              'below_minimum',
+              'not_for_restaurant',
+              'first_order_only',
+              'used_before',
+              'uses_ended',
+              'budget_reached',
+            ])
+            .nullable()
+            .describe('promo_code: why the code does not apply (CU Appendix C «Code refusals»).'),
         }),
       )
       .describe('CU §10.6: every one blocks ordering; the texts are in Appendix C.'),
@@ -199,6 +236,7 @@ export class CustomerQuoteController {
             knownUnitPrice: BigInt(line.knownUnitPrice),
           })),
           customerAccountId: session?.accountId ?? null,
+          deviceId: session?.deviceId ?? null,
         },
         new Date(),
       );
@@ -264,6 +302,10 @@ export function quoteBody(quote: Quote) {
             missing: text(quote.freeDelivery.missing),
           },
     rates: quote.rates,
+    promoCode: quote.promoCode && {
+      ...quote.promoCode,
+      discount: text(quote.promoCode.discount),
+    },
     problems: quote.problems.map((entry) => ({
       ...entry,
       opensAt: entry.opensAt?.toISOString() ?? null,

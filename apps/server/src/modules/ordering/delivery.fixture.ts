@@ -228,6 +228,8 @@ export interface Dish {
 export async function acceptedOrder(
   recipient: { recipientName: string; contactPhone: string } | null = null,
   dish: Dish = { itemId: item, unitPrice: '12000' },
+  // CU §10.4: a code typed at checkout (slice 2.21b).
+  code: string | null = null,
 ) {
   const customer = await appSignIn('customer', phoneNumber());
   const lines = [
@@ -242,7 +244,14 @@ export async function acceptedOrder(
   const quote = await app.inject({
     method: 'POST',
     url: '/v1/customer/quote',
-    payload: { restaurantId: restaurant, location: home, lines, payIn: null, appVersion: '1.0.0' },
+    payload: {
+      restaurantId: restaurant,
+      location: home,
+      lines,
+      payIn: null,
+      appVersion: '1.0.0',
+      code,
+    },
   });
   const placed = await app.inject({
     method: 'POST',
@@ -253,6 +262,7 @@ export async function acceptedOrder(
       lines,
       payIn: null,
       appVersion: '1.0.0',
+      code,
       quoteVersion: quote.json().version,
       addressId: null,
       unsavedAddress: {
@@ -338,8 +348,9 @@ export async function onlineCaptain(point: Point = captainSpot) {
 export async function assignedOrder(
   recipient: { recipientName: string; contactPhone: string } | null = null,
   dish?: Dish,
+  code: string | null = null,
 ) {
-  const order = await acceptedOrder(recipient, dish);
+  const order = await acceptedOrder(recipient, dish, code);
   const captain = await onlineCaptain();
   const ops = await admin(['OPS']);
   expect((await ops.assign(order.id, captain.captainId)).statusCode).toBe(200);
@@ -350,8 +361,8 @@ export const SECOND = 1000;
 export const TRY = (amount: string) => [{ currency: 'TRY', amount }];
 
 // An order whose captain is at the restaurant.
-export async function captainAtRestaurant(dish?: Dish) {
-  const assigned = await assignedOrder(null, dish);
+export async function captainAtRestaurant(dish?: Dish, code: string | null = null) {
+  const assigned = await assignedOrder(null, dish, code);
   expect((await assigned.captain.arrive(assigned.order.id)).statusCode).toBe(200);
   const itemsValue = (BigInt(dish?.unitPrice ?? '12000') * 2n).toString();
   const requestPickup = (lines = TRY(itemsValue), key: string = randomUUID()) =>
@@ -404,8 +415,8 @@ export const farFromCustomer = { latitude: 36.595, longitude: 37.046 };
 
 // An order the captain picked up, with the commands of the way to the
 // customer.
-export async function pickedUpOrder(dish?: Dish) {
-  const at = await captainAtRestaurant(dish);
+export async function pickedUpOrder(dish?: Dish, code: string | null = null) {
+  const at = await captainAtRestaurant(dish, code);
   expect((await at.requestPickup()).statusCode).toBe(200);
   expect((await at.restaurant('confirm')).statusCode).toBe(200);
   const arriveAtCustomer = (
@@ -487,9 +498,9 @@ export function delta(before: Record<string, bigint>, after: Record<string, bigi
 
 // An order at the customer's door, with the delivery command.
 export async function orderAtDoor(
-  options: { away?: object | null; dish?: Dish; tripMetres?: number } = {},
+  options: { away?: object | null; dish?: Dish; tripMetres?: number; code?: string | null } = {},
 ) {
-  const picked = await pickedUpOrder(options.dish);
+  const picked = await pickedUpOrder(options.dish, options.code ?? null);
   if (options.tripMetres !== undefined) {
     // The trip kept at placing, as the pay of AP §8.4's example needs it.
     await sql.query('UPDATE ordering.orders SET trip_metres = $2 WHERE id = $1', [
@@ -582,4 +593,53 @@ export async function peakNow(amount: bigint): Promise<() => Promise<void>> {
       await migrator.end();
     }
   };
+}
+
+// AP §9.11.1 (slice 2.21b): a running code of the city, platform-funded
+// unless the fields say otherwise; the code back.
+export let promoCodes = 0;
+export async function promoCode(fields: Record<string, unknown> = {}): Promise<string> {
+  promoCodes += 1;
+  const row = {
+    code: `CODE${promoCodes}`,
+    kind: 'percentage',
+    percent_bp: 1000,
+    amount: null,
+    max_discount: 3000,
+    min_order: null,
+    total_limit: null,
+    per_customer_limit: null,
+    audience: 'everyone',
+    restaurant_ids: [],
+    funding: 'platform',
+    merchant_share_bp: 0,
+    daily_budget: null,
+    ...fields,
+  };
+  await sql.query(
+    `INSERT INTO marketing.promo_codes (city_id, code, kind, percent_bp, amount, max_discount,
+       currency, min_order, valid_from, valid_to, total_limit, per_customer_limit, audience,
+       restaurant_ids, zone_ids, funding, merchant_share_bp, daily_budget, visibility,
+       created_by, updated_by)
+     VALUES ($1, $2, $3, $4, $5, $6, 'TRY', $7, now() - interval '1 day', now() + interval '30 days',
+       $8, $9, $10, $11, '{}', $12, $13, $14, 'visible', $15, $15)`,
+    [
+      azaz,
+      row.code,
+      row.kind,
+      row.percent_bp,
+      row.amount,
+      row.max_discount,
+      row.min_order,
+      row.total_limit,
+      row.per_customer_limit,
+      row.audience,
+      row.restaurant_ids,
+      row.funding,
+      row.merchant_share_bp,
+      row.daily_budget,
+      randomUUID(),
+    ],
+  );
+  return row.code;
 }

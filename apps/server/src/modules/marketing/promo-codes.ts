@@ -132,3 +132,186 @@ export function generatedCode(prefix: string): string {
   for (let i = 0; i < GENERATED_LENGTH; i += 1) code += ALPHABET[randomInt(ALPHABET.length)];
   return code;
 }
+
+// The terms of a code an order keeps (its snapshot): what the discount is
+// worked out from at placing and again after an edit (AP §9.3.3).
+export interface CodeTerms {
+  kind: PromoCodeKind;
+  percentBp: number | null;
+  amount: bigint | null;
+  maxDiscount: bigint | null;
+  // The restaurant's share in basis points (0 platform, 10000 restaurant).
+  merchantShareBp: number;
+}
+
+// AP §8.4: the discount of a code on an order, and the restaurant's part of
+// it. A percentage or a fixed amount discounts the items value and is capped
+// at it (the rest of a fixed amount is lost); free delivery discounts the
+// whole fee. A percentage and a shared code's split are rounded half up to
+// the minor unit, as the commission is.
+export interface PromoDiscount {
+  total: bigint;
+  // merchant_funded_discount: on the items (item) or the fee (delivery).
+  merchant: bigint;
+  onDelivery: boolean;
+}
+
+const half = (amount: bigint, bp: number) => (amount * BigInt(bp) + 5000n) / 10000n;
+
+export function promoDiscount(
+  terms: CodeTerms,
+  money: { itemsValue: bigint; deliveryFee: bigint },
+): PromoDiscount {
+  const { itemsValue, deliveryFee } = money;
+  let total: bigint;
+  if (terms.kind === 'free_delivery') total = deliveryFee;
+  else {
+    let value =
+      terms.kind === 'percentage' ? half(itemsValue, terms.percentBp ?? 0) : terms.amount!;
+    if (terms.maxDiscount !== null && value > terms.maxDiscount) value = terms.maxDiscount;
+    total = value > itemsValue ? itemsValue : value;
+  }
+  return {
+    total,
+    merchant: half(total, terms.merchantShareBp),
+    onDelivery: terms.kind === 'free_delivery',
+  };
+}
+
+// CU §10.4: «قيمة الكود أكبر من قيمة الأصناف، ولا يُستعاد الفرق».
+export function fixedAmountAboveItems(terms: CodeTerms, itemsValue: bigint): boolean {
+  return terms.kind === 'fixed_amount' && terms.amount! > itemsValue;
+}
+
+// CU Appendix C «Code refusals»: why a code does not apply to this cart.
+export type CodeRefusal =
+  // «الكود غير صحيح»
+  | 'unknown_code'
+  // «الكود غير صالح الآن»: paused, not started, ended, outside its hours,
+  // or saved in a base the city no longer has.
+  | 'not_valid_now'
+  // «أضف {المبلغ} لاستخدام هذا الكود»
+  | 'below_minimum'
+  // «هذا الكود لا يعمل مع هذا المطعم»
+  | 'not_for_restaurant'
+  // «هذا الكود للطلب الأول فقط»
+  | 'first_order_only'
+  // «استخدمت هذا الكود من قبل»
+  | 'used_before'
+  // «انتهت استخدامات هذا الكود»
+  | 'uses_ended'
+  // «الكود غير متاح اليوم»
+  | 'budget_reached';
+
+export interface CodeRow extends CodeTerms {
+  status: PromoCodeStatus;
+  currency: string;
+  minOrder: bigint | null;
+  validFrom: Date;
+  validTo: Date;
+  startMinute: number | null;
+  endMinute: number | null;
+  totalLimit: number | null;
+  perCustomerLimit: number | null;
+  audience: PromoCodeAudience;
+  restaurantIds: string[];
+  zoneIds: string[];
+  dailyBudget: bigint | null;
+}
+
+// What a code is checked against: the cart, the moment and the code's uses
+// (the ones not given back).
+export interface CodeContext {
+  now: Date;
+  // The minute of the day on the city's clock.
+  minuteOfDay: number;
+  baseCurrency: string;
+  restaurantId: string;
+  // The delivery point's zone; null outside the zones (the quote shows it).
+  zoneId: string | null;
+  itemsValue: bigint;
+  // The signed-in customer; null for a guest, whose quote leaves the
+  // audience and the per-customer limit to placing (CU §5.1).
+  customer: {
+    // AP §9.11.1, §8.8: no delivered order on any account of the number.
+    newUser: boolean;
+    // This account's uses of the code.
+    uses: number;
+    // A use of the code by the same number or the same device.
+    phoneOrDeviceUsed: boolean;
+  } | null;
+  totalUses: number;
+  // The business day's cost so far (owner decision 2026-11-16).
+  dayCost: bigint;
+}
+
+export function codeRefusal(
+  code: CodeRow,
+  context: CodeContext,
+): { refusal: CodeRefusal; missing: bigint | null } | null {
+  const refuse = (refusal: CodeRefusal, missing: bigint | null = null) => ({ refusal, missing });
+  const at = context.now.getTime();
+  if (
+    code.status === 'paused' ||
+    at < code.validFrom.getTime() ||
+    at >= code.validTo.getTime() ||
+    code.currency !== context.baseCurrency ||
+    !withinHours(code, context.minuteOfDay)
+  ) {
+    return refuse('not_valid_now');
+  }
+  if (
+    (code.restaurantIds.length > 0 && !code.restaurantIds.includes(context.restaurantId)) ||
+    (code.zoneIds.length > 0 && (context.zoneId === null || !code.zoneIds.includes(context.zoneId)))
+  ) {
+    return refuse('not_for_restaurant');
+  }
+  if (code.minOrder !== null && context.itemsValue < code.minOrder) {
+    return refuse('below_minimum', code.minOrder - context.itemsValue);
+  }
+  const { customer } = context;
+  if (
+    code.audience === 'new_users' &&
+    customer !== null &&
+    (!customer.newUser || customer.phoneOrDeviceUsed)
+  ) {
+    return refuse('first_order_only');
+  }
+  if (
+    code.perCustomerLimit !== null &&
+    customer !== null &&
+    customer.uses >= code.perCustomerLimit
+  ) {
+    return refuse('used_before');
+  }
+  if (code.totalLimit !== null && context.totalUses >= code.totalLimit) {
+    return refuse('uses_ended');
+  }
+  if (code.dailyBudget !== null && context.dayCost >= code.dailyBudget) {
+    return refuse('budget_reached');
+  }
+  return null;
+}
+
+// The optional hours on the city's clock; an end at or before the start
+// runs past midnight.
+function withinHours(code: Pick<CodeRow, 'startMinute' | 'endMinute'>, minute: number): boolean {
+  const { startMinute: start, endMinute: end } = code;
+  if (start === null || end === null) return true;
+  return start < end ? minute >= start && minute < end : minute >= start || minute < end;
+}
+
+// The minute of the day a city's clock shows at an instant.
+export function minuteOfDay(instant: Date, timeZone: string): number {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    })
+      .formatToParts(instant)
+      .map((part) => [part.type, part.value]),
+  );
+  return Number(parts.hour) * 60 + Number(parts.minute);
+}

@@ -17,6 +17,7 @@ import { DeliveryBooking } from './delivery-booking.js';
 import { PickupBooking, PickupTimersWorker } from './pickup-booking.js';
 import { PickupCommands } from './pickup-commands.js';
 import { IdentityModule } from '../identity/index.js';
+import { MarketingModule } from '../marketing/index.js';
 import { LedgerModule } from '../ledger/index.js';
 import { AdminOrdersController } from './admin-orders.controller.js';
 import { CustomerOrdersController } from './customer-orders.controller.js';
@@ -54,6 +55,7 @@ import {
     AuditModule,
     LedgerModule,
     IdentityModule,
+    MarketingModule,
     SettingsModule,
     ContentModule,
     FxModule,
@@ -102,6 +104,7 @@ export class OrderingModule {}
     DatabaseModule,
     JobsModule,
     LedgerModule,
+    MarketingModule,
     NotificationsWorkerModule,
     ContentModule,
     CaptainsModule,

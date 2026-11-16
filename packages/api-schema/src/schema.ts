@@ -2916,6 +2916,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/promo-codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminPromoCodesList"];
+        put?: never;
+        post: operations["adminPromoCodesCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/promo-codes/batch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminPromoCodesGenerate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/promo-codes/{codeId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminPromoCodesEdit"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/promo-codes/{codeId}/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminPromoCodesPause"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/promo-codes/{codeId}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminPromoCodesResume"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/realtime/token": {
         parameters: {
             query?: never;
@@ -3838,86 +3918,6 @@ export interface paths {
         get: operations["adminExportsView"];
         put?: never;
         post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/promo-codes": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["adminPromoCodesList"];
-        put?: never;
-        post: operations["adminPromoCodesCreate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/promo-codes/batch": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["adminPromoCodesGenerate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/promo-codes/{codeId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["adminPromoCodesEdit"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/promo-codes/{codeId}/pause": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["adminPromoCodesPause"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/promo-codes/{codeId}/resume": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["adminPromoCodesResume"];
         delete?: never;
         options?: never;
         head?: never;
@@ -6043,6 +6043,11 @@ export interface components {
             payIn: string | null;
             appVersion: string;
             /**
+             * @description The code typed («تطبيق»), or null; validated by every rule of AP §9.11.1.
+             * @default null
+             */
+            code: string | null;
+            /**
              * @description True on the quote asked on opening checkout: a signed-in customer then counts once per emergency stop (AP §9.1.6).
              * @default false
              */
@@ -6088,7 +6093,7 @@ export interface components {
                 deliveryFee: string;
                 /** @description «مجاني». */
                 deliveryFree: boolean;
-                /** @description «الخصم»; 0 until codes arrive. */
+                /** @description «الخصم», with the code; 0 without one. */
                 discount: string;
                 /** @description «تقريب», shown only when not 0. */
                 rounding: string;
@@ -6133,22 +6138,34 @@ export interface components {
                 currency: string;
                 rateVersionId: string | null;
             }[];
+            /** @description The code that applies (CU §10.4); null without one or when refused. */
+            promoCode: {
+                code: string;
+                /** @enum {string} */
+                kind: "percentage" | "fixed_amount" | "free_delivery";
+                /** @description Integer minor units (AP §8.6). */
+                discount: string;
+                /** @description «قيمة الكود أكبر من قيمة الأصناف، ولا يُستعاد الفرق» before confirming. */
+                fixedAmountAboveItems: boolean;
+            } | null;
             /** @description CU §10.6: every one blocks ordering; the texts are in Appendix C. */
             problems: {
                 /** @enum {string} */
-                code: "update_required" | "maintenance" | "platform_closed" | "outside_zones" | "not_covered" | "restaurant_closed" | "below_minimum_order" | "minimum_not_in_base_currency" | "delivery_unpriced" | "rates_unavailable" | "captain_pay_unset" | "one_order_at_a_time" | "active_order_limit" | "no_captain_nearby" | "terms_pending" | "emergency_stop" | "review_stop" | "dues_unpaid" | "item_not_found" | "item_unavailable" | "option_not_found" | "option_unavailable" | "options_invalid" | "price_not_in_base_currency" | "price_changed";
+                code: "update_required" | "maintenance" | "platform_closed" | "outside_zones" | "not_covered" | "restaurant_closed" | "below_minimum_order" | "minimum_not_in_base_currency" | "delivery_unpriced" | "rates_unavailable" | "captain_pay_unset" | "one_order_at_a_time" | "active_order_limit" | "no_captain_nearby" | "terms_pending" | "emergency_stop" | "review_stop" | "dues_unpaid" | "promo_code" | "item_not_found" | "item_unavailable" | "option_not_found" | "option_unavailable" | "options_invalid" | "price_not_in_base_currency" | "price_changed";
                 /** @description The cart line, for a line problem. */
                 line: number | null;
                 /** @description platform_closed: «FOX DROP يستقبل الطلبات من الساعة {الساعة}». */
                 opensAt: string | null;
                 /** @description emergency_stop: the browsing message (AP §9.1.6). */
                 message: string | null;
-                /** @description dues_unpaid: what the customer owes (CU §5.5, AP §8.8). */
+                /** @description dues_unpaid: what the customer owes (CU §5.5, AP §8.8); promo_code below_minimum: «أضف {المبلغ} لاستخدام هذا الكود». */
                 amount: {
                     /** @description Integer minor units (AP §8.6). */
                     amount: string;
                     currency: string;
                 } | null;
+                /** @description promo_code: why the code does not apply (CU Appendix C «Code refusals»). */
+                refusal: ("unknown_code" | "not_valid_now" | "below_minimum" | "not_for_restaurant" | "first_order_only" | "used_before" | "uses_ended" | "budget_reached") | null;
             }[];
         };
         CustomerActiveOrdersDto_Output: {
@@ -6269,13 +6286,15 @@ export interface components {
                     /** @description Integer minor units (AP §8.6). */
                     deliveryFee: string;
                     deliveryFree: boolean;
-                    /** @description Integer minor units (AP §8.6). */
+                    /** @description «الخصم»; 0 without a code. */
                     discount: string;
                     /** @description Integer minor units (AP §8.6). */
                     rounding: string;
                     /** @description Integer minor units (AP §8.6). */
                     total: string;
                 };
+                /** @description The code of «الخصم» (CU §10.4); null without one. */
+                promoCode: string | null;
                 /** @description The total in the city's other currencies, by the order's own rates (CU §11.1). */
                 equivalents: {
                     currency: string;
@@ -6457,13 +6476,15 @@ export interface components {
                     /** @description Integer minor units (AP §8.6). */
                     deliveryFee: string;
                     deliveryFree: boolean;
-                    /** @description Integer minor units (AP §8.6). */
+                    /** @description «الخصم»; 0 without a code. */
                     discount: string;
                     /** @description Integer minor units (AP §8.6). */
                     rounding: string;
                     /** @description Integer minor units (AP §8.6). */
                     total: string;
                 };
+                /** @description The code of «الخصم» (CU §10.4); null without one. */
+                promoCode: string | null;
                 /** @description The total in the city's other currencies, by the order's own rates (CU §11.1). */
                 equivalents: {
                     currency: string;
@@ -6545,6 +6566,11 @@ export interface components {
             /** @description «سأدفع بـ»: an accepted currency, or null for «لم أحدد» (CU §10.5); one no longer accepted gives payIn null. */
             payIn: string | null;
             appVersion: string;
+            /**
+             * @description The code typed («تطبيق»), or null; validated by every rule of AP §9.11.1.
+             * @default null
+             */
+            code: string | null;
             /** @description The version of the quote the customer confirmed (CU §10.7). */
             quoteVersion: string;
             /** @description A saved address (CU §7.3), or null. */
@@ -6642,7 +6668,7 @@ export interface components {
                 currency: string;
                 /** @description «قيمة الأصناف — يدفعها لك الكابتن نقداً عند الاستلام» (RA §8.4); the delivery fee and the customer total are never shown (R11). */
                 itemsValue: string;
-                /** @description RA §8.4, R10: owners only (null for a cashier, and on a cancelled order). After the pickup the pickup's items value is the base, less the restaurant's own edits (AP §9.3.3). No restaurant-funded discount until codes (Phase 2). */
+                /** @description RA §8.4, R10: owners only (null for a cashier, and on a cancelled order). After the pickup the pickup's items value is the base, less the restaurant's own edits (AP §9.3.3); a restaurant-funded code lowers the commission's base and is its own line. */
                 owner: {
                     /** @description «طلب تجريبي — لا عمولة» instead of the commission lines (AP §9.6.3). */
                     testOrder: boolean;
@@ -6650,6 +6676,10 @@ export interface components {
                     commissionBp: number | null;
                     /** @description «العمولة {النسبة}% — تُسدَّد يوم السبت: {المبلغ}»; null on a test order. */
                     commission: string | null;
+                    /** @description The restaurant-funded discount, paid on Saturday with the commission (AP §8.4, RA S18); 0 without one, null on a test order. */
+                    discountShare: string | null;
+                    /** @description The restaurant-funded discount is on the delivery fee (RA S18), not the items. */
+                    discountOnDelivery: boolean;
                     /** @description «صافيك من الطلب»; null on a test order. */
                     merchantNet: string | null;
                 } | null;
@@ -6847,7 +6877,7 @@ export interface components {
                 currency: string;
                 /** @description «قيمة الأصناف — يدفعها لك الكابتن نقداً عند الاستلام» (RA §8.4); the delivery fee and the customer total are never shown (R11). */
                 itemsValue: string;
-                /** @description RA §8.4, R10: owners only (null for a cashier, and on a cancelled order). After the pickup the pickup's items value is the base, less the restaurant's own edits (AP §9.3.3). No restaurant-funded discount until codes (Phase 2). */
+                /** @description RA §8.4, R10: owners only (null for a cashier, and on a cancelled order). After the pickup the pickup's items value is the base, less the restaurant's own edits (AP §9.3.3); a restaurant-funded code lowers the commission's base and is its own line. */
                 owner: {
                     /** @description «طلب تجريبي — لا عمولة» instead of the commission lines (AP §9.6.3). */
                     testOrder: boolean;
@@ -6855,6 +6885,10 @@ export interface components {
                     commissionBp: number | null;
                     /** @description «العمولة {النسبة}% — تُسدَّد يوم السبت: {المبلغ}»; null on a test order. */
                     commission: string | null;
+                    /** @description The restaurant-funded discount, paid on Saturday with the commission (AP §8.4, RA S18); 0 without one, null on a test order. */
+                    discountShare: string | null;
+                    /** @description The restaurant-funded discount is on the delivery fee (RA S18), not the items. */
+                    discountOnDelivery: boolean;
                     /** @description «صافيك من الطلب»; null on a test order. */
                     merchantNet: string | null;
                 } | null;
@@ -9429,6 +9463,337 @@ export interface components {
             active: boolean;
             startedAt: string | null;
         };
+        AdminPromoCodesDto_Output: {
+            codes: {
+                /** Format: uuid */
+                id: string;
+                code: string;
+                batchId: string | null;
+                /** @enum {string} */
+                kind: "percentage" | "fixed_amount" | "free_delivery";
+                /** @description A percentage code: 2000 is 20%. */
+                percentBp: number | null;
+                /** @description A fixed-amount code: minor units of the base currency. */
+                amount: string | null;
+                /** @description A percentage code's cap, or null for none. */
+                maxDiscount: string | null;
+                /** @description On the items value before discounts; null for none. */
+                minOrder: string | null;
+                /** Format: date-time */
+                validFrom: string;
+                /** Format: date-time */
+                validTo: string;
+                /** @description Optional hours: minutes from midnight on the city clock, 20:00 is 1200. */
+                startMinute: number | null;
+                /** @description At or before the start, the hours run past midnight. */
+                endMinute: number | null;
+                /** @description Null: no limit. */
+                totalLimit: number | null;
+                /** @description Null: no limit. */
+                perCustomerLimit: number | null;
+                /** @enum {string} */
+                audience: "everyone" | "new_users";
+                /** @description None: every restaurant. */
+                restaurantIds: string[];
+                /** @description None: every zone. */
+                zoneIds: string[];
+                /** @enum {string} */
+                funding: "platform" | "restaurant" | "shared";
+                /** @description A shared code: the restaurant's share, 4000 is 40%; null otherwise. */
+                sharedMerchantBp: number | null;
+                /** @description Pauses the code for the business day; null for none. */
+                dailyBudget: string | null;
+                /** @enum {string} */
+                visibility: "visible" | "secret";
+                currency: string;
+                /**
+                 * @description Set by OWN.
+                 * @enum {string}
+                 */
+                status: "active" | "paused";
+                /**
+                 * @description What the list shows: paused, not started, ended or running.
+                 * @enum {string}
+                 */
+                state: "active" | "paused" | "scheduled" | "expired";
+                /** @description Uses held or spent (not given back). */
+                uses: number;
+                /** @description The discounts of the uses not given back; null without marketing.read_costs. */
+                costToDate: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                updatedAt: string;
+            }[];
+            restaurants: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            }[];
+            zones: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                active: boolean;
+            }[];
+            /** @description The amounts are typed in it; null while the city has none. */
+            baseCurrency: string | null;
+            /** @description Whether this admin may create, edit, pause and resume. */
+            canManage: boolean;
+        };
+        AdminCreatePromoCodeDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description Letters and digits, saved in upper case. */
+            code: string;
+            /** @enum {string} */
+            kind: "percentage" | "fixed_amount" | "free_delivery";
+            /** @description A percentage code: 2000 is 20%. */
+            percentBp: number | null;
+            /** @description A fixed-amount code: minor units of the base currency. */
+            amount: string | null;
+            /** @description A percentage code's cap, or null for none. */
+            maxDiscount: string | null;
+            /** @description On the items value before discounts; null for none. */
+            minOrder: string | null;
+            /** Format: date-time */
+            validFrom: string;
+            /** Format: date-time */
+            validTo: string;
+            /** @description Optional hours: minutes from midnight on the city clock, 20:00 is 1200. */
+            startMinute: number | null;
+            /** @description At or before the start, the hours run past midnight. */
+            endMinute: number | null;
+            /** @description Null: no limit. */
+            totalLimit: number | null;
+            /** @description Null: no limit. */
+            perCustomerLimit: number | null;
+            /** @enum {string} */
+            audience: "everyone" | "new_users";
+            /** @description None: every restaurant. */
+            restaurantIds: string[];
+            /** @description None: every zone. */
+            zoneIds: string[];
+            /** @enum {string} */
+            funding: "platform" | "restaurant" | "shared";
+            /** @description A shared code: the restaurant's share, 4000 is 40%; null otherwise. */
+            sharedMerchantBp: number | null;
+            /** @description Pauses the code for the business day; null for none. */
+            dailyBudget: string | null;
+            /** @enum {string} */
+            visibility: "visible" | "secret";
+        };
+        AdminPromoCodesCreatedDto_Output: {
+            codes: {
+                /** Format: uuid */
+                id: string;
+                code: string;
+                batchId: string | null;
+                /** @enum {string} */
+                kind: "percentage" | "fixed_amount" | "free_delivery";
+                /** @description A percentage code: 2000 is 20%. */
+                percentBp: number | null;
+                /** @description A fixed-amount code: minor units of the base currency. */
+                amount: string | null;
+                /** @description A percentage code's cap, or null for none. */
+                maxDiscount: string | null;
+                /** @description On the items value before discounts; null for none. */
+                minOrder: string | null;
+                /** Format: date-time */
+                validFrom: string;
+                /** Format: date-time */
+                validTo: string;
+                /** @description Optional hours: minutes from midnight on the city clock, 20:00 is 1200. */
+                startMinute: number | null;
+                /** @description At or before the start, the hours run past midnight. */
+                endMinute: number | null;
+                /** @description Null: no limit. */
+                totalLimit: number | null;
+                /** @description Null: no limit. */
+                perCustomerLimit: number | null;
+                /** @enum {string} */
+                audience: "everyone" | "new_users";
+                /** @description None: every restaurant. */
+                restaurantIds: string[];
+                /** @description None: every zone. */
+                zoneIds: string[];
+                /** @enum {string} */
+                funding: "platform" | "restaurant" | "shared";
+                /** @description A shared code: the restaurant's share, 4000 is 40%; null otherwise. */
+                sharedMerchantBp: number | null;
+                /** @description Pauses the code for the business day; null for none. */
+                dailyBudget: string | null;
+                /** @enum {string} */
+                visibility: "visible" | "secret";
+                currency: string;
+                /**
+                 * @description Set by OWN.
+                 * @enum {string}
+                 */
+                status: "active" | "paused";
+                /**
+                 * @description What the list shows: paused, not started, ended or running.
+                 * @enum {string}
+                 */
+                state: "active" | "paused" | "scheduled" | "expired";
+                /** @description Uses held or spent (not given back). */
+                uses: number;
+                /** @description The discounts of the uses not given back; null without marketing.read_costs. */
+                costToDate: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                updatedAt: string;
+            }[];
+        };
+        AdminGeneratePromoCodesDto: {
+            /** Format: uuid */
+            cityId: string;
+            count: number;
+            /** @description Before 8 random characters; may be empty. */
+            prefix: string;
+            /** @enum {string} */
+            kind: "percentage" | "fixed_amount" | "free_delivery";
+            /** @description A percentage code: 2000 is 20%. */
+            percentBp: number | null;
+            /** @description A fixed-amount code: minor units of the base currency. */
+            amount: string | null;
+            /** @description A percentage code's cap, or null for none. */
+            maxDiscount: string | null;
+            /** @description On the items value before discounts; null for none. */
+            minOrder: string | null;
+            /** Format: date-time */
+            validFrom: string;
+            /** Format: date-time */
+            validTo: string;
+            /** @description Optional hours: minutes from midnight on the city clock, 20:00 is 1200. */
+            startMinute: number | null;
+            /** @description At or before the start, the hours run past midnight. */
+            endMinute: number | null;
+            /** @description Null: no limit. */
+            totalLimit: number | null;
+            /** @description Null: no limit. */
+            perCustomerLimit: number | null;
+            /** @enum {string} */
+            audience: "everyone" | "new_users";
+            /** @description None: every restaurant. */
+            restaurantIds: string[];
+            /** @description None: every zone. */
+            zoneIds: string[];
+            /** @enum {string} */
+            funding: "platform" | "restaurant" | "shared";
+            /** @description A shared code: the restaurant's share, 4000 is 40%; null otherwise. */
+            sharedMerchantBp: number | null;
+            /** @description Pauses the code for the business day; null for none. */
+            dailyBudget: string | null;
+            /** @enum {string} */
+            visibility: "visible" | "secret";
+        };
+        AdminEditPromoCodeDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @enum {string} */
+            kind: "percentage" | "fixed_amount" | "free_delivery";
+            /** @description A percentage code: 2000 is 20%. */
+            percentBp: number | null;
+            /** @description A fixed-amount code: minor units of the base currency. */
+            amount: string | null;
+            /** @description A percentage code's cap, or null for none. */
+            maxDiscount: string | null;
+            /** @description On the items value before discounts; null for none. */
+            minOrder: string | null;
+            /** Format: date-time */
+            validFrom: string;
+            /** Format: date-time */
+            validTo: string;
+            /** @description Optional hours: minutes from midnight on the city clock, 20:00 is 1200. */
+            startMinute: number | null;
+            /** @description At or before the start, the hours run past midnight. */
+            endMinute: number | null;
+            /** @description Null: no limit. */
+            totalLimit: number | null;
+            /** @description Null: no limit. */
+            perCustomerLimit: number | null;
+            /** @enum {string} */
+            audience: "everyone" | "new_users";
+            /** @description None: every restaurant. */
+            restaurantIds: string[];
+            /** @description None: every zone. */
+            zoneIds: string[];
+            /** @enum {string} */
+            funding: "platform" | "restaurant" | "shared";
+            /** @description A shared code: the restaurant's share, 4000 is 40%; null otherwise. */
+            sharedMerchantBp: number | null;
+            /** @description Pauses the code for the business day; null for none. */
+            dailyBudget: string | null;
+            /** @enum {string} */
+            visibility: "visible" | "secret";
+        };
+        AdminPromoCodeDto_Output: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            batchId: string | null;
+            /** @enum {string} */
+            kind: "percentage" | "fixed_amount" | "free_delivery";
+            /** @description A percentage code: 2000 is 20%. */
+            percentBp: number | null;
+            /** @description A fixed-amount code: minor units of the base currency. */
+            amount: string | null;
+            /** @description A percentage code's cap, or null for none. */
+            maxDiscount: string | null;
+            /** @description On the items value before discounts; null for none. */
+            minOrder: string | null;
+            /** Format: date-time */
+            validFrom: string;
+            /** Format: date-time */
+            validTo: string;
+            /** @description Optional hours: minutes from midnight on the city clock, 20:00 is 1200. */
+            startMinute: number | null;
+            /** @description At or before the start, the hours run past midnight. */
+            endMinute: number | null;
+            /** @description Null: no limit. */
+            totalLimit: number | null;
+            /** @description Null: no limit. */
+            perCustomerLimit: number | null;
+            /** @enum {string} */
+            audience: "everyone" | "new_users";
+            /** @description None: every restaurant. */
+            restaurantIds: string[];
+            /** @description None: every zone. */
+            zoneIds: string[];
+            /** @enum {string} */
+            funding: "platform" | "restaurant" | "shared";
+            /** @description A shared code: the restaurant's share, 4000 is 40%; null otherwise. */
+            sharedMerchantBp: number | null;
+            /** @description Pauses the code for the business day; null for none. */
+            dailyBudget: string | null;
+            /** @enum {string} */
+            visibility: "visible" | "secret";
+            currency: string;
+            /**
+             * @description Set by OWN.
+             * @enum {string}
+             */
+            status: "active" | "paused";
+            /**
+             * @description What the list shows: paused, not started, ended or running.
+             * @enum {string}
+             */
+            state: "active" | "paused" | "scheduled" | "expired";
+            /** @description Uses held or spent (not given back). */
+            uses: number;
+            /** @description The discounts of the uses not given back; null without marketing.read_costs. */
+            costToDate: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        AdminPromoCodeCityDto: {
+            /** Format: uuid */
+            cityId: string;
+        };
         RealtimeTokenDto_Output: {
             /** @description Centrifugo's connection token, valid 15 minutes; ask again when it expires. */
             token: string;
@@ -11613,337 +11978,6 @@ export interface components {
             cityId: string;
             /** @description A business day on the city’s clock, YYYY-MM-DD. */
             day: string;
-        };
-        AdminPromoCodesDto_Output: {
-            codes: {
-                /** Format: uuid */
-                id: string;
-                code: string;
-                batchId: string | null;
-                /** @enum {string} */
-                kind: "percentage" | "fixed_amount" | "free_delivery";
-                /** @description A percentage code: 2000 is 20%. */
-                percentBp: number | null;
-                /** @description A fixed-amount code: minor units of the base currency. */
-                amount: string | null;
-                /** @description A percentage code's cap, or null for none. */
-                maxDiscount: string | null;
-                /** @description On the items value before discounts; null for none. */
-                minOrder: string | null;
-                /** Format: date-time */
-                validFrom: string;
-                /** Format: date-time */
-                validTo: string;
-                /** @description Optional hours: minutes from midnight on the city clock, 20:00 is 1200. */
-                startMinute: number | null;
-                /** @description At or before the start, the hours run past midnight. */
-                endMinute: number | null;
-                /** @description Null: no limit. */
-                totalLimit: number | null;
-                /** @description Null: no limit. */
-                perCustomerLimit: number | null;
-                /** @enum {string} */
-                audience: "everyone" | "new_users";
-                /** @description None: every restaurant. */
-                restaurantIds: string[];
-                /** @description None: every zone. */
-                zoneIds: string[];
-                /** @enum {string} */
-                funding: "platform" | "restaurant" | "shared";
-                /** @description A shared code: the restaurant's share, 4000 is 40%; null otherwise. */
-                sharedMerchantBp: number | null;
-                /** @description Pauses the code for the business day; null for none. */
-                dailyBudget: string | null;
-                /** @enum {string} */
-                visibility: "visible" | "secret";
-                currency: string;
-                /**
-                 * @description Set by OWN.
-                 * @enum {string}
-                 */
-                status: "active" | "paused";
-                /**
-                 * @description What the list shows: paused, not started, ended or running.
-                 * @enum {string}
-                 */
-                state: "active" | "paused" | "scheduled" | "expired";
-                /** @description Uses held or spent; 0 until codes are used in orders (2.21b). */
-                uses: number;
-                /** @description Null without marketing.read_costs; 0 until codes are used in orders (2.21b). */
-                costToDate: string | null;
-                /** Format: date-time */
-                createdAt: string;
-                /** Format: date-time */
-                updatedAt: string;
-            }[];
-            restaurants: {
-                /** Format: uuid */
-                id: string;
-                name: string;
-            }[];
-            zones: {
-                /** Format: uuid */
-                id: string;
-                name: string;
-                active: boolean;
-            }[];
-            /** @description The amounts are typed in it; null while the city has none. */
-            baseCurrency: string | null;
-            /** @description Whether this admin may create, edit, pause and resume. */
-            canManage: boolean;
-        };
-        AdminCreatePromoCodeDto: {
-            /** Format: uuid */
-            cityId: string;
-            /** @description Letters and digits, saved in upper case. */
-            code: string;
-            /** @enum {string} */
-            kind: "percentage" | "fixed_amount" | "free_delivery";
-            /** @description A percentage code: 2000 is 20%. */
-            percentBp: number | null;
-            /** @description A fixed-amount code: minor units of the base currency. */
-            amount: string | null;
-            /** @description A percentage code's cap, or null for none. */
-            maxDiscount: string | null;
-            /** @description On the items value before discounts; null for none. */
-            minOrder: string | null;
-            /** Format: date-time */
-            validFrom: string;
-            /** Format: date-time */
-            validTo: string;
-            /** @description Optional hours: minutes from midnight on the city clock, 20:00 is 1200. */
-            startMinute: number | null;
-            /** @description At or before the start, the hours run past midnight. */
-            endMinute: number | null;
-            /** @description Null: no limit. */
-            totalLimit: number | null;
-            /** @description Null: no limit. */
-            perCustomerLimit: number | null;
-            /** @enum {string} */
-            audience: "everyone" | "new_users";
-            /** @description None: every restaurant. */
-            restaurantIds: string[];
-            /** @description None: every zone. */
-            zoneIds: string[];
-            /** @enum {string} */
-            funding: "platform" | "restaurant" | "shared";
-            /** @description A shared code: the restaurant's share, 4000 is 40%; null otherwise. */
-            sharedMerchantBp: number | null;
-            /** @description Pauses the code for the business day; null for none. */
-            dailyBudget: string | null;
-            /** @enum {string} */
-            visibility: "visible" | "secret";
-        };
-        AdminPromoCodesCreatedDto_Output: {
-            codes: {
-                /** Format: uuid */
-                id: string;
-                code: string;
-                batchId: string | null;
-                /** @enum {string} */
-                kind: "percentage" | "fixed_amount" | "free_delivery";
-                /** @description A percentage code: 2000 is 20%. */
-                percentBp: number | null;
-                /** @description A fixed-amount code: minor units of the base currency. */
-                amount: string | null;
-                /** @description A percentage code's cap, or null for none. */
-                maxDiscount: string | null;
-                /** @description On the items value before discounts; null for none. */
-                minOrder: string | null;
-                /** Format: date-time */
-                validFrom: string;
-                /** Format: date-time */
-                validTo: string;
-                /** @description Optional hours: minutes from midnight on the city clock, 20:00 is 1200. */
-                startMinute: number | null;
-                /** @description At or before the start, the hours run past midnight. */
-                endMinute: number | null;
-                /** @description Null: no limit. */
-                totalLimit: number | null;
-                /** @description Null: no limit. */
-                perCustomerLimit: number | null;
-                /** @enum {string} */
-                audience: "everyone" | "new_users";
-                /** @description None: every restaurant. */
-                restaurantIds: string[];
-                /** @description None: every zone. */
-                zoneIds: string[];
-                /** @enum {string} */
-                funding: "platform" | "restaurant" | "shared";
-                /** @description A shared code: the restaurant's share, 4000 is 40%; null otherwise. */
-                sharedMerchantBp: number | null;
-                /** @description Pauses the code for the business day; null for none. */
-                dailyBudget: string | null;
-                /** @enum {string} */
-                visibility: "visible" | "secret";
-                currency: string;
-                /**
-                 * @description Set by OWN.
-                 * @enum {string}
-                 */
-                status: "active" | "paused";
-                /**
-                 * @description What the list shows: paused, not started, ended or running.
-                 * @enum {string}
-                 */
-                state: "active" | "paused" | "scheduled" | "expired";
-                /** @description Uses held or spent; 0 until codes are used in orders (2.21b). */
-                uses: number;
-                /** @description Null without marketing.read_costs; 0 until codes are used in orders (2.21b). */
-                costToDate: string | null;
-                /** Format: date-time */
-                createdAt: string;
-                /** Format: date-time */
-                updatedAt: string;
-            }[];
-        };
-        AdminGeneratePromoCodesDto: {
-            /** Format: uuid */
-            cityId: string;
-            count: number;
-            /** @description Before 8 random characters; may be empty. */
-            prefix: string;
-            /** @enum {string} */
-            kind: "percentage" | "fixed_amount" | "free_delivery";
-            /** @description A percentage code: 2000 is 20%. */
-            percentBp: number | null;
-            /** @description A fixed-amount code: minor units of the base currency. */
-            amount: string | null;
-            /** @description A percentage code's cap, or null for none. */
-            maxDiscount: string | null;
-            /** @description On the items value before discounts; null for none. */
-            minOrder: string | null;
-            /** Format: date-time */
-            validFrom: string;
-            /** Format: date-time */
-            validTo: string;
-            /** @description Optional hours: minutes from midnight on the city clock, 20:00 is 1200. */
-            startMinute: number | null;
-            /** @description At or before the start, the hours run past midnight. */
-            endMinute: number | null;
-            /** @description Null: no limit. */
-            totalLimit: number | null;
-            /** @description Null: no limit. */
-            perCustomerLimit: number | null;
-            /** @enum {string} */
-            audience: "everyone" | "new_users";
-            /** @description None: every restaurant. */
-            restaurantIds: string[];
-            /** @description None: every zone. */
-            zoneIds: string[];
-            /** @enum {string} */
-            funding: "platform" | "restaurant" | "shared";
-            /** @description A shared code: the restaurant's share, 4000 is 40%; null otherwise. */
-            sharedMerchantBp: number | null;
-            /** @description Pauses the code for the business day; null for none. */
-            dailyBudget: string | null;
-            /** @enum {string} */
-            visibility: "visible" | "secret";
-        };
-        AdminEditPromoCodeDto: {
-            /** Format: uuid */
-            cityId: string;
-            /** @enum {string} */
-            kind: "percentage" | "fixed_amount" | "free_delivery";
-            /** @description A percentage code: 2000 is 20%. */
-            percentBp: number | null;
-            /** @description A fixed-amount code: minor units of the base currency. */
-            amount: string | null;
-            /** @description A percentage code's cap, or null for none. */
-            maxDiscount: string | null;
-            /** @description On the items value before discounts; null for none. */
-            minOrder: string | null;
-            /** Format: date-time */
-            validFrom: string;
-            /** Format: date-time */
-            validTo: string;
-            /** @description Optional hours: minutes from midnight on the city clock, 20:00 is 1200. */
-            startMinute: number | null;
-            /** @description At or before the start, the hours run past midnight. */
-            endMinute: number | null;
-            /** @description Null: no limit. */
-            totalLimit: number | null;
-            /** @description Null: no limit. */
-            perCustomerLimit: number | null;
-            /** @enum {string} */
-            audience: "everyone" | "new_users";
-            /** @description None: every restaurant. */
-            restaurantIds: string[];
-            /** @description None: every zone. */
-            zoneIds: string[];
-            /** @enum {string} */
-            funding: "platform" | "restaurant" | "shared";
-            /** @description A shared code: the restaurant's share, 4000 is 40%; null otherwise. */
-            sharedMerchantBp: number | null;
-            /** @description Pauses the code for the business day; null for none. */
-            dailyBudget: string | null;
-            /** @enum {string} */
-            visibility: "visible" | "secret";
-        };
-        AdminPromoCodeDto_Output: {
-            /** Format: uuid */
-            id: string;
-            code: string;
-            batchId: string | null;
-            /** @enum {string} */
-            kind: "percentage" | "fixed_amount" | "free_delivery";
-            /** @description A percentage code: 2000 is 20%. */
-            percentBp: number | null;
-            /** @description A fixed-amount code: minor units of the base currency. */
-            amount: string | null;
-            /** @description A percentage code's cap, or null for none. */
-            maxDiscount: string | null;
-            /** @description On the items value before discounts; null for none. */
-            minOrder: string | null;
-            /** Format: date-time */
-            validFrom: string;
-            /** Format: date-time */
-            validTo: string;
-            /** @description Optional hours: minutes from midnight on the city clock, 20:00 is 1200. */
-            startMinute: number | null;
-            /** @description At or before the start, the hours run past midnight. */
-            endMinute: number | null;
-            /** @description Null: no limit. */
-            totalLimit: number | null;
-            /** @description Null: no limit. */
-            perCustomerLimit: number | null;
-            /** @enum {string} */
-            audience: "everyone" | "new_users";
-            /** @description None: every restaurant. */
-            restaurantIds: string[];
-            /** @description None: every zone. */
-            zoneIds: string[];
-            /** @enum {string} */
-            funding: "platform" | "restaurant" | "shared";
-            /** @description A shared code: the restaurant's share, 4000 is 40%; null otherwise. */
-            sharedMerchantBp: number | null;
-            /** @description Pauses the code for the business day; null for none. */
-            dailyBudget: string | null;
-            /** @enum {string} */
-            visibility: "visible" | "secret";
-            currency: string;
-            /**
-             * @description Set by OWN.
-             * @enum {string}
-             */
-            status: "active" | "paused";
-            /**
-             * @description What the list shows: paused, not started, ended or running.
-             * @enum {string}
-             */
-            state: "active" | "paused" | "scheduled" | "expired";
-            /** @description Uses held or spent; 0 until codes are used in orders (2.21b). */
-            uses: number;
-            /** @description Null without marketing.read_costs; 0 until codes are used in orders (2.21b). */
-            costToDate: string | null;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            updatedAt: string;
-        };
-        AdminPromoCodeCityDto: {
-            /** Format: uuid */
-            cityId: string;
         };
     };
     responses: never;
@@ -16621,6 +16655,160 @@ export interface operations {
             };
         };
     };
+    adminPromoCodesList: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPromoCodesDto_Output"];
+                };
+            };
+        };
+    };
+    adminPromoCodesCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCreatePromoCodeDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPromoCodesCreatedDto_Output"];
+                };
+            };
+        };
+    };
+    adminPromoCodesGenerate: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminGeneratePromoCodesDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPromoCodesCreatedDto_Output"];
+                };
+            };
+        };
+    };
+    adminPromoCodesEdit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                codeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminEditPromoCodeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPromoCodeDto_Output"];
+                };
+            };
+        };
+    };
+    adminPromoCodesPause: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                codeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminPromoCodeCityDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPromoCodeDto_Output"];
+                };
+            };
+        };
+    };
+    adminPromoCodesResume: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                codeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminPromoCodeCityDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPromoCodeDto_Output"];
+                };
+            };
+        };
+    };
     merchantRealtimeToken: {
         parameters: {
             query?: never;
@@ -18050,160 +18238,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminExportDto_Output"];
-                };
-            };
-        };
-    };
-    adminPromoCodesList: {
-        parameters: {
-            query: {
-                cityId: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminPromoCodesDto_Output"];
-                };
-            };
-        };
-    };
-    adminPromoCodesCreate: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
-                "Idempotency-Key": string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminCreatePromoCodeDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminPromoCodesCreatedDto_Output"];
-                };
-            };
-        };
-    };
-    adminPromoCodesGenerate: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
-                "Idempotency-Key": string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminGeneratePromoCodesDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminPromoCodesCreatedDto_Output"];
-                };
-            };
-        };
-    };
-    adminPromoCodesEdit: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                codeId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminEditPromoCodeDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminPromoCodeDto_Output"];
-                };
-            };
-        };
-    };
-    adminPromoCodesPause: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                codeId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminPromoCodeCityDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminPromoCodeDto_Output"];
-                };
-            };
-        };
-    };
-    adminPromoCodesResume: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                codeId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminPromoCodeCityDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminPromoCodeDto_Output"];
                 };
             };
         };

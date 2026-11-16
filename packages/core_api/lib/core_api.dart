@@ -504,6 +504,7 @@ export 'package:core_api/src/model/customer_quote_dto_output_lines_inner_options
 export 'package:core_api/src/model/customer_quote_dto_output_minimum_order.dart';
 export 'package:core_api/src/model/customer_quote_dto_output_money.dart';
 export 'package:core_api/src/model/customer_quote_dto_output_problems_inner.dart';
+export 'package:core_api/src/model/customer_quote_dto_output_promo_code.dart';
 export 'package:core_api/src/model/customer_quote_dto_output_rates_inner.dart';
 export 'package:core_api/src/model/customer_quote_dto_output_restaurant.dart';
 export 'package:core_api/src/model/customer_quote_request_dto.dart';

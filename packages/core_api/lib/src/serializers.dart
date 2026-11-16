@@ -503,6 +503,7 @@ import 'package:core_api/src/model/customer_quote_dto_output_lines_inner_options
 import 'package:core_api/src/model/customer_quote_dto_output_minimum_order.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_money.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_problems_inner.dart';
+import 'package:core_api/src/model/customer_quote_dto_output_promo_code.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_rates_inner.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_restaurant.dart';
 import 'package:core_api/src/model/customer_quote_request_dto.dart';
@@ -1146,6 +1147,7 @@ part 'serializers.g.dart';
   CustomerQuoteDtoOutputMinimumOrder,
   CustomerQuoteDtoOutputMoney,
   CustomerQuoteDtoOutputProblemsInner,
+  CustomerQuoteDtoOutputPromoCode,
   CustomerQuoteDtoOutputRatesInner,
   CustomerQuoteDtoOutputRestaurant,
   CustomerQuoteRequestDto,

@@ -1,4 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { and, eq, inArray } from 'drizzle-orm';
+import { DATABASE } from '../../database/database.module.js';
+import type { Database } from '../../database/database.js';
+import { CustomerAccountsService } from '../identity/index.js';
+import {
+  type AppliedCode,
+  type CodeCart,
+  type CodeRefusal,
+  PromoCodeUsesService,
+} from '../marketing/index.js';
 import { LedgerService } from '../ledger/index.js';
 import { customerDues } from './customer-dues.js';
 import { CaptainsService } from '../captains/index.js';
@@ -18,6 +28,7 @@ import { SettingsService, versionBelow } from '../settings/index.js';
 import { ActiveOrders } from './active-orders.js';
 import { EmergencyStops } from './emergency-stop.js';
 import { platformOpening } from './platform-hours.js';
+import { orders } from './schema.js';
 import {
   type CartLine,
   type LineProblem,
@@ -60,6 +71,9 @@ export type QuoteProblemCode =
   // docs/domain/08 (slice 2.11a): a fake order's dues are unpaid, «عليك
   // {المبلغ} لـ FOX DROP. ادفعه في المكتب ليُفك الحظر تلقائياً.» (CU §5.5).
   | 'dues_unpaid'
+  // CU §10.4, Appendix C «Code refusals» (slice 2.21b): the typed code does
+  // not apply, with its reason; the order can go without it.
+  | 'promo_code'
   | LineProblem;
 
 export interface QuoteProblem {
@@ -72,6 +86,9 @@ export interface QuoteProblem {
   message: string | null;
   // dues_unpaid: what the customer owes, in the base currency.
   amount: { amount: bigint; currency: string } | null;
+  // promo_code: why the code does not apply (below_minimum gives what is
+  // missing as the amount).
+  refusal: CodeRefusal | null;
 }
 
 export interface QuoteRequest {
@@ -87,6 +104,10 @@ export interface QuoteRequest {
   // CU §10.6: the quote asked on opening checkout, which counts the
   // customer once per emergency stop (AP §9.1.6 item 4).
   openedCheckout?: boolean;
+  // CU §10.4: the code typed, or null; and the session's app installation,
+  // for the new-user rule per device (AP §9.11.1).
+  code?: string | null;
+  deviceId?: string | null;
 }
 
 export interface Quote {
@@ -107,6 +128,14 @@ export interface Quote {
   freeDelivery: { threshold: bigint; reached: boolean; missing: bigint } | null;
   // The exchange-rate version (AP §8.6): each currency's rate version.
   rates: { currency: string; rateVersionId: string | null }[];
+  // CU §10.4: the code that applies, its discount in «الخصم» and the warning
+  // «قيمة الكود أكبر من قيمة الأصناف، ولا يُستعاد الفرق»; null without one.
+  promoCode: {
+    code: string;
+    kind: AppliedCode['terms']['kind'];
+    discount: bigint;
+    fixedAmountAboveItems: boolean;
+  } | null;
   problems: QuoteProblem[];
 }
 
@@ -121,6 +150,9 @@ export interface PricedQuote {
   // The trip of the estimate: its duration in whole seconds rounded up, and
   // its distance in whole metres.
   trip: { seconds: number; metres: number };
+  // The code that applied and the cart it was checked on, which placing
+  // holds again in its transaction (CU §10.7); null without one.
+  code: { applied: AppliedCode; cart: CodeCart } | null;
 }
 
 export type QuoteRefusal = 'unknown_restaurant';
@@ -143,7 +175,8 @@ const TRIP_VEHICLE = 'motorbike';
 // CU §10.6: the versioned quote of a cart for a delivery point. Every check
 // with data is run (owner decision 2026-11-06), the signed-in customer's
 // active-order limit, the terms version, the emergency stop and the capacity
-// check included; account states and codes (Phase 2) pass until their slices.
+// check included, and a typed code (slice 2.21b); account states pass until
+// their slice.
 @Injectable()
 export class QuoteService {
   constructor(
@@ -157,6 +190,9 @@ export class QuoteService {
     private readonly emergencyStops: EmergencyStops,
     private readonly customers: CustomersService,
     private readonly ledger: LedgerService,
+    private readonly promoCodes: PromoCodeUsesService,
+    private readonly customerAccounts: CustomerAccountsService,
+    @Inject(DATABASE) private readonly database: Database,
   ) {}
 
   async quote(request: QuoteRequest, now: Date): Promise<Quote> {
@@ -179,7 +215,8 @@ export class QuoteService {
       opensAt: Date | null = null,
       message: string | null = null,
       amount: QuoteProblem['amount'] = null,
-    ) => problems.push({ code, line, opensAt, message, amount });
+      refusal: CodeRefusal | null = null,
+    ) => problems.push({ code, line, opensAt, message, amount, refusal });
 
     const [
       maintenance,
@@ -263,12 +300,39 @@ export class QuoteService {
     if (!minimumInBase) problem('minimum_not_in_base_currency');
     else if (!status.minimumOrder.reached) problem('below_minimum_order');
 
+    // CU §10.4: a typed code, checked by every rule of AP §9.11.1 once the
+    // items and the fee are priced in the base currency.
+    let code: PricedQuote['code'] = null;
+    const typed = request.code?.trim() ?? '';
+    if (typed !== '' && baseCurrency !== null) {
+      const cart: CodeCart = {
+        cityId,
+        clock: await this.promoCodes.clock(cityId, now),
+        code: typed,
+        baseCurrency,
+        restaurantId: restaurant.id,
+        zoneId: zone?.id ?? null,
+        itemsValue,
+        deliveryFee: fee?.fee ?? 0n,
+        customer:
+          request.customerAccountId === null
+            ? null
+            : await this.codeCustomer(request.customerAccountId, request.deviceId ?? null),
+      };
+      const checked = await this.promoCodes.check(cart, now);
+      if (checked.applied) code = { applied: checked.code, cart };
+      else {
+        const missing =
+          checked.missing === null ? null : { amount: checked.missing, currency: baseCurrency };
+        problem('promo_code', null, null, null, missing, checked.refusal);
+      }
+    }
+
     const base = snapshot?.currencies.find((entry) => entry.code === snapshot.baseCurrency);
     const money = quoteMoney({
       itemsValue,
       deliveryFee: fee?.fee ?? 0n,
-      // Codes wait for Phase 2 (owner decision 2026-11-06).
-      discount: 0n,
+      discount: code?.applied.discount.total ?? 0n,
       rounding: base ? { unitMinor: base.roundingUnitMinor, mode: base.roundingMode } : null,
     });
     const equivalents =
@@ -315,7 +379,8 @@ export class QuoteService {
         money,
         equivalents,
         rateVersions: rates,
-        problems: problems.map(({ code, line }) => ({ code, line })),
+        problems: problems.map(({ code, line, refusal }) => ({ code, line, refusal })),
+        promoCode: code?.applied.code ?? null,
       }),
       restaurant: { id: restaurant.id, state },
       lines,
@@ -336,6 +401,12 @@ export class QuoteService {
           ? null
           : { threshold: freeDeliveryFrom, ...status.freeDelivery },
       rates,
+      promoCode: code && {
+        code: code.applied.code,
+        kind: code.applied.terms.kind,
+        discount: code.applied.discount.total,
+        fixedAmountAboveItems: code.applied.fixedAmountAboveItems,
+      },
       problems,
     };
     // The order keeps the trip of the estimate shown (docs/domain/03).
@@ -346,6 +417,28 @@ export class QuoteService {
       feeRuleId: fee?.ruleId ?? null,
       restaurant,
       trip: { seconds: tripSeconds, metres: distance.metres },
+      code,
+    };
+  }
+
+  // AP §9.11.1, §8.8: who a code is checked for: the number's hash, the
+  // session's device and whether any account of the number has a delivered
+  // order. A session without a device id (none so far) counts the number only.
+  async codeCustomer(accountId: string, deviceId: string | null): Promise<CodeCart['customer']> {
+    const phone = await this.customerAccounts.phoneAccounts(accountId);
+    if (phone === null) throw new Error(`customer ${accountId} does not exist`);
+    const [delivered] = await this.database.db
+      .select({ id: orders.id })
+      .from(orders)
+      .where(
+        and(inArray(orders.customerAccountId, phone.accountIds), eq(orders.status, 'delivered')),
+      )
+      .limit(1);
+    return {
+      accountId,
+      phoneHash: phone.phoneHash,
+      deviceId: deviceId ?? `account:${accountId}`,
+      newUser: delivered === undefined,
     };
   }
 

@@ -18,6 +18,7 @@ part 'customer_place_order_dto.g.dart';
 /// * [lines]
 /// * [payIn] - «سأدفع بـ»: an accepted currency, or null for «لم أحدد» (CU §10.5); one no longer accepted gives payIn null.
 /// * [appVersion]
+/// * [code] - The code typed («تطبيق»), or null; validated by every rule of AP §9.11.1.
 /// * [quoteVersion] - The version of the quote the customer confirmed (CU §10.7).
 /// * [addressId] - A saved address (CU §7.3), or null.
 /// * [unsavedAddress]
@@ -37,6 +38,10 @@ abstract class CustomerPlaceOrderDto
 
   @BuiltValueField(wireName: r'appVersion')
   String get appVersion;
+
+  /// The code typed («تطبيق»), or null; validated by every rule of AP §9.11.1.
+  @BuiltValueField(wireName: r'code')
+  String? get code;
 
   /// The version of the quote the customer confirmed (CU §10.7).
   @BuiltValueField(wireName: r'quoteVersion')
@@ -107,6 +112,13 @@ class _$CustomerPlaceOrderDtoSerializer
       object.appVersion,
       specifiedType: const FullType(String),
     );
+    if (object.code != null) {
+      yield r'code';
+      yield serializers.serialize(
+        object.code,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
     yield r'quoteVersion';
     yield serializers.serialize(
       object.quoteVersion,
@@ -200,6 +212,16 @@ class _$CustomerPlaceOrderDtoSerializer
                   )
                   as String;
           result.appVersion = valueDes;
+          break;
+        case r'code':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.code = valueDes;
           break;
         case r'quoteVersion':
           final valueDes =

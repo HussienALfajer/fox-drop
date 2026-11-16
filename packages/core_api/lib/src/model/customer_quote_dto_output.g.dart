@@ -30,6 +30,8 @@ class _$CustomerQuoteDtoOutput extends CustomerQuoteDtoOutput {
   @override
   final BuiltList<CustomerQuoteDtoOutputRatesInner> rates;
   @override
+  final CustomerQuoteDtoOutputPromoCode? promoCode;
+  @override
   final BuiltList<CustomerQuoteDtoOutputProblemsInner> problems;
 
   factory _$CustomerQuoteDtoOutput([
@@ -48,6 +50,7 @@ class _$CustomerQuoteDtoOutput extends CustomerQuoteDtoOutput {
     required this.minimumOrder,
     this.freeDelivery,
     required this.rates,
+    this.promoCode,
     required this.problems,
   }) : super._();
   @override
@@ -74,6 +77,7 @@ class _$CustomerQuoteDtoOutput extends CustomerQuoteDtoOutput {
         minimumOrder == other.minimumOrder &&
         freeDelivery == other.freeDelivery &&
         rates == other.rates &&
+        promoCode == other.promoCode &&
         problems == other.problems;
   }
 
@@ -91,6 +95,7 @@ class _$CustomerQuoteDtoOutput extends CustomerQuoteDtoOutput {
     _$hash = $jc(_$hash, minimumOrder.hashCode);
     _$hash = $jc(_$hash, freeDelivery.hashCode);
     _$hash = $jc(_$hash, rates.hashCode);
+    _$hash = $jc(_$hash, promoCode.hashCode);
     _$hash = $jc(_$hash, problems.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -110,6 +115,7 @@ class _$CustomerQuoteDtoOutput extends CustomerQuoteDtoOutput {
           ..add('minimumOrder', minimumOrder)
           ..add('freeDelivery', freeDelivery)
           ..add('rates', rates)
+          ..add('promoCode', promoCode)
           ..add('problems', problems))
         .toString();
   }
@@ -181,6 +187,12 @@ class CustomerQuoteDtoOutputBuilder
   set rates(ListBuilder<CustomerQuoteDtoOutputRatesInner>? rates) =>
       _$this._rates = rates;
 
+  CustomerQuoteDtoOutputPromoCodeBuilder? _promoCode;
+  CustomerQuoteDtoOutputPromoCodeBuilder get promoCode =>
+      _$this._promoCode ??= CustomerQuoteDtoOutputPromoCodeBuilder();
+  set promoCode(CustomerQuoteDtoOutputPromoCodeBuilder? promoCode) =>
+      _$this._promoCode = promoCode;
+
   ListBuilder<CustomerQuoteDtoOutputProblemsInner>? _problems;
   ListBuilder<CustomerQuoteDtoOutputProblemsInner> get problems =>
       _$this._problems ??= ListBuilder<CustomerQuoteDtoOutputProblemsInner>();
@@ -205,6 +217,7 @@ class CustomerQuoteDtoOutputBuilder
       _minimumOrder = $v.minimumOrder.toBuilder();
       _freeDelivery = $v.freeDelivery?.toBuilder();
       _rates = $v.rates.toBuilder();
+      _promoCode = $v.promoCode?.toBuilder();
       _problems = $v.problems.toBuilder();
       _$v = null;
     }
@@ -249,6 +262,7 @@ class CustomerQuoteDtoOutputBuilder
             minimumOrder: minimumOrder.build(),
             freeDelivery: _freeDelivery?.build(),
             rates: rates.build(),
+            promoCode: _promoCode?.build(),
             problems: problems.build(),
           );
     } catch (_) {
@@ -273,6 +287,8 @@ class CustomerQuoteDtoOutputBuilder
         _freeDelivery?.build();
         _$failedField = 'rates';
         rates.build();
+        _$failedField = 'promoCode';
+        _promoCode?.build();
         _$failedField = 'problems';
         problems.build();
       } catch (e) {

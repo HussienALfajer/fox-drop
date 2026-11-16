@@ -1,3 +1,4 @@
+import { merchantItemDiscount, type OrderDiscount } from './order-discount.js';
 import { type RateSnapshot, toBase } from '../fx/index.js';
 import type { AccountPurpose, JournalRate, JournalType } from '../ledger/index.js';
 import { commission } from './door-payment.js';
@@ -26,7 +27,8 @@ export interface CancellationFacts {
   // The base currency, the order's.
   currency: string;
   itemsValue: bigint;
-  discount: bigint;
+  // AP §8.4 (slice 2.21b): the code's discount and its funders.
+  discount: OrderDiscount;
   commissionBp: number;
   testOrder: boolean;
   // Owner decision 2026-11-09: the captain's last pickup request's lines (its
@@ -132,12 +134,13 @@ export function cancellationEntries(
   // restaurant not responsible: the merchant net, borne by the platform.
   let merchantCredit: bigint | null = null;
   if (!placed && choices.foodPrepared && choices.responsible !== 'restaurant') {
-    // AP §8.4: a restaurant-funded discount changes the net; codes book it
-    // (Phase 2), as the delivery refuses it until then.
-    if (facts.discount !== 0n) throw new Error('an order with a discount, not booked yet');
+    // AP §8.4: what it would have kept from a normal order, the commission
+    // after its funded item discount and its share of the discount taken.
     const net = facts.testOrder
       ? facts.itemsValue
-      : facts.itemsValue - commission(facts.itemsValue, facts.commissionBp);
+      : facts.itemsValue -
+        commission(facts.itemsValue - merchantItemDiscount(facts.discount), facts.commissionBp) -
+        facts.discount.merchant;
     if (net > 0n) {
       merchantCredit = net;
       journals.push(

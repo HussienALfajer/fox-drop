@@ -26,7 +26,7 @@ const facts: OutcomeFacts = {
   commissionBp: 1500,
   itemsValue: 40_000n,
   deliveryFee: 4_000n,
-  discount: 0n,
+  discount: { total: 0n, merchant: 0n, onDelivery: false },
   total: 44_000n,
   pickup: {
     itemsValue: 40_000n,
@@ -109,6 +109,54 @@ describe('outcomeEntries', () => {
       ],
     ]);
     expect(clearingAfter(result, 40_000n)).toBe(0n);
+  });
+
+  it("books a restaurant-funded code's share and the commission after it (slice 2.21b)", () => {
+    // The restaurant funds 30 of the items: commission 15% of 370 = 55.50,
+    // its share 30, so the merchant net and the loss are 400 − 55.50 − 30.
+    const withCode = {
+      ...facts,
+      discount: { total: 3_000n, merchant: 3_000n, onDelivery: false },
+      total: 41_000n,
+    };
+    const result = outcomeEntries(withCode, failed({ outcome: 'fake', responsible: 'customer' }));
+    expect(booked(result)).toMatchObject({ loss: 31_450n, dues: 35_450n });
+    expect(lines(result).slice(0, 2)).toEqual([
+      [
+        'merchant.commission',
+        null,
+        [
+          ['merchant.account', 5_550n],
+          ['platform.order_clearing', -5_550n],
+        ],
+      ],
+      [
+        'merchant.discount_share',
+        null,
+        [
+          ['merchant.account', 3_000n],
+          ['platform.order_clearing', -3_000n],
+        ],
+      ],
+    ]);
+    expect(clearingAfter(result, 40_000n)).toBe(0n);
+    // A platform code books nothing for the discount: the customer paid none.
+    const platformCode = outcomeEntries(
+      { ...facts, discount: { total: 3_000n, merchant: 0n, onDelivery: false }, total: 41_000n },
+      failed({ responsible: 'platform' }),
+    );
+    expect(booked(platformCode).loss).toBe(34_000n);
+    expect(clearingAfter(platformCode, 40_000n)).toBe(0n);
+    // The restaurant responsible: no commission and no share.
+    const restaurant = outcomeEntries(
+      withCode,
+      failed({
+        outcome: 'wrong_refused',
+        responsible: 'restaurant',
+        food: 'returned_to_restaurant',
+      }),
+    );
+    expect(lines(restaurant).map(([type]) => type)).toEqual(['merchant.debit', 'earn.order_pay']);
   });
 
   it('charges the captain the loss and pays nothing when the captain is responsible', () => {
