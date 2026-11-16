@@ -1,35 +1,37 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'admin_compensate_dto_reason.dart';
+part of 'admin_cancel_dto_compensation_reason.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$AdminCompensateDtoReason extends AdminCompensateDtoReason {
+class _$AdminCancelDtoCompensationReason
+    extends AdminCancelDtoCompensationReason {
   @override
   final String code;
   @override
   final String? note;
 
-  factory _$AdminCompensateDtoReason([
-    void Function(AdminCompensateDtoReasonBuilder)? updates,
-  ]) => (AdminCompensateDtoReasonBuilder()..update(updates))._build();
+  factory _$AdminCancelDtoCompensationReason([
+    void Function(AdminCancelDtoCompensationReasonBuilder)? updates,
+  ]) => (AdminCancelDtoCompensationReasonBuilder()..update(updates))._build();
 
-  _$AdminCompensateDtoReason._({required this.code, this.note}) : super._();
+  _$AdminCancelDtoCompensationReason._({required this.code, this.note})
+    : super._();
   @override
-  AdminCompensateDtoReason rebuild(
-    void Function(AdminCompensateDtoReasonBuilder) updates,
+  AdminCancelDtoCompensationReason rebuild(
+    void Function(AdminCancelDtoCompensationReasonBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  AdminCompensateDtoReasonBuilder toBuilder() =>
-      AdminCompensateDtoReasonBuilder()..replace(this);
+  AdminCancelDtoCompensationReasonBuilder toBuilder() =>
+      AdminCancelDtoCompensationReasonBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is AdminCompensateDtoReason &&
+    return other is AdminCancelDtoCompensationReason &&
         code == other.code &&
         note == other.note;
   }
@@ -45,17 +47,20 @@ class _$AdminCompensateDtoReason extends AdminCompensateDtoReason {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'AdminCompensateDtoReason')
+    return (newBuiltValueToStringHelper(r'AdminCancelDtoCompensationReason')
           ..add('code', code)
           ..add('note', note))
         .toString();
   }
 }
 
-class AdminCompensateDtoReasonBuilder
+class AdminCancelDtoCompensationReasonBuilder
     implements
-        Builder<AdminCompensateDtoReason, AdminCompensateDtoReasonBuilder> {
-  _$AdminCompensateDtoReason? _$v;
+        Builder<
+          AdminCancelDtoCompensationReason,
+          AdminCancelDtoCompensationReasonBuilder
+        > {
+  _$AdminCancelDtoCompensationReason? _$v;
 
   String? _code;
   String? get code => _$this._code;
@@ -65,11 +70,11 @@ class AdminCompensateDtoReasonBuilder
   String? get note => _$this._note;
   set note(String? note) => _$this._note = note;
 
-  AdminCompensateDtoReasonBuilder() {
-    AdminCompensateDtoReason._defaults(this);
+  AdminCancelDtoCompensationReasonBuilder() {
+    AdminCancelDtoCompensationReason._defaults(this);
   }
 
-  AdminCompensateDtoReasonBuilder get _$this {
+  AdminCancelDtoCompensationReasonBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _code = $v.code;
@@ -80,25 +85,25 @@ class AdminCompensateDtoReasonBuilder
   }
 
   @override
-  void replace(AdminCompensateDtoReason other) {
-    _$v = other as _$AdminCompensateDtoReason;
+  void replace(AdminCancelDtoCompensationReason other) {
+    _$v = other as _$AdminCancelDtoCompensationReason;
   }
 
   @override
-  void update(void Function(AdminCompensateDtoReasonBuilder)? updates) {
+  void update(void Function(AdminCancelDtoCompensationReasonBuilder)? updates) {
     if (updates != null) updates(this);
   }
 
   @override
-  AdminCompensateDtoReason build() => _build();
+  AdminCancelDtoCompensationReason build() => _build();
 
-  _$AdminCompensateDtoReason _build() {
+  _$AdminCancelDtoCompensationReason _build() {
     final _$result =
         _$v ??
-        _$AdminCompensateDtoReason._(
+        _$AdminCancelDtoCompensationReason._(
           code: BuiltValueNullFieldError.checkNotNull(
             code,
-            r'AdminCompensateDtoReason',
+            r'AdminCancelDtoCompensationReason',
             'code',
           ),
           note: note,

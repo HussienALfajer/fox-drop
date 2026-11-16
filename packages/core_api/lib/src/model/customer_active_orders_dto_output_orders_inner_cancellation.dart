@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation_compensation.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -15,6 +16,7 @@ part 'customer_active_orders_dto_output_orders_inner_cancellation.g.dart';
 /// * [reason] - The code, such as merchant_auto_cancel (CU §11.9).
 /// * [text] - What the customer sees (CU Appendix C), from Content as it was at the cancellation.
 /// * [byCustomer] - The customer cancelled it themselves while placed: «ألغيت طلبك» instead of the text (CU §11.4, §11.9).
+/// * [compensation]
 @BuiltValue()
 abstract class CustomerActiveOrdersDtoOutputOrdersInnerCancellation
     implements
@@ -36,6 +38,10 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInnerCancellation
   /// The customer cancelled it themselves while placed: «ألغيت طلبك» instead of the text (CU §11.4, §11.9).
   @BuiltValueField(wireName: r'byCustomer')
   bool get byCustomer;
+
+  @BuiltValueField(wireName: r'compensation')
+  CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensation?
+  get compensation;
 
   CustomerActiveOrdersDtoOutputOrdersInnerCancellation._();
 
@@ -94,6 +100,15 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationSerializer
       object.byCustomer,
       specifiedType: const FullType(bool),
     );
+    yield r'compensation';
+    yield object.compensation == null
+        ? null
+        : serializers.serialize(
+            object.compensation,
+            specifiedType: const FullType.nullable(
+              CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensation,
+            ),
+          );
   }
 
   @override
@@ -156,6 +171,18 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationSerializer
                   )
                   as bool;
           result.byCustomer = valueDes;
+          break;
+        case r'compensation':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensation,
+                    ),
+                  )
+                  as CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensation?;
+          if (valueDes == null) continue;
+          result.compensation.replace(valueDes);
           break;
         default:
           unhandled.add(key);

@@ -52,6 +52,7 @@ export {
   CompensationRefusedError,
   CompensationsService,
   type CompensationValue,
+  type PreparedCompensation,
 } from './compensations.service.js';
 export {
   PromoCodeUsesService,

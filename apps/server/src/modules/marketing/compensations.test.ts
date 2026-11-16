@@ -219,32 +219,75 @@ describe('«تعويض الزبون»', () => {
     ).rejects.toBeInstanceOf(CompensationRefusedError);
   });
 
-  it('refuses an unknown reason and keeps the personal code out of the quote', async () => {
+  it('lets only its customer use a personal code, and lists it for them alone (slice 2.22b)', async () => {
+    const target = order();
     const issued = await compensations.request(
-      order(),
-      amount(100n),
+      target,
+      amount(2_500n),
       late,
       admin(['SUP']),
       randomUUID(),
       now,
     );
-    // Slice 2.22b uses a personal code in an order; until then no quote takes it.
     const uses = app.get(PromoCodeUsesService);
-    const checked = await uses.check(
-      {
-        cityId: azaz,
-        clock: await uses.clock(azaz, now),
-        code: issued.code!,
-        baseCurrency: 'TRY',
-        restaurantId: randomUUID(),
-        zoneId: null,
-        itemsValue: 50_000n,
-        deliveryFee: 0n,
-        customer: null,
+    const clock = await uses.clock(azaz, now);
+    const customer = (accountId: string) => ({
+      accountId,
+      phoneHash: `hash-${accountId}`,
+      deviceId: `device-${accountId}`,
+      newUser: false,
+    });
+    const cart = {
+      cityId: azaz,
+      clock,
+      baseCurrency: 'TRY',
+      restaurantId: randomUUID(),
+      zoneId: null,
+      itemsValue: 50_000n,
+      deliveryFee: 1_000n,
+    };
+    const check = (who: ReturnType<typeof customer> | null) =>
+      uses.check({ ...cart, code: issued.code!.toLowerCase(), customer: who }, now);
+    // CU Appendix C: to anyone else, a guest included, the code does not exist.
+    expect(await check(null)).toMatchObject({ applied: false, refusal: 'unknown_code' });
+    expect(await check(customer(randomUUID()))).toMatchObject({
+      applied: false,
+      refusal: 'unknown_code',
+    });
+    expect(await check(customer(target.customerAccountId))).toMatchObject({
+      applied: true,
+      code: {
+        code: issued.code,
+        terms: { kind: 'fixed_amount', amount: 2_500n, compensation: true, merchantShareBp: 0 },
+        discount: { total: 2_500n, merchant: 0n },
       },
-      now,
-    );
-    expect(checked).toMatchObject({ applied: false, refusal: 'unknown_code' });
+    });
+    // Placing holds it under its lock for its customer only, too.
+    const hold = (who: ReturnType<typeof customer>) =>
+      db.db.transaction((tx) => uses.hold(tx, { ...cart, code: issued.code!, customer: who }, now));
+    expect(await hold(customer(randomUUID()))).toMatchObject({
+      applied: false,
+      refusal: 'unknown_code',
+    });
+    expect(await hold(customer(target.customerAccountId))).toMatchObject({ applied: true });
+    // «الأكواد المتاحة لك» and «أكوادي» (CU §10.4, §12.4).
+    const mine = customer(target.customerAccountId);
+    const other = customer(randomUUID());
+    const listed = async (who: typeof mine) =>
+      (await uses.available({ ...cart, customer: who }, now)).map((each) => each.code);
+    expect(await listed(mine)).toContain(issued.code);
+    expect(await listed(other)).not.toContain(issued.code);
+    const myCodes = (who: typeof mine) =>
+      uses.mine({ cityId: azaz, baseCurrency: 'TRY', clock, customer: who }, now);
+    expect((await myCodes(mine)).find((each) => each.code === issued.code)).toMatchObject({
+      ended: null,
+      usesLeft: 1,
+      amount: 2_500n,
+    });
+    expect((await myCodes(other)).map((each) => each.code)).not.toContain(issued.code);
+  });
+
+  it('refuses an unknown reason', async () => {
     await expect(
       compensations.request(
         order(),

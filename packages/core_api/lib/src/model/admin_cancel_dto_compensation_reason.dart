@@ -6,51 +6,54 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_compensate_dto_reason.g.dart';
+part 'admin_cancel_dto_compensation_reason.g.dart';
 
-/// AdminCompensateDtoReason
+/// AdminCancelDtoCompensationReason
 ///
 /// Properties:
 /// * [code]
 /// * [note]
 @BuiltValue()
-abstract class AdminCompensateDtoReason
+abstract class AdminCancelDtoCompensationReason
     implements
-        Built<AdminCompensateDtoReason, AdminCompensateDtoReasonBuilder> {
+        Built<
+          AdminCancelDtoCompensationReason,
+          AdminCancelDtoCompensationReasonBuilder
+        > {
   @BuiltValueField(wireName: r'code')
   String get code;
 
   @BuiltValueField(wireName: r'note')
   String? get note;
 
-  AdminCompensateDtoReason._();
+  AdminCancelDtoCompensationReason._();
 
-  factory AdminCompensateDtoReason([
-    void updates(AdminCompensateDtoReasonBuilder b),
-  ]) = _$AdminCompensateDtoReason;
+  factory AdminCancelDtoCompensationReason([
+    void updates(AdminCancelDtoCompensationReasonBuilder b),
+  ]) = _$AdminCancelDtoCompensationReason;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminCompensateDtoReasonBuilder b) => b;
+  static void _defaults(AdminCancelDtoCompensationReasonBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminCompensateDtoReason> get serializer =>
-      _$AdminCompensateDtoReasonSerializer();
+  static Serializer<AdminCancelDtoCompensationReason> get serializer =>
+      _$AdminCancelDtoCompensationReasonSerializer();
 }
 
-class _$AdminCompensateDtoReasonSerializer
-    implements PrimitiveSerializer<AdminCompensateDtoReason> {
+class _$AdminCancelDtoCompensationReasonSerializer
+    implements PrimitiveSerializer<AdminCancelDtoCompensationReason> {
   @override
   final Iterable<Type> types = const [
-    AdminCompensateDtoReason,
-    _$AdminCompensateDtoReason,
+    AdminCancelDtoCompensationReason,
+    _$AdminCancelDtoCompensationReason,
   ];
 
   @override
-  final String wireName = r'AdminCompensateDtoReason';
+  final String wireName = r'AdminCancelDtoCompensationReason';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminCompensateDtoReason object, {
+    AdminCancelDtoCompensationReason object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'code';
@@ -70,7 +73,7 @@ class _$AdminCompensateDtoReasonSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminCompensateDtoReason object, {
+    AdminCancelDtoCompensationReason object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -85,7 +88,7 @@ class _$AdminCompensateDtoReasonSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminCompensateDtoReasonBuilder result,
+    required AdminCancelDtoCompensationReasonBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -120,12 +123,12 @@ class _$AdminCompensateDtoReasonSerializer
   }
 
   @override
-  AdminCompensateDtoReason deserialize(
+  AdminCancelDtoCompensationReason deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminCompensateDtoReasonBuilder();
+    final result = AdminCancelDtoCompensationReasonBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

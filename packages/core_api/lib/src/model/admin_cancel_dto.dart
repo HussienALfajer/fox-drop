@@ -4,6 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/admin_cancel_dto_compensation.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -18,6 +19,7 @@ part 'admin_cancel_dto.g.dart';
 /// * [compensateCaptain] - «تعويض الكابتن»: the pay table's base pay for the captain's vehicle; only once the assigned captain reached the restaurant (409 compensation_not_allowed; 409 captain_pay_unset without a rate).
 /// * [cash] - «هل أعاد المطعم المبلغ للكابتن؟», required exactly when the captain reached the restaurant (409 cash_answer_required, cash_answer_not_allowed): returned «نعم», not_returned «لا» (the payment on the captain's custody and a merchant.debit), not_paid «لم يدفع الكابتن بعد».
 /// * [reason] - Required (AP §9.3.2): the internal note, never shown to the apps.
+/// * [compensation]
 @BuiltValue()
 abstract class AdminCancelDto
     implements Built<AdminCancelDto, AdminCancelDtoBuilder> {
@@ -46,6 +48,9 @@ abstract class AdminCancelDto
   /// Required (AP §9.3.2): the internal note, never shown to the apps.
   @BuiltValueField(wireName: r'reason')
   String get reason;
+
+  @BuiltValueField(wireName: r'compensation')
+  AdminCancelDtoCompensation? get compensation;
 
   AdminCancelDto._();
 
@@ -105,6 +110,13 @@ class _$AdminCancelDtoSerializer
       object.reason,
       specifiedType: const FullType(String),
     );
+    if (object.compensation != null) {
+      yield r'compensation';
+      yield serializers.serialize(
+        object.compensation,
+        specifiedType: const FullType.nullable(AdminCancelDtoCompensation),
+      );
+    }
   }
 
   @override
@@ -190,6 +202,18 @@ class _$AdminCancelDtoSerializer
                   )
                   as String;
           result.reason = valueDes;
+          break;
+        case r'compensation':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminCancelDtoCompensation,
+                    ),
+                  )
+                  as AdminCancelDtoCompensation?;
+          if (valueDes == null) continue;
+          result.compensation.replace(valueDes);
           break;
         default:
           unhandled.add(key);

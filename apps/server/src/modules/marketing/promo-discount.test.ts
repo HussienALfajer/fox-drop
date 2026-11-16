@@ -17,6 +17,7 @@ const percent: CodeTerms = {
   amount: null,
   maxDiscount: 3000n,
   merchantShareBp: 0,
+  compensation: false,
 };
 
 describe('promoDiscount', () => {

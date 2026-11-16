@@ -2,6 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { type FormEvent, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatMoney } from './format.js';
+import { emptyCompensation, useOrderCompensations } from './order-compensation.js';
+import { CompensationFields } from './order-compensation-page.js';
 import { cashKeys, responsibleKeys } from './order-detail.js';
 import {
   type CancelChoices,
@@ -24,6 +26,8 @@ const empty: CancelForm = {
   compensateCaptain: false,
   cash: null,
   reason: '',
+  compensate: false,
+  compensation: emptyCompensation,
 };
 
 // AP §9.3.2 «إلغاء الطلب»: the reason, the responsible party, «تم تحضير
@@ -51,9 +55,14 @@ export function CancelOrder({
   const shown = preview.data?.status === 'preview' ? preview.data.preview : undefined;
   const lines = shown && previewLines(shown);
   const cancel = useCancelOrder(orderId);
-  const body = lines?.some((line) => line.key === 'unknown')
-    ? null
-    : cancelBody(form, placed, shown);
+  // AP §9.3.2 «may add compensation»: the reasons, the currency and what the
+  // admin's cap leaves, as «تعويض الزبون» reads them.
+  const compensations = useOrderCompensations(orderId).data;
+  // Only a ticked compensation waits for its read: the cancellation never does.
+  const body =
+    lines?.some((line) => line.key === 'unknown') || (form.compensate && !compensations)
+      ? null
+      : cancelBody(form, placed, shown, compensations?.currency ?? '');
   const submit = (event: FormEvent) => {
     event.preventDefault();
     if (body) cancel.mutate(body);
@@ -133,6 +142,27 @@ export function CancelOrder({
           ))}
         </fieldset>
       )}
+      {compensations?.canCompensate && (
+        <fieldset>
+          <legend>
+            <label>
+              <input
+                type="checkbox"
+                checked={form.compensate}
+                onChange={(event) => set({ compensate: event.target.checked })}
+              />
+              {t('order.cancel.compensateCustomer')}
+            </label>
+          </legend>
+          {form.compensate && (
+            <CompensationFields
+              data={compensations}
+              fields={form.compensation}
+              onChange={(compensation) => set({ compensation })}
+            />
+          )}
+        </fieldset>
+      )}
       <section aria-live="polite">
         <h4>{t('order.cancel.preview')}</h4>
         {asked === null && <p>{t('order.cancel.pickResponsible')}</p>}
@@ -163,9 +193,7 @@ export function CancelOrder({
         {t('order.cancel.confirm')}
       </button>
       {cancel.isError && <p role="alert">{t('common.failed')}</p>}
-      {cancel.data?.status === 'refused' && (
-        <p role="alert">{t(refusalKeys[cancel.data.refusal])}</p>
-      )}
+      {cancel.data?.status === 'refused' && <p role="alert">{t(cancelRefusalKey(cancel.data))}</p>}
     </form>
   );
 }
@@ -178,7 +206,27 @@ const refusalKeys = {
   compensation_not_allowed: 'order.onBehalf.refused',
   cash_answer_required: 'order.onBehalf.refused',
   cash_answer_not_allowed: 'order.onBehalf.refused',
+  invalid_compensation: 'compensation.refusal.invalidValue',
+  no_base_currency: 'compensation.refusal.noBaseCurrency',
+  currency_changed: 'compensation.refusal.currencyChanged',
 } as const satisfies Record<CancelRefusal, string>;
+
+// A refusal's sentence; `invalid_compensation` carries «تعويض الزبون»'s own
+// refusal of the value or the reason in its message.
+const compensationRefusalKeys = {
+  invalid_value: 'compensation.refusal.invalidValue',
+  unknown_reason: 'compensation.refusal.unknownReason',
+  reason_note_required: 'compensation.refusal.noteRequired',
+  reason_note_not_allowed: 'compensation.refusal.noteNotAllowed',
+} as const;
+
+function cancelRefusalKey(result: { refusal: CancelRefusal; detail?: string }) {
+  if (result.refusal !== 'invalid_compensation') return refusalKeys[result.refusal];
+  const detail = result.detail ?? '';
+  return detail in compensationRefusalKeys
+    ? compensationRefusalKeys[detail as keyof typeof compensationRefusalKeys]
+    : compensationRefusalKeys.invalid_value;
+}
 
 export function PreviewSentence({ line }: { line: PreviewLine }) {
   const { t } = useTranslation();

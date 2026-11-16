@@ -1282,6 +1282,18 @@ abstract class AppLocalizations {
   /// **'ينتهي {date}'**
   String customerCodeExpires(String date);
 
+  /// The compensation code given with a cancellation, on «أُلغي طلبك» (CU §11.9), in the words of its push (CU §14 #16).
+  ///
+  /// In ar, this message translates to:
+  /// **'لك كود تعويض {value}: {code}'**
+  String customerCompensationCode(String value, String code);
+
+  /// A percentage compensation with its maximum, as the push «لك كود تعويض {القيمة}» says it (CU §11.9; our words, as the panel's).
+  ///
+  /// In ar, this message translates to:
+  /// **'{percent}% بحد أقصى {amount}'**
+  String customerCompensationPercent(String percent, String amount);
+
   /// Asked before another code replaces the applied one: one code per order (CU §10.4; our words).
   ///
   /// In ar, this message translates to:

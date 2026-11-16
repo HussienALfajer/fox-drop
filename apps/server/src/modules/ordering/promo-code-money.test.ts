@@ -130,6 +130,35 @@ describe('the delivery of an order with a code', () => {
     ]);
   });
 
+  it("books a personal code's discount to the compensation cost (slice 2.22b)", async () => {
+    // A compensation code of 25.00 (docs/domain/11: `platform.compensation_cost`
+    // «كلفة التعويضات», compensation codes when used), not a discount cost.
+    const code = await promoCode({
+      kind: 'fixed_amount',
+      percent_bp: null,
+      max_discount: null,
+      amount: 2_500,
+    });
+    const door = await orderAtDoor({ dish: await exampleDish(), tripMetres: 5_000, code });
+    // The order keeps the code's terms as placing took them from a personal code.
+    await sql.query(
+      `UPDATE ordering.orders SET promo_terms = promo_terms || '{"compensation": true}'::jsonb
+        WHERE id = $1`,
+      [door.order.id],
+    );
+    const before = await platformNow();
+    const compensationBefore = await platform('platform.compensation_cost');
+    expect((await door.deliver({ received: TRY('41500'), amountDue: '41500' })).statusCode).toBe(
+      200,
+    );
+    expect(delta(before, await platformNow())).toMatchObject({
+      'platform.order_clearing': -40_000n,
+      'platform.discount_cost': 0n,
+    });
+    expect((await platform('platform.compensation_cost')) - compensationBefore).toBe(2_500n);
+    expect(await useOf(door.order.id)).toBe('spent');
+  });
+
   it('keeps the commission base for a restaurant-funded free delivery, split by the ratio', async () => {
     // Shared half and half: the fee of 40 is 20 platform, 20 restaurant; the
     // commission stays 15% of 400.

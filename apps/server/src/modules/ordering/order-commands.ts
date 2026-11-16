@@ -16,7 +16,15 @@ import {
   MerchantsService,
   RestaurantStatusService,
 } from '../merchants/index.js';
-import { PromoCodeUsesService, promoDiscount } from '../marketing/index.js';
+import {
+  type CompensationAdmin,
+  type CompensationOrder,
+  CompensationRefusedError,
+  CompensationsService,
+  type CompensationValue,
+  PromoCodeUsesService,
+  promoDiscount,
+} from '../marketing/index.js';
 import {
   merchantItemDiscount,
   orderDiscount,
@@ -159,7 +167,13 @@ export type OrderCommandRefusal =
   // AP §8.9 «تغيير النتيجة» (slice 2.11c): past order.outcome_change_days of
   // the first outcome, or an outcome that cannot be reversed (none, still
   // waiting for its collection, or posted before its journals were kept).
-  | 'outcome_change_closed';
+  | 'outcome_change_closed'
+  // AP §9.3.2 «إلغاء الطلب» «may add compensation» (slice 2.22b): the
+  // customer's compensation has a value or reason «تعويض الزبون» refuses
+  // (400), or the city's base is gone or changed since the order (409).
+  | 'invalid_compensation'
+  | 'no_base_currency'
+  | 'currency_changed';
 
 // A restaurant command the order refuses; order_state_changed carries the
 // order as it is now, which the app explains (RA §4.7).
@@ -227,6 +241,16 @@ export interface OpsCancellation {
   foodPrepared: boolean;
   compensateCaptain: boolean;
   cash: CashAnswer | null;
+}
+
+// AP §9.3.2, §6.4 (slice 2.22b): the cancel dialog's optional «تعويض الزبون»,
+// issued within the admin's cap or sent to OWN, in the cancellation's
+// transaction.
+export interface CancelCompensation {
+  order: CompensationOrder;
+  value: CompensationValue;
+  reason: { code: string; note: string | null };
+  admin: CompensationAdmin;
 }
 
 function choicesOf(choices: OpsCancellation): CancellationChoices {
@@ -413,6 +437,7 @@ export class OrderCommands {
     private readonly ledger: LedgerService,
     private readonly customers: CustomersService,
     private readonly assignments: OrderAssignments,
+    private readonly compensations: CompensationsService,
   ) {}
 
   async prepTimeChooser(restaurantId: string, now: Date): Promise<PrepTimeChooser> {
@@ -582,18 +607,36 @@ export class OrderCommands {
   // invalid_cancellation; 409 compensation_not_allowed, captain_pay_unset,
   // cash_answer_required, cash_answer_not_allowed, order_state_changed.
   async cancelFor(
-    command: AdminOrderCommand & OpsCancellation & { code: string },
+    command: AdminOrderCommand &
+      OpsCancellation & { code: string; compensation: CancelCompensation | null },
     now: Date,
   ): Promise<OrderView> {
     const choices = choicesOf(command);
     const actor = { type: 'admin' as const, id: command.admin.accountId };
+    const asked = command.compensation;
     return this.run(
       { kind: 'admin', command },
       { verb: 'cancel', from: CANCELLABLE, to: 'cancelled' },
-      { cancellation: command.code, ...choices, reason: command.reason },
+      {
+        cancellation: command.code,
+        ...choices,
+        reason: command.reason,
+        // The key's hash: the compensation asked, if any (slice 2.22b).
+        ...(asked === null
+          ? {}
+          : {
+              compensation: {
+                value: JSON.stringify(asked.value, (_key, each: unknown) =>
+                  typeof each === 'bigint' ? each.toString() : each,
+                ),
+                reason: asked.reason,
+              },
+            }),
+      },
       now,
       async (order) => {
         const { label } = await this.opsReason(command.code);
+        const compensation = asked === null ? null : await this.prepareCompensation(asked);
         const customerText = await this.content.customerText('ops_cancel', command.code);
         const read = await this.cancellationFacts(this.database.db, order, now);
         const result = this.entries(read.facts, choices);
@@ -658,6 +701,24 @@ export class OrderCommands {
               })
               .where(openReportOf(order.id, order.placedAt));
             await this.postJournals(tx, order, actor, result.journals);
+            if (compensation !== null) {
+              // Its own key, from the cancellation's: the cancellation's key
+              // replays the whole command, so this one is never repeated.
+              try {
+                await this.compensations.requestIn(
+                  tx,
+                  compensation,
+                  `order.cancel:${command.idempotencyKey}`,
+                  now,
+                );
+              } catch (error) {
+                if (!(error instanceof CompensationRefusedError)) throw error;
+                throw new OrderCommandRefusedError(
+                  error.refusal === 'currency_changed' ? 'currency_changed' : 'no_base_currency',
+                  error.message,
+                );
+              }
+            }
             if (result.strike) {
               await this.customers.recordLateCancel(tx, {
                 accountId: read.customerAccountId,
@@ -672,6 +733,18 @@ export class OrderCommands {
         };
       },
     );
+  }
+
+  // The cancel dialog's compensation read before the transaction: its reason
+  // and the admin's cap; a reason «تعويض الزبون» refuses is
+  // invalid_compensation, so it never reads as the cancellation's reason.
+  private async prepareCompensation(asked: CancelCompensation) {
+    try {
+      return await this.compensations.prepare(asked.order, asked.value, asked.reason, asked.admin);
+    } catch (error) {
+      if (!(error instanceof ContentRefusedError)) throw error;
+      throw new OrderCommandRefusedError('invalid_compensation', error.refusal);
+    }
   }
 
   // AP §9.3.2, docs/domain/09: what a cancellation with these choices would

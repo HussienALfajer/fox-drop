@@ -18,6 +18,8 @@ export function storedTerms(stored: unknown): CodeTerms | null {
     amount: string | null;
     maxDiscount: string | null;
     merchantShareBp: number;
+    // Absent on an order placed before slice 2.22b.
+    compensation?: boolean;
   };
   return {
     kind: terms.kind,
@@ -25,6 +27,7 @@ export function storedTerms(stored: unknown): CodeTerms | null {
     amount: terms.amount === null ? null : BigInt(terms.amount),
     maxDiscount: terms.maxDiscount === null ? null : BigInt(terms.maxDiscount),
     merchantShareBp: terms.merchantShareBp,
+    compensation: terms.compensation === true,
   };
 }
 

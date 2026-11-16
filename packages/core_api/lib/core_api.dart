@@ -31,6 +31,9 @@ export 'package:core_api/src/model/admin_bulk_hand_in_grace_answer_dto_output.da
 export 'package:core_api/src/model/admin_bulk_hand_in_grace_answer_dto_output_grace.dart';
 export 'package:core_api/src/model/admin_bulk_hand_in_grace_dto.dart';
 export 'package:core_api/src/model/admin_cancel_dto.dart';
+export 'package:core_api/src/model/admin_cancel_dto_compensation.dart';
+export 'package:core_api/src/model/admin_cancel_dto_compensation_reason.dart';
+export 'package:core_api/src/model/admin_cancel_dto_compensation_value.dart';
 export 'package:core_api/src/model/admin_cancel_preview_answer_dto_output.dart';
 export 'package:core_api/src/model/admin_cancel_preview_answer_dto_output_entries_inner.dart';
 export 'package:core_api/src/model/admin_cancel_preview_dto.dart';
@@ -51,8 +54,6 @@ export 'package:core_api/src/model/admin_city_office_dto_output_office_location.
 export 'package:core_api/src/model/admin_close_drawer_session_dto.dart';
 export 'package:core_api/src/model/admin_close_item_report_dto.dart';
 export 'package:core_api/src/model/admin_compensate_dto.dart';
-export 'package:core_api/src/model/admin_compensate_dto_reason.dart';
-export 'package:core_api/src/model/admin_compensate_dto_value.dart';
 export 'package:core_api/src/model/admin_compensation_dto_output.dart';
 export 'package:core_api/src/model/admin_compensation_requests_dto_output.dart';
 export 'package:core_api/src/model/admin_confirm_pickup_dto.dart';
@@ -473,6 +474,9 @@ export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inne
 export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_address.dart';
 export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_address_location.dart';
 export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation.dart';
+export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation_compensation.dart';
+export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation_compensation_amount.dart';
+export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation_compensation_max_discount.dart';
 export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_captain.dart';
 export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_delivery.dart';
 export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_door_ping.dart';

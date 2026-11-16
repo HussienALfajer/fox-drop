@@ -142,6 +142,9 @@ export interface CodeTerms {
   maxDiscount: bigint | null;
   // The restaurant's share in basis points (0 platform, 10000 restaurant).
   merchantShareBp: number;
+  // A personal code (compensation, late code; slice 2.22b): its use costs
+  // `platform.compensation_cost`, not `platform.discount_cost` (docs/domain/11).
+  compensation: boolean;
 }
 
 // AP §8.4: the discount of a code on an order, and the restaurant's part of
@@ -203,7 +206,7 @@ export type CodeRefusal =
   // «الكود غير متاح اليوم»
   | 'budget_reached';
 
-export interface CodeRow extends CodeTerms {
+export interface CodeRow extends Omit<CodeTerms, 'compensation'> {
   status: PromoCodeStatus;
   currency: string;
   minOrder: bigint | null;
@@ -387,9 +390,10 @@ export interface MyCode {
 
 export const ENDED_CODES_DAYS = 30;
 
-// CU §12.4: a visible code customers can use now, whatever the cart: active,
-// started, not ended and saved in the city's base. With `openToCustomer` it
-// is in «متاحة».
+// CU §12.4: a visible or personal code customers can use now, whatever the
+// cart: active, started, not ended and saved in the city's base. With
+// `openToCustomer` it is in «متاحة»; a personal code is read only for its
+// customer (slice 2.22b).
 export function runsNow(
   code: Pick<CodeRow, 'status' | 'validFrom' | 'validTo' | 'currency'> & {
     visibility: PromoCodeVisibility;
@@ -398,7 +402,7 @@ export function runsNow(
   now: Date,
 ): boolean {
   return (
-    code.visibility === 'visible' &&
+    code.visibility !== 'secret' &&
     code.status === 'active' &&
     code.currency === baseCurrency &&
     code.validFrom.getTime() <= now.getTime() &&

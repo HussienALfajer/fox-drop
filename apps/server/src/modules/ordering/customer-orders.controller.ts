@@ -32,6 +32,7 @@ import {
 import { OrderCommandRefusedError, OrderCommands } from './order-commands.js';
 import type { OrderView } from './order-views.js';
 import { OrderRefusedError, OrdersService } from './orders.service.js';
+import { type Compensation, CompensationsService } from '../marketing/index.js';
 import { orderStatuses } from './schema.js';
 
 class CustomerPlaceOrderDto extends createZodDto(
@@ -118,6 +119,25 @@ const customerOrder = z.object({
         .boolean()
         .describe(
           'The customer cancelled it themselves while placed: «ألغيت طلبك» instead of the text (CU §11.4, §11.9).',
+        ),
+      compensation: z
+        .object({
+          code: z.string(),
+          kind: z.enum(['fixed_amount', 'percentage']),
+          amount: z
+            .object({ amount: z.string(), currency: z.string() })
+            .nullable()
+            .describe('A fixed amount; null for a percentage.'),
+          percentBp: z.number().int().nullable().describe('A percentage in basis points.'),
+          maxDiscount: z
+            .object({ amount: z.string(), currency: z.string() })
+            .nullable()
+            .describe("A percentage's maximum."),
+          validTo: z.iso.datetime(),
+        })
+        .nullable()
+        .describe(
+          "CU §11.9 (slice 2.22b): the compensation code given on this order, the latest issued, shown on «أُلغي طلبك»; it is also in «أكوادي». Null without one, and while OWN's approval waits.",
         ),
     })
     .nullable()
@@ -296,6 +316,7 @@ export class CustomerOrdersController {
     private readonly captains: CaptainsService,
     private readonly commands: OrderCommands,
     private readonly captainAccounts: CaptainAccountsService,
+    private readonly compensations: CompensationsService,
   ) {}
 
   @Get('orders/active')
@@ -481,11 +502,12 @@ export class CustomerOrdersController {
   }
 
   private async withNames(order: OrderView) {
-    const [names, captains] = await Promise.all([
+    const [names, captains, compensation] = await Promise.all([
       this.merchants.names([order.restaurantId]),
       this.captainsOf([order]),
+      order.cancellation === null ? null : this.compensations.issuedCode(order.id),
     ]);
-    return orderBody(order, names, captains);
+    return orderBody(order, names, captains, compensation);
   }
 
   // The captains of these orders; with their number once one of their orders
@@ -522,6 +544,8 @@ function orderBody(
   order: OrderView,
   names: Map<string, { nameAr: string; nameEn: string | null }>,
   captains: Map<string, CardCaptain>,
+  // CU §11.9: the compensation code on a cancelled order (slice 2.22b).
+  compensation: Compensation | null = null,
 ) {
   const captain = order.captainId === null ? undefined : captains.get(order.captainId);
   const restaurant = names.get(order.restaurantId);
@@ -550,6 +574,23 @@ function orderBody(
       reason: order.cancellation.reason,
       text: order.cancellation.customerText ?? GENERIC_CUSTOMER_TEXT,
       byCustomer: order.cancellation.byCustomer,
+      compensation:
+        compensation === null || compensation.code === null
+          ? null
+          : {
+              code: compensation.code,
+              kind: compensation.kind,
+              amount:
+                compensation.amount === null
+                  ? null
+                  : { amount: text(compensation.amount), currency: compensation.currency },
+              percentBp: compensation.percentBp,
+              maxDiscount:
+                compensation.maxDiscount === null
+                  ? null
+                  : { amount: text(compensation.maxDiscount), currency: compensation.currency },
+              validTo: compensation.codeValidTo!.toISOString(),
+            },
     },
     outcome: order.outcome && {
       at: order.outcome.at.toISOString(),

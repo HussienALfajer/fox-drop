@@ -30,6 +30,9 @@ import 'package:core_api/src/model/admin_bulk_hand_in_grace_answer_dto_output.da
 import 'package:core_api/src/model/admin_bulk_hand_in_grace_answer_dto_output_grace.dart';
 import 'package:core_api/src/model/admin_bulk_hand_in_grace_dto.dart';
 import 'package:core_api/src/model/admin_cancel_dto.dart';
+import 'package:core_api/src/model/admin_cancel_dto_compensation.dart';
+import 'package:core_api/src/model/admin_cancel_dto_compensation_reason.dart';
+import 'package:core_api/src/model/admin_cancel_dto_compensation_value.dart';
 import 'package:core_api/src/model/admin_cancel_preview_answer_dto_output.dart';
 import 'package:core_api/src/model/admin_cancel_preview_answer_dto_output_entries_inner.dart';
 import 'package:core_api/src/model/admin_cancel_preview_dto.dart';
@@ -50,8 +53,6 @@ import 'package:core_api/src/model/admin_city_office_dto_output_office_location.
 import 'package:core_api/src/model/admin_close_drawer_session_dto.dart';
 import 'package:core_api/src/model/admin_close_item_report_dto.dart';
 import 'package:core_api/src/model/admin_compensate_dto.dart';
-import 'package:core_api/src/model/admin_compensate_dto_reason.dart';
-import 'package:core_api/src/model/admin_compensate_dto_value.dart';
 import 'package:core_api/src/model/admin_compensation_dto_output.dart';
 import 'package:core_api/src/model/admin_compensation_requests_dto_output.dart';
 import 'package:core_api/src/model/admin_confirm_pickup_dto.dart';
@@ -472,6 +473,9 @@ import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inne
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_address.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_address_location.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation_compensation.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation_compensation_amount.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation_compensation_max_discount.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_captain.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_delivery.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_door_ping.dart';
@@ -694,6 +698,9 @@ part 'serializers.g.dart';
   AdminBulkHandInGraceAnswerDtoOutputGrace,
   AdminBulkHandInGraceDto,
   AdminCancelDto,
+  AdminCancelDtoCompensation,
+  AdminCancelDtoCompensationReason,
+  AdminCancelDtoCompensationValue,
   AdminCancelPreviewAnswerDtoOutput,
   AdminCancelPreviewAnswerDtoOutputEntriesInner,
   AdminCancelPreviewDto,
@@ -714,8 +721,6 @@ part 'serializers.g.dart';
   AdminCloseDrawerSessionDto,
   AdminCloseItemReportDto,
   AdminCompensateDto,
-  AdminCompensateDtoReason,
-  AdminCompensateDtoValue,
   AdminCompensationDtoOutput,
   AdminCompensationRequestsDtoOutput,
   AdminConfirmPickupDto,
@@ -1136,6 +1141,9 @@ part 'serializers.g.dart';
   CustomerActiveOrdersDtoOutputOrdersInnerAddress,
   CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation,
   CustomerActiveOrdersDtoOutputOrdersInnerCancellation,
+  CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensation,
+  CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmount,
+  CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscount,
   CustomerActiveOrdersDtoOutputOrdersInnerCaptain,
   CustomerActiveOrdersDtoOutputOrdersInnerDelivery,
   CustomerActiveOrdersDtoOutputOrdersInnerDoorPing,

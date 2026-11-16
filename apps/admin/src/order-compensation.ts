@@ -60,6 +60,25 @@ export const emptyValue: ValueForm = {
 
 export type ValueProblem = 'amount' | 'percent' | 'maxDiscount';
 
+// The whole compensation as typed: the value, the reason's code ('' until
+// chosen) and the optional note.
+export interface CompensationForm {
+  value: ValueForm;
+  reason: string;
+  note: string;
+}
+
+export const emptyCompensation: CompensationForm = { value: emptyValue, reason: '', note: '' };
+
+// The body of a complete compensation, or null while the value or the reason
+// is missing (AP §6.4); a blank note is none.
+export function compensationOf(form: CompensationForm, currency: string): CompensateBody | null {
+  const checked = valueOf(form.value, currency);
+  if (!('value' in checked) || form.reason === '') return null;
+  const note = form.note.trim();
+  return { value: checked.value, reason: { code: form.reason, note: note === '' ? null : note } };
+}
+
 // AP §6.4: an amount above 0, or a percentage from 0.01 to 100 with a
 // maximum above 0 (what counts against the cap).
 export function valueOf(

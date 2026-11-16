@@ -20,7 +20,12 @@ import { orderKey, snapshotOf } from './order-views.js';
 import { postOrderJournals } from './outcome-facts.js';
 import { captainNet, type OutcomeJournal, type SetOutcome } from './outcome.js';
 import { journalRates } from './journal-rates.js';
-import { merchantItemDiscount, orderDiscount, type OrderDiscount } from './order-discount.js';
+import {
+  merchantItemDiscount,
+  orderDiscount,
+  type OrderDiscount,
+  storedTerms,
+} from './order-discount.js';
 import { type PaymentLine, storedLines } from './pickup-booking.js';
 import type { ChosenReason } from '../content/index.js';
 import { collections, orderOutcomeRows, orders } from './schema.js';
@@ -433,11 +438,17 @@ export class DeliveryBooking {
       ]);
     }
     // AP §8.4, docs/domain/11: the discount the customer did not pay, its
-    // platform part a cost (a test order's whole discount its test cost) and
+    // platform part a cost (a personal code's `platform.compensation_cost`,
+    // slice 2.22b; a test order's whole discount its test cost) and
     // the restaurant's part owed on Saturday with the commission
     // (docs/domain/07 merchant.discount_share).
     const share = money.commission === null ? 0n : money.discount.merchant;
-    const cost = money.commission === null ? 'platform.test_cost' : 'platform.discount_cost';
+    const cost =
+      money.commission === null
+        ? 'platform.test_cost'
+        : storedTerms(order.promoTerms)?.compensation
+          ? 'platform.compensation_cost'
+          : 'platform.discount_cost';
     await post(cost, [
       { accountId: clearing, currency: base, amount: -(money.discount.total - share) },
       {

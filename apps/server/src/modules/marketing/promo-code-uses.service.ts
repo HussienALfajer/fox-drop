@@ -247,7 +247,7 @@ export class PromoCodeUsesService {
       .groupBy(promoCodeUses.codeId);
     const lastUse = new Map(used.map((row) => [row.codeId, new Date(row.last)]));
     const running = and(
-      eq(promoCodes.visibility, 'visible'),
+      listedFor(customer),
       eq(promoCodes.currency, scope.baseCurrency),
       lte(promoCodes.validFrom, now),
       gt(promoCodes.validTo, since),
@@ -283,7 +283,7 @@ export class PromoCodeUsesService {
       // paused or secret waits, and shows as expired once it ends.
       else if (last !== undefined && !open) ended = { reason: 'used', at: last };
       else if (
-        row.visibility === 'visible' &&
+        row.visibility !== 'secret' &&
         row.validTo.getTime() <= now.getTime() &&
         (row.audience === 'everyone' || customer.newUser)
       ) {
@@ -384,7 +384,7 @@ export class PromoCodeUsesService {
       .where(
         and(
           eq(promoCodes.cityId, cart.cityId),
-          eq(promoCodes.visibility, 'visible'),
+          listedFor(cart.customer),
           eq(promoCodes.status, 'active'),
           eq(promoCodes.currency, cart.baseCurrency),
           lte(promoCodes.validFrom, now),
@@ -507,8 +507,13 @@ export class PromoCodeUsesService {
       .select()
       .from(promoCodes)
       .where(and(eq(promoCodes.cityId, cart.cityId), eq(promoCodes.code, typed)));
-    // A personal code (compensation, late code) is used from slice 2.22b.
-    if (!row || row.visibility === 'personal') {
+    // A personal code (compensation, late code; slice 2.22b) exists only for
+    // its customer: anyone else, a guest included, is told it does not.
+    if (
+      !row ||
+      (row.visibility === 'personal' &&
+        (cart.customer === null || cart.customer.accountId !== row.customerAccountId))
+    ) {
       return { applied: false, refusal: 'unknown_code', missing: null };
     }
     if (lock) {
@@ -561,5 +566,21 @@ function codeTerms(row: typeof promoCodes.$inferSelect): CodeTerms {
     amount: row.amount,
     maxDiscount: row.maxDiscount,
     merchantShareBp: row.merchantShareBp,
+    compensation: row.visibility === 'personal',
   };
+}
+
+// The codes a customer may read in a city's lists: the visible ones, and
+// their own personal codes (CU §10.4, §12.4; slice 2.22b).
+function listedFor(customer: { accountId: string } | null) {
+  const visible = eq(promoCodes.visibility, 'visible');
+  return customer === null
+    ? visible
+    : or(
+        visible,
+        and(
+          eq(promoCodes.visibility, 'personal'),
+          eq(promoCodes.customerAccountId, customer.accountId),
+        ),
+      );
 }

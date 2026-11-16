@@ -3,6 +3,7 @@ import { keepPreviousData, queryOptions, useMutation, useQueryClient } from '@ta
 import { useRef } from 'react';
 import { api } from './api.js';
 import { OPERATIONS_MANAGE } from './assign-captain.js';
+import { type CompensationForm, compensationOf } from './order-compensation.js';
 import type { OrderDetail } from './order-detail.js';
 import { type AdminSession, can } from './session.js';
 
@@ -46,6 +47,9 @@ export interface CancelForm {
   cash: CashAnswer | null;
   // Operations' note, required (AP §9.3.2), never shown to the apps.
   reason: string;
+  // AP §9.3.2 «may add compensation» (slice 2.22b): «تعويض الزبون» when ticked.
+  compensate: boolean;
+  compensation: CompensationForm;
 }
 
 // The preview's choices once a responsible party is chosen (the server needs
@@ -70,12 +74,17 @@ export function cancelBody(
   form: CancelForm,
   placed: boolean,
   preview: Pick<CancelPreview, 'cashAsked' | 'compensationAllowed'> | undefined,
+  // The order's currency, which the compensation's amounts are typed in.
+  currency: string,
 ): CancelBody | null {
   const reason = form.reason.trim();
   if (form.cancellation === null || form.responsible === null || reason === '') return null;
   if (preview === undefined) return null;
   if (preview.cashAsked && form.cash === null) return null;
+  const compensation = form.compensate ? compensationOf(form.compensation, currency) : null;
+  if (form.compensate && compensation === null) return null;
   return {
+    compensation,
     cancellation: form.cancellation,
     responsible: form.responsible,
     foodPrepared: !placed && form.foodPrepared,
@@ -94,7 +103,11 @@ export type CancelRefusal =
   | 'invalid_cancellation'
   | 'compensation_not_allowed'
   | 'cash_answer_required'
-  | 'cash_answer_not_allowed';
+  | 'cash_answer_not_allowed'
+  // The customer's compensation (slice 2.22b).
+  | 'invalid_compensation'
+  | 'no_base_currency'
+  | 'currency_changed';
 
 const refusals: readonly string[] = [
   'order_state_changed',
@@ -104,6 +117,9 @@ const refusals: readonly string[] = [
   'compensation_not_allowed',
   'cash_answer_required',
   'cash_answer_not_allowed',
+  'invalid_compensation',
+  'no_base_currency',
+  'currency_changed',
 ] satisfies CancelRefusal[];
 
 function refusalOf(status: number, error: unknown): CancelRefusal | null {
@@ -144,7 +160,10 @@ export function cancelPreviewQuery(orderId: string, version: number, body: Previ
   });
 }
 
-export type CancelResult = { status: 'done' } | { status: 'refused'; refusal: CancelRefusal };
+export type CancelResult =
+  | { status: 'done' }
+  // detail: the server's message, which names a compensation's own refusal.
+  | { status: 'refused'; refusal: CancelRefusal; detail?: string };
 
 // One Idempotency-Key per choice until an answer arrives, so a retry after a
 // lost answer replays instead of cancelling twice (architecture §5.3).
@@ -170,7 +189,12 @@ export function useCancelOrder(orderId: string) {
       const refusal = refusalOf(response.status, error);
       if (refusal) {
         keys.current.delete(id);
-        return { status: 'refused', refusal };
+        const detail = (error as { message?: unknown } | undefined)?.message;
+        return {
+          status: 'refused',
+          refusal,
+          ...(typeof detail === 'string' ? { detail } : {}),
+        };
       }
       throw new Error(`The cancellation failed with ${response.status}.`);
     },

@@ -36,6 +36,10 @@ Serializers _$serializers =
           ..add(AdminBulkHandInGraceDto.serializer)
           ..add(AdminCancelDto.serializer)
           ..add(AdminCancelDtoCashEnum.serializer)
+          ..add(AdminCancelDtoCompensation.serializer)
+          ..add(AdminCancelDtoCompensationReason.serializer)
+          ..add(AdminCancelDtoCompensationValue.serializer)
+          ..add(AdminCancelDtoCompensationValueKindEnum.serializer)
           ..add(AdminCancelDtoResponsibleEnum.serializer)
           ..add(AdminCancelPreviewAnswerDtoOutput.serializer)
           ..add(AdminCancelPreviewAnswerDtoOutputEntriesInner.serializer)
@@ -66,9 +70,6 @@ Serializers _$serializers =
           ..add(AdminCloseDrawerSessionDto.serializer)
           ..add(AdminCloseItemReportDto.serializer)
           ..add(AdminCompensateDto.serializer)
-          ..add(AdminCompensateDtoReason.serializer)
-          ..add(AdminCompensateDtoValue.serializer)
-          ..add(AdminCompensateDtoValueKindEnum.serializer)
           ..add(AdminCompensationDtoOutput.serializer)
           ..add(AdminCompensationDtoOutputKindEnum.serializer)
           ..add(AdminCompensationDtoOutputStatusEnum.serializer)
@@ -756,6 +757,22 @@ Serializers _$serializers =
             CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation.serializer,
           )
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerCancellation.serializer)
+          ..add(
+            CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensation
+                .serializer,
+          )
+          ..add(
+            CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmount
+                .serializer,
+          )
+          ..add(
+            CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationKindEnum
+                .serializer,
+          )
+          ..add(
+            CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscount
+                .serializer,
+          )
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerCaptain.serializer)
           ..add(
             CustomerActiveOrdersDtoOutputOrdersInnerCaptainVehicleEnum
