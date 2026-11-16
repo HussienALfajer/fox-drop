@@ -21,9 +21,15 @@ import {
 // session is the owner of its own `platform.cash` accounts.
 export const cashdesk = pgSchema('cashdesk');
 
-// AP §9.10.3: a user holds one office session at a time; the field session
-// of a restaurant visit joins with slice 2.19.
-export const sessionKinds = ['office'] as const;
+// AP §9.10.3: a user holds one office session and one field session at a
+// time; the field session is a restaurant visit's, opened with a zero float
+// from a phone (slice 2.19c).
+export const sessionKinds = ['office', 'field'] as const;
+
+// RA §12.4, AP §9.10.3 tab 3: how a restaurant's payment reached FOX DROP,
+// «في المكتب» or «زيارة ميدانية» (slice 2.19c). A captain's receipt is at
+// the office.
+export const receiptMethods = ['office', 'field'] as const;
 
 // «جلسة الصندوق» (AP §9.10.3): opened by a desk user with a float counted per
 // currency, closed with the counted cash. Every desk transaction belongs to
@@ -49,7 +55,7 @@ export const drawerSessions = cashdesk.table(
       .on(table.adminAccountId, table.kind)
       .where(sql`${table.closedAt} IS NULL`),
     index('drawer_sessions_city_opened').on(table.cityId, table.openedAt),
-    check('drawer_sessions_kind_values', sql`${table.kind} IN ('office')`),
+    check('drawer_sessions_kind_values', sql`${table.kind} IN ('office', 'field')`),
     check(
       'drawer_sessions_note_when_closed',
       sql`${table.closeNote} IS NULL OR ${table.closedAt} IS NOT NULL`,
@@ -153,6 +159,12 @@ export const receipts = cashdesk.table(
     // owes it), in the base currency of its account.
     dueBefore: bigint('due_before', { mode: 'bigint' }),
     dueCurrency: text('due_currency'),
+    // RA §12.4 (slice 2.19c): «في المكتب» or «زيارة ميدانية»; a field visit
+    // names the staff member who visited, as the receipt was issued: the
+    // field session's user, or the visitor without FIN the desk names.
+    method: text('method', { enum: receiptMethods }).notNull().default('office'),
+    visitorId: uuid('visitor_id'),
+    visitorName: text('visitor_name'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
   },
   (table) => [
@@ -174,6 +186,11 @@ export const receipts = cashdesk.table(
     check(
       'receipts_party',
       sql`CASE WHEN ${table.type} IN ('captain_hand_in', 'captain_reimbursement', 'captain_payout', 'captain_earnings_collection') THEN ${table.captainId} IS NOT NULL AND ${table.captainName} IS NOT NULL AND ${table.restaurantId} IS NULL AND ${table.restaurantName} IS NULL AND ${table.dueBefore} IS NULL AND ${table.dueCurrency} IS NULL ELSE ${table.captainId} IS NULL AND ${table.captainName} IS NULL AND ${table.restaurantId} IS NOT NULL AND ${table.restaurantName} IS NOT NULL AND ${table.dueBefore} IS NOT NULL AND ${table.dueCurrency} IS NOT NULL END`,
+    ),
+    check('receipts_method_values', sql`${table.method} IN ('office', 'field')`),
+    check(
+      'receipts_visitor',
+      sql`CASE WHEN ${table.method} = 'field' THEN ${table.restaurantId} IS NOT NULL AND ${table.visitorId} IS NOT NULL AND ${table.visitorName} IS NOT NULL ELSE ${table.visitorId} IS NULL AND ${table.visitorName} IS NULL END`,
     ),
   ],
 );

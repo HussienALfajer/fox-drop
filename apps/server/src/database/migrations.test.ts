@@ -939,6 +939,42 @@ describe('the cash desk tables (AP §9.10.3, §4.8)', () => {
     );
   });
 
+  it('keeps one office and one field session open per user', async () => {
+    const accountId = randomUUID();
+    await appQuery(session(accountId));
+    const field = session(accountId).replace("'office'", "'field'");
+    await appQuery(field);
+    await expect(appQuery(field)).rejects.toThrow(/drawer_sessions_one_open/);
+    await expect(appQuery(session(randomUUID()).replace("'office'", "'safe'"))).rejects.toThrow(
+      /drawer_sessions_kind_values/,
+    );
+  });
+
+  it('names the visitor on a field visit receipt only, and a method at the office by default', async () => {
+    const { rows } = await appQuery(session(randomUUID()));
+    const restaurantReceipt = (sequence: number, columns: string, values: string) =>
+      `INSERT INTO cashdesk.receipts (city_id, year, sequence, number, type, session_id, admin_account_id, restaurant_id, restaurant_name, due_before, due_currency${columns}, created_at) VALUES (${azaz}, 2097, ${sequence}, 'AZ-2097-${sequence}', 'merchant_settlement', '${rows[0].id}', '${randomUUID()}', '${randomUUID()}', 'مطعم', 6000, 'TRY'${values}, now()) RETURNING method`;
+    const visitor = `, '${randomUUID()}', 'زائر'`;
+    expect((await appQuery(restaurantReceipt(1, '', ''))).rows[0].method).toBe('office');
+    await appQuery(
+      restaurantReceipt(2, ', method, visitor_id, visitor_name', `, 'field'${visitor}`),
+    );
+    await expect(appQuery(restaurantReceipt(3, ', method', ", 'field'"))).rejects.toThrow(
+      /receipts_visitor/,
+    );
+    await expect(
+      appQuery(restaurantReceipt(4, ', visitor_id, visitor_name', visitor)),
+    ).rejects.toThrow(/receipts_visitor/);
+    await expect(appQuery(restaurantReceipt(5, ', method', ", 'phone'"))).rejects.toThrow(
+      /receipts_method_values/,
+    );
+    await expect(
+      appQuery(
+        `INSERT INTO cashdesk.receipts (city_id, year, sequence, number, type, session_id, admin_account_id, captain_id, captain_name, method, visitor_id, visitor_name, created_at) VALUES (${azaz}, 2097, 6, 'AZ-2097-6', 'captain_hand_in', '${rows[0].id}', '${randomUUID()}', '${randomUUID()}', 'كابتن', 'field'${visitor}, now())`,
+      ),
+    ).rejects.toThrow(/receipts_visitor/);
+  });
+
   it('keeps a restaurant statement sums and one per restaurant and cutoff', async () => {
     const restaurant = randomUUID();
     const statement = (cutoff: string, totalDue: number) =>
