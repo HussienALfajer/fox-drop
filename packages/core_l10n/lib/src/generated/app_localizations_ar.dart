@@ -2828,6 +2828,16 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String merchantAccountOverdue(String amount, String date) {
+    return 'متأخر: $amount من كشف $date';
+  }
+
+  @override
+  String merchantOverdueBanner(String amount) {
+    return 'لديك مبلغ متأخر: $amount. يرجى التسوية في أقرب وقت.';
+  }
+
+  @override
   String merchantAccountCommission(String rate) {
     return 'عمولتك الحالية: $rate%';
   }

@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import { type AdminAlert, needsRepeat, receivesAlerts, soundPlan } from './alerts.js';
+import {
+  type AdminAlert,
+  needsRepeat,
+  overdueRestaurantOf,
+  receivesAlerts,
+  soundPlan,
+} from './alerts.js';
 
 vi.mock('./api.js', () => ({ api: {} }));
 
@@ -13,6 +19,7 @@ function alert(overrides: Partial<AdminAlert>): AdminAlert {
     orderNumber: '10001',
     captainName: null,
     restaurantName: null,
+    statementId: null,
     location: null,
     raisedAt: '2026-11-08T09:00:00.000Z',
     acknowledged: null,
@@ -64,5 +71,21 @@ describe('receivesAlerts', () => {
     expect(receivesAlerts(session(['FIN']))).toBe(true);
     expect(receivesAlerts(session(['SUP']))).toBe(false);
     expect(receivesAlerts(session(['DATA']))).toBe(false);
+  });
+});
+
+// AP §9.1.3 «مطعم متأخر في التسوية» (slice 2.19f): its restaurant only.
+describe('overdueRestaurantOf', () => {
+  it('names the restaurant of the overdue alert, and nothing for another alert', () => {
+    const overdue = alert({
+      code: 'restaurant_settlement_overdue',
+      severity: 'warning',
+      subjectType: 'restaurant',
+      subjectId: 'r1',
+      orderNumber: null,
+      restaurantName: 'مطعم',
+    });
+    expect(overdueRestaurantOf(overdue)).toBe('r1');
+    expect(overdueRestaurantOf(alert({}))).toBeNull();
   });
 });

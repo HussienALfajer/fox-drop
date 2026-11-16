@@ -9,8 +9,10 @@ import {
   alertsQuery,
   autoPausedRestaurantOf,
   orderOf,
+  overdueRestaurantOf,
   useAcknowledgeAlert,
 } from './alerts.js';
+import { CASH_DESK } from './cash-desk.js';
 import { type City, chosenCity, citiesQuery } from './cities.js';
 import { formatDateTime } from './format.js';
 import { mapLink } from './map-link.js';
@@ -143,6 +145,8 @@ function AlertLine({ alert, city }: { alert: AdminAlert; city: City }) {
   const { session } = signedIn.useRouteContext();
   // The order's page needs operations.read (a FIN user sees shortfalls).
   const orderId = can(session, OPERATIONS_READ) ? orderOf(alert) : null;
+  // OWN and FIN receive it and both hold the desk; checked all the same.
+  const overdueId = can(session, CASH_DESK) ? overdueRestaurantOf(alert) : null;
   return (
     <>
       <strong>{t(`alerts.severity.${alert.severity}`)}</strong>{' '}
@@ -175,6 +179,30 @@ function AlertLine({ alert, city }: { alert: AdminAlert; city: City }) {
         <Link to="/orders/$orderId" params={{ orderId }} search={{ city: city.code }}>
           {t('alerts.openOrder')}
         </Link>
+      )}
+      {overdueId && (
+        <>
+          {alert.statementId && (
+            <>
+              <Link
+                to="/cash-desk/merchant-statements/$statementId"
+                params={{ statementId: alert.statementId }}
+              >
+                {t('alerts.openStatement')}
+              </Link>{' '}
+            </>
+          )}
+          <Link to="/cash-desk/restaurants" search={{ city: city.code }}>
+            {t('alerts.openSettlements')}
+          </Link>{' '}
+          <Link
+            to="/cash-desk/restaurants/$restaurantId/settle"
+            params={{ restaurantId: overdueId }}
+            search={{ city: city.code }}
+          >
+            {t('alerts.settleRestaurant')}
+          </Link>
+        </>
       )}
     </>
   );

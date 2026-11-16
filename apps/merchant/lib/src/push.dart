@@ -88,8 +88,8 @@ final notificationAskProvider = Provider<void>((ref) {
 });
 
 /// The route a push's data opens (RA §16): an order's push opens its
-/// detail. The others (statements, tickets, the menu) come with their
-/// slices; until then such a tap only opens the app.
+/// detail, the money's under «الحساب». The others (tickets, the menu) come
+/// with their slices; until then such a tap only opens the app.
 String? pushTargetPath(Map<String, String> data) => switch (data) {
   {'target': 'order', 'orderId': final id} when id.isNotEmpty =>
     '/orders/${Uri.encodeComponent(id)}',
@@ -99,6 +99,8 @@ String? pushTargetPath(Map<String, String> data) => switch (data) {
   // RA §16 #31: the receipt over «الإيصالات».
   {'target': 'receipt', 'receiptId': final id} when id.isNotEmpty =>
     '/account/receipts/${Uri.encodeComponent(id)}',
+  // RA §16 #32: the overdue reminder over «الحساب».
+  {'target': 'account'} => '/account',
   _ => null,
 };
 

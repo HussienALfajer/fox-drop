@@ -33,6 +33,12 @@ class AdminAlertDto extends createZodDto(
     orderNumber: z.string().nullable().describe('For an alert about an order.'),
     captainName: z.string().nullable().describe('For an alert about a captain.'),
     restaurantName: z.string().nullable().describe('For an alert about a restaurant.'),
+    statementId: z
+      .uuid()
+      .nullable()
+      .describe(
+        '«مطعم متأخر في التسوية» (AP §9.1.3, slice 2.19f): the oldest statement still unpaid, for «فتح الكشف»; null for the others.',
+      ),
     location: z
       .object({ latitude: z.number(), longitude: z.number(), at: z.iso.datetime() })
       .nullable()
@@ -102,6 +108,7 @@ export class AdminAlertsController {
       orderNumber: alert.details.orderNumber ?? null,
       captainName: alert.details.captainName ?? null,
       restaurantName: alert.details.restaurantName ?? null,
+      statementId: alert.details.statementId ?? null,
       location: locationOf(alert.details),
       raisedAt: alert.raisedAt.toISOString(),
       acknowledged:

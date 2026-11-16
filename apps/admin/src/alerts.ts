@@ -106,3 +106,11 @@ export function autoPausedRestaurantOf(alert: AdminAlert): string | null {
     ? alert.subjectId
     : null;
 }
+
+// AP §9.1.3 «مطعم متأخر في التسوية» (slice 2.19f): its restaurant, for
+// «تسوية المطاعم» and «تسوية».
+export function overdueRestaurantOf(alert: AdminAlert): string | null {
+  return alert.code === 'restaurant_settlement_overdue' && alert.subjectType === 'restaurant'
+    ? alert.subjectId
+    : null;
+}

@@ -22,6 +22,7 @@ part 'admin_alert_dto_output.g.dart';
 /// * [orderNumber] - For an alert about an order.
 /// * [captainName] - For an alert about a captain.
 /// * [restaurantName] - For an alert about a restaurant.
+/// * [statementId] - «مطعم متأخر في التسوية» (AP §9.1.3, slice 2.19f): the oldest statement still unpaid, for «فتح الكشف»; null for the others.
 /// * [location]
 /// * [raisedAt]
 /// * [acknowledged]
@@ -35,7 +36,7 @@ abstract class AdminAlertDtoOutput
   /// The rule of AP §9.1.3.
   @BuiltValueField(wireName: r'code')
   AdminAlertDtoOutputCodeEnum get code;
-  // enum codeEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  captain_cash_limit,  codes_cannot_send,  code_number_stopped,  away_from_address,  item_unavailable,  edit_unacknowledged,  captain_cannot_complete,  captain_emergency,  customer_not_answering,  restaurant_auto_paused,  };
+  // enum codeEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  captain_cash_limit,  codes_cannot_send,  code_number_stopped,  away_from_address,  item_unavailable,  edit_unacknowledged,  captain_cannot_complete,  captain_emergency,  customer_not_answering,  restaurant_auto_paused,  restaurant_settlement_overdue,  };
 
   /// critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
   @BuiltValueField(wireName: r'severity')
@@ -61,6 +62,10 @@ abstract class AdminAlertDtoOutput
   /// For an alert about a restaurant.
   @BuiltValueField(wireName: r'restaurantName')
   String? get restaurantName;
+
+  /// «مطعم متأخر في التسوية» (AP §9.1.3, slice 2.19f): the oldest statement still unpaid, for «فتح الكشف»; null for the others.
+  @BuiltValueField(wireName: r'statementId')
+  String? get statementId;
 
   @BuiltValueField(wireName: r'location')
   AdminAlertsDtoOutputAlertsInnerLocation? get location;
@@ -147,6 +152,13 @@ class _$AdminAlertDtoOutputSerializer
         ? null
         : serializers.serialize(
             object.restaurantName,
+            specifiedType: const FullType.nullable(String),
+          );
+    yield r'statementId';
+    yield object.statementId == null
+        ? null
+        : serializers.serialize(
+            object.statementId,
             specifiedType: const FullType.nullable(String),
           );
     yield r'location';
@@ -285,6 +297,16 @@ class _$AdminAlertDtoOutputSerializer
           if (valueDes == null) continue;
           result.restaurantName = valueDes;
           break;
+        case r'statementId':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.statementId = valueDes;
+          break;
         case r'location':
           final valueDes =
               serializers.deserialize(
@@ -416,6 +438,9 @@ class AdminAlertDtoOutputCodeEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'restaurant_auto_paused')
   static const AdminAlertDtoOutputCodeEnum restaurantAutoPaused =
       _$adminAlertDtoOutputCodeEnum_restaurantAutoPaused;
+  @BuiltValueEnumConst(wireName: r'restaurant_settlement_overdue')
+  static const AdminAlertDtoOutputCodeEnum restaurantSettlementOverdue =
+      _$adminAlertDtoOutputCodeEnum_restaurantSettlementOverdue;
 
   static Serializer<AdminAlertDtoOutputCodeEnum> get serializer =>
       _$adminAlertDtoOutputCodeEnumSerializer;

@@ -5,13 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'account.dart';
+import 'overdue.dart';
 import 'records.dart';
 
 /// «الحساب», the owners' (RA §12.2, R10): the balance card with «موعد
 /// التسوية», the commission, «قبضت اليوم من الكباتن» with today's pickups,
 /// this week by day with the exceptions' labels (RA §12.5), and the links to
-/// «الكشوف» and «الإيصالات». The overdue line comes with 2.19f. Unstyled
-/// until the design.
+/// «الكشوف» and «الإيصالات», and the overdue line «متأخر: …» (RA §12.6).
+/// Unstyled until the design (the line red then).
 class AccountScreen extends ConsumerWidget {
   const AccountScreen({super.key});
 
@@ -26,7 +27,11 @@ class AccountScreen extends ConsumerWidget {
           IconButton(
             key: const Key('account-refresh'),
             tooltip: l10n.merchantRetry,
-            onPressed: () => ref.invalidate(accountProvider),
+            onPressed: () {
+              ref.invalidate(accountProvider);
+              // The banner follows what the account shows.
+              ref.invalidate(overdueProvider);
+            },
             icon: const Icon(Icons.refresh),
           ),
         ],
@@ -78,6 +83,14 @@ class _AccountView extends StatelessWidget {
           title: Text(l10n.balanceText(account)),
           subtitle: Text(l10n.settlementText(account.settlementDate)),
         ),
+        // RA §12.2, §12.6: a statement overdue.
+        if ((account.overdue, currency) case (final overdue?, final code?))
+          ListTile(
+            key: const Key('account-overdue'),
+            title: Text(
+              l10n.overdueLineText(overdue.amount, code, overdue.statementDate),
+            ),
+          ),
         if (account.commissionBp case final bp?)
           ListTile(
             key: const Key('account-commission'),

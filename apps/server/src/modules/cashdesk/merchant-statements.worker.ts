@@ -9,7 +9,8 @@ export const MERCHANT_STATEMENTS_MS = 60_000;
 
 // AP §8.7 (slice 2.19a): each active city's restaurants get their statement
 // at the cutoff that starts merchant.settlement_weekday. A city whose cutoff
-// was swept is skipped until the next one; a failed sweep runs again.
+// was swept is skipped until the next one; a failed sweep runs again. Every
+// run also syncs the overdue alert and reminder (RA §12.6, slice 2.19f).
 @Injectable()
 export class MerchantStatementsWorker implements OnModuleInit, OnApplicationShutdown {
   private readonly logger = new Logger('MerchantStatementsWorker');
@@ -42,6 +43,14 @@ export class MerchantStatementsWorker implements OnModuleInit, OnApplicationShut
         if (complete) this.swept.set(city.id, cutoff.getTime());
       } catch (error) {
         this.logger.error({ err: error, cityId: city.id }, 'restaurant statements failed');
+        reportError(error);
+      }
+      // The overdue alert and reminder (slice 2.19f), every minute, after
+      // the statements so a new cutoff is counted first.
+      try {
+        await this.statements.syncOverdue(city.id, now);
+      } catch (error) {
+        this.logger.error({ err: error, cityId: city.id }, 'restaurant overdue failed');
         reportError(error);
       }
     }

@@ -9173,6 +9173,32 @@
         ]
       }
     },
+    "/v1/merchant/account/overdue": {
+      "get": {
+        "operationId": "merchantAccountOverdue",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantOverdueDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
     "/v1/merchant/account": {
       "get": {
         "operationId": "merchantAccountRead",
@@ -31853,7 +31879,8 @@
                     "captain_cannot_complete",
                     "captain_emergency",
                     "customer_not_answering",
-                    "restaurant_auto_paused"
+                    "restaurant_auto_paused",
+                    "restaurant_settlement_overdue"
                   ],
                   "description": "The rule of AP §9.1.3."
                 },
@@ -31900,6 +31927,19 @@
                     "string",
                     "null"
                   ]
+                },
+                "statementId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "«مطعم متأخر في التسوية» (AP §9.1.3, slice 2.19f): the oldest statement still unpaid, for «فتح الكشف»; null for the others."
                 },
                 "location": {
                   "anyOf": [
@@ -31993,6 +32033,7 @@
                 "orderNumber",
                 "captainName",
                 "restaurantName",
+                "statementId",
                 "location",
                 "raisedAt",
                 "acknowledged",
@@ -32036,7 +32077,8 @@
               "captain_cannot_complete",
               "captain_emergency",
               "customer_not_answering",
-              "restaurant_auto_paused"
+              "restaurant_auto_paused",
+              "restaurant_settlement_overdue"
             ],
             "description": "The rule of AP §9.1.3."
           },
@@ -32083,6 +32125,19 @@
               "string",
               "null"
             ]
+          },
+          "statementId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«مطعم متأخر في التسوية» (AP §9.1.3, slice 2.19f): the oldest statement still unpaid, for «فتح الكشف»; null for the others."
           },
           "location": {
             "anyOf": [
@@ -32176,6 +32231,7 @@
           "orderNumber",
           "captainName",
           "restaurantName",
+          "statementId",
           "location",
           "raisedAt",
           "acknowledged",
@@ -37811,6 +37867,49 @@
         ],
         "additionalProperties": false
       },
+      "MerchantOverdueDto_Output": {
+        "type": "object",
+        "properties": {
+          "overdue": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "string",
+                    "pattern": "^-?\\d{1,19}$",
+                    "description": "What is still unpaid merchant.settlement_overdue_days after its settlement day."
+                  },
+                  "statementDate": {
+                    "type": "string",
+                    "format": "date",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                    "description": "The settlement day of the oldest statement still unpaid, on the city's clock."
+                  },
+                  "currency": {
+                    "type": "string",
+                    "pattern": "^[A-Z]{3}$"
+                  }
+                },
+                "required": [
+                  "amount",
+                  "statementDate",
+                  "currency"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What is overdue, or null when nothing is."
+          }
+        },
+        "required": [
+          "overdue"
+        ],
+        "additionalProperties": false
+      },
       "MerchantAccountDto_Output": {
         "type": "object",
         "properties": {
@@ -38133,6 +38232,35 @@
               "additionalProperties": false
             },
             "description": "«هذا الأسبوع»: every entry since the latest statement closed, newest day first, each day's orders then its exceptions and payments in the ledger's order."
+          },
+          "overdue": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "string",
+                    "pattern": "^-?\\d{1,19}$",
+                    "description": "What is still unpaid merchant.settlement_overdue_days after its settlement day."
+                  },
+                  "statementDate": {
+                    "type": "string",
+                    "format": "date",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                    "description": "The settlement day of the oldest statement still unpaid, on the city's clock."
+                  }
+                },
+                "required": [
+                  "amount",
+                  "statementDate"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«متأخر: {المبلغ} من كشف {التاريخ}» (RA §12.6), or null when nothing is overdue."
           }
         },
         "required": [
@@ -38144,7 +38272,8 @@
           "todayFrom",
           "pickups",
           "weekFrom",
-          "weekLines"
+          "weekLines",
+          "overdue"
         ],
         "additionalProperties": false
       },

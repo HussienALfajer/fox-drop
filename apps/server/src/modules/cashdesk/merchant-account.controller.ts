@@ -14,6 +14,14 @@ const signedMinor = z
   .regex(/^-?\d{1,19}$/)
   .describe("Integer minor units of the city's base currency (AP §8.6).");
 const currency = z.string().regex(/^[A-Z]{3}$/);
+const overdueLine = z.object({
+  amount: signedMinor.describe(
+    'What is still unpaid merchant.settlement_overdue_days after its settlement day.',
+  ),
+  statementDate: z.iso
+    .date()
+    .describe("The settlement day of the oldest statement still unpaid, on the city's clock."),
+});
 
 // Flat lists, since the Dart generator misnames an enum inside a nested
 // object.
@@ -86,6 +94,20 @@ class MerchantAccountDto extends createZodDto(
       .describe(
         "«هذا الأسبوع»: every entry since the latest statement closed, newest day first, each day's orders then its exceptions and payments in the ledger's order.",
       ),
+    overdue: overdueLine
+      .nullable()
+      .describe('«متأخر: {المبلغ} من كشف {التاريخ}» (RA §12.6), or null when nothing is overdue.'),
+  }),
+) {}
+
+// RA §6.3 item 7, §12.6 (slice 2.19f): the owners' amber banner «لديك مبلغ
+// متأخر: {المبلغ}…». An object, since a top-level nullable reads as a list.
+class MerchantOverdueDto extends createZodDto(
+  z.object({
+    overdue: overdueLine
+      .extend({ currency })
+      .nullable()
+      .describe('What is overdue, or null when nothing is.'),
   }),
 ) {}
 
@@ -98,16 +120,26 @@ export class MerchantAccountController {
     private readonly merchants: MerchantsService,
   ) {}
 
+  @Get('account/overdue')
+  @AppSignedIn()
+  @ZodResponse({ status: 200, type: MerchantOverdueDto })
+  async overdue(@CurrentAppSession() session: AppSession) {
+    const restaurant = await this.ownersRestaurant(session);
+    const found = await this.account.overdue(restaurant.id, restaurant.cityId, new Date());
+    return {
+      overdue: found && {
+        currency: found.currency,
+        amount: found.amount.toString(),
+        statementDate: found.statementDate,
+      },
+    };
+  }
+
   @Get('account')
   @AppSignedIn()
   @ZodResponse({ status: 200, type: MerchantAccountDto })
   async read(@CurrentAppSession() session: AppSession) {
-    if (!session.merchant) throw new Error('a merchant route without a restaurant user');
-    if (session.merchant.role !== 'owner') {
-      throw new ForbiddenException({ statusCode: HttpStatus.FORBIDDEN, error: 'owner_only' });
-    }
-    const restaurant = await this.merchants.restaurant(session.merchant.restaurantId);
-    if (!restaurant) throw new Error('the session names no restaurant');
+    const restaurant = await this.ownersRestaurant(session);
     const found = await this.account.account(restaurant.id, restaurant.cityId, new Date());
     return {
       currency: found.currency,
@@ -164,6 +196,20 @@ export class MerchantAccountController {
               decidedByName: line.decidedBy?.name ?? null,
             },
       ),
+      overdue: found.overdue && {
+        amount: found.overdue.amount.toString(),
+        statementDate: found.overdue.statementDate,
+      },
     };
+  }
+
+  private async ownersRestaurant(session: AppSession) {
+    if (!session.merchant) throw new Error('a merchant route without a restaurant user');
+    if (session.merchant.role !== 'owner') {
+      throw new ForbiddenException({ statusCode: HttpStatus.FORBIDDEN, error: 'owner_only' });
+    }
+    const restaurant = await this.merchants.restaurant(session.merchant.restaurantId);
+    if (!restaurant) throw new Error('the session names no restaurant');
+    return restaurant;
   }
 }

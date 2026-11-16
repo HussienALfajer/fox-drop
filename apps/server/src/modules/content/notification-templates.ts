@@ -158,6 +158,7 @@ const merchant: Entry[] = [
     'silent',
   ],
   ['settlement_receipt', '31', 'إيصال {رقم}: استلمنا منك {المبلغ}', 'silent'],
+  ['settlement_overdue', '32', 'لديك مبلغ متأخر: {المبلغ}. يرجى التسوية في أقرب وقت.', 'silent'],
   ['commission_change', '33', 'تتغيّر عمولتك إلى {النسبة}% اعتباراً من {التاريخ}', 'silent'],
   ['item_report_closed', '37', 'أغلقت العمليات بلاغ الصنف في الطلب #{رقم}: {السبب}', 'chime'],
 ];
