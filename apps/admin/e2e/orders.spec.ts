@@ -171,7 +171,70 @@ async function fakeOperations(page: Page) {
   await page.route(`**/v1/admin/orders/${orderId}/offers`, (route) =>
     route.fulfill({ json: { offers: [] } }),
   );
+  await page.route(`**/v1/admin/orders/${orderId}/compensations`, (route) =>
+    route.fulfill({ json: compensationsOf([]) }),
+  );
 }
+
+const compensationsOf = (compensations: object[], capLeft: string | null = '375') => ({
+  compensations,
+  currency: 'USD',
+  capLeft,
+  canCompensate: true,
+  reasons: [
+    { code: 'late', label: 'تأخير' },
+    { code: 'other', label: 'أخرى' },
+  ],
+});
+
+// AP §9.3.2 «تعويض الزبون», §6.4 (slice 2.22a): SUP asks for more than the
+// cap leaves, so the request goes to OWN; the value is sent in minor units.
+test('compensates the customer above the cap, which goes to OWN', async ({ page }) => {
+  await fakeSession(page, ['operations.read', 'operations.compensate']);
+  await fakeOperations(page);
+  let sent: unknown = null;
+  let key: string | undefined;
+  await page.route(`**/v1/admin/orders/${orderId}/compensations`, (route) => {
+    const request = route.request();
+    if (request.method() !== 'POST') return route.fulfill({ json: compensationsOf([]) });
+    sent = request.postDataJSON();
+    key = request.headers()['idempotency-key'];
+    return route.fulfill({
+      json: {
+        id: '01900000-0000-7000-8000-0000000000b1',
+        orderId,
+        orderNumber: '10001',
+        kind: 'fixed_amount',
+        amount: '500',
+        percentBp: null,
+        maxDiscount: null,
+        currency: 'USD',
+        reason: { code: 'late', label: 'تأخير' },
+        note: null,
+        status: 'waiting',
+        requestedBy: 'سارة',
+        requestedAt: later(0),
+        decidedBy: null,
+        decidedAt: null,
+        code: null,
+        codeValidTo: null,
+      },
+    });
+  });
+  await page.goto(`/orders/${orderId}`);
+  const form = page.getByRole('form', { name: 'تعويض الزبون' });
+  await expect(form.getByText(/دون موافقة المالك/)).toBeVisible();
+  await form.getByLabel(/المبلغ/).fill('5');
+  await expect(form.getByText(/يُرسل الطلب إلى المالك للموافقة/)).toBeVisible();
+  await form.getByLabel('السبب').selectOption('late');
+  await form.getByRole('button', { name: 'إرسال للموافقة' }).click();
+  await expect(form.getByText('أُرسل الطلب إلى المالك للموافقة.')).toBeVisible();
+  expect(sent).toEqual({
+    value: { kind: 'fixed_amount', amount: '500', percentBp: null, maxDiscount: null },
+    reason: { code: 'late', note: null },
+  });
+  expect(key).toBeTruthy();
+});
 
 // AP §9.2.1, §9.3.2, §9.7.4 (slice 2.15c): an order the dispatcher is
 // offering in «مختلط» shows its offer; operations take it out of automatic

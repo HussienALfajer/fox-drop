@@ -2,10 +2,12 @@ import { getRouteApi, Link, useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { SETTINGS_READ } from './app-settings.js';
 import { CASH_DESK, FINANCE_READ } from './cash-desk.js';
+import { ApprovalsLink } from './compensation-approvals-page.js';
 import { CONTENT_FAQS, CONTENT_READ } from './content.js';
 import { EMERGENCY_CODE_PERMISSION } from './emergency-code.js';
 import { OPERATIONS_READ } from './orders-board.js';
 import { ZONES_READ } from './peak-bonus.js';
+import { canApproveCompensations } from './order-compensation.js';
 import { canSeePromoCodes } from './promo-codes.js';
 import { RESTAURANT_STATEMENTS } from './restaurant-statements.js';
 import { canSeeImages } from './restaurant-images.js';
@@ -64,6 +66,11 @@ export function HomePage() {
           {can(session, ZONES_READ) && (
             <li>
               <Link to="/peak-bonus">{t('peakBonus.title')}</Link>
+            </li>
+          )}
+          {canApproveCompensations(session) && (
+            <li>
+              <ApprovalsLink />
             </li>
           )}
           {canSeePromoCodes(session) && (

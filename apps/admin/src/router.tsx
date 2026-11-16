@@ -33,6 +33,8 @@ import { ManualEntriesPage } from './manual-entries-page.js';
 import { CashDeskPage, CashDeskSessionsPage } from './cash-desk-page.js';
 import { ZONES_READ } from './peak-bonus.js';
 import { PeakBonusPage } from './peak-bonus-page.js';
+import { CompensationApprovalsPage } from './compensation-approvals-page.js';
+import { canApproveCompensations } from './order-compensation.js';
 import { canSeePromoCodes } from './promo-codes.js';
 import { PromoCodesPage } from './promo-codes-page.js';
 import { PromoCodeReportPage } from './promo-code-report-page.js';
@@ -250,6 +252,18 @@ const peakBonusRoute = createRoute({
     if (!can(context.session, ZONES_READ)) throw redirect({ to: '/' });
   },
   component: PeakBonusPage,
+});
+
+// AP §6.4 «طلبات الموافقة» (slice 2.22a): OWN approves, edits or rejects
+// the compensations asked above a cap (compensation.approve_above_cap).
+const compensationsRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/compensations',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!canApproveCompensations(context.session)) throw redirect({ to: '/' });
+  },
+  component: CompensationApprovalsPage,
 });
 
 // AP §9.11.1 «أكواد الخصم» (slice 2.21a): OPS reads the codes, FIN reads
@@ -474,6 +488,7 @@ const routeTree = rootRoute.addChildren([
     contentRoute,
     appSettingsRoute,
     peakBonusRoute,
+    compensationsRoute,
     promoCodesRoute,
     promoCodeReportRoute,
     officeRoute,

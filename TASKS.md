@@ -11,7 +11,7 @@ Slice 2.22a, «تعويض الزبون» in the server and the panel (`docs/road
 - **Branch:** `feat/compensation-codes`.
 - **Plan:**
   - [x] The server: personal codes in `marketing` (the customer and the order on a code, issued only through compensation), the compensation requests with their reason, note, cap check (the order's customer total, the sum of the order's compensations by anyone, a percentage counted at its maximum) and status (issued, waiting, rejected), OWN's approve, edit and reject, the setting, the reason list, the push, the alert and the approvals count, the audit, the routes, the OpenAPI document and the clients.
-  - [ ] The panel: «تعويض الزبون» on the order detail (amount or percentage with a maximum, the reason, the note, what is left of the role's cap, «أُرسل الكود» or «أُرسل الطلب إلى المالك للموافقة»), the order's compensations on the detail, «طلبات الموافقة» for OWN with approve, edit and reject, and the dashboard's alert and count.
+  - [x] The panel: «تعويض الزبون» on the order detail (amount or percentage with a maximum, the reason, the note, what is left of the role's cap, «أُرسل الكود» or «أُرسل الطلب إلى المالك للموافقة»), the order's compensations on the detail, «طلبات الموافقة» for OWN with approve, edit and reject, and the dashboard's alert and count.
   - [ ] Review, then hand over to 2.22b.
 
 ### Owner decisions for 2.22 (2026-11-17)

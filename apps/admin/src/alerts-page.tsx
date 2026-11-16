@@ -17,6 +17,7 @@ import { CASH_DESK, FINANCE_READ } from './cash-desk.js';
 import { type City, chosenCity, citiesQuery } from './cities.js';
 import { formatDateTime } from './format.js';
 import { mapLink } from './map-link.js';
+import { canApproveCompensations } from './order-compensation.js';
 import { OPERATIONS_READ } from './orders-board.js';
 import { can } from './session.js';
 import { alertKeys } from './order-labels.js';
@@ -149,6 +150,8 @@ function AlertLine({ alert, city }: { alert: AdminAlert; city: City }) {
   // OWN and FIN receive it and both hold the desk; checked all the same.
   const overdueId = can(session, CASH_DESK) ? overdueRestaurantOf(alert) : null;
   const staleCurrency = can(session, FINANCE_READ) ? staleRateOf(alert) : null;
+  // AP §9.1.3 «طلب موافقة تعويض» (slice 2.22a): «فتح طلبات الموافقة».
+  const approval = alert.code === 'compensation_approval' && canApproveCompensations(session);
   return (
     <>
       <strong>{t(`alerts.severity.${alert.severity}`)}</strong>{' '}
@@ -178,6 +181,11 @@ function AlertLine({ alert, city }: { alert: AdminAlert; city: City }) {
             : t('alerts.takenByUnnamed', { time: time(alert.acknowledged.at) })}
         </span>
       )}{' '}
+      {approval && (
+        <Link to="/compensations" search={{ city: city.code }}>
+          {t('alerts.openApprovals')}
+        </Link>
+      )}
       {staleCurrency && (
         <Link to="/exchange-rates" search={{ city: city.code }}>
           {t('alerts.openRates')}
