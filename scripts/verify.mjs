@@ -3,7 +3,7 @@
 //
 // `pnpm verify` runs every part. CI runs each part as its own job, in
 // parallel: `node scripts/verify.mjs <part>...`, and `--shard=<i>/<n>` splits
-// the server's tests (Vitest's shards) across jobs.
+// the server's tests (Vitest's shards) or the Flutter packages across jobs.
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
@@ -42,6 +42,48 @@ function step(name, command, cwd = '.') {
 // The same filters as the test:dart and test:flutter scripts in pubspec.yaml.
 function dartPackagesWithTests(flutterFlag) {
   return read(`dart run melos list --parsable --dir-exists=test ${flutterFlag}`).trim();
+}
+
+// Seconds each Flutter package's tests took alone (2026-11-16), to balance
+// the shards. Only the balance depends on it: a package not listed counts as
+// UNLISTED_SECONDS and is tested all the same.
+const FLUTTER_TEST_SECONDS = {
+  captain: 91,
+  customer: 45,
+  merchant: 35,
+  core_platform: 19,
+  core_l10n: 18,
+  core_auth: 16,
+  core_push: 13,
+  core_storage: 13,
+};
+const UNLISTED_SECONDS = 30;
+
+// The Flutter packages with tests of shard `<index>/<count>`: the slowest
+// first, each to the shard with the least so far. Every package lands in
+// exactly one shard.
+function flutterShard(spec) {
+  const [index, count] = spec.split('/').map(Number);
+  if (index < 1 || index > count) fail(`--shard=${spec}`);
+  const names = read('dart run melos list --dir-exists=test --flutter')
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => /^[a-z][a-z0-9_]*$/.test(line));
+  // Melos prints the names for people; the paths are its parsable list. A
+  // shard never tests nothing silently because a name was not read.
+  const paths = dartPackagesWithTests('--flutter').split(/\r?\n/).filter(Boolean);
+  if (names.length === 0 || names.length !== paths.length) {
+    console.error(`\nRead ${names.length} Flutter package names for ${paths.length} packages.`);
+    fail('Flutter shards');
+  }
+  const seconds = (name) => FLUTTER_TEST_SECONDS[name] ?? UNLISTED_SECONDS;
+  const shards = Array.from({ length: count }, () => ({ seconds: 0, names: [] }));
+  for (const name of names.sort((a, b) => seconds(b) - seconds(a) || a.localeCompare(b))) {
+    const lightest = shards.reduce((least, each) => (each.seconds < least.seconds ? each : least));
+    lightest.names.push(name);
+    lightest.seconds += seconds(name);
+  }
+  return shards[index - 1].names;
 }
 
 // A mismatch only warns locally, but fails in CI, which must run the pinned version.
@@ -122,7 +164,7 @@ function checkLocalizations() {
   fail('Flutter localizations');
 }
 
-const PARTS = ['contract', 'format', 'typescript', 'server', 'dart'];
+const PARTS = ['contract', 'format', 'typescript', 'server', 'dart', 'flutter'];
 const args = process.argv.slice(2);
 const shard = args.find((arg) => arg.startsWith('--shard='))?.slice('--shard='.length);
 const named = args.filter((arg) => arg !== `--shard=${shard}`);
@@ -135,6 +177,11 @@ if (unknown.length > 0 || (shard !== undefined && !/^\d+\/\d+$/.test(shard))) {
   process.exit(1);
 }
 const parts = new Set(named.length > 0 ? named : PARTS);
+// A shard of one part: with any other part it would cut that one too.
+if (shard !== undefined && !(parts.size === 1 && (parts.has('server') || parts.has('flutter')))) {
+  console.error('verify: --shard needs exactly one of the parts server and flutter.');
+  process.exit(1);
+}
 
 if (parts.has('contract')) checkApiContract();
 if (parts.has('format')) step('Prettier', 'pnpm exec prettier --check .');
@@ -170,16 +217,32 @@ if (parts.has('typescript') && parts.has('server') && shard === undefined) {
   }
 }
 
+if (parts.has('dart') || parts.has('flutter')) checkFlutterVersion();
 if (parts.has('dart')) {
-  checkFlutterVersion();
   checkDartWorkspace();
   checkLocalizations();
   step('Dart analyze', 'dart run melos run analyze --no-select');
   step('Dart format', 'dart run melos run format:check --no-select');
   if (dartPackagesWithTests('--no-flutter'))
     step('Dart tests', 'dart run melos run test:dart --no-select');
-  if (dartPackagesWithTests('--flutter'))
-    step('Flutter tests', 'dart run melos run test:flutter --no-select');
+}
+if (parts.has('flutter')) {
+  if (shard === undefined) {
+    if (dartPackagesWithTests('--flutter'))
+      step('Flutter tests', 'dart run melos run test:flutter --no-select');
+  } else {
+    const packages = flutterShard(shard);
+    if (packages.length === 0) {
+      console.log(`\n=== Flutter tests, shard ${shard}: no package`);
+    } else {
+      // Melos scopes a script to the packages this variable names.
+      process.env.MELOS_PACKAGES = packages.join(',');
+      step(
+        `Flutter tests, shard ${shard}: ${packages.join(', ')}`,
+        'dart run melos run test:flutter --no-select',
+      );
+    }
+  }
 }
 
 console.log(`\nverify: ${named.length > 0 ? [...parts].join(', ') : 'all checks'} passed`);
