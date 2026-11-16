@@ -3524,6 +3524,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantAccountRead"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -6242,6 +6258,17 @@ export interface components {
                 currency: string;
                 /** @description «قيمة الأصناف — يدفعها لك الكابتن نقداً عند الاستلام» (RA §8.4); the delivery fee and the customer total are never shown (R11). */
                 itemsValue: string;
+                /** @description RA §8.4, R10: owners only (null for a cashier, and on a cancelled order). After the pickup the pickup's items value is the base, less the restaurant's own edits (AP §9.3.3). No restaurant-funded discount until codes (Phase 2). */
+                owner: {
+                    /** @description «طلب تجريبي — لا عمولة» instead of the commission lines (AP §9.6.3). */
+                    testOrder: boolean;
+                    /** @description The rate at placing in basis points (1500 is 15%); null on a test order. */
+                    commissionBp: number | null;
+                    /** @description «العمولة {النسبة}% — تُسدَّد يوم السبت: {المبلغ}»; null on a test order. */
+                    commission: string | null;
+                    /** @description «صافيك من الطلب»; null on a test order. */
+                    merchantNet: string | null;
+                } | null;
                 /** @description The captain line (RA §8.1): searching or offered «بانتظار كابتن», assigned «الكابتن {الاسم} في الطريق»; null before the search starts. */
                 captainTrack: ("searching" | "offered" | "assigned" | "at_merchant" | "pickup_pending" | "picked_up" | "at_customer" | "done") | null;
                 /** @description From assignment (RA §8.9); the photo and the ETA come with their slices. */
@@ -6436,6 +6463,17 @@ export interface components {
                 currency: string;
                 /** @description «قيمة الأصناف — يدفعها لك الكابتن نقداً عند الاستلام» (RA §8.4); the delivery fee and the customer total are never shown (R11). */
                 itemsValue: string;
+                /** @description RA §8.4, R10: owners only (null for a cashier, and on a cancelled order). After the pickup the pickup's items value is the base, less the restaurant's own edits (AP §9.3.3). No restaurant-funded discount until codes (Phase 2). */
+                owner: {
+                    /** @description «طلب تجريبي — لا عمولة» instead of the commission lines (AP §9.6.3). */
+                    testOrder: boolean;
+                    /** @description The rate at placing in basis points (1500 is 15%); null on a test order. */
+                    commissionBp: number | null;
+                    /** @description «العمولة {النسبة}% — تُسدَّد يوم السبت: {المبلغ}»; null on a test order. */
+                    commission: string | null;
+                    /** @description «صافيك من الطلب»; null on a test order. */
+                    merchantNet: string | null;
+                } | null;
                 /** @description The captain line (RA §8.1): searching or offered «بانتظار كابتن», assigned «الكابتن {الاسم} في الطريق»; null before the search starts. */
                 captainTrack: ("searching" | "offered" | "assigned" | "at_merchant" | "pickup_pending" | "picked_up" | "at_customer" | "done") | null;
                 /** @description From assignment (RA §8.9); the photo and the ETA come with their slices. */
@@ -10371,6 +10409,75 @@ export interface components {
             collected: string;
             /** @description Carried to the next week. */
             carriedOut: string;
+        };
+        MerchantAccountDto_Output: {
+            /** @description The city's base currency. */
+            currency: string | null;
+            /** @description «المستحق عليك حتى الآن»: + the restaurant owes, − the platform owes it (AP §8.7). */
+            balance: string;
+            /**
+             * Format: date
+             * @description «موعد التسوية»: the settlement day on the city's clock, the latest statement's while it is unpaid, else the next.
+             */
+            settlementDate: string;
+            /** @description The current commission in basis points (1500 is 15%). */
+            commissionBp: number | null;
+            /** @description A change scheduled for new orders (AP D16), or null. */
+            nextCommission: {
+                rateBp: number;
+                /** Format: date-time */
+                from: string;
+            } | null;
+            /**
+             * Format: date-time
+             * @description The business day's start (its cutoff).
+             */
+            todayFrom: string;
+            /** @description «قبضت اليوم من الكباتن»: the pickups confirmed today, newest first. */
+            pickups: {
+                /** Format: uuid */
+                orderId: string;
+                orderNumber: string;
+                /** Format: date-time */
+                at: string;
+                /** @description The captain's first name. */
+                captainName: string | null;
+                /** @description The full items value (RA §12.7). */
+                amount: string;
+                /** @description The currency lines the captain paid. */
+                lines: {
+                    currency: string;
+                    /** @description Integer minor units of the city's base currency (AP §8.6). */
+                    amount: string;
+                }[];
+            }[];
+            /** @description The latest statement's cutoff; null before the first statement. */
+            weekFrom: string | null;
+            /** @description «هذا الأسبوع»: every entry since the latest statement closed, newest day first, each day's orders then its exceptions and payments in the ledger's order. */
+            weekLines: {
+                /**
+                 * Format: date
+                 * @description The business day on the city's clock.
+                 */
+                day: string;
+                /** @enum {string} */
+                kind: "order" | "exception" | "payment";
+                /** Format: date-time */
+                at: string;
+                orderId: string | null;
+                orderNumber: string | null;
+                /** @description An order: its pickup payment. */
+                itemsValue: string | null;
+                /** @description An order: its commission that day. */
+                commission: string | null;
+                /** @description An order: the restaurant-funded discount that day. */
+                discountShare: string | null;
+                /** @description An exception: what it is (RA §12.5). */
+                cause: ("food_credit" | "credit" | "pickup_refund" | "pickup_kept" | "items_removed" | "fee_lowered" | "fee_cut_returned" | "debit" | "commission_reversal" | "commission_restored" | "discount_reversal" | "outcome_changed" | "adjustment") | null;
+                /** @description An exception or a payment: + raises what is owed, − lowers it. */
+                amount: string | null;
+                reason: string | null;
+            }[];
         };
     };
     responses: never;
@@ -15953,6 +16060,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptainStatementDto_Output"];
+                };
+            };
+        };
+    };
+    merchantAccountRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantAccountDto_Output"];
                 };
             };
         };

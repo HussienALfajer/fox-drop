@@ -433,7 +433,7 @@ export class MerchantStatementsService {
   // while what raised the balance since (a commission, a payout) is next
   // week's: so the unpaid part is the balance now less what the entries
   // since its cutoff raised, between zero and its total due.
-  private async standing(restaurantId: string, accountId: string) {
+  async standing(restaurantId: string, accountId: string) {
     const statements = await this.database.db
       .select({
         id: merchantStatements.id,

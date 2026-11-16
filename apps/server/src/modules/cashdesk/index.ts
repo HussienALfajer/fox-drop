@@ -18,6 +18,8 @@ import { CaptainEarningsController } from './captain-earnings.controller.js';
 import { CaptainStatementsController } from './captain-statements.controller.js';
 import { CashDeskService } from './cashdesk.service.js';
 import { EarningsService } from './earnings.service.js';
+import { MerchantAccountController } from './merchant-account.controller.js';
+import { MerchantAccountService } from './merchant-account.service.js';
 import { MerchantSettlementService } from './merchant-settlement.service.js';
 import { MerchantStatementsService } from './merchant-statements.service.js';
 import { MerchantStatementsWorker } from './merchant-statements.worker.js';
@@ -46,10 +48,12 @@ import { SettlementService } from './settlement.service.js';
     CaptainCustodyController,
     CaptainEarningsController,
     CaptainStatementsController,
+    MerchantAccountController,
   ],
   providers: [
     CashDeskService,
     EarningsService,
+    MerchantAccountService,
     SettlementService,
     MerchantStatementsService,
     MerchantSettlementService,

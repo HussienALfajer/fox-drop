@@ -147,6 +147,7 @@ export {
   OrderRefusedError,
   OrdersService,
   type PlaceOrder,
+  type RestaurantPickup,
 } from './orders.service.js';
 export {
   type PricedQuote,

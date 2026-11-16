@@ -278,6 +278,8 @@ class _$MerchantOrdersDtoOutputOrdersInner
   @override
   final String itemsValue;
   @override
+  final MerchantOrdersDtoOutputOrdersInnerOwner? owner;
+  @override
   final MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum? captainTrack;
   @override
   final MerchantOrdersDtoOutputOrdersInnerCaptain? captain;
@@ -311,6 +313,7 @@ class _$MerchantOrdersDtoOutputOrdersInner
     required this.lines,
     required this.currency,
     required this.itemsValue,
+    this.owner,
     this.captainTrack,
     this.captain,
     this.captainArrival,
@@ -346,6 +349,7 @@ class _$MerchantOrdersDtoOutputOrdersInner
         lines == other.lines &&
         currency == other.currency &&
         itemsValue == other.itemsValue &&
+        owner == other.owner &&
         captainTrack == other.captainTrack &&
         captain == other.captain &&
         captainArrival == other.captainArrival &&
@@ -372,6 +376,7 @@ class _$MerchantOrdersDtoOutputOrdersInner
     _$hash = $jc(_$hash, lines.hashCode);
     _$hash = $jc(_$hash, currency.hashCode);
     _$hash = $jc(_$hash, itemsValue.hashCode);
+    _$hash = $jc(_$hash, owner.hashCode);
     _$hash = $jc(_$hash, captainTrack.hashCode);
     _$hash = $jc(_$hash, captain.hashCode);
     _$hash = $jc(_$hash, captainArrival.hashCode);
@@ -400,6 +405,7 @@ class _$MerchantOrdersDtoOutputOrdersInner
           ..add('lines', lines)
           ..add('currency', currency)
           ..add('itemsValue', itemsValue)
+          ..add('owner', owner)
           ..add('captainTrack', captainTrack)
           ..add('captain', captain)
           ..add('captainArrival', captainArrival)
@@ -487,6 +493,12 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
   String? get itemsValue => _$this._itemsValue;
   set itemsValue(String? itemsValue) => _$this._itemsValue = itemsValue;
 
+  MerchantOrdersDtoOutputOrdersInnerOwnerBuilder? _owner;
+  MerchantOrdersDtoOutputOrdersInnerOwnerBuilder get owner =>
+      _$this._owner ??= MerchantOrdersDtoOutputOrdersInnerOwnerBuilder();
+  set owner(MerchantOrdersDtoOutputOrdersInnerOwnerBuilder? owner) =>
+      _$this._owner = owner;
+
   MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum? _captainTrack;
   MerchantOrdersDtoOutputOrdersInnerCaptainTrackEnum? get captainTrack =>
       _$this._captainTrack;
@@ -558,6 +570,7 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
       _lines = $v.lines.toBuilder();
       _currency = $v.currency;
       _itemsValue = $v.itemsValue;
+      _owner = $v.owner?.toBuilder();
       _captainTrack = $v.captainTrack;
       _captain = $v.captain?.toBuilder();
       _captainArrival = $v.captainArrival?.toBuilder();
@@ -633,6 +646,7 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
               r'MerchantOrdersDtoOutputOrdersInner',
               'itemsValue',
             ),
+            owner: _owner?.build(),
             captainTrack: captainTrack,
             captain: _captain?.build(),
             captainArrival: _captainArrival?.build(),
@@ -652,6 +666,9 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
 
         _$failedField = 'lines';
         lines.build();
+
+        _$failedField = 'owner';
+        _owner?.build();
 
         _$failedField = 'captain';
         _captain?.build();

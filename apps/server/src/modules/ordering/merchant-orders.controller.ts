@@ -30,6 +30,7 @@ import { currentRequests, type PickupRequestView } from './pickup-views.js';
 import { type MerchantCommand, OrderCommandRefusedError, OrderCommands } from './order-commands.js';
 import type { OrderView } from './order-views.js';
 import { OrdersService } from './orders.service.js';
+import type { OwnerMoney } from './owner-money.js';
 import { captainTracks, orderStatuses } from './schema.js';
 
 const boardOrder = z.object({
@@ -100,6 +101,24 @@ const boardOrder = z.object({
   itemsValue: minor.describe(
     '«قيمة الأصناف — يدفعها لك الكابتن نقداً عند الاستلام» (RA §8.4); the delivery fee and the customer total are never shown (R11).',
   ),
+  owner: z
+    .object({
+      testOrder: z
+        .boolean()
+        .describe('«طلب تجريبي — لا عمولة» instead of the commission lines (AP §9.6.3).'),
+      commissionBp: z
+        .int()
+        .nullable()
+        .describe('The rate at placing in basis points (1500 is 15%); null on a test order.'),
+      commission: minor
+        .nullable()
+        .describe('«العمولة {النسبة}% — تُسدَّد يوم السبت: {المبلغ}»; null on a test order.'),
+      merchantNet: minor.nullable().describe('«صافيك من الطلب»; null on a test order.'),
+    })
+    .nullable()
+    .describe(
+      "RA §8.4, R10: owners only (null for a cashier, and on a cancelled order). After the pickup the pickup's items value is the base, less the restaurant's own edits (AP §9.3.3). No restaurant-funded discount until codes (Phase 2).",
+    ),
   captainTrack: z
     .enum(captainTracks)
     .nullable()
@@ -378,7 +397,7 @@ export class MerchantOrdersController {
       this.orders.restaurantActiveOrders(restaurantId, new Date()),
       this.commands.prepTimeChooser(restaurantId, new Date()),
     ]);
-    return { orders: await this.boardOrders(restaurantId, orders), prepTime };
+    return { orders: await this.boardOrders(session, restaurantId, orders), prepTime };
   }
 
   // RA §8.5: «قبول — {د} د». 409 order_state_changed with the order as it is
@@ -396,7 +415,7 @@ export class MerchantOrdersController {
     @Body() body: MerchantAcceptDto,
   ) {
     const command = await this.command(session, idempotencyKey, params.orderId);
-    return this.answer(command.restaurantId, () =>
+    return this.answer(session, command.restaurantId, () =>
       this.commands.accept({ ...command, prepMin: body.prepMin }, new Date()),
     );
   }
@@ -420,7 +439,7 @@ export class MerchantOrdersController {
     @Req() request: FastifyRequest,
   ) {
     const command = await this.command(session, idempotencyKey, params.orderId);
-    return this.answer(command.restaurantId, () =>
+    return this.answer(session, command.restaurantId, () =>
       this.commands.reject(
         {
           ...command,
@@ -449,7 +468,7 @@ export class MerchantOrdersController {
     @Param() params: MerchantOrderParamsDto,
   ) {
     const command = await this.command(session, idempotencyKey, params.orderId);
-    return this.answer(command.restaurantId, () => this.commands.ready(command, new Date()));
+    return this.answer(session, command.restaurantId, () => this.commands.ready(command, new Date()));
   }
 
   // RA §8.10 item 4 «تأكيد الاستلام»: the atomic pickup. 409
@@ -466,7 +485,7 @@ export class MerchantOrdersController {
     @Param() params: MerchantOrderParamsDto,
   ) {
     const command = await this.command(session, idempotencyKey, params.orderId);
-    return this.answer(command.restaurantId, () => this.pickups.confirm(command, new Date()));
+    return this.answer(session, command.restaurantId, () => this.pickups.confirm(command, new Date()));
   }
 
   // RA §8.10 items 6 and 8 «المبلغ غير صحيح»: rejects an open request, or,
@@ -485,7 +504,7 @@ export class MerchantOrdersController {
     @Body() body: MerchantPickupDisputeDto,
   ) {
     const command = await this.command(session, idempotencyKey, params.orderId);
-    return this.answer(command.restaurantId, () =>
+    return this.answer(session, command.restaurantId, () =>
       this.pickups.dispute(
         { ...command, receivedLines: linesOfBody(body.receivedLines) },
         new Date(),
@@ -505,7 +524,7 @@ export class MerchantOrdersController {
     @Param() params: MerchantOrderParamsDto,
   ) {
     const command = await this.command(session, idempotencyKey, params.orderId);
-    return this.answer(command.restaurantId, () => this.pickups.incomplete(command, new Date()));
+    return this.answer(session, command.restaurantId, () => this.pickups.incomplete(command, new Date()));
   }
 
   // RA §8.14, §18 «حسناً» (slice 2.8b): after operations cancelled an
@@ -524,7 +543,7 @@ export class MerchantOrdersController {
     @Param() params: MerchantOrderParamsDto,
   ) {
     const command = await this.command(session, idempotencyKey, params.orderId);
-    return this.answer(command.restaurantId, () =>
+    return this.answer(session, command.restaurantId, () =>
       this.commands.acknowledgeCancellation(command, new Date()),
     );
   }
@@ -546,7 +565,7 @@ export class MerchantOrdersController {
     @Body() body: MerchantAcknowledgeEditDto,
   ) {
     const command = await this.command(session, idempotencyKey, params.orderId);
-    return this.answer(command.restaurantId, () =>
+    return this.answer(session, command.restaurantId, () =>
       this.commands.acknowledgeEdits({ ...command, through: new Date(body.through) }, new Date()),
     );
   }
@@ -570,7 +589,7 @@ export class MerchantOrdersController {
     @Req() request: FastifyRequest,
   ) {
     const command = await this.command(session, idempotencyKey, params.orderId);
-    return this.answer(command.restaurantId, () =>
+    return this.answer(session, command.restaurantId, () =>
       this.commands.reportItems(
         {
           ...command,
@@ -599,7 +618,7 @@ export class MerchantOrdersController {
     @Req() request: FastifyRequest,
   ) {
     const command = await this.command(session, idempotencyKey, params.orderId);
-    return this.answer(command.restaurantId, () =>
+    return this.answer(session, command.restaurantId, () =>
       this.commands.withdrawItemReport(
         {
           ...command,
@@ -625,9 +644,13 @@ export class MerchantOrdersController {
     };
   }
 
-  private async answer(restaurantId: string, run: () => Promise<OrderView>) {
+  private async answer(
+    session: AppSession,
+    restaurantId: string,
+    run: () => Promise<OrderView>,
+  ) {
     try {
-      const [order] = await this.boardOrders(restaurantId, [await run()]);
+      const [order] = await this.boardOrders(session, restaurantId, [await run()]);
       return { order: order! };
     } catch (error) {
       if (!(error instanceof OrderCommandRefusedError)) throw error;
@@ -657,7 +680,7 @@ export class MerchantOrdersController {
       if (error.order === null) {
         throw new ConflictException({ statusCode: HttpStatus.CONFLICT, error: refusal });
       }
-      const [order] = await this.boardOrders(restaurantId, [error.order]);
+      const [order] = await this.boardOrders(session, restaurantId, [error.order]);
       throw new ConflictException({ statusCode: HttpStatus.CONFLICT, error: refusal, order });
     }
   }
@@ -677,8 +700,12 @@ export class MerchantOrdersController {
 
   // What the restaurant sees of its orders (RA §8.4): never the delivery fee,
   // the total, the address, a phone, the promised time or operations' alert
-  // moments.
-  private async boardOrders(restaurantId: string, orders: OrderView[]) {
+  // moments; the commission and the net to owners only (R10).
+  private async boardOrders(session: AppSession, restaurantId: string, orders: OrderView[]) {
+    const owners =
+      session.merchant?.role === 'owner'
+        ? await this.orders.ownerMoney(orders)
+        : new Map<string, null>();
     const captainIds = [...new Set(orders.flatMap((order) => order.captainId ?? []))];
     const now = new Date();
     const captains = new Map(
@@ -749,6 +776,7 @@ export class MerchantOrdersController {
       })),
       currency: order.currency,
       itemsValue: order.money.itemsValue.toString(),
+      owner: ownerBody(owners, order),
       captainTrack: order.captainTrack,
       captain: captainLine(order.captainId === null ? undefined : captains.get(order.captainId)),
       // RA §8.9: only while the captain waits at the restaurant for an
@@ -798,6 +826,18 @@ export class MerchantOrdersController {
       ),
     }));
   }
+}
+
+// RA §8.4, R10: the owners' lines, or the test order's «لا عمولة».
+function ownerBody(owners: Map<string, OwnerMoney | null>, order: OrderView) {
+  if (!owners.has(order.id)) return null;
+  const money = owners.get(order.id) ?? null;
+  return {
+    testOrder: money === null,
+    commissionBp: money?.commissionBp ?? null,
+    commission: money?.commission.toString() ?? null,
+    merchantNet: money?.merchantNet.toString() ?? null,
+  };
 }
 
 // RA §8.9: the captain's first name and vehicle, never the phone number.
