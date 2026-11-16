@@ -131,16 +131,17 @@ export class ExportsService {
     return this.answerRepeat(other, params, now);
   }
 
-  // The export's state, to its requester only; a download URL while it is
-  // ready, each one audited as a view of the file (architecture §5.8).
-  async view(exportId: string, user: ExportUser, now: Date): Promise<ExportView> {
+  // The export's state, to its requester only. With `download`, while it is
+  // ready, a fresh download URL, audited as a view of the file (architecture
+  // §5.8): only when the user downloads, so reading the state logs nothing.
+  async view(exportId: string, user: ExportUser, now: Date, download = false): Promise<ExportView> {
     const [row] = await this.database.db
       .select()
       .from(exports)
       .where(and(eq(exports.id, exportId), eq(exports.requestedBy, user.accountId)));
     if (!row) throw new ExportsRefusedError('unknown_export');
     const view = this.viewOf(row, now, null);
-    if (view.status !== 'ready' || row.objectKey === null) return view;
+    if (!download || view.status !== 'ready' || row.objectKey === null) return view;
     const url = await this.files.privateDownloadUrl(
       row.objectKey,
       row.fileName,
@@ -196,12 +197,14 @@ export class ExportsService {
     });
   }
 
-  // Removes the file after its 24 hours. Removing a file already gone is
+  // Removes the file once its 24 hours are over. The job is queued for that
+  // moment by the database's clock; one run early by the worker's clock is
+  // still the file's end (the URLs stop at expires_at anyway), so it never
+  // completes without removing the file. Removing a file already gone is
   // fine, so a repeat changes nothing.
-  async expire(exportId: string, now: Date): Promise<boolean> {
+  async expire(exportId: string): Promise<boolean> {
     const [row] = await this.database.db.select().from(exports).where(eq(exports.id, exportId));
     if (!row || row.status !== 'ready' || row.objectKey === null) return false;
-    if (row.expiresAt !== null && row.expiresAt.getTime() > now.getTime()) return false;
     await this.files.deletePrivate(row.objectKey);
     await this.database.db
       .update(exports)

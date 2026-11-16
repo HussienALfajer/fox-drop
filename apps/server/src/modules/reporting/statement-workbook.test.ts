@@ -1,7 +1,7 @@
 import ExcelJS from 'exceljs';
 import { describe, expect, it } from 'vitest';
 import type { RestaurantPeriodStatement } from '../cashdesk/index.js';
-import { majorOf, statementWorkbook } from './statement-workbook.js';
+import { decimalOf, majorOf, statementWorkbook } from './statement-workbook.js';
 
 // Architecture §5.9, AP §9.10.5 (slice 2.19g): the Excel file of a
 // restaurant's statement for a period.
@@ -11,6 +11,8 @@ describe('majorOf', () => {
     expect(majorOf(-5n, 2)).toBe(-0.05);
     expect(majorOf(0n, 2)).toBe(0);
     expect(majorOf(500n, 0)).toBe(500);
+    expect(decimalOf(10_50n, 2)).toBe('10.50');
+    expect(decimalOf(-5n, 2)).toBe('-0.05');
   });
 });
 
@@ -103,7 +105,7 @@ describe('statementWorkbook', () => {
       'طلب',
       '1042',
       400,
-      '200 TRY + 5 USD',
+      '200.00 TRY + 5.00 USD',
       60,
       5,
       65,

@@ -14,8 +14,16 @@ export type StatementExport = components['schemas']['AdminExportDto_Output'];
 
 // The longest period the server takes: a year and a day.
 export const PERIOD_MAX_DAYS = 366;
-// How often a pending export is read again.
+// How often a pending export is read again, and how long the screen waits
+// for it before saying it failed (the worker retries a failure for about an
+// hour, and the export has no failed state yet).
 export const EXPORT_POLL_MS = 2_000;
+export const EXPORT_WAIT_MS = 10 * 60_000;
+
+// Whether the screen gave up on an export asked at `startedAt`.
+export function exportGaveUp(startedAt: number, now: number): boolean {
+  return now - startedAt >= EXPORT_WAIT_MS;
+}
 
 export interface Period {
   restaurantId: string;
@@ -131,18 +139,36 @@ export function useExportStatement() {
   });
 }
 
-// The export's state, read again while the worker writes it; once ready it
-// carries a download URL valid 5 minutes.
-export function useExportState(exportId: string | undefined) {
+// The export's state, read again while the worker writes it, until the
+// screen gives up on it.
+export function useExportState(exportId: string | undefined, startedAt: number) {
   return useQuery({
     queryKey: ['exports', exportId ?? ''],
     enabled: exportId !== undefined,
-    refetchInterval: (query) => (query.state.data?.status === 'pending' ? EXPORT_POLL_MS : false),
+    refetchInterval: (query) =>
+      query.state.data?.status === 'pending' && !exportGaveUp(startedAt, Date.now())
+        ? EXPORT_POLL_MS
+        : false,
     queryFn: async (): Promise<StatementExport> => {
       const { data, response } = await api.GET('/v1/admin/exports/{exportId}', {
         params: { path: { exportId: exportId! } },
       });
       if (!data) throw new Error(`The export read failed with ${response.status}.`);
+      return data;
+    },
+  });
+}
+
+// «تنزيل»: a fresh signed URL (valid 5 minutes, audited by the server) at
+// the moment of the click, then the browser follows it.
+export function useDownloadExport() {
+  return useMutation({
+    mutationFn: async (exportId: string): Promise<StatementExport> => {
+      const { data, response } = await api.GET('/v1/admin/exports/{exportId}', {
+        params: { path: { exportId }, query: { download: 'true' } },
+      });
+      if (!data) throw new Error(`The export download failed with ${response.status}.`);
+      if (data.url) window.location.assign(data.url);
       return data;
     },
   });

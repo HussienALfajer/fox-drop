@@ -9,10 +9,12 @@ import type { ExceptionCause } from './restaurant-settlement.js';
 import {
   defaultPeriod,
   entryOf,
+  exportGaveUp,
   type Period,
   periodFits,
   type PeriodStatement,
   type PeriodStatementLine,
+  useDownloadExport,
   useExportState,
   useExportStatement,
   useRestaurantPeriodStatement,
@@ -115,7 +117,7 @@ export function RestaurantStatementsPage() {
                 <button type="button" onClick={() => window.print()}>
                   {t('cashDesk.receipt.printA4')}
                 </button>{' '}
-                <ExportButton period={period} />
+                <ExportButton key={formKey} period={period} />
               </p>
               <StatementView statement={statement.data.statement} timeZone={city.timeZone} />
             </>
@@ -175,29 +177,43 @@ function PeriodForm({
   );
 }
 
-// «تصدير Excel»: the worker writes the file, then a link downloads it.
+// «تصدير Excel»: the worker writes the file, then «تنزيل» downloads it
+// through a URL signed at the click. The screen stops waiting after
+// EXPORT_WAIT_MS and lets the user ask again.
 function ExportButton({ period }: { period: Period }) {
   const { t } = useTranslation();
+  const [startedAt, setStartedAt] = useState(0);
   const requested = useExportStatement();
-  const state = useExportState(requested.data?.id);
+  const state = useExportState(requested.data?.id, startedAt);
+  const download = useDownloadExport();
   const current = state.data ?? requested.data;
+  const pending = current?.status === 'pending';
+  // The last read past the wait ends the polling, so it also tells the giving up.
+  const gaveUp = pending && exportGaveUp(startedAt, state.dataUpdatedAt);
   return (
     <>
       <button
         type="button"
-        disabled={requested.isPending || current?.status === 'pending'}
-        onClick={() => requested.mutate(period)}
+        disabled={requested.isPending || (pending && !gaveUp)}
+        onClick={() => {
+          setStartedAt(Date.now());
+          requested.mutate(period);
+        }}
       >
         {t('restaurantStatements.export')}
       </button>{' '}
-      {requested.isError || state.isError ? (
+      {requested.isError || state.isError || download.isError || gaveUp ? (
         <span role="alert">{t('restaurantStatements.exportFailed')}</span>
-      ) : requested.isPending || current?.status === 'pending' ? (
+      ) : requested.isPending || pending ? (
         <span role="status">{t('restaurantStatements.exporting')}</span>
-      ) : current?.status === 'ready' && current.url ? (
-        <a href={current.url} download={current.fileName}>
+      ) : current?.status === 'ready' ? (
+        <button
+          type="button"
+          disabled={download.isPending}
+          onClick={() => download.mutate(current.id)}
+        >
           {t('restaurantStatements.download', { name: current.fileName })}
-        </a>
+        </button>
       ) : current?.status === 'expired' ? (
         <span>{t('restaurantStatements.exportExpired')}</span>
       ) : null}

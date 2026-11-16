@@ -10879,7 +10879,7 @@ export interface components {
             createdAt: string;
             /** @description Until when it can be downloaded. */
             expiresAt: string | null;
-            /** @description A signed download on the panel’s origin, valid 5 minutes, while ready. */
+            /** @description Asked with download=true while ready: a signed download on the panel’s origin, valid 5 minutes. */
             url: string | null;
         };
     };
@@ -16668,7 +16668,10 @@ export interface operations {
     };
     adminExportsView: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description true signs a download URL (audited); the state alone otherwise. */
+                download?: "true" | "false";
+            };
             header?: never;
             path: {
                 exportId: string;

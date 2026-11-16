@@ -18,7 +18,7 @@ part 'admin_export_dto_output.g.dart';
 /// * [fileName]
 /// * [createdAt]
 /// * [expiresAt] - Until when it can be downloaded.
-/// * [url] - A signed download on the panel’s origin, valid 5 minutes, while ready.
+/// * [url] - Asked with download=true while ready: a signed download on the panel’s origin, valid 5 minutes.
 @BuiltValue()
 abstract class AdminExportDtoOutput
     implements Built<AdminExportDtoOutput, AdminExportDtoOutputBuilder> {
@@ -43,7 +43,7 @@ abstract class AdminExportDtoOutput
   @BuiltValueField(wireName: r'expiresAt')
   DateTime? get expiresAt;
 
-  /// A signed download on the panel’s origin, valid 5 minutes, while ready.
+  /// Asked with download=true while ready: a signed download on the panel’s origin, valid 5 minutes.
   @BuiltValueField(wireName: r'url')
   String? get url;
 

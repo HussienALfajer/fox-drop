@@ -187,7 +187,11 @@ describe('the Excel export of a restaurant statement', () => {
     expect(await exportsService.build(id, now)).toBe(true);
     expect(await exportsService.build(id, now)).toBe(false);
 
-    const ready = await fin.get(`/v1/admin/exports/${id}`);
+    // Reading the state signs and logs nothing; asking the download does.
+    const state = await fin.get(`/v1/admin/exports/${id}`);
+    expect(state.json()).toMatchObject({ status: 'ready', url: null });
+    expect(await auditActions(id)).toEqual(['export.create']);
+    const ready = await fin.get(`/v1/admin/exports/${id}?download=true`);
     expect(ready.statusCode).toBe(200);
     expect(ready.json()).toMatchObject({ status: 'ready', url: expect.any(String) });
     const url = new URL(ready.json().url);
@@ -206,12 +210,17 @@ describe('the Excel export of a restaurant statement', () => {
 
     // Nobody else reads it, not even another FIN.
     const other = await admin(['FIN']);
-    expect((await other.get(`/v1/admin/exports/${id}`)).statusCode).toBe(404);
+    expect((await other.get(`/v1/admin/exports/${id}?download=true`)).statusCode).toBe(404);
 
-    // After 24 hours the file is gone.
-    expect(await exportsService.expire(id, now)).toBe(false);
-    expect(await exportsService.expire(id, new Date(now.getTime() + EXPORT_KEEP_MS))).toBe(true);
-    const expired = await fin.get(`/v1/admin/exports/${id}`);
+    // The removal job queued for 24 hours on removes the file, once.
+    const { rows: expiry } = await sql.query(
+      "SELECT start_after FROM pgboss.job WHERE name = 'reporting-export-expiry' AND data->>'exportId' = $1",
+      [id],
+    );
+    expect(expiry[0].start_after.getTime()).toBe(now.getTime() + EXPORT_KEEP_MS);
+    expect(await exportsService.expire(id)).toBe(true);
+    expect(await exportsService.expire(id)).toBe(false);
+    const expired = await fin.get(`/v1/admin/exports/${id}?download=true`);
     expect(expired.json()).toMatchObject({ status: 'expired', url: null });
     expect((await fetch(url)).status).toBe(404);
   });

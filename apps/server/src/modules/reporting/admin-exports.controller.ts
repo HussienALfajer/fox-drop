@@ -6,6 +6,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Query,
   Req,
   BadRequestException,
   UnprocessableEntityException,
@@ -31,6 +32,15 @@ class AdminRestaurantStatementExportDto extends createZodDto(restaurantPeriodQue
 
 class AdminExportParamsDto extends createZodDto(z.object({ exportId: z.uuid() })) {}
 
+class AdminExportQueryDto extends createZodDto(
+  z.object({
+    download: z
+      .enum(['true', 'false'])
+      .optional()
+      .describe('true signs a download URL (audited); the state alone otherwise.'),
+  }),
+) {}
+
 class AdminExportDto extends createZodDto(
   z.object({
     id: z.uuid(),
@@ -42,7 +52,9 @@ class AdminExportDto extends createZodDto(
     url: z
       .string()
       .nullable()
-      .describe('A signed download on the panel’s origin, valid 5 minutes, while ready.'),
+      .describe(
+        'Asked with download=true while ready: a signed download on the panel’s origin, valid 5 minutes.',
+      ),
   }),
 ) {}
 
@@ -118,19 +130,25 @@ export class AdminExportsController {
   }
 
   // The export's state, to whoever asked for it (404 unknown_export for
-  // anyone else); while ready, a download URL. The only kind so far is the
+  // anyone else); with download=true while ready, a download URL, audited. The only kind so far is the
   // restaurant statement, so the route asks its permission.
   @Get('exports/:exportId')
   @RequirePermission('restaurants.statements')
   @ZodResponse({ status: 200, type: AdminExportDto })
   view(
     @Param() params: AdminExportParamsDto,
+    @Query() query: AdminExportQueryDto,
     @CurrentAdminSession() session: AdminSession,
     @Req() request: FastifyRequest,
   ) {
     return refusalsAsHttp(async () =>
       exportBody(
-        await this.exports.view(params.exportId, exportUser(session, request), new Date()),
+        await this.exports.view(
+          params.exportId,
+          exportUser(session, request),
+          new Date(),
+          query.download === 'true',
+        ),
       ),
     );
   }

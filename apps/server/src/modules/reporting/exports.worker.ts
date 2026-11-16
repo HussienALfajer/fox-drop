@@ -27,7 +27,7 @@ export class ExportsWorker implements OnModuleInit {
     await this.jobs.work<ExportJob>(QUEUES.exportExpiry, async (batch) => {
       for (const job of batch) {
         await this.run('export removed', job.data.exportId, () =>
-          this.exports.expire(job.data.exportId, new Date()),
+          this.exports.expire(job.data.exportId),
         );
       }
     });

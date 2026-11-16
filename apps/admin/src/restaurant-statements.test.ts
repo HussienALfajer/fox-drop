@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   defaultPeriod,
   entryOf,
+  EXPORT_WAIT_MS,
+  exportGaveUp,
   type PeriodStatementLine,
   periodFits,
   todayOn,
@@ -29,6 +31,13 @@ describe('the period', () => {
     expect(periodFits('2026-11-02', '2026-11-01')).toBe(false);
     expect(periodFits('2026-02-30', '2026-03-01')).toBe(false);
     expect(periodFits('', '2026-03-01')).toBe(false);
+  });
+});
+
+describe('exportGaveUp', () => {
+  it('waits ten minutes for the worker', () => {
+    expect(exportGaveUp(1_000, 1_000 + EXPORT_WAIT_MS - 1)).toBe(false);
+    expect(exportGaveUp(1_000, 1_000 + EXPORT_WAIT_MS)).toBe(true);
   });
 });
 

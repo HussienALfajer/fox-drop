@@ -103,7 +103,12 @@ test("shows a restaurant's statement for a period and exports it", async ({ page
       },
     });
   });
-  await page.route(`**/v1/admin/exports/${exportId}`, (route) =>
+  let downloads = 0;
+  await page.route('**/private-docs/exports/**', (route) => {
+    downloads += 1;
+    return route.fulfill({ status: 200, body: 'xlsx' });
+  });
+  await page.route(`**/v1/admin/exports/${exportId}*`, (route) =>
     route.fulfill({
       json: {
         id: exportId,
@@ -112,7 +117,9 @@ test("shows a restaurant's statement for a period and exports it", async ({ page
         fileName: 'كشف مطعم الشام 2026-11-01 - 2026-11-30.xlsx',
         createdAt: '2026-11-16T09:00:00.000Z',
         expiresAt: '2026-11-17T09:00:05.000Z',
-        url: '/private-docs/exports/file.xlsx?X-Amz-Signature=fake',
+        url: new URL(route.request().url()).searchParams.get('download')
+          ? '/private-docs/exports/file.xlsx?X-Amz-Signature=fake'
+          : null,
       },
     }),
   );
@@ -137,9 +144,7 @@ test("shows a restaurant's statement for a period and exports it", async ({ page
   await expect(page.getByRole('button', { name: 'طباعة A4' })).toBeVisible();
 
   await page.getByRole('button', { name: 'تصدير Excel' }).click();
-  await expect(page.getByRole('link', { name: /تنزيل كشف مطعم الشام/ })).toHaveAttribute(
-    'href',
-    /\/private-docs\/exports\/file\.xlsx/,
-  );
+  await page.getByRole('button', { name: /تنزيل كشف مطعم الشام/ }).click();
+  await expect.poll(() => downloads).toBe(1);
   expect(exportBody).toEqual({ restaurantId, from: '2026-11-01', to: '2026-11-30' });
 });

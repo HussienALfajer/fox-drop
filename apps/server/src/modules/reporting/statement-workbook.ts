@@ -6,11 +6,16 @@ import { restaurantStatementLabels as labels } from '../content/index.js';
 // cell holds the number nearest the exact amount (Excel keeps numbers as
 // doubles; money is never computed through one here).
 export function majorOf(minor: bigint, decimals: number): number {
+  return Number(decimalOf(minor, decimals));
+}
+
+// The same amount as text with all its minor digits, «10.50».
+export function decimalOf(minor: bigint, decimals: number): string {
   const negative = minor < 0n;
   const digits = (negative ? -minor : minor).toString().padStart(decimals + 1, '0');
   const whole = digits.slice(0, digits.length - decimals);
   const fraction = digits.slice(digits.length - decimals);
-  return Number(`${negative ? '-' : ''}${whole}${decimals > 0 ? `.${fraction}` : ''}`);
+  return `${negative ? '-' : ''}${whole}${decimals > 0 ? `.${fraction}` : ''}`;
 }
 
 // A moment on the city's clock, YYYY-MM-DD HH:MM, Western digits.
@@ -104,7 +109,7 @@ export async function statementWorkbook(
             order,
             line.itemsValue === null ? null : money(line.itemsValue),
             (line.pickupLines ?? [])
-              .map((each) => `${majorOf(each.amount, decimals(each.currency))} ${each.currency}`)
+              .map((each) => `${decimalOf(each.amount, decimals(each.currency))} ${each.currency}`)
               .join(' + '),
             money(line.commission),
             money(line.discountShare),
