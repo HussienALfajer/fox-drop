@@ -3524,6 +3524,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/account/overdue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantAccountOverdue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/account": {
         parameters: {
             query?: never;
@@ -9052,7 +9068,7 @@ export interface components {
                  * @description The rule of AP §9.1.3.
                  * @enum {string}
                  */
-                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused";
+                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue";
                 /**
                  * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
                  * @enum {string}
@@ -9095,7 +9111,7 @@ export interface components {
              * @description The rule of AP §9.1.3.
              * @enum {string}
              */
-            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused";
+            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue";
             /**
              * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
              * @enum {string}
@@ -10474,6 +10490,19 @@ export interface components {
             /** @description Carried to the next week. */
             carriedOut: string;
         };
+        MerchantOverdueDto_Output: {
+            /** @description What is overdue, or null when nothing is. */
+            overdue: {
+                /** @description What is still unpaid merchant.settlement_overdue_days after its settlement day. */
+                amount: string;
+                /**
+                 * Format: date
+                 * @description The settlement day of the oldest statement still unpaid, on the city's clock.
+                 */
+                statementDate: string;
+                currency: string;
+            } | null;
+        };
         MerchantAccountDto_Output: {
             /** @description The city's base currency. */
             currency: string | null;
@@ -10546,6 +10575,16 @@ export interface components {
                 /** @description The FOX DROP staff member, by name. */
                 decidedByName: string | null;
             }[];
+            /** @description «متأخر: {المبلغ} من كشف {التاريخ}» (RA §12.6), or null when nothing is overdue. */
+            overdue: {
+                /** @description What is still unpaid merchant.settlement_overdue_days after its settlement day. */
+                amount: string;
+                /**
+                 * Format: date
+                 * @description The settlement day of the oldest statement still unpaid, on the city's clock.
+                 */
+                statementDate: string;
+            } | null;
         };
         MerchantStatementListDto_Output: {
             /** @description The latest statements (a year), newest first. */
@@ -16275,6 +16314,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptainStatementDto_Output"];
+                };
+            };
+        };
+    };
+    merchantAccountOverdue: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantOverdueDto_Output"];
                 };
             };
         };

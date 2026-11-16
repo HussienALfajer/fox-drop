@@ -171,6 +171,28 @@ export function oldestUnpaid<Statement extends { weekTotal: bigint }>(
   return newestFirst[newestFirst.length - 1]!;
 }
 
+// RA §12.6, AP §8.7 (slice 2.19f): what is overdue of the unpaid amount,
+// and the oldest statement it is from. A statement is overdue once its
+// cutoff is at or before `overdueFrom` (now less merchant.settlement_overdue_days).
+// The unpaid amount is the newest weeks' (owner decision 2026-11-16), so the
+// newer weeks still within their days take their positive totals first and
+// what reaches back past them is overdue. Null when nothing is.
+export function overdueOf<Statement extends { cutoff: Date; weekTotal: bigint }>(
+  newestFirst: readonly Statement[],
+  unpaid: bigint,
+  overdueFrom: Date,
+): { amount: bigint; statement: Statement } | null {
+  const oldest = oldestUnpaid(newestFirst, unpaid);
+  if (oldest === null) return null;
+  let left = unpaid;
+  for (const statement of newestFirst) {
+    if (statement.cutoff.getTime() <= overdueFrom.getTime()) break;
+    const week = statement.weekTotal > 0n ? statement.weekTotal : 0n;
+    left = left > week ? left - week : 0n;
+  }
+  return left > 0n ? { amount: left, statement: oldest } : null;
+}
+
 // RA §12.3: «غير مسدّد», «مسدّد جزئياً», «مسدّد».
 export type StatementStatus = 'unpaid' | 'partly_paid' | 'paid';
 

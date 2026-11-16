@@ -57,6 +57,9 @@ _$adminAlertDtoOutputCodeEnum_customerNotAnswering =
 const AdminAlertDtoOutputCodeEnum
 _$adminAlertDtoOutputCodeEnum_restaurantAutoPaused =
     const AdminAlertDtoOutputCodeEnum._('restaurantAutoPaused');
+const AdminAlertDtoOutputCodeEnum
+_$adminAlertDtoOutputCodeEnum_restaurantSettlementOverdue =
+    const AdminAlertDtoOutputCodeEnum._('restaurantSettlementOverdue');
 
 AdminAlertDtoOutputCodeEnum _$adminAlertDtoOutputCodeEnumValueOf(String name) {
   switch (name) {
@@ -98,6 +101,8 @@ AdminAlertDtoOutputCodeEnum _$adminAlertDtoOutputCodeEnumValueOf(String name) {
       return _$adminAlertDtoOutputCodeEnum_customerNotAnswering;
     case 'restaurantAutoPaused':
       return _$adminAlertDtoOutputCodeEnum_restaurantAutoPaused;
+    case 'restaurantSettlementOverdue':
+      return _$adminAlertDtoOutputCodeEnum_restaurantSettlementOverdue;
     default:
       throw ArgumentError(name);
   }
@@ -125,6 +130,7 @@ _$adminAlertDtoOutputCodeEnumValues =
       _$adminAlertDtoOutputCodeEnum_captainEmergency,
       _$adminAlertDtoOutputCodeEnum_customerNotAnswering,
       _$adminAlertDtoOutputCodeEnum_restaurantAutoPaused,
+      _$adminAlertDtoOutputCodeEnum_restaurantSettlementOverdue,
     ]);
 
 const AdminAlertDtoOutputSeverityEnum
@@ -241,6 +247,7 @@ class _$AdminAlertDtoOutputCodeEnumSerializer
     'captainEmergency': 'captain_emergency',
     'customerNotAnswering': 'customer_not_answering',
     'restaurantAutoPaused': 'restaurant_auto_paused',
+    'restaurantSettlementOverdue': 'restaurant_settlement_overdue',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_not_accepted': 'restaurantNotAccepted',
@@ -262,6 +269,7 @@ class _$AdminAlertDtoOutputCodeEnumSerializer
     'captain_emergency': 'captainEmergency',
     'customer_not_answering': 'customerNotAnswering',
     'restaurant_auto_paused': 'restaurantAutoPaused',
+    'restaurant_settlement_overdue': 'restaurantSettlementOverdue',
   };
 
   @override

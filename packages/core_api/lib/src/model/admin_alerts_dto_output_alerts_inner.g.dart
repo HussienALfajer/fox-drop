@@ -63,6 +63,11 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnum_customerNotAnswering =
 const AdminAlertsDtoOutputAlertsInnerCodeEnum
 _$adminAlertsDtoOutputAlertsInnerCodeEnum_restaurantAutoPaused =
     const AdminAlertsDtoOutputAlertsInnerCodeEnum._('restaurantAutoPaused');
+const AdminAlertsDtoOutputAlertsInnerCodeEnum
+_$adminAlertsDtoOutputAlertsInnerCodeEnum_restaurantSettlementOverdue =
+    const AdminAlertsDtoOutputAlertsInnerCodeEnum._(
+      'restaurantSettlementOverdue',
+    );
 
 AdminAlertsDtoOutputAlertsInnerCodeEnum
 _$adminAlertsDtoOutputAlertsInnerCodeEnumValueOf(String name) {
@@ -105,6 +110,8 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnumValueOf(String name) {
       return _$adminAlertsDtoOutputAlertsInnerCodeEnum_customerNotAnswering;
     case 'restaurantAutoPaused':
       return _$adminAlertsDtoOutputAlertsInnerCodeEnum_restaurantAutoPaused;
+    case 'restaurantSettlementOverdue':
+      return _$adminAlertsDtoOutputAlertsInnerCodeEnum_restaurantSettlementOverdue;
     default:
       throw ArgumentError(name);
   }
@@ -133,6 +140,7 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnumValues =
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_captainEmergency,
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_customerNotAnswering,
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_restaurantAutoPaused,
+        _$adminAlertsDtoOutputAlertsInnerCodeEnum_restaurantSettlementOverdue,
       ],
     );
 
@@ -248,6 +256,7 @@ class _$AdminAlertsDtoOutputAlertsInnerCodeEnumSerializer
     'captainEmergency': 'captain_emergency',
     'customerNotAnswering': 'customer_not_answering',
     'restaurantAutoPaused': 'restaurant_auto_paused',
+    'restaurantSettlementOverdue': 'restaurant_settlement_overdue',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_not_accepted': 'restaurantNotAccepted',
@@ -269,6 +278,7 @@ class _$AdminAlertsDtoOutputAlertsInnerCodeEnumSerializer
     'captain_emergency': 'captainEmergency',
     'customer_not_answering': 'customerNotAnswering',
     'restaurant_auto_paused': 'restaurantAutoPaused',
+    'restaurant_settlement_overdue': 'restaurantSettlementOverdue',
   };
 
   @override

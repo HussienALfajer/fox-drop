@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { AccountEntry } from '../ledger/index.js';
 import { merchantEntryCause, merchantEntryCauses, type OrderPickup } from '../ordering/index.js';
-import { buildStatement, oldestUnpaid, statementStatuses } from './merchant-statement.js';
+import {
+  buildStatement,
+  oldestUnpaid,
+  overdueOf,
+  statementStatuses,
+} from './merchant-statement.js';
 import { merchantExceptionCauses } from './schema.js';
 
 // AP §8.7, RA §12.3, §12.5 (slice 2.19a): the restaurant's weekly statement
@@ -236,5 +241,36 @@ describe("each statement's status", () => {
     expect(
       statementStatuses([{ id: 'c', weekTotal: -3_400n, totalDue: -3_400n }], 0n).get('c'),
     ).toEqual({ status: null, unpaid: 0n });
+  });
+});
+
+// RA §12.6, AP §8.7 (slice 2.19f): what is overdue is the unpaid part of the
+// statements past their overdue time. The newer weeks not yet overdue take
+// their positive totals first, as a payment settles the oldest first.
+describe('what is overdue', () => {
+  const day = (n: number) => new Date(Date.UTC(2026, 10, n, 4));
+  const weeks = [
+    { id: 'w3', cutoff: day(14), weekTotal: 2_000n },
+    { id: 'w2', cutoff: day(7), weekTotal: -500n },
+    { id: 'w1', cutoff: day(1), weekTotal: 3_000n },
+  ];
+
+  it('is nothing while every unpaid week is still within its days', () => {
+    expect(overdueOf(weeks, 2_000n, day(10))).toBeNull();
+  });
+
+  it('is what reaches back past the weeks not yet overdue', () => {
+    // w3 is not overdue (its cutoff is after the threshold): 2 000 is its.
+    expect(overdueOf(weeks, 2_600n, day(10))).toEqual({ amount: 600n, statement: weeks[2] });
+  });
+
+  it('is the whole unpaid amount once the latest week is overdue', () => {
+    expect(overdueOf(weeks, 2_600n, day(16))).toEqual({ amount: 2_600n, statement: weeks[2] });
+    expect(overdueOf(weeks, 1_500n, day(16))).toEqual({ amount: 1_500n, statement: weeks[0] });
+  });
+
+  it('is nothing when nothing is unpaid', () => {
+    expect(overdueOf(weeks, 0n, day(16))).toBeNull();
+    expect(overdueOf([], 100n, day(16))).toBeNull();
   });
 });

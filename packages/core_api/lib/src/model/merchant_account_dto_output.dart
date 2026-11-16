@@ -6,6 +6,7 @@
 import 'package:core_api/src/model/merchant_account_dto_output_next_commission.dart';
 import 'package:core_api/src/model/merchant_account_dto_output_week_lines_inner.dart';
 import 'package:core_api/src/model/merchant_account_dto_output_pickups_inner.dart';
+import 'package:core_api/src/model/merchant_account_dto_output_overdue.dart';
 import 'package:core_api/src/model/date.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
@@ -25,6 +26,7 @@ part 'merchant_account_dto_output.g.dart';
 /// * [pickups] - «قبضت اليوم من الكباتن»: the pickups confirmed today, newest first.
 /// * [weekFrom] - The latest statement's cutoff; null before the first statement.
 /// * [weekLines] - «هذا الأسبوع»: every entry since the latest statement closed, newest day first, each day's orders then its exceptions and payments in the ledger's order.
+/// * [overdue]
 @BuiltValue()
 abstract class MerchantAccountDtoOutput
     implements
@@ -63,6 +65,9 @@ abstract class MerchantAccountDtoOutput
   /// «هذا الأسبوع»: every entry since the latest statement closed, newest day first, each day's orders then its exceptions and payments in the ledger's order.
   @BuiltValueField(wireName: r'weekLines')
   BuiltList<MerchantAccountDtoOutputWeekLinesInner> get weekLines;
+
+  @BuiltValueField(wireName: r'overdue')
+  MerchantAccountDtoOutputOverdue? get overdue;
 
   MerchantAccountDtoOutput._();
 
@@ -153,6 +158,15 @@ class _$MerchantAccountDtoOutputSerializer
         FullType(MerchantAccountDtoOutputWeekLinesInner),
       ]),
     );
+    yield r'overdue';
+    yield object.overdue == null
+        ? null
+        : serializers.serialize(
+            object.overdue,
+            specifiedType: const FullType.nullable(
+              MerchantAccountDtoOutputOverdue,
+            ),
+          );
   }
 
   @override
@@ -270,6 +284,18 @@ class _$MerchantAccountDtoOutputSerializer
                   )
                   as BuiltList<MerchantAccountDtoOutputWeekLinesInner>;
           result.weekLines.replace(valueDes);
+          break;
+        case r'overdue':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      MerchantAccountDtoOutputOverdue,
+                    ),
+                  )
+                  as MerchantAccountDtoOutputOverdue?;
+          if (valueDes == null) continue;
+          result.overdue.replace(valueDes);
           break;
         default:
           unhandled.add(key);

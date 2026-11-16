@@ -25,6 +25,8 @@ class _$MerchantAccountDtoOutput extends MerchantAccountDtoOutput {
   final DateTime? weekFrom;
   @override
   final BuiltList<MerchantAccountDtoOutputWeekLinesInner> weekLines;
+  @override
+  final MerchantAccountDtoOutputOverdue? overdue;
 
   factory _$MerchantAccountDtoOutput([
     void Function(MerchantAccountDtoOutputBuilder)? updates,
@@ -40,6 +42,7 @@ class _$MerchantAccountDtoOutput extends MerchantAccountDtoOutput {
     required this.pickups,
     this.weekFrom,
     required this.weekLines,
+    this.overdue,
   }) : super._();
   @override
   MerchantAccountDtoOutput rebuild(
@@ -62,7 +65,8 @@ class _$MerchantAccountDtoOutput extends MerchantAccountDtoOutput {
         todayFrom == other.todayFrom &&
         pickups == other.pickups &&
         weekFrom == other.weekFrom &&
-        weekLines == other.weekLines;
+        weekLines == other.weekLines &&
+        overdue == other.overdue;
   }
 
   @override
@@ -77,6 +81,7 @@ class _$MerchantAccountDtoOutput extends MerchantAccountDtoOutput {
     _$hash = $jc(_$hash, pickups.hashCode);
     _$hash = $jc(_$hash, weekFrom.hashCode);
     _$hash = $jc(_$hash, weekLines.hashCode);
+    _$hash = $jc(_$hash, overdue.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -92,7 +97,8 @@ class _$MerchantAccountDtoOutput extends MerchantAccountDtoOutput {
           ..add('todayFrom', todayFrom)
           ..add('pickups', pickups)
           ..add('weekFrom', weekFrom)
-          ..add('weekLines', weekLines))
+          ..add('weekLines', weekLines)
+          ..add('overdue', overdue))
         .toString();
   }
 }
@@ -149,6 +155,12 @@ class MerchantAccountDtoOutputBuilder
     ListBuilder<MerchantAccountDtoOutputWeekLinesInner>? weekLines,
   ) => _$this._weekLines = weekLines;
 
+  MerchantAccountDtoOutputOverdueBuilder? _overdue;
+  MerchantAccountDtoOutputOverdueBuilder get overdue =>
+      _$this._overdue ??= MerchantAccountDtoOutputOverdueBuilder();
+  set overdue(MerchantAccountDtoOutputOverdueBuilder? overdue) =>
+      _$this._overdue = overdue;
+
   MerchantAccountDtoOutputBuilder() {
     MerchantAccountDtoOutput._defaults(this);
   }
@@ -165,6 +177,7 @@ class MerchantAccountDtoOutputBuilder
       _pickups = $v.pickups.toBuilder();
       _weekFrom = $v.weekFrom;
       _weekLines = $v.weekLines.toBuilder();
+      _overdue = $v.overdue?.toBuilder();
       _$v = null;
     }
     return this;
@@ -210,6 +223,7 @@ class MerchantAccountDtoOutputBuilder
             pickups: pickups.build(),
             weekFrom: weekFrom,
             weekLines: weekLines.build(),
+            overdue: _overdue?.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -222,6 +236,8 @@ class MerchantAccountDtoOutputBuilder
 
         _$failedField = 'weekLines';
         weekLines.build();
+        _$failedField = 'overdue';
+        _overdue?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'MerchantAccountDtoOutput',

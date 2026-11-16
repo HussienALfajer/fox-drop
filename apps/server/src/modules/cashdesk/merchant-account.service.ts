@@ -29,6 +29,10 @@ export interface MerchantAccount {
   weekFrom: Date | null;
   // An exception carries «من قرّر» (RA §12.5).
   weekLines: (StatementLine & { day: string; decidedBy: Decider | null })[];
+  // RA §12.2, §12.6 (slice 2.19f): «متأخر: {المبلغ} من كشف {التاريخ}», the
+  // amount overdue and the settlement day (YYYY-MM-DD) of the oldest
+  // statement still unpaid; null when nothing is overdue.
+  overdue: { amount: bigint; statementDate: string } | null;
 }
 
 @Injectable()
@@ -94,11 +98,13 @@ export class MerchantAccountService {
         settlementDate: dateOf(cutoffs.next),
         weekFrom: null,
         weekLines: [],
+        overdue: null,
       };
     }
-    const [{ statements, unpaid }, held] = await Promise.all([
+    const [{ statements, unpaid }, held, overdue] = await Promise.all([
       this.statements.standing(restaurantId, account.id),
       this.ledger.balance(account.id),
+      this.statements.overdue(cityId, restaurantId, now),
     ]);
     const latest = statements[0] ?? null;
     // The entries since the latest statement, as the next statement will take
@@ -141,6 +147,29 @@ export class MerchantAccountService {
       settlementDate: dateOf(latest && unpaid > 0n ? latest.cutoff : cutoffs.next),
       weekFrom: latest?.cutoff ?? null,
       weekLines,
+      overdue: overdue && {
+        amount: overdue.amount,
+        statementDate: dateOf(overdue.statementCutoff),
+      },
+    };
+  }
+
+  // RA §6.3 item 7, §12.6 (slice 2.19f): what the owners' amber banner
+  // needs, read on its own so the banner does not read the whole account.
+  async overdue(restaurantId: string, cityId: string, now: Date) {
+    const timeZone = await this.geo.cityTimeZone(cityId);
+    if (timeZone === null) throw new Error(`city ${cityId} does not exist`);
+    const overdue = await this.statements.overdue(cityId, restaurantId, now);
+    if (!overdue) return null;
+    return {
+      currency: overdue.currency,
+      amount: overdue.amount,
+      statementDate: new Intl.DateTimeFormat('en-CA', {
+        timeZone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }).format(overdue.statementCutoff),
     };
   }
 }

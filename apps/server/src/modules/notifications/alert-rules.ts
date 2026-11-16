@@ -60,6 +60,10 @@ export const alertCodes = [
   // «مطعم أوقف تلقائياً»: merchant.auto_pause_unanswered_count unanswered
   // orders in a business day (AP §9.6.5), until operations resume it.
   'restaurant_auto_paused',
+  // «مطعم متأخر في التسوية»: a statement not fully paid
+  // merchant.settlement_overdue_days after the settlement day (AP §8.7,
+  // slice 2.19f), until it is paid.
+  'restaurant_settlement_overdue',
 ] as const;
 export type AlertCode = (typeof alertCodes)[number];
 
@@ -98,6 +102,7 @@ export const ALERT_RULES: Record<AlertCode, AlertRule> = {
   captain_emergency: rule('critical', OPERATIONS, 'order'),
   customer_not_answering: rule('warning', OPERATIONS, 'order'),
   restaurant_auto_paused: rule('warning', OPERATIONS, 'restaurant'),
+  restaurant_settlement_overdue: rule('warning', ['OWN', 'FIN'], 'restaurant'),
 };
 
 function rule(

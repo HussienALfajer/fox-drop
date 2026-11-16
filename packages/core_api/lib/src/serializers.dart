@@ -490,6 +490,7 @@ import 'package:core_api/src/model/emergency_sign_in_code_request_dto.dart';
 import 'package:core_api/src/model/merchant_accept_dto.dart';
 import 'package:core_api/src/model/merchant_account_dto_output.dart';
 import 'package:core_api/src/model/merchant_account_dto_output_next_commission.dart';
+import 'package:core_api/src/model/merchant_account_dto_output_overdue.dart';
 import 'package:core_api/src/model/merchant_account_dto_output_pickups_inner.dart';
 import 'package:core_api/src/model/merchant_account_dto_output_pickups_inner_lines_inner.dart';
 import 'package:core_api/src/model/merchant_account_dto_output_week_lines_inner.dart';
@@ -540,6 +541,8 @@ import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_owner
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_pickup.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_pickup_request.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_prep_time.dart';
+import 'package:core_api/src/model/merchant_overdue_dto_output.dart';
+import 'package:core_api/src/model/merchant_overdue_dto_output_overdue.dart';
 import 'package:core_api/src/model/merchant_pause_dto.dart';
 import 'package:core_api/src/model/merchant_pickup_currencies_dto_output.dart';
 import 'package:core_api/src/model/merchant_pickup_currencies_dto_output_base_currency.dart';
@@ -1083,6 +1086,7 @@ part 'serializers.g.dart';
   MerchantAcceptDto,
   MerchantAccountDtoOutput,
   MerchantAccountDtoOutputNextCommission,
+  MerchantAccountDtoOutputOverdue,
   MerchantAccountDtoOutputPickupsInner,
   MerchantAccountDtoOutputPickupsInnerLinesInner,
   MerchantAccountDtoOutputWeekLinesInner,
@@ -1133,6 +1137,8 @@ part 'serializers.g.dart';
   MerchantOrdersDtoOutputOrdersInnerPickup,
   MerchantOrdersDtoOutputOrdersInnerPickupRequest,
   MerchantOrdersDtoOutputPrepTime,
+  MerchantOverdueDtoOutput,
+  MerchantOverdueDtoOutputOverdue,
   MerchantPauseDto,
   MerchantPickupCurrenciesDtoOutput,
   MerchantPickupCurrenciesDtoOutputBaseCurrency,

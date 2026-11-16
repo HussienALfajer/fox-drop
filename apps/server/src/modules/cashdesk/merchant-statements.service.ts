@@ -9,14 +9,14 @@ import { GeoService, nextCutoff } from '../geo/index.js';
 import { type AccountEntry, LedgerService } from '../ledger/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { merchantEntryCause, OrdersService } from '../ordering/index.js';
-import { PushQueue } from '../notifications/index.js';
+import { type AlertCode, AlertsService, PushQueue } from '../notifications/index.js';
 import { SettingsService } from '../settings/index.js';
 import type { Tx } from './cashdesk.service.js';
 import { payoutCycle } from './earnings.js';
 import {
   buildStatement,
   type ExceptionCause,
-  oldestUnpaid,
+  overdueOf,
   type StatementLine,
   type StatementStatus,
   statementStatuses,
@@ -34,6 +34,8 @@ export const STATEMENT_OVERLAP_MS = 60 * 60_000;
 const DAY_MS = 24 * 60 * 60_000;
 // The statements read back to find the oldest one still unpaid: a year.
 const OVERDUE_LOOKBACK = 52;
+// AP §9.1.3 «مطعم متأخر في التسوية» (slice 2.19f).
+const OVERDUE_ALERT: AlertCode = 'restaurant_settlement_overdue';
 
 // A restaurant's account, held while its statement is taken or a payment
 // is recorded (slice 2.19b), so a payment is never half in a statement and
@@ -94,6 +96,17 @@ export interface RestaurantSettlementRow {
   overdueSince: Date | null;
 }
 
+// RA §12.6 (slice 2.19f): what is overdue of a restaurant's account, in the
+// city's base, and the oldest statement still unpaid it is from.
+export interface RestaurantOverdue {
+  currency: string;
+  amount: bigint;
+  statementId: string;
+  statementCutoff: Date;
+  // When it became overdue: that statement's cutoff + the overdue days.
+  since: Date;
+}
+
 export interface RestaurantSettlementList {
   currency: string | null;
   // The settlement day (merchant.settlement_weekday) and the next cutoff that
@@ -121,6 +134,7 @@ export class MerchantStatementsService {
     private readonly settings: SettingsService,
     private readonly texts: NotificationTexts,
     private readonly pushes: PushQueue,
+    private readonly alerts: AlertsService,
   ) {}
 
   // The latest settlement cutoff at or before now, and the next one.
@@ -335,8 +349,7 @@ export class MerchantStatementsService {
       if (balance === 0n) continue;
       const { statements, unpaid } = await this.standing(restaurant.id, account.id);
       const latest = statements[0];
-      const oldest = oldestUnpaid(statements, unpaid);
-      const overdueAt = oldest ? new Date(oldest.cutoff.getTime() + overdueDays * DAY_MS) : null;
+      const overdue = overdueOf(statements, unpaid, new Date(now.getTime() - overdueDays * DAY_MS));
       rows.push({
         restaurantId: restaurant.id,
         restaurantName: restaurant.nameAr,
@@ -354,7 +367,9 @@ export class MerchantStatementsService {
             }
           : null,
         unpaid,
-        overdueSince: overdueAt && overdueAt <= now ? overdueAt : null,
+        overdueSince: overdue
+          ? new Date(overdue.statement.cutoff.getTime() + overdueDays * DAY_MS)
+          : null,
       });
     }
     rows.sort(
@@ -364,6 +379,124 @@ export class MerchantStatementsService {
         a.restaurantName.localeCompare(b.restaurantName, 'ar'),
     );
     return { currency, settlementWeekday: weekday, nextCutoff: next, restaurants: rows };
+  }
+
+  // RA §12.6, AP §8.7 (slice 2.19f): what of the restaurant's account is
+  // overdue, merchant.settlement_overdue_days after the settlement day of
+  // the oldest statement still unpaid; null when nothing is.
+  async overdue(
+    cityId: string,
+    restaurantId: string,
+    now: Date,
+  ): Promise<RestaurantOverdue | null> {
+    const [currency, overdueDays] = await Promise.all([
+      this.fx.baseCurrency(cityId),
+      this.settings.get('merchant.settlement_overdue_days', { cityId }),
+    ]);
+    if (currency === null) return null;
+    const accounts = await this.ledger.ownerAccounts(cityId, restaurantId, 'merchant.account');
+    const account = accounts.find((each) => each.currency === currency);
+    if (!account) return null;
+    const { statements, unpaid } = await this.standing(restaurantId, account.id);
+    const found = overdueOf(statements, unpaid, new Date(now.getTime() - overdueDays * DAY_MS));
+    if (!found) return null;
+    return {
+      currency,
+      amount: found.amount,
+      statementId: found.statement.id,
+      statementCutoff: found.statement.cutoff,
+      since: new Date(found.statement.cutoff.getTime() + overdueDays * DAY_MS),
+    };
+  }
+
+  // The worker's sweep (slice 2.19f): each restaurant of the city raises
+  // «مطعم متأخر في التسوية» for OWN and FIN while something is overdue and
+  // resolves it once paid (AP §8.7, §9.1.3); the owners hear of each overdue
+  // statement once (RA §12.6, §16 #32). The restaurant is never paused for
+  // it (owner decision 2026-11-16, AP §13 item 2).
+  async syncOverdue(cityId: string, now: Date): Promise<void> {
+    const known = await this.knownCurrencies();
+    const seen = new Set<string>();
+    for (const restaurant of await this.merchants.restaurantIds(cityId)) {
+      seen.add(restaurant.id);
+      try {
+        await this.syncOverdueOne(cityId, restaurant, known, now);
+      } catch (error) {
+        // Tried again every minute: one report per restaurant, the rest logged.
+        const key = `overdue:${restaurant.id}`;
+        if (!this.reported.has(key)) {
+          this.reported.add(key);
+          reportError(error);
+        }
+        this.logger.error(
+          { err: error, cityId, restaurantId: restaurant.id },
+          'restaurant overdue sync failed',
+        );
+      }
+    }
+    // A restaurant no longer in the city's list.
+    for (const subject of await this.alerts.openSubjects(OVERDUE_ALERT)) {
+      if (subject.cityId !== cityId || seen.has(subject.id)) continue;
+      await this.database.db.transaction((tx) =>
+        this.alerts.sync(
+          tx,
+          { type: 'restaurant', id: subject.id, cityId },
+          [OVERDUE_ALERT],
+          [],
+          now,
+        ),
+      );
+    }
+  }
+
+  // Under the restaurant's lock, so a payment being recorded is read whole:
+  // the alert and the push never follow a balance already paid.
+  private async syncOverdueOne(
+    cityId: string,
+    restaurant: { id: string; nameAr: string },
+    known: Awaited<ReturnType<MerchantStatementsService['knownCurrencies']>>,
+    now: Date,
+  ): Promise<void> {
+    await this.database.db.transaction(async (tx) => {
+      await lockRestaurantAccount(tx, restaurant.id);
+      const overdue = await this.overdue(cityId, restaurant.id, now);
+      await this.alerts.sync(
+        tx,
+        {
+          type: 'restaurant',
+          id: restaurant.id,
+          cityId,
+          details: { restaurantName: restaurant.nameAr },
+        },
+        [OVERDUE_ALERT],
+        overdue ? [OVERDUE_ALERT] : [],
+        now,
+      );
+      if (!overdue) return;
+      const rendered = await this.texts.render(
+        'merchant.settlement_overdue',
+        { المبلغ: formatMoney(overdue.amount, overdue.currency, known) },
+        tx,
+      );
+      // Once per overdue statement: the source repeats every minute.
+      await this.pushes.enqueue(
+        tx,
+        [
+          {
+            source: `cashdesk:merchant-overdue:${overdue.statementId}`,
+            recipient: { party: 'merchant', restaurantId: restaurant.id, owners: true },
+            templateKey: 'merchant.settlement_overdue',
+            body: rendered.body,
+            level: rendered.level,
+            priority: rendered.priority,
+            data: { target: 'account' },
+            at: now,
+            expiresAt: new Date(now.getTime() + DAY_MS),
+          },
+        ],
+        now,
+      );
+    });
   }
 
   // A statement with its lines, in the order shown; given a restaurant, only

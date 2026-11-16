@@ -388,6 +388,92 @@ describe('the restaurant weekly statement at the cutoff', () => {
   });
 });
 
+async function overdueAlerts(restaurantId: string) {
+  return (
+    await sql.query(
+      "SELECT severity, resolved_at, details FROM notifications.alerts WHERE code = 'restaurant_settlement_overdue' AND subject_id = $1 ORDER BY raised_at",
+      [restaurantId],
+    )
+  ).rows;
+}
+
+async function overduePushes(restaurantId: string) {
+  return (
+    await sql.query(
+      "SELECT body, owners_only, data FROM notifications.push_messages WHERE restaurant_id = $1 AND template_key = 'merchant.settlement_overdue' ORDER BY created_at",
+      [restaurantId],
+    )
+  ).rows;
+}
+
+// RA §12.6, §16 #32, AP §8.7, §9.1.3 (slice 2.19f): a statement not fully
+// paid merchant.settlement_overdue_days after its settlement day raises
+// «مطعم متأخر في التسوية» for OWN and FIN and reminds the owners once; the
+// alert closes once it is paid. The restaurant is never paused for it.
+describe('the overdue settlement', () => {
+  it('waits for the overdue days after the settlement day', async () => {
+    const id = await restaurant();
+    await post(id, 'merchant.commission', 1_000n);
+    const cutoff = await databaseNow();
+    await statements.closeAt(azaz, cutoff, cutoff, { notify: false });
+
+    const early = new Date(cutoff.getTime() + 2 * DAY - 60_000);
+    expect(await statements.overdue(azaz, id, early)).toBeNull();
+    await statements.syncOverdue(azaz, early);
+    expect(await overdueAlerts(id)).toEqual([]);
+    expect(await overduePushes(id)).toEqual([]);
+  });
+
+  it('raises the alert and reminds the owners once, and closes it when paid', async () => {
+    const id = await restaurant();
+    await post(id, 'merchant.commission', 1_000n);
+    const first = await databaseNow();
+    await statements.closeAt(azaz, first, first, { notify: false });
+    await post(id, 'merchant.commission', 2_000n);
+    const second = await databaseNow();
+    await statements.closeAt(azaz, second, second, { notify: false });
+
+    // The second week is still within its days (its cutoff is after the
+    // first's): only the first is overdue. Every sync runs at that moment.
+    const now = new Date(first.getTime() + 2 * DAY);
+    const firstId = (await rows(id))[0].id;
+    expect(await statements.overdue(azaz, id, now)).toEqual({
+      currency: 'TRY',
+      amount: 1_000n,
+      statementId: firstId,
+      statementCutoff: first,
+      since: now,
+    });
+    await statements.syncOverdue(azaz, now);
+    await statements.syncOverdue(azaz, now);
+
+    const [alert, ...more] = await overdueAlerts(id);
+    expect(more).toEqual([]);
+    expect(alert).toMatchObject({ severity: 'warning', resolved_at: null });
+    expect(alert.details).toMatchObject({ restaurantName: expect.stringContaining('مطعم') });
+    expect(await overduePushes(id)).toEqual([
+      {
+        body: 'لديك مبلغ متأخر: 10 ₺. يرجى التسوية في أقرب وقت.',
+        owners_only: true,
+        data: { target: 'account' },
+      },
+    ]);
+
+    // A part paid settles the oldest first: still overdue, no new reminder.
+    await post(id, 'merchant.settlement', -500n);
+    await statements.syncOverdue(azaz, now);
+    expect(await overdueAlerts(id)).toHaveLength(1);
+    expect((await overdueAlerts(id))[0].resolved_at).toBeNull();
+    expect(await overduePushes(id)).toHaveLength(1);
+
+    // The rest of the first week paid: the second is not overdue yet.
+    await post(id, 'merchant.settlement', -500n);
+    await statements.syncOverdue(azaz, now);
+    expect((await overdueAlerts(id))[0].resolved_at).not.toBeNull();
+    expect(await statements.overdue(azaz, id, now)).toBeNull();
+  });
+});
+
 describe('the routes of «تسوية المطاعم»', () => {
   let accounts = 0;
   async function admin(roles: string[]) {
