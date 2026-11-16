@@ -2916,6 +2916,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/customer/promo-codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["customerCodesList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/promo-codes": {
         parameters: {
             query?: never;
@@ -9491,6 +9507,49 @@ export interface components {
         CaptainEmergencyStopDto_Output: {
             active: boolean;
             startedAt: string | null;
+        };
+        CustomerCodesDto_Output: {
+            /** @description The city base; null outside every city. */
+            currency: string | null;
+            /** @description «متاحة» by the nearest end, then «منتهية» newest first. */
+            codes: {
+                code: string;
+                /** @enum {string} */
+                kind: "percentage" | "fixed_amount" | "free_delivery";
+                /** @description A percentage in basis points (2000 is 20%). */
+                percentBp: number | null;
+                amount: string | null;
+                maxDiscount: string | null;
+                /** @description The minimum on the items value. */
+                minOrder: string | null;
+                /** @description The restaurants it works with; none: all. */
+                restaurants: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                }[];
+                /** @description The zones it works in, by name; none: all. */
+                zones: string[];
+                /** @description The hours on the city clock, minutes from midnight; an end at or before the start runs past midnight. */
+                hours: {
+                    startMinute: number;
+                    endMinute: number;
+                } | null;
+                /**
+                 * Format: date-time
+                 * @description «ينتهي {التاريخ}».
+                 */
+                validTo: string;
+                /** @description What the customer has left; null: no limit. */
+                usesLeft: number | null;
+                /** @description null in «متاحة»; else «منتهية», used or expired. */
+                ended: {
+                    /** @enum {string} */
+                    reason: "used" | "expired";
+                    /** Format: date-time */
+                    at: string;
+                } | null;
+            }[];
         };
         AdminPromoCodesDto_Output: {
             codes: {
@@ -16680,6 +16739,29 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptainEmergencyStopDto_Output"];
+                };
+            };
+        };
+    };
+    customerCodesList: {
+        parameters: {
+            query: {
+                latitude: string;
+                longitude: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerCodesDto_Output"];
                 };
             };
         };

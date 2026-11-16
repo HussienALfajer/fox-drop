@@ -480,6 +480,10 @@ import 'package:core_api/src/model/customer_address_list_dto_output_addresses_in
 import 'package:core_api/src/model/customer_cancel_order_dto.dart';
 import 'package:core_api/src/model/customer_code_request_dto.dart';
 import 'package:core_api/src/model/customer_code_sent_dto_output.dart';
+import 'package:core_api/src/model/customer_codes_dto_output.dart';
+import 'package:core_api/src/model/customer_codes_dto_output_codes_inner.dart';
+import 'package:core_api/src/model/customer_codes_dto_output_codes_inner_ended.dart';
+import 'package:core_api/src/model/customer_codes_dto_output_codes_inner_hours.dart';
 import 'package:core_api/src/model/customer_content_dto_output.dart';
 import 'package:core_api/src/model/customer_content_dto_output_reasons.dart';
 import 'package:core_api/src/model/customer_emergency_stop_dto_output.dart';
@@ -1126,6 +1130,10 @@ part 'serializers.g.dart';
   CustomerCancelOrderDto,
   CustomerCodeRequestDto,
   CustomerCodeSentDtoOutput,
+  CustomerCodesDtoOutput,
+  CustomerCodesDtoOutputCodesInner,
+  CustomerCodesDtoOutputCodesInnerEnded,
+  CustomerCodesDtoOutputCodesInnerHours,
   CustomerContentDtoOutput,
   CustomerContentDtoOutputReasons,
   CustomerEmergencyStopDtoOutput,
@@ -1392,6 +1400,12 @@ Serializers serializers =
               FullType(AdminDailyReportDtoOutputCashInner),
             ]),
             () => ListBuilder<AdminDailyReportDtoOutputCashInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CustomerCodesDtoOutputCodesInner),
+            ]),
+            () => ListBuilder<CustomerCodesDtoOutputCodesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

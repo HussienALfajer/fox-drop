@@ -781,6 +781,12 @@ Serializers _$serializers =
           ..add(CustomerCodeRequestDto.serializer)
           ..add(CustomerCodeSentDtoOutput.serializer)
           ..add(CustomerCodeSentDtoOutputChannelEnum.serializer)
+          ..add(CustomerCodesDtoOutput.serializer)
+          ..add(CustomerCodesDtoOutputCodesInner.serializer)
+          ..add(CustomerCodesDtoOutputCodesInnerEnded.serializer)
+          ..add(CustomerCodesDtoOutputCodesInnerEndedReasonEnum.serializer)
+          ..add(CustomerCodesDtoOutputCodesInnerHours.serializer)
+          ..add(CustomerCodesDtoOutputCodesInnerKindEnum.serializer)
           ..add(CustomerContentDtoOutput.serializer)
           ..add(CustomerContentDtoOutputReasons.serializer)
           ..add(CustomerEmergencyStopDtoOutput.serializer)
@@ -2191,6 +2197,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(CustomerCodesDtoOutputCodesInner),
+            ]),
+            () => ListBuilder<CustomerCodesDtoOutputCodesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(CustomerNotificationsDtoOutputNotificationsInner),
             ]),
             () =>
@@ -3034,6 +3046,21 @@ Serializers _$serializers =
               const FullType.nullable(AdminCurrentDrawerSessionDtoOutputField),
             ]),
             () => ListBuilder<AdminCurrentDrawerSessionDtoOutputField?>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType.nullable(
+                AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

@@ -153,6 +153,29 @@ describe('a code in the quote', () => {
     const applied = await quote(best);
     expect(applied.suggestedCode).toBeNull();
     expect(applied.money.discount).toBe('23760');
+
+    // «أكوادي» (CU §12.4) at the point's city, signed in only.
+    const url = `/v1/customer/promo-codes?latitude=${home.latitude}&longitude=${home.longitude}`;
+    expect((await app.inject({ method: 'GET', url })).statusCode).toBe(401);
+    const mine = await app.inject({
+      method: 'GET',
+      url,
+      headers: await appSignIn('customer', phoneNumber()),
+    });
+    expect(mine.statusCode, mine.body).toBe(200);
+    expect(mine.json().currency).toBe('TRY');
+    expect(mine.json().codes.map((entry: { code: string }) => entry.code)).toEqual(
+      expect.arrayContaining([best, other]),
+    );
+    expect(mine.json().codes.find((entry: { code: string }) => entry.code === best)).toMatchObject({
+      kind: 'percentage',
+      percentBp: 9900,
+      restaurants: [],
+      zones: [],
+      hours: null,
+      usesLeft: null,
+      ended: null,
+    });
   });
 });
 

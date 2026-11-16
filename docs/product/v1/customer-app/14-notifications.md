@@ -26,7 +26,9 @@
 | 20  | Account blocked, unblocked or closed                       | Default                                  | With the reason (§5.5)                                                |
 | 21  | Dues paid, block lifted                                    | Default                                  | «تم استلام {المبلغ}. حسابك فعّال من جديد»                             |
 | 22  | Mass push (AP §9.11.4)                                     | Default                                  | The campaign text                                                     |
+| 23  | A code's use given back (§10.4)                            | Default                                  | «أُعيد الكود {الكود} إلى أكوادك»                                      |
 
-- Rows 1 to 15 open the order. Rows 16 and 21 open «أكوادي» or the account. Row 22 opens its target.
+- Rows 1 to 15 open the order. Rows 16, 21 and 23 open «أكوادي» or the account. Row 22 opens its target.
+- Row 23 is sent only when the code is back in «متاحة»: a visible code that has not ended (owner decision 2026-11-16).
 - Texts come from Content templates (AP §9.13). The texts above are the defaults.
 - Every push is also stored in «الإشعارات» (§13).

@@ -166,6 +166,73 @@ describe('PromoCodeUsesService.available', () => {
     ]);
   });
 
+  it('gives «أكوادي»: the open codes by end, then those used or expired', async () => {
+    const mine = await uses.mine(
+      {
+        cityId: azaz,
+        baseCurrency: 'TRY',
+        clock: cart().clock,
+        customer: who,
+      },
+      now,
+    );
+    expect(mine.map((entry) => [entry.code, entry.ended?.reason ?? null])).toEqual([
+      ['BIG', null],
+      ['CAPPED', null],
+      ['ELSEWHERE', null],
+      ['FIXED', null],
+      ['SHIP', null],
+      ['TEN', null],
+      // Used up (1 of 1), then ended on 5 December unused. Never the secret,
+      // the paused, or the new users' code for a customer who is not new.
+      ['ONCE', 'used'],
+      ['ENDED', 'expired'],
+    ]);
+    expect(mine.find((entry) => entry.code === 'ELSEWHERE')).toMatchObject({
+      restaurantIds: [otherRestaurant],
+      usesLeft: null,
+    });
+    expect(mine.find((entry) => entry.code === 'ONCE')).toMatchObject({
+      usesLeft: 0,
+      ended: { reason: 'used', at: now },
+    });
+    // A new user sees the new users' code; a month on, «منتهية» is empty.
+    const fresh = await uses.mine(
+      {
+        cityId: azaz,
+        baseCurrency: 'TRY',
+        clock: cart().clock,
+        customer: {
+          ...who,
+          accountId: randomUUID(),
+          phoneHash: randomUUID(),
+          deviceId: randomUUID(),
+          newUser: true,
+        },
+      },
+      now,
+    );
+    expect(fresh.map((entry) => entry.code)).toContain('NEWONLY');
+    // On 20 January every code has ended: the use of 10 December is past 30
+    // days, so ONCE is merely expired, and ENDED (5 December) is gone.
+    const later = new Date('2027-01-20T12:00:00Z');
+    const after = await uses.mine(
+      { cityId: azaz, baseCurrency: 'TRY', clock: cart().clock, customer: who },
+      later,
+    );
+    expect(after.map((entry) => entry.code)).toEqual([
+      'BIG',
+      'CAPPED',
+      'ELSEWHERE',
+      'FIXED',
+      'ONCE',
+      'PAUSED',
+      'SHIP',
+      'TEN',
+    ]);
+    expect(after.every((entry) => entry.ended?.reason === 'expired')).toBe(true);
+  });
+
   it('suggests the largest discount above the applied one, never the applied code', async () => {
     const listed = await uses.available(cart(), now);
     expect(suggestedCode(listed, null)).toEqual({ code: 'CAPPED', discount: 6000n });

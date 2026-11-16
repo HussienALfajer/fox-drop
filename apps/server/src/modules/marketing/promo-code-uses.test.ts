@@ -189,6 +189,36 @@ describe('PromoCodeUsesService', () => {
     expect(await uses.check(await cartAt(typed, next), next)).toMatchObject({ applied: true });
   });
 
+  it('tells the customer «أُعيد الكود {الكود} إلى أكوادك» when a use comes back', async () => {
+    const typed = await code();
+    const who = customer();
+    const pushes = async () =>
+      (
+        await sql.query(
+          "SELECT body, data FROM notifications.push_messages WHERE account_id = $1 AND template_key = 'customer.code_returned'",
+          [who.accountId],
+        )
+      ).rows;
+    const spent = await place(cart(typed, who));
+    await db.db.transaction((tx) => uses.settle(tx, spent.orderId, 'spent', now));
+    expect(await pushes()).toEqual([]);
+    const back = await place(cart(typed, who));
+    await db.db.transaction((tx) => uses.settle(tx, back.orderId, 'returned', now));
+    // Settled again the same way: nothing more.
+    await db.db.transaction((tx) => uses.settle(tx, back.orderId, 'returned', now));
+    expect(await pushes()).toEqual([
+      { body: `أُعيد الكود ${typed} إلى أكوادك`, data: { target: 'codes' } },
+    ]);
+    // A secret code is not in «أكوادي»: no push.
+    const secret = await code();
+    await sql.query("UPDATE marketing.promo_codes SET visibility = 'secret' WHERE code = $1", [
+      secret,
+    ]);
+    const hidden = await place(cart(secret, who));
+    await db.db.transaction((tx) => uses.settle(tx, hidden.orderId, 'returned', now));
+    expect(await pushes()).toHaveLength(1);
+  });
+
   it('never lets two placings take the last use', async () => {
     const typed = await code({ total_limit: 1 });
     const results = await Promise.all([place(cart(typed)), place(cart(typed))]);

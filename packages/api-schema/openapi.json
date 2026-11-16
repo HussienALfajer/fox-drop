@@ -7721,6 +7721,51 @@
         ]
       }
     },
+    "/v1/customer/promo-codes": {
+      "get": {
+        "operationId": "customerCodesList",
+        "parameters": [
+          {
+            "name": "latitude",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "name": "longitude",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerCodesDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
+    },
     "/v1/admin/promo-codes": {
       "get": {
         "operationId": "adminPromoCodesList",
@@ -33391,6 +33436,220 @@
         "required": [
           "active",
           "startedAt"
+        ],
+        "additionalProperties": false
+      },
+      "CustomerCodesDto_Output": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The city base; null outside every city."
+          },
+          "codes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "percentage",
+                    "fixed_amount",
+                    "free_delivery"
+                  ]
+                },
+                "percentBp": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "A percentage in basis points (2000 is 20%)."
+                },
+                "amount": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^\\d+$",
+                      "description": "Minor units of `currency`."
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "maxDiscount": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^\\d+$",
+                      "description": "Minor units of `currency`."
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "minOrder": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^\\d+$",
+                      "description": "Minor units of `currency`."
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The minimum on the items value."
+                },
+                "restaurants": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "name": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "description": "The restaurants it works with; none: all."
+                },
+                "zones": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "The zones it works in, by name; none: all."
+                },
+                "hours": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "startMinute": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "endMinute": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "startMinute",
+                        "endMinute"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The hours on the city clock, minutes from midnight; an end at or before the start runs past midnight."
+                },
+                "validTo": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                  "description": "«ينتهي {التاريخ}»."
+                },
+                "usesLeft": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "What the customer has left; null: no limit."
+                },
+                "ended": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "reason": {
+                          "type": "string",
+                          "enum": [
+                            "used",
+                            "expired"
+                          ]
+                        },
+                        "at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        }
+                      },
+                      "required": [
+                        "reason",
+                        "at"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "null in «متاحة»; else «منتهية», used or expired."
+                }
+              },
+              "required": [
+                "code",
+                "kind",
+                "percentBp",
+                "amount",
+                "maxDiscount",
+                "minOrder",
+                "restaurants",
+                "zones",
+                "hours",
+                "validTo",
+                "usesLeft",
+                "ended"
+              ],
+              "additionalProperties": false
+            },
+            "description": "«متاحة» by the nearest end, then «منتهية» newest first."
+          }
+        },
+        "required": [
+          "currency",
+          "codes"
         ],
         "additionalProperties": false
       },

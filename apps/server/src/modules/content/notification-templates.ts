@@ -71,6 +71,8 @@ const customer: Entry[] = [
   ['compensation_code', '16', 'لك كود تعويض {القيمة}: {الكود}', 'default'],
   ['ticket_resolved', '17', 'تم الرد على بلاغك T-{رقم}', 'default'],
   ['dues_paid', '21', 'تم استلام {المبلغ}. حسابك فعّال من جديد', 'default'],
+  // CU §10.4 (slice 2.21d, owner decision 2026-11-16): a code's use given back.
+  ['code_returned', '23', 'أُعيد الكود {الكود} إلى أكوادك', 'default'],
 ];
 
 const merchant: Entry[] = [

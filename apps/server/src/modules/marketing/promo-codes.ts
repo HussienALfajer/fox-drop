@@ -348,3 +348,38 @@ export function suggestedCode(
   }
   return best;
 }
+
+// CU §12.4 «أكوادي» (slice 2.21d): whether a customer may still use a code,
+// whatever the cart: its audience, their uses and the total left. The cart's
+// own rules (restaurants, zones, minimum, hours, the day's budget) wait for
+// checkout.
+export function openToCustomer(
+  code: Pick<CodeRow, 'audience' | 'perCustomerLimit' | 'totalLimit'>,
+  uses: { newUser: boolean; mine: number; phoneOrDeviceUsed: boolean; total: number },
+): boolean {
+  if (code.audience === 'new_users' && (!uses.newUser || uses.phoneOrDeviceUsed)) return false;
+  if (code.perCustomerLimit !== null && uses.mine >= code.perCustomerLimit) return false;
+  return code.totalLimit === null || uses.total < code.totalLimit;
+}
+
+// A code in «أكوادي»: «متاحة» while `ended` is null, else «منتهية», used or
+// expired within the last 30 days (fixed).
+export interface MyCode {
+  codeId: string;
+  code: string;
+  kind: PromoCodeKind;
+  percentBp: number | null;
+  amount: bigint | null;
+  maxDiscount: bigint | null;
+  minOrder: bigint | null;
+  restaurantIds: string[];
+  zoneIds: string[];
+  startMinute: number | null;
+  endMinute: number | null;
+  validTo: Date;
+  // What this customer has left of their per-customer limit; null: no limit.
+  usesLeft: number | null;
+  ended: { reason: 'used' | 'expired'; at: Date } | null;
+}
+
+export const ENDED_CODES_DAYS = 30;
