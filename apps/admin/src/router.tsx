@@ -31,6 +31,8 @@ import { ZONES_READ } from './peak-bonus.js';
 import { PeakBonusPage } from './peak-bonus-page.js';
 import { OfficePage } from './office-page.js';
 import { ReceiptPage } from './receipt-page.js';
+import { RESTAURANT_STATEMENTS } from './restaurant-statements.js';
+import { RestaurantStatementsPage } from './restaurant-statements-page.js';
 import { SettleCaptainPage, SettlementsPage, StatementPage } from './settlement-page.js';
 import { RestaurantReceiptPage, RestaurantSettlePage } from './restaurant-settle-page.js';
 import { MerchantStatementPage, RestaurantSettlementsPage } from './restaurant-settlement-page.js';
@@ -375,6 +377,25 @@ const restaurantReceiptRoute = createRoute({
   component: RestaurantReceiptPage,
 });
 
+// AP §9.10.5 «كشوف المطاعم» (slice 2.19g): any restaurant and any period,
+// printed and exported to Excel (restaurants.statements: OWN, FIN).
+const restaurantStatementsRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/restaurant-statements',
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { city?: string; restaurant?: string; from?: string; to?: string } => ({
+    ...citySearch(search),
+    ...(typeof search.restaurant === 'string' ? { restaurant: search.restaurant } : {}),
+    ...(typeof search.from === 'string' ? { from: search.from } : {}),
+    ...(typeof search.to === 'string' ? { to: search.to } : {}),
+  }),
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, RESTAURANT_STATEMENTS)) throw redirect({ to: '/' });
+  },
+  component: RestaurantStatementsPage,
+});
+
 const routeTree = rootRoute.addChildren([
   setupRoute,
   signInRoute,
@@ -397,6 +418,7 @@ const routeTree = rootRoute.addChildren([
     merchantStatementRoute,
     restaurantSettleRoute,
     restaurantReceiptRoute,
+    restaurantStatementsRoute,
     imagesRoute,
     restaurantStatusRoute,
     alertsRoute,

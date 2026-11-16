@@ -1379,6 +1379,39 @@
       "carriedOut": "يُرحَّل إلى الأسبوع التالي"
     }
   },
+  "restaurantStatements": {
+    "title": "كشوف المطاعم",
+    "restaurant": "المطعم",
+    "choose": "اختر مطعماً",
+    "from": "من",
+    "to": "إلى",
+    "show": "عرض الكشف",
+    "noRestaurants": "لا مطاعم في هذه المدينة.",
+    "invalidPeriod": "اختر فترة صحيحة: يوم النهاية لا يسبق يوم البداية، ولا تزيد الفترة على سنة.",
+    "unknownRestaurant": "لم يُعثر على هذا المطعم.",
+    "statementTitle": "كشف حساب المطعم",
+    "sign": "المبالغ من جهة المطعم: الموجب عليه، والسالب له.",
+    "opening": "الرصيد الافتتاحي",
+    "orders": "عدد الطلبات",
+    "paid": "المدفوع في الفترة",
+    "closing": "الرصيد الختامي",
+    "lines": "البنود",
+    "noLines": "لا بنود في هذه الفترة.",
+    "column": {
+      "at": "الوقت",
+      "receipt": "الإيصال"
+    },
+    "entry": {
+      "order": "طلب",
+      "payment": "دفعة",
+      "payout": "صرف للمطعم"
+    },
+    "export": "تصدير Excel",
+    "exporting": "جارٍ تجهيز ملف Excel…",
+    "download": "تنزيل {{name}}",
+    "exportExpired": "انتهت صلاحية الملف. صدّره من جديد.",
+    "exportFailed": "تعذّر التصدير."
+  },
   "restaurantSettlement": {
     "title": "تسوية المطاعم",
     "nextCutoff": "يُغلق كشف الأسبوع التالي في {{at}}.",

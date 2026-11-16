@@ -6,6 +6,7 @@ import { CONTENT_FAQS, CONTENT_READ } from './content.js';
 import { EMERGENCY_CODE_PERMISSION } from './emergency-code.js';
 import { OPERATIONS_READ } from './orders-board.js';
 import { ZONES_READ } from './peak-bonus.js';
+import { RESTAURANT_STATEMENTS } from './restaurant-statements.js';
 import { canSeeImages } from './restaurant-images.js';
 import { canSeeRestaurantStatus } from './restaurant-status.js';
 import { can, useSignOut } from './session.js';
@@ -76,6 +77,11 @@ export function HomePage() {
           {can(session, FINANCE_READ) && (
             <li>
               <Link to="/captain-balances">{t('captainBalances.title')}</Link>
+            </li>
+          )}
+          {can(session, RESTAURANT_STATEMENTS) && (
+            <li>
+              <Link to="/restaurant-statements">{t('restaurantStatements.title')}</Link>
             </li>
           )}
           {can(session, SETTINGS_READ) && (
