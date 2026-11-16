@@ -140,6 +140,7 @@ import 'package:core_api/src/model/admin_order_dto_output_order_delivery.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_delivery_net_received.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_delivery_recorded_by.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_delivery_shortfall.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_delivery_shortfall_resolution.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_edit_choices.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_edit_choices_items_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_edit_choices_items_inner_option_groups_inner.dart';
@@ -221,6 +222,7 @@ import 'package:core_api/src/model/admin_reject_dto.dart';
 import 'package:core_api/src/model/admin_reject_dto_items_inner.dart';
 import 'package:core_api/src/model/admin_release_device_dto.dart';
 import 'package:core_api/src/model/admin_resend_notification_dto.dart';
+import 'package:core_api/src/model/admin_resolve_shortfall_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_holiday_close_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_images_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_images_dto_output_categories_inner.dart';
@@ -272,6 +274,9 @@ import 'package:core_api/src/model/admin_settlement_preview_dto_output_payout_ra
 import 'package:core_api/src/model/admin_settlement_preview_dto_output_payout_unit.dart';
 import 'package:core_api/src/model/admin_settlement_preview_request_dto.dart';
 import 'package:core_api/src/model/admin_settlements_dto_output.dart';
+import 'package:core_api/src/model/admin_shortfall_preview_answer_dto_output.dart';
+import 'package:core_api/src/model/admin_shortfall_preview_answer_dto_output_shortfall.dart';
+import 'package:core_api/src/model/admin_shortfall_preview_dto.dart';
 import 'package:core_api/src/model/admin_shortfalls_dto_output.dart';
 import 'package:core_api/src/model/admin_shortfalls_dto_output_shortfalls_inner.dart';
 import 'package:core_api/src/model/admin_start_emergency_stop_dto.dart';
@@ -747,6 +752,7 @@ part 'serializers.g.dart';
   AdminOrderDtoOutputOrderDeliveryNetReceived,
   AdminOrderDtoOutputOrderDeliveryRecordedBy,
   AdminOrderDtoOutputOrderDeliveryShortfall,
+  AdminOrderDtoOutputOrderDeliveryShortfallResolution,
   AdminOrderDtoOutputOrderEditChoices,
   AdminOrderDtoOutputOrderEditChoicesItemsInner,
   AdminOrderDtoOutputOrderEditChoicesItemsInnerOptionGroupsInner,
@@ -828,6 +834,7 @@ part 'serializers.g.dart';
   AdminRejectDtoItemsInner,
   AdminReleaseDeviceDto,
   AdminResendNotificationDto,
+  AdminResolveShortfallDto,
   AdminRestaurantHolidayCloseDto,
   AdminRestaurantImagesDtoOutput,
   AdminRestaurantImagesDtoOutputCategoriesInner,
@@ -879,6 +886,9 @@ part 'serializers.g.dart';
   AdminSettlementPreviewDtoOutputPayoutUnit,
   AdminSettlementPreviewRequestDto,
   AdminSettlementsDtoOutput,
+  AdminShortfallPreviewAnswerDtoOutput,
+  AdminShortfallPreviewAnswerDtoOutputShortfall,
+  AdminShortfallPreviewDto,
   AdminShortfallsDtoOutput,
   AdminShortfallsDtoOutputShortfallsInner,
   AdminStartEmergencyStopDto,

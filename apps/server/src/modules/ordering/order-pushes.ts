@@ -1,4 +1,5 @@
 import type { PushRecipient } from '../notifications/index.js';
+import { SHORTFALL_REASON } from './shortfall.js';
 
 // Architecture §8.1, CU §14, RA §16, CA §14: which push each order event
 // sends to whom, with the values its template takes. Only the rows whose
@@ -73,6 +74,9 @@ export interface OrderPushFacts {
     // or charge, the restaurant's debit).
     change?: { customer: boolean; duesCancelled: boolean; captain: boolean; merchant: boolean };
   } | null;
+  // AP §8.6, CA §14 #14 (slice 2.20b): the shortfall charged to the captain
+  // when operations made them responsible; null otherwise.
+  shortfallCharge?: string | null;
 }
 
 export interface OrderPush {
@@ -380,6 +384,13 @@ export function orderPushes(
         ...(change.captain ? captain('captain.outcome_changed', { النتيجة: outcome.label }) : []),
       ];
     }
+    case 'order.shortfall_resolved':
+      // CA §14 #14 «خُصم من مستحقاتك {المبلغ}: {السبب}», the reason the
+      // alert's name (slice 2.20b). The customer hears nothing: the dues
+      // show at checkout (to confirm with the owner).
+      return facts.shortfallCharge
+        ? captain('captain.charge', { المبلغ: facts.shortfallCharge, السبب: SHORTFALL_REASON })
+        : [];
     case 'order.item_reported':
       // CU §11.6, §14 #10: FOX DROP will call the customer.
       return [customer('customer.item_unavailable')];

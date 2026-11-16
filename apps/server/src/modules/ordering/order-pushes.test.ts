@@ -253,6 +253,16 @@ describe('the pushes of an order event', () => {
     ).toEqual([]);
   });
 
+  it('tells the captain charged for a shortfall (CA §14 #14) and nobody else', () => {
+    expect(
+      sent('order.shortfall_resolved', 'captain', { actor: 'admin', shortfallCharge: '30 ₺' }),
+    ).toEqual([
+      [captain, 'captain.charge', { رقم: '10002', المبلغ: '30 ₺', السبب: 'نقص في التحصيل' }],
+    ]);
+    expect(sent('order.shortfall_resolved', 'customer', { actor: 'admin' })).toEqual([]);
+    expect(sent('order.shortfall_resolved', 'platform', { actor: 'admin' })).toEqual([]);
+  });
+
   it('rings every device of the restaurant with a new order (RA §16 #1)', () => {
     expect(sent('order.placed', null, { captainId: null })).toEqual([
       [restaurant, 'merchant.new_order', { رقم: '10002' }],

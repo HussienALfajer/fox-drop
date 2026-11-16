@@ -113,6 +113,9 @@ const CUSTOMER_SKIPS = new Set([
   // on the others).
   'order.customer_not_answering',
   'order.no_answer_waited',
+  // AP §8.6 (slice 2.20b): who bears a shortfall is operations' and the
+  // captain's.
+  'order.shortfall_resolved',
 ]);
 
 // AP §10: the restaurant hears nothing of a handover but the receipt, which
@@ -133,6 +136,7 @@ const MERCHANT_SKIPS = new Set([
   'order.ping_answered',
   'order.customer_not_answering',
   'order.no_answer_waited',
+  'order.shortfall_resolved',
 ]);
 
 // The restaurant's own steps and operations' dispatch the captain's channel

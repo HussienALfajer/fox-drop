@@ -13,12 +13,12 @@ part 'admin_shortfalls_dto_output.g.dart';
 /// AdminShortfallsDtoOutput
 ///
 /// Properties:
-/// * [shortfalls] - «نقص في التحصيل» (AP §8.6), newest first; all open until resolution is built.
+/// * [shortfalls] - «نقص في التحصيل» (AP §8.6): the ones operations have not resolved yet, newest first.
 @BuiltValue()
 abstract class AdminShortfallsDtoOutput
     implements
         Built<AdminShortfallsDtoOutput, AdminShortfallsDtoOutputBuilder> {
-  /// «نقص في التحصيل» (AP §8.6), newest first; all open until resolution is built.
+  /// «نقص في التحصيل» (AP §8.6): the ones operations have not resolved yet, newest first.
   @BuiltValueField(wireName: r'shortfalls')
   BuiltList<AdminShortfallsDtoOutputShortfallsInner> get shortfalls;
 

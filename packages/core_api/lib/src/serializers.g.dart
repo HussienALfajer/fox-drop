@@ -209,6 +209,11 @@ Serializers _$serializers =
           ..add(AdminOrderDtoOutputOrderDeliveryRecordedBy.serializer)
           ..add(AdminOrderDtoOutputOrderDeliveryRecordedByTypeEnum.serializer)
           ..add(AdminOrderDtoOutputOrderDeliveryShortfall.serializer)
+          ..add(AdminOrderDtoOutputOrderDeliveryShortfallResolution.serializer)
+          ..add(
+            AdminOrderDtoOutputOrderDeliveryShortfallResolutionResponsibleEnum
+                .serializer,
+          )
           ..add(AdminOrderDtoOutputOrderEditChoices.serializer)
           ..add(AdminOrderDtoOutputOrderEditChoicesItemsInner.serializer)
           ..add(
@@ -362,6 +367,8 @@ Serializers _$serializers =
           ..add(AdminReleaseDeviceDto.serializer)
           ..add(AdminResendNotificationDto.serializer)
           ..add(AdminResendNotificationDtoToEnum.serializer)
+          ..add(AdminResolveShortfallDto.serializer)
+          ..add(AdminResolveShortfallDtoResponsibleEnum.serializer)
           ..add(AdminRestaurantHolidayCloseDto.serializer)
           ..add(AdminRestaurantImagesDtoOutput.serializer)
           ..add(AdminRestaurantImagesDtoOutputCategoriesInner.serializer)
@@ -451,6 +458,10 @@ Serializers _$serializers =
           ..add(AdminSettlementsDtoOutput.serializer)
           ..add(AdminSettlementsDtoOutputPayoutWeekdayEnum.serializer)
           ..add(AdminSettlementsDtoOutputPolicyEnum.serializer)
+          ..add(AdminShortfallPreviewAnswerDtoOutput.serializer)
+          ..add(AdminShortfallPreviewAnswerDtoOutputShortfall.serializer)
+          ..add(AdminShortfallPreviewDto.serializer)
+          ..add(AdminShortfallPreviewDtoResponsibleEnum.serializer)
           ..add(AdminShortfallsDtoOutput.serializer)
           ..add(AdminShortfallsDtoOutputShortfallsInner.serializer)
           ..add(AdminStartEmergencyStopDto.serializer)
@@ -1403,6 +1414,12 @@ Serializers _$serializers =
               const FullType(AdminOrderOffersDtoOutputOffersInner),
             ]),
             () => ListBuilder<AdminOrderOffersDtoOutputOffersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOutcomePreviewAnswerDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<AdminOutcomePreviewAnswerDtoOutputEntriesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

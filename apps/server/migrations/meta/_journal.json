@@ -533,6 +533,13 @@
       "when": 1794831171814,
       "tag": "0075_notifications_currency_alerts",
       "breakpoints": true
+    },
+    {
+      "idx": 76,
+      "version": "7",
+      "when": 1794834477776,
+      "tag": "0076_ordering_shortfall_resolutions",
+      "breakpoints": true
     }
   ]
 }

@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/admin_order_dto_output_order_delivery_shortfall_resolution.dart';
 import 'package:core_api/src/model/captain_went_offline_dto_output_hand_in.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -16,6 +17,7 @@ part 'admin_order_dto_output_order_delivery_shortfall.g.dart';
 /// * [reason] - The code in Content.
 /// * [label] - Its label as chosen.
 /// * [note]
+/// * [resolution]
 @BuiltValue()
 abstract class AdminOrderDtoOutputOrderDeliveryShortfall
     implements
@@ -36,6 +38,9 @@ abstract class AdminOrderDtoOutputOrderDeliveryShortfall
 
   @BuiltValueField(wireName: r'note')
   String? get note;
+
+  @BuiltValueField(wireName: r'resolution')
+  AdminOrderDtoOutputOrderDeliveryShortfallResolution? get resolution;
 
   AdminOrderDtoOutputOrderDeliveryShortfall._();
 
@@ -93,6 +98,15 @@ class _$AdminOrderDtoOutputOrderDeliveryShortfallSerializer
         : serializers.serialize(
             object.note,
             specifiedType: const FullType.nullable(String),
+          );
+    yield r'resolution';
+    yield object.resolution == null
+        ? null
+        : serializers.serialize(
+            object.resolution,
+            specifiedType: const FullType.nullable(
+              AdminOrderDtoOutputOrderDeliveryShortfallResolution,
+            ),
           );
   }
 
@@ -160,6 +174,18 @@ class _$AdminOrderDtoOutputOrderDeliveryShortfallSerializer
                   as String?;
           if (valueDes == null) continue;
           result.note = valueDes;
+          break;
+        case r'resolution':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminOrderDtoOutputOrderDeliveryShortfallResolution,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderDeliveryShortfallResolution?;
+          if (valueDes == null) continue;
+          result.resolution.replace(valueDes);
           break;
         default:
           unhandled.add(key);

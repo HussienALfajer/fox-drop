@@ -287,7 +287,7 @@ export async function acceptedOrder(
     payload: { prepMin: 20 },
   });
   expect(accepted.statusCode).toBe(200);
-  return { id: order.id as string, cashier };
+  return { id: order.id as string, cashier, customer };
 }
 
 // An activated motorbike captain, signed in and online at the point.

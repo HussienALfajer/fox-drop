@@ -2452,6 +2452,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/orders/{orderId}/resolve-shortfall": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminOrdersResolveShortfall"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/orders/{orderId}/shortfall-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminOrdersShortfallPreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/orders/{orderId}/record-arrival": {
         parameters: {
             query?: never;
@@ -7386,6 +7418,63 @@ export interface components {
                 };
             }[];
         };
+        AdminResolveShortfallDto: {
+            /**
+             * @description Who bears the missing amount: the captain (earn.charge), the customer (dues.charge, blocked until paid) or the platform (operating cost).
+             * @enum {string}
+             */
+            responsible: "captain" | "customer" | "platform";
+            /** @description Required: the internal note, never shown to the apps. */
+            reason: string;
+        };
+        AdminShortfallPreviewDto: {
+            /**
+             * @description Who bears the missing amount: the captain (earn.charge), the customer (dues.charge, blocked until paid) or the platform (operating cost).
+             * @enum {string}
+             */
+            responsible: "captain" | "customer" | "platform";
+        };
+        AdminShortfallPreviewAnswerDto_Output: {
+            /** @description The missing amount, in the base currency. */
+            shortfall: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            };
+            /** @description The customer's dues, with the customer responsible. */
+            dues: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            } | null;
+            /** @description The captain's charge (CA §14 #14), with the captain responsible. */
+            captainCharge: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            } | null;
+            /** @description Every entry the resolution would post. */
+            entries: {
+                /** @description The journal type, such as dues.charge. */
+                type: string;
+                /** @description The journal's reason, its line on the party's account (RA §12.5). */
+                reason: string | null;
+                /** @description The account purpose, such as customer.dues. */
+                account: string;
+                party: {
+                    /** @enum {string} */
+                    kind: "merchant" | "captain" | "customer" | "platform";
+                    id: string | null;
+                    name: string | null;
+                };
+                /** @description From the platform's side: + a debit, − a credit. */
+                amount: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                };
+            }[];
+        };
         AdminRecordArrivalDto: {
             /** @description Required (AP §9.3.2). */
             reason: string;
@@ -7420,7 +7509,7 @@ export interface components {
             reason: string;
         };
         AdminShortfallsDto_Output: {
-            /** @description «نقص في التحصيل» (AP §8.6), newest first; all open until resolution is built. */
+            /** @description «نقص في التحصيل» (AP §8.6): the ones operations have not resolved yet, newest first. */
             shortfalls: {
                 /** Format: uuid */
                 orderId: string;
@@ -8234,6 +8323,20 @@ export interface components {
                         /** @description Its label as chosen. */
                         label: string;
                         note: string | null;
+                        /** @description «حلّ النقص» (AP §8.6, slice 2.20b); null while the shortfall is open. */
+                        resolution: {
+                            /** @enum {string} */
+                            responsible: "captain" | "customer" | "platform";
+                            /** @description Operations' required note. */
+                            note: string;
+                            /** Format: date-time */
+                            at: string;
+                            /**
+                             * Format: uuid
+                             * @description The admin who resolved it.
+                             */
+                            by: string;
+                        } | null;
                     } | null;
                     recordedBy: {
                         /** @enum {string} */
@@ -14890,6 +14993,61 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminOutcomeChangePreviewAnswerDto_Output"];
+                };
+            };
+        };
+    };
+    adminOrdersResolveShortfall: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminResolveShortfallDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderCardDto_Output"];
+                };
+            };
+        };
+    };
+    adminOrdersShortfallPreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminShortfallPreviewDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminShortfallPreviewAnswerDto_Output"];
                 };
             };
         };
