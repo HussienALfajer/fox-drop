@@ -6148,6 +6148,35 @@ export interface components {
                 /** @description «قيمة الكود أكبر من قيمة الأصناف، ولا يُستعاد الفرق» before confirming. */
                 fixedAmountAboveItems: boolean;
             } | null;
+            /** @description «الأكواد المتاحة لك» (CU §10.4): the visible codes that apply to this cart, largest discount first, then those below their minimum. */
+            availableCodes: {
+                code: string;
+                /** @enum {string} */
+                kind: "percentage" | "fixed_amount" | "free_delivery";
+                /** @description A percentage in basis points (2000 is 20%). */
+                percentBp: number | null;
+                /** @description A fixed amount. */
+                amount: string | null;
+                /** @description The cap of a percentage, or null. */
+                maxDiscount: string | null;
+                /** @description The minimum on the items value, or null. */
+                minOrder: string | null;
+                /**
+                 * Format: date-time
+                 * @description «ينتهي {التاريخ}».
+                 */
+                validTo: string;
+                /** @description What it takes off this cart; null while below its minimum. */
+                discount: string | null;
+                /** @description «أضف {المبلغ} لاستخدام هذا الكود»; null when it applies. */
+                missing: string | null;
+            }[];
+            /** @description «لديك كود يوفر عليك {المبلغ}: {الكود}» with «تطبيق» (Q19): the largest discount above the applied code; never applied by itself (U11). */
+            suggestedCode: {
+                code: string;
+                /** @description Integer minor units (AP §8.6). */
+                discount: string;
+            } | null;
             /** @description CU §10.6: every one blocks ordering; the texts are in Appendix C. */
             problems: {
                 /** @enum {string} */

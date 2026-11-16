@@ -19205,6 +19205,148 @@
             ],
             "description": "The code that applies (CU §10.4); null without one or when refused."
           },
+          "availableCodes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "percentage",
+                    "fixed_amount",
+                    "free_delivery"
+                  ]
+                },
+                "percentBp": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "A percentage in basis points (2000 is 20%)."
+                },
+                "amount": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "A fixed amount."
+                },
+                "maxDiscount": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The cap of a percentage, or null."
+                },
+                "minOrder": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The minimum on the items value, or null."
+                },
+                "validTo": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                  "description": "«ينتهي {التاريخ}»."
+                },
+                "discount": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "What it takes off this cart; null while below its minimum."
+                },
+                "missing": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "«أضف {المبلغ} لاستخدام هذا الكود»; null when it applies."
+                }
+              },
+              "required": [
+                "code",
+                "kind",
+                "percentBp",
+                "amount",
+                "maxDiscount",
+                "minOrder",
+                "validTo",
+                "discount",
+                "missing"
+              ],
+              "additionalProperties": false
+            },
+            "description": "«الأكواد المتاحة لك» (CU §10.4): the visible codes that apply to this cart, largest discount first, then those below their minimum."
+          },
+          "suggestedCode": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "discount": {
+                    "type": "string",
+                    "pattern": "^-?\\d+$",
+                    "description": "Integer minor units (AP §8.6)."
+                  }
+                },
+                "required": [
+                  "code",
+                  "discount"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«لديك كود يوفر عليك {المبلغ}: {الكود}» with «تطبيق» (Q19): the largest discount above the applied code; never applied by itself (U11)."
+          },
           "problems": {
             "type": "array",
             "items": {
@@ -19350,6 +19492,8 @@
           "freeDelivery",
           "rates",
           "promoCode",
+          "availableCodes",
+          "suggestedCode",
           "problems"
         ],
         "additionalProperties": false

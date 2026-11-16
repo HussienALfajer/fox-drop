@@ -496,6 +496,7 @@ import 'package:core_api/src/model/customer_place_order_dto_unsaved_address.dart
 import 'package:core_api/src/model/customer_profile_dto_output.dart';
 import 'package:core_api/src/model/customer_profile_dto_output_profile.dart';
 import 'package:core_api/src/model/customer_quote_dto_output.dart';
+import 'package:core_api/src/model/customer_quote_dto_output_available_codes_inner.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_estimate.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_free_delivery.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_lines_inner.dart';
@@ -506,6 +507,7 @@ import 'package:core_api/src/model/customer_quote_dto_output_problems_inner.dart
 import 'package:core_api/src/model/customer_quote_dto_output_promo_code.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_rates_inner.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_restaurant.dart';
+import 'package:core_api/src/model/customer_quote_dto_output_suggested_code.dart';
 import 'package:core_api/src/model/customer_quote_request_dto.dart';
 import 'package:core_api/src/model/customer_quote_request_dto_lines_inner.dart';
 import 'package:core_api/src/model/customer_quote_request_dto_location.dart';
@@ -1140,6 +1142,7 @@ part 'serializers.g.dart';
   CustomerProfileDtoOutput,
   CustomerProfileDtoOutputProfile,
   CustomerQuoteDtoOutput,
+  CustomerQuoteDtoOutputAvailableCodesInner,
   CustomerQuoteDtoOutputEstimate,
   CustomerQuoteDtoOutputFreeDelivery,
   CustomerQuoteDtoOutputLinesInner,
@@ -1150,6 +1153,7 @@ part 'serializers.g.dart';
   CustomerQuoteDtoOutputPromoCode,
   CustomerQuoteDtoOutputRatesInner,
   CustomerQuoteDtoOutputRestaurant,
+  CustomerQuoteDtoOutputSuggestedCode,
   CustomerQuoteRequestDto,
   CustomerQuoteRequestDtoLinesInner,
   CustomerQuoteRequestDtoLocation,
@@ -1908,6 +1912,12 @@ Serializers serializers =
               FullType(AdminFaqsDtoOutputCustomerInner),
             ]),
             () => ListBuilder<AdminFaqsDtoOutputCustomerInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CustomerQuoteDtoOutputAvailableCodesInner),
+            ]),
+            () => ListBuilder<CustomerQuoteDtoOutputAvailableCodesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

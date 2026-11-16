@@ -126,6 +126,34 @@ describe('a code in the quote', () => {
       'not_for_restaurant',
     );
   });
+
+  it('lists the visible codes and suggests the largest discount, never applying it', async () => {
+    // The codes of the tests before, some giving the whole items value, rest.
+    await sql.query("UPDATE marketing.promo_codes SET status = 'paused'");
+    const other = await promoCode();
+    const best = await promoCode({ percent_bp: 9900, max_discount: null });
+    const secret = await promoCode({ percent_bp: 10000, max_discount: null });
+    await sql.query("UPDATE marketing.promo_codes SET visibility = 'secret' WHERE code = $1", [
+      secret,
+    ]);
+    const body = await quote(null);
+    const codes = body.availableCodes.map((entry: { code: string }) => entry.code);
+    expect(codes).toEqual([best, other]);
+    expect(body.availableCodes[0]).toMatchObject({
+      kind: 'percentage',
+      percentBp: 9900,
+      discount: '23760',
+      missing: null,
+    });
+    // U11: suggested, not applied.
+    expect(body.suggestedCode).toEqual({ code: best, discount: '23760' });
+    expect(body.money.discount).toBe('0');
+    expect(body.promoCode).toBeNull();
+    // Applied, nothing gives more; the suggestion leaves the version alone.
+    const applied = await quote(best);
+    expect(applied.suggestedCode).toBeNull();
+    expect(applied.money.discount).toBe('23760');
+  });
 });
 
 describe('a code in the order', () => {

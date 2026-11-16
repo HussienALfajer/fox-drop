@@ -29,9 +29,11 @@ export {
   type HeldCode,
 } from './promo-code-uses.service.js';
 export {
+  type AvailableCode,
   type CodeRefusal,
   type CodeTerms,
   fixedAmountAboveItems,
   promoDiscount,
   type PromoDiscount,
+  suggestedCode,
 } from './promo-codes.js';

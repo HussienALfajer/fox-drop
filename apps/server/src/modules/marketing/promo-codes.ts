@@ -315,3 +315,36 @@ export function minuteOfDay(instant: Date, timeZone: string): number {
   );
   return Number(parts.hour) * 60 + Number(parts.minute);
 }
+
+// CU §10.4 «الأكواد المتاحة لك» (slice 2.21d): a visible code running in the
+// city with what it gives this cart, or what its minimum still lacks.
+export interface AvailableCode {
+  codeId: string;
+  code: string;
+  kind: PromoCodeKind;
+  percentBp: number | null;
+  amount: bigint | null;
+  maxDiscount: bigint | null;
+  minOrder: bigint | null;
+  validTo: Date;
+  // null while below its minimum.
+  discount: PromoDiscount | null;
+  // «أضف {المبلغ} لاستخدام هذا الكود»; null when it applies.
+  missing: bigint | null;
+}
+
+// Q19: «لديك كود يوفر عليك {المبلغ}: {الكود}», the available code with the
+// largest discount on the cart, when it gives more than the code applied.
+// It is never applied by itself (U11).
+export function suggestedCode(
+  available: readonly AvailableCode[],
+  applied: { code: string; discount: bigint } | null,
+): { code: string; discount: bigint } | null {
+  let best: { code: string; discount: bigint } | null = null;
+  for (const entry of available) {
+    const total = entry.discount?.total ?? 0n;
+    if (entry.code === applied?.code || total <= (applied?.discount ?? 0n)) continue;
+    if (best === null || total > best.discount) best = { code: entry.code, discount: total };
+  }
+  return best;
+}

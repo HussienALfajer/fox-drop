@@ -3,16 +3,18 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/captain_went_offline_dto_output_hand_in.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_problems_inner.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_promo_code.dart';
+import 'package:core_api/src/model/customer_quote_dto_output_estimate.dart';
+import 'package:core_api/src/model/customer_quote_dto_output_available_codes_inner.dart';
+import 'package:core_api/src/model/customer_quote_dto_output_rates_inner.dart';
+import 'package:core_api/src/model/captain_went_offline_dto_output_hand_in.dart';
+import 'package:core_api/src/model/customer_quote_dto_output_suggested_code.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_restaurant.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_money.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_minimum_order.dart';
-import 'package:core_api/src/model/customer_quote_dto_output_estimate.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_lines_inner.dart';
-import 'package:core_api/src/model/customer_quote_dto_output_rates_inner.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_free_delivery.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -34,6 +36,8 @@ part 'customer_quote_dto_output.g.dart';
 /// * [freeDelivery]
 /// * [rates] - The exchange-rate version: null for the base currency.
 /// * [promoCode]
+/// * [availableCodes] - «الأكواد المتاحة لك» (CU §10.4): the visible codes that apply to this cart, largest discount first, then those below their minimum.
+/// * [suggestedCode]
 /// * [problems] - CU §10.6: every one blocks ordering; the texts are in Appendix C.
 @BuiltValue()
 abstract class CustomerQuoteDtoOutput
@@ -77,6 +81,13 @@ abstract class CustomerQuoteDtoOutput
 
   @BuiltValueField(wireName: r'promoCode')
   CustomerQuoteDtoOutputPromoCode? get promoCode;
+
+  /// «الأكواد المتاحة لك» (CU §10.4): the visible codes that apply to this cart, largest discount first, then those below their minimum.
+  @BuiltValueField(wireName: r'availableCodes')
+  BuiltList<CustomerQuoteDtoOutputAvailableCodesInner> get availableCodes;
+
+  @BuiltValueField(wireName: r'suggestedCode')
+  CustomerQuoteDtoOutputSuggestedCode? get suggestedCode;
 
   /// CU §10.6: every one blocks ordering; the texts are in Appendix C.
   @BuiltValueField(wireName: r'problems')
@@ -188,6 +199,22 @@ class _$CustomerQuoteDtoOutputSerializer
             object.promoCode,
             specifiedType: const FullType.nullable(
               CustomerQuoteDtoOutputPromoCode,
+            ),
+          );
+    yield r'availableCodes';
+    yield serializers.serialize(
+      object.availableCodes,
+      specifiedType: const FullType(BuiltList, [
+        FullType(CustomerQuoteDtoOutputAvailableCodesInner),
+      ]),
+    );
+    yield r'suggestedCode';
+    yield object.suggestedCode == null
+        ? null
+        : serializers.serialize(
+            object.suggestedCode,
+            specifiedType: const FullType.nullable(
+              CustomerQuoteDtoOutputSuggestedCode,
             ),
           );
     yield r'problems';
@@ -352,6 +379,29 @@ class _$CustomerQuoteDtoOutputSerializer
                   as CustomerQuoteDtoOutputPromoCode?;
           if (valueDes == null) continue;
           result.promoCode.replace(valueDes);
+          break;
+        case r'availableCodes':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(CustomerQuoteDtoOutputAvailableCodesInner),
+                    ]),
+                  )
+                  as BuiltList<CustomerQuoteDtoOutputAvailableCodesInner>;
+          result.availableCodes.replace(valueDes);
+          break;
+        case r'suggestedCode':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CustomerQuoteDtoOutputSuggestedCode,
+                    ),
+                  )
+                  as CustomerQuoteDtoOutputSuggestedCode?;
+          if (valueDes == null) continue;
+          result.suggestedCode.replace(valueDes);
           break;
         case r'problems':
           final valueDes =

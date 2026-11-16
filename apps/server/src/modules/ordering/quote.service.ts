@@ -8,6 +8,8 @@ import {
   type CodeCart,
   type CodeRefusal,
   PromoCodeUsesService,
+  suggestedCode,
+  type AvailableCode,
 } from '../marketing/index.js';
 import { LedgerService } from '../ledger/index.js';
 import { customerDues } from './customer-dues.js';
@@ -136,6 +138,9 @@ export interface Quote {
     discount: bigint;
     fixedAmountAboveItems: boolean;
   } | null;
+  // CU §10.4 «الأكواد المتاحة لك» and Q19's suggestion, never applied (U11).
+  availableCodes: AvailableCode[];
+  suggestedCode: { code: string; discount: bigint } | null;
   problems: QuoteProblem[];
 }
 
@@ -303,12 +308,12 @@ export class QuoteService {
     // CU §10.4: a typed code, checked by every rule of AP §9.11.1 once the
     // items and the fee are priced in the base currency.
     let code: PricedQuote['code'] = null;
+    let availableCodes: AvailableCode[] = [];
     const typed = request.code?.trim() ?? '';
-    if (typed !== '' && baseCurrency !== null) {
-      const cart: CodeCart = {
+    if (baseCurrency !== null) {
+      const codeCart: Omit<CodeCart, 'code'> = {
         cityId,
         clock: await this.promoCodes.clock(cityId, now),
-        code: typed,
         baseCurrency,
         restaurantId: restaurant.id,
         zoneId: zone?.id ?? null,
@@ -319,8 +324,13 @@ export class QuoteService {
             ? null
             : await this.codeCustomer(request.customerAccountId, request.deviceId ?? null),
       };
-      const checked = await this.promoCodes.check(cart, now);
-      if (checked.applied) code = { applied: checked.code, cart };
+      // «الأكواد المتاحة لك» and the suggestion (slice 2.21d).
+      availableCodes = await this.promoCodes.available(codeCart, now);
+      const cart: CodeCart = { ...codeCart, code: typed };
+      const checked = typed === '' ? null : await this.promoCodes.check(cart, now);
+      if (checked === null) {
+        // No code typed.
+      } else if (checked.applied) code = { applied: checked.code, cart };
       else {
         const missing =
           checked.missing === null ? null : { amount: checked.missing, currency: baseCurrency };
@@ -407,6 +417,12 @@ export class QuoteService {
         discount: code.applied.discount.total,
         fixedAmountAboveItems: code.applied.fixedAmountAboveItems,
       },
+      // Neither changes the quote's version: no money line depends on them.
+      availableCodes,
+      suggestedCode: suggestedCode(
+        availableCodes,
+        code && { code: code.applied.code, discount: code.applied.discount.total },
+      ),
       problems,
     };
     // The order keeps the trip of the estimate shown (docs/domain/03).

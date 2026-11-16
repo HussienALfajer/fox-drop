@@ -497,6 +497,7 @@ export 'package:core_api/src/model/customer_place_order_dto_unsaved_address.dart
 export 'package:core_api/src/model/customer_profile_dto_output.dart';
 export 'package:core_api/src/model/customer_profile_dto_output_profile.dart';
 export 'package:core_api/src/model/customer_quote_dto_output.dart';
+export 'package:core_api/src/model/customer_quote_dto_output_available_codes_inner.dart';
 export 'package:core_api/src/model/customer_quote_dto_output_estimate.dart';
 export 'package:core_api/src/model/customer_quote_dto_output_free_delivery.dart';
 export 'package:core_api/src/model/customer_quote_dto_output_lines_inner.dart';
@@ -507,6 +508,7 @@ export 'package:core_api/src/model/customer_quote_dto_output_problems_inner.dart
 export 'package:core_api/src/model/customer_quote_dto_output_promo_code.dart';
 export 'package:core_api/src/model/customer_quote_dto_output_rates_inner.dart';
 export 'package:core_api/src/model/customer_quote_dto_output_restaurant.dart';
+export 'package:core_api/src/model/customer_quote_dto_output_suggested_code.dart';
 export 'package:core_api/src/model/customer_quote_request_dto.dart';
 export 'package:core_api/src/model/customer_quote_request_dto_lines_inner.dart';
 export 'package:core_api/src/model/customer_quote_request_dto_location.dart';
