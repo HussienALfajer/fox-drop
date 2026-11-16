@@ -4,13 +4,22 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.21, promo codes «أكواد الخصم» (`docs/roadmap.md`, Phase 2, Money).
+Slice 2.21a, «أكواد الخصم» in the server and the panel (`docs/roadmap.md`, Phase 2, Money; the first of 2.21a–c).
 
-- **Roadmap line:** 2.21 Promo codes: every field of AP §9.11.1, the new-user rule per phone and device, the daily budget cap, typed or picked codes, the suggested best code, the refusal messages, uses returned on rejection, cancellation or a failure without the customer at fault, the discount entries (AP §8.4, §9.11.1, CU §10.4). The owner creates a code and uses it in an order.
-- **Specs:** AP §9.11.1 (`docs/product/v1/admin-panel/09-modules/11-marketing.md`), AP §8.4 (`docs/domain/04-order-money.md`: the discount, its funder, `platform.discount_cost` and `merchant.discount_share`), CU §10.4 (the code at checkout), the ordering module's `CLAUDE.md` (the quote, placing, the delivery's refusal of an order with a discount, the outcomes and edits that say «codes, Phase 2»), `apps/admin/CLAUDE.md`, `apps/customer/CLAUDE.md`.
-- **Branch:** to name after the split (`feat/promo-codes-…`).
+- **Roadmap line:** 2.21a «أكواد الخصم» in the server and the panel: a new `marketing` module with every field of AP §9.11.1 (a code typed by hand or a generated batch of unique codes, the type, the value and cap, the minimum order, the validity with optional hours, the total and per-customer limits, the audience, the restaurants and zones, the funding with its ratio, the daily budget cap, the visibility), the list with its columns, the edit, pause and resume, for OWN (`marketing.manage`), OPS (`marketing.read`) and FIN (`marketing.read_costs`) (AP §6, §9.11.1). The owner creates a code and sees it in the list.
+- **Specs:** AP §9.11.1 (`docs/product/v1/admin-panel/09-modules/11-marketing.md`), AP §6 (the marketing row), AP §8.4 (`docs/domain/04-order-money.md`: the type, cap and funding a code needs for 2.21b), `apps/server/CLAUDE.md`, `apps/admin/CLAUDE.md`, the `db-migration` skill.
+- **Branch:** `feat/promo-codes-panel`.
 - **Plan:**
-  - [ ] Split 2.21 into vertical slices with the `slice-plan` skill (it spans the server, the panel and the customer app, and the quote, placing, delivery, cancellation, outcomes and edits all book the discount) and get the owner's approval of the split; then rewrite this plan for the first sub-slice.
+  - [ ] The `marketing` module in the server: `marketing.promo_codes` with its restaurants and zones, the migration and grants, the service and its field rules, the routes (list, create one, generate a batch, edit, pause, resume) with the audit, the route table, the OpenAPI document and the clients.
+  - [ ] «أكواد الخصم» in the panel: the list with its columns (uses against the limit and cost to date read 0 until 2.21b holds uses), the create and edit form, the batch, pause and resume, by permission.
+  - [ ] Review, then hand over to 2.21b.
+
+### Owner decisions for 2.21 (2026-11-16)
+
+- 2.21 splits into 2.21a (the codes in the panel), 2.21b (the code in the order and every money path: delivery, cancellation, outcomes, the shortfall, edits, the owners' line, the daily report) and 2.21c (picking and suggesting, «أكوادي», the code report).
+- The new-user rule per device uses the device id the app sends at sign-in now; 2.25b's device identity makes it survive a reinstall, with no change to the codes' rule.
+- An edit that takes the items value below a code's minimum keeps the code; a percentage is recomputed on the new items value within its cap.
+- The daily budget cap counts the business day of the daily report (the 06:00 cutoff).
 
 ### Left from 2.20d (`feat/daily-report`)
 
