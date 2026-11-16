@@ -11,16 +11,11 @@ part 'admin_alerts_dto_output_alerts_inner_location.g.dart';
 /// «طوارئ كابتن» (AP §9.1.3, CA §9.11): the location the captain sent, for «فتح الخريطة»; null for the others and an emergency without a fix.
 ///
 /// Properties:
-/// * [latitude]
-/// * [longitude]
-/// * [at]
+/// * [latitude] 
+/// * [longitude] 
+/// * [at] 
 @BuiltValue()
-abstract class AdminAlertsDtoOutputAlertsInnerLocation
-    implements
-        Built<
-          AdminAlertsDtoOutputAlertsInnerLocation,
-          AdminAlertsDtoOutputAlertsInnerLocationBuilder
-        > {
+abstract class AdminAlertsDtoOutputAlertsInnerLocation implements Built<AdminAlertsDtoOutputAlertsInnerLocation, AdminAlertsDtoOutputAlertsInnerLocationBuilder> {
   @BuiltValueField(wireName: r'latitude')
   num get latitude;
 
@@ -32,25 +27,18 @@ abstract class AdminAlertsDtoOutputAlertsInnerLocation
 
   AdminAlertsDtoOutputAlertsInnerLocation._();
 
-  factory AdminAlertsDtoOutputAlertsInnerLocation([
-    void updates(AdminAlertsDtoOutputAlertsInnerLocationBuilder b),
-  ]) = _$AdminAlertsDtoOutputAlertsInnerLocation;
+  factory AdminAlertsDtoOutputAlertsInnerLocation([void updates(AdminAlertsDtoOutputAlertsInnerLocationBuilder b)]) = _$AdminAlertsDtoOutputAlertsInnerLocation;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminAlertsDtoOutputAlertsInnerLocationBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminAlertsDtoOutputAlertsInnerLocation> get serializer =>
-      _$AdminAlertsDtoOutputAlertsInnerLocationSerializer();
+  static Serializer<AdminAlertsDtoOutputAlertsInnerLocation> get serializer => _$AdminAlertsDtoOutputAlertsInnerLocationSerializer();
 }
 
-class _$AdminAlertsDtoOutputAlertsInnerLocationSerializer
-    implements PrimitiveSerializer<AdminAlertsDtoOutputAlertsInnerLocation> {
+class _$AdminAlertsDtoOutputAlertsInnerLocationSerializer implements PrimitiveSerializer<AdminAlertsDtoOutputAlertsInnerLocation> {
   @override
-  final Iterable<Type> types = const [
-    AdminAlertsDtoOutputAlertsInnerLocation,
-    _$AdminAlertsDtoOutputAlertsInnerLocation,
-  ];
+  final Iterable<Type> types = const [AdminAlertsDtoOutputAlertsInnerLocation, _$AdminAlertsDtoOutputAlertsInnerLocation];
 
   @override
   final String wireName = r'AdminAlertsDtoOutputAlertsInnerLocation';
@@ -83,11 +71,7 @@ class _$AdminAlertsDtoOutputAlertsInnerLocationSerializer
     AdminAlertsDtoOutputAlertsInnerLocation object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -103,24 +87,24 @@ class _$AdminAlertsDtoOutputAlertsInnerLocationSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'latitude':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(num))
-                  as num;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(num),
+          ) as num;
           result.latitude = valueDes;
           break;
         case r'longitude':
-          final valueDes =
-              serializers.deserialize(value, specifiedType: const FullType(num))
-                  as num;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(num),
+          ) as num;
           result.longitude = valueDes;
           break;
         case r'at':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.at = valueDes;
           break;
         default:
@@ -151,3 +135,5 @@ class _$AdminAlertsDtoOutputAlertsInnerLocationSerializer
     return result.build();
   }
 }
+
+

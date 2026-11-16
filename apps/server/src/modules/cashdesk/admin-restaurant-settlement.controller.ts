@@ -31,6 +31,9 @@ import { merchantExceptionCauses, merchantStatementLineKinds } from './schema.js
 const minor = z.string().regex(/^\d{1,18}$/);
 const signedMinor = z.string().regex(/^-?\d{1,18}$/);
 const currency = z.string().regex(/^[A-Z]{3}$/);
+// RA §12.3 «غير مسدّد», «مسدّد جزئياً», «مسدّد»; null when the statement asked
+// nothing of the restaurant.
+const statementStatus = z.enum(['unpaid', 'partly_paid', 'paid']).nullable();
 const weekday = z.enum([
   'saturday',
   'sunday',
@@ -62,6 +65,7 @@ class AdminRestaurantSettlementsDto extends createZodDto(
             discountShare: signedMinor,
             exceptions: signedMinor,
             totalDue: signedMinor,
+            status: statementStatus,
           })
           .nullable(),
         unpaid: signedMinor.describe('What is left of the latest statement after the payments.'),
@@ -93,6 +97,8 @@ class AdminMerchantStatementDto extends createZodDto(
     paid: signedMinor,
     earlierUnpaid: signedMinor,
     totalDue: signedMinor,
+    status: statementStatus,
+    unpaid: signedMinor.describe('What of the total due is still unpaid, oldest first.'),
     // Flat, since the Dart generator misnames an enum inside a nested object.
     lines: z.array(
       z.object({
@@ -237,6 +243,8 @@ function statementBody(found: MerchantStatementView) {
     paid: found.paid.toString(),
     earlierUnpaid: found.earlierUnpaid.toString(),
     totalDue: found.totalDue.toString(),
+    status: found.status,
+    unpaid: found.unpaid.toString(),
     lines: found.lines.map((line) =>
       line.kind === 'order'
         ? {
@@ -371,6 +379,7 @@ export class AdminRestaurantSettlementController {
           discountShare: row.latest.discountShare.toString(),
           exceptions: row.latest.exceptions.toString(),
           totalDue: row.latest.totalDue.toString(),
+          status: row.latest.status,
         },
         unpaid: row.unpaid.toString(),
         overdueSince: row.overdueSince?.toISOString() ?? null,

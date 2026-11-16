@@ -11,18 +11,13 @@ part 'admin_bulk_hand_in_grace_answer_dto_output_grace.g.dart';
 /// AdminBulkHandInGraceAnswerDtoOutputGrace
 ///
 /// Properties:
-/// * [id]
+/// * [id] 
 /// * [until] - The next business-day cutoff when it was granted.
-/// * [reason]
+/// * [reason] 
 /// * [bulk] - The city's bulk grace for one business day.
-/// * [grantedAt]
+/// * [grantedAt] 
 @BuiltValue()
-abstract class AdminBulkHandInGraceAnswerDtoOutputGrace
-    implements
-        Built<
-          AdminBulkHandInGraceAnswerDtoOutputGrace,
-          AdminBulkHandInGraceAnswerDtoOutputGraceBuilder
-        > {
+abstract class AdminBulkHandInGraceAnswerDtoOutputGrace implements Built<AdminBulkHandInGraceAnswerDtoOutputGrace, AdminBulkHandInGraceAnswerDtoOutputGraceBuilder> {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -42,25 +37,18 @@ abstract class AdminBulkHandInGraceAnswerDtoOutputGrace
 
   AdminBulkHandInGraceAnswerDtoOutputGrace._();
 
-  factory AdminBulkHandInGraceAnswerDtoOutputGrace([
-    void updates(AdminBulkHandInGraceAnswerDtoOutputGraceBuilder b),
-  ]) = _$AdminBulkHandInGraceAnswerDtoOutputGrace;
+  factory AdminBulkHandInGraceAnswerDtoOutputGrace([void updates(AdminBulkHandInGraceAnswerDtoOutputGraceBuilder b)]) = _$AdminBulkHandInGraceAnswerDtoOutputGrace;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdminBulkHandInGraceAnswerDtoOutputGraceBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminBulkHandInGraceAnswerDtoOutputGrace> get serializer =>
-      _$AdminBulkHandInGraceAnswerDtoOutputGraceSerializer();
+  static Serializer<AdminBulkHandInGraceAnswerDtoOutputGrace> get serializer => _$AdminBulkHandInGraceAnswerDtoOutputGraceSerializer();
 }
 
-class _$AdminBulkHandInGraceAnswerDtoOutputGraceSerializer
-    implements PrimitiveSerializer<AdminBulkHandInGraceAnswerDtoOutputGrace> {
+class _$AdminBulkHandInGraceAnswerDtoOutputGraceSerializer implements PrimitiveSerializer<AdminBulkHandInGraceAnswerDtoOutputGrace> {
   @override
-  final Iterable<Type> types = const [
-    AdminBulkHandInGraceAnswerDtoOutputGrace,
-    _$AdminBulkHandInGraceAnswerDtoOutputGrace,
-  ];
+  final Iterable<Type> types = const [AdminBulkHandInGraceAnswerDtoOutputGrace, _$AdminBulkHandInGraceAnswerDtoOutputGrace];
 
   @override
   final String wireName = r'AdminBulkHandInGraceAnswerDtoOutputGrace';
@@ -103,11 +91,7 @@ class _$AdminBulkHandInGraceAnswerDtoOutputGraceSerializer
     AdminBulkHandInGraceAnswerDtoOutputGrace object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -123,48 +107,38 @@ class _$AdminBulkHandInGraceAnswerDtoOutputGraceSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.id = valueDes;
           break;
         case r'until':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.until = valueDes;
           break;
         case r'reason':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.reason = valueDes;
           break;
         case r'bulk':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(bool),
-                  )
-                  as bool;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(bool),
+          ) as bool;
           result.bulk = valueDes;
           break;
         case r'grantedAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.grantedAt = valueDes;
           break;
         default:
@@ -195,3 +169,5 @@ class _$AdminBulkHandInGraceAnswerDtoOutputGraceSerializer
     return result.build();
   }
 }
+
+

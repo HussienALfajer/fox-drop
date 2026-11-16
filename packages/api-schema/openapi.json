@@ -36053,6 +36053,21 @@
                         "totalDue": {
                           "type": "string",
                           "pattern": "^-?\\d{1,18}$"
+                        },
+                        "status": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "unpaid",
+                                "partly_paid",
+                                "paid"
+                              ]
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
                         }
                       },
                       "required": [
@@ -36061,7 +36076,8 @@
                         "commission",
                         "discountShare",
                         "exceptions",
-                        "totalDue"
+                        "totalDue",
+                        "status"
                       ],
                       "additionalProperties": false
                     },
@@ -36196,6 +36212,26 @@
           "totalDue": {
             "type": "string",
             "pattern": "^-?\\d{1,18}$"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "unpaid",
+                  "partly_paid",
+                  "paid"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "unpaid": {
+            "type": "string",
+            "pattern": "^-?\\d{1,18}$",
+            "description": "What of the total due is still unpaid, oldest first."
           },
           "lines": {
             "type": "array",
@@ -36379,6 +36415,8 @@
           "paid",
           "earlierUnpaid",
           "totalDue",
+          "status",
+          "unpaid",
           "lines"
         ],
         "additionalProperties": false

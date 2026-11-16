@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -17,6 +18,7 @@ part 'admin_restaurant_settlements_dto_output_restaurants_inner_latest.g.dart';
 /// * [discountShare]
 /// * [exceptions]
 /// * [totalDue]
+/// * [status]
 @BuiltValue()
 abstract class AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatest
     implements
@@ -41,6 +43,11 @@ abstract class AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatest
 
   @BuiltValueField(wireName: r'totalDue')
   String get totalDue;
+
+  @BuiltValueField(wireName: r'status')
+  AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum?
+  get status;
+  // enum statusEnum {  unpaid,  partly_paid,  paid,  };
 
   AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatest._();
 
@@ -111,6 +118,15 @@ class _$AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestSerializer
       object.totalDue,
       specifiedType: const FullType(String),
     );
+    yield r'status';
+    yield object.status == null
+        ? null
+        : serializers.serialize(
+            object.status,
+            specifiedType: const FullType.nullable(
+              AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum,
+            ),
+          );
   }
 
   @override
@@ -193,6 +209,18 @@ class _$AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestSerializer
                   as String;
           result.totalDue = valueDes;
           break;
+        case r'status':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum,
+                    ),
+                  )
+                  as AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum?;
+          if (valueDes == null) continue;
+          result.status = valueDes;
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -221,4 +249,41 @@ class _$AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestSerializer
     );
     return result.build();
   }
+}
+
+class AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum
+    extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'unpaid')
+  static const AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum
+  unpaid =
+      _$adminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum_unpaid;
+  @BuiltValueEnumConst(wireName: r'partly_paid')
+  static const AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum
+  partlyPaid =
+      _$adminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum_partlyPaid;
+  @BuiltValueEnumConst(wireName: r'paid')
+  static const AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum
+  paid =
+      _$adminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum_paid;
+
+  static Serializer<
+    AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum
+  >
+  get serializer =>
+      _$adminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnumSerializer;
+
+  const AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum._(
+    String name,
+  ) : super(name);
+
+  static BuiltSet<
+    AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum
+  >
+  get values =>
+      _$adminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnumValues;
+  static AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum
+  valueOf(String name) =>
+      _$adminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnumValueOf(
+        name,
+      );
 }

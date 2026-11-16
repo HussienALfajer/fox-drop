@@ -12,13 +12,12 @@ part 'add_reason_dto.g.dart';
 /// AddReasonDto
 ///
 /// Properties:
-/// * [label]
+/// * [label] 
 /// * [customerText] - Only in the lists with customer texts; null shows the generic apology.
 /// * [note] - none, optional or required («أخرى» with its text); none in a closed list.
 /// * [captainFault] - Required in the reassignment list (its default fault), null in the others.
 @BuiltValue()
-abstract class AddReasonDto
-    implements Built<AddReasonDto, AddReasonDtoBuilder> {
+abstract class AddReasonDto implements Built<AddReasonDto, AddReasonDtoBuilder> {
   @BuiltValueField(wireName: r'label')
   String get label;
 
@@ -64,12 +63,10 @@ class _$AddReasonDtoSerializer implements PrimitiveSerializer<AddReasonDto> {
       specifiedType: const FullType(String),
     );
     yield r'customerText';
-    yield object.customerText == null
-        ? null
-        : serializers.serialize(
-            object.customerText,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.customerText == null ? null : serializers.serialize(
+      object.customerText,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'note';
     yield serializers.serialize(
       object.note,
@@ -90,11 +87,7 @@ class _$AddReasonDtoSerializer implements PrimitiveSerializer<AddReasonDto> {
     AddReasonDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(
-      serializers,
-      object,
-      specifiedType: specifiedType,
-    ).toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -110,40 +103,32 @@ class _$AddReasonDtoSerializer implements PrimitiveSerializer<AddReasonDto> {
       final value = serializedList[i + 1];
       switch (key) {
         case r'label':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
           result.label = valueDes;
           break;
         case r'customerText':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
           if (valueDes == null) continue;
           result.customerText = valueDes;
           break;
         case r'note':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(AddReasonDtoNoteEnum),
-                  )
-                  as AddReasonDtoNoteEnum;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(AddReasonDtoNoteEnum),
+          ) as AddReasonDtoNoteEnum;
           result.note = valueDes;
           break;
         case r'captainFault':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(bool),
-                  )
-                  as bool?;
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(bool),
+          ) as bool?;
           if (valueDes == null) continue;
           result.captainFault = valueDes;
           break;
@@ -176,23 +161,22 @@ class _$AddReasonDtoSerializer implements PrimitiveSerializer<AddReasonDto> {
   }
 }
 
+
 /// none, optional or required («أخرى» with its text); none in a closed list.
 class AddReasonDtoNoteEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'none')
   static const AddReasonDtoNoteEnum none = _$addReasonDtoNoteEnum_none;
   @BuiltValueEnumConst(wireName: r'optional')
   static const AddReasonDtoNoteEnum optional = _$addReasonDtoNoteEnum_optional;
   @BuiltValueEnumConst(wireName: r'required')
-  static const AddReasonDtoNoteEnum required_ =
-      _$addReasonDtoNoteEnum_required_;
+  static const AddReasonDtoNoteEnum required_ = _$addReasonDtoNoteEnum_required_;
 
-  static Serializer<AddReasonDtoNoteEnum> get serializer =>
-      _$addReasonDtoNoteEnumSerializer;
+  static Serializer<AddReasonDtoNoteEnum> get serializer => _$addReasonDtoNoteEnumSerializer;
 
-  const AddReasonDtoNoteEnum._(String name) : super(name);
+  const AddReasonDtoNoteEnum._(String name): super(name);
 
-  static BuiltSet<AddReasonDtoNoteEnum> get values =>
-      _$addReasonDtoNoteEnumValues;
-  static AddReasonDtoNoteEnum valueOf(String name) =>
-      _$addReasonDtoNoteEnumValueOf(name);
+  static BuiltSet<AddReasonDtoNoteEnum> get values => _$addReasonDtoNoteEnumValues;
+  static AddReasonDtoNoteEnum valueOf(String name) => _$addReasonDtoNoteEnumValueOf(name);
 }
+

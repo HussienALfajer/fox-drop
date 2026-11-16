@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { AccountEntry } from '../ledger/index.js';
 import { merchantEntryCause, merchantEntryCauses, type OrderPickup } from '../ordering/index.js';
-import { buildStatement, oldestUnpaid } from './merchant-statement.js';
+import { buildStatement, oldestUnpaid, statementStatuses } from './merchant-statement.js';
 import { merchantExceptionCauses } from './schema.js';
 
 // AP §8.7, RA §12.3, §12.5 (slice 2.19a): the restaurant's weekly statement
@@ -203,5 +203,38 @@ describe('the oldest statement still unpaid', () => {
   it('is none when nothing is unpaid', () => {
     expect(oldestUnpaid(weeks, 0n)).toBeNull();
     expect(oldestUnpaid([], 100n)).toBeNull();
+  });
+});
+
+// RA §12.3 «غير مسدّد», «مسدّد جزئياً», «مسدّد» (slice 2.19b): what is still
+// unpaid is the newest weeks' (owner decision 2026-11-16), so each
+// statement's own part is what reaches back to it, at most its total due.
+describe("each statement's status", () => {
+  const weeks = [
+    { id: 'w3', weekTotal: 2_000n, totalDue: 4_500n },
+    { id: 'w2', weekTotal: -500n, totalDue: 2_500n },
+    { id: 'w1', weekTotal: 3_000n, totalDue: 3_000n },
+  ];
+
+  it('is unpaid while nothing reached it', () => {
+    const statuses = statementStatuses(weeks, 4_500n);
+    expect(statuses.get('w3')).toEqual({ status: 'unpaid', unpaid: 4_500n });
+    expect(statuses.get('w2')).toEqual({ status: 'unpaid', unpaid: 2_500n });
+    // The credit of w2 settles the oldest week first, as a payment would.
+    expect(statuses.get('w1')).toEqual({ status: 'partly_paid', unpaid: 2_500n });
+  });
+
+  it('turns partly paid, the older ones paid first', () => {
+    const statuses = statementStatuses(weeks, 1_000n);
+    expect(statuses.get('w3')).toEqual({ status: 'partly_paid', unpaid: 1_000n });
+    expect(statuses.get('w2')).toEqual({ status: 'paid', unpaid: 0n });
+    expect(statuses.get('w1')).toEqual({ status: 'paid', unpaid: 0n });
+  });
+
+  it('is paid once nothing is unpaid, and none when nothing was due', () => {
+    expect(statementStatuses(weeks, 0n).get('w3')).toEqual({ status: 'paid', unpaid: 0n });
+    expect(
+      statementStatuses([{ id: 'c', weekTotal: -3_400n, totalDue: -3_400n }], 0n).get('c'),
+    ).toEqual({ status: null, unpaid: 0n });
   });
 });

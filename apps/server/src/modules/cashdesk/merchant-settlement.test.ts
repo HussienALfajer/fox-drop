@@ -19,6 +19,7 @@ import {
   type DeskUser,
   type MerchantSettleCommand,
   MerchantSettlementService,
+  MerchantStatementsService,
 } from './index.js';
 
 // «تسوية المطاعم» at the office (AP §8.7, §9.10.3 tab 3, RA §12.4, §16 #31;
@@ -284,6 +285,33 @@ describe('the restaurant settlement at the office', () => {
     );
     expect(again.id).toBe(receipt.id);
     expect(await due(id)).toBe(26_000n);
+  });
+
+  it('turns the statement partly paid, then paid, the oldest first', async () => {
+    const { cashier } = await openDesk();
+    const statements = app.get(MerchantStatementsService);
+    const id = await restaurant();
+    await owes(id, 46_000n);
+    const { rows } = await sql.query<{ now: Date }>('SELECT clock_timestamp() AS now');
+    await statements.closeAt(azaz, rows[0]!.now, rows[0]!.now, { notify: false });
+    const statementOf = async () => {
+      const row = (await statements.restaurants(azaz, new Date())).restaurants.find(
+        (each) => each.restaurantId === id,
+      );
+      return statements.statement(row!.latest!.id);
+    };
+    expect(await statementOf()).toMatchObject({ status: 'unpaid', unpaid: 46_000n });
+
+    await settle(cashier.user, id, [{ currency: 'TRY', amount: 20_000n }]);
+    expect(await statementOf()).toMatchObject({ status: 'partly_paid', unpaid: 26_000n });
+
+    await settle(cashier.user, id, [{ currency: 'TRY', amount: 26_000n }]);
+    const list = await statements.restaurants(azaz, new Date());
+    expect(list.restaurants.some((each) => each.restaurantId === id)).toBe(false);
+    const [{ id: statementId }] = (
+      await sql.query('SELECT id FROM cashdesk.merchant_statements WHERE restaurant_id = $1', [id])
+    ).rows;
+    expect(await statements.statement(statementId)).toMatchObject({ status: 'paid', unpaid: 0n });
   });
 
   it('takes several currencies, each at the current rate', async () => {

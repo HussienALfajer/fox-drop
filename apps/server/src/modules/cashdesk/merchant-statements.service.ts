@@ -18,6 +18,8 @@ import {
   type ExceptionCause,
   oldestUnpaid,
   type StatementLine,
+  type StatementStatus,
+  statementStatuses,
 } from './merchant-statement.js';
 import { merchantStatementLines, merchantStatements } from './schema.js';
 import type { PayoutWeekday } from './settlement.service.js';
@@ -64,6 +66,10 @@ export interface MerchantStatement {
 }
 
 export interface MerchantStatementView extends MerchantStatement {
+  // RA §12.3, by the oldest-first rule: null when it asked nothing of the
+  // restaurant; and what of its total due is still unpaid.
+  status: StatementStatus | null;
+  unpaid: bigint;
   lines: (StatementLine & { position: number })[];
 }
 
@@ -82,6 +88,7 @@ export interface RestaurantSettlementRow {
     discountShare: bigint;
     exceptions: bigint;
     totalDue: bigint;
+    status: StatementStatus | null;
   } | null;
   unpaid: bigint;
   overdueSince: Date | null;
@@ -326,38 +333,8 @@ export class MerchantStatementsService {
       // The party's view is − the restaurant owes.
       const balance = -(await this.ledger.balance(account.id)).amount;
       if (balance === 0n) continue;
-      // Newest first: the latest is the one paid against, the older ones
-      // tell which statement the unpaid amount is from.
-      const statements = await this.database.db
-        .select({
-          id: merchantStatements.id,
-          cutoff: merchantStatements.cutoff,
-          commission: merchantStatements.commission,
-          discountShare: merchantStatements.discountShare,
-          exceptions: merchantStatements.exceptions,
-          weekTotal: merchantStatements.weekTotal,
-          totalDue: merchantStatements.totalDue,
-          journalIds: merchantStatements.journalIds,
-        })
-        .from(merchantStatements)
-        .where(eq(merchantStatements.restaurantId, restaurant.id))
-        .orderBy(desc(merchantStatements.cutoff))
-        .limit(OVERDUE_LOOKBACK);
+      const { statements, unpaid } = await this.standing(restaurant.id, account.id);
       const latest = statements[0];
-      let unpaid = 0n;
-      if (latest && latest.totalDue > 0n) {
-        const covered = new Set(latest.journalIds);
-        const paidSince = (
-          await this.ledger.periodEntries(
-            [account.id],
-            'merchant.account',
-            new Date(latest.cutoff.getTime() - STATEMENT_OVERLAP_MS),
-          )
-        )
-          .filter((entry) => entry.type === 'merchant.settlement' && !covered.has(entry.journalId))
-          .reduce((sum, entry) => sum + entry.amount, 0n);
-        unpaid = latest.totalDue - paidSince > 0n ? latest.totalDue - paidSince : 0n;
-      }
       const oldest = oldestUnpaid(statements, unpaid);
       const overdueAt = oldest ? new Date(oldest.cutoff.getTime() + overdueDays * DAY_MS) : null;
       rows.push({
@@ -373,6 +350,7 @@ export class MerchantStatementsService {
               discountShare: latest.discountShare,
               exceptions: latest.exceptions,
               totalDue: latest.totalDue,
+              status: statementStatuses(statements, unpaid).get(latest.id)!.status,
             }
           : null,
         unpaid,
@@ -395,6 +373,19 @@ export class MerchantStatementsService {
       .from(merchantStatements)
       .where(eq(merchantStatements.id, statementId));
     if (!row) return null;
+    const accounts = await this.ledger.ownerAccounts(
+      row.cityId,
+      row.restaurantId,
+      'merchant.account',
+    );
+    const account = accounts.find((each) => each.currency === row.currency);
+    const standing = account
+      ? await this.standing(row.restaurantId, account.id)
+      : { statements: [], unpaid: 0n };
+    // Older than the statements read back (a year): long settled.
+    const { status, unpaid } = statementStatuses(standing.statements, standing.unpaid).get(
+      row.id,
+    ) ?? { status: row.totalDue > 0n ? 'paid' : null, unpaid: 0n };
     const lines = await this.database.db
       .select()
       .from(merchantStatementLines)
@@ -402,6 +393,8 @@ export class MerchantStatementsService {
       .orderBy(merchantStatementLines.position);
     return {
       ...row,
+      status,
+      unpaid,
       lines: lines.map((line) =>
         line.kind === 'order'
           ? {
@@ -431,6 +424,44 @@ export class MerchantStatementsService {
             },
       ),
     };
+  }
+
+  // The restaurant's latest statements, newest first (the latest is the one
+  // paid against, the older ones tell which statement the unpaid amount is
+  // from), and what is still unpaid of the latest: its total due less the
+  // payments since its cutoff.
+  private async standing(restaurantId: string, accountId: string) {
+    const statements = await this.database.db
+      .select({
+        id: merchantStatements.id,
+        cutoff: merchantStatements.cutoff,
+        commission: merchantStatements.commission,
+        discountShare: merchantStatements.discountShare,
+        exceptions: merchantStatements.exceptions,
+        weekTotal: merchantStatements.weekTotal,
+        totalDue: merchantStatements.totalDue,
+        journalIds: merchantStatements.journalIds,
+      })
+      .from(merchantStatements)
+      .where(eq(merchantStatements.restaurantId, restaurantId))
+      .orderBy(desc(merchantStatements.cutoff))
+      .limit(OVERDUE_LOOKBACK);
+    const latest = statements[0];
+    let unpaid = 0n;
+    if (latest && latest.totalDue > 0n) {
+      const covered = new Set(latest.journalIds);
+      const paidSince = (
+        await this.ledger.periodEntries(
+          [accountId],
+          'merchant.account',
+          new Date(latest.cutoff.getTime() - STATEMENT_OVERLAP_MS),
+        )
+      )
+        .filter((entry) => entry.type === 'merchant.settlement' && !covered.has(entry.journalId))
+        .reduce((sum, entry) => sum + entry.amount, 0n);
+      unpaid = latest.totalDue - paidSince > 0n ? latest.totalDue - paidSince : 0n;
+    }
+    return { statements, unpaid };
   }
 
   private async knownCurrencies() {

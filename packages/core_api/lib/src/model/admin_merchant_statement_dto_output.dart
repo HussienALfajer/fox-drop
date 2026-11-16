@@ -31,6 +31,8 @@ part 'admin_merchant_statement_dto_output.g.dart';
 /// * [paid]
 /// * [earlierUnpaid]
 /// * [totalDue]
+/// * [status]
+/// * [unpaid] - What of the total due is still unpaid, oldest first.
 /// * [lines]
 @BuiltValue()
 abstract class AdminMerchantStatementDtoOutput
@@ -92,6 +94,14 @@ abstract class AdminMerchantStatementDtoOutput
 
   @BuiltValueField(wireName: r'totalDue')
   String get totalDue;
+
+  @BuiltValueField(wireName: r'status')
+  AdminMerchantStatementDtoOutputStatusEnum? get status;
+  // enum statusEnum {  unpaid,  partly_paid,  paid,  };
+
+  /// What of the total due is still unpaid, oldest first.
+  @BuiltValueField(wireName: r'unpaid')
+  String get unpaid;
 
   @BuiltValueField(wireName: r'lines')
   BuiltList<AdminMerchantStatementDtoOutputLinesInner> get lines;
@@ -216,6 +226,20 @@ class _$AdminMerchantStatementDtoOutputSerializer
     yield r'totalDue';
     yield serializers.serialize(
       object.totalDue,
+      specifiedType: const FullType(String),
+    );
+    yield r'status';
+    yield object.status == null
+        ? null
+        : serializers.serialize(
+            object.status,
+            specifiedType: const FullType.nullable(
+              AdminMerchantStatementDtoOutputStatusEnum,
+            ),
+          );
+    yield r'unpaid';
+    yield serializers.serialize(
+      object.unpaid,
       specifiedType: const FullType(String),
     );
     yield r'lines';
@@ -412,6 +436,27 @@ class _$AdminMerchantStatementDtoOutputSerializer
                   as String;
           result.totalDue = valueDes;
           break;
+        case r'status':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminMerchantStatementDtoOutputStatusEnum,
+                    ),
+                  )
+                  as AdminMerchantStatementDtoOutputStatusEnum?;
+          if (valueDes == null) continue;
+          result.status = valueDes;
+          break;
+        case r'unpaid':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.unpaid = valueDes;
+          break;
         case r'lines':
           final valueDes =
               serializers.deserialize(
@@ -450,4 +495,26 @@ class _$AdminMerchantStatementDtoOutputSerializer
     );
     return result.build();
   }
+}
+
+class AdminMerchantStatementDtoOutputStatusEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'unpaid')
+  static const AdminMerchantStatementDtoOutputStatusEnum unpaid =
+      _$adminMerchantStatementDtoOutputStatusEnum_unpaid;
+  @BuiltValueEnumConst(wireName: r'partly_paid')
+  static const AdminMerchantStatementDtoOutputStatusEnum partlyPaid =
+      _$adminMerchantStatementDtoOutputStatusEnum_partlyPaid;
+  @BuiltValueEnumConst(wireName: r'paid')
+  static const AdminMerchantStatementDtoOutputStatusEnum paid =
+      _$adminMerchantStatementDtoOutputStatusEnum_paid;
+
+  static Serializer<AdminMerchantStatementDtoOutputStatusEnum> get serializer =>
+      _$adminMerchantStatementDtoOutputStatusEnumSerializer;
+
+  const AdminMerchantStatementDtoOutputStatusEnum._(String name) : super(name);
+
+  static BuiltSet<AdminMerchantStatementDtoOutputStatusEnum> get values =>
+      _$adminMerchantStatementDtoOutputStatusEnumValues;
+  static AdminMerchantStatementDtoOutputStatusEnum valueOf(String name) =>
+      _$adminMerchantStatementDtoOutputStatusEnumValueOf(name);
 }

@@ -52,6 +52,7 @@ import 'package:core_api/src/model/terms_accepted_dto_output.dart';
 import 'package:core_api/src/model/terms_dto_output.dart';
 
 class MerchantApi {
+
   final Dio _dio;
 
   final Serializers _serializers;
@@ -59,7 +60,7 @@ class MerchantApi {
   const MerchantApi(this._dio, this._serializers);
 
   /// merchantAuthCurrent
-  ///
+  /// 
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -71,7 +72,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantSessionDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantSessionDtoOutput>> merchantAuthCurrent({
+  Future<Response<MerchantSessionDtoOutput>> merchantAuthCurrent({ 
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -82,8 +83,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/auth/session';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       validateStatus: validateStatus,
     );
 
@@ -99,13 +105,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantSessionDtoOutput),
-                )
-                as MerchantSessionDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantSessionDtoOutput),
+      ) as MerchantSessionDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -129,10 +133,10 @@ class MerchantApi {
   }
 
   /// merchantAuthDevice
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [merchantDeviceDto]
+  /// * [merchantDeviceDto] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -142,7 +146,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantDeviceSavedDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantDeviceSavedDtoOutput>> merchantAuthDevice({
+  Future<Response<MerchantDeviceSavedDtoOutput>> merchantAuthDevice({ 
     required MerchantDeviceDto merchantDeviceDto,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -154,8 +158,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/auth/device';
     final _options = Options(
       method: r'PUT',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -164,13 +173,14 @@ class MerchantApi {
 
     try {
       const _type = FullType(MerchantDeviceDto);
-      _bodyData = _serializers.serialize(
-        merchantDeviceDto,
-        specifiedType: _type,
-      );
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(merchantDeviceDto, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(_dio.options, _path),
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -190,13 +200,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantDeviceSavedDtoOutput),
-                )
-                as MerchantDeviceSavedDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantDeviceSavedDtoOutput),
+      ) as MerchantDeviceSavedDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -220,10 +228,10 @@ class MerchantApi {
   }
 
   /// merchantAuthRefresh
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [merchantRefreshDto]
+  /// * [merchantRefreshDto] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -233,7 +241,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantTokensDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantTokensDtoOutput>> merchantAuthRefresh({
+  Future<Response<MerchantTokensDtoOutput>> merchantAuthRefresh({ 
     required MerchantRefreshDto merchantRefreshDto,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -245,8 +253,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/auth/refresh';
     final _options = Options(
       method: r'POST',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -255,13 +268,14 @@ class MerchantApi {
 
     try {
       const _type = FullType(MerchantRefreshDto);
-      _bodyData = _serializers.serialize(
-        merchantRefreshDto,
-        specifiedType: _type,
-      );
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(merchantRefreshDto, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(_dio.options, _path),
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -281,13 +295,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantTokensDtoOutput),
-                )
-                as MerchantTokensDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantTokensDtoOutput),
+      ) as MerchantTokensDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -311,10 +323,10 @@ class MerchantApi {
   }
 
   /// merchantAuthRequestCode
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [merchantCodeRequestDto]
+  /// * [merchantCodeRequestDto] 
   /// * [xFirebaseAppCheck] - The Firebase App Check token. Refused with 403 app_check_failed when missing or invalid while the server requires it (otp.app_check_required).
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -325,7 +337,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantCodeSentDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantCodeSentDtoOutput>> merchantAuthRequestCode({
+  Future<Response<MerchantCodeSentDtoOutput>> merchantAuthRequestCode({ 
     required MerchantCodeRequestDto merchantCodeRequestDto,
     String? xFirebaseAppCheck,
     CancelToken? cancelToken,
@@ -339,11 +351,13 @@ class MerchantApi {
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
-        if (xFirebaseAppCheck != null)
-          r'X-Firebase-AppCheck': xFirebaseAppCheck,
+        if (xFirebaseAppCheck != null) r'X-Firebase-AppCheck': xFirebaseAppCheck,
         ...?headers,
       },
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -352,13 +366,14 @@ class MerchantApi {
 
     try {
       const _type = FullType(MerchantCodeRequestDto);
-      _bodyData = _serializers.serialize(
-        merchantCodeRequestDto,
-        specifiedType: _type,
-      );
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(merchantCodeRequestDto, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(_dio.options, _path),
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -378,13 +393,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantCodeSentDtoOutput),
-                )
-                as MerchantCodeSentDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantCodeSentDtoOutput),
+      ) as MerchantCodeSentDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -408,10 +421,10 @@ class MerchantApi {
   }
 
   /// merchantAuthSignIn
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [merchantSignInDto]
+  /// * [merchantSignInDto] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -421,7 +434,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantSignedInDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantSignedInDtoOutput>> merchantAuthSignIn({
+  Future<Response<MerchantSignedInDtoOutput>> merchantAuthSignIn({ 
     required MerchantSignInDto merchantSignInDto,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -433,8 +446,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/auth/sign-in';
     final _options = Options(
       method: r'POST',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -443,13 +461,14 @@ class MerchantApi {
 
     try {
       const _type = FullType(MerchantSignInDto);
-      _bodyData = _serializers.serialize(
-        merchantSignInDto,
-        specifiedType: _type,
-      );
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(merchantSignInDto, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(_dio.options, _path),
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -469,13 +488,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantSignedInDtoOutput),
-                )
-                as MerchantSignedInDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantSignedInDtoOutput),
+      ) as MerchantSignedInDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -499,7 +516,7 @@ class MerchantApi {
   }
 
   /// merchantAuthSignOut
-  ///
+  /// 
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -511,7 +528,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantSignedOutDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantSignedOutDtoOutput>> merchantAuthSignOut({
+  Future<Response<MerchantSignedOutDtoOutput>> merchantAuthSignOut({ 
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -522,8 +539,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/auth/sign-out';
     final _options = Options(
       method: r'POST',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       validateStatus: validateStatus,
     );
 
@@ -539,13 +561,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantSignedOutDtoOutput),
-                )
-                as MerchantSignedOutDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantSignedOutDtoOutput),
+      ) as MerchantSignedOutDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -569,7 +589,7 @@ class MerchantApi {
   }
 
   /// merchantContactGet
-  ///
+  /// 
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -581,7 +601,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [ContactDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ContactDtoOutput>> merchantContactGet({
+  Future<Response<ContactDtoOutput>> merchantContactGet({ 
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -592,8 +612,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/contact';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       validateStatus: validateStatus,
     );
 
@@ -609,13 +634,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(ContactDtoOutput),
-                )
-                as ContactDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(ContactDtoOutput),
+      ) as ContactDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -639,7 +662,7 @@ class MerchantApi {
   }
 
   /// merchantContentGet
-  ///
+  /// 
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -651,7 +674,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantContentDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantContentDtoOutput>> merchantContentGet({
+  Future<Response<MerchantContentDtoOutput>> merchantContentGet({ 
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -662,8 +685,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/content';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       validateStatus: validateStatus,
     );
 
@@ -679,13 +707,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantContentDtoOutput),
-                )
-                as MerchantContentDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantContentDtoOutput),
+      ) as MerchantContentDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -709,7 +735,7 @@ class MerchantApi {
   }
 
   /// merchantEmergencyStopRead
-  ///
+  /// 
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -721,7 +747,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantEmergencyStopDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantEmergencyStopDtoOutput>> merchantEmergencyStopRead({
+  Future<Response<MerchantEmergencyStopDtoOutput>> merchantEmergencyStopRead({ 
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -732,8 +758,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/emergency-stop';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       validateStatus: validateStatus,
     );
 
@@ -749,13 +780,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantEmergencyStopDtoOutput),
-                )
-                as MerchantEmergencyStopDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantEmergencyStopDtoOutput),
+      ) as MerchantEmergencyStopDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -779,7 +808,7 @@ class MerchantApi {
   }
 
   /// merchantMenuMenu
-  ///
+  /// 
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -791,7 +820,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantMenuDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantMenuDtoOutput>> merchantMenuMenu({
+  Future<Response<MerchantMenuDtoOutput>> merchantMenuMenu({ 
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -802,8 +831,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/menu';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       validateStatus: validateStatus,
     );
 
@@ -819,13 +853,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantMenuDtoOutput),
-                )
-                as MerchantMenuDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantMenuDtoOutput),
+      ) as MerchantMenuDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -849,7 +881,7 @@ class MerchantApi {
   }
 
   /// merchantMenuRestaurant
-  ///
+  /// 
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -861,7 +893,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantRestaurantDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantRestaurantDtoOutput>> merchantMenuRestaurant({
+  Future<Response<MerchantRestaurantDtoOutput>> merchantMenuRestaurant({ 
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -872,8 +904,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/restaurant';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       validateStatus: validateStatus,
     );
 
@@ -889,13 +926,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantRestaurantDtoOutput),
-                )
-                as MerchantRestaurantDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantRestaurantDtoOutput),
+      ) as MerchantRestaurantDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -919,10 +954,10 @@ class MerchantApi {
   }
 
   /// merchantMenuSetAvailability
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [merchantAvailabilityDto]
+  /// * [merchantAvailabilityDto] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -932,8 +967,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantAvailabilitySavedDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantAvailabilitySavedDtoOutput>>
-  merchantMenuSetAvailability({
+  Future<Response<MerchantAvailabilitySavedDtoOutput>> merchantMenuSetAvailability({ 
     required MerchantAvailabilityDto merchantAvailabilityDto,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -945,8 +979,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/menu/availability';
     final _options = Options(
       method: r'PUT',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -955,13 +994,14 @@ class MerchantApi {
 
     try {
       const _type = FullType(MerchantAvailabilityDto);
-      _bodyData = _serializers.serialize(
-        merchantAvailabilityDto,
-        specifiedType: _type,
-      );
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(merchantAvailabilityDto, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(_dio.options, _path),
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -981,15 +1021,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(
-                    MerchantAvailabilitySavedDtoOutput,
-                  ),
-                )
-                as MerchantAvailabilitySavedDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantAvailabilitySavedDtoOutput),
+      ) as MerchantAvailabilitySavedDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1013,12 +1049,12 @@ class MerchantApi {
   }
 
   /// merchantOrdersAccept
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [orderId]
+  /// * [orderId] 
   /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
-  /// * [merchantAcceptDto]
+  /// * [merchantAcceptDto] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1028,7 +1064,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantOrderDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantOrderDtoOutput>> merchantOrdersAccept({
+  Future<Response<MerchantOrderDtoOutput>> merchantOrdersAccept({ 
     required String orderId,
     required String idempotencyKey,
     required MerchantAcceptDto merchantAcceptDto,
@@ -1039,23 +1075,17 @@ class MerchantApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/merchant/orders/{orderId}/accept'.replaceAll(
-      '{'
-      r'orderId'
-      '}',
-      encodeQueryParameter(
-        _serializers,
-        orderId,
-        const FullType(String),
-      ).toString(),
-    );
+    final _path = r'/v1/merchant/orders/{orderId}/accept'.replaceAll('{' r'orderId' '}', encodeQueryParameter(_serializers, orderId, const FullType(String)).toString());
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
         r'Idempotency-Key': idempotencyKey,
         ...?headers,
       },
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -1064,13 +1094,14 @@ class MerchantApi {
 
     try {
       const _type = FullType(MerchantAcceptDto);
-      _bodyData = _serializers.serialize(
-        merchantAcceptDto,
-        specifiedType: _type,
-      );
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(merchantAcceptDto, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(_dio.options, _path),
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -1090,13 +1121,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantOrderDtoOutput),
-                )
-                as MerchantOrderDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantOrderDtoOutput),
+      ) as MerchantOrderDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1120,10 +1149,10 @@ class MerchantApi {
   }
 
   /// merchantOrdersAcknowledgeCancellation
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [orderId]
+  /// * [orderId] 
   /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -1134,8 +1163,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantOrderDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantOrderDtoOutput>>
-  merchantOrdersAcknowledgeCancellation({
+  Future<Response<MerchantOrderDtoOutput>> merchantOrdersAcknowledgeCancellation({ 
     required String orderId,
     required String idempotencyKey,
     CancelToken? cancelToken,
@@ -1145,24 +1173,17 @@ class MerchantApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/merchant/orders/{orderId}/acknowledge-cancellation'
-        .replaceAll(
-          '{'
-          r'orderId'
-          '}',
-          encodeQueryParameter(
-            _serializers,
-            orderId,
-            const FullType(String),
-          ).toString(),
-        );
+    final _path = r'/v1/merchant/orders/{orderId}/acknowledge-cancellation'.replaceAll('{' r'orderId' '}', encodeQueryParameter(_serializers, orderId, const FullType(String)).toString());
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
         r'Idempotency-Key': idempotencyKey,
         ...?headers,
       },
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       validateStatus: validateStatus,
     );
 
@@ -1178,13 +1199,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantOrderDtoOutput),
-                )
-                as MerchantOrderDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantOrderDtoOutput),
+      ) as MerchantOrderDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1208,12 +1227,12 @@ class MerchantApi {
   }
 
   /// merchantOrdersAcknowledgeEdit
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [orderId]
+  /// * [orderId] 
   /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
-  /// * [merchantAcknowledgeEditDto]
+  /// * [merchantAcknowledgeEditDto] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1223,7 +1242,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantOrderDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantOrderDtoOutput>> merchantOrdersAcknowledgeEdit({
+  Future<Response<MerchantOrderDtoOutput>> merchantOrdersAcknowledgeEdit({ 
     required String orderId,
     required String idempotencyKey,
     required MerchantAcknowledgeEditDto merchantAcknowledgeEditDto,
@@ -1234,23 +1253,17 @@ class MerchantApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/merchant/orders/{orderId}/acknowledge-edit'.replaceAll(
-      '{'
-      r'orderId'
-      '}',
-      encodeQueryParameter(
-        _serializers,
-        orderId,
-        const FullType(String),
-      ).toString(),
-    );
+    final _path = r'/v1/merchant/orders/{orderId}/acknowledge-edit'.replaceAll('{' r'orderId' '}', encodeQueryParameter(_serializers, orderId, const FullType(String)).toString());
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
         r'Idempotency-Key': idempotencyKey,
         ...?headers,
       },
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -1259,13 +1272,14 @@ class MerchantApi {
 
     try {
       const _type = FullType(MerchantAcknowledgeEditDto);
-      _bodyData = _serializers.serialize(
-        merchantAcknowledgeEditDto,
-        specifiedType: _type,
-      );
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(merchantAcknowledgeEditDto, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(_dio.options, _path),
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -1285,13 +1299,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantOrderDtoOutput),
-                )
-                as MerchantOrderDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantOrderDtoOutput),
+      ) as MerchantOrderDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1315,7 +1327,7 @@ class MerchantApi {
   }
 
   /// merchantOrdersBoard
-  ///
+  /// 
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -1327,7 +1339,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantOrdersDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantOrdersDtoOutput>> merchantOrdersBoard({
+  Future<Response<MerchantOrdersDtoOutput>> merchantOrdersBoard({ 
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -1338,8 +1350,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/orders';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       validateStatus: validateStatus,
     );
 
@@ -1355,13 +1372,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantOrdersDtoOutput),
-                )
-                as MerchantOrdersDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantOrdersDtoOutput),
+      ) as MerchantOrdersDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1385,10 +1400,10 @@ class MerchantApi {
   }
 
   /// merchantOrdersConfirmPickup
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [orderId]
+  /// * [orderId] 
   /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -1399,7 +1414,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantOrderDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantOrderDtoOutput>> merchantOrdersConfirmPickup({
+  Future<Response<MerchantOrderDtoOutput>> merchantOrdersConfirmPickup({ 
     required String orderId,
     required String idempotencyKey,
     CancelToken? cancelToken,
@@ -1409,23 +1424,17 @@ class MerchantApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/merchant/orders/{orderId}/pickup/confirm'.replaceAll(
-      '{'
-      r'orderId'
-      '}',
-      encodeQueryParameter(
-        _serializers,
-        orderId,
-        const FullType(String),
-      ).toString(),
-    );
+    final _path = r'/v1/merchant/orders/{orderId}/pickup/confirm'.replaceAll('{' r'orderId' '}', encodeQueryParameter(_serializers, orderId, const FullType(String)).toString());
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
         r'Idempotency-Key': idempotencyKey,
         ...?headers,
       },
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       validateStatus: validateStatus,
     );
 
@@ -1441,13 +1450,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantOrderDtoOutput),
-                )
-                as MerchantOrderDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantOrderDtoOutput),
+      ) as MerchantOrderDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1471,12 +1478,12 @@ class MerchantApi {
   }
 
   /// merchantOrdersDisputePickup
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [orderId]
+  /// * [orderId] 
   /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
-  /// * [merchantPickupDisputeDto]
+  /// * [merchantPickupDisputeDto] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1486,7 +1493,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantOrderDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantOrderDtoOutput>> merchantOrdersDisputePickup({
+  Future<Response<MerchantOrderDtoOutput>> merchantOrdersDisputePickup({ 
     required String orderId,
     required String idempotencyKey,
     required MerchantPickupDisputeDto merchantPickupDisputeDto,
@@ -1497,23 +1504,17 @@ class MerchantApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/merchant/orders/{orderId}/pickup/dispute'.replaceAll(
-      '{'
-      r'orderId'
-      '}',
-      encodeQueryParameter(
-        _serializers,
-        orderId,
-        const FullType(String),
-      ).toString(),
-    );
+    final _path = r'/v1/merchant/orders/{orderId}/pickup/dispute'.replaceAll('{' r'orderId' '}', encodeQueryParameter(_serializers, orderId, const FullType(String)).toString());
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
         r'Idempotency-Key': idempotencyKey,
         ...?headers,
       },
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -1522,13 +1523,14 @@ class MerchantApi {
 
     try {
       const _type = FullType(MerchantPickupDisputeDto);
-      _bodyData = _serializers.serialize(
-        merchantPickupDisputeDto,
-        specifiedType: _type,
-      );
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(merchantPickupDisputeDto, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(_dio.options, _path),
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -1548,13 +1550,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantOrderDtoOutput),
-                )
-                as MerchantOrderDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantOrderDtoOutput),
+      ) as MerchantOrderDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1578,10 +1578,10 @@ class MerchantApi {
   }
 
   /// merchantOrdersPickupIncomplete
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [orderId]
+  /// * [orderId] 
   /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -1592,7 +1592,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantOrderDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantOrderDtoOutput>> merchantOrdersPickupIncomplete({
+  Future<Response<MerchantOrderDtoOutput>> merchantOrdersPickupIncomplete({ 
     required String orderId,
     required String idempotencyKey,
     CancelToken? cancelToken,
@@ -1602,23 +1602,17 @@ class MerchantApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/merchant/orders/{orderId}/pickup/incomplete'.replaceAll(
-      '{'
-      r'orderId'
-      '}',
-      encodeQueryParameter(
-        _serializers,
-        orderId,
-        const FullType(String),
-      ).toString(),
-    );
+    final _path = r'/v1/merchant/orders/{orderId}/pickup/incomplete'.replaceAll('{' r'orderId' '}', encodeQueryParameter(_serializers, orderId, const FullType(String)).toString());
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
         r'Idempotency-Key': idempotencyKey,
         ...?headers,
       },
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       validateStatus: validateStatus,
     );
 
@@ -1634,13 +1628,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantOrderDtoOutput),
-                )
-                as MerchantOrderDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantOrderDtoOutput),
+      ) as MerchantOrderDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1664,10 +1656,10 @@ class MerchantApi {
   }
 
   /// merchantOrdersReady
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [orderId]
+  /// * [orderId] 
   /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -1678,7 +1670,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantOrderDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantOrderDtoOutput>> merchantOrdersReady({
+  Future<Response<MerchantOrderDtoOutput>> merchantOrdersReady({ 
     required String orderId,
     required String idempotencyKey,
     CancelToken? cancelToken,
@@ -1688,23 +1680,17 @@ class MerchantApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/merchant/orders/{orderId}/ready'.replaceAll(
-      '{'
-      r'orderId'
-      '}',
-      encodeQueryParameter(
-        _serializers,
-        orderId,
-        const FullType(String),
-      ).toString(),
-    );
+    final _path = r'/v1/merchant/orders/{orderId}/ready'.replaceAll('{' r'orderId' '}', encodeQueryParameter(_serializers, orderId, const FullType(String)).toString());
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
         r'Idempotency-Key': idempotencyKey,
         ...?headers,
       },
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       validateStatus: validateStatus,
     );
 
@@ -1720,13 +1706,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantOrderDtoOutput),
-                )
-                as MerchantOrderDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantOrderDtoOutput),
+      ) as MerchantOrderDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1750,12 +1734,12 @@ class MerchantApi {
   }
 
   /// merchantOrdersReject
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [orderId]
+  /// * [orderId] 
   /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
-  /// * [merchantRejectDto]
+  /// * [merchantRejectDto] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1765,7 +1749,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantOrderDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantOrderDtoOutput>> merchantOrdersReject({
+  Future<Response<MerchantOrderDtoOutput>> merchantOrdersReject({ 
     required String orderId,
     required String idempotencyKey,
     required MerchantRejectDto merchantRejectDto,
@@ -1776,23 +1760,17 @@ class MerchantApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/merchant/orders/{orderId}/reject'.replaceAll(
-      '{'
-      r'orderId'
-      '}',
-      encodeQueryParameter(
-        _serializers,
-        orderId,
-        const FullType(String),
-      ).toString(),
-    );
+    final _path = r'/v1/merchant/orders/{orderId}/reject'.replaceAll('{' r'orderId' '}', encodeQueryParameter(_serializers, orderId, const FullType(String)).toString());
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
         r'Idempotency-Key': idempotencyKey,
         ...?headers,
       },
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -1801,13 +1779,14 @@ class MerchantApi {
 
     try {
       const _type = FullType(MerchantRejectDto);
-      _bodyData = _serializers.serialize(
-        merchantRejectDto,
-        specifiedType: _type,
-      );
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(merchantRejectDto, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(_dio.options, _path),
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -1827,13 +1806,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantOrderDtoOutput),
-                )
-                as MerchantOrderDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantOrderDtoOutput),
+      ) as MerchantOrderDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1857,12 +1834,12 @@ class MerchantApi {
   }
 
   /// merchantOrdersReportItems
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [orderId]
+  /// * [orderId] 
   /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
-  /// * [merchantItemReportDto]
+  /// * [merchantItemReportDto] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1872,7 +1849,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantOrderDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantOrderDtoOutput>> merchantOrdersReportItems({
+  Future<Response<MerchantOrderDtoOutput>> merchantOrdersReportItems({ 
     required String orderId,
     required String idempotencyKey,
     required MerchantItemReportDto merchantItemReportDto,
@@ -1883,23 +1860,17 @@ class MerchantApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/merchant/orders/{orderId}/item-report'.replaceAll(
-      '{'
-      r'orderId'
-      '}',
-      encodeQueryParameter(
-        _serializers,
-        orderId,
-        const FullType(String),
-      ).toString(),
-    );
+    final _path = r'/v1/merchant/orders/{orderId}/item-report'.replaceAll('{' r'orderId' '}', encodeQueryParameter(_serializers, orderId, const FullType(String)).toString());
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
         r'Idempotency-Key': idempotencyKey,
         ...?headers,
       },
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -1908,13 +1879,14 @@ class MerchantApi {
 
     try {
       const _type = FullType(MerchantItemReportDto);
-      _bodyData = _serializers.serialize(
-        merchantItemReportDto,
-        specifiedType: _type,
-      );
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(merchantItemReportDto, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(_dio.options, _path),
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -1934,13 +1906,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantOrderDtoOutput),
-                )
-                as MerchantOrderDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantOrderDtoOutput),
+      ) as MerchantOrderDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -1964,10 +1934,10 @@ class MerchantApi {
   }
 
   /// merchantOrdersWithdrawItemReport
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [orderId]
+  /// * [orderId] 
   /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -1978,7 +1948,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantOrderDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantOrderDtoOutput>> merchantOrdersWithdrawItemReport({
+  Future<Response<MerchantOrderDtoOutput>> merchantOrdersWithdrawItemReport({ 
     required String orderId,
     required String idempotencyKey,
     CancelToken? cancelToken,
@@ -1988,24 +1958,17 @@ class MerchantApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/merchant/orders/{orderId}/item-report/withdraw'
-        .replaceAll(
-          '{'
-          r'orderId'
-          '}',
-          encodeQueryParameter(
-            _serializers,
-            orderId,
-            const FullType(String),
-          ).toString(),
-        );
+    final _path = r'/v1/merchant/orders/{orderId}/item-report/withdraw'.replaceAll('{' r'orderId' '}', encodeQueryParameter(_serializers, orderId, const FullType(String)).toString());
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
         r'Idempotency-Key': idempotencyKey,
         ...?headers,
       },
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       validateStatus: validateStatus,
     );
 
@@ -2021,13 +1984,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantOrderDtoOutput),
-                )
-                as MerchantOrderDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantOrderDtoOutput),
+      ) as MerchantOrderDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2051,7 +2012,7 @@ class MerchantApi {
   }
 
   /// merchantPlatformGet
-  ///
+  /// 
   ///
   /// Parameters:
   /// * [version] - The app version, such as 1.4.0.
@@ -2064,7 +2025,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [PlatformDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PlatformDtoOutput>> merchantPlatformGet({
+  Future<Response<PlatformDtoOutput>> merchantPlatformGet({ 
     required String version,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -2076,17 +2037,18 @@ class MerchantApi {
     final _path = r'/v1/merchant/platform';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       validateStatus: validateStatus,
     );
 
     final _queryParameters = <String, dynamic>{
-      r'version': encodeQueryParameter(
-        _serializers,
-        version,
-        const FullType(String),
-      ),
+      r'version': encodeQueryParameter(_serializers, version, const FullType(String)),
     };
 
     final _response = await _dio.request<Object>(
@@ -2102,13 +2064,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(PlatformDtoOutput),
-                )
-                as PlatformDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(PlatformDtoOutput),
+      ) as PlatformDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2132,10 +2092,10 @@ class MerchantApi {
   }
 
   /// merchantPushTokenRegister
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [pushTokenDto]
+  /// * [pushTokenDto] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2145,7 +2105,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [PushTokenRegisteredDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PushTokenRegisteredDtoOutput>> merchantPushTokenRegister({
+  Future<Response<PushTokenRegisteredDtoOutput>> merchantPushTokenRegister({ 
     required PushTokenDto pushTokenDto,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -2157,8 +2117,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/push-token';
     final _options = Options(
       method: r'PUT',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -2168,9 +2133,13 @@ class MerchantApi {
     try {
       const _type = FullType(PushTokenDto);
       _bodyData = _serializers.serialize(pushTokenDto, specifiedType: _type);
-    } catch (error, stackTrace) {
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(_dio.options, _path),
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -2190,13 +2159,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(PushTokenRegisteredDtoOutput),
-                )
-                as PushTokenRegisteredDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(PushTokenRegisteredDtoOutput),
+      ) as PushTokenRegisteredDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2220,7 +2187,7 @@ class MerchantApi {
   }
 
   /// merchantRealtimeToken
-  ///
+  /// 
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -2232,7 +2199,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [RealtimeTokenDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<RealtimeTokenDtoOutput>> merchantRealtimeToken({
+  Future<Response<RealtimeTokenDtoOutput>> merchantRealtimeToken({ 
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -2243,8 +2210,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/realtime/token';
     final _options = Options(
       method: r'POST',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       validateStatus: validateStatus,
     );
 
@@ -2260,13 +2232,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(RealtimeTokenDtoOutput),
-                )
-                as RealtimeTokenDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(RealtimeTokenDtoOutput),
+      ) as RealtimeTokenDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2290,10 +2260,10 @@ class MerchantApi {
   }
 
   /// merchantStatusBusyMode
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [merchantBusyModeDto]
+  /// * [merchantBusyModeDto] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2303,7 +2273,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantStatusDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantStatusDtoOutput>> merchantStatusBusyMode({
+  Future<Response<MerchantStatusDtoOutput>> merchantStatusBusyMode({ 
     required MerchantBusyModeDto merchantBusyModeDto,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -2315,8 +2285,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/restaurant/status/busy-mode';
     final _options = Options(
       method: r'PUT',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -2325,13 +2300,14 @@ class MerchantApi {
 
     try {
       const _type = FullType(MerchantBusyModeDto);
-      _bodyData = _serializers.serialize(
-        merchantBusyModeDto,
-        specifiedType: _type,
-      );
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(merchantBusyModeDto, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(_dio.options, _path),
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -2351,13 +2327,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantStatusDtoOutput),
-                )
-                as MerchantStatusDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantStatusDtoOutput),
+      ) as MerchantStatusDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2381,7 +2355,7 @@ class MerchantApi {
   }
 
   /// merchantStatusEndHolidayClose
-  ///
+  /// 
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -2393,7 +2367,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantStatusDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantStatusDtoOutput>> merchantStatusEndHolidayClose({
+  Future<Response<MerchantStatusDtoOutput>> merchantStatusEndHolidayClose({ 
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -2404,8 +2378,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/restaurant/holiday-close';
     final _options = Options(
       method: r'DELETE',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       validateStatus: validateStatus,
     );
 
@@ -2421,13 +2400,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantStatusDtoOutput),
-                )
-                as MerchantStatusDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantStatusDtoOutput),
+      ) as MerchantStatusDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2451,7 +2428,7 @@ class MerchantApi {
   }
 
   /// merchantStatusGet
-  ///
+  /// 
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -2463,7 +2440,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [StatusDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<StatusDtoOutput>> merchantStatusGet({
+  Future<Response<StatusDtoOutput>> merchantStatusGet({ 
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -2474,8 +2451,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/status';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       validateStatus: validateStatus,
     );
 
@@ -2491,13 +2473,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(StatusDtoOutput),
-                )
-                as StatusDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(StatusDtoOutput),
+      ) as StatusDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2521,7 +2501,7 @@ class MerchantApi {
   }
 
   /// merchantStatusHours
-  ///
+  /// 
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -2533,7 +2513,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantHoursDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantHoursDtoOutput>> merchantStatusHours({
+  Future<Response<MerchantHoursDtoOutput>> merchantStatusHours({ 
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -2544,8 +2524,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/restaurant/hours';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       validateStatus: validateStatus,
     );
 
@@ -2561,13 +2546,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantHoursDtoOutput),
-                )
-                as MerchantHoursDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantHoursDtoOutput),
+      ) as MerchantHoursDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2591,10 +2574,10 @@ class MerchantApi {
   }
 
   /// merchantStatusPause
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [merchantPauseDto]
+  /// * [merchantPauseDto] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2604,7 +2587,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantStatusDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantStatusDtoOutput>> merchantStatusPause({
+  Future<Response<MerchantStatusDtoOutput>> merchantStatusPause({ 
     required MerchantPauseDto merchantPauseDto,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -2616,8 +2599,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/restaurant/status/pause';
     final _options = Options(
       method: r'POST',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -2626,13 +2614,14 @@ class MerchantApi {
 
     try {
       const _type = FullType(MerchantPauseDto);
-      _bodyData = _serializers.serialize(
-        merchantPauseDto,
-        specifiedType: _type,
-      );
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(merchantPauseDto, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(_dio.options, _path),
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -2652,13 +2641,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantStatusDtoOutput),
-                )
-                as MerchantStatusDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantStatusDtoOutput),
+      ) as MerchantStatusDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2682,7 +2669,7 @@ class MerchantApi {
   }
 
   /// merchantStatusPickupCurrencies
-  ///
+  /// 
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -2694,8 +2681,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantPickupCurrenciesDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantPickupCurrenciesDtoOutput>>
-  merchantStatusPickupCurrencies({
+  Future<Response<MerchantPickupCurrenciesDtoOutput>> merchantStatusPickupCurrencies({ 
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -2706,8 +2692,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/settings/pickup-currencies';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       validateStatus: validateStatus,
     );
 
@@ -2723,15 +2714,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(
-                    MerchantPickupCurrenciesDtoOutput,
-                  ),
-                )
-                as MerchantPickupCurrenciesDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantPickupCurrenciesDtoOutput),
+      ) as MerchantPickupCurrenciesDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2755,7 +2742,7 @@ class MerchantApi {
   }
 
   /// merchantStatusRead
-  ///
+  /// 
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -2767,7 +2754,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantStatusDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantStatusDtoOutput>> merchantStatusRead({
+  Future<Response<MerchantStatusDtoOutput>> merchantStatusRead({ 
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -2778,8 +2765,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/restaurant/status';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       validateStatus: validateStatus,
     );
 
@@ -2795,13 +2787,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantStatusDtoOutput),
-                )
-                as MerchantStatusDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantStatusDtoOutput),
+      ) as MerchantStatusDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2825,7 +2815,7 @@ class MerchantApi {
   }
 
   /// merchantStatusResume
-  ///
+  /// 
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -2837,7 +2827,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantStatusDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantStatusDtoOutput>> merchantStatusResume({
+  Future<Response<MerchantStatusDtoOutput>> merchantStatusResume({ 
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -2848,8 +2838,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/restaurant/status/resume';
     final _options = Options(
       method: r'POST',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       validateStatus: validateStatus,
     );
 
@@ -2865,13 +2860,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantStatusDtoOutput),
-                )
-                as MerchantStatusDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantStatusDtoOutput),
+      ) as MerchantStatusDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2895,10 +2888,10 @@ class MerchantApi {
   }
 
   /// merchantStatusSetHolidayClose
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [merchantHolidayCloseDto]
+  /// * [merchantHolidayCloseDto] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2908,7 +2901,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantStatusDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantStatusDtoOutput>> merchantStatusSetHolidayClose({
+  Future<Response<MerchantStatusDtoOutput>> merchantStatusSetHolidayClose({ 
     required MerchantHolidayCloseDto merchantHolidayCloseDto,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -2920,8 +2913,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/restaurant/holiday-close';
     final _options = Options(
       method: r'PUT',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -2930,13 +2928,14 @@ class MerchantApi {
 
     try {
       const _type = FullType(MerchantHolidayCloseDto);
-      _bodyData = _serializers.serialize(
-        merchantHolidayCloseDto,
-        specifiedType: _type,
-      );
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(merchantHolidayCloseDto, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(_dio.options, _path),
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -2956,13 +2955,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantStatusDtoOutput),
-                )
-                as MerchantStatusDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantStatusDtoOutput),
+      ) as MerchantStatusDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -2986,10 +2983,10 @@ class MerchantApi {
   }
 
   /// merchantStatusSetHours
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [merchantScheduleDto]
+  /// * [merchantScheduleDto] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2999,7 +2996,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantHoursDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantHoursDtoOutput>> merchantStatusSetHours({
+  Future<Response<MerchantHoursDtoOutput>> merchantStatusSetHours({ 
     required MerchantScheduleDto merchantScheduleDto,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -3011,8 +3008,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/restaurant/hours';
     final _options = Options(
       method: r'PUT',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -3021,13 +3023,14 @@ class MerchantApi {
 
     try {
       const _type = FullType(MerchantScheduleDto);
-      _bodyData = _serializers.serialize(
-        merchantScheduleDto,
-        specifiedType: _type,
-      );
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(merchantScheduleDto, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(_dio.options, _path),
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -3047,13 +3050,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantHoursDtoOutput),
-                )
-                as MerchantHoursDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantHoursDtoOutput),
+      ) as MerchantHoursDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -3077,10 +3078,10 @@ class MerchantApi {
   }
 
   /// merchantStatusSetOrderSettings
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [merchantOrderSettingsDto]
+  /// * [merchantOrderSettingsDto] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -3090,7 +3091,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantHoursDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantHoursDtoOutput>> merchantStatusSetOrderSettings({
+  Future<Response<MerchantHoursDtoOutput>> merchantStatusSetOrderSettings({ 
     required MerchantOrderSettingsDto merchantOrderSettingsDto,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -3102,8 +3103,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/restaurant/order-settings';
     final _options = Options(
       method: r'PUT',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -3112,13 +3118,14 @@ class MerchantApi {
 
     try {
       const _type = FullType(MerchantOrderSettingsDto);
-      _bodyData = _serializers.serialize(
-        merchantOrderSettingsDto,
-        specifiedType: _type,
-      );
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(merchantOrderSettingsDto, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(_dio.options, _path),
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -3138,13 +3145,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(MerchantHoursDtoOutput),
-                )
-                as MerchantHoursDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantHoursDtoOutput),
+      ) as MerchantHoursDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -3168,10 +3173,10 @@ class MerchantApi {
   }
 
   /// merchantStatusSetPickupCurrencies
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [merchantSetPickupCurrenciesDto]
+  /// * [merchantSetPickupCurrenciesDto] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -3181,8 +3186,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MerchantPickupCurrenciesDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MerchantPickupCurrenciesDtoOutput>>
-  merchantStatusSetPickupCurrencies({
+  Future<Response<MerchantPickupCurrenciesDtoOutput>> merchantStatusSetPickupCurrencies({ 
     required MerchantSetPickupCurrenciesDto merchantSetPickupCurrenciesDto,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -3194,8 +3198,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/settings/pickup-currencies';
     final _options = Options(
       method: r'PUT',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -3204,13 +3213,14 @@ class MerchantApi {
 
     try {
       const _type = FullType(MerchantSetPickupCurrenciesDto);
-      _bodyData = _serializers.serialize(
-        merchantSetPickupCurrenciesDto,
-        specifiedType: _type,
-      );
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(merchantSetPickupCurrenciesDto, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(_dio.options, _path),
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -3230,15 +3240,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(
-                    MerchantPickupCurrenciesDtoOutput,
-                  ),
-                )
-                as MerchantPickupCurrenciesDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(MerchantPickupCurrenciesDtoOutput),
+      ) as MerchantPickupCurrenciesDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -3262,10 +3268,10 @@ class MerchantApi {
   }
 
   /// merchantTermsAccept
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [termsAcceptDto]
+  /// * [termsAcceptDto] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -3275,7 +3281,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [TermsAcceptedDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<TermsAcceptedDtoOutput>> merchantTermsAccept({
+  Future<Response<TermsAcceptedDtoOutput>> merchantTermsAccept({ 
     required TermsAcceptDto termsAcceptDto,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -3287,8 +3293,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/terms/accept';
     final _options = Options(
       method: r'POST',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       contentType: 'application/json',
       validateStatus: validateStatus,
     );
@@ -3298,9 +3309,13 @@ class MerchantApi {
     try {
       const _type = FullType(TermsAcceptDto);
       _bodyData = _serializers.serialize(termsAcceptDto, specifiedType: _type);
-    } catch (error, stackTrace) {
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(_dio.options, _path),
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -3320,13 +3335,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(TermsAcceptedDtoOutput),
-                )
-                as TermsAcceptedDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(TermsAcceptedDtoOutput),
+      ) as TermsAcceptedDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -3350,7 +3363,7 @@ class MerchantApi {
   }
 
   /// merchantTermsGet
-  ///
+  /// 
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -3362,7 +3375,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [TermsDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<TermsDtoOutput>> merchantTermsGet({
+  Future<Response<TermsDtoOutput>> merchantTermsGet({ 
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -3373,8 +3386,13 @@ class MerchantApi {
     final _path = r'/v1/merchant/terms';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{...?headers},
-      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
       validateStatus: validateStatus,
     );
 
@@ -3390,13 +3408,11 @@ class MerchantApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-                  rawResponse,
-                  specifiedType: const FullType(TermsDtoOutput),
-                )
-                as TermsDtoOutput;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(TermsDtoOutput),
+      ) as TermsDtoOutput;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -3418,4 +3434,5 @@ class MerchantApi {
       extra: _response.extra,
     );
   }
+
 }

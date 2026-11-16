@@ -167,3 +167,37 @@ export function oldestUnpaid<Statement extends { weekTotal: bigint }>(
   // Older than the statements read: the oldest of them.
   return newestFirst[newestFirst.length - 1]!;
 }
+
+// RA §12.3: «غير مسدّد», «مسدّد جزئياً», «مسدّد».
+export type StatementStatus = 'unpaid' | 'partly_paid' | 'paid';
+
+// RA §12.3, owner decision 2026-11-16 (slice 2.19b): a payment, and a week
+// that lowered what was owed, settle the oldest statement first, so what is
+// still unpaid belongs to the newest weeks. Walking newest first, each
+// statement's unpaid part is what is left once the newer weeks took theirs,
+// at most its own total due: none is «مسدّد», all of it «غير مسدّد», between
+// «مسدّد جزئياً». A statement that asked nothing of the restaurant (its total
+// due at zero or below) has no status.
+export function statementStatuses<
+  Statement extends { id: string; weekTotal: bigint; totalDue: bigint },
+>(
+  newestFirst: readonly Statement[],
+  unpaid: bigint,
+): Map<string, { status: StatementStatus | null; unpaid: bigint }> {
+  const statuses = new Map<string, { status: StatementStatus | null; unpaid: bigint }>();
+  let left = unpaid > 0n ? unpaid : 0n;
+  for (const statement of newestFirst) {
+    if (statement.totalDue <= 0n) {
+      statuses.set(statement.id, { status: null, unpaid: 0n });
+    } else {
+      const own = left < statement.totalDue ? left : statement.totalDue;
+      statuses.set(statement.id, {
+        status: own === 0n ? 'paid' : own === statement.totalDue ? 'unpaid' : 'partly_paid',
+        unpaid: own,
+      });
+    }
+    const week = statement.weekTotal > 0n ? statement.weekTotal : 0n;
+    left = left > week ? left - week : 0n;
+  }
+  return statuses;
+}

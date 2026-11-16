@@ -135,6 +135,7 @@ Serializers _$serializers =
           ..add(AdminMerchantStatementDtoOutputLinesInner.serializer)
           ..add(AdminMerchantStatementDtoOutputLinesInnerCauseEnum.serializer)
           ..add(AdminMerchantStatementDtoOutputLinesInnerKindEnum.serializer)
+          ..add(AdminMerchantStatementDtoOutputStatusEnum.serializer)
           ..add(AdminNewUploadDto.serializer)
           ..add(AdminNewUploadDtoContentTypeEnum.serializer)
           ..add(AdminNewUploadDtoPurposeEnum.serializer)
@@ -369,6 +370,10 @@ Serializers _$serializers =
           ..add(AdminRestaurantSettlementsDtoOutputRestaurantsInner.serializer)
           ..add(
             AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatest
+                .serializer,
+          )
+          ..add(
+            AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatestStatusEnum
                 .serializer,
           )
           ..add(

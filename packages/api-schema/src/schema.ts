@@ -10019,6 +10019,7 @@ export interface components {
                     discountShare: string;
                     exceptions: string;
                     totalDue: string;
+                    status: ("unpaid" | "partly_paid" | "paid") | null;
                 } | null;
                 /** @description What is left of the latest statement after the payments. */
                 unpaid: string;
@@ -10049,6 +10050,9 @@ export interface components {
             paid: string;
             earlierUnpaid: string;
             totalDue: string;
+            status: ("unpaid" | "partly_paid" | "paid") | null;
+            /** @description What of the total due is still unpaid, oldest first. */
+            unpaid: string;
             lines: {
                 position: number;
                 /** @enum {string} */
