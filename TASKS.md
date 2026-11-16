@@ -4,13 +4,16 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.20, exchange rates and corrections (`docs/roadmap.md`, Phase 2, Money).
+Slice 2.20a, «أسعار الصرف» in the server and the panel (`docs/roadmap.md`, Phase 2, Money; owner approved the split of 2.20 into 2.20a–2.20d on 2026-11-16).
 
-- **Roadmap line:** 2.20 Exchange rates and corrections: the panel's rate versions and the stale-rate alert, resolving a shortfall, the daily report, «القيود التصحيحية» (AP §8.6, §9.10.1, §9.10.4, §9.10.7). A new rate applies to new orders only.
-- **Specs:** AP §8.6 (currencies and rates), §9.10.1 (the daily report), §9.10.4 (shortfalls), §9.10.7 (adjustments and reversals), AP §6.3 (`fx.edit_rates`, `ledger.manual_adjustment`); the fx, ledger and cashdesk modules' `CLAUDE.md`; architecture §5.9 for the daily report's Excel export, which reuses the reporting module's export plumbing (slice 2.19g).
-- **Branch:** to name once the split is approved (`feat/<topic>`).
-- **Split first:** the line holds four features (rates and the stale-rate alert, shortfalls, the daily report, «القيود التصحيحية»). Run the `slice-plan` skill and get the owner's approval of the split into 2.20a, 2.20b… before building.
-- **Plan:** written per sub-slice once the split is approved.
+- **Roadmap line:** 2.20a «أسعار الصرف» in the server and the panel, OWN and FIN (`fx.edit_rates`): the routes over the fx service already built, each accepted currency with its current rate, last update, editor and history, the rate edit in either direction with the large-change second confirmation above `fx.large_change_confirm_pct`, the rounding unit and mode per currency (D14), and the stale-rate information alert for OWN and FIN after `fx.stale_alert_hours` (AP §8.6, §9.10.4).
+- **Specs:** AP §8.6 (`docs/domain/06-currencies-and-exchange-rates.md`), §9.10.4, §6.3 (`fx.edit_rates`), Appendix A (`fx.stale_alert_hours`, `fx.large_change_confirm_pct`, `currency.<code>.rounding_unit`, `currency.<code>.rounding_mode`); the fx module's `CLAUDE.md` ("Not built yet"), `apps/admin/CLAUDE.md`.
+- **Branch:** `feat/exchange-rates-screen`.
+- **Plan:**
+  - [ ] The routes: the city's accepted currencies with the current rate, `setAt`, the editor and the rounding rule; a currency's rate history; the rate edit with `confirmLargeChange` (`fx.edit_rates`, `Idempotency-Key`); the generated clients.
+  - [ ] The stale-rate alert: an information alert for OWN and FIN while a currency's current rate is older than `fx.stale_alert_hours`, opened and closed by the worker, closed by a new rate.
+  - [ ] The panel's «أسعار الصرف»: the list, the history, the edit in either direction with the second confirmation, the rounding unit and mode through the settings routes; Playwright smoke.
+  - [ ] Review, then hand over to 2.20b.
 
 ### Left from 2.19g (`feat/restaurant-statements-period`)
 
