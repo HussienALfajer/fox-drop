@@ -11,8 +11,8 @@ Slice 2.22b, the personal code in the order and the customer app (`docs/roadmap.
 - **Branch:** `feat/compensation-codes-use`.
 - **Plan:**
   - [x] The server: a personal code checked and held only for its customer (anyone else `unknown_code`; lift 2.22a's refusal in `PromoCodeUsesService.evaluate`), the use of a personal code booked to `platform.compensation_cost` instead of `platform.discount_cost` at the delivery, an outcome, a change of outcome, the edits and the daily report's figures, given back like any use (and the push «أُعيد الكود…» when it is back in «متاحة»); «أكوادي» (`mine`) and «الأكواد المتاحة لك» (`available`) list the customer's personal codes; the cancel dialog's optional customer compensation (`cancelFor` calling `CompensationsService` in the cancellation's flow, within the cap or as a request) and the code on the customer's cancelled order; the OpenAPI document and the clients.
-  - [ ] The panel: «تعويض الزبون» in «إلغاء الطلب» (amount or percentage with its maximum, the reason, what the cap leaves).
-  - [ ] The customer app: personal codes in «أكوادي» and «الأكواد المتاحة لك», the code on «أُلغي طلبك», the push #16 opening «أكوادي».
+  - [x] The panel: «تعويض الزبون» in «إلغاء الطلب» (amount or percentage with its maximum, the reason, what the cap leaves).
+  - [x] The customer app: personal codes in «أكوادي» and «الأكواد المتاحة لك», the code on «أُلغي طلبك», the push #16 opening «أكوادي».
   - [ ] Review, then hand over to 2.22c.
 
 ### Left from 2.22a (`feat/compensation-codes`)

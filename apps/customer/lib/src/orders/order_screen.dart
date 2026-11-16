@@ -1,8 +1,10 @@
+import 'package:core_api/core_api.dart';
 import 'package:core_l10n/core_l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../checkout/codes.dart';
 import '../emergency_stop.dart';
 import '../notifications/notifications_off_banner.dart';
 import 'cancel_order.dart';
@@ -102,6 +104,26 @@ class OrderScreen extends ConsumerWidget {
               ),
               // CU §11.9: a rejected or unanswered order.
               OrderAgainSection(order: order),
+              // CU §11.9 (slice 2.22b): the compensation code given with the
+              // cancellation, also in «أكوادي».
+              if (order.cancellation?.compensation case final code?)
+                ListTile(
+                  key: const Key('cancel-compensation'),
+                  title: Text(
+                    l10n.customerCompensationCode(
+                      compensationValueText(l10n, code),
+                      code.code,
+                    ),
+                  ),
+                  subtitle: Text(
+                    l10n.customerCodeExpires(l10n.formatDate(code.validTo)),
+                  ),
+                  trailing: TextButton(
+                    key: const Key('cancel-compensation-codes'),
+                    onPressed: () => context.push('/codes'),
+                    child: Text(l10n.customerMyCodesTitle),
+                  ),
+                ),
               // CU §11.6: the emergency stop's delay notice.
               if (!ended) EmergencyDelayNotice(orderId: orderId),
               // CU §11.6: the restaurant reported an item unavailable (RA
@@ -249,6 +271,21 @@ class OrderScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// A compensation's value as its push says it (CU §14 #16): «25 ₺», or «20%
+/// بحد أقصى 50 ₺».
+String compensationValueText(
+  AppLocalizations l10n,
+  CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensation code,
+) {
+  final amount = code.amount;
+  if (amount != null) return l10n.formatMoney(amount.amount, amount.currency);
+  final max = code.maxDiscount!;
+  return l10n.customerCompensationPercent(
+    percentText(code.percentBp ?? 0),
+    l10n.formatMoney(max.amount, max.currency),
+  );
 }
 
 /// CU §11.2 and §11.9 as strings.

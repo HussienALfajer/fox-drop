@@ -561,6 +561,47 @@ void main() {
     ]);
     // The customer-facing reason the order kept from Content (CU Appendix C).
     expect(_status(tester), 'أُلغي طلبك — لم نجد كابتناً متاحاً لطلبك');
+    expect(find.byKey(const Key('cancel-compensation')), findsNothing);
+    await app.done(tester);
+  });
+
+  testWidgets('a cancelled order shows its compensation code (CU §11.9)', (
+    tester,
+  ) async {
+    final app = await open(tester, [
+      FakeAnswer(200, {
+        'order': _order(
+          status: 'cancelled',
+          version: 3,
+          cancellation: {
+            'at': '2026-11-07T12:07:00.000Z',
+            'reason': 'no_captain',
+            'text': 'لم نجد كابتناً متاحاً لطلبك',
+            'byCustomer': false,
+            'compensation': {
+              'code': 'K7PQRSTU',
+              'kind': 'percentage',
+              'amount': null,
+              'percentBp': 2000,
+              'maxDiscount': {'amount': '5000', 'currency': 'TRY'},
+              'validTo': '2026-12-07T12:07:00.000Z',
+            },
+          },
+        ),
+      }),
+    ]);
+    final tile = find.byKey(const Key('cancel-compensation'));
+    expect(
+      find.descendant(
+        of: tile,
+        matching: find.text('لك كود تعويض 20% بحد أقصى 50 ₺: K7PQRSTU'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: tile, matching: find.text('ينتهي 07/12/2026')),
+      findsOneWidget,
+    );
     await app.done(tester);
   });
 

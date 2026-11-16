@@ -718,6 +718,16 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String customerCompensationCode(String value, String code) {
+    return 'لك كود تعويض $value: $code';
+  }
+
+  @override
+  String customerCompensationPercent(String percent, String amount) {
+    return '$percent% بحد أقصى $amount';
+  }
+
+  @override
   String customerCodeReplaceAsk(String current, String code) {
     return 'طلبك يحمل الكود $current. هل تستبدله بالكود $code؟';
   }
