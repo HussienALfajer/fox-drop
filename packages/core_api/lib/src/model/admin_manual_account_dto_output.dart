@@ -17,6 +17,7 @@ part 'admin_manual_account_dto_output.g.dart';
 /// * [partyId]
 /// * [partyName]
 /// * [balances]
+/// * [currencies] - What an adjustment takes: custody any enabled currency, the others the base.
 /// * [entries]
 @BuiltValue()
 abstract class AdminManualAccountDtoOutput
@@ -30,6 +31,10 @@ abstract class AdminManualAccountDtoOutput
 
   @BuiltValueField(wireName: r'balances')
   BuiltList<AdminDeskCustodyDtoOutputUsage> get balances;
+
+  /// What an adjustment takes: custody any enabled currency, the others the base.
+  @BuiltValueField(wireName: r'currencies')
+  BuiltList<String> get currencies;
 
   @BuiltValueField(wireName: r'entries')
   BuiltList<AdminManualAccountDtoOutputEntriesInner> get entries;
@@ -80,6 +85,11 @@ class _$AdminManualAccountDtoOutputSerializer
       specifiedType: const FullType(BuiltList, [
         FullType(AdminDeskCustodyDtoOutputUsage),
       ]),
+    );
+    yield r'currencies';
+    yield serializers.serialize(
+      object.currencies,
+      specifiedType: const FullType(BuiltList, [FullType(String)]),
     );
     yield r'entries';
     yield serializers.serialize(
@@ -143,6 +153,17 @@ class _$AdminManualAccountDtoOutputSerializer
                   )
                   as BuiltList<AdminDeskCustodyDtoOutputUsage>;
           result.balances.replace(valueDes);
+          break;
+        case r'currencies':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltList<String>;
+          result.currencies.replace(valueDes);
           break;
         case r'entries':
           final valueDes =

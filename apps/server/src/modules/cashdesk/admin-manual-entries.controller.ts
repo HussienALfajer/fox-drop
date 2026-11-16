@@ -112,6 +112,9 @@ class AdminManualAccountDto extends createZodDto(
     partyId: z.uuid(),
     partyName: z.string(),
     balances: z.array(z.object({ currency, amount: signedMinor })),
+    currencies: z
+      .array(currency)
+      .describe('What an adjustment takes: custody any enabled currency, the others the base.'),
     entries: z.array(
       journalSummary.extend({
         reversible: z.boolean(),
@@ -184,7 +187,8 @@ export class AdminManualEntriesController {
   }
 
   // A manual entry on one account of one party, against «القيود التصحيحية».
-  // Refused 400 reason_required, invalid_amounts (zero), invalid_currency;
+  // Refused 400 reason_required, invalid_amounts (zero), invalid_currency,
+  // invalid_account (an account the party has not);
   // 404 unknown_party; 409 no_base_currency.
   @Post()
   @RequirePermission('ledger.manual_adjustment')
@@ -217,8 +221,8 @@ export class AdminManualEntriesController {
   }
 
   // The reversal of an existing journal, linked to it, once. Refused 404
-  // unknown_journal; 409 already_reversed, not_reversible (a reversal, or an
-  // order's or a drawer's journal).
+  // unknown_journal; 409 already_reversed, not_reversible (a reversal, or a
+  // journal of an order or a receipt).
   @Post('reversals')
   @RequirePermission('ledger.manual_adjustment')
   @Idempotent()
@@ -279,6 +283,7 @@ export class AdminManualEntriesController {
           amount: each.amount.toString(),
         })),
         entries: found.entries.map(accountEntryBody),
+        currencies: found.currencies,
       };
     });
   }

@@ -26,6 +26,7 @@ import {
   type DeskUser,
   keepKey,
 } from './cashdesk.service.js';
+import { lockRestaurantAccount } from './merchant-statements.service.js';
 import { type ManualEntryKind, type ManualEntryParty, manualEntries } from './schema.js';
 
 // AP §9.10.7 «القيود التصحيحية» (slice 2.20c): the accounts a manual entry
@@ -61,10 +62,13 @@ const partyOfAccount: Record<string, ManualEntryParty> = {
   'customer.dues': 'customer',
 };
 
-// A journal touching these is the order's or the drawer's own record, which
-// its receipt or the order's money settles: a manual reversal would leave the
-// order clearing account or a drawer's cash apart from them. Corrected by an
-// adjustment instead (decided by us, to confirm with the owner).
+// A journal of an order or a receipt is that record's own: an order's money
+// is corrected by «تغيير النتيجة», which reverses the order's journals itself
+// (AP §8.9), and a receipt is the cash that changed hands. A manual reversal
+// of either would leave the order clearing account, a drawer's cash or the
+// outcome's own reversal apart from them, so it is corrected by an
+// adjustment instead (decided by us, to confirm with the owner). These
+// accounts are only ever reached by such journals.
 const NOT_REVERSIBLE_ON: readonly AccountPurpose[] = [
   'platform.order_clearing',
   'platform.cash',
@@ -175,7 +179,7 @@ export class ManualEntriesService {
     }
     if (!(partyAccounts[command.party] as readonly string[]).includes(command.account)) {
       throw new CashDeskRefusedError(
-        'invalid_currency',
+        'invalid_account',
         `${command.party} has no ${command.account}`,
       );
     }
@@ -185,10 +189,21 @@ export class ManualEntriesService {
 
     const party = await this.partyOf(command.cityId, command.party, command.partyId, now);
     await this.checkCurrency(command.cityId, command.account, command.currency);
+    // AP §8.8: the dues block reads the dues of the order's city, so an
+    // adjustment goes to a customer's dues where they are (decided by us).
+    if (
+      command.party === 'customer' &&
+      (await this.ledger.ownerAccounts(command.cityId, command.partyId, 'customer.dues')).length ===
+        0
+    ) {
+      throw new CashDeskRefusedError('unknown_party', 'the customer has no dues in the city');
+    }
+    const lockParty = await this.partyLock(command.party, command.partyId, now);
 
     const id = await this.database.db.transaction(async (tx) => {
       const again = await this.keyLocked(tx, user, command.idempotencyKey, requestHash, now);
       if (again) return again;
+      await lockParty(tx);
       const [partyAccount, counter] = await Promise.all([
         this.ledger.openAccount(
           {
@@ -277,10 +292,15 @@ export class ManualEntriesService {
     const requestHash = hashOf(['reverse', command]);
     const replayed = await this.replay(user, command.idempotencyKey, requestHash, now);
     if (replayed) return replayed;
+    // The party first, so its lock is taken as the desk takes it.
+    const [read] = await this.ledger.journalRecords([command.journalId]);
+    const owner = read && read.cityId === command.cityId ? partyOfJournal(read) : null;
+    const lockParty = owner ? await this.partyLock(owner.kind, owner.id, now) : async () => {};
 
     const id = await this.database.db.transaction(async (tx) => {
       const again = await this.keyLocked(tx, user, command.idempotencyKey, requestHash, now);
       if (again) return again;
+      await lockParty(tx);
       // Two reversals of one journal take turns, so the second finds it
       // reversed rather than failing on the ledger's unique index.
       await tx.execute(
@@ -294,7 +314,7 @@ export class ManualEntriesService {
         throw new CashDeskRefusedError('already_reversed', 'the journal is already reversed');
       }
       const party = partyOfJournal(journal);
-      if (!reversible(journal) || party === null) {
+      if (!reversible(journal) || party === null || party.id !== owner?.id) {
         throw new CashDeskRefusedError(
           'not_reversible',
           `a ${journal.type} journal is not reversed here`,
@@ -411,9 +431,11 @@ export class ManualEntriesService {
     party: PartyRef;
     balances: { currency: string; amount: bigint }[];
     entries: AccountEntryView[];
+    // The currencies an adjustment of the account may take.
+    currencies: string[];
   }> {
     if (!(partyAccounts[party] as readonly string[]).includes(account)) {
-      throw new CashDeskRefusedError('invalid_currency', `${party} has no ${account}`);
+      throw new CashDeskRefusedError('invalid_account', `${party} has no ${account}`);
     }
     const ref = await this.partyOf(cityId, party, partyId, now);
     const accounts = await this.ledger.ownerAccounts(cityId, partyId, account);
@@ -441,6 +463,7 @@ export class ManualEntriesService {
       party: ref,
       balances: balances.sort((a, b) => a.currency.localeCompare(b.currency)),
       entries,
+      currencies: await this.currenciesOf(cityId, account),
     };
   }
 
@@ -462,7 +485,7 @@ export class ManualEntriesService {
       journal.reversedById ? [journal.reversedById] : [],
     );
     const reversalRecords = await this.ledger.journalRecords(reversals);
-    const summaries = await this.summaries(journals);
+    const summaries = await this.summaries([...journals, ...reversalRecords]);
     const names = await this.names(rows);
     return ids.flatMap((id) => {
       const row = rows.find((each) => each.id === id);
@@ -555,6 +578,29 @@ export class ManualEntriesService {
     return { parties, admins };
   }
 
+  // The lock the desk takes on the party's balance (the ledger's
+  // «Concurrency»): the captain's row, the restaurant's account lock, so a
+  // hand-in, a settlement or a statement never reads a balance a manual
+  // entry is changing. A customer's dues have no desk lock yet (2.25).
+  private async partyLock(
+    party: ManualEntryParty,
+    partyId: string,
+    now: Date,
+  ): Promise<(tx: Tx) => Promise<void>> {
+    switch (party) {
+      case 'captain': {
+        const { lock } = await this.captains.deskLock(partyId, now);
+        return async (tx) => {
+          await lock(tx);
+        };
+      }
+      case 'restaurant':
+        return (tx) => lockRestaurantAccount(tx, partyId);
+      case 'customer':
+        return async () => {};
+    }
+  }
+
   private async partyOf(
     cityId: string,
     party: ManualEntryParty,
@@ -585,21 +631,23 @@ export class ManualEntriesService {
   // Custody in any enabled currency of the city; earnings, a restaurant's
   // account and a customer's dues in the base only, as their statements and
   // the dues block read them.
-  private async checkCurrency(cityId: string, account: AdjustedAccount, currency: string) {
+  private async currenciesOf(cityId: string, account: AdjustedAccount): Promise<string[]> {
     if (account === 'captain.custody') {
-      const enabled = (await this.fx.cityCurrencies(cityId)).filter((each) => each.enabled);
-      if (!enabled.some((each) => each.currency === currency)) {
-        throw new CashDeskRefusedError(
-          'invalid_currency',
-          `${currency} is not enabled in the city`,
-        );
-      }
-      return;
+      return (await this.fx.cityCurrencies(cityId))
+        .filter((each) => each.enabled)
+        .map((each) => each.currency);
     }
     const base = await this.fx.baseCurrency(cityId);
-    if (base === null) throw new CashDeskRefusedError('no_base_currency', 'the city has no base');
-    if (currency !== base) {
-      throw new CashDeskRefusedError('invalid_currency', `${account} is in the base ${base}`);
+    return base === null ? [] : [base];
+  }
+
+  private async checkCurrency(cityId: string, account: AdjustedAccount, currency: string) {
+    const allowed = await this.currenciesOf(cityId, account);
+    if (allowed.length === 0) {
+      throw new CashDeskRefusedError('no_base_currency', 'the city has no base');
+    }
+    if (!allowed.includes(currency)) {
+      throw new CashDeskRefusedError('invalid_currency', `${account} takes ${allowed.join(', ')}`);
     }
   }
 
@@ -694,11 +742,14 @@ function partyOfJournal(journal: JournalRecord): { kind: ManualEntryParty; id: s
   return null;
 }
 
-// Not a reversal itself, on a party's account, and touching neither an
-// order's clearing nor a drawer's cash.
-export function reversible(journal: Pick<JournalRecord, 'reversesJournalId' | 'entries'>): boolean {
+// Not a reversal itself, of no order or receipt, on a party's account, and
+// touching neither an order's clearing nor a drawer's cash.
+export function reversible(
+  journal: Pick<JournalRecord, 'reversesJournalId' | 'entries' | 'source'>,
+): boolean {
   return (
     journal.reversesJournalId === null &&
+    journal.source === null &&
     journal.entries.some((entry) => entry.purpose in partyOfAccount) &&
     !journal.entries.some((entry) => NOT_REVERSIBLE_ON.includes(entry.purpose))
   );

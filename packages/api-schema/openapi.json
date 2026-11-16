@@ -37851,6 +37851,14 @@
               "additionalProperties": false
             }
           },
+          "currencies": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z]{3}$"
+            },
+            "description": "What an adjustment takes: custody any enabled currency, the others the base."
+          },
           "entries": {
             "type": "array",
             "items": {
@@ -37961,6 +37969,7 @@
           "partyId",
           "partyName",
           "balances",
+          "currencies",
           "entries"
         ],
         "additionalProperties": false

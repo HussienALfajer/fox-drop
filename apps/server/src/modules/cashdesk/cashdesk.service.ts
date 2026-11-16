@@ -70,6 +70,7 @@ export type CashDeskRefusal =
   | 'unknown_party'
   | 'unknown_journal'
   | 'invalid_currency'
+  | 'invalid_account'
   | 'no_base_currency'
   | 'already_reversed'
   | 'not_reversible';

@@ -47,6 +47,7 @@ export async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
       case 'reason_required':
       case 'invalid_visitor':
       case 'invalid_currency':
+      case 'invalid_account':
         throw new BadRequestException(body(HttpStatus.BAD_REQUEST));
       case 'idempotency_key_reused':
         throw new UnprocessableEntityException(body(HttpStatus.UNPROCESSABLE_ENTITY));

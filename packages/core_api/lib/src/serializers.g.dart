@@ -1164,6 +1164,10 @@ Serializers _$serializers =
             () => ListBuilder<AdminDeskCustodyDtoOutputUsage>(),
           )
           ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType(AdminManualAccountDtoOutputEntriesInner),
             ]),

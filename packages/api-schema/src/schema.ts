@@ -10527,6 +10527,8 @@ export interface components {
                 currency: string;
                 amount: string;
             }[];
+            /** @description What an adjustment takes: custody any enabled currency, the others the base. */
+            currencies: string[];
             entries: {
                 /** Format: uuid */
                 journalId: string;

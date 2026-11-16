@@ -349,6 +349,14 @@ describe('a manual entry and its reversal (AP §9.10.7)', () => {
     expect(await balanceOf('merchant.account', restaurantId)).toBe(-3000n);
 
     const buyer = await customer();
+    // AP §8.8: dues are read in their city, so a customer without dues here
+    // takes no adjustment (decided by us).
+    const noDues = await finance.post(
+      '/v1/admin/manual-entries',
+      adjustment({ party: 'customer', partyId: buyer.id, account: 'customer.dues', amount: '-1' }),
+    );
+    expect(noDues.statusCode).toBe(404);
+    expect(noDues.json().error).toBe('unknown_party');
     // The customer owes 24 400 from a fake order; a correction clears it.
     await post('dues.charge', 'customer.dues', buyer.id, 'platform.revenue_delivery', 24_400n);
     const cleared = await finance.post(
@@ -402,6 +410,7 @@ describe('a manual entry and its reversal (AP §9.10.7)', () => {
       }),
     );
     expect(notTheirs.statusCode).toBe(400);
+    expect(notTheirs.json().error).toBe('invalid_account');
     const noReason = await finance.post(
       '/v1/admin/manual-entries',
       adjustment({
@@ -415,9 +424,10 @@ describe('a manual entry and its reversal (AP §9.10.7)', () => {
     expect(noReason.statusCode).toBe(400);
   });
 
-  it("reverses a party's journal but not an order's clearing or a drawer's (decided by us)", async () => {
+  it("reverses a manual entry but not an order's or a receipt's journal (decided by us)", async () => {
     const finance = await admin(['FIN']);
     const captainId = await captain();
+    // «تغيير النتيجة» reverses an order's journals itself (AP §8.9).
     const pay = await post(
       'earn.order_pay',
       'captain.earnings',
@@ -434,41 +444,60 @@ describe('a manual entry and its reversal (AP §9.10.7)', () => {
       -40_000n,
       randomUUID(),
     );
+    const manual = (
+      await finance.post(
+        '/v1/admin/manual-entries',
+        adjustment({
+          party: 'captain',
+          partyId: captainId,
+          account: 'captain.earnings',
+          amount: '-1000',
+        }),
+      )
+    ).json();
 
     const view = (
       await finance.get(
         `/v1/admin/manual-entries/account?cityId=${azaz}&party=captain&partyId=${captainId}&account=captain.earnings`,
       )
     ).json();
-    expect(view.balances).toEqual([{ currency: 'TRY', amount: '9000' }]);
+    expect(view.balances).toEqual([{ currency: 'TRY', amount: '8000' }]);
+    expect(view.currencies).toEqual(['TRY']);
     expect(view.entries).toMatchObject([
-      { journalId: pay, type: 'earn.order_pay', reversible: true, reversed: false },
+      { journalId: manual.journal.journalId, reversible: true, reversed: false },
+      { journalId: pay, type: 'earn.order_pay', reversible: false, reversed: false },
     ]);
     const custodyView = (
       await finance.get(
         `/v1/admin/manual-entries/account?cityId=${azaz}&party=captain&partyId=${captainId}&account=captain.custody`,
       )
     ).json();
+    expect(custodyView.currencies).toEqual(['TRY', 'USD']);
     expect(custodyView.entries).toMatchObject([{ journalId: pickup, reversible: false }]);
 
-    const refused = await finance.post('/v1/admin/manual-entries/reversals', {
-      cityId: azaz,
-      journalId: pickup,
-      reason: 'خطأ',
-    });
-    expect(refused.statusCode).toBe(409);
-    expect(refused.json().error).toBe('not_reversible');
+    for (const journalId of [pay, pickup]) {
+      const refused = await finance.post('/v1/admin/manual-entries/reversals', {
+        cityId: azaz,
+        journalId,
+        reason: 'خطأ',
+      });
+      expect(refused.statusCode).toBe(409);
+      expect(refused.json().error).toBe('not_reversible');
+    }
 
-    const reversed = await finance.post('/v1/admin/manual-entries/reversals', {
-      cityId: azaz,
-      journalId: pay,
-      reason: 'الطلب لم يُسلَّم',
-    });
-    expect(reversed.statusCode).toBe(201);
-    expect(reversed.json()).toMatchObject({
-      corrects: { journalId: pay, type: 'earn.order_pay', manualEntryId: null },
-    });
-    expect(await balanceOf('captain.earnings', captainId)).toBe(0n);
+    // Two reversals at once: one reverses, the other finds it reversed.
+    const both = await Promise.all(
+      ['أولى', 'ثانية'].map((reason) =>
+        finance.post('/v1/admin/manual-entries/reversals', {
+          cityId: azaz,
+          journalId: manual.journal.journalId,
+          reason,
+        }),
+      ),
+    );
+    expect(both.map((each) => each.statusCode).sort()).toEqual([201, 409]);
+    expect(both.find((each) => each.statusCode === 409)!.json().error).toBe('already_reversed');
+    expect(await balanceOf('captain.earnings', captainId)).toBe(9000n);
 
     const unknown = await finance.post('/v1/admin/manual-entries/reversals', {
       cityId: azaz,
@@ -497,6 +526,15 @@ describe('a manual entry and its reversal (AP §9.10.7)', () => {
     expect(second.statusCode).toBe(201);
     expect(second.json().id).toBe(first.json().id);
     expect(await balanceOf('captain.earnings', captainId)).toBe(700n);
+    const reversal = (
+      await finance.post('/v1/admin/manual-entries/reversals', {
+        cityId: azaz,
+        journalId: first.json().journal.journalId,
+        reason: 'عكس',
+      })
+    ).json();
+    const replayed = await finance.post('/v1/admin/manual-entries', body, key);
+    expect(replayed.json().reversedBy).toMatchObject({ manualEntryId: reversal.id });
     const other = await finance.post('/v1/admin/manual-entries', { ...body, amount: '800' }, key);
     expect(other.statusCode).toBe(422);
     const noKey = await finance.post('/v1/admin/manual-entries', body, null);

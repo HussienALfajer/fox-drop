@@ -14,6 +14,8 @@ class _$AdminManualAccountDtoOutput extends AdminManualAccountDtoOutput {
   @override
   final BuiltList<AdminDeskCustodyDtoOutputUsage> balances;
   @override
+  final BuiltList<String> currencies;
+  @override
   final BuiltList<AdminManualAccountDtoOutputEntriesInner> entries;
 
   factory _$AdminManualAccountDtoOutput([
@@ -24,6 +26,7 @@ class _$AdminManualAccountDtoOutput extends AdminManualAccountDtoOutput {
     required this.partyId,
     required this.partyName,
     required this.balances,
+    required this.currencies,
     required this.entries,
   }) : super._();
   @override
@@ -42,6 +45,7 @@ class _$AdminManualAccountDtoOutput extends AdminManualAccountDtoOutput {
         partyId == other.partyId &&
         partyName == other.partyName &&
         balances == other.balances &&
+        currencies == other.currencies &&
         entries == other.entries;
   }
 
@@ -51,6 +55,7 @@ class _$AdminManualAccountDtoOutput extends AdminManualAccountDtoOutput {
     _$hash = $jc(_$hash, partyId.hashCode);
     _$hash = $jc(_$hash, partyName.hashCode);
     _$hash = $jc(_$hash, balances.hashCode);
+    _$hash = $jc(_$hash, currencies.hashCode);
     _$hash = $jc(_$hash, entries.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -62,6 +67,7 @@ class _$AdminManualAccountDtoOutput extends AdminManualAccountDtoOutput {
           ..add('partyId', partyId)
           ..add('partyName', partyName)
           ..add('balances', balances)
+          ..add('currencies', currencies)
           ..add('entries', entries))
         .toString();
   }
@@ -89,6 +95,12 @@ class AdminManualAccountDtoOutputBuilder
   set balances(ListBuilder<AdminDeskCustodyDtoOutputUsage>? balances) =>
       _$this._balances = balances;
 
+  ListBuilder<String>? _currencies;
+  ListBuilder<String> get currencies =>
+      _$this._currencies ??= ListBuilder<String>();
+  set currencies(ListBuilder<String>? currencies) =>
+      _$this._currencies = currencies;
+
   ListBuilder<AdminManualAccountDtoOutputEntriesInner>? _entries;
   ListBuilder<AdminManualAccountDtoOutputEntriesInner> get entries =>
       _$this._entries ??=
@@ -106,6 +118,7 @@ class AdminManualAccountDtoOutputBuilder
       _partyId = $v.partyId;
       _partyName = $v.partyName;
       _balances = $v.balances.toBuilder();
+      _currencies = $v.currencies.toBuilder();
       _entries = $v.entries.toBuilder();
       _$v = null;
     }
@@ -142,6 +155,7 @@ class AdminManualAccountDtoOutputBuilder
               'partyName',
             ),
             balances: balances.build(),
+            currencies: currencies.build(),
             entries: entries.build(),
           );
     } catch (_) {
@@ -149,6 +163,8 @@ class AdminManualAccountDtoOutputBuilder
       try {
         _$failedField = 'balances';
         balances.build();
+        _$failedField = 'currencies';
+        currencies.build();
         _$failedField = 'entries';
         entries.build();
       } catch (e) {
