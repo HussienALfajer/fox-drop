@@ -128,7 +128,8 @@ test('lists the restaurants and shows a weekly statement', async ({ page }) => {
 
 // AP §9.10.3 tab 3, RA §12.4 (slice 2.19b): a partial payment in two
 // currencies, reviewed at the current rate, then the receipt to print.
-test('records a partial payment and opens its receipt', async ({ page }) => {
+test('records a partial payment brought by a visitor and opens its receipt', async ({ page }) => {
+  const visitorId = '01900000-0000-7000-8000-000000000009';
   const sessionId = '01900000-0000-7000-8000-0000000000d1';
   const receiptId = '01900000-0000-7000-8000-0000000000e1';
   const balance = {
@@ -162,7 +163,9 @@ test('records a partial payment and opens its receipt', async ({ page }) => {
     number: 'AZ-2026-000042',
     type: 'merchant_settlement',
     sessionId,
-    method: 'office',
+    method: 'field',
+    visitorId,
+    visitorName: 'زائر المطاعم',
     cashierId: '01900000-0000-7000-8000-000000000001',
     cashierName: 'أمين الصندوق',
     restaurantId: lateId,
@@ -193,9 +196,13 @@ test('records a partial payment and opens its receipt', async ({ page }) => {
             { currency: 'USD', openingFloat: '0', expected: '0', counted: null, variance: null },
           ],
         },
+        field: null,
         currencies: ['TRY', 'USD'],
       },
     }),
+  );
+  await page.route('**/v1/admin/cash-desk/visitors', (route) =>
+    route.fulfill({ json: { visitors: [{ id: visitorId, name: 'زائر المطاعم' }] } }),
   );
   await page.route('**/v1/admin/cash-desk/restaurant-settlements/preview', (route) => {
     const body = route.request().postDataJSON() as { lines: unknown[] };
@@ -212,6 +219,7 @@ test('records a partial payment and opens its receipt', async ({ page }) => {
 
   await page.goto(`/cash-desk/restaurants/${lateId}/settle`);
   await expect(page.getByRole('heading', { name: 'تسوية مطعم الشام' })).toBeVisible();
+  await page.getByLabel('زيارة ميدانية بواسطة:').selectOption({ label: 'زائر المطاعم' });
   await page.getByLabel('المبلغ (TRY)').fill('100');
   await page.getByLabel('المبلغ (USD)').fill('2.50');
   await page.getByRole('button', { name: 'مراجعة' }).click();
@@ -220,6 +228,8 @@ test('records a partial payment and opens its receipt', async ({ page }) => {
   await page.getByRole('button', { name: 'تأكيد وإصدار الإيصال' }).click();
   await expect(page.getByRole('link', { name: 'صدر الإيصال AZ-2026-000042.' })).toBeVisible();
   expect(settled).toEqual({
+    session: 'office',
+    visitorId,
     restaurantId: lateId,
     due: '46000',
     lines: quoted.lines.map(({ currency, amount, base, rates }) => ({
@@ -231,6 +241,7 @@ test('records a partial payment and opens its receipt', async ({ page }) => {
   });
   await page.getByRole('link', { name: 'صدر الإيصال AZ-2026-000042.' }).click();
   await expect(page.getByRole('heading', { name: 'إيصال AZ-2026-000042' })).toBeVisible();
-  await expect(page.getByText('طريقة التسوية: في المكتب')).toBeVisible();
+  await expect(page.getByText('طريقة التسوية: زيارة ميدانية')).toBeVisible();
+  await expect(page.getByText('الموظف الزائر: زائر المطاعم')).toBeVisible();
   await expect(page.getByRole('button', { name: 'طباعة 80 مم' })).toBeVisible();
 });

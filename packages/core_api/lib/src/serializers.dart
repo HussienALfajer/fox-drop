@@ -53,6 +53,7 @@ import 'package:core_api/src/model/admin_conversion_quote_dto_output.dart';
 import 'package:core_api/src/model/admin_conversion_quote_dto_output_unit.dart';
 import 'package:core_api/src/model/admin_conversion_quote_request_dto.dart';
 import 'package:core_api/src/model/admin_current_drawer_session_dto_output.dart';
+import 'package:core_api/src/model/admin_current_drawer_session_dto_output_field.dart';
 import 'package:core_api/src/model/admin_current_drawer_session_dto_output_session.dart';
 import 'package:core_api/src/model/admin_current_drawer_session_dto_output_session_currencies_inner.dart';
 import 'package:core_api/src/model/admin_desk_captain_search_dto.dart';
@@ -69,7 +70,6 @@ import 'package:core_api/src/model/admin_dispatch_state_dto_output_order.dart';
 import 'package:core_api/src/model/admin_dispatch_state_dto_output_order_offer.dart';
 import 'package:core_api/src/model/admin_drawer_session_dto_output.dart';
 import 'package:core_api/src/model/admin_drawer_sessions_dto_output.dart';
-import 'package:core_api/src/model/admin_drawer_sessions_dto_output_sessions_inner.dart';
 import 'package:core_api/src/model/admin_edit_dto.dart';
 import 'package:core_api/src/model/admin_edit_dto_add_inner.dart';
 import 'package:core_api/src/model/admin_edit_dto_keep_inner.dart';
@@ -91,6 +91,7 @@ import 'package:core_api/src/model/admin_faq_dto_items_inner.dart';
 import 'package:core_api/src/model/admin_faq_dto_output.dart';
 import 'package:core_api/src/model/admin_faqs_dto_output.dart';
 import 'package:core_api/src/model/admin_faqs_dto_output_customer_inner.dart';
+import 'package:core_api/src/model/admin_field_visitors_dto_output.dart';
 import 'package:core_api/src/model/admin_force_offline_dto.dart';
 import 'package:core_api/src/model/admin_hand_in_dto.dart';
 import 'package:core_api/src/model/admin_hand_in_dto_conversions_inner.dart';
@@ -630,6 +631,7 @@ part 'serializers.g.dart';
   AdminConversionQuoteDtoOutputUnit,
   AdminConversionQuoteRequestDto,
   AdminCurrentDrawerSessionDtoOutput,
+  AdminCurrentDrawerSessionDtoOutputField,
   AdminCurrentDrawerSessionDtoOutputSession,
   AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner,
   AdminDeskCaptainSearchDto,
@@ -646,7 +648,6 @@ part 'serializers.g.dart';
   AdminDispatchStateDtoOutputOrderOffer,
   AdminDrawerSessionDtoOutput,
   AdminDrawerSessionsDtoOutput,
-  AdminDrawerSessionsDtoOutputSessionsInner,
   AdminEditDto,
   AdminEditDtoAddInner,
   AdminEditDtoKeepInner,
@@ -668,6 +669,7 @@ part 'serializers.g.dart';
   AdminFaqDtoOutput,
   AdminFaqsDtoOutput,
   AdminFaqsDtoOutputCustomerInner,
+  AdminFieldVisitorsDtoOutput,
   AdminForceOfflineDto,
   AdminHandInDto,
   AdminHandInDtoConversionsInner,
@@ -1660,6 +1662,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType.nullable(AdminCurrentDrawerSessionDtoOutputField),
+            ]),
+            () => ListBuilder<AdminCurrentDrawerSessionDtoOutputField>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminOrderDtoOutputOrderHandoverHandoversInner),
             ]),
             () => ListBuilder<AdminOrderDtoOutputOrderHandoverHandoversInner>(),
@@ -1760,12 +1768,6 @@ Serializers serializers =
               FullType(AdminSetPeakBonusDtoWindowsInner),
             ]),
             () => ListBuilder<AdminSetPeakBonusDtoWindowsInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, [
-              FullType(AdminDrawerSessionsDtoOutputSessionsInner),
-            ]),
-            () => ListBuilder<AdminDrawerSessionsDtoOutputSessionsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

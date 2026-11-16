@@ -15,6 +15,24 @@ export type StatementStatus = NonNullable<MerchantStatement['status']>;
 export type RestaurantSettlementPreview =
   components['schemas']['AdminRestaurantSettlementPreviewDto_Output'];
 export type RestaurantReceipt = components['schemas']['AdminRestaurantReceiptDto_Output'];
+export type FieldVisitor =
+  components['schemas']['AdminFieldVisitorsDto_Output']['visitors'][number];
+
+// Where the settlement is recorded (AP §9.10.3 tab 3, slice 2.19c): the
+// user's office session, where a visitor without FIN may be named, or
+// their field session on a visit.
+export type SettleVia =
+  { session: 'office'; visitorId: string | null } | { session: 'field'; visitorId: null };
+
+// The session a settlement goes to by default: the field session whenever
+// it is open (it exists only during a visit), else the office one; null
+// when neither is.
+export function defaultSession(open: {
+  office: boolean;
+  field: boolean;
+}): SettleVia['session'] | null {
+  return open.field ? 'field' : open.office ? 'office' : null;
+}
 
 // AP §8.7: + the restaurant owes the platform, − the platform owes it.
 export function balanceSide(amount: string): 'owes' | 'owed' | 'settled' {
@@ -93,8 +111,10 @@ export function aboveDue(preview: RestaurantSettlementPreview): boolean {
 
 // «تأكيد وإصدار الإيصال»: exactly what the review showed, so the server
 // refuses it once the balance or a rate moved.
-export function restaurantSettleBodyOf(preview: RestaurantSettlementPreview) {
+export function restaurantSettleBodyOf(preview: RestaurantSettlementPreview, via: SettleVia) {
   return {
+    session: via.session,
+    visitorId: via.visitorId,
     restaurantId: preview.restaurantId,
     due: preview.due,
     lines: preview.lines.map(({ currency, amount, base, rates }) => ({
@@ -135,7 +155,10 @@ export type RestaurantSettleRefusal =
   | 'drawer_short'
   | 'no_open_session'
   | 'unknown_restaurant'
-  | 'invalid_amounts';
+  | 'invalid_amounts'
+  | 'unknown_visitor'
+  | 'invalid_visitor'
+  | 'name_required';
 export const restaurantSettleRefusals = [
   'above_balance',
   'balance_changed',
@@ -146,6 +169,9 @@ export const restaurantSettleRefusals = [
   'no_open_session',
   'unknown_restaurant',
   'invalid_amounts',
+  'unknown_visitor',
+  'invalid_visitor',
+  'name_required',
 ] as const satisfies readonly RestaurantSettleRefusal[];
 
 export type RestaurantSettleResult =
@@ -200,6 +226,18 @@ export function useRestaurantReceipt(receiptId: string) {
       });
       if (!data) throw new Error('The restaurant receipt read failed.');
       return data;
+    },
+  });
+}
+
+// The team members the desk can name as a field visit's visitor.
+export function useFieldVisitors() {
+  return useQuery({
+    queryKey: ['cash-desk', 'visitors'],
+    queryFn: async (): Promise<FieldVisitor[]> => {
+      const { data } = await api.GET('/v1/admin/cash-desk/visitors');
+      if (!data) throw new Error('The visitors read failed.');
+      return data.visitors;
     },
   });
 }

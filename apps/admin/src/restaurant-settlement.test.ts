@@ -4,6 +4,7 @@ import {
   balanceSide,
   type MerchantStatement,
   type RestaurantSettlementPreview,
+  defaultSession,
   restaurantSettleBodyOf,
   settlementLinesOf,
   statementParts,
@@ -91,7 +92,9 @@ describe('the restaurant settlement form', () => {
   });
 
   it('confirms exactly what the review showed', () => {
-    expect(restaurantSettleBodyOf(preview)).toEqual({
+    expect(restaurantSettleBodyOf(preview, { session: 'office', visitorId: 'a1' })).toEqual({
+      session: 'office',
+      visitorId: 'a1',
       restaurantId: 'r1',
       due: '-3400',
       lines: [
@@ -103,5 +106,15 @@ describe('the restaurant settlement form', () => {
         },
       ],
     });
+  });
+});
+
+// AP §9.10.3 tab 3 (slice 2.19c): the field session while a visit is open,
+// the office one otherwise.
+describe('the session a settlement goes to', () => {
+  it('takes the field session first, then the office one, else none', () => {
+    expect(defaultSession({ office: true, field: true })).toBe('field');
+    expect(defaultSession({ office: true, field: false })).toBe('office');
+    expect(defaultSession({ office: false, field: false })).toBeNull();
   });
 });

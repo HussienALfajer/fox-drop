@@ -24,7 +24,7 @@ import {
   type Receipt,
 } from './cashdesk.service.js';
 import { deskUser, refusalsAsHttp } from './desk-http.js';
-import { captainReceiptTypes } from './schema.js';
+import { captainReceiptTypes, sessionKinds } from './schema.js';
 import { type SettlementPreview, SettlementService, type Statement } from './settlement.service.js';
 
 const minor = z.string().regex(/^\d{1,18}$/);
@@ -203,7 +203,7 @@ const sessionBody = z.object({
   cityId: z.uuid(),
   adminAccountId: z.uuid(),
   adminName: z.string().nullable(),
-  kind: z.enum(['office']),
+  kind: z.enum(sessionKinds),
   openedAt: z.iso.datetime(),
   closedAt: z.iso.datetime().nullable(),
   closeNote: z.string().nullable(),
@@ -224,7 +224,10 @@ class AdminCurrentDrawerSessionQueryDto extends createZodDto(z.object({ cityId: 
 
 class AdminCurrentDrawerSessionDto extends createZodDto(
   z.object({
-    session: sessionBody.nullable(),
+    session: sessionBody.nullable().describe('The office session.'),
+    field: sessionBody
+      .nullable()
+      .describe('The field session of a restaurant visit (AP §9.10.3), opened beside it.'),
     currencies: z
       .array(currency)
       .describe("The city's enabled currencies in display order: the float's fields."),
@@ -236,7 +239,14 @@ class AdminDrawerSessionsQueryDto extends createZodDto(z.object({ cityId: z.uuid
 class AdminDrawerSessionsDto extends createZodDto(z.object({ sessions: z.array(sessionBody) })) {}
 
 class AdminOpenDrawerSessionDto extends createZodDto(
-  z.object({ cityId: z.uuid(), floats: cashLines }),
+  z.object({
+    cityId: z.uuid(),
+    kind: z
+      .enum(sessionKinds)
+      .default('office')
+      .describe('A field session (a restaurant visit) opens with a zero float.'),
+    floats: cashLines,
+  }),
 ) {}
 
 class AdminDrawerSessionParamsDto extends createZodDto(z.object({ sessionId: z.uuid() })) {}
@@ -516,7 +526,8 @@ export class AdminCashDeskController {
     return statementBodyOf(found);
   }
 
-  // The user's open session, or null, and the city's currencies to count.
+  // The user's open office and field sessions, or null, and the city's
+  // currencies to count.
   @Get('sessions/current')
   @RequirePermission('cash_desk.record')
   @ZodResponse({ status: 200, type: AdminCurrentDrawerSessionDto })
@@ -524,11 +535,12 @@ export class AdminCashDeskController {
     @Query() query: AdminCurrentDrawerSessionQueryDto,
     @CurrentAdminSession() session: AdminSession,
   ) {
-    const [open, currencies] = await Promise.all([
+    const [open, field, currencies] = await Promise.all([
       this.desk.openSessionOf(session.accountId),
+      this.desk.openSessionOf(session.accountId, 'field'),
       this.desk.deskCurrencies(query.cityId),
     ]);
-    return { session: open && drawerBody(open), currencies };
+    return { session: open && drawerBody(open), field: field && drawerBody(field), currencies };
   }
 
   // The city's sessions with their variances, newest first: every user's
@@ -565,6 +577,7 @@ export class AdminCashDeskController {
           body.cityId,
           body.floats.map(cashLine),
           new Date(),
+          body.kind,
         ),
       ),
     );

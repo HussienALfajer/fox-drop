@@ -1,12 +1,18 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq, gt, inArray, isNull } from 'drizzle-orm';
+import { and, asc, eq, gt, inArray, isNotNull, isNull, ne, notInArray } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditExecutor, type AuditRequestContext, AuditService } from '../audit/index.js';
 import { SettingsService } from '../settings/index.js';
 import type { AdminPermission } from './permissions.js';
 import { accountAccess, actorRole } from './roles.js';
-import { adminAccounts, adminSessionEndReasons, adminSessions } from './schema.js';
+import {
+  adminAccountRoles,
+  adminAccounts,
+  adminRolePermissions,
+  adminSessionEndReasons,
+  adminSessions,
+} from './schema.js';
 import { newToken, tokenHash } from './secrets.js';
 
 export interface AdminSession {
@@ -265,6 +271,38 @@ export class AdminSessionsService {
       .from(adminAccounts)
       .where(inArray(adminAccounts.id, [...new Set(accountIds)]));
     return new Map(rows.flatMap((row) => (row.name === null ? [] : [[row.id, row.name] as const])));
+  }
+
+  // The active team members with a name and without a permission, by name:
+  // the staff member without FIN a desk names on a field visit (AP §9.10.3,
+  // slice 2.19c; an OWN or FIN visitor records it in a field session).
+  async teamWithout(permission: AdminPermission): Promise<{ id: string; name: string }[]> {
+    const holders = this.database.db
+      .select({ id: adminAccountRoles.accountId })
+      .from(adminAccountRoles)
+      .innerJoin(
+        adminRolePermissions,
+        eq(adminRolePermissions.roleCode, adminAccountRoles.roleCode),
+      )
+      .where(
+        and(
+          isNull(adminAccountRoles.revokedAt),
+          eq(adminRolePermissions.permissionCode, permission),
+        ),
+      );
+    const rows = await this.database.db
+      .select({ id: adminAccounts.id, name: adminAccounts.name })
+      .from(adminAccounts)
+      .where(
+        and(
+          eq(adminAccounts.status, 'active'),
+          isNotNull(adminAccounts.name),
+          ne(adminAccounts.name, ''),
+          notInArray(adminAccounts.id, holders),
+        ),
+      )
+      .orderBy(asc(adminAccounts.name));
+    return rows.map((row) => ({ id: row.id, name: row.name! }));
   }
 
   // The longest a cookie can still be useful, for its Max-Age.

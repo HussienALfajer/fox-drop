@@ -15,7 +15,7 @@ import { z } from 'zod';
 import { CurrentAdminSession, RequirePermission } from '../../http/access.js';
 import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { AdminController } from '../../http/route-groups.js';
-import type { AdminSession } from '../identity/index.js';
+import { type AdminSession, AdminSessionsService } from '../identity/index.js';
 import { deskUser, refusalsAsHttp } from './desk-http.js';
 import {
   type MerchantReceipt,
@@ -26,7 +26,12 @@ import {
   MerchantStatementsService,
   type MerchantStatementView,
 } from './merchant-statements.service.js';
-import { merchantExceptionCauses, merchantStatementLineKinds } from './schema.js';
+import {
+  merchantExceptionCauses,
+  merchantStatementLineKinds,
+  receiptMethods,
+  sessionKinds,
+} from './schema.js';
 
 const minor = z.string().regex(/^\d{1,18}$/);
 const signedMinor = z.string().regex(/^-?\d{1,18}$/);
@@ -158,12 +163,22 @@ class AdminRestaurantSettlementPreviewDto extends createZodDto(
 class AdminRestaurantSettleDto extends createZodDto(
   z.object({
     restaurantId: z.uuid(),
+    session: z
+      .enum(sessionKinds)
+      .default('office')
+      .describe("The user's session it is recorded in: the office's, or the field's on a visit."),
+    // At the office: the staff member without FIN who visited (AP §9.10.3).
+    visitorId: z.uuid().nullable().default(null),
     due: signedMinor.describe('The balance the screen showed.'),
     lines: z
       .array(z.object({ currency, amount: minor, base: minor, rates }))
       .min(1)
       .max(10),
   }),
+) {}
+
+class AdminFieldVisitorsDto extends createZodDto(
+  z.object({ visitors: z.array(z.object({ id: z.uuid(), name: z.string() })) }),
 ) {}
 
 class AdminRestaurantReceiptParamsDto extends createZodDto(z.object({ receiptId: z.uuid() })) {}
@@ -175,7 +190,10 @@ class AdminRestaurantReceiptDto extends createZodDto(
     number: z.string(),
     type: z.enum(['merchant_settlement', 'merchant_payout']),
     sessionId: z.uuid(),
-    method: z.enum(['office']),
+    method: z.enum(receiptMethods).describe('«في المكتب» or «زيارة ميدانية».'),
+    // The staff member who visited, on a field visit.
+    visitorId: z.uuid().nullable(),
+    visitorName: z.string().nullable(),
     cashierId: z.uuid(),
     cashierName: z.string().nullable(),
     restaurantId: z.uuid(),
@@ -291,6 +309,7 @@ export class AdminRestaurantSettlementController {
   constructor(
     private readonly statements: MerchantStatementsService,
     private readonly settlements: MerchantSettlementService,
+    private readonly admins: AdminSessionsService,
   ) {}
 
   // What the screen shows before the confirmation: the balance, each
@@ -330,6 +349,8 @@ export class AdminRestaurantSettlementController {
         await this.settlements.settle(
           deskUser(session, request),
           {
+            session: body.session,
+            visitorId: body.visitorId,
             restaurantId: body.restaurantId,
             due: BigInt(body.due),
             lines: body.lines.map((line) => ({
@@ -344,6 +365,15 @@ export class AdminRestaurantSettlementController {
         ),
       ),
     );
+  }
+
+  // The team members a desk can name as the visitor of a field visit: the
+  // active ones without the desk (an OWN or FIN visitor uses a field session).
+  @Get('visitors')
+  @RequirePermission('cash_desk.record')
+  @ZodResponse({ status: 200, type: AdminFieldVisitorsDto })
+  async visitors() {
+    return { visitors: await this.admins.teamWithout('cash_desk.record') };
   }
 
   // A restaurant's receipt, to print on 80 mm or A4.

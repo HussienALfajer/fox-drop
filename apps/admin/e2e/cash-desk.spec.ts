@@ -48,7 +48,7 @@ test('opens the drawer, records a hand-in and shows the receipt', async ({ page 
   let open = false;
   let opened: unknown = null;
   await page.route('**/v1/admin/cash-desk/sessions/current*', (route) =>
-    route.fulfill({ json: { session: open ? drawer : null, currencies: ['TRY'] } }),
+    route.fulfill({ json: { session: open ? drawer : null, field: null, currencies: ['TRY'] } }),
   );
   await page.route('**/v1/admin/cash-desk/sessions', (route) => {
     opened = route.request().postDataJSON();
@@ -100,7 +100,11 @@ test('opens the drawer, records a hand-in and shows the receipt', async ({ page 
   await page.getByRole('link', { name: 'الصندوق' }).click();
   await page.getByLabel('المبلغ الافتتاحي (TRY)').fill('500');
   await page.getByRole('button', { name: 'فتح الصندوق' }).click();
-  expect(opened).toEqual({ cityId, floats: [{ currency: 'TRY', amount: '50000' }] });
+  expect(opened).toEqual({
+    cityId,
+    kind: 'office',
+    floats: [{ currency: 'TRY', amount: '50000' }],
+  });
 
   await page.getByLabel('ابحث عن الكابتن بالاسم أو الرقم').fill('سامر');
   await page.getByRole('button', { name: 'سامر خالد الحسن' }).click();
@@ -117,6 +121,54 @@ test('opens the drawer, records a hand-in and shows the receipt', async ({ page 
   await expect(page.getByText('تسليم نقد')).toBeVisible();
   await expect(page.getByRole('button', { name: 'طباعة 80 مم' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'طباعة A4' })).toBeVisible();
+});
+
+// AP §9.10.3 «زيارة ميدانية» (slice 2.19c): a field session opens with a
+// zero float from a phone and closes on its count at the office.
+test('opens a field session on a phone and closes it at the office', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await fakeSession(page, ['cash_desk.record']);
+  await page.route('**/v1/admin/cities', (route) => route.fulfill({ json: cities }));
+  const field = {
+    ...drawer,
+    id: '01900000-0000-7000-8000-0000000000d2',
+    kind: 'field',
+    currencies: [
+      { currency: 'TRY', openingFloat: '0', expected: '20000', counted: null, variance: null },
+    ],
+  };
+  let open = false;
+  const posted: unknown[] = [];
+  await page.route('**/v1/admin/cash-desk/sessions/current*', (route) =>
+    route.fulfill({ json: { session: null, field: open ? field : null, currencies: ['TRY'] } }),
+  );
+  await page.route('**/v1/admin/cash-desk/sessions', (route) => {
+    posted.push(route.request().postDataJSON());
+    open = true;
+    return route.fulfill({ status: 201, json: field });
+  });
+  await page.route(`**/v1/admin/cash-desk/sessions/${field.id}/close`, (route) => {
+    posted.push(route.request().postDataJSON());
+    open = false;
+    return route.fulfill({ json: { ...field, closedAt: '2026-11-12T12:00:00.000Z' } });
+  });
+
+  await page.goto('/cash-desk');
+  await page.getByRole('button', { name: 'فتح جلسة ميدانية' }).click();
+  await expect(page.getByRole('heading', { name: 'إقفال الجلسة الميدانية' })).toBeVisible();
+  await page
+    .getByRole('region', { name: 'الجلسة الميدانية' })
+    .getByLabel('النقد المعدود (TRY)')
+    .fill('200');
+  await page.getByRole('button', { name: 'إقفال الجلسة الميدانية' }).click();
+  await expect(page.getByRole('button', { name: 'فتح جلسة ميدانية' })).toBeVisible();
+  expect(posted).toEqual([
+    { cityId, kind: 'field', floats: [] },
+    { counted: [{ currency: 'TRY', amount: '20000' }], note: null },
+  ]);
+  expect(await page.evaluate<number>('document.documentElement.scrollWidth')).toBeLessThanOrEqual(
+    375,
+  );
 });
 
 test('keeps the desk from a role that does not record at it', async ({ page }) => {

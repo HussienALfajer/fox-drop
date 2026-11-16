@@ -33,6 +33,7 @@ import {
   receipts,
   type captainReceiptTypes,
   type receiptTypes,
+  type sessionKinds,
 } from './schema.js';
 
 export type CashDeskRefusal =
@@ -57,7 +58,14 @@ export type CashDeskRefusal =
   | 'balance_changed'
   // «تسوية المطاعم» (slice 2.19b).
   | 'unknown_restaurant'
-  | 'above_balance';
+  | 'above_balance'
+  // The field visit (slice 2.19c): a visitor not on the team, or one named
+  // in a field session, whose visitor is its own user.
+  | 'unknown_visitor'
+  | 'invalid_visitor'
+  // A field visit's receipt names its visitor: an account without a name
+  // (the first OWN) cannot hold a field session.
+  | 'name_required';
 
 export class CashDeskRefusedError extends Error {
   override readonly name = 'CashDeskRefusedError';
@@ -99,7 +107,7 @@ export interface DrawerSession {
   cityId: string;
   adminAccountId: string;
   adminName: string | null;
-  kind: 'office';
+  kind: SessionKind;
   openedAt: Date;
   closedAt: Date | null;
   closeNote: string | null;
@@ -107,6 +115,7 @@ export interface DrawerSession {
 }
 
 export type ReceiptType = (typeof receiptTypes)[number];
+export type SessionKind = (typeof sessionKinds)[number];
 // A captain's receipt; a restaurant's is merchant-settlement.service.ts's.
 export type CaptainReceiptType = (typeof captainReceiptTypes)[number];
 
@@ -227,18 +236,29 @@ export class CashDeskService {
   ) {}
 
   // «فتح الصندوق»: an office session with its float counted per currency;
-  // every enabled currency of the city gets a row (0 when not given).
+  // every enabled currency of the city gets a row (0 when not given). A
+  // field session (AP §9.10.3 «زيارة ميدانية», slice 2.19c) opens beside it
+  // with a zero float in every currency.
   async openSession(
     user: DeskUser,
     cityId: string,
     floats: CashLine[],
     now: Date,
+    kind: SessionKind = 'office',
   ): Promise<DrawerSession> {
     if (!(await this.geo.cityCode(cityId))) {
       throw new CashDeskRefusedError('unknown_city', 'no such city');
     }
     const enabled = await this.deskCurrencies(cityId);
     checkLines(floats, enabled, 0n);
+    if (kind === 'field') {
+      if (floats.some((line) => line.amount !== 0n)) {
+        throw new CashDeskRefusedError('invalid_amounts', 'a field session opens with zero');
+      }
+      if (!(await this.admins.names([user.accountId])).get(user.accountId)) {
+        throw new CashDeskRefusedError('name_required', 'the visitor is named on the receipt');
+      }
+    }
     const id = await this.database.db.transaction(async (tx) => {
       await tx.execute(
         sql`SELECT pg_advisory_xact_lock(hashtextextended(${`cashdesk.session:${user.accountId}`}, 0))`,
@@ -247,12 +267,16 @@ export class CashDeskService {
         .select({ id: drawerSessions.id })
         .from(drawerSessions)
         .where(
-          and(eq(drawerSessions.adminAccountId, user.accountId), isNull(drawerSessions.closedAt)),
+          and(
+            eq(drawerSessions.adminAccountId, user.accountId),
+            eq(drawerSessions.kind, kind),
+            isNull(drawerSessions.closedAt),
+          ),
         );
       if (open) throw new CashDeskRefusedError('session_open', 'a session is already open');
       const [created] = await tx
         .insert(drawerSessions)
-        .values({ cityId, adminAccountId: user.accountId, kind: 'office', openedAt: now })
+        .values({ cityId, adminAccountId: user.accountId, kind, openedAt: now })
         .returning({ id: drawerSessions.id });
       const sessionId = created!.id;
       const given = new Map(floats.map((line) => [line.currency, line.amount]));
@@ -273,7 +297,7 @@ export class CashDeskService {
           action: 'cash_desk.session_open',
           target: { type: 'drawer_session', id: sessionId },
           before: null,
-          after: { floats: floats.map(moneyOf) },
+          after: { kind, floats: kind === 'field' ? [] : floats.map(moneyOf) },
         },
         tx,
       );
@@ -289,14 +313,15 @@ export class CashDeskService {
       .map((entry) => entry.currency);
   }
 
-  // The user's open office session, or null.
-  async openSessionOf(adminAccountId: string): Promise<DrawerSession | null> {
+  // The user's open session of that kind, or null.
+  async openSessionOf(
+    adminAccountId: string,
+    kind: SessionKind = 'office',
+  ): Promise<DrawerSession | null> {
     const [row] = await this.database.db
       .select({ id: drawerSessions.id })
       .from(drawerSessions)
-      .where(
-        and(eq(drawerSessions.adminAccountId, adminAccountId), isNull(drawerSessions.closedAt)),
-      );
+      .where(openOf(adminAccountId, kind));
     return row ? this.session(row.id) : null;
   }
 
@@ -502,9 +527,7 @@ export class CashDeskService {
       const [session] = await tx
         .select()
         .from(drawerSessions)
-        .where(
-          and(eq(drawerSessions.adminAccountId, user.accountId), isNull(drawerSessions.closedAt)),
-        )
+        .where(openOf(user.accountId, 'office'))
         .for('share');
       if (!session) throw new CashDeskRefusedError('no_open_session', 'open the drawer first');
       if (session.cityId !== captain.cityId) {
@@ -1161,6 +1184,16 @@ function checkLines(lines: CashLine[], allowed: readonly string[], minimum: bigi
 // AP §4.8: the next number of the city's year, {CITY}-{YYYY}-{000001}. The
 // counter row is updated in the receipt's transaction, so a rollback gives
 // the number back and the sequence keeps no gap.
+// The user's open session of a kind: a captain's hand-in and settlement are
+// at the office; a restaurant's payment in either (slice 2.19c).
+export function openOf(adminAccountId: string, kind: SessionKind) {
+  return and(
+    eq(drawerSessions.adminAccountId, adminAccountId),
+    eq(drawerSessions.kind, kind),
+    isNull(drawerSessions.closedAt),
+  );
+}
+
 export async function nextNumber(
   tx: Tx,
   cityId: string,

@@ -18,7 +18,9 @@ part 'admin_restaurant_receipt_dto_output.g.dart';
 /// * [number]
 /// * [type]
 /// * [sessionId]
-/// * [method]
+/// * [method] - «في المكتب» or «زيارة ميدانية».
+/// * [visitorId]
+/// * [visitorName]
 /// * [cashierId]
 /// * [cashierName]
 /// * [restaurantId]
@@ -52,9 +54,16 @@ abstract class AdminRestaurantReceiptDtoOutput
   @BuiltValueField(wireName: r'sessionId')
   String get sessionId;
 
+  /// «في المكتب» or «زيارة ميدانية».
   @BuiltValueField(wireName: r'method')
   AdminRestaurantReceiptDtoOutputMethodEnum get method;
-  // enum methodEnum {  office,  };
+  // enum methodEnum {  office,  field,  };
+
+  @BuiltValueField(wireName: r'visitorId')
+  String? get visitorId;
+
+  @BuiltValueField(wireName: r'visitorName')
+  String? get visitorName;
 
   @BuiltValueField(wireName: r'cashierId')
   String get cashierId;
@@ -146,6 +155,20 @@ class _$AdminRestaurantReceiptDtoOutputSerializer
       object.method,
       specifiedType: const FullType(AdminRestaurantReceiptDtoOutputMethodEnum),
     );
+    yield r'visitorId';
+    yield object.visitorId == null
+        ? null
+        : serializers.serialize(
+            object.visitorId,
+            specifiedType: const FullType.nullable(String),
+          );
+    yield r'visitorName';
+    yield object.visitorName == null
+        ? null
+        : serializers.serialize(
+            object.visitorName,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'cashierId';
     yield serializers.serialize(
       object.cashierId,
@@ -284,6 +307,26 @@ class _$AdminRestaurantReceiptDtoOutputSerializer
                   )
                   as AdminRestaurantReceiptDtoOutputMethodEnum;
           result.method = valueDes;
+          break;
+        case r'visitorId':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.visitorId = valueDes;
+          break;
+        case r'visitorName':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.visitorName = valueDes;
           break;
         case r'cashierId':
           final valueDes =
@@ -426,10 +469,14 @@ class AdminRestaurantReceiptDtoOutputTypeEnum extends EnumClass {
       _$adminRestaurantReceiptDtoOutputTypeEnumValueOf(name);
 }
 
+/// «في المكتب» or «زيارة ميدانية».
 class AdminRestaurantReceiptDtoOutputMethodEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'office')
   static const AdminRestaurantReceiptDtoOutputMethodEnum office =
       _$adminRestaurantReceiptDtoOutputMethodEnum_office;
+  @BuiltValueEnumConst(wireName: r'field')
+  static const AdminRestaurantReceiptDtoOutputMethodEnum field =
+      _$adminRestaurantReceiptDtoOutputMethodEnum_field;
 
   static Serializer<AdminRestaurantReceiptDtoOutputMethodEnum> get serializer =>
       _$adminRestaurantReceiptDtoOutputMethodEnumSerializer;

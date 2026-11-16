@@ -119,6 +119,7 @@ async function admin(roles: string[]) {
   };
   return {
     user,
+    name: `Restaurant desk ${accounts}`,
     get: (url: string) => app.inject({ method: 'GET', url, cookies }),
     post: (url: string, payload: object, key: string | null = randomUUID()) =>
       app.inject({
@@ -196,9 +197,14 @@ async function settle(
   restaurantId: string,
   lines: { currency: string; amount: bigint }[],
   key = randomUUID(),
+  via: Pick<MerchantSettleCommand, 'session' | 'visitorId'> = {
+    session: 'office',
+    visitorId: null,
+  },
 ) {
   const preview = await settlements.preview(restaurantId, lines);
   const command: MerchantSettleCommand = {
+    ...via,
     restaurantId,
     due: preview.due,
     lines: preview.lines.map(({ currency, amount, base, rates }) => ({
@@ -276,6 +282,8 @@ describe('the restaurant settlement at the office', () => {
     const again = await settlements.settle(
       cashier.user,
       {
+        session: 'office',
+        visitorId: null,
         restaurantId: id,
         due: 46_000n,
         lines: [{ currency: 'TRY', amount: 20_000n, base: 20_000n, rates: [] }],
@@ -319,6 +327,8 @@ describe('the restaurant settlement at the office', () => {
     const id = await restaurant();
     await owes(id, 5_000n);
     const command: MerchantSettleCommand = {
+      session: 'office',
+      visitorId: null,
       restaurantId: id,
       due: 5_000n,
       lines: [{ currency: 'TRY', amount: 2_000n, base: 2_000n, rates: [] }],
@@ -338,6 +348,8 @@ describe('the restaurant settlement at the office', () => {
     const id = await restaurant();
     await owes(id, 5_000n);
     const command = (key: string): MerchantSettleCommand => ({
+      session: 'office',
+      visitorId: null,
       restaurantId: id,
       due: 5_000n,
       lines: [{ currency: 'TRY', amount: 5_000n, base: 5_000n, rates: [] }],
@@ -407,6 +419,8 @@ describe('the restaurant settlement at the office', () => {
       settlements.settle(
         cashier.user,
         {
+          session: 'office',
+          visitorId: null,
           restaurantId: id,
           due: dueShown,
           lines: [{ currency: 'USD', amount: 100n, base, rates: preview.lines[0]!.rates }],
@@ -459,6 +473,194 @@ describe('the restaurant settlement at the office', () => {
   });
 });
 
+// AP §9.10.3 tab 3 «زيارة ميدانية», RA §12.4 (slice 2.19c).
+describe('the field visit', () => {
+  it('opens a field session with a zero float beside the office one', async () => {
+    const { cashier, session } = await openDesk();
+    expect(
+      await refusal(
+        desk.openSession(
+          cashier.user,
+          azaz,
+          [{ currency: 'TRY', amount: 1_000n }],
+          new Date(),
+          'field',
+        ),
+      ),
+    ).toBe('invalid_amounts');
+    const field = await desk.openSession(cashier.user, azaz, [], new Date(), 'field');
+    expect(field).toMatchObject({ kind: 'field', closedAt: null });
+    expect(field.currencies.map((each) => each.openingFloat)).toEqual([0n, 0n]);
+    expect(await refusal(desk.openSession(cashier.user, azaz, [], new Date(), 'field'))).toBe(
+      'session_open',
+    );
+    // The receipt names the visitor: an account without a name opens none.
+    const unnamed = await admin(['OWN']);
+    await sql.query('UPDATE identity.admin_accounts SET name = NULL WHERE id = $1', [
+      unnamed.user.accountId,
+    ]);
+    expect(await refusal(desk.openSession(unnamed.user, azaz, [], new Date(), 'field'))).toBe(
+      'name_required',
+    );
+    expect((await desk.openSessionOf(cashier.user.accountId))?.id).toBe(session.id);
+    expect((await desk.openSessionOf(cashier.user.accountId, 'field'))?.id).toBe(field.id);
+  });
+
+  it('records the payment on the spot with its receipt at once, closed at the office', async () => {
+    const visitor = await admin(['FIN']);
+    const id = await restaurant();
+    await owes(id, 46_000n);
+    const field = { session: 'field', visitorId: null } as const;
+    expect(
+      await refusal(
+        settle(visitor.user, id, [{ currency: 'TRY', amount: 20_000n }], randomUUID(), field),
+      ),
+    ).toBe('no_open_session');
+    const session = await desk.openSession(visitor.user, azaz, [], new Date(), 'field');
+    // A captain's hand-in and settlement take the office session only.
+    expect(await desk.openSessionOf(visitor.user.accountId)).toBeNull();
+
+    const receipt = await settle(
+      visitor.user,
+      id,
+      [{ currency: 'TRY', amount: 20_000n }],
+      randomUUID(),
+      field,
+    );
+
+    expect(receipt).toMatchObject({
+      type: 'merchant_settlement',
+      sessionId: session.id,
+      method: 'field',
+      visitorId: visitor.user.accountId,
+      visitorName: visitor.name,
+      cashierId: visitor.user.accountId,
+      dueAfter: 26_000n,
+    });
+    expect(await due(id)).toBe(26_000n);
+    expect(await receiptPushes(id)).toHaveLength(1);
+    expect((await desk.session(session.id))?.currencies[0]).toMatchObject({
+      currency: 'TRY',
+      expected: 20_000n,
+    });
+    // The cash reaches the office: the field session closes on its count.
+    const closed = await desk.closeSession(
+      visitor.user,
+      session.id,
+      [
+        { currency: 'TRY', amount: 20_000n },
+        { currency: 'USD', amount: 0n },
+      ],
+      null,
+      new Date(),
+    );
+    expect(closed.closedAt).not.toBeNull();
+  });
+
+  it('records at the desk the visit of a staff member without FIN, naming them', async () => {
+    const { cashier, session } = await openDesk();
+    const visitor = await admin([]);
+    const id = await restaurant();
+    await owes(id, 9_000n);
+
+    const receipt = await settle(
+      cashier.user,
+      id,
+      [{ currency: 'TRY', amount: 9_000n }],
+      randomUUID(),
+      { session: 'office', visitorId: visitor.user.accountId },
+    );
+
+    expect(receipt).toMatchObject({
+      sessionId: session.id,
+      method: 'field',
+      visitorId: visitor.user.accountId,
+      visitorName: visitor.name,
+      cashierId: cashier.user.accountId,
+      dueAfter: 0n,
+    });
+    expect(await receiptPushes(id)).toHaveLength(1);
+  });
+
+  it('refuses a visitor not on the team, and a visitor named in a field session', async () => {
+    const { cashier } = await openDesk();
+    await desk.openSession(cashier.user, azaz, [], new Date(), 'field');
+    const id = await restaurant();
+    await owes(id, 9_000n);
+    const lines = [{ currency: 'TRY', amount: 1_000n }];
+    expect(
+      await refusal(
+        settle(cashier.user, id, lines, randomUUID(), {
+          session: 'office',
+          visitorId: randomUUID(),
+        }),
+      ),
+    ).toBe('unknown_visitor');
+    const other = await admin([]);
+    expect(
+      await refusal(
+        settle(cashier.user, id, lines, randomUUID(), {
+          session: 'field',
+          visitorId: other.user.accountId,
+        }),
+      ),
+    ).toBe('invalid_visitor');
+    // An OWN or FIN visitor records the visit in their own field session.
+    for (const desker of [cashier, await admin(['OWN'])]) {
+      expect(
+        await refusal(
+          settle(cashier.user, id, lines, randomUUID(), {
+            session: 'office',
+            visitorId: desker.user.accountId,
+          }),
+        ),
+      ).toBe('unknown_visitor');
+    }
+    expect(await due(id)).toBe(9_000n);
+  });
+
+  it('answers both sessions, the team to name and a field visit over HTTP', async () => {
+    const cashier = await admin(['FIN']);
+    const visitor = await admin([]);
+    const opened = await cashier.post(
+      '/v1/admin/cash-desk/sessions',
+      { cityId: azaz, kind: 'field', floats: [] },
+      null,
+    );
+    expect(opened.statusCode).toBe(201);
+    expect(opened.json()).toMatchObject({ kind: 'field' });
+    const current = await cashier.get(`/v1/admin/cash-desk/sessions/current?cityId=${azaz}`);
+    expect(current.json()).toMatchObject({ session: null, field: { kind: 'field' } });
+
+    const team = await cashier.get('/v1/admin/cash-desk/visitors');
+    expect(team.statusCode).toBe(200);
+    expect(team.json().visitors).toContainEqual({
+      id: visitor.user.accountId,
+      name: visitor.name,
+    });
+    expect(team.json().visitors.map((each: { id: string }) => each.id)).not.toContain(
+      cashier.user.accountId,
+    );
+
+    const id = await restaurant();
+    await owes(id, 5_000n);
+    const settled = await cashier.post('/v1/admin/cash-desk/restaurant-settlements', {
+      restaurantId: id,
+      due: '5000',
+      session: 'field',
+      lines: [{ currency: 'TRY', amount: '5000', base: '5000', rates: [] }],
+    });
+    expect(settled.statusCode).toBe(201);
+    expect(settled.json()).toMatchObject({
+      method: 'field',
+      visitorId: cashier.user.accountId,
+      visitorName: cashier.name,
+    });
+    const read = await cashier.get(`/v1/admin/cash-desk/restaurant-receipts/${settled.json().id}`);
+    expect(read.json()).toMatchObject({ method: 'field', visitorName: cashier.name });
+  });
+});
+
 describe('the routes of the restaurant settlement', () => {
   it('quotes and settles for FIN, money as strings, with the key', async () => {
     const cashier = await admin(['FIN']);
@@ -475,6 +677,8 @@ describe('the routes of the restaurant settlement', () => {
     expect(preview.json()).toMatchObject({ due: '5000', total: '3000', remaining: '2000' });
 
     const body = {
+      session: 'office',
+      visitorId: null,
       restaurantId: id,
       due: '5000',
       lines: [{ currency: 'TRY', amount: '3000', base: '3000', rates: [] }],

@@ -10,7 +10,7 @@ import 'package:built_value/serializer.dart';
 
 part 'admin_current_drawer_session_dto_output_session.g.dart';
 
-/// AdminCurrentDrawerSessionDtoOutputSession
+/// The office session.
 ///
 /// Properties:
 /// * [id]
@@ -43,7 +43,7 @@ abstract class AdminCurrentDrawerSessionDtoOutputSession
 
   @BuiltValueField(wireName: r'kind')
   AdminCurrentDrawerSessionDtoOutputSessionKindEnum get kind;
-  // enum kindEnum {  office,  };
+  // enum kindEnum {  office,  field,  };
 
   @BuiltValueField(wireName: r'openedAt')
   DateTime get openedAt;
@@ -296,6 +296,9 @@ class AdminCurrentDrawerSessionDtoOutputSessionKindEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'office')
   static const AdminCurrentDrawerSessionDtoOutputSessionKindEnum office =
       _$adminCurrentDrawerSessionDtoOutputSessionKindEnum_office;
+  @BuiltValueEnumConst(wireName: r'field')
+  static const AdminCurrentDrawerSessionDtoOutputSessionKindEnum field =
+      _$adminCurrentDrawerSessionDtoOutputSessionKindEnum_field;
 
   static Serializer<AdminCurrentDrawerSessionDtoOutputSessionKindEnum>
   get serializer =>

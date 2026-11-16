@@ -8921,6 +8921,32 @@
         ]
       }
     },
+    "/v1/admin/cash-desk/visitors": {
+      "get": {
+        "operationId": "adminRestaurantSettlementVisitors",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminFieldVisitorsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/cash-desk/restaurant-receipts/{receiptId}": {
       "get": {
         "operationId": "adminRestaurantSettlementReceipt",
@@ -34693,7 +34719,8 @@
                   "kind": {
                     "type": "string",
                     "enum": [
-                      "office"
+                      "office",
+                      "field"
                     ]
                   },
                   "openedAt": {
@@ -34787,7 +34814,135 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "The office session."
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "cityId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "adminAccountId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "adminName": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "office",
+                      "field"
+                    ]
+                  },
+                  "openedAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "closedAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "closeNote": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "currencies": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "currency": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{3}$"
+                        },
+                        "openingFloat": {
+                          "type": "string",
+                          "pattern": "^\\d{1,18}$"
+                        },
+                        "expected": {
+                          "type": "string",
+                          "pattern": "^-?\\d{1,18}$",
+                          "description": "The float plus the cash moved; as at the close once closed."
+                        },
+                        "counted": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "pattern": "^\\d{1,18}$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "variance": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "pattern": "^-?\\d{1,18}$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "currency",
+                        "openingFloat",
+                        "expected",
+                        "counted",
+                        "variance"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "id",
+                  "cityId",
+                  "adminAccountId",
+                  "adminName",
+                  "kind",
+                  "openedAt",
+                  "closedAt",
+                  "closeNote",
+                  "currencies"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The field session of a restaurant visit (AP §9.10.3), opened beside it."
           },
           "currencies": {
             "type": "array",
@@ -34800,6 +34955,7 @@
         },
         "required": [
           "session",
+          "field",
           "currencies"
         ],
         "additionalProperties": false
@@ -34836,7 +34992,8 @@
                 "kind": {
                   "type": "string",
                   "enum": [
-                    "office"
+                    "office",
+                    "field"
                   ]
                 },
                 "openedAt": {
@@ -34942,6 +35099,15 @@
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           },
+          "kind": {
+            "default": "office",
+            "description": "A field session (a restaurant visit) opens with a zero float.",
+            "type": "string",
+            "enum": [
+              "office",
+              "field"
+            ]
+          },
           "floats": {
             "maxItems": 10,
             "type": "array",
@@ -34996,7 +35162,8 @@
           "kind": {
             "type": "string",
             "enum": [
-              "office"
+              "office",
+              "field"
             ]
           },
           "openedAt": {
@@ -35786,6 +35953,28 @@
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           },
+          "session": {
+            "default": "office",
+            "description": "The user's session it is recorded in: the office's, or the field's on a visit.",
+            "type": "string",
+            "enum": [
+              "office",
+              "field"
+            ]
+          },
+          "visitorId": {
+            "default": null,
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "due": {
             "type": "string",
             "pattern": "^-?\\d{1,18}$",
@@ -35880,7 +36069,27 @@
           "method": {
             "type": "string",
             "enum": [
-              "office"
+              "office",
+              "field"
+            ],
+            "description": "«في المكتب» or «زيارة ميدانية»."
+          },
+          "visitorId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "visitorName": {
+            "type": [
+              "string",
+              "null"
             ]
           },
           "cashierId": {
@@ -35957,6 +36166,8 @@
           "type",
           "sessionId",
           "method",
+          "visitorId",
+          "visitorName",
           "cashierId",
           "cashierName",
           "restaurantId",
@@ -35967,6 +36178,36 @@
           "dueAfter",
           "createdAt",
           "lines"
+        ],
+        "additionalProperties": false
+      },
+      "AdminFieldVisitorsDto_Output": {
+        "type": "object",
+        "properties": {
+          "visitors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "visitors"
         ],
         "additionalProperties": false
       },

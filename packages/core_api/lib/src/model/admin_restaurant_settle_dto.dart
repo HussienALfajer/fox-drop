@@ -14,6 +14,8 @@ part 'admin_restaurant_settle_dto.g.dart';
 ///
 /// Properties:
 /// * [restaurantId]
+/// * [session] - The user's session it is recorded in: the office's, or the field's on a visit.
+/// * [visitorId]
 /// * [due] - The balance the screen showed.
 /// * [lines]
 @BuiltValue()
@@ -22,6 +24,14 @@ abstract class AdminRestaurantSettleDto
         Built<AdminRestaurantSettleDto, AdminRestaurantSettleDtoBuilder> {
   @BuiltValueField(wireName: r'restaurantId')
   String get restaurantId;
+
+  /// The user's session it is recorded in: the office's, or the field's on a visit.
+  @BuiltValueField(wireName: r'session')
+  AdminRestaurantSettleDtoSessionEnum? get session;
+  // enum sessionEnum {  office,  field,  };
+
+  @BuiltValueField(wireName: r'visitorId')
+  String? get visitorId;
 
   /// The balance the screen showed.
   @BuiltValueField(wireName: r'due')
@@ -37,7 +47,8 @@ abstract class AdminRestaurantSettleDto
   ]) = _$AdminRestaurantSettleDto;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminRestaurantSettleDtoBuilder b) => b;
+  static void _defaults(AdminRestaurantSettleDtoBuilder b) =>
+      b..session = AdminRestaurantSettleDtoSessionEnum.valueOf('office');
 
   @BuiltValueSerializer(custom: true)
   static Serializer<AdminRestaurantSettleDto> get serializer =>
@@ -65,6 +76,20 @@ class _$AdminRestaurantSettleDtoSerializer
       object.restaurantId,
       specifiedType: const FullType(String),
     );
+    if (object.session != null) {
+      yield r'session';
+      yield serializers.serialize(
+        object.session,
+        specifiedType: const FullType(AdminRestaurantSettleDtoSessionEnum),
+      );
+    }
+    if (object.visitorId != null) {
+      yield r'visitorId';
+      yield serializers.serialize(
+        object.visitorId,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
     yield r'due';
     yield serializers.serialize(
       object.due,
@@ -113,6 +138,28 @@ class _$AdminRestaurantSettleDtoSerializer
                   as String;
           result.restaurantId = valueDes;
           break;
+        case r'session':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminRestaurantSettleDtoSessionEnum,
+                    ),
+                  )
+                  as AdminRestaurantSettleDtoSessionEnum?;
+          if (valueDes == null) continue;
+          result.session = valueDes;
+          break;
+        case r'visitorId':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.visitorId = valueDes;
+          break;
         case r'due':
           final valueDes =
               serializers.deserialize(
@@ -160,4 +207,24 @@ class _$AdminRestaurantSettleDtoSerializer
     );
     return result.build();
   }
+}
+
+/// The user's session it is recorded in: the office's, or the field's on a visit.
+class AdminRestaurantSettleDtoSessionEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'office')
+  static const AdminRestaurantSettleDtoSessionEnum office =
+      _$adminRestaurantSettleDtoSessionEnum_office;
+  @BuiltValueEnumConst(wireName: r'field')
+  static const AdminRestaurantSettleDtoSessionEnum field =
+      _$adminRestaurantSettleDtoSessionEnum_field;
+
+  static Serializer<AdminRestaurantSettleDtoSessionEnum> get serializer =>
+      _$adminRestaurantSettleDtoSessionEnumSerializer;
+
+  const AdminRestaurantSettleDtoSessionEnum._(String name) : super(name);
+
+  static BuiltSet<AdminRestaurantSettleDtoSessionEnum> get values =>
+      _$adminRestaurantSettleDtoSessionEnumValues;
+  static AdminRestaurantSettleDtoSessionEnum valueOf(String name) =>
+      _$adminRestaurantSettleDtoSessionEnumValueOf(name);
 }

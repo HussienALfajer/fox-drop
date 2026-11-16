@@ -4,17 +4,24 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.19c, the field visit (`docs/roadmap.md`, Phase 2, Money, under 2.19).
+Slice 2.19d, «الحساب» in the restaurant app (`docs/roadmap.md`, Phase 2, Money, under 2.19).
 
-- **Roadmap line:** 2.19c The field visit, in the server and the panel: the `field` drawer session opened with a zero float by OWN or FIN from a phone, the payment recorded on the spot with its receipt at once, the field session closed when the cash reaches the office; a visitor without FIN recorded at the desk with the visitor's name (AP §9.10.3, RA §12.4). The owner opens a field session on a phone, records a payment and closes it.
-- **Specs:** AP §9.10.3 tab 3 «زيارة ميدانية» and the drawer sessions («A user can have one office session and one field session open at a time»), RA §12.4 (the method «في المكتب» or «زيارة ميدانية», the staff member; the receipt at once for OWN or FIN, otherwise when the cash reaches the desk), `docs/domain/07-restaurant-account.md` (AP §8.7: «recording the staff member who visited»), the cashdesk module's `CLAUDE.md` (drawer sessions, «تسوية» of a restaurant), `apps/admin/CLAUDE.md`.
-- **Branch:** `feat/restaurant-field-visit`.
+- **Roadmap line:** 2.19d «الحساب» in the restaurant app, owners only: the order detail's owner lines (the commission, the restaurant-funded discount, «صافيك من الطلب», «طلب تجريبي — لا عمولة»), the balance card «المستحق عليك حتى الآن» with «موعد التسوية», «قبضت اليوم من الكباتن» with today's pickups, this week by day with the exceptions in their Arabic labels, the current commission rate, as a plain layout until the design (RA §8.4, §12.1–12.2, §12.5, R10). An owner sees the commission and the running balance after a delivery, and a cashier sees neither.
+- **Specs:** RA §8.4 (`docs/product/v1/restaurant-app/08-orders/04-order-detail.md`, the owner lines), RA §12.1, §12.2 and §12.5 (`12-money.md`), R10, AP §8.4 and §8.7 (`docs/domain/07-restaurant-account.md`), the cashdesk module's `CLAUDE.md` (the weekly statement, `merchantEntryCause`, the statement's status), `apps/customer/CLAUDE.md` (the Flutter apps' rules), `packages/core_l10n/CLAUDE.md`.
+- **Branch:** `feat/restaurant-account-screen`.
 - **Plan:**
-  - [ ] Migration: `session_kinds` gains `field` (`drawer_sessions_kind_values`), a field session opens with a zero float in every currency; `receipts` keeps the method and the visitor's name for a payment recorded at the desk for a visitor without FIN; the database test.
-  - [ ] The field session (test first): `openSession` with `kind: field` (one office and one field session per user, `drawer_sessions_one_open` by kind; zero float), the settlement in a chosen session (`sessionId` or `kind`), the receipt's method «زيارة ميدانية» from a field session, and the close when the cash reaches the office (how the cash moves into the office drawer: ask the owner if no entry type fits).
-  - [ ] A visitor without FIN: the desk records the payment with the visitor's name, method «زيارة ميدانية», receipt issued then.
-  - [ ] The panel: «فتح جلسة ميدانية» and its close, the session chosen on «تسوية», the visitor's name, the method on the receipt; usable at phone width, unstyled until the design.
-  - [ ] The modules' `CLAUDE.md`, the reviewer, the hand-over to 2.19d.
+  - [ ] The server, test first: `GET /v1/merchant/account` for owners only (a cashier `403`): the balance (+ owes) in the base, the next cutoff «موعد التسوية», the current commission rate and any scheduled change, today's pickups since the business-day cutoff (order, time, captain, the currency lines), and this week's entries since the latest statement grouped by day, each order's commission and discount share and each exception with its order, cause and reason.
+  - [ ] The order detail's owner lines on the merchant order route, owners only: the commission, the restaurant-funded discount, «صافيك من الطلب», «طلب تجريبي — لا عمولة».
+  - [ ] The restaurant app: «الحساب» for owners (hidden from a cashier), the balance card, today, this week by day with the exception labels in `core_l10n`, the commission rate; the order detail's owner lines; a plain layout, no styling until the design.
+  - [ ] The modules' `CLAUDE.md`, the reviewer, the hand-over to 2.19e.
+
+### Left from 2.19c (`feat/restaurant-field-visit`)
+
+- **Before deploying to staging:** migration 0073 lets `cashdesk.drawer_sessions.kind` be `field` and gives `cashdesk.receipts` `method` (default `office`), `visitor_id` and `visitor_name` (`receipts_visitor`). Expand only. Open no field session while the 2.19b server still serves, and close every field session before any rollback below 2.19c: the old server takes any open session of the user as its drawer. New route `GET /v1/admin/cash-desk/visitors`; `POST …/sessions` takes `kind`; `GET …/sessions/current` answers `field`; `POST …/restaurant-settlements` takes `session` and `visitorId`; the restaurant receipt answers `method`, `visitorId`, `visitorName`. Deploy the server before the panel.
+- **To check on staging:** on a phone, «الصندوق» → «فتح جلسة ميدانية» (zero float); a restaurant that owes → «تسوية»: the field session is chosen, «تُسجَّل في جلستك الميدانية…»; confirm: «إيصال AZ-…» with «طريقة التسوية: زيارة ميدانية» and «الموظف الزائر: {your name}», the owners' push at once; back at the office «إقفال الجلسة الميدانية» with the counted cash. At the office drawer, «زيارة ميدانية بواسطة:» lists the team without the desk's permission; choosing one issues the receipt with that visitor.
+- **Owner decisions (2026-11-16):** closing a field session is a count only; its cash stays on the field session's own `platform.cash` accounts, never moved into the office drawer (as a closed office session's cash). A visitor without FIN is chosen from the active team accounts, not typed.
+- **Decided by us:** the visitor list leaves out every account holding `cash_desk.record` (OWN and FIN visitors record in their own field session); an account without a name (the first OWN) cannot open a field session (`name_required`), since the receipt names the visitor; the panel's «تسوية» takes the field session whenever it is open; a field session may also pay a restaurant the platform owes, from the cash it collected.
+- **Not yet:** the restaurant app's money screens and receipts (2.19d, 2.19e); moving a closed session's cash to a safe or a bank (no entry type yet).
 
 ### Left from 2.19b (`feat/restaurant-office-settlement`)
 

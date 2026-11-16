@@ -8,7 +8,7 @@ part of 'admin_drawer_sessions_dto_output.dart';
 
 class _$AdminDrawerSessionsDtoOutput extends AdminDrawerSessionsDtoOutput {
   @override
-  final BuiltList<AdminDrawerSessionsDtoOutputSessionsInner> sessions;
+  final BuiltList<AdminCurrentDrawerSessionDtoOutputField?> sessions;
 
   factory _$AdminDrawerSessionsDtoOutput([
     void Function(AdminDrawerSessionsDtoOutputBuilder)? updates,
@@ -54,12 +54,12 @@ class AdminDrawerSessionsDtoOutputBuilder
         > {
   _$AdminDrawerSessionsDtoOutput? _$v;
 
-  ListBuilder<AdminDrawerSessionsDtoOutputSessionsInner>? _sessions;
-  ListBuilder<AdminDrawerSessionsDtoOutputSessionsInner> get sessions =>
+  ListBuilder<AdminCurrentDrawerSessionDtoOutputField?>? _sessions;
+  ListBuilder<AdminCurrentDrawerSessionDtoOutputField?> get sessions =>
       _$this._sessions ??=
-          ListBuilder<AdminDrawerSessionsDtoOutputSessionsInner>();
+          ListBuilder<AdminCurrentDrawerSessionDtoOutputField?>();
   set sessions(
-    ListBuilder<AdminDrawerSessionsDtoOutputSessionsInner>? sessions,
+    ListBuilder<AdminCurrentDrawerSessionDtoOutputField?>? sessions,
   ) => _$this._sessions = sessions;
 
   AdminDrawerSessionsDtoOutputBuilder() {

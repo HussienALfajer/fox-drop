@@ -6,9 +6,77 @@ part of 'admin_open_drawer_session_dto.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const AdminOpenDrawerSessionDtoKindEnum
+_$adminOpenDrawerSessionDtoKindEnum_office =
+    const AdminOpenDrawerSessionDtoKindEnum._('office');
+const AdminOpenDrawerSessionDtoKindEnum
+_$adminOpenDrawerSessionDtoKindEnum_field =
+    const AdminOpenDrawerSessionDtoKindEnum._('field');
+
+AdminOpenDrawerSessionDtoKindEnum _$adminOpenDrawerSessionDtoKindEnumValueOf(
+  String name,
+) {
+  switch (name) {
+    case 'office':
+      return _$adminOpenDrawerSessionDtoKindEnum_office;
+    case 'field':
+      return _$adminOpenDrawerSessionDtoKindEnum_field;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<AdminOpenDrawerSessionDtoKindEnum>
+_$adminOpenDrawerSessionDtoKindEnumValues =
+    BuiltSet<AdminOpenDrawerSessionDtoKindEnum>(
+      const <AdminOpenDrawerSessionDtoKindEnum>[
+        _$adminOpenDrawerSessionDtoKindEnum_office,
+        _$adminOpenDrawerSessionDtoKindEnum_field,
+      ],
+    );
+
+Serializer<AdminOpenDrawerSessionDtoKindEnum>
+_$adminOpenDrawerSessionDtoKindEnumSerializer =
+    _$AdminOpenDrawerSessionDtoKindEnumSerializer();
+
+class _$AdminOpenDrawerSessionDtoKindEnumSerializer
+    implements PrimitiveSerializer<AdminOpenDrawerSessionDtoKindEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'office': 'office',
+    'field': 'field',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'office': 'office',
+    'field': 'field',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[AdminOpenDrawerSessionDtoKindEnum];
+  @override
+  final String wireName = 'AdminOpenDrawerSessionDtoKindEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    AdminOpenDrawerSessionDtoKindEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  AdminOpenDrawerSessionDtoKindEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => AdminOpenDrawerSessionDtoKindEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
 class _$AdminOpenDrawerSessionDto extends AdminOpenDrawerSessionDto {
   @override
   final String cityId;
+  @override
+  final AdminOpenDrawerSessionDtoKindEnum? kind;
   @override
   final BuiltList<AdminOpenDrawerSessionDtoFloatsInner> floats;
 
@@ -16,8 +84,11 @@ class _$AdminOpenDrawerSessionDto extends AdminOpenDrawerSessionDto {
     void Function(AdminOpenDrawerSessionDtoBuilder)? updates,
   ]) => (AdminOpenDrawerSessionDtoBuilder()..update(updates))._build();
 
-  _$AdminOpenDrawerSessionDto._({required this.cityId, required this.floats})
-    : super._();
+  _$AdminOpenDrawerSessionDto._({
+    required this.cityId,
+    this.kind,
+    required this.floats,
+  }) : super._();
   @override
   AdminOpenDrawerSessionDto rebuild(
     void Function(AdminOpenDrawerSessionDtoBuilder) updates,
@@ -32,6 +103,7 @@ class _$AdminOpenDrawerSessionDto extends AdminOpenDrawerSessionDto {
     if (identical(other, this)) return true;
     return other is AdminOpenDrawerSessionDto &&
         cityId == other.cityId &&
+        kind == other.kind &&
         floats == other.floats;
   }
 
@@ -39,6 +111,7 @@ class _$AdminOpenDrawerSessionDto extends AdminOpenDrawerSessionDto {
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, cityId.hashCode);
+    _$hash = $jc(_$hash, kind.hashCode);
     _$hash = $jc(_$hash, floats.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -48,6 +121,7 @@ class _$AdminOpenDrawerSessionDto extends AdminOpenDrawerSessionDto {
   String toString() {
     return (newBuiltValueToStringHelper(r'AdminOpenDrawerSessionDto')
           ..add('cityId', cityId)
+          ..add('kind', kind)
           ..add('floats', floats))
         .toString();
   }
@@ -61,6 +135,10 @@ class AdminOpenDrawerSessionDtoBuilder
   String? _cityId;
   String? get cityId => _$this._cityId;
   set cityId(String? cityId) => _$this._cityId = cityId;
+
+  AdminOpenDrawerSessionDtoKindEnum? _kind;
+  AdminOpenDrawerSessionDtoKindEnum? get kind => _$this._kind;
+  set kind(AdminOpenDrawerSessionDtoKindEnum? kind) => _$this._kind = kind;
 
   ListBuilder<AdminOpenDrawerSessionDtoFloatsInner>? _floats;
   ListBuilder<AdminOpenDrawerSessionDtoFloatsInner> get floats =>
@@ -76,6 +154,7 @@ class AdminOpenDrawerSessionDtoBuilder
     final $v = _$v;
     if ($v != null) {
       _cityId = $v.cityId;
+      _kind = $v.kind;
       _floats = $v.floats.toBuilder();
       _$v = null;
     }
@@ -106,6 +185,7 @@ class AdminOpenDrawerSessionDtoBuilder
               r'AdminOpenDrawerSessionDto',
               'cityId',
             ),
+            kind: kind,
             floats: floats.build(),
           );
     } catch (_) {

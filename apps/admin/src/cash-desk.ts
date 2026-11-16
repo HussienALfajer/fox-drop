@@ -190,12 +190,13 @@ export function useSessions(cityId: string | undefined) {
 }
 
 export type SessionRefusal =
-  'session_open' | 'session_closed' | 'note_required' | 'invalid_amounts';
+  'session_open' | 'session_closed' | 'note_required' | 'invalid_amounts' | 'name_required';
 const sessionRefusals: readonly string[] = [
   'session_open',
   'session_closed',
   'note_required',
   'invalid_amounts',
+  'name_required',
 ];
 
 export type SessionResult =
@@ -216,13 +217,14 @@ function sessionResult(
   throw new Error(`The drawer session command failed with ${status}.`);
 }
 
-// «فتح الصندوق». A second open is refused, so it needs no key.
-export function useOpenSession(cityId: string) {
+// «فتح الصندوق», or «فتح جلسة ميدانية» with a zero float (AP §9.10.3,
+// slice 2.19c). A second open is refused, so it needs no key.
+export function useOpenSession(cityId: string, kind: DrawerSession['kind'] = 'office') {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (floats: CashLine[]): Promise<SessionResult> => {
       const { data, error, response } = await api.POST('/v1/admin/cash-desk/sessions', {
-        body: { cityId, floats },
+        body: { cityId, kind, floats },
       });
       return sessionResult(data, error, response.status);
     },

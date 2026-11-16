@@ -2,16 +2,19 @@ import { useQuery } from '@tanstack/react-query';
 import { getRouteApi, Link } from '@tanstack/react-router';
 import { type FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type CashLine, type Paper, useCurrentSession } from './cash-desk.js';
+import { type CashLine, type CurrentSession, type Paper, useCurrentSession } from './cash-desk.js';
 import { citiesQuery } from './cities.js';
 import { formatDateTime, formatMoney } from './format.js';
 import { BalanceText } from './restaurant-settlement-page.js';
 import {
   aboveDue,
+  defaultSession,
   type RestaurantReceipt,
   type RestaurantSettlementPreview,
   restaurantSettleBodyOf,
+  type SettleVia,
   settlementLinesOf,
+  useFieldVisitors,
   useRestaurantReceipt,
   useRestaurantSettle,
   useRestaurantSettlementPreview,
@@ -26,14 +29,20 @@ const receiptTypeLabelKeys = {
   merchant_payout: 'cashDesk.receiptType.merchant_payout',
 } as const satisfies Record<RestaurantReceipt['type'], string>;
 
+const methodKeys = {
+  office: 'restaurantSettlement.receipt.methodName.office',
+  field: 'restaurantSettlement.receipt.methodName.field',
+} as const satisfies Record<RestaurantReceipt['method'], string>;
+
 const paperClasses = { thermal: 'paper-thermal', a4: 'paper-a4' } as const satisfies Record<
   Paper,
   string
 >;
 
-// AP §9.10.3 tab 3, AP §8.7, RA §12.4 (slice 2.19b): the settlement at the
-// office. The cash per currency, in part or in full, reviewed at the current
-// rate, then «تأكيد وإصدار الإيصال». Unstyled until the design.
+// AP §9.10.3 tab 3, AP §8.7, RA §12.4 (slices 2.19b, 2.19c): the
+// settlement at the office or on a field visit. The cash per currency, in
+// part or in full, reviewed at the current rate, then «تأكيد وإصدار
+// الإيصال». Unstyled until the design.
 export function RestaurantSettlePage() {
   const { t } = useTranslation();
   const { restaurantId } = settleRoute.useParams();
@@ -41,6 +50,9 @@ export function RestaurantSettlePage() {
   const balance = useRestaurantSettlementPreview(restaurantId, []);
   const known = balance.data && balance.data !== 'refused' ? balance.data : undefined;
   const current = useCurrentSession(known?.cityId);
+  const first =
+    current.data &&
+    defaultSession({ office: current.data.session !== null, field: current.data.field !== null });
   return (
     <main>
       <p>
@@ -63,7 +75,7 @@ export function RestaurantSettlePage() {
           </p>
           {known.due === '0' ? (
             <p>{t('restaurantSettlement.form.nothingDue')}</p>
-          ) : !current.data.session ? (
+          ) : !first ? (
             <p>
               <Link to="/cash-desk" search={search}>
                 {t('restaurantSettlement.form.noSession')}
@@ -73,7 +85,8 @@ export function RestaurantSettlePage() {
             <SettleForm
               restaurantId={restaurantId}
               collect={BigInt(known.due) > 0n}
-              currencies={current.data.session.currencies.map((each) => each.currency)}
+              current={current.data}
+              first={first}
             />
           )}
         </>
@@ -85,13 +98,26 @@ export function RestaurantSettlePage() {
 function SettleForm({
   restaurantId,
   collect,
-  currencies,
+  current,
+  first,
 }: {
   restaurantId: string;
   collect: boolean;
-  currencies: string[];
+  current: CurrentSession;
+  first: SettleVia['session'];
 }) {
   const { t } = useTranslation();
+  const [picked, setPicked] = useState<SettleVia['session']>(first);
+  // A session closed elsewhere since: back to the one still open.
+  const chosen = (picked === 'field' ? current.field : current.session) ? picked : first;
+  const [visitorId, setVisitorId] = useState('');
+  const visitors = useFieldVisitors();
+  const via: SettleVia =
+    chosen === 'field'
+      ? { session: 'field', visitorId: null }
+      : { session: 'office', visitorId: visitorId || null };
+  const open = chosen === 'field' ? current.field : current.session;
+  const currencies = open ? open.currencies.map((each) => each.currency) : [];
   const [typed, setTyped] = useState<Record<string, string>>({});
   const [reviewed, setReviewed] = useState<CashLine[] | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
@@ -114,6 +140,56 @@ function SettleForm({
   return (
     <>
       <form onSubmit={review}>
+        {current.session && current.field && (
+          <fieldset>
+            <legend>{t('restaurantSettlement.form.session')}</legend>
+            {(['office', 'field'] as const).map((kind) => (
+              <label key={kind}>
+                <input
+                  type="radio"
+                  name="session"
+                  checked={chosen === kind}
+                  onChange={() => {
+                    setPicked(kind);
+                    setReviewed(null);
+                  }}
+                />{' '}
+                {t(
+                  kind === 'office'
+                    ? 'restaurantSettlement.form.sessionOffice'
+                    : 'restaurantSettlement.form.sessionField',
+                )}
+              </label>
+            ))}
+          </fieldset>
+        )}
+        {chosen === 'field' ? (
+          <p>{t('restaurantSettlement.form.inField')}</p>
+        ) : (
+          <>
+            <p>
+              <label>
+                {t('restaurantSettlement.form.visitor')}{' '}
+                <select
+                  value={visitorId}
+                  onChange={(event) => {
+                    setVisitorId(event.target.value);
+                    setReviewed(null);
+                  }}
+                >
+                  <option value="">{t('restaurantSettlement.form.visitorNone')}</option>
+                  {visitors.data?.map((visitor) => (
+                    <option key={visitor.id} value={visitor.id}>
+                      {visitor.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </p>
+            <p>{t('restaurantSettlement.form.visitorHint')}</p>
+            {visitors.isError && <p role="alert">{t('common.failed')}</p>}
+          </>
+        )}
         <p>
           {collect
             ? t('restaurantSettlement.form.collectHint')
@@ -139,12 +215,20 @@ function SettleForm({
         </p>
         {problem && <p role="alert">{problem}</p>}
       </form>
-      {reviewed && <Review restaurantId={restaurantId} lines={reviewed} />}
+      {reviewed && <Review restaurantId={restaurantId} lines={reviewed} via={via} />}
     </>
   );
 }
 
-function Review({ restaurantId, lines }: { restaurantId: string; lines: CashLine[] }) {
+function Review({
+  restaurantId,
+  lines,
+  via,
+}: {
+  restaurantId: string;
+  lines: CashLine[];
+  via: SettleVia;
+}) {
   const { t } = useTranslation();
   const preview = useRestaurantSettlementPreview(restaurantId, lines);
   const settle = useRestaurantSettle();
@@ -206,7 +290,7 @@ function Review({ restaurantId, lines }: { restaurantId: string; lines: CashLine
             <button
               type="button"
               disabled={above || settle.isPending}
-              onClick={() => settle.mutate(restaurantSettleBodyOf(quoted))}
+              onClick={() => settle.mutate(restaurantSettleBodyOf(quoted, via))}
             >
               {t('restaurantSettlement.form.confirm')}
             </button>
@@ -286,7 +370,14 @@ function ReceiptView({
       <p>{t(receiptTypeLabelKeys[receipt.type])}</p>
       <p>{formatDateTime(receipt.createdAt, timeZone)}</p>
       <p>{t('restaurantSettlement.receipt.restaurant', { name: receipt.restaurantName })}</p>
-      <p>{t('restaurantSettlement.receipt.method')}</p>
+      <p>
+        {t('restaurantSettlement.receipt.method', {
+          method: t(methodKeys[receipt.method]),
+        })}
+      </p>
+      {receipt.visitorName !== null && (
+        <p>{t('restaurantSettlement.receipt.visitor', { name: receipt.visitorName })}</p>
+      )}
       <p>{t('cashDesk.receipt.cashier', { name: receipt.cashierName ?? '' })}</p>
       <table>
         <thead>

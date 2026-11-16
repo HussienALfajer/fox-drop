@@ -1,73 +1,81 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'admin_drawer_sessions_dto_output_sessions_inner.dart';
+part of 'admin_current_drawer_session_dto_output_field.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-const AdminDrawerSessionsDtoOutputSessionsInnerKindEnum
-_$adminDrawerSessionsDtoOutputSessionsInnerKindEnum_office =
-    const AdminDrawerSessionsDtoOutputSessionsInnerKindEnum._('office');
+const AdminCurrentDrawerSessionDtoOutputFieldKindEnum
+_$adminCurrentDrawerSessionDtoOutputFieldKindEnum_office =
+    const AdminCurrentDrawerSessionDtoOutputFieldKindEnum._('office');
+const AdminCurrentDrawerSessionDtoOutputFieldKindEnum
+_$adminCurrentDrawerSessionDtoOutputFieldKindEnum_field =
+    const AdminCurrentDrawerSessionDtoOutputFieldKindEnum._('field');
 
-AdminDrawerSessionsDtoOutputSessionsInnerKindEnum
-_$adminDrawerSessionsDtoOutputSessionsInnerKindEnumValueOf(String name) {
+AdminCurrentDrawerSessionDtoOutputFieldKindEnum
+_$adminCurrentDrawerSessionDtoOutputFieldKindEnumValueOf(String name) {
   switch (name) {
     case 'office':
-      return _$adminDrawerSessionsDtoOutputSessionsInnerKindEnum_office;
+      return _$adminCurrentDrawerSessionDtoOutputFieldKindEnum_office;
+    case 'field':
+      return _$adminCurrentDrawerSessionDtoOutputFieldKindEnum_field;
     default:
       throw ArgumentError(name);
   }
 }
 
-final BuiltSet<AdminDrawerSessionsDtoOutputSessionsInnerKindEnum>
-_$adminDrawerSessionsDtoOutputSessionsInnerKindEnumValues =
-    BuiltSet<AdminDrawerSessionsDtoOutputSessionsInnerKindEnum>(
-      const <AdminDrawerSessionsDtoOutputSessionsInnerKindEnum>[
-        _$adminDrawerSessionsDtoOutputSessionsInnerKindEnum_office,
+final BuiltSet<AdminCurrentDrawerSessionDtoOutputFieldKindEnum>
+_$adminCurrentDrawerSessionDtoOutputFieldKindEnumValues =
+    BuiltSet<AdminCurrentDrawerSessionDtoOutputFieldKindEnum>(
+      const <AdminCurrentDrawerSessionDtoOutputFieldKindEnum>[
+        _$adminCurrentDrawerSessionDtoOutputFieldKindEnum_office,
+        _$adminCurrentDrawerSessionDtoOutputFieldKindEnum_field,
       ],
     );
 
-Serializer<AdminDrawerSessionsDtoOutputSessionsInnerKindEnum>
-_$adminDrawerSessionsDtoOutputSessionsInnerKindEnumSerializer =
-    _$AdminDrawerSessionsDtoOutputSessionsInnerKindEnumSerializer();
+Serializer<AdminCurrentDrawerSessionDtoOutputFieldKindEnum>
+_$adminCurrentDrawerSessionDtoOutputFieldKindEnumSerializer =
+    _$AdminCurrentDrawerSessionDtoOutputFieldKindEnumSerializer();
 
-class _$AdminDrawerSessionsDtoOutputSessionsInnerKindEnumSerializer
+class _$AdminCurrentDrawerSessionDtoOutputFieldKindEnumSerializer
     implements
-        PrimitiveSerializer<AdminDrawerSessionsDtoOutputSessionsInnerKindEnum> {
+        PrimitiveSerializer<AdminCurrentDrawerSessionDtoOutputFieldKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'office': 'office',
+    'field': 'field',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'office': 'office',
+    'field': 'field',
   };
 
   @override
   final Iterable<Type> types = const <Type>[
-    AdminDrawerSessionsDtoOutputSessionsInnerKindEnum,
+    AdminCurrentDrawerSessionDtoOutputFieldKindEnum,
   ];
   @override
-  final String wireName = 'AdminDrawerSessionsDtoOutputSessionsInnerKindEnum';
+  final String wireName = 'AdminCurrentDrawerSessionDtoOutputFieldKindEnum';
 
   @override
   Object serialize(
     Serializers serializers,
-    AdminDrawerSessionsDtoOutputSessionsInnerKindEnum object, {
+    AdminCurrentDrawerSessionDtoOutputFieldKindEnum object, {
     FullType specifiedType = FullType.unspecified,
   }) => _toWire[object.name] ?? object.name;
 
   @override
-  AdminDrawerSessionsDtoOutputSessionsInnerKindEnum deserialize(
+  AdminCurrentDrawerSessionDtoOutputFieldKindEnum deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
-  }) => AdminDrawerSessionsDtoOutputSessionsInnerKindEnum.valueOf(
+  }) => AdminCurrentDrawerSessionDtoOutputFieldKindEnum.valueOf(
     _fromWire[serialized] ?? (serialized is String ? serialized : ''),
   );
 }
 
-class _$AdminDrawerSessionsDtoOutputSessionsInner
-    extends AdminDrawerSessionsDtoOutputSessionsInner {
+class _$AdminCurrentDrawerSessionDtoOutputField
+    extends AdminCurrentDrawerSessionDtoOutputField {
   @override
   final String id;
   @override
@@ -77,7 +85,7 @@ class _$AdminDrawerSessionsDtoOutputSessionsInner
   @override
   final String? adminName;
   @override
-  final AdminDrawerSessionsDtoOutputSessionsInnerKindEnum kind;
+  final AdminCurrentDrawerSessionDtoOutputFieldKindEnum kind;
   @override
   final DateTime openedAt;
   @override
@@ -88,12 +96,12 @@ class _$AdminDrawerSessionsDtoOutputSessionsInner
   final BuiltList<AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner>
   currencies;
 
-  factory _$AdminDrawerSessionsDtoOutputSessionsInner([
-    void Function(AdminDrawerSessionsDtoOutputSessionsInnerBuilder)? updates,
-  ]) => (AdminDrawerSessionsDtoOutputSessionsInnerBuilder()..update(updates))
+  factory _$AdminCurrentDrawerSessionDtoOutputField([
+    void Function(AdminCurrentDrawerSessionDtoOutputFieldBuilder)? updates,
+  ]) => (AdminCurrentDrawerSessionDtoOutputFieldBuilder()..update(updates))
       ._build();
 
-  _$AdminDrawerSessionsDtoOutputSessionsInner._({
+  _$AdminCurrentDrawerSessionDtoOutputField._({
     required this.id,
     required this.cityId,
     required this.adminAccountId,
@@ -105,18 +113,18 @@ class _$AdminDrawerSessionsDtoOutputSessionsInner
     required this.currencies,
   }) : super._();
   @override
-  AdminDrawerSessionsDtoOutputSessionsInner rebuild(
-    void Function(AdminDrawerSessionsDtoOutputSessionsInnerBuilder) updates,
+  AdminCurrentDrawerSessionDtoOutputField rebuild(
+    void Function(AdminCurrentDrawerSessionDtoOutputFieldBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  AdminDrawerSessionsDtoOutputSessionsInnerBuilder toBuilder() =>
-      AdminDrawerSessionsDtoOutputSessionsInnerBuilder()..replace(this);
+  AdminCurrentDrawerSessionDtoOutputFieldBuilder toBuilder() =>
+      AdminCurrentDrawerSessionDtoOutputFieldBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is AdminDrawerSessionsDtoOutputSessionsInner &&
+    return other is AdminCurrentDrawerSessionDtoOutputField &&
         id == other.id &&
         cityId == other.cityId &&
         adminAccountId == other.adminAccountId &&
@@ -147,7 +155,7 @@ class _$AdminDrawerSessionsDtoOutputSessionsInner
   @override
   String toString() {
     return (newBuiltValueToStringHelper(
-            r'AdminDrawerSessionsDtoOutputSessionsInner',
+            r'AdminCurrentDrawerSessionDtoOutputField',
           )
           ..add('id', id)
           ..add('cityId', cityId)
@@ -162,13 +170,13 @@ class _$AdminDrawerSessionsDtoOutputSessionsInner
   }
 }
 
-class AdminDrawerSessionsDtoOutputSessionsInnerBuilder
+class AdminCurrentDrawerSessionDtoOutputFieldBuilder
     implements
         Builder<
-          AdminDrawerSessionsDtoOutputSessionsInner,
-          AdminDrawerSessionsDtoOutputSessionsInnerBuilder
+          AdminCurrentDrawerSessionDtoOutputField,
+          AdminCurrentDrawerSessionDtoOutputFieldBuilder
         > {
-  _$AdminDrawerSessionsDtoOutputSessionsInner? _$v;
+  _$AdminCurrentDrawerSessionDtoOutputField? _$v;
 
   String? _id;
   String? get id => _$this._id;
@@ -187,9 +195,9 @@ class AdminDrawerSessionsDtoOutputSessionsInnerBuilder
   String? get adminName => _$this._adminName;
   set adminName(String? adminName) => _$this._adminName = adminName;
 
-  AdminDrawerSessionsDtoOutputSessionsInnerKindEnum? _kind;
-  AdminDrawerSessionsDtoOutputSessionsInnerKindEnum? get kind => _$this._kind;
-  set kind(AdminDrawerSessionsDtoOutputSessionsInnerKindEnum? kind) =>
+  AdminCurrentDrawerSessionDtoOutputFieldKindEnum? _kind;
+  AdminCurrentDrawerSessionDtoOutputFieldKindEnum? get kind => _$this._kind;
+  set kind(AdminCurrentDrawerSessionDtoOutputFieldKindEnum? kind) =>
       _$this._kind = kind;
 
   DateTime? _openedAt;
@@ -214,11 +222,11 @@ class AdminDrawerSessionsDtoOutputSessionsInnerBuilder
     currencies,
   ) => _$this._currencies = currencies;
 
-  AdminDrawerSessionsDtoOutputSessionsInnerBuilder() {
-    AdminDrawerSessionsDtoOutputSessionsInner._defaults(this);
+  AdminCurrentDrawerSessionDtoOutputFieldBuilder() {
+    AdminCurrentDrawerSessionDtoOutputField._defaults(this);
   }
 
-  AdminDrawerSessionsDtoOutputSessionsInnerBuilder get _$this {
+  AdminCurrentDrawerSessionDtoOutputFieldBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _id = $v.id;
@@ -236,50 +244,50 @@ class AdminDrawerSessionsDtoOutputSessionsInnerBuilder
   }
 
   @override
-  void replace(AdminDrawerSessionsDtoOutputSessionsInner other) {
-    _$v = other as _$AdminDrawerSessionsDtoOutputSessionsInner;
+  void replace(AdminCurrentDrawerSessionDtoOutputField other) {
+    _$v = other as _$AdminCurrentDrawerSessionDtoOutputField;
   }
 
   @override
   void update(
-    void Function(AdminDrawerSessionsDtoOutputSessionsInnerBuilder)? updates,
+    void Function(AdminCurrentDrawerSessionDtoOutputFieldBuilder)? updates,
   ) {
     if (updates != null) updates(this);
   }
 
   @override
-  AdminDrawerSessionsDtoOutputSessionsInner build() => _build();
+  AdminCurrentDrawerSessionDtoOutputField build() => _build();
 
-  _$AdminDrawerSessionsDtoOutputSessionsInner _build() {
-    _$AdminDrawerSessionsDtoOutputSessionsInner _$result;
+  _$AdminCurrentDrawerSessionDtoOutputField _build() {
+    _$AdminCurrentDrawerSessionDtoOutputField _$result;
     try {
       _$result =
           _$v ??
-          _$AdminDrawerSessionsDtoOutputSessionsInner._(
+          _$AdminCurrentDrawerSessionDtoOutputField._(
             id: BuiltValueNullFieldError.checkNotNull(
               id,
-              r'AdminDrawerSessionsDtoOutputSessionsInner',
+              r'AdminCurrentDrawerSessionDtoOutputField',
               'id',
             ),
             cityId: BuiltValueNullFieldError.checkNotNull(
               cityId,
-              r'AdminDrawerSessionsDtoOutputSessionsInner',
+              r'AdminCurrentDrawerSessionDtoOutputField',
               'cityId',
             ),
             adminAccountId: BuiltValueNullFieldError.checkNotNull(
               adminAccountId,
-              r'AdminDrawerSessionsDtoOutputSessionsInner',
+              r'AdminCurrentDrawerSessionDtoOutputField',
               'adminAccountId',
             ),
             adminName: adminName,
             kind: BuiltValueNullFieldError.checkNotNull(
               kind,
-              r'AdminDrawerSessionsDtoOutputSessionsInner',
+              r'AdminCurrentDrawerSessionDtoOutputField',
               'kind',
             ),
             openedAt: BuiltValueNullFieldError.checkNotNull(
               openedAt,
-              r'AdminDrawerSessionsDtoOutputSessionsInner',
+              r'AdminCurrentDrawerSessionDtoOutputField',
               'openedAt',
             ),
             closedAt: closedAt,
@@ -293,7 +301,7 @@ class AdminDrawerSessionsDtoOutputSessionsInnerBuilder
         currencies.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-          r'AdminDrawerSessionsDtoOutputSessionsInner',
+          r'AdminCurrentDrawerSessionDtoOutputField',
           _$failedField,
           e.toString(),
         );
