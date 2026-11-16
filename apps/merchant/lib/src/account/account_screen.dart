@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'account.dart';
+import 'records.dart';
 
 /// «الحساب», the owners' (RA §12.2, R10): the balance card with «موعد
 /// التسوية», the commission, «قبضت اليوم من الكباتن» with today's pickups,
@@ -196,6 +197,8 @@ class _WeekLine extends StatelessWidget {
           amount.isNegative
               ? l10n.merchantAccountLowers
               : l10n.merchantAccountRaises,
+          // RA §12.5: who decided it.
+          ?l10n.deciderNameText(line.decidedBy?.name, line.decidedByName),
         ].join(' · '),
       ),
     );

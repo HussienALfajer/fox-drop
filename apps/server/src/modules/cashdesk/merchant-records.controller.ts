@@ -6,7 +6,7 @@ import { MerchantController } from '../../http/route-groups.js';
 import type { AppSession } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import type { MerchantReceipt } from './merchant-settlement.service.js';
-import { MerchantRecordsService } from './merchant-records.service.js';
+import { actorTypes, MerchantRecordsService } from './merchant-records.service.js';
 import { merchantExceptionCauses, merchantStatementLineKinds, receiptMethods } from './schema.js';
 
 const minor = z
@@ -21,7 +21,6 @@ const currency = z.string().regex(/^[A-Z]{3}$/);
 // RA §12.3 «غير مسدّد», «مسدّد جزئياً», «مسدّد»; null when the statement asked
 // nothing of the restaurant.
 const status = z.enum(['unpaid', 'partly_paid', 'paid']).nullable();
-const actorTypes = ['admin', 'merchant', 'captain', 'customer', 'system'] as const;
 
 class MerchantStatementListDto extends createZodDto(
   z.object({

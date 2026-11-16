@@ -77,7 +77,9 @@ class _StatementScreenState extends ConsumerState<StatementScreen> {
     try {
       final boundary =
           _image.currentContext!.findRenderObject()! as RenderRepaintBoundary;
-      final image = await boundary.toImage(pixelRatio: pixelRatio);
+      final image = await boundary.toImage(
+        pixelRatio: imageRatio(pixelRatio, boundary.size),
+      );
       final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
       image.dispose();
       await sharer(

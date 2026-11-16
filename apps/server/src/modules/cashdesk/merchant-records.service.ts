@@ -3,7 +3,11 @@ import { FxService } from '../fx/index.js';
 import { AdminSessionsService } from '../identity/index.js';
 import { type ActorType, LedgerService } from '../ledger/index.js';
 import { type MerchantReceipt, MerchantSettlementService } from './merchant-settlement.service.js';
-import { statementStatuses, type StatementStatus } from './merchant-statement.js';
+import {
+  type StatementLine,
+  statementStatuses,
+  type StatementStatus,
+} from './merchant-statement.js';
 import {
   MerchantStatementsService,
   type MerchantStatementView,
@@ -12,6 +16,9 @@ import {
 // The receipts the restaurant app lists (decided by us: the latest, as the
 // captain's; a few a week is a year of them).
 export const MERCHANT_RECEIPTS = 100;
+
+// The ledger's actor types (AP D27), as «من قرّر» names them.
+export const actorTypes = ['admin', 'merchant', 'captain', 'customer', 'system'] as const;
 
 export interface MerchantStatementRow {
   id: string;
@@ -73,32 +80,37 @@ export class MerchantRecordsService {
     restaurantId: string,
     statementId: string,
   ): Promise<MerchantStatementRead | null> {
-    const found = await this.statements.statement(statementId);
-    if (!found || found.restaurantId !== restaurantId) return null;
-    const exceptions = found.lines.flatMap((line) =>
-      line.kind === 'exception' ? [line.journalId] : [],
-    );
+    const found = await this.statements.statement(statementId, restaurantId);
+    if (!found) return null;
+    const deciders = await this.deciders(found.lines);
+    return {
+      ...found,
+      lines: found.lines.map((line) => ({
+        ...line,
+        decidedBy: line.kind === 'exception' ? (deciders.get(line.journalId) ?? null) : null,
+      })),
+    };
+  }
+
+  // «من قرّر» of each exception by its journal (RA §12.5): who posted it, a
+  // staff member by name. Shared by the statement and «الحساب»'s week.
+  async deciders(lines: readonly StatementLine[]): Promise<Map<string, Decider>> {
+    const exceptions = lines.flatMap((line) => (line.kind === 'exception' ? [line.journalId] : []));
     const actors = await this.ledger.journalActors(exceptions);
     const names = await this.admins.names(
       [...actors.values()].flatMap((actor) =>
         actor.type === 'admin' && actor.id !== null ? [actor.id] : [],
       ),
     );
-    return {
-      ...found,
-      lines: found.lines.map((line) => {
-        const actor = line.kind === 'exception' ? actors.get(line.journalId) : undefined;
-        return {
-          ...line,
-          decidedBy: actor
-            ? {
-                type: actor.type,
-                name: actor.type === 'admin' && actor.id ? (names.get(actor.id) ?? null) : null,
-              }
-            : null,
-        };
-      }),
-    };
+    return new Map(
+      [...actors].map(([journalId, actor]) => [
+        journalId,
+        {
+          type: actor.type,
+          name: actor.type === 'admin' && actor.id ? (names.get(actor.id) ?? null) : null,
+        },
+      ]),
+    );
   }
 
   async receipts(restaurantId: string): Promise<MerchantReceipt[]> {

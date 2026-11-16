@@ -771,6 +771,7 @@ Serializers _$serializers =
           ..add(MerchantAccountDtoOutputPickupsInnerLinesInner.serializer)
           ..add(MerchantAccountDtoOutputWeekLinesInner.serializer)
           ..add(MerchantAccountDtoOutputWeekLinesInnerCauseEnum.serializer)
+          ..add(MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum.serializer)
           ..add(MerchantAccountDtoOutputWeekLinesInnerKindEnum.serializer)
           ..add(MerchantAcknowledgeEditDto.serializer)
           ..add(MerchantAvailabilityDto.serializer)

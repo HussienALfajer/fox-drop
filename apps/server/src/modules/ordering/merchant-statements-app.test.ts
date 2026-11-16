@@ -21,6 +21,7 @@ import {
   orderAtDoor,
   phoneNumber,
   restaurant,
+  sql,
 } from './delivery.fixture.js';
 
 // RA §12.3–12.5, §16 #30–#31, R10 (slice 2.19e): «الكشوف» and «الإيصالات»
@@ -52,11 +53,40 @@ async function otherOwner() {
   await app
     .get(MerchantAccountsService)
     .addAccount(other, { role: 'owner', name: 'owner', phone }, change);
-  return appSignIn('merchant', phone);
+  return { id: other, headers: await appSignIn('merchant', phone) };
 }
 
 const get = (url: string, headers: Record<string, string>) =>
   app.inject({ method: 'GET', url, headers });
+
+// What the platform owes the restaurant, posted by the system: a credit on
+// an order (RA §12.5 «تعويض عن طلب أُلغي بعد التحضير»).
+async function systemCredit(restaurantId: string, amount: bigint) {
+  const ledger = app.get(LedgerService);
+  await db.db.transaction(async (tx) => {
+    const own = await ledger.openAccount(
+      { cityId: azaz, purpose: 'merchant.account', ownerId: restaurantId, currency: 'TRY' },
+      tx,
+    );
+    const other = await ledger.openAccount(
+      { cityId: azaz, purpose: 'platform.order_clearing', ownerId: null, currency: 'TRY' },
+      tx,
+    );
+    await ledger.post(
+      {
+        cityId: azaz,
+        type: 'merchant.credit',
+        source: { kind: 'order', id: randomUUID() },
+        actor: { type: 'system', id: null },
+        entries: [
+          { accountId: own, currency: 'TRY', amount: -amount },
+          { accountId: other, currency: 'TRY', amount },
+        ],
+      },
+      tx,
+    );
+  });
+}
 
 // A manual correction by a finance admin, + the restaurant owes (RA §12.5).
 async function adjustment(adminId: string, owes: bigint) {
@@ -94,6 +124,19 @@ describe('the statements and receipts in the restaurant app (RA §12.3–12.4)',
     expect((await door.deliver()).statusCode).toBe(200);
     const finance = await admin(['FIN']);
     await adjustment(finance.accountId, 1_000n);
+    // «الحساب»'s week names who decided it too (RA §12.2, §12.5).
+    const week = (await get('/v1/merchant/account', owners)).json().weekLines;
+    expect(week).toContainEqual(
+      expect.objectContaining({
+        kind: 'exception',
+        cause: 'adjustment',
+        decidedBy: 'admin',
+        decidedByName: expect.stringMatching(/^Operator \d+$/),
+      }),
+    );
+    expect(
+      week.find((line: { orderId: string | null }) => line.orderId === door.order.id),
+    ).toMatchObject({ decidedBy: null, decidedByName: null });
     const cutoff = new Date();
     await app.get(MerchantStatementsService).closeAt(azaz, cutoff, cutoff, { notify: false });
 
@@ -191,12 +234,97 @@ describe('the statements and receipts in the restaurant app (RA §12.3–12.4)',
     );
 
     // Another restaurant's owner sees neither.
-    const others = await otherOwner();
+    const { headers: others } = await otherOwner();
     expect((await get('/v1/merchant/statements', others)).json().statements).toEqual([]);
     expect((await get('/v1/merchant/receipts', others)).json().receipts).toEqual([]);
     expect((await get(`/v1/merchant/statements/${latest.id}`, others)).statusCode).toBe(404);
     expect((await get(`/v1/merchant/receipts/${issued.id}`, others)).statusCode).toBe(404);
   });
+
+  it(
+    'shows a payout recorded at the desk for a visitor, a decision by the ' +
+      'system, and keeps both for a terminated restaurant',
+    async () => {
+      const other = await otherOwner();
+      await systemCredit(other.id, 5_000n);
+      const cutoff = new Date();
+      await app.get(MerchantStatementsService).closeAt(azaz, cutoff, cutoff, { notify: false });
+      const [latest] = (await get('/v1/merchant/statements', other.headers)).json().statements;
+      // The platform owes the restaurant: the statement asks nothing of it.
+      expect(latest).toMatchObject({ totalDue: '-5000', status: null });
+      const statement = (await get(`/v1/merchant/statements/${latest.id}`, other.headers)).json();
+      expect(statement.lines).toContainEqual(
+        expect.objectContaining({
+          kind: 'exception',
+          cause: 'credit',
+          amount: '-5000',
+          decidedBy: 'system',
+          decidedByName: null,
+        }),
+      );
+
+      // The desk pays it, naming the staff member without FIN who visited
+      // (RA §12.4, AP §9.10.3).
+      const finance = await admin(['FIN']);
+      const visitor = await admin(['OPS']);
+      const visitorName = (
+        await sql.query('SELECT name FROM identity.admin_accounts WHERE id = $1', [
+          visitor.accountId,
+        ])
+      ).rows[0].name as string;
+      const user: DeskUser = {
+        accountId: finance.accountId,
+        roles: ['FIN'],
+        actor: { type: 'admin', id: finance.accountId, role: 'FIN' },
+        context: { ipAddress: '203.0.113.9', device: 'test' },
+      };
+      await app
+        .get(CashDeskService)
+        .openSession(user, azaz, [{ currency: 'TRY', amount: 100_000n }], new Date());
+      const settlements = app.get(MerchantSettlementService);
+      const lines = [{ currency: 'TRY', amount: 5_000n }];
+      const preview = await settlements.preview(other.id, lines);
+      const issued = await settlements.settle(
+        user,
+        {
+          session: 'office',
+          visitorId: visitor.accountId,
+          restaurantId: other.id,
+          due: preview.due,
+          lines: preview.lines.map(({ currency, amount, base, rates }) => ({
+            currency,
+            amount,
+            base,
+            rates,
+          })),
+          idempotencyKey: randomUUID(),
+        },
+        new Date(),
+      );
+
+      // RA §5.5: a terminated restaurant's owners keep their statements and
+      // receipts.
+      await app.get(MerchantsService).setAccountStatus(other.id, 'terminated', change);
+      expect((await get('/v1/merchant/statements', other.headers)).statusCode).toBe(200);
+      const receipts = await get('/v1/merchant/receipts', other.headers);
+      expect(receipts.statusCode).toBe(200);
+      expect(receipts.json().receipts).toEqual([
+        expect.objectContaining({
+          id: issued.id,
+          type: 'merchant_payout',
+          method: 'field',
+          staffName: visitorName,
+          total: '5000',
+        }),
+      ]);
+      expect((await get(`/v1/merchant/receipts/${issued.id}`, other.headers)).json()).toMatchObject(
+        {
+          dueBefore: '-5000',
+          dueAfter: '0',
+        },
+      );
+    },
+  );
 
   it('refuses a cashier every one of them', async () => {
     const { cashier } = await acceptedOrder();

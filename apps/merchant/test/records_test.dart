@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:merchant/src/account/records.dart';
 
@@ -23,5 +24,13 @@ void main() {
     expect(failureOf(_answer(400)), RecordsFailure.notFound);
     expect(failureOf(_answer(500)), RecordsFailure.other);
     expect(failureOf(StateError('offline')), RecordsFailure.other);
+  });
+
+  // RA §12.3: a busy week's statement still renders as an image.
+  test('a tall statement renders below the screen ratio', () {
+    expect(imageRatio(2.75, const Size(400, 900)), 2.75);
+    expect(imageRatio(2.75, const Size(400, 8192)), 1);
+    expect(imageRatio(3, const Size(400, 16384)), 0.5);
+    expect(imageRatio(2, Size.zero), 2);
   });
 }

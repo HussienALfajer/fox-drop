@@ -1,4 +1,6 @@
+import 'dart:math' as math;
 import 'dart:typed_data';
+import 'dart:ui' show Size;
 
 import 'package:core_api/core_api.dart';
 import 'package:core_l10n/core_l10n.dart';
@@ -80,6 +82,19 @@ final imageSharerProvider = Provider<ImageSharer>(
   },
 );
 
+/// The longest side of a shared image, in pixels: a busy week's statement
+/// is thousands of points tall, and many Android GPUs refuse a texture
+/// above 8192 pixels (or run out of memory before).
+const maxImageSide = 8192.0;
+
+/// The pixel ratio to render a statement of [size] at: the screen's, lowered
+/// so its longest side stays within [maxImageSide].
+double imageRatio(double screenRatio, Size size) {
+  final longest = size.longestSide;
+  if (longest <= 0) return screenRatio;
+  return math.min(screenRatio, maxImageSide / longest);
+}
+
 /// What a read failed with: a cashier (`403`, R10), a statement or receipt
 /// this restaurant does not have (`404`, `400`: a push of another
 /// restaurant on this device, or a bad id), or anything else, worth a retry.
@@ -153,15 +168,17 @@ extension RecordsTexts on AppLocalizations {
 
   /// RA §12.5 «من قرّر»: the FOX DROP staff member by name, else who
   /// posted it.
-  String? deciderText(StatementLine line) => switch (line.decidedBy) {
-    null => null,
-    Decider.admin => merchantStatementDecidedBy(
-      line.decidedByName ?? merchantDeciderPlatform,
-    ),
-    Decider.system => merchantStatementDecidedBy(merchantDeciderSystem),
-    Decider.merchant => merchantStatementDecidedBy(merchantDeciderRestaurant),
-    Decider.captain => merchantStatementDecidedBy(merchantDeciderCaptain),
-    Decider.customer => merchantStatementDecidedBy(merchantDeciderCustomer),
+  String? deciderText(StatementLine line) =>
+      deciderNameText(line.decidedBy?.name, line.decidedByName);
+
+  /// The same by the actor type's name, whichever generated enum carries it
+  /// (the statement's or «الحساب»'s week).
+  String? deciderNameText(String? type, String? name) => switch (type) {
+    'admin' => merchantStatementDecidedBy(name ?? merchantDeciderPlatform),
+    'system' => merchantStatementDecidedBy(merchantDeciderSystem),
+    'merchant' => merchantStatementDecidedBy(merchantDeciderRestaurant),
+    'captain' => merchantStatementDecidedBy(merchantDeciderCaptain),
+    'customer' => merchantStatementDecidedBy(merchantDeciderCustomer),
     _ => null,
   };
 

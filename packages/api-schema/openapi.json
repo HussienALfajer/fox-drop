@@ -38088,6 +38088,31 @@
                     "string",
                     "null"
                   ]
+                },
+                "decidedBy": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "admin",
+                        "merchant",
+                        "captain",
+                        "customer",
+                        "system"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "«من قرّر» on an exception (RA §12.5): who posted it."
+                },
+                "decidedByName": {
+                  "description": "The FOX DROP staff member, by name.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               },
               "required": [
@@ -38101,7 +38126,9 @@
                 "discountShare",
                 "cause",
                 "amount",
-                "reason"
+                "reason",
+                "decidedBy",
+                "decidedByName"
               ],
               "additionalProperties": false
             },

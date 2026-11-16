@@ -10541,6 +10541,10 @@ export interface components {
                 /** @description An exception or a payment: + raises what is owed, − lowers it. */
                 amount: string | null;
                 reason: string | null;
+                /** @description «من قرّر» on an exception (RA §12.5): who posted it. */
+                decidedBy: ("admin" | "merchant" | "captain" | "customer" | "system") | null;
+                /** @description The FOX DROP staff member, by name. */
+                decidedByName: string | null;
             }[];
         };
         MerchantStatementListDto_Output: {

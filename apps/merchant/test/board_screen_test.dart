@@ -681,6 +681,8 @@ void main() {
             'cause': 'food_credit',
             'amount': '-1500',
             'reason': 'تعويض عن طلب أُلغي بعد التحضير',
+            'decidedBy': 'admin',
+            'decidedByName': 'سارة',
           },
         ],
       }),
@@ -700,7 +702,10 @@ void main() {
     expect(find.text('#10001: العمولة 57 ₺'), findsOneWidget);
     expect(find.text('خصم يموّله المطعم: 20 ₺'), findsOneWidget);
     expect(find.text('تعويض عن طلب أُلغي بعد التحضير: 15 ₺'), findsOneWidget);
-    expect(find.text('الطلب #10000 · يُنقص المستحق عليك'), findsOneWidget);
+    expect(
+      find.text('الطلب #10000 · يُنقص المستحق عليك · من قرّر: سارة'),
+      findsOneWidget,
+    );
     await app.done(tester);
   });
 
