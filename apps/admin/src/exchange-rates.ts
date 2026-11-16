@@ -138,19 +138,20 @@ export function useSaveRounding(cityId: string) {
       row: RateRow;
       edit: RoundingEdit;
     }): Promise<RoundingResult> => {
-      const minor = minorOf(edit.unit, row.currency);
+      const minor = minorOf(edit.unit, row.currency, row.decimals);
       if (minor === null || /^0+$/.test(minor) || !edit.reason.trim()) {
         return { status: 'refused' };
       }
+      // The mode first: if the unit then fails, the unit in force stays.
       const changes: { key: string; value: unknown }[] = [];
+      if (edit.mode !== row.roundingMode) {
+        changes.push({ key: `currency.${row.currency}.rounding_mode`, value: edit.mode });
+      }
       if (minor !== row.roundingUnitMinor) {
         changes.push({
           key: `currency.${row.currency}.rounding_unit`,
           value: { amountMinor: Number(minor) },
         });
-      }
-      if (edit.mode !== row.roundingMode) {
-        changes.push({ key: `currency.${row.currency}.rounding_mode`, value: edit.mode });
       }
       try {
         for (const { key, value } of changes) {

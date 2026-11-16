@@ -88,8 +88,9 @@ class AdminSetExchangeRateDto extends createZodDto(
 // rate now, its editor and its history, and the rate edit with the
 // large-change confirmation (AP §8.6). The routes live here, with the
 // finance screens, because fx cannot import identity for the editors' names.
-// The edit sets the rate to the value sent, and the same rate again records
-// nothing, so it takes no Idempotency-Key.
+// The edit sets the rate to the value sent, so it takes no Idempotency-Key:
+// a repeat leaves the same rate in force. The same rate again is a new
+// version, which confirms it and clears «سعر صرف قديم» (AP §9.1.3).
 @AdminController('exchange-rates')
 export class AdminExchangeRatesController {
   constructor(

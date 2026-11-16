@@ -238,23 +238,26 @@ describe('rates', () => {
     ]);
   });
 
-  it('records nothing when the rate sent is the current one', async () => {
+  it('records the same rate again as a new version, which confirms it (AP §9.1.3)', async () => {
     const cityId = await lira({ usd: true });
     const [current] = await fx.currentRates(cityId);
-    // «41.2» is the same rate as «41.20».
+    // «41.2» is the same rate as «41.20»: the market did not move.
     const again = await fx.setRate(
       cityId,
       'USD',
       { value: '41.2', direction: 'base_per_unit' },
       fin,
     );
-    expect(again).toBe(current!.versionId);
-    expect(await fx.rateHistory(cityId, 'USD')).toHaveLength(1);
+    expect(again).not.toBe(current!.versionId);
+    expect((await fx.currentRates(cityId))[0]!.setAt.getTime()).toBeGreaterThanOrEqual(
+      current!.setAt.getTime(),
+    );
+    expect(await fx.rateHistory(cityId, 'USD')).toHaveLength(2);
     const { rows } = await sql.query(
       "SELECT count(*)::int AS n FROM audit.events WHERE city_id = $1 AND action = 'rate.set'",
       [cityId],
     );
-    expect(rows[0].n).toBe(1);
+    expect(rows[0].n).toBe(2);
   });
 
   it('is refused for the base, outside the city, from the system and when malformed', async () => {

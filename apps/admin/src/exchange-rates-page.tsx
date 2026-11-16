@@ -102,7 +102,14 @@ function Currency({ row, board, city }: { row: RateRow; board: ExchangeRates; ci
           mode: t(modeKeys[row.roundingMode]),
         })}
       </p>
-      {!row.isBase && editor && <RateForm row={row} cityId={city.id} pct={board.largeChangePct} />}
+      {!row.isBase && editor && (
+        <RateForm
+          row={row}
+          cityId={city.id}
+          pct={board.largeChangePct}
+          baseCurrency={board.baseCurrency}
+        />
+      )}
       {editor && <RoundingForm row={row} cityId={city.id} />}
       {!row.isBase && (
         <button type="button" onClick={() => setHistory(!history)}>
@@ -142,14 +149,24 @@ const refusalKeys: Record<string, 'exchangeRates.refusal.invalidRate'> = {
   invalid_rate: 'exchangeRates.refusal.invalidRate',
 };
 
-function RateForm({ row, cityId, pct }: { row: RateRow; cityId: string; pct: number }) {
+function RateForm({
+  row,
+  cityId,
+  pct,
+  baseCurrency,
+}: {
+  row: RateRow;
+  cityId: string;
+  pct: number;
+  baseCurrency: string | null;
+}) {
   const { t } = useTranslation();
   const setRate = useSetRate(cityId);
   const [direction, setDirection] = useState<Direction>('base_per_unit');
   const [value, setValue] = useState('');
   const [reason, setReason] = useState('');
   const [result, setResult] = useState<RateEditResult | null>(null);
-  const base = row.rate?.baseCurrency ?? '';
+  const base = row.rate?.baseCurrency ?? baseCurrency ?? '';
   const send = async (confirmLargeChange: boolean) => {
     const answer = await setRate.mutateAsync({
       currency: row.currency,

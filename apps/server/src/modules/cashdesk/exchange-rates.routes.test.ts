@@ -105,7 +105,7 @@ describe('«أسعار الصرف»', () => {
     expect(refused.statusCode).toBe(409);
     expect(refused.json().error).toBe('large_change_unconfirmed');
     expect((await fin.put({ ...large, confirmLargeChange: true })).statusCode).toBe(200);
-    // The same rate again records no version.
+    // The same rate again is a new version that confirms it.
     expect((await fin.put({ ...large, value: '50.00' })).statusCode).toBe(200);
 
     const history = await fin.get(`/v1/admin/exchange-rates/history?cityId=${azaz}&currency=USD`);
@@ -118,6 +118,7 @@ describe('«أسعار الصرف»', () => {
           row.denominator,
         ]),
     ).toEqual([
+      ['50', '1'],
       ['50', '1'],
       ['206', '5'],
     ]);
@@ -134,6 +135,12 @@ describe('«أسعار الصرف»', () => {
       '/v1/admin/exchange-rates?cityId=0190f3a0-0000-7000-8000-00000000dead',
     );
     expect([unknown.statusCode, unknown.json().error]).toEqual([404, 'unknown_city']);
+    const history = await own.get(
+      '/v1/admin/exchange-rates/history?cityId=0190f3a0-0000-7000-8000-00000000dead&currency=USD',
+    );
+    expect([history.statusCode, history.json().error]).toEqual([404, 'unknown_city']);
+    const other = await own.put({ ...body, currency: 'SYP', value: '290' });
+    expect([other.statusCode, other.json().error]).toEqual([400, 'not_city_currency']);
   });
 
   it('is for OWN and FIN only', async () => {

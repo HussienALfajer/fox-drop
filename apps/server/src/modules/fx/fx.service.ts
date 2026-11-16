@@ -438,15 +438,6 @@ export class FxService implements OnModuleInit {
       const previous = (await this.currentRates(cityId, tx)).find(
         (entry) => entry.currency === currency,
       );
-      // The rate it already has: nothing to record, so a repeat of the same
-      // edit adds no version (the route takes no Idempotency-Key).
-      if (
-        previous &&
-        previous.rate.numerator === rate.numerator &&
-        previous.rate.denominator === rate.denominator
-      ) {
-        return previous.versionId;
-      }
       if (
         previous &&
         !change.confirmLargeChange &&
