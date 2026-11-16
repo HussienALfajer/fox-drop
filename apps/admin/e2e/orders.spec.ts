@@ -681,6 +681,7 @@ test('cancels a ready order with the cash question and the preview of its entrie
       compensateCaptain: true,
       cash: 'not_returned',
       reason: 'اتصل الزبون',
+      compensation: null,
     });
 });
 

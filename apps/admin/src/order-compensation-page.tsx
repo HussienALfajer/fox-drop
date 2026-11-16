@@ -4,7 +4,9 @@ import { formatDateTime, formatMoney } from './format.js';
 import {
   type CompensateRefusal,
   type Compensation,
-  emptyValue,
+  compensationOf,
+  type CompensationForm,
+  emptyCompensation,
   needsApproval,
   type OrderCompensations,
   useCompensate,
@@ -91,34 +93,63 @@ export function OrderCompensations({ orderId, timeZone }: { orderId: string; tim
 function CompensateForm({ orderId, data }: { orderId: string; data: OrderCompensations }) {
   const { t } = useTranslation();
   const title = useId();
-  const [form, setForm] = useState<ValueForm>(emptyValue);
-  const [reason, setReason] = useState('');
-  const [note, setNote] = useState('');
+  const [fields, setFields] = useState<CompensationForm>(emptyCompensation);
   const compensate = useCompensate(orderId);
-  const checked = valueOf(form, data.currency);
-  const value = 'value' in checked ? checked.value : null;
-  const touched = form.amount !== '' || form.percent !== '' || form.maxDiscount !== '';
-  const set = (change: Partial<ValueForm>) => setForm({ ...form, ...change });
+  const asked = compensationOf(fields, data.currency);
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    if (!value || reason === '') return;
-    const trimmed = note.trim();
-    compensate.mutate(
-      { value, reason: { code: reason, note: trimmed === '' ? null : trimmed } },
-      {
-        onSuccess: (result) => {
-          if (result.status !== 'done') return;
-          setForm(emptyValue);
-          setReason('');
-          setNote('');
-        },
+    if (!asked) return;
+    compensate.mutate(asked, {
+      onSuccess: (result) => {
+        if (result.status === 'done') setFields(emptyCompensation);
       },
-    );
+    });
   };
   const result = compensate.data;
   return (
     <form onSubmit={submit} aria-labelledby={title} noValidate>
       <h4 id={title}>{t('compensation.give')}</h4>
+      <CompensationFields data={data} fields={fields} onChange={setFields} />
+      <button type="submit" disabled={compensate.isPending || !asked}>
+        {asked && needsApproval(asked.value, data.capLeft)
+          ? t('compensation.ask')
+          : t('compensation.confirm')}
+      </button>
+      {compensate.isError && <p role="alert">{t('common.failed')}</p>}
+      {result?.status === 'refused' && <p role="alert">{t(refusalKeys[result.refusal])}</p>}
+      {result?.status === 'done' && (
+        <p role="status">
+          {result.compensation.status === 'issued'
+            ? t('compensation.issued', { code: result.compensation.code ?? '' })
+            : t('compensation.sentForApproval')}
+        </p>
+      )}
+    </form>
+  );
+}
+
+// The value with what the cap leaves, the reason and the note (AP §6.4), as
+// «تعويض الزبون» and the cancel dialog (AP §9.3.2, slice 2.22b) ask them.
+export function CompensationFields({
+  data,
+  fields,
+  onChange,
+}: {
+  data: Pick<OrderCompensations, 'capLeft' | 'currency' | 'reasons'>;
+  fields: CompensationForm;
+  onChange: (fields: CompensationForm) => void;
+}) {
+  const { t } = useTranslation();
+  const { value: form, reason, note } = fields;
+  const checked = valueOf(form, data.currency);
+  const value = 'value' in checked ? checked.value : null;
+  const touched = form.amount !== '' || form.percent !== '' || form.maxDiscount !== '';
+  const set = (change: Partial<ValueForm>) =>
+    onChange({ ...fields, value: { ...form, ...change } });
+  const setReason = (code: string) => onChange({ ...fields, reason: code });
+  const setNote = (text: string) => onChange({ ...fields, note: text });
+  return (
+    <>
       <p>
         {data.capLeft === null
           ? t('compensation.noCap')
@@ -195,20 +226,6 @@ function CompensateForm({ orderId, data }: { orderId: string; data: OrderCompens
         {t('compensation.noteField')}
         <textarea maxLength={300} value={note} onChange={(event) => setNote(event.target.value)} />
       </label>
-      <button type="submit" disabled={compensate.isPending || !value || reason === ''}>
-        {value && needsApproval(value, data.capLeft)
-          ? t('compensation.ask')
-          : t('compensation.confirm')}
-      </button>
-      {compensate.isError && <p role="alert">{t('common.failed')}</p>}
-      {result?.status === 'refused' && <p role="alert">{t(refusalKeys[result.refusal])}</p>}
-      {result?.status === 'done' && (
-        <p role="status">
-          {result.compensation.status === 'issued'
-            ? t('compensation.issued', { code: result.compensation.code ?? '' })
-            : t('compensation.sentForApproval')}
-        </p>
-      )}
-    </form>
+    </>
   );
 }

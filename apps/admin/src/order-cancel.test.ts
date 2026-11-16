@@ -18,6 +18,12 @@ const form: CancelForm = {
   compensateCaptain: true,
   cash: null,
   reason: ' ملاحظة ',
+  compensate: false,
+  compensation: {
+    value: { kind: 'fixed_amount', amount: '', percent: '', maxDiscount: '' },
+    reason: '',
+    note: '',
+  },
 };
 const notAsked = { cashAsked: false, compensationAllowed: false };
 
@@ -46,28 +52,55 @@ describe('previewBody', () => {
 });
 
 describe('cancelBody', () => {
+  it("adds the customer's compensation once ticked and complete (AP §9.3.2, slice 2.22b)", () => {
+    const compensating: CancelForm = {
+      ...form,
+      compensate: true,
+      compensation: { ...form.compensation, value: { ...form.compensation.value, amount: '50' } },
+    };
+    // No reason chosen yet: the confirm waits.
+    expect(cancelBody(compensating, false, notAsked, 'TRY')).toBeNull();
+    expect(
+      cancelBody(
+        {
+          ...compensating,
+          compensation: { ...compensating.compensation, reason: 'order_cancelled', note: ' ' },
+        },
+        false,
+        notAsked,
+        'TRY',
+      ),
+    ).toMatchObject({
+      compensation: {
+        value: { kind: 'fixed_amount', amount: '5000', percentBp: null, maxDiscount: null },
+        reason: { code: 'order_cancelled', note: null },
+      },
+    });
+  });
+
   it('needs the reason, the party, the note and the preview', () => {
-    expect(cancelBody(form, false, notAsked)).toEqual({
+    expect(cancelBody(form, false, notAsked, 'TRY')).toEqual({
       cancellation: 'emergency',
       responsible: 'platform',
       foodPrepared: true,
       compensateCaptain: false,
       cash: null,
       reason: 'ملاحظة',
+      compensation: null,
     });
-    expect(cancelBody({ ...form, reason: '  ' }, false, notAsked)).toBeNull();
-    expect(cancelBody({ ...form, cancellation: null }, false, notAsked)).toBeNull();
-    expect(cancelBody(form, false, undefined)).toBeNull();
+    expect(cancelBody({ ...form, reason: '  ' }, false, notAsked, 'TRY')).toBeNull();
+    expect(cancelBody({ ...form, cancellation: null }, false, notAsked, 'TRY')).toBeNull();
+    expect(cancelBody(form, false, undefined, 'TRY')).toBeNull();
   });
 
   it('needs the cash answer once asked, and drops answers the order no longer allows', () => {
     const asked = { cashAsked: true, compensationAllowed: true };
-    expect(cancelBody(form, false, asked)).toBeNull();
-    expect(cancelBody({ ...form, cash: 'not_returned' }, false, asked)).toMatchObject({
+    expect(cancelBody(form, false, asked, 'TRY')).toBeNull();
+    expect(cancelBody({ ...form, cash: 'not_returned' }, false, asked, 'TRY')).toMatchObject({
       cash: 'not_returned',
       compensateCaptain: true,
     });
-    expect(cancelBody({ ...form, cash: 'returned' }, false, notAsked)).toMatchObject({
+    expect(cancelBody({ ...form, cash: 'returned' }, false, notAsked, 'TRY')).toMatchObject({
       cash: null,
     });
   });

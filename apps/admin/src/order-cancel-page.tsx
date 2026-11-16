@@ -2,6 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { type FormEvent, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatMoney } from './format.js';
+import { emptyCompensation, useOrderCompensations } from './order-compensation.js';
+import { CompensationFields } from './order-compensation-page.js';
 import { cashKeys, responsibleKeys } from './order-detail.js';
 import {
   type CancelChoices,
@@ -24,6 +26,8 @@ const empty: CancelForm = {
   compensateCaptain: false,
   cash: null,
   reason: '',
+  compensate: false,
+  compensation: emptyCompensation,
 };
 
 // AP §9.3.2 «إلغاء الطلب»: the reason, the responsible party, «تم تحضير
@@ -51,9 +55,13 @@ export function CancelOrder({
   const shown = preview.data?.status === 'preview' ? preview.data.preview : undefined;
   const lines = shown && previewLines(shown);
   const cancel = useCancelOrder(orderId);
-  const body = lines?.some((line) => line.key === 'unknown')
-    ? null
-    : cancelBody(form, placed, shown);
+  // AP §9.3.2 «may add compensation»: the reasons, the currency and what the
+  // admin's cap leaves, as «تعويض الزبون» reads them.
+  const compensations = useOrderCompensations(orderId).data;
+  const body =
+    lines?.some((line) => line.key === 'unknown') || !compensations
+      ? null
+      : cancelBody(form, placed, shown, compensations.currency);
   const submit = (event: FormEvent) => {
     event.preventDefault();
     if (body) cancel.mutate(body);
@@ -133,6 +141,27 @@ export function CancelOrder({
           ))}
         </fieldset>
       )}
+      {compensations?.canCompensate && (
+        <fieldset>
+          <legend>
+            <label>
+              <input
+                type="checkbox"
+                checked={form.compensate}
+                onChange={(event) => set({ compensate: event.target.checked })}
+              />
+              {t('order.cancel.compensateCustomer')}
+            </label>
+          </legend>
+          {form.compensate && (
+            <CompensationFields
+              data={compensations}
+              fields={form.compensation}
+              onChange={(compensation) => set({ compensation })}
+            />
+          )}
+        </fieldset>
+      )}
       <section aria-live="polite">
         <h4>{t('order.cancel.preview')}</h4>
         {asked === null && <p>{t('order.cancel.pickResponsible')}</p>}
@@ -178,6 +207,9 @@ const refusalKeys = {
   compensation_not_allowed: 'order.onBehalf.refused',
   cash_answer_required: 'order.onBehalf.refused',
   cash_answer_not_allowed: 'order.onBehalf.refused',
+  invalid_compensation: 'compensation.refusal.invalidValue',
+  no_base_currency: 'compensation.refusal.noBaseCurrency',
+  currency_changed: 'compensation.refusal.currencyChanged',
 } as const satisfies Record<CancelRefusal, string>;
 
 export function PreviewSentence({ line }: { line: PreviewLine }) {

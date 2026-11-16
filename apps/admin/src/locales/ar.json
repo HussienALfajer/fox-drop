@@ -434,6 +434,7 @@
       "responsible": "المسؤول عن الإلغاء",
       "foodPrepared": "تم تحضير الطعام؟",
       "compensateCaptain": "تعويض الكابتن",
+      "compensateCustomer": "تعويض الزبون",
       "cashQuestion": "هل أعاد المطعم المبلغ للكابتن؟",
       "captainPaid": "دفع الكابتن للمطعم: {{lines}}",
       "preview": "القيود التي ستُسجَّل",
