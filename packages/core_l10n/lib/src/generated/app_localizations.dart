@@ -1228,6 +1228,72 @@ abstract class AppLocalizations {
   /// **'الكود غير متاح اليوم'**
   String get customerCodeBudgetReached;
 
+  /// The visible codes that apply to the cart, at checkout (CU §10.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'الأكواد المتاحة لك'**
+  String get customerCodesAvailable;
+
+  /// The suggested code with the largest discount, with «تطبيق»; never applied by itself (CU §10.4, Q19, U11).
+  ///
+  /// In ar, this message translates to:
+  /// **'لديك كود يوفر عليك {amount}: {code}'**
+  String customerCodeSuggestion(String amount, String code);
+
+  /// What an available code takes off this cart (CU §10.4; our words, to confirm with the owner).
+  ///
+  /// In ar, this message translates to:
+  /// **'يوفر عليك {amount}'**
+  String customerCodeSaves(String amount);
+
+  /// A percentage code's value (CU §10.4, §12.4; our words). The percentage has Western digits, such as 12.5.
+  ///
+  /// In ar, this message translates to:
+  /// **'خصم {percent}%'**
+  String customerCodePercent(String percent);
+
+  /// A percentage code with its cap (CU §10.4, §12.4; our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'خصم {percent}% بحد أقصى {amount}'**
+  String customerCodePercentCapped(String percent, String amount);
+
+  /// A fixed-amount code's value (CU §10.4, §12.4; our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'خصم {amount}'**
+  String customerCodeFixed(String amount);
+
+  /// A free-delivery code's value (CU §10.4, §12.4; our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'توصيل مجاني'**
+  String get customerCodeFreeDelivery;
+
+  /// A code's minimum order on the items value (CU §10.4, §12.4; our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'للطلبات من {amount}'**
+  String customerCodeMinimum(String amount);
+
+  /// A code's expiry (CU §12.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'ينتهي {date}'**
+  String customerCodeExpires(String date);
+
+  /// Asked before another code replaces the applied one: one code per order (CU §10.4; our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'طلبك يحمل الكود {current}. هل تستبدله بالكود {code}؟'**
+  String customerCodeReplaceAsk(String current, String code);
+
+  /// Confirms replacing the applied code (CU §10.4; our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'استبدال'**
+  String get customerCodeReplace;
+
   /// A money line, only when not 0 (CU §10.3).
   ///
   /// In ar, this message translates to:

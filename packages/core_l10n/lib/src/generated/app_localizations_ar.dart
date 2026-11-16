@@ -677,6 +677,55 @@ class AppLocalizationsAr extends AppLocalizations {
   String get customerCodeBudgetReached => 'الكود غير متاح اليوم';
 
   @override
+  String get customerCodesAvailable => 'الأكواد المتاحة لك';
+
+  @override
+  String customerCodeSuggestion(String amount, String code) {
+    return 'لديك كود يوفر عليك $amount: $code';
+  }
+
+  @override
+  String customerCodeSaves(String amount) {
+    return 'يوفر عليك $amount';
+  }
+
+  @override
+  String customerCodePercent(String percent) {
+    return 'خصم $percent%';
+  }
+
+  @override
+  String customerCodePercentCapped(String percent, String amount) {
+    return 'خصم $percent% بحد أقصى $amount';
+  }
+
+  @override
+  String customerCodeFixed(String amount) {
+    return 'خصم $amount';
+  }
+
+  @override
+  String get customerCodeFreeDelivery => 'توصيل مجاني';
+
+  @override
+  String customerCodeMinimum(String amount) {
+    return 'للطلبات من $amount';
+  }
+
+  @override
+  String customerCodeExpires(String date) {
+    return 'ينتهي $date';
+  }
+
+  @override
+  String customerCodeReplaceAsk(String current, String code) {
+    return 'طلبك يحمل الكود $current. هل تستبدله بالكود $code؟';
+  }
+
+  @override
+  String get customerCodeReplace => 'استبدال';
+
+  @override
   String get customerRounding => 'تقريب';
 
   @override
