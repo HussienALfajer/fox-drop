@@ -196,8 +196,7 @@ class _BoardScreenState extends ConsumerState<BoardScreen>
                   (s) =>
                       s.value?.role == MerchantSessionDtoOutputRoleEnum.owner,
                 ),
-              ))
-              ...[
+              )) ...[
                 // RA §12.2, R10: «الحساب», owners only.
                 IconButton(
                   key: const Key('open-account'),

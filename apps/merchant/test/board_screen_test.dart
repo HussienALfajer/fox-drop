@@ -499,10 +499,7 @@ void main() {
     ]);
     app.container.read(routerProvider).push('/orders/$_orderId');
     await tester.pumpAndSettle();
-    expect(
-      find.text('العمولة 15% — تُسدَّد يوم السبت: 36 ₺'),
-      findsOneWidget,
-    );
+    expect(find.text('العمولة 15% — تُسدَّد يوم السبت: 36 ₺'), findsOneWidget);
     expect(find.text('صافيك من الطلب: 204 ₺'), findsOneWidget);
     await app.done(tester);
   });
@@ -533,7 +530,9 @@ void main() {
 
   testWidgets('a cashier sees no money lines and no «الحساب»', (tester) async {
     final app = _Board();
-    await app.pump(tester, [FakeAnswer(200, boardJson([orderJson()]))]);
+    await app.pump(tester, [
+      FakeAnswer(200, boardJson([orderJson()])),
+    ]);
     expect(find.byKey(const Key('open-account')), findsNothing);
     app.container.read(routerProvider).push('/orders/$_orderId');
     await tester.pumpAndSettle();
@@ -553,10 +552,7 @@ void main() {
         'balance': '7700',
         'settlementDate': '2026-11-14',
         'commissionBp': 1500,
-        'nextCommission': {
-          'rateBp': 1250,
-          'from': '2026-12-01T03:00:00.000Z',
-        },
+        'nextCommission': {'rateBp': 1250, 'from': '2026-12-01T03:00:00.000Z'},
         'todayFrom': '2026-11-07T03:00:00.000Z',
         'pickups': [
           {
@@ -611,17 +607,11 @@ void main() {
       find.text('تتغيّر عمولتك إلى 12.5% اعتباراً من 01/12/2026'),
       findsOneWidget,
     );
-    expect(
-      find.text('قبضت اليوم من الكباتن: 400 ₺ (1 طلباً)'),
-      findsOneWidget,
-    );
+    expect(find.text('قبضت اليوم من الكباتن: 400 ₺ (1 طلباً)'), findsOneWidget);
     expect(find.text('#10001 · 3:20 م · سامر'), findsOneWidget);
     expect(find.text('#10001: العمولة 57 ₺'), findsOneWidget);
     expect(find.text('خصم يموّله المطعم: 20 ₺'), findsOneWidget);
-    expect(
-      find.text('تعويض عن طلب أُلغي بعد التحضير: 15 ₺'),
-      findsOneWidget,
-    );
+    expect(find.text('تعويض عن طلب أُلغي بعد التحضير: 15 ₺'), findsOneWidget);
     expect(find.text('الطلب #10000 · يُنقص المستحق عليك'), findsOneWidget);
     await app.done(tester);
   });

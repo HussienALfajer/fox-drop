@@ -147,7 +147,10 @@ class OrderScreen extends ConsumerWidget {
                   key: const Key('owner-net'),
                   title: Text(
                     l10n.merchantOrderNet(
-                      l10n.formatMoney(owner.merchantNet ?? '0', order.currency),
+                      l10n.formatMoney(
+                        owner.merchantNet ?? '0',
+                        order.currency,
+                      ),
                     ),
                   ),
                 ),
