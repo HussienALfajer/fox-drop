@@ -57,6 +57,16 @@ export 'package:core_api/src/model/admin_current_drawer_session_dto_output.dart'
 export 'package:core_api/src/model/admin_current_drawer_session_dto_output_field.dart';
 export 'package:core_api/src/model/admin_current_drawer_session_dto_output_session.dart';
 export 'package:core_api/src/model/admin_current_drawer_session_dto_output_session_currencies_inner.dart';
+export 'package:core_api/src/model/admin_daily_report_dto_output.dart';
+export 'package:core_api/src/model/admin_daily_report_dto_output_captain_pay.dart';
+export 'package:core_api/src/model/admin_daily_report_dto_output_cash_inner.dart';
+export 'package:core_api/src/model/admin_daily_report_dto_output_discounts.dart';
+export 'package:core_api/src/model/admin_daily_report_dto_output_now.dart';
+export 'package:core_api/src/model/admin_daily_report_dto_output_now_overdue_restaurants_inner.dart';
+export 'package:core_api/src/model/admin_daily_report_dto_output_orders.dart';
+export 'package:core_api/src/model/admin_daily_report_dto_output_previous_inner.dart';
+export 'package:core_api/src/model/admin_daily_report_dto_output_restaurants.dart';
+export 'package:core_api/src/model/admin_daily_report_export_dto.dart';
 export 'package:core_api/src/model/admin_desk_captain_search_dto.dart';
 export 'package:core_api/src/model/admin_desk_captains_dto_output.dart';
 export 'package:core_api/src/model/admin_desk_captains_dto_output_captains_inner.dart';

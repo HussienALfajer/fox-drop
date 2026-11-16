@@ -14,12 +14,13 @@ import {
 import type { FastifyRequest } from 'fastify';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
-import { CurrentAdminSession, RequirePermission } from '../../http/access.js';
+import { CurrentAdminSession, RequireAnyPermission, RequirePermission } from '../../http/access.js';
 import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
 import type { AdminSession } from '../identity/index.js';
-import { restaurantPeriodQuery } from './admin-restaurant-statements.controller.js';
+import { dailyReportRefusal } from './admin-daily-report.controller.js';
+import { day, restaurantPeriodQuery } from './admin-restaurant-statements.controller.js';
 import {
   type ExportUser,
   ExportsRefusedError,
@@ -29,6 +30,8 @@ import {
 import { exportKinds, exportStatuses } from './schema.js';
 
 class AdminRestaurantStatementExportDto extends createZodDto(restaurantPeriodQuery) {}
+
+class AdminDailyReportExportDto extends createZodDto(z.object({ cityId: z.uuid(), day })) {}
 
 class AdminExportParamsDto extends createZodDto(z.object({ exportId: z.uuid() })) {}
 
@@ -73,6 +76,7 @@ function exportBody(view: ExportView) {
 function exportUser(session: AdminSession, request: FastifyRequest): ExportUser {
   return {
     accountId: session.accountId,
+    permissions: session.permissions,
     actor: { type: 'admin', id: session.accountId, role: session.roles.join(',') },
     context: requestContext(request),
   };
@@ -92,6 +96,11 @@ async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
         throw new BadRequestException(body(HttpStatus.BAD_REQUEST));
       case 'idempotency_key_reused':
         throw new UnprocessableEntityException(body(HttpStatus.UNPROCESSABLE_ENTITY));
+      case 'invalid_day':
+      case 'unknown_city':
+      case 'no_base_currency':
+      case 'rate_missing':
+        throw dailyReportRefusal(error.refusal);
     }
   }
 }
@@ -129,11 +138,37 @@ export class AdminExportsController {
     );
   }
 
-  // The export's state, to whoever asked for it (404 unknown_export for
-  // anyone else); with download=true while ready, a download URL, audited. The only kind so far is the
-  // restaurant statement, so the route asks its permission.
+  // «تصدير Excel» of the daily report (AP §9.10.1, slice 2.20d). 202, as
+  // the statement's. 400 invalid_day; 404 unknown_city; 409
+  // no_base_currency; 422 idempotency_key_reused.
+  @Post('daily-report/exports')
+  @RequirePermission('finance.read')
+  @Idempotent()
+  @HttpCode(202)
+  @ZodResponse({ status: 202, type: AdminExportDto })
+  requestDailyReport(
+    @Body() body: AdminDailyReportExportDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(async () =>
+      exportBody(
+        await this.exports.requestDailyReport(
+          exportUser(session, request),
+          { cityId: body.cityId, day: body.day },
+          idempotencyKey,
+          new Date(),
+        ),
+      ),
+    );
+  }
+
+  // The export's state, to whoever asked for it while they still hold its
+  // kind's permission (`exportPermissions`; 404 unknown_export for anyone
+  // else); with download=true while ready, a download URL, audited.
   @Get('exports/:exportId')
-  @RequirePermission('restaurants.statements')
+  @RequireAnyPermission('restaurants.statements', 'finance.read')
   @ZodResponse({ status: 200, type: AdminExportDto })
   view(
     @Param() params: AdminExportParamsDto,

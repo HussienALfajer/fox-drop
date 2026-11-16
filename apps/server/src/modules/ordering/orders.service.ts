@@ -1,5 +1,5 @@
 import { Inject, Injectable, type OnModuleInit } from '@nestjs/common';
-import { and, desc, eq, gt, gte, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm';
+import { and, desc, eq, gt, gte, inArray, isNotNull, isNull, lt, or, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -112,6 +112,18 @@ class Requote extends Error {}
 // it waits for another; then one transaction takes the customer's and the
 // restaurant's locks, counts both limits, takes the rate snapshot and numbers
 // the order.
+// How long before a period an order delivered in it may have been placed
+// (an order is delivered within hours; two days spare).
+const DELIVERED_LOOKBACK_MS = 2 * 86_400_000;
+
+// The orders delivered in a period, in one currency (`deliveredTotals`).
+export interface DeliveredTotals {
+  currency: string;
+  count: number;
+  gmv: bigint;
+  itemsValue: bigint;
+}
+
 @Injectable()
 export class OrdersService implements OnModuleInit {
   constructor(
@@ -395,6 +407,42 @@ export class OrdersService implements OnModuleInit {
       .from(collections)
       .where(inArray(collections.orderId, [...new Set(orderIds)]));
     return new Map(rows.map(({ orderId, ...parts }) => [orderId, parts]));
+  }
+
+  // AP §9.10.1 «التقرير اليومي» (slice 2.20d): the city's orders delivered
+  // normally from `from` (included) to `to` (excluded), test orders and the
+  // outcomes of «تحديد النتيجة» left out (the customer paid the total of a
+  // normal delivery only), with their customer totals (GMV) and items value,
+  // per currency (the base). Orders placed up to DELIVERED_LOOKBACK_MS
+  // before `from` are read, so the month partitions prune.
+  async deliveredTotals(cityId: string, from: Date, to: Date): Promise<DeliveredTotals[]> {
+    const rows = await this.database.db
+      .select({
+        currency: orders.currency,
+        count: sql<number>`count(*)::int`,
+        gmv: sql<string>`sum(${orders.total})::text`,
+        itemsValue: sql<string>`sum(${orders.itemsValue})::text`,
+      })
+      .from(orders)
+      .where(
+        and(
+          eq(orders.cityId, cityId),
+          eq(orders.status, 'delivered'),
+          eq(orders.outcome, 'normal'),
+          eq(orders.testOrder, false),
+          gte(orders.placedAt, new Date(from.getTime() - DELIVERED_LOOKBACK_MS)),
+          lt(orders.placedAt, to),
+          gte(orders.deliveredAt, from),
+          lt(orders.deliveredAt, to),
+        ),
+      )
+      .groupBy(orders.currency);
+    return rows.map((row) => ({
+      currency: row.currency,
+      count: row.count,
+      gmv: BigInt(row.gmv),
+      itemsValue: BigInt(row.itemsValue),
+    }));
   }
 
   // AP §8.7, RA §12.3 (slice 2.19a): each order's number and its confirmed

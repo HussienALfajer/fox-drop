@@ -93,20 +93,24 @@ export class CashDeskModule {}
 })
 export class CashDeskWorkerModule {}
 
-// A restaurant's statement for any period (AP §9.10.5, slice 2.19g), for the
-// reporting module's screen and Excel export, in the API and the worker.
+// A restaurant's statement for any period (AP §9.10.5, slice 2.19g) and the
+// restaurants' balances and overdue settlements (the daily report, AP
+// §9.10.1, slice 2.20d), for the reporting module's screens and Excel
+// exports, in the API and the worker.
 @Module({
   imports: [
     DatabaseModule,
     LedgerModule,
     FxModule,
     GeoModule,
+    ContentModule,
+    NotificationsModule,
     OrderingModule,
     SettingsModule,
     MerchantsModule,
   ],
-  providers: [MerchantPeriodService],
-  exports: [MerchantPeriodService],
+  providers: [MerchantPeriodService, MerchantStatementsService],
+  exports: [MerchantPeriodService, MerchantStatementsService],
 })
 export class CashDeskPeriodModule {}
 
@@ -124,6 +128,7 @@ export {
   type ReceiptType,
 } from './cashdesk.service.js';
 export {
+  isDay,
   MerchantPeriodService,
   PERIOD_MAX_DAYS,
   periodFits,

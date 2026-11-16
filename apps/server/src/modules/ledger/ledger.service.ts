@@ -105,6 +105,35 @@ export interface JournalRecord extends PostedJournal {
   createdAt: Date;
 }
 
+// A city's entries of a period summed (`cityTotals`), from the platform's
+// side; `period` is the index of the period among the bounds.
+export interface CityTotal {
+  period: number;
+  purpose: AccountPurpose;
+  type: JournalType;
+  currency: string;
+  rates: JournalRate[] | null;
+  amount: bigint;
+}
+
+// An account's balance at a moment (`cityBalancesAt`), from the party's view.
+export interface OwnerBalance {
+  ownerId: string | null;
+  currency: string;
+  amount: bigint;
+}
+
+// The index of the period an entry falls in among ascending bounds. Queries
+// group by it as their first column (`1`): its parameters make each writing
+// of it another expression to PostgreSQL.
+function periodOf(bounds: readonly Date[]) {
+  const array = sql.join(
+    bounds.map((bound) => sql`${bound.toISOString()}::timestamptz`),
+    sql`, `,
+  );
+  return sql<number>`(width_bucket(${entries.createdAt}, ARRAY[${array}]) - 1)::int`;
+}
+
 // The database, or the open transaction of the change the money belongs to.
 export type LedgerExecutor = Pick<NodePgDatabase, 'insert' | 'select'>;
 
@@ -426,6 +455,136 @@ export class LedgerService {
       purpose,
       and(gte(entries.createdAt, from), lt(entries.createdAt, to)),
       executor,
+    );
+  }
+
+  // The city's entries of consecutive periods (`bounds`, ascending: period
+  // i runs from bounds[i], included, to bounds[i + 1], excluded), summed per
+  // period by account purpose, journal type, currency and the journal's rate
+  // versions, from the platform's side (+ a debit), in one scan: «التقرير
+  // اليومي» and the days it compares with (AP §9.10.1, slice 2.20d). Entries
+  // of a journal that carries rates are summed per journal, so each converts
+  // to the base at its own rates as the ledger booked it (AP §8.6).
+  async cityTotals(
+    cityId: string,
+    bounds: readonly Date[],
+    executor: LedgerExecutor = this.database.db,
+  ): Promise<CityTotal[]> {
+    if (bounds.length < 2) return [];
+    const period = periodOf(bounds);
+    const journal = sql`CASE WHEN ${journals.rates} IS NULL THEN NULL ELSE ${journals.id} END`;
+    const rows = await executor
+      .select({
+        period,
+        purpose: accounts.purpose,
+        type: journals.type,
+        currency: entries.currency,
+        rates: journals.rates,
+        sum: sql<string>`sum(${entries.amount})::text`,
+      })
+      .from(entries)
+      .innerJoin(journals, eq(journals.id, entries.journalId))
+      .innerJoin(accounts, eq(accounts.id, entries.accountId))
+      .where(
+        and(
+          eq(journals.cityId, cityId),
+          gte(entries.createdAt, bounds[0]!),
+          lt(entries.createdAt, bounds.at(-1)!),
+        ),
+      )
+      .groupBy(sql`1`, accounts.purpose, journals.type, entries.currency, journals.rates, journal);
+    return rows
+      .map((row) => ({
+        period: row.period,
+        purpose: row.purpose as AccountPurpose,
+        type: row.type as JournalType,
+        currency: row.currency,
+        rates: (row.rates as JournalRate[] | null) ?? null,
+        amount: BigInt(row.sum),
+      }))
+      .filter((row) => row.amount !== 0n);
+  }
+
+  // The same periods' entries of one purpose and type, summed per period by
+  // the journal's source, from the platform's side: the orders of each
+  // day's order pay.
+  async sourceTotals(
+    cityId: string,
+    purpose: AccountPurpose,
+    type: JournalType,
+    bounds: readonly Date[],
+    executor: LedgerExecutor = this.database.db,
+  ): Promise<Map<string, bigint>[]> {
+    const totals = bounds.slice(1).map(() => new Map<string, bigint>());
+    if (bounds.length < 2) return totals;
+    const period = periodOf(bounds);
+    const rows = await executor
+      .select({
+        period,
+        sourceId: journals.sourceId,
+        sum: sql<string>`sum(${entries.amount})::text`,
+      })
+      .from(entries)
+      .innerJoin(journals, eq(journals.id, entries.journalId))
+      .innerJoin(accounts, eq(accounts.id, entries.accountId))
+      .where(
+        and(
+          eq(journals.cityId, cityId),
+          eq(accounts.purpose, purpose),
+          eq(journals.type, type),
+          gte(entries.createdAt, bounds[0]!),
+          lt(entries.createdAt, bounds.at(-1)!),
+        ),
+      )
+      .groupBy(sql`1`, journals.sourceId);
+    for (const row of rows) {
+      if (row.sourceId !== null) totals[row.period]!.set(row.sourceId, BigInt(row.sum));
+    }
+    return totals;
+  }
+
+  // Every account of one purpose in the city at each of some moments (the
+  // entries before it), by owner and currency, from the party's view, in
+  // one scan; accounts at zero are left out: the open custody and
+  // restaurant balances at each business day's cutoff (AP §9.10.1). It sums
+  // the city's whole history of the purpose: no balance is cached yet.
+  async cityBalancesAt(
+    cityId: string,
+    purpose: AccountPurpose,
+    moments: readonly Date[],
+    executor: LedgerExecutor = this.database.db,
+  ): Promise<OwnerBalance[][]> {
+    if (moments.length === 0) return [];
+    const latest = moments.reduce((a, b) => (a > b ? a : b));
+    const sums = moments.map(
+      (at) =>
+        sql<string>`coalesce(sum(${entries.amount}) FILTER (WHERE ${entries.createdAt} < ${at.toISOString()}::timestamptz), 0)::text`,
+    );
+    const rows = await executor
+      .select({
+        ownerId: accounts.ownerId,
+        currency: accounts.currency,
+        sums: sql<string[]>`ARRAY[${sql.join(sums, sql`, `)}]`,
+      })
+      .from(entries)
+      .innerJoin(accounts, eq(accounts.id, entries.accountId))
+      .where(
+        and(
+          eq(accounts.cityId, cityId),
+          eq(accounts.purpose, purpose),
+          lt(entries.createdAt, latest),
+        ),
+      )
+      .groupBy(accounts.ownerId, accounts.currency);
+    const sign = accountPurposes[purpose].sign;
+    return moments.map((_, index) =>
+      rows
+        .map((row) => ({
+          ownerId: row.ownerId,
+          currency: row.currency,
+          amount: BigInt(row.sums[index]!) * sign,
+        }))
+        .filter((row) => row.amount !== 0n),
     );
   }
 

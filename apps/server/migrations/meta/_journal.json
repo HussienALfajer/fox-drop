@@ -547,6 +547,13 @@
       "when": 1794837026398,
       "tag": "0077_cashdesk_manual_entries",
       "breakpoints": true
+    },
+    {
+      "idx": 78,
+      "version": "7",
+      "when": 1794840287326,
+      "tag": "0078_reporting_daily_report_exports",
+      "breakpoints": true
     }
   ]
 }

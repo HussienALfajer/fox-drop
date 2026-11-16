@@ -569,6 +569,204 @@ describe('LedgerService.balanceAt', () => {
   });
 });
 
+describe('LedgerService.cityTotals and cityBalancesAt (AP §9.10.1)', () => {
+  const databaseNow = async () =>
+    (await pool.query<{ now: Date }>('SELECT clock_timestamp() AS now')).rows[0]!.now;
+
+  it("sums a city's entries per period by purpose, type, currency and rates, each rated journal apart", async () => {
+    const { cityId, custody, custodyUsd, clearing, open } = await setUp();
+    const other = await setUp();
+    await post(pickup(cityId, custody, clearing, [500n, -500n]));
+    const from = await databaseNow();
+    await post(pickup(cityId, custody, clearing));
+    const middle = await databaseNow();
+    await post(pickup(cityId, custody, clearing, [-100n, 100n]));
+    await post(pickup(cityId, custody, clearing, [-50n, 50n]));
+    await post(pickup(other.cityId, other.custody, other.clearing));
+    const fx = await open('platform.fx_rounding');
+    const fxUsd = await open('platform.fx_rounding', 'USD');
+    const rateVersionId = randomUUID();
+    const convert = {
+      cityId,
+      type: 'custody.fx_convert',
+      source: null,
+      actor: system,
+      rates: [{ currency: 'USD', rateVersionId }],
+      entries: [
+        { accountId: custodyUsd, currency: 'USD', amount: -10n },
+        { accountId: fxUsd, currency: 'USD', amount: 10n },
+        { accountId: custody, currency: 'TRY', amount: 405n },
+        { accountId: fx, currency: 'TRY', amount: -405n },
+      ],
+    } satisfies PostJournal;
+    // Two journals at the same rates stay apart, each converting as booked.
+    await post(convert);
+    await post(convert);
+    const to = await databaseNow();
+    await post(pickup(cityId, custody, clearing));
+
+    const totals = await ledger.cityTotals(cityId, [from, middle, to]);
+    const key = (row: (typeof totals)[number]) =>
+      `${row.period}${row.purpose}${row.type}${row.currency}`;
+    const rates = [{ currency: 'USD', rateVersionId }];
+    expect([...totals].sort((a, b) => key(a).localeCompare(key(b)))).toEqual([
+      {
+        period: 0,
+        purpose: 'captain.custody',
+        type: 'custody.pay_merchant',
+        currency: 'TRY',
+        rates: null,
+        amount: -400n,
+      },
+      {
+        period: 0,
+        purpose: 'platform.order_clearing',
+        type: 'custody.pay_merchant',
+        currency: 'TRY',
+        rates: null,
+        amount: 400n,
+      },
+      {
+        period: 1,
+        purpose: 'captain.custody',
+        type: 'custody.fx_convert',
+        currency: 'TRY',
+        rates,
+        amount: 405n,
+      },
+      {
+        period: 1,
+        purpose: 'captain.custody',
+        type: 'custody.fx_convert',
+        currency: 'TRY',
+        rates,
+        amount: 405n,
+      },
+      {
+        period: 1,
+        purpose: 'captain.custody',
+        type: 'custody.fx_convert',
+        currency: 'USD',
+        rates,
+        amount: -10n,
+      },
+      {
+        period: 1,
+        purpose: 'captain.custody',
+        type: 'custody.fx_convert',
+        currency: 'USD',
+        rates,
+        amount: -10n,
+      },
+      {
+        period: 1,
+        purpose: 'captain.custody',
+        type: 'custody.pay_merchant',
+        currency: 'TRY',
+        rates: null,
+        amount: -150n,
+      },
+      {
+        period: 1,
+        purpose: 'platform.fx_rounding',
+        type: 'custody.fx_convert',
+        currency: 'TRY',
+        rates,
+        amount: -405n,
+      },
+      {
+        period: 1,
+        purpose: 'platform.fx_rounding',
+        type: 'custody.fx_convert',
+        currency: 'TRY',
+        rates,
+        amount: -405n,
+      },
+      {
+        period: 1,
+        purpose: 'platform.fx_rounding',
+        type: 'custody.fx_convert',
+        currency: 'USD',
+        rates,
+        amount: 10n,
+      },
+      {
+        period: 1,
+        purpose: 'platform.fx_rounding',
+        type: 'custody.fx_convert',
+        currency: 'USD',
+        rates,
+        amount: 10n,
+      },
+      {
+        period: 1,
+        purpose: 'platform.order_clearing',
+        type: 'custody.pay_merchant',
+        currency: 'TRY',
+        rates: null,
+        amount: 150n,
+      },
+    ]);
+  });
+
+  it('gives the sources of the type asked, one total per source and period', async () => {
+    const { cityId, custody, clearing } = await setUp();
+    const from = await databaseNow();
+    const journal = pickup(cityId, custody, clearing);
+    await post(journal);
+    await post({
+      ...journal,
+      entries: journal.entries.map((e) => ({ ...e, amount: -e.amount / 4n })),
+    });
+    const middle = await databaseNow();
+    await post(journal);
+    const to = await databaseNow();
+
+    expect(
+      await ledger.sourceTotals(cityId, 'captain.custody', 'custody.pay_merchant', [
+        from,
+        middle,
+        to,
+      ]),
+    ).toEqual([new Map([[journal.source!.id, -300n]]), new Map([[journal.source!.id, -400n]])]);
+  });
+
+  it("gives every account of a purpose at each moment, by owner and currency, from the party's view", async () => {
+    const { cityId, captainId, custody, custodyUsd, clearing, open } = await setUp();
+    const second = randomUUID();
+    const secondCustody = await open('captain.custody', 'TRY', second);
+    await post(pickup(cityId, custody, clearing, [410n, -410n]));
+    const first = await databaseNow();
+    await post(pickup(cityId, secondCustody, clearing, [-60n, 60n]));
+    await post({
+      cityId,
+      type: 'custody.collect',
+      source: { kind: 'order', id: randomUUID() },
+      actor: system,
+      entries: [
+        { accountId: custodyUsd, currency: 'USD', amount: 5n },
+        { accountId: await open('platform.order_clearing', 'USD'), currency: 'USD', amount: -5n },
+      ],
+    });
+    const at = await databaseNow();
+    await post(pickup(cityId, custody, clearing, [1000n, -1000n]));
+
+    const sorted = <T extends { ownerId: string | null; currency: string }>(rows: T[]) =>
+      [...rows].sort((a, b) =>
+        `${a.ownerId}${a.currency}`.localeCompare(`${b.ownerId}${b.currency}`),
+      );
+    const [then, now] = await ledger.cityBalancesAt(cityId, 'captain.custody', [first, at]);
+    expect(then).toEqual([{ ownerId: captainId, currency: 'TRY', amount: 410n }]);
+    expect(sorted(now!)).toEqual(
+      sorted([
+        { ownerId: captainId, currency: 'TRY', amount: 410n },
+        { ownerId: captainId, currency: 'USD', amount: 5n },
+        { ownerId: second, currency: 'TRY', amount: -60n },
+      ]),
+    );
+  });
+});
+
 describe('LedgerService.reverse', () => {
   it('cancels a journal entry by entry, once, with a reason', async () => {
     const { cityId, custody, clearing } = await setUp();
