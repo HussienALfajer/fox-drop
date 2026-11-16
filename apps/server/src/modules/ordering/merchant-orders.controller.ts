@@ -468,7 +468,9 @@ export class MerchantOrdersController {
     @Param() params: MerchantOrderParamsDto,
   ) {
     const command = await this.command(session, idempotencyKey, params.orderId);
-    return this.answer(session, command.restaurantId, () => this.commands.ready(command, new Date()));
+    return this.answer(session, command.restaurantId, () =>
+      this.commands.ready(command, new Date()),
+    );
   }
 
   // RA §8.10 item 4 «تأكيد الاستلام»: the atomic pickup. 409
@@ -485,7 +487,9 @@ export class MerchantOrdersController {
     @Param() params: MerchantOrderParamsDto,
   ) {
     const command = await this.command(session, idempotencyKey, params.orderId);
-    return this.answer(session, command.restaurantId, () => this.pickups.confirm(command, new Date()));
+    return this.answer(session, command.restaurantId, () =>
+      this.pickups.confirm(command, new Date()),
+    );
   }
 
   // RA §8.10 items 6 and 8 «المبلغ غير صحيح»: rejects an open request, or,
@@ -524,7 +528,9 @@ export class MerchantOrdersController {
     @Param() params: MerchantOrderParamsDto,
   ) {
     const command = await this.command(session, idempotencyKey, params.orderId);
-    return this.answer(session, command.restaurantId, () => this.pickups.incomplete(command, new Date()));
+    return this.answer(session, command.restaurantId, () =>
+      this.pickups.incomplete(command, new Date()),
+    );
   }
 
   // RA §8.14, §18 «حسناً» (slice 2.8b): after operations cancelled an
@@ -644,11 +650,7 @@ export class MerchantOrdersController {
     };
   }
 
-  private async answer(
-    session: AppSession,
-    restaurantId: string,
-    run: () => Promise<OrderView>,
-  ) {
+  private async answer(session: AppSession, restaurantId: string, run: () => Promise<OrderView>) {
     try {
       const [order] = await this.boardOrders(session, restaurantId, [await run()]);
       return { order: order! };
