@@ -57,6 +57,11 @@ const handInRefusalKeys = {
   invalid_amounts: 'cashDesk.refusal.invalid_amounts',
 } as const satisfies Record<HandInRefusal, string>;
 
+const sessionKindKeys = {
+  office: 'cashDesk.sessionKind.office',
+  field: 'cashDesk.sessionKind.field',
+} as const satisfies Record<DrawerSession['kind'], string>;
+
 const statusKeys = {
   active: 'cashDesk.status.active',
   suspended: 'cashDesk.status.suspended',
@@ -93,6 +98,7 @@ export function CashDeskPage() {
       ) : (
         <>
           <SessionSection current={current.data} city={city} />
+          <FieldSessionSection current={current.data} city={city} />
           <HandInSection
             city={city}
             currencies={current.data.currencies}
@@ -122,6 +128,47 @@ function SessionSection({ current, city }: { current: CurrentSession; city: City
         </>
       ) : (
         <OpenSession currencies={current.currencies} city={city} />
+      )}
+    </section>
+  );
+}
+
+// «زيارة ميدانية» (AP §9.10.3 tab 3, slice 2.19c): the field session an
+// OWN or FIN user opens from a phone with a zero float, records a
+// restaurant's payment in on the spot, and closes on its count once the
+// cash reaches the office.
+function FieldSessionSection({ current, city }: { current: CurrentSession; city: City }) {
+  const { t } = useTranslation();
+  const open = useOpenSession(city.id, 'field');
+  return (
+    <section aria-labelledby="field-session">
+      <h2 id="field-session">{t('cashDesk.field.title')}</h2>
+      {current.field ? (
+        <>
+          <p>
+            {t('cashDesk.session.openSince', {
+              at: formatDateTime(current.field.openedAt, city.timeZone),
+            })}
+          </p>
+          <SessionCash session={current.field} />
+          <p>{t('cashDesk.field.closeHint')}</p>
+          <CloseSession
+            key={current.field.id}
+            session={current.field}
+            title={t('cashDesk.field.close')}
+          />
+        </>
+      ) : (
+        <>
+          <p>{t('cashDesk.field.none')}</p>
+          <button type="button" disabled={open.isPending} onClick={() => open.mutate([])}>
+            {t('cashDesk.field.open')}
+          </button>
+          {open.isError && <p role="alert">{t('common.failed')}</p>}
+          {open.data?.status === 'refused' && (
+            <p role="alert">{t(sessionRefusalKeys[open.data.refusal])}</p>
+          )}
+        </>
       )}
     </section>
   );
@@ -231,7 +278,7 @@ function OpenSession({ currencies, city }: { currencies: string[]; city: City })
 
 // «إقفال الصندوق»: the counted cash of every currency; a variance needs a
 // note, kept with the session.
-function CloseSession({ session }: { session: DrawerSession }) {
+function CloseSession({ session, title }: { session: DrawerSession; title?: string }) {
   const { t } = useTranslation();
   const close = useCloseSession();
   const [typed, setTyped] = useState<Typed>({});
@@ -255,7 +302,7 @@ function CloseSession({ session }: { session: DrawerSession }) {
 
   return (
     <form onSubmit={submit}>
-      <h3>{t('cashDesk.session.close')}</h3>
+      <h3>{title ?? t('cashDesk.session.close')}</h3>
       <AmountFields
         currencies={currencies}
         typed={typed}
@@ -280,7 +327,7 @@ function CloseSession({ session }: { session: DrawerSession }) {
         type="submit"
         disabled={!complete || (variance && note.trim() === '') || close.isPending}
       >
-        {t('cashDesk.session.close')}
+        {title ?? t('cashDesk.session.close')}
       </button>
       {close.isError && <p role="alert">{t('common.failed')}</p>}
       {close.data?.status === 'refused' && (
@@ -779,6 +826,7 @@ export function CashDeskSessionsPage() {
                 opened: formatDateTime(session.openedAt, city.timeZone),
               })}
             </h2>
+            <p>{t(sessionKindKeys[session.kind])}</p>
             <p>
               {session.closedAt
                 ? t('cashDesk.sessions.closedAt', {

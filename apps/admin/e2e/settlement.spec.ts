@@ -96,7 +96,7 @@ test('settles a captain on Thursday and shows the statement', async ({ page }) =
   await fakeSession(page, ['cash_desk.record']);
   await page.route('**/v1/admin/cities', (route) => route.fulfill({ json: cities }));
   await page.route('**/v1/admin/cash-desk/sessions/current*', (route) =>
-    route.fulfill({ json: { session: drawer, currencies: ['TRY'] } }),
+    route.fulfill({ json: { session: drawer, field: null, currencies: ['TRY'] } }),
   );
   await page.route('**/v1/admin/cash-desk/settlements?*', (route) =>
     route.fulfill({
