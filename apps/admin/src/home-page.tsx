@@ -82,6 +82,11 @@ export function HomePage() {
           )}
           {can(session, FINANCE_READ) && (
             <li>
+              <Link to="/daily-report">{t('dailyReport.title')}</Link>
+            </li>
+          )}
+          {can(session, FINANCE_READ) && (
+            <li>
               <Link to="/exchange-rates">{t('exchangeRates.title')}</Link>
             </li>
           )}
