@@ -4622,6 +4622,18 @@ abstract class AppLocalizations {
   /// **'موعد التسوية: {weekday} {date}'**
   String merchantAccountSettlement(String weekday, String date);
 
+  /// The red line of the balance card when a statement is overdue (RA §12.2, §12.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'متأخر: {amount} من كشف {date}'**
+  String merchantAccountOverdue(String amount, String date);
+
+  /// The owners' amber banner when a statement is overdue (RA §6.3 item 7, §12.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'لديك مبلغ متأخر: {amount}. يرجى التسوية في أقرب وقت.'**
+  String merchantOverdueBanner(String amount);
+
   /// The current commission rate (RA §12.2; no wording in the spec).
   ///
   /// In ar, this message translates to:

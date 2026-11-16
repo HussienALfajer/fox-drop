@@ -379,7 +379,7 @@ void main() {
       await app.done(tester);
     });
 
-    test('only an order target has a route yet', () {
+    test('each target opens its screen', () {
       expect(
         pushTargetPath({'target': 'order', 'orderId': 'a b'}),
         '/orders/a%20b',
@@ -396,6 +396,8 @@ void main() {
         '/account/receipts/r1',
       );
       expect(pushTargetPath({'target': 'receipt', 'receiptId': ''}), isNull);
+      // RA §16 #32 (slice 2.19f).
+      expect(pushTargetPath({'target': 'account'}), '/account');
     });
   });
 

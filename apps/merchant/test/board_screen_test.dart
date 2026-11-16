@@ -616,12 +616,67 @@ void main() {
     await app.done(tester);
   });
 
+  // RA §6.3 item 7, §12.2, §12.6 (slice 2.19f): the owners' amber banner
+  // and the red line on «الحساب».
+  testWidgets(
+    'an owner with an overdue statement sees the banner and the line',
+    (tester) async {
+      final app = _Board(role: 'owner');
+      app.server.on('/v1/merchant/account/overdue', [
+        const FakeAnswer(200, {
+          'overdue': {
+            'currency': 'TRY',
+            'amount': '5000',
+            'statementDate': '2026-11-07',
+          },
+        }),
+      ]);
+      app.server.on('/v1/merchant/account', [
+        FakeAnswer(200, {
+          ..._accountJson(),
+          'overdue': {'amount': '5000', 'statementDate': '2026-11-07'},
+        }),
+      ]);
+      await app.pump(tester, [FakeAnswer(200, boardJson([]))]);
+      expect(
+        find.text('لديك مبلغ متأخر: 50 ₺. يرجى التسوية في أقرب وقت.'),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(const Key('open-account')));
+      await tester.pumpAndSettle();
+      expect(find.text('متأخر: 50 ₺ من كشف 07/11/2026'), findsOneWidget);
+      await app.done(tester);
+    },
+  );
+
+  testWidgets('nothing overdue shows no banner and no line', (tester) async {
+    final app = _Board(role: 'owner');
+    app.server.on('/v1/merchant/account/overdue', [
+      const FakeAnswer(200, {'overdue': null}),
+    ]);
+    app.server.on('/v1/merchant/account', [FakeAnswer(200, _accountJson())]);
+    await app.pump(tester, [FakeAnswer(200, boardJson([]))]);
+    expect(find.byKey(const Key('overdue-banner')), findsNothing);
+    await tester.tap(find.byKey(const Key('open-account')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('account-overdue')), findsNothing);
+    await app.done(tester);
+  });
+
   testWidgets('a cashier sees no money lines and no «الحساب»', (tester) async {
     final app = _Board();
     await app.pump(tester, [
       FakeAnswer(200, boardJson([orderJson()])),
     ]);
     expect(find.byKey(const Key('open-account')), findsNothing);
+    // RA §6.3 item 7: the banner is the owners'; a cashier never reads it.
+    expect(find.byKey(const Key('overdue-banner')), findsNothing);
+    expect(
+      app.server.requests.where(
+        (request) => request.uri.path == '/v1/merchant/account/overdue',
+      ),
+      isEmpty,
+    );
     app.container.read(routerProvider).push('/orders/$_orderId');
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('owner-commission')), findsNothing);

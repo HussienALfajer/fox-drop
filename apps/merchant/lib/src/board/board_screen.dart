@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../account/overdue.dart';
 import '../content.dart';
 import '../api.dart';
 import '../auth.dart';
@@ -285,6 +286,8 @@ class BoardAlertsLayer extends ConsumerWidget {
             EmergencyStopBanner(check: stop),
           // RA §6.3 items 3 and 6.
           const StatusBanners(),
+          // RA §6.3 item 7, owners only.
+          const OverdueBanner(),
           Expanded(
             child: Stack(
               children: [
