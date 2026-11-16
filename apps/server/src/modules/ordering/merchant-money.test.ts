@@ -1,9 +1,12 @@
 import 'reflect-metadata';
 import { describe, expect, it } from 'vitest';
+import { MerchantStatementsService } from '../cashdesk/index.js';
+import { GeoService } from '../geo/index.js';
 import { MerchantAccountsService } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import {
   app,
+  azaz,
   acceptedOrder,
   appSignIn,
   change,
@@ -99,5 +102,62 @@ describe('GET /v1/merchant/account (RA §12.2)', () => {
     const refused = await account(order.cashier);
     expect(refused.statusCode).toBe(403);
     expect(refused.json().error).toBe('owner_only');
+  });
+
+  it('shows another restaurant’s owner nothing of this one', async () => {
+    const merchants = app.get(MerchantsService);
+    const other = await merchants.createRestaurant(
+      azaz,
+      {
+        nameAr: 'مطعم آخر',
+        location: { latitude: 36.587, longitude: 37.046 },
+        coverage: { kind: 'radius', radiusMetres: 1000 },
+        minimumOrder: { amount: 10_000n, currency: 'TRY' },
+        commissionBp: 1000,
+        defaultPrepMin: 20,
+      },
+      change,
+    );
+    await merchants.setAccountStatus(other, 'active', change);
+    const phone = phoneNumber();
+    await app
+      .get(MerchantAccountsService)
+      .addAccount(other, { role: 'owner', name: 'owner', phone }, change);
+    const owners = await appSignIn('merchant', phone);
+    const door = await orderAtDoor();
+    expect((await door.deliver()).statusCode).toBe(200);
+    expect((await account(owners)).json()).toMatchObject({
+      balance: '0',
+      commissionBp: 1000,
+      pickups: [],
+      weekLines: [],
+    });
+    expect((await board(owners)).json().orders).toEqual([]);
+  });
+
+  // Last: it closes a statement on the shared restaurant.
+  it('starts the week at the latest statement and dates the settlement by it', async () => {
+    const owners = await owner();
+    const earlier = await orderAtDoor();
+    expect((await earlier.deliver()).statusCode).toBe(200);
+    const cutoff = new Date();
+    await app.get(MerchantStatementsService).closeAt(azaz, cutoff, cutoff, { notify: false });
+    const later = await orderAtDoor();
+    expect((await later.deliver()).statusCode).toBe(200);
+    const answer = (await account(owners)).json();
+    expect(answer.weekFrom).toBe(cutoff.toISOString());
+    const orders = answer.weekLines.map((line: { orderId: string | null }) => line.orderId);
+    expect(orders).toContain(later.order.id);
+    expect(orders).not.toContain(earlier.order.id);
+    // The statement is unpaid, so it is the one to settle.
+    const timeZone = (await app.get(GeoService).cityTimeZone(azaz))!;
+    expect(answer.settlementDate).toBe(
+      new Intl.DateTimeFormat('en-CA', {
+        timeZone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }).format(cutoff),
+    );
   });
 });

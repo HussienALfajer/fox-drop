@@ -442,31 +442,43 @@ export class OrdersService implements OnModuleInit {
   // orders, null for a test order; a cancelled or rejected order has none.
   // After the pickup they read the edits that froze its values.
   async ownerMoney(views: readonly OrderView[]): Promise<Map<string, OwnerMoney | null>> {
-    const lines = new Map<string, OwnerMoney | null>();
-    for (const order of views) {
-      if (order.status === 'cancelled' || order.status === 'rejected') continue;
-      const frozen =
-        order.pickup === null
-          ? null
-          : await frozenAtPickup(this.database.db, {
-              id: order.id,
-              placedAt: order.placedAt,
+    const shown = views.filter(
+      (order) => order.status !== 'cancelled' && order.status !== 'rejected',
+    );
+    const lines = await Promise.all(
+      shown.map(async (order) => {
+        const frozen =
+          order.pickup === null
+            ? null
+            : await frozenAtPickup(this.database.db, {
+                id: order.id,
+                placedAt: order.placedAt,
+                itemsValue: order.money.itemsValue,
+                deliveryFee: order.money.deliveryFee,
+              });
+        // AP §8.9: an outcome the restaurant bears takes the pickup payment
+        // back; without its debit kept, the pickup less its own edits.
+        const outcome = order.outcome?.responsible === 'restaurant' ? order.outcome : null;
+        const debit =
+          outcome === null || frozen === null
+            ? null
+            : (outcome.merchantDebit ??
+              frozen.itemsValue - frozen.restaurantCharge + frozen.restaurantCommissionCut);
+        return [
+          order.id,
+          ownerMoney(
+            {
               itemsValue: order.money.itemsValue,
-              deliveryFee: order.money.deliveryFee,
-            });
-      lines.set(
-        order.id,
-        ownerMoney(
-          {
-            itemsValue: order.money.itemsValue,
-            commissionBp: order.commissionBp,
-            testOrder: order.testOrder,
-          },
-          frozen,
-        ),
-      );
-    }
-    return lines;
+              commissionBp: order.commissionBp,
+              testOrder: order.testOrder,
+            },
+            frozen,
+            debit,
+          ),
+        ] as const;
+      }),
+    );
+    return new Map(lines);
   }
 
   // RA §12.2 (slice 2.19d): the restaurant's pickups confirmed since a

@@ -6,6 +6,9 @@ import { commission } from './door-payment.js';
 // Before the pickup they follow the items value; after it (`frozen`, from
 // `frozenAtPickup`) the pickup's items value is the commission's base, and
 // only the restaurant's own edits change them (AP §9.3.3, docs/domain/09).
+// An outcome with the restaurant responsible (`restaurantDebit`, the
+// outcome's whole debit) books no commission and takes the pickup payment
+// back, so its net is what is left after that debit (AP §8.9).
 // No restaurant-funded discount until codes (Phase 2).
 export interface OwnerMoney {
   commissionBp: number;
@@ -16,8 +19,20 @@ export interface OwnerMoney {
 export function ownerMoney(
   order: { itemsValue: bigint; commissionBp: number; testOrder: boolean },
   frozen: { itemsValue: bigint; restaurantCommissionCut: bigint; restaurantCharge: bigint } | null,
+  restaurantDebit: bigint | null = null,
 ): OwnerMoney | null {
   if (order.testOrder) return null;
+  if (restaurantDebit !== null && frozen !== null) {
+    return {
+      commissionBp: order.commissionBp,
+      commission: 0n,
+      merchantNet:
+        frozen.itemsValue -
+        frozen.restaurantCharge +
+        frozen.restaurantCommissionCut -
+        restaurantDebit,
+    };
+  }
   if (frozen === null) {
     const cut = commission(order.itemsValue, order.commissionBp);
     return {

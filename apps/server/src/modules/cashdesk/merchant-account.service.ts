@@ -63,7 +63,13 @@ export class MerchantAccountService {
     const todayFrom = lastCutoff(now, cutoffMinutes, timeZone);
     const pickups = await this.orders.restaurantPickups(restaurantId, todayFrom);
     const names = new Map(
-      (await this.captains.captainIds(cityId)).map((captain) => [captain.id, captain.name]),
+      (
+        await Promise.all(
+          [...new Set(pickups.map((pickup) => pickup.captainId))].map((id) =>
+            this.captains.captain(id, now),
+          ),
+        )
+      ).flatMap((captain) => (captain ? [[captain.id, captain.name] as const] : [])),
     );
     const base = {
       currency,

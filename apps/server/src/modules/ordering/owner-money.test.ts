@@ -43,4 +43,19 @@ describe('ownerMoney', () => {
       ),
     ).toEqual({ commissionBp: 1500, commission: 6_000n, merchantNet: 34_000n });
   });
+
+  it('shows no commission and the net after the debit when the restaurant is responsible', () => {
+    // AP §8.9: the restaurant returns the pickup payment less its own edits'
+    // debits, and the commission its edit reversed is restored.
+    const frozen = {
+      itemsValue: 40_000n,
+      restaurantCommissionCut: 1_200n,
+      restaurantCharge: 8_000n,
+    };
+    expect(ownerMoney({ ...order, itemsValue: 32_000n }, frozen, 33_200n)).toEqual({
+      commissionBp: 1500,
+      commission: 0n,
+      merchantNet: 0n,
+    });
+  });
 });
