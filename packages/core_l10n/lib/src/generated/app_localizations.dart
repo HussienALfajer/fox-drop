@@ -1228,6 +1228,150 @@ abstract class AppLocalizations {
   /// **'الكود غير متاح اليوم'**
   String get customerCodeBudgetReached;
 
+  /// The visible codes that apply to the cart, at checkout (CU §10.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'الأكواد المتاحة لك'**
+  String get customerCodesAvailable;
+
+  /// The suggested code with the largest discount, with «تطبيق»; never applied by itself (CU §10.4, Q19, U11).
+  ///
+  /// In ar, this message translates to:
+  /// **'لديك كود يوفر عليك {amount}: {code}'**
+  String customerCodeSuggestion(String amount, String code);
+
+  /// What an available code takes off this cart (CU §10.4; our words, to confirm with the owner).
+  ///
+  /// In ar, this message translates to:
+  /// **'يوفر عليك {amount}'**
+  String customerCodeSaves(String amount);
+
+  /// A percentage code's value (CU §10.4, §12.4; our words). The percentage has Western digits, such as 12.5.
+  ///
+  /// In ar, this message translates to:
+  /// **'خصم {percent}%'**
+  String customerCodePercent(String percent);
+
+  /// A percentage code with its cap (CU §10.4, §12.4; our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'خصم {percent}% بحد أقصى {amount}'**
+  String customerCodePercentCapped(String percent, String amount);
+
+  /// A fixed-amount code's value (CU §10.4, §12.4; our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'خصم {amount}'**
+  String customerCodeFixed(String amount);
+
+  /// A free-delivery code's value (CU §10.4, §12.4; our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'توصيل مجاني'**
+  String get customerCodeFreeDelivery;
+
+  /// A code's minimum order on the items value (CU §10.4, §12.4; our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'للطلبات من {amount}'**
+  String customerCodeMinimum(String amount);
+
+  /// A code's expiry (CU §12.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'ينتهي {date}'**
+  String customerCodeExpires(String date);
+
+  /// Asked before another code replaces the applied one: one code per order (CU §10.4; our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'طلبك يحمل الكود {current}. هل تستبدله بالكود {code}؟'**
+  String customerCodeReplaceAsk(String current, String code);
+
+  /// Between the items of a list written in a line, such as a code's restaurants (CU §12.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'، '**
+  String get listSeparator;
+
+  /// «أكوادي» (CU §12.4, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'أكوادي'**
+  String get customerMyCodesTitle;
+
+  /// The codes the customer can use (CU §12.4, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'متاحة'**
+  String get customerCodesTabAvailable;
+
+  /// The codes used or expired in the last 30 days (CU §12.4, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'منتهية'**
+  String get customerCodesTabEnded;
+
+  /// An empty tab of «أكوادي» (our words, to confirm with the owner).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد أكواد هنا الآن'**
+  String get customerCodesEmpty;
+
+  /// «أكوادي» before a delivery point is known: the codes are the city's (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'حدّد موقعك لعرض أكوادك'**
+  String get customerCodesNoPoint;
+
+  /// The restaurants a code works with (CU §12.4; our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'في: {names}'**
+  String customerCodeRestaurants(String names);
+
+  /// The zones a code works in (CU §12.4; our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'في مناطق: {names}'**
+  String customerCodeZones(String names);
+
+  /// A code's hours of the day on the city clock (CU §12.4; our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'من {from} إلى {to}'**
+  String customerCodeHours(String from, String to);
+
+  /// The uses left of a code (CU §12.4; our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'متبقٍ لك: {count}'**
+  String customerCodeUsesLeft(int count);
+
+  /// Opens the code's restaurant, or home (CU §12.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'استخدم'**
+  String get customerCodeUse;
+
+  /// A code used up, in «منتهية» (CU §12.4; our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'استُخدم {date}'**
+  String customerCodeUsedOn(String date);
+
+  /// A code that ended, in «منتهية» (CU §12.4; our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهى {date}'**
+  String customerCodeExpiredOn(String date);
+
+  /// Confirms replacing the applied code (CU §10.4; our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'استبدال'**
+  String get customerCodeReplace;
+
   /// A money line, only when not 0 (CU §10.3).
   ///
   /// In ar, this message translates to:

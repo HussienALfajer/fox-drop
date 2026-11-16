@@ -150,6 +150,7 @@ Serializers _$serializers =
           ..add(AdminExportDtoOutput.serializer)
           ..add(AdminExportDtoOutputKindEnum.serializer)
           ..add(AdminExportDtoOutputStatusEnum.serializer)
+          ..add(AdminExtendPromoCodeDto.serializer)
           ..add(AdminFaqDto.serializer)
           ..add(AdminFaqDtoItemsInner.serializer)
           ..add(AdminFaqDtoOutput.serializer)
@@ -391,6 +392,8 @@ Serializers _$serializers =
           ..add(AdminPromoCodeDtoOutputStateEnum.serializer)
           ..add(AdminPromoCodeDtoOutputStatusEnum.serializer)
           ..add(AdminPromoCodeDtoOutputVisibilityEnum.serializer)
+          ..add(AdminPromoCodeReportDtoOutput.serializer)
+          ..add(AdminPromoCodeReportDtoOutputReport.serializer)
           ..add(AdminPromoCodesCreatedDtoOutput.serializer)
           ..add(AdminPromoCodesDtoOutput.serializer)
           ..add(AdminPromoCodesDtoOutputCodesInner.serializer)
@@ -781,6 +784,11 @@ Serializers _$serializers =
           ..add(CustomerCodeRequestDto.serializer)
           ..add(CustomerCodeSentDtoOutput.serializer)
           ..add(CustomerCodeSentDtoOutputChannelEnum.serializer)
+          ..add(CustomerCodesDtoOutput.serializer)
+          ..add(CustomerCodesDtoOutputCodesInner.serializer)
+          ..add(CustomerCodesDtoOutputCodesInnerEnded.serializer)
+          ..add(CustomerCodesDtoOutputCodesInnerEndedReasonEnum.serializer)
+          ..add(CustomerCodesDtoOutputCodesInnerKindEnum.serializer)
           ..add(CustomerContentDtoOutput.serializer)
           ..add(CustomerContentDtoOutputReasons.serializer)
           ..add(CustomerEmergencyStopDtoOutput.serializer)
@@ -801,6 +809,9 @@ Serializers _$serializers =
           ..add(CustomerProfileDtoOutputProfile.serializer)
           ..add(CustomerProfileDtoOutputProfileGenderEnum.serializer)
           ..add(CustomerQuoteDtoOutput.serializer)
+          ..add(CustomerQuoteDtoOutputAvailableCodesInner.serializer)
+          ..add(CustomerQuoteDtoOutputAvailableCodesInnerHours.serializer)
+          ..add(CustomerQuoteDtoOutputAvailableCodesInnerKindEnum.serializer)
           ..add(CustomerQuoteDtoOutputEstimate.serializer)
           ..add(CustomerQuoteDtoOutputFreeDelivery.serializer)
           ..add(CustomerQuoteDtoOutputLinesInner.serializer)
@@ -815,6 +826,7 @@ Serializers _$serializers =
           ..add(CustomerQuoteDtoOutputRatesInner.serializer)
           ..add(CustomerQuoteDtoOutputRestaurant.serializer)
           ..add(CustomerQuoteDtoOutputRestaurantStateEnum.serializer)
+          ..add(CustomerQuoteDtoOutputSuggestedCode.serializer)
           ..add(CustomerQuoteRequestDto.serializer)
           ..add(CustomerQuoteRequestDtoLinesInner.serializer)
           ..add(CustomerQuoteRequestDtoLocation.serializer)
@@ -2188,6 +2200,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(CustomerCodesDtoOutputCodesInner),
+            ]),
+            () => ListBuilder<CustomerCodesDtoOutputCodesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(CustomerNotificationsDtoOutputNotificationsInner),
             ]),
             () =>
@@ -2210,6 +2228,12 @@ Serializers _$serializers =
               const FullType(CustomerQuoteDtoOutputRatesInner),
             ]),
             () => ListBuilder<CustomerQuoteDtoOutputRatesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CustomerQuoteDtoOutputAvailableCodesInner),
+            ]),
+            () => ListBuilder<CustomerQuoteDtoOutputAvailableCodesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -3025,6 +3049,21 @@ Serializers _$serializers =
               const FullType.nullable(AdminCurrentDrawerSessionDtoOutputField),
             ]),
             () => ListBuilder<AdminCurrentDrawerSessionDtoOutputField?>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType.nullable(
+                AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

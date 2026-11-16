@@ -3,6 +3,7 @@ import {
   basisPointsOf,
   createRequestOf,
   emptyForm,
+  extendedEndOf,
   fieldsOf,
   formOfCode,
   type PromoCode,
@@ -168,5 +169,25 @@ describe('the form', () => {
       visibility: 'secret',
     });
     expect(utcToZoned('2026-11-30T21:00:00.000Z', timeZone)).toBe('2026-12-01T00:00');
+  });
+});
+
+describe('«تمديد» (AP §9.11.1 «Code report», slice 2.21d)', () => {
+  const code = { validTo: '2026-12-31T21:00:00.000Z' };
+  const now = new Date('2026-12-10T12:00:00Z');
+
+  it('takes a wall time on the city clock later than the end and than now', () => {
+    expect(extendedEndOf('2027-01-31T23:59', code, timeZone, now)).toBe('2027-01-31T20:59:00.000Z');
+  });
+
+  it('refuses the same end, an earlier one, one before now, and nothing typed', () => {
+    expect(extendedEndOf('2027-01-01T00:00', code, timeZone, now)).toBeNull();
+    expect(extendedEndOf('2026-12-20T00:00', code, timeZone, now)).toBeNull();
+    const ended = { validTo: '2026-12-01T21:00:00.000Z' };
+    expect(extendedEndOf('2026-12-05T00:00', ended, timeZone, now)).toBeNull();
+    expect(extendedEndOf('2026-12-12T00:00', ended, timeZone, now)).toBe(
+      '2026-12-11T21:00:00.000Z',
+    );
+    expect(extendedEndOf('', code, timeZone, now)).toBeNull();
   });
 });

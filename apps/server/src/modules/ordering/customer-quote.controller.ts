@@ -146,6 +146,39 @@ class CustomerQuoteDto extends createZodDto(
       })
       .nullable()
       .describe('The code that applies (CU §10.4); null without one or when refused.'),
+    availableCodes: z
+      .array(
+        z.object({
+          code: z.string(),
+          kind: z.enum(['percentage', 'fixed_amount', 'free_delivery']),
+          percentBp: z.int().nullable().describe('A percentage in basis points (2000 is 20%).'),
+          amount: minor.nullable().describe('A fixed amount.'),
+          maxDiscount: minor.nullable().describe('The cap of a percentage, or null.'),
+          minOrder: minor.nullable().describe('The minimum on the items value, or null.'),
+          hours: z
+            .object({ startMinute: z.int(), endMinute: z.int() })
+            .nullable()
+            .describe(
+              'The hours on the city clock, minutes from midnight; an end at or before the start runs past midnight.',
+            ),
+          validTo: z.iso.datetime().describe('«ينتهي {التاريخ}».'),
+          discount: minor
+            .nullable()
+            .describe('What it takes off this cart; null while below its minimum.'),
+          missing: minor
+            .nullable()
+            .describe('«أضف {المبلغ} لاستخدام هذا الكود»; null when it applies.'),
+        }),
+      )
+      .describe(
+        '«الأكواد المتاحة لك» (CU §10.4): the visible codes that apply to this cart, largest discount first, then those below their minimum.',
+      ),
+    suggestedCode: z
+      .object({ code: z.string(), discount: minor })
+      .nullable()
+      .describe(
+        '«لديك كود يوفر عليك {المبلغ}: {الكود}» with «تطبيق» (Q19): the largest discount above the applied code; never applied by itself (U11).',
+      ),
     problems: z
       .array(
         z.object({
@@ -305,6 +338,25 @@ export function quoteBody(quote: Quote) {
     promoCode: quote.promoCode && {
       ...quote.promoCode,
       discount: text(quote.promoCode.discount),
+    },
+    availableCodes: quote.availableCodes.map((entry) => ({
+      code: entry.code,
+      kind: entry.kind,
+      percentBp: entry.percentBp,
+      amount: textOrNull(entry.amount),
+      maxDiscount: textOrNull(entry.maxDiscount),
+      minOrder: textOrNull(entry.minOrder),
+      hours:
+        entry.startMinute === null || entry.endMinute === null
+          ? null
+          : { startMinute: entry.startMinute, endMinute: entry.endMinute },
+      validTo: entry.validTo.toISOString(),
+      discount: textOrNull(entry.discount?.total ?? null),
+      missing: textOrNull(entry.missing),
+    })),
+    suggestedCode: quote.suggestedCode && {
+      code: quote.suggestedCode.code,
+      discount: text(quote.suggestedCode.discount),
     },
     problems: quote.problems.map((entry) => ({
       ...entry,

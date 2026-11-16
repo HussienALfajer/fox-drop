@@ -677,6 +677,106 @@ class AppLocalizationsAr extends AppLocalizations {
   String get customerCodeBudgetReached => 'الكود غير متاح اليوم';
 
   @override
+  String get customerCodesAvailable => 'الأكواد المتاحة لك';
+
+  @override
+  String customerCodeSuggestion(String amount, String code) {
+    return 'لديك كود يوفر عليك $amount: $code';
+  }
+
+  @override
+  String customerCodeSaves(String amount) {
+    return 'يوفر عليك $amount';
+  }
+
+  @override
+  String customerCodePercent(String percent) {
+    return 'خصم $percent%';
+  }
+
+  @override
+  String customerCodePercentCapped(String percent, String amount) {
+    return 'خصم $percent% بحد أقصى $amount';
+  }
+
+  @override
+  String customerCodeFixed(String amount) {
+    return 'خصم $amount';
+  }
+
+  @override
+  String get customerCodeFreeDelivery => 'توصيل مجاني';
+
+  @override
+  String customerCodeMinimum(String amount) {
+    return 'للطلبات من $amount';
+  }
+
+  @override
+  String customerCodeExpires(String date) {
+    return 'ينتهي $date';
+  }
+
+  @override
+  String customerCodeReplaceAsk(String current, String code) {
+    return 'طلبك يحمل الكود $current. هل تستبدله بالكود $code؟';
+  }
+
+  @override
+  String get listSeparator => '، ';
+
+  @override
+  String get customerMyCodesTitle => 'أكوادي';
+
+  @override
+  String get customerCodesTabAvailable => 'متاحة';
+
+  @override
+  String get customerCodesTabEnded => 'منتهية';
+
+  @override
+  String get customerCodesEmpty => 'لا توجد أكواد هنا الآن';
+
+  @override
+  String get customerCodesNoPoint => 'حدّد موقعك لعرض أكوادك';
+
+  @override
+  String customerCodeRestaurants(String names) {
+    return 'في: $names';
+  }
+
+  @override
+  String customerCodeZones(String names) {
+    return 'في مناطق: $names';
+  }
+
+  @override
+  String customerCodeHours(String from, String to) {
+    return 'من $from إلى $to';
+  }
+
+  @override
+  String customerCodeUsesLeft(int count) {
+    return 'متبقٍ لك: $count';
+  }
+
+  @override
+  String get customerCodeUse => 'استخدم';
+
+  @override
+  String customerCodeUsedOn(String date) {
+    return 'استُخدم $date';
+  }
+
+  @override
+  String customerCodeExpiredOn(String date) {
+    return 'انتهى $date';
+  }
+
+  @override
+  String get customerCodeReplace => 'استبدال';
+
+  @override
   String get customerRounding => 'تقريب';
 
   @override

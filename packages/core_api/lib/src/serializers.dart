@@ -104,6 +104,7 @@ import 'package:core_api/src/model/admin_exchange_rates_dto_output.dart';
 import 'package:core_api/src/model/admin_exchange_rates_dto_output_currencies_inner.dart';
 import 'package:core_api/src/model/admin_exchange_rates_dto_output_currencies_inner_rate.dart';
 import 'package:core_api/src/model/admin_export_dto_output.dart';
+import 'package:core_api/src/model/admin_extend_promo_code_dto.dart';
 import 'package:core_api/src/model/admin_faq_dto.dart';
 import 'package:core_api/src/model/admin_faq_dto_items_inner.dart';
 import 'package:core_api/src/model/admin_faq_dto_output.dart';
@@ -230,6 +231,8 @@ import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custod
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody_usage.dart';
 import 'package:core_api/src/model/admin_promo_code_city_dto.dart';
 import 'package:core_api/src/model/admin_promo_code_dto_output.dart';
+import 'package:core_api/src/model/admin_promo_code_report_dto_output.dart';
+import 'package:core_api/src/model/admin_promo_code_report_dto_output_report.dart';
 import 'package:core_api/src/model/admin_promo_codes_created_dto_output.dart';
 import 'package:core_api/src/model/admin_promo_codes_dto_output.dart';
 import 'package:core_api/src/model/admin_promo_codes_dto_output_codes_inner.dart';
@@ -480,6 +483,9 @@ import 'package:core_api/src/model/customer_address_list_dto_output_addresses_in
 import 'package:core_api/src/model/customer_cancel_order_dto.dart';
 import 'package:core_api/src/model/customer_code_request_dto.dart';
 import 'package:core_api/src/model/customer_code_sent_dto_output.dart';
+import 'package:core_api/src/model/customer_codes_dto_output.dart';
+import 'package:core_api/src/model/customer_codes_dto_output_codes_inner.dart';
+import 'package:core_api/src/model/customer_codes_dto_output_codes_inner_ended.dart';
 import 'package:core_api/src/model/customer_content_dto_output.dart';
 import 'package:core_api/src/model/customer_content_dto_output_reasons.dart';
 import 'package:core_api/src/model/customer_emergency_stop_dto_output.dart';
@@ -496,6 +502,8 @@ import 'package:core_api/src/model/customer_place_order_dto_unsaved_address.dart
 import 'package:core_api/src/model/customer_profile_dto_output.dart';
 import 'package:core_api/src/model/customer_profile_dto_output_profile.dart';
 import 'package:core_api/src/model/customer_quote_dto_output.dart';
+import 'package:core_api/src/model/customer_quote_dto_output_available_codes_inner.dart';
+import 'package:core_api/src/model/customer_quote_dto_output_available_codes_inner_hours.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_estimate.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_free_delivery.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_lines_inner.dart';
@@ -506,6 +514,7 @@ import 'package:core_api/src/model/customer_quote_dto_output_problems_inner.dart
 import 'package:core_api/src/model/customer_quote_dto_output_promo_code.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_rates_inner.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_restaurant.dart';
+import 'package:core_api/src/model/customer_quote_dto_output_suggested_code.dart';
 import 'package:core_api/src/model/customer_quote_request_dto.dart';
 import 'package:core_api/src/model/customer_quote_request_dto_lines_inner.dart';
 import 'package:core_api/src/model/customer_quote_request_dto_location.dart';
@@ -748,6 +757,7 @@ part 'serializers.g.dart';
   AdminExchangeRatesDtoOutputCurrenciesInner,
   AdminExchangeRatesDtoOutputCurrenciesInnerRate,
   AdminExportDtoOutput,
+  AdminExtendPromoCodeDto,
   AdminFaqDto,
   AdminFaqDtoItemsInner,
   AdminFaqDtoOutput,
@@ -874,6 +884,8 @@ part 'serializers.g.dart';
   AdminPickerDtoOutputCaptainsInnerCustodyUsage,
   AdminPromoCodeCityDto,
   AdminPromoCodeDtoOutput,
+  AdminPromoCodeReportDtoOutput,
+  AdminPromoCodeReportDtoOutputReport,
   AdminPromoCodesCreatedDtoOutput,
   AdminPromoCodesDtoOutput,
   AdminPromoCodesDtoOutputCodesInner,
@@ -1124,6 +1136,9 @@ part 'serializers.g.dart';
   CustomerCancelOrderDto,
   CustomerCodeRequestDto,
   CustomerCodeSentDtoOutput,
+  CustomerCodesDtoOutput,
+  CustomerCodesDtoOutputCodesInner,
+  CustomerCodesDtoOutputCodesInnerEnded,
   CustomerContentDtoOutput,
   CustomerContentDtoOutputReasons,
   CustomerEmergencyStopDtoOutput,
@@ -1140,6 +1155,8 @@ part 'serializers.g.dart';
   CustomerProfileDtoOutput,
   CustomerProfileDtoOutputProfile,
   CustomerQuoteDtoOutput,
+  CustomerQuoteDtoOutputAvailableCodesInner,
+  CustomerQuoteDtoOutputAvailableCodesInnerHours,
   CustomerQuoteDtoOutputEstimate,
   CustomerQuoteDtoOutputFreeDelivery,
   CustomerQuoteDtoOutputLinesInner,
@@ -1150,6 +1167,7 @@ part 'serializers.g.dart';
   CustomerQuoteDtoOutputPromoCode,
   CustomerQuoteDtoOutputRatesInner,
   CustomerQuoteDtoOutputRestaurant,
+  CustomerQuoteDtoOutputSuggestedCode,
   CustomerQuoteRequestDto,
   CustomerQuoteRequestDtoLinesInner,
   CustomerQuoteRequestDtoLocation,
@@ -1388,6 +1406,12 @@ Serializers serializers =
               FullType(AdminDailyReportDtoOutputCashInner),
             ]),
             () => ListBuilder<AdminDailyReportDtoOutputCashInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CustomerCodesDtoOutputCodesInner),
+            ]),
+            () => ListBuilder<CustomerCodesDtoOutputCodesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -1908,6 +1932,12 @@ Serializers serializers =
               FullType(AdminFaqsDtoOutputCustomerInner),
             ]),
             () => ListBuilder<AdminFaqsDtoOutputCustomerInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CustomerQuoteDtoOutputAvailableCodesInner),
+            ]),
+            () => ListBuilder<CustomerQuoteDtoOutputAvailableCodesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

@@ -190,7 +190,7 @@ export class DeliveryBooking {
       discount,
     });
     // AP §9.11.1: delivered, the code's use is spent.
-    await this.promoCodes.settle(tx, order.id, 'spent', now);
+    await this.promoCodes.settle(tx, order.id, 'spent', now, true);
     await recordTransition(tx, this.jobs, order, {
       type: 'order.delivered',
       from: order.status,

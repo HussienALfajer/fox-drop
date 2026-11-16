@@ -381,6 +381,9 @@ type Change = {
   // AP §9.11.1 (slice 2.21b): how an outcome settles the code's use; a
   // rejection or a cancellation gives it back without saying so.
   codeUse?: 'spent' | 'returned';
+  // The code report's new customers (slice 2.21d): the outcome delivers the
+  // order, even one still waiting for its collection.
+  codeDelivered?: boolean;
   // What the audit keeps beside the status («تعديل الوقت»: the times it
   // moved, before and after).
   audit?: { before: Record<string, unknown>; after: Record<string, unknown> };
@@ -1003,6 +1006,7 @@ export class OrderCommands {
               },
           ...(waits ? {} : { to: result.status }),
           codeUse: codeUseOf(result.status, choices.responsible),
+          codeDelivered: result.status === 'delivered',
           // RA §16 #19: the restaurant learns the outcome once it is posted.
           ...(waits ? {} : { publicReason: choices.outcome }),
           // The entries were worked out from the order before the lock; an
@@ -1159,6 +1163,7 @@ export class OrderCommands {
           },
           to: result.status,
           codeUse: codeUseOf(result.status, choices.responsible),
+          codeDelivered: result.status === 'delivered',
           publicReason: choices.outcome,
           // The entries were worked out from the order and its outcome before
           // the lock; anything since moved its version.
@@ -2954,7 +2959,15 @@ export class OrderCommands {
       // ends rejected or cancelled; an outcome settles it by its party.
       const codeUse =
         prepared.codeUse ?? (to === 'rejected' || to === 'cancelled' ? 'returned' : null);
-      if (codeUse !== null) await this.promoCodes.settle(tx, order.id, codeUse, now);
+      if (codeUse !== null) {
+        await this.promoCodes.settle(
+          tx,
+          order.id,
+          codeUse,
+          now,
+          prepared.codeDelivered ?? to === 'delivered',
+        );
+      }
       // CA §7.3, K18 (slice 2.13a): an order that left its captain (ended,
       // cancelled or withdrawn) may end the captain's last order.
       if (

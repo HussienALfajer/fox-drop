@@ -111,3 +111,48 @@ test('shows OPS the codes without their cost or the form', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'كود جديد' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'إيقاف FOX20' })).toHaveCount(0);
 });
+
+// AP §9.11.1 «Code report» (slice 2.21d): the code's name opens its report;
+// OWN extends it from there.
+test('opens a code report and extends the code', async ({ page }) => {
+  await fakeSession(page, ['marketing.read', 'marketing.read_costs', 'marketing.manage']);
+  await page.route('**/v1/admin/cities', (route) => route.fulfill({ json: cities }));
+  let extended: unknown = null;
+  let current = { ...code, state: 'active', uses: 3, costToDate: '9000' };
+  await page.route('**/v1/admin/promo-codes**', (route) => {
+    const request = route.request();
+    if (request.method() === 'POST' && request.url().endsWith('/extend')) {
+      extended = request.postDataJSON();
+      current = { ...current, validTo: '2027-01-31T20:59:00.000Z' };
+      return route.fulfill({ json: current });
+    }
+    if (request.url().includes('/report')) {
+      return route.fulfill({
+        json: {
+          code: current,
+          report: {
+            orders: 3,
+            returned: 1,
+            customers: 2,
+            newCustomers: 1,
+            cost: '9000',
+            merchantShare: '3000',
+          },
+          canManage: true,
+        },
+      });
+    }
+    return route.fulfill({ json: listOf([current]) });
+  });
+  await page.goto('/promo-codes');
+
+  await page.getByRole('link', { name: 'FOX20' }).click();
+  await expect(page.getByRole('heading', { name: 'تقرير الكود' })).toBeVisible();
+  await expect(page.getByText('زبائن جدد جلبهم الكود')).toBeVisible();
+  await expect(page.getByRole('definition').filter({ hasText: '90.00' })).toBeVisible();
+
+  await page.getByLabel('النهاية الجديدة').fill('2027-01-31T23:59');
+  await page.getByRole('button', { name: 'تمديد FOX20' }).click();
+  await expect(page.getByRole('status')).toContainText('مُدّد الكود FOX20');
+  expect(extended).toEqual({ cityId, validTo: '2027-01-31T20:59:00.000Z' });
+});

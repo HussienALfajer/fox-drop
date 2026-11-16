@@ -414,3 +414,59 @@ export function useSetPromoCodeStatus(cityId: string) {
     },
   });
 }
+
+// AP §9.11.1 «Code report» (slice 2.21d): orders, customers, cost and the
+// new customers acquired, with pause, resume and «تمديد» for OWN.
+export type PromoCodeReport = components['schemas']['AdminPromoCodeReportDto_Output'];
+
+const reportKey = (cityId: string, codeId: string) =>
+  ['promo-codes', cityId, 'report', codeId] as const;
+
+export function usePromoCodeReport(cityId: string | undefined, codeId: string) {
+  return useQuery({
+    queryKey: reportKey(cityId ?? '', codeId),
+    enabled: cityId !== undefined,
+    queryFn: async (): Promise<PromoCodeReport | null> => {
+      const { data, response } = await api.GET('/v1/admin/promo-codes/{codeId}/report', {
+        params: { path: { codeId }, query: { cityId: cityId! } },
+      });
+      if (response.status === 404) return null;
+      if (!data) throw new Error('The promo code report read failed.');
+      return data;
+    },
+  });
+}
+
+// «تمديد»: the new end typed as the city's wall time, later than the end it
+// has and than now (the server checks both); null while it is not.
+export function extendedEndOf(
+  typed: string,
+  code: Pick<PromoCode, 'validTo'>,
+  timeZone: string,
+  now: Date,
+): string | null {
+  const at = zonedToUtc(typed, timeZone);
+  if (at === null) return null;
+  const time = new Date(at).getTime();
+  return time > new Date(code.validTo).getTime() && time > now.getTime() ? at : null;
+}
+
+// Sets the end, so no key.
+export function useExtendPromoCode(cityId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ codeId, validTo }: { codeId: string; validTo: string }) => {
+      const { data, error, response } = await api.POST('/v1/admin/promo-codes/{codeId}/extend', {
+        params: { path: { codeId } },
+        body: { cityId, validTo },
+      });
+      if (data) {
+        await queryClient.invalidateQueries({ queryKey: codesKey(cityId) });
+        return { status: 'saved', codes: [data] } as SaveResult;
+      }
+      const refusal = refusalOf(response.status, error);
+      if (refusal) return { status: 'refused', refusal } as SaveResult;
+      throw new Error(`Extending a promo code failed with ${response.status}.`);
+    },
+  });
+}

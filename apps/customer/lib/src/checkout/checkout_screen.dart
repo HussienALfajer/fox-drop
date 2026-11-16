@@ -14,6 +14,7 @@ import '../notifications/permission.dart';
 import '../profile/profile.dart';
 import '../router.dart';
 import 'checkout.dart';
+import 'codes.dart';
 import 'place_order.dart';
 import 'problems.dart';
 import 'quote.dart';
@@ -235,6 +236,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 const Divider(),
                 if (q != null) ..._payIn(l10n, q),
                 ..._codeField(l10n, cart, enabled: !sending),
+                if (q != null) ..._codes(l10n, q, cart, enabled: !sending),
                 ListTile(title: Text(l10n.customerCashOnDelivery)),
                 if (q != null) ..._money(l10n, q),
                 // CU §10.4: a fixed-amount code larger than the items value,
@@ -500,8 +502,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   /// The code (CU §10.4): «أدخل الكود» with «تطبيق», or the applied code
-  /// with «إزالة». One code per order: replacing it comes with picking codes
-  /// (2.21d). The quote checks it and shows a refusal as a problem.
+  /// with «إزالة»; another code replaces it from the suggestion or
+  /// «الأكواد المتاحة لك» (`_codes`). The quote checks it and shows a refusal
+  /// as a problem.
   List<Widget> _codeField(
     AppLocalizations l10n,
     Cart cart, {
@@ -550,6 +553,111 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         ),
       ),
     ];
+  }
+
+  /// CU §10.4, Q19: the suggestion «لديك كود يوفر عليك {المبلغ}: {الكود}»
+  /// and «الأكواد المتاحة لك», each code with its value, minimum, hours, expiry and
+  /// what it saves on this cart, or what its minimum still lacks. Only the
+  /// customer's «تطبيق» applies one (U11).
+  List<Widget> _codes(
+    AppLocalizations l10n,
+    Quote q,
+    Cart cart, {
+    required bool enabled,
+  }) {
+    String money(String minor) => l10n.formatMoney(minor, q.currency);
+    final applied = q.promoCode?.code ?? cart.code;
+    return [
+      if (q.suggestedCode case final suggested?)
+        ListTile(
+          key: const Key('code-suggestion'),
+          title: Text(
+            l10n.customerCodeSuggestion(
+              money(suggested.discount),
+              suggested.code,
+            ),
+          ),
+          trailing: TextButton(
+            key: const Key('code-suggestion-apply'),
+            onPressed: enabled
+                ? () => _applyCode(l10n, cart, suggested.code)
+                : null,
+            child: Text(l10n.customerCodeApply),
+          ),
+        ),
+      if (q.availableCodes.isNotEmpty)
+        ListTile(
+          key: const Key('codes-available'),
+          title: Text(l10n.customerCodesAvailable),
+        ),
+      for (final code in q.availableCodes)
+        ListTile(
+          key: Key('code-available-${code.code}'),
+          title: Text(code.code),
+          subtitle: Text(
+            [
+              codeValueText(
+                l10n,
+                kind: CodeKind.values.byName(code.kind.name),
+                percentBp: code.percentBp,
+                amount: code.amount,
+                maxDiscount: code.maxDiscount,
+                currency: q.currency,
+              ),
+              if (code.minOrder case final minimum?)
+                l10n.customerCodeMinimum(money(minimum)),
+              if (code.hours case final hours?)
+                l10n.customerCodeHours(
+                  l10n.formatMinuteOfDay(hours.startMinute),
+                  l10n.formatMinuteOfDay(hours.endMinute),
+                ),
+              l10n.customerCodeExpires(l10n.formatDate(code.validTo)),
+              if (code.discount case final discount?)
+                l10n.customerCodeSaves(money(discount)),
+              if (code.missing case final missing?)
+                l10n.customerCodeBelowMinimum(money(missing)),
+            ].join(' · '),
+          ),
+          trailing: code.discount == null || code.code == applied
+              ? null
+              : TextButton(
+                  key: Key('code-apply-${code.code}'),
+                  onPressed: enabled
+                      ? () => _applyCode(l10n, cart, code.code)
+                      : null,
+                  child: Text(l10n.customerCodeApply),
+                ),
+        ),
+    ];
+  }
+
+  /// One code per order (CU §10.4): another code replaces the applied one
+  /// once the customer confirms.
+  Future<void> _applyCode(AppLocalizations l10n, Cart cart, String code) async {
+    final current = cart.code;
+    if (current != null && replacesCode(current, code)) {
+      final shown = ref.read(quoteProvider).value?.promoCode?.code ?? current;
+      final replace = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          key: const Key('code-replace-ask'),
+          content: Text(l10n.customerCodeReplaceAsk(shown, code)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(l10n.customerCancel),
+            ),
+            FilledButton(
+              key: const Key('code-replace'),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(l10n.customerCodeReplace),
+            ),
+          ],
+        ),
+      );
+      if (replace != true) return;
+    }
+    await ref.read(cartProvider.notifier).setCode(code);
   }
 
   List<Widget> _money(AppLocalizations l10n, Quote q) {

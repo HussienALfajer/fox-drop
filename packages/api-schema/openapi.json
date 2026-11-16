@@ -7721,6 +7721,51 @@
         ]
       }
     },
+    "/v1/customer/promo-codes": {
+      "get": {
+        "operationId": "customerCodesList",
+        "parameters": [
+          {
+            "name": "latitude",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "name": "longitude",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerCodesDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
+    },
     "/v1/admin/promo-codes": {
       "get": {
         "operationId": "adminPromoCodesList",
@@ -7918,6 +7963,100 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/AdminPromoCodeCityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminPromoCodeDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/promo-codes/{codeId}/report": {
+      "get": {
+        "operationId": "adminPromoCodesReport",
+        "parameters": [
+          {
+            "name": "codeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cityId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminPromoCodeReportDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/promo-codes/{codeId}/extend": {
+      "post": {
+        "operationId": "adminPromoCodesExtend",
+        "parameters": [
+          {
+            "name": "codeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminExtendPromoCodeDto"
               }
             }
           }
@@ -19205,6 +19344,177 @@
             ],
             "description": "The code that applies (CU §10.4); null without one or when refused."
           },
+          "availableCodes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "percentage",
+                    "fixed_amount",
+                    "free_delivery"
+                  ]
+                },
+                "percentBp": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "A percentage in basis points (2000 is 20%)."
+                },
+                "amount": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "A fixed amount."
+                },
+                "maxDiscount": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The cap of a percentage, or null."
+                },
+                "minOrder": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The minimum on the items value, or null."
+                },
+                "hours": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "startMinute": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "endMinute": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "startMinute",
+                        "endMinute"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The hours on the city clock, minutes from midnight; an end at or before the start runs past midnight."
+                },
+                "validTo": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                  "description": "«ينتهي {التاريخ}»."
+                },
+                "discount": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "What it takes off this cart; null while below its minimum."
+                },
+                "missing": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "«أضف {المبلغ} لاستخدام هذا الكود»; null when it applies."
+                }
+              },
+              "required": [
+                "code",
+                "kind",
+                "percentBp",
+                "amount",
+                "maxDiscount",
+                "minOrder",
+                "hours",
+                "validTo",
+                "discount",
+                "missing"
+              ],
+              "additionalProperties": false
+            },
+            "description": "«الأكواد المتاحة لك» (CU §10.4): the visible codes that apply to this cart, largest discount first, then those below their minimum."
+          },
+          "suggestedCode": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "discount": {
+                    "type": "string",
+                    "pattern": "^-?\\d+$",
+                    "description": "Integer minor units (AP §8.6)."
+                  }
+                },
+                "required": [
+                  "code",
+                  "discount"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«لديك كود يوفر عليك {المبلغ}: {الكود}» with «تطبيق» (Q19): the largest discount above the applied code; never applied by itself (U11)."
+          },
           "problems": {
             "type": "array",
             "items": {
@@ -19350,6 +19660,8 @@
           "freeDelivery",
           "rates",
           "promoCode",
+          "availableCodes",
+          "suggestedCode",
           "problems"
         ],
         "additionalProperties": false
@@ -33250,6 +33562,220 @@
         ],
         "additionalProperties": false
       },
+      "CustomerCodesDto_Output": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The city base; null outside every city."
+          },
+          "codes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "percentage",
+                    "fixed_amount",
+                    "free_delivery"
+                  ]
+                },
+                "percentBp": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "A percentage in basis points (2000 is 20%)."
+                },
+                "amount": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^\\d+$",
+                      "description": "Minor units of `currency`."
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "maxDiscount": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^\\d+$",
+                      "description": "Minor units of `currency`."
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "minOrder": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^\\d+$",
+                      "description": "Minor units of `currency`."
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The minimum on the items value."
+                },
+                "restaurants": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "name": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "description": "The restaurants it works with; none: all."
+                },
+                "zones": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "The zones it works in, by name; none: all."
+                },
+                "hours": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "startMinute": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "endMinute": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "startMinute",
+                        "endMinute"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The hours on the city clock, minutes from midnight; an end at or before the start runs past midnight."
+                },
+                "validTo": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                  "description": "«ينتهي {التاريخ}»."
+                },
+                "usesLeft": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "What the customer has left; null: no limit."
+                },
+                "ended": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "reason": {
+                          "type": "string",
+                          "enum": [
+                            "used",
+                            "expired"
+                          ]
+                        },
+                        "at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        }
+                      },
+                      "required": [
+                        "reason",
+                        "at"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "null in «متاحة»; else «منتهية», used or expired."
+                }
+              },
+              "required": [
+                "code",
+                "kind",
+                "percentBp",
+                "amount",
+                "maxDiscount",
+                "minOrder",
+                "restaurants",
+                "zones",
+                "hours",
+                "validTo",
+                "usesLeft",
+                "ended"
+              ],
+              "additionalProperties": false
+            },
+            "description": "«متاحة» by the nearest end, then «منتهية» newest first."
+          }
+        },
+        "required": [
+          "currency",
+          "codes"
+        ],
+        "additionalProperties": false
+      },
       "AdminPromoCodesDto_Output": {
         "type": "object",
         "properties": {
@@ -34901,6 +35427,397 @@
         },
         "required": [
           "cityId"
+        ]
+      },
+      "AdminPromoCodeReportDto_Output": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "code": {
+                "type": "string"
+              },
+              "batchId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "percentage",
+                  "fixed_amount",
+                  "free_delivery"
+                ]
+              },
+              "percentBp": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 10000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "A percentage code: 2000 is 20%."
+              },
+              "amount": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^\\d{1,18}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "A fixed-amount code: minor units of the base currency."
+              },
+              "maxDiscount": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^\\d{1,18}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "A percentage code's cap, or null for none."
+              },
+              "minOrder": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^\\d{1,18}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "On the items value before discounts; null for none."
+              },
+              "validFrom": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              "validTo": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              "startMinute": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1439
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Optional hours: minutes from midnight on the city clock, 20:00 is 1200."
+              },
+              "endMinute": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1439
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "At or before the start, the hours run past midnight."
+              },
+              "totalLimit": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Null: no limit."
+              },
+              "perCustomerLimit": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Null: no limit."
+              },
+              "audience": {
+                "type": "string",
+                "enum": [
+                  "everyone",
+                  "new_users"
+                ]
+              },
+              "restaurantIds": {
+                "maxItems": 500,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "description": "None: every restaurant."
+              },
+              "zoneIds": {
+                "maxItems": 200,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "description": "None: every zone."
+              },
+              "funding": {
+                "type": "string",
+                "enum": [
+                  "platform",
+                  "restaurant",
+                  "shared"
+                ]
+              },
+              "sharedMerchantBp": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 10000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "A shared code: the restaurant's share, 4000 is 40%; null otherwise."
+              },
+              "dailyBudget": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^\\d{1,18}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Pauses the code for the business day; null for none."
+              },
+              "visibility": {
+                "type": "string",
+                "enum": [
+                  "visible",
+                  "secret"
+                ]
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "paused"
+                ],
+                "description": "Set by OWN."
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "paused",
+                  "scheduled",
+                  "expired"
+                ],
+                "description": "What the list shows: paused, not started, ended or running."
+              },
+              "uses": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "description": "Uses held or spent (not given back)."
+              },
+              "costToDate": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^\\d{1,18}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "The discounts of the uses not given back; null without marketing.read_costs."
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              "updatedAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              }
+            },
+            "required": [
+              "id",
+              "code",
+              "batchId",
+              "kind",
+              "percentBp",
+              "amount",
+              "maxDiscount",
+              "minOrder",
+              "validFrom",
+              "validTo",
+              "startMinute",
+              "endMinute",
+              "totalLimit",
+              "perCustomerLimit",
+              "audience",
+              "restaurantIds",
+              "zoneIds",
+              "funding",
+              "sharedMerchantBp",
+              "dailyBudget",
+              "visibility",
+              "currency",
+              "status",
+              "state",
+              "uses",
+              "costToDate",
+              "createdAt",
+              "updatedAt"
+            ],
+            "additionalProperties": false
+          },
+          "report": {
+            "type": "object",
+            "properties": {
+              "orders": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "description": "Orders with the code, uses given back left out."
+              },
+              "returned": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "description": "Uses given back (rejected, cancelled, failed not by the customer)."
+              },
+              "customers": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "description": "Customer accounts behind those orders."
+              },
+              "newCustomers": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "description": "Numbers whose order with the code was placed with no delivered order before and ended delivered."
+              },
+              "cost": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^\\d+$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "The discounts, minor units of the code currency; null without the cost permission."
+              },
+              "merchantShare": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^\\d+$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "The restaurants part of the cost; null without the cost permission."
+              }
+            },
+            "required": [
+              "orders",
+              "returned",
+              "customers",
+              "newCustomers",
+              "cost",
+              "merchantShare"
+            ],
+            "additionalProperties": false,
+            "description": "AP §9.11.1 «Code report»."
+          },
+          "canManage": {
+            "type": "boolean",
+            "description": "Pause, resume and extend (marketing.manage)."
+          }
+        },
+        "required": [
+          "code",
+          "report",
+          "canManage"
+        ],
+        "additionalProperties": false
+      },
+      "AdminExtendPromoCodeDto": {
+        "type": "object",
+        "properties": {
+          "cityId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "validTo": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "The new end."
+          }
+        },
+        "required": [
+          "cityId",
+          "validTo"
         ]
       },
       "RealtimeTokenDto_Output": {

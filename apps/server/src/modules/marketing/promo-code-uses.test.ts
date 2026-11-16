@@ -8,6 +8,7 @@ import { createDatabase, type Database } from '../../database/database.js';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
 import { createApiApp } from '../../http/create-api-app.js';
 import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
+import { FxService } from '../fx/index.js';
 import { type CodeCart, PromoCodeUsesService } from './promo-code-uses.service.js';
 
 // A code checked, held at placing and settled (AP §9.11.1, slice 2.21b):
@@ -187,6 +188,68 @@ describe('PromoCodeUsesService', () => {
       refusal: 'budget_reached',
     });
     expect(await uses.check(await cartAt(typed, next), next)).toMatchObject({ applied: true });
+  });
+
+  it('tells the customer «أُعيد الكود {الكود} إلى أكوادك» when a use comes back', async () => {
+    // The push names a code back in «متاحة», which needs the city's base.
+    const fx = app.get(FxService);
+    const change = {
+      actor: { type: 'system', id: null, role: null } as const,
+      context: { ipAddress: null, device: null },
+      reason: 'test',
+    };
+    await fx.setCityCurrency(azaz, { currency: 'TRY', displayOrder: 1, enabled: true }, change);
+    await fx.setBaseCurrency(azaz, 'TRY', change);
+    const typed = await code();
+    const who = customer();
+    const pushes = async () =>
+      (
+        await sql.query(
+          "SELECT body, data FROM notifications.push_messages WHERE account_id = $1 AND template_key = 'customer.code_returned'",
+          [who.accountId],
+        )
+      ).rows;
+    const spent = await place(cart(typed, who));
+    await db.db.transaction((tx) => uses.settle(tx, spent.orderId, 'spent', now));
+    expect(await pushes()).toEqual([]);
+    const back = await place(cart(typed, who));
+    await db.db.transaction((tx) => uses.settle(tx, back.orderId, 'returned', now));
+    // Settled again the same way: nothing more.
+    await db.db.transaction((tx) => uses.settle(tx, back.orderId, 'returned', now));
+    expect(await pushes()).toEqual([
+      { body: `أُعيد الكود ${typed} إلى أكوادك`, data: { target: 'codes' } },
+    ]);
+    // A secret code is not in «أكوادي»: no push.
+    const secret = await code();
+    await sql.query("UPDATE marketing.promo_codes SET visibility = 'secret' WHERE code = $1", [
+      secret,
+    ]);
+    const hidden = await place(cart(secret, who));
+    await db.db.transaction((tx) => uses.settle(tx, hidden.orderId, 'returned', now));
+    // Nor is a paused one.
+    const paused = await code();
+    const stopped = await place(cart(paused, who));
+    await sql.query("UPDATE marketing.promo_codes SET status = 'paused' WHERE code = $1", [paused]);
+    await db.db.transaction((tx) => uses.settle(tx, stopped.orderId, 'returned', now));
+    expect(await pushes()).toHaveLength(1);
+  });
+
+  it('keeps whether the customer was new and whether the order was delivered', async () => {
+    const typed = await code();
+    const { orderId } = await place(cart(typed, customer({ newUser: true })));
+    const flags = async () =>
+      (
+        await sql.query(
+          'SELECT new_user, delivered FROM marketing.promo_code_uses WHERE order_id = $1',
+          [orderId],
+        )
+      ).rows[0];
+    expect(await flags()).toEqual({ new_user: true, delivered: false });
+    await db.db.transaction((tx) => uses.settle(tx, orderId, 'spent', now, true));
+    expect(await flags()).toEqual({ new_user: true, delivered: true });
+    // «تغيير النتيجة» to a fake order: still spent, no longer delivered.
+    await db.db.transaction((tx) => uses.settle(tx, orderId, 'spent', now, false));
+    expect(await flags()).toEqual({ new_user: true, delivered: false });
   });
 
   it('never lets two placings take the last use', async () => {

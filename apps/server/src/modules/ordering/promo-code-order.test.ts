@@ -126,6 +126,61 @@ describe('a code in the quote', () => {
       'not_for_restaurant',
     );
   });
+
+  it('lists the visible codes and suggests the largest discount, never applying it', async () => {
+    // The codes of the tests before, some giving the whole items value, rest.
+    await sql.query("UPDATE marketing.promo_codes SET status = 'paused'");
+    const other = await promoCode();
+    const best = await promoCode({ percent_bp: 9900, max_discount: null });
+    const secret = await promoCode({ percent_bp: 10000, max_discount: null });
+    await sql.query("UPDATE marketing.promo_codes SET visibility = 'secret' WHERE code = $1", [
+      secret,
+    ]);
+    const body = await quote(null);
+    const codes = body.availableCodes.map((entry: { code: string }) => entry.code);
+    expect(codes).toEqual([best, other]);
+    expect(body.availableCodes[0]).toMatchObject({
+      kind: 'percentage',
+      percentBp: 9900,
+      discount: '23760',
+      missing: null,
+    });
+    // U11: suggested, not applied.
+    expect(body.suggestedCode).toEqual({ code: best, discount: '23760' });
+    expect(body.money.discount).toBe('0');
+    expect(body.promoCode).toBeNull();
+    // Applied, nothing gives more; the suggestion leaves the version alone.
+    const applied = await quote(best);
+    expect(applied.suggestedCode).toBeNull();
+    expect(applied.money.discount).toBe('23760');
+
+    // «أكوادي» (CU §12.4) at the point's city, signed in only. A code whose
+    // only restaurant customers cannot see is left out (no name, no id).
+    const ghost = await promoCode({ restaurant_ids: [randomUUID()] });
+
+    const url = `/v1/customer/promo-codes?latitude=${home.latitude}&longitude=${home.longitude}`;
+    expect((await app.inject({ method: 'GET', url })).statusCode).toBe(401);
+    const mine = await app.inject({
+      method: 'GET',
+      url,
+      headers: await appSignIn('customer', phoneNumber()),
+    });
+    expect(mine.statusCode, mine.body).toBe(200);
+    expect(mine.json().currency).toBe('TRY');
+    expect(mine.json().codes.map((entry: { code: string }) => entry.code)).toEqual(
+      expect.arrayContaining([best, other]),
+    );
+    expect(mine.json().codes.map((entry: { code: string }) => entry.code)).not.toContain(ghost);
+    expect(mine.json().codes.find((entry: { code: string }) => entry.code === best)).toMatchObject({
+      kind: 'percentage',
+      percentBp: 9900,
+      restaurants: [],
+      zones: [],
+      hours: null,
+      usesLeft: null,
+      ended: null,
+    });
+  });
 });
 
 describe('a code in the order', () => {

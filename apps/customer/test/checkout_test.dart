@@ -23,6 +23,8 @@ Map<String, Object?> _quote({
   bool minimumReached = true,
   String? payIn,
   Map<String, Object?>? promoCode,
+  List<Map<String, Object?>> availableCodes = const [],
+  Map<String, Object?>? suggestedCode,
   String discount = '0',
   String total = '14000',
 }) => {
@@ -56,6 +58,8 @@ Map<String, Object?> _quote({
     'total': total,
   },
   'promoCode': promoCode,
+  'availableCodes': availableCodes,
+  'suggestedCode': suggestedCode,
   'equivalents': [
     {'amount': '350', 'currency': 'USD'},
   ],
@@ -73,6 +77,46 @@ Map<String, Object?> _quote({
   ],
   'problems': problems,
 };
+
+// «الأكواد المتاحة لك» (CU §10.4): two that apply, one below its minimum.
+final _available = [
+  {
+    'code': 'FOX20',
+    'kind': 'percentage',
+    'percentBp': 2000,
+    'amount': null,
+    'maxDiscount': '5000',
+    'minOrder': null,
+    'hours': {'startMinute': 720, 'endMinute': 1320},
+    'validTo': '2026-12-31T21:00:00.000Z',
+    'discount': '2600',
+    'missing': null,
+  },
+  {
+    'code': 'SHIP',
+    'kind': 'free_delivery',
+    'percentBp': null,
+    'amount': null,
+    'maxDiscount': null,
+    'minOrder': null,
+    'hours': null,
+    'validTo': '2026-12-31T21:00:00.000Z',
+    'discount': '1000',
+    'missing': null,
+  },
+  {
+    'code': 'BIG',
+    'kind': 'fixed_amount',
+    'percentBp': null,
+    'amount': '4000',
+    'maxDiscount': null,
+    'minOrder': '20000',
+    'hours': null,
+    'validTo': '2026-12-31T21:00:00.000Z',
+    'discount': null,
+    'missing': '7000',
+  },
+];
 
 Map<String, Object?> _order() => {
   'order': {
@@ -1030,6 +1074,106 @@ void main() {
       final body = app.bodyOf('/v1/customer/orders');
       expect(body['code'], 'fox10');
       expect(body['quoteVersion'], 'v2');
+      await app.done(tester);
+    });
+
+    testWidgets('the suggestion and «الأكواد المتاحة لك» apply only on «تطبيق»', (
+      tester,
+    ) async {
+      final listed = _quote(
+        availableCodes: _available,
+        suggestedCode: {'code': 'FOX20', 'discount': '2600'},
+      );
+      final app = await _checkout(
+        tester,
+        quotes: [FakeAnswer(200, listed), FakeAnswer(200, listed)],
+      );
+      // U11: suggested, never applied by itself.
+      expect(app.bodyOf('/v1/customer/quote')['code'], isNull);
+      expect(find.text('لديك كود يوفر عليك 26 ₺: FOX20'), findsOneWidget);
+      expect(find.text('الأكواد المتاحة لك'), findsOneWidget);
+      expect(
+        find.text(
+          'خصم 20% بحد أقصى 50 ₺ · من 12:00 م إلى 10:00 م · ينتهي 01/01/2027 · يوفر عليك 26 ₺',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.text('توصيل مجاني · ينتهي 01/01/2027 · يوفر عليك 10 ₺'),
+        findsOneWidget,
+      );
+      // Below its minimum: no «تطبيق».
+      expect(
+        find.text(
+          'خصم 40 ₺ · للطلبات من 200 ₺ · ينتهي 01/01/2027 · أضف 70 ₺ لاستخدام هذا الكود',
+        ),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('code-apply-BIG')), findsNothing);
+
+      await tester.ensureVisible(
+        find.byKey(const Key('code-suggestion-apply')),
+      );
+      await tester.tap(find.byKey(const Key('code-suggestion-apply')));
+      await tester.pumpAndSettle();
+      final quotes = app.server.to('/v1/customer/quote').length;
+      expect(
+        app.bodyOf('/v1/customer/quote', index: quotes - 1)['code'],
+        'FOX20',
+      );
+      await app.done(tester);
+    });
+
+    testWidgets('another code replaces the applied one after a confirmation', (
+      tester,
+    ) async {
+      final applied = _quote(
+        discount: '1000',
+        total: '13000',
+        promoCode: {
+          'code': 'SHIP',
+          'kind': 'free_delivery',
+          'discount': '1000',
+          'fixedAmountAboveItems': false,
+        },
+        availableCodes: _available,
+        suggestedCode: {'code': 'FOX20', 'discount': '2600'},
+      );
+      final app = await _checkout(
+        tester,
+        quotes: [
+          FakeAnswer(200, _quote()),
+          FakeAnswer(200, applied),
+          FakeAnswer(200, applied),
+        ],
+      );
+      await apply(tester, 'ship');
+      // The applied code has no «تطبيق» of its own.
+      expect(find.byKey(const Key('code-apply-SHIP')), findsNothing);
+      Future<void> pick() async {
+        await tester.ensureVisible(find.byKey(const Key('code-apply-FOX20')));
+        await tester.tap(find.byKey(const Key('code-apply-FOX20')));
+        await tester.pumpAndSettle();
+      }
+
+      await pick();
+      expect(
+        find.text('طلبك يحمل الكود SHIP. هل تستبدله بالكود FOX20؟'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('إلغاء'));
+      await tester.pumpAndSettle();
+      expect(app.device.values['cart'], contains('"code":"ship"'));
+
+      await pick();
+      await tester.tap(find.byKey(const Key('code-replace')));
+      await tester.pumpAndSettle();
+      final quotes = app.server.to('/v1/customer/quote').length;
+      expect(
+        app.bodyOf('/v1/customer/quote', index: quotes - 1)['code'],
+        'FOX20',
+      );
+      expect(app.device.values['cart'], contains('"code":"FOX20"'));
       await app.done(tester);
     });
 

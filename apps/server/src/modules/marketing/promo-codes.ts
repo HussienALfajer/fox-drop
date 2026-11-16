@@ -315,3 +315,93 @@ export function minuteOfDay(instant: Date, timeZone: string): number {
   );
   return Number(parts.hour) * 60 + Number(parts.minute);
 }
+
+// CU §10.4 «الأكواد المتاحة لك» (slice 2.21d): a visible code running in the
+// city with what it gives this cart, or what its minimum still lacks.
+export interface AvailableCode {
+  codeId: string;
+  code: string;
+  kind: PromoCodeKind;
+  percentBp: number | null;
+  amount: bigint | null;
+  maxDiscount: bigint | null;
+  minOrder: bigint | null;
+  // The hours on the city clock, both or neither.
+  startMinute: number | null;
+  endMinute: number | null;
+  validTo: Date;
+  // null while below its minimum.
+  discount: PromoDiscount | null;
+  // «أضف {المبلغ} لاستخدام هذا الكود»; null when it applies.
+  missing: bigint | null;
+}
+
+// Q19: «لديك كود يوفر عليك {المبلغ}: {الكود}», the available code with the
+// largest discount on the cart, when it gives more than the code applied.
+// It is never applied by itself (U11).
+export function suggestedCode(
+  available: readonly AvailableCode[],
+  applied: { code: string; discount: bigint } | null,
+): { code: string; discount: bigint } | null {
+  let best: { code: string; discount: bigint } | null = null;
+  for (const entry of available) {
+    const total = entry.discount?.total ?? 0n;
+    if (entry.code === applied?.code || total <= (applied?.discount ?? 0n)) continue;
+    if (best === null || total > best.discount) best = { code: entry.code, discount: total };
+  }
+  return best;
+}
+
+// CU §12.4 «أكوادي» (slice 2.21d): whether a customer may still use a code,
+// whatever the cart: its audience, their uses and the total left. The cart's
+// own rules (restaurants, zones, minimum, hours, the day's budget) wait for
+// checkout.
+export function openToCustomer(
+  code: Pick<CodeRow, 'audience' | 'perCustomerLimit' | 'totalLimit'>,
+  uses: { newUser: boolean; mine: number; phoneOrDeviceUsed: boolean; total: number },
+): boolean {
+  if (code.audience === 'new_users' && (!uses.newUser || uses.phoneOrDeviceUsed)) return false;
+  if (code.perCustomerLimit !== null && uses.mine >= code.perCustomerLimit) return false;
+  return code.totalLimit === null || uses.total < code.totalLimit;
+}
+
+// A code in «أكوادي»: «متاحة» while `ended` is null, else «منتهية», used or
+// expired within the last 30 days (fixed).
+export interface MyCode {
+  codeId: string;
+  code: string;
+  kind: PromoCodeKind;
+  percentBp: number | null;
+  amount: bigint | null;
+  maxDiscount: bigint | null;
+  minOrder: bigint | null;
+  restaurantIds: string[];
+  zoneIds: string[];
+  startMinute: number | null;
+  endMinute: number | null;
+  validTo: Date;
+  // What this customer has left of their per-customer limit; null: no limit.
+  usesLeft: number | null;
+  ended: { reason: 'used' | 'expired'; at: Date } | null;
+}
+
+export const ENDED_CODES_DAYS = 30;
+
+// CU §12.4: a visible code customers can use now, whatever the cart: active,
+// started, not ended and saved in the city's base. With `openToCustomer` it
+// is in «متاحة».
+export function runsNow(
+  code: Pick<CodeRow, 'status' | 'validFrom' | 'validTo' | 'currency'> & {
+    visibility: PromoCodeVisibility;
+  },
+  baseCurrency: string,
+  now: Date,
+): boolean {
+  return (
+    code.visibility === 'visible' &&
+    code.status === 'active' &&
+    code.currency === baseCurrency &&
+    code.validFrom.getTime() <= now.getTime() &&
+    code.validTo.getTime() > now.getTime()
+  );
+}

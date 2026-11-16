@@ -1,13 +1,22 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq, inArray, ne, or, sql } from 'drizzle-orm';
+import { and, eq, gt, gte, inArray, lte, ne, or, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
+import { NotificationTexts } from '../content/index.js';
+import { FxService } from '../fx/index.js';
 import { GeoService, lastCutoff } from '../geo/index.js';
+import { PushQueue } from '../notifications/index.js';
 import { SettingsService } from '../settings/index.js';
 import {
+  type AvailableCode,
+  type CodeContext,
   type CodeRefusal,
   codeRefusal,
+  ENDED_CODES_DAYS,
+  type MyCode,
+  openToCustomer,
+  runsNow,
   type CodeTerms,
   fixedAmountAboveItems,
   minuteOfDay,
@@ -78,6 +87,9 @@ export class PromoCodeUsesService {
     @Inject(DATABASE) private readonly database: Database,
     private readonly geo: GeoService,
     private readonly settings: SettingsService,
+    private readonly texts: NotificationTexts,
+    private readonly pushes: PushQueue,
+    private readonly fx: FxService,
   ) {}
 
   // The city's clock for a cart (owner decision 2026-11-16: the daily
@@ -121,6 +133,7 @@ export class PromoCodeUsesService {
           discount: code.discount.total,
           merchantShare: code.discount.merchant,
           heldAt: now,
+          newUser: customer.newUser,
         });
       },
     };
@@ -129,16 +142,181 @@ export class PromoCodeUsesService {
   // The order ended (AP §9.11.1): spent when delivered or failed with the
   // customer responsible, given back otherwise. An outcome changed later
   // settles it again. An order without a code has no use: nothing happens.
+  // `delivered`: the order ended delivered, for the code report's new
+  // customers (slice 2.21d).
   async settle(
     tx: Tx,
     orderId: string,
     status: Exclude<PromoCodeUseStatus, 'held'>,
     now: Date,
+    delivered = false,
   ): Promise<void> {
-    await tx
+    const [use] = await tx
       .update(promoCodeUses)
-      .set({ status, settledAt: now })
-      .where(and(eq(promoCodeUses.orderId, orderId), ne(promoCodeUses.status, status)));
+      .set({ status, settledAt: now, delivered })
+      .where(
+        and(
+          eq(promoCodeUses.orderId, orderId),
+          or(ne(promoCodeUses.status, status), ne(promoCodeUses.delivered, delivered)),
+        ),
+      )
+      .returning({
+        codeId: promoCodeUses.codeId,
+        cityId: promoCodeUses.cityId,
+        accountId: promoCodeUses.customerAccountId,
+        phoneHash: promoCodeUses.phoneHash,
+        deviceId: promoCodeUses.deviceId,
+        newUser: promoCodeUses.newUser,
+      });
+    if (status !== 'returned' || use === undefined) return;
+    // CU §10.4, §14 #23 (owner decision 2026-11-16): «أُعيد الكود {الكود}
+    // إلى أكوادك» once the code is back in the customer's «متاحة», by
+    // `mine`'s rule. Whether they are still new is the placing's answer: the
+    // order given back was not delivered.
+    const [code] = await tx.select().from(promoCodes).where(eq(promoCodes.id, use.codeId));
+    const baseCurrency = await this.fx.baseCurrency(use.cityId, tx);
+    if (!code || baseCurrency === null || !runsNow(code, baseCurrency, now)) return;
+    const count =
+      (
+        await this.counts(tx, [code.id], {
+          customer: {
+            accountId: use.accountId,
+            phoneHash: use.phoneHash,
+            deviceId: use.deviceId,
+            newUser: use.newUser,
+          },
+          // The day's cost is not read here.
+          clock: { timeZone: 'UTC', businessDay: now },
+        })
+      ).get(code.id) ?? NO_USES;
+    const open = openToCustomer(code, {
+      newUser: use.newUser,
+      mine: count.mine,
+      phoneOrDeviceUsed: count.sameNumberOrDevice > 0,
+      total: count.total,
+    });
+    if (!open) return;
+    const templateKey = 'customer.code_returned';
+    const rendered = await this.texts.render(templateKey, { الكود: code.code }, tx);
+    await this.pushes.enqueue(
+      tx,
+      [
+        {
+          source: `marketing:${templateKey}:${orderId}:${now.toISOString()}`,
+          recipient: { party: 'customer', accountId: use.accountId },
+          templateKey,
+          body: rendered.body,
+          level: rendered.level,
+          priority: rendered.priority,
+          data: { target: 'codes' },
+          at: now,
+        },
+      ],
+      now,
+    );
+  }
+
+  // CU §12.4 «أكوادي» (slice 2.21d): «متاحة», the visible codes running in
+  // the city now that are open to this customer (`openToCustomer`), and
+  // «منتهية», those they used up or that ended within the last 30 days. A
+  // code the account used (a use not given back) and can no longer use is
+  // `used`, a secret one included; a visible code that ended without being
+  // used up is `expired` when its audience took the customer.
+  async mine(
+    scope: Pick<CodeCart, 'cityId' | 'baseCurrency' | 'clock'> & {
+      customer: NonNullable<CodeCart['customer']>;
+    },
+    now: Date,
+  ): Promise<MyCode[]> {
+    const since = new Date(now.getTime() - ENDED_CODES_DAYS * 24 * 60 * 60 * 1000);
+    const { customer } = scope;
+    const used = await this.database.db
+      .select({
+        codeId: promoCodeUses.codeId,
+        last: sql<string>`max(${promoCodeUses.heldAt})::text`,
+      })
+      .from(promoCodeUses)
+      .where(
+        and(
+          eq(promoCodeUses.customerAccountId, customer.accountId),
+          eq(promoCodeUses.cityId, scope.cityId),
+          counting,
+          gte(promoCodeUses.heldAt, since),
+        ),
+      )
+      .groupBy(promoCodeUses.codeId);
+    const lastUse = new Map(used.map((row) => [row.codeId, new Date(row.last)]));
+    const running = and(
+      eq(promoCodes.visibility, 'visible'),
+      eq(promoCodes.currency, scope.baseCurrency),
+      lte(promoCodes.validFrom, now),
+      gt(promoCodes.validTo, since),
+    );
+    const rows = await this.database.db
+      .select()
+      .from(promoCodes)
+      .where(
+        and(
+          eq(promoCodes.cityId, scope.cityId),
+          lastUse.size === 0 ? running : or(running, inArray(promoCodes.id, [...lastUse.keys()])),
+        ),
+      );
+    if (rows.length === 0) return [];
+    const counts = await this.counts(
+      this.database.db,
+      rows.map((row) => row.id),
+      scope,
+    );
+    const listed: MyCode[] = [];
+    for (const row of rows) {
+      const count = counts.get(row.id) ?? NO_USES;
+      const open = openToCustomer(row, {
+        newUser: customer.newUser,
+        mine: count.mine,
+        phoneOrDeviceUsed: count.sameNumberOrDevice > 0,
+        total: count.total,
+      });
+      const last = lastUse.get(row.id);
+      let ended: MyCode['ended'];
+      if (open && runsNow(row, scope.baseCurrency, now)) ended = null;
+      // Used up by this customer; a code they may still use but that is
+      // paused or secret waits, and shows as expired once it ends.
+      else if (last !== undefined && !open) ended = { reason: 'used', at: last };
+      else if (
+        row.visibility === 'visible' &&
+        row.validTo.getTime() <= now.getTime() &&
+        (row.audience === 'everyone' || customer.newUser)
+      ) {
+        ended = { reason: 'expired', at: row.validTo };
+      } else continue;
+      listed.push({
+        codeId: row.id,
+        code: row.code,
+        kind: row.kind,
+        percentBp: row.percentBp,
+        amount: row.amount,
+        maxDiscount: row.maxDiscount,
+        minOrder: row.minOrder,
+        restaurantIds: row.restaurantIds,
+        zoneIds: row.zoneIds,
+        startMinute: row.startMinute,
+        endMinute: row.endMinute,
+        validTo: row.validTo,
+        usesLeft:
+          row.perCustomerLimit === null ? null : Math.max(row.perCustomerLimit - count.mine, 0),
+        ended,
+      });
+    }
+    // «متاحة» by the nearest end, «منتهية» newest first.
+    return listed.sort((a, b) => {
+      if (a.ended === null || b.ended === null) {
+        if (a.ended !== b.ended) return a.ended === null ? -1 : 1;
+        const by = a.validTo.getTime() - b.validTo.getTime();
+        return by !== 0 ? by : a.code < b.code ? -1 : 1;
+      }
+      const by = b.ended.at.getTime() - a.ended.at.getTime();
+      return by !== 0 ? by : a.code < b.code ? -1 : 1;
+    });
   }
 
   // AP §9.3.3 (slice 2.21b): an edit worked the order's discount out again
@@ -148,6 +326,34 @@ export class PromoCodeUsesService {
       .update(promoCodeUses)
       .set({ discount: discount.total, merchantShare: discount.merchant })
       .where(eq(promoCodeUses.orderId, orderId));
+  }
+
+  // AP §9.11.1 «Code report» (slice 2.21d): the orders that used the code
+  // and the customers (accounts) behind them, its cost and the restaurants'
+  // part of it, counting the uses not given back; the uses given back; and
+  // the new customers it acquired: numbers whose order with the code was
+  // placed while they had no delivered order and ended delivered (owner
+  // decision 2026-11-16).
+  async report(codeId: string): Promise<CodeReport> {
+    const [row] = await this.database.db
+      .select({
+        orders: sql<number>`count(*) FILTER (WHERE ${counting})::int`,
+        returned: sql<number>`count(*) FILTER (WHERE NOT (${counting}))::int`,
+        customers: sql<number>`count(DISTINCT ${promoCodeUses.customerAccountId}) FILTER (WHERE ${counting})::int`,
+        cost: sql<string>`coalesce(sum(${promoCodeUses.discount}) FILTER (WHERE ${counting}), 0)::text`,
+        merchantShare: sql<string>`coalesce(sum(${promoCodeUses.merchantShare}) FILTER (WHERE ${counting}), 0)::text`,
+        newCustomers: sql<number>`count(DISTINCT ${promoCodeUses.phoneHash}) FILTER (WHERE ${promoCodeUses.newUser} AND ${promoCodeUses.delivered})::int`,
+      })
+      .from(promoCodeUses)
+      .where(eq(promoCodeUses.codeId, codeId));
+    return {
+      orders: row!.orders,
+      returned: row!.returned,
+      customers: row!.customers,
+      cost: BigInt(row!.cost),
+      merchantShare: BigInt(row!.merchantShare),
+      newCustomers: row!.newCustomers,
+    };
   }
 
   // The list's «الاستخدامات» and «التكلفة حتى الآن»: the uses not given back
@@ -164,6 +370,130 @@ export class PromoCodeUsesService {
       .where(and(inArray(promoCodeUses.codeId, [...codeIds]), counting))
       .groupBy(promoCodeUses.codeId);
     return new Map(rows.map((row) => [row.codeId, { uses: row.uses, cost: BigInt(row.cost) }]));
+  }
+
+  // CU §10.4 «الأكواد المتاحة لك» (slice 2.21d, owner decision 2026-11-16):
+  // the visible codes running in the city that apply to this cart, largest
+  // discount first, then those only its minimum keeps out, by what is
+  // missing. A code refused for anything else is left out (another
+  // restaurant's, used up, for new users only, the day's budget reached).
+  async available(cart: Omit<CodeCart, 'code'>, now: Date): Promise<AvailableCode[]> {
+    const rows = await this.database.db
+      .select()
+      .from(promoCodes)
+      .where(
+        and(
+          eq(promoCodes.cityId, cart.cityId),
+          eq(promoCodes.visibility, 'visible'),
+          eq(promoCodes.status, 'active'),
+          eq(promoCodes.currency, cart.baseCurrency),
+          lte(promoCodes.validFrom, now),
+          gt(promoCodes.validTo, now),
+        ),
+      );
+    if (rows.length === 0) return [];
+    const counts = await this.counts(
+      this.database.db,
+      rows.map((row) => row.id),
+      cart,
+    );
+    const listed: AvailableCode[] = [];
+    for (const row of rows) {
+      const count = counts.get(row.id) ?? NO_USES;
+      // Checked as if the minimum were reached, so only the minimum is missing.
+      const below = row.minOrder !== null && cart.itemsValue < row.minOrder;
+      const refused = codeRefusal(
+        row,
+        this.context(cart, now, count, below ? row.minOrder! : cart.itemsValue),
+      );
+      if (refused !== null) continue;
+      const terms = codeTerms(row);
+      listed.push({
+        codeId: row.id,
+        code: row.code,
+        kind: row.kind,
+        percentBp: row.percentBp,
+        amount: row.amount,
+        maxDiscount: row.maxDiscount,
+        minOrder: row.minOrder,
+        startMinute: row.startMinute,
+        endMinute: row.endMinute,
+        validTo: row.validTo,
+        discount: below ? null : promoDiscount(terms, cart),
+        missing: below ? row.minOrder! - cart.itemsValue : null,
+      });
+    }
+    return listed.sort((a, b) => {
+      if ((a.discount === null) !== (b.discount === null)) return a.discount === null ? 1 : -1;
+      const by =
+        a.discount !== null
+          ? Number(b.discount!.total - a.discount.total)
+          : Number(a.missing! - b.missing!);
+      return by !== 0 ? by : a.code < b.code ? -1 : a.code > b.code ? 1 : 0;
+    });
+  }
+
+  // The uses of codes that count, per code: in all, this account's, by the
+  // same number or device, and the business day's cost.
+  private async counts(
+    db: Executor,
+    codeIds: string[],
+    cart: Pick<CodeCart, 'customer' | 'clock'>,
+  ): Promise<Map<string, UseCounts>> {
+    const { customer } = cart;
+    const rows = await db
+      .select({
+        codeId: promoCodeUses.codeId,
+        total: sql<number>`count(*)::int`,
+        mine: customer
+          ? sql<number>`count(*) FILTER (WHERE ${promoCodeUses.customerAccountId} = ${customer.accountId})::int`
+          : sql<number>`0`,
+        sameNumberOrDevice: customer
+          ? sql<number>`count(*) FILTER (WHERE ${or(
+              eq(promoCodeUses.phoneHash, customer.phoneHash),
+              eq(promoCodeUses.deviceId, customer.deviceId),
+            )})::int`
+          : sql<number>`0`,
+        dayCost: sql<string>`coalesce(sum(${promoCodeUses.discount}) FILTER (WHERE ${promoCodeUses.businessDay} = ${cart.clock.businessDay.toISOString()}::timestamptz), 0)::text`,
+      })
+      .from(promoCodeUses)
+      .where(and(inArray(promoCodeUses.codeId, codeIds), counting))
+      .groupBy(promoCodeUses.codeId);
+    return new Map(
+      rows.map((row) => [
+        row.codeId,
+        {
+          total: row.total,
+          mine: row.mine,
+          sameNumberOrDevice: row.sameNumberOrDevice,
+          dayCost: BigInt(row.dayCost),
+        },
+      ]),
+    );
+  }
+
+  private context(
+    cart: Omit<CodeCart, 'code'>,
+    now: Date,
+    count: UseCounts,
+    itemsValue: bigint,
+  ): CodeContext {
+    const { customer } = cart;
+    return {
+      now,
+      minuteOfDay: minuteOfDay(now, cart.clock.timeZone),
+      baseCurrency: cart.baseCurrency,
+      restaurantId: cart.restaurantId,
+      zoneId: cart.zoneId,
+      itemsValue,
+      customer: customer && {
+        newUser: customer.newUser,
+        uses: count.mine,
+        phoneOrDeviceUsed: count.sameNumberOrDevice > 0,
+      },
+      totalUses: count.total,
+      dayCost: count.dayCost,
+    };
   }
 
   private async evaluate(
@@ -183,47 +513,10 @@ export class PromoCodeUsesService {
         sql`SELECT pg_advisory_xact_lock(hashtextextended(${`marketing.code:${row.id}`}, 0))`,
       );
     }
-    const { timeZone, businessDay } = cart.clock;
-    const { customer } = cart;
-    const [counts] = await db
-      .select({
-        total: sql<number>`count(*)::int`,
-        mine: customer
-          ? sql<number>`count(*) FILTER (WHERE ${promoCodeUses.customerAccountId} = ${customer.accountId})::int`
-          : sql<number>`0`,
-        sameNumberOrDevice: customer
-          ? sql<number>`count(*) FILTER (WHERE ${or(
-              eq(promoCodeUses.phoneHash, customer.phoneHash),
-              eq(promoCodeUses.deviceId, customer.deviceId),
-            )})::int`
-          : sql<number>`0`,
-        dayCost: sql<string>`coalesce(sum(${promoCodeUses.discount}) FILTER (WHERE ${promoCodeUses.businessDay} = ${businessDay.toISOString()}::timestamptz), 0)::text`,
-      })
-      .from(promoCodeUses)
-      .where(and(eq(promoCodeUses.codeId, row.id), counting));
-    const refused = codeRefusal(row, {
-      now,
-      minuteOfDay: minuteOfDay(now, timeZone),
-      baseCurrency: cart.baseCurrency,
-      restaurantId: cart.restaurantId,
-      zoneId: cart.zoneId,
-      itemsValue: cart.itemsValue,
-      customer: customer && {
-        newUser: customer.newUser,
-        uses: counts!.mine,
-        phoneOrDeviceUsed: counts!.sameNumberOrDevice > 0,
-      },
-      totalUses: counts!.total,
-      dayCost: BigInt(counts!.dayCost),
-    });
+    const count = (await this.counts(db, [row.id], cart)).get(row.id) ?? NO_USES;
+    const refused = codeRefusal(row, this.context(cart, now, count, cart.itemsValue));
     if (refused !== null) return { applied: false, ...refused };
-    const terms: CodeTerms = {
-      kind: row.kind,
-      percentBp: row.percentBp,
-      amount: row.amount,
-      maxDiscount: row.maxDiscount,
-      merchantShareBp: row.merchantShareBp,
-    };
+    const terms = codeTerms(row);
     return {
       applied: true,
       code: {
@@ -237,5 +530,33 @@ export class PromoCodeUsesService {
   }
 }
 
+export interface CodeReport {
+  orders: number;
+  returned: number;
+  customers: number;
+  cost: bigint;
+  merchantShare: bigint;
+  newCustomers: number;
+}
+
 // A use counts while it is not given back.
 const counting = ne(promoCodeUses.status, 'returned');
+
+interface UseCounts {
+  total: number;
+  mine: number;
+  sameNumberOrDevice: number;
+  dayCost: bigint;
+}
+
+const NO_USES: UseCounts = { total: 0, mine: 0, sameNumberOrDevice: 0, dayCost: 0n };
+
+function codeTerms(row: typeof promoCodes.$inferSelect): CodeTerms {
+  return {
+    kind: row.kind,
+    percentBp: row.percentBp,
+    amount: row.amount,
+    maxDiscount: row.maxDiscount,
+    merchantShareBp: row.merchantShareBp,
+  };
+}

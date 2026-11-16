@@ -29,13 +29,13 @@ import {
 
 const route = getRouteApi('/signed-in/promo-codes');
 
-const kindKeys = {
+export const kindKeys = {
   percentage: 'promoCodes.kind.percentage',
   fixed_amount: 'promoCodes.kind.fixed_amount',
   free_delivery: 'promoCodes.kind.free_delivery',
 } as const;
 
-const stateKeys = {
+export const stateKeys = {
   active: 'promoCodes.state.active',
   paused: 'promoCodes.state.paused',
   scheduled: 'promoCodes.state.scheduled',
@@ -72,7 +72,7 @@ const problemKeys = {
   restaurants: 'promoCodes.problem.restaurants',
 } as const satisfies Record<FormProblem, string>;
 
-const refusalKeys = {
+export const refusalKeys = {
   invalid_promo_code: 'promoCodes.refusal.invalid_promo_code',
   code_taken: 'promoCodes.refusal.code_taken',
   no_base_currency: 'promoCodes.refusal.no_base_currency',
@@ -154,7 +154,15 @@ function PromoCodesView({ codes, city }: { codes: PromoCodes; city: City }) {
           <tbody>
             {codes.codes.map((code) => (
               <tr key={code.id}>
-                <td>{code.code}</td>
+                <td>
+                  <Link
+                    to="/promo-codes/$codeId"
+                    params={{ codeId: code.id }}
+                    search={{ city: city.code }}
+                  >
+                    {code.code}
+                  </Link>
+                </td>
                 <td>{t(kindKeys[code.kind])}</td>
                 <td>
                   <ValueText code={code} />
@@ -207,7 +215,7 @@ function PromoCodesView({ codes, city }: { codes: PromoCodes; city: City }) {
   );
 }
 
-function ValueText({ code }: { code: PromoCode }) {
+export function ValueText({ code }: { code: PromoCode }) {
   const { t } = useTranslation();
   const value = valueOf(code);
   if (value === null) return <>{t('promoCodes.wholeFee')}</>;

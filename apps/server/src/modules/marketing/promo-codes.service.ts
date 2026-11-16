@@ -274,6 +274,45 @@ export class PromoCodesService implements OnModuleInit {
     });
   }
 
+  // AP §9.11.1 «Code report» (slice 2.21d): «تمديد» moves the end later,
+  // past now and past the end it had, so an ended code runs again. It sets a
+  // value, so no key. 400 invalid_promo_code; 404 unknown_promo_code; 409
+  // currency_changed for a code saved in an earlier base.
+  async extend(cityId: string, id: string, validTo: Date, change: PromoChange) {
+    return this.database.db.transaction(async (tx) => {
+      await lockCityCurrencies(tx, cityId);
+      const before = await this.locked(tx, cityId, id);
+      if (validTo.getTime() <= Math.max(before.validTo.getTime(), Date.now())) {
+        throw new PromoRefusedError(
+          'invalid_promo_code',
+          'the new end must come after the current end and after now',
+        );
+      }
+      if (before.currency !== (await this.baseCurrency(cityId, tx))) {
+        throw new PromoRefusedError('currency_changed', 'the code is in an earlier base currency');
+      }
+      const [after] = (await tx
+        .update(promoCodes)
+        .set({ validTo, updatedBy: change.accountId, updatedAt: new Date() })
+        .where(eq(promoCodes.id, id))
+        .returning()) as [PromoCode];
+      await this.audit.recordWrite(
+        {
+          actor: change.actor,
+          context: change.context,
+          cityId,
+          action: 'promo_code.extend',
+          target: { type: 'promo_code', id },
+          before: { validTo: before.validTo.toISOString() },
+          after: { validTo: validTo.toISOString() },
+          reason: null,
+        },
+        tx,
+      );
+      return after;
+    });
+  }
+
   private async locked(tx: Tx, cityId: string, id: string): Promise<PromoCode> {
     const [row] = await tx
       .select()

@@ -401,6 +401,10 @@ const routeAccess: Record<string, Access> = {
   'PUT /v1/admin/promo-codes/{codeId}': 'marketing.manage',
   'POST /v1/admin/promo-codes/{codeId}/pause': 'marketing.manage',
   'POST /v1/admin/promo-codes/{codeId}/resume': 'marketing.manage',
+  'POST /v1/admin/promo-codes/{codeId}/extend': 'marketing.manage',
+  'GET /v1/admin/promo-codes/{codeId}/report': {
+    anyOf: ['marketing.read', 'marketing.read_costs', 'marketing.manage'],
+  },
   'POST /v1/admin/cash-desk/captains/search': 'cash_desk.record',
   'GET /v1/admin/cash-desk/captains/{captainId}': 'cash_desk.record',
   'GET /v1/admin/cash-desk/sessions/current': 'cash_desk.record',
@@ -457,6 +461,7 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/customer/orders/{orderId}/cancel': 'app_session',
   'POST /v1/customer/realtime/token': 'app_session',
   'GET /v1/customer/notifications': 'app_session',
+  'GET /v1/customer/promo-codes': 'app_session',
   'PUT /v1/customer/push-token': 'app_session',
   'GET /v1/customer/profile': 'app_session',
   'PUT /v1/customer/profile': 'app_session',

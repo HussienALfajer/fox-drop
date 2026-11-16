@@ -128,7 +128,8 @@ void main() {
       '/orders/a%20b',
     );
     expect(pushTargetPath({'target': 'order'}), isNull);
-    expect(pushTargetPath({'target': 'codes'}), isNull);
+    // CU §14 #23: a returned code opens «أكوادي».
+    expect(pushTargetPath({'target': 'codes'}), '/codes');
     // CU §14 #19: «الخدمة عادت» opens home.
     expect(pushTargetPath({'target': 'home'}), '/');
     expect(pushTargetPath({}), isNull);

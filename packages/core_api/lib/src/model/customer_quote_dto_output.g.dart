@@ -32,6 +32,10 @@ class _$CustomerQuoteDtoOutput extends CustomerQuoteDtoOutput {
   @override
   final CustomerQuoteDtoOutputPromoCode? promoCode;
   @override
+  final BuiltList<CustomerQuoteDtoOutputAvailableCodesInner> availableCodes;
+  @override
+  final CustomerQuoteDtoOutputSuggestedCode? suggestedCode;
+  @override
   final BuiltList<CustomerQuoteDtoOutputProblemsInner> problems;
 
   factory _$CustomerQuoteDtoOutput([
@@ -51,6 +55,8 @@ class _$CustomerQuoteDtoOutput extends CustomerQuoteDtoOutput {
     this.freeDelivery,
     required this.rates,
     this.promoCode,
+    required this.availableCodes,
+    this.suggestedCode,
     required this.problems,
   }) : super._();
   @override
@@ -78,6 +84,8 @@ class _$CustomerQuoteDtoOutput extends CustomerQuoteDtoOutput {
         freeDelivery == other.freeDelivery &&
         rates == other.rates &&
         promoCode == other.promoCode &&
+        availableCodes == other.availableCodes &&
+        suggestedCode == other.suggestedCode &&
         problems == other.problems;
   }
 
@@ -96,6 +104,8 @@ class _$CustomerQuoteDtoOutput extends CustomerQuoteDtoOutput {
     _$hash = $jc(_$hash, freeDelivery.hashCode);
     _$hash = $jc(_$hash, rates.hashCode);
     _$hash = $jc(_$hash, promoCode.hashCode);
+    _$hash = $jc(_$hash, availableCodes.hashCode);
+    _$hash = $jc(_$hash, suggestedCode.hashCode);
     _$hash = $jc(_$hash, problems.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -116,6 +126,8 @@ class _$CustomerQuoteDtoOutput extends CustomerQuoteDtoOutput {
           ..add('freeDelivery', freeDelivery)
           ..add('rates', rates)
           ..add('promoCode', promoCode)
+          ..add('availableCodes', availableCodes)
+          ..add('suggestedCode', suggestedCode)
           ..add('problems', problems))
         .toString();
   }
@@ -193,6 +205,21 @@ class CustomerQuoteDtoOutputBuilder
   set promoCode(CustomerQuoteDtoOutputPromoCodeBuilder? promoCode) =>
       _$this._promoCode = promoCode;
 
+  ListBuilder<CustomerQuoteDtoOutputAvailableCodesInner>? _availableCodes;
+  ListBuilder<CustomerQuoteDtoOutputAvailableCodesInner> get availableCodes =>
+      _$this._availableCodes ??=
+          ListBuilder<CustomerQuoteDtoOutputAvailableCodesInner>();
+  set availableCodes(
+    ListBuilder<CustomerQuoteDtoOutputAvailableCodesInner>? availableCodes,
+  ) => _$this._availableCodes = availableCodes;
+
+  CustomerQuoteDtoOutputSuggestedCodeBuilder? _suggestedCode;
+  CustomerQuoteDtoOutputSuggestedCodeBuilder get suggestedCode =>
+      _$this._suggestedCode ??= CustomerQuoteDtoOutputSuggestedCodeBuilder();
+  set suggestedCode(
+    CustomerQuoteDtoOutputSuggestedCodeBuilder? suggestedCode,
+  ) => _$this._suggestedCode = suggestedCode;
+
   ListBuilder<CustomerQuoteDtoOutputProblemsInner>? _problems;
   ListBuilder<CustomerQuoteDtoOutputProblemsInner> get problems =>
       _$this._problems ??= ListBuilder<CustomerQuoteDtoOutputProblemsInner>();
@@ -218,6 +245,8 @@ class CustomerQuoteDtoOutputBuilder
       _freeDelivery = $v.freeDelivery?.toBuilder();
       _rates = $v.rates.toBuilder();
       _promoCode = $v.promoCode?.toBuilder();
+      _availableCodes = $v.availableCodes.toBuilder();
+      _suggestedCode = $v.suggestedCode?.toBuilder();
       _problems = $v.problems.toBuilder();
       _$v = null;
     }
@@ -263,6 +292,8 @@ class CustomerQuoteDtoOutputBuilder
             freeDelivery: _freeDelivery?.build(),
             rates: rates.build(),
             promoCode: _promoCode?.build(),
+            availableCodes: availableCodes.build(),
+            suggestedCode: _suggestedCode?.build(),
             problems: problems.build(),
           );
     } catch (_) {
@@ -289,6 +320,10 @@ class CustomerQuoteDtoOutputBuilder
         rates.build();
         _$failedField = 'promoCode';
         _promoCode?.build();
+        _$failedField = 'availableCodes';
+        availableCodes.build();
+        _$failedField = 'suggestedCode';
+        _suggestedCode?.build();
         _$failedField = 'problems';
         problems.build();
       } catch (e) {

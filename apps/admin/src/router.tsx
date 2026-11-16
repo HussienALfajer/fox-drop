@@ -35,6 +35,7 @@ import { ZONES_READ } from './peak-bonus.js';
 import { PeakBonusPage } from './peak-bonus-page.js';
 import { canSeePromoCodes } from './promo-codes.js';
 import { PromoCodesPage } from './promo-codes-page.js';
+import { PromoCodeReportPage } from './promo-code-report-page.js';
 import { OfficePage } from './office-page.js';
 import { ReceiptPage } from './receipt-page.js';
 import { RESTAURANT_STATEMENTS } from './restaurant-statements.js';
@@ -263,6 +264,18 @@ const promoCodesRoute = createRoute({
   component: PromoCodesPage,
 });
 
+// AP §9.11.1 «Code report» (slice 2.21d): the list's readers; OWN pauses,
+// resumes and extends from it (checked by the page and the server).
+const promoCodeReportRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/promo-codes/$codeId',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!canSeePromoCodes(context.session)) throw redirect({ to: '/' });
+  },
+  component: PromoCodeReportPage,
+});
+
 // AP §9.12.1 «المكتب» (slice 2.17c; owner decision 2026-11-12): the city's
 // office and desk hours, read with the zones (zones.read); only OWN saves
 // them (zones.manage, checked by the page and the server), until the map.
@@ -462,6 +475,7 @@ const routeTree = rootRoute.addChildren([
     appSettingsRoute,
     peakBonusRoute,
     promoCodesRoute,
+    promoCodeReportRoute,
     officeRoute,
     cashDeskRoute,
     cashDeskSessionsRoute,
