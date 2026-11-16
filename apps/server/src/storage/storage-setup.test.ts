@@ -1,10 +1,16 @@
 import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { PUBLIC_MEDIA_BUCKET, setUpStorage, type StorageKey } from './storage-setup.js';
+import {
+  PRIVATE_DOCS_BUCKET,
+  PUBLIC_MEDIA_BUCKET,
+  setUpStorage,
+  type StorageKey,
+} from './storage-setup.js';
 import { startTestStorage, type TestStorage } from './test-storage.js';
 
 // The storage setup (architecture §5.8) on a real Garage: the layout, the two
-// keys and their rights on public-media, and running it again.
+// keys and their rights on public-media and private-docs, and running it
+// again.
 let storage: TestStorage;
 
 beforeAll(async () => {
@@ -35,6 +41,21 @@ describe('setUpStorage', () => {
     );
     expect(await read.Body?.transformToString()).toBe('image');
     await expect(put(storage.reader, 'test/two.txt')).rejects.toThrow();
+  });
+
+  it('keeps private-docs to the server', async () => {
+    await client(storage.key).send(
+      new PutObjectCommand({ Bucket: PRIVATE_DOCS_BUCKET, Key: 'exports/one.xlsx', Body: 'x' }),
+    );
+    const read = await client(storage.key).send(
+      new GetObjectCommand({ Bucket: PRIVATE_DOCS_BUCKET, Key: 'exports/one.xlsx' }),
+    );
+    expect(await read.Body?.transformToString()).toBe('x');
+    await expect(
+      client(storage.reader).send(
+        new GetObjectCommand({ Bucket: PRIVATE_DOCS_BUCKET, Key: 'exports/one.xlsx' }),
+      ),
+    ).rejects.toThrow();
   });
 
   it('runs again without changing anything', async () => {

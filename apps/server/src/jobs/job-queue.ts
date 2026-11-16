@@ -33,6 +33,10 @@ export const QUEUES = {
   pauseEnd: 'merchants-pause-end',
   // RA §7.3, §16 #25: busy mode's reminder, every merchant.busy_mode_reminder_min.
   busyReminder: 'merchants-busy-reminder',
+  // Architecture §5.9: write an Excel export to private-docs, and remove it
+  // after its 24 hours.
+  exportBuild: 'reporting-export-build',
+  exportExpiry: 'reporting-export-expiry',
 } as const;
 
 export type QueueName = (typeof QUEUES)[keyof typeof QUEUES];

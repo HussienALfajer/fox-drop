@@ -18,7 +18,7 @@ import { roadDistancesFromEnvironment } from './osrm-road-distances.js';
 })
 export class GeoModule {}
 
-export { lastCutoff, nextCutoff } from './business-day.js';
+export { cutoffOn, lastCutoff, nextCutoff } from './business-day.js';
 export {
   checkWeeklySchedule,
   currentPeriod,

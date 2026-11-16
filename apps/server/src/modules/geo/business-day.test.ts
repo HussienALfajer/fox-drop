@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { lastCutoff, nextCutoff } from './business-day.js';
+import { cutoffOn, lastCutoff, nextCutoff } from './business-day.js';
 
 // RA §4.9, §9.3: «حتى الغد» ends at the next business-day cutoff on the city's
 // clock (finance.business_day_cutoff, 06:00 by default); AP §8.5.4: the cash
@@ -65,6 +65,25 @@ describe('lastCutoff', () => {
     );
     expect(lastCutoff(at('2026-10-25T05:00:00', '+01:00'), 360, 'Europe/Berlin')).toEqual(
       at('2026-10-24T06:00:00', '+02:00'),
+    );
+  });
+});
+
+// AP §9.10.5 (slice 2.19g): a period of business days starts at the cutoff
+// of its first day and ends at the cutoff of the day after its last.
+describe('cutoffOn', () => {
+  it('is the cutoff of that day on the city clock', () => {
+    expect(cutoffOn('2026-11-07', 360, 'Asia/Damascus')).toEqual(at('2026-11-07T06:00:00'));
+    expect(cutoffOn('2026-12-31', 0, 'Asia/Damascus')).toEqual(at('2026-12-31T00:00:00'));
+  });
+
+  it('takes the offset in force on that day', () => {
+    // Berlin is UTC+2 in summer and UTC+1 in winter.
+    expect(cutoffOn('2026-07-01', 360, 'Europe/Berlin')).toEqual(
+      at('2026-07-01T06:00:00', '+02:00'),
+    );
+    expect(cutoffOn('2026-01-01', 360, 'Europe/Berlin')).toEqual(
+      at('2026-01-01T06:00:00', '+01:00'),
     );
   });
 });

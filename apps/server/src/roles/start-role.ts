@@ -18,6 +18,7 @@ import {
   PushWorkerModule,
 } from '../modules/notifications/index.js';
 import { OrderingWorkerModule } from '../modules/ordering/index.js';
+import { ReportingWorkerModule } from '../modules/reporting/index.js';
 import { PlaceholderSeed, seedsPlaceholders } from '../seed/placeholder-seed.js';
 import type { ProcessRole } from './process-role.js';
 
@@ -38,6 +39,7 @@ const BACKGROUND_MODULES: Record<BackgroundRole, Type[]> = {
     PlatformRelayWorkerModule,
     MerchantsWorkerModule,
     CashDeskWorkerModule,
+    ReportingWorkerModule,
   ],
   dispatcher: [DispatcherModule],
   'otp-sender': [OtpSenderModule],

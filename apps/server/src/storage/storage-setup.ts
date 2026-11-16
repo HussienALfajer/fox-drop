@@ -1,14 +1,19 @@
 import { z } from 'zod';
 
 // The public bucket (architecture §5.8): menu photos, logos and covers,
-// served through imgproxy. private-docs joins with its first use (2.34).
+// served through imgproxy.
 export const PUBLIC_MEDIA_BUCKET = 'public-media';
+// The private bucket (architecture §5.8, §5.9): the Excel exports (slice
+// 2.19g), later the captain documents (2.34). Only the server's key reaches
+// it; a file leaves it through a short signed URL.
+export const PRIVATE_DOCS_BUCKET = 'private-docs';
 
 export interface StorageKey {
   id: string;
   secret: string;
   name: string;
-  // What the key may do on public-media.
+  // What the key may do on public-media; a key that writes is the server's,
+  // which alone reads and writes private-docs.
   write: boolean;
 }
 
@@ -78,21 +83,29 @@ export async function setUpStorage(options: StorageSetupOptions): Promise<void> 
     }
   }
 
-  let bucket = await admin.getOrNull(`GetBucketInfo?globalAlias=${PUBLIC_MEDIA_BUCKET}`);
-  bucket ??= await admin.post('CreateBucket', { globalAlias: PUBLIC_MEDIA_BUCKET });
-  const bucketId = bucketInfo.parse(bucket).id;
-
-  for (const key of options.keys) {
-    const rights = { bucketId, accessKeyId: key.id };
-    await admin.post('AllowBucketKey', {
-      ...rights,
-      permissions: { read: true, write: key.write, owner: false },
-    });
-    // Takes back what an earlier setup may have given.
-    await admin.post('DenyBucketKey', {
-      ...rights,
-      permissions: { read: false, write: !key.write, owner: true },
-    });
+  const buckets = [
+    { alias: PUBLIC_MEDIA_BUCKET, rights: (key: StorageKey) => ({ read: true, write: key.write }) },
+    {
+      alias: PRIVATE_DOCS_BUCKET,
+      rights: (key: StorageKey) => ({ read: key.write, write: key.write }),
+    },
+  ];
+  for (const { alias, rights } of buckets) {
+    let bucket = await admin.getOrNull(`GetBucketInfo?globalAlias=${alias}`);
+    bucket ??= await admin.post('CreateBucket', { globalAlias: alias });
+    const bucketId = bucketInfo.parse(bucket).id;
+    for (const key of options.keys) {
+      const allowed = rights(key);
+      const ids = { bucketId, accessKeyId: key.id };
+      if (allowed.read || allowed.write) {
+        await admin.post('AllowBucketKey', { ...ids, permissions: { ...allowed, owner: false } });
+      }
+      // Takes back what an earlier setup may have given.
+      await admin.post('DenyBucketKey', {
+        ...ids,
+        permissions: { read: !allowed.read, write: !allowed.write, owner: true },
+      });
+    }
   }
 }
 

@@ -118,6 +118,9 @@ Serializers _$serializers =
           ..add(AdminEmergencyStopStateDtoOutput.serializer)
           ..add(AdminEmergencyStopStateDtoOutputDefaults.serializer)
           ..add(AdminEmergencyStopStateDtoOutputStop.serializer)
+          ..add(AdminExportDtoOutput.serializer)
+          ..add(AdminExportDtoOutputKindEnum.serializer)
+          ..add(AdminExportDtoOutputStatusEnum.serializer)
           ..add(AdminFaqDto.serializer)
           ..add(AdminFaqDtoItemsInner.serializer)
           ..add(AdminFaqDtoOutput.serializer)
@@ -358,6 +361,16 @@ Serializers _$serializers =
           )
           ..add(AdminRestaurantMaxActiveOrdersDto.serializer)
           ..add(AdminRestaurantPauseDto.serializer)
+          ..add(AdminRestaurantPeriodStatementDtoOutput.serializer)
+          ..add(AdminRestaurantPeriodStatementDtoOutputLinesInner.serializer)
+          ..add(
+            AdminRestaurantPeriodStatementDtoOutputLinesInnerCauseEnum
+                .serializer,
+          )
+          ..add(
+            AdminRestaurantPeriodStatementDtoOutputLinesInnerKindEnum
+                .serializer,
+          )
           ..add(AdminRestaurantPickupCurrenciesDto.serializer)
           ..add(AdminRestaurantReceiptDtoOutput.serializer)
           ..add(AdminRestaurantReceiptDtoOutputLinesInner.serializer)
@@ -382,6 +395,7 @@ Serializers _$serializers =
           ..add(
             AdminRestaurantSettlementsDtoOutputSettlementWeekdayEnum.serializer,
           )
+          ..add(AdminRestaurantStatementExportDto.serializer)
           ..add(AdminRestaurantStatusDtoOutput.serializer)
           ..add(AdminRestaurantStatusDtoOutputAccountStatusEnum.serializer)
           ..add(AdminRestaurantStatusDtoOutputHeldPauseSourceEnum.serializer)
@@ -430,6 +444,7 @@ Serializers _$serializers =
           ..add(AdminShortfallsDtoOutputShortfallsInner.serializer)
           ..add(AdminStartEmergencyStopDto.serializer)
           ..add(AdminStatementDtoOutput.serializer)
+          ..add(AdminStatementRestaurantsDtoOutput.serializer)
           ..add(AdminTermsDtoOutput.serializer)
           ..add(AdminTermsDtoOutputCustomer.serializer)
           ..add(AdminTermsVersionDtoOutput.serializer)
@@ -1094,6 +1109,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminDeskCustodyDtoOutputUsage),
+            ]),
+            () => ListBuilder<AdminDeskCustodyDtoOutputUsage>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminEditDtoKeepInner),
             ]),
             () => ListBuilder<AdminEditDtoKeepInner>(),
@@ -1508,6 +1529,15 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminRestaurantPeriodStatementDtoOutputLinesInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminRestaurantPeriodStatementDtoOutputLinesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminRestaurantReceiptDtoOutputLinesInner),
             ]),
             () => ListBuilder<AdminRestaurantReceiptDtoOutputLinesInner>(),
@@ -1844,6 +1874,13 @@ Serializers _$serializers =
               const FullType(CaptainPeakBonusDtoOutputActiveInner),
             ]),
             () => ListBuilder<CaptainPeakBonusDtoOutputActiveInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+            ]),
+            () =>
+                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
