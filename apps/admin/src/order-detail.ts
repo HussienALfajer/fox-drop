@@ -53,6 +53,7 @@ export const eventKeys = {
   'order.outcome_set': 'order.event.outcomeSet',
   'order.outcome_collected': 'order.event.outcomeCollected',
   'order.outcome_changed': 'order.event.outcomeChanged',
+  'order.shortfall_resolved': 'order.event.shortfallResolved',
   'order.reassigned': 'order.event.reassigned',
   'order.handover_offered': 'order.event.handoverOffered',
   'order.handover_assigned': 'order.event.handoverAssigned',

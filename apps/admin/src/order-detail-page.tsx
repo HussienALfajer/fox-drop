@@ -13,6 +13,8 @@ import { ChangeOutcome } from './order-outcome-change-page.js';
 import { canChangeOutcome } from './order-outcome-change.js';
 import { SetOutcome } from './order-outcome-page.js';
 import { canSetOutcome } from './order-outcome.js';
+import { ResolveShortfall } from './order-shortfall-page.js';
+import { canResolveShortfall } from './order-shortfall.js';
 import { RecordOutcomePayment } from './order-outcome-payment-page.js';
 import { canRecordOutcomePayment } from './order-outcome-payment.js';
 import { canCancel } from './order-cancel.js';
@@ -281,6 +283,14 @@ export function OrderDetailPage() {
             payment: { amount: detail.money.pickupPayment, currency: detail.money.currency },
           }}
           total={{ amount: detail.money.total, currency: detail.money.currency }}
+        />
+      )}
+      {canResolveShortfall(session, detail) && (
+        <ResolveShortfall
+          key={[orderId, detail.version].join(':')}
+          orderId={orderId}
+          version={detail.version}
+          amount={detail.delivery.shortfall.amount}
         />
       )}
       {canChangeOutcome(session, detail) && (
@@ -602,6 +612,18 @@ export function OrderDetailPage() {
                 {delivery.shortfall.label} {delivery.shortfall.note}
               </strong>
             </p>
+          )}
+          {delivery.shortfall?.resolution && (
+            <p>
+              {t('order.resolveShortfall.done', {
+                party: t(responsibleKeys[delivery.shortfall.resolution.responsible]),
+                time: time(delivery.shortfall.resolution.at),
+              })}{' '}
+              {delivery.shortfall.resolution.note}
+            </p>
+          )}
+          {delivery.shortfall && !delivery.shortfall.resolution && (
+            <p>{t('order.resolveShortfall.open')}</p>
           )}
         </>
       )}
