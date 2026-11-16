@@ -52,6 +52,7 @@ import 'package:core_api/src/model/admin_contact_dto_output.dart';
 import 'package:core_api/src/model/admin_conversion_quote_dto_output.dart';
 import 'package:core_api/src/model/admin_conversion_quote_dto_output_unit.dart';
 import 'package:core_api/src/model/admin_conversion_quote_request_dto.dart';
+import 'package:core_api/src/model/admin_create_promo_code_dto.dart';
 import 'package:core_api/src/model/admin_current_drawer_session_dto_output.dart';
 import 'package:core_api/src/model/admin_current_drawer_session_dto_output_field.dart';
 import 'package:core_api/src/model/admin_current_drawer_session_dto_output_session.dart';
@@ -90,6 +91,7 @@ import 'package:core_api/src/model/admin_edit_preview_answer_dto_output_entries_
 import 'package:core_api/src/model/admin_edit_preview_answer_dto_output_entries_inner_amount.dart';
 import 'package:core_api/src/model/admin_edit_preview_answer_dto_output_entries_inner_party.dart';
 import 'package:core_api/src/model/admin_edit_preview_dto.dart';
+import 'package:core_api/src/model/admin_edit_promo_code_dto.dart';
 import 'package:core_api/src/model/admin_emergency_stop_dto_output.dart';
 import 'package:core_api/src/model/admin_emergency_stop_dto_output_stop.dart';
 import 'package:core_api/src/model/admin_emergency_stop_resumed_dto_output.dart';
@@ -109,6 +111,7 @@ import 'package:core_api/src/model/admin_faqs_dto_output.dart';
 import 'package:core_api/src/model/admin_faqs_dto_output_customer_inner.dart';
 import 'package:core_api/src/model/admin_field_visitors_dto_output.dart';
 import 'package:core_api/src/model/admin_force_offline_dto.dart';
+import 'package:core_api/src/model/admin_generate_promo_codes_dto.dart';
 import 'package:core_api/src/model/admin_hand_in_dto.dart';
 import 'package:core_api/src/model/admin_hand_in_dto_conversions_inner.dart';
 import 'package:core_api/src/model/admin_hand_in_grace_answer_dto_output.dart';
@@ -225,6 +228,11 @@ import 'package:core_api/src/model/admin_picker_dto_output_captains_inner.dart';
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody.dart';
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody_limit.dart';
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody_usage.dart';
+import 'package:core_api/src/model/admin_promo_code_city_dto.dart';
+import 'package:core_api/src/model/admin_promo_code_dto_output.dart';
+import 'package:core_api/src/model/admin_promo_codes_created_dto_output.dart';
+import 'package:core_api/src/model/admin_promo_codes_dto_output.dart';
+import 'package:core_api/src/model/admin_promo_codes_dto_output_codes_inner.dart';
 import 'package:core_api/src/model/admin_publish_terms_dto.dart';
 import 'package:core_api/src/model/admin_reason_dto_output.dart';
 import 'package:core_api/src/model/admin_reason_lists_dto_output.dart';
@@ -687,6 +695,7 @@ part 'serializers.g.dart';
   AdminConversionQuoteDtoOutput,
   AdminConversionQuoteDtoOutputUnit,
   AdminConversionQuoteRequestDto,
+  AdminCreatePromoCodeDto,
   AdminCurrentDrawerSessionDtoOutput,
   AdminCurrentDrawerSessionDtoOutputField,
   AdminCurrentDrawerSessionDtoOutputSession,
@@ -725,6 +734,7 @@ part 'serializers.g.dart';
   AdminEditPreviewAnswerDtoOutputEntriesInnerAmount,
   AdminEditPreviewAnswerDtoOutputEntriesInnerParty,
   AdminEditPreviewDto,
+  AdminEditPromoCodeDto,
   AdminEmergencyStopDtoOutput,
   AdminEmergencyStopDtoOutputStop,
   AdminEmergencyStopResumedDtoOutput,
@@ -744,6 +754,7 @@ part 'serializers.g.dart';
   AdminFaqsDtoOutputCustomerInner,
   AdminFieldVisitorsDtoOutput,
   AdminForceOfflineDto,
+  AdminGeneratePromoCodesDto,
   AdminHandInDto,
   AdminHandInDtoConversionsInner,
   AdminHandInGraceAnswerDtoOutput,
@@ -860,6 +871,11 @@ part 'serializers.g.dart';
   AdminPickerDtoOutputCaptainsInnerCustody,
   AdminPickerDtoOutputCaptainsInnerCustodyLimit,
   AdminPickerDtoOutputCaptainsInnerCustodyUsage,
+  AdminPromoCodeCityDto,
+  AdminPromoCodeDtoOutput,
+  AdminPromoCodesCreatedDtoOutput,
+  AdminPromoCodesDtoOutput,
+  AdminPromoCodesDtoOutputCodesInner,
   AdminPublishTermsDto,
   AdminReasonDtoOutput,
   AdminReasonListsDtoOutput,
@@ -1295,6 +1311,12 @@ Serializers serializers =
               FullType(MerchantMenuDtoOutputCategoriesInnerItemsInner),
             ]),
             () => ListBuilder<MerchantMenuDtoOutputCategoriesInnerItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminPromoCodesDtoOutputCodesInner),
+            ]),
+            () => ListBuilder<AdminPromoCodesDtoOutputCodesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

@@ -554,6 +554,13 @@
       "when": 1794840287326,
       "tag": "0078_reporting_daily_report_exports",
       "breakpoints": true
+    },
+    {
+      "idx": 79,
+      "version": "7",
+      "when": 1794845076366,
+      "tag": "0079_marketing_promo_codes",
+      "breakpoints": true
     }
   ]
 }

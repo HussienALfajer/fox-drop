@@ -33,6 +33,8 @@ import { ManualEntriesPage } from './manual-entries-page.js';
 import { CashDeskPage, CashDeskSessionsPage } from './cash-desk-page.js';
 import { ZONES_READ } from './peak-bonus.js';
 import { PeakBonusPage } from './peak-bonus-page.js';
+import { canSeePromoCodes } from './promo-codes.js';
+import { PromoCodesPage } from './promo-codes-page.js';
 import { OfficePage } from './office-page.js';
 import { ReceiptPage } from './receipt-page.js';
 import { RESTAURANT_STATEMENTS } from './restaurant-statements.js';
@@ -249,6 +251,18 @@ const peakBonusRoute = createRoute({
   component: PeakBonusPage,
 });
 
+// AP §9.11.1 «أكواد الخصم» (slice 2.21a): OPS reads the codes, FIN reads
+// them with their cost, OWN manages them (checked by the page and the server).
+const promoCodesRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/promo-codes',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!canSeePromoCodes(context.session)) throw redirect({ to: '/' });
+  },
+  component: PromoCodesPage,
+});
+
 // AP §9.12.1 «المكتب» (slice 2.17c; owner decision 2026-11-12): the city's
 // office and desk hours, read with the zones (zones.read); only OWN saves
 // them (zones.manage, checked by the page and the server), until the map.
@@ -447,6 +461,7 @@ const routeTree = rootRoute.addChildren([
     contentRoute,
     appSettingsRoute,
     peakBonusRoute,
+    promoCodesRoute,
     officeRoute,
     cashDeskRoute,
     cashDeskSessionsRoute,

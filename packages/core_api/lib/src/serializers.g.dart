@@ -67,6 +67,11 @@ Serializers _$serializers =
           ..add(AdminConversionQuoteDtoOutput.serializer)
           ..add(AdminConversionQuoteDtoOutputUnit.serializer)
           ..add(AdminConversionQuoteRequestDto.serializer)
+          ..add(AdminCreatePromoCodeDto.serializer)
+          ..add(AdminCreatePromoCodeDtoAudienceEnum.serializer)
+          ..add(AdminCreatePromoCodeDtoFundingEnum.serializer)
+          ..add(AdminCreatePromoCodeDtoKindEnum.serializer)
+          ..add(AdminCreatePromoCodeDtoVisibilityEnum.serializer)
           ..add(AdminCurrentDrawerSessionDtoOutput.serializer)
           ..add(AdminCurrentDrawerSessionDtoOutputField.serializer)
           ..add(AdminCurrentDrawerSessionDtoOutputFieldKindEnum.serializer)
@@ -121,6 +126,11 @@ Serializers _$serializers =
           )
           ..add(AdminEditPreviewDto.serializer)
           ..add(AdminEditPreviewDtoResponsibleEnum.serializer)
+          ..add(AdminEditPromoCodeDto.serializer)
+          ..add(AdminEditPromoCodeDtoAudienceEnum.serializer)
+          ..add(AdminEditPromoCodeDtoFundingEnum.serializer)
+          ..add(AdminEditPromoCodeDtoKindEnum.serializer)
+          ..add(AdminEditPromoCodeDtoVisibilityEnum.serializer)
           ..add(AdminEmergencyStopDtoOutput.serializer)
           ..add(AdminEmergencyStopDtoOutputStop.serializer)
           ..add(AdminEmergencyStopResumedDtoOutput.serializer)
@@ -147,6 +157,11 @@ Serializers _$serializers =
           ..add(AdminFaqsDtoOutputCustomerInner.serializer)
           ..add(AdminFieldVisitorsDtoOutput.serializer)
           ..add(AdminForceOfflineDto.serializer)
+          ..add(AdminGeneratePromoCodesDto.serializer)
+          ..add(AdminGeneratePromoCodesDtoAudienceEnum.serializer)
+          ..add(AdminGeneratePromoCodesDtoFundingEnum.serializer)
+          ..add(AdminGeneratePromoCodesDtoKindEnum.serializer)
+          ..add(AdminGeneratePromoCodesDtoVisibilityEnum.serializer)
           ..add(AdminHandInDto.serializer)
           ..add(AdminHandInDtoConversionsInner.serializer)
           ..add(AdminHandInGraceAnswerDtoOutput.serializer)
@@ -368,6 +383,23 @@ Serializers _$serializers =
           ..add(AdminPickerDtoOutputCaptainsInnerCustodyUsage.serializer)
           ..add(AdminPickerDtoOutputCaptainsInnerReasonsEnum.serializer)
           ..add(AdminPickerDtoOutputCaptainsInnerVehicleEnum.serializer)
+          ..add(AdminPromoCodeCityDto.serializer)
+          ..add(AdminPromoCodeDtoOutput.serializer)
+          ..add(AdminPromoCodeDtoOutputAudienceEnum.serializer)
+          ..add(AdminPromoCodeDtoOutputFundingEnum.serializer)
+          ..add(AdminPromoCodeDtoOutputKindEnum.serializer)
+          ..add(AdminPromoCodeDtoOutputStateEnum.serializer)
+          ..add(AdminPromoCodeDtoOutputStatusEnum.serializer)
+          ..add(AdminPromoCodeDtoOutputVisibilityEnum.serializer)
+          ..add(AdminPromoCodesCreatedDtoOutput.serializer)
+          ..add(AdminPromoCodesDtoOutput.serializer)
+          ..add(AdminPromoCodesDtoOutputCodesInner.serializer)
+          ..add(AdminPromoCodesDtoOutputCodesInnerAudienceEnum.serializer)
+          ..add(AdminPromoCodesDtoOutputCodesInnerFundingEnum.serializer)
+          ..add(AdminPromoCodesDtoOutputCodesInnerKindEnum.serializer)
+          ..add(AdminPromoCodesDtoOutputCodesInnerStateEnum.serializer)
+          ..add(AdminPromoCodesDtoOutputCodesInnerStatusEnum.serializer)
+          ..add(AdminPromoCodesDtoOutputCodesInnerVisibilityEnum.serializer)
           ..add(AdminPublishTermsDto.serializer)
           ..add(AdminReasonDtoOutput.serializer)
           ..add(AdminReasonDtoOutputNoteEnum.serializer)
@@ -1584,6 +1616,31 @@ Serializers _$serializers =
               const FullType(AdminPickerDtoOutputCaptainsInnerReasonsEnum),
             ]),
             () => ListBuilder<AdminPickerDtoOutputCaptainsInnerReasonsEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminPromoCodesDtoOutputCodesInner),
+            ]),
+            () => ListBuilder<AdminPromoCodesDtoOutputCodesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminPromoCodesDtoOutputCodesInner),
+            ]),
+            () => ListBuilder<AdminPromoCodesDtoOutputCodesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+            ]),
+            () =>
+                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminPeakBonusDtoOutputZonesInner),
+            ]),
+            () => ListBuilder<AdminPeakBonusDtoOutputZonesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -2804,6 +2861,46 @@ Serializers _$serializers =
               const FullType(MerchantPickupCurrenciesDtoOutputChoicesInner),
             ]),
             () => ListBuilder<MerchantPickupCurrenciesDtoOutputChoicesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),
