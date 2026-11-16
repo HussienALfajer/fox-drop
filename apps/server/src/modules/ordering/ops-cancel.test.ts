@@ -610,6 +610,37 @@ describe('POST /v1/admin/orders/{orderId}/cancel (AP §9.3.2)', () => {
     expect(push.rows).toEqual([{ body: `لك كود تعويض 50 ₺: ${code}` }]);
   });
 
+  it('sends a compensation above the cap to OWN, which the customer does not see yet', async () => {
+    const order = await acceptedOrder();
+    const ops = await admin(['OPS']);
+    // 30% of the order's total is far below 500.00.
+    const answer = await ops.cancel(order.id, {
+      ...plain,
+      compensation: {
+        value: { kind: 'fixed_amount', amount: '50000', percentBp: null, maxDiscount: null },
+        reason: { code: 'order_cancelled', note: null },
+      },
+    });
+    expect(answer.statusCode).toBe(200);
+    const asked = await sql.query(
+      'SELECT id, status, code_id FROM marketing.compensations WHERE order_id = $1',
+      [order.id],
+    );
+    expect(asked.rows).toEqual([{ id: expect.any(String), status: 'waiting', code_id: null }]);
+    const alert = await sql.query(
+      `SELECT code FROM notifications.alerts
+        WHERE subject_type = 'compensation' AND subject_id = $1 AND resolved_at IS NULL`,
+      [asked.rows[0].id],
+    );
+    expect(alert.rows).toEqual([{ code: 'compensation_approval' }]);
+    const read = await app.inject({
+      method: 'GET',
+      url: `/v1/customer/orders/${order.id}`,
+      headers: order.customer,
+    });
+    expect(read.json().order.cancellation).toMatchObject({ compensation: null });
+  });
+
   it('refuses the whole cancellation when its compensation is refused', async () => {
     const order = await acceptedOrder();
     const ops = await admin(['OPS']);

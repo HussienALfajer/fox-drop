@@ -262,6 +262,14 @@ describe('«تعويض الزبون»', () => {
         discount: { total: 2_500n, merchant: 0n },
       },
     });
+    // Placing holds it under its lock for its customer only, too.
+    const hold = (who: ReturnType<typeof customer>) =>
+      db.db.transaction((tx) => uses.hold(tx, { ...cart, code: issued.code!, customer: who }, now));
+    expect(await hold(customer(randomUUID()))).toMatchObject({
+      applied: false,
+      refusal: 'unknown_code',
+    });
+    expect(await hold(customer(target.customerAccountId))).toMatchObject({ applied: true });
     // «الأكواد المتاحة لك» and «أكوادي» (CU §10.4, §12.4).
     const mine = customer(target.customerAccountId);
     const other = customer(randomUUID());

@@ -58,10 +58,11 @@ export function CancelOrder({
   // AP §9.3.2 «may add compensation»: the reasons, the currency and what the
   // admin's cap leaves, as «تعويض الزبون» reads them.
   const compensations = useOrderCompensations(orderId).data;
+  // Only a ticked compensation waits for its read: the cancellation never does.
   const body =
-    lines?.some((line) => line.key === 'unknown') || !compensations
+    lines?.some((line) => line.key === 'unknown') || (form.compensate && !compensations)
       ? null
-      : cancelBody(form, placed, shown, compensations.currency);
+      : cancelBody(form, placed, shown, compensations?.currency ?? '');
   const submit = (event: FormEvent) => {
     event.preventDefault();
     if (body) cancel.mutate(body);
@@ -192,9 +193,7 @@ export function CancelOrder({
         {t('order.cancel.confirm')}
       </button>
       {cancel.isError && <p role="alert">{t('common.failed')}</p>}
-      {cancel.data?.status === 'refused' && (
-        <p role="alert">{t(refusalKeys[cancel.data.refusal])}</p>
-      )}
+      {cancel.data?.status === 'refused' && <p role="alert">{t(cancelRefusalKey(cancel.data))}</p>}
     </form>
   );
 }
@@ -211,6 +210,23 @@ const refusalKeys = {
   no_base_currency: 'compensation.refusal.noBaseCurrency',
   currency_changed: 'compensation.refusal.currencyChanged',
 } as const satisfies Record<CancelRefusal, string>;
+
+// A refusal's sentence; `invalid_compensation` carries «تعويض الزبون»'s own
+// refusal of the value or the reason in its message.
+const compensationRefusalKeys = {
+  invalid_value: 'compensation.refusal.invalidValue',
+  unknown_reason: 'compensation.refusal.unknownReason',
+  reason_note_required: 'compensation.refusal.noteRequired',
+  reason_note_not_allowed: 'compensation.refusal.noteNotAllowed',
+} as const;
+
+function cancelRefusalKey(result: { refusal: CancelRefusal; detail?: string }) {
+  if (result.refusal !== 'invalid_compensation') return refusalKeys[result.refusal];
+  const detail = result.detail ?? '';
+  return detail in compensationRefusalKeys
+    ? compensationRefusalKeys[detail as keyof typeof compensationRefusalKeys]
+    : compensationRefusalKeys.invalid_value;
+}
 
 export function PreviewSentence({ line }: { line: PreviewLine }) {
   const { t } = useTranslation();

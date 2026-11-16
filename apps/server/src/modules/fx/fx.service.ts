@@ -139,8 +139,10 @@ export class FxService implements OnModuleInit {
     this.amountSources.push(source);
   }
 
-  async currencies(): Promise<Currency[]> {
-    return this.database.db.select().from(currencies).orderBy(asc(currencies.code));
+  async currencies(
+    executor: Pick<NodePgDatabase, 'select'> = this.database.db,
+  ): Promise<Currency[]> {
+    return executor.select().from(currencies).orderBy(asc(currencies.code));
   }
 
   async baseCurrency(cityId: string, executor: FxExecutor = this.database.db) {

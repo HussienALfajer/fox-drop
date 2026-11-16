@@ -160,7 +160,10 @@ export function cancelPreviewQuery(orderId: string, version: number, body: Previ
   });
 }
 
-export type CancelResult = { status: 'done' } | { status: 'refused'; refusal: CancelRefusal };
+export type CancelResult =
+  | { status: 'done' }
+  // detail: the server's message, which names a compensation's own refusal.
+  | { status: 'refused'; refusal: CancelRefusal; detail?: string };
 
 // One Idempotency-Key per choice until an answer arrives, so a retry after a
 // lost answer replays instead of cancelling twice (architecture §5.3).
@@ -186,7 +189,12 @@ export function useCancelOrder(orderId: string) {
       const refusal = refusalOf(response.status, error);
       if (refusal) {
         keys.current.delete(id);
-        return { status: 'refused', refusal };
+        const detail = (error as { message?: unknown } | undefined)?.message;
+        return {
+          status: 'refused',
+          refusal,
+          ...(typeof detail === 'string' ? { detail } : {}),
+        };
       }
       throw new Error(`The cancellation failed with ${response.status}.`);
     },

@@ -203,10 +203,13 @@ export class CompensationsService {
     // One compensation of an order at a time, so two never pass its cap
     // together.
     await lock(tx, `marketing.compensation:${order.id}`);
-    // The city's codes, then its currencies: PromoCodesService.create's
-    // order, so the two never deadlock.
+    // The city's codes. No currencies lock: a compensation belongs to an
+    // order, and a city's first order locked its base for good
+    // (`fx.city_bases_keep_lock`), so the base read here cannot change; and
+    // ordering's cancellation calls this holding the order's row, before the
+    // captain's (slice 2.22b), which a currencies lock would invert against
+    // CaptainsService.setCustodyLimit.
     await lock(tx, `marketing.codes:${order.cityId}`);
-    await lockCityCurrencies(tx, order.cityId);
     const currency = await this.fx.baseCurrency(order.cityId, tx);
     if (currency === null) {
       throw new CompensationRefusedError('no_base_currency', 'the city has no base currency');
@@ -353,9 +356,13 @@ export class CompensationsService {
     now: Date,
   ): Promise<Compensation> {
     // The caller holds the city's codes lock (`marketing.codes:<cityId>`).
-    const days = await this.settings.get('support.personal_code_valid_days', {
-      cityId: row.cityId,
-    });
+    // Through the transaction: it may be the order's (slice 2.22b), which
+    // never waits on a second connection.
+    const days = await this.settings.get(
+      'support.personal_code_valid_days',
+      { cityId: row.cityId },
+      tx,
+    );
     let code: string | null = null;
     for (let i = 0; i < DRAWS && code === null; i += 1) {
       const candidate = generatedCode('');
@@ -407,7 +414,7 @@ export class CompensationsService {
       .where(eq(compensations.id, row.id))
       .returning()) as [CompensationRow];
     const known = new Map(
-      (await this.fx.currencies()).map((each) => [
+      (await this.fx.currencies(tx)).map((each) => [
         each.code,
         { symbol: each.symbol, decimals: each.decimals },
       ]),
