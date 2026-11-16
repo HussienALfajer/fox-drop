@@ -190,19 +190,28 @@ class _BoardScreenState extends ConsumerState<BoardScreen>
                 onPressed: () => context.push('/status-and-hours'),
                 icon: const Icon(Icons.schedule),
               ),
-              // RA §14.3, owners only, until the navigation of RA §6.2.
+              // RA §12.2, §14.3, owners only, until the navigation of RA §6.2.
               if (ref.watch(
                 merchantSessionProvider.select(
                   (s) =>
                       s.value?.role == MerchantSessionDtoOutputRoleEnum.owner,
                 ),
               ))
+              ...[
+                // RA §12.2, R10: «الحساب», owners only.
+                IconButton(
+                  key: const Key('open-account'),
+                  tooltip: l10n.merchantAccount,
+                  onPressed: () => context.push('/account'),
+                  icon: const Icon(Icons.account_balance_wallet),
+                ),
                 IconButton(
                   key: const Key('open-settings'),
                   tooltip: l10n.merchantSettings,
                   onPressed: () => context.push('/settings'),
                   icon: const Icon(Icons.settings),
                 ),
+              ],
               IconButton(
                 tooltip: l10n.signOut,
                 onPressed: () =>

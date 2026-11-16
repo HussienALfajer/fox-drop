@@ -2,6 +2,7 @@ import 'package:core_l10n/core_l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../account/account.dart';
 import '../api.dart';
 import '../auth.dart';
 import '../content.dart';
@@ -15,8 +16,8 @@ import 'texts.dart';
 
 /// The order detail (RA §8.4) from the board's state: header, customer,
 /// items, the money line everyone sees, the captain, the pickup and the
-/// actions. The owner-only money lines, the badges and the timeline come
-/// with their server fields. Unstyled until the design.
+/// actions, and the owners' money lines (slice 2.19d). The badges and the
+/// timeline come with their server fields. Unstyled until the design.
 class OrderScreen extends ConsumerWidget {
   const OrderScreen({super.key, required this.orderId});
 
@@ -124,6 +125,33 @@ class OrderScreen extends ConsumerWidget {
                 ),
               ),
             ),
+            // RA §8.4, R10: the owners' lines (the server gives them to
+            // owners only).
+            if (order.owner case final owner?)
+              if (owner.testOrder)
+                ListTile(
+                  key: const Key('owner-test-order'),
+                  title: Text(l10n.merchantOrderTestNoCommission),
+                )
+              else ...[
+                ListTile(
+                  key: const Key('owner-commission'),
+                  title: Text(
+                    l10n.merchantOrderCommission(
+                      percentOf(owner.commissionBp ?? 0),
+                      l10n.formatMoney(owner.commission ?? '0', order.currency),
+                    ),
+                  ),
+                ),
+                ListTile(
+                  key: const Key('owner-net'),
+                  title: Text(
+                    l10n.merchantOrderNet(
+                      l10n.formatMoney(owner.merchantNet ?? '0', order.currency),
+                    ),
+                  ),
+                ),
+              ],
             if (line != null)
               ListTile(
                 title: Text(captainLineText(l10n, line, now)),

@@ -4591,6 +4591,228 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'لم يُعثر على هذا الكشف.'**
   String get captainStatementNotFound;
+
+  /// The owners' account screen (RA §12.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'الحساب'**
+  String get merchantAccount;
+
+  /// The balance card when the restaurant owes (RA §12.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'المستحق عليك حتى الآن: {amount}'**
+  String merchantAccountOwed(String amount);
+
+  /// The balance card when the platform owes the restaurant (RA §12.2; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'لك عند FOX DROP: {amount}'**
+  String merchantAccountCredit(String amount);
+
+  /// The balance card at zero (RA §12.2; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا مستحقات عليك الآن.'**
+  String get merchantAccountSettled;
+
+  /// The settlement day (RA §12.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'موعد التسوية: {weekday} {date}'**
+  String merchantAccountSettlement(String weekday, String date);
+
+  /// The current commission rate (RA §12.2; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'عمولتك الحالية: {rate}%'**
+  String merchantAccountCommission(String rate);
+
+  /// A scheduled commission change (RA §12.2, S15).
+  ///
+  /// In ar, this message translates to:
+  /// **'تتغيّر عمولتك إلى {rate}% اعتباراً من {date}'**
+  String merchantAccountCommissionChange(String rate, String date);
+
+  /// Today's pickups (RA §12.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'قبضت اليوم من الكباتن: {amount} ({count} طلباً)'**
+  String merchantAccountToday(String amount, String count);
+
+  /// One pickup today: the order, the time and the captain (RA §12.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'#{number} · {time} · {captain}'**
+  String merchantAccountPickup(String number, String time, String captain);
+
+  /// The entries since the last statement, by day (RA §12.2; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا الأسبوع'**
+  String get merchantAccountWeek;
+
+  /// No entry since the last statement (RA §12.2; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا قيود منذ آخر كشف.'**
+  String get merchantAccountWeekEmpty;
+
+  /// An order's commission in the week (RA §12.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'#{number}: العمولة {amount}'**
+  String merchantAccountOrder(String number, String amount);
+
+  /// An order's restaurant-funded discount in the week (RA §12.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'خصم يموّله المطعم: {amount}'**
+  String merchantAccountOrderDiscount(String amount);
+
+  /// A payment in the week (RA §12.2; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'دفعة مسدّدة: {amount}'**
+  String merchantAccountPayment(String amount);
+
+  /// A payout to the restaurant in the week (RA §12.2; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'صُرف لك: {amount}'**
+  String merchantAccountPayout(String amount);
+
+  /// An exception in the week with its amount (RA §12.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'{label}: {amount}'**
+  String merchantAccountException(String label, String amount);
+
+  /// The order of an exception (RA §12.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلب #{number}'**
+  String merchantAccountExceptionOrder(String number);
+
+  /// An exception that raises what the restaurant owes (RA §12.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'يزيد المستحق عليك'**
+  String get merchantAccountRaises;
+
+  /// An exception that lowers what the restaurant owes (RA §12.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'يُنقص المستحق عليك'**
+  String get merchantAccountLowers;
+
+  /// The account could not be read (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل الحساب.'**
+  String get merchantAccountFailed;
+
+  /// A cashier or another refusal (R10; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'الحساب للمالكين فقط.'**
+  String get merchantAccountNotAllowed;
+
+  /// An exception (RA §12.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعويض عن طلب أُلغي بعد التحضير'**
+  String get merchantCauseFoodCredit;
+
+  /// An exception (RA §12.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'تصحيح مبلغ الاستلام'**
+  String get merchantCauseCredit;
+
+  /// An exception (RA §12.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'استرداد مبلغ الاستلام'**
+  String get merchantCausePickupRefund;
+
+  /// An exception: the pickup payment kept on a cancelled order (the panel's label, to confirm with the owner).
+  ///
+  /// In ar, this message translates to:
+  /// **'مبلغ استلام لطلب لم يكتمل'**
+  String get merchantCausePickupKept;
+
+  /// An exception (RA §12.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'أصناف حُذفت بعد الاستلام'**
+  String get merchantCauseItemsRemoved;
+
+  /// An exception (the panel's label, to confirm with the owner).
+  ///
+  /// In ar, this message translates to:
+  /// **'خُفّضت أجرة التوصيل بعد الاستلام'**
+  String get merchantCauseFeeLowered;
+
+  /// An exception (the panel's label, to confirm with the owner).
+  ///
+  /// In ar, this message translates to:
+  /// **'إلغاء خصم أجرة التوصيل'**
+  String get merchantCauseFeeCutReturned;
+
+  /// An exception (RA §12.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'مشكلة بعد التسليم'**
+  String get merchantCauseDebit;
+
+  /// An exception (RA §12.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'إلغاء عمولة'**
+  String get merchantCauseCommissionReversal;
+
+  /// An exception (the panel's label, to confirm with the owner).
+  ///
+  /// In ar, this message translates to:
+  /// **'إلغاء استرداد العمولة'**
+  String get merchantCauseCommissionRestored;
+
+  /// An exception (the panel's label, to confirm with the owner).
+  ///
+  /// In ar, this message translates to:
+  /// **'إلغاء خصم يموّله المطعم'**
+  String get merchantCauseDiscountReversal;
+
+  /// An exception (the panel's label, to confirm with the owner).
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيير النتيجة'**
+  String get merchantCauseOutcomeChanged;
+
+  /// A manual correction with its reason (RA §12.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'تسوية يدوية: {reason}'**
+  String merchantCauseAdjustment(String reason);
+
+  /// The owners' commission line of an order (RA §8.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'العمولة {rate}% — تُسدَّد يوم السبت: {amount}'**
+  String merchantOrderCommission(String rate, String amount);
+
+  /// The owners' net line of an order (RA §8.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'صافيك من الطلب: {amount}'**
+  String merchantOrderNet(String amount);
+
+  /// A test order instead of the commission lines (RA §8.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'طلب تجريبي — لا عمولة'**
+  String get merchantOrderTestNoCommission;
 }
 
 class _AppLocalizationsDelegate
