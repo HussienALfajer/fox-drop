@@ -25,6 +25,7 @@ export {
   type AppliedCode,
   type CodeCart,
   type CodeCheck,
+  type CodeClock,
   type HeldCode,
 } from './promo-code-uses.service.js';
 export {

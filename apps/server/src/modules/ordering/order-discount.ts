@@ -46,3 +46,20 @@ export function orderDiscount(order: {
 export function merchantItemDiscount(discount: OrderDiscount): bigint {
   return discount.onDelivery ? 0n : discount.merchant;
 }
+
+// AP §8.4's caps on a discount kept after the pickup (slice 2.21b): never
+// above the items value, or the fee for free delivery; a capped discount
+// keeps the restaurant's part in proportion, half up.
+export function withinCaps(
+  discount: OrderDiscount,
+  money: { itemsValue: bigint; deliveryFee: bigint },
+): OrderDiscount {
+  const cap = discount.onDelivery ? money.deliveryFee : money.itemsValue;
+  if (discount.total <= cap) return discount;
+  const total = cap < 0n ? 0n : cap;
+  const merchant =
+    discount.total === 0n
+      ? 0n
+      : (discount.merchant * total * 2n + discount.total) / (2n * discount.total);
+  return { ...discount, total, merchant };
+}

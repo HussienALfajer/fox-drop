@@ -17,7 +17,13 @@ import {
   RestaurantStatusService,
 } from '../merchants/index.js';
 import { PromoCodeUsesService, promoDiscount } from '../marketing/index.js';
-import { orderDiscount, storedTerms } from './order-discount.js';
+import {
+  merchantItemDiscount,
+  orderDiscount,
+  type OrderDiscount,
+  storedTerms,
+  withinCaps,
+} from './order-discount.js';
 import { SettingsService } from '../settings/index.js';
 import type { AdminOrderCommand } from './captain-orders.js';
 import {
@@ -2386,12 +2392,18 @@ export class OrderCommands {
   async previewEdit(orderId: string, request: EditRequest, now: Date): Promise<EditPreview> {
     const order = await this.find(orderId, {});
     if (!EDITABLE.includes(order.status)) throw await this.stateChanged(order);
-    const { plan, before, after, times, commissionOf, booking, captainId } = await this.prepareEdit(
-      order,
-      request,
-      now,
-      { preview: true },
-    );
+    const {
+      plan,
+      before,
+      after,
+      times,
+      commissionOf,
+      booking,
+      captainId,
+      placedDiscount,
+      discount,
+      testOrder,
+    } = await this.prepareEdit(order, request, now, { preview: true });
     const entries = (booking?.journals ?? []).flatMap((journal) =>
       journal.entries.map((entry) => ({ type: journal.type, reason: journal.reason, ...entry })),
     );
@@ -2408,11 +2420,14 @@ export class OrderCommands {
         : party.kind === 'captain'
           ? (captain?.name ?? null)
           : null;
-    const side = (money: QuoteMoney) => {
-      const cut = commissionOf(money.itemsValue);
-      return { ...money, commission: cut, merchantNet: money.itemsValue - cut };
+    // AP §8.4 (slice 2.21b): a restaurant-funded code lowers the
+    // commission's base by its item part and the net by its share.
+    const share = (each: OrderDiscount) => (testOrder ? 0n : each.merchant);
+    const side = (money: QuoteMoney, each: OrderDiscount) => {
+      const cut = commissionOf(money.itemsValue - merchantItemDiscount(each));
+      return { ...money, commission: cut, merchantNet: money.itemsValue - cut - share(each) };
     };
-    let sides = { before: side(before), after: side(after) };
+    let sides = { before: side(before, placedDiscount), after: side(after, discount) };
     if (AFTER_PICKUP.includes(order.status)) {
       // AP §9.3.3: after the pickup the commission's base is frozen; the
       // restaurant keeps the pickup payment less the commission and its own
@@ -2425,14 +2440,17 @@ export class OrderCommands {
       });
       const ownCut = request.responsible === 'restaurant' && booking ? booking.commissionCut : 0n;
       const ownCharge = request.responsible === 'restaurant' && booking ? booking.charge : 0n;
-      const commissionBefore = commissionOf(frozen.itemsValue) - frozen.restaurantCommissionCut;
-      const netBefore = frozen.itemsValue - commissionBefore - frozen.restaurantCharge;
+      const commissionBefore =
+        commissionOf(frozen.itemsValue - merchantItemDiscount(placedDiscount)) -
+        frozen.restaurantCommissionCut;
+      const netBefore =
+        frozen.itemsValue - commissionBefore - share(placedDiscount) - frozen.restaurantCharge;
       sides = {
         before: { ...before, commission: commissionBefore, merchantNet: netBefore },
         after: {
           ...after,
           commission: commissionBefore - ownCut,
-          merchantNet: netBefore + ownCut - ownCharge,
+          merchantNet: netBefore + ownCut - ownCharge + share(placedDiscount) - share(discount),
         },
       };
     }
@@ -2590,6 +2608,7 @@ export class OrderCommands {
         captainTrack: orders.captainTrack,
         currency: orders.currency,
         discount: orders.discount,
+        discountMerchant: orders.discountMerchant,
         promoTerms: orders.promoTerms,
         deliveryFee: orders.deliveryFee,
         rateSnapshot: orders.rateSnapshot,
@@ -2681,14 +2700,24 @@ export class OrderCommands {
     }
     const snapshot = snapshotOf(row.rateSnapshot);
     const base = snapshot.currencies.find((entry) => entry.code === snapshot.baseCurrency);
-    // AP §9.3.3 (owner decision 2026-11-16): the code's discount worked out
-    // again by its terms on the new items value and fee, within its caps; the
-    // code stays below its minimum.
+    // AP §9.3.3 (owner decision 2026-11-16): before the pickup the code's
+    // discount is worked out again by its terms on the new items value and
+    // fee, within its caps; the code stays below its minimum. After the
+    // pickup the edit's party bears what the customer no longer pays, so the
+    // discount stays as it was at the pickup, within AP §8.4's caps (to
+    // confirm with the owner).
     const terms = storedTerms(row.promoTerms);
-    const discount =
+    const placedDiscount: OrderDiscount = {
+      total: row.discount,
+      merchant: row.discountMerchant,
+      onDelivery: terms?.kind === 'free_delivery',
+    };
+    const discount: OrderDiscount =
       terms === null
-        ? { total: row.discount, merchant: 0n, onDelivery: false }
-        : promoDiscount(terms, { itemsValue: plan.itemsValue, deliveryFee });
+        ? placedDiscount
+        : afterPickup
+          ? withinCaps(placedDiscount, { itemsValue: plan.itemsValue, deliveryFee })
+          : promoDiscount(terms, { itemsValue: plan.itemsValue, deliveryFee });
     const after = quoteMoney({
       itemsValue: plan.itemsValue,
       deliveryFee,
@@ -2727,8 +2756,11 @@ export class OrderCommands {
             currency: row.currency,
             itemsValueBefore: view.money.itemsValue,
             itemsValueAfter: after.itemsValue,
-            deliveryFeeBefore: row.deliveryFee,
-            deliveryFeeAfter: after.deliveryFee,
+            // A free-delivery code: the party bears only the fee the customer
+            // no longer pays.
+            deliveryFeeBefore:
+              row.deliveryFee - (placedDiscount.onDelivery ? placedDiscount.total : 0n),
+            deliveryFeeAfter: after.deliveryFee - (discount.onDelivery ? discount.total : 0n),
             commissionOf,
           })
         : null;
@@ -2736,7 +2768,9 @@ export class OrderCommands {
       plan,
       before: view.money,
       after,
+      placedDiscount,
       discount,
+      testOrder: row.testOrder,
       times,
       booking,
       captainId: row.captainId,

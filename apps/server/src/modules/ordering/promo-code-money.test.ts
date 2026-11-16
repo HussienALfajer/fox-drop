@@ -295,3 +295,97 @@ describe('an outcome of an order with a code', () => {
     expect(await useOf(picked.order.id)).toBe('spent');
   });
 });
+
+describe('the other ends of an order with a code', () => {
+  async function adminPost(roles: string[], orderId: string, path: string, body: object) {
+    const ops = await admin(roles);
+    const shown = await ops.get(`/v1/admin/orders/${orderId}`);
+    return app.inject({
+      method: 'POST',
+      url: `/v1/admin/orders/${orderId}/${path}`,
+      cookies: ops.cookies,
+      headers: { 'idempotency-key': randomUUID() },
+      payload: { version: shown.json().order.version, ...body },
+    });
+  }
+
+  it("gives the use back on operations' cancellation and credits the net after the code", async () => {
+    // A restaurant-funded 24 off 240: the food credit is 240 − 15% of 216 − 24.
+    const code = await promoCode({
+      funding: 'restaurant',
+      merchant_share_bp: 10_000,
+      restaurant_ids: [restaurant],
+    });
+    const order = await acceptedOrder(null, undefined, code);
+    const answer = await adminPost(['OPS'], order.id, 'cancel', {
+      cancellation: 'emergency',
+      responsible: 'platform',
+      foodPrepared: true,
+      compensateCaptain: false,
+      cash: null,
+      reason: 'ملاحظة العمليات',
+    });
+    expect(answer.statusCode, answer.body).toBe(200);
+    expect(await useOf(order.id)).toBe('returned');
+    const { rows } = await sql.query(
+      'SELECT cancel_merchant_credit FROM ordering.orders WHERE id = $1',
+      [order.id],
+    );
+    expect(rows[0].cancel_merchant_credit).toBe('18360');
+  });
+
+  it('settles the use again when the outcome changes, both ways', async () => {
+    const code = await promoCode();
+    const picked = await pickedUpOrder(undefined, code);
+    const failed = await adminPost(['OPS'], picked.order.id, 'outcome', {
+      outcome: 'wrong_refused',
+      responsible: 'restaurant',
+      delivered: false,
+      food: 'returned_to_restaurant',
+      reason: 'اتصلنا بالزبون',
+    });
+    expect(failed.statusCode, failed.body).toBe(200);
+    expect(await useOf(picked.order.id)).toBe('returned');
+    const fake = {
+      outcome: 'fake',
+      responsible: 'customer',
+      delivered: false,
+      food: 'kept_by_captain',
+      reason: 'راجعنا المكالمات',
+    };
+    const changed = await adminPost(['OWN'], picked.order.id, 'outcome-change', fake);
+    expect(changed.statusCode, changed.body).toBe(200);
+    expect(await useOf(picked.order.id)).toBe('spent');
+    const back = await adminPost(['OWN'], picked.order.id, 'outcome-change', {
+      ...fake,
+      outcome: 'failed_other',
+      responsible: 'platform',
+    });
+    expect(back.statusCode, back.body).toBe(200);
+    expect(await useOf(picked.order.id)).toBe('returned');
+  });
+
+  it('charges nobody for a lower fee after the pickup that a free-delivery code covered', async () => {
+    const code = await promoCode({ kind: 'free_delivery', percent_bp: null, max_discount: null });
+    const picked = await pickedUpOrder(undefined, code);
+    const lowerFee = {
+      keep: [{ position: 0, quantity: 2 }],
+      add: [],
+      deliveryFee: '3000',
+      extraPrepMin: null,
+      responsible: 'captain',
+      reason: 'اتفقنا مع الزبون',
+    };
+    const preview = await adminPost(['OPS'], picked.order.id, 'edit-preview', lowerFee);
+    expect(preview.statusCode, preview.body).toBe(200);
+    expect(preview.json().entries).toEqual([]);
+    const edited = await adminPost(['OPS'], picked.order.id, 'edit', lowerFee);
+    expect(edited.statusCode, edited.body).toBe(200);
+    const { rows } = await sql.query(
+      'SELECT delivery_fee, discount, total FROM ordering.orders WHERE id = $1',
+      [picked.order.id],
+    );
+    // The customer still pays the items only.
+    expect(rows[0]).toEqual({ delivery_fee: '3000', discount: '3000', total: '24000' });
+  });
+});

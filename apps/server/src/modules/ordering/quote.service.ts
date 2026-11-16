@@ -307,6 +307,7 @@ export class QuoteService {
     if (typed !== '' && baseCurrency !== null) {
       const cart: CodeCart = {
         cityId,
+        clock: await this.promoCodes.clock(cityId, now),
         code: typed,
         baseCurrency,
         restaurantId: restaurant.id,

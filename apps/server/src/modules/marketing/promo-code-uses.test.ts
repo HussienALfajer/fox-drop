@@ -90,9 +90,15 @@ function customer(overrides: Partial<NonNullable<CodeCart['customer']>> = {}) {
   };
 }
 
+async function cartAt(typed: string, at: Date) {
+  return { ...cart(typed), clock: await uses.clock(azaz, at) };
+}
+
 function cart(typed: string, who: CodeCart['customer'] = customer()): CodeCart {
   return {
     cityId: azaz,
+    // Azaz's clock on 10 December, the business day from 06:00.
+    clock: { timeZone: 'Asia/Damascus', businessDay: new Date('2026-12-10T03:00:00Z') },
     code: typed,
     baseCurrency: 'TRY',
     restaurantId,
@@ -175,12 +181,12 @@ describe('PromoCodeUsesService', () => {
     expect(second.held).toMatchObject({ applied: true });
     expect(await uses.check(cart(typed), now)).toMatchObject({ refusal: 'budget_reached' });
     // 05:59 the next morning is the same business day; 06:00 starts another.
-    expect(await uses.check(cart(typed), new Date('2026-12-11T02:59:00Z'))).toMatchObject({
+    const early = new Date('2026-12-11T02:59:00Z');
+    const next = new Date('2026-12-11T03:00:00Z');
+    expect(await uses.check(await cartAt(typed, early), early)).toMatchObject({
       refusal: 'budget_reached',
     });
-    expect(await uses.check(cart(typed), new Date('2026-12-11T03:00:00Z'))).toMatchObject({
-      applied: true,
-    });
+    expect(await uses.check(await cartAt(typed, next), next)).toMatchObject({ applied: true });
   });
 
   it('never lets two placings take the last use', async () => {

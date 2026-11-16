@@ -24,6 +24,9 @@ type Executor = Database['db'] | Tx;
 // the city's base currency, and the signed-in customer (null for a guest).
 export interface CodeCart {
   cityId: string;
+  // The city's clock and business day at the moment checked (`clock`), read
+  // before any transaction, so the hold reads nothing through the pool.
+  clock: CodeClock;
   code: string;
   baseCurrency: string;
   restaurantId: string;
@@ -38,6 +41,12 @@ export interface CodeCart {
     // AP §9.11.1, §8.8: no delivered order on any account of the number.
     newUser: boolean;
   } | null;
+}
+
+export interface CodeClock {
+  timeZone: string;
+  // The cutoff that started the business day (finance.business_day_cutoff).
+  businessDay: Date;
 }
 
 // A code that applies: what the order keeps of it and its discount.
@@ -71,6 +80,16 @@ export class PromoCodeUsesService {
     private readonly settings: SettingsService,
   ) {}
 
+  // The city's clock for a cart (owner decision 2026-11-16: the daily
+  // report's business day), read through the pool before the transaction.
+  async clock(cityId: string, now: Date): Promise<CodeClock> {
+    const timeZone = await this.geo.cityTimeZone(cityId);
+    if (timeZone === null) throw new Error(`city ${cityId} does not exist`);
+    const cutoff = await this.settings.get('finance.business_day_cutoff', { cityId });
+    const [hours, minutes] = cutoff.split(':').map(Number) as [number, number];
+    return { timeZone, businessDay: lastCutoff(now, hours * 60 + minutes, timeZone) };
+  }
+
   // The quote's check, outside any transaction.
   async check(cart: CodeCart, now: Date): Promise<CodeCheck> {
     return this.evaluate(this.database.db, cart, now, false);
@@ -85,7 +104,7 @@ export class PromoCodeUsesService {
     const checked = await this.evaluate(tx, cart, now, true);
     if (!checked.applied) return checked;
     const { code } = checked;
-    const businessDay = await this.businessDay(cart.cityId, now);
+    const { businessDay } = cart.clock;
     return {
       ...checked,
       record: async (order) => {
@@ -164,9 +183,7 @@ export class PromoCodeUsesService {
         sql`SELECT pg_advisory_xact_lock(hashtextextended(${`marketing.code:${row.id}`}, 0))`,
       );
     }
-    const timeZone = await this.geo.cityTimeZone(cart.cityId);
-    if (timeZone === null) throw new Error(`city ${cart.cityId} does not exist`);
-    const businessDay = await this.businessDay(cart.cityId, now, timeZone);
+    const { timeZone, businessDay } = cart.clock;
     const { customer } = cart;
     const [counts] = await db
       .select({
@@ -217,16 +234,6 @@ export class PromoCodeUsesService {
         fixedAmountAboveItems: fixedAmountAboveItems(terms, cart.itemsValue),
       },
     };
-  }
-
-  // The cutoff that started the city's business day (owner decision
-  // 2026-11-16: the daily report's).
-  private async businessDay(cityId: string, now: Date, zone?: string): Promise<Date> {
-    const timeZone = zone ?? (await this.geo.cityTimeZone(cityId));
-    if (timeZone === null) throw new Error(`city ${cityId} does not exist`);
-    const cutoff = await this.settings.get('finance.business_day_cutoff', { cityId });
-    const [hours, minutes] = cutoff.split(':').map(Number) as [number, number];
-    return lastCutoff(now, hours * 60 + minutes, timeZone);
   }
 }
 
