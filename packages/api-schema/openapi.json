@@ -42598,7 +42598,7 @@
                   "type": "integer",
                   "minimum": -9007199254740991,
                   "maximum": 9007199254740991,
-                  "description": "Uses held or spent; 0 until codes are used in orders (2.21b)."
+                  "description": "Uses held or spent (not given back)."
                 },
                 "costToDate": {
                   "anyOf": [
@@ -42610,7 +42610,7 @@
                       "type": "null"
                     }
                   ],
-                  "description": "Null without marketing.read_costs; 0 until codes are used in orders (2.21b)."
+                  "description": "The discounts of the uses not given back; null without marketing.read_costs."
                 },
                 "createdAt": {
                   "type": "string",
@@ -43194,7 +43194,7 @@
                   "type": "integer",
                   "minimum": -9007199254740991,
                   "maximum": 9007199254740991,
-                  "description": "Uses held or spent; 0 until codes are used in orders (2.21b)."
+                  "description": "Uses held or spent (not given back)."
                 },
                 "costToDate": {
                   "anyOf": [
@@ -43206,7 +43206,7 @@
                       "type": "null"
                     }
                   ],
-                  "description": "Null without marketing.read_costs; 0 until codes are used in orders (2.21b)."
+                  "description": "The discounts of the uses not given back; null without marketing.read_costs."
                 },
                 "createdAt": {
                   "type": "string",
@@ -43940,7 +43940,7 @@
             "type": "integer",
             "minimum": -9007199254740991,
             "maximum": 9007199254740991,
-            "description": "Uses held or spent; 0 until codes are used in orders (2.21b)."
+            "description": "Uses held or spent (not given back)."
           },
           "costToDate": {
             "anyOf": [
@@ -43952,7 +43952,7 @@
                 "type": "null"
               }
             ],
-            "description": "Null without marketing.read_costs; 0 until codes are used in orders (2.21b)."
+            "description": "The discounts of the uses not given back; null without marketing.read_costs."
           },
           "createdAt": {
             "type": "string",

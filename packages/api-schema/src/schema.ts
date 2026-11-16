@@ -11667,9 +11667,9 @@ export interface components {
                  * @enum {string}
                  */
                 state: "active" | "paused" | "scheduled" | "expired";
-                /** @description Uses held or spent; 0 until codes are used in orders (2.21b). */
+                /** @description Uses held or spent (not given back). */
                 uses: number;
-                /** @description Null without marketing.read_costs; 0 until codes are used in orders (2.21b). */
+                /** @description The discounts of the uses not given back; null without marketing.read_costs. */
                 costToDate: string | null;
                 /** Format: date-time */
                 createdAt: string;
@@ -11787,9 +11787,9 @@ export interface components {
                  * @enum {string}
                  */
                 state: "active" | "paused" | "scheduled" | "expired";
-                /** @description Uses held or spent; 0 until codes are used in orders (2.21b). */
+                /** @description Uses held or spent (not given back). */
                 uses: number;
-                /** @description Null without marketing.read_costs; 0 until codes are used in orders (2.21b). */
+                /** @description The discounts of the uses not given back; null without marketing.read_costs. */
                 costToDate: string | null;
                 /** Format: date-time */
                 createdAt: string;
@@ -11932,9 +11932,9 @@ export interface components {
              * @enum {string}
              */
             state: "active" | "paused" | "scheduled" | "expired";
-            /** @description Uses held or spent; 0 until codes are used in orders (2.21b). */
+            /** @description Uses held or spent (not given back). */
             uses: number;
-            /** @description Null without marketing.read_costs; 0 until codes are used in orders (2.21b). */
+            /** @description The discounts of the uses not given back; null without marketing.read_costs. */
             costToDate: string | null;
             /** Format: date-time */
             createdAt: string;

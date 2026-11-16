@@ -159,3 +159,55 @@ export const idempotencyKeys = marketing.table(
   },
   (table) => [primaryKey({ columns: [table.accountId, table.key] })],
 );
+
+// AP §9.11.1 «When a use counts»: held when the order is placed, spent when
+// it ends delivered or failed with the customer responsible, given back when
+// it ends rejected, cancelled or failed with another party responsible.
+export const promoCodeUseStatuses = ['held', 'spent', 'returned'] as const;
+export type PromoCodeUseStatus = (typeof promoCodeUseStatuses)[number];
+
+// A code used on an order (slice 2.21b): one row per order. The order, the
+// customer's account and the city are other modules' ids, plain values. The
+// number is kept by its keyed hash and the app installation by its id, so a
+// new-user code works once per number and once per device. The business day
+// (from finance.business_day_cutoff) counts the daily budget; the cost is the
+// discount the order got, the restaurant's share included.
+export const promoCodeUses = marketing.table(
+  'promo_code_uses',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    codeId: uuid('code_id')
+      .notNull()
+      .references(() => promoCodes.id),
+    cityId: uuid('city_id').notNull(),
+    orderId: uuid('order_id').notNull(),
+    orderPlacedAt: timestamp('order_placed_at', { withTimezone: true }).notNull(),
+    customerAccountId: uuid('customer_account_id').notNull(),
+    phoneHash: text('phone_hash').notNull(),
+    deviceId: text('device_id').notNull(),
+    // The cutoff that started the business day it was held in.
+    businessDay: timestamp('business_day', { withTimezone: true }).notNull(),
+    currency: text('currency').notNull(),
+    discount: bigint('discount', { mode: 'bigint' }).notNull(),
+    merchantShare: bigint('merchant_share', { mode: 'bigint' }).notNull(),
+    status: text('status', { enum: promoCodeUseStatuses }).notNull().default('held'),
+    heldAt: timestamp('held_at', { withTimezone: true }).notNull(),
+    settledAt: timestamp('settled_at', { withTimezone: true }),
+  },
+  (table) => [
+    uniqueIndex('promo_code_uses_order').on(table.orderId),
+    index('promo_code_uses_code_day').on(table.codeId, table.businessDay),
+    index('promo_code_uses_code_customer').on(table.codeId, table.customerAccountId),
+    check('promo_code_uses_status_values', sql`${table.status} IN ('held', 'spent', 'returned')`),
+    check(
+      'promo_code_uses_money',
+      sql`${table.discount} >= 0 AND ${table.merchantShare} >= 0 AND ${table.merchantShare} <= ${table.discount}`,
+    ),
+    check(
+      'promo_code_uses_settled',
+      sql`(${table.status} = 'held') = (${table.settledAt} IS NULL)`,
+    ),
+  ],
+);

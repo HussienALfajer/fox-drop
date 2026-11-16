@@ -36,8 +36,8 @@ part 'admin_promo_code_dto_output.g.dart';
 /// * [currency]
 /// * [status] - Set by OWN.
 /// * [state] - What the list shows: paused, not started, ended or running.
-/// * [uses] - Uses held or spent; 0 until codes are used in orders (2.21b).
-/// * [costToDate] - Null without marketing.read_costs; 0 until codes are used in orders (2.21b).
+/// * [uses] - Uses held or spent (not given back).
+/// * [costToDate] - The discounts of the uses not given back; null without marketing.read_costs.
 /// * [createdAt]
 /// * [updatedAt]
 @BuiltValue()
@@ -135,11 +135,11 @@ abstract class AdminPromoCodeDtoOutput
   AdminPromoCodeDtoOutputStateEnum get state;
   // enum stateEnum {  active,  paused,  scheduled,  expired,  };
 
-  /// Uses held or spent; 0 until codes are used in orders (2.21b).
+  /// Uses held or spent (not given back).
   @BuiltValueField(wireName: r'uses')
   int get uses;
 
-  /// Null without marketing.read_costs; 0 until codes are used in orders (2.21b).
+  /// The discounts of the uses not given back; null without marketing.read_costs.
   @BuiltValueField(wireName: r'costToDate')
   String? get costToDate;
 
