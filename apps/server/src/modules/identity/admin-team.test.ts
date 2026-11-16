@@ -405,6 +405,11 @@ const routeAccess: Record<string, Access> = {
   'GET /v1/admin/promo-codes/{codeId}/report': {
     anyOf: ['marketing.read', 'marketing.read_costs', 'marketing.manage'],
   },
+  'GET /v1/admin/compensations': 'compensation.approve_above_cap',
+  'POST /v1/admin/compensations/{compensationId}/approve': 'compensation.approve_above_cap',
+  'POST /v1/admin/compensations/{compensationId}/reject': 'compensation.approve_above_cap',
+  'GET /v1/admin/orders/{orderId}/compensations': 'operations.read',
+  'POST /v1/admin/orders/{orderId}/compensations': 'operations.compensate',
   'POST /v1/admin/cash-desk/captains/search': 'cash_desk.record',
   'GET /v1/admin/cash-desk/captains/{captainId}': 'cash_desk.record',
   'GET /v1/admin/cash-desk/sessions/current': 'cash_desk.record',

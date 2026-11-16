@@ -22,6 +22,9 @@ Serializers _$serializers =
           ..add(AdminAlertsDtoOutputAlertsInnerLocation.serializer)
           ..add(AdminAlertsDtoOutputAlertsInnerSeverityEnum.serializer)
           ..add(AdminAlertsDtoOutputAlertsInnerSubjectTypeEnum.serializer)
+          ..add(AdminApproveCompensationDto.serializer)
+          ..add(AdminApproveCompensationDtoValue.serializer)
+          ..add(AdminApproveCompensationDtoValueKindEnum.serializer)
           ..add(AdminAssignDto.serializer)
           ..add(AdminBoardDtoOutput.serializer)
           ..add(AdminBoardDtoOutputOrdersInner.serializer)
@@ -62,6 +65,14 @@ Serializers _$serializers =
           ..add(AdminCityOfficeDtoOutputOfficeLocation.serializer)
           ..add(AdminCloseDrawerSessionDto.serializer)
           ..add(AdminCloseItemReportDto.serializer)
+          ..add(AdminCompensateDto.serializer)
+          ..add(AdminCompensateDtoReason.serializer)
+          ..add(AdminCompensateDtoValue.serializer)
+          ..add(AdminCompensateDtoValueKindEnum.serializer)
+          ..add(AdminCompensationDtoOutput.serializer)
+          ..add(AdminCompensationDtoOutputKindEnum.serializer)
+          ..add(AdminCompensationDtoOutputStatusEnum.serializer)
+          ..add(AdminCompensationRequestsDtoOutput.serializer)
           ..add(AdminConfirmPickupDto.serializer)
           ..add(AdminContactDtoOutput.serializer)
           ..add(AdminConversionQuoteDtoOutput.serializer)
@@ -235,6 +246,19 @@ Serializers _$serializers =
           ..add(AdminOrderCardDtoOutputOrderMoments.serializer)
           ..add(AdminOrderCardDtoOutputOrderStatusEnum.serializer)
           ..add(AdminOrderCardDtoOutputOrderTotal.serializer)
+          ..add(AdminOrderCompensationDtoOutput.serializer)
+          ..add(AdminOrderCompensationDtoOutputKindEnum.serializer)
+          ..add(AdminOrderCompensationDtoOutputStatusEnum.serializer)
+          ..add(AdminOrderCompensationsDtoOutput.serializer)
+          ..add(AdminOrderCompensationsDtoOutputCompensationsInner.serializer)
+          ..add(
+            AdminOrderCompensationsDtoOutputCompensationsInnerKindEnum
+                .serializer,
+          )
+          ..add(
+            AdminOrderCompensationsDtoOutputCompensationsInnerStatusEnum
+                .serializer,
+          )
           ..add(AdminOrderDtoOutput.serializer)
           ..add(AdminOrderDtoOutputOrder.serializer)
           ..add(AdminOrderDtoOutputOrderAcceptance.serializer)
@@ -428,6 +452,7 @@ Serializers _$serializers =
           ..add(AdminRecordDeliveryDtoAmountDue.serializer)
           ..add(AdminRecordDeliveryDtoReceivedInner.serializer)
           ..add(AdminRecordDeliveryDtoShortfall.serializer)
+          ..add(AdminRejectCompensationDto.serializer)
           ..add(AdminRejectDto.serializer)
           ..add(AdminRejectDtoItemsInner.serializer)
           ..add(AdminRejectDtoItemsInnerUntilEnum.serializer)
@@ -1429,6 +1454,37 @@ Serializers _$serializers =
               const FullType(AdminOrderCardDtoOutputOrderAlertsEnum),
             ]),
             () => ListBuilder<AdminOrderCardDtoOutputOrderAlertsEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminOrderCompensationsDtoOutputCompensationsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminOrderCompensationsDtoOutputCompensationsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminOrderCompensationsDtoOutputCompensationsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminOrderCompensationsDtoOutputCompensationsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOrderDtoOutputOrderCancelChoicesReasonsInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminOrderDtoOutputOrderCancelChoicesReasonsInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

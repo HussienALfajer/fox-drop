@@ -538,6 +538,14 @@ export const catalogue = {
   }),
   'support.compensation_cap_pct.SUP': { ...percent(30), reasonRequired: true },
   'support.compensation_cap_pct.OPS': { ...percent(30), reasonRequired: true },
+  // Owner decision 2026-11-17: a compensation or late code's validity.
+  'support.personal_code_valid_days': define({
+    type: 'duration',
+    unit: 'days',
+    scope: 'city',
+    schema: positiveInt,
+    default: 30,
+  }),
   'finance.business_day_cutoff': define({
     type: 'time_of_day',
     scope: 'city',

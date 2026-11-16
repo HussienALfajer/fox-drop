@@ -29,8 +29,10 @@ export type PromoCodeAudience = (typeof promoCodeAudiences)[number];
 export const promoCodeFundings = ['platform', 'restaurant', 'shared'] as const;
 export type PromoCodeFunding = (typeof promoCodeFundings)[number];
 
-// «الظهور»: shown in the app, or secret (shared outside the app).
-export const promoCodeVisibilities = ['visible', 'secret'] as const;
+// «الظهور»: shown in the app, or secret (shared outside the app). A
+// personal code (slice 2.22a) belongs to one customer: a compensation code
+// or the automatic late code (AP §6.4, CU §12.4), never made by hand.
+export const promoCodeVisibilities = ['visible', 'secret', 'personal'] as const;
 export type PromoCodeVisibility = (typeof promoCodeVisibilities)[number];
 
 // Set by OWN: a paused code is refused until resumed. The daily budget's
@@ -84,6 +86,8 @@ export const promoCodes = marketing.table(
     // reaches it (owner decision 2026-11-16: the daily report's business day).
     dailyBudget: bigint('daily_budget', { mode: 'bigint' }),
     visibility: text('visibility', { enum: promoCodeVisibilities }).notNull(),
+    // A personal code's customer (identity's account id, a plain value).
+    customerAccountId: uuid('customer_account_id'),
     status: text('status', { enum: promoCodeStatuses }).notNull().default('active'),
     // The admin accounts (identity's ids, plain values).
     createdBy: uuid('created_by').notNull(),
@@ -93,6 +97,8 @@ export const promoCodes = marketing.table(
   },
   (table) => [
     uniqueIndex('promo_codes_city_code').on(table.cityId, table.code),
+    // «أكوادي» (slice 2.22b): a customer's personal codes.
+    index('promo_codes_customer').on(table.customerAccountId),
     index('promo_codes_batch').on(table.batchId),
     check('promo_codes_code_format', sql`${table.code} ~ '^[A-Z0-9]{3,20}$'`),
     check(
@@ -141,7 +147,23 @@ export const promoCodes = marketing.table(
             ELSE false
           END`,
     ),
-    check('promo_codes_visibility_values', sql`${table.visibility} IN ('visible', 'secret')`),
+    check(
+      'promo_codes_visibility_values',
+      sql`${table.visibility} IN ('visible', 'secret', 'personal')`,
+    ),
+    // A personal code (slice 2.22a): one use by its customer, an amount or a
+    // percentage with a maximum, funded by the platform, with no other rule.
+    check(
+      'promo_codes_personal',
+      sql`(${table.visibility} = 'personal') = (${table.customerAccountId} IS NOT NULL)
+          AND (${table.visibility} <> 'personal' OR (${table.kind} <> 'free_delivery'
+            AND (${table.kind} <> 'percentage' OR ${table.maxDiscount} IS NOT NULL)
+            AND ${table.totalLimit} = 1 AND ${table.perCustomerLimit} = 1
+            AND ${table.audience} = 'everyone' AND ${table.funding} = 'platform'
+            AND cardinality(${table.restaurantIds}) = 0 AND cardinality(${table.zoneIds}) = 0
+            AND ${table.minOrder} IS NULL AND ${table.dailyBudget} IS NULL
+            AND ${table.startMinute} IS NULL AND ${table.batchId} IS NULL))`,
+    ),
     check('promo_codes_status_values', sql`${table.status} IN ('active', 'paused')`),
   ],
 );
@@ -217,6 +239,81 @@ export const promoCodeUses = marketing.table(
     check(
       'promo_code_uses_settled',
       sql`(${table.status} = 'held') = (${table.settledAt} IS NULL)`,
+    ),
+  ],
+);
+
+// «تعويض الزبون» (AP §6.4, §9.3.2; slice 2.22a): what a compensation is
+// worth and where it stands. Issued: within the issuer's cap, or approved by
+// OWN, with its personal code. Waiting: above the cap, in «طلبات الموافقة».
+// Rejected by OWN.
+export const compensationStatuses = ['issued', 'waiting', 'rejected'] as const;
+export type CompensationStatus = (typeof compensationStatuses)[number];
+
+// An amount, or a percentage with a maximum amount (AP §6.4).
+export const compensationKinds = ['fixed_amount', 'percentage'] as const;
+export type CompensationKind = (typeof compensationKinds)[number];
+
+// A compensation of one customer, linked to one of their orders (AP §6.4:
+// every compensation is). The order, the customer, the city and the admins
+// are other modules' ids, plain values. Amounts are in `currency`, the
+// city's base when requested; what counts against a cap is the amount, or a
+// percentage's maximum. The reason is a copy of content's
+// «تعويض الزبون» reason (owner decision 2026-11-17).
+export const compensations = marketing.table(
+  'compensations',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    cityId: uuid('city_id').notNull(),
+    orderId: uuid('order_id').notNull(),
+    orderNumber: bigint('order_number', { mode: 'bigint' }).notNull(),
+    customerAccountId: uuid('customer_account_id').notNull(),
+    kind: text('kind', { enum: compensationKinds }).notNull(),
+    percentBp: integer('percent_bp'),
+    amount: bigint('amount', { mode: 'bigint' }),
+    maxDiscount: bigint('max_discount', { mode: 'bigint' }),
+    currency: text('currency').notNull(),
+    reasonCode: text('reason_code').notNull(),
+    reasonLabel: text('reason_label').notNull(),
+    note: text('note'),
+    status: text('status', { enum: compensationStatuses }).notNull(),
+    requestedBy: uuid('requested_by').notNull(),
+    requestedAt: timestamp('requested_at', { withTimezone: true }).notNull(),
+    // Architecture §5.3: the request's Idempotency-Key and a hash of it.
+    idempotencyKey: text('idempotency_key').notNull(),
+    requestHash: text('request_hash').notNull(),
+    // OWN's approval or rejection of a request above the cap.
+    decidedBy: uuid('decided_by'),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    codeId: uuid('code_id').references(() => promoCodes.id),
+  },
+  (table) => [
+    uniqueIndex('compensations_key').on(table.requestedBy, table.idempotencyKey),
+    index('compensations_order').on(table.orderId),
+    index('compensations_city_status').on(table.cityId, table.status),
+    check('compensations_kind_values', sql`${table.kind} IN ('fixed_amount', 'percentage')`),
+    check(
+      'compensations_value',
+      sql`COALESCE(CASE ${table.kind}
+            WHEN 'percentage' THEN ${table.percentBp} BETWEEN 1 AND 10000 AND ${table.amount} IS NULL
+              AND ${table.maxDiscount} > 0
+            ELSE ${table.amount} > 0 AND ${table.percentBp} IS NULL AND ${table.maxDiscount} IS NULL
+          END, false)`,
+    ),
+    check('compensations_currency', sql`${table.currency} ~ '^[A-Z]{3}$'`),
+    check(
+      'compensations_note',
+      sql`${table.note} IS NULL OR char_length(${table.note}) BETWEEN 1 AND 300`,
+    ),
+    check('compensations_status_values', sql`${table.status} IN ('issued', 'waiting', 'rejected')`),
+    check(
+      'compensations_state',
+      sql`(${table.status} = 'issued') = (${table.codeId} IS NOT NULL)
+          AND (${table.decidedBy} IS NULL) = (${table.decidedAt} IS NULL)
+          AND (${table.status} <> 'waiting' OR ${table.decidedAt} IS NULL)
+          AND (${table.status} <> 'rejected' OR ${table.decidedAt} IS NOT NULL)`,
     ),
   ],
 );

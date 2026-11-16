@@ -172,6 +172,7 @@
       "restaurantAutoPaused": "مطعم أوقف تلقائياً",
       "restaurantSettlementOverdue": "مطعم متأخر في التسوية",
       "rateStale": "سعر صرف قديم",
+      "compensationApproval": "طلب موافقة تعويض",
       "editUnacknowledged": "المطعم لم يؤكد التعديل",
       "captainCannotComplete": "كابتن لا يستطيع إكمال الطلب",
       "captainEmergency": "طوارئ كابتن",
@@ -777,6 +778,7 @@
       "captain_suspension": "إيقاف الكابتن",
       "customer_block": "حظر الزبون",
       "emergency_stop": "الإيقاف الطارئ",
+      "compensation": "تعويض الزبون",
       "failed_outcome": "نتائج الطلب الفاشل",
       "system_cancellation": "الإلغاء التلقائي"
     },

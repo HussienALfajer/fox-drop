@@ -19,6 +19,7 @@ import { PickupCommands } from './pickup-commands.js';
 import { IdentityModule } from '../identity/index.js';
 import { MarketingModule } from '../marketing/index.js';
 import { LedgerModule } from '../ledger/index.js';
+import { AdminOrderCompensationsController } from './admin-order-compensations.controller.js';
 import { AdminOrdersController } from './admin-orders.controller.js';
 import { CustomerOrdersController } from './customer-orders.controller.js';
 import { CustomerCodesController } from './customer-codes.controller.js';
@@ -72,6 +73,7 @@ import {
     CustomerOrdersController,
     MerchantOrdersController,
     AdminOrdersController,
+    AdminOrderCompensationsController,
     CaptainOrdersController,
     AdminEmergencyStopController,
     CustomerEmergencyStopController,

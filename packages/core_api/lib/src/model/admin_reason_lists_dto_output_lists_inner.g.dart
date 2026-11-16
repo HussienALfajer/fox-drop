@@ -81,6 +81,9 @@ const AdminReasonListsDtoOutputListsInnerListEnum
 _$adminReasonListsDtoOutputListsInnerListEnum_emergencyStop =
     const AdminReasonListsDtoOutputListsInnerListEnum._('emergencyStop');
 const AdminReasonListsDtoOutputListsInnerListEnum
+_$adminReasonListsDtoOutputListsInnerListEnum_compensation =
+    const AdminReasonListsDtoOutputListsInnerListEnum._('compensation');
+const AdminReasonListsDtoOutputListsInnerListEnum
 _$adminReasonListsDtoOutputListsInnerListEnum_failedOutcome =
     const AdminReasonListsDtoOutputListsInnerListEnum._('failedOutcome');
 const AdminReasonListsDtoOutputListsInnerListEnum
@@ -138,6 +141,8 @@ _$adminReasonListsDtoOutputListsInnerListEnumValueOf(String name) {
       return _$adminReasonListsDtoOutputListsInnerListEnum_customerBlock;
     case 'emergencyStop':
       return _$adminReasonListsDtoOutputListsInnerListEnum_emergencyStop;
+    case 'compensation':
+      return _$adminReasonListsDtoOutputListsInnerListEnum_compensation;
     case 'failedOutcome':
       return _$adminReasonListsDtoOutputListsInnerListEnum_failedOutcome;
     case 'systemCancellation':
@@ -175,6 +180,7 @@ _$adminReasonListsDtoOutputListsInnerListEnumValues =
         _$adminReasonListsDtoOutputListsInnerListEnum_captainSuspension,
         _$adminReasonListsDtoOutputListsInnerListEnum_customerBlock,
         _$adminReasonListsDtoOutputListsInnerListEnum_emergencyStop,
+        _$adminReasonListsDtoOutputListsInnerListEnum_compensation,
         _$adminReasonListsDtoOutputListsInnerListEnum_failedOutcome,
         _$adminReasonListsDtoOutputListsInnerListEnum_systemCancellation,
       ],
@@ -249,6 +255,7 @@ class _$AdminReasonListsDtoOutputListsInnerListEnumSerializer
     'captainSuspension': 'captain_suspension',
     'customerBlock': 'customer_block',
     'emergencyStop': 'emergency_stop',
+    'compensation': 'compensation',
     'failedOutcome': 'failed_outcome',
     'systemCancellation': 'system_cancellation',
   };
@@ -277,6 +284,7 @@ class _$AdminReasonListsDtoOutputListsInnerListEnumSerializer
     'captain_suspension': 'captainSuspension',
     'customer_block': 'customerBlock',
     'emergency_stop': 'emergencyStop',
+    'compensation': 'compensation',
     'failed_outcome': 'failedOutcome',
     'system_cancellation': 'systemCancellation',
   };

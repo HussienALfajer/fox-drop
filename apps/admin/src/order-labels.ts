@@ -51,6 +51,7 @@ export const alertKeys = {
   captain_cannot_complete: 'order.alert.captainCannotComplete',
   captain_emergency: 'order.alert.captainEmergency',
   customer_not_answering: 'order.alert.customerNotAnswering',
+  compensation_approval: 'order.alert.compensationApproval',
 } as const satisfies Record<AlertCode, string>;
 
 export const badgeKeys = {

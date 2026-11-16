@@ -41,6 +41,8 @@ export const reasonLists = {
   captain_suspension: { apps: [] },
   customer_block: { apps: [], customerText: true },
   emergency_stop: { apps: [] },
+  // «تعويض الزبون» (owner decision 2026-11-17, slice 2.22a).
+  compensation: { apps: [] },
   // Not chosen by anyone: the texts the customer sees for an order that
   // failed (AP §8.9) and for the automatic cancellation (AP §8.3).
   failed_outcome: { apps: [], customerText: true, closed: true },

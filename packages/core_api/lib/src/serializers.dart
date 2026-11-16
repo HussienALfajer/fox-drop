@@ -21,6 +21,8 @@ import 'package:core_api/src/model/admin_alerts_dto_output.dart';
 import 'package:core_api/src/model/admin_alerts_dto_output_alerts_inner.dart';
 import 'package:core_api/src/model/admin_alerts_dto_output_alerts_inner_acknowledged.dart';
 import 'package:core_api/src/model/admin_alerts_dto_output_alerts_inner_location.dart';
+import 'package:core_api/src/model/admin_approve_compensation_dto.dart';
+import 'package:core_api/src/model/admin_approve_compensation_dto_value.dart';
 import 'package:core_api/src/model/admin_assign_dto.dart';
 import 'package:core_api/src/model/admin_board_dto_output.dart';
 import 'package:core_api/src/model/admin_board_dto_output_orders_inner.dart';
@@ -47,6 +49,11 @@ import 'package:core_api/src/model/admin_city_office_dto_output_office_hours_inn
 import 'package:core_api/src/model/admin_city_office_dto_output_office_location.dart';
 import 'package:core_api/src/model/admin_close_drawer_session_dto.dart';
 import 'package:core_api/src/model/admin_close_item_report_dto.dart';
+import 'package:core_api/src/model/admin_compensate_dto.dart';
+import 'package:core_api/src/model/admin_compensate_dto_reason.dart';
+import 'package:core_api/src/model/admin_compensate_dto_value.dart';
+import 'package:core_api/src/model/admin_compensation_dto_output.dart';
+import 'package:core_api/src/model/admin_compensation_requests_dto_output.dart';
 import 'package:core_api/src/model/admin_confirm_pickup_dto.dart';
 import 'package:core_api/src/model/admin_contact_dto_output.dart';
 import 'package:core_api/src/model/admin_conversion_quote_dto_output.dart';
@@ -151,6 +158,9 @@ import 'package:core_api/src/model/admin_order_card_dto_output_order_dispatch.da
 import 'package:core_api/src/model/admin_order_card_dto_output_order_dispatch_manual.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_moments.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_total.dart';
+import 'package:core_api/src/model/admin_order_compensation_dto_output.dart';
+import 'package:core_api/src/model/admin_order_compensations_dto_output.dart';
+import 'package:core_api/src/model/admin_order_compensations_dto_output_compensations_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_acceptance.dart';
@@ -252,6 +262,7 @@ import 'package:core_api/src/model/admin_record_delivery_dto.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_amount_due.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_received_inner.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_shortfall.dart';
+import 'package:core_api/src/model/admin_reject_compensation_dto.dart';
 import 'package:core_api/src/model/admin_reject_dto.dart';
 import 'package:core_api/src/model/admin_reject_dto_items_inner.dart';
 import 'package:core_api/src/model/admin_release_device_dto.dart';
@@ -674,6 +685,8 @@ part 'serializers.g.dart';
   AdminAlertsDtoOutputAlertsInner,
   AdminAlertsDtoOutputAlertsInnerAcknowledged,
   AdminAlertsDtoOutputAlertsInnerLocation,
+  AdminApproveCompensationDto,
+  AdminApproveCompensationDtoValue,
   AdminAssignDto,
   AdminBoardDtoOutput,
   AdminBoardDtoOutputOrdersInner,
@@ -700,6 +713,11 @@ part 'serializers.g.dart';
   AdminCityOfficeDtoOutputOfficeLocation,
   AdminCloseDrawerSessionDto,
   AdminCloseItemReportDto,
+  AdminCompensateDto,
+  AdminCompensateDtoReason,
+  AdminCompensateDtoValue,
+  AdminCompensationDtoOutput,
+  AdminCompensationRequestsDtoOutput,
   AdminConfirmPickupDto,
   AdminContactDtoOutput,
   AdminConversionQuoteDtoOutput,
@@ -804,6 +822,9 @@ part 'serializers.g.dart';
   AdminOrderCardDtoOutputOrderDispatchManual,
   AdminOrderCardDtoOutputOrderMoments,
   AdminOrderCardDtoOutputOrderTotal,
+  AdminOrderCompensationDtoOutput,
+  AdminOrderCompensationsDtoOutput,
+  AdminOrderCompensationsDtoOutputCompensationsInner,
   AdminOrderDtoOutput,
   AdminOrderDtoOutputOrder,
   AdminOrderDtoOutputOrderAcceptance,
@@ -905,6 +926,7 @@ part 'serializers.g.dart';
   AdminRecordDeliveryDtoAmountDue,
   AdminRecordDeliveryDtoReceivedInner,
   AdminRecordDeliveryDtoShortfall,
+  AdminRejectCompensationDto,
   AdminRejectDto,
   AdminRejectDtoItemsInner,
   AdminReleaseDeviceDto,
@@ -1960,6 +1982,15 @@ Serializers serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, [FullType(TeamUsersDtoOutputUsersInner)]),
             () => ListBuilder<TeamUsersDtoOutputUsersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminOrderCompensationsDtoOutputCompensationsInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminOrderCompensationsDtoOutputCompensationsInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
