@@ -69,6 +69,13 @@ function flutterShard(spec) {
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter((line) => /^[a-z][a-z0-9_]*$/.test(line));
+  // Melos prints the names for people; the paths are its parsable list. A
+  // shard never tests nothing silently because a name was not read.
+  const paths = dartPackagesWithTests('--flutter').split(/\r?\n/).filter(Boolean);
+  if (names.length === 0 || names.length !== paths.length) {
+    console.error(`\nRead ${names.length} Flutter package names for ${paths.length} packages.`);
+    fail('Flutter shards');
+  }
   const seconds = (name) => FLUTTER_TEST_SECONDS[name] ?? UNLISTED_SECONDS;
   const shards = Array.from({ length: count }, () => ({ seconds: 0, names: [] }));
   for (const name of names.sort((a, b) => seconds(b) - seconds(a) || a.localeCompare(b))) {
@@ -170,6 +177,11 @@ if (unknown.length > 0 || (shard !== undefined && !/^\d+\/\d+$/.test(shard))) {
   process.exit(1);
 }
 const parts = new Set(named.length > 0 ? named : PARTS);
+// A shard of one part: with any other part it would cut that one too.
+if (shard !== undefined && !(parts.size === 1 && (parts.has('server') || parts.has('flutter')))) {
+  console.error('verify: --shard needs exactly one of the parts server and flutter.');
+  process.exit(1);
+}
 
 if (parts.has('contract')) checkApiContract();
 if (parts.has('format')) step('Prettier', 'pnpm exec prettier --check .');

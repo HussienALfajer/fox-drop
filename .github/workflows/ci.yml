@@ -54,8 +54,11 @@ jobs:
           # could fail the pipe on a long list.
           if grep -qvE '(\.md$|^docs/)' <<<"$files"; then code=true; fi
           if grep -qE '^docs/(product|domain)/' <<<"$files"; then code=true; fi
-          if grep -qE '(\.dart$|\.arb$|(^|/)(pubspec\.(yaml|lock)|analysis_options\.yaml|l10n\.yaml)$|^(apps/(customer|captain|merchant)|packages/core_[a-z_]+)/|^\.fvmrc$|^\.github/workflows/ci\.yml$|^scripts/verify\.mjs$)' <<<"$files"; then dart=true; fi
-          if grep -qE '^(apps/(customer|captain|merchant)/|packages/core_|pubspec\.(yaml|lock)$|\.fvmrc$|analysis_options\.yaml$|\.github/workflows/ci\.yml$)' <<<"$files"; then flutter=true; fi
+          # Markdown alone, even in a Dart folder, is code=false: no Dart then.
+          if [ "$code" = true ]; then
+            if grep -qE '(\.dart$|\.arb$|(^|/)(pubspec\.(yaml|lock)|analysis_options\.yaml|l10n\.yaml)$|^(apps/(customer|captain|merchant)|packages/core_[a-z0-9_]+)/|^\.fvmrc$|^\.github/workflows/ci\.yml$|^scripts/verify\.mjs$)' <<<"$files"; then dart=true; fi
+            if grep -qE '^(apps/(customer|captain|merchant)/|packages/core_|pubspec\.(yaml|lock)$|\.fvmrc$|analysis_options\.yaml$|\.github/workflows/ci\.yml$)' <<<"$files"; then flutter=true; fi
+          fi
           echo "code=$code" >> "$GITHUB_OUTPUT"
           echo "dart=$dart" >> "$GITHUB_OUTPUT"
           echo "flutter=$flutter" >> "$GITHUB_OUTPUT"
