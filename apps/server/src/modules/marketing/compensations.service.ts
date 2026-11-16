@@ -45,6 +45,17 @@ export interface CompensationAdmin {
   context: AuditRequestContext;
 }
 
+// A request read before its transaction (`prepare`).
+export interface PreparedCompensation {
+  order: CompensationOrder;
+  value: CompensationValue;
+  chosen: { code: string; label: string; note: string | null };
+  admin: CompensationAdmin;
+  // null: no cap (OWN).
+  cap: number | null;
+  requestHash: string;
+}
+
 export interface Compensation extends CompensationRow {
   // The personal code once issued.
   code: string | null;
@@ -122,6 +133,16 @@ export class CompensationsService {
     return { compensations: rows, capLeft: left > 0n ? left : 0n };
   }
 
+  // CU §11.9 «أُلغي طلبك» (slice 2.22b): the latest code issued on the order
+  // for its customer, null without one (a request waiting for OWN shows
+  // nothing until approved).
+  async issuedCode(orderId: string): Promise<Compensation | null> {
+    const [latest] = await this.withCodes(
+      and(eq(compensations.orderId, orderId), eq(compensations.status, 'issued')),
+    );
+    return latest ?? null;
+  }
+
   // «طلبات الموافقة»: the city's requests waiting for OWN, oldest first.
   async waiting(cityId: string): Promise<Compensation[]> {
     return (
@@ -145,75 +166,101 @@ export class CompensationsService {
     idempotencyKey: string,
     now: Date,
   ): Promise<Compensation> {
+    const prepared = await this.prepare(order, value, reason, admin);
+    return this.database.db.transaction(async (tx) => {
+      await lock(tx, `marketing.compensation_key:${admin.accountId}:${idempotencyKey}`);
+      const replayed = await this.replay(tx, admin.accountId, idempotencyKey, prepared.requestHash);
+      if (replayed) return replayed;
+      return this.requestIn(tx, prepared, idempotencyKey, now);
+    });
+  }
+
+  // What a request reads through the pool before its transaction: the reason
+  // (400 unknown_reason, reason_note_*) and the admin's cap.
+  async prepare(
+    order: CompensationOrder,
+    value: CompensationValue,
+    reason: { code: string; note: string | null },
+    admin: CompensationAdmin,
+  ): Promise<PreparedCompensation> {
     const chosen = await this.content.choose('compensation', reason);
     const cap = await this.capPct(order.cityId, admin);
     const requestHash = hashOf([order.id, value, chosen.code, chosen.note]);
-    return this.database.db.transaction(async (tx) => {
-      await lock(tx, `marketing.compensation_key:${admin.accountId}:${idempotencyKey}`);
-      const replayed = await this.replay(tx, admin.accountId, idempotencyKey, requestHash);
-      if (replayed) return replayed;
-      // One compensation of an order at a time, so two never pass its cap
-      // together.
-      await lock(tx, `marketing.compensation:${order.id}`);
-      // The city's codes, then its currencies: PromoCodesService.create's
-      // order, so the two never deadlock.
-      await lock(tx, `marketing.codes:${order.cityId}`);
-      await lockCityCurrencies(tx, order.cityId);
-      const currency = await this.fx.baseCurrency(order.cityId, tx);
-      if (currency === null) {
-        throw new CompensationRefusedError('no_base_currency', 'the city has no base currency');
-      }
-      if (currency !== order.currency) {
-        throw new CompensationRefusedError(
-          'currency_changed',
-          'the order is in another currency than the base',
-        );
-      }
-      const issued = await tx
-        .select({ amount: compensations.amount, maxDiscount: compensations.maxDiscount })
-        .from(compensations)
-        .where(and(eq(compensations.orderId, order.id), eq(compensations.status, 'issued')));
-      const within =
-        cap === null ||
-        issuedSum(issued) + countedValue(stored(value)) <= capAmount(order.total, cap);
-      const [row] = (await tx
-        .insert(compensations)
-        .values({
-          cityId: order.cityId,
-          orderId: order.id,
-          orderNumber: order.number,
-          customerAccountId: order.customerAccountId,
-          ...stored(value),
-          currency,
-          reasonCode: chosen.code,
-          reasonLabel: chosen.label,
-          note: chosen.note,
-          status: 'waiting',
-          requestedBy: admin.accountId,
-          requestedAt: now,
-          idempotencyKey,
-          requestHash,
-        })
-        .returning()) as [CompensationRow];
-      const answer = within
-        ? await this.issue(tx, row, admin.accountId, now)
-        : { ...row, code: null, codeValidTo: null };
-      await this.audit.recordWrite(
-        {
-          actor: admin.actor,
-          context: admin.context,
-          cityId: order.cityId,
-          action: within ? 'compensation.issue' : 'compensation.request',
-          target: { type: 'compensation', id: row.id },
-          before: null,
-          after: { orderNumber: order.number.toString(), code: answer.code, ...auditOf(answer) },
-          reason: chosen.note,
-        },
-        tx,
+    return { order, value, chosen, admin, cap, requestHash };
+  }
+
+  // The request in the caller's transaction (AP §9.3.2 «إلغاء الطلب» «may
+  // add compensation», slice 2.22b: the cancellation's, whose own key replays
+  // it, so this one never replays). The order's lock is the caller's when it
+  // holds the order's row: these advisory locks come after it.
+  async requestIn(
+    tx: Tx,
+    prepared: PreparedCompensation,
+    idempotencyKey: string,
+    now: Date,
+  ): Promise<Compensation> {
+    const { order, value, chosen, admin, cap, requestHash } = prepared;
+    // One compensation of an order at a time, so two never pass its cap
+    // together.
+    await lock(tx, `marketing.compensation:${order.id}`);
+    // The city's codes, then its currencies: PromoCodesService.create's
+    // order, so the two never deadlock.
+    await lock(tx, `marketing.codes:${order.cityId}`);
+    await lockCityCurrencies(tx, order.cityId);
+    const currency = await this.fx.baseCurrency(order.cityId, tx);
+    if (currency === null) {
+      throw new CompensationRefusedError('no_base_currency', 'the city has no base currency');
+    }
+    if (currency !== order.currency) {
+      throw new CompensationRefusedError(
+        'currency_changed',
+        'the order is in another currency than the base',
       );
-      if (!within) await this.syncAlert(tx, row, true, now);
-      return answer;
-    });
+    }
+    const issued = await tx
+      .select({ amount: compensations.amount, maxDiscount: compensations.maxDiscount })
+      .from(compensations)
+      .where(and(eq(compensations.orderId, order.id), eq(compensations.status, 'issued')));
+    const within =
+      cap === null ||
+      issuedSum(issued) + countedValue(stored(value)) <= capAmount(order.total, cap);
+    const [row] = (await tx
+      .insert(compensations)
+      .values({
+        cityId: order.cityId,
+        orderId: order.id,
+        orderNumber: order.number,
+        customerAccountId: order.customerAccountId,
+        ...stored(value),
+        currency,
+        reasonCode: chosen.code,
+        reasonLabel: chosen.label,
+        note: chosen.note,
+        status: 'waiting',
+        requestedBy: admin.accountId,
+        requestedAt: now,
+        idempotencyKey,
+        requestHash,
+      })
+      .returning()) as [CompensationRow];
+    const answer = within
+      ? await this.issue(tx, row, admin.accountId, now)
+      : { ...row, code: null, codeValidTo: null };
+    await this.audit.recordWrite(
+      {
+        actor: admin.actor,
+        context: admin.context,
+        cityId: order.cityId,
+        action: within ? 'compensation.issue' : 'compensation.request',
+        target: { type: 'compensation', id: row.id },
+        before: null,
+        after: { orderNumber: order.number.toString(), code: answer.code, ...auditOf(answer) },
+        reason: chosen.note,
+      },
+      tx,
+    );
+    if (!within) await this.syncAlert(tx, row, true, now);
+    return answer;
   }
 
   // OWN approves a waiting request, with the value as asked or edited (AP

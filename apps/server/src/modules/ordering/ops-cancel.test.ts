@@ -564,6 +564,73 @@ describe('POST /v1/admin/orders/{orderId}/cancel (AP §9.3.2)', () => {
     });
   });
 
+  it('compensates the customer in the cancellation, shown on «أُلغي طلبك» (slice 2.22b)', async () => {
+    const order = await acceptedOrder();
+    const ops = await admin(['OPS']);
+    const key = randomUUID();
+    const body = {
+      ...plain,
+      compensation: {
+        value: { kind: 'fixed_amount', amount: '5000', percentBp: null, maxDiscount: null },
+        reason: { code: 'order_cancelled', note: null },
+      },
+    };
+    expect((await ops.cancel(order.id, body, key)).statusCode).toBe(200);
+    // A repeat of the cancellation's key gives no second code.
+    expect((await ops.cancel(order.id, body, key)).statusCode).toBe(200);
+    const issued = await sql.query(
+      `SELECT c.status, c.amount, c.requested_by, p.code, p.customer_account_id
+         FROM marketing.compensations c JOIN marketing.promo_codes p ON p.id = c.code_id
+        WHERE c.order_id = $1`,
+      [order.id],
+    );
+    expect(issued.rows).toHaveLength(1);
+    expect(issued.rows[0]).toMatchObject({
+      status: 'issued',
+      amount: '5000',
+      requested_by: ops.accountId,
+    });
+    const code: string = issued.rows[0].code;
+    const read = await app.inject({
+      method: 'GET',
+      url: `/v1/customer/orders/${order.id}`,
+      headers: order.customer,
+    });
+    expect(read.json().order.cancellation.compensation).toMatchObject({
+      code,
+      kind: 'fixed_amount',
+      amount: { amount: '5000', currency: 'TRY' },
+      percentBp: null,
+    });
+    const push = await sql.query(
+      `SELECT body FROM notifications.push_messages
+        WHERE account_id = $1 AND template_key = 'customer.compensation_code'`,
+      [issued.rows[0].customer_account_id],
+    );
+    expect(push.rows).toEqual([{ body: `لك كود تعويض 50 ₺: ${code}` }]);
+  });
+
+  it('refuses the whole cancellation when its compensation is refused', async () => {
+    const order = await acceptedOrder();
+    const ops = await admin(['OPS']);
+    const refused = await ops.cancel(order.id, {
+      ...plain,
+      compensation: {
+        value: { kind: 'fixed_amount', amount: '5000', percentBp: null, maxDiscount: null },
+        reason: { code: 'nope', note: null },
+      },
+    });
+    expect(refused.statusCode).toBe(400);
+    expect(refused.json().error).toBe('invalid_compensation');
+    expect(await row(order.id)).toMatchObject({ status: 'accepted' });
+    const read = await app.inject({
+      method: 'GET',
+      url: `/v1/customer/orders/${order.id}`,
+      headers: order.customer,
+    });
+    expect(read.json().order.cancellation).toBeNull();
+  });
+
   it('withdraws an open offer before the cancellation (CA §9.10)', async () => {
     const settings = app.get(SettingsService);
     await settings.update(

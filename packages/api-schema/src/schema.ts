@@ -6355,6 +6355,26 @@ export interface components {
                     text: string;
                     /** @description The customer cancelled it themselves while placed: «ألغيت طلبك» instead of the text (CU §11.4, §11.9). */
                     byCustomer: boolean;
+                    /** @description CU §11.9 (slice 2.22b): the compensation code given on this order, the latest issued, shown on «أُلغي طلبك»; it is also in «أكوادي». Null without one, and while OWN's approval waits. */
+                    compensation: {
+                        code: string;
+                        /** @enum {string} */
+                        kind: "fixed_amount" | "percentage";
+                        /** @description A fixed amount; null for a percentage. */
+                        amount: {
+                            amount: string;
+                            currency: string;
+                        } | null;
+                        /** @description A percentage in basis points. */
+                        percentBp: number | null;
+                        /** @description A percentage's maximum. */
+                        maxDiscount: {
+                            amount: string;
+                            currency: string;
+                        } | null;
+                        /** Format: date-time */
+                        validTo: string;
+                    } | null;
                 } | null;
                 /** @description While rejected (CU §11.9). */
                 rejection: {
@@ -6545,6 +6565,26 @@ export interface components {
                     text: string;
                     /** @description The customer cancelled it themselves while placed: «ألغيت طلبك» instead of the text (CU §11.4, §11.9). */
                     byCustomer: boolean;
+                    /** @description CU §11.9 (slice 2.22b): the compensation code given on this order, the latest issued, shown on «أُلغي طلبك»; it is also in «أكوادي». Null without one, and while OWN's approval waits. */
+                    compensation: {
+                        code: string;
+                        /** @enum {string} */
+                        kind: "fixed_amount" | "percentage";
+                        /** @description A fixed amount; null for a percentage. */
+                        amount: {
+                            amount: string;
+                            currency: string;
+                        } | null;
+                        /** @description A percentage in basis points. */
+                        percentBp: number | null;
+                        /** @description A percentage's maximum. */
+                        maxDiscount: {
+                            amount: string;
+                            currency: string;
+                        } | null;
+                        /** Format: date-time */
+                        validTo: string;
+                    } | null;
                 } | null;
                 /** @description While rejected (CU §11.9). */
                 rejection: {
@@ -7501,6 +7541,23 @@ export interface components {
             cash: ("returned" | "not_returned" | "not_paid") | null;
             /** @description Required (AP §9.3.2): the internal note, never shown to the apps. */
             reason: string;
+            /** @description AP §9.3.2 «may add compensation» (slice 2.22b): «تعويض الزبون» as the order's own route takes it, issued within the admin's cap or sent to OWN, in the cancellation's transaction; needs operations.compensate (403). 400 invalid_compensation (its value or reason); 409 no_base_currency, currency_changed. */
+            compensation?: {
+                value: {
+                    /** @enum {string} */
+                    kind: "fixed_amount" | "percentage";
+                    /** @description A fixed amount; null for a percentage. */
+                    amount: string | null;
+                    /** @description A percentage: 2000 is 20%; null for an amount. */
+                    percentBp: number | null;
+                    /** @description A percentage's maximum, what counts against the cap; null for an amount. */
+                    maxDiscount: string | null;
+                };
+                reason: {
+                    code: string;
+                    note: string | null;
+                };
+            } | null;
         };
         AdminCancelPreviewDto: {
             /** @description Checked when given (400 unknown_reason). */

@@ -16,6 +16,9 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellation
   final String text;
   @override
   final bool byCustomer;
+  @override
+  final CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensation?
+  compensation;
 
   factory _$CustomerActiveOrdersDtoOutputOrdersInnerCancellation([
     void Function(CustomerActiveOrdersDtoOutputOrdersInnerCancellationBuilder)?
@@ -30,6 +33,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellation
     required this.reason,
     required this.text,
     required this.byCustomer,
+    this.compensation,
   }) : super._();
   @override
   CustomerActiveOrdersDtoOutputOrdersInnerCancellation rebuild(
@@ -49,7 +53,8 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellation
         at == other.at &&
         reason == other.reason &&
         text == other.text &&
-        byCustomer == other.byCustomer;
+        byCustomer == other.byCustomer &&
+        compensation == other.compensation;
   }
 
   @override
@@ -59,6 +64,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellation
     _$hash = $jc(_$hash, reason.hashCode);
     _$hash = $jc(_$hash, text.hashCode);
     _$hash = $jc(_$hash, byCustomer.hashCode);
+    _$hash = $jc(_$hash, compensation.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -71,7 +77,8 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellation
           ..add('at', at)
           ..add('reason', reason)
           ..add('text', text)
-          ..add('byCustomer', byCustomer))
+          ..add('byCustomer', byCustomer)
+          ..add('compensation', compensation))
         .toString();
   }
 }
@@ -100,6 +107,16 @@ class CustomerActiveOrdersDtoOutputOrdersInnerCancellationBuilder
   bool? get byCustomer => _$this._byCustomer;
   set byCustomer(bool? byCustomer) => _$this._byCustomer = byCustomer;
 
+  CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationBuilder?
+  _compensation;
+  CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationBuilder
+  get compensation => _$this._compensation ??=
+      CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationBuilder();
+  set compensation(
+    CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationBuilder?
+    compensation,
+  ) => _$this._compensation = compensation;
+
   CustomerActiveOrdersDtoOutputOrdersInnerCancellationBuilder() {
     CustomerActiveOrdersDtoOutputOrdersInnerCancellation._defaults(this);
   }
@@ -111,6 +128,7 @@ class CustomerActiveOrdersDtoOutputOrdersInnerCancellationBuilder
       _reason = $v.reason;
       _text = $v.text;
       _byCustomer = $v.byCustomer;
+      _compensation = $v.compensation?.toBuilder();
       _$v = null;
     }
     return this;
@@ -133,30 +151,47 @@ class CustomerActiveOrdersDtoOutputOrdersInnerCancellationBuilder
   CustomerActiveOrdersDtoOutputOrdersInnerCancellation build() => _build();
 
   _$CustomerActiveOrdersDtoOutputOrdersInnerCancellation _build() {
-    final _$result =
-        _$v ??
-        _$CustomerActiveOrdersDtoOutputOrdersInnerCancellation._(
-          at: BuiltValueNullFieldError.checkNotNull(
-            at,
-            r'CustomerActiveOrdersDtoOutputOrdersInnerCancellation',
-            'at',
-          ),
-          reason: BuiltValueNullFieldError.checkNotNull(
-            reason,
-            r'CustomerActiveOrdersDtoOutputOrdersInnerCancellation',
-            'reason',
-          ),
-          text: BuiltValueNullFieldError.checkNotNull(
-            text,
-            r'CustomerActiveOrdersDtoOutputOrdersInnerCancellation',
-            'text',
-          ),
-          byCustomer: BuiltValueNullFieldError.checkNotNull(
-            byCustomer,
-            r'CustomerActiveOrdersDtoOutputOrdersInnerCancellation',
-            'byCustomer',
-          ),
+    _$CustomerActiveOrdersDtoOutputOrdersInnerCancellation _$result;
+    try {
+      _$result =
+          _$v ??
+          _$CustomerActiveOrdersDtoOutputOrdersInnerCancellation._(
+            at: BuiltValueNullFieldError.checkNotNull(
+              at,
+              r'CustomerActiveOrdersDtoOutputOrdersInnerCancellation',
+              'at',
+            ),
+            reason: BuiltValueNullFieldError.checkNotNull(
+              reason,
+              r'CustomerActiveOrdersDtoOutputOrdersInnerCancellation',
+              'reason',
+            ),
+            text: BuiltValueNullFieldError.checkNotNull(
+              text,
+              r'CustomerActiveOrdersDtoOutputOrdersInnerCancellation',
+              'text',
+            ),
+            byCustomer: BuiltValueNullFieldError.checkNotNull(
+              byCustomer,
+              r'CustomerActiveOrdersDtoOutputOrdersInnerCancellation',
+              'byCustomer',
+            ),
+            compensation: _compensation?.build(),
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'compensation';
+        _compensation?.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+          r'CustomerActiveOrdersDtoOutputOrdersInnerCancellation',
+          _$failedField,
+          e.toString(),
         );
+      }
+      rethrow;
+    }
     replace(_$result);
     return _$result;
   }

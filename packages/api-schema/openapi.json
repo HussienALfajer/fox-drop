@@ -20040,13 +20040,112 @@
                         "byCustomer": {
                           "type": "boolean",
                           "description": "The customer cancelled it themselves while placed: «ألغيت طلبك» instead of the text (CU §11.4, §11.9)."
+                        },
+                        "compensation": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "code": {
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "fixed_amount",
+                                    "percentage"
+                                  ]
+                                },
+                                "amount": {
+                                  "anyOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "amount": {
+                                          "type": "string"
+                                        },
+                                        "currency": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "amount",
+                                        "currency"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ],
+                                  "description": "A fixed amount; null for a percentage."
+                                },
+                                "percentBp": {
+                                  "anyOf": [
+                                    {
+                                      "type": "integer",
+                                      "minimum": -9007199254740991,
+                                      "maximum": 9007199254740991
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ],
+                                  "description": "A percentage in basis points."
+                                },
+                                "maxDiscount": {
+                                  "anyOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "amount": {
+                                          "type": "string"
+                                        },
+                                        "currency": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "amount",
+                                        "currency"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ],
+                                  "description": "A percentage's maximum."
+                                },
+                                "validTo": {
+                                  "type": "string",
+                                  "format": "date-time",
+                                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                                }
+                              },
+                              "required": [
+                                "code",
+                                "kind",
+                                "amount",
+                                "percentBp",
+                                "maxDiscount",
+                                "validTo"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "CU §11.9 (slice 2.22b): the compensation code given on this order, the latest issued, shown on «أُلغي طلبك»; it is also in «أكوادي». Null without one, and while OWN's approval waits."
                         }
                       },
                       "required": [
                         "at",
                         "reason",
                         "text",
-                        "byCustomer"
+                        "byCustomer",
+                        "compensation"
                       ],
                       "additionalProperties": false
                     },
@@ -20838,13 +20937,112 @@
                       "byCustomer": {
                         "type": "boolean",
                         "description": "The customer cancelled it themselves while placed: «ألغيت طلبك» instead of the text (CU §11.4, §11.9)."
+                      },
+                      "compensation": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "code": {
+                                "type": "string"
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "fixed_amount",
+                                  "percentage"
+                                ]
+                              },
+                              "amount": {
+                                "anyOf": [
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "amount": {
+                                        "type": "string"
+                                      },
+                                      "currency": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "amount",
+                                      "currency"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "description": "A fixed amount; null for a percentage."
+                              },
+                              "percentBp": {
+                                "anyOf": [
+                                  {
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "description": "A percentage in basis points."
+                              },
+                              "maxDiscount": {
+                                "anyOf": [
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "amount": {
+                                        "type": "string"
+                                      },
+                                      "currency": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "amount",
+                                      "currency"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "description": "A percentage's maximum."
+                              },
+                              "validTo": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                              }
+                            },
+                            "required": [
+                              "code",
+                              "kind",
+                              "amount",
+                              "percentBp",
+                              "maxDiscount",
+                              "validTo"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "CU §11.9 (slice 2.22b): the compensation code given on this order, the latest issued, shown on «أُلغي طلبك»; it is also in «أكوادي». Null without one, and while OWN's approval waits."
                       }
                     },
                     "required": [
                       "at",
                       "reason",
                       "text",
-                      "byCustomer"
+                      "byCustomer",
+                      "compensation"
                     ],
                     "additionalProperties": false
                   },
@@ -24842,6 +25040,103 @@
             "minLength": 1,
             "maxLength": 500,
             "description": "Required (AP §9.3.2): the internal note, never shown to the apps."
+          },
+          "compensation": {
+            "description": "AP §9.3.2 «may add compensation» (slice 2.22b): «تعويض الزبون» as the order's own route takes it, issued within the admin's cap or sent to OWN, in the cancellation's transaction; needs operations.compensate (403). 400 invalid_compensation (its value or reason); 409 no_base_currency, currency_changed.",
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "fixed_amount",
+                          "percentage"
+                        ]
+                      },
+                      "amount": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^\\d{1,18}$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "A fixed amount; null for a percentage."
+                      },
+                      "percentBp": {
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 10000
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "A percentage: 2000 is 20%; null for an amount."
+                      },
+                      "maxDiscount": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^\\d{1,18}$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "A percentage's maximum, what counts against the cap; null for an amount."
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "amount",
+                      "percentBp",
+                      "maxDiscount"
+                    ]
+                  },
+                  "reason": {
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 60
+                      },
+                      "note": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 300
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "note"
+                    ]
+                  }
+                },
+                "required": [
+                  "value",
+                  "reason"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [

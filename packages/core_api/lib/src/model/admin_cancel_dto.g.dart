@@ -160,6 +160,8 @@ class _$AdminCancelDto extends AdminCancelDto {
   final AdminCancelDtoCashEnum? cash;
   @override
   final String reason;
+  @override
+  final AdminCancelDtoCompensation? compensation;
 
   factory _$AdminCancelDto([void Function(AdminCancelDtoBuilder)? updates]) =>
       (AdminCancelDtoBuilder()..update(updates))._build();
@@ -171,6 +173,7 @@ class _$AdminCancelDto extends AdminCancelDto {
     required this.compensateCaptain,
     this.cash,
     required this.reason,
+    this.compensation,
   }) : super._();
   @override
   AdminCancelDto rebuild(void Function(AdminCancelDtoBuilder) updates) =>
@@ -188,7 +191,8 @@ class _$AdminCancelDto extends AdminCancelDto {
         foodPrepared == other.foodPrepared &&
         compensateCaptain == other.compensateCaptain &&
         cash == other.cash &&
-        reason == other.reason;
+        reason == other.reason &&
+        compensation == other.compensation;
   }
 
   @override
@@ -200,6 +204,7 @@ class _$AdminCancelDto extends AdminCancelDto {
     _$hash = $jc(_$hash, compensateCaptain.hashCode);
     _$hash = $jc(_$hash, cash.hashCode);
     _$hash = $jc(_$hash, reason.hashCode);
+    _$hash = $jc(_$hash, compensation.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -212,7 +217,8 @@ class _$AdminCancelDto extends AdminCancelDto {
           ..add('foodPrepared', foodPrepared)
           ..add('compensateCaptain', compensateCaptain)
           ..add('cash', cash)
-          ..add('reason', reason))
+          ..add('reason', reason)
+          ..add('compensation', compensation))
         .toString();
   }
 }
@@ -247,6 +253,12 @@ class AdminCancelDtoBuilder
   String? get reason => _$this._reason;
   set reason(String? reason) => _$this._reason = reason;
 
+  AdminCancelDtoCompensationBuilder? _compensation;
+  AdminCancelDtoCompensationBuilder get compensation =>
+      _$this._compensation ??= AdminCancelDtoCompensationBuilder();
+  set compensation(AdminCancelDtoCompensationBuilder? compensation) =>
+      _$this._compensation = compensation;
+
   AdminCancelDtoBuilder() {
     AdminCancelDto._defaults(this);
   }
@@ -260,6 +272,7 @@ class AdminCancelDtoBuilder
       _compensateCaptain = $v.compensateCaptain;
       _cash = $v.cash;
       _reason = $v.reason;
+      _compensation = $v.compensation?.toBuilder();
       _$v = null;
     }
     return this;
@@ -279,36 +292,53 @@ class AdminCancelDtoBuilder
   AdminCancelDto build() => _build();
 
   _$AdminCancelDto _build() {
-    final _$result =
-        _$v ??
-        _$AdminCancelDto._(
-          cancellation: BuiltValueNullFieldError.checkNotNull(
-            cancellation,
-            r'AdminCancelDto',
-            'cancellation',
-          ),
-          responsible: BuiltValueNullFieldError.checkNotNull(
-            responsible,
-            r'AdminCancelDto',
-            'responsible',
-          ),
-          foodPrepared: BuiltValueNullFieldError.checkNotNull(
-            foodPrepared,
-            r'AdminCancelDto',
-            'foodPrepared',
-          ),
-          compensateCaptain: BuiltValueNullFieldError.checkNotNull(
-            compensateCaptain,
-            r'AdminCancelDto',
-            'compensateCaptain',
-          ),
-          cash: cash,
-          reason: BuiltValueNullFieldError.checkNotNull(
-            reason,
-            r'AdminCancelDto',
-            'reason',
-          ),
+    _$AdminCancelDto _$result;
+    try {
+      _$result =
+          _$v ??
+          _$AdminCancelDto._(
+            cancellation: BuiltValueNullFieldError.checkNotNull(
+              cancellation,
+              r'AdminCancelDto',
+              'cancellation',
+            ),
+            responsible: BuiltValueNullFieldError.checkNotNull(
+              responsible,
+              r'AdminCancelDto',
+              'responsible',
+            ),
+            foodPrepared: BuiltValueNullFieldError.checkNotNull(
+              foodPrepared,
+              r'AdminCancelDto',
+              'foodPrepared',
+            ),
+            compensateCaptain: BuiltValueNullFieldError.checkNotNull(
+              compensateCaptain,
+              r'AdminCancelDto',
+              'compensateCaptain',
+            ),
+            cash: cash,
+            reason: BuiltValueNullFieldError.checkNotNull(
+              reason,
+              r'AdminCancelDto',
+              'reason',
+            ),
+            compensation: _compensation?.build(),
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'compensation';
+        _compensation?.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+          r'AdminCancelDto',
+          _$failedField,
+          e.toString(),
         );
+      }
+      rethrow;
+    }
     replace(_$result);
     return _$result;
   }

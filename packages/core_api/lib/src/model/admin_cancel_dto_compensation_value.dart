@@ -7,9 +7,9 @@ import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_compensate_dto_value.g.dart';
+part 'admin_cancel_dto_compensation_value.g.dart';
 
-/// AdminCompensateDtoValue
+/// AdminCancelDtoCompensationValue
 ///
 /// Properties:
 /// * [kind]
@@ -17,10 +17,14 @@ part 'admin_compensate_dto_value.g.dart';
 /// * [percentBp] - A percentage: 2000 is 20%; null for an amount.
 /// * [maxDiscount] - A percentage's maximum, what counts against the cap; null for an amount.
 @BuiltValue()
-abstract class AdminCompensateDtoValue
-    implements Built<AdminCompensateDtoValue, AdminCompensateDtoValueBuilder> {
+abstract class AdminCancelDtoCompensationValue
+    implements
+        Built<
+          AdminCancelDtoCompensationValue,
+          AdminCancelDtoCompensationValueBuilder
+        > {
   @BuiltValueField(wireName: r'kind')
-  AdminCompensateDtoValueKindEnum get kind;
+  AdminCancelDtoCompensationValueKindEnum get kind;
   // enum kindEnum {  fixed_amount,  percentage,  };
 
   /// A fixed amount; null for a percentage.
@@ -35,40 +39,40 @@ abstract class AdminCompensateDtoValue
   @BuiltValueField(wireName: r'maxDiscount')
   String? get maxDiscount;
 
-  AdminCompensateDtoValue._();
+  AdminCancelDtoCompensationValue._();
 
-  factory AdminCompensateDtoValue([
-    void updates(AdminCompensateDtoValueBuilder b),
-  ]) = _$AdminCompensateDtoValue;
+  factory AdminCancelDtoCompensationValue([
+    void updates(AdminCancelDtoCompensationValueBuilder b),
+  ]) = _$AdminCancelDtoCompensationValue;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminCompensateDtoValueBuilder b) => b;
+  static void _defaults(AdminCancelDtoCompensationValueBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminCompensateDtoValue> get serializer =>
-      _$AdminCompensateDtoValueSerializer();
+  static Serializer<AdminCancelDtoCompensationValue> get serializer =>
+      _$AdminCancelDtoCompensationValueSerializer();
 }
 
-class _$AdminCompensateDtoValueSerializer
-    implements PrimitiveSerializer<AdminCompensateDtoValue> {
+class _$AdminCancelDtoCompensationValueSerializer
+    implements PrimitiveSerializer<AdminCancelDtoCompensationValue> {
   @override
   final Iterable<Type> types = const [
-    AdminCompensateDtoValue,
-    _$AdminCompensateDtoValue,
+    AdminCancelDtoCompensationValue,
+    _$AdminCancelDtoCompensationValue,
   ];
 
   @override
-  final String wireName = r'AdminCompensateDtoValue';
+  final String wireName = r'AdminCancelDtoCompensationValue';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminCompensateDtoValue object, {
+    AdminCancelDtoCompensationValue object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'kind';
     yield serializers.serialize(
       object.kind,
-      specifiedType: const FullType(AdminCompensateDtoValueKindEnum),
+      specifiedType: const FullType(AdminCancelDtoCompensationValueKindEnum),
     );
     yield r'amount';
     yield object.amount == null
@@ -96,7 +100,7 @@ class _$AdminCompensateDtoValueSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminCompensateDtoValue object, {
+    AdminCancelDtoCompensationValue object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -111,7 +115,7 @@ class _$AdminCompensateDtoValueSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminCompensateDtoValueBuilder result,
+    required AdminCancelDtoCompensationValueBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -123,10 +127,10 @@ class _$AdminCompensateDtoValueSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(
-                      AdminCompensateDtoValueKindEnum,
+                      AdminCancelDtoCompensationValueKindEnum,
                     ),
                   )
-                  as AdminCompensateDtoValueKindEnum;
+                  as AdminCancelDtoCompensationValueKindEnum;
           result.kind = valueDes;
           break;
         case r'amount':
@@ -168,12 +172,12 @@ class _$AdminCompensateDtoValueSerializer
   }
 
   @override
-  AdminCompensateDtoValue deserialize(
+  AdminCancelDtoCompensationValue deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminCompensateDtoValueBuilder();
+    final result = AdminCancelDtoCompensationValueBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(
@@ -188,21 +192,21 @@ class _$AdminCompensateDtoValueSerializer
   }
 }
 
-class AdminCompensateDtoValueKindEnum extends EnumClass {
+class AdminCancelDtoCompensationValueKindEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'fixed_amount')
-  static const AdminCompensateDtoValueKindEnum fixedAmount =
-      _$adminCompensateDtoValueKindEnum_fixedAmount;
+  static const AdminCancelDtoCompensationValueKindEnum fixedAmount =
+      _$adminCancelDtoCompensationValueKindEnum_fixedAmount;
   @BuiltValueEnumConst(wireName: r'percentage')
-  static const AdminCompensateDtoValueKindEnum percentage =
-      _$adminCompensateDtoValueKindEnum_percentage;
+  static const AdminCancelDtoCompensationValueKindEnum percentage =
+      _$adminCancelDtoCompensationValueKindEnum_percentage;
 
-  static Serializer<AdminCompensateDtoValueKindEnum> get serializer =>
-      _$adminCompensateDtoValueKindEnumSerializer;
+  static Serializer<AdminCancelDtoCompensationValueKindEnum> get serializer =>
+      _$adminCancelDtoCompensationValueKindEnumSerializer;
 
-  const AdminCompensateDtoValueKindEnum._(String name) : super(name);
+  const AdminCancelDtoCompensationValueKindEnum._(String name) : super(name);
 
-  static BuiltSet<AdminCompensateDtoValueKindEnum> get values =>
-      _$adminCompensateDtoValueKindEnumValues;
-  static AdminCompensateDtoValueKindEnum valueOf(String name) =>
-      _$adminCompensateDtoValueKindEnumValueOf(name);
+  static BuiltSet<AdminCancelDtoCompensationValueKindEnum> get values =>
+      _$adminCancelDtoCompensationValueKindEnumValues;
+  static AdminCancelDtoCompensationValueKindEnum valueOf(String name) =>
+      _$adminCancelDtoCompensationValueKindEnumValueOf(name);
 }

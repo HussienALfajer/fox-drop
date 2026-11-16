@@ -8,9 +8,9 @@ part of 'admin_compensate_dto.dart';
 
 class _$AdminCompensateDto extends AdminCompensateDto {
   @override
-  final AdminCompensateDtoValue value;
+  final AdminCancelDtoCompensationValue value;
   @override
-  final AdminCompensateDtoReason reason;
+  final AdminCancelDtoCompensationReason reason;
 
   factory _$AdminCompensateDto([
     void Function(AdminCompensateDtoBuilder)? updates,
@@ -57,15 +57,16 @@ class AdminCompensateDtoBuilder
     implements Builder<AdminCompensateDto, AdminCompensateDtoBuilder> {
   _$AdminCompensateDto? _$v;
 
-  AdminCompensateDtoValueBuilder? _value;
-  AdminCompensateDtoValueBuilder get value =>
-      _$this._value ??= AdminCompensateDtoValueBuilder();
-  set value(AdminCompensateDtoValueBuilder? value) => _$this._value = value;
+  AdminCancelDtoCompensationValueBuilder? _value;
+  AdminCancelDtoCompensationValueBuilder get value =>
+      _$this._value ??= AdminCancelDtoCompensationValueBuilder();
+  set value(AdminCancelDtoCompensationValueBuilder? value) =>
+      _$this._value = value;
 
-  AdminCompensateDtoReasonBuilder? _reason;
-  AdminCompensateDtoReasonBuilder get reason =>
-      _$this._reason ??= AdminCompensateDtoReasonBuilder();
-  set reason(AdminCompensateDtoReasonBuilder? reason) =>
+  AdminCancelDtoCompensationReasonBuilder? _reason;
+  AdminCancelDtoCompensationReasonBuilder get reason =>
+      _$this._reason ??= AdminCancelDtoCompensationReasonBuilder();
+  set reason(AdminCancelDtoCompensationReasonBuilder? reason) =>
       _$this._reason = reason;
 
   AdminCompensateDtoBuilder() {

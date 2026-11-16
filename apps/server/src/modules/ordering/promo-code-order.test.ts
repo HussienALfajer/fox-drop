@@ -205,6 +205,7 @@ describe('a code in the order', () => {
         amount: null,
         maxDiscount: '3000',
         merchantShareBp: 5000,
+        compensation: false,
       },
       total: '25500',
     });

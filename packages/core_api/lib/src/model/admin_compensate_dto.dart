@@ -3,8 +3,8 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/admin_compensate_dto_reason.dart';
-import 'package:core_api/src/model/admin_compensate_dto_value.dart';
+import 'package:core_api/src/model/admin_cancel_dto_compensation_value.dart';
+import 'package:core_api/src/model/admin_cancel_dto_compensation_reason.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -19,10 +19,10 @@ part 'admin_compensate_dto.g.dart';
 abstract class AdminCompensateDto
     implements Built<AdminCompensateDto, AdminCompensateDtoBuilder> {
   @BuiltValueField(wireName: r'value')
-  AdminCompensateDtoValue get value;
+  AdminCancelDtoCompensationValue get value;
 
   @BuiltValueField(wireName: r'reason')
-  AdminCompensateDtoReason get reason;
+  AdminCancelDtoCompensationReason get reason;
 
   AdminCompensateDto._();
 
@@ -53,12 +53,12 @@ class _$AdminCompensateDtoSerializer
     yield r'value';
     yield serializers.serialize(
       object.value,
-      specifiedType: const FullType(AdminCompensateDtoValue),
+      specifiedType: const FullType(AdminCancelDtoCompensationValue),
     );
     yield r'reason';
     yield serializers.serialize(
       object.reason,
-      specifiedType: const FullType(AdminCompensateDtoReason),
+      specifiedType: const FullType(AdminCancelDtoCompensationReason),
     );
   }
 
@@ -91,18 +91,22 @@ class _$AdminCompensateDtoSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(AdminCompensateDtoValue),
+                    specifiedType: const FullType(
+                      AdminCancelDtoCompensationValue,
+                    ),
                   )
-                  as AdminCompensateDtoValue;
+                  as AdminCancelDtoCompensationValue;
           result.value.replace(valueDes);
           break;
         case r'reason':
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(AdminCompensateDtoReason),
+                    specifiedType: const FullType(
+                      AdminCancelDtoCompensationReason,
+                    ),
                   )
-                  as AdminCompensateDtoReason;
+                  as AdminCancelDtoCompensationReason;
           result.reason.replace(valueDes);
           break;
         default:

@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   ConflictException,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -21,6 +22,11 @@ import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
 import { CustomersService } from '../customers/index.js';
 import type { AdminSession } from '../identity/index.js';
+import {
+  compensationAdminOf,
+  compensationValue,
+  compensationValueBody,
+} from '../marketing/index.js';
 import { CaptainOrderRefusedError, CaptainOrders } from './captain-orders.js';
 import {
   doorCollection,
@@ -36,6 +42,7 @@ import { AFTER_PICKUP, EDITABLE } from './order-views.js';
 import {
   CANCELLABLE,
   TIME_CHANGEABLE,
+  type CancelCompensation,
   type CancellationPreview,
   type OutcomeChangePreview,
   type OutcomePreview,
@@ -456,6 +463,16 @@ class AdminCancelDto extends createZodDto(
       .min(1)
       .max(500)
       .describe('Required (AP §9.3.2): the internal note, never shown to the apps.'),
+    compensation: z
+      .object({
+        value: compensationValueBody,
+        reason: z.object({ code: z.string().min(1).max(60), note: z.string().max(300).nullable() }),
+      })
+      .nullable()
+      .optional()
+      .describe(
+        "AP §9.3.2 «may add compensation» (slice 2.22b): «تعويض الزبون» as the order's own route takes it, issued within the admin's cap or sent to OWN, in the cancellation's transaction; needs operations.compensate (403). 400 invalid_compensation (its value or reason); 409 no_base_currency, currency_changed.",
+      ),
   }),
 ) {}
 
@@ -1707,6 +1724,7 @@ export class AdminOrdersController {
     @CurrentAdminSession() session: AdminSession,
     @Req() request: FastifyRequest,
   ) {
+    const compensation = await this.cancelCompensation(params.orderId, body, session, request);
     return this.onBehalf(params.orderId, () =>
       this.commands.cancelFor(
         {
@@ -1720,6 +1738,7 @@ export class AdminOrdersController {
           compensateCaptain: body.compensateCaptain,
           cash: body.cash,
           reason: body.reason,
+          compensation,
         },
         new Date(),
       ),
@@ -2004,6 +2023,47 @@ export class AdminOrdersController {
 
   // Runs a command on the restaurant's behalf and answers the card, or its
   // refusal.
+  // The cancel dialog's «تعويض الزبون» (AP §9.3.2, slice 2.22b): the order as
+  // the compensation reads it (AP §6.4: the customer total its caps are a
+  // percentage of) and the admin's roles and permissions.
+  private async cancelCompensation(
+    orderId: string,
+    body: AdminCancelDto,
+    session: AdminSession,
+    request: FastifyRequest,
+  ): Promise<CancelCompensation | null> {
+    if (!body.compensation) return null;
+    if (!session.permissions.includes('operations.compensate')) {
+      throw new ForbiddenException();
+    }
+    const value = compensationValue(body.compensation.value);
+    if (value === null) {
+      throw new BadRequestException({
+        statusCode: HttpStatus.BAD_REQUEST,
+        error: 'invalid_compensation',
+        message: 'invalid_value',
+      });
+    }
+    const item = await this.views.order(orderId, new Date());
+    if (item === null) {
+      throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: 'unknown_order' });
+    }
+    const { order } = item;
+    return {
+      order: {
+        id: order.id,
+        cityId: order.cityId,
+        number: order.number,
+        customerAccountId: order.customerAccountId,
+        total: order.money.total,
+        currency: order.currency,
+      },
+      value,
+      reason: body.compensation.reason,
+      admin: compensationAdminOf(session, request),
+    };
+  }
+
   private async onBehalf(orderId: string, run: () => Promise<unknown>) {
     try {
       await run();
@@ -2027,7 +2087,8 @@ export class AdminOrdersController {
         refusal === 'invalid_rejection' ||
         refusal === 'invalid_cancellation' ||
         refusal === 'invalid_edit' ||
-        refusal === 'invalid_outcome'
+        refusal === 'invalid_outcome' ||
+        refusal === 'invalid_compensation'
       ) {
         throw new BadRequestException({
           statusCode: HttpStatus.BAD_REQUEST,
