@@ -16,6 +16,8 @@ class _$AdminOrderDtoOutputOrderDeliveryShortfall
   final String label;
   @override
   final String? note;
+  @override
+  final AdminOrderDtoOutputOrderDeliveryShortfallResolution? resolution;
 
   factory _$AdminOrderDtoOutputOrderDeliveryShortfall([
     void Function(AdminOrderDtoOutputOrderDeliveryShortfallBuilder)? updates,
@@ -27,6 +29,7 @@ class _$AdminOrderDtoOutputOrderDeliveryShortfall
     required this.reason,
     required this.label,
     this.note,
+    this.resolution,
   }) : super._();
   @override
   AdminOrderDtoOutputOrderDeliveryShortfall rebuild(
@@ -44,7 +47,8 @@ class _$AdminOrderDtoOutputOrderDeliveryShortfall
         amount == other.amount &&
         reason == other.reason &&
         label == other.label &&
-        note == other.note;
+        note == other.note &&
+        resolution == other.resolution;
   }
 
   @override
@@ -54,6 +58,7 @@ class _$AdminOrderDtoOutputOrderDeliveryShortfall
     _$hash = $jc(_$hash, reason.hashCode);
     _$hash = $jc(_$hash, label.hashCode);
     _$hash = $jc(_$hash, note.hashCode);
+    _$hash = $jc(_$hash, resolution.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -66,7 +71,8 @@ class _$AdminOrderDtoOutputOrderDeliveryShortfall
           ..add('amount', amount)
           ..add('reason', reason)
           ..add('label', label)
-          ..add('note', note))
+          ..add('note', note)
+          ..add('resolution', resolution))
         .toString();
   }
 }
@@ -97,6 +103,14 @@ class AdminOrderDtoOutputOrderDeliveryShortfallBuilder
   String? get note => _$this._note;
   set note(String? note) => _$this._note = note;
 
+  AdminOrderDtoOutputOrderDeliveryShortfallResolutionBuilder? _resolution;
+  AdminOrderDtoOutputOrderDeliveryShortfallResolutionBuilder get resolution =>
+      _$this._resolution ??=
+          AdminOrderDtoOutputOrderDeliveryShortfallResolutionBuilder();
+  set resolution(
+    AdminOrderDtoOutputOrderDeliveryShortfallResolutionBuilder? resolution,
+  ) => _$this._resolution = resolution;
+
   AdminOrderDtoOutputOrderDeliveryShortfallBuilder() {
     AdminOrderDtoOutputOrderDeliveryShortfall._defaults(this);
   }
@@ -108,6 +122,7 @@ class AdminOrderDtoOutputOrderDeliveryShortfallBuilder
       _reason = $v.reason;
       _label = $v.label;
       _note = $v.note;
+      _resolution = $v.resolution?.toBuilder();
       _$v = null;
     }
     return this;
@@ -146,12 +161,16 @@ class AdminOrderDtoOutputOrderDeliveryShortfallBuilder
               'label',
             ),
             note: note,
+            resolution: _resolution?.build(),
           );
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'amount';
         _amount?.build();
+
+        _$failedField = 'resolution';
+        _resolution?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminOrderDtoOutputOrderDeliveryShortfall',

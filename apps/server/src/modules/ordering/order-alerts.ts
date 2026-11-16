@@ -6,7 +6,7 @@ import {
   type OnApplicationShutdown,
   type OnModuleInit,
 } from '@nestjs/common';
-import { and, eq, gt, gte, inArray, isNotNull, sql } from 'drizzle-orm';
+import { and, eq, gte, inArray, isNotNull, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -21,6 +21,7 @@ import { openCannotComplete } from './cannot-complete.js';
 import { type OpenEmergency, openEmergency } from './emergencies.js';
 import { openItemReport } from './item-reports.js';
 import { openNoAnswerReport } from './no-answer.js';
+import { shortfallOpen } from './shortfall.js';
 import { unacknowledgedAdditionAt } from './order-edits.js';
 import { BEFORE_PICKUP } from './order-views.js';
 import { type CaptainTrack, lockOrder } from './order-events.js';
@@ -139,7 +140,7 @@ export function orderAlerts(
     order.captainTrack === 'at_merchant' || order.captainTrack === 'pickup_pending';
   from('captain_waiting', waiting && atRestaurant, order.captainWaitingAlertAt);
   from('delivery_late', UNTIL_ENDED.includes(order.status), order.deliveryLateAt);
-  // AP §8.6: open until operations resolve it (not built yet).
+  // AP §8.6: open until operations resolve it («حلّ النقص», slice 2.20b).
   if (order.shortfall) open.push('collection_shortfall');
   if (order.away) open.push('away_from_address');
   if (order.itemReportOpen) open.push('item_unavailable');
@@ -319,7 +320,8 @@ async function readInput(
       and(
         eq(collections.orderId, orderId),
         eq(collections.orderPlacedAt, placedAt),
-        gt(collections.shortfall, 0n),
+        // Slice 2.20b: open until operations resolve it.
+        shortfallOpen,
       ),
     )
     .limit(1);

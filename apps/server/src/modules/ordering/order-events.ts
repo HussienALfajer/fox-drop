@@ -100,6 +100,10 @@ export type OrderEventType =
   // outcome; the status follows it (delivered or failed). The new outcome is
   // its reason.
   | 'order.outcome_changed'
+  // AP §8.6 (slice 2.20b): operations resolved a delivered order's collection
+  // shortfall «نقص في التحصيل»; the status stays. The party who bears it is
+  // its reason, on the panel's and the captain's channels only.
+  | 'order.shortfall_resolved'
   // AP §9.3.2 «سحب وإعادة تعيين» (slice 2.12a): operations took the order
   // from its captain before the pickup (the status stays, the track back to
   // searching); the event is about the withdrawn captain, and publishes the

@@ -523,6 +523,8 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/admin/orders/{orderId}/outcome-preview': 'operations.manage',
   'POST /v1/admin/orders/{orderId}/outcome-change': 'orders.change_outcome',
   'POST /v1/admin/orders/{orderId}/outcome-change-preview': 'orders.change_outcome',
+  'POST /v1/admin/orders/{orderId}/resolve-shortfall': 'operations.manage',
+  'POST /v1/admin/orders/{orderId}/shortfall-preview': 'operations.manage',
   'POST /v1/admin/orders/{orderId}/edit': 'operations.manage',
   'POST /v1/admin/orders/{orderId}/edit-preview': 'operations.manage',
   'POST /v1/merchant/orders/{orderId}/acknowledge-edit': 'app_session',

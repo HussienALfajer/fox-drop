@@ -25,7 +25,9 @@ import {
   orderLines,
   orders,
   type orderStatuses,
+  shortfallResolutions,
 } from './schema.js';
+import type { ShortfallParty } from './shortfall.js';
 
 type OrderStatus = (typeof orderStatuses)[number];
 export type OrderOutcome = (typeof orderOutcomes)[number];
@@ -112,8 +114,19 @@ export interface OrderView {
     received: PaymentLine[];
     change: PaymentLine[];
     netReceived: bigint;
-    // «نقص في التحصيل» (AP §8.6), with the captain's reason (K16).
-    shortfall: ({ amount: bigint } & RecordedReason) | null;
+    // «نقص في التحصيل» (AP §8.6), with the captain's reason (K16), and
+    // operations' resolution once made (slice 2.20b), null while open.
+    shortfall:
+      | ({
+          amount: bigint;
+          resolution: {
+            responsible: ShortfallParty;
+            note: string;
+            at: Date;
+            by: string;
+          } | null;
+        } & RecordedReason)
+      | null;
     recordedBy: { type: string; id: string; reason: string | null };
   } | null;
   // AP §9.3.2 «تحديد النتيجة» (slice 2.11a): the outcome operations set,
@@ -493,8 +506,22 @@ export async function readOrders(
               ),
             ),
           );
+  const shorts = deliveries.filter((each) => each.shortfall > 0n);
+  const resolutions =
+    shorts.length === 0
+      ? []
+      : await executor
+          .select()
+          .from(shortfallResolutions)
+          .where(
+            inArray(
+              shortfallResolutions.orderId,
+              shorts.map((each) => each.orderId),
+            ),
+          );
   return rows.map((row) => {
     const collection = deliveries.find((each) => each.orderId === row.id);
+    const resolution = resolutions.find((each) => each.orderId === row.id);
     // The outcome in force; the ones «تغيير النتيجة» replaced are its history
     // (slice 2.11c).
     const ownOutcomes = outcomes
@@ -607,6 +634,14 @@ export async function readOrders(
                     reason: collection.shortfallReason,
                     label: collection.shortfallReasonLabel ?? collection.shortfallReason,
                     note: collection.shortfallNote,
+                    resolution: resolution
+                      ? {
+                          responsible: resolution.responsible as ShortfallParty,
+                          note: resolution.note,
+                          at: resolution.resolvedAt,
+                          by: resolution.resolvedBy,
+                        }
+                      : null,
                   }
                 : null,
               recordedBy: {

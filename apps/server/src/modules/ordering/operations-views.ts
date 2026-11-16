@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, asc, count, desc, eq, gt, inArray } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { CaptainsService } from '../captains/index.js';
@@ -19,6 +19,7 @@ import {
 } from './pickup-views.js';
 import type { ItemReportNote, ItemReportUntil, ReportedItem } from './item-reports.js';
 import { collections, itemReports, orderEvents, orders, timeChanges } from './schema.js';
+import { shortfallOpen } from './shortfall.js';
 
 // AP §9.1.3: the alerts the board shows on a card, the same conditions as
 // the alerts list (order-alerts.ts).
@@ -134,9 +135,8 @@ export class OperationsViews {
   // AP §9.3.1: every event of the order with its time and actor, oldest
   // first.
   // AP §8.6, CA §9.7 item 4: «نقص في التحصيل», the orders of the city
-  // delivered short of their total beyond rounding, newest first. Operations
-  // resolve them with the responsible party (not built yet), so every one is
-  // still open.
+  // delivered short of their total beyond rounding that operations have not
+  // resolved yet (slice 2.20b), newest first.
   async shortfalls(cityId: string): Promise<Shortfall[]> {
     return this.database.db
       .select({
@@ -157,7 +157,7 @@ export class OperationsViews {
         orders,
         and(eq(orders.id, collections.orderId), eq(orders.placedAt, collections.orderPlacedAt)),
       )
-      .where(and(eq(collections.cityId, cityId), gt(collections.shortfall, 0n)))
+      .where(and(eq(collections.cityId, cityId), shortfallOpen))
       .orderBy(desc(collections.recordedAt)) as Promise<Shortfall[]>;
   }
 
@@ -275,7 +275,7 @@ export class OperationsViews {
       this.database.db
         .select({ orderId: collections.orderId })
         .from(collections)
-        .where(and(inArray(collections.orderId, ids), gt(collections.shortfall, 0n)))
+        .where(and(inArray(collections.orderId, ids), shortfallOpen))
         .then((rows) => new Set(rows.map((row) => row.orderId))),
       this.assignments.dispatchViews(extras.map((row) => ({ id: row.id, cityId: row.cityId }))),
     ]);

@@ -865,6 +865,47 @@ export const collections = ordering.table(
   ],
 );
 
+// AP §8.6, docs/domain/06 (slice 2.20b): operations' resolution of a
+// collection shortfall «نقص في التحصيل», one per order, never changed: the
+// party who bears the missing amount (`captain`, `customer` or `platform`),
+// the amount and the journal that moved it off the order clearing account,
+// the captain charged (CA §14 #14), the required note and the admin.
+export const shortfallResolutions = ordering.table(
+  'shortfall_resolutions',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    orderId: uuid('order_id').notNull(),
+    orderPlacedAt: timestamp('order_placed_at', { withTimezone: true }).notNull(),
+    cityId: uuid('city_id').notNull(),
+    collectionId: uuid('collection_id')
+      .notNull()
+      .references(() => collections.id),
+    responsible: text('responsible').notNull(),
+    currency: text('currency').notNull(),
+    amount: bigint('amount', { mode: 'bigint' }).notNull(),
+    // The ledger module's journal.
+    journalId: uuid('journal_id').notNull(),
+    // The captain charged, set exactly when the captain is responsible.
+    captainId: uuid('captain_id'),
+    note: text('note').notNull(),
+    resolvedAt: timestamp('resolved_at', { withTimezone: true }).notNull(),
+    resolvedBy: uuid('resolved_by').notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.orderId, table.orderPlacedAt],
+      foreignColumns: [orders.id, orders.placedAt],
+    }),
+    uniqueIndex('shortfall_resolutions_one_per_order').on(table.orderId),
+    check(
+      'shortfall_resolutions_values',
+      sql`${table.responsible} IN ('captain', 'customer', 'platform') AND (${table.responsible} = 'captain') = (${table.captainId} IS NOT NULL) AND ${table.amount} > 0 AND char_length(${table.note}) BETWEEN 1 AND 500`,
+    ),
+  ],
+);
+
 // Architecture §5.3: a command's Idempotency-Key, kept with the order it
 // placed for 24 hours. A repeat within them answers that order; an older key
 // may be used again.

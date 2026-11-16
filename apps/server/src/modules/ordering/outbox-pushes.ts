@@ -26,6 +26,7 @@ import {
   outbox,
   pickupRequests,
   reassignments,
+  shortfallResolutions,
 } from './schema.js';
 import { OUTCOME_LABELS } from './outcome.js';
 import { unansweredInBusinessDay } from './unanswered.js';
@@ -277,7 +278,27 @@ export class OutboxPushes {
         type === 'order.outcome_changed'
           ? await this.outcome(order, currencies, type, new Date(payload.at))
           : null,
+      shortfallCharge:
+        type === 'order.shortfall_resolved' ? await this.shortfallCharge(order, currencies) : null,
     };
+  }
+
+  // AP §8.6, CA §14 #14 (slice 2.20b): the shortfall the captain bears.
+  private async shortfallCharge(
+    order: typeof orders.$inferSelect,
+    currencies: Currencies,
+  ): Promise<string | null> {
+    const [row] = await this.database.db
+      .select({ amount: shortfallResolutions.amount, currency: shortfallResolutions.currency })
+      .from(shortfallResolutions)
+      .where(
+        and(
+          eq(shortfallResolutions.orderId, order.id),
+          eq(shortfallResolutions.orderPlacedAt, order.placedAt),
+          eq(shortfallResolutions.responsible, 'captain'),
+        ),
+      );
+    return row ? formatMoney(row.amount, row.currency, currencies) : null;
   }
 
   // AP §9.3.2 «سحب وإعادة تعيين» (slice 2.12a): the withdrawal made at the

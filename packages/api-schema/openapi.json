@@ -6330,6 +6330,110 @@
         ]
       }
     },
+    "/v1/admin/orders/{orderId}/resolve-shortfall": {
+      "post": {
+        "operationId": "adminOrdersResolveShortfall",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminResolveShortfallDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOrderCardDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/orders/{orderId}/shortfall-preview": {
+      "post": {
+        "operationId": "adminOrdersShortfallPreview",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminShortfallPreviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminShortfallPreviewAnswerDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/orders/{orderId}/record-arrival": {
       "post": {
         "operationId": "adminOrdersRecordArrival",
@@ -24563,6 +24667,227 @@
         ],
         "additionalProperties": false
       },
+      "AdminResolveShortfallDto": {
+        "type": "object",
+        "properties": {
+          "responsible": {
+            "type": "string",
+            "enum": [
+              "captain",
+              "customer",
+              "platform"
+            ],
+            "description": "Who bears the missing amount: the captain (earn.charge), the customer (dues.charge, blocked until paid) or the platform (operating cost)."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Required: the internal note, never shown to the apps."
+          }
+        },
+        "required": [
+          "responsible",
+          "reason"
+        ]
+      },
+      "AdminShortfallPreviewDto": {
+        "type": "object",
+        "properties": {
+          "responsible": {
+            "type": "string",
+            "enum": [
+              "captain",
+              "customer",
+              "platform"
+            ],
+            "description": "Who bears the missing amount: the captain (earn.charge), the customer (dues.charge, blocked until paid) or the platform (operating cost)."
+          }
+        },
+        "required": [
+          "responsible"
+        ]
+      },
+      "AdminShortfallPreviewAnswerDto_Output": {
+        "type": "object",
+        "properties": {
+          "shortfall": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "string",
+                "pattern": "^-?\\d+$",
+                "description": "Integer minor units (AP §8.6)."
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              }
+            },
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "additionalProperties": false,
+            "description": "The missing amount, in the base currency."
+          },
+          "dues": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "string",
+                    "pattern": "^-?\\d+$",
+                    "description": "Integer minor units (AP §8.6)."
+                  },
+                  "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  }
+                },
+                "required": [
+                  "amount",
+                  "currency"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The customer's dues, with the customer responsible."
+          },
+          "captainCharge": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "string",
+                    "pattern": "^-?\\d+$",
+                    "description": "Integer minor units (AP §8.6)."
+                  },
+                  "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                  }
+                },
+                "required": [
+                  "amount",
+                  "currency"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The captain's charge (CA §14 #14), with the captain responsible."
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "The journal type, such as dues.charge."
+                },
+                "reason": {
+                  "description": "The journal's reason, its line on the party's account (RA §12.5).",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "account": {
+                  "type": "string",
+                  "description": "The account purpose, such as customer.dues."
+                },
+                "party": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "merchant",
+                        "captain",
+                        "customer",
+                        "platform"
+                      ]
+                    },
+                    "id": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "id",
+                    "name"
+                  ],
+                  "additionalProperties": false
+                },
+                "amount": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    },
+                    "currency": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "currency"
+                  ],
+                  "additionalProperties": false,
+                  "description": "From the platform's side: + a debit, − a credit."
+                }
+              },
+              "required": [
+                "type",
+                "reason",
+                "account",
+                "party",
+                "amount"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Every entry the resolution would post."
+          }
+        },
+        "required": [
+          "shortfall",
+          "dues",
+          "captainCharge",
+          "entries"
+        ],
+        "additionalProperties": false
+      },
       "AdminRecordArrivalDto": {
         "type": "object",
         "properties": {
@@ -24814,7 +25139,7 @@
               ],
               "additionalProperties": false
             },
-            "description": "«نقص في التحصيل» (AP §8.6), newest first; all open until resolution is built."
+            "description": "«نقص في التحصيل» (AP §8.6): the ones operations have not resolved yet, newest first."
           }
         },
         "required": [
@@ -28190,13 +28515,57 @@
                                   "string",
                                   "null"
                                 ]
+                              },
+                              "resolution": {
+                                "anyOf": [
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "responsible": {
+                                        "type": "string",
+                                        "enum": [
+                                          "captain",
+                                          "customer",
+                                          "platform"
+                                        ]
+                                      },
+                                      "note": {
+                                        "type": "string",
+                                        "description": "Operations' required note."
+                                      },
+                                      "at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                                      },
+                                      "by": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "description": "The admin who resolved it."
+                                      }
+                                    },
+                                    "required": [
+                                      "responsible",
+                                      "note",
+                                      "at",
+                                      "by"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "description": "«حلّ النقص» (AP §8.6, slice 2.20b); null while the shortfall is open."
                               }
                             },
                             "required": [
                               "amount",
                               "reason",
                               "label",
-                              "note"
+                              "note",
+                              "resolution"
                             ],
                             "additionalProperties": false
                           },

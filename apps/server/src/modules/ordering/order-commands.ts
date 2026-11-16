@@ -89,6 +89,7 @@ import {
   type ReportedItem,
 } from './item-reports.js';
 import {
+  collections,
   doorPings,
   itemReports,
   noAnswerReports,
@@ -100,8 +101,10 @@ import {
   pickupRequests,
   reassignments,
   handovers,
+  shortfallResolutions,
   timeChanges,
 } from './schema.js';
+import { type ShortfallParty, shortfallEntries } from './shortfall.js';
 
 const MINUTE_MS = 60_000;
 // docs/domain/03: the promised time is rounded up to the next 5 minutes.
@@ -322,6 +325,7 @@ type Transition = {
     | 'edit'
     | 'set_outcome'
     | 'change_outcome'
+    | 'resolve_shortfall'
     | 'reassign'
     | 'answer_ping'
     | 'no_answer_wait';
@@ -1301,9 +1305,143 @@ export class OrderCommands {
     return { current, read, choices, result: this.outcome(read.facts, choices) };
   }
 
+  // AP §8.6, docs/domain/06 «Payment at the door» (slice 2.20b): operations
+  // resolve a delivered order's collection shortfall «نقص في التحصيل» by
+  // choosing who bears the missing amount (shortfallEntries), with their
+  // note, once per order. In one transaction: the journal that takes the
+  // shortfall off the order clearing account, the resolution's row, the
+  // event order.shortfall_resolved (the status stays; its alert sync closes
+  // «نقص في التحصيل», and the captain's charge pushes CA §14 #14) and the
+  // audit. 409 order_state_changed: no shortfall, or already resolved.
+  async resolveShortfall(
+    command: AdminOrderCommand & { responsible: ShortfallParty },
+    now: Date,
+  ): Promise<OrderView> {
+    const actor = { type: 'admin' as const, id: command.admin.accountId };
+    return this.run(
+      { kind: 'admin', command },
+      {
+        verb: 'resolve_shortfall',
+        from: ['delivered'],
+        to: null,
+        event: 'order.shortfall_resolved',
+      },
+      { responsible: command.responsible, reason: command.reason },
+      now,
+      async (order) => {
+        const shortfall = await this.openShortfall(this.database.db, order);
+        if (shortfall === null) throw await this.stateChanged(order);
+        const booking = shortfallEntries(shortfall.facts, command.responsible);
+        return {
+          set: {},
+          publicReason: command.responsible,
+          // Another resolution committed since the read leaves nothing open.
+          guard: async (tx) =>
+            (await this.openShortfall(tx, order))?.collectionId === shortfall.collectionId,
+          effects: async (tx) => {
+            const [journalId] = await this.postJournals(tx, order, actor, booking.journals);
+            await tx.insert(shortfallResolutions).values({
+              orderId: order.id,
+              orderPlacedAt: order.placedAt,
+              cityId: order.cityId,
+              collectionId: shortfall.collectionId,
+              responsible: command.responsible,
+              currency: shortfall.facts.currency,
+              amount: shortfall.facts.amount,
+              journalId: journalId!,
+              captainId: command.responsible === 'captain' ? shortfall.facts.captainId : null,
+              note: command.reason,
+              resolvedAt: now,
+              resolvedBy: actor.id,
+            });
+          },
+          audit: {
+            before: { shortfall: shortfall.facts.amount.toString() },
+            after: { shortfall: '0' },
+          },
+        };
+      },
+    );
+  }
+
+  // What resolving the shortfall with this party would post, every entry
+  // with its account, amount and party's name, for the dialog; it writes
+  // nothing. 409 order_state_changed: no shortfall open.
+  async previewShortfall(
+    orderId: string,
+    responsible: ShortfallParty,
+    now: Date,
+  ): Promise<ShortfallPreview> {
+    const order = await this.find(orderId, {});
+    const shortfall =
+      order.status === 'delivered' ? await this.openShortfall(this.database.db, order) : null;
+    if (shortfall === null) throw await this.stateChanged(order);
+    const booking = shortfallEntries(shortfall.facts, responsible);
+    const name = await this.partyNames(shortfall.parties, now);
+    return {
+      amount: shortfall.facts.amount,
+      currency: shortfall.facts.currency,
+      dues: booking.dues,
+      captainCharge: booking.captainCharge,
+      entries: booking.journals.flatMap((journal) =>
+        journal.entries.map((entry) => ({
+          type: journal.type,
+          reason: journal.reason,
+          ...entry,
+          party: { ...entry.party, name: name(entry.party) },
+        })),
+      ),
+    };
+  }
+
+  // The order's collection short beyond rounding and not yet resolved, with
+  // what its resolution books; null otherwise.
+  private async openShortfall(
+    executor: Pick<Database['db'], 'select'>,
+    order: { id: string; placedAt: Date },
+  ) {
+    const [row] = await executor
+      .select({
+        collectionId: collections.id,
+        amount: collections.shortfall,
+        currency: collections.currency,
+        captainId: collections.captainId,
+        customerAccountId: orders.customerAccountId,
+        restaurantId: orders.restaurantId,
+        testOrder: orders.testOrder,
+        resolved: shortfallResolutions.id,
+      })
+      .from(collections)
+      .innerJoin(
+        orders,
+        and(eq(orders.id, collections.orderId), eq(orders.placedAt, collections.orderPlacedAt)),
+      )
+      .leftJoin(shortfallResolutions, eq(shortfallResolutions.orderId, collections.orderId))
+      .where(and(eq(collections.orderId, order.id), eq(collections.orderPlacedAt, order.placedAt)));
+    if (!row || row.amount <= 0n || row.resolved !== null) return null;
+    return {
+      collectionId: row.collectionId,
+      facts: {
+        amount: row.amount,
+        currency: row.currency,
+        captainId: row.captainId,
+        customerAccountId: row.customerAccountId,
+        testOrder: row.testOrder,
+      },
+      parties: {
+        restaurantId: row.restaurantId,
+        captainId: row.captainId,
+        customerAccountId: row.customerAccountId,
+      },
+    };
+  }
+
   // The names the outcome dialogs show beside each entry: the restaurant's,
   // the captain's and the customer's first name.
-  private async partyNames(facts: OutcomeFacts, now: Date) {
+  private async partyNames(
+    facts: Pick<OutcomeFacts, 'restaurantId' | 'captainId' | 'customerAccountId'>,
+    now: Date,
+  ) {
     const [names, captain, customers] = await Promise.all([
       this.merchants.names([facts.restaurantId]),
       this.captains.captain(facts.captainId, now),
@@ -2981,6 +3119,15 @@ export interface OutcomePreview {
 // «تغيير النتيجة»: the entries reversed beside the ones posted.
 export interface OutcomeChangePreview extends OutcomePreview {
   reversed: OutcomePreview['entries'];
+}
+
+// AP §8.6 (slice 2.20b): the «حلّ النقص» dialog's entries and amounts.
+export interface ShortfallPreview {
+  amount: bigint;
+  currency: string;
+  dues: bigint | null;
+  captainCharge: bigint | null;
+  entries: OutcomePreview['entries'];
 }
 
 // AP §8.9 «تغيير النتيجة»: a finished order with an outcome.

@@ -4,16 +4,24 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.20b, resolving «نقص في التحصيل» (`docs/roadmap.md`, Phase 2, Money; the second of 2.20's four sub-slices, owner approved 2026-11-16).
+Slice 2.20c, «القيود التصحيحية» (`docs/roadmap.md`, Phase 2, Money; the third of 2.20's four sub-slices).
 
-- **Roadmap line:** 2.20b Resolving «نقص في التحصيل», in the server and the panel: operations choose the responsible party with the §8.9 effects on the missing amount only, previewed before confirming: the captain (`earn.charge`, the push «خُصم من مستحقاتك», CA §14 #14), the customer (`dues.charge` of the missing amount with the block until paid, no fake-order rule, strike or trust change) or the platform (`platform.operating_cost`); the alert closes and the open shortfall leaves the order and the dashboard (AP §8.6, §8.8–8.9).
-- **Specs:** AP §8.6 (`docs/domain/06-currencies-and-exchange-rates.md`, «Payment at the door»), §8.8 (`docs/domain/08-customer-trust-strikes-and-dues.md`), §8.9 (`docs/domain/09-outcomes-and-responsibility.md`), AP §9.3.2 and §9.1.3 («نقص في التحصيل»), CA §14 #14; the ordering module's `CLAUDE.md` (the delivery, `GET /v1/admin/orders/shortfalls`, `order-alerts.ts`: the alert «stays open until operations resolve the shortfall (not built)»), the ledger module's `CLAUDE.md`, `apps/admin/CLAUDE.md`.
-- **Branch:** `feat/resolve-shortfall`.
+- **Roadmap line:** 2.20c «القيود التصحيحية» in the server and the panel, OWN and FIN (`ledger.manual_adjustment`): a manual entry with a reason on a captain's custody or earnings, a restaurant account or a customer's dues (`dues.adjustment`, owner decision 2026-11-16, brought forward from 2.25), the reversal of an existing entry linked to it, and the list of every manual entry with who, when, why and what it corrects; nothing deleted (AP §9.10.7). The owner adjusts a captain's earnings, reverses it, and sees both linked in the list.
+- **Specs:** AP §9.10.7 (`docs/product/v1/admin-panel/09-modules/10-finance.md`), AP §8.8 (`docs/domain/08-customer-trust-strikes-and-dues.md`, `dues.adjustment`), the ledger module's `CLAUDE.md` (journals, reversals, accounts), `apps/server/src/modules/cashdesk/CLAUDE.md` if the routes live there, `apps/admin/CLAUDE.md`.
+- **Branch:** `feat/manual-adjustments`.
 - **Plan:**
-  - [ ] The rule and its entries, test first: the shortfall left on the order clearing account moved to the captain (`earn.charge`), the customer (`dues.charge`, the missing amount only) or the platform (`platform.operating_cost`; `test_cost` on a test order), the clearing account back to zero; the resolution kept on the order once, audited, with an event.
-  - [ ] The routes: the preview and the resolution (`operations.manage`, `Idempotency-Key`), the shortfalls list and the order detail answering it resolved; the alert «نقص في التحصيل» closed; the captain's push «خُصم من مستحقاتك»; the generated clients.
-  - [ ] The panel: «حلّ النقص» on the order detail with the party, the preview's sentences and the required note; the shortfall and its resolution on the detail.
-  - [ ] Review, then hand over to 2.20c.
+  - [ ] The rule and its entries, test first: a manual adjustment on one party account (captain custody per currency, captain earnings, restaurant account, customer dues) against its platform counter-account, with the required reason, the admin and the audit; the reversal of an existing journal linked to it (once); nothing deleted.
+  - [ ] The routes (`ledger.manual_adjustment`, `Idempotency-Key`): create, reverse, and the list of every manual entry with who, when, why and what it corrects; the generated clients.
+  - [ ] The panel: «القيود التصحيحية» for OWN and FIN, the form (the party, the account, the amount and its sign, the reason), the reversal of an entry, and the list with the links.
+  - [ ] Review, then hand over to 2.20d.
+
+### Left from 2.20b (`feat/resolve-shortfall`)
+
+- **Before deploying to staging:** migration 0076 adds `ordering.shortfall_resolutions` (expand only; the application role cannot update it). New routes `POST /v1/admin/orders/{orderId}/resolve-shortfall` and `.../shortfall-preview` (`operations.manage`); the detail's `delivery.shortfall` answers `resolution`; the shortfalls list and the board's badge leave out a resolved shortfall. New event `order.shortfall_resolved` (panel and captain channels only). Deploy the server before the panel.
+- **To check on staging:** deliver an order short (the captain enters less than the total with a reason): the warning «نقص في التحصيل» opens for OWN, OPS and FIN. Open the order: «النقص مفتوح…» and «حلّ النقص» with the missing amount. Choose «الزبون»: the preview says «سيُحظر الزبون … حتى دفع …»; write the note and «تأكيد الحل»: the alert closes, the detail says «حُلّ النقص: يتحمّله الزبون …», the timeline «حُلّ نقص التحصيل», and the customer's checkout shows the dues block until the dues are paid at the desk. On another short order choose «الكابتن»: the captain's phone gets «خُصم من مستحقاتك {المبلغ}: نقص في التحصيل» and the earnings drop by the amount; «المنصة» books the operating cost.
+- **To confirm with the owner:** whether FIN may resolve a shortfall too (AP §9.1.3 sends FIN the alert with «Resolve», docs/domain/06 says OPS resolves it; built for OWN and OPS, `operations.manage`); the customer gets no push when made responsible (CU §14 has no row; the block shows at checkout); a resolution is final (no change or reversal; «القيود التصحيحية», 2.20c, can correct the entry); the panel's words: «حلّ النقص», «المبلغ الناقص: …», «اختر من يتحمّل النقص لتظهر القيود», «تأكيد الحل», «حُلّ هذا النقص من قبل. أعد فتح الطلب.», «النقص مفتوح حتى تحدّد العمليات من يتحمّله.», «حُلّ النقص: يتحمّله {الطرف} ({الوقت})», «حُلّ نقص التحصيل».
+- **Decided by us:** the captain charged is the one who collected (the collection's captain, the second after a handover); a test order's platform share is `platform.test_cost`; the alert «نقص في التحصيل» keeps «فتح الطلب», where the form is.
+- **Not yet:** the dashboard's pending-task count «open collection shortfalls» (AP §9.1.4: the panel has no dashboard widgets yet; the alert and `GET /v1/admin/orders/shortfalls` carry it); an end-to-end test of the captain's push through `OutboxPushes` (the rule is tested in `order-pushes.test.ts`).
 
 ### Left from 2.20a (`feat/exchange-rates-screen`)
 

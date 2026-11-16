@@ -39,6 +39,7 @@ import {
   type CancellationPreview,
   type OutcomeChangePreview,
   type OutcomePreview,
+  type ShortfallPreview,
   type EditPreview,
   OrderCommandRefusedError,
   OrderCommands,
@@ -46,6 +47,7 @@ import {
 } from './order-commands.js';
 import { PickupCommands } from './pickup-commands.js';
 import { REASSIGNABLE } from './reassignment.js';
+import { shortfallParties } from './shortfall.js';
 import { ResendNotification, ResendRefusedError } from './resend-notification.js';
 import { minor } from './customer-quote.controller.js';
 import { type OperationsOrder, OperationsViews } from './operations-views.js';
@@ -175,7 +177,9 @@ class AdminShortfallsDto extends createZodDto(
           recordedAt: z.iso.datetime(),
         }),
       )
-      .describe('«نقص في التحصيل» (AP §8.6), newest first; all open until resolution is built.'),
+      .describe(
+        '«نقص في التحصيل» (AP §8.6): the ones operations have not resolved yet, newest first.',
+      ),
   }),
 ) {}
 
@@ -657,6 +661,40 @@ const outcomePreviewAnswer = z.object({
 });
 
 class AdminOutcomePreviewAnswerDto extends createZodDto(outcomePreviewAnswer) {}
+
+// AP §8.6 (slice 2.20b): «حلّ النقص», the party who bears the missing amount.
+const shortfallChoice = {
+  responsible: z
+    .enum(shortfallParties)
+    .describe(
+      'Who bears the missing amount: the captain (earn.charge), the customer (dues.charge, blocked until paid) or the platform (operating cost).',
+    ),
+};
+
+class AdminResolveShortfallDto extends createZodDto(
+  z.object({
+    ...shortfallChoice,
+    reason: z
+      .string()
+      .trim()
+      .min(1)
+      .max(500)
+      .describe('Required: the internal note, never shown to the apps.'),
+  }),
+) {}
+
+class AdminShortfallPreviewDto extends createZodDto(z.object(shortfallChoice)) {}
+
+class AdminShortfallPreviewAnswerDto extends createZodDto(
+  z.object({
+    shortfall: money.describe('The missing amount, in the base currency.'),
+    dues: money.nullable().describe("The customer's dues, with the customer responsible."),
+    captainCharge: money
+      .nullable()
+      .describe("The captain's charge (CA §14 #14), with the captain responsible."),
+    entries: z.array(previewEntry).describe('Every entry the resolution would post.'),
+  }),
+) {}
 
 class AdminOutcomeChangePreviewAnswerDto extends createZodDto(
   outcomePreviewAnswer.extend({
@@ -1168,6 +1206,15 @@ class AdminOrderDto extends createZodDto(
               reason: z.string().describe('The code in Content.'),
               label: z.string().describe('Its label as chosen.'),
               note: z.string().nullable(),
+              resolution: z
+                .object({
+                  responsible: z.enum(shortfallParties),
+                  note: z.string().describe("Operations' required note."),
+                  at: z.iso.datetime(),
+                  by: z.uuid().describe('The admin who resolved it.'),
+                })
+                .nullable()
+                .describe('«حلّ النقص» (AP §8.6, slice 2.20b); null while the shortfall is open.'),
             })
             .nullable()
             .describe('«نقص في التحصيل» (AP §8.6), open until operations resolve it.'),
@@ -1897,6 +1944,64 @@ export class AdminOrdersController {
     return { ...outcomePreviewBody(rest), reversed: reversed.map(previewEntryBody) };
   }
 
+  // AP §8.6, docs/domain/06 (slice 2.20b): «حلّ النقص», operations choose
+  // who bears a delivered order's collection shortfall, with their note,
+  // once: the journal, the resolution and order.shortfall_resolved (the
+  // alert closes) in one transaction. 409 order_state_changed (no shortfall
+  // open) with the order as it is now; 404 unknown_order; 422
+  // idempotency_key_reused.
+  @Post(':orderId/resolve-shortfall')
+  @RequirePermission('operations.manage')
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminOrderCardDto })
+  async resolveShortfall(
+    @Param() params: AdminOrderParamsDto,
+    @Body() body: AdminResolveShortfallDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.onBehalf(params.orderId, () =>
+      this.commands.resolveShortfall(
+        {
+          orderId: params.orderId,
+          admin: { accountId: session.accountId, roles: session.roles },
+          context: requestContext(request),
+          idempotencyKey,
+          responsible: body.responsible,
+          reason: body.reason,
+        },
+        new Date(),
+      ),
+    );
+  }
+
+  // What «حلّ النقص» with this party would post; it writes nothing, so it
+  // takes no key. 409 order_state_changed: no shortfall open.
+  @Post(':orderId/shortfall-preview')
+  @RequirePermission('operations.manage')
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminShortfallPreviewAnswerDto })
+  async shortfallPreview(
+    @Param() params: AdminOrderParamsDto,
+    @Body() body: AdminShortfallPreviewDto,
+  ) {
+    let preview: ShortfallPreview | undefined;
+    await this.onBehalf(params.orderId, async () => {
+      preview = await this.commands.previewShortfall(params.orderId, body.responsible, new Date());
+    });
+    const { amount, currency, dues, captainCharge, entries } = preview!;
+    const value = (each: bigint | null) =>
+      each === null ? null : { amount: each.toString(), currency };
+    return {
+      shortfall: value(amount)!,
+      dues: value(dues),
+      captainCharge: value(captainCharge),
+      entries: entries.map(previewEntryBody),
+    };
+  }
+
   // Runs a command on the restaurant's behalf and answers the card, or its
   // refusal.
   private async onBehalf(orderId: string, run: () => Promise<unknown>) {
@@ -2438,6 +2543,10 @@ export class AdminOrdersController {
             reason: order.delivery.shortfall.reason,
             label: order.delivery.shortfall.label,
             note: order.delivery.shortfall.note,
+            resolution: order.delivery.shortfall.resolution && {
+              ...order.delivery.shortfall.resolution,
+              at: order.delivery.shortfall.resolution.at.toISOString(),
+            },
           },
           recordedBy: {
             type: order.delivery.recordedBy.type as 'captain' | 'admin',
