@@ -28,6 +28,7 @@ export type PromoRefusal =
   | 'unknown_city'
   | 'unknown_promo_code'
   | 'no_base_currency'
+  | 'currency_changed'
   | 'idempotency_key_reused';
 
 export class PromoRefusedError extends Error {
@@ -92,7 +93,7 @@ export class PromoCodesService implements OnModuleInit {
 
   // One code typed by hand, or a batch of `count` generated codes with the
   // prefix, all with the same fields. 400 invalid_promo_code; 404
-  // unknown_city; 409 code_taken, no_base_currency, idempotency_key_reused.
+  // unknown_city; 409 code_taken, no_base_currency; 422 idempotency_key_reused.
   async create(
     cityId: string,
     what: { code: string } | { count: number; prefix: string },
@@ -207,13 +208,17 @@ export class PromoCodesService implements OnModuleInit {
 
   // Replaces a code's fields (not the code itself); setting them again
   // changes nothing. 400 invalid_promo_code; 404 unknown_promo_code;
-  // 409 no_base_currency.
+  // 409 no_base_currency, currency_changed (its amounts are in an earlier
+  // base: a new code is made in the new one).
   async edit(cityId: string, id: string, fields: PromoFields, change: PromoChange) {
     await this.checkFields(cityId, fields);
     return this.database.db.transaction(async (tx) => {
       await lockCityCurrencies(tx, cityId);
       const before = await this.locked(tx, cityId, id);
       const currency = await this.baseCurrency(cityId, tx);
+      if (before.currency !== currency) {
+        throw new PromoRefusedError('currency_changed', 'the code is in an earlier base currency');
+      }
       const [after] = (await tx
         .update(promoCodes)
         .set({

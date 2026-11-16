@@ -76,6 +76,7 @@ const refusalKeys = {
   invalid_promo_code: 'promoCodes.refusal.invalid_promo_code',
   code_taken: 'promoCodes.refusal.code_taken',
   no_base_currency: 'promoCodes.refusal.no_base_currency',
+  currency_changed: 'promoCodes.refusal.currency_changed',
   unknown_promo_code: 'promoCodes.refusal.unknown_promo_code',
 } as const satisfies Record<PromoRefusal, string>;
 
@@ -474,7 +475,7 @@ function PromoCodeForm({
                   checked={form.zoneIds.includes(zone.id)}
                   onChange={() => set({ zoneIds: toggle(form.zoneIds, zone.id) })}
                 />
-                {zone.name}
+                {zone.active ? zone.name : t('promoCodes.inactiveZone', { zone: zone.name })}
               </label>
             ))}
           </fieldset>

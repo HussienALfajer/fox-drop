@@ -155,6 +155,10 @@ export function formOfCode(code: PromoCode, timeZone: string): PromoForm {
   };
 }
 
+// The server's maximums of the limits.
+export const MAX_TOTAL_LIMIT = 1_000_000;
+export const MAX_PER_CUSTOMER_LIMIT = 1000;
+
 export type FormProblem =
   | 'code'
   | 'count'
@@ -180,9 +184,11 @@ export function fieldsOf(
     const minor = minorOf(typed, currency);
     return minor === null || /^0+$/.test(minor) ? false : minor;
   };
-  const whole = (typed: string): number | null | false => {
+  // A limit: empty is none; else a whole number from 1 to the server's maximum.
+  const whole = (typed: string, max: number): number | null | false => {
     if (typed.trim() === '') return null;
-    return /^\d{1,7}$/.test(typed.trim()) && Number(typed) > 0 ? Number(typed) : false;
+    const value = Number(typed.trim());
+    return /^\d{1,7}$/.test(typed.trim()) && value > 0 && value <= max ? value : false;
   };
   let percentBp: number | null = null;
   let amount: string | null = null;
@@ -213,8 +219,8 @@ export function fieldsOf(
       return { problem: 'hours' };
     }
   }
-  const totalLimit = whole(form.totalLimit);
-  const perCustomerLimit = whole(form.perCustomerLimit);
+  const totalLimit = whole(form.totalLimit, MAX_TOTAL_LIMIT);
+  const perCustomerLimit = whole(form.perCustomerLimit, MAX_PER_CUSTOMER_LIMIT);
   if (
     totalLimit === false ||
     perCustomerLimit === false ||
@@ -317,6 +323,7 @@ export const promoRefusals = [
   'invalid_promo_code',
   'code_taken',
   'no_base_currency',
+  'currency_changed',
   'unknown_promo_code',
 ] as const;
 export type PromoRefusal = (typeof promoRefusals)[number];

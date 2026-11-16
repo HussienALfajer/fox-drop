@@ -224,7 +224,7 @@ export class AdminPromoCodesController {
 
   // Sets a code's fields to the values sent (not the code itself), so no
   // Idempotency-Key. 400 invalid_promo_code; 404 unknown_promo_code;
-  // 409 no_base_currency.
+  // 409 no_base_currency, currency_changed.
   @Put(':codeId')
   @RequirePermission('marketing.manage')
   @ZodResponse({ status: 200, type: AdminPromoCodeDto })
@@ -385,6 +385,7 @@ async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
         throw new NotFoundException(body(HttpStatus.NOT_FOUND));
       case 'code_taken':
       case 'no_base_currency':
+      case 'currency_changed':
         throw new ConflictException(body(HttpStatus.CONFLICT));
       case 'idempotency_key_reused':
         throw new UnprocessableEntityException(body(HttpStatus.UNPROCESSABLE_ENTITY));

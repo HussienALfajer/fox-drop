@@ -276,6 +276,37 @@ describe('«أكواد الخصم»', () => {
   });
 });
 
+describe('«أكواد الخصم» out of scope and replayed', () => {
+  it('answers a code of another city as unknown', async () => {
+    const own = await admin(['OWN']);
+    const id: string = (await own.post('', { cityId: azaz, code: 'SCOPE1', ...fields })).json()
+      .codes[0].id;
+    const elsewhere = randomUUID();
+    expect((await own.post(`/${id}/pause`, { cityId: elsewhere }, null)).statusCode).toBe(404);
+    expect((await own.post(`/${id}/resume`, { cityId: elsewhere }, null)).statusCode).toBe(404);
+    expect((await own.put(id, { cityId: elsewhere, ...fields })).statusCode).toBe(404);
+  });
+
+  it('answers a batch sent again with its key with the same codes', async () => {
+    const own = await admin(['OWN']);
+    const key = randomUUID();
+    const body = { cityId: azaz, count: 3, prefix: 'RE', ...fields };
+    const first = (await own.post('/batch', body, key))
+      .json()
+      .codes.map((c: { id: string }) => c.id);
+    const again = (await own.post('/batch', body, key))
+      .json()
+      .codes.map((c: { id: string }) => c.id);
+    expect(again.sort()).toEqual([...first].sort());
+  });
+
+  it('keeps the base currency while a code runs (AP §8.6)', async () => {
+    const fx = app.get(FxService);
+    await fx.setCityCurrency(azaz, { currency: 'USD', displayOrder: 2, enabled: false }, change);
+    await expect(fx.setBaseCurrency(azaz, 'USD', change)).rejects.toThrow(/promo_code:FOX20/);
+  });
+});
+
 describe('the marketing tables', () => {
   it('refuse a percentage without its value and never let the application role delete', async () => {
     const insert = (percent: string) =>

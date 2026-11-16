@@ -89,6 +89,8 @@ describe('the form', () => {
     expect(problem({ validTo: '2026-11-01T00:00' })).toEqual({ problem: 'dates' });
     expect(problem({ start: '20:00' })).toEqual({ problem: 'hours' });
     expect(problem({ totalLimit: '1', perCustomerLimit: '2' })).toEqual({ problem: 'limits' });
+    expect(problem({ totalLimit: '1000001' })).toEqual({ problem: 'limits' });
+    expect(problem({ totalLimit: '', perCustomerLimit: '1001' })).toEqual({ problem: 'limits' });
     expect(problem({ funding: 'shared', restaurantIds: [restaurant] })).toEqual({
       problem: 'share',
     });
