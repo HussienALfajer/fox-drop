@@ -5,8 +5,16 @@ export const alertSeverities = ['critical', 'warning', 'information'] as const;
 export type AlertSeverity = (typeof alertSeverities)[number];
 
 // What an alert is about: an order, a captain, the WhatsApp code senders
-// (the pool as a whole, or one number), or a restaurant.
-export const alertSubjects = ['order', 'captain', 'otp_pool', 'otp_number', 'restaurant'] as const;
+// (the pool as a whole, or one number), a restaurant, or one currency of a
+// city (`<cityId>:<code>`).
+export const alertSubjects = [
+  'order',
+  'captain',
+  'otp_pool',
+  'otp_number',
+  'restaurant',
+  'currency',
+] as const;
 export type AlertSubject = (typeof alertSubjects)[number];
 
 export const alertCodes = [
@@ -64,6 +72,10 @@ export const alertCodes = [
   // merchant.settlement_overdue_days after the settlement day (AP §8.7,
   // slice 2.19f), until it is paid.
   'restaurant_settlement_overdue',
+  // «سعر صرف قديم»: an enabled currency's current rate older than
+  // fx.stale_alert_hours (AP §8.6, slice 2.20a), until a new rate is set or
+  // the currency is disabled.
+  'rate_stale',
 ] as const;
 export type AlertCode = (typeof alertCodes)[number];
 
@@ -103,6 +115,7 @@ export const ALERT_RULES: Record<AlertCode, AlertRule> = {
   customer_not_answering: rule('warning', OPERATIONS, 'order'),
   restaurant_auto_paused: rule('warning', OPERATIONS, 'restaurant'),
   restaurant_settlement_overdue: rule('warning', ['OWN', 'FIN'], 'restaurant'),
+  rate_stale: rule('information', ['OWN', 'FIN'], 'currency'),
 };
 
 function rule(

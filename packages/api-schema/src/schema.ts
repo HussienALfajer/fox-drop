@@ -9164,14 +9164,14 @@ export interface components {
                  * @description The rule of AP §9.1.3.
                  * @enum {string}
                  */
-                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue";
+                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale";
                 /**
                  * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
                  * @enum {string}
                  */
                 severity: "critical" | "warning" | "information";
                 /** @enum {string} */
-                subjectType: "order" | "captain" | "otp_pool" | "otp_number" | "restaurant";
+                subjectType: "order" | "captain" | "otp_pool" | "otp_number" | "restaurant" | "currency";
                 /** @description The order, captain or sending number it is about. */
                 subjectId: string;
                 /** @description For an alert about an order. */
@@ -9180,6 +9180,8 @@ export interface components {
                 captainName: string | null;
                 /** @description For an alert about a restaurant. */
                 restaurantName: string | null;
+                /** @description «سعر صرف قديم» (AP §8.6, slice 2.20a): the currency; null for the others. */
+                currency: string | null;
                 /** @description «مطعم متأخر في التسوية» (AP §9.1.3, slice 2.19f): the oldest statement still unpaid, for «فتح الكشف»; null for the others. */
                 statementId: string | null;
                 /** @description «طوارئ كابتن» (AP §9.1.3, CA §9.11): the location the captain sent, for «فتح الخريطة»; null for the others and an emergency without a fix. */
@@ -9209,14 +9211,14 @@ export interface components {
              * @description The rule of AP §9.1.3.
              * @enum {string}
              */
-            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue";
+            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale";
             /**
              * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
              * @enum {string}
              */
             severity: "critical" | "warning" | "information";
             /** @enum {string} */
-            subjectType: "order" | "captain" | "otp_pool" | "otp_number" | "restaurant";
+            subjectType: "order" | "captain" | "otp_pool" | "otp_number" | "restaurant" | "currency";
             /** @description The order, captain or sending number it is about. */
             subjectId: string;
             /** @description For an alert about an order. */
@@ -9225,6 +9227,8 @@ export interface components {
             captainName: string | null;
             /** @description For an alert about a restaurant. */
             restaurantName: string | null;
+            /** @description «سعر صرف قديم» (AP §8.6, slice 2.20a): the currency; null for the others. */
+            currency: string | null;
             /** @description «مطعم متأخر في التسوية» (AP §9.1.3, slice 2.19f): the oldest statement still unpaid, for «فتح الكشف»; null for the others. */
             statementId: string | null;
             /** @description «طوارئ كابتن» (AP §9.1.3, CA §9.11): the location the captain sent, for «فتح الخريطة»; null for the others and an emergency without a fix. */

@@ -10,6 +10,7 @@ import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { reportError } from '../../observability/error-tracking.js';
 import { CaptainsService } from '../captains/index.js';
+import { FxService } from '../fx/index.js';
 import { GeoService } from '../geo/index.js';
 import { OtpSenderPoolService } from '../identity/index.js';
 import type { AlertCode } from './alert-rules.js';
@@ -38,6 +39,7 @@ export class AlertsSweep {
     private readonly captains: CaptainsService,
     private readonly geo: GeoService,
     private readonly restaurants: RestaurantStatusService,
+    private readonly fx: FxService,
   ) {}
 
   async run(now: Date): Promise<void> {
@@ -45,6 +47,7 @@ export class AlertsSweep {
       this.senders(now).catch((error: unknown) => this.failed('code senders', error)),
       this.cashLimits(now).catch((error: unknown) => this.failed('cash limits', error)),
       this.autoPauses(now).catch((error: unknown) => this.failed('auto-pauses', error)),
+      this.staleRates(now).catch((error: unknown) => this.failed('stale rates', error)),
     ]);
   }
 
@@ -125,6 +128,35 @@ export class AlertsSweep {
       if (seen.has(subject.id)) continue;
       await this.sync(
         { type: 'restaurant', id: subject.id, cityId: subject.cityId },
+        [code],
+        [],
+        now,
+      );
+    }
+  }
+
+  // AP §8.6 «سعر صرف قديم» (slice 2.20a): open while an enabled currency's
+  // rate is older than fx.stale_alert_hours, resolved by a new rate or once
+  // the currency is disabled.
+  async staleRates(now: Date): Promise<void> {
+    const code: AlertCode = 'rate_stale';
+    const seen = new Set<string>();
+    for (const city of await this.geo.activeCities()) {
+      for (const rate of await this.fx.staleRates(city.id, now)) {
+        const id = `${city.id}:${rate.currency}`;
+        seen.add(id);
+        await this.sync(
+          { type: 'currency', id, cityId: city.id, details: { currency: rate.currency } },
+          [code],
+          [code],
+          now,
+        );
+      }
+    }
+    for (const subject of await this.alerts.openSubjects(code)) {
+      if (seen.has(subject.id)) continue;
+      await this.sync(
+        { type: 'currency', id: subject.id, cityId: subject.cityId },
         [code],
         [],
         now,

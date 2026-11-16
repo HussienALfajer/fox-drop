@@ -526,6 +526,13 @@
       "when": 1794827540504,
       "tag": "0074_reporting_exports",
       "breakpoints": true
+    },
+    {
+      "idx": 75,
+      "version": "7",
+      "when": 1794831171814,
+      "tag": "0075_notifications_currency_alerts",
+      "breakpoints": true
     }
   ]
 }

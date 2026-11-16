@@ -45,6 +45,7 @@ export const alertKeys = {
   code_number_stopped: 'order.alert.codeNumberStopped',
   restaurant_auto_paused: 'order.alert.restaurantAutoPaused',
   restaurant_settlement_overdue: 'order.alert.restaurantSettlementOverdue',
+  rate_stale: 'order.alert.rateStale',
   item_unavailable: 'order.alert.itemUnavailable',
   edit_unacknowledged: 'order.alert.editUnacknowledged',
   captain_cannot_complete: 'order.alert.captainCannotComplete',

@@ -123,7 +123,14 @@ export class PushWorkerModule {}
 // The worker's sweep of the alerts no transaction raises (alerts-sweep.ts),
 // and the relay of every alert change to the panel (alerts-relay.ts).
 @Module({
-  imports: [DatabaseModule, CaptainsModule, GeoModule, OtpSenderPoolModule, MerchantsModule],
+  imports: [
+    DatabaseModule,
+    CaptainsModule,
+    GeoModule,
+    OtpSenderPoolModule,
+    MerchantsModule,
+    FxModule,
+  ],
   providers: [
     AlertsService,
     AlertsSweep,

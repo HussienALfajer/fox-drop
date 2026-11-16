@@ -156,6 +156,7 @@ function AlertLine({ alert, city }: { alert: AdminAlert; city: City }) {
       {alert.restaurantName && (
         <span>{t('alerts.restaurant', { name: alert.restaurantName })}</span>
       )}{' '}
+      {alert.currency && <span>{t('alerts.currency', { code: alert.currency })}</span>}{' '}
       {alert.location && (
         <>
           <span>{t('alerts.locatedAt', { time: time(alert.location.at) })}</span>{' '}
