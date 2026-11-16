@@ -16,13 +16,17 @@ jobs:
   # What a change touches. Markdown and docs/ only: Prettier alone checks
   # them. The specs (docs/product, docs/domain) count as code, since tests
   # check the code against them (catalogue.test.ts reads AP Appendix A). The
-  # Android builds run only for a change to a Flutter app, a Dart package or
-  # this workflow.
+  # Dart checks and tests run only for a change to Dart code, a pubspec, the
+  # analysis or localization files, the pinned Flutter, this workflow or
+  # verify.mjs (a server route changes packages/core_api, the committed
+  # client, and the contract job fails one left stale). The Android builds
+  # run only for a change to a Flutter app, a Dart package or this workflow.
   changes:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
       code: ${{ steps.paths.outputs.code }}
+      dart: ${{ steps.paths.outputs.dart }}
       flutter: ${{ steps.paths.outputs.flutter }}
     steps:
       - uses: actions/checkout@v7
@@ -36,6 +40,7 @@ jobs:
           if ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
             # No commit to compare with (a new branch): check everything.
             echo "code=true" >> "$GITHUB_OUTPUT"
+            echo "dart=true" >> "$GITHUB_OUTPUT"
             echo "flutter=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -43,13 +48,16 @@ jobs:
           files=$(git diff --name-only --no-renames "$BASE" HEAD)
           printf '%s\n' "$files"
           code=false
+          dart=false
           flutter=false
           # Here-strings, not pipes: under pipefail an early grep -q exit
           # could fail the pipe on a long list.
           if grep -qvE '(\.md$|^docs/)' <<<"$files"; then code=true; fi
           if grep -qE '^docs/(product|domain)/' <<<"$files"; then code=true; fi
+          if grep -qE '(\.dart$|\.arb$|(^|/)(pubspec\.(yaml|lock)|analysis_options\.yaml|l10n\.yaml)$|^(apps/(customer|captain|merchant)|packages/core_[a-z_]+)/|^\.fvmrc$|^\.github/workflows/ci\.yml$|^scripts/verify\.mjs$)' <<<"$files"; then dart=true; fi
           if grep -qE '^(apps/(customer|captain|merchant)/|packages/core_|pubspec\.(yaml|lock)$|\.fvmrc$|analysis_options\.yaml$|\.github/workflows/ci\.yml$)' <<<"$files"; then flutter=true; fi
           echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "dart=$dart" >> "$GITHUB_OUTPUT"
           echo "flutter=$flutter" >> "$GITHUB_OUTPUT"
 
   # The parts of pnpm verify run as parallel jobs (scripts/verify.mjs). The
@@ -179,7 +187,7 @@ jobs:
 
   dart:
     needs: changes
-    if: needs.changes.outputs.code == 'true'
+    if: needs.changes.outputs.dart == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -206,11 +214,46 @@ jobs:
 
       - run: node scripts/verify.mjs dart
 
+  # The Flutter packages' tests in three shards, balanced by verify.mjs
+  # (FLUTTER_TEST_SECONDS); every package lands in one shard.
+  flutter:
+    needs: changes
+    if: needs.changes.outputs.dart == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v7
+
+      # Runs scripts/verify.mjs.
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+
+      - name: Read the pinned Flutter version
+        id: flutter
+        run: |
+          version=$(jq -er .flutter .fvmrc)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          flutter-version: ${{ steps.flutter.outputs.version }}
+          cache: true
+
+      - run: dart pub get --enforce-lockfile
+
+      - run: node scripts/verify.mjs flutter --shard=${{ matrix.shard }}/3
+
   # The check main requires: every part passed, or was skipped for a change
-  # of docs only.
+  # of docs only, or of no Dart.
   verify:
     if: always()
-    needs: [changes, contract, format, typescript, server, dart]
+    needs: [changes, contract, format, typescript, server, dart, flutter]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
