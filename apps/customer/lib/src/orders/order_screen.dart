@@ -215,6 +215,23 @@ class OrderScreen extends ConsumerWidget {
                 title: Text(order.address.street),
                 subtitle: Text(order.address.landmark),
               ),
+              // «الخصم» with the code (CU §10.3 item 7, §10.4).
+              if (order.promoCode case final code?)
+                ListTile(
+                  key: const Key('order-discount'),
+                  title: Text(l10n.customerDiscountWithCode(code)),
+                  trailing: Text(
+                    l10n.formatMoney(order.money.discount, order.currency),
+                  ),
+                )
+              else if (BigInt.parse(order.money.discount) != BigInt.zero)
+                ListTile(
+                  key: const Key('order-discount'),
+                  title: Text(l10n.customerDiscount),
+                  trailing: Text(
+                    l10n.formatMoney(order.money.discount, order.currency),
+                  ),
+                ),
               ListTile(
                 title: Text(l10n.customerTotal),
                 trailing: Text(total()),

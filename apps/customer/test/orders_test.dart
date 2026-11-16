@@ -26,6 +26,9 @@ Map<String, Object?> _order({
   List<Map<String, Object?>> removedLines = const [],
   Map<String, Object?>? doorPing,
   String? recipient,
+  String? promoCode,
+  String discount = '0',
+  String total = '14000',
 }) => {
   'id': _orderId,
   'number': '10423',
@@ -46,10 +49,11 @@ Map<String, Object?> _order({
     'itemsValue': '13000',
     'deliveryFee': '1000',
     'deliveryFree': false,
-    'discount': '0',
+    'discount': discount,
     'rounding': '0',
-    'total': '14000',
+    'total': total,
   },
+  'promoCode': promoCode,
   'equivalents': <Object>[],
   'lines':
       lines ??
@@ -247,6 +251,28 @@ void main() {
     expect(find.text(banner), findsNothing);
     expect(find.text('يصل حوالي 3:45 م'), findsNothing);
     expect(find.text('يصل حوالي 4:00 م'), findsNWidgets(2));
+    await app.done(tester);
+  });
+
+  testWidgets('the order shows «الخصم» with its code (CU §10.4)', (
+    tester,
+  ) async {
+    final app = await open(tester, [
+      FakeAnswer(200, {
+        'order': _order(promoCode: 'FOX10', discount: '3000', total: '11000'),
+      }),
+    ]);
+    expect(find.text('الخصم (FOX10)'), findsOneWidget);
+    expect(find.text('30 ₺'), findsOneWidget);
+    expect(find.text('110 ₺'), findsWidgets);
+    await app.done(tester);
+  });
+
+  testWidgets('an order without a code has no «الخصم» line', (tester) async {
+    final app = await open(tester, [
+      FakeAnswer(200, {'order': _order()}),
+    ]);
+    expect(find.byKey(const Key('order-discount')), findsNothing);
     await app.done(tester);
   });
 

@@ -12,7 +12,7 @@ Slice 2.21c, the code in the customer app (`docs/roadmap.md`, Phase 2, Money; th
 - **Plan** (one commit per step):
   - [x] Checkout: «أدخل الكود» with «تطبيق» and «إزالة», the code kept with the cart and sent with every quote and the order command, the discount line «الخصم» with the code, and «قيمة الكود أكبر من قيمة الأصناف، ولا يُستعاد الفرق» before confirming.
   - [x] The refusals of CU Appendix C (`refusal` to its text, «أضف {المبلغ} لاستخدام هذا الكود» with the amount), a refused code blocking the order until removed, and a code that stopped working between quote and confirmation (`409` with the new quote).
-  - [ ] The order screen's «الخصم» line with the code.
+  - [x] The order screen's «الخصم» line with the code.
   - [ ] Review, then hand over to 2.21d.
 
 ### Left from 2.21b (`feat/promo-codes-orders`)
