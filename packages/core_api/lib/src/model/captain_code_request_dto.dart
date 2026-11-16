@@ -14,7 +14,8 @@ part 'captain_code_request_dto.g.dart';
 /// * [phone] - The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
 /// * [deviceId] - The app installation, generated once by the app and kept until it is removed.
 @BuiltValue()
-abstract class CaptainCodeRequestDto implements Built<CaptainCodeRequestDto, CaptainCodeRequestDtoBuilder> {
+abstract class CaptainCodeRequestDto
+    implements Built<CaptainCodeRequestDto, CaptainCodeRequestDtoBuilder> {
   /// The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
   @BuiltValueField(wireName: r'phone')
   String get phone;
@@ -25,18 +26,25 @@ abstract class CaptainCodeRequestDto implements Built<CaptainCodeRequestDto, Cap
 
   CaptainCodeRequestDto._();
 
-  factory CaptainCodeRequestDto([void updates(CaptainCodeRequestDtoBuilder b)]) = _$CaptainCodeRequestDto;
+  factory CaptainCodeRequestDto([
+    void updates(CaptainCodeRequestDtoBuilder b),
+  ]) = _$CaptainCodeRequestDto;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainCodeRequestDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainCodeRequestDto> get serializer => _$CaptainCodeRequestDtoSerializer();
+  static Serializer<CaptainCodeRequestDto> get serializer =>
+      _$CaptainCodeRequestDtoSerializer();
 }
 
-class _$CaptainCodeRequestDtoSerializer implements PrimitiveSerializer<CaptainCodeRequestDto> {
+class _$CaptainCodeRequestDtoSerializer
+    implements PrimitiveSerializer<CaptainCodeRequestDto> {
   @override
-  final Iterable<Type> types = const [CaptainCodeRequestDto, _$CaptainCodeRequestDto];
+  final Iterable<Type> types = const [
+    CaptainCodeRequestDto,
+    _$CaptainCodeRequestDto,
+  ];
 
   @override
   final String wireName = r'CaptainCodeRequestDto';
@@ -64,7 +72,11 @@ class _$CaptainCodeRequestDtoSerializer implements PrimitiveSerializer<CaptainCo
     CaptainCodeRequestDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -80,17 +92,21 @@ class _$CaptainCodeRequestDtoSerializer implements PrimitiveSerializer<CaptainCo
       final value = serializedList[i + 1];
       switch (key) {
         case r'phone':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.phone = valueDes;
           break;
         case r'deviceId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.deviceId = valueDes;
           break;
         default:
@@ -121,5 +137,3 @@ class _$CaptainCodeRequestDtoSerializer implements PrimitiveSerializer<CaptainCo
     return result.build();
   }
 }
-
-

@@ -12,9 +12,14 @@ part 'captain_availability_dto_output_custody_remit_tolerance.g.dart';
 ///
 /// Properties:
 /// * [amount] - Integer minor units (AP §8.6).
-/// * [currency] 
+/// * [currency]
 @BuiltValue()
-abstract class CaptainAvailabilityDtoOutputCustodyRemitTolerance implements Built<CaptainAvailabilityDtoOutputCustodyRemitTolerance, CaptainAvailabilityDtoOutputCustodyRemitToleranceBuilder> {
+abstract class CaptainAvailabilityDtoOutputCustodyRemitTolerance
+    implements
+        Built<
+          CaptainAvailabilityDtoOutputCustodyRemitTolerance,
+          CaptainAvailabilityDtoOutputCustodyRemitToleranceBuilder
+        > {
   /// Integer minor units (AP §8.6).
   @BuiltValueField(wireName: r'amount')
   String get amount;
@@ -24,18 +29,29 @@ abstract class CaptainAvailabilityDtoOutputCustodyRemitTolerance implements Buil
 
   CaptainAvailabilityDtoOutputCustodyRemitTolerance._();
 
-  factory CaptainAvailabilityDtoOutputCustodyRemitTolerance([void updates(CaptainAvailabilityDtoOutputCustodyRemitToleranceBuilder b)]) = _$CaptainAvailabilityDtoOutputCustodyRemitTolerance;
+  factory CaptainAvailabilityDtoOutputCustodyRemitTolerance([
+    void updates(CaptainAvailabilityDtoOutputCustodyRemitToleranceBuilder b),
+  ]) = _$CaptainAvailabilityDtoOutputCustodyRemitTolerance;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CaptainAvailabilityDtoOutputCustodyRemitToleranceBuilder b) => b;
+  static void _defaults(
+    CaptainAvailabilityDtoOutputCustodyRemitToleranceBuilder b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainAvailabilityDtoOutputCustodyRemitTolerance> get serializer => _$CaptainAvailabilityDtoOutputCustodyRemitToleranceSerializer();
+  static Serializer<CaptainAvailabilityDtoOutputCustodyRemitTolerance>
+  get serializer =>
+      _$CaptainAvailabilityDtoOutputCustodyRemitToleranceSerializer();
 }
 
-class _$CaptainAvailabilityDtoOutputCustodyRemitToleranceSerializer implements PrimitiveSerializer<CaptainAvailabilityDtoOutputCustodyRemitTolerance> {
+class _$CaptainAvailabilityDtoOutputCustodyRemitToleranceSerializer
+    implements
+        PrimitiveSerializer<CaptainAvailabilityDtoOutputCustodyRemitTolerance> {
   @override
-  final Iterable<Type> types = const [CaptainAvailabilityDtoOutputCustodyRemitTolerance, _$CaptainAvailabilityDtoOutputCustodyRemitTolerance];
+  final Iterable<Type> types = const [
+    CaptainAvailabilityDtoOutputCustodyRemitTolerance,
+    _$CaptainAvailabilityDtoOutputCustodyRemitTolerance,
+  ];
 
   @override
   final String wireName = r'CaptainAvailabilityDtoOutputCustodyRemitTolerance';
@@ -63,7 +79,11 @@ class _$CaptainAvailabilityDtoOutputCustodyRemitToleranceSerializer implements P
     CaptainAvailabilityDtoOutputCustodyRemitTolerance object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -79,17 +99,21 @@ class _$CaptainAvailabilityDtoOutputCustodyRemitToleranceSerializer implements P
       final value = serializedList[i + 1];
       switch (key) {
         case r'amount':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.amount = valueDes;
           break;
         case r'currency':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.currency = valueDes;
           break;
         default:
@@ -120,5 +144,3 @@ class _$CaptainAvailabilityDtoOutputCustodyRemitToleranceSerializer implements P
     return result.build();
   }
 }
-
-

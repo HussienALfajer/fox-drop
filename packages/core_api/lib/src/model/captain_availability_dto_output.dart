@@ -14,11 +14,16 @@ part 'captain_availability_dto_output.g.dart';
 /// CaptainAvailabilityDtoOutput
 ///
 /// Properties:
-/// * [availability] 
-/// * [office] 
-/// * [custody] 
+/// * [availability]
+/// * [office]
+/// * [custody]
 @BuiltValue()
-abstract class CaptainAvailabilityDtoOutput implements Built<CaptainAvailabilityDtoOutput, CaptainAvailabilityDtoOutputBuilder> {
+abstract class CaptainAvailabilityDtoOutput
+    implements
+        Built<
+          CaptainAvailabilityDtoOutput,
+          CaptainAvailabilityDtoOutputBuilder
+        > {
   @BuiltValueField(wireName: r'availability')
   CaptainAvailabilityDtoOutputAvailability get availability;
 
@@ -30,18 +35,25 @@ abstract class CaptainAvailabilityDtoOutput implements Built<CaptainAvailability
 
   CaptainAvailabilityDtoOutput._();
 
-  factory CaptainAvailabilityDtoOutput([void updates(CaptainAvailabilityDtoOutputBuilder b)]) = _$CaptainAvailabilityDtoOutput;
+  factory CaptainAvailabilityDtoOutput([
+    void updates(CaptainAvailabilityDtoOutputBuilder b),
+  ]) = _$CaptainAvailabilityDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainAvailabilityDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainAvailabilityDtoOutput> get serializer => _$CaptainAvailabilityDtoOutputSerializer();
+  static Serializer<CaptainAvailabilityDtoOutput> get serializer =>
+      _$CaptainAvailabilityDtoOutputSerializer();
 }
 
-class _$CaptainAvailabilityDtoOutputSerializer implements PrimitiveSerializer<CaptainAvailabilityDtoOutput> {
+class _$CaptainAvailabilityDtoOutputSerializer
+    implements PrimitiveSerializer<CaptainAvailabilityDtoOutput> {
   @override
-  final Iterable<Type> types = const [CaptainAvailabilityDtoOutput, _$CaptainAvailabilityDtoOutput];
+  final Iterable<Type> types = const [
+    CaptainAvailabilityDtoOutput,
+    _$CaptainAvailabilityDtoOutput,
+  ];
 
   @override
   final String wireName = r'CaptainAvailabilityDtoOutput';
@@ -57,10 +69,14 @@ class _$CaptainAvailabilityDtoOutputSerializer implements PrimitiveSerializer<Ca
       specifiedType: const FullType(CaptainAvailabilityDtoOutputAvailability),
     );
     yield r'office';
-    yield object.office == null ? null : serializers.serialize(
-      object.office,
-      specifiedType: const FullType.nullable(CaptainAvailabilityDtoOutputOffice),
-    );
+    yield object.office == null
+        ? null
+        : serializers.serialize(
+            object.office,
+            specifiedType: const FullType.nullable(
+              CaptainAvailabilityDtoOutputOffice,
+            ),
+          );
     yield r'custody';
     yield serializers.serialize(
       object.custody,
@@ -74,7 +90,11 @@ class _$CaptainAvailabilityDtoOutputSerializer implements PrimitiveSerializer<Ca
     CaptainAvailabilityDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -90,25 +110,37 @@ class _$CaptainAvailabilityDtoOutputSerializer implements PrimitiveSerializer<Ca
       final value = serializedList[i + 1];
       switch (key) {
         case r'availability':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CaptainAvailabilityDtoOutputAvailability),
-          ) as CaptainAvailabilityDtoOutputAvailability;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainAvailabilityDtoOutputAvailability,
+                    ),
+                  )
+                  as CaptainAvailabilityDtoOutputAvailability;
           result.availability.replace(valueDes);
           break;
         case r'office':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(CaptainAvailabilityDtoOutputOffice),
-          ) as CaptainAvailabilityDtoOutputOffice?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CaptainAvailabilityDtoOutputOffice,
+                    ),
+                  )
+                  as CaptainAvailabilityDtoOutputOffice?;
           if (valueDes == null) continue;
           result.office.replace(valueDes);
           break;
         case r'custody':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CaptainAvailabilityDtoOutputCustody),
-          ) as CaptainAvailabilityDtoOutputCustody;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainAvailabilityDtoOutputCustody,
+                    ),
+                  )
+                  as CaptainAvailabilityDtoOutputCustody;
           result.custody.replace(valueDes);
           break;
         default:
@@ -139,5 +171,3 @@ class _$CaptainAvailabilityDtoOutputSerializer implements PrimitiveSerializer<Ca
     return result.build();
   }
 }
-
-

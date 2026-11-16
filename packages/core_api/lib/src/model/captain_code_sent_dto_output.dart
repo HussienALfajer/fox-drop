@@ -14,9 +14,11 @@ part 'captain_code_sent_dto_output.g.dart';
 /// Properties:
 /// * [channel] - Where the code went (architecture §8.3.4).
 /// * [resendAfterSec] - When the app may offer «إعادة الإرسال».
-/// * [expiresAt] 
+/// * [expiresAt]
 @BuiltValue()
-abstract class CaptainCodeSentDtoOutput implements Built<CaptainCodeSentDtoOutput, CaptainCodeSentDtoOutputBuilder> {
+abstract class CaptainCodeSentDtoOutput
+    implements
+        Built<CaptainCodeSentDtoOutput, CaptainCodeSentDtoOutputBuilder> {
   /// Where the code went (architecture §8.3.4).
   @BuiltValueField(wireName: r'channel')
   CaptainCodeSentDtoOutputChannelEnum get channel;
@@ -31,18 +33,25 @@ abstract class CaptainCodeSentDtoOutput implements Built<CaptainCodeSentDtoOutpu
 
   CaptainCodeSentDtoOutput._();
 
-  factory CaptainCodeSentDtoOutput([void updates(CaptainCodeSentDtoOutputBuilder b)]) = _$CaptainCodeSentDtoOutput;
+  factory CaptainCodeSentDtoOutput([
+    void updates(CaptainCodeSentDtoOutputBuilder b),
+  ]) = _$CaptainCodeSentDtoOutput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainCodeSentDtoOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainCodeSentDtoOutput> get serializer => _$CaptainCodeSentDtoOutputSerializer();
+  static Serializer<CaptainCodeSentDtoOutput> get serializer =>
+      _$CaptainCodeSentDtoOutputSerializer();
 }
 
-class _$CaptainCodeSentDtoOutputSerializer implements PrimitiveSerializer<CaptainCodeSentDtoOutput> {
+class _$CaptainCodeSentDtoOutputSerializer
+    implements PrimitiveSerializer<CaptainCodeSentDtoOutput> {
   @override
-  final Iterable<Type> types = const [CaptainCodeSentDtoOutput, _$CaptainCodeSentDtoOutput];
+  final Iterable<Type> types = const [
+    CaptainCodeSentDtoOutput,
+    _$CaptainCodeSentDtoOutput,
+  ];
 
   @override
   final String wireName = r'CaptainCodeSentDtoOutput';
@@ -75,7 +84,11 @@ class _$CaptainCodeSentDtoOutputSerializer implements PrimitiveSerializer<Captai
     CaptainCodeSentDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -91,24 +104,29 @@ class _$CaptainCodeSentDtoOutputSerializer implements PrimitiveSerializer<Captai
       final value = serializedList[i + 1];
       switch (key) {
         case r'channel':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CaptainCodeSentDtoOutputChannelEnum),
-          ) as CaptainCodeSentDtoOutputChannelEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainCodeSentDtoOutputChannelEnum,
+                    ),
+                  )
+                  as CaptainCodeSentDtoOutputChannelEnum;
           result.channel = valueDes;
           break;
         case r'resendAfterSec':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.resendAfterSec = valueDes;
           break;
         case r'expiresAt':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.expiresAt = valueDes;
           break;
         default:
@@ -140,18 +158,19 @@ class _$CaptainCodeSentDtoOutputSerializer implements PrimitiveSerializer<Captai
   }
 }
 
-
 /// Where the code went (architecture §8.3.4).
 class CaptainCodeSentDtoOutputChannelEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'whatsapp')
-  static const CaptainCodeSentDtoOutputChannelEnum whatsapp = _$captainCodeSentDtoOutputChannelEnum_whatsapp;
+  static const CaptainCodeSentDtoOutputChannelEnum whatsapp =
+      _$captainCodeSentDtoOutputChannelEnum_whatsapp;
 
-  static Serializer<CaptainCodeSentDtoOutputChannelEnum> get serializer => _$captainCodeSentDtoOutputChannelEnumSerializer;
+  static Serializer<CaptainCodeSentDtoOutputChannelEnum> get serializer =>
+      _$captainCodeSentDtoOutputChannelEnumSerializer;
 
-  const CaptainCodeSentDtoOutputChannelEnum._(String name): super(name);
+  const CaptainCodeSentDtoOutputChannelEnum._(String name) : super(name);
 
-  static BuiltSet<CaptainCodeSentDtoOutputChannelEnum> get values => _$captainCodeSentDtoOutputChannelEnumValues;
-  static CaptainCodeSentDtoOutputChannelEnum valueOf(String name) => _$captainCodeSentDtoOutputChannelEnumValueOf(name);
+  static BuiltSet<CaptainCodeSentDtoOutputChannelEnum> get values =>
+      _$captainCodeSentDtoOutputChannelEnumValues;
+  static CaptainCodeSentDtoOutputChannelEnum valueOf(String name) =>
+      _$captainCodeSentDtoOutputChannelEnumValueOf(name);
 }
-

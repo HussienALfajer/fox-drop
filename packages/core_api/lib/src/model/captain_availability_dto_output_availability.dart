@@ -12,16 +12,21 @@ part 'captain_availability_dto_output_availability.g.dart';
 /// CA §7.1: «غير متصل», «متصل متاح», «مشغول» (an active order), «آخر طلب» (last-order mode), «لا تصلك عروض» with its reasons, «موقوف».
 ///
 /// Properties:
-/// * [state] 
+/// * [state]
 /// * [since] - Online since; null unless online.
 /// * [reasons] - Why no offers arrive; empty unless not_receiving_offers.
-/// * [suspensionReason] 
+/// * [suspensionReason]
 /// * [suspendedUntil] - While suspended: the end, or null until further notice.
 /// * [lastOrderBy] - In last_order: who set it (CA §7.3, §7.6, K18). Only the captain's own can be cancelled.
 /// * [lastOrderReason] - In last_order: the reason shown, a force offline's or a suspension's.
 /// * [offersExpired] - While offline after C3 (CA §7.4): the offers in a row that expired unanswered, for «لم ترد على {العدد} عروض متتالية، فأصبحت غير متصل. اضغط «متصل» عندما تكون جاهزاً.»; null otherwise.
 @BuiltValue()
-abstract class CaptainAvailabilityDtoOutputAvailability implements Built<CaptainAvailabilityDtoOutputAvailability, CaptainAvailabilityDtoOutputAvailabilityBuilder> {
+abstract class CaptainAvailabilityDtoOutputAvailability
+    implements
+        Built<
+          CaptainAvailabilityDtoOutputAvailability,
+          CaptainAvailabilityDtoOutputAvailabilityBuilder
+        > {
   @BuiltValueField(wireName: r'state')
   CaptainAvailabilityDtoOutputAvailabilityStateEnum get state;
   // enum stateEnum {  offline,  online_available,  busy,  last_order,  not_receiving_offers,  suspended,  };
@@ -57,18 +62,25 @@ abstract class CaptainAvailabilityDtoOutputAvailability implements Built<Captain
 
   CaptainAvailabilityDtoOutputAvailability._();
 
-  factory CaptainAvailabilityDtoOutputAvailability([void updates(CaptainAvailabilityDtoOutputAvailabilityBuilder b)]) = _$CaptainAvailabilityDtoOutputAvailability;
+  factory CaptainAvailabilityDtoOutputAvailability([
+    void updates(CaptainAvailabilityDtoOutputAvailabilityBuilder b),
+  ]) = _$CaptainAvailabilityDtoOutputAvailability;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CaptainAvailabilityDtoOutputAvailabilityBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CaptainAvailabilityDtoOutputAvailability> get serializer => _$CaptainAvailabilityDtoOutputAvailabilitySerializer();
+  static Serializer<CaptainAvailabilityDtoOutputAvailability> get serializer =>
+      _$CaptainAvailabilityDtoOutputAvailabilitySerializer();
 }
 
-class _$CaptainAvailabilityDtoOutputAvailabilitySerializer implements PrimitiveSerializer<CaptainAvailabilityDtoOutputAvailability> {
+class _$CaptainAvailabilityDtoOutputAvailabilitySerializer
+    implements PrimitiveSerializer<CaptainAvailabilityDtoOutputAvailability> {
   @override
-  final Iterable<Type> types = const [CaptainAvailabilityDtoOutputAvailability, _$CaptainAvailabilityDtoOutputAvailability];
+  final Iterable<Type> types = const [
+    CaptainAvailabilityDtoOutputAvailability,
+    _$CaptainAvailabilityDtoOutputAvailability,
+  ];
 
   @override
   final String wireName = r'CaptainAvailabilityDtoOutputAvailability';
@@ -81,43 +93,61 @@ class _$CaptainAvailabilityDtoOutputAvailabilitySerializer implements PrimitiveS
     yield r'state';
     yield serializers.serialize(
       object.state,
-      specifiedType: const FullType(CaptainAvailabilityDtoOutputAvailabilityStateEnum),
+      specifiedType: const FullType(
+        CaptainAvailabilityDtoOutputAvailabilityStateEnum,
+      ),
     );
     yield r'since';
-    yield object.since == null ? null : serializers.serialize(
-      object.since,
-      specifiedType: const FullType.nullable(DateTime),
-    );
+    yield object.since == null
+        ? null
+        : serializers.serialize(
+            object.since,
+            specifiedType: const FullType.nullable(DateTime),
+          );
     yield r'reasons';
     yield serializers.serialize(
       object.reasons,
-      specifiedType: const FullType(BuiltList, [FullType(CaptainAvailabilityDtoOutputAvailabilityReasonsEnum)]),
+      specifiedType: const FullType(BuiltList, [
+        FullType(CaptainAvailabilityDtoOutputAvailabilityReasonsEnum),
+      ]),
     );
     yield r'suspensionReason';
-    yield object.suspensionReason == null ? null : serializers.serialize(
-      object.suspensionReason,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.suspensionReason == null
+        ? null
+        : serializers.serialize(
+            object.suspensionReason,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'suspendedUntil';
-    yield object.suspendedUntil == null ? null : serializers.serialize(
-      object.suspendedUntil,
-      specifiedType: const FullType.nullable(DateTime),
-    );
+    yield object.suspendedUntil == null
+        ? null
+        : serializers.serialize(
+            object.suspendedUntil,
+            specifiedType: const FullType.nullable(DateTime),
+          );
     yield r'lastOrderBy';
-    yield object.lastOrderBy == null ? null : serializers.serialize(
-      object.lastOrderBy,
-      specifiedType: const FullType.nullable(CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum),
-    );
+    yield object.lastOrderBy == null
+        ? null
+        : serializers.serialize(
+            object.lastOrderBy,
+            specifiedType: const FullType.nullable(
+              CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum,
+            ),
+          );
     yield r'lastOrderReason';
-    yield object.lastOrderReason == null ? null : serializers.serialize(
-      object.lastOrderReason,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.lastOrderReason == null
+        ? null
+        : serializers.serialize(
+            object.lastOrderReason,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'offersExpired';
-    yield object.offersExpired == null ? null : serializers.serialize(
-      object.offersExpired,
-      specifiedType: const FullType.nullable(int),
-    );
+    yield object.offersExpired == null
+        ? null
+        : serializers.serialize(
+            object.offersExpired,
+            specifiedType: const FullType.nullable(int),
+          );
   }
 
   @override
@@ -126,7 +156,11 @@ class _$CaptainAvailabilityDtoOutputAvailabilitySerializer implements PrimitiveS
     CaptainAvailabilityDtoOutputAvailability object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -142,64 +176,90 @@ class _$CaptainAvailabilityDtoOutputAvailabilitySerializer implements PrimitiveS
       final value = serializedList[i + 1];
       switch (key) {
         case r'state':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CaptainAvailabilityDtoOutputAvailabilityStateEnum),
-          ) as CaptainAvailabilityDtoOutputAvailabilityStateEnum;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      CaptainAvailabilityDtoOutputAvailabilityStateEnum,
+                    ),
+                  )
+                  as CaptainAvailabilityDtoOutputAvailabilityStateEnum;
           result.state = valueDes;
           break;
         case r'since':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(DateTime),
-          ) as DateTime?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(DateTime),
+                  )
+                  as DateTime?;
           if (valueDes == null) continue;
           result.since = valueDes;
           break;
         case r'reasons':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(CaptainAvailabilityDtoOutputAvailabilityReasonsEnum)]),
-          ) as BuiltList<CaptainAvailabilityDtoOutputAvailabilityReasonsEnum>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(
+                        CaptainAvailabilityDtoOutputAvailabilityReasonsEnum,
+                      ),
+                    ]),
+                  )
+                  as BuiltList<
+                    CaptainAvailabilityDtoOutputAvailabilityReasonsEnum
+                  >;
           result.reasons.replace(valueDes);
           break;
         case r'suspensionReason':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.suspensionReason = valueDes;
           break;
         case r'suspendedUntil':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(DateTime),
-          ) as DateTime?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(DateTime),
+                  )
+                  as DateTime?;
           if (valueDes == null) continue;
           result.suspendedUntil = valueDes;
           break;
         case r'lastOrderBy':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum),
-          ) as CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum,
+                    ),
+                  )
+                  as CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum?;
           if (valueDes == null) continue;
           result.lastOrderBy = valueDes;
           break;
         case r'lastOrderReason':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
           if (valueDes == null) continue;
           result.lastOrderReason = valueDes;
           break;
         case r'offersExpired':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(int),
-          ) as int?;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(int),
+                  )
+                  as int?;
           if (valueDes == null) continue;
           result.offersExpired = valueDes;
           break;
@@ -232,64 +292,96 @@ class _$CaptainAvailabilityDtoOutputAvailabilitySerializer implements PrimitiveS
   }
 }
 
-
 class CaptainAvailabilityDtoOutputAvailabilityStateEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'offline')
-  static const CaptainAvailabilityDtoOutputAvailabilityStateEnum offline = _$captainAvailabilityDtoOutputAvailabilityStateEnum_offline;
+  static const CaptainAvailabilityDtoOutputAvailabilityStateEnum offline =
+      _$captainAvailabilityDtoOutputAvailabilityStateEnum_offline;
   @BuiltValueEnumConst(wireName: r'online_available')
-  static const CaptainAvailabilityDtoOutputAvailabilityStateEnum onlineAvailable = _$captainAvailabilityDtoOutputAvailabilityStateEnum_onlineAvailable;
+  static const CaptainAvailabilityDtoOutputAvailabilityStateEnum
+  onlineAvailable =
+      _$captainAvailabilityDtoOutputAvailabilityStateEnum_onlineAvailable;
   @BuiltValueEnumConst(wireName: r'busy')
-  static const CaptainAvailabilityDtoOutputAvailabilityStateEnum busy = _$captainAvailabilityDtoOutputAvailabilityStateEnum_busy;
+  static const CaptainAvailabilityDtoOutputAvailabilityStateEnum busy =
+      _$captainAvailabilityDtoOutputAvailabilityStateEnum_busy;
   @BuiltValueEnumConst(wireName: r'last_order')
-  static const CaptainAvailabilityDtoOutputAvailabilityStateEnum lastOrder = _$captainAvailabilityDtoOutputAvailabilityStateEnum_lastOrder;
+  static const CaptainAvailabilityDtoOutputAvailabilityStateEnum lastOrder =
+      _$captainAvailabilityDtoOutputAvailabilityStateEnum_lastOrder;
   @BuiltValueEnumConst(wireName: r'not_receiving_offers')
-  static const CaptainAvailabilityDtoOutputAvailabilityStateEnum notReceivingOffers = _$captainAvailabilityDtoOutputAvailabilityStateEnum_notReceivingOffers;
+  static const CaptainAvailabilityDtoOutputAvailabilityStateEnum
+  notReceivingOffers =
+      _$captainAvailabilityDtoOutputAvailabilityStateEnum_notReceivingOffers;
   @BuiltValueEnumConst(wireName: r'suspended')
-  static const CaptainAvailabilityDtoOutputAvailabilityStateEnum suspended = _$captainAvailabilityDtoOutputAvailabilityStateEnum_suspended;
+  static const CaptainAvailabilityDtoOutputAvailabilityStateEnum suspended =
+      _$captainAvailabilityDtoOutputAvailabilityStateEnum_suspended;
 
-  static Serializer<CaptainAvailabilityDtoOutputAvailabilityStateEnum> get serializer => _$captainAvailabilityDtoOutputAvailabilityStateEnumSerializer;
+  static Serializer<CaptainAvailabilityDtoOutputAvailabilityStateEnum>
+  get serializer =>
+      _$captainAvailabilityDtoOutputAvailabilityStateEnumSerializer;
 
-  const CaptainAvailabilityDtoOutputAvailabilityStateEnum._(String name): super(name);
+  const CaptainAvailabilityDtoOutputAvailabilityStateEnum._(String name)
+    : super(name);
 
-  static BuiltSet<CaptainAvailabilityDtoOutputAvailabilityStateEnum> get values => _$captainAvailabilityDtoOutputAvailabilityStateEnumValues;
-  static CaptainAvailabilityDtoOutputAvailabilityStateEnum valueOf(String name) => _$captainAvailabilityDtoOutputAvailabilityStateEnumValueOf(name);
+  static BuiltSet<CaptainAvailabilityDtoOutputAvailabilityStateEnum>
+  get values => _$captainAvailabilityDtoOutputAvailabilityStateEnumValues;
+  static CaptainAvailabilityDtoOutputAvailabilityStateEnum valueOf(
+    String name,
+  ) => _$captainAvailabilityDtoOutputAvailabilityStateEnumValueOf(name);
 }
 
 class CaptainAvailabilityDtoOutputAvailabilityReasonsEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'cash_limit')
-  static const CaptainAvailabilityDtoOutputAvailabilityReasonsEnum cashLimit = _$captainAvailabilityDtoOutputAvailabilityReasonsEnum_cashLimit;
+  static const CaptainAvailabilityDtoOutputAvailabilityReasonsEnum cashLimit =
+      _$captainAvailabilityDtoOutputAvailabilityReasonsEnum_cashLimit;
   @BuiltValueEnumConst(wireName: r'closed_due')
-  static const CaptainAvailabilityDtoOutputAvailabilityReasonsEnum closedDue = _$captainAvailabilityDtoOutputAvailabilityReasonsEnum_closedDue;
+  static const CaptainAvailabilityDtoOutputAvailabilityReasonsEnum closedDue =
+      _$captainAvailabilityDtoOutputAvailabilityReasonsEnum_closedDue;
   @BuiltValueEnumConst(wireName: r'simulated_location')
-  static const CaptainAvailabilityDtoOutputAvailabilityReasonsEnum simulatedLocation = _$captainAvailabilityDtoOutputAvailabilityReasonsEnum_simulatedLocation;
+  static const CaptainAvailabilityDtoOutputAvailabilityReasonsEnum
+  simulatedLocation =
+      _$captainAvailabilityDtoOutputAvailabilityReasonsEnum_simulatedLocation;
 
-  static Serializer<CaptainAvailabilityDtoOutputAvailabilityReasonsEnum> get serializer => _$captainAvailabilityDtoOutputAvailabilityReasonsEnumSerializer;
+  static Serializer<CaptainAvailabilityDtoOutputAvailabilityReasonsEnum>
+  get serializer =>
+      _$captainAvailabilityDtoOutputAvailabilityReasonsEnumSerializer;
 
-  const CaptainAvailabilityDtoOutputAvailabilityReasonsEnum._(String name): super(name);
+  const CaptainAvailabilityDtoOutputAvailabilityReasonsEnum._(String name)
+    : super(name);
 
-  static BuiltSet<CaptainAvailabilityDtoOutputAvailabilityReasonsEnum> get values => _$captainAvailabilityDtoOutputAvailabilityReasonsEnumValues;
-  static CaptainAvailabilityDtoOutputAvailabilityReasonsEnum valueOf(String name) => _$captainAvailabilityDtoOutputAvailabilityReasonsEnumValueOf(name);
+  static BuiltSet<CaptainAvailabilityDtoOutputAvailabilityReasonsEnum>
+  get values => _$captainAvailabilityDtoOutputAvailabilityReasonsEnumValues;
+  static CaptainAvailabilityDtoOutputAvailabilityReasonsEnum valueOf(
+    String name,
+  ) => _$captainAvailabilityDtoOutputAvailabilityReasonsEnumValueOf(name);
 }
 
 /// In last_order: who set it (CA §7.3, §7.6, K18). Only the captain's own can be cancelled.
-class CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum extends EnumClass {
-
+class CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum
+    extends EnumClass {
   @BuiltValueEnumConst(wireName: r'captain')
-  static const CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum captain = _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnum_captain;
+  static const CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum captain =
+      _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnum_captain;
   @BuiltValueEnumConst(wireName: r'forced')
-  static const CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum forced = _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnum_forced;
+  static const CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum forced =
+      _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnum_forced;
   @BuiltValueEnumConst(wireName: r'suspended')
-  static const CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum suspended = _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnum_suspended;
+  static const CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum
+  suspended =
+      _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnum_suspended;
   @BuiltValueEnumConst(wireName: r'terminated')
-  static const CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum terminated = _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnum_terminated;
+  static const CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum
+  terminated =
+      _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnum_terminated;
 
-  static Serializer<CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum> get serializer => _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnumSerializer;
+  static Serializer<CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum>
+  get serializer =>
+      _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnumSerializer;
 
-  const CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum._(String name): super(name);
+  const CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum._(String name)
+    : super(name);
 
-  static BuiltSet<CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum> get values => _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnumValues;
-  static CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum valueOf(String name) => _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnumValueOf(name);
+  static BuiltSet<CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum>
+  get values => _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnumValues;
+  static CaptainAvailabilityDtoOutputAvailabilityLastOrderByEnum valueOf(
+    String name,
+  ) => _$captainAvailabilityDtoOutputAvailabilityLastOrderByEnumValueOf(name);
 }
-
