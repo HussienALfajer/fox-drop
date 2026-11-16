@@ -236,6 +236,8 @@ export const idempotencyKeys = cashdesk.table(
     receiptIds: uuid('receipt_ids').array().notNull(),
     // The settlement's statement (slice 2.18a), which names its receipts.
     statementId: uuid('statement_id'),
+    // The manual entry the command posted (AP §9.10.7, slice 2.20c).
+    manualEntryId: uuid('manual_entry_id'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
   },
   (table) => [primaryKey({ columns: [table.accountId, table.key] })],
@@ -474,5 +476,52 @@ export const merchantStatementLines = cashdesk.table(
       'merchant_statement_lines_shape',
       sql`CASE ${table.kind} WHEN 'order' THEN ${table.orderId} IS NOT NULL AND ${table.commission} IS NOT NULL AND ${table.discountShare} IS NOT NULL AND ${table.amount} IS NULL AND ${table.cause} IS NULL WHEN 'exception' THEN ${table.cause} IS NOT NULL AND ${table.amount} IS NOT NULL AND ${table.journalId} IS NOT NULL ELSE ${table.cause} IS NULL AND ${table.amount} IS NOT NULL AND ${table.journalId} IS NOT NULL END`,
     ),
+  ],
+);
+
+// AP §9.10.7 «القيود التصحيحية» (slice 2.20c): a manual entry on one party's
+// account against platform.adjustments, or the reversal of an existing
+// journal, by OWN or FIN with a reason. The journal holds the money; this row
+// keeps who, when, why and what it corrects, so the list reads them in one
+// place. Never changed and never deleted.
+export const manualEntryKinds = ['adjustment', 'reversal'] as const;
+export type ManualEntryKind = (typeof manualEntryKinds)[number];
+export const manualEntryParties = ['captain', 'restaurant', 'customer'] as const;
+export type ManualEntryParty = (typeof manualEntryParties)[number];
+
+export const manualEntries = cashdesk.table(
+  'manual_entries',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    cityId: uuid('city_id').notNull(),
+    kind: text('kind', { enum: manualEntryKinds }).notNull(),
+    // The party whose account it reaches: a captain record, a restaurant or
+    // a customer's account, kept as plain ids.
+    party: text('party', { enum: manualEntryParties }).notNull(),
+    partyId: uuid('party_id').notNull(),
+    // The journal it posted: the adjustment, or the reversal.
+    journalId: uuid('journal_id').notNull(),
+    // The journal a reversal cancels.
+    reversesJournalId: uuid('reverses_journal_id'),
+    reason: text('reason').notNull(),
+    adminAccountId: uuid('admin_account_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    uniqueIndex('manual_entries_journal').on(table.journalId),
+    uniqueIndex('manual_entries_reverses_journal').on(table.reversesJournalId),
+    index('manual_entries_city_created').on(table.cityId, table.createdAt.desc()),
+    check('manual_entries_kind_values', sql`${table.kind} IN ('adjustment', 'reversal')`),
+    check(
+      'manual_entries_party_values',
+      sql`${table.party} IN ('captain', 'restaurant', 'customer')`,
+    ),
+    check(
+      'manual_entries_reversal_links',
+      sql`(${table.kind} = 'reversal') = (${table.reversesJournalId} IS NOT NULL)`,
+    ),
+    check('manual_entries_reason', sql`char_length(btrim(${table.reason})) BETWEEN 1 AND 500`),
   ],
 );

@@ -144,6 +144,28 @@ Serializers _$serializers =
           ..add(AdminHandInReceiptsDtoOutput.serializer)
           ..add(AdminHandoverDto.serializer)
           ..add(AdminImageSetDtoOutput.serializer)
+          ..add(AdminManualAccountDtoOutput.serializer)
+          ..add(AdminManualAccountDtoOutputEntriesInner.serializer)
+          ..add(AdminManualAdjustmentDto.serializer)
+          ..add(AdminManualAdjustmentDtoAccountEnum.serializer)
+          ..add(AdminManualAdjustmentDtoPartyEnum.serializer)
+          ..add(AdminManualEntriesDtoOutput.serializer)
+          ..add(AdminManualEntriesDtoOutputEntriesInner.serializer)
+          ..add(AdminManualEntriesDtoOutputEntriesInnerCorrects.serializer)
+          ..add(AdminManualEntriesDtoOutputEntriesInnerJournal.serializer)
+          ..add(
+            AdminManualEntriesDtoOutputEntriesInnerJournalLinesInner.serializer,
+          )
+          ..add(AdminManualEntriesDtoOutputEntriesInnerKindEnum.serializer)
+          ..add(AdminManualEntriesDtoOutputEntriesInnerPartyKindEnum.serializer)
+          ..add(AdminManualEntriesDtoOutputEntriesInnerReversedBy.serializer)
+          ..add(AdminManualEntryDtoOutput.serializer)
+          ..add(AdminManualEntryDtoOutputKindEnum.serializer)
+          ..add(AdminManualEntryDtoOutputPartyKindEnum.serializer)
+          ..add(AdminManualPartiesDtoOutput.serializer)
+          ..add(AdminManualPartySearchDto.serializer)
+          ..add(AdminManualPartySearchDtoPartyEnum.serializer)
+          ..add(AdminManualReversalDto.serializer)
           ..add(AdminMerchantStatementDtoOutput.serializer)
           ..add(AdminMerchantStatementDtoOutputLinesInner.serializer)
           ..add(AdminMerchantStatementDtoOutputLinesInnerCauseEnum.serializer)
@@ -1137,6 +1159,22 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminDeskCustodyDtoOutputUsage),
+            ]),
+            () => ListBuilder<AdminDeskCustodyDtoOutputUsage>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminManualAccountDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<AdminManualAccountDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminEditDtoKeepInner),
             ]),
             () => ListBuilder<AdminEditDtoKeepInner>(),
@@ -1230,6 +1268,45 @@ Serializers _$serializers =
               const FullType(AdminOpenDrawerSessionDtoFloatsInner),
             ]),
             () => ListBuilder<AdminOpenDrawerSessionDtoFloatsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminManualEntriesDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<AdminManualEntriesDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminManualEntriesDtoOutputEntriesInnerJournalLinesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminManualEntriesDtoOutputEntriesInnerJournalLinesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminManualEntriesDtoOutputEntriesInnerJournalLinesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminManualEntriesDtoOutputEntriesInnerJournalLinesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminManualEntriesDtoOutputEntriesInnerJournalLinesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminManualEntriesDtoOutputEntriesInnerJournalLinesInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -1914,6 +1991,13 @@ Serializers _$serializers =
               const FullType(CaptainPeakBonusDtoOutputActiveInner),
             ]),
             () => ListBuilder<CaptainPeakBonusDtoOutputActiveInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+            ]),
+            () =>
+                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

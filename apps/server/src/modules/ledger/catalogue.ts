@@ -137,6 +137,8 @@ export const journalRules = {
     account: 'customer.dues',
     counters: ['platform.order_clearing', 'platform.revenue_delivery'],
   },
+  // AP §8.8 ±, §9.10.7 (owner decision 2026-11-16, slice 2.20c).
+  'dues.adjustment': { account: 'customer.dues', ...adjustment },
   'platform.revenue_delivery': { account: 'platform.revenue_delivery', counters: orderCounter },
   'platform.discount_cost': { account: 'platform.discount_cost', counters: orderCounter },
   'platform.compensation_cost': {

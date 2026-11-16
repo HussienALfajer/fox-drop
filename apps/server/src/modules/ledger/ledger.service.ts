@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { and, asc, desc, eq, gt, gte, inArray, lt, or, type SQL, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { alias } from 'drizzle-orm/pg-core';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import {
@@ -91,6 +92,17 @@ export interface PostedJournal {
   type: JournalType;
   reason: string | null;
   entries: { purpose: AccountPurpose; ownerId: string | null; currency: string; amount: bigint }[];
+}
+
+// A journal with its links (`journalRecords`): what «القيود التصحيحية» lists.
+export interface JournalRecord extends PostedJournal {
+  cityId: string;
+  source: { kind: SourceKind; id: string } | null;
+  actor: LedgerActor;
+  // The journal this one reverses, and the one that reversed it.
+  reversesJournalId: string | null;
+  reversedById: string | null;
+  createdAt: Date;
 }
 
 // The database, or the open transaction of the change the money belongs to.
@@ -229,6 +241,68 @@ export class LedgerService {
             amount: line.amount,
           })),
       };
+    });
+  }
+
+  // The journals as posted with their city, source, actor, time and links:
+  // the journal each reverses and the one that reversed it (AP §9.10.7
+  // «القيود التصحيحية»). In the order of the ids given; one not found is
+  // left out.
+  async journalRecords(
+    journalIds: readonly string[],
+    executor: LedgerExecutor = this.database.db,
+  ): Promise<JournalRecord[]> {
+    if (journalIds.length === 0) return [];
+    const ids = [...new Set(journalIds)];
+    const reversal = alias(journals, 'reversal');
+    const [heads, lines] = await Promise.all([
+      executor
+        .select({ head: journals, reversedById: reversal.id })
+        .from(journals)
+        .leftJoin(reversal, eq(reversal.reversesJournalId, journals.id))
+        .where(inArray(journals.id, ids)),
+      executor
+        .select({
+          journalId: entries.journalId,
+          purpose: accounts.purpose,
+          ownerId: accounts.ownerId,
+          currency: entries.currency,
+          amount: entries.amount,
+        })
+        .from(entries)
+        .innerJoin(accounts, eq(accounts.id, entries.accountId))
+        .where(inArray(entries.journalId, ids))
+        .orderBy(entries.id),
+    ]);
+    const byId = new Map(heads.map((row) => [row.head.id, row]));
+    return ids.flatMap((id) => {
+      const row = byId.get(id);
+      if (!row) return [];
+      const { head } = row;
+      return [
+        {
+          id,
+          cityId: head.cityId,
+          type: head.type as JournalType,
+          source:
+            head.sourceKind && head.sourceId
+              ? { kind: head.sourceKind as SourceKind, id: head.sourceId }
+              : null,
+          actor: { type: head.actorType as ActorType, id: head.actorId },
+          reason: head.reason,
+          reversesJournalId: head.reversesJournalId,
+          reversedById: row.reversedById,
+          createdAt: head.createdAt,
+          entries: lines
+            .filter((line) => line.journalId === id)
+            .map((line) => ({
+              purpose: line.purpose as AccountPurpose,
+              ownerId: line.ownerId,
+              currency: line.currency,
+              amount: line.amount,
+            })),
+        },
+      ];
     });
   }
 

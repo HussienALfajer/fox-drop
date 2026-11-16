@@ -88,7 +88,7 @@ function pickup(
 const post = (journal: PostJournal) => db.transaction((tx) => ledger.post(journal, tx));
 
 describe('the catalogue', () => {
-  it('has every entry type of AP §8.5, §8.7 and §8.8 (its dues.charge so far), the platform types of §8.11, and no other', () => {
+  it('has every entry type of AP §8.5, §8.7 and §8.8 (its dues.charge and dues.adjustment so far), the platform types of §8.11, and no other', () => {
     expect([...journalTypeNames].sort()).toEqual(
       [
         'custody.collect',
@@ -114,6 +114,7 @@ describe('the catalogue', () => {
         'merchant.settlement',
         'merchant.adjustment',
         'dues.charge',
+        'dues.adjustment',
         'platform.revenue_delivery',
         'platform.discount_cost',
         'platform.compensation_cost',
@@ -590,5 +591,42 @@ describe('LedgerService.reverse', () => {
         ledger.reverse(randomUUID(), { actor: system, reason: 'Wrong entry' }, tx),
       ),
     ).rejects.toThrow(LedgerRefusal);
+  });
+});
+
+describe('LedgerService.journalRecords', () => {
+  it('reads journals with their source, actor, links and entries (AP §9.10.7)', async () => {
+    const { cityId, custody, clearing } = await setUp();
+    const admin = { type: 'admin', id: randomUUID() } as const;
+    const journal = pickup(cityId, custody, clearing);
+    const original = await post(journal);
+    const reversal = await db.transaction((tx) =>
+      ledger.reverse(original, { actor: admin, reason: 'Recorded twice' }, tx),
+    );
+
+    const [first, second] = await ledger.journalRecords([original, reversal]);
+    expect(first).toMatchObject({
+      id: original,
+      cityId,
+      type: 'custody.pay_merchant',
+      source: journal.source,
+      actor: system,
+      reason: null,
+      reversesJournalId: null,
+      reversedById: reversal,
+    });
+    expect(first!.createdAt).toBeInstanceOf(Date);
+    expect(first!.entries).toEqual([
+      { purpose: 'captain.custody', ownerId: expect.any(String), currency: 'TRY', amount: -400n },
+      { purpose: 'platform.order_clearing', ownerId: null, currency: 'TRY', amount: 400n },
+    ]);
+    expect(second).toMatchObject({
+      id: reversal,
+      actor: admin,
+      reason: 'Recorded twice',
+      reversesJournalId: original,
+      reversedById: null,
+    });
+    expect(await ledger.journalRecords([randomUUID()])).toEqual([]);
   });
 });

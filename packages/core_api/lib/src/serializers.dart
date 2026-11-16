@@ -106,6 +106,19 @@ import 'package:core_api/src/model/admin_hand_in_grace_dto.dart';
 import 'package:core_api/src/model/admin_hand_in_receipts_dto_output.dart';
 import 'package:core_api/src/model/admin_handover_dto.dart';
 import 'package:core_api/src/model/admin_image_set_dto_output.dart';
+import 'package:core_api/src/model/admin_manual_account_dto_output.dart';
+import 'package:core_api/src/model/admin_manual_account_dto_output_entries_inner.dart';
+import 'package:core_api/src/model/admin_manual_adjustment_dto.dart';
+import 'package:core_api/src/model/admin_manual_entries_dto_output.dart';
+import 'package:core_api/src/model/admin_manual_entries_dto_output_entries_inner.dart';
+import 'package:core_api/src/model/admin_manual_entries_dto_output_entries_inner_corrects.dart';
+import 'package:core_api/src/model/admin_manual_entries_dto_output_entries_inner_journal.dart';
+import 'package:core_api/src/model/admin_manual_entries_dto_output_entries_inner_journal_lines_inner.dart';
+import 'package:core_api/src/model/admin_manual_entries_dto_output_entries_inner_reversed_by.dart';
+import 'package:core_api/src/model/admin_manual_entry_dto_output.dart';
+import 'package:core_api/src/model/admin_manual_parties_dto_output.dart';
+import 'package:core_api/src/model/admin_manual_party_search_dto.dart';
+import 'package:core_api/src/model/admin_manual_reversal_dto.dart';
 import 'package:core_api/src/model/admin_merchant_statement_dto_output.dart';
 import 'package:core_api/src/model/admin_merchant_statement_dto_output_lines_inner.dart';
 import 'package:core_api/src/model/admin_new_upload_dto.dart';
@@ -718,6 +731,19 @@ part 'serializers.g.dart';
   AdminHandInReceiptsDtoOutput,
   AdminHandoverDto,
   AdminImageSetDtoOutput,
+  AdminManualAccountDtoOutput,
+  AdminManualAccountDtoOutputEntriesInner,
+  AdminManualAdjustmentDto,
+  AdminManualEntriesDtoOutput,
+  AdminManualEntriesDtoOutputEntriesInner,
+  AdminManualEntriesDtoOutputEntriesInnerCorrects,
+  AdminManualEntriesDtoOutputEntriesInnerJournal,
+  AdminManualEntriesDtoOutputEntriesInnerJournalLinesInner,
+  AdminManualEntriesDtoOutputEntriesInnerReversedBy,
+  AdminManualEntryDtoOutput,
+  AdminManualPartiesDtoOutput,
+  AdminManualPartySearchDto,
+  AdminManualReversalDto,
   AdminMerchantStatementDtoOutput,
   AdminMerchantStatementDtoOutputLinesInner,
   AdminNewUploadDto,
@@ -1252,6 +1278,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminManualEntriesDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<AdminManualEntriesDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(CustomerRestaurantPageDtoOutputMenuInnerItemsInner),
             ]),
             () =>
@@ -1344,6 +1376,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminManualAccountDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<AdminManualAccountDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminDeskCustodyDtoOutputCurrenciesInner),
             ]),
             () => ListBuilder<AdminDeskCustodyDtoOutputCurrenciesInner>(),
@@ -1381,6 +1419,17 @@ Serializers serializers =
               FullType(CaptainAvailabilityDtoOutputOfficeHoursInner),
             ]),
             () => ListBuilder<CaptainAvailabilityDtoOutputOfficeHoursInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(
+                AdminManualEntriesDtoOutputEntriesInnerJournalLinesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminManualEntriesDtoOutputEntriesInnerJournalLinesInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
