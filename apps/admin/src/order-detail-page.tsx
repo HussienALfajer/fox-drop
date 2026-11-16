@@ -47,6 +47,7 @@ import { EditChangeText, EditOrder } from './order-edit-page.js';
 import { canEdit } from './order-edit.js';
 import { ChangeTime } from './order-time-change-page.js';
 import { canChangeTime } from './order-time-change.js';
+import { OrderCompensations } from './order-compensation-page.js';
 import { Badges } from './orders-board-page.js';
 import {
   canResend,
@@ -244,6 +245,8 @@ export function OrderDetailPage() {
       {canWaitForCustomer(session, detail) && <WaitForCustomer key={orderId} orderId={orderId} />}
       {detail.itemReport && <ItemReportSection report={detail.itemReport} time={time} />}
       {canCloseItemReport(session, detail) && <CloseItemReport key={orderId} orderId={orderId} />}
+      {/* AP §9.3.2 «تعويض الزبون», in any status (slice 2.22a). */}
+      <OrderCompensations orderId={orderId} timeZone={city.timeZone} />
       {canChangeTime(session, detail) && (
         <ChangeTime
           key={orderId}

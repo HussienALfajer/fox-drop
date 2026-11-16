@@ -62,6 +62,9 @@ _$adminAlertDtoOutputCodeEnum_restaurantSettlementOverdue =
     const AdminAlertDtoOutputCodeEnum._('restaurantSettlementOverdue');
 const AdminAlertDtoOutputCodeEnum _$adminAlertDtoOutputCodeEnum_rateStale =
     const AdminAlertDtoOutputCodeEnum._('rateStale');
+const AdminAlertDtoOutputCodeEnum
+_$adminAlertDtoOutputCodeEnum_compensationApproval =
+    const AdminAlertDtoOutputCodeEnum._('compensationApproval');
 
 AdminAlertDtoOutputCodeEnum _$adminAlertDtoOutputCodeEnumValueOf(String name) {
   switch (name) {
@@ -107,6 +110,8 @@ AdminAlertDtoOutputCodeEnum _$adminAlertDtoOutputCodeEnumValueOf(String name) {
       return _$adminAlertDtoOutputCodeEnum_restaurantSettlementOverdue;
     case 'rateStale':
       return _$adminAlertDtoOutputCodeEnum_rateStale;
+    case 'compensationApproval':
+      return _$adminAlertDtoOutputCodeEnum_compensationApproval;
     default:
       throw ArgumentError(name);
   }
@@ -136,6 +141,7 @@ _$adminAlertDtoOutputCodeEnumValues =
       _$adminAlertDtoOutputCodeEnum_restaurantAutoPaused,
       _$adminAlertDtoOutputCodeEnum_restaurantSettlementOverdue,
       _$adminAlertDtoOutputCodeEnum_rateStale,
+      _$adminAlertDtoOutputCodeEnum_compensationApproval,
     ]);
 
 const AdminAlertDtoOutputSeverityEnum
@@ -191,6 +197,9 @@ _$adminAlertDtoOutputSubjectTypeEnum_restaurant =
 const AdminAlertDtoOutputSubjectTypeEnum
 _$adminAlertDtoOutputSubjectTypeEnum_currency =
     const AdminAlertDtoOutputSubjectTypeEnum._('currency');
+const AdminAlertDtoOutputSubjectTypeEnum
+_$adminAlertDtoOutputSubjectTypeEnum_compensation =
+    const AdminAlertDtoOutputSubjectTypeEnum._('compensation');
 
 AdminAlertDtoOutputSubjectTypeEnum _$adminAlertDtoOutputSubjectTypeEnumValueOf(
   String name,
@@ -208,6 +217,8 @@ AdminAlertDtoOutputSubjectTypeEnum _$adminAlertDtoOutputSubjectTypeEnumValueOf(
       return _$adminAlertDtoOutputSubjectTypeEnum_restaurant;
     case 'currency':
       return _$adminAlertDtoOutputSubjectTypeEnum_currency;
+    case 'compensation':
+      return _$adminAlertDtoOutputSubjectTypeEnum_compensation;
     default:
       throw ArgumentError(name);
   }
@@ -223,6 +234,7 @@ _$adminAlertDtoOutputSubjectTypeEnumValues =
         _$adminAlertDtoOutputSubjectTypeEnum_otpNumber,
         _$adminAlertDtoOutputSubjectTypeEnum_restaurant,
         _$adminAlertDtoOutputSubjectTypeEnum_currency,
+        _$adminAlertDtoOutputSubjectTypeEnum_compensation,
       ],
     );
 
@@ -260,6 +272,7 @@ class _$AdminAlertDtoOutputCodeEnumSerializer
     'restaurantAutoPaused': 'restaurant_auto_paused',
     'restaurantSettlementOverdue': 'restaurant_settlement_overdue',
     'rateStale': 'rate_stale',
+    'compensationApproval': 'compensation_approval',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_not_accepted': 'restaurantNotAccepted',
@@ -283,6 +296,7 @@ class _$AdminAlertDtoOutputCodeEnumSerializer
     'restaurant_auto_paused': 'restaurantAutoPaused',
     'restaurant_settlement_overdue': 'restaurantSettlementOverdue',
     'rate_stale': 'rateStale',
+    'compensation_approval': 'compensationApproval',
   };
 
   @override
@@ -351,6 +365,7 @@ class _$AdminAlertDtoOutputSubjectTypeEnumSerializer
     'otpNumber': 'otp_number',
     'restaurant': 'restaurant',
     'currency': 'currency',
+    'compensation': 'compensation',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'order': 'order',
@@ -359,6 +374,7 @@ class _$AdminAlertDtoOutputSubjectTypeEnumSerializer
     'otp_number': 'otpNumber',
     'restaurant': 'restaurant',
     'currency': 'currency',
+    'compensation': 'compensation',
   };
 
   @override

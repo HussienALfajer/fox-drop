@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { Inject, Injectable, type OnModuleInit } from '@nestjs/common';
-import { and, desc, eq, gt, inArray, sql } from 'drizzle-orm';
+import { and, desc, eq, gt, inArray, ne, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -69,17 +69,27 @@ export class PromoCodesService implements OnModuleInit {
       const rows = await executor
         .select({ code: promoCodes.code, currency: promoCodes.currency })
         .from(promoCodes)
-        .where(and(eq(promoCodes.cityId, cityId), gt(promoCodes.validTo, sql`now()`)));
+        .where(
+          and(
+            eq(promoCodes.cityId, cityId),
+            gt(promoCodes.validTo, sql`now()`),
+            // A personal code would hold the base for good once support
+            // compensates every few days (slice 2.22a); one saved in an
+            // earlier base is refused as not_valid_now.
+            ne(promoCodes.visibility, 'personal'),
+          ),
+        );
       return rows.map((row) => ({ key: `promo_code:${row.code}`, currency: row.currency }));
     });
   }
 
-  // Every code of the city, newest first.
+  // Every code of the city made in «أكواد الخصم», newest first; personal
+  // codes (compensation, late codes) are not among them.
   async list(cityId: string): Promise<PromoCode[]> {
     return this.database.db
       .select()
       .from(promoCodes)
-      .where(eq(promoCodes.cityId, cityId))
+      .where(and(eq(promoCodes.cityId, cityId), ne(promoCodes.visibility, 'personal')))
       .orderBy(desc(promoCodes.createdAt), promoCodes.code);
   }
 
@@ -87,7 +97,13 @@ export class PromoCodesService implements OnModuleInit {
     const [row] = await this.database.db
       .select()
       .from(promoCodes)
-      .where(and(eq(promoCodes.cityId, cityId), eq(promoCodes.id, id)));
+      .where(
+        and(
+          eq(promoCodes.cityId, cityId),
+          eq(promoCodes.id, id),
+          ne(promoCodes.visibility, 'personal'),
+        ),
+      );
     return row ?? null;
   }
 
@@ -317,7 +333,13 @@ export class PromoCodesService implements OnModuleInit {
     const [row] = await tx
       .select()
       .from(promoCodes)
-      .where(and(eq(promoCodes.cityId, cityId), eq(promoCodes.id, id)))
+      .where(
+        and(
+          eq(promoCodes.cityId, cityId),
+          eq(promoCodes.id, id),
+          ne(promoCodes.visibility, 'personal'),
+        ),
+      )
       .for('update');
     if (!row) throw new PromoRefusedError('unknown_promo_code', 'no such code in the city');
     return row;

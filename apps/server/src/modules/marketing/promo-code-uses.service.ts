@@ -507,7 +507,10 @@ export class PromoCodeUsesService {
       .select()
       .from(promoCodes)
       .where(and(eq(promoCodes.cityId, cart.cityId), eq(promoCodes.code, typed)));
-    if (!row) return { applied: false, refusal: 'unknown_code', missing: null };
+    // A personal code (compensation, late code) is used from slice 2.22b.
+    if (!row || row.visibility === 'personal') {
+      return { applied: false, refusal: 'unknown_code', missing: null };
+    }
     if (lock) {
       await db.execute(
         sql`SELECT pg_advisory_xact_lock(hashtextextended(${`marketing.code:${row.id}`}, 0))`,

@@ -32,12 +32,7 @@ import {
   PromoCodesService,
   PromoRefusedError,
 } from './promo-codes.service.js';
-import {
-  promoCodeAudiences,
-  promoCodeFundings,
-  promoCodeKinds,
-  promoCodeVisibilities,
-} from './schema.js';
+import { promoCodeAudiences, promoCodeFundings, promoCodeKinds } from './schema.js';
 
 const minor = z.string().regex(/^\d{1,18}$/);
 const minuteOfDay = z.number().int().min(0).max(1439);
@@ -67,7 +62,8 @@ const fields = {
     .nullable()
     .describe("A shared code: the restaurant's share, 4000 is 40%; null otherwise."),
   dailyBudget: minor.nullable().describe('Pauses the code for the business day; null for none.'),
-  visibility: z.enum(promoCodeVisibilities),
+  // A personal code is never made here (slice 2.22a).
+  visibility: z.enum(['visible', 'secret']),
 };
 
 const promoCodeBody = z.object({
@@ -456,7 +452,8 @@ function codeBody(
     funding: code.funding,
     sharedMerchantBp: code.funding === 'shared' ? code.merchantShareBp : null,
     dailyBudget: text(code.dailyBudget),
-    visibility: code.visibility,
+    // The list and its routes never reach a personal code.
+    visibility: code.visibility === 'secret' ? ('secret' as const) : ('visible' as const),
     currency: code.currency,
     status: code.status,
     state: promoCodeState(code, now),

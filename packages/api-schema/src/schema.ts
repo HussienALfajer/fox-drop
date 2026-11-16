@@ -2580,6 +2580,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/orders/{orderId}/compensations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminOrderCompensationsList"];
+        put?: never;
+        post: operations["adminOrderCompensationsCompensate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/captain/orders/active": {
         parameters: {
             query?: never;
@@ -3038,6 +3054,54 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["adminPromoCodesResume"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/compensations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCompensationsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/compensations/{compensationId}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCompensationsApprove"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/compensations/{compensationId}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCompensationsReject"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5457,7 +5521,7 @@ export interface components {
         AdminReasonListsDto_Output: {
             lists: {
                 /** @enum {string} */
-                list: "merchant_rejection" | "merchant_problem" | "item_unavailable_note" | "merchant_ticket_type" | "captain_cannot_complete" | "captain_away" | "shortfall" | "food_after_failed" | "captain_ticket_type" | "captain_problem" | "customer_cancel" | "customer_problem" | "order_note" | "restaurant_rating_low" | "restaurant_rating_mid" | "restaurant_rating_high" | "captain_rating_low" | "captain_rating_mid" | "captain_rating_high" | "ops_cancel" | "reassignment" | "captain_suspension" | "customer_block" | "emergency_stop" | "failed_outcome" | "system_cancellation";
+                list: "merchant_rejection" | "merchant_problem" | "item_unavailable_note" | "merchant_ticket_type" | "captain_cannot_complete" | "captain_away" | "shortfall" | "food_after_failed" | "captain_ticket_type" | "captain_problem" | "customer_cancel" | "customer_problem" | "order_note" | "restaurant_rating_low" | "restaurant_rating_mid" | "restaurant_rating_high" | "captain_rating_low" | "captain_rating_mid" | "captain_rating_high" | "ops_cancel" | "reassignment" | "captain_suspension" | "customer_block" | "emergency_stop" | "compensation" | "failed_outcome" | "system_cancellation";
                 apps: ("merchant" | "captain" | "customer")[];
                 /** @description Its reasons may carry «نص للزبون». */
                 customerText: boolean;
@@ -8679,6 +8743,100 @@ export interface components {
                 }[];
             };
         };
+        AdminOrderCompensationsDto_Output: {
+            /** @description Newest first. */
+            compensations: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                orderId: string;
+                orderNumber: string;
+                /** @enum {string} */
+                kind: "fixed_amount" | "percentage";
+                amount: string | null;
+                percentBp: number | null;
+                maxDiscount: string | null;
+                currency: string;
+                reason: {
+                    code: string;
+                    label: string;
+                };
+                note: string | null;
+                /**
+                 * @description issued: the customer has the code; waiting: in «طلبات الموافقة»; rejected by OWN.
+                 * @enum {string}
+                 */
+                status: "issued" | "waiting" | "rejected";
+                /** @description The admin's name, null when they have none. */
+                requestedBy: string | null;
+                /** Format: date-time */
+                requestedAt: string;
+                decidedBy: string | null;
+                decidedAt: string | null;
+                /** @description The personal code once issued. */
+                code: string | null;
+                codeValidTo: string | null;
+            }[];
+            /** @description The order's currency, the codes' too. */
+            currency: string;
+            /** @description What the admin may still give on this order without OWN's approval; null for no cap (OWN). */
+            capLeft: string | null;
+            /** @description The session holds operations.compensate. */
+            canCompensate: boolean;
+            /** @description The active «تعويض الزبون» reasons, in order; each takes an optional note. */
+            reasons: {
+                code: string;
+                label: string;
+            }[];
+        };
+        AdminCompensateDto: {
+            value: {
+                /** @enum {string} */
+                kind: "fixed_amount" | "percentage";
+                /** @description A fixed amount; null for a percentage. */
+                amount: string | null;
+                /** @description A percentage: 2000 is 20%; null for an amount. */
+                percentBp: number | null;
+                /** @description A percentage's maximum, what counts against the cap; null for an amount. */
+                maxDiscount: string | null;
+            };
+            reason: {
+                code: string;
+                note: string | null;
+            };
+        };
+        AdminOrderCompensationDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            orderId: string;
+            orderNumber: string;
+            /** @enum {string} */
+            kind: "fixed_amount" | "percentage";
+            amount: string | null;
+            percentBp: number | null;
+            maxDiscount: string | null;
+            currency: string;
+            reason: {
+                code: string;
+                label: string;
+            };
+            note: string | null;
+            /**
+             * @description issued: the customer has the code; waiting: in «طلبات الموافقة»; rejected by OWN.
+             * @enum {string}
+             */
+            status: "issued" | "waiting" | "rejected";
+            /** @description The admin's name, null when they have none. */
+            requestedBy: string | null;
+            /** Format: date-time */
+            requestedAt: string;
+            decidedBy: string | null;
+            decidedAt: string | null;
+            /** @description The personal code once issued. */
+            code: string | null;
+            codeValidTo: string | null;
+        };
         CaptainActiveOrderDto_Output: {
             /** @description Null without an active order. */
             order: {
@@ -10008,6 +10166,92 @@ export interface components {
              */
             validTo: string;
         };
+        AdminCompensationRequestsDto_Output: {
+            /** @description Oldest first. */
+            requests: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                orderId: string;
+                orderNumber: string;
+                /** @enum {string} */
+                kind: "fixed_amount" | "percentage";
+                amount: string | null;
+                percentBp: number | null;
+                maxDiscount: string | null;
+                currency: string;
+                reason: {
+                    code: string;
+                    label: string;
+                };
+                note: string | null;
+                /**
+                 * @description issued: the customer has the code; waiting: in «طلبات الموافقة»; rejected by OWN.
+                 * @enum {string}
+                 */
+                status: "issued" | "waiting" | "rejected";
+                /** @description The admin's name, null when they have none. */
+                requestedBy: string | null;
+                /** Format: date-time */
+                requestedAt: string;
+                decidedBy: string | null;
+                decidedAt: string | null;
+                /** @description The personal code once issued. */
+                code: string | null;
+                codeValidTo: string | null;
+            }[];
+        };
+        AdminApproveCompensationDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description «تعديل القيمة»: the value OWN gives instead; null keeps the one asked. */
+            value: {
+                /** @enum {string} */
+                kind: "fixed_amount" | "percentage";
+                /** @description A fixed amount; null for a percentage. */
+                amount: string | null;
+                /** @description A percentage: 2000 is 20%; null for an amount. */
+                percentBp: number | null;
+                /** @description A percentage's maximum, what counts against the cap; null for an amount. */
+                maxDiscount: string | null;
+            } | null;
+        };
+        AdminCompensationDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            orderId: string;
+            orderNumber: string;
+            /** @enum {string} */
+            kind: "fixed_amount" | "percentage";
+            amount: string | null;
+            percentBp: number | null;
+            maxDiscount: string | null;
+            currency: string;
+            reason: {
+                code: string;
+                label: string;
+            };
+            note: string | null;
+            /**
+             * @description issued: the customer has the code; waiting: in «طلبات الموافقة»; rejected by OWN.
+             * @enum {string}
+             */
+            status: "issued" | "waiting" | "rejected";
+            /** @description The admin's name, null when they have none. */
+            requestedBy: string | null;
+            /** Format: date-time */
+            requestedAt: string;
+            decidedBy: string | null;
+            decidedAt: string | null;
+            /** @description The personal code once issued. */
+            code: string | null;
+            codeValidTo: string | null;
+        };
+        AdminRejectCompensationDto: {
+            /** Format: uuid */
+            cityId: string;
+        };
         RealtimeTokenDto_Output: {
             /** @description Centrifugo's connection token, valid 15 minutes; ask again when it expires. */
             token: string;
@@ -10022,14 +10266,14 @@ export interface components {
                  * @description The rule of AP §9.1.3.
                  * @enum {string}
                  */
-                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale";
+                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval";
                 /**
                  * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
                  * @enum {string}
                  */
                 severity: "critical" | "warning" | "information";
                 /** @enum {string} */
-                subjectType: "order" | "captain" | "otp_pool" | "otp_number" | "restaurant" | "currency";
+                subjectType: "order" | "captain" | "otp_pool" | "otp_number" | "restaurant" | "currency" | "compensation";
                 /** @description The order, captain or sending number it is about. */
                 subjectId: string;
                 /** @description For an alert about an order. */
@@ -10069,14 +10313,14 @@ export interface components {
              * @description The rule of AP §9.1.3.
              * @enum {string}
              */
-            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale";
+            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval";
             /**
              * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
              * @enum {string}
              */
             severity: "critical" | "warning" | "information";
             /** @enum {string} */
-            subjectType: "order" | "captain" | "otp_pool" | "otp_number" | "restaurant" | "currency";
+            subjectType: "order" | "captain" | "otp_pool" | "otp_number" | "restaurant" | "currency" | "compensation";
             /** @description The order, captain or sending number it is about. */
             subjectId: string;
             /** @description For an alert about an order. */
@@ -16309,6 +16553,57 @@ export interface operations {
             };
         };
     };
+    adminOrderCompensationsList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderCompensationsDto_Output"];
+                };
+            };
+        };
+    };
+    adminOrderCompensationsCompensate: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCompensateDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderCompensationDto_Output"];
+                };
+            };
+        };
+    };
     captainOrdersActive: {
         parameters: {
             query?: never;
@@ -17092,6 +17387,80 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminPromoCodeDto_Output"];
+                };
+            };
+        };
+    };
+    adminCompensationsList: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCompensationRequestsDto_Output"];
+                };
+            };
+        };
+    };
+    adminCompensationsApprove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                compensationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminApproveCompensationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCompensationDto_Output"];
+                };
+            };
+        };
+    };
+    adminCompensationsReject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                compensationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRejectCompensationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCompensationDto_Output"];
                 };
             };
         };
