@@ -90,6 +90,7 @@ class Cart {
     required this.restaurantName,
     required this.lines,
     required this.changedAt,
+    this.code,
   });
 
   factory Cart.fromJson(Map<String, dynamic> json) => Cart(
@@ -100,6 +101,7 @@ class Cart {
         CartLine.fromJson(line as Map<String, dynamic>),
     ],
     changedAt: DateTime.parse(json['changedAt'] as String),
+    code: json['code'] as String?,
   );
 
   final String restaurantId;
@@ -107,11 +109,16 @@ class Cart {
   final List<CartLine> lines;
   final DateTime changedAt;
 
+  /// The order's code (CU §10.4), as the customer typed it, sent with every
+  /// quote and the order command; null without one. One code per order.
+  final String? code;
+
   Map<String, dynamic> toJson() => {
     'restaurantId': restaurantId,
     'restaurantName': restaurantName,
     'lines': [for (final line in lines) line.toJson()],
     'changedAt': changedAt.toUtc().toIso8601String(),
+    'code': code,
   };
 }
 
@@ -178,7 +185,7 @@ class CartController extends AsyncNotifier<CartState> {
         quantity: quantity > maxQuantity ? maxQuantity : quantity,
       );
     }
-    await _save(restaurantId, restaurantName, lines);
+    await _save(restaurantId, restaurantName, lines, code: current?.code);
     return CartAdd.added;
   }
 
@@ -242,6 +249,20 @@ class CartController extends AsyncNotifier<CartState> {
     }
   });
 
+  /// «تطبيق» (CU §10.4): the code for the order, trimmed; the server checks
+  /// it with every quote. Null is «إزالة».
+  Future<void> setCode(String? code) async {
+    final cart = await _fresh();
+    if (cart == null) return;
+    final trimmed = code?.trim();
+    await _save(
+      cart.restaurantId,
+      cart.restaurantName,
+      cart.lines,
+      code: trimmed == null || trimmed.isEmpty ? null : trimmed,
+    );
+  }
+
   /// After the order is placed (CU §10.7).
   Future<void> clear() async {
     await _store.delete(_cartKey);
@@ -267,20 +288,23 @@ class CartController extends AsyncNotifier<CartState> {
     if (cart == null) return;
     final lines = [...cart.lines];
     change(lines);
-    await _save(cart.restaurantId, cart.restaurantName, lines);
+    await _save(cart.restaurantId, cart.restaurantName, lines, code: cart.code);
   }
 
+  /// A new cart ([startNew], [replaceWith]) starts without a code.
   Future<void> _save(
     String restaurantId,
     String restaurantName,
-    List<CartLine> lines,
-  ) async {
+    List<CartLine> lines, {
+    String? code,
+  }) async {
     if (lines.isEmpty) return clear();
     final cart = Cart(
       restaurantId: restaurantId,
       restaurantName: restaurantName,
       lines: List.unmodifiable(lines),
       changedAt: _now(),
+      code: code,
     );
     state = AsyncData(CartState(cart));
     await _store.write(_cartKey, jsonEncode(cart.toJson()));

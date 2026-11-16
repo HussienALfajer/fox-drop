@@ -19,6 +19,9 @@ Map<String, Object?> _quote({
   String unitPrice = '6500',
   bool minimumReached = true,
   String? payIn,
+  Map<String, Object?>? promoCode,
+  String discount = '0',
+  String total = '14000',
 }) => {
   'version': version,
   'restaurant': {
@@ -45,10 +48,11 @@ Map<String, Object?> _quote({
     'itemsValue': '13000',
     'deliveryFee': '1000',
     'deliveryFree': false,
-    'discount': '0',
+    'discount': discount,
     'rounding': '0',
-    'total': '14000',
+    'total': total,
   },
+  'promoCode': promoCode,
   'equivalents': [
     {'amount': '350', 'currency': 'USD'},
   ],
@@ -964,4 +968,116 @@ void main() {
     expect(opened.first, isTrue);
     await app.done(tester);
   });
+
+  group('the code (CU §10.4)', () {
+    Future<void> apply(WidgetTester tester, String code) async {
+      await tester.ensureVisible(find.byKey(const Key('code-field')));
+      await tester.enterText(find.byKey(const Key('code-field')), code);
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('code-apply')));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('a code is applied, shown with «الخصم» and sent', (
+      tester,
+    ) async {
+      final app = await _checkout(
+        tester,
+        quotes: [
+          FakeAnswer(200, _quote()),
+          FakeAnswer(
+            200,
+            _quote(
+              version: 'v2',
+              discount: '3000',
+              total: '11000',
+              promoCode: {
+                'code': 'FOX10',
+                'kind': 'percentage',
+                'discount': '3000',
+                'fixedAmountAboveItems': false,
+              },
+            ),
+          ),
+        ],
+        before: (app) =>
+            app.server.on('/v1/customer/orders', [FakeAnswer(201, _order())]),
+      );
+      expect(app.bodyOf('/v1/customer/quote')['code'], isNull);
+      expect(find.text('أدخل الكود'), findsOneWidget);
+      await apply(tester, ' fox10 ');
+
+      final quotes = app.server.to('/v1/customer/quote').length;
+      expect(
+        app.bodyOf('/v1/customer/quote', index: quotes - 1)['code'],
+        'fox10',
+      );
+      expect(find.text('fox10'), findsOneWidget);
+      expect(find.text('إزالة'), findsOneWidget);
+      expect(find.text('الخصم (FOX10)'), findsOneWidget);
+      expect(find.text('30 ₺'), findsOneWidget);
+      expect(find.text('تأكيد الطلب — 110 ₺'), findsOneWidget);
+      expect(find.text(l10nCodeAboveItems), findsNothing);
+      // Kept with the cart on the device.
+      expect(app.device.values['cart'], contains('"code":"fox10"'));
+
+      await _fillAddress(tester);
+      await _confirm(tester);
+      final body = app.bodyOf('/v1/customer/orders');
+      expect(body['code'], 'fox10');
+      expect(body['quoteVersion'], 'v2');
+      await app.done(tester);
+    });
+
+    testWidgets('«إزالة» removes the code and quotes without it', (
+      tester,
+    ) async {
+      final app = await _checkout(tester);
+      await apply(tester, 'FOX10');
+      await tester.tap(find.byKey(const Key('code-remove')));
+      await tester.pumpAndSettle();
+
+      final quotes = app.server.to('/v1/customer/quote').length;
+      expect(
+        app.bodyOf('/v1/customer/quote', index: quotes - 1)['code'],
+        isNull,
+      );
+      expect(find.text('أدخل الكود'), findsOneWidget);
+      expect(app.device.values['cart'], isNot(contains('FOX10')));
+      await app.done(tester);
+    });
+
+    testWidgets('a fixed code above the items value warns before confirming', (
+      tester,
+    ) async {
+      final app = await _checkout(
+        tester,
+        quotes: [
+          FakeAnswer(200, _quote()),
+          FakeAnswer(
+            200,
+            _quote(
+              version: 'v2',
+              discount: '13000',
+              total: '1000',
+              promoCode: {
+                'code': 'BIG200',
+                'kind': 'fixed_amount',
+                'discount': '13000',
+                'fixedAmountAboveItems': true,
+              },
+            ),
+          ),
+        ],
+      );
+      await apply(tester, 'BIG200');
+
+      expect(find.text('الخصم (BIG200)'), findsOneWidget);
+      expect(find.text(l10nCodeAboveItems), findsOneWidget);
+      expect(find.text('تأكيد الطلب — 10 ₺'), findsOneWidget);
+      await app.done(tester);
+    });
+  });
 }
+
+const l10nCodeAboveItems = 'قيمة الكود أكبر من قيمة الأصناف، ولا يُستعاد الفرق';

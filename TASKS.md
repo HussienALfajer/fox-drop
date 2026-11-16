@@ -10,7 +10,7 @@ Slice 2.21c, the code in the customer app (`docs/roadmap.md`, Phase 2, Money; th
 - **Specs:** CU §10.4, §10.6–10.7, CU Appendix C «Code refusals» (`docs/product/v1/customer-app/10-cart-and-checkout.md`, `appendix-c-reason-lists-and-customer-facing-texts.md`), CU §11 (the order's money lines); `apps/customer/CLAUDE.md`, `packages/core_l10n/CLAUDE.md`. The server is done (2.21b): the quote and the order command take `code`; the quote answers `promoCode` (`code`, `kind`, `discount`, `fixedAmountAboveItems`) or the problem `promo_code` with its `refusal` and, for `below_minimum`, the missing `amount`; the customer's order answers `promoCode` beside `money.discount`.
 - **Branch:** `feat/promo-codes-app`.
 - **Plan** (one commit per step):
-  - [ ] Checkout: «أدخل الكود» with «تطبيق» and «إزالة», the code kept with the cart and sent with every quote and the order command, the discount line «الخصم» with the code, and «قيمة الكود أكبر من قيمة الأصناف، ولا يُستعاد الفرق» before confirming.
+  - [x] Checkout: «أدخل الكود» with «تطبيق» and «إزالة», the code kept with the cart and sent with every quote and the order command, the discount line «الخصم» with the code, and «قيمة الكود أكبر من قيمة الأصناف، ولا يُستعاد الفرق» before confirming.
   - [ ] The refusals of CU Appendix C (`refusal` to its text, «أضف {المبلغ} لاستخدام هذا الكود» with the amount), a refused code blocking the order until removed, and a code that stopped working between quote and confirmation (`409` with the new quote).
   - [ ] The order screen's «الخصم» line with the code.
   - [ ] Review, then hand over to 2.21d.

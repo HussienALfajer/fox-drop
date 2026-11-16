@@ -633,6 +633,50 @@ class AppLocalizationsAr extends AppLocalizations {
   String get customerDiscount => 'الخصم';
 
   @override
+  String customerDiscountWithCode(String code) {
+    return 'الخصم ($code)';
+  }
+
+  @override
+  String get customerCodeEnter => 'أدخل الكود';
+
+  @override
+  String get customerCodeApply => 'تطبيق';
+
+  @override
+  String get customerCodeRemove => 'إزالة';
+
+  @override
+  String get customerCodeAboveItems =>
+      'قيمة الكود أكبر من قيمة الأصناف، ولا يُستعاد الفرق';
+
+  @override
+  String get customerCodeUnknown => 'الكود غير صحيح';
+
+  @override
+  String get customerCodeNotValidNow => 'الكود غير صالح الآن';
+
+  @override
+  String customerCodeBelowMinimum(String amount) {
+    return 'أضف $amount لاستخدام هذا الكود';
+  }
+
+  @override
+  String get customerCodeNotForRestaurant => 'هذا الكود لا يعمل مع هذا المطعم';
+
+  @override
+  String get customerCodeFirstOrderOnly => 'هذا الكود للطلب الأول فقط';
+
+  @override
+  String get customerCodeUsedBefore => 'استخدمت هذا الكود من قبل';
+
+  @override
+  String get customerCodeUsesEnded => 'انتهت استخدامات هذا الكود';
+
+  @override
+  String get customerCodeBudgetReached => 'الكود غير متاح اليوم';
+
+  @override
   String get customerRounding => 'تقريب';
 
   @override
