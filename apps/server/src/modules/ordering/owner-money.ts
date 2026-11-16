@@ -9,23 +9,38 @@ import { commission } from './door-payment.js';
 // An outcome with the restaurant responsible (`restaurantDebit`, the
 // outcome's whole debit) books no commission and takes the pickup payment
 // back, so its net is what is left after that debit (AP §8.9).
-// No restaurant-funded discount until codes (Phase 2).
+// A code the restaurant funds (slice 2.21b, RA S18, AP §8.4) is its own line,
+// paid on Saturday with the commission, and its item part lowers the
+// commission's base.
 export interface OwnerMoney {
   commissionBp: number;
   commission: bigint;
+  // The restaurant-funded discount, on the items or the fee; 0 without one.
+  discountShare: bigint;
+  discountOnDelivery: boolean;
   merchantNet: bigint;
 }
 
 export function ownerMoney(
-  order: { itemsValue: bigint; commissionBp: number; testOrder: boolean },
+  order: {
+    itemsValue: bigint;
+    commissionBp: number;
+    testOrder: boolean;
+    discount?: { merchant: bigint; onDelivery: boolean };
+  },
   frozen: { itemsValue: bigint; restaurantCommissionCut: bigint; restaurantCharge: bigint } | null,
   restaurantDebit: bigint | null = null,
 ): OwnerMoney | null {
   if (order.testOrder) return null;
+  const share = order.discount?.merchant ?? 0n;
+  const onDelivery = order.discount?.onDelivery ?? false;
+  const itemDiscount = onDelivery ? 0n : share;
   if (restaurantDebit !== null && frozen !== null) {
     return {
       commissionBp: order.commissionBp,
       commission: 0n,
+      discountShare: 0n,
+      discountOnDelivery: onDelivery,
       merchantNet:
         frozen.itemsValue -
         frozen.restaurantCharge +
@@ -34,17 +49,23 @@ export function ownerMoney(
     };
   }
   if (frozen === null) {
-    const cut = commission(order.itemsValue, order.commissionBp);
+    const cut = commission(order.itemsValue - itemDiscount, order.commissionBp);
     return {
       commissionBp: order.commissionBp,
       commission: cut,
-      merchantNet: order.itemsValue - cut,
+      discountShare: share,
+      discountOnDelivery: onDelivery,
+      merchantNet: order.itemsValue - cut - share,
     };
   }
-  const cut = commission(frozen.itemsValue, order.commissionBp) - frozen.restaurantCommissionCut;
+  const cut =
+    commission(frozen.itemsValue - itemDiscount, order.commissionBp) -
+    frozen.restaurantCommissionCut;
   return {
     commissionBp: order.commissionBp,
     commission: cut,
-    merchantNet: frozen.itemsValue - cut - frozen.restaurantCharge,
+    discountShare: share,
+    discountOnDelivery: onDelivery,
+    merchantNet: frozen.itemsValue - cut - share - frozen.restaurantCharge,
   };
 }

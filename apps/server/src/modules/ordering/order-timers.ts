@@ -2,6 +2,7 @@ import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
 import { and, eq } from 'drizzle-orm';
 import { ContentService } from '../content/index.js';
 import { GeoService } from '../geo/index.js';
+import { PromoCodeUsesService } from '../marketing/index.js';
 import { RestaurantStatusService } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
 import { DATABASE } from '../../database/database.module.js';
@@ -57,6 +58,7 @@ export class OrderTimers {
     private readonly geo: GeoService,
     private readonly settings: SettingsService,
     private readonly status: RestaurantStatusService,
+    private readonly promoCodes: PromoCodeUsesService,
   ) {}
 
   // AP §8.3: cancels a placed order the restaurant did not accept in time;
@@ -98,6 +100,8 @@ export class OrderTimers {
         reason: MERCHANT_AUTO_CANCEL,
         at: now,
       });
+      // AP §9.11.1: a code's use is given back.
+      await this.promoCodes.settle(tx, order.id, 'returned', now);
       const timeZone = await this.geo.cityTimeZone(order.cityId);
       if (timeZone !== null) {
         await this.status.autoPauseIfDue(

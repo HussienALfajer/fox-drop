@@ -41,7 +41,7 @@ const accepted: CancellationFacts = {
   arrivedAtMerchant: false,
   currency: 'TRY',
   itemsValue: 24_000n,
-  discount: 0n,
+  discount: { total: 0n, merchant: 0n, onDelivery: false },
   commissionBp: 1500,
   testOrder: false,
   cashLines: [{ currency: 'TRY', amount: 24_000n }],
@@ -137,10 +137,19 @@ describe('cancellationEntries', () => {
     expect(result).toMatchObject({ journals: [], merchantCredit: null });
   });
 
-  it('refuses a credit on an order with a discount, not booked until codes', () => {
-    expect(() =>
-      cancellationEntries({ ...accepted, discount: 1_000n }, { ...plain, foodPrepared: true }),
-    ).toThrow(/discount/);
+  it('credits the net a code leaves the restaurant (AP §8.4, slice 2.21b)', () => {
+    const credit = (discount: { total: bigint; merchant: bigint; onDelivery: boolean }) =>
+      (
+        cancellationEntries({ ...accepted, discount }, { ...plain, foodPrepared: true }) as {
+          merchantCredit: bigint | null;
+        }
+      ).merchantCredit;
+    // A platform code leaves the net: 240 − 36.
+    expect(credit({ total: 2_400n, merchant: 0n, onDelivery: false })).toBe(20_400n);
+    // A restaurant-funded 24 on the items: 240 − 15% of 216 − 24.
+    expect(credit({ total: 2_400n, merchant: 2_400n, onDelivery: false })).toBe(18_360n);
+    // A restaurant-funded free delivery of 40: 240 − 36 − 40.
+    expect(credit({ total: 4_000n, merchant: 4_000n, onDelivery: true })).toBe(16_400n);
   });
 
   it('counts a strike when the customer is responsible after acceptance, whatever the reason (docs/domain/08)', () => {

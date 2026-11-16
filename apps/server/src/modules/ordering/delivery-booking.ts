@@ -4,6 +4,7 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Jobs } from '../../jobs/jobs.module.js';
 import { CaptainsService, type PayParts, type PeakBonusAmount } from '../captains/index.js';
 import type { RateSnapshot } from '../fx/index.js';
+import { PromoCodeUsesService } from '../marketing/index.js';
 import {
   type AccountPurpose,
   type JournalType,
@@ -19,6 +20,7 @@ import { orderKey, snapshotOf } from './order-views.js';
 import { postOrderJournals } from './outcome-facts.js';
 import { captainNet, type OutcomeJournal, type SetOutcome } from './outcome.js';
 import { journalRates } from './journal-rates.js';
+import { merchantItemDiscount, orderDiscount, type OrderDiscount } from './order-discount.js';
 import { type PaymentLine, storedLines } from './pickup-booking.js';
 import type { ChosenReason } from '../content/index.js';
 import { collections, orderOutcomeRows, orders } from './schema.js';
@@ -38,6 +40,9 @@ export interface DeliveryOrder extends OrderRow {
   rounding: bigint;
   total: bigint;
   snapshot: RateSnapshot;
+  // AP §8.4 (slice 2.21b): the discount's funders.
+  discountMerchant: bigint;
+  promoTerms: unknown;
 }
 
 export async function lockForDelivery(tx: Tx, order: OrderRow): Promise<DeliveryOrder> {
@@ -50,6 +55,8 @@ export async function lockForDelivery(tx: Tx, order: OrderRow): Promise<Delivery
       rounding: orders.rounding,
       total: orders.total,
       rateSnapshot: orders.rateSnapshot,
+      discountMerchant: orders.discountMerchant,
+      promoTerms: orders.promoTerms,
     })
     .from(orders)
     .where(and(eq(orders.id, order.id), eq(orders.placedAt, order.placedAt)));
@@ -113,6 +120,7 @@ export class DeliveryBooking {
     private readonly jobs: Jobs,
     private readonly ledger: LedgerService,
     private readonly captains: CaptainsService,
+    private readonly promoCodes: PromoCodeUsesService,
   ) {}
 
   async complete(
@@ -124,10 +132,6 @@ export class DeliveryBooking {
     away: ChosenReason | null,
   ): Promise<AfterCommit> {
     if (order.captainId === null) throw new Error(`order ${order.id} has no captain`);
-    // AP §8.4: a discount needs platform.discount_cost or
-    // merchant.discount_share, which come with codes (Phase 2); until then
-    // the clearing account would not settle.
-    if (order.discount !== 0n) throw new Error(`order ${order.id} has a discount, not booked yet`);
     const version = order.version + 1;
     await tx
       .update(orders)
@@ -174,14 +178,19 @@ export class DeliveryBooking {
     // the order clearing account, and the pickup's fee as the revenue; read
     // under the order's lock, so an edit committed since counts.
     const frozen = await frozenAtPickup(tx, order);
+    const discount = orderDiscount(order);
     await this.post(tx, order, order.captainId, delivery, by.actor, {
+      // docs/domain/04: after the restaurant-funded item discount.
       commission:
         delivery.commissionBp === null
           ? null
-          : commission(frozen.itemsValue, delivery.commissionBp),
+          : commission(frozen.itemsValue - merchantItemDiscount(discount), delivery.commissionBp),
       commissionToClearing: delivery.commissionBp === null ? 0n : frozen.commissionToClearing,
       deliveryFee: frozen.deliveryFee,
+      discount,
     });
+    // AP §9.11.1: delivered, the code's use is spent.
+    await this.promoCodes.settle(tx, order.id, 'spent', now);
     await recordTransition(tx, this.jobs, order, {
       type: 'order.delivered',
       from: order.status,
@@ -378,7 +387,12 @@ export class DeliveryBooking {
     captainId: string,
     delivery: Delivery,
     actor: DeliveredBy['actor'],
-    money: { commission: bigint | null; commissionToClearing: bigint; deliveryFee: bigint },
+    money: {
+      commission: bigint | null;
+      commissionToClearing: bigint;
+      deliveryFee: bigint;
+      discount: OrderDiscount;
+    },
   ): Promise<void> {
     const base = order.snapshot.baseCurrency;
     const ledgerActor: LedgerActor = { type: actor.type, id: actor.id };
@@ -418,6 +432,28 @@ export class DeliveryBooking {
         { accountId: clearing, currency: base, amount: -money.commissionToClearing },
       ]);
     }
+    // AP §8.4, docs/domain/11: the discount the customer did not pay, its
+    // platform part a cost (a test order's whole discount its test cost) and
+    // the restaurant's part owed on Saturday with the commission
+    // (docs/domain/07 merchant.discount_share).
+    const share = money.commission === null ? 0n : money.discount.merchant;
+    const cost = money.commission === null ? 'platform.test_cost' : 'platform.discount_cost';
+    await post(cost, [
+      { accountId: clearing, currency: base, amount: -(money.discount.total - share) },
+      {
+        accountId: await account(cost, base),
+        currency: base,
+        amount: money.discount.total - share,
+      },
+    ]);
+    await post('merchant.discount_share', [
+      {
+        accountId: await account('merchant.account', base, order.restaurantId),
+        currency: base,
+        amount: share,
+      },
+      { accountId: clearing, currency: base, amount: -share },
+    ]);
     // AP §8.5.2, AP §9.6.3: a test order's pay is the platform's test cost.
     const payCounter = await account(
       money.commission === null ? 'platform.test_cost' : 'platform.captain_pay',

@@ -1,6 +1,7 @@
 import type { AccountPurpose, JournalType } from '../ledger/index.js';
 import type { ResponsibleParty } from './cancellation.js';
 import { commission } from './door-payment.js';
+import { merchantItemDiscount, type OrderDiscount } from './order-discount.js';
 import type { orderOutcomes, outcomeFoods } from './schema.js';
 
 export type OrderOutcome = (typeof orderOutcomes)[number];
@@ -57,7 +58,8 @@ export interface OutcomeFacts {
   // The order now, after any edit after the pickup.
   itemsValue: bigint;
   deliveryFee: bigint;
-  discount: bigint;
+  // AP §8.4 (slice 2.21b): the code's discount and its funders.
+  discount: OrderDiscount;
   // The customer total now, which an amount to collect stays below.
   total: bigint;
   // What the pickup paid and what the edits after it already booked against
@@ -151,9 +153,6 @@ export function outcomeEntries(
     return { problem: 'invalid_outcome' };
   }
   if (facts.pay === null && responsible !== 'captain') return { problem: 'captain_pay_unset' };
-  // AP §8.4: a discount needs its share booked; codes come in Phase 2, as
-  // the delivery refuses it until then.
-  if (facts.discount !== 0n) throw new Error('an order with a discount, not booked yet');
 
   const { currency, pickup } = facts;
   const platform = { kind: 'platform' as const, id: null };
@@ -226,15 +225,27 @@ export function outcomeEntries(
       entry('platform.operating_cost', platform, -feeCuts.platform),
       clearing(feeCuts.platform),
     ]);
-    // Rule 2: the commission as usual, on the pickup's items value, less
-    // the restaurant's own reversals; against the order clearing account,
-    // where it recovers part of the pickup payment (rule 3).
+    // Rule 2: the commission as usual, on the pickup's items value after
+    // the restaurant-funded item discount (AP §8.4), less the restaurant's
+    // own reversals; against the order clearing account, where it recovers
+    // part of the pickup payment (rule 3).
     const full =
-      facts.commissionBp === null ? 0n : commission(pickup.itemsValue, facts.commissionBp);
+      facts.commissionBp === null
+        ? 0n
+        : commission(pickup.itemsValue - merchantItemDiscount(facts.discount), facts.commissionBp);
     push('merchant.commission', null, [
       entry('merchant.account', merchant, full),
       entry('platform.revenue_commission', platform, -pickup.restaurantCommissionCut),
       clearing(-(full - pickup.restaurantCommissionCut)),
+    ]);
+    // Rule 2: the restaurant's share of the discount as usual (none on a
+    // test order), so the merchant net is what it would keep from a normal
+    // order; the platform's part is no cost, the customer not having paid the
+    // discounted total.
+    const share = facts.commissionBp === null ? 0n : facts.discount.merchant;
+    push('merchant.discount_share', null, [
+      entry('merchant.account', merchant, share),
+      clearing(-share),
     ]);
     // Rule 3: what the order clearing account still holds is the loss: the
     // merchant net of the items still in the order, never below zero.
@@ -243,7 +254,7 @@ export function outcomeEntries(
       pickup.captainCharge +
       pickup.platformCharge -
       (feeCuts.restaurant + feeCuts.captain + feeCuts.platform);
-    const left = pickup.itemsValue - itemCharges - (full - pickup.restaurantCommissionCut);
+    const left = pickup.itemsValue - itemCharges - (full - pickup.restaurantCommissionCut) - share;
     if (left < 0n) throw new Error('the order clearing account would not settle');
     // Rule 3: the loss less what the customer paid, floored at zero.
     loss = left > collected ? left - collected : 0n;
@@ -383,9 +394,12 @@ function duesAmount(facts: OutcomeFacts): bigint | null {
   const { kind, fixed } = facts.duesRule;
   if (kind === 'fixed') return fixed !== null && fixed > 0n ? fixed : null;
   if (kind === 'fee_plus_items_value') return facts.deliveryFee + facts.itemsValue;
+  // AP §8.4: the merchant net after the restaurant-funded discount.
   const net =
     facts.commissionBp === null
       ? facts.itemsValue
-      : facts.itemsValue - commission(facts.itemsValue, facts.commissionBp);
+      : facts.itemsValue -
+        commission(facts.itemsValue - merchantItemDiscount(facts.discount), facts.commissionBp) -
+        facts.discount.merchant;
   return facts.deliveryFee + net;
 }

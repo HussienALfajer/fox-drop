@@ -1,3 +1,4 @@
+import { orderDiscount } from './order-discount.js';
 import { and, asc, eq, gt, isNull } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { CaptainsService } from '../captains/index.js';
@@ -34,6 +35,8 @@ export async function readOutcomeFacts(
       itemsValue: orders.itemsValue,
       deliveryFee: orders.deliveryFee,
       discount: orders.discount,
+      discountMerchant: orders.discountMerchant,
+      promoTerms: orders.promoTerms,
       total: orders.total,
     })
     .from(orders)
@@ -57,7 +60,7 @@ export async function readOutcomeFacts(
       commissionBp,
       itemsValue: row.itemsValue,
       deliveryFee: row.deliveryFee,
-      discount: row.discount,
+      discount: orderDiscount(row),
       total: row.total,
       pickup: {
         itemsValue: frozen.itemsValue,

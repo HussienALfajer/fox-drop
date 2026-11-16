@@ -113,11 +113,19 @@ const boardOrder = z.object({
       commission: minor
         .nullable()
         .describe('«العمولة {النسبة}% — تُسدَّد يوم السبت: {المبلغ}»; null on a test order.'),
+      discountShare: minor
+        .nullable()
+        .describe(
+          'The restaurant-funded discount, paid on Saturday with the commission (AP §8.4, RA S18); 0 without one, null on a test order.',
+        ),
+      discountOnDelivery: z
+        .boolean()
+        .describe('The restaurant-funded discount is on the delivery fee (RA S18), not the items.'),
       merchantNet: minor.nullable().describe('«صافيك من الطلب»; null on a test order.'),
     })
     .nullable()
     .describe(
-      "RA §8.4, R10: owners only (null for a cashier, and on a cancelled order). After the pickup the pickup's items value is the base, less the restaurant's own edits (AP §9.3.3). No restaurant-funded discount until codes (Phase 2).",
+      "RA §8.4, R10: owners only (null for a cashier, and on a cancelled order). After the pickup the pickup's items value is the base, less the restaurant's own edits (AP §9.3.3); a restaurant-funded code lowers the commission's base and is its own line.",
     ),
   captainTrack: z
     .enum(captainTracks)
@@ -838,6 +846,8 @@ function ownerBody(owners: Map<string, OwnerMoney | null>, order: OrderView) {
     testOrder: money === null,
     commissionBp: money?.commissionBp ?? null,
     commission: money?.commission.toString() ?? null,
+    discountShare: money?.discountShare.toString() ?? null,
+    discountOnDelivery: money?.discountOnDelivery ?? false,
     merchantNet: money?.merchantNet.toString() ?? null,
   };
 }

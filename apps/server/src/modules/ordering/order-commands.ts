@@ -16,6 +16,8 @@ import {
   MerchantsService,
   RestaurantStatusService,
 } from '../merchants/index.js';
+import { PromoCodeUsesService, promoDiscount } from '../marketing/index.js';
+import { orderDiscount, storedTerms } from './order-discount.js';
 import { SettingsService } from '../settings/index.js';
 import type { AdminOrderCommand } from './captain-orders.js';
 import {
@@ -370,6 +372,9 @@ type Change = {
   before?: (tx: Tx) => Promise<void>;
   // Written in the transaction after the order's own change (RA §8.6).
   effects?: (tx: Tx) => Promise<void>;
+  // AP §9.11.1 (slice 2.21b): how an outcome settles the code's use; a
+  // rejection or a cancellation gives it back without saying so.
+  codeUse?: 'spent' | 'returned';
   // What the audit keeps beside the status («تعديل الوقت»: the times it
   // moved, before and after).
   audit?: { before: Record<string, unknown>; after: Record<string, unknown> };
@@ -387,6 +392,7 @@ type Tx = Parameters<Parameters<Database['db']['transaction']>[0]>[0];
 export class OrderCommands {
   constructor(
     @Inject(DATABASE) private readonly database: Database,
+    private readonly promoCodes: PromoCodeUsesService,
     private readonly merchants: MerchantsService,
     private readonly captains: CaptainsService,
     private readonly geo: GeoService,
@@ -990,6 +996,7 @@ export class OrderCommands {
                 ...(result.status === 'delivered' ? { deliveredAt: now } : {}),
               },
           ...(waits ? {} : { to: result.status }),
+          codeUse: codeUseOf(result.status, choices.responsible),
           // RA §16 #19: the restaurant learns the outcome once it is posted.
           ...(waits ? {} : { publicReason: choices.outcome }),
           // The entries were worked out from the order before the lock; an
@@ -1145,6 +1152,7 @@ export class OrderCommands {
                 : {}),
           },
           to: result.status,
+          codeUse: codeUseOf(result.status, choices.responsible),
           publicReason: choices.outcome,
           // The entries were worked out from the order and its outcome before
           // the lock; anything since moved its version.
@@ -1624,7 +1632,7 @@ export class OrderCommands {
         arrivedAtMerchant: row.arrivedAtMerchantAt !== null,
         currency: row.currency,
         itemsValue: row.itemsValue,
-        discount: row.discount,
+        discount: orderDiscount(row),
         commissionBp: row.commissionBp,
         testOrder: row.testOrder,
         cashLines,
@@ -1652,6 +1660,8 @@ export class OrderCommands {
         currency: orders.currency,
         itemsValue: orders.itemsValue,
         discount: orders.discount,
+        discountMerchant: orders.discountMerchant,
+        promoTerms: orders.promoTerms,
         commissionBp: orders.commissionBp,
         testOrder: orders.testOrder,
         payTableId: orders.payTableId,
@@ -2233,6 +2243,8 @@ export class OrderCommands {
           set: {
             itemsValue: after.itemsValue,
             deliveryFee: after.deliveryFee,
+            discount: after.discount,
+            discountMerchant: edit.discount.merchant,
             rounding: after.rounding,
             total: after.total,
             ...(times
@@ -2259,6 +2271,7 @@ export class OrderCommands {
             (await this.editBasis(tx, order)) === edit.basis &&
             (await lockOrder(tx, order.id, order.placedAt))?.version === command.version,
           effects: async (tx) => {
+            await this.promoCodes.adjust(tx, order.id, edit.discount);
             await tx.insert(orderEdits).values({
               id: editId,
               orderId: order.id,
@@ -2577,6 +2590,7 @@ export class OrderCommands {
         captainTrack: orders.captainTrack,
         currency: orders.currency,
         discount: orders.discount,
+        promoTerms: orders.promoTerms,
         deliveryFee: orders.deliveryFee,
         rateSnapshot: orders.rateSnapshot,
         commissionBp: orders.commissionBp,
@@ -2667,11 +2681,18 @@ export class OrderCommands {
     }
     const snapshot = snapshotOf(row.rateSnapshot);
     const base = snapshot.currencies.find((entry) => entry.code === snapshot.baseCurrency);
+    // AP §9.3.3 (owner decision 2026-11-16): the code's discount worked out
+    // again by its terms on the new items value and fee, within its caps; the
+    // code stays below its minimum.
+    const terms = storedTerms(row.promoTerms);
+    const discount =
+      terms === null
+        ? { total: row.discount, merchant: 0n, onDelivery: false }
+        : promoDiscount(terms, { itemsValue: plan.itemsValue, deliveryFee });
     const after = quoteMoney({
       itemsValue: plan.itemsValue,
       deliveryFee,
-      // Codes wait for Phase 2: the discount stays as placed (AP §9.3.3).
-      discount: row.discount,
+      discount: discount.total,
       rounding: base ? { unitMinor: base.roundingUnitMinor, mode: base.roundingMode } : null,
     });
     let times: EditTimes | null = null;
@@ -2715,6 +2736,7 @@ export class OrderCommands {
       plan,
       before: view.money,
       after,
+      discount,
       times,
       booking,
       captainId: row.captainId,
@@ -2894,6 +2916,11 @@ export class OrderCommands {
         });
       }
       await prepared.effects?.(tx);
+      // AP §9.11.1 (slice 2.21b): a code's use is given back when the order
+      // ends rejected or cancelled; an outcome settles it by its party.
+      const codeUse =
+        prepared.codeUse ?? (to === 'rejected' || to === 'cancelled' ? 'returned' : null);
+      if (codeUse !== null) await this.promoCodes.settle(tx, order.id, codeUse, now);
       // CA §7.3, K18 (slice 2.13a): an order that left its captain (ended,
       // cancelled or withdrawn) may end the captain's last order.
       if (
@@ -3172,4 +3199,13 @@ function keptCash(own: {
     : [{ currency: own.row.currency, amount: own.row.itemsValue }];
   const snapshot = snapshotOf(own.row.rateSnapshot);
   return { cashLines, cashBase: baseTotal(snapshot, cashLines), snapshot };
+}
+
+// AP §9.11.1 (slice 2.21b): an outcome spends the code's use when the order
+// was delivered or the customer is responsible, and gives it back otherwise.
+function codeUseOf(
+  status: 'delivered' | 'failed',
+  responsible: ResponsibleParty,
+): 'spent' | 'returned' {
+  return status === 'delivered' || responsible === 'customer' ? 'spent' : 'returned';
 }

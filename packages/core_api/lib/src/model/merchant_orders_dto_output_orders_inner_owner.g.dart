@@ -15,6 +15,10 @@ class _$MerchantOrdersDtoOutputOrdersInnerOwner
   @override
   final String? commission;
   @override
+  final String? discountShare;
+  @override
+  final bool discountOnDelivery;
+  @override
   final String? merchantNet;
 
   factory _$MerchantOrdersDtoOutputOrdersInnerOwner([
@@ -26,6 +30,8 @@ class _$MerchantOrdersDtoOutputOrdersInnerOwner
     required this.testOrder,
     this.commissionBp,
     this.commission,
+    this.discountShare,
+    required this.discountOnDelivery,
     this.merchantNet,
   }) : super._();
   @override
@@ -44,6 +50,8 @@ class _$MerchantOrdersDtoOutputOrdersInnerOwner
         testOrder == other.testOrder &&
         commissionBp == other.commissionBp &&
         commission == other.commission &&
+        discountShare == other.discountShare &&
+        discountOnDelivery == other.discountOnDelivery &&
         merchantNet == other.merchantNet;
   }
 
@@ -53,6 +61,8 @@ class _$MerchantOrdersDtoOutputOrdersInnerOwner
     _$hash = $jc(_$hash, testOrder.hashCode);
     _$hash = $jc(_$hash, commissionBp.hashCode);
     _$hash = $jc(_$hash, commission.hashCode);
+    _$hash = $jc(_$hash, discountShare.hashCode);
+    _$hash = $jc(_$hash, discountOnDelivery.hashCode);
     _$hash = $jc(_$hash, merchantNet.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -66,6 +76,8 @@ class _$MerchantOrdersDtoOutputOrdersInnerOwner
           ..add('testOrder', testOrder)
           ..add('commissionBp', commissionBp)
           ..add('commission', commission)
+          ..add('discountShare', discountShare)
+          ..add('discountOnDelivery', discountOnDelivery)
           ..add('merchantNet', merchantNet))
         .toString();
   }
@@ -91,6 +103,16 @@ class MerchantOrdersDtoOutputOrdersInnerOwnerBuilder
   String? get commission => _$this._commission;
   set commission(String? commission) => _$this._commission = commission;
 
+  String? _discountShare;
+  String? get discountShare => _$this._discountShare;
+  set discountShare(String? discountShare) =>
+      _$this._discountShare = discountShare;
+
+  bool? _discountOnDelivery;
+  bool? get discountOnDelivery => _$this._discountOnDelivery;
+  set discountOnDelivery(bool? discountOnDelivery) =>
+      _$this._discountOnDelivery = discountOnDelivery;
+
   String? _merchantNet;
   String? get merchantNet => _$this._merchantNet;
   set merchantNet(String? merchantNet) => _$this._merchantNet = merchantNet;
@@ -105,6 +127,8 @@ class MerchantOrdersDtoOutputOrdersInnerOwnerBuilder
       _testOrder = $v.testOrder;
       _commissionBp = $v.commissionBp;
       _commission = $v.commission;
+      _discountShare = $v.discountShare;
+      _discountOnDelivery = $v.discountOnDelivery;
       _merchantNet = $v.merchantNet;
       _$v = null;
     }
@@ -137,6 +161,12 @@ class MerchantOrdersDtoOutputOrdersInnerOwnerBuilder
           ),
           commissionBp: commissionBp,
           commission: commission,
+          discountShare: discountShare,
+          discountOnDelivery: BuiltValueNullFieldError.checkNotNull(
+            discountOnDelivery,
+            r'MerchantOrdersDtoOutputOrdersInnerOwner',
+            'discountOnDelivery',
+          ),
           merchantNet: merchantNet,
         );
     replace(_$result);

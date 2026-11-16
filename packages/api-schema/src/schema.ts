@@ -6668,7 +6668,7 @@ export interface components {
                 currency: string;
                 /** @description «قيمة الأصناف — يدفعها لك الكابتن نقداً عند الاستلام» (RA §8.4); the delivery fee and the customer total are never shown (R11). */
                 itemsValue: string;
-                /** @description RA §8.4, R10: owners only (null for a cashier, and on a cancelled order). After the pickup the pickup's items value is the base, less the restaurant's own edits (AP §9.3.3). No restaurant-funded discount until codes (Phase 2). */
+                /** @description RA §8.4, R10: owners only (null for a cashier, and on a cancelled order). After the pickup the pickup's items value is the base, less the restaurant's own edits (AP §9.3.3); a restaurant-funded code lowers the commission's base and is its own line. */
                 owner: {
                     /** @description «طلب تجريبي — لا عمولة» instead of the commission lines (AP §9.6.3). */
                     testOrder: boolean;
@@ -6676,6 +6676,10 @@ export interface components {
                     commissionBp: number | null;
                     /** @description «العمولة {النسبة}% — تُسدَّد يوم السبت: {المبلغ}»; null on a test order. */
                     commission: string | null;
+                    /** @description The restaurant-funded discount, paid on Saturday with the commission (AP §8.4, RA S18); 0 without one, null on a test order. */
+                    discountShare: string | null;
+                    /** @description The restaurant-funded discount is on the delivery fee (RA S18), not the items. */
+                    discountOnDelivery: boolean;
                     /** @description «صافيك من الطلب»; null on a test order. */
                     merchantNet: string | null;
                 } | null;
@@ -6873,7 +6877,7 @@ export interface components {
                 currency: string;
                 /** @description «قيمة الأصناف — يدفعها لك الكابتن نقداً عند الاستلام» (RA §8.4); the delivery fee and the customer total are never shown (R11). */
                 itemsValue: string;
-                /** @description RA §8.4, R10: owners only (null for a cashier, and on a cancelled order). After the pickup the pickup's items value is the base, less the restaurant's own edits (AP §9.3.3). No restaurant-funded discount until codes (Phase 2). */
+                /** @description RA §8.4, R10: owners only (null for a cashier, and on a cancelled order). After the pickup the pickup's items value is the base, less the restaurant's own edits (AP §9.3.3); a restaurant-funded code lowers the commission's base and is its own line. */
                 owner: {
                     /** @description «طلب تجريبي — لا عمولة» instead of the commission lines (AP §9.6.3). */
                     testOrder: boolean;
@@ -6881,6 +6885,10 @@ export interface components {
                     commissionBp: number | null;
                     /** @description «العمولة {النسبة}% — تُسدَّد يوم السبت: {المبلغ}»; null on a test order. */
                     commission: string | null;
+                    /** @description The restaurant-funded discount, paid on Saturday with the commission (AP §8.4, RA S18); 0 without one, null on a test order. */
+                    discountShare: string | null;
+                    /** @description The restaurant-funded discount is on the delivery fee (RA S18), not the items. */
+                    discountOnDelivery: boolean;
                     /** @description «صافيك من الطلب»; null on a test order. */
                     merchantNet: string | null;
                 } | null;

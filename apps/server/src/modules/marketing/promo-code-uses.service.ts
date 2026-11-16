@@ -122,6 +122,15 @@ export class PromoCodeUsesService {
       .where(and(eq(promoCodeUses.orderId, orderId), ne(promoCodeUses.status, status)));
   }
 
+  // AP §9.3.3 (slice 2.21b): an edit worked the order's discount out again
+  // (owner decision 2026-11-16), so the use's cost follows it.
+  async adjust(tx: Tx, orderId: string, discount: PromoDiscount): Promise<void> {
+    await tx
+      .update(promoCodeUses)
+      .set({ discount: discount.total, merchantShare: discount.merchant })
+      .where(eq(promoCodeUses.orderId, orderId));
+  }
+
   // The list's «الاستخدامات» and «التكلفة حتى الآن»: the uses not given back
   // and their discounts, per code.
   async totals(codeIds: readonly string[]): Promise<Map<string, { uses: number; cost: bigint }>> {

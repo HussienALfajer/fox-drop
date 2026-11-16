@@ -8,12 +8,14 @@ import 'package:built_value/serializer.dart';
 
 part 'merchant_orders_dto_output_orders_inner_owner.g.dart';
 
-/// RA §8.4, R10: owners only (null for a cashier, and on a cancelled order). After the pickup the pickup's items value is the base, less the restaurant's own edits (AP §9.3.3). No restaurant-funded discount until codes (Phase 2).
+/// RA §8.4, R10: owners only (null for a cashier, and on a cancelled order). After the pickup the pickup's items value is the base, less the restaurant's own edits (AP §9.3.3); a restaurant-funded code lowers the commission's base and is its own line.
 ///
 /// Properties:
 /// * [testOrder] - «طلب تجريبي — لا عمولة» instead of the commission lines (AP §9.6.3).
 /// * [commissionBp] - The rate at placing in basis points (1500 is 15%); null on a test order.
 /// * [commission] - Integer minor units (AP §8.6).
+/// * [discountShare] - Integer minor units (AP §8.6).
+/// * [discountOnDelivery] - The restaurant-funded discount is on the delivery fee (RA S18), not the items.
 /// * [merchantNet] - Integer minor units (AP §8.6).
 @BuiltValue()
 abstract class MerchantOrdersDtoOutputOrdersInnerOwner
@@ -33,6 +35,14 @@ abstract class MerchantOrdersDtoOutputOrdersInnerOwner
   /// Integer minor units (AP §8.6).
   @BuiltValueField(wireName: r'commission')
   String? get commission;
+
+  /// Integer minor units (AP §8.6).
+  @BuiltValueField(wireName: r'discountShare')
+  String? get discountShare;
+
+  /// The restaurant-funded discount is on the delivery fee (RA S18), not the items.
+  @BuiltValueField(wireName: r'discountOnDelivery')
+  bool get discountOnDelivery;
 
   /// Integer minor units (AP §8.6).
   @BuiltValueField(wireName: r'merchantNet')
@@ -87,6 +97,18 @@ class _$MerchantOrdersDtoOutputOrdersInnerOwnerSerializer
             object.commission,
             specifiedType: const FullType.nullable(String),
           );
+    yield r'discountShare';
+    yield object.discountShare == null
+        ? null
+        : serializers.serialize(
+            object.discountShare,
+            specifiedType: const FullType.nullable(String),
+          );
+    yield r'discountOnDelivery';
+    yield serializers.serialize(
+      object.discountOnDelivery,
+      specifiedType: const FullType(bool),
+    );
     yield r'merchantNet';
     yield object.merchantNet == null
         ? null
@@ -149,6 +171,25 @@ class _$MerchantOrdersDtoOutputOrdersInnerOwnerSerializer
                   as String?;
           if (valueDes == null) continue;
           result.commission = valueDes;
+          break;
+        case r'discountShare':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.discountShare = valueDes;
+          break;
+        case r'discountOnDelivery':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.discountOnDelivery = valueDes;
           break;
         case r'merchantNet':
           final valueDes =

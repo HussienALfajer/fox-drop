@@ -543,6 +543,7 @@ export class OrdersService implements OnModuleInit {
               itemsValue: order.money.itemsValue,
               commissionBp: order.commissionBp,
               testOrder: order.testOrder,
+              discount: { merchant: order.discountMerchant, onDelivery: order.discountOnDelivery },
             },
             frozen,
             debit,
