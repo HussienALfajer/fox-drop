@@ -9058,6 +9058,123 @@
         ]
       }
     },
+    "/v1/admin/exchange-rates": {
+      "get": {
+        "operationId": "adminExchangeRatesRates",
+        "parameters": [
+          {
+            "name": "cityId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminExchangeRatesDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      },
+      "put": {
+        "operationId": "adminExchangeRatesSet",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminSetExchangeRateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminExchangeRatesDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/exchange-rates/history": {
+      "get": {
+        "operationId": "adminExchangeRatesHistory",
+        "parameters": [
+          {
+            "name": "cityId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "currency",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "pattern": "^[A-Z]{3}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminExchangeRateHistoryDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/captain/custody": {
       "get": {
         "operationId": "captainCustodyCustody",
@@ -37188,6 +37305,280 @@
           "lines"
         ],
         "additionalProperties": false
+      },
+      "AdminExchangeRatesDto_Output": {
+        "type": "object",
+        "properties": {
+          "baseCurrency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Null while the city has no base currency."
+          },
+          "staleAlertHours": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "fx.stale_alert_hours"
+          },
+          "largeChangePct": {
+            "type": "number",
+            "description": "fx.large_change_confirm_pct"
+          },
+          "currencies": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "currency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                },
+                "nameAr": {
+                  "type": "string"
+                },
+                "symbol": {
+                  "type": "string"
+                },
+                "decimals": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "displayOrder": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "isBase": {
+                  "type": "boolean"
+                },
+                "rate": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "versionId": {
+                          "type": "string"
+                        },
+                        "baseCurrency": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{3}$"
+                        },
+                        "numerator": {
+                          "type": "string",
+                          "description": "Base major units per one major unit, as an exact fraction."
+                        },
+                        "denominator": {
+                          "type": "string"
+                        },
+                        "editorId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "editorName": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "reason": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "setAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        }
+                      },
+                      "required": [
+                        "versionId",
+                        "baseCurrency",
+                        "numerator",
+                        "denominator",
+                        "editorId",
+                        "editorName",
+                        "reason",
+                        "setAt"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Null for the base and before a first rate."
+                },
+                "stale": {
+                  "type": "boolean",
+                  "description": "Enabled, with a rate older than fx.stale_alert_hours."
+                },
+                "roundingUnitMinor": {
+                  "description": "currency.<code>.rounding_unit in minor units; null until entered.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "roundingMode": {
+                  "type": "string",
+                  "enum": [
+                    "nearest",
+                    "up",
+                    "down"
+                  ]
+                }
+              },
+              "required": [
+                "currency",
+                "nameAr",
+                "symbol",
+                "decimals",
+                "displayOrder",
+                "enabled",
+                "isBase",
+                "rate",
+                "stale",
+                "roundingUnitMinor",
+                "roundingMode"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "baseCurrency",
+          "staleAlertHours",
+          "largeChangePct",
+          "currencies"
+        ],
+        "additionalProperties": false
+      },
+      "AdminExchangeRateHistoryDto_Output": {
+        "type": "object",
+        "properties": {
+          "versions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "versionId": {
+                  "type": "string"
+                },
+                "baseCurrency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                },
+                "numerator": {
+                  "type": "string",
+                  "description": "Base major units per one major unit, as an exact fraction."
+                },
+                "denominator": {
+                  "type": "string"
+                },
+                "editorId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "editorName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "setAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "versionId",
+                "baseCurrency",
+                "numerator",
+                "denominator",
+                "editorId",
+                "editorName",
+                "reason",
+                "setAt"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Newest first, at most 100."
+          }
+        },
+        "required": [
+          "versions"
+        ],
+        "additionalProperties": false
+      },
+      "AdminSetExchangeRateDto": {
+        "type": "object",
+        "properties": {
+          "cityId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "value": {
+            "type": "string",
+            "maxLength": 40,
+            "description": "A decimal such as 41.20."
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "base_per_unit",
+              "units_per_base"
+            ],
+            "description": "«1 USD = 41.20 TRY» is base_per_unit, «1 TRY = 290 SYP» units_per_base."
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "confirmLargeChange": {
+            "description": "The second confirmation of a change above fx.large_change_confirm_pct.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "cityId",
+          "currency",
+          "value",
+          "direction"
+        ]
       },
       "CaptainCustodyDto_Output": {
         "type": "object",

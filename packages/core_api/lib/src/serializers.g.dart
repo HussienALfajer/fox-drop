@@ -118,6 +118,15 @@ Serializers _$serializers =
           ..add(AdminEmergencyStopStateDtoOutput.serializer)
           ..add(AdminEmergencyStopStateDtoOutputDefaults.serializer)
           ..add(AdminEmergencyStopStateDtoOutputStop.serializer)
+          ..add(AdminExchangeRateHistoryDtoOutput.serializer)
+          ..add(AdminExchangeRateHistoryDtoOutputVersionsInner.serializer)
+          ..add(AdminExchangeRatesDtoOutput.serializer)
+          ..add(AdminExchangeRatesDtoOutputCurrenciesInner.serializer)
+          ..add(AdminExchangeRatesDtoOutputCurrenciesInnerRate.serializer)
+          ..add(
+            AdminExchangeRatesDtoOutputCurrenciesInnerRoundingModeEnum
+                .serializer,
+          )
           ..add(AdminExportDtoOutput.serializer)
           ..add(AdminExportDtoOutputKindEnum.serializer)
           ..add(AdminExportDtoOutputStatusEnum.serializer)
@@ -409,6 +418,8 @@ Serializers _$serializers =
           ..add(AdminSetCityOfficeDto.serializer)
           ..add(AdminSetCityOfficeDtoHoursInner.serializer)
           ..add(AdminSetCityOfficeDtoLocation.serializer)
+          ..add(AdminSetExchangeRateDto.serializer)
+          ..add(AdminSetExchangeRateDtoDirectionEnum.serializer)
           ..add(AdminSetImageDto.serializer)
           ..add(AdminSetOutcomeDto.serializer)
           ..add(AdminSetOutcomeDtoFoodEnum.serializer)
@@ -1154,6 +1165,18 @@ Serializers _$serializers =
               const FullType(AdminEditPreviewAnswerDtoOutputEntriesInner),
             ]),
             () => ListBuilder<AdminEditPreviewAnswerDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminExchangeRateHistoryDtoOutputVersionsInner),
+            ]),
+            () => ListBuilder<AdminExchangeRateHistoryDtoOutputVersionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminExchangeRatesDtoOutputCurrenciesInner),
+            ]),
+            () => ListBuilder<AdminExchangeRatesDtoOutputCurrenciesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

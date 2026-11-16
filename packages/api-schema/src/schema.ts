@@ -3460,6 +3460,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/exchange-rates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminExchangeRatesRates"];
+        put: operations["adminExchangeRatesSet"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/exchange-rates/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminExchangeRatesHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/captain/custody": {
         parameters: {
             query?: never;
@@ -10326,6 +10358,74 @@ export interface components {
                 reason: string | null;
             }[];
         };
+        AdminExchangeRatesDto_Output: {
+            /** @description Null while the city has no base currency. */
+            baseCurrency: string | null;
+            /** @description fx.stale_alert_hours */
+            staleAlertHours: number;
+            /** @description fx.large_change_confirm_pct */
+            largeChangePct: number;
+            currencies: {
+                currency: string;
+                nameAr: string;
+                symbol: string;
+                decimals: number;
+                displayOrder: number;
+                enabled: boolean;
+                isBase: boolean;
+                /** @description Null for the base and before a first rate. */
+                rate: {
+                    versionId: string;
+                    baseCurrency: string;
+                    /** @description Base major units per one major unit, as an exact fraction. */
+                    numerator: string;
+                    denominator: string;
+                    /** Format: uuid */
+                    editorId: string;
+                    editorName: string | null;
+                    reason: string | null;
+                    /** Format: date-time */
+                    setAt: string;
+                } | null;
+                /** @description Enabled, with a rate older than fx.stale_alert_hours. */
+                stale: boolean;
+                /** @description currency.<code>.rounding_unit in minor units; null until entered. */
+                roundingUnitMinor: string | null;
+                /** @enum {string} */
+                roundingMode: "nearest" | "up" | "down";
+            }[];
+        };
+        AdminExchangeRateHistoryDto_Output: {
+            /** @description Newest first, at most 100. */
+            versions: {
+                versionId: string;
+                baseCurrency: string;
+                /** @description Base major units per one major unit, as an exact fraction. */
+                numerator: string;
+                denominator: string;
+                /** Format: uuid */
+                editorId: string;
+                editorName: string | null;
+                reason: string | null;
+                /** Format: date-time */
+                setAt: string;
+            }[];
+        };
+        AdminSetExchangeRateDto: {
+            /** Format: uuid */
+            cityId: string;
+            currency: string;
+            /** @description A decimal such as 41.20. */
+            value: string;
+            /**
+             * @description «1 USD = 41.20 TRY» is base_per_unit, «1 TRY = 290 SYP» units_per_base.
+             * @enum {string}
+             */
+            direction: "base_per_unit" | "units_per_base";
+            reason?: string | null;
+            /** @description The second confirmation of a change above fx.large_change_confirm_pct. */
+            confirmLargeChange?: boolean;
+        };
         CaptainCustodyDto_Output: {
             /** @description The cash held, in the base currency (AP §8.5.3). */
             usage: {
@@ -16381,6 +16481,75 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminMerchantStatementDto_Output"];
+                };
+            };
+        };
+    };
+    adminExchangeRatesRates: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminExchangeRatesDto_Output"];
+                };
+            };
+        };
+    };
+    adminExchangeRatesSet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminSetExchangeRateDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminExchangeRatesDto_Output"];
+                };
+            };
+        };
+    };
+    adminExchangeRatesHistory: {
+        parameters: {
+            query: {
+                cityId: string;
+                currency: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminExchangeRateHistoryDto_Output"];
                 };
             };
         };

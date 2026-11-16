@@ -69,6 +69,26 @@ export interface CurrentRate {
   setAt: Date;
 }
 
+// One currency of the city as the exchange rates screen shows it (AP
+// §9.10.4): its rate now (null for the base and before its first rate),
+// whether that rate is stale (AP §8.6) and its rounding rule (D14).
+export interface ExchangeRateRow extends CityCurrency {
+  nameAr: string;
+  symbol: string;
+  decimals: number;
+  rate: CurrentRate | null;
+  stale: boolean;
+  roundingUnitMinor: bigint | null;
+  roundingMode: RoundingMode;
+}
+
+export interface ExchangeRates {
+  baseCurrency: string | null;
+  staleAlertHours: number;
+  largeChangePct: number;
+  currencies: ExchangeRateRow[];
+}
+
 // Who changes the city's currencies and why, for the audit log. A rate is
 // set by an admin only.
 export interface FxChange {
@@ -169,6 +189,59 @@ export class FxService implements OnModuleInit {
       .where(and(eq(rateVersions.cityId, cityId), eq(rateVersions.baseEpoch, base.epoch)))
       .orderBy(asc(rateVersions.currency), desc(rateVersions.id));
     return rows.map(rateOf);
+  }
+
+  // AP §9.10.4: every currency of the city in display order, with its rate
+  // now, whether it is stale and its rounding rule.
+  async exchangeRates(cityId: string, now: Date): Promise<ExchangeRates> {
+    const [accepted, rates, known, base, staleAlertHours, largeChangePct] = await Promise.all([
+      this.cityCurrencies(cityId),
+      this.currentRates(cityId),
+      this.currencies(),
+      this.baseCurrency(cityId),
+      this.settings.get('fx.stale_alert_hours', { cityId }),
+      this.settings.get('fx.large_change_confirm_pct', { cityId }),
+    ]);
+    const rows = await Promise.all(
+      accepted.map(async (entry): Promise<ExchangeRateRow> => {
+        const currency = known.find((row) => row.code === entry.currency)!;
+        const rate = rates.find((row) => row.currency === entry.currency) ?? null;
+        const target = { cityId, parameter: entry.currency };
+        const [unit, mode] = await Promise.all([
+          this.settings.get('currency.<code>.rounding_unit', target),
+          this.settings.get('currency.<code>.rounding_mode', target),
+        ]);
+        return {
+          ...entry,
+          nameAr: currency.nameAr,
+          symbol: currency.symbol,
+          decimals: currency.decimals,
+          rate,
+          stale: isStale(entry, rate, staleAlertHours, now),
+          roundingUnitMinor: unit === null ? null : BigInt(unit.amountMinor),
+          roundingMode: mode as RoundingMode,
+        };
+      }),
+    );
+    return { baseCurrency: base, staleAlertHours, largeChangePct, currencies: rows };
+  }
+
+  // AP §8.6: the current rates of the city's enabled currencies set more than
+  // fx.stale_alert_hours ago, for the alert to OWN and FIN.
+  async staleRates(cityId: string, now: Date): Promise<CurrentRate[]> {
+    const [accepted, rates, hours] = await Promise.all([
+      this.cityCurrencies(cityId),
+      this.currentRates(cityId),
+      this.settings.get('fx.stale_alert_hours', { cityId }),
+    ]);
+    return rates.filter((rate) =>
+      isStale(
+        accepted.find((entry) => entry.currency === rate.currency),
+        rate,
+        hours,
+        now,
+      ),
+    );
   }
 
   // Every rate one currency of the city has had, newest first, for the
@@ -365,6 +438,15 @@ export class FxService implements OnModuleInit {
       const previous = (await this.currentRates(cityId, tx)).find(
         (entry) => entry.currency === currency,
       );
+      // The rate it already has: nothing to record, so a repeat of the same
+      // edit adds no version (the route takes no Idempotency-Key).
+      if (
+        previous &&
+        previous.rate.numerator === rate.numerator &&
+        previous.rate.denominator === rate.denominator
+      ) {
+        return previous.versionId;
+      }
       if (
         previous &&
         !change.confirmLargeChange &&
@@ -547,6 +629,18 @@ function rateOf(row: typeof rateVersions.$inferSelect): CurrentRate {
     reason: row.reason,
     setAt: row.createdAt,
   };
+}
+
+// A rate is stale once it is older than the hours, while its currency is
+// enabled: a disabled currency's rate serves nothing.
+function isStale(
+  entry: CityCurrency | undefined,
+  rate: CurrentRate | null,
+  hours: number,
+  now: Date,
+): boolean {
+  if (!entry?.enabled || entry.isBase || rate === null) return false;
+  return now.getTime() - rate.setAt.getTime() > hours * 3_600_000;
 }
 
 // |new − old| / old > pct %, in the direction the editor entered the rate,

@@ -238,6 +238,25 @@ describe('rates', () => {
     ]);
   });
 
+  it('records nothing when the rate sent is the current one', async () => {
+    const cityId = await lira({ usd: true });
+    const [current] = await fx.currentRates(cityId);
+    // «41.2» is the same rate as «41.20».
+    const again = await fx.setRate(
+      cityId,
+      'USD',
+      { value: '41.2', direction: 'base_per_unit' },
+      fin,
+    );
+    expect(again).toBe(current!.versionId);
+    expect(await fx.rateHistory(cityId, 'USD')).toHaveLength(1);
+    const { rows } = await sql.query(
+      "SELECT count(*)::int AS n FROM audit.events WHERE city_id = $1 AND action = 'rate.set'",
+      [cityId],
+    );
+    expect(rows[0].n).toBe(1);
+  });
+
   it('is refused for the base, outside the city, from the system and when malformed', async () => {
     const cityId = await lira();
     expect(await refusal(fx.setRate(cityId, 'TRY', usdRate, fin))).toBe('invalid_rate');
@@ -247,6 +266,51 @@ describe('rates', () => {
     const malformed = { value: '41,20', direction: 'base_per_unit' } as const;
     expect(await refusal(fx.setRate(cityId, 'USD', malformed, fin))).toBe('invalid_rate');
     expect(await refusal(fx.setRate(await city(), 'USD', usdRate, fin))).toBe('no_base_currency');
+  });
+});
+
+describe('the exchange rates screen', () => {
+  it('lists every currency of the city with its rate, rounding rule and age', async () => {
+    const cityId = await lira({ usd: true });
+    await accept(cityId, 'SYP', 3, false);
+    await setRounding(cityId, 'USD', 50);
+    const [usd] = await fx.currentRates(cityId);
+    const board = await fx.exchangeRates(cityId, usd!.setAt);
+    expect(board).toMatchObject({ baseCurrency: 'TRY', staleAlertHours: 24, largeChangePct: 10 });
+    expect(board.currencies).toEqual([
+      expect.objectContaining({
+        currency: 'TRY',
+        nameAr: 'ليرة تركية',
+        isBase: true,
+        enabled: true,
+        rate: null,
+        stale: false,
+        roundingUnitMinor: null,
+        roundingMode: 'nearest',
+      }),
+      expect.objectContaining({
+        currency: 'USD',
+        isBase: false,
+        enabled: true,
+        rate: usd,
+        stale: false,
+        roundingUnitMinor: 50n,
+      }),
+      expect.objectContaining({ currency: 'SYP', enabled: false, rate: null, stale: false }),
+    ]);
+  });
+
+  it('marks an enabled rate older than fx.stale_alert_hours as stale', async () => {
+    const cityId = await lira({ usd: true });
+    const [usd] = await fx.currentRates(cityId);
+    const hours = (n: number) => new Date(usd!.setAt.getTime() + n * 3_600_000);
+    expect(await fx.staleRates(cityId, hours(24))).toEqual([]);
+    expect(await fx.staleRates(cityId, hours(24.01))).toEqual([usd]);
+    const board = await fx.exchangeRates(cityId, hours(25));
+    expect(board.currencies.find((entry) => entry.currency === 'USD')!.stale).toBe(true);
+    // A disabled currency's rate is used by nothing, so it is never stale.
+    await accept(cityId, 'USD', 2, false);
+    expect(await fx.staleRates(cityId, hours(25))).toEqual([]);
   });
 });
 
