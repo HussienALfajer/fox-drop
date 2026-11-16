@@ -32,6 +32,7 @@ import { PeakBonusPage } from './peak-bonus-page.js';
 import { OfficePage } from './office-page.js';
 import { ReceiptPage } from './receipt-page.js';
 import { SettleCaptainPage, SettlementsPage, StatementPage } from './settlement-page.js';
+import { RestaurantReceiptPage, RestaurantSettlePage } from './restaurant-settle-page.js';
 import { MerchantStatementPage, RestaurantSettlementsPage } from './restaurant-settlement-page.js';
 import { CONTENT_FAQS, CONTENT_READ } from './content.js';
 import { ContentPage } from './content-page.js';
@@ -354,6 +355,26 @@ const merchantStatementRoute = createRoute({
   component: MerchantStatementPage,
 });
 
+// «تسوية» (slice 2.19b): the settlement at the office and its receipt.
+const restaurantSettleRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/cash-desk/restaurants/$restaurantId/settle',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, CASH_DESK)) throw redirect({ to: '/' });
+  },
+  component: RestaurantSettlePage,
+});
+
+const restaurantReceiptRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/cash-desk/restaurant-receipts/$receiptId',
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, CASH_DESK)) throw redirect({ to: '/' });
+  },
+  component: RestaurantReceiptPage,
+});
+
 const routeTree = rootRoute.addChildren([
   setupRoute,
   signInRoute,
@@ -374,6 +395,8 @@ const routeTree = rootRoute.addChildren([
     statementRoute,
     restaurantSettlementsRoute,
     merchantStatementRoute,
+    restaurantSettleRoute,
+    restaurantReceiptRoute,
     imagesRoute,
     restaurantStatusRoute,
     alertsRoute,

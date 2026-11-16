@@ -8,6 +8,7 @@ import {
   type ExceptionCause,
   type MerchantStatement,
   type MerchantStatementLine,
+  type StatementStatus,
   statementParts,
   useMerchantStatement,
   useRestaurantSettlements,
@@ -34,6 +35,13 @@ const causeKeys = {
   adjustment: 'restaurantSettlement.cause.adjustment',
 } as const satisfies Record<ExceptionCause, string>;
 
+// RA §12.3 «غير مسدّد», «مسدّد جزئياً», «مسدّد».
+export const statusKeys = {
+  unpaid: 'restaurantSettlement.statusLabel.unpaid',
+  partly_paid: 'restaurantSettlement.statusLabel.partly_paid',
+  paid: 'restaurantSettlement.statusLabel.paid',
+} as const satisfies Record<StatementStatus, string>;
+
 const sideKeys = {
   owes: 'restaurantSettlement.owes',
   owed: 'restaurantSettlement.owed',
@@ -41,7 +49,7 @@ const sideKeys = {
 } as const;
 
 // + the restaurant owes («عليه»), − the platform owes it («له»).
-function BalanceText({ amount, currency }: { amount: string; currency: string }) {
+export function BalanceText({ amount, currency }: { amount: string; currency: string }) {
   const { t } = useTranslation();
   const absolute = amount.startsWith('-') ? amount.slice(1) : amount;
   return (
@@ -49,9 +57,9 @@ function BalanceText({ amount, currency }: { amount: string; currency: string })
   );
 }
 
-// AP §9.10.3 «تسوية المطاعم» (slice 2.19a): every restaurant with a balance,
-// the overdue first, and its latest statement. Read-only until the
-// settlement (2.19b). Unstyled until the design.
+// AP §9.10.3 «تسوية المطاعم» (slices 2.19a, 2.19b): every restaurant with a
+// balance, the overdue first, its latest statement with its status, and
+// «تسوية». Unstyled until the design.
 export function RestaurantSettlementsPage() {
   const { t } = useTranslation();
   const search = listRoute.useSearch();
@@ -91,6 +99,7 @@ export function RestaurantSettlementsPage() {
                   <th scope="col">{t('restaurantSettlement.statement.exceptions')}</th>
                   <th scope="col">{t('restaurantSettlement.unpaid')}</th>
                   <th scope="col">{t('restaurantSettlement.state')}</th>
+                  <th scope="col">{t('restaurantSettlement.settle')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -117,6 +126,7 @@ export function RestaurantSettlementsPage() {
                       ) : (
                         t('restaurantSettlement.noStatement')
                       )}
+                      {row.latest?.status && <> {t(statusKeys[row.latest.status])}</>}
                     </td>
                     {(['commission', 'discountShare', 'exceptions'] as const).map((part) => (
                       <td key={part}>
@@ -132,6 +142,15 @@ export function RestaurantSettlementsPage() {
                             at: formatDateTime(row.overdueSince, city.timeZone),
                           })
                         : t('restaurantSettlement.onTime')}
+                    </td>
+                    <td>
+                      <Link
+                        to="/cash-desk/restaurants/$restaurantId/settle"
+                        params={{ restaurantId: row.restaurantId }}
+                        search={search}
+                      >
+                        {t('restaurantSettlement.settle')}
+                      </Link>
                     </td>
                   </tr>
                 ))}
@@ -203,6 +222,15 @@ function StatementView({
       <h1>{t('app.name')}</h1>
       <h2 id="merchant-statement-title">{t('restaurantSettlement.statement.title')}</h2>
       <p>{statement.restaurantName}</p>
+      {statement.status && (
+        <p>
+          {t('restaurantSettlement.statement.status', {
+            status: t(statusKeys[statement.status]),
+          })}{' '}
+          {statement.status === 'partly_paid' &&
+            t('restaurantSettlement.statement.unpaid', { amount: money(statement.unpaid) })}
+        </p>
+      )}
       <p>
         {statement.periodFrom
           ? t('restaurantSettlement.statement.period', {

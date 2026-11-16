@@ -1,5 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
-import { balanceSide, type MerchantStatement, statementParts } from './restaurant-settlement.js';
+import {
+  aboveDue,
+  balanceSide,
+  type MerchantStatement,
+  type RestaurantSettlementPreview,
+  restaurantSettleBodyOf,
+  settlementLinesOf,
+  statementParts,
+} from './restaurant-settlement.js';
 
 vi.mock('./api.js', () => ({ api: {} }));
 
@@ -35,5 +43,65 @@ describe('the restaurant settlement', () => {
     expect(parts.orders.map((each) => each.position)).toEqual([1, 3]);
     expect(parts.exceptions.map((each) => each.position)).toEqual([2]);
     expect(parts.payments.map((each) => each.position)).toEqual([0]);
+  });
+});
+
+// AP §9.10.3 tab 3, RA §12.4 (slice 2.19b): the cash typed per currency and
+// the confirmation's body.
+describe('the restaurant settlement form', () => {
+  const currencies = ['TRY', 'USD'];
+
+  it('takes the amounts typed in major units, leaving empty fields and zeros out', () => {
+    expect(settlementLinesOf({ TRY: '200', USD: '20.50' }, currencies)).toEqual({
+      status: 'lines',
+      lines: [
+        { currency: 'TRY', amount: '20000' },
+        { currency: 'USD', amount: '2050' },
+      ],
+    });
+    expect(settlementLinesOf({ TRY: ' ', USD: '0' }, currencies)).toEqual({ status: 'empty' });
+    expect(settlementLinesOf({ TRY: '12.345' }, currencies)).toEqual({
+      status: 'invalid',
+      currency: 'TRY',
+    });
+  });
+
+  const preview: RestaurantSettlementPreview = {
+    restaurantId: 'r1',
+    restaurantName: 'مطعم',
+    cityId: 'c1',
+    currency: 'TRY',
+    due: '-3400',
+    lines: [
+      {
+        currency: 'USD',
+        amount: '100',
+        base: '4000',
+        rates: [{ currency: 'USD', rateVersionId: 'v1' }],
+        unit: { from: 'USD', to: 'TRY', value: '40' },
+      },
+    ],
+    total: '4000',
+    remaining: '600',
+  };
+
+  it('finds an amount above what is owed, either way', () => {
+    expect(aboveDue(preview)).toBe(true);
+    expect(aboveDue({ ...preview, due: '4000' })).toBe(false);
+  });
+
+  it('confirms exactly what the review showed', () => {
+    expect(restaurantSettleBodyOf(preview)).toEqual({
+      restaurantId: 'r1',
+      due: '-3400',
+      lines: [
+        {
+          currency: 'USD',
+          amount: '100',
+          base: '4000',
+          rates: [{ currency: 'USD', rateVersionId: 'v1' }],
+        },
+      ],
+    });
   });
 });
