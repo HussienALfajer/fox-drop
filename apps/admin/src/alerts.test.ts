@@ -19,6 +19,7 @@ function alert(overrides: Partial<AdminAlert>): AdminAlert {
     orderNumber: '10001',
     captainName: null,
     restaurantName: null,
+    statementId: null,
     location: null,
     raisedAt: '2026-11-08T09:00:00.000Z',
     acknowledged: null,

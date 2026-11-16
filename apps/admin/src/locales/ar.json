@@ -96,6 +96,7 @@
     "resolvedAt": "أُغلق {{time}}",
     "order": "الطلب #{{number}}",
     "openOrder": "فتح الطلب",
+    "openStatement": "فتح الكشف",
     "openSettlements": "فتح تسوية المطاعم",
     "settleRestaurant": "تسجيل دفعة",
     "captain": "الكابتن {{name}}",

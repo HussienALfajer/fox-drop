@@ -9084,6 +9084,8 @@ export interface components {
                 captainName: string | null;
                 /** @description For an alert about a restaurant. */
                 restaurantName: string | null;
+                /** @description «مطعم متأخر في التسوية» (AP §9.1.3, slice 2.19f): the oldest statement still unpaid, for «فتح الكشف»; null for the others. */
+                statementId: string | null;
                 /** @description «طوارئ كابتن» (AP §9.1.3, CA §9.11): the location the captain sent, for «فتح الخريطة»; null for the others and an emergency without a fix. */
                 location: {
                     latitude: number;
@@ -9127,6 +9129,8 @@ export interface components {
             captainName: string | null;
             /** @description For an alert about a restaurant. */
             restaurantName: string | null;
+            /** @description «مطعم متأخر في التسوية» (AP §9.1.3, slice 2.19f): the oldest statement still unpaid, for «فتح الكشف»; null for the others. */
+            statementId: string | null;
             /** @description «طوارئ كابتن» (AP §9.1.3, CA §9.11): the location the captain sent, for «فتح الخريطة»; null for the others and an emergency without a fix. */
             location: {
                 latitude: number;

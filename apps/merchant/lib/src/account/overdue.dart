@@ -16,10 +16,14 @@ typedef Overdue = MerchantOverdueDtoOutputOverdue;
 /// app follows, so the banner keeps up within this (and on every resume).
 const overdueRefresh = Duration(minutes: 15);
 
+/// A resume within this of the last read reads nothing again.
+const overdueResumeGap = Duration(minutes: 1);
+
 /// `GET /v1/merchant/account/overdue` (RA §6.3 item 7, §12.6; slice 2.19f):
 /// what an owner's amber banner shows; null for a cashier, signed out, when
 /// nothing is overdue, or while the read fails (the banner waits for the
-/// next read). Read at start, on every resume and every [overdueRefresh].
+/// next read). Read at start, on a resume at least [overdueResumeGap] after
+/// the last read, and every [overdueRefresh].
 final overdueProvider = FutureProvider<Overdue?>((ref) async {
   final owner = ref.watch(
     merchantSessionProvider.select(
@@ -28,7 +32,13 @@ final overdueProvider = FutureProvider<Overdue?>((ref) async {
   );
   if (!owner) return null;
   final timer = Timer(overdueRefresh, ref.invalidateSelf);
-  final lifecycle = AppLifecycleListener(onResume: ref.invalidateSelf);
+  // Windows resumes on every focus change: a read a minute old is fresh.
+  final age = Stopwatch()..start();
+  final lifecycle = AppLifecycleListener(
+    onResume: () {
+      if (age.elapsed >= overdueResumeGap) ref.invalidateSelf();
+    },
+  );
   ref.onDispose(() {
     timer.cancel();
     lifecycle.dispose();

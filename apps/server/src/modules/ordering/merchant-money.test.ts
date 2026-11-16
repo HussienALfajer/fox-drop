@@ -25,6 +25,29 @@ async function owner() {
   return appSignIn('merchant', phone);
 }
 
+// An owner of another restaurant, with nothing owed.
+async function otherOwner() {
+  const merchants = app.get(MerchantsService);
+  const other = await merchants.createRestaurant(
+    azaz,
+    {
+      nameAr: `مطعم آخر ${phoneNumber()}`,
+      location: { latitude: 36.587, longitude: 37.046 },
+      coverage: { kind: 'radius', radiusMetres: 1000 },
+      minimumOrder: { amount: 10_000n, currency: 'TRY' },
+      commissionBp: 1000,
+      defaultPrepMin: 20,
+    },
+    change,
+  );
+  await merchants.setAccountStatus(other, 'active', change);
+  const phone = phoneNumber();
+  await app
+    .get(MerchantAccountsService)
+    .addAccount(other, { role: 'owner', name: 'owner', phone }, change);
+  return appSignIn('merchant', phone);
+}
+
 const board = (headers: Record<string, string>) =>
   app.inject({ method: 'GET', url: '/v1/merchant/orders', headers });
 const account = (headers: Record<string, string>) =>
@@ -180,6 +203,8 @@ describe('GET /v1/merchant/account (RA §12.2)', () => {
       expect((await overdue(later)).json()).toEqual({
         overdue: { currency: 'TRY', amount: late.amount, statementDate },
       });
+      // Another restaurant's owner sees nothing of this one.
+      expect((await overdue(await otherOwner())).json()).toEqual({ overdue: null });
     } finally {
       vi.useRealTimers();
     }

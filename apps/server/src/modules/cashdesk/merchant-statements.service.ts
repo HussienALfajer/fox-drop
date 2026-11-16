@@ -389,10 +389,24 @@ export class MerchantStatementsService {
     restaurantId: string,
     now: Date,
   ): Promise<RestaurantOverdue | null> {
+    return this.overdueIn(cityId, restaurantId, await this.overdueTerms(cityId), now);
+  }
+
+  // The city's base and merchant.settlement_overdue_days, read once per sweep.
+  private async overdueTerms(cityId: string) {
     const [currency, overdueDays] = await Promise.all([
       this.fx.baseCurrency(cityId),
       this.settings.get('merchant.settlement_overdue_days', { cityId }),
     ]);
+    return { currency, overdueDays };
+  }
+
+  private async overdueIn(
+    cityId: string,
+    restaurantId: string,
+    { currency, overdueDays }: { currency: string | null; overdueDays: number },
+    now: Date,
+  ): Promise<RestaurantOverdue | null> {
     if (currency === null) return null;
     const accounts = await this.ledger.ownerAccounts(cityId, restaurantId, 'merchant.account');
     const account = accounts.find((each) => each.currency === currency);
@@ -415,14 +429,16 @@ export class MerchantStatementsService {
   // statement once (RA §12.6, §16 #32). The restaurant is never paused for
   // it (owner decision 2026-11-16, AP §13 item 2).
   async syncOverdue(cityId: string, now: Date): Promise<void> {
-    const known = await this.knownCurrencies();
+    const [known, terms] = await Promise.all([this.knownCurrencies(), this.overdueTerms(cityId)]);
     const seen = new Set<string>();
     for (const restaurant of await this.merchants.restaurantIds(cityId)) {
       seen.add(restaurant.id);
       try {
-        await this.syncOverdueOne(cityId, restaurant, known, now);
+        await this.syncOverdueOne(cityId, restaurant, terms, known, now);
+        this.reported.delete(`overdue:${restaurant.id}`);
       } catch (error) {
-        // Tried again every minute: one report per restaurant, the rest logged.
+        // Tried again every minute: one report per restaurant until it syncs
+        // again, the rest logged.
         const key = `overdue:${restaurant.id}`;
         if (!this.reported.has(key)) {
           this.reported.add(key);
@@ -454,12 +470,13 @@ export class MerchantStatementsService {
   private async syncOverdueOne(
     cityId: string,
     restaurant: { id: string; nameAr: string },
+    terms: { currency: string | null; overdueDays: number },
     known: Awaited<ReturnType<MerchantStatementsService['knownCurrencies']>>,
     now: Date,
   ): Promise<void> {
     await this.database.db.transaction(async (tx) => {
       await lockRestaurantAccount(tx, restaurant.id);
-      const overdue = await this.overdue(cityId, restaurant.id, now);
+      const overdue = await this.overdueIn(cityId, restaurant.id, terms, now);
       await this.alerts.sync(
         tx,
         {
@@ -467,6 +484,10 @@ export class MerchantStatementsService {
           id: restaurant.id,
           cityId,
           details: { restaurantName: restaurant.nameAr },
+          // «فتح الكشف»: the oldest statement still unpaid, kept current.
+          ...(overdue && {
+            codeDetails: { restaurant_settlement_overdue: { statementId: overdue.statementId } },
+          }),
         },
         [OVERDUE_ALERT],
         overdue ? [OVERDUE_ALERT] : [],

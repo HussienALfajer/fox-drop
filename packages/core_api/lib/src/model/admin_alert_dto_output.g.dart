@@ -386,6 +386,8 @@ class _$AdminAlertDtoOutput extends AdminAlertDtoOutput {
   @override
   final String? restaurantName;
   @override
+  final String? statementId;
+  @override
   final AdminAlertsDtoOutputAlertsInnerLocation? location;
   @override
   final DateTime raisedAt;
@@ -407,6 +409,7 @@ class _$AdminAlertDtoOutput extends AdminAlertDtoOutput {
     this.orderNumber,
     this.captainName,
     this.restaurantName,
+    this.statementId,
     this.location,
     required this.raisedAt,
     this.acknowledged,
@@ -433,6 +436,7 @@ class _$AdminAlertDtoOutput extends AdminAlertDtoOutput {
         orderNumber == other.orderNumber &&
         captainName == other.captainName &&
         restaurantName == other.restaurantName &&
+        statementId == other.statementId &&
         location == other.location &&
         raisedAt == other.raisedAt &&
         acknowledged == other.acknowledged &&
@@ -450,6 +454,7 @@ class _$AdminAlertDtoOutput extends AdminAlertDtoOutput {
     _$hash = $jc(_$hash, orderNumber.hashCode);
     _$hash = $jc(_$hash, captainName.hashCode);
     _$hash = $jc(_$hash, restaurantName.hashCode);
+    _$hash = $jc(_$hash, statementId.hashCode);
     _$hash = $jc(_$hash, location.hashCode);
     _$hash = $jc(_$hash, raisedAt.hashCode);
     _$hash = $jc(_$hash, acknowledged.hashCode);
@@ -469,6 +474,7 @@ class _$AdminAlertDtoOutput extends AdminAlertDtoOutput {
           ..add('orderNumber', orderNumber)
           ..add('captainName', captainName)
           ..add('restaurantName', restaurantName)
+          ..add('statementId', statementId)
           ..add('location', location)
           ..add('raisedAt', raisedAt)
           ..add('acknowledged', acknowledged)
@@ -516,6 +522,10 @@ class AdminAlertDtoOutputBuilder
   set restaurantName(String? restaurantName) =>
       _$this._restaurantName = restaurantName;
 
+  String? _statementId;
+  String? get statementId => _$this._statementId;
+  set statementId(String? statementId) => _$this._statementId = statementId;
+
   AdminAlertsDtoOutputAlertsInnerLocationBuilder? _location;
   AdminAlertsDtoOutputAlertsInnerLocationBuilder get location =>
       _$this._location ??= AdminAlertsDtoOutputAlertsInnerLocationBuilder();
@@ -553,6 +563,7 @@ class AdminAlertDtoOutputBuilder
       _orderNumber = $v.orderNumber;
       _captainName = $v.captainName;
       _restaurantName = $v.restaurantName;
+      _statementId = $v.statementId;
       _location = $v.location?.toBuilder();
       _raisedAt = $v.raisedAt;
       _acknowledged = $v.acknowledged?.toBuilder();
@@ -609,6 +620,7 @@ class AdminAlertDtoOutputBuilder
             orderNumber: orderNumber,
             captainName: captainName,
             restaurantName: restaurantName,
+            statementId: statementId,
             location: _location?.build(),
             raisedAt: BuiltValueNullFieldError.checkNotNull(
               raisedAt,

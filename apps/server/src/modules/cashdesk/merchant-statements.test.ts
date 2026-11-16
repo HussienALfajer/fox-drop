@@ -450,7 +450,10 @@ describe('the overdue settlement', () => {
     const [alert, ...more] = await overdueAlerts(id);
     expect(more).toEqual([]);
     expect(alert).toMatchObject({ severity: 'warning', resolved_at: null });
-    expect(alert.details).toMatchObject({ restaurantName: expect.stringContaining('مطعم') });
+    expect(alert.details).toMatchObject({
+      restaurantName: expect.stringContaining('مطعم'),
+      statementId: firstId,
+    });
     expect(await overduePushes(id)).toEqual([
       {
         body: 'لديك مبلغ متأخر: 10 ₺. يرجى التسوية في أقرب وقت.',

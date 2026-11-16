@@ -182,6 +182,16 @@ function AlertLine({ alert, city }: { alert: AdminAlert; city: City }) {
       )}
       {overdueId && (
         <>
+          {alert.statementId && (
+            <>
+              <Link
+                to="/cash-desk/merchant-statements/$statementId"
+                params={{ statementId: alert.statementId }}
+              >
+                {t('alerts.openStatement')}
+              </Link>{' '}
+            </>
+          )}
           <Link to="/cash-desk/restaurants" search={{ city: city.code }}>
             {t('alerts.openSettlements')}
           </Link>{' '}

@@ -22,6 +22,7 @@ part 'admin_alert_dto_output.g.dart';
 /// * [orderNumber] - For an alert about an order.
 /// * [captainName] - For an alert about a captain.
 /// * [restaurantName] - For an alert about a restaurant.
+/// * [statementId] - «مطعم متأخر في التسوية» (AP §9.1.3, slice 2.19f): the oldest statement still unpaid, for «فتح الكشف»; null for the others.
 /// * [location]
 /// * [raisedAt]
 /// * [acknowledged]
@@ -61,6 +62,10 @@ abstract class AdminAlertDtoOutput
   /// For an alert about a restaurant.
   @BuiltValueField(wireName: r'restaurantName')
   String? get restaurantName;
+
+  /// «مطعم متأخر في التسوية» (AP §9.1.3, slice 2.19f): the oldest statement still unpaid, for «فتح الكشف»; null for the others.
+  @BuiltValueField(wireName: r'statementId')
+  String? get statementId;
 
   @BuiltValueField(wireName: r'location')
   AdminAlertsDtoOutputAlertsInnerLocation? get location;
@@ -147,6 +152,13 @@ class _$AdminAlertDtoOutputSerializer
         ? null
         : serializers.serialize(
             object.restaurantName,
+            specifiedType: const FullType.nullable(String),
+          );
+    yield r'statementId';
+    yield object.statementId == null
+        ? null
+        : serializers.serialize(
+            object.statementId,
             specifiedType: const FullType.nullable(String),
           );
     yield r'location';
@@ -284,6 +296,16 @@ class _$AdminAlertDtoOutputSerializer
                   as String?;
           if (valueDes == null) continue;
           result.restaurantName = valueDes;
+          break;
+        case r'statementId':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.statementId = valueDes;
           break;
         case r'location':
           final valueDes =
