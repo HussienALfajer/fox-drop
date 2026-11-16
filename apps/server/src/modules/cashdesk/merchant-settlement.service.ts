@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
-import { and, asc, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { AuditService } from '../audit/index.js';
@@ -21,13 +21,16 @@ import {
   type Executor,
   keepKey,
   nextNumber,
+  openOf,
   quoteOf,
+  type SessionKind,
   type Tx,
 } from './cashdesk.service.js';
 import { lockRestaurantAccount } from './merchant-statements.service.js';
-import { drawerSessions, receiptLines, receipts } from './schema.js';
+import { drawerSessions, receiptLines, receiptMethods, receipts } from './schema.js';
 
 export type MerchantReceiptType = 'merchant_settlement' | 'merchant_payout';
+export type ReceiptMethod = (typeof receiptMethods)[number];
 
 // One currency of the settlement: the cash, its value in the account's base
 // at the current rate (AP §8.6: rounded by the base's rule), the rate
@@ -55,8 +58,12 @@ export interface MerchantSettlementPreview {
 }
 
 // The settlement as the screen confirms it: what it showed, checked again
-// under the restaurant's lock.
+// under the restaurant's lock. The session it is recorded in: the user's
+// office one, or their field one on a visit (slice 2.19c); at the office, a
+// visit by a staff member without FIN names them (`visitorId`).
 export interface MerchantSettleCommand {
+  session: SessionKind;
+  visitorId: string | null;
   restaurantId: string;
   due: bigint;
   lines: { currency: string; amount: bigint; base: bigint; rates: ConversionRate[] }[];
@@ -72,8 +79,11 @@ export interface MerchantReceipt {
   number: string;
   type: MerchantReceiptType;
   sessionId: string;
-  // «في المكتب»; the field visit comes with slice 2.19c.
-  method: 'office';
+  // «في المكتب» or «زيارة ميدانية» with the staff member who visited, as
+  // the receipt was issued (RA §12.4).
+  method: ReceiptMethod;
+  visitorId: string | null;
+  visitorName: string | null;
   cashierId: string;
   cashierName: string | null;
   restaurantId: string;
@@ -134,6 +144,8 @@ export class MerchantSettlementService {
       .update(
         JSON.stringify({
           restaurantSettlement: command.restaurantId,
+          session: command.session,
+          visitorId: command.visitorId,
           due: command.due.toString(),
           lines: command.lines.map((line) => [
             line.currency,
@@ -154,6 +166,7 @@ export class MerchantSettlementService {
     if (replayed) return (await this.receipt(replayed.receiptIds[0]!))!;
 
     const restaurant = await this.restaurant(command.restaurantId);
+    const visitor = await this.visitor(user, command);
     const [city, currencies] = await Promise.all([
       this.geo.cityCode(restaurant.cityId),
       this.fx.currencies(),
@@ -167,9 +180,7 @@ export class MerchantSettlementService {
       const [session] = await tx
         .select()
         .from(drawerSessions)
-        .where(
-          and(eq(drawerSessions.adminAccountId, user.accountId), isNull(drawerSessions.closedAt)),
-        )
+        .where(openOf(user.accountId, command.session))
         .for('share');
       if (!session) throw new CashDeskRefusedError('no_open_session', 'open the drawer first');
       if (session.cityId !== restaurant.cityId) {
@@ -228,6 +239,9 @@ export class MerchantSettlementService {
           restaurantName: restaurant.nameAr,
           dueBefore: account.due,
           dueCurrency: account.currency,
+          method: visitor ? 'field' : 'office',
+          visitorId: visitor?.id ?? null,
+          visitorName: visitor?.name ?? null,
           createdAt: now,
         })
         .returning({ id: receipts.id });
@@ -258,6 +272,8 @@ export class MerchantSettlementService {
             type,
             restaurantId: restaurant.id,
             sessionId: session.id,
+            method: visitor ? 'field' : 'office',
+            visitorId: visitor?.id ?? null,
             dueBefore: account.due.toString(),
             lines: quoted.map((line) => ({
               currency: line.currency,
@@ -335,7 +351,9 @@ export class MerchantSettlementService {
       number: row.number,
       type: row.type as MerchantReceiptType,
       sessionId: row.sessionId,
-      method: 'office',
+      method: row.method,
+      visitorId: row.visitorId,
+      visitorName: row.visitorName,
       cashierId: row.adminAccountId,
       cashierName: names.get(row.adminAccountId) ?? null,
       restaurantId: row.restaurantId!,
@@ -347,6 +365,26 @@ export class MerchantSettlementService {
       createdAt: row.createdAt,
       lines: kept,
     };
+  }
+
+  // The staff member who visited, or null at the office: the field
+  // session's own user, or the team member the desk names (AP §9.10.3: a
+  // visitor without FIN, recorded when the cash reaches the desk).
+  private async visitor(
+    user: DeskUser,
+    command: Pick<MerchantSettleCommand, 'session' | 'visitorId'>,
+  ): Promise<{ id: string; name: string } | null> {
+    if (command.session === 'field') {
+      if (command.visitorId !== null) {
+        throw new CashDeskRefusedError('invalid_visitor', "a field session is its user's visit");
+      }
+      const names = await this.admins.names([user.accountId]);
+      return { id: user.accountId, name: names.get(user.accountId) ?? '' };
+    }
+    if (command.visitorId === null) return null;
+    const found = (await this.admins.team()).find((member) => member.id === command.visitorId);
+    if (!found) throw new CashDeskRefusedError('unknown_visitor', 'not an active team member');
+    return found;
   }
 
   private async restaurant(restaurantId: string) {

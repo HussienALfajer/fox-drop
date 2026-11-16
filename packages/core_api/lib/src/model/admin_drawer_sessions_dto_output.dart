@@ -3,8 +3,8 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/admin_drawer_sessions_dto_output_sessions_inner.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/admin_current_drawer_session_dto_output_field.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -22,7 +22,7 @@ abstract class AdminDrawerSessionsDtoOutput
           AdminDrawerSessionsDtoOutputBuilder
         > {
   @BuiltValueField(wireName: r'sessions')
-  BuiltList<AdminDrawerSessionsDtoOutputSessionsInner> get sessions;
+  BuiltList<AdminCurrentDrawerSessionDtoOutputField?> get sessions;
 
   AdminDrawerSessionsDtoOutput._();
 
@@ -58,7 +58,7 @@ class _$AdminDrawerSessionsDtoOutputSerializer
     yield serializers.serialize(
       object.sessions,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminDrawerSessionsDtoOutputSessionsInner),
+        FullType.nullable(AdminCurrentDrawerSessionDtoOutputField),
       ]),
     );
   }
@@ -93,10 +93,12 @@ class _$AdminDrawerSessionsDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(AdminDrawerSessionsDtoOutputSessionsInner),
+                      FullType.nullable(
+                        AdminCurrentDrawerSessionDtoOutputField,
+                      ),
                     ]),
                   )
-                  as BuiltList<AdminDrawerSessionsDtoOutputSessionsInner>;
+                  as BuiltList<AdminCurrentDrawerSessionDtoOutputField?>;
           result.sessions.replace(valueDes);
           break;
         default:

@@ -14,6 +14,7 @@ part 'admin_open_drawer_session_dto.g.dart';
 ///
 /// Properties:
 /// * [cityId]
+/// * [kind] - A field session (a restaurant visit) opens with a zero float.
 /// * [floats]
 @BuiltValue()
 abstract class AdminOpenDrawerSessionDto
@@ -21,6 +22,11 @@ abstract class AdminOpenDrawerSessionDto
         Built<AdminOpenDrawerSessionDto, AdminOpenDrawerSessionDtoBuilder> {
   @BuiltValueField(wireName: r'cityId')
   String get cityId;
+
+  /// A field session (a restaurant visit) opens with a zero float.
+  @BuiltValueField(wireName: r'kind')
+  AdminOpenDrawerSessionDtoKindEnum? get kind;
+  // enum kindEnum {  office,  field,  };
 
   @BuiltValueField(wireName: r'floats')
   BuiltList<AdminOpenDrawerSessionDtoFloatsInner> get floats;
@@ -32,7 +38,8 @@ abstract class AdminOpenDrawerSessionDto
   ]) = _$AdminOpenDrawerSessionDto;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminOpenDrawerSessionDtoBuilder b) => b;
+  static void _defaults(AdminOpenDrawerSessionDtoBuilder b) =>
+      b..kind = AdminOpenDrawerSessionDtoKindEnum.valueOf('office');
 
   @BuiltValueSerializer(custom: true)
   static Serializer<AdminOpenDrawerSessionDto> get serializer =>
@@ -60,6 +67,13 @@ class _$AdminOpenDrawerSessionDtoSerializer
       object.cityId,
       specifiedType: const FullType(String),
     );
+    if (object.kind != null) {
+      yield r'kind';
+      yield serializers.serialize(
+        object.kind,
+        specifiedType: const FullType(AdminOpenDrawerSessionDtoKindEnum),
+      );
+    }
     yield r'floats';
     yield serializers.serialize(
       object.floats,
@@ -103,6 +117,18 @@ class _$AdminOpenDrawerSessionDtoSerializer
                   as String;
           result.cityId = valueDes;
           break;
+        case r'kind':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminOpenDrawerSessionDtoKindEnum,
+                    ),
+                  )
+                  as AdminOpenDrawerSessionDtoKindEnum?;
+          if (valueDes == null) continue;
+          result.kind = valueDes;
+          break;
         case r'floats':
           final valueDes =
               serializers.deserialize(
@@ -141,4 +167,24 @@ class _$AdminOpenDrawerSessionDtoSerializer
     );
     return result.build();
   }
+}
+
+/// A field session (a restaurant visit) opens with a zero float.
+class AdminOpenDrawerSessionDtoKindEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'office')
+  static const AdminOpenDrawerSessionDtoKindEnum office =
+      _$adminOpenDrawerSessionDtoKindEnum_office;
+  @BuiltValueEnumConst(wireName: r'field')
+  static const AdminOpenDrawerSessionDtoKindEnum field =
+      _$adminOpenDrawerSessionDtoKindEnum_field;
+
+  static Serializer<AdminOpenDrawerSessionDtoKindEnum> get serializer =>
+      _$adminOpenDrawerSessionDtoKindEnumSerializer;
+
+  const AdminOpenDrawerSessionDtoKindEnum._(String name) : super(name);
+
+  static BuiltSet<AdminOpenDrawerSessionDtoKindEnum> get values =>
+      _$adminOpenDrawerSessionDtoKindEnumValues;
+  static AdminOpenDrawerSessionDtoKindEnum valueOf(String name) =>
+      _$adminOpenDrawerSessionDtoKindEnumValueOf(name);
 }

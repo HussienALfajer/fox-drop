@@ -906,6 +906,7 @@ describe('the desk routes', () => {
       (await cashier.get(`/v1/admin/cash-desk/sessions/current?cityId=${azaz}`)).json(),
     ).toEqual({
       session: null,
+      field: null,
       currencies: ['TRY', 'USD'],
     });
 

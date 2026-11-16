@@ -68,6 +68,8 @@ Serializers _$serializers =
           ..add(AdminConversionQuoteDtoOutputUnit.serializer)
           ..add(AdminConversionQuoteRequestDto.serializer)
           ..add(AdminCurrentDrawerSessionDtoOutput.serializer)
+          ..add(AdminCurrentDrawerSessionDtoOutputField.serializer)
+          ..add(AdminCurrentDrawerSessionDtoOutputFieldKindEnum.serializer)
           ..add(AdminCurrentDrawerSessionDtoOutputSession.serializer)
           ..add(
             AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner.serializer,
@@ -93,8 +95,6 @@ Serializers _$serializers =
           ..add(AdminDrawerSessionDtoOutput.serializer)
           ..add(AdminDrawerSessionDtoOutputKindEnum.serializer)
           ..add(AdminDrawerSessionsDtoOutput.serializer)
-          ..add(AdminDrawerSessionsDtoOutputSessionsInner.serializer)
-          ..add(AdminDrawerSessionsDtoOutputSessionsInnerKindEnum.serializer)
           ..add(AdminEditDto.serializer)
           ..add(AdminEditDtoAddInner.serializer)
           ..add(AdminEditDtoKeepInner.serializer)
@@ -123,6 +123,7 @@ Serializers _$serializers =
           ..add(AdminFaqDtoOutput.serializer)
           ..add(AdminFaqsDtoOutput.serializer)
           ..add(AdminFaqsDtoOutputCustomerInner.serializer)
+          ..add(AdminFieldVisitorsDtoOutput.serializer)
           ..add(AdminForceOfflineDto.serializer)
           ..add(AdminHandInDto.serializer)
           ..add(AdminHandInDtoConversionsInner.serializer)
@@ -160,6 +161,7 @@ Serializers _$serializers =
           )
           ..add(AdminOpenDrawerSessionDto.serializer)
           ..add(AdminOpenDrawerSessionDtoFloatsInner.serializer)
+          ..add(AdminOpenDrawerSessionDtoKindEnum.serializer)
           ..add(AdminOrderCardDtoOutput.serializer)
           ..add(AdminOrderCardDtoOutputOrder.serializer)
           ..add(AdminOrderCardDtoOutputOrderAlertsEnum.serializer)
@@ -363,6 +365,7 @@ Serializers _$serializers =
           ..add(AdminRestaurantReceiptDtoOutputTypeEnum.serializer)
           ..add(AdminRestaurantSettleDto.serializer)
           ..add(AdminRestaurantSettleDtoLinesInner.serializer)
+          ..add(AdminRestaurantSettleDtoSessionEnum.serializer)
           ..add(AdminRestaurantSettlementPreviewDtoOutput.serializer)
           ..add(AdminRestaurantSettlementPreviewDtoOutputLinesInner.serializer)
           ..add(AdminRestaurantSettlementPreviewRequestDto.serializer)
@@ -1056,12 +1059,6 @@ Serializers _$serializers =
               const FullType(AdminDeskCustodyDtoOutputUsage),
             ]),
             () => ListBuilder<AdminDeskCustodyDtoOutputUsage>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(AdminDrawerSessionsDtoOutputSessionsInner),
-            ]),
-            () => ListBuilder<AdminDrawerSessionsDtoOutputSessionsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -2599,6 +2596,23 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(int)]),
             () => ListBuilder<int>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType.nullable(
+                AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType.nullable(AdminCurrentDrawerSessionDtoOutputField),
+            ]),
+            () => ListBuilder<AdminCurrentDrawerSessionDtoOutputField?>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

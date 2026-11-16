@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq, gt, isNull, or, sql } from 'drizzle-orm';
+import { and, desc, eq, gt, or, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { AuditService } from '../audit/index.js';
@@ -23,6 +23,7 @@ import {
   type Executor,
   keepKey,
   nextNumber,
+  openOf,
   quoteOf,
   type Receipt,
   type CaptainReceiptType,
@@ -268,9 +269,7 @@ export class SettlementService {
       const [session] = await tx
         .select()
         .from(drawerSessions)
-        .where(
-          and(eq(drawerSessions.adminAccountId, user.accountId), isNull(drawerSessions.closedAt)),
-        )
+        .where(openOf(user.accountId, 'office'))
         .for('share');
       if (!session) throw new CashDeskRefusedError('no_open_session', 'open the drawer first');
       if (session.cityId !== captain.cityId) {

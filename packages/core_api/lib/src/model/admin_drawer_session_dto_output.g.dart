@@ -9,12 +9,17 @@ part of 'admin_drawer_session_dto_output.dart';
 const AdminDrawerSessionDtoOutputKindEnum
 _$adminDrawerSessionDtoOutputKindEnum_office =
     const AdminDrawerSessionDtoOutputKindEnum._('office');
+const AdminDrawerSessionDtoOutputKindEnum
+_$adminDrawerSessionDtoOutputKindEnum_field =
+    const AdminDrawerSessionDtoOutputKindEnum._('field');
 
 AdminDrawerSessionDtoOutputKindEnum
 _$adminDrawerSessionDtoOutputKindEnumValueOf(String name) {
   switch (name) {
     case 'office':
       return _$adminDrawerSessionDtoOutputKindEnum_office;
+    case 'field':
+      return _$adminDrawerSessionDtoOutputKindEnum_field;
     default:
       throw ArgumentError(name);
   }
@@ -25,6 +30,7 @@ _$adminDrawerSessionDtoOutputKindEnumValues =
     BuiltSet<AdminDrawerSessionDtoOutputKindEnum>(
       const <AdminDrawerSessionDtoOutputKindEnum>[
         _$adminDrawerSessionDtoOutputKindEnum_office,
+        _$adminDrawerSessionDtoOutputKindEnum_field,
       ],
     );
 
@@ -36,9 +42,11 @@ class _$AdminDrawerSessionDtoOutputKindEnumSerializer
     implements PrimitiveSerializer<AdminDrawerSessionDtoOutputKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'office': 'office',
+    'field': 'field',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'office': 'office',
+    'field': 'field',
   };
 
   @override

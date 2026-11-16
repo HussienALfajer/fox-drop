@@ -5,6 +5,7 @@
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/admin_current_drawer_session_dto_output_session.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/admin_current_drawer_session_dto_output_field.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -14,6 +15,7 @@ part 'admin_current_drawer_session_dto_output.g.dart';
 ///
 /// Properties:
 /// * [session]
+/// * [field]
 /// * [currencies] - The city's enabled currencies in display order: the float's fields.
 @BuiltValue()
 abstract class AdminCurrentDrawerSessionDtoOutput
@@ -24,6 +26,9 @@ abstract class AdminCurrentDrawerSessionDtoOutput
         > {
   @BuiltValueField(wireName: r'session')
   AdminCurrentDrawerSessionDtoOutputSession? get session;
+
+  @BuiltValueField(wireName: r'field')
+  AdminCurrentDrawerSessionDtoOutputField? get field;
 
   /// The city's enabled currencies in display order: the float's fields.
   @BuiltValueField(wireName: r'currencies')
@@ -66,6 +71,15 @@ class _$AdminCurrentDrawerSessionDtoOutputSerializer
             object.session,
             specifiedType: const FullType.nullable(
               AdminCurrentDrawerSessionDtoOutputSession,
+            ),
+          );
+    yield r'field';
+    yield object.field == null
+        ? null
+        : serializers.serialize(
+            object.field,
+            specifiedType: const FullType.nullable(
+              AdminCurrentDrawerSessionDtoOutputField,
             ),
           );
     yield r'currencies';
@@ -111,6 +125,18 @@ class _$AdminCurrentDrawerSessionDtoOutputSerializer
                   as AdminCurrentDrawerSessionDtoOutputSession?;
           if (valueDes == null) continue;
           result.session.replace(valueDes);
+          break;
+        case r'field':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminCurrentDrawerSessionDtoOutputField,
+                    ),
+                  )
+                  as AdminCurrentDrawerSessionDtoOutputField?;
+          if (valueDes == null) continue;
+          result.field.replace(valueDes);
           break;
         case r'currencies':
           final valueDes =

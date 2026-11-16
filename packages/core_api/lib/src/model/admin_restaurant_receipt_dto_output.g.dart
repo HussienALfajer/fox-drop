@@ -37,12 +37,17 @@ _$adminRestaurantReceiptDtoOutputTypeEnumValues =
 const AdminRestaurantReceiptDtoOutputMethodEnum
 _$adminRestaurantReceiptDtoOutputMethodEnum_office =
     const AdminRestaurantReceiptDtoOutputMethodEnum._('office');
+const AdminRestaurantReceiptDtoOutputMethodEnum
+_$adminRestaurantReceiptDtoOutputMethodEnum_field =
+    const AdminRestaurantReceiptDtoOutputMethodEnum._('field');
 
 AdminRestaurantReceiptDtoOutputMethodEnum
 _$adminRestaurantReceiptDtoOutputMethodEnumValueOf(String name) {
   switch (name) {
     case 'office':
       return _$adminRestaurantReceiptDtoOutputMethodEnum_office;
+    case 'field':
+      return _$adminRestaurantReceiptDtoOutputMethodEnum_field;
     default:
       throw ArgumentError(name);
   }
@@ -53,6 +58,7 @@ _$adminRestaurantReceiptDtoOutputMethodEnumValues =
     BuiltSet<AdminRestaurantReceiptDtoOutputMethodEnum>(
       const <AdminRestaurantReceiptDtoOutputMethodEnum>[
         _$adminRestaurantReceiptDtoOutputMethodEnum_office,
+        _$adminRestaurantReceiptDtoOutputMethodEnum_field,
       ],
     );
 
@@ -102,9 +108,11 @@ class _$AdminRestaurantReceiptDtoOutputMethodEnumSerializer
     implements PrimitiveSerializer<AdminRestaurantReceiptDtoOutputMethodEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'office': 'office',
+    'field': 'field',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'office': 'office',
+    'field': 'field',
   };
 
   @override
@@ -146,6 +154,10 @@ class _$AdminRestaurantReceiptDtoOutput
   @override
   final AdminRestaurantReceiptDtoOutputMethodEnum method;
   @override
+  final String? visitorId;
+  @override
+  final String? visitorName;
+  @override
   final String cashierId;
   @override
   final String? cashierName;
@@ -177,6 +189,8 @@ class _$AdminRestaurantReceiptDtoOutput
     required this.type,
     required this.sessionId,
     required this.method,
+    this.visitorId,
+    this.visitorName,
     required this.cashierId,
     this.cashierName,
     required this.restaurantId,
@@ -207,6 +221,8 @@ class _$AdminRestaurantReceiptDtoOutput
         type == other.type &&
         sessionId == other.sessionId &&
         method == other.method &&
+        visitorId == other.visitorId &&
+        visitorName == other.visitorName &&
         cashierId == other.cashierId &&
         cashierName == other.cashierName &&
         restaurantId == other.restaurantId &&
@@ -228,6 +244,8 @@ class _$AdminRestaurantReceiptDtoOutput
     _$hash = $jc(_$hash, type.hashCode);
     _$hash = $jc(_$hash, sessionId.hashCode);
     _$hash = $jc(_$hash, method.hashCode);
+    _$hash = $jc(_$hash, visitorId.hashCode);
+    _$hash = $jc(_$hash, visitorName.hashCode);
     _$hash = $jc(_$hash, cashierId.hashCode);
     _$hash = $jc(_$hash, cashierName.hashCode);
     _$hash = $jc(_$hash, restaurantId.hashCode);
@@ -251,6 +269,8 @@ class _$AdminRestaurantReceiptDtoOutput
           ..add('type', type)
           ..add('sessionId', sessionId)
           ..add('method', method)
+          ..add('visitorId', visitorId)
+          ..add('visitorName', visitorName)
           ..add('cashierId', cashierId)
           ..add('cashierName', cashierName)
           ..add('restaurantId', restaurantId)
@@ -298,6 +318,14 @@ class AdminRestaurantReceiptDtoOutputBuilder
   AdminRestaurantReceiptDtoOutputMethodEnum? get method => _$this._method;
   set method(AdminRestaurantReceiptDtoOutputMethodEnum? method) =>
       _$this._method = method;
+
+  String? _visitorId;
+  String? get visitorId => _$this._visitorId;
+  set visitorId(String? visitorId) => _$this._visitorId = visitorId;
+
+  String? _visitorName;
+  String? get visitorName => _$this._visitorName;
+  set visitorName(String? visitorName) => _$this._visitorName = visitorName;
 
   String? _cashierId;
   String? get cashierId => _$this._cashierId;
@@ -356,6 +384,8 @@ class AdminRestaurantReceiptDtoOutputBuilder
       _type = $v.type;
       _sessionId = $v.sessionId;
       _method = $v.method;
+      _visitorId = $v.visitorId;
+      _visitorName = $v.visitorName;
       _cashierId = $v.cashierId;
       _cashierName = $v.cashierName;
       _restaurantId = $v.restaurantId;
@@ -420,6 +450,8 @@ class AdminRestaurantReceiptDtoOutputBuilder
               r'AdminRestaurantReceiptDtoOutput',
               'method',
             ),
+            visitorId: visitorId,
+            visitorName: visitorName,
             cashierId: BuiltValueNullFieldError.checkNotNull(
               cashierId,
               r'AdminRestaurantReceiptDtoOutput',

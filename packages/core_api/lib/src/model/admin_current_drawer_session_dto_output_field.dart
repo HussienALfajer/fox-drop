@@ -8,9 +8,9 @@ import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_drawer_sessions_dto_output_sessions_inner.g.dart';
+part 'admin_current_drawer_session_dto_output_field.g.dart';
 
-/// AdminDrawerSessionsDtoOutputSessionsInner
+/// The field session of a restaurant visit (AP §9.10.3), opened beside it.
 ///
 /// Properties:
 /// * [id]
@@ -23,11 +23,11 @@ part 'admin_drawer_sessions_dto_output_sessions_inner.g.dart';
 /// * [closeNote]
 /// * [currencies]
 @BuiltValue()
-abstract class AdminDrawerSessionsDtoOutputSessionsInner
+abstract class AdminCurrentDrawerSessionDtoOutputField
     implements
         Built<
-          AdminDrawerSessionsDtoOutputSessionsInner,
-          AdminDrawerSessionsDtoOutputSessionsInnerBuilder
+          AdminCurrentDrawerSessionDtoOutputField,
+          AdminCurrentDrawerSessionDtoOutputFieldBuilder
         > {
   @BuiltValueField(wireName: r'id')
   String get id;
@@ -42,8 +42,8 @@ abstract class AdminDrawerSessionsDtoOutputSessionsInner
   String? get adminName;
 
   @BuiltValueField(wireName: r'kind')
-  AdminDrawerSessionsDtoOutputSessionsInnerKindEnum get kind;
-  // enum kindEnum {  office,  };
+  AdminCurrentDrawerSessionDtoOutputFieldKindEnum get kind;
+  // enum kindEnum {  office,  field,  };
 
   @BuiltValueField(wireName: r'openedAt')
   DateTime get openedAt;
@@ -58,35 +58,34 @@ abstract class AdminDrawerSessionsDtoOutputSessionsInner
   BuiltList<AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner>
   get currencies;
 
-  AdminDrawerSessionsDtoOutputSessionsInner._();
+  AdminCurrentDrawerSessionDtoOutputField._();
 
-  factory AdminDrawerSessionsDtoOutputSessionsInner([
-    void updates(AdminDrawerSessionsDtoOutputSessionsInnerBuilder b),
-  ]) = _$AdminDrawerSessionsDtoOutputSessionsInner;
+  factory AdminCurrentDrawerSessionDtoOutputField([
+    void updates(AdminCurrentDrawerSessionDtoOutputFieldBuilder b),
+  ]) = _$AdminCurrentDrawerSessionDtoOutputField;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminDrawerSessionsDtoOutputSessionsInnerBuilder b) =>
-      b;
+  static void _defaults(AdminCurrentDrawerSessionDtoOutputFieldBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminDrawerSessionsDtoOutputSessionsInner> get serializer =>
-      _$AdminDrawerSessionsDtoOutputSessionsInnerSerializer();
+  static Serializer<AdminCurrentDrawerSessionDtoOutputField> get serializer =>
+      _$AdminCurrentDrawerSessionDtoOutputFieldSerializer();
 }
 
-class _$AdminDrawerSessionsDtoOutputSessionsInnerSerializer
-    implements PrimitiveSerializer<AdminDrawerSessionsDtoOutputSessionsInner> {
+class _$AdminCurrentDrawerSessionDtoOutputFieldSerializer
+    implements PrimitiveSerializer<AdminCurrentDrawerSessionDtoOutputField> {
   @override
   final Iterable<Type> types = const [
-    AdminDrawerSessionsDtoOutputSessionsInner,
-    _$AdminDrawerSessionsDtoOutputSessionsInner,
+    AdminCurrentDrawerSessionDtoOutputField,
+    _$AdminCurrentDrawerSessionDtoOutputField,
   ];
 
   @override
-  final String wireName = r'AdminDrawerSessionsDtoOutputSessionsInner';
+  final String wireName = r'AdminCurrentDrawerSessionDtoOutputField';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminDrawerSessionsDtoOutputSessionsInner object, {
+    AdminCurrentDrawerSessionDtoOutputField object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'id';
@@ -115,7 +114,7 @@ class _$AdminDrawerSessionsDtoOutputSessionsInnerSerializer
     yield serializers.serialize(
       object.kind,
       specifiedType: const FullType(
-        AdminDrawerSessionsDtoOutputSessionsInnerKindEnum,
+        AdminCurrentDrawerSessionDtoOutputFieldKindEnum,
       ),
     );
     yield r'openedAt';
@@ -149,7 +148,7 @@ class _$AdminDrawerSessionsDtoOutputSessionsInnerSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminDrawerSessionsDtoOutputSessionsInner object, {
+    AdminCurrentDrawerSessionDtoOutputField object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -164,7 +163,7 @@ class _$AdminDrawerSessionsDtoOutputSessionsInnerSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminDrawerSessionsDtoOutputSessionsInnerBuilder result,
+    required AdminCurrentDrawerSessionDtoOutputFieldBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -213,10 +212,10 @@ class _$AdminDrawerSessionsDtoOutputSessionsInnerSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(
-                      AdminDrawerSessionsDtoOutputSessionsInnerKindEnum,
+                      AdminCurrentDrawerSessionDtoOutputFieldKindEnum,
                     ),
                   )
-                  as AdminDrawerSessionsDtoOutputSessionsInnerKindEnum;
+                  as AdminCurrentDrawerSessionDtoOutputFieldKindEnum;
           result.kind = valueDes;
           break;
         case r'openedAt':
@@ -272,12 +271,12 @@ class _$AdminDrawerSessionsDtoOutputSessionsInnerSerializer
   }
 
   @override
-  AdminDrawerSessionsDtoOutputSessionsInner deserialize(
+  AdminCurrentDrawerSessionDtoOutputField deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminDrawerSessionsDtoOutputSessionsInnerBuilder();
+    final result = AdminCurrentDrawerSessionDtoOutputFieldBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(
@@ -292,21 +291,22 @@ class _$AdminDrawerSessionsDtoOutputSessionsInnerSerializer
   }
 }
 
-class AdminDrawerSessionsDtoOutputSessionsInnerKindEnum extends EnumClass {
+class AdminCurrentDrawerSessionDtoOutputFieldKindEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'office')
-  static const AdminDrawerSessionsDtoOutputSessionsInnerKindEnum office =
-      _$adminDrawerSessionsDtoOutputSessionsInnerKindEnum_office;
+  static const AdminCurrentDrawerSessionDtoOutputFieldKindEnum office =
+      _$adminCurrentDrawerSessionDtoOutputFieldKindEnum_office;
+  @BuiltValueEnumConst(wireName: r'field')
+  static const AdminCurrentDrawerSessionDtoOutputFieldKindEnum field =
+      _$adminCurrentDrawerSessionDtoOutputFieldKindEnum_field;
 
-  static Serializer<AdminDrawerSessionsDtoOutputSessionsInnerKindEnum>
-  get serializer =>
-      _$adminDrawerSessionsDtoOutputSessionsInnerKindEnumSerializer;
+  static Serializer<AdminCurrentDrawerSessionDtoOutputFieldKindEnum>
+  get serializer => _$adminCurrentDrawerSessionDtoOutputFieldKindEnumSerializer;
 
-  const AdminDrawerSessionsDtoOutputSessionsInnerKindEnum._(String name)
+  const AdminCurrentDrawerSessionDtoOutputFieldKindEnum._(String name)
     : super(name);
 
-  static BuiltSet<AdminDrawerSessionsDtoOutputSessionsInnerKindEnum>
-  get values => _$adminDrawerSessionsDtoOutputSessionsInnerKindEnumValues;
-  static AdminDrawerSessionsDtoOutputSessionsInnerKindEnum valueOf(
-    String name,
-  ) => _$adminDrawerSessionsDtoOutputSessionsInnerKindEnumValueOf(name);
+  static BuiltSet<AdminCurrentDrawerSessionDtoOutputFieldKindEnum> get values =>
+      _$adminCurrentDrawerSessionDtoOutputFieldKindEnumValues;
+  static AdminCurrentDrawerSessionDtoOutputFieldKindEnum valueOf(String name) =>
+      _$adminCurrentDrawerSessionDtoOutputFieldKindEnumValueOf(name);
 }

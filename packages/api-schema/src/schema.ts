@@ -3396,6 +3396,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/cash-desk/visitors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRestaurantSettlementVisitors"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/cash-desk/restaurant-receipts/{receiptId}": {
         parameters: {
             query?: never;
@@ -9702,6 +9718,7 @@ export interface components {
             receiptIds: string[];
         };
         AdminCurrentDrawerSessionDto_Output: {
+            /** @description The office session. */
             session: {
                 /** Format: uuid */
                 id: string;
@@ -9711,7 +9728,31 @@ export interface components {
                 adminAccountId: string;
                 adminName: string | null;
                 /** @enum {string} */
-                kind: "office";
+                kind: "office" | "field";
+                /** Format: date-time */
+                openedAt: string;
+                closedAt: string | null;
+                closeNote: string | null;
+                currencies: {
+                    currency: string;
+                    openingFloat: string;
+                    /** @description The float plus the cash moved; as at the close once closed. */
+                    expected: string;
+                    counted: string | null;
+                    variance: string | null;
+                }[];
+            } | null;
+            /** @description The field session of a restaurant visit (AP §9.10.3), opened beside it. */
+            field: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                cityId: string;
+                /** Format: uuid */
+                adminAccountId: string;
+                adminName: string | null;
+                /** @enum {string} */
+                kind: "office" | "field";
                 /** Format: date-time */
                 openedAt: string;
                 closedAt: string | null;
@@ -9738,7 +9779,7 @@ export interface components {
                 adminAccountId: string;
                 adminName: string | null;
                 /** @enum {string} */
-                kind: "office";
+                kind: "office" | "field";
                 /** Format: date-time */
                 openedAt: string;
                 closedAt: string | null;
@@ -9756,6 +9797,12 @@ export interface components {
         AdminOpenDrawerSessionDto: {
             /** Format: uuid */
             cityId: string;
+            /**
+             * @description A field session (a restaurant visit) opens with a zero float.
+             * @default office
+             * @enum {string}
+             */
+            kind: "office" | "field";
             floats: {
                 currency: string;
                 amount: string;
@@ -9770,7 +9817,7 @@ export interface components {
             adminAccountId: string;
             adminName: string | null;
             /** @enum {string} */
-            kind: "office";
+            kind: "office" | "field";
             /** Format: date-time */
             openedAt: string;
             closedAt: string | null;
@@ -9953,6 +10000,14 @@ export interface components {
         AdminRestaurantSettleDto: {
             /** Format: uuid */
             restaurantId: string;
+            /**
+             * @description The user's session it is recorded in: the office's, or the field's on a visit.
+             * @default office
+             * @enum {string}
+             */
+            session: "office" | "field";
+            /** @default null */
+            visitorId: string | null;
             /** @description The balance the screen showed. */
             due: string;
             lines: {
@@ -9977,8 +10032,13 @@ export interface components {
             type: "merchant_settlement" | "merchant_payout";
             /** Format: uuid */
             sessionId: string;
-            /** @enum {string} */
-            method: "office";
+            /**
+             * @description «في المكتب» or «زيارة ميدانية».
+             * @enum {string}
+             */
+            method: "office" | "field";
+            visitorId: string | null;
+            visitorName: string | null;
             /** Format: uuid */
             cashierId: string;
             cashierName: string | null;
@@ -9995,6 +10055,13 @@ export interface components {
                 currency: string;
                 amount: string;
                 base: string;
+            }[];
+        };
+        AdminFieldVisitorsDto_Output: {
+            visitors: {
+                /** Format: uuid */
+                id: string;
+                name: string;
             }[];
         };
         AdminRestaurantSettlementsDto_Output: {
@@ -15718,6 +15785,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminRestaurantReceiptDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantSettlementVisitors: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminFieldVisitorsDto_Output"];
                 };
             };
         };

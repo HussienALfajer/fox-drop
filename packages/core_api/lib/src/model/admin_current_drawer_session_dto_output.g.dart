@@ -11,6 +11,8 @@ class _$AdminCurrentDrawerSessionDtoOutput
   @override
   final AdminCurrentDrawerSessionDtoOutputSession? session;
   @override
+  final AdminCurrentDrawerSessionDtoOutputField? field;
+  @override
   final BuiltList<String> currencies;
 
   factory _$AdminCurrentDrawerSessionDtoOutput([
@@ -19,6 +21,7 @@ class _$AdminCurrentDrawerSessionDtoOutput
 
   _$AdminCurrentDrawerSessionDtoOutput._({
     this.session,
+    this.field,
     required this.currencies,
   }) : super._();
   @override
@@ -35,6 +38,7 @@ class _$AdminCurrentDrawerSessionDtoOutput
     if (identical(other, this)) return true;
     return other is AdminCurrentDrawerSessionDtoOutput &&
         session == other.session &&
+        field == other.field &&
         currencies == other.currencies;
   }
 
@@ -42,6 +46,7 @@ class _$AdminCurrentDrawerSessionDtoOutput
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, session.hashCode);
+    _$hash = $jc(_$hash, field.hashCode);
     _$hash = $jc(_$hash, currencies.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -51,6 +56,7 @@ class _$AdminCurrentDrawerSessionDtoOutput
   String toString() {
     return (newBuiltValueToStringHelper(r'AdminCurrentDrawerSessionDtoOutput')
           ..add('session', session)
+          ..add('field', field)
           ..add('currencies', currencies))
         .toString();
   }
@@ -70,6 +76,12 @@ class AdminCurrentDrawerSessionDtoOutputBuilder
   set session(AdminCurrentDrawerSessionDtoOutputSessionBuilder? session) =>
       _$this._session = session;
 
+  AdminCurrentDrawerSessionDtoOutputFieldBuilder? _field;
+  AdminCurrentDrawerSessionDtoOutputFieldBuilder get field =>
+      _$this._field ??= AdminCurrentDrawerSessionDtoOutputFieldBuilder();
+  set field(AdminCurrentDrawerSessionDtoOutputFieldBuilder? field) =>
+      _$this._field = field;
+
   ListBuilder<String>? _currencies;
   ListBuilder<String> get currencies =>
       _$this._currencies ??= ListBuilder<String>();
@@ -84,6 +96,7 @@ class AdminCurrentDrawerSessionDtoOutputBuilder
     final $v = _$v;
     if ($v != null) {
       _session = $v.session?.toBuilder();
+      _field = $v.field?.toBuilder();
       _currencies = $v.currencies.toBuilder();
       _$v = null;
     }
@@ -112,6 +125,7 @@ class AdminCurrentDrawerSessionDtoOutputBuilder
           _$v ??
           _$AdminCurrentDrawerSessionDtoOutput._(
             session: _session?.build(),
+            field: _field?.build(),
             currencies: currencies.build(),
           );
     } catch (_) {
@@ -119,6 +133,8 @@ class AdminCurrentDrawerSessionDtoOutputBuilder
       try {
         _$failedField = 'session';
         _session?.build();
+        _$failedField = 'field';
+        _field?.build();
         _$failedField = 'currencies';
         currencies.build();
       } catch (e) {

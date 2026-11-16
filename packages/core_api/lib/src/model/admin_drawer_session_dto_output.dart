@@ -40,7 +40,7 @@ abstract class AdminDrawerSessionDtoOutput
 
   @BuiltValueField(wireName: r'kind')
   AdminDrawerSessionDtoOutputKindEnum get kind;
-  // enum kindEnum {  office,  };
+  // enum kindEnum {  office,  field,  };
 
   @BuiltValueField(wireName: r'openedAt')
   DateTime get openedAt;
@@ -290,6 +290,9 @@ class AdminDrawerSessionDtoOutputKindEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'office')
   static const AdminDrawerSessionDtoOutputKindEnum office =
       _$adminDrawerSessionDtoOutputKindEnum_office;
+  @BuiltValueEnumConst(wireName: r'field')
+  static const AdminDrawerSessionDtoOutputKindEnum field =
+      _$adminDrawerSessionDtoOutputKindEnum_field;
 
   static Serializer<AdminDrawerSessionDtoOutputKindEnum> get serializer =>
       _$adminDrawerSessionDtoOutputKindEnumSerializer;
