@@ -26,6 +26,7 @@ import { OPERATIONS_READ } from './orders-board.js';
 import { OrdersBoardPage } from './orders-board-page.js';
 import { CASH_DESK, FINANCE_READ } from './cash-desk.js';
 import { CaptainBalancesPage } from './captain-balances-page.js';
+import { DailyReportPage } from './daily-report-page.js';
 import { ExchangeRatesPage } from './exchange-rates-page.js';
 import { MANUAL_ADJUSTMENT } from './manual-entries.js';
 import { ManualEntriesPage } from './manual-entries-page.js';
@@ -310,6 +311,21 @@ const exchangeRatesRoute = createRoute({
   component: ExchangeRatesPage,
 });
 
+// AP §9.10.1 «التقرير اليومي» (slice 2.20d), finance's (OWN, FIN): the
+// `day` parameter is the business day shown, today's when left out.
+const dailyReportRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/daily-report',
+  validateSearch: (search: Record<string, unknown>): { city?: string; day?: string } => ({
+    ...citySearch(search),
+    ...(typeof search.day === 'string' ? { day: search.day } : {}),
+  }),
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, FINANCE_READ)) throw redirect({ to: '/' });
+  },
+  component: DailyReportPage,
+});
+
 // AP §9.10.7 «القيود التصحيحية» (slice 2.20c), OWN and FIN.
 const manualEntriesRoute = createRoute({
   getParentRoute: () => signedInRoute,
@@ -436,6 +452,7 @@ const routeTree = rootRoute.addChildren([
     cashDeskSessionsRoute,
     captainBalancesRoute,
     exchangeRatesRoute,
+    dailyReportRoute,
     manualEntriesRoute,
     receiptRoute,
     settlementsRoute,

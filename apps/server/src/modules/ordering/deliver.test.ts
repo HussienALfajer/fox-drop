@@ -72,6 +72,18 @@ describe('POST /v1/captain/orders/{orderId}/deliver (CA §9.7–9.8)', () => {
         ],
       ]),
     );
+    // AP §9.10.1 «التقرير اليومي»: the day's delivered orders, their GMV and
+    // items value.
+    const { rows } = await sql.query(
+      'SELECT delivered_at, total FROM ordering.orders WHERE id = $1',
+      [door.order.id],
+    );
+    const deliveredAt: Date = rows[0].delivered_at;
+    expect(
+      await app
+        .get(OrdersService)
+        .deliveredTotals(azaz, deliveredAt, new Date(deliveredAt.getTime() + 1)),
+    ).toEqual([{ currency: 'TRY', count: 1, gmv: BigInt(rows[0].total), itemsValue: 24_000n }]);
     // AP §8.7: the restaurant owes its 15% commission on 240.
     expect((await owned(restaurant, 'merchant.account')) - restaurantBefore).toBe(-3_600n);
     // The order's clearing returns to zero; the fee, commission and pay land.
@@ -231,6 +243,16 @@ describe('POST /v1/captain/orders/{orderId}/deliver (CA §9.7–9.8)', () => {
     expect(moved['platform.order_clearing']).toBe(-24_000n);
     expect((await owned(restaurant, 'merchant.account')) - restaurantBefore).toBe(0n);
     expect(await owned(door.captain.captainId, 'captain.earnings')).toBe(2_500n);
+    // A test order is left out of the daily report's orders (AP §9.6.3).
+    const { rows } = await sql.query('SELECT delivered_at FROM ordering.orders WHERE id = $1', [
+      door.order.id,
+    ]);
+    const deliveredAt: Date = rows[0].delivered_at;
+    expect(
+      await app
+        .get(OrdersService)
+        .deliveredTotals(azaz, deliveredAt, new Date(deliveredAt.getTime() + 1)),
+    ).toEqual([]);
   });
 
   it('refuses a net above the amount due, and a stale amount due', async () => {

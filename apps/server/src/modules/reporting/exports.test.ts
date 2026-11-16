@@ -260,3 +260,171 @@ describe('the Excel export of a restaurant statement', () => {
     ).toBe(403);
   });
 });
+
+// «التقرير اليومي» (AP §9.10.1, slice 2.20d): the routes over the ledger's
+// day, today's state, the comparison and the Excel export.
+describe('the daily report', () => {
+  it("answers today's figures from the ledger, the days before and today's state", async () => {
+    const ledger = app.get(LedgerService);
+    const system = { type: 'system', id: null } as const;
+    const captainId = randomUUID();
+    const orderId = randomUUID();
+    await db.db.transaction(async (tx) => {
+      const open = (
+        purpose: Parameters<LedgerService['openAccount']>[0]['purpose'],
+        ownerId: string | null = null,
+      ) => ledger.openAccount({ cityId: azaz, purpose, ownerId, currency: 'TRY' }, tx);
+      const custody = await open('captain.custody', captainId);
+      const earnings = await open('captain.earnings', captainId);
+      const clearing = await open('platform.order_clearing');
+      const fees = await open('platform.revenue_delivery');
+      const pay = await open('platform.captain_pay');
+      const drawer = await open('platform.cash', randomUUID());
+      const order = { kind: 'order', id: orderId } as const;
+      const post = (
+        type: Parameters<LedgerService['post']>[0]['type'],
+        source: typeof order | null,
+        entries: [string, bigint][],
+      ) =>
+        ledger.post(
+          {
+            cityId: azaz,
+            type,
+            source,
+            actor: system,
+            entries: entries.map(([accountId, amount]) => ({ accountId, currency: 'TRY', amount })),
+          },
+          tx,
+        );
+      await post('custody.pay_merchant', order, [
+        [custody, -40_000n],
+        [clearing, 40_000n],
+      ]);
+      await post('custody.collect', order, [
+        [custody, 44_000n],
+        [clearing, -44_000n],
+      ]);
+      await post('platform.revenue_delivery', order, [
+        [clearing, 4_000n],
+        [fees, -4_000n],
+      ]);
+      await post('earn.order_pay', order, [
+        [earnings, -2_500n],
+        [pay, 2_500n],
+      ]);
+      await post('custody.hand_in', null, [
+        [custody, -3_000n],
+        [drawer, 3_000n],
+      ]);
+    });
+
+    const fin = await admin(['FIN']);
+    const answer = await fin.get(`/v1/admin/daily-report?cityId=${azaz}`);
+    expect(answer.statusCode).toBe(200);
+    const report = answer.json();
+    expect(report).toMatchObject({
+      cityId: azaz,
+      today: true,
+      currency: 'TRY',
+      // No order row was delivered here: the ledger's figures stand alone.
+      orders: { count: 0, gmv: '0', itemsValue: '0' },
+      deliveryFees: '4000',
+      // The setup's commission of 25.
+      commission: '2500',
+      captainPay: { base: '2500', distance: '0', total: '2500' },
+      // 25 + 40 − 25.
+      margin: '4000',
+      cash: [
+        {
+          currency: 'TRY',
+          custodyCreated: '4000',
+          handedIn: '3000',
+          reimbursed: '0',
+          openCustody: '1000',
+          owedToCaptains: '0',
+        },
+      ],
+      restaurants: { commission: '2500', owedByRestaurants: '2500', owedToRestaurants: '0' },
+      now: { captainsBlocked: 0, overdueRestaurants: [] },
+    });
+    expect(report.previous).toHaveLength(6);
+    const before = new Date(Date.parse(report.day) - 86_400_000).toISOString().slice(0, 10);
+    expect(report.previous[0]).toMatchObject({ day: before, margin: '0', to: report.from });
+
+    // A past day: no state now, nothing earned.
+    const past = (await fin.get(`/v1/admin/daily-report?cityId=${azaz}&day=${before}`)).json();
+    expect(past).toMatchObject({ day: before, today: false, now: null, margin: '0' });
+    expect(past.cash).toEqual([]);
+
+    // The day not started, a day that does not exist, an unknown city, OPS.
+    const after = new Date(Date.parse(report.day) + 86_400_000).toISOString().slice(0, 10);
+    const future = await fin.get(`/v1/admin/daily-report?cityId=${azaz}&day=${after}`);
+    expect(future.statusCode).toBe(400);
+    expect(future.json()).toMatchObject({ error: 'invalid_day' });
+    expect(
+      (await fin.get(`/v1/admin/daily-report?cityId=${azaz}&day=2026-02-30`)).json(),
+    ).toMatchObject({ error: 'invalid_day' });
+    const unknown = await fin.get(`/v1/admin/daily-report?cityId=${randomUUID()}`);
+    expect(unknown.statusCode).toBe(404);
+    expect(unknown.json()).toMatchObject({ error: 'unknown_city' });
+    const ops = await admin(['OPS']);
+    expect((await ops.get(`/v1/admin/daily-report?cityId=${azaz}`)).statusCode).toBe(403);
+  });
+
+  it('exports the day to Excel, read by its requester while they hold finance.read', async () => {
+    const fin = await admin(['FIN']);
+    const { day } = (await fin.get(`/v1/admin/daily-report?cityId=${azaz}`)).json();
+    const key = randomUUID();
+    const asked = await fin.post('/v1/admin/daily-report/exports', { cityId: azaz, day }, key);
+    expect(asked.statusCode).toBe(202);
+    expect(asked.json()).toMatchObject({
+      kind: 'daily_report',
+      status: 'pending',
+      fileName: `التقرير اليومي ${day}.xlsx`,
+    });
+    const id: string = asked.json().id;
+    expect(await auditActions(id)).toEqual(['export.create']);
+    expect(
+      (await fin.post('/v1/admin/daily-report/exports', { cityId: azaz, day }, key)).json().id,
+    ).toBe(id);
+    const after = new Date(Date.parse(day) + 86_400_000).toISOString().slice(0, 10);
+    const reused = await fin.post(
+      '/v1/admin/daily-report/exports',
+      { cityId: azaz, day: after },
+      key,
+    );
+    expect(reused.statusCode).toBe(422);
+    const future = await fin.post('/v1/admin/daily-report/exports', { cityId: azaz, day: after });
+    expect(future.statusCode).toBe(400);
+    expect(future.json()).toMatchObject({ error: 'invalid_day' });
+
+    expect(await exportsService.build(id, new Date())).toBe(true);
+    const ready = await fin.get(`/v1/admin/exports/${id}?download=true`);
+    expect(ready.json()).toMatchObject({ status: 'ready', url: expect.any(String) });
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(await (await fetch(new URL(ready.json().url))).arrayBuffer());
+    const sheet = workbook.worksheets[0]!;
+    expect(sheet.getRow(2).values).toEqual([undefined, 'اليوم التجاري', day]);
+    const rows = sheet
+      .getSheetValues()
+      .filter((row): row is ExcelJS.CellValue[] => Array.isArray(row))
+      .map((row) => row.slice(1));
+    expect(rows.find((row) => row[0] === 'هامش المنصة')?.[1]).toBe(40);
+    expect(rows.find((row) => row[0] === 'سُلّم اليوم')).toEqual(['سُلّم اليوم', 30]);
+
+    // An export is read with its kind's permission: a requester who holds
+    // only the statements' no longer sees this one.
+    const user = {
+      accountId: fin.accountId,
+      actor: { type: 'admin', id: fin.accountId, role: 'FIN' },
+      context: { ipAddress: null, device: null },
+    } as const;
+    await expect(
+      exportsService.view(id, { ...user, permissions: ['restaurants.statements'] }, new Date()),
+    ).rejects.toMatchObject({ refusal: 'unknown_export' });
+    expect(
+      (await exportsService.view(id, { ...user, permissions: ['finance.read'] }, new Date()))
+        .status,
+    ).toBe('ready');
+  });
+});

@@ -56,6 +56,16 @@ import 'package:core_api/src/model/admin_current_drawer_session_dto_output.dart'
 import 'package:core_api/src/model/admin_current_drawer_session_dto_output_field.dart';
 import 'package:core_api/src/model/admin_current_drawer_session_dto_output_session.dart';
 import 'package:core_api/src/model/admin_current_drawer_session_dto_output_session_currencies_inner.dart';
+import 'package:core_api/src/model/admin_daily_report_dto_output.dart';
+import 'package:core_api/src/model/admin_daily_report_dto_output_captain_pay.dart';
+import 'package:core_api/src/model/admin_daily_report_dto_output_cash_inner.dart';
+import 'package:core_api/src/model/admin_daily_report_dto_output_discounts.dart';
+import 'package:core_api/src/model/admin_daily_report_dto_output_now.dart';
+import 'package:core_api/src/model/admin_daily_report_dto_output_now_overdue_restaurants_inner.dart';
+import 'package:core_api/src/model/admin_daily_report_dto_output_orders.dart';
+import 'package:core_api/src/model/admin_daily_report_dto_output_previous_inner.dart';
+import 'package:core_api/src/model/admin_daily_report_dto_output_restaurants.dart';
+import 'package:core_api/src/model/admin_daily_report_export_dto.dart';
 import 'package:core_api/src/model/admin_desk_captain_search_dto.dart';
 import 'package:core_api/src/model/admin_desk_captains_dto_output.dart';
 import 'package:core_api/src/model/admin_desk_captains_dto_output_captains_inner.dart';
@@ -681,6 +691,16 @@ part 'serializers.g.dart';
   AdminCurrentDrawerSessionDtoOutputField,
   AdminCurrentDrawerSessionDtoOutputSession,
   AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner,
+  AdminDailyReportDtoOutput,
+  AdminDailyReportDtoOutputCaptainPay,
+  AdminDailyReportDtoOutputCashInner,
+  AdminDailyReportDtoOutputDiscounts,
+  AdminDailyReportDtoOutputNow,
+  AdminDailyReportDtoOutputNowOverdueRestaurantsInner,
+  AdminDailyReportDtoOutputOrders,
+  AdminDailyReportDtoOutputPreviousInner,
+  AdminDailyReportDtoOutputRestaurants,
+  AdminDailyReportExportDto,
   AdminDeskCaptainSearchDto,
   AdminDeskCaptainsDtoOutput,
   AdminDeskCaptainsDtoOutputCaptainsInner,
@@ -1341,6 +1361,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminDailyReportDtoOutputCashInner),
+            ]),
+            () => ListBuilder<AdminDailyReportDtoOutputCashInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(
                 CustomerRestaurantPageDtoOutputMenuInnerItemsInnerOptionGroupsInner,
               ),
@@ -1509,6 +1535,12 @@ Serializers serializers =
               FullType(AdminBoardDtoOutputOrdersInner),
             ]),
             () => ListBuilder<AdminBoardDtoOutputOrdersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminDailyReportDtoOutputPreviousInner),
+            ]),
+            () => ListBuilder<AdminDailyReportDtoOutputPreviousInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -2031,6 +2063,15 @@ Serializers serializers =
               FullType(MerchantStatementDtoOutputLinesInner),
             ]),
             () => ListBuilder<MerchantStatementDtoOutputLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminDailyReportDtoOutputNowOverdueRestaurantsInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminDailyReportDtoOutputNowOverdueRestaurantsInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

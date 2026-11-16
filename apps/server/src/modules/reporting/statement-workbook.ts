@@ -19,7 +19,7 @@ export function decimalOf(minor: bigint, decimals: number): string {
 }
 
 // A moment on the city's clock, YYYY-MM-DD HH:MM, Western digits.
-function localTime(at: Date, timeZone: string): string {
+export function localTime(at: Date, timeZone: string): string {
   const parts = Object.fromEntries(
     new Intl.DateTimeFormat('en-CA', {
       timeZone,

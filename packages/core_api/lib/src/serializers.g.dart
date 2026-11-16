@@ -75,6 +75,16 @@ Serializers _$serializers =
             AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner.serializer,
           )
           ..add(AdminCurrentDrawerSessionDtoOutputSessionKindEnum.serializer)
+          ..add(AdminDailyReportDtoOutput.serializer)
+          ..add(AdminDailyReportDtoOutputCaptainPay.serializer)
+          ..add(AdminDailyReportDtoOutputCashInner.serializer)
+          ..add(AdminDailyReportDtoOutputDiscounts.serializer)
+          ..add(AdminDailyReportDtoOutputNow.serializer)
+          ..add(AdminDailyReportDtoOutputNowOverdueRestaurantsInner.serializer)
+          ..add(AdminDailyReportDtoOutputOrders.serializer)
+          ..add(AdminDailyReportDtoOutputPreviousInner.serializer)
+          ..add(AdminDailyReportDtoOutputRestaurants.serializer)
+          ..add(AdminDailyReportExportDto.serializer)
           ..add(AdminDeskCaptainSearchDto.serializer)
           ..add(AdminDeskCaptainsDtoOutput.serializer)
           ..add(AdminDeskCaptainsDtoOutputCaptainsInner.serializer)
@@ -1114,6 +1124,35 @@ Serializers _$serializers =
             () =>
                 ListBuilder<
                   AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminDailyReportDtoOutputCashInner),
+            ]),
+            () => ListBuilder<AdminDailyReportDtoOutputCashInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminDailyReportDtoOutputCashInner),
+            ]),
+            () => ListBuilder<AdminDailyReportDtoOutputCashInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminDailyReportDtoOutputPreviousInner),
+            ]),
+            () => ListBuilder<AdminDailyReportDtoOutputPreviousInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminDailyReportDtoOutputNowOverdueRestaurantsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminDailyReportDtoOutputNowOverdueRestaurantsInner
                 >(),
           )
           ..addBuilderFactory(

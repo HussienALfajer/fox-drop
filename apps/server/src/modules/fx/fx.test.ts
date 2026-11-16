@@ -541,6 +541,34 @@ describe('the current value in the base', () => {
   });
 });
 
+describe('the value in the base at a moment (AP §9.10.1)', () => {
+  it("converts at a journal's rate version, else at the rate in force at the moment", async () => {
+    const cityId = await lira({ usd: true });
+    const [first] = await fx.currentRates(cityId);
+    const between = new Date();
+    await fx.setRate(
+      cityId,
+      'USD',
+      { value: '42.00', direction: 'base_per_unit' },
+      { ...fin, confirmLargeChange: true },
+    );
+    const { base, toBase } = await fx.valueAt(cityId, between, [first!.versionId]);
+    expect(base).toBe('TRY');
+    expect(toBase(1_000n, 'USD', first!.versionId)).toBe(41_200n);
+    expect(toBase(1_000n, 'USD', null)).toBe(41_200n);
+    expect(toBase(500n, 'TRY', null)).toBe(500n);
+    const later = await fx.valueAt(cityId, new Date(Date.now() + 1_000), []);
+    expect(later.toBase(-1_000n, 'USD', null)).toBe(-42_000n);
+  });
+
+  it('refuses a currency with no rate by then, and a city without a base', async () => {
+    const cityId = await lira();
+    const { toBase } = await fx.valueAt(cityId, new Date(), []);
+    expect(() => toBase(1_000n, 'USD', null)).toThrow(FxRefusedError);
+    expect(await refusal(fx.valueAt(await city(), new Date(), []))).toBe('no_base_currency');
+  });
+});
+
 describe('the settings, through the city currencies', () => {
   const owner = { editor: { id: finId, roles: ['OWN'] as const }, context, reason: 'Set' };
 

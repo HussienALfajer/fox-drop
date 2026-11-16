@@ -5,8 +5,9 @@ import { check, jsonb, pgSchema, text, timestamp, uniqueIndex, uuid } from 'driz
 export const reporting = pgSchema('reporting');
 
 // What an export holds (architecture §5.9). Slice 2.19g: a restaurant's
-// statement for a period (AP §9.10.5).
-export const exportKinds = ['restaurant_statement'] as const;
+// statement for a period (AP §9.10.5); slice 2.20d: the daily report
+// (AP §9.10.1).
+export const exportKinds = ['restaurant_statement', 'daily_report'] as const;
 export type ExportKind = (typeof exportKinds)[number];
 
 // pending: the worker has not written it yet; ready: in private-docs until
@@ -25,7 +26,8 @@ export const exports = reporting.table(
       .default(sql`uuidv7()`),
     cityId: uuid('city_id').notNull(),
     kind: text('kind', { enum: exportKinds }).notNull(),
-    // What was asked, by kind: { restaurantId, from, to } for a statement.
+    // What was asked, by kind: { restaurantId, from, to } for a statement,
+    // { day } for a daily report.
     params: jsonb('params').notNull(),
     // The admin account (identity's id, a plain column) that asked for it.
     requestedBy: uuid('requested_by').notNull(),
@@ -42,7 +44,7 @@ export const exports = reporting.table(
   },
   (table) => [
     uniqueIndex('exports_requester_key').on(table.requestedBy, table.idempotencyKey),
-    check('exports_kind_values', sql`${table.kind} IN ('restaurant_statement')`),
+    check('exports_kind_values', sql`${table.kind} IN ('restaurant_statement', 'daily_report')`),
     check('exports_status_values', sql`${table.status} IN ('pending', 'ready', 'expired')`),
     check(
       'exports_written',

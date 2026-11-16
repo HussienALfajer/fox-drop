@@ -9,6 +9,8 @@ part of 'admin_export_dto_output.dart';
 const AdminExportDtoOutputKindEnum
 _$adminExportDtoOutputKindEnum_restaurantStatement =
     const AdminExportDtoOutputKindEnum._('restaurantStatement');
+const AdminExportDtoOutputKindEnum _$adminExportDtoOutputKindEnum_dailyReport =
+    const AdminExportDtoOutputKindEnum._('dailyReport');
 
 AdminExportDtoOutputKindEnum _$adminExportDtoOutputKindEnumValueOf(
   String name,
@@ -16,17 +18,19 @@ AdminExportDtoOutputKindEnum _$adminExportDtoOutputKindEnumValueOf(
   switch (name) {
     case 'restaurantStatement':
       return _$adminExportDtoOutputKindEnum_restaurantStatement;
+    case 'dailyReport':
+      return _$adminExportDtoOutputKindEnum_dailyReport;
     default:
       throw ArgumentError(name);
   }
 }
 
 final BuiltSet<AdminExportDtoOutputKindEnum>
-_$adminExportDtoOutputKindEnumValues = BuiltSet<AdminExportDtoOutputKindEnum>(
-  const <AdminExportDtoOutputKindEnum>[
-    _$adminExportDtoOutputKindEnum_restaurantStatement,
-  ],
-);
+_$adminExportDtoOutputKindEnumValues =
+    BuiltSet<AdminExportDtoOutputKindEnum>(const <AdminExportDtoOutputKindEnum>[
+      _$adminExportDtoOutputKindEnum_restaurantStatement,
+      _$adminExportDtoOutputKindEnum_dailyReport,
+    ]);
 
 const AdminExportDtoOutputStatusEnum _$adminExportDtoOutputStatusEnum_pending =
     const AdminExportDtoOutputStatusEnum._('pending');
@@ -71,9 +75,11 @@ class _$AdminExportDtoOutputKindEnumSerializer
     implements PrimitiveSerializer<AdminExportDtoOutputKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'restaurantStatement': 'restaurant_statement',
+    'dailyReport': 'daily_report',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_statement': 'restaurantStatement',
+    'daily_report': 'dailyReport',
   };
 
   @override

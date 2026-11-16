@@ -1,5 +1,5 @@
 import { Inject, Injectable, type OnModuleInit } from '@nestjs/common';
-import { and, asc, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, lte, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -549,6 +549,75 @@ export class FxService implements OnModuleInit {
         if (currency !== base && !rates.some((rate) => rate.currency === currency)) {
           throw new FxRefusedError('rate_missing', `${currency} has no rate`);
         }
+        return toBase(snapshot, amountMinor, currency);
+      },
+    };
+  }
+
+  // Amounts in the base as they stood at a moment, to the nearest base minor
+  // unit (AP §9.10.1, slice 2.20d): an amount of a journal that carries rate
+  // versions converts at its version (one of `versionIds`), any other at the
+  // newest rate of its currency set by `at` in the current base. Refuses a
+  // currency with no such rate (rate_missing).
+  async valueAt(
+    cityId: string,
+    at: Date,
+    versionIds: readonly string[],
+    executor: FxExecutor = this.database.db,
+  ): Promise<{
+    base: string;
+    toBase: (amountMinor: bigint, currency: string, versionId: string | null) => bigint;
+  }> {
+    const base = await this.base(cityId, executor);
+    if (base === null)
+      throw new FxRefusedError('no_base_currency', 'the city has no base currency');
+    const [inForce, versions, decimals] = await Promise.all([
+      executor
+        .selectDistinctOn([rateVersions.currency])
+        .from(rateVersions)
+        .where(
+          and(
+            eq(rateVersions.cityId, cityId),
+            eq(rateVersions.baseEpoch, base.epoch),
+            lte(rateVersions.createdAt, at),
+          ),
+        )
+        .orderBy(asc(rateVersions.currency), desc(rateVersions.id)),
+      versionIds.length === 0
+        ? []
+        : executor
+            .select()
+            .from(rateVersions)
+            .where(and(eq(rateVersions.cityId, cityId), inArray(rateVersions.id, [...versionIds]))),
+      executor.select().from(currencies),
+    ]);
+    const decimalsOf = new Map(decimals.map((row) => [row.code, row.decimals]));
+    const byCurrency = new Map(inForce.map((row) => [row.currency, row]));
+    const byId = new Map(versions.map((row) => [row.id, row]));
+    const plain = { rateVersionId: null, roundingUnitMinor: 1n, roundingMode: 'nearest' as const };
+    const one = { numerator: 1n, denominator: 1n };
+    return {
+      base: base.currency,
+      toBase: (amountMinor, currency, versionId) => {
+        if (currency === base.currency) return amountMinor;
+        const row = versionId === null ? byCurrency.get(currency) : byId.get(versionId);
+        if (!row || row.currency !== currency || row.baseCurrency !== base.currency) {
+          throw new FxRefusedError('rate_missing', `${currency} has no rate by then`);
+        }
+        const snapshot: RateSnapshot = {
+          cityId,
+          baseCurrency: base.currency,
+          takenAt: at,
+          currencies: [
+            { code: base.currency, decimals: decimalsOf.get(base.currency)!, rate: one, ...plain },
+            {
+              code: currency,
+              decimals: decimalsOf.get(currency)!,
+              rate: { numerator: row.rateNumerator, denominator: row.rateDenominator },
+              ...plain,
+            },
+          ],
+        };
         return toBase(snapshot, amountMinor, currency);
       },
     };
