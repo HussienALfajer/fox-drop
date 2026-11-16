@@ -56,13 +56,20 @@ export interface RestaurantPeriodStatement {
 export type PeriodRefusal = 'invalid_period';
 
 // A calendar day written YYYY-MM-DD (2026-02-30 is not one).
-function isDay(day: string): boolean {
+export function isDay(day: string): boolean {
   const at = Date.parse(`${day}T00:00:00Z`);
   return (
     /^\d{4}-\d{2}-\d{2}$/.test(day) &&
     !Number.isNaN(at) &&
     new Date(at).toISOString().startsWith(day)
   );
+}
+
+// Whether a period of business days is one the statement takes: two real
+// days, the last not before the first, at most PERIOD_MAX_DAYS.
+export function periodFits(fromDay: string, toDay: string): boolean {
+  const days = (Date.parse(toDay) - Date.parse(fromDay)) / 86_400_000 + 1;
+  return isDay(fromDay) && isDay(toDay) && days >= 1 && days <= PERIOD_MAX_DAYS;
 }
 
 @Injectable()
@@ -84,10 +91,7 @@ export class MerchantPeriodService {
     fromDay: string,
     toDay: string,
   ): Promise<RestaurantPeriodStatement | PeriodRefusal | null> {
-    const days = (Date.parse(toDay) - Date.parse(fromDay)) / 86_400_000 + 1;
-    if (!isDay(fromDay) || !isDay(toDay) || !(days >= 1 && days <= PERIOD_MAX_DAYS)) {
-      return 'invalid_period';
-    }
+    if (!periodFits(fromDay, toDay)) return 'invalid_period';
     const restaurant = await this.merchants.restaurant(restaurantId);
     if (!restaurant) return null;
     const { cityId } = restaurant;

@@ -118,6 +118,7 @@ export {
 export {
   MerchantPeriodService,
   PERIOD_MAX_DAYS,
+  periodFits,
   type PeriodReceipt,
   type PeriodStatementLine,
   type RestaurantPeriodStatement,

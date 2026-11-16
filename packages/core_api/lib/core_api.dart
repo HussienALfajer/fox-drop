@@ -87,6 +87,7 @@ export 'package:core_api/src/model/admin_emergency_stop_resumed_dto_output.dart'
 export 'package:core_api/src/model/admin_emergency_stop_state_dto_output.dart';
 export 'package:core_api/src/model/admin_emergency_stop_state_dto_output_defaults.dart';
 export 'package:core_api/src/model/admin_emergency_stop_state_dto_output_stop.dart';
+export 'package:core_api/src/model/admin_export_dto_output.dart';
 export 'package:core_api/src/model/admin_faq_dto.dart';
 export 'package:core_api/src/model/admin_faq_dto_items_inner.dart';
 export 'package:core_api/src/model/admin_faq_dto_output.dart';
@@ -235,6 +236,7 @@ export 'package:core_api/src/model/admin_restaurant_settlement_preview_request_d
 export 'package:core_api/src/model/admin_restaurant_settlements_dto_output.dart';
 export 'package:core_api/src/model/admin_restaurant_settlements_dto_output_restaurants_inner.dart';
 export 'package:core_api/src/model/admin_restaurant_settlements_dto_output_restaurants_inner_latest.dart';
+export 'package:core_api/src/model/admin_restaurant_statement_export_dto.dart';
 export 'package:core_api/src/model/admin_restaurant_status_dto_output.dart';
 export 'package:core_api/src/model/admin_restaurant_status_dto_output_pickup_base_currency.dart';
 export 'package:core_api/src/model/admin_restaurants_dto_output.dart';

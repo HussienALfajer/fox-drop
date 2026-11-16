@@ -118,6 +118,9 @@ Serializers _$serializers =
           ..add(AdminEmergencyStopStateDtoOutput.serializer)
           ..add(AdminEmergencyStopStateDtoOutputDefaults.serializer)
           ..add(AdminEmergencyStopStateDtoOutputStop.serializer)
+          ..add(AdminExportDtoOutput.serializer)
+          ..add(AdminExportDtoOutputKindEnum.serializer)
+          ..add(AdminExportDtoOutputStatusEnum.serializer)
           ..add(AdminFaqDto.serializer)
           ..add(AdminFaqDtoItemsInner.serializer)
           ..add(AdminFaqDtoOutput.serializer)
@@ -392,6 +395,7 @@ Serializers _$serializers =
           ..add(
             AdminRestaurantSettlementsDtoOutputSettlementWeekdayEnum.serializer,
           )
+          ..add(AdminRestaurantStatementExportDto.serializer)
           ..add(AdminRestaurantStatusDtoOutput.serializer)
           ..add(AdminRestaurantStatusDtoOutputAccountStatusEnum.serializer)
           ..add(AdminRestaurantStatusDtoOutputHeldPauseSourceEnum.serializer)

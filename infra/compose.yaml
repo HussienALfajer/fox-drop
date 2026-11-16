@@ -200,6 +200,11 @@ services:
     environment:
       <<: [*server-environment, *centrifugo-publish]
       PROCESS_ROLE: worker
+      # Writes the Excel exports to private-docs and removes them after 24
+      # hours (§5.9).
+      STORAGE_URL: http://storage:3900
+      STORAGE_KEY_ID: ${STORAGE_KEY_ID:?}
+      STORAGE_SECRET: ${STORAGE_SECRET:?}
       # Push (architecture §8.1): the Firebase service account's JSON key in
       # base64, a secret of this process only. Empty until the owner sets it:
       # the pushes then wait in the queue and expire (production refuses to

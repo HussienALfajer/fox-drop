@@ -155,8 +155,9 @@ test("the storage's keys reach only the processes that use them (§15)", () => {
       )
       .map(([name]) => name)
       .toSorted();
-  // The server's key reads and writes: the API signs and checks uploads.
-  assert.deepEqual(holders('STORAGE_SECRET'), ['api', 'storage-setup']);
+  // The server's key reads and writes: the API signs and checks uploads and
+  // signs the exports' downloads; the worker writes and removes the exports.
+  assert.deepEqual(holders('STORAGE_SECRET'), ['api', 'storage-setup', 'worker']);
   // The reader key: imgproxy (the nightly copy reads the file on the server).
   assert.deepEqual(holders('STORAGE_READER_SECRET'), ['imgproxy', 'storage-setup']);
   assert.deepEqual(holders('GARAGE_ADMIN_TOKEN'), ['storage', 'storage-setup']);

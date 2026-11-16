@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import {
   CopyObjectCommand,
+  DeleteObjectCommand,
   GetObjectCommand,
   HeadObjectCommand,
   NoSuchKey,
@@ -13,7 +14,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
-import { PUBLIC_MEDIA_BUCKET } from '../../storage/storage-setup.js';
+import { PRIVATE_DOCS_BUCKET, PUBLIC_MEDIA_BUCKET } from '../../storage/storage-setup.js';
 import { type ImageType, type UploadPurpose, uploads } from './schema.js';
 
 // Architecture §5.8: the largest image the panel may upload. A phone photo is
@@ -97,8 +98,9 @@ export function hasImageSignature(type: ImageType, head: Uint8Array): boolean {
 interface Storage {
   // Reads and checks objects on the environment's network.
   internal: S3Client;
-  // Signs the panel's uploads for its own origin, whose /public-media path
-  // nginx (and Vite in development) forwards to the storage.
+  // Signs the panel's uploads and downloads for its own origin, whose
+  // /public-media/incoming/ (PUT) and /private-docs/exports/ (GET) paths
+  // nginx (and Vite in development) forward to the storage.
   uploads: S3Client;
 }
 
@@ -229,6 +231,50 @@ export class FilesService {
     if (row.linkedAt !== null) return { key, alreadyLinked: true };
     await tx.update(uploads).set({ linkedAt: now }).where(eq(uploads.id, uploadId));
     return { key, alreadyLinked: false };
+  }
+
+  // Architecture §5.8, §5.9: a file the server writes to private-docs (an
+  // Excel export), never public.
+  async putPrivate(key: string, body: Uint8Array, contentType: string): Promise<void> {
+    await this.store.internal.send(
+      new PutObjectCommand({
+        Bucket: PRIVATE_DOCS_BUCKET,
+        Key: key,
+        Body: body,
+        ContentType: contentType,
+      }),
+    );
+  }
+
+  // A short signed GET of a private file on the panel's origin, saved as
+  // `fileName` (RFC 6266, with an ASCII fallback).
+  async privateDownloadUrl(
+    key: string,
+    fileName: string,
+    seconds: number,
+    now = new Date(),
+  ): Promise<string> {
+    const encoded = encodeURIComponent(fileName).replace(
+      /['()*]/g,
+      (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`,
+    );
+    const extension = /\.[a-z0-9]+$/i.exec(fileName)?.[0] ?? '';
+    return getSignedUrl(
+      this.store.uploads,
+      new GetObjectCommand({
+        Bucket: PRIVATE_DOCS_BUCKET,
+        Key: key,
+        ResponseContentDisposition: `attachment; filename="download${extension}"; filename*=UTF-8''${encoded}`,
+      }),
+      { expiresIn: seconds, signingDate: now },
+    );
+  }
+
+  // Removes a private file; one already gone is fine.
+  async deletePrivate(key: string): Promise<void> {
+    await this.store.internal.send(
+      new DeleteObjectCommand({ Bucket: PRIVATE_DOCS_BUCKET, Key: key }),
+    );
   }
 
   private async check(key: string, type: ImageType, size: number): Promise<void> {

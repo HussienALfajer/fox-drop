@@ -86,6 +86,7 @@ import 'package:core_api/src/model/admin_emergency_stop_resumed_dto_output.dart'
 import 'package:core_api/src/model/admin_emergency_stop_state_dto_output.dart';
 import 'package:core_api/src/model/admin_emergency_stop_state_dto_output_defaults.dart';
 import 'package:core_api/src/model/admin_emergency_stop_state_dto_output_stop.dart';
+import 'package:core_api/src/model/admin_export_dto_output.dart';
 import 'package:core_api/src/model/admin_faq_dto.dart';
 import 'package:core_api/src/model/admin_faq_dto_items_inner.dart';
 import 'package:core_api/src/model/admin_faq_dto_output.dart';
@@ -234,6 +235,7 @@ import 'package:core_api/src/model/admin_restaurant_settlement_preview_request_d
 import 'package:core_api/src/model/admin_restaurant_settlements_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_settlements_dto_output_restaurants_inner.dart';
 import 'package:core_api/src/model/admin_restaurant_settlements_dto_output_restaurants_inner_latest.dart';
+import 'package:core_api/src/model/admin_restaurant_statement_export_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_status_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_status_dto_output_pickup_base_currency.dart';
 import 'package:core_api/src/model/admin_restaurants_dto_output.dart';
@@ -685,6 +687,7 @@ part 'serializers.g.dart';
   AdminEmergencyStopStateDtoOutput,
   AdminEmergencyStopStateDtoOutputDefaults,
   AdminEmergencyStopStateDtoOutputStop,
+  AdminExportDtoOutput,
   AdminFaqDto,
   AdminFaqDtoItemsInner,
   AdminFaqDtoOutput,
@@ -833,6 +836,7 @@ part 'serializers.g.dart';
   AdminRestaurantSettlementsDtoOutput,
   AdminRestaurantSettlementsDtoOutputRestaurantsInner,
   AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatest,
+  AdminRestaurantStatementExportDto,
   AdminRestaurantStatusDtoOutput,
   AdminRestaurantStatusDtoOutputPickupBaseCurrency,
   AdminRestaurantsDtoOutput,

@@ -519,6 +519,13 @@
       "when": 1794815601969,
       "tag": "0073_cashdesk_field_visit",
       "breakpoints": true
+    },
+    {
+      "idx": 74,
+      "version": "7",
+      "when": 1794827540504,
+      "tag": "0074_reporting_exports",
+      "breakpoints": true
     }
   ]
 }

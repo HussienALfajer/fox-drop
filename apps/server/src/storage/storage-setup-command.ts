@@ -6,7 +6,7 @@ import { setUpStorage, storageSetupFromEnvironment } from './storage-setup.js';
 const logger = createLogger();
 try {
   await setUpStorage(storageSetupFromEnvironment());
-  logger.info('storage set up: the layout, the keys and the public-media bucket');
+  logger.info('storage set up: the layout, the keys and the public-media and private-docs buckets');
 } catch (error) {
   logger.fatal({ err: error }, 'storage setup failed');
   process.exit(1);
