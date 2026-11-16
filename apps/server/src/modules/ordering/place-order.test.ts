@@ -784,6 +784,8 @@ describe("the order's reads, for the screens and the polling fallback (CU §4.3,
       ],
       currency: 'TRY',
       itemsValue: '12000',
+      // RA §8.4, R10: a cashier gets no owner lines.
+      owner: null,
       // No captain before the search starts (RA §8.1).
       captainTrack: null,
       captain: null,
