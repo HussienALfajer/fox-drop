@@ -194,7 +194,7 @@ String codeRefusalText(AppLocalizations l10n, QuoteProblem problem) {
     CodeRefusal.usedBefore => l10n.customerCodeUsedBefore,
     CodeRefusal.usesEnded => l10n.customerCodeUsesEnded,
     CodeRefusal.budgetReached => l10n.customerCodeBudgetReached,
-    // unknown_code, and a reason this version does not know.
+    // unknown_code, and a problem without a refusal.
     _ => l10n.customerCodeUnknown,
   };
 }

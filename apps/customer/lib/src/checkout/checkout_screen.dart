@@ -513,7 +513,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       return [
         ListTile(
           key: const Key('code-applied'),
-          title: Text(code),
+          // The server's form of the code once the quote names it.
+          title: Text(ref.watch(quoteProvider).value?.promoCode?.code ?? code),
           trailing: TextButton(
             key: const Key('code-remove'),
             onPressed: enabled ? () => carts.setCode(null) : null,
@@ -530,6 +531,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             key: const Key('code-field'),
             controller: _code,
             enabled: enabled,
+            maxLength: maxCodeLength,
+            autocorrect: false,
+            enableSuggestions: false,
+            textCapitalization: TextCapitalization.characters,
             decoration: InputDecoration(labelText: l10n.customerCodeEnter),
           ),
           trailing: TextButton(

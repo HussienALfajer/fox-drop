@@ -1015,7 +1015,8 @@ void main() {
         app.bodyOf('/v1/customer/quote', index: quotes - 1)['code'],
         'fox10',
       );
-      expect(find.text('fox10'), findsOneWidget);
+      // The applied code in the server's form.
+      expect(find.text('FOX10'), findsOneWidget);
       expect(find.text('إزالة'), findsOneWidget);
       expect(find.text('الخصم (FOX10)'), findsOneWidget);
       expect(find.text('30 ₺'), findsOneWidget);

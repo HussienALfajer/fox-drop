@@ -249,12 +249,13 @@ class CartController extends AsyncNotifier<CartState> {
     }
   });
 
-  /// «تطبيق» (CU §10.4): the code for the order, trimmed; the server checks
-  /// it with every quote. Null is «إزالة».
+  /// «تطبيق» (CU §10.4): the code for the order, trimmed and with Western
+  /// digits (AP §4.7); the server checks it with every quote. Null is
+  /// «إزالة».
   Future<void> setCode(String? code) async {
     final cart = await _fresh();
     if (cart == null) return;
-    final trimmed = code?.trim();
+    final trimmed = code == null ? null : _westernDigits(code).trim();
     await _save(
       cart.restaurantId,
       cart.restaurantName,
@@ -310,6 +311,21 @@ class CartController extends AsyncNotifier<CartState> {
     await _store.write(_cartKey, jsonEncode(cart.toJson()));
   }
 }
+
+/// [text] with Arabic-Indic and Persian digits as Western ones (AP §4.7),
+/// every other character kept.
+String _westernDigits(String text) => String.fromCharCodes(
+  text.runes.map(
+    (c) => c >= 0x0660 && c <= 0x0669
+        ? c - 0x0660 + 0x30
+        : c >= 0x06F0 && c <= 0x06F9
+        ? c - 0x06F0 + 0x30
+        : c,
+  ),
+);
+
+/// The longest code the quote takes (the server's `promoCodeInput`).
+const maxCodeLength = 40;
 
 /// A line's quantity is 1 to 20 (CU §9.4, fixed).
 const maxQuantity = 20;

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:core_auth/testing.dart';
 import 'package:core_api/core_api.dart';
+import 'package:customer/src/cart/cart.dart';
 import 'package:customer/src/cart/item_choice.dart';
 import 'package:customer/src/router.dart';
 import 'package:flutter/material.dart';
@@ -129,6 +130,43 @@ void main() {
     await tester.pumpAndSettle();
     final stored = jsonDecode(app.device.values['cart']!) as Map;
     expect(stored['restaurantId'], nourId);
+  });
+
+  testWidgets('the code stays with the cart until a new cart (CU §10.4)', (
+    tester,
+  ) async {
+    final app = await browsingApp(tester);
+    final carts = app.container.read(cartProvider.notifier);
+    String? code() => app.container.read(cartProvider).value?.cart?.code;
+    CartLine line(String note) => CartLine(
+      itemId: shawarmaId,
+      name: 'شاورما دجاج',
+      optionIds: const [],
+      optionNames: const [],
+      quantity: 1,
+      note: note,
+      unitPrice: '6500',
+      currency: 'TRY',
+    );
+
+    await carts.startNew(shamId, 'مطعم الشام', line('a'));
+    await carts.setCode(' FOX٢٠ ');
+    expect(code(), 'FOX20');
+    await carts.add(shamId, 'مطعم الشام', line('b'));
+    await carts.setQuantity(0, 3);
+    await carts.acceptPrice(line('a').key, '7000');
+    await carts.remove(1);
+    expect(code(), 'FOX20');
+    expect(jsonDecode(app.device.values['cart']!)['code'], 'FOX20');
+
+    await carts.startNew(shamId, 'مطعم الشام', line('a'));
+    expect(code(), isNull);
+    await carts.setCode('FOX20');
+    await carts.replaceWith(shamId, 'مطعم الشام', [line('a')]);
+    expect(code(), isNull);
+    await carts.setCode('FOX20');
+    await carts.setCode('  ');
+    expect(code(), isNull);
   });
 
   testWidgets('a cart older than 24 hours empties', (tester) async {
