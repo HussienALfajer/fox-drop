@@ -221,6 +221,13 @@ import 'package:core_api/src/model/admin_restaurant_images_dto_output_categories
 import 'package:core_api/src/model/admin_restaurant_max_active_orders_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_pause_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_pickup_currencies_dto.dart';
+import 'package:core_api/src/model/admin_restaurant_receipt_dto_output.dart';
+import 'package:core_api/src/model/admin_restaurant_receipt_dto_output_lines_inner.dart';
+import 'package:core_api/src/model/admin_restaurant_settle_dto.dart';
+import 'package:core_api/src/model/admin_restaurant_settle_dto_lines_inner.dart';
+import 'package:core_api/src/model/admin_restaurant_settlement_preview_dto_output.dart';
+import 'package:core_api/src/model/admin_restaurant_settlement_preview_dto_output_lines_inner.dart';
+import 'package:core_api/src/model/admin_restaurant_settlement_preview_request_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_settlements_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_settlements_dto_output_restaurants_inner.dart';
 import 'package:core_api/src/model/admin_restaurant_settlements_dto_output_restaurants_inner_latest.dart';
@@ -791,6 +798,13 @@ part 'serializers.g.dart';
   AdminRestaurantMaxActiveOrdersDto,
   AdminRestaurantPauseDto,
   AdminRestaurantPickupCurrenciesDto,
+  AdminRestaurantReceiptDtoOutput,
+  AdminRestaurantReceiptDtoOutputLinesInner,
+  AdminRestaurantSettleDto,
+  AdminRestaurantSettleDtoLinesInner,
+  AdminRestaurantSettlementPreviewDtoOutput,
+  AdminRestaurantSettlementPreviewDtoOutputLinesInner,
+  AdminRestaurantSettlementPreviewRequestDto,
   AdminRestaurantSettlementsDtoOutput,
   AdminRestaurantSettlementsDtoOutputRestaurantsInner,
   AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatest,
@@ -1248,6 +1262,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminRestaurantReceiptDtoOutputLinesInner),
+            ]),
+            () => ListBuilder<AdminRestaurantReceiptDtoOutputLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(CustomerRestaurantPageDtoOutputMenuInner),
             ]),
             () => ListBuilder<CustomerRestaurantPageDtoOutputMenuInner>(),
@@ -1381,6 +1401,12 @@ Serializers serializers =
                 ListBuilder<
                   CustomerRestaurantPageDtoOutputMenuInnerItemsInnerOptionGroupsInnerOptionsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminRestaurantSettleDtoLinesInner),
+            ]),
+            () => ListBuilder<AdminRestaurantSettleDtoLinesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -1850,6 +1876,15 @@ Serializers serializers =
               FullType(AdminHandInDtoConversionsInner),
             ]),
             () => ListBuilder<AdminHandInDtoConversionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminRestaurantSettlementPreviewDtoOutputLinesInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminRestaurantSettlementPreviewDtoOutputLinesInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

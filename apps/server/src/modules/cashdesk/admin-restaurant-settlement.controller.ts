@@ -1,14 +1,34 @@
-import { Get, HttpStatus, NotFoundException, Param, Query } from '@nestjs/common';
+import {
+  Body,
+  Get,
+  HttpCode,
+  HttpStatus,
+  NotFoundException,
+  Param,
+  Post,
+  Query,
+  Req,
+} from '@nestjs/common';
+import type { FastifyRequest } from 'fastify';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
-import { RequirePermission } from '../../http/access.js';
+import { CurrentAdminSession, RequirePermission } from '../../http/access.js';
+import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { AdminController } from '../../http/route-groups.js';
+import type { AdminSession } from '../identity/index.js';
+import { deskUser, refusalsAsHttp } from './desk-http.js';
+import {
+  type MerchantReceipt,
+  MerchantSettlementService,
+  type MerchantSettlementPreview,
+} from './merchant-settlement.service.js';
 import {
   MerchantStatementsService,
   type MerchantStatementView,
 } from './merchant-statements.service.js';
 import { merchantExceptionCauses, merchantStatementLineKinds } from './schema.js';
 
+const minor = z.string().regex(/^\d{1,18}$/);
 const signedMinor = z.string().regex(/^-?\d{1,18}$/);
 const currency = z.string().regex(/^[A-Z]{3}$/);
 const weekday = z.enum([
@@ -93,6 +113,110 @@ class AdminMerchantStatementDto extends createZodDto(
   }),
 ) {}
 
+const rates = z
+  .array(z.object({ currency, rateVersionId: z.uuid() }))
+  .max(10)
+  .describe('The rate version of each currency but the base, as the quote gave it.');
+
+class AdminRestaurantSettlementPreviewRequestDto extends createZodDto(
+  z.object({
+    restaurantId: z.uuid(),
+    lines: z
+      .array(z.object({ currency, amount: minor }))
+      .max(10)
+      .describe('The cash per currency; none to read the balance alone.'),
+  }),
+) {}
+
+class AdminRestaurantSettlementPreviewDto extends createZodDto(
+  z.object({
+    restaurantId: z.uuid(),
+    restaurantName: z.string(),
+    cityId: z.uuid(),
+    currency,
+    due: signedMinor.describe('+ the restaurant owes, − the platform owes it.'),
+    lines: z.array(
+      z.object({
+        currency,
+        amount: minor,
+        base: minor.describe('The value in the base at the current rate.'),
+        rates,
+        unit: z.object({ from: currency, to: currency, value: z.string() }).nullable(),
+      }),
+    ),
+    total: minor,
+    remaining: signedMinor.describe('What stays on the account, of the sign of due.'),
+  }),
+) {}
+
+class AdminRestaurantSettleDto extends createZodDto(
+  z.object({
+    restaurantId: z.uuid(),
+    due: signedMinor.describe('The balance the screen showed.'),
+    lines: z
+      .array(z.object({ currency, amount: minor, base: minor, rates }))
+      .min(1)
+      .max(10),
+  }),
+) {}
+
+class AdminRestaurantReceiptParamsDto extends createZodDto(z.object({ receiptId: z.uuid() })) {}
+
+class AdminRestaurantReceiptDto extends createZodDto(
+  z.object({
+    id: z.uuid(),
+    cityId: z.uuid(),
+    number: z.string(),
+    type: z.enum(['merchant_settlement', 'merchant_payout']),
+    sessionId: z.uuid(),
+    method: z.enum(['office']),
+    cashierId: z.uuid(),
+    cashierName: z.string().nullable(),
+    restaurantId: z.uuid(),
+    restaurantName: z.string(),
+    currency,
+    dueBefore: signedMinor,
+    total: minor,
+    dueAfter: signedMinor,
+    createdAt: z.iso.datetime(),
+    lines: z.array(z.object({ currency, amount: minor, base: minor })),
+  }),
+) {}
+
+function previewBody(found: MerchantSettlementPreview) {
+  return {
+    restaurantId: found.restaurantId,
+    restaurantName: found.restaurantName,
+    cityId: found.cityId,
+    currency: found.currency,
+    due: found.due.toString(),
+    lines: found.lines.map((line) => ({
+      currency: line.currency,
+      amount: line.amount.toString(),
+      base: line.base.toString(),
+      rates: line.rates,
+      unit: line.unit,
+    })),
+    total: found.total.toString(),
+    remaining: found.remaining.toString(),
+  };
+}
+
+function receiptBody(found: MerchantReceipt) {
+  return {
+    ...found,
+    dueBefore: found.dueBefore.toString(),
+    total: found.total.toString(),
+    dueAfter: found.dueAfter.toString(),
+    createdAt: found.createdAt.toISOString(),
+    lines: found.lines.map((line) => ({
+      currency: line.currency,
+      amount: line.amount.toString(),
+      base: line.base.toString(),
+    })),
+  };
+}
+
 function statementBody(found: MerchantStatementView) {
   return {
     id: found.id,
@@ -151,12 +275,80 @@ function statementBody(found: MerchantStatementView) {
   };
 }
 
-// «تسوية المطاعم» (AP §9.10.3 tab 3, AP §8.7; slice 2.19a), read-only until
-// the settlement (2.19b): the restaurants with a balance and their weekly
-// statements. Money travels as strings of minor units.
+// «تسوية المطاعم» (AP §9.10.3 tab 3, AP §8.7; slices 2.19a, 2.19b): the
+// restaurants with a balance, their weekly statements, and the settlement at
+// the office with its receipt. Money travels as strings of minor units.
 @AdminController('cash-desk')
 export class AdminRestaurantSettlementController {
-  constructor(private readonly statements: MerchantStatementsService) {}
+  constructor(
+    private readonly statements: MerchantStatementsService,
+    private readonly settlements: MerchantSettlementService,
+  ) {}
+
+  // What the screen shows before the confirmation: the balance, each
+  // currency's value in the base at the current rate and what stays due. A
+  // read, so no Idempotency-Key. 404 unknown_restaurant; 409 rate_missing.
+  @Post('restaurant-settlements/preview')
+  @RequirePermission('cash_desk.record')
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminRestaurantSettlementPreviewDto })
+  preview(@Body() body: AdminRestaurantSettlementPreviewRequestDto) {
+    return refusalsAsHttp(async () =>
+      previewBody(
+        await this.settlements.preview(
+          body.restaurantId,
+          body.lines.map((line) => ({ currency: line.currency, amount: BigInt(line.amount) })),
+        ),
+      ),
+    );
+  }
+
+  // «تأكيد وإصدار الإيصال» (AP §8.7, RA §12.4): the receipt. Refused 409
+  // above_balance, balance_changed (the balance moved since the preview),
+  // rate_changed, nothing_due, drawer_short (a payout above the drawer's
+  // cash), no_open_session; 404 unknown_restaurant.
+  @Post('restaurant-settlements')
+  @RequirePermission('cash_desk.record')
+  @Idempotent()
+  @ZodResponse({ status: 201, type: AdminRestaurantReceiptDto })
+  settle(
+    @Body() body: AdminRestaurantSettleDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(async () =>
+      receiptBody(
+        await this.settlements.settle(
+          deskUser(session, request),
+          {
+            restaurantId: body.restaurantId,
+            due: BigInt(body.due),
+            lines: body.lines.map((line) => ({
+              currency: line.currency,
+              amount: BigInt(line.amount),
+              base: BigInt(line.base),
+              rates: line.rates,
+            })),
+            idempotencyKey,
+          },
+          new Date(),
+        ),
+      ),
+    );
+  }
+
+  // A restaurant's receipt, to print on 80 mm or A4.
+  @Get('restaurant-receipts/:receiptId')
+  @RequirePermission('cash_desk.record')
+  @ZodResponse({ status: 200, type: AdminRestaurantReceiptDto })
+  async receipt(@Param() params: AdminRestaurantReceiptParamsDto) {
+    const found = await this.settlements.receipt(params.receiptId);
+    if (!found) {
+      throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: 'unknown_receipt' });
+    }
+    return receiptBody(found);
+  }
 
   @Get('restaurants')
   @RequirePermission('cash_desk.record')

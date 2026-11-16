@@ -11,6 +11,7 @@ import { MerchantsService } from '../merchants/index.js';
 import { merchantEntryCause, OrdersService } from '../ordering/index.js';
 import { PushQueue } from '../notifications/index.js';
 import { SettingsService } from '../settings/index.js';
+import type { Tx } from './cashdesk.service.js';
 import { payoutCycle } from './earnings.js';
 import {
   buildStatement,
@@ -31,6 +32,15 @@ export const STATEMENT_OVERLAP_MS = 60 * 60_000;
 const DAY_MS = 24 * 60 * 60_000;
 // The statements read back to find the oldest one still unpaid: a year.
 const OVERDUE_LOOKBACK = 52;
+
+// A restaurant's account, held while its statement is taken or a payment
+// is recorded (slice 2.19b), so a payment is never half in a statement and
+// two desks never settle one balance twice.
+export async function lockRestaurantAccount(tx: Tx, restaurantId: string): Promise<void> {
+  await tx.execute(
+    sql`SELECT pg_advisory_xact_lock(hashtext(${`merchant-statement:${restaurantId}`}))`,
+  );
+}
 
 export interface MerchantStatement {
   id: string;
@@ -178,9 +188,7 @@ export class MerchantStatementsService {
   ): Promise<void> {
     const known = notify ? await this.knownCurrencies() : null;
     await this.database.db.transaction(async (tx) => {
-      await tx.execute(
-        sql`SELECT pg_advisory_xact_lock(hashtext(${`merchant-statement:${restaurant.id}`}))`,
-      );
+      await lockRestaurantAccount(tx, restaurant.id);
       const [previous] = await tx
         .select({
           cutoff: merchantStatements.cutoff,

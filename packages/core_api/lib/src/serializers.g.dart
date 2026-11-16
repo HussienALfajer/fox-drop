@@ -356,6 +356,15 @@ Serializers _$serializers =
           ..add(AdminRestaurantMaxActiveOrdersDto.serializer)
           ..add(AdminRestaurantPauseDto.serializer)
           ..add(AdminRestaurantPickupCurrenciesDto.serializer)
+          ..add(AdminRestaurantReceiptDtoOutput.serializer)
+          ..add(AdminRestaurantReceiptDtoOutputLinesInner.serializer)
+          ..add(AdminRestaurantReceiptDtoOutputMethodEnum.serializer)
+          ..add(AdminRestaurantReceiptDtoOutputTypeEnum.serializer)
+          ..add(AdminRestaurantSettleDto.serializer)
+          ..add(AdminRestaurantSettleDtoLinesInner.serializer)
+          ..add(AdminRestaurantSettlementPreviewDtoOutput.serializer)
+          ..add(AdminRestaurantSettlementPreviewDtoOutputLinesInner.serializer)
+          ..add(AdminRestaurantSettlementPreviewRequestDto.serializer)
           ..add(AdminRestaurantSettlementsDtoOutput.serializer)
           ..add(AdminRestaurantSettlementsDtoOutputRestaurantsInner.serializer)
           ..add(
@@ -1159,6 +1168,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminOpenDrawerSessionDtoFloatsInner),
+            ]),
+            () => ListBuilder<AdminOpenDrawerSessionDtoFloatsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminOrderCardDtoOutputOrderAlertsEnum),
             ]),
             () => ListBuilder<AdminOrderCardDtoOutputOrderAlertsEnum>(),
@@ -1459,6 +1474,29 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminRestaurantReceiptDtoOutputLinesInner),
+            ]),
+            () => ListBuilder<AdminRestaurantReceiptDtoOutputLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminRestaurantSettleDtoLinesInner),
+            ]),
+            () => ListBuilder<AdminRestaurantSettleDtoLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminRestaurantSettlementPreviewDtoOutputLinesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminRestaurantSettlementPreviewDtoOutputLinesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(
                 AdminRestaurantSettlementsDtoOutputRestaurantsInner,
               ),
@@ -1491,6 +1529,12 @@ Serializers _$serializers =
               const FullType(AdminSettleDtoCustodyInner),
             ]),
             () => ListBuilder<AdminSettleDtoCustodyInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminSettleDtoPayoutRatesInner),
+            ]),
+            () => ListBuilder<AdminSettleDtoPayoutRatesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -1563,6 +1607,13 @@ Serializers _$serializers =
               const FullType(AdminDeskCustodyDtoOutputUsage),
             ]),
             () => ListBuilder<AdminDeskCustodyDtoOutputUsage>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminSettlementPreviewDtoOutputPayoutRatesInner),
+            ]),
+            () =>
+                ListBuilder<AdminSettlementPreviewDtoOutputPayoutRatesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
