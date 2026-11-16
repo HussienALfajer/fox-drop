@@ -371,12 +371,23 @@ describe('the restaurant settlement at the office', () => {
     ]);
     expect(receipt).toMatchObject({ total: 90_000n, dueAfter: 10_000n });
     expect(await due(id)).toBe(10_000n);
+    // The dollars meet the lira through platform.fx_rounding; the ledger
+    // refuses such a journal without the rate version.
     const { rows } = await sql.query(
-      `SELECT j.rates FROM cashdesk.receipt_lines l JOIN ledger.journals j ON j.id = l.journal_id
-       WHERE l.receipt_id = $1 AND l.currency = 'USD'`,
+      "SELECT journal_id FROM cashdesk.receipt_lines WHERE receipt_id = $1 AND currency = 'USD'",
       [receipt.id],
     );
-    expect(rows[0].rates).toEqual([{ currency: 'USD', rateVersionId: expect.any(String) }]);
+    const [journal] = await ledger.journalLines([rows[0].journal_id]);
+    expect(
+      journal?.entries.map(({ purpose, currency, amount }) => [purpose, currency, amount]),
+    ).toEqual(
+      expect.arrayContaining([
+        ['merchant.account', 'TRY', -80_000n],
+        ['platform.cash', 'USD', 2_000n],
+        ['platform.fx_rounding', 'TRY', 80_000n],
+        ['platform.fx_rounding', 'USD', -2_000n],
+      ]),
+    );
     expect((await receiptPushes(id))[0].body).toBe(
       `إيصال ${receipt.number}: استلمنا منك 100 ₺ + 20 $`,
     );
