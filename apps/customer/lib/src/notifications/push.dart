@@ -49,6 +49,8 @@ String? pushTargetPath(Map<String, String> data) => switch (data) {
     '/orders/${Uri.encodeComponent(id)}',
   // CU §14 #19: «الخدمة عادت».
   {'target': 'home'} => '/',
+  // CU §14 #23: «أُعيد الكود {الكود} إلى أكوادك».
+  {'target': 'codes'} => '/codes',
   _ => null,
 };
 

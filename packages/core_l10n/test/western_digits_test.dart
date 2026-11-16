@@ -72,6 +72,7 @@ void main() {
     expect(l10n.weekdayName(0), 'الأحد');
     expect(l10n.weekdayName(6), 'السبت');
     expect(l10n.durationMinutes(12), '12 د');
+    expect(l10n.customerCodeUsesLeft(12), 'متبقٍ لك: 12');
     expect(l10n.durationSeconds(45), '45 ث');
     expect(
       l10n.formatCountdown(const Duration(minutes: 6, seconds: 59)),

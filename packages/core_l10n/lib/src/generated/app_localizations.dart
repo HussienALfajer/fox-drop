@@ -1288,6 +1288,78 @@ abstract class AppLocalizations {
   /// **'طلبك يحمل الكود {current}. هل تستبدله بالكود {code}؟'**
   String customerCodeReplaceAsk(String current, String code);
 
+  /// «أكوادي» (CU §12.4, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'أكوادي'**
+  String get customerMyCodesTitle;
+
+  /// The codes the customer can use (CU §12.4, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'متاحة'**
+  String get customerCodesTabAvailable;
+
+  /// The codes used or expired in the last 30 days (CU §12.4, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'منتهية'**
+  String get customerCodesTabEnded;
+
+  /// An empty tab of «أكوادي» (our words, to confirm with the owner).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد أكواد هنا الآن'**
+  String get customerCodesEmpty;
+
+  /// «أكوادي» before a delivery point is known: the codes are the city's (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'حدّد موقعك لعرض أكوادك'**
+  String get customerCodesNoPoint;
+
+  /// The restaurants a code works with (CU §12.4; our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'في: {names}'**
+  String customerCodeRestaurants(String names);
+
+  /// The zones a code works in (CU §12.4; our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'في مناطق: {names}'**
+  String customerCodeZones(String names);
+
+  /// A code's hours of the day on the city clock (CU §12.4; our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'من {from} إلى {to}'**
+  String customerCodeHours(String from, String to);
+
+  /// The uses left of a code (CU §12.4; our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'متبقٍ لك: {count}'**
+  String customerCodeUsesLeft(int count);
+
+  /// Opens the code's restaurant, or home (CU §12.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'استخدم'**
+  String get customerCodeUse;
+
+  /// A code used up, in «منتهية» (CU §12.4; our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'استُخدم {date}'**
+  String customerCodeUsedOn(String date);
+
+  /// A code that ended, in «منتهية» (CU §12.4; our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهى {date}'**
+  String customerCodeExpiredOn(String date);
+
   /// Confirms replacing the applied code (CU §10.4; our words).
   ///
   /// In ar, this message translates to:

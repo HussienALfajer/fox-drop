@@ -9,6 +9,7 @@ import 'blocked_screen.dart';
 import 'browsing/restaurant_screen.dart';
 import 'cart/cart_screen.dart';
 import 'checkout/checkout_screen.dart';
+import 'codes/my_codes_screen.dart';
 import 'content.dart';
 import 'home_screen.dart';
 import 'not_found_screen.dart';
@@ -113,6 +114,15 @@ final routerProvider = Provider<GoRouter>((ref) {
             ? null
             : signInFrom('/notifications'),
         builder: (context, state) => const NotificationsScreen(),
+      ),
+      // CU §12.4 «أكوادي»: the account's, so a guest signs in first.
+      GoRoute(
+        path: '/codes',
+        redirect: (context, state) =>
+            ref.read(customerAuth.session).value is SignedIn
+            ? null
+            : signInFrom('/codes'),
+        builder: (context, state) => const MyCodesScreen(),
       ),
       GoRoute(
         path: '/checkout',

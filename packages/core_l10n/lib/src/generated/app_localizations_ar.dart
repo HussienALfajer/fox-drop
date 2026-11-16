@@ -723,6 +723,54 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get customerMyCodesTitle => 'أكوادي';
+
+  @override
+  String get customerCodesTabAvailable => 'متاحة';
+
+  @override
+  String get customerCodesTabEnded => 'منتهية';
+
+  @override
+  String get customerCodesEmpty => 'لا توجد أكواد هنا الآن';
+
+  @override
+  String get customerCodesNoPoint => 'حدّد موقعك لعرض أكوادك';
+
+  @override
+  String customerCodeRestaurants(String names) {
+    return 'في: $names';
+  }
+
+  @override
+  String customerCodeZones(String names) {
+    return 'في مناطق: $names';
+  }
+
+  @override
+  String customerCodeHours(String from, String to) {
+    return 'من $from إلى $to';
+  }
+
+  @override
+  String customerCodeUsesLeft(int count) {
+    return 'متبقٍ لك: $count';
+  }
+
+  @override
+  String get customerCodeUse => 'استخدم';
+
+  @override
+  String customerCodeUsedOn(String date) {
+    return 'استُخدم $date';
+  }
+
+  @override
+  String customerCodeExpiredOn(String date) {
+    return 'انتهى $date';
+  }
+
+  @override
   String get customerCodeReplace => 'استبدال';
 
   @override
