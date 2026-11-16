@@ -11,7 +11,7 @@ Slice 2.21a, «أكواد الخصم» in the server and the panel (`docs/roadma
 - **Branch:** `feat/promo-codes-panel`.
 - **Plan:**
   - [x] The `marketing` module in the server: `marketing.promo_codes` with its restaurants and zones, the migration and grants, the service and its field rules, the routes (list, create one, generate a batch, edit, pause, resume) with the audit, the route table, the OpenAPI document and the clients.
-  - [ ] «أكواد الخصم» in the panel: the list with its columns (uses against the limit and cost to date read 0 until 2.21b holds uses), the create and edit form, the batch, pause and resume, by permission.
+  - [x] «أكواد الخصم» in the panel: the list with its columns (uses against the limit and cost to date read 0 until 2.21b holds uses), the create and edit form, the batch, pause and resume, by permission.
   - [ ] Review, then hand over to 2.21b.
 
 ### Owner decisions for 2.21 (2026-11-16)
