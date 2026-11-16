@@ -4,16 +4,25 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.21c, the code in the customer app (`docs/roadmap.md`, Phase 2, Money; the third of 2.21a–d).
+Slice 2.21d, picking and suggesting codes (`docs/roadmap.md`, Phase 2, Money; the last of 2.21a–d).
 
-- **Roadmap line:** 2.21c The code in the customer app: «أدخل الكود» with «تطبيق» and «إزالة», the refusal messages of CU Appendix C, the warning «قيمة الكود أكبر من قيمة الأصناف، ولا يُستعاد الفرق», the discount line «الخصم» with the code in checkout and the order, and a code that stopped working between quote and confirmation (CU §10.4, §10.6–10.7). The owner uses a code in an order, delivers it and the entries match AP §8.4's example.
-- **Specs:** CU §10.4, §10.6–10.7, CU Appendix C «Code refusals» (`docs/product/v1/customer-app/10-cart-and-checkout.md`, `appendix-c-reason-lists-and-customer-facing-texts.md`), CU §11 (the order's money lines); `apps/customer/CLAUDE.md`, `packages/core_l10n/CLAUDE.md`. The server is done (2.21b): the quote and the order command take `code`; the quote answers `promoCode` (`code`, `kind`, `discount`, `fixedAmountAboveItems`) or the problem `promo_code` with its `refusal` and, for `below_minimum`, the missing `amount`; the customer's order answers `promoCode` beside `money.discount`.
-- **Branch:** `feat/promo-codes-app`.
-- **Plan** (one commit per step):
-  - [ ] Checkout: «أدخل الكود» with «تطبيق» and «إزالة», the code kept with the cart and sent with every quote and the order command, the discount line «الخصم» with the code, and «قيمة الكود أكبر من قيمة الأصناف، ولا يُستعاد الفرق» before confirming.
-  - [ ] The refusals of CU Appendix C (`refusal` to its text, «أضف {المبلغ} لاستخدام هذا الكود» with the amount), a refused code blocking the order until removed, and a code that stopped working between quote and confirmation (`409` with the new quote).
-  - [ ] The order screen's «الخصم» line with the code.
-  - [ ] Review, then hand over to 2.21d.
+- **Roadmap line:** 2.21d Picking and suggesting codes, in the server, the customer app and the panel: «الأكواد المتاحة لك», the suggestion of the code with the largest discount on the cart (never applied by itself), replacing a code after a confirmation, the visible codes in «أكوادي» with «منتهية» (personal codes come with 2.22), «أُعيد الكود {الكود} إلى أكوادك», and the code report (orders, customers, cost, new customers acquired) with pause, resume and extend from it (AP §9.11.1, CU §10.4, §12.4, U11, Q19). The customer sees the suggestion and applies it; the owner reads the code's report.
+- **Specs:** AP §9.11.1 (`docs/product/v1/admin-panel/09-modules/11-marketing.md`), CU §10.4 and §12.4 (`docs/product/v1/customer-app/10-cart-and-checkout.md`, `12-after-the-order.md`), CU §14 (the push of a returned code), U11, Q19; `apps/server/CLAUDE.md`, `apps/admin/CLAUDE.md`, `apps/customer/CLAUDE.md`, `packages/core_l10n/CLAUDE.md`. The code is already in the cart (`Cart.code`), the quote and the order (2.21c); a visible code is one not marked secret in the panel (2.21a).
+- **Branch:** `feat/promo-codes-picking`.
+- **Plan** (one commit per step; ask the owner first whether it is one pull request or two, server and app, then panel):
+  - [ ] Server: the customer's eligible visible codes for the cart (value, conditions, expiry, the discount on this cart) and the quote's suggestion of the largest discount, never applied.
+  - [ ] App: «الأكواد المتاحة لك» at checkout, the line «لديك كود يوفر عليك {المبلغ}: {الكود}» with «تطبيق», and replacing an applied code after a confirmation.
+  - [ ] Server and app: «أكوادي» with the visible codes and «منتهية», and the push «أُعيد الكود {الكود} إلى أكوادك» when a use comes back.
+  - [ ] Server and panel: the code report (orders, customers, cost, new customers acquired) with pause, resume and extend.
+  - [ ] Review, then hand over to 2.22.
+
+### Left from 2.21c (`feat/promo-codes-app`)
+
+- **Before deploying to staging:** nothing new on the server; the customer app needs the server of 2.21b.
+- **To check on staging (with the APK of this slice):** as OWN make FOX10 (10%, cap 30.00, platform). In the app, a cart of 400.00, checkout, «أدخل الكود» fox10, «تطبيق»: the code shows as FOX10 with «إزالة», «الخصم (FOX10)» 30.00 and «تأكيد الطلب — 410.00». Place it and deliver it paying 410.00: the order shows «الخصم (FOX10)», the captain's custody +10.00, the restaurant owes its commission on 400.00, and «التقرير اليومي» and «أكواد الخصم» show the 30.00 (AP §8.4's example). A fixed code of 500.00 shows «قيمة الكود أكبر من قيمة الأصناف، ولا يُستعاد الفرق». Each refusal of CU Appendix C shows its text with «إزالة» and keeps «تأكيد الطلب» off; pause the code in the panel between the quote and «تأكيد الطلب»: the order is refused and checkout shows «الكود غير صالح الآن».
+- **To confirm with the owner:** a code that applies but discounts 0 (a free-delivery code when the delivery is already free) shows «الخصم ({الكود}) 0»; the code typed is kept with the cart for its 24 hours and dropped by a new cart («سلة جديدة», «اطلب بدون الأصناف غير المتوفرة»).
+- **Decided by us:** the code field takes up to 40 characters, capital letters, and turns Arabic-Indic digits into Western ones; the order screen shows «الخصم» above «المجموع» (its other money lines come with §11.8).
+- **Not yet:** a refusal reason the server adds later fails the whole quote in this app version (the generated client refuses an unknown enum value).
 
 ### Left from 2.21b (`feat/promo-codes-orders`)
 

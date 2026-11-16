@@ -214,6 +214,7 @@ class PlaceOrderController extends Notifier<PlaceState> {
         ..restaurantId = command.cart.restaurantId
         ..lines.replace(requestLines(command.cart))
         ..payIn = command.payIn
+        ..code = command.cart.code
         ..appVersion = appVersion
         ..quoteVersion = command.quoteVersion
         ..addressId = addressId

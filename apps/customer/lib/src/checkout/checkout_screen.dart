@@ -20,9 +20,8 @@ import 'quote.dart';
 import 'quote_widgets.dart';
 
 /// Checkout (CU §10.3–10.7), top to bottom: the problems, the address, the
-/// note, «سأدفع بـ», the payment, the estimate, the money and «تأكيد الطلب».
-/// Codes wait for Phase 2 (owner decision 2026-11-06). Unstyled until the
-/// design.
+/// note, «سأدفع بـ», the code, the payment, the estimate, the money and
+/// «تأكيد الطلب». Unstyled until the design.
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
 
@@ -34,10 +33,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   Set<FormProblem> _problems = const {};
   bool _preselected = false;
   late final CheckoutOpening _opening;
+  final _code = TextEditingController();
 
   @override
   void dispose() {
     _opening.clear();
+    _code.dispose();
     super.dispose();
   }
 
@@ -233,8 +234,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 ..._note(l10n),
                 const Divider(),
                 if (q != null) ..._payIn(l10n, q),
+                ..._codeField(l10n, cart, enabled: !sending),
                 ListTile(title: Text(l10n.customerCashOnDelivery)),
                 if (q != null) ..._money(l10n, q),
+                // CU §10.4: a fixed-amount code larger than the items value,
+                // before confirming.
+                if (q?.promoCode?.fixedAmountAboveItems ?? false)
+                  ListTile(
+                    key: const Key('code-above-items'),
+                    title: Text(l10n.customerCodeAboveItems),
+                  ),
                 if (quote.isLoading) const LinearProgressIndicator(),
                 if (quote.hasError)
                   TextButton(
@@ -490,6 +499,59 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     ];
   }
 
+  /// The code (CU §10.4): «أدخل الكود» with «تطبيق», or the applied code
+  /// with «إزالة». One code per order: replacing it comes with picking codes
+  /// (2.21d). The quote checks it and shows a refusal as a problem.
+  List<Widget> _codeField(
+    AppLocalizations l10n,
+    Cart cart, {
+    required bool enabled,
+  }) {
+    final carts = ref.read(cartProvider.notifier);
+    final code = cart.code;
+    if (code != null) {
+      return [
+        ListTile(
+          key: const Key('code-applied'),
+          // The server's form of the code once the quote names it.
+          title: Text(ref.watch(quoteProvider).value?.promoCode?.code ?? code),
+          trailing: TextButton(
+            key: const Key('code-remove'),
+            onPressed: enabled ? () => carts.setCode(null) : null,
+            child: Text(l10n.customerCodeRemove),
+          ),
+        ),
+      ];
+    }
+    return [
+      ValueListenableBuilder(
+        valueListenable: _code,
+        builder: (context, value, _) => ListTile(
+          title: TextField(
+            key: const Key('code-field'),
+            controller: _code,
+            enabled: enabled,
+            maxLength: maxCodeLength,
+            autocorrect: false,
+            enableSuggestions: false,
+            textCapitalization: TextCapitalization.characters,
+            decoration: InputDecoration(labelText: l10n.customerCodeEnter),
+          ),
+          trailing: TextButton(
+            key: const Key('code-apply'),
+            onPressed: !enabled || value.text.trim().isEmpty
+                ? null
+                : () async {
+                    await carts.setCode(_code.text);
+                    _code.clear();
+                  },
+            child: Text(l10n.customerCodeApply),
+          ),
+        ),
+      ),
+    ];
+  }
+
   List<Widget> _money(AppLocalizations l10n, Quote q) {
     String money(String minor) => l10n.formatMoney(minor, q.currency);
     final m = q.money;
@@ -505,7 +567,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         l10n.customerDeliveryFee,
         m.deliveryFree ? l10n.customerFree : money(m.deliveryFee),
       ),
-      if (BigInt.parse(m.discount) != BigInt.zero)
+      // «الخصم» with the code (CU §10.3 item 7); the quote names it only
+      // when it applies.
+      if (q.promoCode case final code?)
+        _moneyLine(l10n.customerDiscountWithCode(code.code), money(m.discount))
+      else if (BigInt.parse(m.discount) != BigInt.zero)
         _moneyLine(l10n.customerDiscount, money(m.discount)),
       if (BigInt.parse(m.rounding) != BigInt.zero)
         _moneyLine(l10n.customerRounding, money(m.rounding)),

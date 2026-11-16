@@ -108,6 +108,7 @@ final quoteProvider = FutureProvider.autoDispose<Quote?>((ref) async {
             ..location.longitude = point.point.longitude
             ..lines.replace(requestLines(cart))
             ..payIn = payIn
+            ..code = cart.code
             ..appVersion = appVersion
             ..openedCheckout = openedCheckout,
         ),

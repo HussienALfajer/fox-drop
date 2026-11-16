@@ -1150,6 +1150,84 @@ abstract class AppLocalizations {
   /// **'الخصم'**
   String get customerDiscount;
 
+  /// The discount line with its code, in checkout and the order (CU §10.3, §10.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'الخصم ({code})'**
+  String customerDiscountWithCode(String code);
+
+  /// The code field (CU §10.4, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل الكود'**
+  String get customerCodeEnter;
+
+  /// Applies the typed code (CU §10.4, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'تطبيق'**
+  String get customerCodeApply;
+
+  /// Removes the order's code (CU §10.4, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'إزالة'**
+  String get customerCodeRemove;
+
+  /// A fixed-amount code larger than the items value, before confirming (CU §10.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'قيمة الكود أكبر من قيمة الأصناف، ولا يُستعاد الفرق'**
+  String get customerCodeAboveItems;
+
+  /// Code refusal unknown_code (CU Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'الكود غير صحيح'**
+  String get customerCodeUnknown;
+
+  /// Code refusal not_valid_now (CU Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'الكود غير صالح الآن'**
+  String get customerCodeNotValidNow;
+
+  /// Code refusal below_minimum, with the missing amount (CU Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'أضف {amount} لاستخدام هذا الكود'**
+  String customerCodeBelowMinimum(String amount);
+
+  /// Code refusal not_for_restaurant (CU Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا الكود لا يعمل مع هذا المطعم'**
+  String get customerCodeNotForRestaurant;
+
+  /// Code refusal first_order_only (CU Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا الكود للطلب الأول فقط'**
+  String get customerCodeFirstOrderOnly;
+
+  /// Code refusal used_before (CU Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'استخدمت هذا الكود من قبل'**
+  String get customerCodeUsedBefore;
+
+  /// Code refusal uses_ended (CU Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهت استخدامات هذا الكود'**
+  String get customerCodeUsesEnded;
+
+  /// Code refusal budget_reached (CU Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'الكود غير متاح اليوم'**
+  String get customerCodeBudgetReached;
+
   /// A money line, only when not 0 (CU §10.3).
   ///
   /// In ar, this message translates to:
