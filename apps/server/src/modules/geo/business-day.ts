@@ -58,3 +58,10 @@ export function lastCutoff(now: Date, cutoffMinutes: number, timeZone: string): 
   if (cutoff > wall) cutoff -= DAY_MS;
   return instantOf(cutoff, timeZone);
 }
+
+// AP §9.10.5 (slice 2.19g): the cutoff that starts a business day, the day
+// given as YYYY-MM-DD on the city's clock.
+export function cutoffOn(day: string, cutoffMinutes: number, timeZone: string): Date {
+  const [year, month, date] = day.split('-').map(Number) as [number, number, number];
+  return instantOf(Date.UTC(year, month - 1, date) + cutoffMinutes * 60_000, timeZone);
+}

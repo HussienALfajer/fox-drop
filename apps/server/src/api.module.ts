@@ -13,6 +13,7 @@ import { IdentityModule, RouteAccessGuard } from './modules/identity/index.js';
 import { MerchantsModule } from './modules/merchants/index.js';
 import { NotificationsModule } from './modules/notifications/index.js';
 import { OrderingModule } from './modules/ordering/index.js';
+import { ReportingModule } from './modules/reporting/index.js';
 import { SettingsModule } from './modules/settings/index.js';
 import { PlaceholderSeedModule } from './seed/placeholder-seed.js';
 
@@ -38,6 +39,7 @@ import { PlaceholderSeedModule } from './seed/placeholder-seed.js';
     NotificationsModule,
     ContentModule,
     FilesModule,
+    ReportingModule,
     PlaceholderSeedModule,
   ],
   controllers: STATUS_CONTROLLERS,

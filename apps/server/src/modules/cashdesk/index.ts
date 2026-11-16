@@ -22,6 +22,7 @@ import { MerchantAccountController } from './merchant-account.controller.js';
 import { MerchantAccountService } from './merchant-account.service.js';
 import { MerchantRecordsController } from './merchant-records.controller.js';
 import { MerchantRecordsService } from './merchant-records.service.js';
+import { MerchantPeriodService } from './merchant-period.service.js';
 import { MerchantSettlementService } from './merchant-settlement.service.js';
 import { MerchantStatementsService } from './merchant-statements.service.js';
 import { MerchantStatementsWorker } from './merchant-statements.worker.js';
@@ -84,6 +85,23 @@ export class CashDeskModule {}
 })
 export class CashDeskWorkerModule {}
 
+// A restaurant's statement for any period (AP §9.10.5, slice 2.19g), for the
+// reporting module's screen and Excel export, in the API and the worker.
+@Module({
+  imports: [
+    DatabaseModule,
+    LedgerModule,
+    FxModule,
+    GeoModule,
+    OrderingModule,
+    SettingsModule,
+    MerchantsModule,
+  ],
+  providers: [MerchantPeriodService],
+  exports: [MerchantPeriodService],
+})
+export class CashDeskPeriodModule {}
+
 export {
   type BalanceRow,
   type CashDeskRefusal,
@@ -98,11 +116,20 @@ export {
   type ReceiptType,
 } from './cashdesk.service.js';
 export {
+  MerchantPeriodService,
+  PERIOD_MAX_DAYS,
+  type PeriodReceipt,
+  type PeriodStatementLine,
+  type RestaurantPeriodStatement,
+} from './merchant-period.service.js';
+export {
   type MerchantReceipt,
   type MerchantSettleCommand,
   type MerchantSettlementPreview,
   MerchantSettlementService,
 } from './merchant-settlement.service.js';
+export { type ExceptionCause } from './merchant-statement.js';
+export { merchantExceptionCauses, merchantStatementLineKinds } from './schema.js';
 export {
   type MerchantStatement,
   type MerchantStatementView,

@@ -222,6 +222,8 @@ export 'package:core_api/src/model/admin_restaurant_images_dto_output_categories
 export 'package:core_api/src/model/admin_restaurant_images_dto_output_categories_inner_items_inner.dart';
 export 'package:core_api/src/model/admin_restaurant_max_active_orders_dto.dart';
 export 'package:core_api/src/model/admin_restaurant_pause_dto.dart';
+export 'package:core_api/src/model/admin_restaurant_period_statement_dto_output.dart';
+export 'package:core_api/src/model/admin_restaurant_period_statement_dto_output_lines_inner.dart';
 export 'package:core_api/src/model/admin_restaurant_pickup_currencies_dto.dart';
 export 'package:core_api/src/model/admin_restaurant_receipt_dto_output.dart';
 export 'package:core_api/src/model/admin_restaurant_receipt_dto_output_lines_inner.dart';
@@ -267,6 +269,7 @@ export 'package:core_api/src/model/admin_shortfalls_dto_output.dart';
 export 'package:core_api/src/model/admin_shortfalls_dto_output_shortfalls_inner.dart';
 export 'package:core_api/src/model/admin_start_emergency_stop_dto.dart';
 export 'package:core_api/src/model/admin_statement_dto_output.dart';
+export 'package:core_api/src/model/admin_statement_restaurants_dto_output.dart';
 export 'package:core_api/src/model/admin_terms_dto_output.dart';
 export 'package:core_api/src/model/admin_terms_dto_output_customer.dart';
 export 'package:core_api/src/model/admin_terms_version_dto_output.dart';

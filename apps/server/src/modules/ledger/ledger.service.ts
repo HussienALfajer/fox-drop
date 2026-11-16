@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, asc, desc, eq, gt, gte, inArray, lt, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, gte, inArray, lt, or, type SQL, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -329,6 +329,38 @@ export class LedgerService {
     after: Date | null,
     executor: LedgerExecutor = this.database.db,
   ): Promise<AccountEntry[]> {
+    return this.entriesWhere(
+      accountIds,
+      purpose,
+      after === null ? undefined : gt(entries.createdAt, after),
+      executor,
+    );
+  }
+
+  // The entries posted from `from` (included) to `to` (excluded), oldest
+  // first, from the party's view: a restaurant's statement for any period
+  // (AP §9.10.5, slice 2.19g), whose opening is balanceAt(from).
+  async rangeEntries(
+    accountIds: readonly string[],
+    purpose: AccountPurpose,
+    from: Date,
+    to: Date,
+    executor: LedgerExecutor = this.database.db,
+  ): Promise<AccountEntry[]> {
+    return this.entriesWhere(
+      accountIds,
+      purpose,
+      and(gte(entries.createdAt, from), lt(entries.createdAt, to)),
+      executor,
+    );
+  }
+
+  private async entriesWhere(
+    accountIds: readonly string[],
+    purpose: AccountPurpose,
+    when: SQL | undefined,
+    executor: LedgerExecutor,
+  ): Promise<AccountEntry[]> {
     if (accountIds.length === 0) return [];
     const rows = await executor
       .select({
@@ -344,13 +376,7 @@ export class LedgerService {
       .from(entries)
       .innerJoin(journals, eq(journals.id, entries.journalId))
       .innerJoin(accounts, eq(accounts.id, entries.accountId))
-      .where(
-        and(
-          inArray(entries.accountId, [...accountIds]),
-          eq(accounts.purpose, purpose),
-          after === null ? undefined : gt(entries.createdAt, after),
-        ),
-      )
+      .where(and(inArray(entries.accountId, [...accountIds]), eq(accounts.purpose, purpose), when))
       .orderBy(asc(entries.createdAt), asc(entries.id));
     const sign = accountPurposes[purpose].sign;
     return rows.map((row) => ({

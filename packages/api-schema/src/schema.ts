@@ -3620,6 +3620,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/restaurant-statements/restaurants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRestaurantStatementsRestaurants"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-statements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRestaurantStatementsStatement"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -10737,6 +10769,64 @@ export interface components {
             /** @description Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7). */
             dueAfter: string;
         };
+        AdminStatementRestaurantsDto_Output: {
+            restaurants: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            }[];
+        };
+        AdminRestaurantPeriodStatementDto_Output: {
+            /** Format: uuid */
+            restaurantId: string;
+            restaurantName: string;
+            /** Format: uuid */
+            cityId: string;
+            currency: string | null;
+            /** @description A business day on the city’s clock, YYYY-MM-DD. */
+            fromDay: string;
+            /** @description A business day on the city’s clock, YYYY-MM-DD. */
+            toDay: string;
+            /**
+             * Format: date-time
+             * @description The cutoff that starts the first day.
+             */
+            from: string;
+            /**
+             * Format: date-time
+             * @description The cutoff that ends the last day.
+             */
+            to: string;
+            /** @description + the restaurant owes, − the platform owes it. */
+            opening: string;
+            orders: number;
+            itemsValue: string;
+            commission: string;
+            discountShare: string;
+            exceptions: string;
+            paid: string;
+            closing: string;
+            lines: {
+                /** @enum {string} */
+                kind: "order" | "exception" | "payment";
+                /** Format: date-time */
+                at: string;
+                orderId: string | null;
+                orderNumber: string | null;
+                itemsValue: string | null;
+                pickupLines: {
+                    currency: string;
+                    amount: string;
+                }[] | null;
+                commission: string | null;
+                discountShare: string | null;
+                cause: ("food_credit" | "credit" | "pickup_refund" | "pickup_kept" | "items_removed" | "fee_lowered" | "fee_cut_returned" | "debit" | "commission_reversal" | "commission_restored" | "discount_reversal" | "outcome_changed" | "adjustment") | null;
+                amount: string | null;
+                reason: string | null;
+                receiptId: string | null;
+                receiptNumber: string | null;
+            }[];
+        };
     };
     responses: never;
     parameters: never;
@@ -16442,6 +16532,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MerchantReceiptDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantStatementsRestaurants: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminStatementRestaurantsDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantStatementsStatement: {
+        parameters: {
+            query: {
+                restaurantId: string;
+                /** @description A business day on the city’s clock, YYYY-MM-DD. */
+                from: string;
+                /** @description A business day on the city’s clock, YYYY-MM-DD. */
+                to: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantPeriodStatementDto_Output"];
                 };
             };
         };
