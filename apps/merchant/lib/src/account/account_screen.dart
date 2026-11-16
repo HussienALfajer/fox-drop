@@ -2,14 +2,16 @@ import 'package:core_l10n/core_l10n.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'account.dart';
+import 'records.dart';
 
 /// «الحساب», the owners' (RA §12.2, R10): the balance card with «موعد
 /// التسوية», the commission, «قبضت اليوم من الكباتن» with today's pickups,
-/// and this week by day with the exceptions' labels (RA §12.5). «الكشوف» and
-/// «الإيصالات» come with 2.19e, the overdue line with 2.19f. Unstyled until
-/// the design.
+/// this week by day with the exceptions' labels (RA §12.5), and the links to
+/// «الكشوف» and «الإيصالات». The overdue line comes with 2.19f. Unstyled
+/// until the design.
 class AccountScreen extends ConsumerWidget {
   const AccountScreen({super.key});
 
@@ -89,6 +91,19 @@ class _AccountView extends StatelessWidget {
                     ),
                   ),
           ),
+        // RA §12.2: the tabs «الكشوف» and «الإيصالات».
+        ListTile(
+          key: const Key('account-statements'),
+          title: Text(l10n.merchantStatements),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push('/account/statements'),
+        ),
+        ListTile(
+          key: const Key('account-receipts'),
+          title: Text(l10n.merchantReceipts),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push('/account/receipts'),
+        ),
         const Divider(),
         ListTile(
           key: const Key('account-today'),
@@ -182,6 +197,8 @@ class _WeekLine extends StatelessWidget {
           amount.isNegative
               ? l10n.merchantAccountLowers
               : l10n.merchantAccountRaises,
+          // RA §12.5: who decided it.
+          ?l10n.deciderNameText(line.decidedBy?.name, line.decidedByName),
         ].join(' · '),
       ),
     );

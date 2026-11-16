@@ -54,9 +54,14 @@ DateTime noonOf(Date date) => DateTime.utc(date.year, date.month, date.day, 9);
 
 extension AccountTexts on AppLocalizations {
   /// RA §12.5: an exception's label, the manual correction's with its reason.
-  String causeLabel(Cause? cause, String? reason) {
-    if (cause == Cause.adjustment) return merchantCauseAdjustment(reason ?? '');
-    return switch (cause?.name) {
+  String causeLabel(Cause? cause, String? reason) =>
+      causeNameLabel(cause?.name, reason);
+
+  /// The same by the cause's name, whichever generated enum carries it (the
+  /// account's or the statement's).
+  String causeNameLabel(String? cause, String? reason) {
+    if (cause == 'adjustment') return merchantCauseAdjustment(reason ?? '');
+    return switch (cause) {
       'foodCredit' => merchantCauseFoodCredit,
       'credit' => merchantCauseCredit,
       'pickupRefund' => merchantCausePickupRefund,

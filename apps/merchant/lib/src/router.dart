@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'account/account_screen.dart';
+import 'account/records_screen.dart';
 import 'auth.dart';
 import 'board/board_screen.dart';
 import 'board/order_screen.dart';
@@ -69,6 +70,34 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/account',
         builder: (context, state) => const AccountScreen(),
+        routes: [
+          // RA §12.3, §16 #30: the statements; a statement over them.
+          GoRoute(
+            path: 'statements',
+            builder: (context, state) => const StatementsScreen(),
+            routes: [
+              GoRoute(
+                path: ':statementId',
+                builder: (context, state) => StatementScreen(
+                  statementId: state.pathParameters['statementId']!,
+                ),
+              ),
+            ],
+          ),
+          // RA §12.4, §16 #31: the receipts; a receipt over them.
+          GoRoute(
+            path: 'receipts',
+            builder: (context, state) => const ReceiptsScreen(),
+            routes: [
+              GoRoute(
+                path: ':receiptId',
+                builder: (context, state) => ReceiptScreen(
+                  receiptId: state.pathParameters['receiptId']!,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       // AP §9.13, RA §4.10: the restaurant terms, which owners accept.
       GoRoute(

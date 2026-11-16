@@ -138,12 +138,61 @@ _$merchantAccountDtoOutputWeekLinesInnerCauseEnumValues =
       ],
     );
 
+const MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum
+_$merchantAccountDtoOutputWeekLinesInnerDecidedByEnum_admin =
+    const MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum._('admin');
+const MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum
+_$merchantAccountDtoOutputWeekLinesInnerDecidedByEnum_merchant =
+    const MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum._('merchant');
+const MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum
+_$merchantAccountDtoOutputWeekLinesInnerDecidedByEnum_captain =
+    const MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum._('captain');
+const MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum
+_$merchantAccountDtoOutputWeekLinesInnerDecidedByEnum_customer =
+    const MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum._('customer');
+const MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum
+_$merchantAccountDtoOutputWeekLinesInnerDecidedByEnum_system =
+    const MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum._('system');
+
+MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum
+_$merchantAccountDtoOutputWeekLinesInnerDecidedByEnumValueOf(String name) {
+  switch (name) {
+    case 'admin':
+      return _$merchantAccountDtoOutputWeekLinesInnerDecidedByEnum_admin;
+    case 'merchant':
+      return _$merchantAccountDtoOutputWeekLinesInnerDecidedByEnum_merchant;
+    case 'captain':
+      return _$merchantAccountDtoOutputWeekLinesInnerDecidedByEnum_captain;
+    case 'customer':
+      return _$merchantAccountDtoOutputWeekLinesInnerDecidedByEnum_customer;
+    case 'system':
+      return _$merchantAccountDtoOutputWeekLinesInnerDecidedByEnum_system;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum>
+_$merchantAccountDtoOutputWeekLinesInnerDecidedByEnumValues =
+    BuiltSet<MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum>(
+      const <MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum>[
+        _$merchantAccountDtoOutputWeekLinesInnerDecidedByEnum_admin,
+        _$merchantAccountDtoOutputWeekLinesInnerDecidedByEnum_merchant,
+        _$merchantAccountDtoOutputWeekLinesInnerDecidedByEnum_captain,
+        _$merchantAccountDtoOutputWeekLinesInnerDecidedByEnum_customer,
+        _$merchantAccountDtoOutputWeekLinesInnerDecidedByEnum_system,
+      ],
+    );
+
 Serializer<MerchantAccountDtoOutputWeekLinesInnerKindEnum>
 _$merchantAccountDtoOutputWeekLinesInnerKindEnumSerializer =
     _$MerchantAccountDtoOutputWeekLinesInnerKindEnumSerializer();
 Serializer<MerchantAccountDtoOutputWeekLinesInnerCauseEnum>
 _$merchantAccountDtoOutputWeekLinesInnerCauseEnumSerializer =
     _$MerchantAccountDtoOutputWeekLinesInnerCauseEnumSerializer();
+Serializer<MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum>
+_$merchantAccountDtoOutputWeekLinesInnerDecidedByEnumSerializer =
+    _$MerchantAccountDtoOutputWeekLinesInnerDecidedByEnumSerializer();
 
 class _$MerchantAccountDtoOutputWeekLinesInnerKindEnumSerializer
     implements
@@ -241,6 +290,50 @@ class _$MerchantAccountDtoOutputWeekLinesInnerCauseEnumSerializer
   );
 }
 
+class _$MerchantAccountDtoOutputWeekLinesInnerDecidedByEnumSerializer
+    implements
+        PrimitiveSerializer<
+          MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum
+        > {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'admin': 'admin',
+    'merchant': 'merchant',
+    'captain': 'captain',
+    'customer': 'customer',
+    'system': 'system',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'admin': 'admin',
+    'merchant': 'merchant',
+    'captain': 'captain',
+    'customer': 'customer',
+    'system': 'system',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum,
+  ];
+  @override
+  final String wireName = 'MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
 class _$MerchantAccountDtoOutputWeekLinesInner
     extends MerchantAccountDtoOutputWeekLinesInner {
   @override
@@ -265,6 +358,10 @@ class _$MerchantAccountDtoOutputWeekLinesInner
   final String? amount;
   @override
   final String? reason;
+  @override
+  final MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum? decidedBy;
+  @override
+  final String? decidedByName;
 
   factory _$MerchantAccountDtoOutputWeekLinesInner([
     void Function(MerchantAccountDtoOutputWeekLinesInnerBuilder)? updates,
@@ -283,6 +380,8 @@ class _$MerchantAccountDtoOutputWeekLinesInner
     this.cause,
     this.amount,
     this.reason,
+    this.decidedBy,
+    this.decidedByName,
   }) : super._();
   @override
   MerchantAccountDtoOutputWeekLinesInner rebuild(
@@ -307,7 +406,9 @@ class _$MerchantAccountDtoOutputWeekLinesInner
         discountShare == other.discountShare &&
         cause == other.cause &&
         amount == other.amount &&
-        reason == other.reason;
+        reason == other.reason &&
+        decidedBy == other.decidedBy &&
+        decidedByName == other.decidedByName;
   }
 
   @override
@@ -324,6 +425,8 @@ class _$MerchantAccountDtoOutputWeekLinesInner
     _$hash = $jc(_$hash, cause.hashCode);
     _$hash = $jc(_$hash, amount.hashCode);
     _$hash = $jc(_$hash, reason.hashCode);
+    _$hash = $jc(_$hash, decidedBy.hashCode);
+    _$hash = $jc(_$hash, decidedByName.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -343,7 +446,9 @@ class _$MerchantAccountDtoOutputWeekLinesInner
           ..add('discountShare', discountShare)
           ..add('cause', cause)
           ..add('amount', amount)
-          ..add('reason', reason))
+          ..add('reason', reason)
+          ..add('decidedBy', decidedBy)
+          ..add('decidedByName', decidedByName))
         .toString();
   }
 }
@@ -403,6 +508,18 @@ class MerchantAccountDtoOutputWeekLinesInnerBuilder
   String? get reason => _$this._reason;
   set reason(String? reason) => _$this._reason = reason;
 
+  MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum? _decidedBy;
+  MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum? get decidedBy =>
+      _$this._decidedBy;
+  set decidedBy(
+    MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum? decidedBy,
+  ) => _$this._decidedBy = decidedBy;
+
+  String? _decidedByName;
+  String? get decidedByName => _$this._decidedByName;
+  set decidedByName(String? decidedByName) =>
+      _$this._decidedByName = decidedByName;
+
   MerchantAccountDtoOutputWeekLinesInnerBuilder() {
     MerchantAccountDtoOutputWeekLinesInner._defaults(this);
   }
@@ -421,6 +538,8 @@ class MerchantAccountDtoOutputWeekLinesInnerBuilder
       _cause = $v.cause;
       _amount = $v.amount;
       _reason = $v.reason;
+      _decidedBy = $v.decidedBy;
+      _decidedByName = $v.decidedByName;
       _$v = null;
     }
     return this;
@@ -468,6 +587,8 @@ class MerchantAccountDtoOutputWeekLinesInnerBuilder
           cause: cause,
           amount: amount,
           reason: reason,
+          decidedBy: decidedBy,
+          decidedByName: decidedByName,
         );
     replace(_$result);
     return _$result;

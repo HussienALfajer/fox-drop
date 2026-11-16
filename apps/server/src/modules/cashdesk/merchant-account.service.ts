@@ -7,6 +7,7 @@ import { MerchantsService } from '../merchants/index.js';
 import { merchantEntryCause, OrdersService, type RestaurantPickup } from '../ordering/index.js';
 import { SettingsService } from '../settings/index.js';
 import { buildStatement, type StatementLine } from './merchant-statement.js';
+import { type Decider, MerchantRecordsService } from './merchant-records.service.js';
 import { MerchantStatementsService, STATEMENT_OVERLAP_MS } from './merchant-statements.service.js';
 
 // RA §12.2 «الحساب» (slice 2.19d): what the owners see of their account.
@@ -26,7 +27,8 @@ export interface MerchantAccount {
   // «هذا الأسبوع»: since the latest statement's cutoff (null before the
   // first), each line with its business day on the city's clock.
   weekFrom: Date | null;
-  weekLines: (StatementLine & { day: string })[];
+  // An exception carries «من قرّر» (RA §12.5).
+  weekLines: (StatementLine & { day: string; decidedBy: Decider | null })[];
 }
 
 @Injectable()
@@ -40,6 +42,7 @@ export class MerchantAccountService {
     private readonly geo: GeoService,
     private readonly settings: SettingsService,
     private readonly statements: MerchantStatementsService,
+    private readonly records: MerchantRecordsService,
   ) {}
 
   async account(restaurantId: string, cityId: string, now: Date): Promise<MerchantAccount> {
@@ -118,7 +121,7 @@ export class MerchantAccountService {
       const day = dateOf(lastCutoff(entry.createdAt, cutoffMinutes, timeZone));
       days.set(day, [...(days.get(day) ?? []), entry]);
     }
-    const weekLines = [...days.entries()]
+    const dayLines = [...days.entries()]
       .sort(([a], [b]) => (a < b ? 1 : a > b ? -1 : 0))
       .flatMap(([day, dayEntries]) =>
         buildStatement(dayEntries, 0n, known, merchantEntryCause).lines.map((line) => ({
@@ -126,6 +129,11 @@ export class MerchantAccountService {
           day,
         })),
       );
+    const deciders = await this.records.deciders(dayLines);
+    const weekLines = dayLines.map((line) => ({
+      ...line,
+      decidedBy: line.kind === 'exception' ? (deciders.get(line.journalId) ?? null) : null,
+    }));
     return {
       ...base,
       // The party's view is − the restaurant owes.

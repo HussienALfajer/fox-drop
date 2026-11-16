@@ -93,6 +93,12 @@ final notificationAskProvider = Provider<void>((ref) {
 String? pushTargetPath(Map<String, String> data) => switch (data) {
   {'target': 'order', 'orderId': final id} when id.isNotEmpty =>
     '/orders/${Uri.encodeComponent(id)}',
+  // RA §16 #30: the weekly statement over «الكشوف».
+  {'target': 'statement', 'statementId': final id} when id.isNotEmpty =>
+    '/account/statements/${Uri.encodeComponent(id)}',
+  // RA §16 #31: the receipt over «الإيصالات».
+  {'target': 'receipt', 'receiptId': final id} when id.isNotEmpty =>
+    '/account/receipts/${Uri.encodeComponent(id)}',
   _ => null,
 };
 

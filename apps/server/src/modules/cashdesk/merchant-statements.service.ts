@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { desc, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { reportError } from '../../observability/error-tracking.js';
@@ -366,12 +366,24 @@ export class MerchantStatementsService {
     return { currency, settlementWeekday: weekday, nextCutoff: next, restaurants: rows };
   }
 
-  // A statement with its lines, in the order shown.
-  async statement(statementId: string): Promise<MerchantStatementView | null> {
+  // A statement with its lines, in the order shown; given a restaurant, only
+  // that restaurant's (the restaurant app, slice 2.19e), checked before the
+  // rest is read.
+  async statement(
+    statementId: string,
+    restaurantId?: string,
+  ): Promise<MerchantStatementView | null> {
     const [row] = await this.database.db
       .select()
       .from(merchantStatements)
-      .where(eq(merchantStatements.id, statementId));
+      .where(
+        and(
+          eq(merchantStatements.id, statementId),
+          restaurantId === undefined
+            ? undefined
+            : eq(merchantStatements.restaurantId, restaurantId),
+        ),
+      );
     if (!row) return null;
     const accounts = await this.ledger.ownerAccounts(
       row.cityId,
@@ -438,6 +450,8 @@ export class MerchantStatementsService {
       .select({
         id: merchantStatements.id,
         cutoff: merchantStatements.cutoff,
+        periodFrom: merchantStatements.periodFrom,
+        currency: merchantStatements.currency,
         commission: merchantStatements.commission,
         discountShare: merchantStatements.discountShare,
         exceptions: merchantStatements.exceptions,

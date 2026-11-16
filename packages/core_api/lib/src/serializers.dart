@@ -546,6 +546,10 @@ import 'package:core_api/src/model/merchant_pickup_currencies_dto_output_base_cu
 import 'package:core_api/src/model/merchant_pickup_currencies_dto_output_choices_inner.dart';
 import 'package:core_api/src/model/merchant_pickup_dispute_dto.dart';
 import 'package:core_api/src/model/merchant_pickup_dispute_dto_received_lines_inner.dart';
+import 'package:core_api/src/model/merchant_receipt_dto_output.dart';
+import 'package:core_api/src/model/merchant_receipt_list_dto_output.dart';
+import 'package:core_api/src/model/merchant_receipt_list_dto_output_receipts_inner.dart';
+import 'package:core_api/src/model/merchant_receipt_list_dto_output_receipts_inner_lines_inner.dart';
 import 'package:core_api/src/model/merchant_refresh_dto.dart';
 import 'package:core_api/src/model/merchant_reject_dto.dart';
 import 'package:core_api/src/model/merchant_reject_dto_items_inner.dart';
@@ -557,6 +561,11 @@ import 'package:core_api/src/model/merchant_set_pickup_currencies_dto.dart';
 import 'package:core_api/src/model/merchant_sign_in_dto.dart';
 import 'package:core_api/src/model/merchant_signed_in_dto_output.dart';
 import 'package:core_api/src/model/merchant_signed_out_dto_output.dart';
+import 'package:core_api/src/model/merchant_statement_dto_output.dart';
+import 'package:core_api/src/model/merchant_statement_dto_output_lines_inner.dart';
+import 'package:core_api/src/model/merchant_statement_dto_output_lines_inner_pickup_lines_inner.dart';
+import 'package:core_api/src/model/merchant_statement_list_dto_output.dart';
+import 'package:core_api/src/model/merchant_statement_list_dto_output_statements_inner.dart';
 import 'package:core_api/src/model/merchant_status_dto_output.dart';
 import 'package:core_api/src/model/merchant_status_dto_output_busy_mode.dart';
 import 'package:core_api/src/model/merchant_status_dto_output_holiday.dart';
@@ -1130,6 +1139,10 @@ part 'serializers.g.dart';
   MerchantPickupCurrenciesDtoOutputChoicesInner,
   MerchantPickupDisputeDto,
   MerchantPickupDisputeDtoReceivedLinesInner,
+  MerchantReceiptDtoOutput,
+  MerchantReceiptListDtoOutput,
+  MerchantReceiptListDtoOutputReceiptsInner,
+  MerchantReceiptListDtoOutputReceiptsInnerLinesInner,
   MerchantRefreshDto,
   MerchantRejectDto,
   MerchantRejectDtoItemsInner,
@@ -1141,6 +1154,11 @@ part 'serializers.g.dart';
   MerchantSignInDto,
   MerchantSignedInDtoOutput,
   MerchantSignedOutDtoOutput,
+  MerchantStatementDtoOutput,
+  MerchantStatementDtoOutputLinesInner,
+  MerchantStatementDtoOutputLinesInnerPickupLinesInner,
+  MerchantStatementListDtoOutput,
+  MerchantStatementListDtoOutputStatementsInner,
   MerchantStatusDtoOutput,
   MerchantStatusDtoOutputBusyMode,
   MerchantStatusDtoOutputHoliday,
@@ -1439,6 +1457,15 @@ Serializers serializers =
               FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
             ]),
             () => ListBuilder<CaptainWentOfflineDtoOutputHandIn>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(MerchantReceiptListDtoOutputReceiptsInnerLinesInner),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantReceiptListDtoOutputReceiptsInnerLinesInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -1844,6 +1871,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(MerchantReceiptListDtoOutputReceiptsInner),
+            ]),
+            () => ListBuilder<MerchantReceiptListDtoOutputReceiptsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(MerchantOrdersDtoOutputOrdersInnerEditsInner),
             ]),
             () => ListBuilder<MerchantOrdersDtoOutputOrdersInnerEditsInner>(),
@@ -1887,6 +1920,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(MerchantStatementDtoOutputLinesInner),
+            ]),
+            () => ListBuilder<MerchantStatementDtoOutputLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminSetCityOfficeDtoHoursInner),
             ]),
             () => ListBuilder<AdminSetCityOfficeDtoHoursInner>(),
@@ -1905,12 +1944,27 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(MerchantStatementDtoOutputLinesInnerPickupLinesInner),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantStatementDtoOutputLinesInnerPickupLinesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminRestaurantSettlementPreviewDtoOutputLinesInner),
             ]),
             () =>
                 ListBuilder<
                   AdminRestaurantSettlementPreviewDtoOutputLinesInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(MerchantStatementListDtoOutputStatementsInner),
+            ]),
+            () => ListBuilder<MerchantStatementListDtoOutputStatementsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

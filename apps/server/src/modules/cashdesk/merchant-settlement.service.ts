@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
-import { and, asc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { AuditService } from '../audit/index.js';
@@ -326,47 +326,72 @@ export class MerchantSettlementService {
 
   // A restaurant's receipt; a captain's is null.
   async receipt(receiptId: string): Promise<MerchantReceipt | null> {
-    const [row] = await this.database.db
+    const rows = await this.database.db
       .select()
       .from(receipts)
       .where(and(eq(receipts.id, receiptId), isNotNull(receipts.restaurantId)));
-    if (!row) return null;
-    const [lines, names, order] = await Promise.all([
+    return (await this.views(rows))[0] ?? null;
+  }
+
+  // A restaurant's latest receipts, newest first (RA §12.4 «الإيصالات»).
+  async restaurantReceipts(restaurantId: string, limit: number): Promise<MerchantReceipt[]> {
+    const rows = await this.database.db
+      .select()
+      .from(receipts)
+      .where(eq(receipts.restaurantId, restaurantId))
+      .orderBy(desc(receipts.createdAt), desc(receipts.id))
+      .limit(limit);
+    return this.views(rows);
+  }
+
+  private async views(rows: (typeof receipts.$inferSelect)[]): Promise<MerchantReceipt[]> {
+    if (rows.length === 0) return [];
+    const cities = [...new Set(rows.map((row) => row.cityId))];
+    const [lines, names, orders] = await Promise.all([
       this.database.db
         .select()
         .from(receiptLines)
-        .where(inArray(receiptLines.receiptId, [row.id]))
+        .where(
+          inArray(
+            receiptLines.receiptId,
+            rows.map((row) => row.id),
+          ),
+        )
         .orderBy(asc(receiptLines.currency)),
-      this.admins.names([row.adminAccountId]),
-      this.desk.currencyOrder(row.cityId),
+      this.admins.names(rows.map((row) => row.adminAccountId)),
+      Promise.all(cities.map((city) => this.desk.currencyOrder(city))),
     ]);
-    // receipts_party and receipt_lines_expected_or_base: a restaurant's
-    // receipt names it and what it owed, and each line its base value.
-    const kept = lines
-      .map((line) => ({ currency: line.currency, amount: line.amount, base: line.baseAmount! }))
-      .sort((a, b) => order(a.currency) - order(b.currency));
-    const total = kept.reduce((sum, line) => sum + line.base, 0n);
-    const dueBefore = row.dueBefore!;
-    return {
-      id: row.id,
-      cityId: row.cityId,
-      number: row.number,
-      type: row.type as MerchantReceiptType,
-      sessionId: row.sessionId,
-      method: row.method,
-      visitorId: row.visitorId,
-      visitorName: row.visitorName,
-      cashierId: row.adminAccountId,
-      cashierName: names.get(row.adminAccountId) ?? null,
-      restaurantId: row.restaurantId!,
-      restaurantName: row.restaurantName!,
-      currency: row.dueCurrency!,
-      dueBefore,
-      total,
-      dueAfter: dueBefore >= 0n ? dueBefore - total : dueBefore + total,
-      createdAt: row.createdAt,
-      lines: kept,
-    };
+    return rows.map((row) => {
+      const order = orders[cities.indexOf(row.cityId)]!;
+      // receipts_party and receipt_lines_expected_or_base: a restaurant's
+      // receipt names it and what it owed, and each line its base value.
+      const kept = lines
+        .filter((line) => line.receiptId === row.id)
+        .map((line) => ({ currency: line.currency, amount: line.amount, base: line.baseAmount! }))
+        .sort((a, b) => order(a.currency) - order(b.currency));
+      const total = kept.reduce((sum, line) => sum + line.base, 0n);
+      const dueBefore = row.dueBefore!;
+      return {
+        id: row.id,
+        cityId: row.cityId,
+        number: row.number,
+        type: row.type as MerchantReceiptType,
+        sessionId: row.sessionId,
+        method: row.method,
+        visitorId: row.visitorId,
+        visitorName: row.visitorName,
+        cashierId: row.adminAccountId,
+        cashierName: names.get(row.adminAccountId) ?? null,
+        restaurantId: row.restaurantId!,
+        restaurantName: row.restaurantName!,
+        currency: row.dueCurrency!,
+        dueBefore,
+        total,
+        dueAfter: dueBefore >= 0n ? dueBefore - total : dueBefore + total,
+        createdAt: row.createdAt,
+        lines: kept,
+      };
+    });
   }
 
   // The staff member who visited, or null at the office: the field

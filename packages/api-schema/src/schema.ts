@@ -3540,6 +3540,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/statements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantRecordsStatements"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/statements/{statementId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantRecordsStatement"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/receipts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantRecordsReceipts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/receipts/{receiptId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantRecordsReceipt"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -10477,7 +10541,158 @@ export interface components {
                 /** @description An exception or a payment: + raises what is owed, − lowers it. */
                 amount: string | null;
                 reason: string | null;
+                /** @description «من قرّر» on an exception (RA §12.5): who posted it. */
+                decidedBy: ("admin" | "merchant" | "captain" | "customer" | "system") | null;
+                /** @description The FOX DROP staff member, by name. */
+                decidedByName: string | null;
             }[];
+        };
+        MerchantStatementListDto_Output: {
+            /** @description The latest statements (a year), newest first. */
+            statements: {
+                /** Format: uuid */
+                id: string;
+                /**
+                 * Format: date-time
+                 * @description The settlement day’s cutoff that closed it.
+                 */
+                cutoff: string;
+                /** @description The previous statement’s cutoff, null for the first. */
+                periodFrom: string | null;
+                currency: string;
+                /** @description Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7). */
+                weekTotal: string;
+                /** @description Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7). */
+                totalDue: string;
+                status: ("unpaid" | "partly_paid" | "paid") | null;
+                /** @description What of the total due is still unpaid, oldest first. */
+                unpaid: string;
+            }[];
+        };
+        MerchantStatementDto_Output: {
+            /** Format: uuid */
+            id: string;
+            restaurantName: string;
+            /** Format: date-time */
+            cutoff: string;
+            periodFrom: string | null;
+            currency: string;
+            orders: number;
+            /** @description Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7). */
+            itemsValue: string;
+            /** @description Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7). */
+            commission: string;
+            /** @description Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7). */
+            discountShare: string;
+            /** @description Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7). */
+            exceptions: string;
+            /** @description Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7). */
+            weekTotal: string;
+            /** @description Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7). */
+            previousDue: string;
+            /** @description Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7). */
+            paid: string;
+            /** @description Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7). */
+            earlierUnpaid: string;
+            /** @description Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7). */
+            totalDue: string;
+            status: ("unpaid" | "partly_paid" | "paid") | null;
+            /** @description What of the total due is still unpaid, oldest first. */
+            unpaid: string;
+            lines: {
+                /** @enum {string} */
+                kind: "order" | "exception" | "payment";
+                /** Format: date-time */
+                at: string;
+                orderId: string | null;
+                orderNumber: string | null;
+                /** @description An order: its pickup payment. */
+                itemsValue: string | null;
+                /** @description An order: the currency lines the captain paid. */
+                pickupLines: {
+                    currency: string;
+                    /** @description Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7). */
+                    amount: string;
+                }[] | null;
+                commission: string | null;
+                discountShare: string | null;
+                /** @description An exception (RA §12.5). */
+                cause: ("food_credit" | "credit" | "pickup_refund" | "pickup_kept" | "items_removed" | "fee_lowered" | "fee_cut_returned" | "debit" | "commission_reversal" | "commission_restored" | "discount_reversal" | "outcome_changed" | "adjustment") | null;
+                /** @description An exception or a payment. */
+                amount: string | null;
+                reason: string | null;
+                /** @description «من قرّر» on an exception (RA §12.5): who posted it. */
+                decidedBy: ("admin" | "merchant" | "captain" | "customer" | "system") | null;
+                /** @description The FOX DROP staff member, by name. */
+                decidedByName: string | null;
+            }[];
+        };
+        MerchantReceiptListDto_Output: {
+            /** @description Newest first. */
+            receipts: {
+                /** Format: uuid */
+                id: string;
+                number: string;
+                /**
+                 * @description The restaurant paid, or FOX DROP paid it.
+                 * @enum {string}
+                 */
+                type: "merchant_settlement" | "merchant_payout";
+                /**
+                 * @description «في المكتب» or «زيارة ميدانية».
+                 * @enum {string}
+                 */
+                method: "office" | "field";
+                /** @description The staff member: the visitor on a field visit, else the cashier. */
+                staffName: string | null;
+                /** @description The account's base currency. */
+                currency: string;
+                /** @description In the base. */
+                total: string;
+                /** Format: date-time */
+                createdAt: string;
+                lines: {
+                    currency: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    /** @description Integer minor units (AP §8.6). */
+                    base: string;
+                }[];
+            }[];
+        };
+        MerchantReceiptDto_Output: {
+            /** Format: uuid */
+            id: string;
+            number: string;
+            /**
+             * @description The restaurant paid, or FOX DROP paid it.
+             * @enum {string}
+             */
+            type: "merchant_settlement" | "merchant_payout";
+            /**
+             * @description «في المكتب» or «زيارة ميدانية».
+             * @enum {string}
+             */
+            method: "office" | "field";
+            /** @description The staff member: the visitor on a field visit, else the cashier. */
+            staffName: string | null;
+            /** @description The account's base currency. */
+            currency: string;
+            /** @description In the base. */
+            total: string;
+            /** Format: date-time */
+            createdAt: string;
+            lines: {
+                currency: string;
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                /** @description Integer minor units (AP §8.6). */
+                base: string;
+            }[];
+            /** @description Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7). */
+            dueBefore: string;
+            /** @description Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7). */
+            dueAfter: string;
         };
     };
     responses: never;
@@ -16080,6 +16295,90 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MerchantAccountDto_Output"];
+                };
+            };
+        };
+    };
+    merchantRecordsStatements: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantStatementListDto_Output"];
+                };
+            };
+        };
+    };
+    merchantRecordsStatement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantStatementDto_Output"];
+                };
+            };
+        };
+    };
+    merchantRecordsReceipts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantReceiptListDto_Output"];
+                };
+            };
+        };
+    };
+    merchantRecordsReceipt: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                receiptId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantReceiptDto_Output"];
                 };
             };
         };

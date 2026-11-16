@@ -24,6 +24,8 @@ part 'merchant_account_dto_output_week_lines_inner.g.dart';
 /// * [cause] - An exception: what it is (RA §12.5).
 /// * [amount] - Integer minor units of the city's base currency (AP §8.6).
 /// * [reason]
+/// * [decidedBy] - «من قرّر» on an exception (RA §12.5): who posted it.
+/// * [decidedByName] - The FOX DROP staff member, by name.
 @BuiltValue()
 abstract class MerchantAccountDtoOutputWeekLinesInner
     implements
@@ -71,6 +73,15 @@ abstract class MerchantAccountDtoOutputWeekLinesInner
 
   @BuiltValueField(wireName: r'reason')
   String? get reason;
+
+  /// «من قرّر» on an exception (RA §12.5): who posted it.
+  @BuiltValueField(wireName: r'decidedBy')
+  MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum? get decidedBy;
+  // enum decidedByEnum {  admin,  merchant,  captain,  customer,  system,  };
+
+  /// The FOX DROP staff member, by name.
+  @BuiltValueField(wireName: r'decidedByName')
+  String? get decidedByName;
 
   MerchantAccountDtoOutputWeekLinesInner._();
 
@@ -175,6 +186,22 @@ class _$MerchantAccountDtoOutputWeekLinesInnerSerializer
         ? null
         : serializers.serialize(
             object.reason,
+            specifiedType: const FullType.nullable(String),
+          );
+    yield r'decidedBy';
+    yield object.decidedBy == null
+        ? null
+        : serializers.serialize(
+            object.decidedBy,
+            specifiedType: const FullType.nullable(
+              MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum,
+            ),
+          );
+    yield r'decidedByName';
+    yield object.decidedByName == null
+        ? null
+        : serializers.serialize(
+            object.decidedByName,
             specifiedType: const FullType.nullable(String),
           );
   }
@@ -315,6 +342,28 @@ class _$MerchantAccountDtoOutputWeekLinesInnerSerializer
           if (valueDes == null) continue;
           result.reason = valueDes;
           break;
+        case r'decidedBy':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum,
+                    ),
+                  )
+                  as MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum?;
+          if (valueDes == null) continue;
+          result.decidedBy = valueDes;
+          break;
+        case r'decidedByName':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.decidedByName = valueDes;
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -422,4 +471,36 @@ class MerchantAccountDtoOutputWeekLinesInnerCauseEnum extends EnumClass {
       _$merchantAccountDtoOutputWeekLinesInnerCauseEnumValues;
   static MerchantAccountDtoOutputWeekLinesInnerCauseEnum valueOf(String name) =>
       _$merchantAccountDtoOutputWeekLinesInnerCauseEnumValueOf(name);
+}
+
+/// «من قرّر» on an exception (RA §12.5): who posted it.
+class MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'admin')
+  static const MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum admin =
+      _$merchantAccountDtoOutputWeekLinesInnerDecidedByEnum_admin;
+  @BuiltValueEnumConst(wireName: r'merchant')
+  static const MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum merchant =
+      _$merchantAccountDtoOutputWeekLinesInnerDecidedByEnum_merchant;
+  @BuiltValueEnumConst(wireName: r'captain')
+  static const MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum captain =
+      _$merchantAccountDtoOutputWeekLinesInnerDecidedByEnum_captain;
+  @BuiltValueEnumConst(wireName: r'customer')
+  static const MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum customer =
+      _$merchantAccountDtoOutputWeekLinesInnerDecidedByEnum_customer;
+  @BuiltValueEnumConst(wireName: r'system')
+  static const MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum system =
+      _$merchantAccountDtoOutputWeekLinesInnerDecidedByEnum_system;
+
+  static Serializer<MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum>
+  get serializer =>
+      _$merchantAccountDtoOutputWeekLinesInnerDecidedByEnumSerializer;
+
+  const MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum._(String name)
+    : super(name);
+
+  static BuiltSet<MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum>
+  get values => _$merchantAccountDtoOutputWeekLinesInnerDecidedByEnumValues;
+  static MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum valueOf(
+    String name,
+  ) => _$merchantAccountDtoOutputWeekLinesInnerDecidedByEnumValueOf(name);
 }

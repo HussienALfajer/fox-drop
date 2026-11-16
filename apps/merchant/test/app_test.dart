@@ -386,6 +386,16 @@ void main() {
       );
       expect(pushTargetPath({'target': 'order'}), isNull);
       expect(pushTargetPath({'target': 'statement'}), isNull);
+      // RA §16 #30–#31 (slice 2.19e).
+      expect(
+        pushTargetPath({'target': 'statement', 'statementId': 's1'}),
+        '/account/statements/s1',
+      );
+      expect(
+        pushTargetPath({'target': 'receipt', 'receiptId': 'r1'}),
+        '/account/receipts/r1',
+      );
+      expect(pushTargetPath({'target': 'receipt', 'receiptId': ''}), isNull);
     });
   });
 

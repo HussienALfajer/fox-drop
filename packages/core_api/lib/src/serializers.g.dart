@@ -771,6 +771,7 @@ Serializers _$serializers =
           ..add(MerchantAccountDtoOutputPickupsInnerLinesInner.serializer)
           ..add(MerchantAccountDtoOutputWeekLinesInner.serializer)
           ..add(MerchantAccountDtoOutputWeekLinesInnerCauseEnum.serializer)
+          ..add(MerchantAccountDtoOutputWeekLinesInnerDecidedByEnum.serializer)
           ..add(MerchantAccountDtoOutputWeekLinesInnerKindEnum.serializer)
           ..add(MerchantAcknowledgeEditDto.serializer)
           ..add(MerchantAvailabilityDto.serializer)
@@ -871,6 +872,14 @@ Serializers _$serializers =
           ..add(MerchantPickupCurrenciesDtoOutputChoicesInner.serializer)
           ..add(MerchantPickupDisputeDto.serializer)
           ..add(MerchantPickupDisputeDtoReceivedLinesInner.serializer)
+          ..add(MerchantReceiptDtoOutput.serializer)
+          ..add(MerchantReceiptDtoOutputMethodEnum.serializer)
+          ..add(MerchantReceiptDtoOutputTypeEnum.serializer)
+          ..add(MerchantReceiptListDtoOutput.serializer)
+          ..add(MerchantReceiptListDtoOutputReceiptsInner.serializer)
+          ..add(MerchantReceiptListDtoOutputReceiptsInnerLinesInner.serializer)
+          ..add(MerchantReceiptListDtoOutputReceiptsInnerMethodEnum.serializer)
+          ..add(MerchantReceiptListDtoOutputReceiptsInnerTypeEnum.serializer)
           ..add(MerchantRefreshDto.serializer)
           ..add(MerchantRejectDto.serializer)
           ..add(MerchantRejectDtoItemsInner.serializer)
@@ -888,6 +897,18 @@ Serializers _$serializers =
           ..add(MerchantSignedInDtoOutputRoleEnum.serializer)
           ..add(MerchantSignedOutDtoOutput.serializer)
           ..add(MerchantSignedOutDtoOutputStatusEnum.serializer)
+          ..add(MerchantStatementDtoOutput.serializer)
+          ..add(MerchantStatementDtoOutputLinesInner.serializer)
+          ..add(MerchantStatementDtoOutputLinesInnerCauseEnum.serializer)
+          ..add(MerchantStatementDtoOutputLinesInnerDecidedByEnum.serializer)
+          ..add(MerchantStatementDtoOutputLinesInnerKindEnum.serializer)
+          ..add(MerchantStatementDtoOutputLinesInnerPickupLinesInner.serializer)
+          ..add(MerchantStatementDtoOutputStatusEnum.serializer)
+          ..add(MerchantStatementListDtoOutput.serializer)
+          ..add(MerchantStatementListDtoOutputStatementsInner.serializer)
+          ..add(
+            MerchantStatementListDtoOutputStatementsInnerStatusEnum.serializer,
+          )
           ..add(MerchantStatusDtoOutput.serializer)
           ..add(MerchantStatusDtoOutputBusyMode.serializer)
           ..add(MerchantStatusDtoOutputHoliday.serializer)
@@ -2372,6 +2393,34 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(MerchantReceiptListDtoOutputReceiptsInner),
+            ]),
+            () => ListBuilder<MerchantReceiptListDtoOutputReceiptsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantReceiptListDtoOutputReceiptsInnerLinesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantReceiptListDtoOutputReceiptsInnerLinesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantReceiptListDtoOutputReceiptsInnerLinesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantReceiptListDtoOutputReceiptsInnerLinesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(MerchantRejectDtoItemsInner),
             ]),
             () => ListBuilder<MerchantRejectDtoItemsInner>(),
@@ -2387,6 +2436,29 @@ Serializers _$serializers =
               const FullType(MerchantScheduleDtoPeriodsInner),
             ]),
             () => ListBuilder<MerchantScheduleDtoPeriodsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantStatementDtoOutputLinesInner),
+            ]),
+            () => ListBuilder<MerchantStatementDtoOutputLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantStatementDtoOutputLinesInnerPickupLinesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantStatementDtoOutputLinesInnerPickupLinesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantStatementListDtoOutputStatementsInner),
+            ]),
+            () => ListBuilder<MerchantStatementListDtoOutputStatementsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

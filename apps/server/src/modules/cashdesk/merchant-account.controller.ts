@@ -6,6 +6,7 @@ import { MerchantController } from '../../http/route-groups.js';
 import type { AppSession } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { MerchantAccountService } from './merchant-account.service.js';
+import { actorTypes } from './merchant-records.service.js';
 import { merchantExceptionCauses, merchantStatementLineKinds } from './schema.js';
 
 const signedMinor = z
@@ -75,6 +76,11 @@ class MerchantAccountDto extends createZodDto(
             .nullable()
             .describe('An exception or a payment: + raises what is owed, − lowers it.'),
           reason: z.string().nullable(),
+          decidedBy: z
+            .enum(actorTypes)
+            .nullable()
+            .describe('«من قرّر» on an exception (RA §12.5): who posted it.'),
+          decidedByName: z.string().nullable().describe('The FOX DROP staff member, by name.'),
         }),
       )
       .describe(
@@ -139,6 +145,8 @@ export class MerchantAccountController {
               cause: null,
               amount: null,
               reason: null,
+              decidedBy: null,
+              decidedByName: null,
             }
           : {
               day: line.day,
@@ -152,6 +160,8 @@ export class MerchantAccountController {
               cause: line.cause,
               amount: line.amount.toString(),
               reason: line.reason,
+              decidedBy: line.decidedBy?.type ?? null,
+              decidedByName: line.decidedBy?.name ?? null,
             },
       ),
     };
