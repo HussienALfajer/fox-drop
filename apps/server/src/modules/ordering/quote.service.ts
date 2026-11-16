@@ -440,7 +440,10 @@ export class QuoteService {
   // AP §9.11.1, §8.8: who a code is checked for: the number's hash, the
   // session's device and whether any account of the number has a delivered
   // order. A session without a device id (none so far) counts the number only.
-  async codeCustomer(accountId: string, deviceId: string | null): Promise<CodeCart['customer']> {
+  async codeCustomer(
+    accountId: string,
+    deviceId: string | null,
+  ): Promise<NonNullable<CodeCart['customer']>> {
     const phone = await this.customerAccounts.phoneAccounts(accountId);
     if (phone === null) throw new Error(`customer ${accountId} does not exist`);
     const [delivered] = await this.database.db

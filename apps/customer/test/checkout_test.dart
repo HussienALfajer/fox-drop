@@ -87,6 +87,7 @@ final _available = [
     'amount': null,
     'maxDiscount': '5000',
     'minOrder': null,
+    'hours': {'startMinute': 720, 'endMinute': 1320},
     'validTo': '2026-12-31T21:00:00.000Z',
     'discount': '2600',
     'missing': null,
@@ -98,6 +99,7 @@ final _available = [
     'amount': null,
     'maxDiscount': null,
     'minOrder': null,
+    'hours': null,
     'validTo': '2026-12-31T21:00:00.000Z',
     'discount': '1000',
     'missing': null,
@@ -109,6 +111,7 @@ final _available = [
     'amount': '4000',
     'maxDiscount': null,
     'minOrder': '20000',
+    'hours': null,
     'validTo': '2026-12-31T21:00:00.000Z',
     'discount': null,
     'missing': '7000',
@@ -1090,7 +1093,9 @@ void main() {
       expect(find.text('لديك كود يوفر عليك 26 ₺: FOX20'), findsOneWidget);
       expect(find.text('الأكواد المتاحة لك'), findsOneWidget);
       expect(
-        find.text('خصم 20% بحد أقصى 50 ₺ · ينتهي 01/01/2027 · يوفر عليك 26 ₺'),
+        find.text(
+          'خصم 20% بحد أقصى 50 ₺ · من 12:00 م إلى 10:00 م · ينتهي 01/01/2027 · يوفر عليك 26 ₺',
+        ),
         findsOneWidget,
       );
       expect(

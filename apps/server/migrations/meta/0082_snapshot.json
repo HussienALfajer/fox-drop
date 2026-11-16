@@ -1,5 +1,5 @@
 {
-  "id": "5859f493-a886-4443-84fd-3e0cb535f50a",
+  "id": "c7b7492b-586a-44ec-bab9-b531375d362e",
   "prevId": "81268017-2fcf-44b7-b039-14acd0bffcfc",
   "version": "7",
   "dialect": "postgresql",
@@ -6921,6 +6921,27 @@
             },
             {
               "expression": "customer_account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "promo_code_uses_customer_held": {
+          "name": "promo_code_uses_customer_held",
+          "columns": [
+            {
+              "expression": "customer_account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "held_at",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

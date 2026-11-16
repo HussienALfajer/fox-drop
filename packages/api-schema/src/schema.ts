@@ -6209,6 +6209,11 @@ export interface components {
                 maxDiscount: string | null;
                 /** @description The minimum on the items value, or null. */
                 minOrder: string | null;
+                /** @description The hours on the city clock, minutes from midnight; an end at or before the start runs past midnight. */
+                hours: {
+                    startMinute: number;
+                    endMinute: number;
+                } | null;
                 /**
                  * Format: date-time
                  * @description «ينتهي {التاريخ}».

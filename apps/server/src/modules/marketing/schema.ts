@@ -207,6 +207,8 @@ export const promoCodeUses = marketing.table(
     uniqueIndex('promo_code_uses_order').on(table.orderId),
     index('promo_code_uses_code_day').on(table.codeId, table.businessDay),
     index('promo_code_uses_code_customer').on(table.codeId, table.customerAccountId),
+    // «أكوادي» (slice 2.21d): a customer's uses of the last 30 days.
+    index('promo_code_uses_customer_held').on(table.customerAccountId, table.heldAt),
     check('promo_code_uses_status_values', sql`${table.status} IN ('held', 'spent', 'returned')`),
     check(
       'promo_code_uses_money',

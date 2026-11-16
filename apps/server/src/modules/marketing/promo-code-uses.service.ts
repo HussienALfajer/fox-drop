@@ -4,6 +4,7 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { NotificationTexts } from '../content/index.js';
+import { FxService } from '../fx/index.js';
 import { GeoService, lastCutoff } from '../geo/index.js';
 import { PushQueue } from '../notifications/index.js';
 import { SettingsService } from '../settings/index.js';
@@ -15,6 +16,7 @@ import {
   ENDED_CODES_DAYS,
   type MyCode,
   openToCustomer,
+  runsNow,
   type CodeTerms,
   fixedAmountAboveItems,
   minuteOfDay,
@@ -87,6 +89,7 @@ export class PromoCodeUsesService {
     private readonly settings: SettingsService,
     private readonly texts: NotificationTexts,
     private readonly pushes: PushQueue,
+    private readonly fx: FxService,
   ) {}
 
   // The city's clock for a cart (owner decision 2026-11-16: the daily
@@ -157,19 +160,42 @@ export class PromoCodeUsesService {
           or(ne(promoCodeUses.status, status), ne(promoCodeUses.delivered, delivered)),
         ),
       )
-      .returning({ codeId: promoCodeUses.codeId, accountId: promoCodeUses.customerAccountId });
+      .returning({
+        codeId: promoCodeUses.codeId,
+        cityId: promoCodeUses.cityId,
+        accountId: promoCodeUses.customerAccountId,
+        phoneHash: promoCodeUses.phoneHash,
+        deviceId: promoCodeUses.deviceId,
+        newUser: promoCodeUses.newUser,
+      });
     if (status !== 'returned' || use === undefined) return;
-    // CU §10.4 (owner decision 2026-11-16): «أُعيد الكود {الكود} إلى أكوادك»
-    // once the code is back in «متاحة»: visible and not ended.
-    const [code] = await tx
-      .select({
-        code: promoCodes.code,
-        visibility: promoCodes.visibility,
-        validTo: promoCodes.validTo,
-      })
-      .from(promoCodes)
-      .where(eq(promoCodes.id, use.codeId));
-    if (!code || code.visibility !== 'visible' || code.validTo.getTime() <= now.getTime()) return;
+    // CU §10.4, §14 #23 (owner decision 2026-11-16): «أُعيد الكود {الكود}
+    // إلى أكوادك» once the code is back in the customer's «متاحة», by
+    // `mine`'s rule. Whether they are still new is the placing's answer: the
+    // order given back was not delivered.
+    const [code] = await tx.select().from(promoCodes).where(eq(promoCodes.id, use.codeId));
+    const baseCurrency = await this.fx.baseCurrency(use.cityId, tx);
+    if (!code || baseCurrency === null || !runsNow(code, baseCurrency, now)) return;
+    const count =
+      (
+        await this.counts(tx, [code.id], {
+          customer: {
+            accountId: use.accountId,
+            phoneHash: use.phoneHash,
+            deviceId: use.deviceId,
+            newUser: use.newUser,
+          },
+          // The day's cost is not read here.
+          clock: { timeZone: 'UTC', businessDay: now },
+        })
+      ).get(code.id) ?? NO_USES;
+    const open = openToCustomer(code, {
+      newUser: use.newUser,
+      mine: count.mine,
+      phoneOrDeviceUsed: count.sameNumberOrDevice > 0,
+      total: count.total,
+    });
+    if (!open) return;
     const templateKey = 'customer.code_returned';
     const rendered = await this.texts.render(templateKey, { الكود: code.code }, tx);
     await this.pushes.enqueue(
@@ -194,8 +220,8 @@ export class PromoCodeUsesService {
   // the city now that are open to this customer (`openToCustomer`), and
   // «منتهية», those they used up or that ended within the last 30 days. A
   // code the account used (a use not given back) and can no longer use is
-  // `used`, a secret one included; a visible code that ended unused is
-  // `expired` when its audience took the customer.
+  // `used`, a secret one included; a visible code that ended without being
+  // used up is `expired` when its audience took the customer.
   async mine(
     scope: Pick<CodeCart, 'cityId' | 'baseCurrency' | 'clock'> & {
       customer: NonNullable<CodeCart['customer']>;
@@ -250,16 +276,12 @@ export class PromoCodeUsesService {
         phoneOrDeviceUsed: count.sameNumberOrDevice > 0,
         total: count.total,
       });
-      const runsNow =
-        row.visibility === 'visible' &&
-        row.status === 'active' &&
-        row.currency === scope.baseCurrency &&
-        row.validFrom.getTime() <= now.getTime() &&
-        row.validTo.getTime() > now.getTime();
       const last = lastUse.get(row.id);
       let ended: MyCode['ended'];
-      if (runsNow && open) ended = null;
-      else if (last !== undefined) ended = { reason: 'used', at: last };
+      if (open && runsNow(row, scope.baseCurrency, now)) ended = null;
+      // Used up by this customer; a code they may still use but that is
+      // paused or secret waits, and shows as expired once it ends.
+      else if (last !== undefined && !open) ended = { reason: 'used', at: last };
       else if (
         row.visibility === 'visible' &&
         row.validTo.getTime() <= now.getTime() &&
@@ -394,6 +416,8 @@ export class PromoCodeUsesService {
         amount: row.amount,
         maxDiscount: row.maxDiscount,
         minOrder: row.minOrder,
+        startMinute: row.startMinute,
+        endMinute: row.endMinute,
         validTo: row.validTo,
         discount: below ? null : promoDiscount(terms, cart),
         missing: below ? row.minOrder! - cart.itemsValue : null,

@@ -213,6 +213,8 @@ describe('PromoCodeUsesService.available', () => {
       now,
     );
     expect(fresh.map((entry) => entry.code)).toContain('NEWONLY');
+    // Another customer's use is never this one's: ONCE stays open to them.
+    expect(fresh.find((entry) => entry.code === 'ONCE')).toMatchObject({ ended: null });
     // On 20 January every code has ended: the use of 10 December is past 30
     // days, so ONCE is merely expired, and ENDED (5 December) is gone.
     const later = new Date('2027-01-20T12:00:00Z');

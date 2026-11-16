@@ -486,7 +486,6 @@ import 'package:core_api/src/model/customer_code_sent_dto_output.dart';
 import 'package:core_api/src/model/customer_codes_dto_output.dart';
 import 'package:core_api/src/model/customer_codes_dto_output_codes_inner.dart';
 import 'package:core_api/src/model/customer_codes_dto_output_codes_inner_ended.dart';
-import 'package:core_api/src/model/customer_codes_dto_output_codes_inner_hours.dart';
 import 'package:core_api/src/model/customer_content_dto_output.dart';
 import 'package:core_api/src/model/customer_content_dto_output_reasons.dart';
 import 'package:core_api/src/model/customer_emergency_stop_dto_output.dart';
@@ -504,6 +503,7 @@ import 'package:core_api/src/model/customer_profile_dto_output.dart';
 import 'package:core_api/src/model/customer_profile_dto_output_profile.dart';
 import 'package:core_api/src/model/customer_quote_dto_output.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_available_codes_inner.dart';
+import 'package:core_api/src/model/customer_quote_dto_output_available_codes_inner_hours.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_estimate.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_free_delivery.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_lines_inner.dart';
@@ -1139,7 +1139,6 @@ part 'serializers.g.dart';
   CustomerCodesDtoOutput,
   CustomerCodesDtoOutputCodesInner,
   CustomerCodesDtoOutputCodesInnerEnded,
-  CustomerCodesDtoOutputCodesInnerHours,
   CustomerContentDtoOutput,
   CustomerContentDtoOutputReasons,
   CustomerEmergencyStopDtoOutput,
@@ -1157,6 +1156,7 @@ part 'serializers.g.dart';
   CustomerProfileDtoOutputProfile,
   CustomerQuoteDtoOutput,
   CustomerQuoteDtoOutputAvailableCodesInner,
+  CustomerQuoteDtoOutputAvailableCodesInnerHours,
   CustomerQuoteDtoOutputEstimate,
   CustomerQuoteDtoOutputFreeDelivery,
   CustomerQuoteDtoOutputLinesInner,

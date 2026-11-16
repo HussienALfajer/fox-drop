@@ -1,40 +1,43 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'customer_codes_dto_output_codes_inner_hours.dart';
+part of 'customer_quote_dto_output_available_codes_inner_hours.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$CustomerCodesDtoOutputCodesInnerHours
-    extends CustomerCodesDtoOutputCodesInnerHours {
+class _$CustomerQuoteDtoOutputAvailableCodesInnerHours
+    extends CustomerQuoteDtoOutputAvailableCodesInnerHours {
   @override
   final int startMinute;
   @override
   final int endMinute;
 
-  factory _$CustomerCodesDtoOutputCodesInnerHours([
-    void Function(CustomerCodesDtoOutputCodesInnerHoursBuilder)? updates,
-  ]) => (CustomerCodesDtoOutputCodesInnerHoursBuilder()..update(updates))
-      ._build();
+  factory _$CustomerQuoteDtoOutputAvailableCodesInnerHours([
+    void Function(CustomerQuoteDtoOutputAvailableCodesInnerHoursBuilder)?
+    updates,
+  ]) =>
+      (CustomerQuoteDtoOutputAvailableCodesInnerHoursBuilder()..update(updates))
+          ._build();
 
-  _$CustomerCodesDtoOutputCodesInnerHours._({
+  _$CustomerQuoteDtoOutputAvailableCodesInnerHours._({
     required this.startMinute,
     required this.endMinute,
   }) : super._();
   @override
-  CustomerCodesDtoOutputCodesInnerHours rebuild(
-    void Function(CustomerCodesDtoOutputCodesInnerHoursBuilder) updates,
+  CustomerQuoteDtoOutputAvailableCodesInnerHours rebuild(
+    void Function(CustomerQuoteDtoOutputAvailableCodesInnerHoursBuilder)
+    updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  CustomerCodesDtoOutputCodesInnerHoursBuilder toBuilder() =>
-      CustomerCodesDtoOutputCodesInnerHoursBuilder()..replace(this);
+  CustomerQuoteDtoOutputAvailableCodesInnerHoursBuilder toBuilder() =>
+      CustomerQuoteDtoOutputAvailableCodesInnerHoursBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is CustomerCodesDtoOutputCodesInnerHours &&
+    return other is CustomerQuoteDtoOutputAvailableCodesInnerHours &&
         startMinute == other.startMinute &&
         endMinute == other.endMinute;
   }
@@ -51,7 +54,7 @@ class _$CustomerCodesDtoOutputCodesInnerHours
   @override
   String toString() {
     return (newBuiltValueToStringHelper(
-            r'CustomerCodesDtoOutputCodesInnerHours',
+            r'CustomerQuoteDtoOutputAvailableCodesInnerHours',
           )
           ..add('startMinute', startMinute)
           ..add('endMinute', endMinute))
@@ -59,13 +62,13 @@ class _$CustomerCodesDtoOutputCodesInnerHours
   }
 }
 
-class CustomerCodesDtoOutputCodesInnerHoursBuilder
+class CustomerQuoteDtoOutputAvailableCodesInnerHoursBuilder
     implements
         Builder<
-          CustomerCodesDtoOutputCodesInnerHours,
-          CustomerCodesDtoOutputCodesInnerHoursBuilder
+          CustomerQuoteDtoOutputAvailableCodesInnerHours,
+          CustomerQuoteDtoOutputAvailableCodesInnerHoursBuilder
         > {
-  _$CustomerCodesDtoOutputCodesInnerHours? _$v;
+  _$CustomerQuoteDtoOutputAvailableCodesInnerHours? _$v;
 
   int? _startMinute;
   int? get startMinute => _$this._startMinute;
@@ -75,11 +78,11 @@ class CustomerCodesDtoOutputCodesInnerHoursBuilder
   int? get endMinute => _$this._endMinute;
   set endMinute(int? endMinute) => _$this._endMinute = endMinute;
 
-  CustomerCodesDtoOutputCodesInnerHoursBuilder() {
-    CustomerCodesDtoOutputCodesInnerHours._defaults(this);
+  CustomerQuoteDtoOutputAvailableCodesInnerHoursBuilder() {
+    CustomerQuoteDtoOutputAvailableCodesInnerHours._defaults(this);
   }
 
-  CustomerCodesDtoOutputCodesInnerHoursBuilder get _$this {
+  CustomerQuoteDtoOutputAvailableCodesInnerHoursBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _startMinute = $v.startMinute;
@@ -90,32 +93,33 @@ class CustomerCodesDtoOutputCodesInnerHoursBuilder
   }
 
   @override
-  void replace(CustomerCodesDtoOutputCodesInnerHours other) {
-    _$v = other as _$CustomerCodesDtoOutputCodesInnerHours;
+  void replace(CustomerQuoteDtoOutputAvailableCodesInnerHours other) {
+    _$v = other as _$CustomerQuoteDtoOutputAvailableCodesInnerHours;
   }
 
   @override
   void update(
-    void Function(CustomerCodesDtoOutputCodesInnerHoursBuilder)? updates,
+    void Function(CustomerQuoteDtoOutputAvailableCodesInnerHoursBuilder)?
+    updates,
   ) {
     if (updates != null) updates(this);
   }
 
   @override
-  CustomerCodesDtoOutputCodesInnerHours build() => _build();
+  CustomerQuoteDtoOutputAvailableCodesInnerHours build() => _build();
 
-  _$CustomerCodesDtoOutputCodesInnerHours _build() {
+  _$CustomerQuoteDtoOutputAvailableCodesInnerHours _build() {
     final _$result =
         _$v ??
-        _$CustomerCodesDtoOutputCodesInnerHours._(
+        _$CustomerQuoteDtoOutputAvailableCodesInnerHours._(
           startMinute: BuiltValueNullFieldError.checkNotNull(
             startMinute,
-            r'CustomerCodesDtoOutputCodesInnerHours',
+            r'CustomerQuoteDtoOutputAvailableCodesInnerHours',
             'startMinute',
           ),
           endMinute: BuiltValueNullFieldError.checkNotNull(
             endMinute,
-            r'CustomerCodesDtoOutputCodesInnerHours',
+            r'CustomerQuoteDtoOutputAvailableCodesInnerHours',
             'endMinute',
           ),
         );

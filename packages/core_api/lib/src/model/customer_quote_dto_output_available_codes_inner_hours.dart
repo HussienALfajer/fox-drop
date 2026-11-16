@@ -6,7 +6,7 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'customer_codes_dto_output_codes_inner_hours.g.dart';
+part 'customer_quote_dto_output_available_codes_inner_hours.g.dart';
 
 /// The hours on the city clock, minutes from midnight; an end at or before the start runs past midnight.
 ///
@@ -14,11 +14,11 @@ part 'customer_codes_dto_output_codes_inner_hours.g.dart';
 /// * [startMinute]
 /// * [endMinute]
 @BuiltValue()
-abstract class CustomerCodesDtoOutputCodesInnerHours
+abstract class CustomerQuoteDtoOutputAvailableCodesInnerHours
     implements
         Built<
-          CustomerCodesDtoOutputCodesInnerHours,
-          CustomerCodesDtoOutputCodesInnerHoursBuilder
+          CustomerQuoteDtoOutputAvailableCodesInnerHours,
+          CustomerQuoteDtoOutputAvailableCodesInnerHoursBuilder
         > {
   @BuiltValueField(wireName: r'startMinute')
   int get startMinute;
@@ -26,34 +26,38 @@ abstract class CustomerCodesDtoOutputCodesInnerHours
   @BuiltValueField(wireName: r'endMinute')
   int get endMinute;
 
-  CustomerCodesDtoOutputCodesInnerHours._();
+  CustomerQuoteDtoOutputAvailableCodesInnerHours._();
 
-  factory CustomerCodesDtoOutputCodesInnerHours([
-    void updates(CustomerCodesDtoOutputCodesInnerHoursBuilder b),
-  ]) = _$CustomerCodesDtoOutputCodesInnerHours;
+  factory CustomerQuoteDtoOutputAvailableCodesInnerHours([
+    void updates(CustomerQuoteDtoOutputAvailableCodesInnerHoursBuilder b),
+  ]) = _$CustomerQuoteDtoOutputAvailableCodesInnerHours;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CustomerCodesDtoOutputCodesInnerHoursBuilder b) => b;
+  static void _defaults(
+    CustomerQuoteDtoOutputAvailableCodesInnerHoursBuilder b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerCodesDtoOutputCodesInnerHours> get serializer =>
-      _$CustomerCodesDtoOutputCodesInnerHoursSerializer();
+  static Serializer<CustomerQuoteDtoOutputAvailableCodesInnerHours>
+  get serializer =>
+      _$CustomerQuoteDtoOutputAvailableCodesInnerHoursSerializer();
 }
 
-class _$CustomerCodesDtoOutputCodesInnerHoursSerializer
-    implements PrimitiveSerializer<CustomerCodesDtoOutputCodesInnerHours> {
+class _$CustomerQuoteDtoOutputAvailableCodesInnerHoursSerializer
+    implements
+        PrimitiveSerializer<CustomerQuoteDtoOutputAvailableCodesInnerHours> {
   @override
   final Iterable<Type> types = const [
-    CustomerCodesDtoOutputCodesInnerHours,
-    _$CustomerCodesDtoOutputCodesInnerHours,
+    CustomerQuoteDtoOutputAvailableCodesInnerHours,
+    _$CustomerQuoteDtoOutputAvailableCodesInnerHours,
   ];
 
   @override
-  final String wireName = r'CustomerCodesDtoOutputCodesInnerHours';
+  final String wireName = r'CustomerQuoteDtoOutputAvailableCodesInnerHours';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    CustomerCodesDtoOutputCodesInnerHours object, {
+    CustomerQuoteDtoOutputAvailableCodesInnerHours object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'startMinute';
@@ -71,7 +75,7 @@ class _$CustomerCodesDtoOutputCodesInnerHoursSerializer
   @override
   Object serialize(
     Serializers serializers,
-    CustomerCodesDtoOutputCodesInnerHours object, {
+    CustomerQuoteDtoOutputAvailableCodesInnerHours object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -86,7 +90,7 @@ class _$CustomerCodesDtoOutputCodesInnerHoursSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required CustomerCodesDtoOutputCodesInnerHoursBuilder result,
+    required CustomerQuoteDtoOutputAvailableCodesInnerHoursBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -114,12 +118,12 @@ class _$CustomerCodesDtoOutputCodesInnerHoursSerializer
   }
 
   @override
-  CustomerCodesDtoOutputCodesInnerHours deserialize(
+  CustomerQuoteDtoOutputAvailableCodesInnerHours deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = CustomerCodesDtoOutputCodesInnerHoursBuilder();
+    final result = CustomerQuoteDtoOutputAvailableCodesInnerHoursBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

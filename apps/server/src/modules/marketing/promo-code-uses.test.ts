@@ -8,6 +8,7 @@ import { createDatabase, type Database } from '../../database/database.js';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
 import { createApiApp } from '../../http/create-api-app.js';
 import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
+import { FxService } from '../fx/index.js';
 import { type CodeCart, PromoCodeUsesService } from './promo-code-uses.service.js';
 
 // A code checked, held at placing and settled (AP §9.11.1, slice 2.21b):
@@ -190,6 +191,15 @@ describe('PromoCodeUsesService', () => {
   });
 
   it('tells the customer «أُعيد الكود {الكود} إلى أكوادك» when a use comes back', async () => {
+    // The push names a code back in «متاحة», which needs the city's base.
+    const fx = app.get(FxService);
+    const change = {
+      actor: { type: 'system', id: null, role: null } as const,
+      context: { ipAddress: null, device: null },
+      reason: 'test',
+    };
+    await fx.setCityCurrency(azaz, { currency: 'TRY', displayOrder: 1, enabled: true }, change);
+    await fx.setBaseCurrency(azaz, 'TRY', change);
     const typed = await code();
     const who = customer();
     const pushes = async () =>
@@ -216,6 +226,11 @@ describe('PromoCodeUsesService', () => {
     ]);
     const hidden = await place(cart(secret, who));
     await db.db.transaction((tx) => uses.settle(tx, hidden.orderId, 'returned', now));
+    // Nor is a paused one.
+    const paused = await code();
+    const stopped = await place(cart(paused, who));
+    await sql.query("UPDATE marketing.promo_codes SET status = 'paused' WHERE code = $1", [paused]);
+    await db.db.transaction((tx) => uses.settle(tx, stopped.orderId, 'returned', now));
     expect(await pushes()).toHaveLength(1);
   });
 

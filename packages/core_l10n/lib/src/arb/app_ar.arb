@@ -398,6 +398,8 @@
   "@customerCodeExpires": {"description": "A code's expiry (CU §12.4).", "placeholders": {"date": {"type": "String"}}},
   "customerCodeReplaceAsk": "طلبك يحمل الكود {current}. هل تستبدله بالكود {code}؟",
   "@customerCodeReplaceAsk": {"description": "Asked before another code replaces the applied one: one code per order (CU §10.4; our words).", "placeholders": {"current": {"type": "String"}, "code": {"type": "String"}}},
+  "listSeparator": "، ",
+  "@listSeparator": {"description": "Between the items of a list written in a line, such as a code's restaurants (CU §12.4)."},
   "customerMyCodesTitle": "أكوادي",
   "@customerMyCodesTitle": {"description": "«أكوادي» (CU §12.4, Appendix B)."},
   "customerCodesTabAvailable": "متاحة",

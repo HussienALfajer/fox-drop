@@ -155,6 +155,12 @@ class CustomerQuoteDto extends createZodDto(
           amount: minor.nullable().describe('A fixed amount.'),
           maxDiscount: minor.nullable().describe('The cap of a percentage, or null.'),
           minOrder: minor.nullable().describe('The minimum on the items value, or null.'),
+          hours: z
+            .object({ startMinute: z.int(), endMinute: z.int() })
+            .nullable()
+            .describe(
+              'The hours on the city clock, minutes from midnight; an end at or before the start runs past midnight.',
+            ),
           validTo: z.iso.datetime().describe('«ينتهي {التاريخ}».'),
           discount: minor
             .nullable()
@@ -340,6 +346,10 @@ export function quoteBody(quote: Quote) {
       amount: textOrNull(entry.amount),
       maxDiscount: textOrNull(entry.maxDiscount),
       minOrder: textOrNull(entry.minOrder),
+      hours:
+        entry.startMinute === null || entry.endMinute === null
+          ? null
+          : { startMinute: entry.startMinute, endMinute: entry.endMinute },
       validTo: entry.validTo.toISOString(),
       discount: textOrNull(entry.discount?.total ?? null),
       missing: textOrNull(entry.missing),

@@ -1288,6 +1288,12 @@ abstract class AppLocalizations {
   /// **'طلبك يحمل الكود {current}. هل تستبدله بالكود {code}؟'**
   String customerCodeReplaceAsk(String current, String code);
 
+  /// Between the items of a list written in a line, such as a code's restaurants (CU §12.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'، '**
+  String get listSeparator;
+
   /// «أكوادي» (CU §12.4, Appendix B).
   ///
   /// In ar, this message translates to:

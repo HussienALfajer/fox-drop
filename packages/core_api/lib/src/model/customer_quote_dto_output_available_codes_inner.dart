@@ -4,6 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/customer_quote_dto_output_available_codes_inner_hours.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -18,6 +19,7 @@ part 'customer_quote_dto_output_available_codes_inner.g.dart';
 /// * [amount] - Integer minor units (AP §8.6).
 /// * [maxDiscount] - Integer minor units (AP §8.6).
 /// * [minOrder] - Integer minor units (AP §8.6).
+/// * [hours]
 /// * [validTo] - «ينتهي {التاريخ}».
 /// * [discount] - Integer minor units (AP §8.6).
 /// * [missing] - Integer minor units (AP §8.6).
@@ -50,6 +52,9 @@ abstract class CustomerQuoteDtoOutputAvailableCodesInner
   /// Integer minor units (AP §8.6).
   @BuiltValueField(wireName: r'minOrder')
   String? get minOrder;
+
+  @BuiltValueField(wireName: r'hours')
+  CustomerQuoteDtoOutputAvailableCodesInnerHours? get hours;
 
   /// «ينتهي {التاريخ}».
   @BuiltValueField(wireName: r'validTo')
@@ -133,6 +138,15 @@ class _$CustomerQuoteDtoOutputAvailableCodesInnerSerializer
         : serializers.serialize(
             object.minOrder,
             specifiedType: const FullType.nullable(String),
+          );
+    yield r'hours';
+    yield object.hours == null
+        ? null
+        : serializers.serialize(
+            object.hours,
+            specifiedType: const FullType.nullable(
+              CustomerQuoteDtoOutputAvailableCodesInnerHours,
+            ),
           );
     yield r'validTo';
     yield serializers.serialize(
@@ -239,6 +253,18 @@ class _$CustomerQuoteDtoOutputAvailableCodesInnerSerializer
                   as String?;
           if (valueDes == null) continue;
           result.minOrder = valueDes;
+          break;
+        case r'hours':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CustomerQuoteDtoOutputAvailableCodesInnerHours,
+                    ),
+                  )
+                  as CustomerQuoteDtoOutputAvailableCodesInnerHours?;
+          if (valueDes == null) continue;
+          result.hours.replace(valueDes);
           break;
         case r'validTo':
           final valueDes =

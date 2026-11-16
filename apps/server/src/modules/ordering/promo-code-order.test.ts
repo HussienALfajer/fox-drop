@@ -154,7 +154,10 @@ describe('a code in the quote', () => {
     expect(applied.suggestedCode).toBeNull();
     expect(applied.money.discount).toBe('23760');
 
-    // «أكوادي» (CU §12.4) at the point's city, signed in only.
+    // «أكوادي» (CU §12.4) at the point's city, signed in only. A code whose
+    // only restaurant customers cannot see is left out (no name, no id).
+    const ghost = await promoCode({ restaurant_ids: [randomUUID()] });
+
     const url = `/v1/customer/promo-codes?latitude=${home.latitude}&longitude=${home.longitude}`;
     expect((await app.inject({ method: 'GET', url })).statusCode).toBe(401);
     const mine = await app.inject({
@@ -167,6 +170,7 @@ describe('a code in the quote', () => {
     expect(mine.json().codes.map((entry: { code: string }) => entry.code)).toEqual(
       expect.arrayContaining([best, other]),
     );
+    expect(mine.json().codes.map((entry: { code: string }) => entry.code)).not.toContain(ghost);
     expect(mine.json().codes.find((entry: { code: string }) => entry.code === best)).toMatchObject({
       kind: 'percentage',
       percentBp: 9900,

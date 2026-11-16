@@ -5,7 +5,7 @@
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/customer_codes_dto_output_codes_inner_ended.dart';
-import 'package:core_api/src/model/customer_codes_dto_output_codes_inner_hours.dart';
+import 'package:core_api/src/model/customer_quote_dto_output_available_codes_inner_hours.dart';
 import 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force_windows_inner_zones_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -67,7 +67,7 @@ abstract class CustomerCodesDtoOutputCodesInner
   BuiltList<String> get zones;
 
   @BuiltValueField(wireName: r'hours')
-  CustomerCodesDtoOutputCodesInnerHours? get hours;
+  CustomerQuoteDtoOutputAvailableCodesInnerHours? get hours;
 
   /// «ينتهي {التاريخ}».
   @BuiltValueField(wireName: r'validTo')
@@ -166,7 +166,7 @@ class _$CustomerCodesDtoOutputCodesInnerSerializer
         : serializers.serialize(
             object.hours,
             specifiedType: const FullType.nullable(
-              CustomerCodesDtoOutputCodesInnerHours,
+              CustomerQuoteDtoOutputAvailableCodesInnerHours,
             ),
           );
     yield r'validTo';
@@ -308,10 +308,10 @@ class _$CustomerCodesDtoOutputCodesInnerSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      CustomerCodesDtoOutputCodesInnerHours,
+                      CustomerQuoteDtoOutputAvailableCodesInnerHours,
                     ),
                   )
-                  as CustomerCodesDtoOutputCodesInnerHours?;
+                  as CustomerQuoteDtoOutputAvailableCodesInnerHours?;
           if (valueDes == null) continue;
           result.hours.replace(valueDes);
           break;

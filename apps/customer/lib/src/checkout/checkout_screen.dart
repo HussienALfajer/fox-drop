@@ -556,7 +556,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   /// CU §10.4, Q19: the suggestion «لديك كود يوفر عليك {المبلغ}: {الكود}»
-  /// and «الأكواد المتاحة لك», each code with its value, minimum, expiry and
+  /// and «الأكواد المتاحة لك», each code with its value, minimum, hours, expiry and
   /// what it saves on this cart, or what its minimum still lacks. Only the
   /// customer's «تطبيق» applies one (U11).
   List<Widget> _codes(
@@ -606,6 +606,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               ),
               if (code.minOrder case final minimum?)
                 l10n.customerCodeMinimum(money(minimum)),
+              if (code.hours case final hours?)
+                l10n.customerCodeHours(
+                  l10n.formatMinuteOfDay(hours.startMinute),
+                  l10n.formatMinuteOfDay(hours.endMinute),
+                ),
               l10n.customerCodeExpires(l10n.formatDate(code.validTo)),
               if (code.discount case final discount?)
                 l10n.customerCodeSaves(money(discount)),

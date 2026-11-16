@@ -93,9 +93,10 @@ class _CodeTile extends StatelessWidget {
         l10n.customerCodeMinimum(l10n.formatMoney(minimum, currency)),
       if (code.restaurants.isNotEmpty)
         l10n.customerCodeRestaurants(
-          code.restaurants.map((r) => r!.name).join('، '),
+          code.restaurants.map((r) => r!.name).join(l10n.listSeparator),
         ),
-      if (code.zones.isNotEmpty) l10n.customerCodeZones(code.zones.join('، ')),
+      if (code.zones.isNotEmpty)
+        l10n.customerCodeZones(code.zones.join(l10n.listSeparator)),
       if (hours != null)
         l10n.customerCodeHours(
           l10n.formatMinuteOfDay(hours.startMinute),

@@ -19412,6 +19412,34 @@
                   ],
                   "description": "The minimum on the items value, or null."
                 },
+                "hours": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "startMinute": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "endMinute": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "startMinute",
+                        "endMinute"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The hours on the city clock, minutes from midnight; an end at or before the start runs past midnight."
+                },
                 "validTo": {
                   "type": "string",
                   "format": "date-time",
@@ -19452,6 +19480,7 @@
                 "amount",
                 "maxDiscount",
                 "minOrder",
+                "hours",
                 "validTo",
                 "discount",
                 "missing"

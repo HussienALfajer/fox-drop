@@ -390,6 +390,22 @@ describe('the code report (AP §9.11.1, slice 2.21d)', () => {
     const later = await extend(own, '2100-06-30T00:00:00.000Z');
     expect(later.statusCode, later.body).toBe(200);
     expect(later.json().validTo).toBe('2100-06-30T00:00:00.000Z');
+    // Scoped to the city: another cityId is unknown.
+    const elsewhere = randomUUID();
+    const outside = await app.inject({
+      method: 'GET',
+      url: `/v1/admin/promo-codes/${id}/report?cityId=${elsewhere}`,
+      cookies: { [ADMIN_SESSION_COOKIE]: own.cookie },
+    });
+    expect(outside.statusCode).toBe(404);
+    expect(outside.json().error).toBe('unknown_promo_code');
+    const away = await app.inject({
+      method: 'POST',
+      url: `/v1/admin/promo-codes/${id}/extend`,
+      cookies: { [ADMIN_SESSION_COOKIE]: own.cookie },
+      payload: { cityId: elsewhere, validTo: '2101-01-01T00:00:00.000Z' },
+    });
+    expect(away.statusCode).toBe(404);
     const audit = await sql.query(
       "SELECT changes FROM audit.events WHERE action = 'promo_code.extend' AND target_id = $1",
       [id],
@@ -401,5 +417,26 @@ describe('the code report (AP §9.11.1, slice 2.21d)', () => {
         },
       },
     ]);
+  });
+
+  it('runs an ended code again once extended', async () => {
+    const own = await admin(['OWN']);
+    const created = await own.post('', {
+      cityId: azaz,
+      code: 'ENDED1',
+      ...fields,
+      validFrom: '2026-01-01T00:00:00.000Z',
+      validTo: '2026-02-01T00:00:00.000Z',
+    });
+    const { id, state } = created.json().codes[0];
+    expect(state).toBe('expired');
+    const extended = await app.inject({
+      method: 'POST',
+      url: `/v1/admin/promo-codes/${id}/extend`,
+      cookies: { [ADMIN_SESSION_COOKIE]: own.cookie },
+      payload: { cityId: azaz, validTo: '2099-01-01T00:00:00.000Z' },
+    });
+    expect(extended.statusCode, extended.body).toBe(200);
+    expect(extended.json()).toMatchObject({ state: 'active', validTo: '2099-01-01T00:00:00.000Z' });
   });
 });

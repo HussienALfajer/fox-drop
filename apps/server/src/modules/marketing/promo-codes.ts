@@ -326,6 +326,9 @@ export interface AvailableCode {
   amount: bigint | null;
   maxDiscount: bigint | null;
   minOrder: bigint | null;
+  // The hours on the city clock, both or neither.
+  startMinute: number | null;
+  endMinute: number | null;
   validTo: Date;
   // null while below its minimum.
   discount: PromoDiscount | null;
@@ -383,3 +386,22 @@ export interface MyCode {
 }
 
 export const ENDED_CODES_DAYS = 30;
+
+// CU §12.4: a visible code customers can use now, whatever the cart: active,
+// started, not ended and saved in the city's base. With `openToCustomer` it
+// is in «متاحة».
+export function runsNow(
+  code: Pick<CodeRow, 'status' | 'validFrom' | 'validTo' | 'currency'> & {
+    visibility: PromoCodeVisibility;
+  },
+  baseCurrency: string,
+  now: Date,
+): boolean {
+  return (
+    code.visibility === 'visible' &&
+    code.status === 'active' &&
+    code.currency === baseCurrency &&
+    code.validFrom.getTime() <= now.getTime() &&
+    code.validTo.getTime() > now.getTime()
+  );
+}

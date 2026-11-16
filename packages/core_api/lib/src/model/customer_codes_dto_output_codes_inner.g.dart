@@ -101,7 +101,7 @@ class _$CustomerCodesDtoOutputCodesInner
   @override
   final BuiltList<String> zones;
   @override
-  final CustomerCodesDtoOutputCodesInnerHours? hours;
+  final CustomerQuoteDtoOutputAvailableCodesInnerHours? hours;
   @override
   final DateTime validTo;
   @override
@@ -239,10 +239,10 @@ class CustomerCodesDtoOutputCodesInnerBuilder
   ListBuilder<String> get zones => _$this._zones ??= ListBuilder<String>();
   set zones(ListBuilder<String>? zones) => _$this._zones = zones;
 
-  CustomerCodesDtoOutputCodesInnerHoursBuilder? _hours;
-  CustomerCodesDtoOutputCodesInnerHoursBuilder get hours =>
-      _$this._hours ??= CustomerCodesDtoOutputCodesInnerHoursBuilder();
-  set hours(CustomerCodesDtoOutputCodesInnerHoursBuilder? hours) =>
+  CustomerQuoteDtoOutputAvailableCodesInnerHoursBuilder? _hours;
+  CustomerQuoteDtoOutputAvailableCodesInnerHoursBuilder get hours =>
+      _$this._hours ??= CustomerQuoteDtoOutputAvailableCodesInnerHoursBuilder();
+  set hours(CustomerQuoteDtoOutputAvailableCodesInnerHoursBuilder? hours) =>
       _$this._hours = hours;
 
   DateTime? _validTo;

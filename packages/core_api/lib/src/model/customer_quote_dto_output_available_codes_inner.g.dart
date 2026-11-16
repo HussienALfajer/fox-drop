@@ -97,6 +97,8 @@ class _$CustomerQuoteDtoOutputAvailableCodesInner
   @override
   final String? minOrder;
   @override
+  final CustomerQuoteDtoOutputAvailableCodesInnerHours? hours;
+  @override
   final DateTime validTo;
   @override
   final String? discount;
@@ -115,6 +117,7 @@ class _$CustomerQuoteDtoOutputAvailableCodesInner
     this.amount,
     this.maxDiscount,
     this.minOrder,
+    this.hours,
     required this.validTo,
     this.discount,
     this.missing,
@@ -138,6 +141,7 @@ class _$CustomerQuoteDtoOutputAvailableCodesInner
         amount == other.amount &&
         maxDiscount == other.maxDiscount &&
         minOrder == other.minOrder &&
+        hours == other.hours &&
         validTo == other.validTo &&
         discount == other.discount &&
         missing == other.missing;
@@ -152,6 +156,7 @@ class _$CustomerQuoteDtoOutputAvailableCodesInner
     _$hash = $jc(_$hash, amount.hashCode);
     _$hash = $jc(_$hash, maxDiscount.hashCode);
     _$hash = $jc(_$hash, minOrder.hashCode);
+    _$hash = $jc(_$hash, hours.hashCode);
     _$hash = $jc(_$hash, validTo.hashCode);
     _$hash = $jc(_$hash, discount.hashCode);
     _$hash = $jc(_$hash, missing.hashCode);
@@ -170,6 +175,7 @@ class _$CustomerQuoteDtoOutputAvailableCodesInner
           ..add('amount', amount)
           ..add('maxDiscount', maxDiscount)
           ..add('minOrder', minOrder)
+          ..add('hours', hours)
           ..add('validTo', validTo)
           ..add('discount', discount)
           ..add('missing', missing))
@@ -210,6 +216,12 @@ class CustomerQuoteDtoOutputAvailableCodesInnerBuilder
   String? get minOrder => _$this._minOrder;
   set minOrder(String? minOrder) => _$this._minOrder = minOrder;
 
+  CustomerQuoteDtoOutputAvailableCodesInnerHoursBuilder? _hours;
+  CustomerQuoteDtoOutputAvailableCodesInnerHoursBuilder get hours =>
+      _$this._hours ??= CustomerQuoteDtoOutputAvailableCodesInnerHoursBuilder();
+  set hours(CustomerQuoteDtoOutputAvailableCodesInnerHoursBuilder? hours) =>
+      _$this._hours = hours;
+
   DateTime? _validTo;
   DateTime? get validTo => _$this._validTo;
   set validTo(DateTime? validTo) => _$this._validTo = validTo;
@@ -235,6 +247,7 @@ class CustomerQuoteDtoOutputAvailableCodesInnerBuilder
       _amount = $v.amount;
       _maxDiscount = $v.maxDiscount;
       _minOrder = $v.minOrder;
+      _hours = $v.hours?.toBuilder();
       _validTo = $v.validTo;
       _discount = $v.discount;
       _missing = $v.missing;
@@ -259,31 +272,48 @@ class CustomerQuoteDtoOutputAvailableCodesInnerBuilder
   CustomerQuoteDtoOutputAvailableCodesInner build() => _build();
 
   _$CustomerQuoteDtoOutputAvailableCodesInner _build() {
-    final _$result =
-        _$v ??
-        _$CustomerQuoteDtoOutputAvailableCodesInner._(
-          code: BuiltValueNullFieldError.checkNotNull(
-            code,
-            r'CustomerQuoteDtoOutputAvailableCodesInner',
-            'code',
-          ),
-          kind: BuiltValueNullFieldError.checkNotNull(
-            kind,
-            r'CustomerQuoteDtoOutputAvailableCodesInner',
-            'kind',
-          ),
-          percentBp: percentBp,
-          amount: amount,
-          maxDiscount: maxDiscount,
-          minOrder: minOrder,
-          validTo: BuiltValueNullFieldError.checkNotNull(
-            validTo,
-            r'CustomerQuoteDtoOutputAvailableCodesInner',
-            'validTo',
-          ),
-          discount: discount,
-          missing: missing,
+    _$CustomerQuoteDtoOutputAvailableCodesInner _$result;
+    try {
+      _$result =
+          _$v ??
+          _$CustomerQuoteDtoOutputAvailableCodesInner._(
+            code: BuiltValueNullFieldError.checkNotNull(
+              code,
+              r'CustomerQuoteDtoOutputAvailableCodesInner',
+              'code',
+            ),
+            kind: BuiltValueNullFieldError.checkNotNull(
+              kind,
+              r'CustomerQuoteDtoOutputAvailableCodesInner',
+              'kind',
+            ),
+            percentBp: percentBp,
+            amount: amount,
+            maxDiscount: maxDiscount,
+            minOrder: minOrder,
+            hours: _hours?.build(),
+            validTo: BuiltValueNullFieldError.checkNotNull(
+              validTo,
+              r'CustomerQuoteDtoOutputAvailableCodesInner',
+              'validTo',
+            ),
+            discount: discount,
+            missing: missing,
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'hours';
+        _hours?.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+          r'CustomerQuoteDtoOutputAvailableCodesInner',
+          _$failedField,
+          e.toString(),
         );
+      }
+      rethrow;
+    }
     replace(_$result);
     return _$result;
   }

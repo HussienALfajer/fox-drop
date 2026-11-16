@@ -723,6 +723,9 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get listSeparator => '، ';
+
+  @override
   String get customerMyCodesTitle => 'أكوادي';
 
   @override

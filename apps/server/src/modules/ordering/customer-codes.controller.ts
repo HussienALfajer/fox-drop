@@ -75,24 +75,40 @@ export class CustomerCodesController {
         cityId: city.cityId,
         baseCurrency,
         clock: await this.codes.clock(city.cityId, now),
-        customer: customer!,
+        customer,
       },
       now,
     );
-    const [names, zones] = await Promise.all([
-      this.merchants.names([...new Set(mine.flatMap((code) => code.restaurantIds))]),
+    // Only restaurants and zones customers see are named; a code whose
+    // places are all hidden or gone is left out, so a restricted code never
+    // reads as working everywhere.
+    const ids = [...new Set(mine.flatMap((code) => code.restaurantIds))];
+    const [restaurants, zones] = await Promise.all([
+      Promise.all(ids.map((id) => this.merchants.restaurant(id, now))),
       this.geo.zones(city.cityId),
     ]);
-    const zoneNames = new Map(zones.map((zone) => [zone.id, zone.name]));
-    return { currency: baseCurrency, codes: mine.map((code) => body(code, names, zoneNames)) };
+    const names = new Map(
+      restaurants.flatMap((restaurant) =>
+        restaurant !== null && restaurant.accountStatus === 'active' && restaurant.visible
+          ? [[restaurant.id, restaurant.nameAr] as const]
+          : [],
+      ),
+    );
+    const zoneNames = new Map(
+      zones.flatMap((zone) => (zone.active ? [[zone.id, zone.name] as const] : [])),
+    );
+    const codes = mine.flatMap((code) => {
+      const shown = body(code, names, zoneNames);
+      const hidden =
+        (code.restaurantIds.length > 0 && shown.restaurants.length === 0) ||
+        (code.zoneIds.length > 0 && shown.zones.length === 0);
+      return hidden ? [] : [shown];
+    });
+    return { currency: baseCurrency, codes };
   }
 }
 
-function body(
-  code: MyCode,
-  names: Map<string, { nameAr: string }>,
-  zoneNames: Map<string, string>,
-) {
+function body(code: MyCode, names: Map<string, string>, zoneNames: Map<string, string>) {
   const text = (value: bigint | null) => (value === null ? null : value.toString());
   return {
     code: code.code,
@@ -103,7 +119,7 @@ function body(
     minOrder: text(code.minOrder),
     restaurants: code.restaurantIds.flatMap((id) => {
       const name = names.get(id);
-      return name ? [{ id, name: name.nameAr }] : [];
+      return name === undefined ? [] : [{ id, name }];
     }),
     zones: code.zoneIds.flatMap((id) => zoneNames.get(id) ?? []),
     hours:
