@@ -219,6 +219,24 @@ describe('PromoCodeUsesService', () => {
     expect(await pushes()).toHaveLength(1);
   });
 
+  it('keeps whether the customer was new and whether the order was delivered', async () => {
+    const typed = await code();
+    const { orderId } = await place(cart(typed, customer({ newUser: true })));
+    const flags = async () =>
+      (
+        await sql.query(
+          'SELECT new_user, delivered FROM marketing.promo_code_uses WHERE order_id = $1',
+          [orderId],
+        )
+      ).rows[0];
+    expect(await flags()).toEqual({ new_user: true, delivered: false });
+    await db.db.transaction((tx) => uses.settle(tx, orderId, 'spent', now, true));
+    expect(await flags()).toEqual({ new_user: true, delivered: true });
+    // «تغيير النتيجة» to a fake order: still spent, no longer delivered.
+    await db.db.transaction((tx) => uses.settle(tx, orderId, 'spent', now, false));
+    expect(await flags()).toEqual({ new_user: true, delivered: false });
+  });
+
   it('never lets two placings take the last use', async () => {
     const typed = await code({ total_limit: 1 });
     const results = await Promise.all([place(cart(typed)), place(cart(typed))]);

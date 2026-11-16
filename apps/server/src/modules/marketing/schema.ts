@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import {
   bigint,
+  boolean,
   check,
   index,
   integer,
@@ -195,6 +196,12 @@ export const promoCodeUses = marketing.table(
     status: text('status', { enum: promoCodeUseStatuses }).notNull().default('held'),
     heldAt: timestamp('held_at', { withTimezone: true }).notNull(),
     settledAt: timestamp('settled_at', { withTimezone: true }),
+    // The code report (AP §9.11.1, slice 2.21d): the customer was new at
+    // placing (no delivered order on any account of the number), and the
+    // order ended delivered. Both: a new customer the code acquired (owner
+    // decision 2026-11-16). Uses before 2.21d read false.
+    newUser: boolean('new_user').notNull().default(false),
+    delivered: boolean('delivered').notNull().default(false),
   },
   (table) => [
     uniqueIndex('promo_code_uses_order').on(table.orderId),

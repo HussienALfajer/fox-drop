@@ -130,6 +130,7 @@ export class PromoCodeUsesService {
           discount: code.discount.total,
           merchantShare: code.discount.merchant,
           heldAt: now,
+          newUser: customer.newUser,
         });
       },
     };
@@ -138,16 +139,24 @@ export class PromoCodeUsesService {
   // The order ended (AP §9.11.1): spent when delivered or failed with the
   // customer responsible, given back otherwise. An outcome changed later
   // settles it again. An order without a code has no use: nothing happens.
+  // `delivered`: the order ended delivered, for the code report's new
+  // customers (slice 2.21d).
   async settle(
     tx: Tx,
     orderId: string,
     status: Exclude<PromoCodeUseStatus, 'held'>,
     now: Date,
+    delivered = false,
   ): Promise<void> {
     const [use] = await tx
       .update(promoCodeUses)
-      .set({ status, settledAt: now })
-      .where(and(eq(promoCodeUses.orderId, orderId), ne(promoCodeUses.status, status)))
+      .set({ status, settledAt: now, delivered })
+      .where(
+        and(
+          eq(promoCodeUses.orderId, orderId),
+          or(ne(promoCodeUses.status, status), ne(promoCodeUses.delivered, delivered)),
+        ),
+      )
       .returning({ codeId: promoCodeUses.codeId, accountId: promoCodeUses.customerAccountId });
     if (status !== 'returned' || use === undefined) return;
     // CU §10.4 (owner decision 2026-11-16): «أُعيد الكود {الكود} إلى أكوادك»
@@ -295,6 +304,34 @@ export class PromoCodeUsesService {
       .update(promoCodeUses)
       .set({ discount: discount.total, merchantShare: discount.merchant })
       .where(eq(promoCodeUses.orderId, orderId));
+  }
+
+  // AP §9.11.1 «Code report» (slice 2.21d): the orders that used the code
+  // and the customers (accounts) behind them, its cost and the restaurants'
+  // part of it, counting the uses not given back; the uses given back; and
+  // the new customers it acquired: numbers whose order with the code was
+  // placed while they had no delivered order and ended delivered (owner
+  // decision 2026-11-16).
+  async report(codeId: string): Promise<CodeReport> {
+    const [row] = await this.database.db
+      .select({
+        orders: sql<number>`count(*) FILTER (WHERE ${counting})::int`,
+        returned: sql<number>`count(*) FILTER (WHERE NOT (${counting}))::int`,
+        customers: sql<number>`count(DISTINCT ${promoCodeUses.customerAccountId}) FILTER (WHERE ${counting})::int`,
+        cost: sql<string>`coalesce(sum(${promoCodeUses.discount}) FILTER (WHERE ${counting}), 0)::text`,
+        merchantShare: sql<string>`coalesce(sum(${promoCodeUses.merchantShare}) FILTER (WHERE ${counting}), 0)::text`,
+        newCustomers: sql<number>`count(DISTINCT ${promoCodeUses.phoneHash}) FILTER (WHERE ${promoCodeUses.newUser} AND ${promoCodeUses.delivered})::int`,
+      })
+      .from(promoCodeUses)
+      .where(eq(promoCodeUses.codeId, codeId));
+    return {
+      orders: row!.orders,
+      returned: row!.returned,
+      customers: row!.customers,
+      cost: BigInt(row!.cost),
+      merchantShare: BigInt(row!.merchantShare),
+      newCustomers: row!.newCustomers,
+    };
   }
 
   // The list's «الاستخدامات» and «التكلفة حتى الآن»: the uses not given back
@@ -467,6 +504,15 @@ export class PromoCodeUsesService {
       },
     };
   }
+}
+
+export interface CodeReport {
+  orders: number;
+  returned: number;
+  customers: number;
+  cost: bigint;
+  merchantShare: bigint;
+  newCustomers: number;
 }
 
 // A use counts while it is not given back.

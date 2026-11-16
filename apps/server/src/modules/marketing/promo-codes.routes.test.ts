@@ -99,6 +99,7 @@ async function admin(roles: string[]) {
   const cookies = { [ADMIN_SESSION_COOKIE]: token };
   return {
     accountId,
+    cookie: token,
     list: () => app.inject({ method: 'GET', url: `/v1/admin/promo-codes?cityId=${azaz}`, cookies }),
     post: (url: string, payload: object, key: string | null = randomUUID()) =>
       app.inject({
@@ -322,5 +323,83 @@ describe('the marketing tables', () => {
     await expect(sql.query('DELETE FROM marketing.promo_codes')).rejects.toThrow(
       /permission denied/,
     );
+  });
+});
+
+describe('the code report (AP §9.11.1, slice 2.21d)', () => {
+  it('counts orders, customers, cost and new customers, and extends from it', async () => {
+    const own = await admin(['OWN']);
+    const ops = await admin(['OPS']);
+    const created = await own.post('', { cityId: azaz, code: 'REPORT1', ...fields });
+    const { id } = created.json().codes[0];
+    const first = { account: randomUUID(), phone: randomUUID() };
+    // A new customer delivered, the same customer again, an old customer,
+    // and a use given back.
+    const uses: [string, string, string, boolean, boolean][] = [
+      [first.account, first.phone, 'spent', true, true],
+      [first.account, first.phone, 'spent', false, true],
+      [randomUUID(), randomUUID(), 'held', false, false],
+      [randomUUID(), randomUUID(), 'returned', true, false],
+    ];
+    for (const [account, phone, status, newUser, delivered] of uses) {
+      await sql.query(
+        `INSERT INTO marketing.promo_code_uses (code_id, city_id, order_id, order_placed_at,
+           customer_account_id, phone_hash, device_id, business_day, currency, discount,
+           merchant_share, status, held_at, settled_at, new_user, delivered)
+         VALUES ($1, $2, $3, now(), $4, $5, 'device', now(), 'TRY', 3000, 1000, $6, now(),
+           CASE WHEN $6 = 'held' THEN NULL ELSE now() END, $7, $8)`,
+        [id, azaz, randomUUID(), account, phone, status, newUser, delivered],
+      );
+    }
+    const report = (who: typeof own) =>
+      app.inject({
+        method: 'GET',
+        url: `/v1/admin/promo-codes/${id}/report?cityId=${azaz}`,
+        cookies: { [ADMIN_SESSION_COOKIE]: who.cookie },
+      });
+    const owned = await report(own);
+    expect(owned.statusCode, owned.body).toBe(200);
+    expect(owned.json()).toMatchObject({
+      code: { code: 'REPORT1', uses: 3, costToDate: '9000' },
+      report: {
+        orders: 3,
+        returned: 1,
+        customers: 2,
+        newCustomers: 1,
+        cost: '9000',
+        merchantShare: '3000',
+      },
+      canManage: true,
+    });
+    const seen = (await report(ops)).json();
+    expect(seen.report).toMatchObject({ orders: 3, cost: null, merchantShare: null });
+    expect(seen.canManage).toBe(false);
+
+    // «تمديد»: later than the end it had, by OWN only.
+    const extend = (who: typeof own, validTo: string) =>
+      app.inject({
+        method: 'POST',
+        url: `/v1/admin/promo-codes/${id}/extend`,
+        cookies: { [ADMIN_SESSION_COOKIE]: who.cookie },
+        payload: { cityId: azaz, validTo },
+      });
+    expect((await extend(ops, '2100-06-30T00:00:00.000Z')).statusCode).toBe(403);
+    const earlier = await extend(own, '2099-06-30T00:00:00.000Z');
+    expect(earlier.statusCode).toBe(400);
+    expect(earlier.json().error).toBe('invalid_promo_code');
+    const later = await extend(own, '2100-06-30T00:00:00.000Z');
+    expect(later.statusCode, later.body).toBe(200);
+    expect(later.json().validTo).toBe('2100-06-30T00:00:00.000Z');
+    const audit = await sql.query(
+      "SELECT changes FROM audit.events WHERE action = 'promo_code.extend' AND target_id = $1",
+      [id],
+    );
+    expect(audit.rows).toEqual([
+      {
+        changes: {
+          validTo: { before: '2099-12-31T00:00:00.000Z', after: '2100-06-30T00:00:00.000Z' },
+        },
+      },
+    ]);
   });
 });

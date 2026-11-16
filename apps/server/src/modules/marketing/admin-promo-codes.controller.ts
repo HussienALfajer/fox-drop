@@ -135,6 +135,43 @@ class AdminPromoCodeCityDto extends createZodDto(z.object({ cityId: z.uuid() }))
 
 class AdminPromoCodeParamsDto extends createZodDto(z.object({ codeId: z.uuid() })) {}
 
+class AdminExtendPromoCodeDto extends createZodDto(
+  z.object({ cityId: z.uuid(), validTo: z.iso.datetime().describe('The new end.') }),
+) {}
+
+const count = z.int().min(0);
+
+class AdminPromoCodeReportDto extends createZodDto(
+  z.object({
+    code: promoCodeBody,
+    report: z
+      .object({
+        orders: count.describe('Orders with the code, uses given back left out.'),
+        returned: count.describe(
+          'Uses given back (rejected, cancelled, failed not by the customer).',
+        ),
+        customers: count.describe('Customer accounts behind those orders.'),
+        newCustomers: count.describe(
+          'Numbers whose order with the code was placed with no delivered order before and ended delivered.',
+        ),
+        cost: z
+          .string()
+          .regex(/^\d+$/)
+          .nullable()
+          .describe(
+            'The discounts, minor units of the code currency; null without the cost permission.',
+          ),
+        merchantShare: z
+          .string()
+          .regex(/^\d+$/)
+          .nullable()
+          .describe('The restaurants part of the cost; null without the cost permission.'),
+      })
+      .describe('AP §9.11.1 «Code report».'),
+    canManage: z.boolean().describe('Pause, resume and extend (marketing.manage).'),
+  }),
+) {}
+
 type FieldsBody = z.infer<z.ZodObject<typeof fields>>;
 
 // AP §9.11.1 «أكواد الخصم» (slice 2.21a): OWN creates, edits, pauses and
@@ -268,6 +305,69 @@ export class AdminPromoCodesController {
           body.cityId,
           params.codeId,
           'paused',
+          changeOf(session, request),
+        ),
+        session,
+        new Date(),
+      ),
+    );
+  }
+
+  // AP §9.11.1 «Code report» (slice 2.21d): the code with its report; the
+  // cost and the restaurants' part are null without the cost permission,
+  // as the list's. 404 unknown_promo_code.
+  @Get(':codeId/report')
+  @RequireAnyPermission('marketing.read', 'marketing.read_costs', 'marketing.manage')
+  @ZodResponse({ status: 200, type: AdminPromoCodeReportDto })
+  async report(
+    @Param() params: AdminPromoCodeParamsDto,
+    @Query() query: AdminPromoCodesQueryDto,
+    @CurrentAdminSession() session: AdminSession,
+  ) {
+    const code = await this.codes.code(query.cityId, params.codeId);
+    if (code === null) {
+      throw new NotFoundException({
+        statusCode: HttpStatus.NOT_FOUND,
+        error: 'unknown_promo_code',
+      });
+    }
+    const report = await this.uses.report(code.id);
+    const seesCosts =
+      session.permissions.includes('marketing.read_costs') ||
+      session.permissions.includes('marketing.manage');
+    return {
+      code: codeBody(code, session, new Date(), { uses: report.orders, cost: report.cost }),
+      report: {
+        orders: report.orders,
+        returned: report.returned,
+        customers: report.customers,
+        newCustomers: report.newCustomers,
+        cost: seesCosts ? report.cost.toString() : null,
+        merchantShare: seesCosts ? report.merchantShare.toString() : null,
+      },
+      canManage: session.permissions.includes('marketing.manage'),
+    };
+  }
+
+  // «تمديد» from the report: a later end. Sets a value, so no
+  // Idempotency-Key. 400 invalid_promo_code; 404 unknown_promo_code; 409
+  // currency_changed.
+  @Post(':codeId/extend')
+  @RequirePermission('marketing.manage')
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminPromoCodeDto })
+  extend(
+    @Param() params: AdminPromoCodeParamsDto,
+    @Body() body: AdminExtendPromoCodeDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(async () =>
+      codeBody(
+        await this.codes.extend(
+          body.cityId,
+          params.codeId,
+          new Date(body.validTo),
           changeOf(session, request),
         ),
         session,

@@ -1,0 +1,2 @@
+ALTER TABLE "marketing"."promo_code_uses" ADD COLUMN "new_user" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+ALTER TABLE "marketing"."promo_code_uses" ADD COLUMN "delivered" boolean DEFAULT false NOT NULL;

@@ -105,6 +105,7 @@ export 'package:core_api/src/model/admin_exchange_rates_dto_output.dart';
 export 'package:core_api/src/model/admin_exchange_rates_dto_output_currencies_inner.dart';
 export 'package:core_api/src/model/admin_exchange_rates_dto_output_currencies_inner_rate.dart';
 export 'package:core_api/src/model/admin_export_dto_output.dart';
+export 'package:core_api/src/model/admin_extend_promo_code_dto.dart';
 export 'package:core_api/src/model/admin_faq_dto.dart';
 export 'package:core_api/src/model/admin_faq_dto_items_inner.dart';
 export 'package:core_api/src/model/admin_faq_dto_output.dart';
@@ -231,6 +232,8 @@ export 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custod
 export 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody_usage.dart';
 export 'package:core_api/src/model/admin_promo_code_city_dto.dart';
 export 'package:core_api/src/model/admin_promo_code_dto_output.dart';
+export 'package:core_api/src/model/admin_promo_code_report_dto_output.dart';
+export 'package:core_api/src/model/admin_promo_code_report_dto_output_report.dart';
 export 'package:core_api/src/model/admin_promo_codes_created_dto_output.dart';
 export 'package:core_api/src/model/admin_promo_codes_dto_output.dart';
 export 'package:core_api/src/model/admin_promo_codes_dto_output_codes_inner.dart';
