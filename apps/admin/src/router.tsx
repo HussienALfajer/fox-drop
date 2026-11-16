@@ -26,6 +26,7 @@ import { OPERATIONS_READ } from './orders-board.js';
 import { OrdersBoardPage } from './orders-board-page.js';
 import { CASH_DESK, FINANCE_READ } from './cash-desk.js';
 import { CaptainBalancesPage } from './captain-balances-page.js';
+import { ExchangeRatesPage } from './exchange-rates-page.js';
 import { CashDeskPage, CashDeskSessionsPage } from './cash-desk-page.js';
 import { ZONES_READ } from './peak-bonus.js';
 import { PeakBonusPage } from './peak-bonus-page.js';
@@ -296,6 +297,17 @@ const captainBalancesRoute = createRoute({
   component: CaptainBalancesPage,
 });
 
+// AP §9.10.4 «أسعار الصرف» (slice 2.20a), finance's (OWN, FIN).
+const exchangeRatesRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/exchange-rates',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, FINANCE_READ)) throw redirect({ to: '/' });
+  },
+  component: ExchangeRatesPage,
+});
+
 const receiptRoute = createRoute({
   getParentRoute: () => signedInRoute,
   path: '/cash-desk/receipts/$receiptId',
@@ -410,6 +422,7 @@ const routeTree = rootRoute.addChildren([
     cashDeskRoute,
     cashDeskSessionsRoute,
     captainBalancesRoute,
+    exchangeRatesRoute,
     receiptRoute,
     settlementsRoute,
     settleCaptainRoute,

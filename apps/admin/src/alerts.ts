@@ -107,6 +107,11 @@ export function autoPausedRestaurantOf(alert: AdminAlert): string | null {
     : null;
 }
 
+// AP §8.6 «سعر صرف قديم» (slice 2.20a): its currency, for «فتح أسعار الصرف».
+export function staleRateOf(alert: AdminAlert): string | null {
+  return alert.code === 'rate_stale' && alert.subjectType === 'currency' ? alert.currency : null;
+}
+
 // AP §9.1.3 «مطعم متأخر في التسوية» (slice 2.19f): its restaurant, for
 // «تسوية المطاعم» and «تسوية».
 export function overdueRestaurantOf(alert: AdminAlert): string | null {
