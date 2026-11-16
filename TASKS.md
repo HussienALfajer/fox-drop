@@ -10,8 +10,8 @@ Slice 2.20c, «القيود التصحيحية» (`docs/roadmap.md`, Phase 2, Mo
 - **Specs:** AP §9.10.7 (`docs/product/v1/admin-panel/09-modules/10-finance.md`), AP §8.8 (`docs/domain/08-customer-trust-strikes-and-dues.md`, `dues.adjustment`), the ledger module's `CLAUDE.md` (journals, reversals, accounts), `apps/server/src/modules/cashdesk/CLAUDE.md` if the routes live there, `apps/admin/CLAUDE.md`.
 - **Branch:** `feat/manual-adjustments`.
 - **Plan:**
-  - [ ] The rule and its entries, test first: a manual adjustment on one party account (captain custody per currency, captain earnings, restaurant account, customer dues) against its platform counter-account, with the required reason, the admin and the audit; the reversal of an existing journal linked to it (once); nothing deleted.
-  - [ ] The routes (`ledger.manual_adjustment`, `Idempotency-Key`): create, reverse, and the list of every manual entry with who, when, why and what it corrects; the generated clients.
+  - [x] The rule and its entries, test first: a manual adjustment on one party account (captain custody per currency, captain earnings, restaurant account, customer dues) against its platform counter-account, with the required reason, the admin and the audit; the reversal of an existing journal linked to it (once); nothing deleted.
+  - [x] The routes (`ledger.manual_adjustment`, `Idempotency-Key`): create, reverse, and the list of every manual entry with who, when, why and what it corrects; the generated clients.
   - [ ] The panel: «القيود التصحيحية» for OWN and FIN, the form (the party, the account, the amount and its sign, the reason), the reversal of an entry, and the list with the links.
   - [ ] Review, then hand over to 2.20d.
 

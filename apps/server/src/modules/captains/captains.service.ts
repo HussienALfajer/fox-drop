@@ -720,6 +720,16 @@ export class CaptainsService implements OnModuleInit {
       .where(eq(captainRecords.cityId, cityId));
   }
 
+  // The captains' names by id, in one read (AP §9.10.7's list).
+  async names(captainIds: readonly string[]): Promise<Map<string, string>> {
+    if (captainIds.length === 0) return new Map();
+    const rows = await this.database.db
+      .select({ id: captainRecords.id, name: captainRecords.name })
+      .from(captainRecords)
+      .where(inArray(captainRecords.id, [...captainIds]));
+    return new Map(rows.map((row) => [row.id, row.name]));
+  }
+
   // AP §9.7.5: suspend (until a moment or further notice), reactivate or
   // terminate, each with a reason. Suspending a suspended captain replaces
   // the suspension (a new reason or end); one past its end counts as active.

@@ -3,8 +3,8 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_zones_inner.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force_windows_inner_zones_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -19,7 +19,7 @@ abstract class AdminFieldVisitorsDtoOutput
     implements
         Built<AdminFieldVisitorsDtoOutput, AdminFieldVisitorsDtoOutputBuilder> {
   @BuiltValueField(wireName: r'visitors')
-  BuiltList<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?> get visitors;
+  BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner> get visitors;
 
   AdminFieldVisitorsDtoOutput._();
 
@@ -55,7 +55,7 @@ class _$AdminFieldVisitorsDtoOutputSerializer
     yield serializers.serialize(
       object.visitors,
       specifiedType: const FullType(BuiltList, [
-        FullType.nullable(AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner),
+        FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
       ]),
     );
   }
@@ -90,14 +90,10 @@ class _$AdminFieldVisitorsDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType.nullable(
-                        AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
-                      ),
+                      FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
                     ]),
                   )
-                  as BuiltList<
-                    AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
-                  >;
+                  as BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>;
           result.visitors.replace(valueDes);
           break;
         default:

@@ -3396,6 +3396,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/manual-entries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminManualEntriesList"];
+        put?: never;
+        post: operations["adminManualEntriesAdjust"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/manual-entries/reversals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminManualEntriesReverse"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/manual-entries/parties/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminManualEntriesFindParties"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/manual-entries/account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminManualEntriesAccount"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/cash-desk/restaurant-settlements/preview": {
         parameters: {
             query?: never;
@@ -10283,6 +10347,209 @@ export interface components {
                 remaining: string;
             }[];
         };
+        AdminManualEntriesDto_Output: {
+            entries: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                kind: "adjustment" | "reversal";
+                /** @enum {string} */
+                partyKind: "captain" | "restaurant" | "customer";
+                /** Format: uuid */
+                partyId: string;
+                partyName: string;
+                reason: string;
+                /** Format: uuid */
+                adminId: string;
+                adminName: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                /** @description The journal the entry posted. */
+                journal: {
+                    /** Format: uuid */
+                    journalId: string;
+                    /** @description The ledger journal type, such as earn.adjustment. */
+                    type: string;
+                    reason: string | null;
+                    /** Format: date-time */
+                    createdAt: string;
+                    lines: {
+                        /** @description The party account, such as captain.earnings. */
+                        purpose: string;
+                        currency: string;
+                        /** @description From the party's view: custody + the captain hands in, earnings + the platform owes them, the restaurant account − it owes, dues + the customer owes. */
+                        amount: string;
+                    }[];
+                    orderId: string | null;
+                    orderNumber: string | null;
+                    /** @description The manual entry that posted it, if one did. */
+                    manualEntryId: string | null;
+                };
+                /** @description A reversal: the journal it cancels. */
+                corrects: {
+                    /** Format: uuid */
+                    journalId: string;
+                    /** @description The ledger journal type, such as earn.adjustment. */
+                    type: string;
+                    reason: string | null;
+                    /** Format: date-time */
+                    createdAt: string;
+                    lines: {
+                        /** @description The party account, such as captain.earnings. */
+                        purpose: string;
+                        currency: string;
+                        /** @description From the party's view: custody + the captain hands in, earnings + the platform owes them, the restaurant account − it owes, dues + the customer owes. */
+                        amount: string;
+                    }[];
+                    orderId: string | null;
+                    orderNumber: string | null;
+                    /** @description The manual entry that posted it, if one did. */
+                    manualEntryId: string | null;
+                } | null;
+                reversedBy: {
+                    /** Format: uuid */
+                    journalId: string;
+                    manualEntryId: string | null;
+                    /** Format: date-time */
+                    at: string;
+                } | null;
+                reversible: boolean;
+            }[];
+        };
+        AdminManualAdjustmentDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @enum {string} */
+            party: "captain" | "restaurant" | "customer";
+            /** Format: uuid */
+            partyId: string;
+            /** @enum {string} */
+            account: "captain.custody" | "captain.earnings" | "merchant.account" | "customer.dues";
+            currency: string;
+            /** @description From the party's view, never zero. */
+            amount: string;
+            reason: string;
+        };
+        AdminManualEntryDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "adjustment" | "reversal";
+            /** @enum {string} */
+            partyKind: "captain" | "restaurant" | "customer";
+            /** Format: uuid */
+            partyId: string;
+            partyName: string;
+            reason: string;
+            /** Format: uuid */
+            adminId: string;
+            adminName: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** @description The journal the entry posted. */
+            journal: {
+                /** Format: uuid */
+                journalId: string;
+                /** @description The ledger journal type, such as earn.adjustment. */
+                type: string;
+                reason: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                lines: {
+                    /** @description The party account, such as captain.earnings. */
+                    purpose: string;
+                    currency: string;
+                    /** @description From the party's view: custody + the captain hands in, earnings + the platform owes them, the restaurant account − it owes, dues + the customer owes. */
+                    amount: string;
+                }[];
+                orderId: string | null;
+                orderNumber: string | null;
+                /** @description The manual entry that posted it, if one did. */
+                manualEntryId: string | null;
+            };
+            /** @description A reversal: the journal it cancels. */
+            corrects: {
+                /** Format: uuid */
+                journalId: string;
+                /** @description The ledger journal type, such as earn.adjustment. */
+                type: string;
+                reason: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                lines: {
+                    /** @description The party account, such as captain.earnings. */
+                    purpose: string;
+                    currency: string;
+                    /** @description From the party's view: custody + the captain hands in, earnings + the platform owes them, the restaurant account − it owes, dues + the customer owes. */
+                    amount: string;
+                }[];
+                orderId: string | null;
+                orderNumber: string | null;
+                /** @description The manual entry that posted it, if one did. */
+                manualEntryId: string | null;
+            } | null;
+            reversedBy: {
+                /** Format: uuid */
+                journalId: string;
+                manualEntryId: string | null;
+                /** Format: date-time */
+                at: string;
+            } | null;
+            reversible: boolean;
+        };
+        AdminManualReversalDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** Format: uuid */
+            journalId: string;
+            reason: string;
+        };
+        AdminManualPartySearchDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @enum {string} */
+            party: "captain" | "restaurant" | "customer";
+            /** @description A part of the name (captain, restaurant), or the number (captain, customer). */
+            q: string;
+        };
+        AdminManualPartiesDto_Output: {
+            parties: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            }[];
+        };
+        AdminManualAccountDto_Output: {
+            /** Format: uuid */
+            partyId: string;
+            partyName: string;
+            balances: {
+                currency: string;
+                amount: string;
+            }[];
+            entries: {
+                /** Format: uuid */
+                journalId: string;
+                /** @description The ledger journal type, such as earn.adjustment. */
+                type: string;
+                reason: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                lines: {
+                    /** @description The party account, such as captain.earnings. */
+                    purpose: string;
+                    currency: string;
+                    /** @description From the party's view: custody + the captain hands in, earnings + the platform owes them, the restaurant account − it owes, dues + the customer owes. */
+                    amount: string;
+                }[];
+                orderId: string | null;
+                orderNumber: string | null;
+                /** @description The manual entry that posted it, if one did. */
+                manualEntryId: string | null;
+                reversible: boolean;
+                reversed: boolean;
+            }[];
+        };
         AdminRestaurantSettlementPreviewRequestDto: {
             /** Format: uuid */
             restaurantId: string;
@@ -16506,6 +16773,131 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminReceiptDto_Output"];
+                };
+            };
+        };
+    };
+    adminManualEntriesList: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminManualEntriesDto_Output"];
+                };
+            };
+        };
+    };
+    adminManualEntriesAdjust: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminManualAdjustmentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminManualEntryDto_Output"];
+                };
+            };
+        };
+    };
+    adminManualEntriesReverse: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminManualReversalDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminManualEntryDto_Output"];
+                };
+            };
+        };
+    };
+    adminManualEntriesFindParties: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminManualPartySearchDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminManualPartiesDto_Output"];
+                };
+            };
+        };
+    };
+    adminManualEntriesAccount: {
+        parameters: {
+            query: {
+                cityId: string;
+                party: "captain" | "restaurant" | "customer";
+                partyId: string;
+                account: "captain.custody" | "captain.earnings" | "merchant.account" | "customer.dues";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminManualAccountDto_Output"];
                 };
             };
         };

@@ -1007,6 +1007,8 @@ describe('the cash desk tables (AP §9.10.3, §4.8)', () => {
       'change a restaurant statement line',
       'UPDATE cashdesk.merchant_statement_lines SET amount = 1',
     ],
+    ['change a manual entry', "UPDATE cashdesk.manual_entries SET reason = 'x'"],
+    ['delete a manual entry', 'DELETE FROM cashdesk.manual_entries'],
     ['delete a session', 'DELETE FROM cashdesk.drawer_sessions'],
     ['delete a receipt', 'DELETE FROM cashdesk.receipts'],
   ])('refuse the application role to %s', async (_, statement) => {

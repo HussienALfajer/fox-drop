@@ -65,7 +65,14 @@ export type CashDeskRefusal =
   | 'invalid_visitor'
   // A field visit's receipt names its visitor: an account without a name
   // (the first OWN) cannot hold a field session.
-  | 'name_required';
+  | 'name_required'
+  // «القيود التصحيحية» (slice 2.20c).
+  | 'unknown_party'
+  | 'unknown_journal'
+  | 'invalid_currency'
+  | 'no_base_currency'
+  | 'already_reversed'
+  | 'not_reversible';
 
 export class CashDeskRefusedError extends Error {
   override readonly name = 'CashDeskRefusedError';
@@ -1152,7 +1159,11 @@ export class CashDeskService {
     command: { idempotencyKey: string },
     requestHash: string,
     now: Date,
-  ): Promise<{ receiptIds: string[]; statementId: string | null } | null> {
+  ): Promise<{
+    receiptIds: string[];
+    statementId: string | null;
+    manualEntryId: string | null;
+  } | null> {
     const [row] = await executor
       .select()
       .from(idempotencyKeys)
@@ -1166,7 +1177,11 @@ export class CashDeskService {
     if (row.requestHash !== requestHash) {
       throw new CashDeskRefusedError('idempotency_key_reused', 'the key came with another command');
     }
-    return { receiptIds: row.receiptIds, statementId: row.statementId };
+    return {
+      receiptIds: row.receiptIds,
+      statementId: row.statementId,
+      manualEntryId: row.manualEntryId,
+    };
   }
 }
 
@@ -1226,8 +1241,10 @@ export async function keepKey(
   receiptIds: string[],
   statementId: string | null,
   now: Date,
+  // A manual entry's key (slice 2.20c) keeps the entry, with no receipt.
+  manualEntryId: string | null = null,
 ): Promise<void> {
-  const kept = { requestHash, receiptIds, statementId, createdAt: now };
+  const kept = { requestHash, receiptIds, statementId, manualEntryId, createdAt: now };
   const [taken] = await tx
     .insert(idempotencyKeys)
     .values({ accountId, key, ...kept })

@@ -540,6 +540,13 @@
       "when": 1794834477776,
       "tag": "0076_ordering_shortfall_resolutions",
       "breakpoints": true
+    },
+    {
+      "idx": 77,
+      "version": "7",
+      "when": 1794837026398,
+      "tag": "0077_cashdesk_manual_entries",
+      "breakpoints": true
     }
   ]
 }

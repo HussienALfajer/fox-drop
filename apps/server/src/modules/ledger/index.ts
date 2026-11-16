@@ -28,6 +28,7 @@ export {
   type Balance,
   type LedgerAccount,
   type JournalRate,
+  type JournalRecord,
   type LedgerEntry,
   type LedgerActor,
   type LedgerExecutor,
