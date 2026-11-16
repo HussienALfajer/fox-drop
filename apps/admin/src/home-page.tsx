@@ -79,6 +79,11 @@ export function HomePage() {
               <Link to="/captain-balances">{t('captainBalances.title')}</Link>
             </li>
           )}
+          {can(session, FINANCE_READ) && (
+            <li>
+              <Link to="/exchange-rates">{t('exchangeRates.title')}</Link>
+            </li>
+          )}
           {can(session, RESTAURANT_STATEMENTS) && (
             <li>
               <Link to="/restaurant-statements">{t('restaurantStatements.title')}</Link>

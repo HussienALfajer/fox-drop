@@ -10,9 +10,10 @@ import {
   autoPausedRestaurantOf,
   orderOf,
   overdueRestaurantOf,
+  staleRateOf,
   useAcknowledgeAlert,
 } from './alerts.js';
-import { CASH_DESK } from './cash-desk.js';
+import { CASH_DESK, FINANCE_READ } from './cash-desk.js';
 import { type City, chosenCity, citiesQuery } from './cities.js';
 import { formatDateTime } from './format.js';
 import { mapLink } from './map-link.js';
@@ -147,6 +148,7 @@ function AlertLine({ alert, city }: { alert: AdminAlert; city: City }) {
   const orderId = can(session, OPERATIONS_READ) ? orderOf(alert) : null;
   // OWN and FIN receive it and both hold the desk; checked all the same.
   const overdueId = can(session, CASH_DESK) ? overdueRestaurantOf(alert) : null;
+  const staleCurrency = can(session, FINANCE_READ) ? staleRateOf(alert) : null;
   return (
     <>
       <strong>{t(`alerts.severity.${alert.severity}`)}</strong>{' '}
@@ -156,6 +158,7 @@ function AlertLine({ alert, city }: { alert: AdminAlert; city: City }) {
       {alert.restaurantName && (
         <span>{t('alerts.restaurant', { name: alert.restaurantName })}</span>
       )}{' '}
+      {alert.currency && <span>{t('alerts.currency', { code: alert.currency })}</span>}{' '}
       {alert.location && (
         <>
           <span>{t('alerts.locatedAt', { time: time(alert.location.at) })}</span>{' '}
@@ -175,6 +178,11 @@ function AlertLine({ alert, city }: { alert: AdminAlert; city: City }) {
             : t('alerts.takenByUnnamed', { time: time(alert.acknowledged.at) })}
         </span>
       )}{' '}
+      {staleCurrency && (
+        <Link to="/exchange-rates" search={{ city: city.code }}>
+          {t('alerts.openRates')}
+        </Link>
+      )}
       {orderId && (
         <Link to="/orders/$orderId" params={{ orderId }} search={{ city: city.code }}>
           {t('alerts.openOrder')}

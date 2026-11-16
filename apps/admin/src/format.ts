@@ -56,8 +56,12 @@ export function formatDistance(metres: number): string {
 // An amount typed in the currency's major units («40» or «40.50», Western
 // digits, at most its minor-unit digits) as minor units, or null when it is
 // not one.
-export function minorOf(typed: string, currency: string): string | null {
-  const digits = digitsOf(currency);
+// `digits` overrides the table when the server gives the currency's own.
+export function minorOf(
+  typed: string,
+  currency: string,
+  digits = digitsOf(currency),
+): string | null {
   const match = /^(\d{1,12})(?:\.(\d+))?$/.exec(typed.trim());
   if (!match) return null;
   const fraction = match[2] ?? '';

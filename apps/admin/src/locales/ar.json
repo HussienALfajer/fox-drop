@@ -101,6 +101,8 @@
     "settleRestaurant": "تسجيل دفعة",
     "captain": "الكابتن {{name}}",
     "restaurant": "المطعم {{name}}",
+    "currency": "العملة {{code}}",
+    "openRates": "فتح أسعار الصرف",
     "notificationTitle": "تنبيه حرج: {{label}}",
     "failed": "تعذّر تحميل التنبيهات",
     "resumeRestaurant": "استئناف",
@@ -169,6 +171,7 @@
       "codeNumberStopped": "رقم إرسال الرموز متوقف",
       "restaurantAutoPaused": "مطعم أوقف تلقائياً",
       "restaurantSettlementOverdue": "مطعم متأخر في التسوية",
+      "rateStale": "سعر صرف قديم",
       "editUnacknowledged": "المطعم لم يؤكد التعديل",
       "captainCannotComplete": "كابتن لا يستطيع إكمال الطلب",
       "captainEmergency": "طوارئ كابتن",
@@ -1530,5 +1533,51 @@
       },
       "visitor": "الموظف الزائر: {{name}}"
     }
+  },
+  "exchangeRates": {
+    "title": "أسعار الصرف",
+    "newOrdersOnly": "السعر الجديد يسري على الطلبات الجديدة فقط.",
+    "noBase": "لم تُحدَّد العملة الأساسية لهذه المدينة بعد.",
+    "base": "العملة الأساسية: {{currency}}.",
+    "staleAfter": "ينبّه السعر بعد {{hours}} ساعة دون تحديث.",
+    "currency": "{{name}} ({{code}})",
+    "isBase": "العملة الأساسية",
+    "disabled": "غير مفعّلة",
+    "stale": "سعر قديم",
+    "noRate": "لا سعر بعد.",
+    "basePerUnit": "1 {{code}} = {{value}} {{base}}",
+    "unitsPerBase": "(1 {{base}} = {{value}} {{code}})",
+    "setBy": "آخر تحديث {{time}} بواسطة {{name}}",
+    "unnamed": "موظف بلا اسم",
+    "reason": "السبب: {{reason}}",
+    "rounding": "التقريب: إلى أقرب {{unit}} {{code}}، {{mode}}",
+    "roundingUnitMissing": "(لم تُدخل وحدة التقريب)",
+    "mode": {
+      "nearest": "للأقرب",
+      "up": "للأعلى",
+      "down": "للأسفل"
+    },
+    "editRate": "تعديل السعر",
+    "direction": "طريقة الإدخال",
+    "directionBasePerUnit": "1 {{code}} = ؟ {{base}}",
+    "directionUnitsPerBase": "1 {{base}} = ؟ {{code}}",
+    "value": "القيمة",
+    "reasonOptional": "السبب (اختياري)",
+    "save": "حفظ السعر",
+    "largeChange": "التغيير أكبر من {{pct}}% عن السعر الحالي. تأكّد من القيمة.",
+    "confirmLarge": "تأكيد التغيير",
+    "saved": "تم الحفظ.",
+    "refusal": {
+      "invalidRate": "القيمة ليست سعراً صالحاً.",
+      "other": "رُفض التعديل.",
+      "rounding": "وحدة التقريب أو السبب غير صالح."
+    },
+    "editRounding": "تعديل التقريب",
+    "roundingUnit": "وحدة التقريب ({{code}})",
+    "roundingMode": "اتجاه التقريب",
+    "reasonRequired": "السبب",
+    "saveRounding": "حفظ التقريب",
+    "showHistory": "سجل الأسعار",
+    "hideHistory": "إخفاء السجل"
   }
 }

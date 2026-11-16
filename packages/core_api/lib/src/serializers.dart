@@ -86,6 +86,11 @@ import 'package:core_api/src/model/admin_emergency_stop_resumed_dto_output.dart'
 import 'package:core_api/src/model/admin_emergency_stop_state_dto_output.dart';
 import 'package:core_api/src/model/admin_emergency_stop_state_dto_output_defaults.dart';
 import 'package:core_api/src/model/admin_emergency_stop_state_dto_output_stop.dart';
+import 'package:core_api/src/model/admin_exchange_rate_history_dto_output.dart';
+import 'package:core_api/src/model/admin_exchange_rate_history_dto_output_versions_inner.dart';
+import 'package:core_api/src/model/admin_exchange_rates_dto_output.dart';
+import 'package:core_api/src/model/admin_exchange_rates_dto_output_currencies_inner.dart';
+import 'package:core_api/src/model/admin_exchange_rates_dto_output_currencies_inner_rate.dart';
 import 'package:core_api/src/model/admin_export_dto_output.dart';
 import 'package:core_api/src/model/admin_faq_dto.dart';
 import 'package:core_api/src/model/admin_faq_dto_items_inner.dart';
@@ -245,6 +250,7 @@ import 'package:core_api/src/model/admin_session_dto_output.dart';
 import 'package:core_api/src/model/admin_set_city_office_dto.dart';
 import 'package:core_api/src/model/admin_set_city_office_dto_hours_inner.dart';
 import 'package:core_api/src/model/admin_set_city_office_dto_location.dart';
+import 'package:core_api/src/model/admin_set_exchange_rate_dto.dart';
 import 'package:core_api/src/model/admin_set_image_dto.dart';
 import 'package:core_api/src/model/admin_set_outcome_dto.dart';
 import 'package:core_api/src/model/admin_set_peak_bonus_dto.dart';
@@ -687,6 +693,11 @@ part 'serializers.g.dart';
   AdminEmergencyStopStateDtoOutput,
   AdminEmergencyStopStateDtoOutputDefaults,
   AdminEmergencyStopStateDtoOutputStop,
+  AdminExchangeRateHistoryDtoOutput,
+  AdminExchangeRateHistoryDtoOutputVersionsInner,
+  AdminExchangeRatesDtoOutput,
+  AdminExchangeRatesDtoOutputCurrenciesInner,
+  AdminExchangeRatesDtoOutputCurrenciesInnerRate,
   AdminExportDtoOutput,
   AdminFaqDto,
   AdminFaqDtoItemsInner,
@@ -846,6 +857,7 @@ part 'serializers.g.dart';
   AdminSetCityOfficeDto,
   AdminSetCityOfficeDtoHoursInner,
   AdminSetCityOfficeDtoLocation,
+  AdminSetExchangeRateDto,
   AdminSetImageDto,
   AdminSetOutcomeDto,
   AdminSetPeakBonusDto,
@@ -1559,6 +1571,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminExchangeRatesDtoOutputCurrenciesInner),
+            ]),
+            () => ListBuilder<AdminExchangeRatesDtoOutputCurrenciesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(
                 CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner,
               ),
@@ -1923,6 +1941,12 @@ Serializers serializers =
               FullType(AdminCaptainBalancesDtoOutputCaptainsInner),
             ]),
             () => ListBuilder<AdminCaptainBalancesDtoOutputCaptainsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminExchangeRateHistoryDtoOutputVersionsInner),
+            ]),
+            () => ListBuilder<AdminExchangeRateHistoryDtoOutputVersionsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [FullType(AdminRejectDtoItemsInner)]),

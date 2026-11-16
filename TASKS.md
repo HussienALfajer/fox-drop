@@ -4,16 +4,24 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.20a, «أسعار الصرف» in the server and the panel (`docs/roadmap.md`, Phase 2, Money; owner approved the split of 2.20 into 2.20a–2.20d on 2026-11-16).
+Slice 2.20b, resolving «نقص في التحصيل» (`docs/roadmap.md`, Phase 2, Money; the second of 2.20's four sub-slices, owner approved 2026-11-16).
 
-- **Roadmap line:** 2.20a «أسعار الصرف» in the server and the panel, OWN and FIN (`fx.edit_rates`): the routes over the fx service already built, each accepted currency with its current rate, last update, editor and history, the rate edit in either direction with the large-change second confirmation above `fx.large_change_confirm_pct`, the rounding unit and mode per currency (D14), and the stale-rate information alert for OWN and FIN after `fx.stale_alert_hours` (AP §8.6, §9.10.4).
-- **Specs:** AP §8.6 (`docs/domain/06-currencies-and-exchange-rates.md`), §9.10.4, §6.3 (`fx.edit_rates`), Appendix A (`fx.stale_alert_hours`, `fx.large_change_confirm_pct`, `currency.<code>.rounding_unit`, `currency.<code>.rounding_mode`); the fx module's `CLAUDE.md` ("Not built yet"), `apps/admin/CLAUDE.md`.
-- **Branch:** `feat/exchange-rates-screen`.
+- **Roadmap line:** 2.20b Resolving «نقص في التحصيل», in the server and the panel: operations choose the responsible party with the §8.9 effects on the missing amount only, previewed before confirming: the captain (`earn.charge`, the push «خُصم من مستحقاتك», CA §14 #14), the customer (`dues.charge` of the missing amount with the block until paid, no fake-order rule, strike or trust change) or the platform (`platform.operating_cost`); the alert closes and the open shortfall leaves the order and the dashboard (AP §8.6, §8.8–8.9).
+- **Specs:** AP §8.6 (`docs/domain/06-currencies-and-exchange-rates.md`, «Payment at the door»), §8.8 (`docs/domain/08-customer-trust-strikes-and-dues.md`), §8.9 (`docs/domain/09-outcomes-and-responsibility.md`), AP §9.3.2 and §9.1.3 («نقص في التحصيل»), CA §14 #14; the ordering module's `CLAUDE.md` (the delivery, `GET /v1/admin/orders/shortfalls`, `order-alerts.ts`: the alert «stays open until operations resolve the shortfall (not built)»), the ledger module's `CLAUDE.md`, `apps/admin/CLAUDE.md`.
+- **Branch:** `feat/resolve-shortfall`.
 - **Plan:**
-  - [ ] The routes: the city's accepted currencies with the current rate, `setAt`, the editor and the rounding rule; a currency's rate history; the rate edit with `confirmLargeChange` (`fx.edit_rates`, `Idempotency-Key`); the generated clients.
-  - [ ] The stale-rate alert: an information alert for OWN and FIN while a currency's current rate is older than `fx.stale_alert_hours`, opened and closed by the worker, closed by a new rate.
-  - [ ] The panel's «أسعار الصرف»: the list, the history, the edit in either direction with the second confirmation, the rounding unit and mode through the settings routes; Playwright smoke.
-  - [ ] Review, then hand over to 2.20b.
+  - [ ] The rule and its entries, test first: the shortfall left on the order clearing account moved to the captain (`earn.charge`), the customer (`dues.charge`, the missing amount only) or the platform (`platform.operating_cost`; `test_cost` on a test order), the clearing account back to zero; the resolution kept on the order once, audited, with an event.
+  - [ ] The routes: the preview and the resolution (`operations.manage`, `Idempotency-Key`), the shortfalls list and the order detail answering it resolved; the alert «نقص في التحصيل» closed; the captain's push «خُصم من مستحقاتك»; the generated clients.
+  - [ ] The panel: «حلّ النقص» on the order detail with the party, the preview's sentences and the required note; the shortfall and its resolution on the detail.
+  - [ ] Review, then hand over to 2.20c.
+
+### Left from 2.20a (`feat/exchange-rates-screen`)
+
+- **Before deploying to staging:** migration 0075 widens `notifications.alerts_subject_type` with `currency` (expand only, `NOT VALID` then `VALIDATE`). New routes `GET /v1/admin/exchange-rates`, `…/history`, `PUT /v1/admin/exchange-rates`; the alert list answers `currency`. The worker's alerts sweep now imports `FxModule`. Deploy the server before the panel.
+- **To check on staging:** as FIN, the home page's «أسعار الصرف»: the base currency, then each currency with «1 USD = … TRY» and its inverse, «آخر تحديث … بواسطة …», the rounding and «سجل الأسعار». Change the dollar by more than 10%: «التغيير أكبر من 10%…» and «تأكيد التغيير»; the new rate shows and the history grows. A new order's equivalents take it; an order placed before keeps its snapshot. Leave a rate 24 hours: within 30 seconds the information alert «سعر صرف قديم» with «العملة USD» and «فتح أسعار الصرف»; saving the rate (the same value is enough) closes it. «تعديل التقريب» changes the unit or mode with a reason. As OPS the page is not offered.
+- **To confirm with the owner:** entering the same rate again is a new version that confirms it and closes «سعر صرف قديم» (the reviewer's finding: otherwise an unchanged market could never clear the alert); the screen's words (`exchangeRates.*` in `apps/admin/src/locales/ar.json`): «أسعار الصرف», «السعر الجديد يسري على الطلبات الجديدة فقط.», «سعر قديم», «تعديل السعر», «طريقة الإدخال», «تأكيد التغيير», «تعديل التقريب», «للأقرب», «للأعلى», «للأسفل», «سجل الأسعار»; the alert's «العملة {الرمز}» and «فتح أسعار الصرف».
+- **Decided by us:** the routes live in `cashdesk` (fx cannot import identity for the editors' names); the rate edit takes no `Idempotency-Key` (it sets a value; a retry only adds a confirming version); a disabled currency's rate is never stale; the rate shows to six places both ways; the rounding mode is saved before the unit, each through the settings routes with the reason.
+- **Not yet:** routes and a screen for a city's accepted currencies and its base currency (the seed and the owner's setup set them); a rate scheduled ahead.
 
 ### Left from 2.19g (`feat/restaurant-statements-period`)
 

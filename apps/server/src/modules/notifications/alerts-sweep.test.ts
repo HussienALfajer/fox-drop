@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Database } from '../../database/database.js';
 import type { CaptainsService } from '../captains/index.js';
+import type { FxService } from '../fx/index.js';
 import type { GeoService } from '../geo/index.js';
 import type { OtpSenderPoolService } from '../identity/index.js';
 import type { RestaurantStatusService } from '../merchants/index.js';
@@ -22,6 +23,7 @@ function sweep(options: {
   captains: { id: string; name: string; atLimit: boolean | null }[];
   openSubjects?: string[];
   autoPaused?: { id: string; nameAr: string }[];
+  staleRates?: string[];
 }) {
   const synced: Synced[] = [];
   const alerts = {
@@ -51,7 +53,13 @@ function sweep(options: {
   const restaurants = {
     autoPaused: async () => options.autoPaused ?? [],
   } as unknown as RestaurantStatusService;
-  return { sweep: new AlertsSweep(database, alerts, pool, captains, geo, restaurants), synced };
+  const fx = {
+    staleRates: async () => (options.staleRates ?? []).map((currency) => ({ currency })),
+  } as unknown as FxService;
+  return {
+    sweep: new AlertsSweep(database, alerts, pool, captains, geo, restaurants, fx),
+    synced,
+  };
 }
 
 describe('the alerts sweep (AP §9.1.3)', () => {
@@ -134,6 +142,21 @@ describe('the alerts sweep (AP §9.1.3)', () => {
         open: ['restaurant_auto_paused'],
       },
       { subject: 'restaurant:r2', evaluated: ['restaurant_auto_paused'], open: [] },
+    ]);
+  });
+
+  it('raises «سعر صرف قديم» per stale currency and resolves the others (AP §8.6)', async () => {
+    const { sweep: run, synced } = sweep({
+      numbers: [],
+      alerts: [],
+      captains: [],
+      staleRates: ['USD'],
+      openSubjects: ['city:USD', 'city:SYP'],
+    });
+    await run.staleRates(new Date());
+    expect(synced).toEqual([
+      { subject: 'currency:city:USD', evaluated: ['rate_stale'], open: ['rate_stale'] },
+      { subject: 'currency:city:SYP', evaluated: ['rate_stale'], open: [] },
     ]);
   });
 });

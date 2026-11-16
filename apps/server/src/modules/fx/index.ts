@@ -33,6 +33,8 @@ export {
   type CurrentRate,
   type FxChange,
   type FxExecutor,
+  type ExchangeRateRow,
+  type ExchangeRates,
   type FxRefusal,
   FxRefusedError,
   FxService,
