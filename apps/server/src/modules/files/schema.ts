@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { check, integer, pgSchema, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { check, index, integer, pgSchema, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 // Architecture §4.3: the files module owns the files schema.
 export const files = pgSchema('files');
@@ -49,5 +49,7 @@ export const uploads = files.table(
       sql`${table.contentType} IN ('image/jpeg', 'image/png', 'image/webp')`,
     ),
     check('uploads_size_positive', sql`${table.sizeBytes} > 0`),
+    // A customer's photos asked in the last hour (slice 2.24a).
+    index('uploads_created_by').on(table.createdBy, table.createdAt),
   ],
 );

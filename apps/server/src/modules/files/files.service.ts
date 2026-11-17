@@ -11,7 +11,7 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Inject, Injectable } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { and, count, eq, gt } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { PRIVATE_DOCS_BUCKET, PUBLIC_MEDIA_BUCKET } from '../../storage/storage-setup.js';
@@ -24,6 +24,10 @@ export const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 // upload may still be linked.
 export const UPLOAD_URL_SECONDS = 10 * 60;
 export const LINK_WITHIN_MS = 60 * 60 * 1000;
+// A customer's report photos asked in an hour (slice 2.24a): a report takes
+// at most 3, so this leaves room for retries and stops an account from
+// filling the storage (architecture §15).
+export const REPORT_UPLOADS_PER_HOUR = 20;
 
 export type FilesRefusal =
   | 'upload_not_found'
@@ -31,7 +35,8 @@ export type FilesRefusal =
   | 'upload_used'
   | 'upload_expired'
   | 'upload_missing'
-  | 'upload_invalid';
+  | 'upload_invalid'
+  | 'too_many_uploads';
 
 export class FilesRefusedError extends Error {
   override readonly name = 'FilesRefusedError';
@@ -176,6 +181,21 @@ export class FilesService {
   async createUpload(upload: NewUpload, accountId: string, now = new Date()) {
     const key = `${INCOMING}/${randomUUID()}.${extensions[upload.contentType]}`;
     const fromApp = PRIVATE_PURPOSES.includes(upload.purpose);
+    if (fromApp) {
+      const [{ asked }] = (await this.database.db
+        .select({ asked: count() })
+        .from(uploads)
+        .where(
+          and(
+            eq(uploads.createdBy, accountId),
+            eq(uploads.purpose, upload.purpose),
+            gt(uploads.createdAt, new Date(now.getTime() - 3_600_000)),
+          ),
+        )) as [{ asked: number }];
+      if (asked >= REPORT_UPLOADS_PER_HOUR) {
+        throw new FilesRefusedError('too_many_uploads', 'too many photos this hour');
+      }
+    }
     const url = await getSignedUrl(
       fromApp ? this.store.apps() : this.store.uploads,
       new PutObjectCommand({

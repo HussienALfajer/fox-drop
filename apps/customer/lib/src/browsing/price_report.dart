@@ -80,13 +80,19 @@ class PriceReport {
           'upload_expired' ||
           'upload_missing' ||
           'upload_invalid' ||
-          'upload_used' => PriceReportOutcome.photoFailed,
+          'upload_used' => _photoRefused(photo),
           _ => PriceReportOutcome.failed,
         };
       }
     } finally {
       alive.close();
     }
+  }
+
+  /// The next send uploads the photo again.
+  PriceReportOutcome _photoRefused(ReportPhoto? photo) {
+    if (photo != null) forgetUploads([photo]);
+    return PriceReportOutcome.photoFailed;
   }
 
   void _forget() {

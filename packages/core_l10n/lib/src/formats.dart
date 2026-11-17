@@ -23,7 +23,15 @@ DateTime _onCityClock(DateTime moment) => moment.toUtc().add(cityUtcOffset);
 /// anything else, more fraction digits than the currency has, or 0.
 String? minorOfTyped(String typed, String currency) {
   final decimals = _currencies[currency]?.decimals ?? 2;
-  final match = RegExp(r'^(\d{1,12})(?:\.(\d+))?$').firstMatch(typed.trim());
+  // An Arabic keyboard may type «١٢٠٫٥»: read it as «120.5».
+  final western = typed
+      .trim()
+      .replaceAll('٫', '.')
+      .replaceAllMapped(
+        RegExp('[٠-٩]'),
+        (m) => '${m[0]!.codeUnitAt(0) - 0x0660}',
+      );
+  final match = RegExp(r'^(\d{1,12})(?:\.(\d+))?$').firstMatch(western);
   if (match == null) return null;
   final fraction = match.group(2) ?? '';
   if (fraction.length > decimals) return null;

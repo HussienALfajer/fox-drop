@@ -10,7 +10,7 @@ void main() {
     expect(minorOfTyped('10.255', 'TRY'), isNull);
     expect(minorOfTyped('0', 'TRY'), isNull);
     expect(minorOfTyped('-5', 'TRY'), isNull);
-    expect(minorOfTyped('١٢٠', 'TRY'), isNull);
+    expect(minorOfTyped('١٢٠٫٥', 'TRY'), '12050');
     expect(minorOfTyped('abc', 'TRY'), isNull);
   });
 }

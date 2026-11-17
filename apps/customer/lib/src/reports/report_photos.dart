@@ -113,6 +113,14 @@ Future<List<String>> uploadPhotos(Ref ref, List<ReportPhoto> photos) async {
   return [for (final each in photos) each.uploadId!];
 }
 
+/// Forgets the photos' uploads after the server refused one (expired,
+/// missing, invalid or used), so the next send uploads them again.
+void forgetUploads(List<ReportPhoto> photos) {
+  for (final each in photos) {
+    each.uploadId = null;
+  }
+}
+
 const _types = {
   'image/jpeg': CustomerNewUploadDtoContentTypeEnum.imageSlashJpeg,
   'image/png': CustomerNewUploadDtoContentTypeEnum.imageSlashPng,

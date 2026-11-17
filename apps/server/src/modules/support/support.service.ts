@@ -947,32 +947,25 @@ export class SupportService {
       description: report.note ?? '',
       restaurantId: report.restaurantId,
     });
-    await this.preparePhotos(photos, by.accountId, now);
     const [cutoff, timeZone] = await Promise.all([
       this.settings.get('finance.business_day_cutoff', { cityId: restaurant.cityId }),
       this.geo.cityTimeZone(restaurant.cityId),
     ]);
     const [hours, minutes] = cutoff.split(':').map(Number) as [number, number];
-    const dayStart = lastCutoff(now, hours * 60 + minutes, timeZone ?? 'Asia/Damascus');
+    if (timeZone === null) throw new Error(`city ${restaurant.cityId} has no time zone`);
+    const dayStart = lastCutoff(now, hours * 60 + minutes, timeZone);
+    // A report already sent today is refused before its photo is copied.
+    if (await this.priceReportedSince(by.accountId, report.restaurantId, dayStart)) {
+      throw new TicketRefusedError('already_reported_today', 'one report a day');
+    }
+    await this.preparePhotos(photos, by.accountId, now);
     const id = await this.database.db.transaction(async (tx) => {
       const again = await this.replayedIn(tx, by.accountId, idempotencyKey, requestHash);
       if (again !== null) return again;
       await tx.execute(
         sql`SELECT pg_advisory_xact_lock(hashtext(${`support.price_report:${by.accountId}:${report.restaurantId}`}))`,
       );
-      const [today] = await tx
-        .select({ id: tickets.id })
-        .from(tickets)
-        .where(
-          and(
-            eq(tickets.source, 'price_report'),
-            eq(tickets.partyId, by.accountId),
-            eq(tickets.restaurantId, report.restaurantId),
-            sql`${tickets.openedAt} >= ${dayStart}`,
-          ),
-        )
-        .limit(1);
-      if (today) {
+      if (await this.priceReportedSince(by.accountId, report.restaurantId, dayStart, tx)) {
         throw new TicketRefusedError('already_reported_today', 'one report a day');
       }
       const photoKeys = await this.linkPhotos(tx, photos, now);
@@ -1006,6 +999,28 @@ export class SupportService {
       );
     });
     return answer(id);
+  }
+
+  // Whether the customer reported a price on the restaurant since a moment.
+  private async priceReportedSince(
+    customerId: string,
+    restaurantId: string,
+    since: Date,
+    executor: Pick<Tx, 'select'> = this.database.db,
+  ): Promise<boolean> {
+    const [found] = await executor
+      .select({ id: tickets.id })
+      .from(tickets)
+      .where(
+        and(
+          eq(tickets.source, 'price_report'),
+          eq(tickets.partyId, customerId),
+          eq(tickets.restaurantId, restaurantId),
+          sql`${tickets.openedAt} >= ${since}`,
+        ),
+      )
+      .limit(1);
+    return found !== undefined;
   }
 
   // A key's ticket in the opening's transaction, under the key's advisory

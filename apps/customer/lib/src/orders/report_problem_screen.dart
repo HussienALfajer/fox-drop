@@ -57,7 +57,8 @@ class _ReportProblemScreenState extends ConsumerState<ReportProblemScreen> {
           .read(reportProblemProvider(widget.orderId))
           .send(
             typeCode: chosen!.code,
-            note: chosen.takesNote && note.isNotEmpty ? note : null,
+            // CU §12.2: the note is optional for every type.
+            note: note.isEmpty ? null : note,
             items: namesItems ? _items : const {},
             photos: _photos,
           );

@@ -30,6 +30,7 @@ import {
   SupportService,
   ticketAnswered,
 } from '../support/index.js';
+import { UNTIL_ENDED } from './active-orders.js';
 import { lockOrder } from './order-events.js';
 import { type Captain, CaptainsService } from '../captains/index.js';
 import { unsavedAddressFields, withRecipient } from '../customers/index.js';
@@ -369,6 +370,7 @@ class CustomerReportOrderDto extends createZodDto(
     photoUploadIds: z
       .array(z.uuid())
       .max(3)
+      .refine((ids) => new Set(ids).size === ids.length, 'each photo once')
       .describe('Up to 3 photos, each from POST /v1/customer/uploads/report-photo once uploaded.'),
   }),
 ) {}
@@ -666,13 +668,16 @@ export class CustomerOrdersController {
 
   private async withNames(order: OrderView) {
     const delivered = order.status === 'delivered';
+    // A report stays on its order whatever the order became since (an
+    // outcome changed to failed included); only its window needs delivered.
+    const ended = !UNTIL_ENDED.includes(order.status);
     const [names, captains, compensation, lateCode, report, deliveredAt, redeliveries] =
       await Promise.all([
         this.merchants.names([order.restaurantId]),
         this.captainsOf([order]),
         order.cancellation === null ? null : this.compensations.issuedCode(order.id),
         order.acceptance === null ? null : this.lateCodes.forOrder(order.id),
-        delivered ? this.support.reportOn(order.id) : null,
+        ended ? this.support.reportOn(order.id) : null,
         delivered ? this.orders.deliveredAt(order.id, order.placedAt) : null,
         this.orders.redeliveriesOf(order.id),
       ]);

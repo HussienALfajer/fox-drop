@@ -77,6 +77,7 @@ class ReportProblem {
   final String orderId;
   String? _key;
   String? _keyFor;
+  List<ReportPhoto> _photos = const [];
 
   Future<ReportOutcome> send({
     required String typeCode,
@@ -104,6 +105,7 @@ class ReportProblem {
         _key = uuidV4();
         _keyFor = fingerprint;
       }
+      _photos = photos;
       return await _send(typeCode, note, chosen, uploadIds);
     } finally {
       alive.close();
@@ -160,6 +162,8 @@ class ReportProblem {
             'upload_missing' ||
             'upload_invalid' ||
             'upload_used':
+          // The next send uploads the photos again.
+          forgetUploads(_photos);
           return const ReportPhotoFailed();
         default:
           return const ReportFailed();
