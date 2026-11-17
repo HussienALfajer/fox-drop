@@ -11,7 +11,7 @@ Slice 2.25b, the rest of the profile and «حسابي» (`docs/roadmap.md`, Phas
 - **Branch:** the cloud session's branch, or `feat/customer-account`.
 - **Plan:**
   - [x] Read the cited sections; write the plan here as a checklist, one step per commit (server, panel, app).
-  - [ ] Server: «توثيق» and «إزالة الثقة» (D23 follows the latest mark as a fake outcome would), clearing strikes (the count restarts from the clear) and ending a review stop, with their routes, audit and the profile's fields.
+  - [x] Server: «توثيق» and «إزالة الثقة» (D23 follows the latest mark as a fake outcome would), clearing strikes (the count restarts from the clear) and ending a review stop, with their routes, audit and the profile's fields.
   - [ ] Server: internal notes, and the profile's orders (count, total spent, last order), tickets, codes used and saved addresses.
   - [ ] Server: the admin test account (OWN, a new permission `customers.test_account`, AP §6.3 row): test-mode restaurants in its list with «تجريبي», their page, quote and placing.
   - [ ] Server: «تغيير الرقم» (Syrian or Turkish, not another open account's; every session ends) and «تسجيل الخروج من كل الأجهزة» from the panel.
