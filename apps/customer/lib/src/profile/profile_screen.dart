@@ -144,9 +144,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ListTile(
               key: const Key('profile-phone'),
               title: Text(l10n.customerAccountPhone),
-              subtitle: Text(
-                '${ref.watch(profileProvider).value?.phone ?? ''}\n'
-                '${l10n.customerAccountPhoneHint}',
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // A number reads left to right (AP §4.7).
+                  Text(
+                    ref.watch(profileProvider).value?.phone ?? '',
+                    textDirection: TextDirection.ltr,
+                  ),
+                  Text(l10n.customerAccountPhoneHint),
+                ],
               ),
             ),
           if (!widget.editing) ...[

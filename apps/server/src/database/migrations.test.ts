@@ -662,7 +662,7 @@ describe('the ordering tables (AP §8.1, §4.8; architecture §5.5)', () => {
     ).rejects.toThrow(/review_stops_end_note/);
   });
 
-  it("keep a customer's strike clears, trust marks and notes unchanged (slice 2.25b)", async () => {
+  it("keep a customer's strike clears, trust marks, test-account flags and notes unchanged (slice 2.25b)", async () => {
     const account = randomUUID();
     const { rows: clears } = await appQuery(
       `INSERT INTO customers.strike_clears (customer_account_id, at, by, note) VALUES ('${account}', now(), '${randomUUID()}', 'راجعنا') RETURNING id`,
@@ -680,6 +680,14 @@ describe('the ordering tables (AP §8.1, §4.8; architecture §5.5)', () => {
     );
     await expect(
       appQuery(`UPDATE customers.trust_marks SET trusted = false WHERE id = '${marks[0].id}'`),
+    ).rejects.toThrow(/permission denied/);
+    const { rows: flags } = await appQuery(
+      `INSERT INTO customers.test_account_flags (customer_account_id, flagged, at, by) VALUES ('${account}', true, now(), '${account}') RETURNING id`,
+    );
+    await expect(
+      appQuery(
+        `UPDATE customers.test_account_flags SET flagged = false WHERE id = '${flags[0].id}'`,
+      ),
     ).rejects.toThrow(/permission denied/);
     const note = () =>
       appQuery(

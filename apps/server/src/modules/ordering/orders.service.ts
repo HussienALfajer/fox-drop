@@ -171,8 +171,8 @@ export class OrdersService implements OnModuleInit {
   }
 
   // AP §9.8 «الطلبات» (slice 2.25b): the customer's orders in the city
-  // (free re-deliveries left out), the delivered ones' totals per currency,
-  // and the latest. Reads every month's partition.
+  // (free re-deliveries left out), what the normal deliveries totalled per
+  // currency (test orders left out), and the latest. Reads every month's partition.
   private async customerSummary(accountId: string, cityId: string) {
     const whose = and(
       eq(orders.customerAccountId, accountId),
@@ -187,7 +187,16 @@ export class OrdersService implements OnModuleInit {
       this.database.db
         .select({ currency: orders.currency, amount: sql<string>`sum(${orders.total})::text` })
         .from(orders)
-        .where(and(whose, eq(orders.status, 'delivered')))
+        // What the customer paid: normal deliveries, test orders left out
+        // (an outcome may have collected less or nothing).
+        .where(
+          and(
+            whose,
+            eq(orders.status, 'delivered'),
+            eq(orders.outcome, 'normal'),
+            eq(orders.testOrder, false),
+          ),
+        )
         .groupBy(orders.currency)
         .orderBy(orders.currency),
       this.database.db

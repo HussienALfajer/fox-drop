@@ -16,6 +16,15 @@ describe('trustBasis (D23 with the marks of AP §9.8)', () => {
     expect(trustBasis(at(5), null)).toEqual({ since: at(5), marked: false });
   });
 
+  it('a fake outcome set by «تغيير النتيجة» after «توثيق» removes the trust', () => {
+    // The order's first outcome came before the mark; the change to fake
+    // after it, which counts the deliveries from the mark on.
+    expect(trustBasis(at(1), { trusted: true, at: at(5) }, at(9))).toEqual({
+      since: at(5),
+      marked: false,
+    });
+  });
+
   it('«توثيق» trusts until a later fake outcome', () => {
     expect(trustBasis(null, { trusted: true, at: at(5) })).toEqual({
       since: at(5),

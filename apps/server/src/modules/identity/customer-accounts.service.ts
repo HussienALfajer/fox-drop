@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq, ne, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, ne, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
 import { APP_PHONE_PATTERN } from './app-phone.js';
 import { AppSessionsService } from './app-sessions.service.js';
-import { customerAccounts } from './schema.js';
+import { appSignInCodes, customerAccounts } from './schema.js';
 import { IDENTITY_SECRETS, IdentitySecrets } from './secrets.js';
 
 export type CustomerAccountRefusal = 'unknown_customer' | 'invalid_phone' | 'phone_taken';
@@ -94,11 +94,12 @@ export class CustomerAccountsService {
   // new Syrian or Turkish mobile, which no other open account has; every
   // session of the account ends («phone_changed») and the customer signs in
   // again with the new number and a code. Active orders are untouched. The
-  // account's own number again changes nothing, so a repeat needs no key. Under
-  // both numbers' code lock (`identity.app_code:<hash>`, the lock a code
-  // request takes), and the open accounts' unique index catches a sign-in
-  // that created an account on the new number meanwhile. Audited without
-  // either number.
+  // account's own number again changes nothing, so a repeat needs no key.
+  // Under both numbers' code-request lock (`identity.app_code:<hash>`); the
+  // old number's open code is locked and ended, so a sign-in on it either
+  // committed first (its session ends here) or finds no code; the open
+  // accounts' unique index catches a sign-in that created an account on the
+  // new number meanwhile. Audited without either number.
   async changePhone(
     admin: CustomerAccountAdmin,
     change: { accountId: string; phone: string },
@@ -125,6 +126,26 @@ export class CustomerAccountsService {
         }
         // Already the account's number: a repeat changes nothing.
         if (account.phoneHash === toHash) return [];
+        // A sign-in on the old number locks its open code: wait for one in
+        // progress (its session then ends below), and end the code, so a
+        // later one finds none.
+        const open = await tx
+          .select({ id: appSignInCodes.id })
+          .from(appSignInCodes)
+          .where(
+            and(
+              eq(appSignInCodes.party, 'customer'),
+              eq(appSignInCodes.phoneHash, account.phoneHash),
+              isNull(appSignInCodes.endedAt),
+            ),
+          )
+          .for('update');
+        if (open.length > 0) {
+          await tx
+            .update(appSignInCodes)
+            .set({ endedAt: now, endReason: 'replaced' })
+            .where(inArray(appSignInCodes.id, open.map((code) => code.id)));
+        }
         const [taken] = await tx
           .select({ id: customerAccounts.id })
           .from(customerAccounts)

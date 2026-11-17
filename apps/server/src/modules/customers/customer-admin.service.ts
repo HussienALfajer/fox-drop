@@ -564,7 +564,7 @@ export class CustomerAdminService {
     if (await earlier(this.database.db)) return;
     await this.checkCustomer(command.cityId, command.accountId);
     await this.database.db.transaction(async (tx) => {
-      await tx
+      const inserted = await tx
         .insert(notes)
         .values({
           customerAccountId: command.accountId,
@@ -574,7 +574,10 @@ export class CustomerAdminService {
           idempotencyKey: command.idempotencyKey,
           requestHash,
         })
-        .onConflictDoNothing({ target: [notes.authorId, notes.idempotencyKey] });
+        .onConflictDoNothing({ target: [notes.authorId, notes.idempotencyKey] })
+        .returning({ id: notes.id });
+      // A repeat sent with the first wrote nothing: nothing to audit.
+      if (inserted.length === 0) return;
       await this.audit.recordWrite(
         {
           actor: admin.actor,
@@ -628,7 +631,8 @@ export class CustomerAdminService {
 
   // AP §9.8 «توثيق» and «إزالة الثقة» (OWN and OPS, a reason required):
   // overrides D23's rule from now (`trustBasis`; owner decisions
-  // 2026-11-17). Sets the trust to a value, so a repeat needs no key. Under
+  // 2026-11-17). Sets the trust to a value (the same value again writes
+  // nothing), so a repeat needs no key. Under
   // the customer's ordering lock, so a placing counts with it or before it.
   async markTrust(
     admin: CustomerAdmin,
@@ -638,6 +642,10 @@ export class CustomerAdminService {
     await this.checkCustomer(command.cityId, command.accountId);
     await this.database.db.transaction(async (tx) => {
       await this.lockCustomer(tx, command.accountId);
+      // The same value again changes nothing: a repeated «إزالة الثقة» would
+      // otherwise restart the count a second time.
+      const latest = await this.customers.trustMark(command.accountId, tx);
+      if (latest?.trusted === command.trusted) return;
       await tx.insert(trustMarks).values({
         customerAccountId: command.accountId,
         trusted: command.trusted,

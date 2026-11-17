@@ -78,6 +78,9 @@ export class ActiveOrders {
                      WHERE first.order_id = ${orderOutcomeRows.orderId}))`.mapWith(
           orderOutcomeRows.setAt,
         ),
+        // When the latest fake outcome in force was set, a change included,
+        // which a «توثيق» must be newer than (slice 2.25b).
+        setAt: sql`max(${orderOutcomeRows.setAt})`.mapWith(orderOutcomeRows.setAt),
       })
       .from(orderOutcomeRows)
       .innerJoin(
@@ -91,6 +94,7 @@ export class ActiveOrders {
     const basis = trustBasis(
       lastFake?.at ?? null,
       await this.customers.trustMark(accountId, executor),
+      lastFake?.setAt ?? null,
     );
     // AP §9.9.3, CU §11.2 (slice 2.23d): a free re-delivery counts toward
     // neither the trust nor the limit.

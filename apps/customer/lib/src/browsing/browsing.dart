@@ -1,13 +1,26 @@
 import 'package:core_api/core_api.dart';
+import 'package:core_auth/core_auth.dart';
 import 'package:core_l10n/core_l10n.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../api.dart';
+import '../auth.dart';
 import '../location/delivery_point.dart';
 import '../location/position.dart';
 
-/// The browsing point, or null before the zone check found one.
+/// The browsing point, or null before the zone check found one. The list
+/// and the page also follow the account, since an admin test account sees
+/// the restaurants in test mode (AP §9.8) and a session ended elsewhere must
+/// read them again as a guest.
 GeoPoint? _browsingPoint(Ref ref) {
+  ref.watch(
+    customerAuth.session.select(
+      (session) => switch (session.value) {
+        SignedIn(:final accountId) => accountId,
+        _ => null,
+      },
+    ),
+  );
   final point = ref.watch(deliveryPointProvider);
   return point is PointChecked && point.coverage == PointCoverage.served
       ? point.point

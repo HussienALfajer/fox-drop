@@ -2,16 +2,21 @@ import 'reflect-metadata';
 import { randomUUID } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { CustomersService } from '../customers/index.js';
+import { CODE_SENDER, type DevelopmentCodeSender } from '../identity/index.js';
+import { SettingsService } from '../settings/index.js';
 import {
   admin,
   app,
   appSignIn,
   azaz,
+  bySystem,
   db,
   home,
   phoneNumber,
+  pickedUpOrder,
   place,
   quoteFor,
+  sql,
 } from './order-edits.fixture.js';
 
 // AP §9.8 «توثيق», «إزالة الثقة», «مسح المخالفات» and «إنهاء الإيقاف»,
@@ -255,6 +260,33 @@ describe('«تغيير الرقم» and «تسجيل الخروج من كل ال
     expect(await profileStatus(again)).toBe(200);
   });
 
+  it("ends the old number's open code, so a sign-in racing the change finds none", async () => {
+    const settings = app.get(SettingsService);
+    await settings.update('otp.resend_after_sec', {}, 1, bySystem);
+    const phone = phoneNumber();
+    const id = sub(await appSignIn('customer', phone));
+    await new Promise((resolve) => setTimeout(resolve, 1_100));
+    const deviceId = randomUUID();
+    const asked = await app.inject({
+      method: 'POST',
+      url: '/v1/customer/auth/code',
+      payload: { phone, deviceId },
+    });
+    expect(asked.statusCode).toBe(200);
+    const code = app.get<DevelopmentCodeSender>(CODE_SENDER).lastCode(phone);
+    expect((await command(['OPS'], id, 'change-phone', { phone: phoneNumber() })).statusCode).toBe(
+      200,
+    );
+    const late = await app.inject({
+      method: 'POST',
+      url: '/v1/customer/auth/sign-in',
+      payload: { phone, deviceId, code },
+    });
+    expect(late.statusCode).not.toBe(200);
+    expect(late.json().error).toBe('code_expired');
+    await settings.update('otp.resend_after_sec', {}, 60, bySystem);
+  });
+
   it('signs every device out, and support may do it', async () => {
     const signedIn = await appSignIn('customer', phoneNumber());
     const id = sub(signedIn);
@@ -266,5 +298,28 @@ describe('«تغيير الرقم» and «تسجيل الخروج من كل ال
     expect((await command(['SUP'], id, 'sign-out-everywhere', {})).json()).toEqual({
       sessionsEnded: 0,
     });
+  });
+});
+
+describe('the profile’s total spent and a repeated mark (AP §9.8)', () => {
+  it('counts what a normal delivery collected, and the same trust value again writes nothing', async () => {
+    const buyer = await customer();
+    const ops = await panel(['OPS']);
+    const order = await pickedUpOrder(buyer.headers);
+    expect((await order.arriveAtCustomer()).statusCode).toBe(200);
+    const { rows } = await sql.query('SELECT total FROM ordering.orders WHERE id = $1', [
+      order.order.id,
+    ]);
+    const total = String(rows[0].total);
+    expect((await order.deliver(total)).statusCode).toBe(200);
+    expect((await ops.profile(buyer.id)).orders).toMatchObject({
+      count: 1,
+      spent: [{ currency: 'TRY', amount: total }],
+      last: { status: 'delivered' },
+    });
+
+    const removed = (await ops.trust(buyer.id, false)).json().trustMark;
+    const again = (await ops.trust(buyer.id, false)).json().trustMark;
+    expect(again.at).toBe(removed.at);
   });
 });
