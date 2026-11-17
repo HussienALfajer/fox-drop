@@ -26,6 +26,7 @@ const profile = (blocked: boolean) => ({
         customerText: 'مخالفة شروط الاستخدام',
         note: 'أساء للكابتن',
         startedAt: '2026-11-17T09:00:00.000Z',
+        viaAccountId: null,
       }
     : null,
   reviewStop: null,
@@ -73,6 +74,8 @@ const profile = (blocked: boolean) => ({
   codes: [],
   addresses: [],
   notes: [],
+  devices: [] as unknown[],
+  duesViaAccountId: null as string | null,
 });
 
 // AP §9.8 (slice 2.25a): the owner finds a customer by the number and blocks
@@ -195,4 +198,64 @@ test("closes a customer's account with a reason", async ({ page }) => {
   await expect(page.getByRole('link', { name: /الحساب الحالي بالرقم نفسه/ })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'إغلاق الحساب' })).toHaveCount(0);
   expect(sent).toEqual([{ cityId, note: 'طلب الزبون' }]);
+});
+
+// docs/domain/08, AP §9.8 (slice 2.25d): the owner sees the phone another
+// blocked account used and lifts its block for a phone sold on.
+test("lifts a device's block with a reason", async ({ page }) => {
+  await fakeSession(page, ['customers.read', 'customers.lift_device_block']);
+  await page.route('**/v1/admin/cities', (route) => route.fulfill({ json: cities }));
+  const deviceId = '6d1f5a2e-3c4b-3a9d-8e7f-0123456789ab';
+  const device = (blocked: boolean) => ({
+    deviceId,
+    firstSeenAt: '2026-11-17T09:00:00.000Z',
+    lastSeenAt: '2026-11-17T12:00:00.000Z',
+    ipAddress: '203.0.113.7',
+    userAgent: null,
+    blocked,
+    accounts: blocked
+      ? [
+          {
+            id: blockId,
+            name: 'ماهر',
+            maskedPhone: '+963 ••• 111',
+            status: 'blocked',
+            lastSignedInAt: '2026-11-17T10:00:00.000Z',
+          },
+        ]
+      : [],
+    lift: blocked ? null : { at: '2026-11-17T13:00:00.000Z', byName: 'سارة', note: 'بيع الهاتف' },
+  });
+  const sent: unknown[] = [];
+  let lifted = false;
+  await page.route('**/v1/admin/customers/**', (route) => {
+    const request = route.request();
+    if (new URL(request.url()).pathname.endsWith('/lift-device-block')) {
+      sent.push(request.postDataJSON());
+      lifted = true;
+    }
+    const base = profile(!lifted);
+    return route.fulfill({
+      json: {
+        ...base,
+        block: base.block && { ...base.block, viaAccountId: blockId },
+        blocks: [],
+        devices: [device(!lifted)],
+      },
+    });
+  });
+  await page.goto(`/customers/${customerId}`);
+  await expect(page.getByRole('heading', { name: 'الأجهزة' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'ماهر' })).toBeVisible();
+  await expect(page.getByText('203.0.113.7')).toBeVisible();
+  // A block through a device is not this account's to lift.
+  await expect(page.getByRole('heading', { name: 'فك الحظر' })).toHaveCount(0);
+  const form = page.locator('form', {
+    has: page.getByRole('heading', { name: 'فك حظر الجهاز 6d1f5a2e' }),
+  });
+  await form.getByLabel('السبب').fill('بيع الهاتف');
+  await form.getByRole('button', { name: 'فك حظر الجهاز 6d1f5a2e' }).click();
+  await expect(page.getByText(/فُكّ حظره في .*: سارة \(بيع الهاتف\)/)).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'فك حظر الجهاز 6d1f5a2e' })).toHaveCount(0);
+  expect(sent).toEqual([{ cityId, deviceId, note: 'بيع الهاتف' }]);
 });

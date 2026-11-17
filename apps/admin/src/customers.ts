@@ -19,6 +19,8 @@ export const CUSTOMERS_CLEAR_STRIKES = 'customers.clear_strikes';
 export const CUSTOMERS_TEST_ACCOUNT = 'customers.test_account';
 export const CUSTOMERS_SIGN_OUT = 'customers.sign_out_everywhere';
 export const CUSTOMERS_CLOSE = 'customers.close_account';
+// Slice 2.25d: «فك حظر الجهاز» (OWN).
+export const CUSTOMERS_LIFT_DEVICE = 'customers.lift_device_block';
 
 export type FoundCustomer =
   components['schemas']['AdminCustomersFoundDto_Output']['customers'][number];
@@ -28,6 +30,12 @@ export type BlockKind = components['schemas']['AdminBlockCustomerDto']['kind'];
 type BlockBody = components['schemas']['AdminBlockCustomerDto'];
 export type DuesPreview = components['schemas']['AdminCustomerDuesPreviewDto_Output'];
 export type CustomerReceipt = components['schemas']['AdminCustomerReceiptDto_Output'];
+
+// A device as the profile names it: the first eight characters of its id
+// (slice 2.25d; the whole id stays in the command).
+export function shortDevice(deviceId: string): string {
+  return deviceId.slice(0, 8);
+}
 
 // AP §9.8 «الحالة», keyed by the API's statuses.
 export const statusKeys = {
@@ -354,6 +362,8 @@ export const actionRefusals = [
   'idempotency_key_reused',
   'active_order',
   'account_closed',
+  'unknown_device',
+  'device_not_blocked',
 ] as const;
 export type ActionRefusal = (typeof actionRefusals)[number];
 export type ActionResult =
@@ -371,7 +381,11 @@ export type CustomerAction =
       path: '/v1/admin/customers/{customerId}/change-phone';
       body: { phone: string; note: string };
     }
-  | { path: '/v1/admin/customers/{customerId}/close'; body: { note: string } };
+  | { path: '/v1/admin/customers/{customerId}/close'; body: { note: string } }
+  | {
+      path: '/v1/admin/customers/{customerId}/lift-device-block';
+      body: { deviceId: string; note: string };
+    };
 
 function sendAction(
   action: CustomerAction,
@@ -390,6 +404,8 @@ function sendAction(
     case '/v1/admin/customers/{customerId}/change-phone':
       return api.POST(action.path, { params, body: { cityId, ...action.body } });
     case '/v1/admin/customers/{customerId}/close':
+      return api.POST(action.path, { params, body: { cityId, ...action.body } });
+    case '/v1/admin/customers/{customerId}/lift-device-block':
       return api.POST(action.path, { params, body: { cityId, ...action.body } });
   }
 }
