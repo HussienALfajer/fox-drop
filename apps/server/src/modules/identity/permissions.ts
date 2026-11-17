@@ -84,6 +84,8 @@ export const adminPermissions = [
   'sign_in.emergency_code',
   // AP §9.8 (slice 2.25b): «حساب تجريبي للإدارة», OWN alone.
   'customers.test_account',
+  // AP §9.8 (slice 2.25b): «تسجيل الخروج من كل الأجهزة», OWN, OPS and SUP.
+  'customers.sign_out_everywhere',
 ] as const;
 
 export type AdminPermission = (typeof adminPermissions)[number];

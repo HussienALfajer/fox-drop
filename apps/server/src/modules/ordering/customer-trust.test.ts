@@ -213,3 +213,58 @@ describe("the profile's orders, addresses and notes (AP §9.8)", () => {
     expect((await fin.note(buyer.id, 'نص آخر', key)).statusCode).toBe(422);
   });
 });
+
+describe('«تغيير الرقم» and «تسجيل الخروج من كل الأجهزة» (AP §9.8, CU §5.4)', () => {
+  const sub = (headers: Record<string, string>) =>
+    JSON.parse(Buffer.from(headers.authorization.split('.')[1]!, 'base64url').toString())
+      .sub as string;
+  const profileStatus = async (headers: Record<string, string>) =>
+    (await app.inject({ method: 'GET', url: '/v1/customer/profile', headers })).statusCode;
+  const command = async (roles: string[], customerId: string, action: string, body: object) => {
+    const { cookies } = await admin(roles);
+    return app.inject({
+      method: 'POST',
+      url: `/v1/admin/customers/${customerId}/${action}`,
+      cookies,
+      payload: { cityId: azaz, note: 'طلب الزبون عبر الدعم', ...body },
+    });
+  };
+
+  it('moves the account to the new number, signs every device out, and the customer signs in with it', async () => {
+    const buyer = await customer();
+    const other = phoneNumber();
+    await appSignIn('customer', other);
+    const changePhone = (phone: string, roles = ['OPS']) =>
+      command(roles, buyer.id, 'change-phone', { phone });
+
+    expect((await changePhone('abc')).json().error).toBe('invalid_phone');
+    expect((await changePhone(other)).json().error).toBe('phone_taken');
+    expect((await changePhone(phoneNumber(), ['SUP'])).statusCode).toBe(403);
+
+    const fresh = phoneNumber();
+    const local = `0${fresh.slice(4)}`;
+    const changed = await changePhone(local);
+    expect(changed.statusCode).toBe(200);
+    expect(changed.json().maskedPhone).toBe(`+963 ••• ${fresh.slice(-3)}`);
+    expect(await profileStatus(buyer.headers)).toBe(401);
+    const again = await appSignIn('customer', fresh);
+    expect(sub(again)).toBe(buyer.id);
+    expect(await profileStatus(again)).toBe(200);
+
+    expect((await changePhone(fresh)).statusCode).toBe(200);
+    expect(await profileStatus(again)).toBe(200);
+  });
+
+  it('signs every device out, and support may do it', async () => {
+    const signedIn = await appSignIn('customer', phoneNumber());
+    const id = sub(signedIn);
+    expect((await command(['FIN'], id, 'sign-out-everywhere', {})).statusCode).toBe(403);
+    const signedOut = await command(['SUP'], id, 'sign-out-everywhere', {});
+    expect(signedOut.statusCode).toBe(200);
+    expect(signedOut.json()).toEqual({ sessionsEnded: 1 });
+    expect(await profileStatus(signedIn)).toBe(401);
+    expect((await command(['SUP'], id, 'sign-out-everywhere', {})).json()).toEqual({
+      sessionsEnded: 0,
+    });
+  });
+});

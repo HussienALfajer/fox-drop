@@ -2052,6 +2052,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/customers/{customerId}/change-phone": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCustomersChangePhone"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/customers/{customerId}/sign-out-everywhere": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCustomersSignOutEverywhere"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/customers/{customerId}/trust": {
         parameters: {
             query?: never;
@@ -7043,6 +7075,24 @@ export interface components {
             /** Format: uuid */
             cityId: string;
             flagged: boolean;
+        };
+        AdminChangeCustomerPhoneDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description The new Syrian or Turkish mobile, in any usual form. */
+            phone: string;
+            /** @description The required reason. */
+            note: string;
+        };
+        AdminCustomerSignOutDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description The required reason. */
+            note: string;
+        };
+        AdminCustomerSignedOutDto_Output: {
+            /** @description The devices signed out. */
+            sessionsEnded: number;
         };
         AdminMarkCustomerTrustDto: {
             /** Format: uuid */
@@ -17967,6 +18017,58 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminCustomerDto_Output"];
+                };
+            };
+        };
+    };
+    adminCustomersChangePhone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                customerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminChangeCustomerPhoneDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCustomerDto_Output"];
+                };
+            };
+        };
+    };
+    adminCustomersSignOutEverywhere: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                customerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCustomerSignOutDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCustomerSignedOutDto_Output"];
                 };
             };
         };

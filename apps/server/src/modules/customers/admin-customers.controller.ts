@@ -20,7 +20,12 @@ import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { phoneOf } from '../../http/phone-search.js';
 import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
-import type { AdminSession } from '../identity/index.js';
+import {
+  type AdminSession,
+  type CustomerAccountAdmin,
+  CustomerAccountRefusedError,
+  CustomerAccountsService,
+} from '../identity/index.js';
 import { type BlockCommand, maskedPhone } from './blocks.js';
 import {
   type AdminMark,
@@ -209,6 +214,27 @@ class AdminSetCustomerTestAccountDto extends createZodDto(
   z.object({ cityId: z.uuid(), flagged: z.boolean() }),
 ) {}
 
+class AdminChangeCustomerPhoneDto extends createZodDto(
+  z.object({
+    cityId: z.uuid(),
+    phone: z
+      .string()
+      .trim()
+      .min(1)
+      .max(30)
+      .describe('The new Syrian or Turkish mobile, in any usual form.'),
+    note: reason.describe('The required reason.'),
+  }),
+) {}
+
+class AdminCustomerSignOutDto extends createZodDto(
+  z.object({ cityId: z.uuid(), note: reason.describe('The required reason.') }),
+) {}
+
+class AdminCustomerSignedOutDto extends createZodDto(
+  z.object({ sessionsEnded: z.int().describe('The devices signed out.') }),
+) {}
+
 class AdminAddCustomerNoteDto extends createZodDto(
   z.object({ cityId: z.uuid(), body: reason.describe('The note, up to 500 characters.') }),
 ) {}
@@ -262,7 +288,10 @@ class AdminEndCustomerReviewStopDto extends createZodDto(
 // actions.
 @AdminController('customers')
 export class AdminCustomersController {
-  constructor(private readonly customers: CustomerAdminService) {}
+  constructor(
+    private readonly customers: CustomerAdminService,
+    private readonly accounts: CustomerAccountsService,
+  ) {}
 
   // A read sent as a POST, so a number never sits in a URL.
   @Post('search')
@@ -395,6 +424,59 @@ export class AdminCustomersController {
     });
   }
 
+  // «تغيير الرقم» (OWN, OPS; AP §9.8, CU §5.4): every session ends and the
+  // customer signs in again with the new number. The account's own number
+  // again changes nothing, so it takes no key. Answers the profile. 400
+  // invalid_phone; 404 unknown_customer; 409 phone_taken.
+  @Post(':customerId/change-phone')
+  @RequirePermission('customers.manage')
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminCustomerDto })
+  changePhone(
+    @Param() params: AdminCustomerParamsDto,
+    @Body() body: AdminChangeCustomerPhoneDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(async () => {
+      const now = new Date();
+      await this.customers.checkCustomer(body.cityId, params.customerId);
+      const phone = phoneOf(body.phone);
+      if (phone === null) {
+        throw new CustomerAccountRefusedError('invalid_phone', 'not a mobile number');
+      }
+      await this.accounts.changePhone(
+        accountAdminOf(session, request, body.cityId, body.note),
+        { accountId: params.customerId, phone },
+        now,
+      );
+      return profileBody(await this.customers.profile(body.cityId, params.customerId, now));
+    });
+  }
+
+  // «تسجيل الخروج من كل الأجهزة» (OWN, OPS, SUP; AP §9.8): after a lost or
+  // sold phone. Active orders are untouched; a repeat ends nothing more.
+  @Post(':customerId/sign-out-everywhere')
+  @RequirePermission('customers.sign_out_everywhere')
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminCustomerSignedOutDto })
+  signOutEverywhere(
+    @Param() params: AdminCustomerParamsDto,
+    @Body() body: AdminCustomerSignOutDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(async () => {
+      await this.customers.checkCustomer(body.cityId, params.customerId);
+      const sessionsEnded = await this.accounts.signOutEverywhere(
+        accountAdminOf(session, request, body.cityId, body.note),
+        params.customerId,
+        new Date(),
+      );
+      return { sessionsEnded };
+    });
+  }
+
   // «توثيق» or «إزالة الثقة» (OWN, OPS). Answers the profile.
   @Post(':customerId/trust')
   @RequirePermission('customers.manage')
@@ -479,6 +561,16 @@ function adminOf(session: AdminSession, request: FastifyRequest): CustomerAdmin 
     actor: { type: 'admin', id: session.accountId, role: session.roles.join(',') },
     context: requestContext(request),
   };
+}
+
+function accountAdminOf(
+  session: AdminSession,
+  request: FastifyRequest,
+  cityId: string,
+  reason: string,
+): CustomerAccountAdmin {
+  const { actor, context } = adminOf(session, request);
+  return { actor, context, cityId, reason };
 }
 
 function blockOf(body: AdminBlockCustomerDto): BlockCommand {
@@ -572,6 +664,17 @@ async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
   try {
     return await run();
   } catch (error) {
+    if (error instanceof CustomerAccountRefusedError) {
+      const body = (statusCode: number) => ({ statusCode, error: error.refusal });
+      switch (error.refusal) {
+        case 'invalid_phone':
+          throw new BadRequestException(body(HttpStatus.BAD_REQUEST));
+        case 'unknown_customer':
+          throw new NotFoundException(body(HttpStatus.NOT_FOUND));
+        case 'phone_taken':
+          throw new ConflictException(body(HttpStatus.CONFLICT));
+      }
+    }
     if (!(error instanceof CustomerAdminRefusedError)) throw error;
     const body = (statusCode: number) => ({ statusCode, error: error.refusal });
     switch (error.refusal) {

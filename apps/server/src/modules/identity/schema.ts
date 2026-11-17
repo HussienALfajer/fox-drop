@@ -362,6 +362,7 @@ export const captainAccounts = identity.table('captain_accounts', {
 
 // other_device: a captain signed in on another device (CA §4.9, K5);
 // device_released: OWN or OPS released a captain's device (AP §9.7.5).
+// phone_changed: the panel's «تغيير الرقم» (AP §9.8, CU §5.4).
 export const appSessionEndReasons = [
   'sign_out',
   'sign_out_everywhere',
@@ -369,6 +370,7 @@ export const appSessionEndReasons = [
   'new_sign_in',
   'other_device',
   'device_released',
+  'phone_changed',
 ] as const;
 
 // A signed-in app installation (architecture §15.1): one refresh token family.
@@ -403,7 +405,7 @@ export const appSessions = identity.table(
     check('app_sessions_party_values', sql`${table.party} IN ('customer', 'merchant', 'captain')`),
     check(
       'app_sessions_end_reason_values',
-      sql`${table.endReason} IN ('sign_out', 'sign_out_everywhere', 'refresh_reuse', 'new_sign_in', 'other_device', 'device_released')`,
+      sql`${table.endReason} IN ('sign_out', 'sign_out_everywhere', 'refresh_reuse', 'new_sign_in', 'other_device', 'device_released', 'phone_changed')`,
     ),
     check(
       'app_sessions_ended_with_reason',

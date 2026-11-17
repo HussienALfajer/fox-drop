@@ -48,6 +48,7 @@ import 'package:core_api/src/model/admin_captain_balances_dto_output_captains_in
 import 'package:core_api/src/model/admin_captain_balances_dto_output_captains_inner_earnings.dart';
 import 'package:core_api/src/model/admin_captain_device_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_device_dto_output_device.dart';
+import 'package:core_api/src/model/admin_change_customer_phone_dto.dart';
 import 'package:core_api/src/model/admin_change_outcome_dto.dart';
 import 'package:core_api/src/model/admin_change_time_dto.dart';
 import 'package:core_api/src/model/admin_cities_dto_output.dart';
@@ -106,6 +107,8 @@ import 'package:core_api/src/model/admin_customer_receipt_dto_output.dart';
 import 'package:core_api/src/model/admin_customer_receipts_dto_output.dart';
 import 'package:core_api/src/model/admin_customer_receipts_dto_output_receipts_inner.dart';
 import 'package:core_api/src/model/admin_customer_search_dto.dart';
+import 'package:core_api/src/model/admin_customer_sign_out_dto.dart';
+import 'package:core_api/src/model/admin_customer_signed_out_dto_output.dart';
 import 'package:core_api/src/model/admin_customers_found_dto_output.dart';
 import 'package:core_api/src/model/admin_customers_found_dto_output_customers_inner.dart';
 import 'package:core_api/src/model/admin_daily_report_dto_output.dart';
@@ -828,6 +831,7 @@ part 'serializers.g.dart';
   AdminCaptainBalancesDtoOutputCaptainsInnerEarnings,
   AdminCaptainDeviceDtoOutput,
   AdminCaptainDeviceDtoOutputDevice,
+  AdminChangeCustomerPhoneDto,
   AdminChangeOutcomeDto,
   AdminChangeTimeDto,
   AdminCitiesDtoOutput,
@@ -886,6 +890,8 @@ part 'serializers.g.dart';
   AdminCustomerReceiptsDtoOutput,
   AdminCustomerReceiptsDtoOutputReceiptsInner,
   AdminCustomerSearchDto,
+  AdminCustomerSignOutDto,
+  AdminCustomerSignedOutDtoOutput,
   AdminCustomersFoundDtoOutput,
   AdminCustomersFoundDtoOutputCustomersInner,
   AdminDailyReportDtoOutput,

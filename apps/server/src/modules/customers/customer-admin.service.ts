@@ -743,7 +743,8 @@ export class CustomerAdminService {
     });
   }
 
-  private async checkCustomer(cityId: string, accountId: string): Promise<void> {
+  // 404 unknown_city, unknown_customer.
+  async checkCustomer(cityId: string, accountId: string): Promise<void> {
     await this.checkCity(cityId);
     if (!(await this.accounts.exists(accountId))) {
       throw new CustomerAdminRefusedError('unknown_customer', 'no such customer');

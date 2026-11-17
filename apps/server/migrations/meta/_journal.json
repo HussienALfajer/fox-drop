@@ -722,6 +722,13 @@
       "when": 1794941747614,
       "tag": "0102_customers_test_accounts",
       "breakpoints": true
+    },
+    {
+      "idx": 103,
+      "version": "7",
+      "when": 1794942117732,
+      "tag": "0103_identity_phone_changed",
+      "breakpoints": true
     }
   ]
 }
