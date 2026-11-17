@@ -234,3 +234,55 @@ describe('«إغلاق الحساب» in the panel (AP §9.8)', () => {
     expect(await problemCodes(back)).not.toContain('account_blocked');
   });
 });
+
+describe('the line after re-registration (AP §8.8)', () => {
+  it('counts dues posted on the closed account later, a review stop, and a third account', async () => {
+    const buyer = await customer();
+    const own = await panel(['OWN']);
+    // A review stop on the first account (docs/domain/08).
+    await sql.query(
+      'INSERT INTO customers.review_stops (customer_account_id, started_at, order_id) VALUES ($1, now(), gen_random_uuid())',
+      [buyer.id],
+    );
+    expect(await problemCodes(buyer.headers)).toContain('review_stop');
+    expect((await own.command(buyer.id, 'close', { note: 'طلب الزبون' })).statusCode).toBe(200);
+
+    await pastResendWait();
+    const second = await appSignIn('customer', buyer.phone);
+    const secondId = sub(second);
+    expect(await problemCodes(second)).toContain('review_stop');
+    expect(await problemCodes(second)).not.toContain('dues_unpaid');
+
+    // Dues charged on the closed account after the move still stop the new one.
+    expect(
+      (
+        await own.command(
+          buyer.id,
+          'block',
+          { kind: 'dues', amount: '3000', until: null, reason: 'fake_order', note: 'طلب وهمي' },
+          randomUUID(),
+        )
+      ).statusCode,
+    ).toBe(201);
+    expect(await duesOf(buyer.id)).toBe(3000n);
+    expect(await problemCodes(second)).toContain('dues_unpaid');
+    const profile = (await own.profile(secondId)).json();
+    expect(profile.dues).toEqual({ amount: '3000', currency: 'TRY' });
+
+    // Closed again: the third account continues the same line.
+    expect((await own.command(secondId, 'close', { note: 'طلب الزبون' })).statusCode).toBe(200);
+    await pastResendWait();
+    const third = await appSignIn('customer', buyer.phone);
+    const thirdId = sub(third);
+    expect(await problemCodes(third)).toEqual(
+      expect.arrayContaining(['review_stop', 'dues_unpaid']),
+    );
+    const linked = (await own.profile(thirdId)).json().linkedAccounts as { id: string }[];
+    expect(linked.map((account) => account.id).toSorted()).toEqual([buyer.id, secondId].toSorted());
+    expect(
+      ((await own.search(buyer.phone)).json().customers as { id: string; status: string }[]).map(
+        (row) => row.status,
+      ),
+    ).toEqual(['dues_unpaid', 'closed', 'closed']);
+  });
+});

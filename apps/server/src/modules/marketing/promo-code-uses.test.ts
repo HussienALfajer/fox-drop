@@ -81,9 +81,13 @@ async function code(fields: Record<string, unknown> = {}): Promise<string> {
   return row.code;
 }
 
-function customer(overrides: Partial<NonNullable<CodeCart['customer']>> = {}) {
+function customer(
+  overrides: Partial<NonNullable<CodeCart['customer']>> = {},
+): NonNullable<CodeCart['customer']> {
+  const accountId = overrides.accountId ?? randomUUID();
   return {
-    accountId: randomUUID(),
+    accountId,
+    accountIds: [accountId],
     phoneHash: randomUUID(),
     deviceId: randomUUID(),
     newUser: true,

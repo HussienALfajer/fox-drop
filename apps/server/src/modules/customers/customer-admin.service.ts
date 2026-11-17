@@ -909,18 +909,17 @@ export class CustomerAdminService {
     });
   }
 
-  // The dues balance in the city, a credit included (+ owes, − a credit).
+  // The line's dues balance in the city, a credit included (+ owes, − a
+  // credit; slice 2.25c).
   private async duesBalance(
     cityId: string,
     accountId: string,
   ): Promise<{ amount: bigint; currency: string | null }> {
-    const accounts = await this.ledger.ownerAccounts(cityId, accountId, 'customer.dues');
     let found: { amount: bigint; currency: string | null } = {
       amount: 0n,
       currency: await this.fx.baseCurrency(cityId),
     };
-    for (const account of accounts) {
-      const balance = await this.ledger.balance(account.id);
+    for (const balance of await this.customers.lineDues(cityId, accountId)) {
       if (balance.amount !== 0n || found.amount === 0n) found = balance;
     }
     return found;

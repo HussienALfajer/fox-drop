@@ -87,8 +87,10 @@ async function code(typed: string, fields: Record<string, unknown> = {}): Promis
   return typed;
 }
 
+const whoId = randomUUID();
 const who = {
-  accountId: randomUUID(),
+  accountId: whoId,
+  accountIds: [whoId],
   phoneHash: randomUUID(),
   deviceId: randomUUID(),
   newUser: false,
@@ -197,6 +199,7 @@ describe('PromoCodeUsesService.available', () => {
       ended: { reason: 'used', at: now },
     });
     // A new user sees the new users' code; a month on, «منتهية» is empty.
+    const freshId = randomUUID();
     const fresh = await uses.mine(
       {
         cityId: azaz,
@@ -204,7 +207,8 @@ describe('PromoCodeUsesService.available', () => {
         clock: cart().clock,
         customer: {
           ...who,
-          accountId: randomUUID(),
+          accountId: freshId,
+          accountIds: [freshId],
           phoneHash: randomUUID(),
           deviceId: randomUUID(),
           newUser: true,

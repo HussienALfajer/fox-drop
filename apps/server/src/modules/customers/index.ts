@@ -57,6 +57,7 @@ export {
   CustomersRefusedError,
   CustomersService,
   customerOrderLock,
+  lockCustomerDues,
   type Location,
   type OrderAddress,
   type Profile,

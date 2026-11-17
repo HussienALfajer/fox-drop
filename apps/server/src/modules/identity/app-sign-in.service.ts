@@ -1,6 +1,6 @@
 import { timingSafeEqual } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq, isNotNull, isNull, sql } from 'drizzle-orm';
+import { and, desc, eq, isNotNull, isNull, or, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Valkey } from 'iovalkey';
 import { DATABASE } from '../../database/database.module.js';
@@ -425,20 +425,41 @@ export class AppSignInService {
     now: Date,
   ): Promise<{ id: string; created: boolean }> {
     // The code row lock serialises sign-ins of one number, so two cannot both
-    // create its account.
+    // create its account. The share lock waits for a closure in progress
+    // (slice 2.25c), so the session starts on an open account, or after the
+    // closure on a new one, never on the account being closed.
     const [existing] = await tx
       .select({ id: customerAccounts.id })
       .from(customerAccounts)
-      .where(and(eq(customerAccounts.phoneHash, phoneHash), eq(customerAccounts.status, 'active')));
+      .where(and(eq(customerAccounts.phoneHash, phoneHash), eq(customerAccounts.status, 'active')))
+      .for('share');
     if (existing) return { id: existing.id, created: false };
     // AP §8.8 (slice 2.25c): the number's latest account, closed, is
-    // continued: the new one joins its line, and its dues move over.
-    const [closed] = await tx
+    // continued: the new one joins its line, and its dues move over. A line
+    // that already has an open account (its customer moved to another number
+    // with «تغيير الرقم») is that customer's, and the number starts a line
+    // of its own (decided by us).
+    const [latest] = await tx
       .select({ id: customerAccounts.id, lineageId: customerAccounts.lineageId })
       .from(customerAccounts)
       .where(and(eq(customerAccounts.phoneHash, phoneHash), eq(customerAccounts.status, 'closed')))
       .orderBy(desc(customerAccounts.closedAt))
       .limit(1);
+    let closed = latest;
+    if (latest) {
+      const root = latest.lineageId ?? latest.id;
+      const [open] = await tx
+        .select({ id: customerAccounts.id })
+        .from(customerAccounts)
+        .where(
+          and(
+            or(eq(customerAccounts.id, root), eq(customerAccounts.lineageId, root)),
+            eq(customerAccounts.status, 'active'),
+          ),
+        )
+        .limit(1);
+      if (open) closed = undefined;
+    }
     const [created] = await tx
       .insert(customerAccounts)
       .values({

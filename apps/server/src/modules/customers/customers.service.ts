@@ -148,6 +148,12 @@ export interface Location {
   zone: { id: string; name: string } | null;
 }
 
+// The desk and «القيود التصحيحية» take turns on a customer's dues (slice
+// 2.25a), and the move to a new account with them (slice 2.25c).
+export async function lockCustomerDues(tx: Tx, customerId: string): Promise<void> {
+  await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${`customer-dues:${customerId}`}))`);
+}
+
 // The reasons of the two `dues.transfer` journals (AP §8.8, slice 2.25c;
 // the wording ours).
 export const DUES_MOVED_OUT = 'نقل المستحقات إلى الحساب الجديد بالرقم نفسه';
@@ -216,6 +222,10 @@ export class CustomersService {
     tx: Tx,
     link: { accountId: string; closedAccountId: string; now: Date },
   ): Promise<void> {
+    // The desk and «القيود التصحيحية» take this lock before they read a
+    // balance, so a payment on the closed account commits before the move
+    // reads it, or waits and finds the dues moved.
+    await lockCustomerDues(tx, link.closedAccountId);
     const owned = await this.ledger.ownedAccounts(link.closedAccountId, 'customer.dues', tx);
     for (const from of owned) {
       const balance = await this.ledger.balance(from.id, tx);
@@ -326,18 +336,41 @@ export class CustomersService {
   // currency should another appear), or null when nothing is owed. A dues
   // block lasts exactly while this is above zero, so it lifts by itself when
   // the desk's payment, «تغيير النتيجة» or an adjustment brings the balance
-  // to 0 or less.
+  // to 0 or less. Since slice 2.25c the line's (`lineDues`).
   async dues(
     cityId: string,
     accountId: string,
     executor?: Parameters<LedgerService['balance']>[1],
   ): Promise<{ amount: bigint; currency: string } | null> {
-    const accounts = await this.ledger.ownerAccounts(cityId, accountId, 'customer.dues', executor);
-    for (const account of accounts) {
-      const balance = await this.ledger.balance(account.id, executor);
+    for (const balance of await this.lineDues(cityId, accountId, executor)) {
       if (balance.amount > 0n) return balance;
     }
     return null;
+  }
+
+  // AP §8.8 (slice 2.25c): the dues of every account of the line in the
+  // city, summed per currency (+ owes, − a credit). The move at
+  // re-registration leaves a closed account at zero, and anything posted on
+  // it later (a «تغيير النتيجة» of its order, a reversal) still counts for
+  // the account that continues it.
+  async lineDues(
+    cityId: string,
+    accountId: string,
+    executor?: Parameters<LedgerService['balance']>[1],
+  ): Promise<{ amount: bigint; currency: string }[]> {
+    const sums = new Map<string, bigint>();
+    for (const id of await this.lineage(accountId, executor)) {
+      for (const account of await this.ledger.ownerAccounts(
+        cityId,
+        id,
+        'customer.dues',
+        executor,
+      )) {
+        const balance = await this.ledger.balance(account.id, executor);
+        sums.set(balance.currency, (sums.get(balance.currency) ?? 0n) + balance.amount);
+      }
+    }
+    return [...sums].map(([currency, amount]) => ({ currency, amount }));
   }
 
   // CU §7.1: the zone check of a point, and whether any restaurant covers it.

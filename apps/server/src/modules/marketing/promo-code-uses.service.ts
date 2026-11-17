@@ -44,6 +44,9 @@ export interface CodeCart {
   deliveryFee: bigint;
   customer: {
     accountId: string;
+    // AP §8.8 (slice 2.25c): every account of the number and of the
+    // account's line, whose uses count toward the per-customer limit.
+    accountIds: string[];
     // identity's keyed hash of the number, and the app installation.
     phoneHash: string;
     deviceId: string;
@@ -193,6 +196,7 @@ export class PromoCodeUsesService {
         await this.counts(tx, [code.id], {
           customer: {
             accountId: use.accountId,
+            accountIds: [use.accountId],
             phoneHash: use.phoneHash,
             deviceId: use.deviceId,
             newUser: use.newUser,
@@ -250,7 +254,7 @@ export class PromoCodeUsesService {
       .from(promoCodeUses)
       .where(
         and(
-          eq(promoCodeUses.customerAccountId, customer.accountId),
+          inArray(promoCodeUses.customerAccountId, customer.accountIds),
           eq(promoCodeUses.cityId, scope.cityId),
           counting,
           gte(promoCodeUses.heldAt, since),
@@ -478,7 +482,7 @@ export class PromoCodeUsesService {
         codeId: promoCodeUses.codeId,
         total: sql<number>`count(*)::int`,
         mine: customer
-          ? sql<number>`count(*) FILTER (WHERE ${promoCodeUses.customerAccountId} = ${customer.accountId})::int`
+          ? sql<number>`count(*) FILTER (WHERE ${inArray(promoCodeUses.customerAccountId, customer.accountIds)})::int`
           : sql<number>`0`,
         sameNumberOrDevice: customer
           ? sql<number>`count(*) FILTER (WHERE ${or(

@@ -599,7 +599,7 @@ export class ManualEntriesService {
       case 'restaurant':
         return (tx) => lockRestaurantAccount(tx, partyId);
       case 'customer':
-        return (tx) => lockCustomerDues(tx, partyId);
+        return (tx) => lockCustomerDues(tx, this.customers, partyId);
     }
   }
 

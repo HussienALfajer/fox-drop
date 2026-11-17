@@ -112,6 +112,10 @@ export class CustomerClosureController {
       if (error instanceof CustomerAdminRefusedError && error.refusal === 'active_order') {
         throw activeOrder();
       }
+      // The panel closed it meanwhile: closed all the same.
+      if (error instanceof CustomerAdminRefusedError && error.refusal === 'account_closed') {
+        return { status: 'closed' as const };
+      }
       throw error;
     }
     return { status: 'closed' as const };
