@@ -1940,6 +1940,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/customer/account-state": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["customerAccountStateRead"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/customers/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCustomersSearch"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/customers/{customerId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCustomersRead"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/customers/{customerId}/block": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCustomersBlock"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/customers/{customerId}/unblock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCustomersUnblock"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/customer/quote": {
         parameters: {
             query?: never;
@@ -6560,6 +6640,155 @@ export interface components {
                 }[];
             }[];
         };
+        CustomerAccountStateDto_Output: {
+            /** @description «حسابك موقوف حتى مراجعة فريق الدعم», with call and WhatsApp (CU §5.5). */
+            reviewStop: boolean;
+            block: {
+                /** @description «حسابك محظور حتى {التاريخ}: {السبب}»; null «حسابك محظور: {السبب}. تواصل مع الدعم.» */
+                until: string | null;
+                /** @description The block reason's customer text (CU Appendix C). */
+                reason: string;
+            } | null;
+            /** @description «عليك {المبلغ} لـ FOX DROP. ادفعه في المكتب ليُفك الحظر تلقائياً.» in the city of the point (AP §8.8). */
+            dues: {
+                /** @description Minor units, above zero. */
+                amount: string;
+                currency: string;
+            } | null;
+            /** @description The dues sheet's office and its hours (AP §9.12.1); null until the owner sets it. */
+            office: {
+                latitude: number;
+                longitude: number;
+                /** @description The desk hours per weekday; a weekday not listed is closed. */
+                hours: {
+                    /** @description 0 Sunday to 6 Saturday. */
+                    weekday: number;
+                    /** @description Minutes after midnight on the city clock. */
+                    opensAt: number;
+                    /** @description Minutes after midnight; at or before the opening it runs past midnight. */
+                    closesAt: number;
+                }[];
+                timeZone: string;
+                open: boolean;
+                closesAt: string | null;
+                opensAt: string | null;
+            } | null;
+        };
+        AdminCustomerSearchDto: {
+            /**
+             * Format: uuid
+             * @description The panel's city, whose dues the status reads.
+             */
+            cityId: string;
+            /** @description A number in any usual form, or a part of a name. */
+            q: string;
+        };
+        AdminCustomersFoundDto_Output: {
+            customers: {
+                /** Format: uuid */
+                id: string;
+                /** @description null until «أكمل بياناتك». */
+                name: string | null;
+                maskedPhone: string | null;
+                /**
+                 * @description «نشط», «محظور» (a block), «محظور» until the dues are paid, «موقوف حتى مراجعة الدعم» (AP §9.8).
+                 * @enum {string}
+                 */
+                status: "active" | "blocked" | "dues_unpaid" | "review_stop";
+            }[];
+        };
+        AdminCustomerDto_Output: {
+            /** Format: uuid */
+            id: string;
+            firstName: string | null;
+            lastName: string | null;
+            gender: ("male" | "female") | null;
+            birthday: string | null;
+            maskedPhone: string | null;
+            /**
+             * @description «نشط», «محظور» (a block), «محظور» until the dues are paid, «موقوف حتى مراجعة الدعم» (AP §9.8).
+             * @enum {string}
+             */
+            status: "active" | "blocked" | "dues_unpaid" | "review_stop";
+            /** @description The block in force: a duration or until further notice. */
+            block: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                kind: "until" | "indefinite" | "dues";
+                until: string | null;
+                reason: string;
+                reasonLabel: string;
+                customerText: string;
+                note: string;
+                /** Format: date-time */
+                startedAt: string;
+            } | null;
+            reviewStop: {
+                /** Format: date-time */
+                startedAt: string;
+            } | null;
+            /** @description «موثوق» by D23. */
+            trusted: boolean;
+            /** @description The normal deliveries that count toward the trust. */
+            delivered: number;
+            trustedAfter: number;
+            lateCancels: {
+                inWindow: number;
+                total: number;
+                limit: number;
+                windowDays: number;
+            };
+            fakeOrders: number;
+            /** @description In the city's base: + the customer owes, − a credit (AP §8.8). */
+            dues: {
+                amount: string;
+                currency: string | null;
+            };
+            blocks: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                kind: "until" | "indefinite" | "dues";
+                reason: string;
+                reasonLabel: string;
+                note: string;
+                until: string | null;
+                duesAmount: string | null;
+                duesCurrency: string | null;
+                /** Format: date-time */
+                startedAt: string;
+                startedByName: string | null;
+                /** @description A duration that ran out ends at its time. */
+                endedAt: string | null;
+                endedByName: string | null;
+                endNote: string | null;
+                inForce: boolean;
+            }[];
+        };
+        AdminBlockCustomerDto: {
+            /** Format: uuid */
+            cityId: string;
+            /**
+             * @description «لمدة» until a moment, «حتى إشعار آخر», or «حتى دفع مستحق» of an amount.
+             * @enum {string}
+             */
+            kind: "until" | "indefinite" | "dues";
+            /** @description The duration kind: when the block ends. */
+            until: string | null;
+            /** @description The dues kind: the amount in minor units of the city's base. */
+            amount: string | null;
+            /** @description A code of Content's customer_block list (AP Appendix B). */
+            reason: string;
+            /** @description The internal reason (AP §9.8: required). */
+            note: string;
+        };
+        AdminUnblockCustomerDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description The required reason. */
+            note: string;
+        };
         CustomerQuoteRequestDto: {
             /** Format: uuid */
             restaurantId: string;
@@ -6725,12 +6954,12 @@ export interface components {
             /** @description CU §10.6: every one blocks ordering; the texts are in Appendix C. */
             problems: {
                 /** @enum {string} */
-                code: "update_required" | "maintenance" | "platform_closed" | "outside_zones" | "not_covered" | "restaurant_closed" | "below_minimum_order" | "minimum_not_in_base_currency" | "delivery_unpriced" | "rates_unavailable" | "captain_pay_unset" | "one_order_at_a_time" | "active_order_limit" | "no_captain_nearby" | "terms_pending" | "emergency_stop" | "review_stop" | "dues_unpaid" | "promo_code" | "item_not_found" | "item_unavailable" | "option_not_found" | "option_unavailable" | "options_invalid" | "price_not_in_base_currency" | "price_changed";
+                code: "update_required" | "maintenance" | "platform_closed" | "outside_zones" | "not_covered" | "restaurant_closed" | "below_minimum_order" | "minimum_not_in_base_currency" | "delivery_unpriced" | "rates_unavailable" | "captain_pay_unset" | "one_order_at_a_time" | "active_order_limit" | "no_captain_nearby" | "terms_pending" | "emergency_stop" | "review_stop" | "dues_unpaid" | "account_blocked" | "promo_code" | "item_not_found" | "item_unavailable" | "option_not_found" | "option_unavailable" | "options_invalid" | "price_not_in_base_currency" | "price_changed";
                 /** @description The cart line, for a line problem. */
                 line: number | null;
                 /** @description platform_closed: «FOX DROP يستقبل الطلبات من الساعة {الساعة}». */
                 opensAt: string | null;
-                /** @description emergency_stop: the browsing message (AP §9.1.6). */
+                /** @description emergency_stop: the browsing message (AP §9.1.6); account_blocked: the block reason's customer text (CU Appendix C). */
                 message: string | null;
                 /** @description dues_unpaid: what the customer owes (CU §5.5, AP §8.8); promo_code below_minimum: «أضف {المبلغ} لاستخدام هذا الكود». */
                 amount: {
@@ -6740,6 +6969,8 @@ export interface components {
                 } | null;
                 /** @description promo_code: why the code does not apply (CU Appendix C «Code refusals»). */
                 refusal: ("unknown_code" | "not_valid_now" | "below_minimum" | "not_for_restaurant" | "first_order_only" | "used_before" | "uses_ended" | "budget_reached") | null;
+                /** @description account_blocked: the block's end («حسابك محظور حتى {التاريخ}: {السبب}»); null until further notice («حسابك محظور: {السبب}. تواصل مع الدعم.»). */
+                until: string | null;
             }[];
         };
         CustomerActiveOrdersDto_Output: {
@@ -17161,6 +17392,132 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CustomerRestaurantPageDto_Output"];
+                };
+            };
+        };
+    };
+    customerAccountStateRead: {
+        parameters: {
+            query: {
+                latitude: string;
+                longitude: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerAccountStateDto_Output"];
+                };
+            };
+        };
+    };
+    adminCustomersSearch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCustomerSearchDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCustomersFoundDto_Output"];
+                };
+            };
+        };
+    };
+    adminCustomersRead: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path: {
+                customerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCustomerDto_Output"];
+                };
+            };
+        };
+    };
+    adminCustomersBlock: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                customerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminBlockCustomerDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCustomerDto_Output"];
+                };
+            };
+        };
+    };
+    adminCustomersUnblock: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                customerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminUnblockCustomerDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCustomerDto_Output"];
                 };
             };
         };

@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import {
+  bigint,
   boolean,
   check,
   customType,
@@ -137,5 +138,69 @@ export const reviewStops = customers.table(
       .on(table.customerAccountId)
       .where(sql`${table.endedAt} IS NULL`),
     check('review_stops_end', sql`(${table.endedAt} IS NULL) = (${table.endedBy} IS NULL)`),
+  ],
+);
+
+// AP §9.8 «حظر» (slice 2.25a): for a duration («حتى {التاريخ}»), until
+// further notice, or until dues of a set amount are paid. The last posts a
+// dues.charge of the amount in the city's base (owner decision 2026-11-17),
+// so the dues balance is that block: its row is the record of the charge,
+// never ends and never stops ordering by itself. The other two stop
+// ordering while open and, for a duration, until `until`. One open per
+// account (`blocks_one_open`); the application role may change only the end
+// columns: «فك الحظر» names its admin and note, and a block whose time
+// passed is closed at its `until` with no admin when the next one starts.
+export const blockKinds = ['until', 'indefinite', 'dues'] as const;
+
+export const blocks = customers.table(
+  'blocks',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    customerAccountId: uuid('customer_account_id').notNull(),
+    kind: text('kind', { enum: blockKinds }).notNull(),
+    // A code of Content's customer_block list (AP Appendix B) with its label
+    // and customer text as chosen (CU Appendix C).
+    reason: text('reason').notNull(),
+    reasonLabel: text('reason_label').notNull(),
+    customerText: text('customer_text').notNull(),
+    // The admin's required reason (AP §9.8: «Reason: Required»), internal.
+    note: text('note').notNull(),
+    until: timestamp('until', { withTimezone: true }),
+    // The dues block: the city of the dues account, the amount in its base
+    // and the dues.charge journal.
+    cityId: uuid('city_id'),
+    duesAmount: bigint('dues_amount', { mode: 'bigint' }),
+    duesCurrency: text('dues_currency'),
+    duesJournalId: uuid('dues_journal_id'),
+    startedAt: timestamp('started_at', { withTimezone: true }).notNull(),
+    // The admin account that blocked.
+    startedBy: uuid('started_by').notNull(),
+    endedAt: timestamp('ended_at', { withTimezone: true }),
+    endedBy: uuid('ended_by'),
+    endNote: text('end_note'),
+    // The command's Idempotency-Key and request hash, kept for good (a
+    // dues block must never charge twice).
+    idempotencyKey: text('idempotency_key').notNull(),
+    requestHash: text('request_hash').notNull(),
+  },
+  (table) => [
+    uniqueIndex('blocks_key').on(table.startedBy, table.idempotencyKey),
+    index('blocks_account').on(table.customerAccountId, table.startedAt),
+    uniqueIndex('blocks_one_open')
+      .on(table.customerAccountId)
+      .where(sql`${table.endedAt} IS NULL AND ${table.kind} <> 'dues'`),
+    check('blocks_kind_values', sql`${table.kind} IN ('until', 'indefinite', 'dues')`),
+    check('blocks_until', sql`(${table.kind} = 'until') = (${table.until} IS NOT NULL)`),
+    check(
+      'blocks_dues',
+      sql`CASE WHEN ${table.kind} = 'dues' THEN ${table.cityId} IS NOT NULL AND ${table.duesAmount} > 0 AND ${table.duesCurrency} IS NOT NULL AND ${table.duesJournalId} IS NOT NULL AND ${table.endedAt} IS NULL ELSE ${table.cityId} IS NULL AND ${table.duesAmount} IS NULL AND ${table.duesCurrency} IS NULL AND ${table.duesJournalId} IS NULL END`,
+    ),
+    check(
+      'blocks_end',
+      sql`(${table.endedAt} IS NOT NULL OR (${table.endedBy} IS NULL AND ${table.endNote} IS NULL)) AND (${table.endedBy} IS NULL) = (${table.endNote} IS NULL)`,
+    ),
+    check('blocks_note', sql`length(${table.note}) BETWEEN 1 AND 500`),
   ],
 );

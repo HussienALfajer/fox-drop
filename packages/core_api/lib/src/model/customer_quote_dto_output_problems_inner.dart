@@ -16,9 +16,10 @@ part 'customer_quote_dto_output_problems_inner.g.dart';
 /// * [code]
 /// * [line] - The cart line, for a line problem.
 /// * [opensAt] - platform_closed: «FOX DROP يستقبل الطلبات من الساعة {الساعة}».
-/// * [message] - emergency_stop: the browsing message (AP §9.1.6).
+/// * [message] - emergency_stop: the browsing message (AP §9.1.6); account_blocked: the block reason's customer text (CU Appendix C).
 /// * [amount]
 /// * [refusal] - promo_code: why the code does not apply (CU Appendix C «Code refusals»).
+/// * [until] - account_blocked: the block's end («حسابك محظور حتى {التاريخ}: {السبب}»); null until further notice («حسابك محظور: {السبب}. تواصل مع الدعم.»).
 @BuiltValue()
 abstract class CustomerQuoteDtoOutputProblemsInner
     implements
@@ -28,7 +29,7 @@ abstract class CustomerQuoteDtoOutputProblemsInner
         > {
   @BuiltValueField(wireName: r'code')
   CustomerQuoteDtoOutputProblemsInnerCodeEnum get code;
-  // enum codeEnum {  update_required,  maintenance,  platform_closed,  outside_zones,  not_covered,  restaurant_closed,  below_minimum_order,  minimum_not_in_base_currency,  delivery_unpriced,  rates_unavailable,  captain_pay_unset,  one_order_at_a_time,  active_order_limit,  no_captain_nearby,  terms_pending,  emergency_stop,  review_stop,  dues_unpaid,  promo_code,  item_not_found,  item_unavailable,  option_not_found,  option_unavailable,  options_invalid,  price_not_in_base_currency,  price_changed,  };
+  // enum codeEnum {  update_required,  maintenance,  platform_closed,  outside_zones,  not_covered,  restaurant_closed,  below_minimum_order,  minimum_not_in_base_currency,  delivery_unpriced,  rates_unavailable,  captain_pay_unset,  one_order_at_a_time,  active_order_limit,  no_captain_nearby,  terms_pending,  emergency_stop,  review_stop,  dues_unpaid,  account_blocked,  promo_code,  item_not_found,  item_unavailable,  option_not_found,  option_unavailable,  options_invalid,  price_not_in_base_currency,  price_changed,  };
 
   /// The cart line, for a line problem.
   @BuiltValueField(wireName: r'line')
@@ -38,7 +39,7 @@ abstract class CustomerQuoteDtoOutputProblemsInner
   @BuiltValueField(wireName: r'opensAt')
   DateTime? get opensAt;
 
-  /// emergency_stop: the browsing message (AP §9.1.6).
+  /// emergency_stop: the browsing message (AP §9.1.6); account_blocked: the block reason's customer text (CU Appendix C).
   @BuiltValueField(wireName: r'message')
   String? get message;
 
@@ -49,6 +50,10 @@ abstract class CustomerQuoteDtoOutputProblemsInner
   @BuiltValueField(wireName: r'refusal')
   CustomerQuoteDtoOutputProblemsInnerRefusalEnum? get refusal;
   // enum refusalEnum {  unknown_code,  not_valid_now,  below_minimum,  not_for_restaurant,  first_order_only,  used_before,  uses_ended,  budget_reached,  };
+
+  /// account_blocked: the block's end («حسابك محظور حتى {التاريخ}: {السبب}»); null until further notice («حسابك محظور: {السبب}. تواصل مع الدعم.»).
+  @BuiltValueField(wireName: r'until')
+  DateTime? get until;
 
   CustomerQuoteDtoOutputProblemsInner._();
 
@@ -125,6 +130,13 @@ class _$CustomerQuoteDtoOutputProblemsInnerSerializer
             specifiedType: const FullType.nullable(
               CustomerQuoteDtoOutputProblemsInnerRefusalEnum,
             ),
+          );
+    yield r'until';
+    yield object.until == null
+        ? null
+        : serializers.serialize(
+            object.until,
+            specifiedType: const FullType.nullable(DateTime),
           );
   }
 
@@ -218,6 +230,16 @@ class _$CustomerQuoteDtoOutputProblemsInnerSerializer
           if (valueDes == null) continue;
           result.refusal = valueDes;
           break;
+        case r'until':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(DateTime),
+                  )
+                  as DateTime?;
+          if (valueDes == null) continue;
+          result.until = valueDes;
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -303,6 +325,9 @@ class CustomerQuoteDtoOutputProblemsInnerCodeEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'dues_unpaid')
   static const CustomerQuoteDtoOutputProblemsInnerCodeEnum duesUnpaid =
       _$customerQuoteDtoOutputProblemsInnerCodeEnum_duesUnpaid;
+  @BuiltValueEnumConst(wireName: r'account_blocked')
+  static const CustomerQuoteDtoOutputProblemsInnerCodeEnum accountBlocked =
+      _$customerQuoteDtoOutputProblemsInnerCodeEnum_accountBlocked;
   @BuiltValueEnumConst(wireName: r'promo_code')
   static const CustomerQuoteDtoOutputProblemsInnerCodeEnum promoCode =
       _$customerQuoteDtoOutputProblemsInnerCodeEnum_promoCode;

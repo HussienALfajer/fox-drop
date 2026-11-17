@@ -11,8 +11,6 @@ import {
   suggestedCode,
   type AvailableCode,
 } from '../marketing/index.js';
-import { LedgerService } from '../ledger/index.js';
-import { customerDues } from './customer-dues.js';
 import { CaptainsService } from '../captains/index.js';
 import { CustomersService } from '../customers/index.js';
 import { TermsService } from '../content/index.js';
@@ -73,6 +71,10 @@ export type QuoteProblemCode =
   // docs/domain/08 (slice 2.11a): a fake order's dues are unpaid, «عليك
   // {المبلغ} لـ FOX DROP. ادفعه في المكتب ليُفك الحظر تلقائياً.» (CU §5.5).
   | 'dues_unpaid'
+  // AP §9.8, CU §5.5 (slice 2.25a): a block from the panel, for a duration
+  // («حسابك محظور حتى {التاريخ}: {السبب}») or until further notice
+  // («حسابك محظور: {السبب}. تواصل مع الدعم.»).
+  | 'account_blocked'
   // CU §10.4, Appendix C «Code refusals» (slice 2.21b): the typed code does
   // not apply, with its reason; the order can go without it.
   | 'promo_code'
@@ -91,6 +93,8 @@ export interface QuoteProblem {
   // promo_code: why the code does not apply (below_minimum gives what is
   // missing as the amount).
   refusal: CodeRefusal | null;
+  // account_blocked: the block's end, null until further notice.
+  until: Date | null;
 }
 
 export interface QuoteRequest {
@@ -194,7 +198,6 @@ export class QuoteService {
     private readonly terms: TermsService,
     private readonly emergencyStops: EmergencyStops,
     private readonly customers: CustomersService,
-    private readonly ledger: LedgerService,
     private readonly promoCodes: PromoCodeUsesService,
     private readonly customerAccounts: CustomerAccountsService,
     @Inject(DATABASE) private readonly database: Database,
@@ -221,7 +224,8 @@ export class QuoteService {
       message: string | null = null,
       amount: QuoteProblem['amount'] = null,
       refusal: CodeRefusal | null = null,
-    ) => problems.push({ code, line, opensAt, message, amount, refusal });
+      until: Date | null = null,
+    ) => problems.push({ code, line, opensAt, message, amount, refusal, until });
 
     const [
       maintenance,
@@ -276,8 +280,13 @@ export class QuoteService {
       if (limit.reached) problem(limit.trusted ? 'active_order_limit' : 'one_order_at_a_time');
       if (await this.terms.pending('customer', request.customerAccountId)) problem('terms_pending');
       if (await this.customers.reviewStopped(request.customerAccountId)) problem('review_stop');
+      // AP §9.8: the reason's customer text (CU Appendix C) is the message.
+      const block = await this.customers.activeBlock(request.customerAccountId, now);
+      if (block !== null) {
+        problem('account_blocked', null, null, block.customerText, null, null, block.until);
+      }
       // AP §8.8: the dues block lifts by itself once the balance is 0 or less.
-      const owed = await customerDues(this.ledger, cityId, request.customerAccountId);
+      const owed = await this.customers.dues(cityId, request.customerAccountId);
       if (owed !== null) problem('dues_unpaid', null, null, null, owed);
     }
 

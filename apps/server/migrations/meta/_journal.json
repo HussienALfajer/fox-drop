@@ -687,6 +687,13 @@
       "when": 1794926808168,
       "tag": "0097_support_captain_reports",
       "breakpoints": true
+    },
+    {
+      "idx": 98,
+      "version": "7",
+      "when": 1794934131343,
+      "tag": "0098_customers_blocks",
+      "breakpoints": true
     }
   ]
 }

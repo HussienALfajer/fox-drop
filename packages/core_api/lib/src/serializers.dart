@@ -24,6 +24,7 @@ import 'package:core_api/src/model/admin_alerts_dto_output_alerts_inner_location
 import 'package:core_api/src/model/admin_approve_compensation_dto.dart';
 import 'package:core_api/src/model/admin_approve_compensation_dto_value.dart';
 import 'package:core_api/src/model/admin_assign_dto.dart';
+import 'package:core_api/src/model/admin_block_customer_dto.dart';
 import 'package:core_api/src/model/admin_board_dto_output.dart';
 import 'package:core_api/src/model/admin_board_dto_output_orders_inner.dart';
 import 'package:core_api/src/model/admin_bulk_hand_in_grace_answer_dto_output.dart';
@@ -77,6 +78,15 @@ import 'package:core_api/src/model/admin_current_drawer_session_dto_output.dart'
 import 'package:core_api/src/model/admin_current_drawer_session_dto_output_field.dart';
 import 'package:core_api/src/model/admin_current_drawer_session_dto_output_session.dart';
 import 'package:core_api/src/model/admin_current_drawer_session_dto_output_session_currencies_inner.dart';
+import 'package:core_api/src/model/admin_customer_dto_output.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_block.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_blocks_inner.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_dues.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_late_cancels.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_review_stop.dart';
+import 'package:core_api/src/model/admin_customer_search_dto.dart';
+import 'package:core_api/src/model/admin_customers_found_dto_output.dart';
+import 'package:core_api/src/model/admin_customers_found_dto_output_customers_inner.dart';
 import 'package:core_api/src/model/admin_daily_report_dto_output.dart';
 import 'package:core_api/src/model/admin_daily_report_dto_output_captain_pay.dart';
 import 'package:core_api/src/model/admin_daily_report_dto_output_cash_inner.dart';
@@ -388,6 +398,7 @@ import 'package:core_api/src/model/admin_ticket_resolve_dto_code_reason.dart';
 import 'package:core_api/src/model/admin_ticket_status_dto.dart';
 import 'package:core_api/src/model/admin_ticket_types_dto_output.dart';
 import 'package:core_api/src/model/admin_tickets_dto_output.dart';
+import 'package:core_api/src/model/admin_unblock_customer_dto.dart';
 import 'package:core_api/src/model/admin_update_contact_dto.dart';
 import 'package:core_api/src/model/admin_update_notification_text_dto.dart';
 import 'package:core_api/src/model/admin_upload_dto_output.dart';
@@ -529,6 +540,10 @@ import 'package:core_api/src/model/change_roles_dto.dart';
 import 'package:core_api/src/model/complete_setup_dto.dart';
 import 'package:core_api/src/model/contact_dto_output.dart';
 import 'package:core_api/src/model/create_user_dto.dart';
+import 'package:core_api/src/model/customer_account_state_dto_output.dart';
+import 'package:core_api/src/model/customer_account_state_dto_output_block.dart';
+import 'package:core_api/src/model/customer_account_state_dto_output_dues.dart';
+import 'package:core_api/src/model/customer_account_state_dto_output_office.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_address.dart';
@@ -769,6 +784,7 @@ part 'serializers.g.dart';
   AdminApproveCompensationDto,
   AdminApproveCompensationDtoValue,
   AdminAssignDto,
+  AdminBlockCustomerDto,
   AdminBoardDtoOutput,
   AdminBoardDtoOutputOrdersInner,
   AdminBulkHandInGraceAnswerDtoOutput,
@@ -822,6 +838,15 @@ part 'serializers.g.dart';
   AdminCurrentDrawerSessionDtoOutputField,
   AdminCurrentDrawerSessionDtoOutputSession,
   AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner,
+  AdminCustomerDtoOutput,
+  AdminCustomerDtoOutputBlock,
+  AdminCustomerDtoOutputBlocksInner,
+  AdminCustomerDtoOutputDues,
+  AdminCustomerDtoOutputLateCancels,
+  AdminCustomerDtoOutputReviewStop,
+  AdminCustomerSearchDto,
+  AdminCustomersFoundDtoOutput,
+  AdminCustomersFoundDtoOutputCustomersInner,
   AdminDailyReportDtoOutput,
   AdminDailyReportDtoOutputCaptainPay,
   AdminDailyReportDtoOutputCashInner,
@@ -1133,6 +1158,7 @@ part 'serializers.g.dart';
   AdminTicketStatusDto,
   AdminTicketTypesDtoOutput,
   AdminTicketsDtoOutput,
+  AdminUnblockCustomerDto,
   AdminUpdateContactDto,
   AdminUpdateNotificationTextDto,
   AdminUploadDtoOutput,
@@ -1274,6 +1300,10 @@ part 'serializers.g.dart';
   CompleteSetupDto,
   ContactDtoOutput,
   CreateUserDto,
+  CustomerAccountStateDtoOutput,
+  CustomerAccountStateDtoOutputBlock,
+  CustomerAccountStateDtoOutputDues,
+  CustomerAccountStateDtoOutputOffice,
   CustomerActiveOrdersDtoOutput,
   CustomerActiveOrdersDtoOutputOrdersInner,
   CustomerActiveOrdersDtoOutputOrdersInnerAddress,
@@ -1678,6 +1708,12 @@ Serializers serializers =
               FullType(CaptainCustodyDtoOutputReceiptsInner),
             ]),
             () => ListBuilder<CaptainCustodyDtoOutputReceiptsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCustomersFoundDtoOutputCustomersInner),
+            ]),
+            () => ListBuilder<AdminCustomersFoundDtoOutputCustomersInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -2528,6 +2564,12 @@ Serializers serializers =
               FullType(CustomerQuoteRequestDtoLinesInner),
             ]),
             () => ListBuilder<CustomerQuoteRequestDtoLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCustomerDtoOutputBlocksInner),
+            ]),
+            () => ListBuilder<AdminCustomerDtoOutputBlocksInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

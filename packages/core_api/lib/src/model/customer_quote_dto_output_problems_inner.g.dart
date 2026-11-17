@@ -63,6 +63,9 @@ const CustomerQuoteDtoOutputProblemsInnerCodeEnum
 _$customerQuoteDtoOutputProblemsInnerCodeEnum_duesUnpaid =
     const CustomerQuoteDtoOutputProblemsInnerCodeEnum._('duesUnpaid');
 const CustomerQuoteDtoOutputProblemsInnerCodeEnum
+_$customerQuoteDtoOutputProblemsInnerCodeEnum_accountBlocked =
+    const CustomerQuoteDtoOutputProblemsInnerCodeEnum._('accountBlocked');
+const CustomerQuoteDtoOutputProblemsInnerCodeEnum
 _$customerQuoteDtoOutputProblemsInnerCodeEnum_promoCode =
     const CustomerQuoteDtoOutputProblemsInnerCodeEnum._('promoCode');
 const CustomerQuoteDtoOutputProblemsInnerCodeEnum
@@ -128,6 +131,8 @@ _$customerQuoteDtoOutputProblemsInnerCodeEnumValueOf(String name) {
       return _$customerQuoteDtoOutputProblemsInnerCodeEnum_reviewStop;
     case 'duesUnpaid':
       return _$customerQuoteDtoOutputProblemsInnerCodeEnum_duesUnpaid;
+    case 'accountBlocked':
+      return _$customerQuoteDtoOutputProblemsInnerCodeEnum_accountBlocked;
     case 'promoCode':
       return _$customerQuoteDtoOutputProblemsInnerCodeEnum_promoCode;
     case 'itemNotFound':
@@ -171,6 +176,7 @@ _$customerQuoteDtoOutputProblemsInnerCodeEnumValues =
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_emergencyStop,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_reviewStop,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_duesUnpaid,
+        _$customerQuoteDtoOutputProblemsInnerCodeEnum_accountBlocked,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_promoCode,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_itemNotFound,
         _$customerQuoteDtoOutputProblemsInnerCodeEnum_itemUnavailable,
@@ -275,6 +281,7 @@ class _$CustomerQuoteDtoOutputProblemsInnerCodeEnumSerializer
     'emergencyStop': 'emergency_stop',
     'reviewStop': 'review_stop',
     'duesUnpaid': 'dues_unpaid',
+    'accountBlocked': 'account_blocked',
     'promoCode': 'promo_code',
     'itemNotFound': 'item_not_found',
     'itemUnavailable': 'item_unavailable',
@@ -303,6 +310,7 @@ class _$CustomerQuoteDtoOutputProblemsInnerCodeEnumSerializer
     'emergency_stop': 'emergencyStop',
     'review_stop': 'reviewStop',
     'dues_unpaid': 'duesUnpaid',
+    'account_blocked': 'accountBlocked',
     'promo_code': 'promoCode',
     'item_not_found': 'itemNotFound',
     'item_unavailable': 'itemUnavailable',
@@ -399,6 +407,8 @@ class _$CustomerQuoteDtoOutputProblemsInner
   final CaptainWentOfflineDtoOutputHandIn? amount;
   @override
   final CustomerQuoteDtoOutputProblemsInnerRefusalEnum? refusal;
+  @override
+  final DateTime? until;
 
   factory _$CustomerQuoteDtoOutputProblemsInner([
     void Function(CustomerQuoteDtoOutputProblemsInnerBuilder)? updates,
@@ -412,6 +422,7 @@ class _$CustomerQuoteDtoOutputProblemsInner
     this.message,
     this.amount,
     this.refusal,
+    this.until,
   }) : super._();
   @override
   CustomerQuoteDtoOutputProblemsInner rebuild(
@@ -431,7 +442,8 @@ class _$CustomerQuoteDtoOutputProblemsInner
         opensAt == other.opensAt &&
         message == other.message &&
         amount == other.amount &&
-        refusal == other.refusal;
+        refusal == other.refusal &&
+        until == other.until;
   }
 
   @override
@@ -443,6 +455,7 @@ class _$CustomerQuoteDtoOutputProblemsInner
     _$hash = $jc(_$hash, message.hashCode);
     _$hash = $jc(_$hash, amount.hashCode);
     _$hash = $jc(_$hash, refusal.hashCode);
+    _$hash = $jc(_$hash, until.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -455,7 +468,8 @@ class _$CustomerQuoteDtoOutputProblemsInner
           ..add('opensAt', opensAt)
           ..add('message', message)
           ..add('amount', amount)
-          ..add('refusal', refusal))
+          ..add('refusal', refusal)
+          ..add('until', until))
         .toString();
   }
 }
@@ -497,6 +511,10 @@ class CustomerQuoteDtoOutputProblemsInnerBuilder
   set refusal(CustomerQuoteDtoOutputProblemsInnerRefusalEnum? refusal) =>
       _$this._refusal = refusal;
 
+  DateTime? _until;
+  DateTime? get until => _$this._until;
+  set until(DateTime? until) => _$this._until = until;
+
   CustomerQuoteDtoOutputProblemsInnerBuilder() {
     CustomerQuoteDtoOutputProblemsInner._defaults(this);
   }
@@ -510,6 +528,7 @@ class CustomerQuoteDtoOutputProblemsInnerBuilder
       _message = $v.message;
       _amount = $v.amount?.toBuilder();
       _refusal = $v.refusal;
+      _until = $v.until;
       _$v = null;
     }
     return this;
@@ -546,6 +565,7 @@ class CustomerQuoteDtoOutputProblemsInnerBuilder
             message: message,
             amount: _amount?.build(),
             refusal: refusal,
+            until: until,
           );
     } catch (_) {
       late String _$failedField;

@@ -659,6 +659,37 @@ describe('the ordering tables (AP §8.1, §4.8; architecture §5.5)', () => {
     await stop();
   });
 
+  it("keep a customer's blocks as they started, one open at a time, the dues kind never ending", async () => {
+    const account = randomUUID();
+    const admin = randomUUID();
+    const block = (kind: string, extra = '') =>
+      appQuery(
+        `INSERT INTO customers.blocks (customer_account_id, kind, reason, reason_label, customer_text, note, started_at, started_by, idempotency_key, request_hash${extra === '' ? '' : ', ' + extra.split('|')[0]}) VALUES ('${account}', '${kind}', 'abuse', 'إساءة', 'مخالفة شروط الاستخدام', 'سبب', now(), '${admin}', '${randomUUID()}', 'h'${extra === '' ? '' : ', ' + extra.split('|')[1]}) RETURNING id`,
+      );
+    await expect(block('until')).rejects.toThrow(/blocks_until/);
+    await expect(block('dues')).rejects.toThrow(/blocks_dues/);
+    const dues = `city_id, dues_amount, dues_currency, dues_journal_id|'${randomUUID()}', 500, 'TRY', '${randomUUID()}'`;
+    const { rows: charged } = await block('dues', dues);
+    await block('dues', dues);
+    const { rows } = await block('indefinite');
+    await expect(block('until', `until|now() + interval '1 day'`)).rejects.toThrow(
+      /blocks_one_open/,
+    );
+    await expect(
+      appQuery(`UPDATE customers.blocks SET note = 'x' WHERE id = '${rows[0].id}'`),
+    ).rejects.toThrow(/permission denied/);
+    await expect(
+      appQuery(`UPDATE customers.blocks SET ended_at = now() WHERE id = '${charged[0].id}'`),
+    ).rejects.toThrow(/blocks_dues/);
+    await expect(
+      appQuery(`UPDATE customers.blocks SET ended_by = '${admin}' WHERE id = '${rows[0].id}'`),
+    ).rejects.toThrow(/blocks_end/);
+    await appQuery(
+      `UPDATE customers.blocks SET ended_at = now(), ended_by = '${admin}', end_note = 'فك' WHERE id = '${rows[0].id}'`,
+    );
+    await block('until', `until|now() + interval '1 day'`);
+  });
+
   it('keep an emergency stop as it started, one open per city, and its attempts unchanged', async () => {
     const admin = randomUUID();
     const start = (city: string) =>

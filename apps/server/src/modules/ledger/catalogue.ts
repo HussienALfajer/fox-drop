@@ -134,10 +134,12 @@ export const journalRules = {
   'merchant.adjustment': { account: 'merchant.account', ...adjustment },
   // AP §8.8, §8.9: a fake order's dues recover the loss on the order
   // clearing account; what they charge beyond it (the fee, by
-  // customer.fake_order_dues_rule) is the delivery's revenue.
+  // customer.fake_order_dues_rule) is the delivery's revenue. A block «حتى
+  // دفع مستحق» of a set amount (AP §9.8; owner decision 2026-11-17, slice
+  // 2.25a) charges it against platform.adjustments.
   'dues.charge': {
     account: 'customer.dues',
-    counters: ['platform.order_clearing', 'platform.revenue_delivery'],
+    counters: ['platform.order_clearing', 'platform.revenue_delivery', 'platform.adjustments'],
   },
   // AP §8.8 ±, §9.10.7 (owner decision 2026-11-16, slice 2.20c).
   'dues.adjustment': { account: 'customer.dues', ...adjustment },

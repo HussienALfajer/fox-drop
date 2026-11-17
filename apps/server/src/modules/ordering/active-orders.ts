@@ -29,6 +29,9 @@ export interface CustomerLimit {
   // After customer.trusted_after_delivered_orders delivered (D23). Not shown
   // to the customer, only its limit (CU §5.5).
   trusted: boolean;
+  // The deliveries that count toward the trust (slice 2.25a: the panel's
+  // profile shows them against customer.trusted_after_delivered_orders).
+  delivered: number;
 }
 
 // The active orders of a restaurant (RA §7.4) and of a customer (D23), for
@@ -100,7 +103,30 @@ export class ActiveOrders {
       and(whose, isNull(orders.redeliveryOfId))!,
       UNTIL_ENDED,
     );
-    return { reached: active >= limit, limit, trusted };
+    return { reached: active >= limit, limit, trusted, delivered };
+  }
+
+  // AP §9.8 (slice 2.25a): the customer's fake orders, those whose outcome
+  // in force is fake, for the panel's profile.
+  async fakeOrders(accountId: string, executor: Executor = this.database.db): Promise<number> {
+    const [row] = await executor
+      .select({ n: count() })
+      .from(orderOutcomeRows)
+      .innerJoin(
+        orders,
+        and(
+          eq(orders.id, orderOutcomeRows.orderId),
+          eq(orders.placedAt, orderOutcomeRows.orderPlacedAt),
+        ),
+      )
+      .where(
+        and(
+          eq(orders.customerAccountId, accountId),
+          eq(orderOutcomeRows.outcome, 'fake'),
+          isNull(orderOutcomeRows.replacedAt),
+        ),
+      );
+    return row?.n ?? 0;
   }
 }
 

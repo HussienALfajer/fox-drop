@@ -26,6 +26,8 @@ Serializers _$serializers =
           ..add(AdminApproveCompensationDtoValue.serializer)
           ..add(AdminApproveCompensationDtoValueKindEnum.serializer)
           ..add(AdminAssignDto.serializer)
+          ..add(AdminBlockCustomerDto.serializer)
+          ..add(AdminBlockCustomerDtoKindEnum.serializer)
           ..add(AdminBoardDtoOutput.serializer)
           ..add(AdminBoardDtoOutputOrdersInner.serializer)
           ..add(AdminBoardDtoOutputOrdersInnerAlertsEnum.serializer)
@@ -111,6 +113,20 @@ Serializers _$serializers =
             AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner.serializer,
           )
           ..add(AdminCurrentDrawerSessionDtoOutputSessionKindEnum.serializer)
+          ..add(AdminCustomerDtoOutput.serializer)
+          ..add(AdminCustomerDtoOutputBlock.serializer)
+          ..add(AdminCustomerDtoOutputBlockKindEnum.serializer)
+          ..add(AdminCustomerDtoOutputBlocksInner.serializer)
+          ..add(AdminCustomerDtoOutputBlocksInnerKindEnum.serializer)
+          ..add(AdminCustomerDtoOutputDues.serializer)
+          ..add(AdminCustomerDtoOutputGenderEnum.serializer)
+          ..add(AdminCustomerDtoOutputLateCancels.serializer)
+          ..add(AdminCustomerDtoOutputReviewStop.serializer)
+          ..add(AdminCustomerDtoOutputStatusEnum.serializer)
+          ..add(AdminCustomerSearchDto.serializer)
+          ..add(AdminCustomersFoundDtoOutput.serializer)
+          ..add(AdminCustomersFoundDtoOutputCustomersInner.serializer)
+          ..add(AdminCustomersFoundDtoOutputCustomersInnerStatusEnum.serializer)
           ..add(AdminDailyReportDtoOutput.serializer)
           ..add(AdminDailyReportDtoOutputCaptainPay.serializer)
           ..add(AdminDailyReportDtoOutputCashInner.serializer)
@@ -667,6 +683,7 @@ Serializers _$serializers =
           ..add(AdminTicketStatusDtoStatusEnum.serializer)
           ..add(AdminTicketTypesDtoOutput.serializer)
           ..add(AdminTicketsDtoOutput.serializer)
+          ..add(AdminUnblockCustomerDto.serializer)
           ..add(AdminUpdateContactDto.serializer)
           ..add(AdminUpdateNotificationTextDto.serializer)
           ..add(AdminUploadDtoOutput.serializer)
@@ -857,6 +874,10 @@ Serializers _$serializers =
           ..add(ContactDtoOutput.serializer)
           ..add(CreateUserDto.serializer)
           ..add(CreateUserDtoRolesEnum.serializer)
+          ..add(CustomerAccountStateDtoOutput.serializer)
+          ..add(CustomerAccountStateDtoOutputBlock.serializer)
+          ..add(CustomerAccountStateDtoOutputDues.serializer)
+          ..add(CustomerAccountStateDtoOutputOffice.serializer)
           ..add(CustomerActiveOrdersDtoOutput.serializer)
           ..add(CustomerActiveOrdersDtoOutputOrdersInner.serializer)
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerAddress.serializer)
@@ -1390,6 +1411,18 @@ Serializers _$serializers =
                 ListBuilder<
                   AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCustomerDtoOutputBlocksInner),
+            ]),
+            () => ListBuilder<AdminCustomerDtoOutputBlocksInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCustomersFoundDtoOutputCustomersInner),
+            ]),
+            () => ListBuilder<AdminCustomersFoundDtoOutputCustomersInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -2442,6 +2475,12 @@ Serializers _$serializers =
               const FullType(CaptainAvailabilityDtoOutputCustodyLimit),
             ]),
             () => ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainAvailabilityDtoOutputOfficeHoursInner),
+            ]),
+            () => ListBuilder<CaptainAvailabilityDtoOutputOfficeHoursInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

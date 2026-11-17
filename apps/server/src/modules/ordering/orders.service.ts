@@ -152,6 +152,20 @@ export class OrdersService implements OnModuleInit {
   // RA §7.4: the restaurant is busy at its maximum active orders.
   onModuleInit(): void {
     this.merchants.countActiveOrders((restaurantId) => this.activeOrders.restaurant(restaurantId));
+    // AP §9.8 (slice 2.25a): the panel's customer profile.
+    this.customers.useOrderFacts(async (accountId, cityId) => {
+      const rules = await this.activeOrders.rules(cityId);
+      const [limit, fakeOrders] = await Promise.all([
+        this.activeOrders.customer(accountId, rules),
+        this.activeOrders.fakeOrders(accountId),
+      ]);
+      return {
+        trusted: limit.trusted,
+        delivered: limit.delivered,
+        trustedAfter: rules.trustedAfter,
+        fakeOrders,
+      };
+    });
   }
 
   async place(command: PlaceOrder, now: Date): Promise<OrderView> {
@@ -227,6 +241,11 @@ export class OrdersService implements OnModuleInit {
         // under this lock) refuses the order.
         if (await this.customers.reviewStopped(command.accountId, tx)) {
           throw new Requote('the account is stopped for review');
+        }
+        // AP §9.8: a block started since the quote (it starts under this
+        // lock) refuses the order.
+        if ((await this.customers.activeBlock(command.accountId, now, tx)) !== null) {
+          throw new Requote('the account is blocked');
         }
         await lock(tx, `orders:restaurant:${restaurant.id}`);
         if (
