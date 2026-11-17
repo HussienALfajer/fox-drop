@@ -18,7 +18,8 @@ import 'order_live.dart';
 /// five-step progress, the time, the captain card from assignment and the
 /// summary, kept live over the order's channel, and «مساعدة» with
 /// «إلغاء الطلب» while placed (CU §11.4–11.5), and the banners of the
-/// emergency stop and the item-unavailable report (CU §11.6), and the door
+/// emergency stop and the item-unavailable report and the late code (CU
+/// §11.6), and the door
 /// ping's full-screen ring (CU §11.7). The map, the
 /// other banners
 /// and the rating sheet come with their slices. Unstyled until the design.
@@ -111,7 +112,12 @@ class OrderScreen extends ConsumerWidget {
                   key: const Key('cancel-compensation'),
                   title: Text(
                     l10n.customerCompensationCode(
-                      compensationValueText(l10n, code),
+                      personalCodeValueText(
+                        l10n,
+                        amount: code.amount,
+                        percentBp: code.percentBp,
+                        maxDiscount: code.maxDiscount,
+                      ),
                       code.code,
                     ),
                   ),
@@ -120,6 +126,31 @@ class OrderScreen extends ConsumerWidget {
                   ),
                   trailing: TextButton(
                     key: const Key('cancel-compensation-codes'),
+                    onPressed: () => context.push('/codes'),
+                    child: Text(l10n.customerMyCodesTitle),
+                  ),
+                ),
+              // CU §11.6 (slice 2.22c): the late code the order earned 45
+              // minutes past its promised time, also in «أكوادي».
+              if (order.lateCode case final code?)
+                ListTile(
+                  key: const Key('late-code'),
+                  title: Text(
+                    l10n.customerLateCode(
+                      personalCodeValueText(
+                        l10n,
+                        amount: code.amount,
+                        percentBp: code.percentBp,
+                        maxDiscount: code.maxDiscount,
+                      ),
+                      code.code,
+                    ),
+                  ),
+                  subtitle: Text(
+                    l10n.customerCodeExpires(l10n.formatDate(code.validTo)),
+                  ),
+                  trailing: TextButton(
+                    key: const Key('late-code-codes'),
                     onPressed: () => context.push('/codes'),
                     child: Text(l10n.customerMyCodesTitle),
                   ),
@@ -273,18 +304,21 @@ class OrderScreen extends ConsumerWidget {
   }
 }
 
-/// A compensation's value as its push says it (CU §14 #16): «25 ₺», or «20%
-/// بحد أقصى 50 ₺».
-String compensationValueText(
-  AppLocalizations l10n,
-  CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensation code,
-) {
-  final amount = code.amount;
+/// A personal code's value as its push says it (CU §14 #16): «25 ₺», «20%
+/// بحد أقصى 50 ₺», or the late code's «15%» without a maximum (CU §11.6).
+String personalCodeValueText(
+  AppLocalizations l10n, {
+  required CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmount? amount,
+  required int? percentBp,
+  required CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscount?
+  maxDiscount,
+}) {
   if (amount != null) return l10n.formatMoney(amount.amount, amount.currency);
-  final max = code.maxDiscount!;
+  final percent = percentText(percentBp ?? 0);
+  if (maxDiscount == null) return '$percent%';
   return l10n.customerCompensationPercent(
-    percentText(code.percentBp ?? 0),
-    l10n.formatMoney(max.amount, max.currency),
+    percent,
+    l10n.formatMoney(maxDiscount.amount, maxDiscount.currency),
   );
 }
 
