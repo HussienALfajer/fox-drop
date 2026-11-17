@@ -153,6 +153,15 @@ const merchant: Entry[] = [
   ['busy_reminder', '25', 'وضع الضغط ما زال مفعّلاً (+{د} د)', 'chime'],
   ['no_receiving_device', '27', 'لا يوجد جهاز يستقبل الطلبات في مطعمك الآن', 'chime'],
   ['ticket_resolved', '29', 'تم حل بلاغك T-{رقم}: {الرد}', 'silent'],
+  // AP §10 «Ticket resolved»: the debit, when the restaurant is responsible
+  // for a problem after delivery (AP §8.10, slice 2.23c); RA §16 has no row
+  // of its own, so the wording is ours, as an edit after the pickup's.
+  [
+    'ticket_debit',
+    '29',
+    'مشكلة بعد التسليم في الطلب #{رقم} — يُقيَّد عليكم {المبلغ} في كشف السبت',
+    'silent',
+  ],
   [
     'weekly_statement',
     '30',

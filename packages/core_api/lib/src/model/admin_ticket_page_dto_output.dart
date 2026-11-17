@@ -9,6 +9,7 @@ import 'package:core_api/src/model/admin_ticket_page_dto_output_notes_inner.dart
 import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_resolution.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output_pickup_dispute.dart';
 import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_sla.dart';
+import 'package:core_api/src/model/admin_ticket_page_dto_output_order.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -43,6 +44,7 @@ part 'admin_ticket_page_dto_output.g.dart';
 /// * [closure]
 /// * [notes] - Oldest first.
 /// * [pickupDispute]
+/// * [order]
 @BuiltValue()
 abstract class AdminTicketPageDtoOutput
     implements
@@ -133,6 +135,9 @@ abstract class AdminTicketPageDtoOutput
 
   @BuiltValueField(wireName: r'pickupDispute')
   AdminTicketPageDtoOutputPickupDispute? get pickupDispute;
+
+  @BuiltValueField(wireName: r'order')
+  AdminTicketPageDtoOutputOrder? get order;
 
   AdminTicketPageDtoOutput._();
 
@@ -320,6 +325,15 @@ class _$AdminTicketPageDtoOutputSerializer
             object.pickupDispute,
             specifiedType: const FullType.nullable(
               AdminTicketPageDtoOutputPickupDispute,
+            ),
+          );
+    yield r'order';
+    yield object.order == null
+        ? null
+        : serializers.serialize(
+            object.order,
+            specifiedType: const FullType.nullable(
+              AdminTicketPageDtoOutputOrder,
             ),
           );
   }
@@ -608,6 +622,18 @@ class _$AdminTicketPageDtoOutputSerializer
                   as AdminTicketPageDtoOutputPickupDispute?;
           if (valueDes == null) continue;
           result.pickupDispute.replace(valueDes);
+          break;
+        case r'order':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminTicketPageDtoOutputOrder,
+                    ),
+                  )
+                  as AdminTicketPageDtoOutputOrder?;
+          if (valueDes == null) continue;
+          result.order.replace(valueDes);
           break;
         default:
           unhandled.add(key);

@@ -98,6 +98,16 @@ export const tickets = support.table(
     closeReason: text('close_reason'),
     closedBy: uuid('closed_by'),
     closedAt: timestamp('closed_at', { withTimezone: true }),
+    // AP §8.10, §9.9.3 (slice 2.23c): a problem after a normal delivery. The
+    // affected lines as chosen (position, name, quantity, value) and their
+    // value `V`, the wrong change `M` the customer was short, in the order's
+    // currency, and the compensation «كود تعويض» asked for (marketing's
+    // row, issued or waiting for OWN).
+    affectedLines: jsonb('affected_lines'),
+    affectedValue: bigint('affected_value', { mode: 'bigint' }),
+    shortAmount: bigint('short_amount', { mode: 'bigint' }),
+    moneyCurrency: text('money_currency'),
+    compensationId: uuid('compensation_id'),
   },
   (table) => [
     uniqueIndex('tickets_city_number').on(table.cityId, table.number),
@@ -117,6 +127,10 @@ export const tickets = support.table(
     check(
       'tickets_resolved',
       sql`(${table.status} = 'resolved') = (${table.resolution} IS NOT NULL AND ${table.message} IS NOT NULL AND ${table.resolvedBy} IS NOT NULL AND ${table.resolvedAt} IS NOT NULL) AND (${table.resolution} IS NOT NULL OR (${table.responsible} IS NULL AND ${table.correctedLines} IS NULL AND ${table.journalIds} IS NULL))`,
+    ),
+    check(
+      'tickets_money',
+      sql`(${table.affectedLines} IS NULL) = (${table.affectedValue} IS NULL) AND (${table.affectedValue} IS NULL OR ${table.affectedValue} > 0) AND (${table.shortAmount} IS NULL OR ${table.shortAmount} > 0) AND ((${table.affectedValue} IS NULL AND ${table.shortAmount} IS NULL) = (${table.moneyCurrency} IS NULL)) AND (${table.resolution} IS NOT NULL OR (${table.moneyCurrency} IS NULL AND ${table.compensationId} IS NULL)) AND (${table.compensationId} IS NULL OR ${table.resolution} = 'compensation_code')`,
     ),
     check(
       'tickets_closed',

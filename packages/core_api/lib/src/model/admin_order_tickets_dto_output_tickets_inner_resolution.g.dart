@@ -12,6 +12,11 @@ _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_noneExplained =
       'noneExplained',
     );
 const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
+_$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_compensationCode =
+    const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum._(
+      'compensationCode',
+    );
+const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
 _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_priceCorrected =
     const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum._(
       'priceCorrected',
@@ -42,6 +47,8 @@ _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnumValueOf(String name) {
   switch (name) {
     case 'noneExplained':
       return _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_noneExplained;
+    case 'compensationCode':
+      return _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_compensationCode;
     case 'priceCorrected':
       return _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_priceCorrected;
     case 'priceCorrect':
@@ -63,6 +70,7 @@ _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnumValues =
       AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
     >[
       _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_noneExplained,
+      _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_compensationCode,
       _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_priceCorrected,
       _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_priceCorrect,
       _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_captainPaid,
@@ -134,6 +142,7 @@ class _$AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnumSerializer
         > {
   static const Map<String, Object> _toWire = const <String, Object>{
     'noneExplained': 'none_explained',
+    'compensationCode': 'compensation_code',
     'priceCorrected': 'price_corrected',
     'priceCorrect': 'price_correct',
     'captainPaid': 'captain_paid',
@@ -142,6 +151,7 @@ class _$AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnumSerializer
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'none_explained': 'noneExplained',
+    'compensation_code': 'compensationCode',
     'price_corrected': 'priceCorrected',
     'price_correct': 'priceCorrect',
     'captain_paid': 'captainPaid',
@@ -235,6 +245,19 @@ class _$AdminOrderTicketsDtoOutputTicketsInnerResolution
   final DateTime resolvedAt;
   @override
   final String? resolvedByName;
+  @override
+  final BuiltList<
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionAffectedLinesInner
+  >?
+  affectedLines;
+  @override
+  final String? affectedValue;
+  @override
+  final String? shortAmount;
+  @override
+  final String? moneyCurrency;
+  @override
+  final String? compensationId;
 
   factory _$AdminOrderTicketsDtoOutputTicketsInnerResolution([
     void Function(AdminOrderTicketsDtoOutputTicketsInnerResolutionBuilder)?
@@ -251,6 +274,11 @@ class _$AdminOrderTicketsDtoOutputTicketsInnerResolution
     this.correctedLines,
     required this.resolvedAt,
     this.resolvedByName,
+    this.affectedLines,
+    this.affectedValue,
+    this.shortAmount,
+    this.moneyCurrency,
+    this.compensationId,
   }) : super._();
   @override
   AdminOrderTicketsDtoOutputTicketsInnerResolution rebuild(
@@ -271,7 +299,12 @@ class _$AdminOrderTicketsDtoOutputTicketsInnerResolution
         message == other.message &&
         correctedLines == other.correctedLines &&
         resolvedAt == other.resolvedAt &&
-        resolvedByName == other.resolvedByName;
+        resolvedByName == other.resolvedByName &&
+        affectedLines == other.affectedLines &&
+        affectedValue == other.affectedValue &&
+        shortAmount == other.shortAmount &&
+        moneyCurrency == other.moneyCurrency &&
+        compensationId == other.compensationId;
   }
 
   @override
@@ -283,6 +316,11 @@ class _$AdminOrderTicketsDtoOutputTicketsInnerResolution
     _$hash = $jc(_$hash, correctedLines.hashCode);
     _$hash = $jc(_$hash, resolvedAt.hashCode);
     _$hash = $jc(_$hash, resolvedByName.hashCode);
+    _$hash = $jc(_$hash, affectedLines.hashCode);
+    _$hash = $jc(_$hash, affectedValue.hashCode);
+    _$hash = $jc(_$hash, shortAmount.hashCode);
+    _$hash = $jc(_$hash, moneyCurrency.hashCode);
+    _$hash = $jc(_$hash, compensationId.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -297,7 +335,12 @@ class _$AdminOrderTicketsDtoOutputTicketsInnerResolution
           ..add('message', message)
           ..add('correctedLines', correctedLines)
           ..add('resolvedAt', resolvedAt)
-          ..add('resolvedByName', resolvedByName))
+          ..add('resolvedByName', resolvedByName)
+          ..add('affectedLines', affectedLines)
+          ..add('affectedValue', affectedValue)
+          ..add('shortAmount', shortAmount)
+          ..add('moneyCurrency', moneyCurrency)
+          ..add('compensationId', compensationId))
         .toString();
   }
 }
@@ -355,6 +398,43 @@ class AdminOrderTicketsDtoOutputTicketsInnerResolutionBuilder
   set resolvedByName(String? resolvedByName) =>
       _$this._resolvedByName = resolvedByName;
 
+  ListBuilder<
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionAffectedLinesInner
+  >?
+  _affectedLines;
+  ListBuilder<
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionAffectedLinesInner
+  >
+  get affectedLines => _$this._affectedLines ??=
+      ListBuilder<
+        AdminOrderTicketsDtoOutputTicketsInnerResolutionAffectedLinesInner
+      >();
+  set affectedLines(
+    ListBuilder<
+      AdminOrderTicketsDtoOutputTicketsInnerResolutionAffectedLinesInner
+    >?
+    affectedLines,
+  ) => _$this._affectedLines = affectedLines;
+
+  String? _affectedValue;
+  String? get affectedValue => _$this._affectedValue;
+  set affectedValue(String? affectedValue) =>
+      _$this._affectedValue = affectedValue;
+
+  String? _shortAmount;
+  String? get shortAmount => _$this._shortAmount;
+  set shortAmount(String? shortAmount) => _$this._shortAmount = shortAmount;
+
+  String? _moneyCurrency;
+  String? get moneyCurrency => _$this._moneyCurrency;
+  set moneyCurrency(String? moneyCurrency) =>
+      _$this._moneyCurrency = moneyCurrency;
+
+  String? _compensationId;
+  String? get compensationId => _$this._compensationId;
+  set compensationId(String? compensationId) =>
+      _$this._compensationId = compensationId;
+
   AdminOrderTicketsDtoOutputTicketsInnerResolutionBuilder() {
     AdminOrderTicketsDtoOutputTicketsInnerResolution._defaults(this);
   }
@@ -368,6 +448,11 @@ class AdminOrderTicketsDtoOutputTicketsInnerResolutionBuilder
       _correctedLines = $v.correctedLines?.toBuilder();
       _resolvedAt = $v.resolvedAt;
       _resolvedByName = $v.resolvedByName;
+      _affectedLines = $v.affectedLines?.toBuilder();
+      _affectedValue = $v.affectedValue;
+      _shortAmount = $v.shortAmount;
+      _moneyCurrency = $v.moneyCurrency;
+      _compensationId = $v.compensationId;
       _$v = null;
     }
     return this;
@@ -413,12 +498,20 @@ class AdminOrderTicketsDtoOutputTicketsInnerResolutionBuilder
               'resolvedAt',
             ),
             resolvedByName: resolvedByName,
+            affectedLines: _affectedLines?.build(),
+            affectedValue: affectedValue,
+            shortAmount: shortAmount,
+            moneyCurrency: moneyCurrency,
+            compensationId: compensationId,
           );
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'correctedLines';
         _correctedLines?.build();
+
+        _$failedField = 'affectedLines';
+        _affectedLines?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminOrderTicketsDtoOutputTicketsInnerResolution',

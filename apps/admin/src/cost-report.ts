@@ -35,14 +35,26 @@ export const partyKeys = {
   platform: 'costReport.party.platform',
 } as const satisfies Record<CostParty, string>;
 
+const lineKeys = {
+  late_delivery: 'costReport.lateDelivery',
+  recovered_restaurant: 'costReport.recoveredRestaurant',
+  recovered_captain: 'costReport.recoveredCaptain',
+} as const;
+
 // A compensation line's name: the reason's label as it was chosen, the late
-// codes' own line, or «أخرى» for a cost with no personal code behind it.
+// codes' own line, what tickets recovered from the party responsible (slice
+// 2.23c), or «أخرى» for a cost with no personal code behind it.
 export function compensationName(
   row: Pick<CompensationReason, 'kind' | 'label'>,
-): { label: string } | { key: 'costReport.lateDelivery' | 'costReport.operating.other' } {
+):
+  | { label: string }
+  | { key: (typeof lineKeys)[keyof typeof lineKeys] | 'costReport.operating.other' } {
   if (row.kind === 'reason' && row.label !== null) return { label: row.label };
   return {
-    key: row.kind === 'late_delivery' ? 'costReport.lateDelivery' : 'costReport.operating.other',
+    key:
+      row.kind in lineKeys
+        ? lineKeys[row.kind as keyof typeof lineKeys]
+        : 'costReport.operating.other',
   };
 }
 

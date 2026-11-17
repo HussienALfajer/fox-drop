@@ -159,6 +159,51 @@ describe('costReport', () => {
     ]);
   });
 
+  it("puts what tickets recovered from the party responsible on its own lines, under the order's restaurant", () => {
+    const report = costReport(
+      input(
+        [
+          // The code given on the ticket, used on a later order.
+          cost('platform.compensation_cost', id(205), 6_000n),
+          // The restaurant's debit of V and the captain's charge, recovering it.
+          cost('platform.compensation_cost', id(301), -6_000n, { type: 'merchant.debit' }),
+          cost('platform.compensation_cost', id(302), -2_000n, { type: 'earn.charge' }),
+        ],
+        [
+          [id(205), order(grill, { promoCodeId: personal, promoCode: 'K7M2QP4X' })],
+          [id(301), order(pizza)],
+          [id(302), order(pizza)],
+        ],
+        [
+          [
+            personal,
+            {
+              kind: 'compensation',
+              reasonCode: 'missing_item',
+              reasonLabel: 'صنف ناقص',
+              orderId: id(301),
+            },
+          ],
+        ],
+      ),
+    );
+    expect(report.totals.compensation).toBe(-2_000n);
+    expect(report.compensationReasons).toEqual([
+      { kind: 'reason', reason: 'missing_item', label: 'صنف ناقص', orders: 1, amount: 6_000n },
+      { kind: 'recovered_captain', reason: null, label: null, orders: 1, amount: -2_000n },
+      { kind: 'recovered_restaurant', reason: null, label: null, orders: 1, amount: -6_000n },
+    ]);
+    expect(report.restaurants).toEqual([
+      {
+        restaurantId: pizza,
+        discounts: 0n,
+        compensation: -2_000n,
+        operating: 0n,
+        total: -2_000n,
+      },
+    ]);
+  });
+
   it('splits the operating cost by its cause and by the responsible party', () => {
     const cancelled = order(pizza, {
       status: 'cancelled',

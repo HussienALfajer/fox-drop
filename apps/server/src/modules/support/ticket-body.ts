@@ -14,6 +14,7 @@ import type { AdminSession } from '../identity/index.js';
 import { ticketSources } from './schema.js';
 import type { MoneyLine, PickupCorrectionPreview, PickupDisputeFacts } from './pickup-disputes.js';
 import type { Ticket, TicketAdmin, TicketNote } from './support.service.js';
+import type { TicketMoneyPreview, TicketOrderFacts } from './ticket-orders.js';
 import { TicketRefusedError } from './support.service.js';
 import {
   responsibleParties,
@@ -37,6 +38,14 @@ export const receivedLine = z.object({
   amount: z.string().regex(/^\d{1,15}$/),
   currency: z.string().regex(/^[A-Z]{3}$/),
 });
+
+// An affected line (AP §8.10): the order's line by its position, how many,
+// and their value.
+export const affectedLine = z.object({
+  position: z.number().int().min(0),
+  quantity: z.number().int().min(1).max(20),
+});
+const affectedLineOut = affectedLine.extend({ name: z.string(), value: z.string() });
 
 // A ticket as the panel reads it (AP §9.9.2–§9.9.3). The SLA's state is
 // worked out by the panel from its times, so it moves without a read.
@@ -88,6 +97,20 @@ export const ticketBody = z.object({
         .describe('«تصحيح في الحسابات»: what the restaurant received, as corrected.'),
       resolvedAt: z.iso.datetime(),
       resolvedByName: z.string().nullable(),
+      affectedLines: z
+        .array(affectedLineOut)
+        .nullable()
+        .describe('A problem after delivery (AP §8.10): the affected lines as chosen.'),
+      affectedValue: z.string().nullable().describe('V, in `moneyCurrency`.'),
+      shortAmount: z
+        .string()
+        .nullable()
+        .describe('«مشكلة في المبلغ أو الباقي»: M, what the customer was short.'),
+      moneyCurrency: z.string().nullable(),
+      compensationId: z
+        .uuid()
+        .nullable()
+        .describe('«كود تعويض»: the compensation asked (issued, or waiting for OWN).'),
     })
     .nullable()
     .describe('«محلولة»'),
@@ -132,6 +155,40 @@ export const correctionPreviewBody = z.object({
   ),
 });
 
+// A customer's general ticket on an order (slice 2.23c): what the resolution
+// reads of the order.
+export const ticketOrderBody = z.object({
+  orderId: z.uuid(),
+  number: number,
+  currency: z.string(),
+  total: z.string(),
+  itemsValue: z.string(),
+  deliveredNormally: z
+    .boolean()
+    .describe('Delivered with the outcome «تم التسليم»: the affected items and M apply.'),
+  lines: z.array(
+    z.object({
+      position: z.number().int(),
+      name: z.string(),
+      quantity: z.number().int(),
+      unitPrice: z.string(),
+      lineTotal: z.string(),
+    }),
+  ),
+  received: z.array(moneyLine).describe('«استلم الكابتن» (CU Q23).'),
+  change: z.array(moneyLine).describe('«أعاد لك».'),
+});
+
+export const moneyPreviewBody = z.object({
+  currency: z.string().nullable(),
+  affectedValue: z.string().describe('V.'),
+  merchantDebit: z
+    .string()
+    .describe('What the restaurant ends up owing: V less the commission reversed.'),
+  captainCharge: z.string(),
+  entries: correctionPreviewBody.shape.entries,
+});
+
 const moneyOut = (line: MoneyLine) => ({
   amount: line.amount.toString(),
   currency: line.currency,
@@ -150,6 +207,44 @@ export function pickupDisputeOut(facts: PickupDisputeFacts): z.infer<typeof pick
     captainName: facts.captainName,
     disputedAt: facts.disputedAt.toISOString(),
     currencies: facts.currencies,
+  };
+}
+
+export function ticketOrderOut(facts: TicketOrderFacts): z.infer<typeof ticketOrderBody> {
+  return {
+    orderId: facts.orderId,
+    number: facts.number.toString(),
+    currency: facts.currency,
+    total: facts.total.toString(),
+    itemsValue: facts.itemsValue.toString(),
+    deliveredNormally: facts.deliveredNormally,
+    lines: facts.lines.map((line) => ({
+      position: line.position,
+      name: line.name,
+      quantity: line.quantity,
+      unitPrice: line.unitPrice.toString(),
+      lineTotal: line.lineTotal.toString(),
+    })),
+    received: facts.received.map(moneyOut),
+    change: facts.change.map(moneyOut),
+  };
+}
+
+export function moneyPreviewOut(
+  preview: Omit<TicketMoneyPreview, 'currency'> & { currency: string | null },
+): z.infer<typeof moneyPreviewBody> {
+  return {
+    currency: preview.currency,
+    affectedValue: preview.affectedValue.toString(),
+    merchantDebit: preview.merchantDebit.toString(),
+    captainCharge: preview.captainCharge.toString(),
+    entries: preview.entries.map((entry) => ({
+      type: entry.type,
+      reason: entry.reason,
+      account: entry.account,
+      party: entry.party,
+      amount: moneyOut(entry.amount),
+    })),
   };
 }
 
@@ -222,6 +317,17 @@ export function ticketOut(ticket: Ticket): z.infer<typeof ticketBody> {
             correctedLines: ticket.resolution.correctedLines?.map(moneyOut) ?? null,
             resolvedAt: ticket.resolution.resolvedAt.toISOString(),
             resolvedByName: ticket.resolution.resolvedByName,
+            affectedLines:
+              ticket.resolution.affectedLines?.map((line) => ({
+                position: line.position,
+                quantity: line.quantity,
+                name: line.name,
+                value: line.value.toString(),
+              })) ?? null,
+            affectedValue: ticket.resolution.affectedValue?.toString() ?? null,
+            shortAmount: ticket.resolution.shortAmount?.toString() ?? null,
+            moneyCurrency: ticket.resolution.moneyCurrency,
+            compensationId: ticket.resolution.compensationId,
           },
     closure:
       ticket.closure === null
@@ -249,6 +355,7 @@ export function ticketAdminOf(session: AdminSession, request: FastifyRequest): T
     actor: { type: 'admin', id: session.accountId, role: session.roles.join(',') },
     context: requestContext(request),
     permissions: session.permissions,
+    roles: session.roles,
   };
 }
 
@@ -274,6 +381,12 @@ export async function answered<T>(run: () => Promise<T>): Promise<T> {
       case 'lines_required':
       case 'invalid_lines':
       case 'no_difference':
+      case 'order_required':
+      case 'not_delivered':
+      case 'amount_required':
+      case 'value_required':
+      case 'invalid_affected':
+      case 'invalid_value':
         throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, error: error.refusal });
       case 'idempotency_key_reused':
         throw new UnprocessableEntityException({

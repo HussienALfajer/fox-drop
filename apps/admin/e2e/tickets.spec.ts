@@ -117,7 +117,7 @@ test('resolves a ticket with a canned reply as the message', async ({ page }) =>
   await page.route('**/v1/admin/content/canned-replies', (route) =>
     route.fulfill({ json: { replies: [{ title: 'لم نجد مشكلة', body: message }] } }),
   );
-  const page0 = { ...ticket(), notes: [], pickupDispute: null };
+  const page0 = { ...ticket(), notes: [], pickupDispute: null, order: null };
   let current: Record<string, unknown> = page0;
   let resolved: unknown = null;
   await page.route(`**/v1/admin/tickets/${id}?**`, (route) => route.fulfill({ json: current }));
@@ -152,6 +152,115 @@ test('resolves a ticket with a canned reply as the message', async ({ page }) =>
     responsible: 'restaurant',
     message,
     receivedLines: null,
+    affected: [],
+    shortAmount: null,
+    code: null,
   });
   await expect(page.getByText(`الرسالة المرسلة: ${message}`)).toBeVisible();
+});
+
+// AP §8.10, §9.9.3, §6.4 (slice 2.23c): support resolves «صنف ناقص» after a
+// normal delivery with the restaurant responsible: one item affected, the
+// entries previewed, and a code for the customer, in minor units.
+test('resolves a missing item with the restaurant responsible and a code', async ({ page }) => {
+  await fakeSession(page, ['support.read', 'support.manage', 'operations.compensate']);
+  const id = '01900000-0000-7000-8000-0000000000f2';
+  const orderId = '01900000-0000-7000-8000-0000000000d1';
+  await page.route('**/v1/admin/cities', (route) => route.fulfill({ json: cities }));
+  await page.route('**/v1/admin/alerts**', (route) => route.fulfill({ json: { alerts: [] } }));
+  await page.route('**/v1/admin/tickets/assignees', (route) =>
+    route.fulfill({ json: { assignees: [] } }),
+  );
+  await page.route('**/v1/admin/tickets?**', (route) => route.fulfill({ json: { tickets: [] } }));
+  await page.route('**/v1/admin/content/canned-replies', (route) =>
+    route.fulfill({ json: { replies: [] } }),
+  );
+  await page.route(`**/v1/admin/orders/${orderId}/compensations`, (route) =>
+    route.fulfill({
+      json: {
+        compensations: [],
+        currency: 'TRY',
+        capLeft: '7500',
+        canCompensate: true,
+        reasons: [{ code: 'missing_item', label: 'صنف ناقص' }],
+      },
+    }),
+  );
+  const page0 = {
+    ...ticket({
+      id,
+      party: 'customer',
+      partyName: 'سامر',
+      orderId,
+      orderNumber: '10021',
+      typeCode: 'missing_item',
+      typeLabel: 'صنف ناقص',
+    }),
+    notes: [],
+    pickupDispute: null,
+    order: {
+      orderId,
+      number: '10021',
+      currency: 'TRY',
+      total: '25000',
+      itemsValue: '24000',
+      deliveredNormally: true,
+      lines: [{ position: 0, name: 'شاورما', quantity: 2, unitPrice: '12000', lineTotal: '24000' }],
+      received: [{ currency: 'TRY', amount: '25000' }],
+      change: [],
+    },
+  };
+  let previewed: unknown = null;
+  let resolved: unknown = null;
+  await page.route(`**/v1/admin/tickets/${id}?**`, (route) => route.fulfill({ json: page0 }));
+  await page.route(`**/v1/admin/tickets/${id}/money-preview`, (route) => {
+    previewed = route.request().postDataJSON();
+    return route.fulfill({
+      json: {
+        currency: 'TRY',
+        affectedValue: '12000',
+        merchantDebit: '10200',
+        captainCharge: '0',
+        entries: [],
+      },
+    });
+  });
+  await page.route(`**/v1/admin/tickets/${id}/resolve`, (route) => {
+    resolved = route.request().postDataJSON();
+    return route.fulfill({ json: page0 });
+  });
+
+  await page.goto(`/tickets/${id}?city=AZ`);
+  await expect(page.getByText('استلم الكابتن:', { exact: false })).toBeVisible();
+  const form = page.locator('form', { hasText: 'رسالة الحل' });
+  await expect(form.getByRole('combobox', { name: 'الحل' })).toHaveValue('compensation_code');
+  await form.getByRole('combobox', { name: 'الطرف المسؤول' }).selectOption('restaurant');
+  await form.getByRole('textbox', { name: 'شاورما (من 2)' }).fill('1');
+  await expect(form.getByText('يُقيَّد على المطعم', { exact: false })).toBeVisible();
+  await form.getByRole('textbox', { name: 'المبلغ (TRY)' }).fill('50');
+  await form.getByRole('combobox', { name: 'السبب' }).selectOption('missing_item');
+  await form.getByRole('textbox', { name: 'رسالة الحل' }).fill('نعتذر، أرسلنا لك كود تعويض.');
+  await form.getByRole('button', { name: 'حل التذكرة' }).click();
+
+  await expect.poll(() => resolved).not.toBeNull();
+  expect(previewed).toMatchObject({
+    cityId,
+    responsible: 'restaurant',
+    affected: [{ position: 0, quantity: 1 }],
+    shortAmount: null,
+    code: true,
+  });
+  expect(resolved).toEqual({
+    cityId,
+    resolution: 'compensation_code',
+    responsible: 'restaurant',
+    message: 'نعتذر، أرسلنا لك كود تعويض.',
+    receivedLines: null,
+    affected: [{ position: 0, quantity: 1 }],
+    shortAmount: null,
+    code: {
+      value: { kind: 'fixed_amount', amount: '5000', percentBp: null, maxDiscount: null },
+      reason: { code: 'missing_item', note: null },
+    },
+  });
 });

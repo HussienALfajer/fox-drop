@@ -85,6 +85,15 @@ export class CompensationRefusedError extends Error {
   }
 }
 
+// AP §6.4, §8.10 (slice 2.23c): the wrong change's code «مشكلة في المبلغ أو
+// الباقي» restores money the customer already paid, so it is not capped and
+// never counts toward the order's cumulative total. It is asked from a
+// ticket with this fixed reason, outside Content's `compensation` list.
+export const WRONG_CHANGE_COMPENSATION = {
+  code: 'wrong_change',
+  label: 'مشكلة في المبلغ أو الباقي',
+} as const;
+
 // AP §6.4: the roles with a cap of their own; another role that may
 // compensate has none, so every request of it waits for OWN.
 const CAPPED_ROLES = ['SUP', 'OPS'] as const;
@@ -210,15 +219,20 @@ export class CompensationsService {
   }
 
   // What a request reads through the pool before its transaction: the reason
-  // (400 unknown_reason, reason_note_*) and the admin's cap.
+  // (400 unknown_reason, reason_note_*) and the admin's cap. The wrong
+  // change's code (`wrong_change`, slice 2.23c) takes its fixed reason and no
+  // cap.
   async prepare(
     order: CompensationOrder,
     value: CompensationValue,
-    reason: { code: string; note: string | null },
+    reason: { code: string; note: string | null } | 'wrong_change',
     admin: CompensationAdmin,
   ): Promise<PreparedCompensation> {
-    const chosen = await this.content.choose('compensation', reason);
-    const cap = await this.capPct(order.cityId, admin);
+    const wrongChange = reason === 'wrong_change';
+    const chosen = wrongChange
+      ? { ...WRONG_CHANGE_COMPENSATION, note: null }
+      : await this.content.choose('compensation', reason);
+    const cap = wrongChange ? null : await this.capPct(order.cityId, admin);
     const requestHash = hashOf([order.id, value, chosen.code, chosen.note]);
     return { order, value, chosen, admin, cap, requestHash };
   }
@@ -255,7 +269,11 @@ export class CompensationsService {
       );
     }
     const issued = await tx
-      .select({ amount: compensations.amount, maxDiscount: compensations.maxDiscount })
+      .select({
+        amount: compensations.amount,
+        maxDiscount: compensations.maxDiscount,
+        reasonCode: compensations.reasonCode,
+      })
       .from(compensations)
       .where(and(eq(compensations.orderId, order.id), eq(compensations.status, 'issued')));
     const within =
@@ -520,15 +538,19 @@ function stored(value: CompensationValue) {
       };
 }
 
+// The order's issued compensations that count toward its cap: the wrong
+// change's code never does (AP §6.4).
 function issuedSum(
   rows: readonly {
     amount: bigint | null;
     maxDiscount: bigint | null;
+    reasonCode: string;
     status?: CompensationStatus;
   }[],
 ) {
   return rows
     .filter((row) => row.status === undefined || row.status === 'issued')
+    .filter((row) => row.reasonCode !== WRONG_CHANGE_COMPENSATION.code)
     .reduce((sum, row) => sum + countedValue(row), 0n);
 }
 

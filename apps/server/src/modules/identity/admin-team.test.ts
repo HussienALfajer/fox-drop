@@ -424,6 +424,7 @@ const routeAccess: Record<string, Access> = {
   'PUT /v1/admin/tickets/{ticketId}/assignee': 'support.manage',
   'PUT /v1/admin/tickets/{ticketId}/status': 'support.manage',
   'POST /v1/admin/tickets/{ticketId}/correction-preview': 'support.resolve_pickup_dispute',
+  'POST /v1/admin/tickets/{ticketId}/money-preview': 'support.manage',
   'POST /v1/admin/tickets/{ticketId}/resolve': {
     anyOf: ['support.manage', 'support.resolve_pickup_dispute'],
   },

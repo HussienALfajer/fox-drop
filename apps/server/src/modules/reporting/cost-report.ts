@@ -18,9 +18,17 @@ export const costAccounts = [
 export type CostParty = NonNullable<CostOrder['cancelResponsible']>;
 
 // A line of the compensation cost: a reason of «تعويض الزبون», the automatic
-// late codes' own line, or the cost with no personal code the report can
-// read behind it.
-export const compensationLineKinds = ['reason', 'late_delivery', 'other'] as const;
+// late codes' own line, what a ticket after delivery recovered from the
+// restaurant or the captain responsible (AP §8.10, slice 2.23c: their
+// `merchant.debit` or `earn.charge` against this account, a negative cost),
+// or the cost with no personal code the report can read behind it.
+export const compensationLineKinds = [
+  'reason',
+  'late_delivery',
+  'recovered_restaurant',
+  'recovered_captain',
+  'other',
+] as const;
 export type CompensationLineKind = (typeof compensationLineKinds)[number];
 
 export interface CostInput {
@@ -47,7 +55,9 @@ export interface CostReportFigures {
   totals: CostTotals;
   // The compensation cost by line: `reason` with the reason's code in
   // «تعويض الزبون» and its label as chosen, `late_delivery` for the late
-  // codes, `other` for the rest (both without a code). `orders` counts the
+  // codes, `recovered_restaurant` and `recovered_captain` for what tickets
+  // took back from the party responsible, `other` for the rest (those
+  // without a code). `orders` counts the
   // orders the codes were used on.
   compensationReasons: {
     kind: CompensationLineKind;
@@ -129,6 +139,17 @@ export function costReport(input: CostInput): CostReportFigures {
         break;
       }
       case 'platform.compensation_cost': {
+        // A ticket's recovery from the party responsible (docs/domain/10),
+        // under the order's restaurant.
+        if (entry.type === 'merchant.debit' || entry.type === 'earn.charge') {
+          compensationReasons.add(
+            entry.type === 'merchant.debit' ? 'recovered_restaurant' : 'recovered_captain',
+            amount,
+            entry.orderId,
+          );
+          book(order?.restaurantId ?? null, 'compensation', amount);
+          break;
+        }
         const origin =
           order?.promoCodeId == null ? undefined : input.origins.get(order.promoCodeId);
         // A reason's key is prefixed, so no code of Content's list can
@@ -165,7 +186,10 @@ export function costReport(input: CostInput): CostReportFigures {
     currency: input.base,
     totals,
     compensationReasons: compensationReasons.lines().map(({ key, ...line }) =>
-      key === 'late_delivery' || key === 'other'
+      key === 'late_delivery' ||
+      key === 'other' ||
+      key === 'recovered_restaurant' ||
+      key === 'recovered_captain'
         ? { kind: key, reason: null, label: null, ...line }
         : {
             kind: 'reason' as const,

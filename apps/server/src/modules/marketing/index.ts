@@ -55,6 +55,7 @@ export {
   type CompensationValue,
   type PersonalCodeOrigin,
   type PreparedCompensation,
+  WRONG_CHANGE_COMPENSATION,
 } from './compensations.service.js';
 export {
   type LateCode,

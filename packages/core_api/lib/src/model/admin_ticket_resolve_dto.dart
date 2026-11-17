@@ -5,6 +5,8 @@
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_ticket_correction_preview_dto_received_lines_inner.dart';
+import 'package:core_api/src/model/admin_ticket_resolve_dto_code.dart';
+import 'package:core_api/src/model/admin_ticket_money_preview_body_dto_affected_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -18,6 +20,9 @@ part 'admin_ticket_resolve_dto.g.dart';
 /// * [responsible] - Required for a general ticket; none for a price difference or a pickup dispute.
 /// * [message] - Sent to the ticket's party.
 /// * [receivedLines] - The lines the restaurant received, one per currency.
+/// * [affected] - A problem after delivery: the affected lines (V).
+/// * [shortAmount] - «مشكلة في المبلغ أو الباقي»: M, what the customer was short.
+/// * [code]
 @BuiltValue()
 abstract class AdminTicketResolveDto
     implements Built<AdminTicketResolveDto, AdminTicketResolveDtoBuilder> {
@@ -27,7 +32,7 @@ abstract class AdminTicketResolveDto
   /// From the ticket kind's (AP §9.9.3).
   @BuiltValueField(wireName: r'resolution')
   AdminTicketResolveDtoResolutionEnum get resolution;
-  // enum resolutionEnum {  none_explained,  price_corrected,  price_correct,  captain_paid,  accounts_corrected,  payment_correct,  };
+  // enum resolutionEnum {  none_explained,  compensation_code,  price_corrected,  price_correct,  captain_paid,  accounts_corrected,  payment_correct,  };
 
   /// Required for a general ticket; none for a price difference or a pickup dispute.
   @BuiltValueField(wireName: r'responsible')
@@ -43,6 +48,17 @@ abstract class AdminTicketResolveDto
   BuiltList<AdminTicketCorrectionPreviewDtoReceivedLinesInner>?
   get receivedLines;
 
+  /// A problem after delivery: the affected lines (V).
+  @BuiltValueField(wireName: r'affected')
+  BuiltList<AdminTicketMoneyPreviewBodyDtoAffectedInner>? get affected;
+
+  /// «مشكلة في المبلغ أو الباقي»: M, what the customer was short.
+  @BuiltValueField(wireName: r'shortAmount')
+  String? get shortAmount;
+
+  @BuiltValueField(wireName: r'code')
+  AdminTicketResolveDtoCode? get code;
+
   AdminTicketResolveDto._();
 
   factory AdminTicketResolveDto([
@@ -50,7 +66,8 @@ abstract class AdminTicketResolveDto
   ]) = _$AdminTicketResolveDto;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminTicketResolveDtoBuilder b) => b;
+  static void _defaults(AdminTicketResolveDtoBuilder b) =>
+      b..affected = ListBuilder();
 
   @BuiltValueSerializer(custom: true)
   static Serializer<AdminTicketResolveDto> get serializer =>
@@ -106,6 +123,29 @@ class _$AdminTicketResolveDtoSerializer
               FullType(AdminTicketCorrectionPreviewDtoReceivedLinesInner),
             ]),
           );
+    if (object.affected != null) {
+      yield r'affected';
+      yield serializers.serialize(
+        object.affected,
+        specifiedType: const FullType(BuiltList, [
+          FullType(AdminTicketMoneyPreviewBodyDtoAffectedInner),
+        ]),
+      );
+    }
+    if (object.shortAmount != null) {
+      yield r'shortAmount';
+      yield serializers.serialize(
+        object.shortAmount,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.code != null) {
+      yield r'code';
+      yield serializers.serialize(
+        object.code,
+        specifiedType: const FullType.nullable(AdminTicketResolveDtoCode),
+      );
+    }
   }
 
   @override
@@ -190,6 +230,40 @@ class _$AdminTicketResolveDtoSerializer
           if (valueDes == null) continue;
           result.receivedLines.replace(valueDes);
           break;
+        case r'affected':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(BuiltList, [
+                      FullType(AdminTicketMoneyPreviewBodyDtoAffectedInner),
+                    ]),
+                  )
+                  as BuiltList<AdminTicketMoneyPreviewBodyDtoAffectedInner>?;
+          if (valueDes == null) continue;
+          result.affected.replace(valueDes);
+          break;
+        case r'shortAmount':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.shortAmount = valueDes;
+          break;
+        case r'code':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminTicketResolveDtoCode,
+                    ),
+                  )
+                  as AdminTicketResolveDtoCode?;
+          if (valueDes == null) continue;
+          result.code.replace(valueDes);
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -224,6 +298,9 @@ class AdminTicketResolveDtoResolutionEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'none_explained')
   static const AdminTicketResolveDtoResolutionEnum noneExplained =
       _$adminTicketResolveDtoResolutionEnum_noneExplained;
+  @BuiltValueEnumConst(wireName: r'compensation_code')
+  static const AdminTicketResolveDtoResolutionEnum compensationCode =
+      _$adminTicketResolveDtoResolutionEnum_compensationCode;
   @BuiltValueEnumConst(wireName: r'price_corrected')
   static const AdminTicketResolveDtoResolutionEnum priceCorrected =
       _$adminTicketResolveDtoResolutionEnum_priceCorrected;

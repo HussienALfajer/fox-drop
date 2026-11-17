@@ -407,6 +407,10 @@ Serializers _$serializers =
           ..add(AdminOrderTicketsDtoOutputTicketsInnerPartyEnum.serializer)
           ..add(AdminOrderTicketsDtoOutputTicketsInnerResolution.serializer)
           ..add(
+            AdminOrderTicketsDtoOutputTicketsInnerResolutionAffectedLinesInner
+                .serializer,
+          )
+          ..add(
             AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum.serializer,
           )
           ..add(
@@ -624,10 +628,16 @@ Serializers _$serializers =
           ..add(AdminTicketDtoOutputKindEnum.serializer)
           ..add(AdminTicketDtoOutputPartyEnum.serializer)
           ..add(AdminTicketDtoOutputStatusEnum.serializer)
+          ..add(AdminTicketMoneyPreviewBodyDto.serializer)
+          ..add(AdminTicketMoneyPreviewBodyDtoAffectedInner.serializer)
+          ..add(AdminTicketMoneyPreviewBodyDtoResponsibleEnum.serializer)
+          ..add(AdminTicketMoneyPreviewDtoOutput.serializer)
           ..add(AdminTicketNoteDto.serializer)
           ..add(AdminTicketPageDtoOutput.serializer)
           ..add(AdminTicketPageDtoOutputKindEnum.serializer)
           ..add(AdminTicketPageDtoOutputNotesInner.serializer)
+          ..add(AdminTicketPageDtoOutputOrder.serializer)
+          ..add(AdminTicketPageDtoOutputOrderLinesInner.serializer)
           ..add(AdminTicketPageDtoOutputPartyEnum.serializer)
           ..add(AdminTicketPageDtoOutputPickupDispute.serializer)
           ..add(AdminTicketPageDtoOutputPickupDisputeConfirmedByEnum.serializer)
@@ -636,6 +646,8 @@ Serializers _$serializers =
           ..add(AdminTicketPartySearchDto.serializer)
           ..add(AdminTicketPartySearchDtoPartyEnum.serializer)
           ..add(AdminTicketResolveDto.serializer)
+          ..add(AdminTicketResolveDtoCode.serializer)
+          ..add(AdminTicketResolveDtoCodeReason.serializer)
           ..add(AdminTicketResolveDtoResolutionEnum.serializer)
           ..add(AdminTicketResolveDtoResponsibleEnum.serializer)
           ..add(AdminTicketStatusDto.serializer)
@@ -1821,6 +1833,17 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType(
+                AdminOrderTicketsDtoOutputTicketsInnerResolutionAffectedLinesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminOrderTicketsDtoOutputTicketsInnerResolutionAffectedLinesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
                 AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
               ),
             ]),
@@ -2242,6 +2265,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminTicketCorrectionDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<AdminTicketCorrectionDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminTicketCorrectionPreviewDtoReceivedLinesInner),
             ]),
             () =>
@@ -2257,12 +2286,52 @@ Serializers _$serializers =
                 ListBuilder<
                   AdminTicketCorrectionPreviewDtoReceivedLinesInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminTicketMoneyPreviewBodyDtoAffectedInner),
+            ]),
+            () => ListBuilder<AdminTicketMoneyPreviewBodyDtoAffectedInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminTicketMoneyPreviewBodyDtoAffectedInner),
+            ]),
+            () => ListBuilder<AdminTicketMoneyPreviewBodyDtoAffectedInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType(AdminTicketPageDtoOutputNotesInner),
             ]),
             () => ListBuilder<AdminTicketPageDtoOutputNotesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminTicketPageDtoOutputOrderLinesInner),
+            ]),
+            () => ListBuilder<AdminTicketPageDtoOutputOrderLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

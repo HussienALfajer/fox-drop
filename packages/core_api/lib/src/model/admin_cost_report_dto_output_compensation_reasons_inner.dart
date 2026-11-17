@@ -27,7 +27,7 @@ abstract class AdminCostReportDtoOutputCompensationReasonsInner
   /// `reason`: a reason of the compensation list; `late_delivery`: the automatic late codes; `other`: the rest.
   @BuiltValueField(wireName: r'kind')
   AdminCostReportDtoOutputCompensationReasonsInnerKindEnum get kind;
-  // enum kindEnum {  reason,  late_delivery,  other,  };
+  // enum kindEnum {  reason,  late_delivery,  recovered_restaurant,  recovered_captain,  other,  };
 
   /// The reason’s code, for `reason` only.
   @BuiltValueField(wireName: r'reason')
@@ -221,6 +221,14 @@ class AdminCostReportDtoOutputCompensationReasonsInnerKindEnum
   static const AdminCostReportDtoOutputCompensationReasonsInnerKindEnum
   lateDelivery =
       _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_lateDelivery;
+  @BuiltValueEnumConst(wireName: r'recovered_restaurant')
+  static const AdminCostReportDtoOutputCompensationReasonsInnerKindEnum
+  recoveredRestaurant =
+      _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_recoveredRestaurant;
+  @BuiltValueEnumConst(wireName: r'recovered_captain')
+  static const AdminCostReportDtoOutputCompensationReasonsInnerKindEnum
+  recoveredCaptain =
+      _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_recoveredCaptain;
   @BuiltValueEnumConst(wireName: r'other')
   static const AdminCostReportDtoOutputCompensationReasonsInnerKindEnum other =
       _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_other;
