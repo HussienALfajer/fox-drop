@@ -11,8 +11,8 @@ Slice 2.22d, the compensation and discount costs (`docs/roadmap.md`, Phase 2, Mo
 - **Branch:** `feat/compensation-costs`.
 - **Before starting, ask the owner:** the period's boundaries (business days like the daily report, or calendar days); whether a compensation's cost counts when the code is issued or when it is used (`docs/domain/11` books `platform.compensation_cost` when used); the late codes' line (their own reason «تأخير التوصيل» beside the compensation reasons).
 - **Plan:**
-  - [ ] The server: the period's costs from the ledger and marketing, split by reason (compensations' reasons, the late code, the operating costs' reasons), by code, by responsible party and by restaurant; the route, its permissions and the Excel export; the OpenAPI document and the clients.
-  - [ ] The panel: «كلفة التعويضات والخصومات» in finance with the period, the splits and «تصدير Excel».
+  - [x] The server: the period's costs from the ledger and marketing, split by reason (compensations' reasons, the late code, the operating costs' reasons), by code, by responsible party and by restaurant; the route, its permissions and the Excel export; the OpenAPI document and the clients.
+  - [x] The panel: «كلفة التعويضات والخصومات» in finance with the period, the splits and «تصدير Excel».
   - [ ] Review, then hand over to the next slice.
 
 ### Left from 2.22c (`feat/late-code`)
