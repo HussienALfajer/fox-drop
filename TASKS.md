@@ -4,14 +4,18 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.25c, closing the account and re-registration (`docs/roadmap.md`, Phase 2, Support and trust). Not started.
+Slice 2.25c, closing the account and re-registration (`docs/roadmap.md`, Phase 2, Support and trust). In progress.
 
 - **Roadmap line:** 2.25c Closing the account and re-registration: «حذف الحساب» with a fresh code, refused with an active order, the panel's «إغلاق الحساب», every session ended, the closed account searchable in the panel but out of active lists, and a new account on the same number linked to the closed one with its block, dues, strikes, trust and code history; all data kept (owner decision 2026-11-17, AP §13 item 6 to check again before the store submission) (AP §8.8, D19, CU §5.6). A customer with dues deletes the account, registers again and is still blocked.
-- **Specs:** AP §8.8 «Account closure», D19, AP §9.8 «إغلاق الحساب» (OWN, OPS, SUP: `customers.close_account`), CU §5.5 «مغلق», CU §5.6; what exists: identity's `customer_accounts` (only `active`, `customer_accounts_active_phone`), `AppSessionsService.endAll`, `CustomerAccountsService` (2.25b's `changePhone`, `signOutEverywhere`), `phoneAccounts` (every account of a number, for the codes), the panel's profile and its actions (2.25b), the app's «حسابي» (2.25b, «حذف الحساب» to add).
-- **Branch:** the cloud session's branch, or `feat/customer-account-closure`.
+- **Specs:** AP §8.8 «Account closure» (`docs/domain/08`), D19, AP §9.8 «إغلاق الحساب» (OWN, OPS, SUP: `customers.close_account`) and «linked closed accounts», CU §5.5 «مغلق», CU §5.6.
+- **Branch:** `claude/serene-galileo-y1xsyb` (the cloud session's).
+- **Owner decisions 2026-11-17 (this slice):** the dues move to the new account by a transfer journal (old account credited, new account charged); trust carries over as it was (the closed account's deliveries, fake outcomes and marks count); the panel's search shows the closed account as its own row «مغلق» beside the new one, and the new account's profile lists its linked closed accounts.
+- **Design:** `identity.customer_accounts` gains `closed` (`closed_at`, `closed_by`, `close_reason`) and `lineage_id` (null for an account that starts its line; a new account on a number whose latest account is closed takes that account's line). Customers and ordering read the blocks, review stops, strikes and clears, trust marks, fake outcomes and normal deliveries over the line (`CustomerAccountsService.lineage`); marketing's new-user rule reads the line with the number's accounts. The dues move by `dues.transfer` journals against `platform.adjustments` in the sign-in's transaction (a listener customers registers with identity).
 - **Plan:**
-  - [ ] Read the cited sections; write the plan here as a checklist, one step per commit (server, panel, app).
-- **To ask the owner first:** what carries over to the linked account in practice (the dues are a ledger account per customer: post a transfer, or read the closed account's balance with the new one's); whether trust carries over as earned or restarts (AP §8.8 says it carries over); whether the panel's search shows a closed account with its own status «مغلق» beside its new account.
+  - [ ] Server: identity's closed state and line, sign-in linking, the dues transfer, the line read by customers, ordering and marketing; closing (`CustomerClosure` in customers: the active-order check through ordering's port, every session ended, audited), the panel's `POST /v1/admin/customers/{customerId}/close`, the app's `POST /v1/customer/account/close-code` and `POST /v1/customer/account/close`; the search and profile with «مغلق» and the linked accounts; placing refuses a closed account under the lock; the API contract.
+  - [ ] Panel: «مغلق» in the search and profile, «إغلاق الحساب» with its reason, «الحسابات المغلقة المرتبطة».
+  - [ ] Customer app: «حسابي» → «حذف الحساب»: the explanation, the fresh code, the closure and signing out; «لا يمكن حذف الحساب أثناء وجود طلب جارٍ».
+  - [ ] Review, docs (module `CLAUDE.md`s), handover.
 
 ### Left from 2.25b (`ccr-9873b3b0-sb59vo`)
 
