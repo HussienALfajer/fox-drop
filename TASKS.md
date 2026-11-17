@@ -11,8 +11,8 @@ Slice 2.23a, the tickets, their timers and the alert (`docs/roadmap.md`, Phase 2
 - **Branch:** `feat/tickets` (not created yet).
 - **Not in this slice:** resolving and closing, canned replies and the pickup dispute's ticket (2.23b); money (2.23c, 2.23d); tickets from the apps, their photos and «بلاغاتي» (2.24); the global search by ticket number (AP §7); the timer's amber and red colours (the design: build the state, not the styling).
 - **Plan:**
-  - [ ] Read the cited sections, `apps/server/CLAUDE.md`, `apps/admin/CLAUDE.md`, and how `notifications` syncs an alert and `ordering` runs a timer; ask the owner anything the decisions below leave open.
-  - [ ] The failing tests first for the pure rules: the priority, which SLA timer a ticket has and when it starts, stops, turns amber (80%) and is breached, and the status moves.
+  - [x] Read the cited sections, `apps/server/CLAUDE.md`, `apps/admin/CLAUDE.md`, and how `notifications` syncs an alert and `ordering` runs a timer; ask the owner anything the decisions below leave open.
+  - [x] The failing tests first for the pure rules: the priority, which SLA timer a ticket has and when it starts, stops, turns amber (80%) and is breached, and the status moves.
   - [ ] The `support` module and its migration (the `db-migration` skill): tickets, their notes, the per-city number, the grants and the database test; the permissions `support.read` and `support.manage` on the routes.
   - [ ] The server: create a manual ticket (`Idempotency-Key`), the list with its filters, the ticket, add a note, assign, change the status; each change with its audit line, in one transaction with its outbox event to the panel's channel.
   - [ ] The alert «تذكرة عاجلة» (`notifications`' rule and sync) and its closing; the SLA states on the list and the filter for a breached timer.
@@ -28,6 +28,8 @@ Slice 2.23a, the tickets, their timers and the alert (`docs/roadmap.md`, Phase 2
 - A ticket with neither an active order nor a delivered one (such as «طلب تعديل بيانات») has the resolution timer, `support.resolution_post_delivery_hours` from its opening.
 - The first-response timer stops when the ticket leaves «جديدة».
 - «بانتظار رد» does not pause the resolution timer.
+- «تذكرة عاجلة» closes when the ticket is resolved or its order ends; the priority follows the order's state now, so a ticket turns «عادية» once its order ends.
+- The timer's kind is fixed at the opening, and both timers run from the opening: a ticket opened on an active order has the first-response timer only; every other ticket has the resolution timer from its opening.
 - **To ask at their slices:** the difference between «محلولة» and «مغلقة» and when a ticket closes (2.23b); whether a ticket stays open while its code waits for OWN's approval (2.23c); whether the restaurant accepts a re-delivery like any order, and what a rejected or failed one does (2.23d).
 
 ### Left from 2.22d (`feat/compensation-costs`)
