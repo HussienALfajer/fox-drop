@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -14,6 +14,7 @@ import {
   type CompensationKind,
   compensations,
   type CompensationStatus,
+  lateCodes,
   promoCodes,
 } from './schema.js';
 
@@ -55,6 +56,12 @@ export interface PreparedCompensation {
   cap: number | null;
   requestHash: string;
 }
+
+// Where a personal code came from (AP §9.10.6, slice 2.22d): a compensation
+// with its reason, or the late code; `orderId` is the order it was given for.
+export type PersonalCodeOrigin =
+  | { kind: 'compensation'; reasonCode: string; reasonLabel: string; orderId: string }
+  | { kind: 'late'; orderId: string };
 
 export interface Compensation extends CompensationRow {
   // The personal code once issued.
@@ -139,6 +146,35 @@ export class CompensationsService {
       and(eq(compensations.orderId, orderId), eq(compensations.status, 'issued')),
     );
     return latest ?? null;
+  }
+
+  // AP §9.10.6 (slice 2.22d): where some personal codes came from, for the
+  // cost report: a compensation with its reason and the order compensated,
+  // or the late code of an order. A code that is neither is left out.
+  async codeOrigins(codeIds: readonly string[]): Promise<Map<string, PersonalCodeOrigin>> {
+    const origins = new Map<string, PersonalCodeOrigin>();
+    if (codeIds.length === 0) return origins;
+    const ids = [...new Set(codeIds)];
+    const [given, late] = await Promise.all([
+      this.database.db
+        .select({
+          codeId: compensations.codeId,
+          reasonCode: compensations.reasonCode,
+          reasonLabel: compensations.reasonLabel,
+          orderId: compensations.orderId,
+        })
+        .from(compensations)
+        .where(inArray(compensations.codeId, ids)),
+      this.database.db
+        .select({ codeId: lateCodes.codeId, orderId: lateCodes.orderId })
+        .from(lateCodes)
+        .where(inArray(lateCodes.codeId, ids)),
+    ]);
+    for (const { codeId, ...row } of given) {
+      if (codeId !== null) origins.set(codeId, { kind: 'compensation', ...row });
+    }
+    for (const row of late) origins.set(row.codeId, { kind: 'late', orderId: row.orderId });
+    return origins;
   }
 
   // «طلبات الموافقة»: the city's requests waiting for OWN, oldest first.

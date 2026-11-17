@@ -38,4 +38,5 @@ export {
   LedgerService,
   type PostJournal,
   type PostedJournal,
+  type SourceCost,
 } from './ledger.service.js';

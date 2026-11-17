@@ -731,6 +731,99 @@ describe('LedgerService.cityTotals and cityBalancesAt (AP §9.10.1)', () => {
     ).toEqual([new Map([[journal.source!.id, -300n]]), new Map([[journal.source!.id, -400n]])]);
   });
 
+  it('sums the cost accounts of a period by type, reason and order, a reversal under the reason it reverses (AP §9.10.6)', async () => {
+    const { cityId, earnings, clearing, open } = await setUp();
+    const operating = await open('platform.operating_cost');
+    const discount = await open('platform.discount_cost');
+    const order = randomUUID();
+    const cost = (amount: bigint, reason: string | null = null): PostJournal => ({
+      cityId,
+      type: 'platform.operating_cost',
+      source: { kind: 'order', id: order },
+      actor: system,
+      ...(reason === null ? {} : { reason }),
+      entries: [
+        { accountId: operating, currency: 'TRY', amount },
+        { accountId: clearing, currency: 'TRY', amount: -amount },
+      ],
+    });
+    await post(cost(999n));
+    const from = await databaseNow();
+    await post(cost(300n));
+    await post(cost(200n));
+    const edit = await post(cost(70n, 'أصناف حُذفت بعد الاستلام'));
+    await db.transaction((tx) =>
+      ledger.reverse(edit, { actor: system, reason: 'تغيير النتيجة' }, tx),
+    );
+    await post(cost(40n, 'نقص في التحصيل'));
+    // The captain's pay the platform bears, and a discount on another order.
+    await post({
+      cityId,
+      type: 'earn.order_pay',
+      source: { kind: 'order', id: order },
+      actor: system,
+      entries: [
+        { accountId: earnings, currency: 'TRY', amount: -25n },
+        { accountId: operating, currency: 'TRY', amount: 25n },
+      ],
+    });
+    const other = randomUUID();
+    await post({
+      cityId,
+      type: 'platform.discount_cost',
+      source: { kind: 'order', id: other },
+      actor: system,
+      entries: [
+        { accountId: discount, currency: 'TRY', amount: 30n },
+        { accountId: clearing, currency: 'TRY', amount: -30n },
+      ],
+    });
+    const to = await databaseNow();
+    await post(cost(999n));
+
+    const costs = await ledger.sourceCosts(
+      cityId,
+      ['platform.operating_cost', 'platform.discount_cost'],
+      from,
+      to,
+    );
+    const key = (row: (typeof costs)[number]) => `${row.purpose}${row.type}${row.reason}`;
+    const line = { currency: 'TRY', orderId: order };
+    // The edit and its reversal cancel under the edit's reason, so they
+    // leave no line; the clearing account's side is never read.
+    expect([...costs].sort((a, b) => key(a).localeCompare(key(b)))).toEqual([
+      {
+        purpose: 'platform.discount_cost',
+        type: 'platform.discount_cost',
+        reason: null,
+        currency: 'TRY',
+        orderId: other,
+        amount: 30n,
+      },
+      {
+        ...line,
+        purpose: 'platform.operating_cost',
+        type: 'earn.order_pay',
+        reason: null,
+        amount: 25n,
+      },
+      {
+        ...line,
+        purpose: 'platform.operating_cost',
+        type: 'platform.operating_cost',
+        reason: null,
+        amount: 500n,
+      },
+      {
+        ...line,
+        purpose: 'platform.operating_cost',
+        type: 'platform.operating_cost',
+        reason: 'نقص في التحصيل',
+        amount: 40n,
+      },
+    ]);
+  });
+
   it("gives every account of a purpose at each moment, by owner and currency, from the party's view", async () => {
     const { cityId, captainId, custody, custodyUsd, clearing, open } = await setUp();
     const second = randomUUID();

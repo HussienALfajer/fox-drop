@@ -218,7 +218,9 @@ export class DailyReportService {
     };
   }
 
-  private async clock(cityId: string) {
+  // The city's clock and its business day's cutoff (`unknown_city` without
+  // the city).
+  async clock(cityId: string) {
     const [timeZone, cutoff] = await Promise.all([
       this.geo.cityTimeZone(cityId),
       this.settings.get('finance.business_day_cutoff', { cityId }),

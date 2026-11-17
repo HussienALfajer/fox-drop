@@ -428,3 +428,115 @@ describe('the daily report', () => {
     ).toBe('ready');
   });
 });
+
+describe('«كلفة التعويضات والخصومات» (AP §9.10.6)', () => {
+  it('answers the last 7 business days to OWN and FIN, split, and exports them', async () => {
+    const ledger = app.get(LedgerService);
+    const order = randomUUID();
+    await db.db.transaction(async (tx) => {
+      const open = (
+        purpose: 'platform.discount_cost' | 'platform.operating_cost' | 'platform.order_clearing',
+      ) => ledger.openAccount({ cityId: azaz, purpose, ownerId: null, currency: 'TRY' }, tx);
+      const clearing = await open('platform.order_clearing');
+      for (const [purpose, amount] of [
+        ['platform.discount_cost', 3_000n],
+        ['platform.operating_cost', 500n],
+      ] as const) {
+        await ledger.post(
+          {
+            cityId: azaz,
+            type: purpose,
+            source: { kind: 'order', id: order },
+            actor: { type: 'system', id: null },
+            entries: [
+              { accountId: await open(purpose), currency: 'TRY', amount },
+              { accountId: clearing, currency: 'TRY', amount: -amount },
+            ],
+          },
+          tx,
+        );
+      }
+    });
+    const fin = await admin(['FIN']);
+    const answer = await fin.get(`/v1/admin/cost-report?cityId=${azaz}`);
+    expect(answer.statusCode, answer.body).toBe(200);
+    const report = answer.json();
+    expect(Date.parse(report.toDay) - Date.parse(report.fromDay)).toBe(6 * 86_400_000);
+    // No order of ours stands behind the entries: the report still adds up.
+    expect(report).toMatchObject({
+      cityId: azaz,
+      currency: 'TRY',
+      totals: { discounts: '3000', compensation: '0', operating: '500', total: '3500' },
+      compensationReasons: [],
+      operatingReasons: [{ reason: 'other', orders: 1, amount: '500' }],
+      codes: [{ codeId: null, code: null, orders: 1, amount: '3000' }],
+      parties: [{ party: null, orders: 1, amount: '500' }],
+      restaurants: [
+        {
+          restaurantId: null,
+          name: null,
+          discounts: '3000',
+          compensation: '0',
+          operating: '500',
+          total: '3500',
+        },
+      ],
+    });
+    // A period before the entries is empty.
+    const before = new Date(Date.parse(report.fromDay) - 86_400_000).toISOString().slice(0, 10);
+    const empty = await fin.get(`/v1/admin/cost-report?cityId=${azaz}&from=${before}&to=${before}`);
+    expect(empty.json()).toMatchObject({ fromDay: before, toDay: before, totals: { total: '0' } });
+
+    const after = new Date(Date.parse(report.toDay) + 86_400_000).toISOString().slice(0, 10);
+    for (const query of [
+      `from=${report.fromDay}`,
+      `from=${report.toDay}&to=${report.fromDay}`,
+      `from=${report.fromDay}&to=${after}`,
+      'from=2026-02-30&to=2026-03-01',
+    ]) {
+      const refused = await fin.get(`/v1/admin/cost-report?cityId=${azaz}&${query}`);
+      expect(refused.statusCode, query).toBe(400);
+      expect(refused.json()).toMatchObject({ error: 'invalid_period' });
+    }
+    expect((await fin.get(`/v1/admin/cost-report?cityId=${randomUUID()}`)).statusCode).toBe(404);
+    const ops = await admin(['OPS']);
+    expect((await ops.get(`/v1/admin/cost-report?cityId=${azaz}`)).statusCode).toBe(403);
+    expect(
+      (await (await admin(['OWN'])).get(`/v1/admin/cost-report?cityId=${azaz}`)).statusCode,
+    ).toBe(200);
+
+    const period = { cityId: azaz, from: report.fromDay, to: report.toDay };
+    const key = randomUUID();
+    const asked = await fin.post('/v1/admin/cost-report/exports', period, key);
+    expect(asked.statusCode, asked.body).toBe(202);
+    expect(asked.json()).toMatchObject({
+      kind: 'cost_report',
+      status: 'pending',
+      fileName: `كلفة التعويضات والخصومات ${report.fromDay} - ${report.toDay}.xlsx`,
+    });
+    const id: string = asked.json().id;
+    expect(await auditActions(id)).toEqual(['export.create']);
+    expect((await fin.post('/v1/admin/cost-report/exports', period, key)).json().id).toBe(id);
+    const future = await fin.post('/v1/admin/cost-report/exports', { ...period, to: after });
+    expect(future.statusCode).toBe(400);
+    expect(future.json()).toMatchObject({ error: 'invalid_period' });
+    expect((await ops.post('/v1/admin/cost-report/exports', period)).statusCode).toBe(403);
+
+    expect(await exportsService.build(id, new Date())).toBe(true);
+    const ready = await fin.get(`/v1/admin/exports/${id}?download=true`);
+    expect(ready.json()).toMatchObject({ status: 'ready', url: expect.any(String) });
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(await (await fetch(new URL(ready.json().url))).arrayBuffer());
+    const sheet = workbook.worksheets[0]!;
+    expect(sheet.views[0]?.rightToLeft).toBe(true);
+    const rows = sheet
+      .getSheetValues()
+      .filter((row): row is ExcelJS.CellValue[] => Array.isArray(row))
+      .map((row) => row.slice(1));
+    expect(rows[1]).toEqual(['الفترة (أيام تجارية)', report.fromDay, report.toDay]);
+    expect(rows.find((row) => row[0] === 'كلفة الخصومات')).toEqual(['كلفة الخصومات', 30]);
+    expect(rows.find((row) => row[0] === 'المجموع')).toEqual(['المجموع', 35]);
+    expect(rows.find((row) => row[0] === 'أخرى')).toEqual(['أخرى', 1, 5]);
+    expect(rows.at(-1)).toEqual(['غير محدد', 30, 0, 5, 35]);
+  });
+});

@@ -444,6 +444,8 @@ const routeAccess: Record<string, Access> = {
   'GET /v1/admin/exports/{exportId}': { anyOf: ['restaurants.statements', 'finance.read'] },
   'GET /v1/admin/daily-report': 'finance.read',
   'POST /v1/admin/daily-report/exports': 'finance.read',
+  'GET /v1/admin/cost-report': 'finance.read',
+  'POST /v1/admin/cost-report/exports': 'finance.read',
   'GET /v1/admin/settings': { editRoles: ['OWN', 'OPS', 'FIN'] },
   'PUT /v1/admin/settings/{key}': settingRoles,
   'POST /v1/admin/settings/{key}/reset': settingRoles,

@@ -9,9 +9,11 @@ import { MerchantPeriodService, periodFits } from '../cashdesk/index.js';
 import { FilesService } from '../files/index.js';
 import { FxService } from '../fx/index.js';
 import { GeoService } from '../geo/index.js';
-import { dailyReportLabels } from '../content/index.js';
+import { costReportLabels, dailyReportLabels } from '../content/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { exports, type ExportKind, type ExportStatus } from './schema.js';
+import { costReportWorkbook } from './cost-report-workbook.js';
+import { type CostReportRefusal, CostReportService } from './cost-report.service.js';
 import { dailyReportWorkbook } from './daily-report-workbook.js';
 import { type DailyReportRefusal, DailyReportService } from './daily-report.service.js';
 import { statementWorkbook } from './statement-workbook.js';
@@ -28,7 +30,8 @@ export type ExportsRefusal =
   | 'invalid_period'
   | 'idempotency_key_reused'
   | 'unknown_export'
-  | DailyReportRefusal;
+  | DailyReportRefusal
+  | CostReportRefusal;
 
 export class ExportsRefusedError extends Error {
   override readonly name = 'ExportsRefusedError';
@@ -68,10 +71,19 @@ export interface DailyReportParams {
   day: string;
 }
 
+export interface CostReportParams {
+  cityId: string;
+  from: string;
+  to: string;
+}
+
+type ExportParams = RestaurantStatementParams | DailyReportParams | CostReportParams;
+
 // The permission each kind of export is read with: the one its screen asks.
 export const exportPermissions = {
   restaurant_statement: 'restaurants.statements',
   daily_report: 'finance.read',
+  cost_report: 'finance.read',
 } as const satisfies Record<ExportKind, string>;
 
 export interface ExportJob {
@@ -96,6 +108,7 @@ export class ExportsService {
     private readonly fx: FxService,
     private readonly geo: GeoService,
     private readonly reports: DailyReportService,
+    private readonly costs: CostReportService,
   ) {}
 
   // «تصدير Excel» of a restaurant's statement (AP §9.10.5): records the
@@ -140,13 +153,29 @@ export class ExportsService {
     return this.record(user, 'daily_report', params.cityId, params, fileName, idempotencyKey, now);
   }
 
+  // «تصدير Excel» of the cost report (AP §9.10.6, slice 2.22d), as the
+  // statement's.
+  async requestCostReport(
+    user: ExportUser,
+    params: CostReportParams,
+    idempotencyKey: string,
+    now: Date,
+  ): Promise<ExportView> {
+    const repeat = await this.byKey(user.accountId, idempotencyKey);
+    if (repeat) return this.answerRepeat(repeat, 'cost_report', params, now);
+    const refusal = await this.costs.check(params.cityId, params.from, params.to, now);
+    if (refusal !== null) throw new ExportsRefusedError(refusal);
+    const fileName = `${costReportLabels.title} ${params.from} - ${params.to}.xlsx`;
+    return this.record(user, 'cost_report', params.cityId, params, fileName, idempotencyKey, now);
+  }
+
   // Records the export and queues its job in one transaction, audited (AP
   // §5.4). A request sent twice at once answers the one recorded.
   private async record(
     user: ExportUser,
     kind: ExportKind,
     cityId: string,
-    params: RestaurantStatementParams | DailyReportParams,
+    params: ExportParams,
     fileName: string,
     idempotencyKey: string,
     now: Date,
@@ -218,10 +247,7 @@ export class ExportsService {
   async build(exportId: string, now: Date): Promise<boolean> {
     const [row] = await this.database.db.select().from(exports).where(eq(exports.id, exportId));
     if (!row || row.status !== 'pending') return false;
-    const file =
-      row.kind === 'daily_report'
-        ? await this.dailyReportFile(row.params as DailyReportParams, now)
-        : await this.statementFile(row);
+    const file = await this.file(row, now);
     const objectKey = `exports/${row.id}.xlsx`;
     await this.files.putPrivate(objectKey, file, XLSX);
     const expiresAt = new Date(now.getTime() + EXPORT_KEEP_MS);
@@ -239,6 +265,30 @@ export class ExportsService {
       });
       return true;
     });
+  }
+
+  private file(row: Row, now: Date): Promise<Buffer> {
+    switch (row.kind) {
+      case 'restaurant_statement':
+        return this.statementFile(row);
+      case 'daily_report':
+        return this.dailyReportFile(row.params as DailyReportParams, now);
+      case 'cost_report':
+        return this.costReportFile(row.params as CostReportParams, now);
+    }
+  }
+
+  // The report as it stands when the worker writes it (a period that ends
+  // today is still running).
+  private async costReportFile(params: CostReportParams, now: Date): Promise<Buffer> {
+    const [report, currencies] = await Promise.all([
+      this.costs.report(params.cityId, params.from, params.to, now),
+      this.fx.currencies(),
+    ]);
+    return costReportWorkbook(
+      report,
+      new Map(currencies.map((each) => [each.code, each.decimals])),
+    );
   }
 
   private async statementFile(row: Row): Promise<Buffer> {
@@ -298,12 +348,7 @@ export class ExportsService {
     return row;
   }
 
-  private answerRepeat(
-    row: Row,
-    kind: ExportKind,
-    params: RestaurantStatementParams | DailyReportParams,
-    now: Date,
-  ): ExportView {
+  private answerRepeat(row: Row, kind: ExportKind, params: ExportParams, now: Date): ExportView {
     const asked = row.params as Record<string, unknown>;
     const same =
       row.kind === kind &&

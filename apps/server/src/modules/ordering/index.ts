@@ -170,6 +170,12 @@ export {
 export type { CartLine, PricedLine, QuoteMoney } from './quote.js';
 export { HANDOVER_FROM } from './handover.js';
 export {
+  type CostOrder,
+  type OperatingCostCause,
+  operatingCostCause,
+  operatingCostCauses,
+} from './platform-costs.js';
+export {
   type MerchantEntryCause,
   merchantEntryCause,
   merchantEntryCauses,

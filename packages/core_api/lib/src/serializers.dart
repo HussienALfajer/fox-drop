@@ -60,6 +60,14 @@ import 'package:core_api/src/model/admin_contact_dto_output.dart';
 import 'package:core_api/src/model/admin_conversion_quote_dto_output.dart';
 import 'package:core_api/src/model/admin_conversion_quote_dto_output_unit.dart';
 import 'package:core_api/src/model/admin_conversion_quote_request_dto.dart';
+import 'package:core_api/src/model/admin_cost_report_dto_output.dart';
+import 'package:core_api/src/model/admin_cost_report_dto_output_codes_inner.dart';
+import 'package:core_api/src/model/admin_cost_report_dto_output_compensation_reasons_inner.dart';
+import 'package:core_api/src/model/admin_cost_report_dto_output_operating_reasons_inner.dart';
+import 'package:core_api/src/model/admin_cost_report_dto_output_parties_inner.dart';
+import 'package:core_api/src/model/admin_cost_report_dto_output_restaurants_inner.dart';
+import 'package:core_api/src/model/admin_cost_report_dto_output_totals.dart';
+import 'package:core_api/src/model/admin_cost_report_export_dto.dart';
 import 'package:core_api/src/model/admin_create_promo_code_dto.dart';
 import 'package:core_api/src/model/admin_current_drawer_session_dto_output.dart';
 import 'package:core_api/src/model/admin_current_drawer_session_dto_output_field.dart';
@@ -729,6 +737,14 @@ part 'serializers.g.dart';
   AdminConversionQuoteDtoOutput,
   AdminConversionQuoteDtoOutputUnit,
   AdminConversionQuoteRequestDto,
+  AdminCostReportDtoOutput,
+  AdminCostReportDtoOutputCodesInner,
+  AdminCostReportDtoOutputCompensationReasonsInner,
+  AdminCostReportDtoOutputOperatingReasonsInner,
+  AdminCostReportDtoOutputPartiesInner,
+  AdminCostReportDtoOutputRestaurantsInner,
+  AdminCostReportDtoOutputTotals,
+  AdminCostReportExportDto,
   AdminCreatePromoCodeDto,
   AdminCurrentDrawerSessionDtoOutput,
   AdminCurrentDrawerSessionDtoOutputField,
@@ -1571,6 +1587,19 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminCostReportDtoOutputRestaurantsInner),
+            ]),
+            () => ListBuilder<AdminCostReportDtoOutputRestaurantsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCostReportDtoOutputCompensationReasonsInner),
+            ]),
+            () =>
+                ListBuilder<AdminCostReportDtoOutputCompensationReasonsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminCityOfficeDtoOutputOfficeHoursInner),
             ]),
             () => ListBuilder<AdminCityOfficeDtoOutputOfficeHoursInner>(),
@@ -1881,6 +1910,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminCostReportDtoOutputPartiesInner),
+            ]),
+            () => ListBuilder<AdminCostReportDtoOutputPartiesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminRestaurantSettlementsDtoOutputRestaurantsInner),
             ]),
             () =>
@@ -2079,6 +2114,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminCostReportDtoOutputOperatingReasonsInner),
+            ]),
+            () => ListBuilder<AdminCostReportDtoOutputOperatingReasonsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(MerchantOrdersDtoOutputOrdersInnerItemReportItemsInner),
             ]),
             () =>
@@ -2266,6 +2307,12 @@ Serializers serializers =
                 ListBuilder<
                   MerchantOrdersDtoOutputOrdersInnerEditsInnerChangesInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCostReportDtoOutputCodesInner),
+            ]),
+            () => ListBuilder<AdminCostReportDtoOutputCodesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

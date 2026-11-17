@@ -107,3 +107,55 @@ export const dailyReportLabels = {
     overdueRestaurants: 'مطاعم متأخرة في التسوية',
   },
 } as const;
+
+// Slice 2.22d: «كلفة التعويضات والخصومات» (AP §9.10.6). The words are the
+// panel's `costReport` (export-labels.test.ts keeps them equal).
+export const costReportLabels = {
+  sheet: 'كلفة التعويضات والخصومات',
+  title: 'كلفة التعويضات والخصومات',
+  period: 'الفترة (أيام تجارية)',
+  currency: 'العملة الأساسية',
+  note: 'كلفة كود التعويض تُحسب عند استخدامه، وتُنسب إلى مطعم الطلب المعوَّض عنه.',
+  lateDelivery: 'تأخير التوصيل',
+  unknown: 'غير محدد',
+  line: {
+    discounts: 'كلفة الخصومات',
+    compensation: 'كلفة التعويضات',
+    operating: 'كلفة تشغيلية',
+    total: 'المجموع',
+  },
+  section: {
+    compensationReasons: 'التعويضات حسب السبب',
+    operatingReasons: 'الكلفة التشغيلية حسب السبب',
+    parties: 'الكلفة التشغيلية حسب الطرف المسؤول',
+    codes: 'الخصومات حسب الكود',
+    restaurants: 'حسب المطعم',
+  },
+  column: {
+    reason: 'السبب',
+    party: 'الطرف المسؤول',
+    code: 'الكود',
+    restaurant: 'المطعم',
+    orders: 'عدد الطلبات',
+    amount: 'الكلفة',
+  },
+  operating: {
+    cancelled_prepared: 'طعام حُضّر لطلب أُلغي',
+    captain_compensation: 'تعويض الكابتن عن طلب أُلغي',
+    free: 'طلب مجاني',
+    fake: 'طلب وهمي',
+    damaged: 'طلب تالف',
+    wrong_refused: 'طلب خطأ ورفضه الزبون',
+    failed_other: 'تعذّر التسليم',
+    edit_after_pickup: 'تعديل بعد الاستلام',
+    shortfall: 'نقص في التحصيل',
+    other: 'أخرى',
+  },
+  party: {
+    restaurant: 'المطعم',
+    captain: 'الكابتن',
+    customer: 'الزبون',
+    platform: 'المنصة',
+    none: 'غير محدد',
+  },
+} as const;

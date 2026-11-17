@@ -79,6 +79,18 @@ Serializers _$serializers =
           ..add(AdminConversionQuoteDtoOutput.serializer)
           ..add(AdminConversionQuoteDtoOutputUnit.serializer)
           ..add(AdminConversionQuoteRequestDto.serializer)
+          ..add(AdminCostReportDtoOutput.serializer)
+          ..add(AdminCostReportDtoOutputCodesInner.serializer)
+          ..add(AdminCostReportDtoOutputCompensationReasonsInner.serializer)
+          ..add(AdminCostReportDtoOutputOperatingReasonsInner.serializer)
+          ..add(
+            AdminCostReportDtoOutputOperatingReasonsInnerReasonEnum.serializer,
+          )
+          ..add(AdminCostReportDtoOutputPartiesInner.serializer)
+          ..add(AdminCostReportDtoOutputPartiesInnerPartyEnum.serializer)
+          ..add(AdminCostReportDtoOutputRestaurantsInner.serializer)
+          ..add(AdminCostReportDtoOutputTotals.serializer)
+          ..add(AdminCostReportExportDto.serializer)
           ..add(AdminCreatePromoCodeDto.serializer)
           ..add(AdminCreatePromoCodeDtoAudienceEnum.serializer)
           ..add(AdminCreatePromoCodeDtoFundingEnum.serializer)
@@ -1184,6 +1196,37 @@ Serializers _$serializers =
               const FullType(AdminCityOfficeDtoOutputOfficeHoursInner),
             ]),
             () => ListBuilder<AdminCityOfficeDtoOutputOfficeHoursInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCostReportDtoOutputCompensationReasonsInner),
+            ]),
+            () =>
+                ListBuilder<AdminCostReportDtoOutputCompensationReasonsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCostReportDtoOutputOperatingReasonsInner),
+            ]),
+            () => ListBuilder<AdminCostReportDtoOutputOperatingReasonsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCostReportDtoOutputCodesInner),
+            ]),
+            () => ListBuilder<AdminCostReportDtoOutputCodesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCostReportDtoOutputPartiesInner),
+            ]),
+            () => ListBuilder<AdminCostReportDtoOutputPartiesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCostReportDtoOutputRestaurantsInner),
+            ]),
+            () => ListBuilder<AdminCostReportDtoOutputRestaurantsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
