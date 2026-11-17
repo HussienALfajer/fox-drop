@@ -29,6 +29,13 @@ const profile = (blocked: boolean) => ({
       }
     : null,
   reviewStop: null,
+  closed: null as null | { at: string; byName: string | null; reason: string | null },
+  linkedAccounts: [] as {
+    id: string;
+    status: 'active' | 'closed';
+    createdAt: string;
+    closedAt: string | null;
+  }[],
   trusted: false,
   delivered: 1,
   trustedAfter: 3,
@@ -146,4 +153,46 @@ test("changes a customer's number with a reason", async ({ page }) => {
   await expect(page.getByText('تغيّر الرقم وسُجّل خروج الزبون من كل الأجهزة.')).toBeVisible();
   await expect(page.getByText('+963 ••• 789')).toBeVisible();
   expect(sent).toEqual([{ cityId, phone: '0991234789', note: 'طلب الزبون عبر الدعم' }]);
+});
+
+// AP §9.8, D19 (slice 2.25c): support closes the account on the customer's
+// request; the profile shows «مغلق» and the account that continues it.
+test("closes a customer's account with a reason", async ({ page }) => {
+  await fakeSession(page, ['customers.read', 'customers.close_account']);
+  await page.route('**/v1/admin/cities', (route) => route.fulfill({ json: cities }));
+  const sent: unknown[] = [];
+  let closed = false;
+  await page.route('**/v1/admin/customers/**', (route) => {
+    const request = route.request();
+    if (new URL(request.url()).pathname.endsWith('/close')) {
+      sent.push(request.postDataJSON());
+      closed = true;
+    }
+    return route.fulfill({
+      json: closed
+        ? {
+            ...profile(false),
+            status: 'closed',
+            closed: { at: '2026-11-17T10:00:00.000Z', byName: 'سارة', reason: 'طلب الزبون' },
+            linkedAccounts: [
+              {
+                id: blockId,
+                status: 'active',
+                createdAt: '2026-11-17T11:00:00.000Z',
+                closedAt: null,
+              },
+            ],
+          }
+        : profile(false),
+    });
+  });
+  await page.goto(`/customers/${customerId}`);
+  const form = page.locator('form', { has: page.getByRole('heading', { name: 'إغلاق الحساب' }) });
+  await form.getByLabel('السبب').fill('طلب الزبون');
+  await form.getByRole('button', { name: 'إغلاق الحساب' }).click();
+  await expect(page.getByText('مغلق', { exact: true })).toBeVisible();
+  await expect(page.getByText(/أُغلق في .*: سارة/)).toBeVisible();
+  await expect(page.getByRole('link', { name: /الحساب الحالي بالرقم نفسه/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'إغلاق الحساب' })).toHaveCount(0);
+  expect(sent).toEqual([{ cityId, note: 'طلب الزبون' }]);
 });

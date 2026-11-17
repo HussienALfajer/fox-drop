@@ -41,9 +41,9 @@ final signOutEverywhereProvider =
     );
 
 /// «حسابي» (CU §13): the details, «أكوادي», «الإشعارات», the help, joining
-/// us, the terms, the version and signing out. «عناويني» and «المفضلة» join
-/// with their slices (2.29, 2.28), «حذف الحساب» with 2.25c (owner decision
-/// 2026-11-17). Unstyled until the design.
+/// us, the terms, the version, signing out and «حذف الحساب» (CU §5.6, slice
+/// 2.25c). «عناويني» and «المفضلة» join with their slices (2.29, 2.28; owner
+/// decision 2026-11-17). Unstyled until the design.
 class MyAccountScreen extends ConsumerWidget {
   const MyAccountScreen({super.key});
 
@@ -127,6 +127,11 @@ class MyAccountScreen extends ConsumerWidget {
             onTap: () => _confirmSignOutEverywhere(context, ref),
           ),
           if (signingOut.hasError) Text(l10n.customerSignOutEverywhereFailed),
+          ListTile(
+            key: const Key('delete-account'),
+            title: Text(l10n.customerDeleteAccount),
+            onTap: () => context.push('/account/delete'),
+          ),
         ],
       ),
     );

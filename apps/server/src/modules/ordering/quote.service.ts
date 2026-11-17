@@ -475,6 +475,7 @@ export class QuoteService {
       .limit(1);
     return {
       accountId,
+      accountIds: phone.accountIds,
       phoneHash: phone.phoneHash,
       deviceId: deviceId ?? `account:${accountId}`,
       newUser: delivered === undefined,

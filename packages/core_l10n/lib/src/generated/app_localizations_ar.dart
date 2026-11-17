@@ -3754,4 +3754,35 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get customerTestMode => 'تجريبي';
+
+  @override
+  String get customerDeleteAccount => 'حذف الحساب';
+
+  @override
+  String get customerDeleteAccountNoSignIn =>
+      'لن تتمكن من تسجيل الدخول إلى هذا الحساب.';
+
+  @override
+  String get customerDeleteAccountLoses => 'ستفقد أكوادك ومفضلتك.';
+
+  @override
+  String get customerDeleteAccountPrivacy =>
+      'تُعامل بياناتك كما تنص سياسة الخصوصية.';
+
+  @override
+  String get customerDeleteAccountSendCode => 'إرسال رمز التحقق';
+
+  @override
+  String get customerDeleteAccountCodeSent =>
+      'أرسلنا رمزاً إلى رقمك على واتساب. أدخله لتأكيد حذف الحساب.';
+
+  @override
+  String get customerDeleteAccountConfirm => 'تأكيد حذف الحساب';
+
+  @override
+  String get customerDeleteAccountActiveOrder =>
+      'لا يمكن حذف الحساب أثناء وجود طلب جارٍ';
+
+  @override
+  String get customerDeleteAccountFailed => 'تعذّر حذف الحساب. حاول مرة أخرى.';
 }

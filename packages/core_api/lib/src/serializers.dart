@@ -58,6 +58,7 @@ import 'package:core_api/src/model/admin_city_office_dto_output_office.dart';
 import 'package:core_api/src/model/admin_city_office_dto_output_office_hours_inner.dart';
 import 'package:core_api/src/model/admin_city_office_dto_output_office_location.dart';
 import 'package:core_api/src/model/admin_clear_customer_strikes_dto.dart';
+import 'package:core_api/src/model/admin_close_customer_account_dto.dart';
 import 'package:core_api/src/model/admin_close_drawer_session_dto.dart';
 import 'package:core_api/src/model/admin_close_item_report_dto.dart';
 import 'package:core_api/src/model/admin_compensate_dto.dart';
@@ -89,10 +90,12 @@ import 'package:core_api/src/model/admin_customer_dto_output_addresses_inner_loc
 import 'package:core_api/src/model/admin_customer_dto_output_block.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_block_reasons_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_blocks_inner.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_closed.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_codes_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_dues.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_late_cancels.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_late_cancels_cleared.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_linked_accounts_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_notes_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_orders.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_orders_last.dart';
@@ -565,6 +568,7 @@ import 'package:core_api/src/model/change_roles_dto.dart';
 import 'package:core_api/src/model/complete_setup_dto.dart';
 import 'package:core_api/src/model/contact_dto_output.dart';
 import 'package:core_api/src/model/create_user_dto.dart';
+import 'package:core_api/src/model/customer_account_closed_dto_output.dart';
 import 'package:core_api/src/model/customer_account_state_dto_output.dart';
 import 'package:core_api/src/model/customer_account_state_dto_output_block.dart';
 import 'package:core_api/src/model/customer_account_state_dto_output_dues.dart';
@@ -600,6 +604,8 @@ import 'package:core_api/src/model/customer_address_list_dto_output.dart';
 import 'package:core_api/src/model/customer_address_list_dto_output_addresses_inner.dart';
 import 'package:core_api/src/model/customer_address_list_dto_output_addresses_inner_location.dart';
 import 'package:core_api/src/model/customer_cancel_order_dto.dart';
+import 'package:core_api/src/model/customer_close_account_dto.dart';
+import 'package:core_api/src/model/customer_close_code_sent_dto_output.dart';
 import 'package:core_api/src/model/customer_code_request_dto.dart';
 import 'package:core_api/src/model/customer_code_sent_dto_output.dart';
 import 'package:core_api/src/model/customer_codes_dto_output.dart';
@@ -841,6 +847,7 @@ part 'serializers.g.dart';
   AdminCityOfficeDtoOutputOfficeHoursInner,
   AdminCityOfficeDtoOutputOfficeLocation,
   AdminClearCustomerStrikesDto,
+  AdminCloseCustomerAccountDto,
   AdminCloseDrawerSessionDto,
   AdminCloseItemReportDto,
   AdminCompensateDto,
@@ -872,10 +879,12 @@ part 'serializers.g.dart';
   AdminCustomerDtoOutputBlock,
   AdminCustomerDtoOutputBlockReasonsInner,
   AdminCustomerDtoOutputBlocksInner,
+  AdminCustomerDtoOutputClosed,
   AdminCustomerDtoOutputCodesInner,
   AdminCustomerDtoOutputDues,
   AdminCustomerDtoOutputLateCancels,
   AdminCustomerDtoOutputLateCancelsCleared,
+  AdminCustomerDtoOutputLinkedAccountsInner,
   AdminCustomerDtoOutputNotesInner,
   AdminCustomerDtoOutputOrders,
   AdminCustomerDtoOutputOrdersLast,
@@ -1348,6 +1357,7 @@ part 'serializers.g.dart';
   CompleteSetupDto,
   ContactDtoOutput,
   CreateUserDto,
+  CustomerAccountClosedDtoOutput,
   CustomerAccountStateDtoOutput,
   CustomerAccountStateDtoOutputBlock,
   CustomerAccountStateDtoOutputDues,
@@ -1383,6 +1393,8 @@ part 'serializers.g.dart';
   CustomerAddressListDtoOutputAddressesInner,
   CustomerAddressListDtoOutputAddressesInnerLocation,
   CustomerCancelOrderDto,
+  CustomerCloseAccountDto,
+  CustomerCloseCodeSentDtoOutput,
   CustomerCodeRequestDto,
   CustomerCodeSentDtoOutput,
   CustomerCodesDtoOutput,
@@ -2039,6 +2051,12 @@ Serializers serializers =
               FullType(AdminOrderDtoOutputOrderOutcomeHistoryInner),
             ]),
             () => ListBuilder<AdminOrderDtoOutputOrderOutcomeHistoryInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCustomerDtoOutputLinkedAccountsInner),
+            ]),
+            () => ListBuilder<AdminCustomerDtoOutputLinkedAccountsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

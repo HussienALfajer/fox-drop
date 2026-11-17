@@ -289,8 +289,9 @@ export const appSignInCodes = identity.table(
 
 // A customer (CU §5). The first sign-in of a number creates it; the details
 // screen (CU §5.3) fills the rest later. One active account per number: a
-// closed account (CU §5.5) leaves its number free for a new one.
-export const customerAccountStatuses = ['active'] as const;
+// closed account (CU §5.5, D19, AP §8.8; slice 2.25c) leaves its number free
+// for a new one, which continues its line (`lineage_id`).
+export const customerAccountStatuses = ['active', 'closed'] as const;
 
 export const customerAccounts = identity.table(
   'customer_accounts',
@@ -302,6 +303,16 @@ export const customerAccounts = identity.table(
     phoneEncrypted: text('phone_encrypted').notNull(),
     phoneHash: text('phone_hash').notNull(),
     status: text('status', { enum: customerAccountStatuses }).notNull().default('active'),
+    // AP §8.8 (slice 2.25c): the first account of the line this one
+    // continues; null for an account that starts its own line. A new account
+    // on a number whose latest account is closed takes that account's line,
+    // so its blocks, dues, strikes, trust and codes carry over.
+    lineageId: uuid('lineage_id'),
+    // D19: when and why it was closed; the admin who closed it, or null when
+    // the customer did from the app (CU §5.6).
+    closedAt: timestamp('closed_at', { withTimezone: true }),
+    closedBy: uuid('closed_by').references(() => adminAccounts.id),
+    closeReason: text('close_reason'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -309,7 +320,12 @@ export const customerAccounts = identity.table(
     uniqueIndex('customer_accounts_active_phone')
       .on(table.phoneHash)
       .where(sql`${table.status} = 'active'`),
-    check('customer_accounts_status_values', sql`${table.status} IN ('active')`),
+    index('customer_accounts_lineage').on(table.lineageId),
+    check('customer_accounts_status_values', sql`${table.status} IN ('active', 'closed')`),
+    check(
+      'customer_accounts_closed',
+      sql`(${table.status} = 'closed') = (${table.closedAt} IS NOT NULL) AND (${table.closedAt} IS NOT NULL OR (${table.closedBy} IS NULL AND ${table.closeReason} IS NULL))`,
+    ),
   ],
 );
 
@@ -363,6 +379,7 @@ export const captainAccounts = identity.table('captain_accounts', {
 // other_device: a captain signed in on another device (CA §4.9, K5);
 // device_released: OWN or OPS released a captain's device (AP §9.7.5).
 // phone_changed: the panel's «تغيير الرقم» (AP §9.8, CU §5.4).
+// account_closed: the account was closed (D19, CU §5.6; slice 2.25c).
 export const appSessionEndReasons = [
   'sign_out',
   'sign_out_everywhere',
@@ -371,6 +388,7 @@ export const appSessionEndReasons = [
   'other_device',
   'device_released',
   'phone_changed',
+  'account_closed',
 ] as const;
 
 // A signed-in app installation (architecture §15.1): one refresh token family.
@@ -405,7 +423,7 @@ export const appSessions = identity.table(
     check('app_sessions_party_values', sql`${table.party} IN ('customer', 'merchant', 'captain')`),
     check(
       'app_sessions_end_reason_values',
-      sql`${table.endReason} IN ('sign_out', 'sign_out_everywhere', 'refresh_reuse', 'new_sign_in', 'other_device', 'device_released', 'phone_changed')`,
+      sql`${table.endReason} IN ('sign_out', 'sign_out_everywhere', 'refresh_reuse', 'new_sign_in', 'other_device', 'device_released', 'phone_changed', 'account_closed')`,
     ),
     check(
       'app_sessions_ended_with_reason',

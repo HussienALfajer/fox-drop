@@ -1,6 +1,7 @@
 import { timingSafeEqual } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq, isNotNull, isNull, sql } from 'drizzle-orm';
+import { and, desc, eq, isNotNull, isNull, or, sql } from 'drizzle-orm';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Valkey } from 'iovalkey';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -47,6 +48,16 @@ export class CodeRequestRefusedError extends Error {
     super(`code request refused: ${refusal}`);
   }
 }
+
+type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
+
+// AP §8.8 (slice 2.25c): a new account on a number whose latest account is
+// closed continues its line. Registered by the customers module, which moves
+// the closed account's dues in the sign-in's transaction.
+export type CustomerRelinked = (
+  tx: Tx,
+  link: { accountId: string; closedAccountId: string; now: Date },
+) => Promise<void>;
 
 // wrong_code: attemptsLeft more tries of this code. code_expired: no usable
 // code for this number and device (none, used, expired, out of attempts, or
@@ -274,46 +285,8 @@ export class AppSignInService {
       request.party === 'captain' ? await this.captainAccounts.signInAccount(phoneHash, now) : null;
     let endedElsewhere: string[] = [];
     const result = await this.database.db.transaction(async (tx) => {
-      const [code] = await tx
-        .select()
-        .from(appSignInCodes)
-        .where(
-          and(
-            eq(appSignInCodes.party, request.party),
-            eq(appSignInCodes.phoneHash, phoneHash),
-            isNull(appSignInCodes.endedAt),
-          ),
-        )
-        .for('update');
-      // An emergency code has no device (W4): the first device that enters
-      // it signs in.
-      if (
-        !code ||
-        (code.deviceId !== null && code.deviceId !== request.deviceId) ||
-        now.getTime() >= code.expiresAt.getTime() ||
-        code.attempts >= maxAttempts
-      ) {
-        return new SignInCodeRefusedError('code_expired', 0);
-      }
-      const given = Buffer.from(this.secrets.signInCodeHash(request.phone, request.code), 'hex');
-      const stored = Buffer.from(code.codeHash, 'hex');
-      if (given.length !== stored.length || !timingSafeEqual(given, stored)) {
-        // The wrong attempt is committed, so the limit holds.
-        const attempts = code.attempts + 1;
-        await tx
-          .update(appSignInCodes)
-          .set(
-            attempts >= maxAttempts
-              ? { attempts, endedAt: now, endReason: 'attempts_exhausted' }
-              : { attempts },
-          )
-          .where(eq(appSignInCodes.id, code.id));
-        return new SignInCodeRefusedError('wrong_code', Math.max(0, maxAttempts - attempts));
-      }
-      await tx
-        .update(appSignInCodes)
-        .set({ endedAt: now, endReason: 'used' })
-        .where(eq(appSignInCodes.id, code.id));
+      const refused = await this.useCodeIn(tx, request, phoneHash, maxAttempts, now);
+      if (refused !== null) return refused;
 
       if (typeof merchant === 'string') return new MerchantSignInRefusedError(merchant);
       if (typeof captain === 'string') return new CaptainSignInRefusedError(captain);
@@ -359,6 +332,79 @@ export class AppSignInService {
     return result;
   }
 
+  // CU §5.6 (slice 2.25c): checks a code the device asked for and uses it up,
+  // without signing in: the fresh code «حذف الحساب» asks for. A wrong one
+  // counts as at the sign-in (`SignInCodeRefusedError`).
+  async useCode(request: CodeRequest & { code: string }, now = new Date()): Promise<void> {
+    const phoneHash = this.secrets.phoneHash(request.phone);
+    const maxAttempts = await this.settings.get('otp.max_attempts');
+    const refused = await this.database.db.transaction((tx) =>
+      this.useCodeIn(tx, request, phoneHash, maxAttempts, now),
+    );
+    if (refused !== null) throw refused;
+  }
+
+  // The number's open code for the party: used up when right, a wrong
+  // attempt committed otherwise (the caller returns the refusal from its
+  // transaction rather than throwing, so the attempt stays).
+  private async useCodeIn(
+    tx: Pick<Database['db'], 'select' | 'update'>,
+    request: CodeRequest & { code: string },
+    phoneHash: string,
+    maxAttempts: number,
+    now: Date,
+  ): Promise<SignInCodeRefusedError | null> {
+    const [code] = await tx
+      .select()
+      .from(appSignInCodes)
+      .where(
+        and(
+          eq(appSignInCodes.party, request.party),
+          eq(appSignInCodes.phoneHash, phoneHash),
+          isNull(appSignInCodes.endedAt),
+        ),
+      )
+      .for('update');
+    // An emergency code has no device (W4): the first device that enters
+    // it signs in.
+    if (
+      !code ||
+      (code.deviceId !== null && code.deviceId !== request.deviceId) ||
+      now.getTime() >= code.expiresAt.getTime() ||
+      code.attempts >= maxAttempts
+    ) {
+      return new SignInCodeRefusedError('code_expired', 0);
+    }
+    const given = Buffer.from(this.secrets.signInCodeHash(request.phone, request.code), 'hex');
+    const stored = Buffer.from(code.codeHash, 'hex');
+    if (given.length !== stored.length || !timingSafeEqual(given, stored)) {
+      // The wrong attempt is committed, so the limit holds.
+      const attempts = code.attempts + 1;
+      await tx
+        .update(appSignInCodes)
+        .set(
+          attempts >= maxAttempts
+            ? { attempts, endedAt: now, endReason: 'attempts_exhausted' }
+            : { attempts },
+        )
+        .where(eq(appSignInCodes.id, code.id));
+      return new SignInCodeRefusedError('wrong_code', Math.max(0, maxAttempts - attempts));
+    }
+    await tx
+      .update(appSignInCodes)
+      .set({ endedAt: now, endReason: 'used' })
+      .where(eq(appSignInCodes.id, code.id));
+    return null;
+  }
+
+  private customerRelinked: CustomerRelinked | null = null;
+
+  // AP §8.8 (slice 2.25c): registered by the customers module through
+  // `CustomerAccountsService.onRelinked`.
+  onCustomerRelinked(listener: CustomerRelinked): void {
+    this.customerRelinked = listener;
+  }
+
   // The merchant account read before the transaction, unless it was removed
   // since.
   private async stillNotRemoved(
@@ -373,28 +419,64 @@ export class AppSignInService {
   }
 
   private async findOrCreateCustomer(
-    tx: Pick<Database['db'], 'select' | 'insert'>,
+    tx: Tx,
     phone: string,
     phoneHash: string,
     now: Date,
   ): Promise<{ id: string; created: boolean }> {
     // The code row lock serialises sign-ins of one number, so two cannot both
-    // create its account.
+    // create its account. The share lock waits for a closure in progress
+    // (slice 2.25c), so the session starts on an open account, or after the
+    // closure on a new one, never on the account being closed.
     const [existing] = await tx
       .select({ id: customerAccounts.id })
       .from(customerAccounts)
-      .where(and(eq(customerAccounts.phoneHash, phoneHash), eq(customerAccounts.status, 'active')));
+      .where(and(eq(customerAccounts.phoneHash, phoneHash), eq(customerAccounts.status, 'active')))
+      .for('share');
     if (existing) return { id: existing.id, created: false };
+    // AP §8.8 (slice 2.25c): the number's latest account, closed, is
+    // continued: the new one joins its line, and its dues move over. A line
+    // that already has an open account (its customer moved to another number
+    // with «تغيير الرقم») is that customer's, and the number starts a line
+    // of its own (decided by us).
+    const [latest] = await tx
+      .select({ id: customerAccounts.id, lineageId: customerAccounts.lineageId })
+      .from(customerAccounts)
+      .where(and(eq(customerAccounts.phoneHash, phoneHash), eq(customerAccounts.status, 'closed')))
+      .orderBy(desc(customerAccounts.closedAt))
+      .limit(1);
+    let closed = latest;
+    if (latest) {
+      const root = latest.lineageId ?? latest.id;
+      const [open] = await tx
+        .select({ id: customerAccounts.id })
+        .from(customerAccounts)
+        .where(
+          and(
+            or(eq(customerAccounts.id, root), eq(customerAccounts.lineageId, root)),
+            eq(customerAccounts.status, 'active'),
+          ),
+        )
+        .limit(1);
+      if (open) closed = undefined;
+    }
     const [created] = await tx
       .insert(customerAccounts)
       .values({
         phoneEncrypted: this.secrets.encrypt(phone),
         phoneHash,
+        lineageId: closed ? (closed.lineageId ?? closed.id) : null,
         createdAt: now,
         updatedAt: now,
       })
       .returning({ id: customerAccounts.id });
     if (!created) throw new Error('the account was not created');
+    if (closed) {
+      if (this.customerRelinked === null) {
+        throw new Error('customers has not registered its relink');
+      }
+      await this.customerRelinked(tx, { accountId: created.id, closedAccountId: closed.id, now });
+    }
     return { id: created.id, created: true };
   }
 }

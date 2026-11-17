@@ -1,11 +1,11 @@
 import { createHash } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
-import { and, asc, desc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNotNull } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { AuditService } from '../audit/index.js';
 import { formatMoney, NotificationTexts } from '../content/index.js';
-import { CustomersService } from '../customers/index.js';
+import { CustomersService, lockCustomerDues as lockAccountDues } from '../customers/index.js';
 import { FxService, type RateSnapshot } from '../fx/index.js';
 import { GeoService } from '../geo/index.js';
 import { AdminSessionsService, CustomerAccountsService } from '../identity/index.js';
@@ -70,9 +70,17 @@ export interface CustomerReceipt {
   lines: { currency: string; amount: bigint; base: bigint }[];
 }
 
-// The desk and «القيود التصحيحية» take turns on a customer's dues.
-export async function lockCustomerDues(tx: Tx, customerId: string): Promise<void> {
-  await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${`customer-dues:${customerId}`}))`);
+// The desk and «القيود التصحيحية» take turns on a customer's dues, and on
+// every account of the line (slice 2.25c: its dues are read together), in
+// order.
+export async function lockCustomerDues(
+  tx: Tx,
+  customers: CustomersService,
+  customerId: string,
+): Promise<void> {
+  for (const id of (await customers.lineage(customerId, tx)).toSorted()) {
+    await lockAccountDues(tx, id);
+  }
 }
 
 // AP §8.8 «FIN records the payment at the desk, which unblocks the customer
@@ -164,7 +172,7 @@ export class CustomerDuesService {
       if (session.cityId !== command.cityId) {
         throw new CashDeskRefusedError('unknown_party', 'the drawer is of another city');
       }
-      await lockCustomerDues(tx, command.customerId);
+      await lockCustomerDues(tx, this.customers, command.customerId);
       const again = await this.desk.replay(tx, user.accountId, command, requestHash, now);
       if (again) return again.receiptIds[0]!;
       const account = await this.account(tx, command.cityId, command.customerId);
@@ -341,7 +349,8 @@ export class CustomerDuesService {
   }
 
   // What the customer owes in the city's base (+ owes): the dues accounts
-  // are opened in the base.
+  // are opened in the base. The line's (slice 2.25c): a payment on the new
+  // account settles what a closed one of the line still holds.
   private async account(
     executor: Executor,
     cityId: string,
@@ -350,15 +359,9 @@ export class CustomerDuesService {
     const base = await this.fx.baseCurrency(cityId, executor);
     if (base === null) throw new CashDeskRefusedError('rate_missing', 'the city has no base');
     let due = 0n;
-    for (const account of await this.ledger.ownerAccounts(
-      cityId,
-      customerId,
-      'customer.dues',
-      executor,
-    )) {
-      const balance = await this.ledger.balance(account.id, executor);
-      if (account.currency !== base) {
-        if (balance.amount !== 0n) throw new Error(`customer dues in ${account.currency}`);
+    for (const balance of await this.customers.lineDues(cityId, customerId, executor)) {
+      if (balance.currency !== base) {
+        if (balance.amount !== 0n) throw new Error(`customer dues in ${balance.currency}`);
         continue;
       }
       due += balance.amount;

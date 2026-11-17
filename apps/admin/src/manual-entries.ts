@@ -114,6 +114,7 @@ const typeKeys = {
   'merchant.adjustment': 'manualEntries.type.merchantAdjustment',
   'dues.charge': 'manualEntries.type.duesCharge',
   'dues.adjustment': 'manualEntries.type.duesAdjustment',
+  'dues.transfer': 'manualEntries.type.duesTransfer',
 } as const;
 
 export function typeKeyOf(

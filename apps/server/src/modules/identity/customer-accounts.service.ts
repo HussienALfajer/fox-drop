@@ -1,14 +1,31 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq, inArray, isNull, ne, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, ne, or, sql } from 'drizzle-orm';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
 import { APP_PHONE_PATTERN } from './app-phone.js';
 import { AppSessionsService } from './app-sessions.service.js';
+import { AppSignInService, type CustomerRelinked } from './app-sign-in.service.js';
 import { appSignInCodes, customerAccounts } from './schema.js';
 import { IDENTITY_SECRETS, IdentitySecrets } from './secrets.js';
 
-export type CustomerAccountRefusal = 'unknown_customer' | 'invalid_phone' | 'phone_taken';
+export type CustomerAccountRefusal =
+  'unknown_customer' | 'invalid_phone' | 'phone_taken' | 'account_closed';
+
+type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
+type Reader = Pick<NodePgDatabase, 'select'>;
+
+// A customer account's state (CU §5.5, D19): the panel's search and profile.
+export interface CustomerAccountState {
+  id: string;
+  status: 'active' | 'closed';
+  createdAt: Date;
+  closedAt: Date | null;
+  // The admin who closed it; null when the customer did from the app.
+  closedBy: string | null;
+  closeReason: string | null;
+}
 
 export class CustomerAccountRefusedError extends Error {
   override readonly name = 'CustomerAccountRefusedError';
@@ -37,6 +54,7 @@ export class CustomerAccountsService {
     @Inject(IDENTITY_SECRETS) private readonly secrets: IdentitySecrets,
     private readonly sessions: AppSessionsService,
     private readonly audit: AuditService,
+    private readonly signIn: AppSignInService,
   ) {}
 
   // AP §9.10.7 (slice 2.20c): the customer a number belongs to, for the
@@ -53,8 +71,10 @@ export class CustomerAccountsService {
   }
 
   // AP §9.11.1 (slice 2.21b): the keyed hash of the account's number and
-  // every account the number has had (a closed account's included, §8.8), so
-  // a new-user code works once per number; null for an unknown account.
+  // every account the number has had (a closed account's included, §8.8)
+  // with the account's line (slice 2.25c, which a number change keeps), so
+  // a new-user code works once per number and per person; null for an
+  // unknown account.
   async phoneAccounts(
     accountId: string,
   ): Promise<{ phoneHash: string; accountIds: string[] } | null> {
@@ -67,7 +87,11 @@ export class CustomerAccountsService {
       .select({ id: customerAccounts.id })
       .from(customerAccounts)
       .where(eq(customerAccounts.phoneHash, row.phoneHash));
-    return { phoneHash: row.phoneHash, accountIds: accounts.map((account) => account.id) };
+    const ids = new Set([
+      ...accounts.map((account) => account.id),
+      ...(await this.lineage(accountId)),
+    ]);
+    return { phoneHash: row.phoneHash, accountIds: [...ids] };
   }
 
   // Whether the account exists, whatever its state.
@@ -88,6 +112,159 @@ export class CustomerAccountsService {
       .from(customerAccounts)
       .where(eq(customerAccounts.id, accountId));
     return row ? this.secrets.decrypt(row.phoneEncrypted) : null;
+  }
+
+  // AP §8.8 (slice 2.25c): every account of the account's line, itself
+  // included: the closed accounts it continues and the account that
+  // continues it. A block, dues, strikes, trust and codes of any of them
+  // count for the line. Unknown, it is the account alone.
+  async lineage(accountId: string, executor: Reader = this.database.db): Promise<string[]> {
+    const [row] = await executor
+      .select({ id: customerAccounts.id, lineageId: customerAccounts.lineageId })
+      .from(customerAccounts)
+      .where(eq(customerAccounts.id, accountId));
+    if (!row) return [accountId];
+    const root = row.lineageId ?? row.id;
+    const rows = await executor
+      .select({ id: customerAccounts.id })
+      .from(customerAccounts)
+      .where(or(eq(customerAccounts.id, root), eq(customerAccounts.lineageId, root)));
+    return rows.map((each) => each.id);
+  }
+
+  // D19: whether the account exists and is not closed.
+  async isOpen(accountId: string, executor: Reader = this.database.db): Promise<boolean> {
+    const [row] = await executor
+      .select({ status: customerAccounts.status })
+      .from(customerAccounts)
+      .where(eq(customerAccounts.id, accountId));
+    return row?.status === 'active';
+  }
+
+  // D19, CU §5.5: the accounts' states, for the panel; an unknown id is left
+  // out.
+  async states(accountIds: readonly string[]): Promise<Map<string, CustomerAccountState>> {
+    if (accountIds.length === 0) return new Map();
+    const rows = await this.database.db
+      .select({
+        id: customerAccounts.id,
+        status: customerAccounts.status,
+        createdAt: customerAccounts.createdAt,
+        closedAt: customerAccounts.closedAt,
+        closedBy: customerAccounts.closedBy,
+        closeReason: customerAccounts.closeReason,
+      })
+      .from(customerAccounts)
+      .where(inArray(customerAccounts.id, [...accountIds]));
+    return new Map(rows.map((row) => [row.id, row]));
+  }
+
+  // AP §9.8 (slice 2.25c): every account a number has had, newest first, so
+  // the panel's search by number shows a closed account beside its new one.
+  async customersByPhone(phone: string): Promise<string[]> {
+    const rows = await this.database.db
+      .select({ id: customerAccounts.id })
+      .from(customerAccounts)
+      .where(eq(customerAccounts.phoneHash, this.secrets.phoneHash(phone)))
+      .orderBy(desc(customerAccounts.createdAt));
+    return rows.map((row) => row.id);
+  }
+
+  // Registered by the customers module at start: moves a closed account's
+  // dues to the account that continues it, in the sign-in's transaction.
+  onRelinked(listener: CustomerRelinked): void {
+    this.signIn.onCustomerRelinked(listener);
+  }
+
+  // D19, CU §5.6, AP §9.8 «إغلاق الحساب» (slice 2.25c): in the caller's
+  // transaction (customers', under the customer's ordering lock, after it
+  // checked for an active order), the account becomes «مغلق» and every
+  // session ends with `account_closed`; the data stays. The caller passes
+  // the ended sessions to `AppSessionsService.notifyEnded` after its commit
+  // (`notifyEnded` here). `admin` is null when the customer closed it from
+  // the app. Audited `customer_account.close`.
+  async close(
+    tx: Tx,
+    closure: {
+      accountId: string;
+      admin: CustomerAccountAdmin | null;
+      context: AuditRequestContext;
+      cityId: string | null;
+    },
+    now: Date,
+  ): Promise<string[]> {
+    const [account] = await tx
+      .select({ status: customerAccounts.status })
+      .from(customerAccounts)
+      .where(eq(customerAccounts.id, closure.accountId))
+      .for('update');
+    if (!account) throw new CustomerAccountRefusedError('unknown_customer', 'no such customer');
+    if (account.status === 'closed') {
+      throw new CustomerAccountRefusedError('account_closed', 'the account is closed already');
+    }
+    await tx
+      .update(customerAccounts)
+      .set({
+        status: 'closed',
+        closedAt: now,
+        closedBy: closure.admin?.actor.id ?? null,
+        closeReason: closure.admin?.reason ?? null,
+        updatedAt: now,
+      })
+      .where(eq(customerAccounts.id, closure.accountId));
+    const sessions = await this.sessions.endAll(
+      tx,
+      'customer',
+      closure.accountId,
+      'account_closed',
+      now,
+    );
+    await this.audit.recordWrite(
+      {
+        actor: closure.admin?.actor ?? { type: 'customer', id: closure.accountId, role: null },
+        context: closure.admin?.context ?? closure.context,
+        cityId: closure.admin?.cityId ?? closure.cityId,
+        action: 'customer_account.close',
+        target: { type: 'customer_account', id: closure.accountId },
+        reason: closure.admin?.reason ?? null,
+        before: { status: 'active' },
+        after: { status: 'closed', sessionsEnded: sessions.length },
+      },
+      tx,
+    );
+    return sessions;
+  }
+
+  notifyEnded(sessionIds: string[]): void {
+    this.sessions.notifyEnded(sessionIds);
+  }
+
+  // CU §5.6 (Q20): a fresh code to the account's own number before «حذف
+  // الحساب», through the sign-in's code request with its limits and App
+  // Check; refused as any code request (`CodeRequestRefusedError`).
+  async sendCloseCode(
+    accountId: string,
+    request: { deviceId: string; appCheckToken: string | undefined },
+    context: AuditRequestContext,
+    now: Date,
+  ): Promise<{ channel: 'whatsapp'; resendAfterSec: number; expiresAt: Date }> {
+    const phone = await this.phone(accountId);
+    if (phone === null)
+      throw new CustomerAccountRefusedError('unknown_customer', 'no such customer');
+    return this.signIn.requestCode({ party: 'customer', phone, ...request }, context, now);
+  }
+
+  // CU §5.6: uses the code up when right (`SignInCodeRefusedError`
+  // otherwise, a wrong attempt counted), before the closure's transaction.
+  async useCloseCode(
+    accountId: string,
+    request: { deviceId: string; code: string },
+    now: Date,
+  ): Promise<void> {
+    const phone = await this.phone(accountId);
+    if (phone === null)
+      throw new CustomerAccountRefusedError('unknown_customer', 'no such customer');
+    await this.signIn.useCode({ party: 'customer', phone, ...request }, now);
   }
 
   // AP §9.8 «تغيير الرقم» (OWN, OPS, on the customer's request; CU §5.4): the
@@ -118,6 +295,9 @@ export class CustomerAccountsService {
           .where(eq(customerAccounts.id, change.accountId));
         if (!account) {
           throw new CustomerAccountRefusedError('unknown_customer', 'no such customer');
+        }
+        if (account.status === 'closed') {
+          throw new CustomerAccountRefusedError('account_closed', 'the account is closed');
         }
         for (const hash of [account.phoneHash, toHash].toSorted()) {
           await tx.execute(

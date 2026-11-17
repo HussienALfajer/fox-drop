@@ -116,6 +116,7 @@ describe('the catalogue', () => {
         'dues.charge',
         'dues.payment',
         'dues.adjustment',
+        'dues.transfer',
         'platform.revenue_delivery',
         'platform.discount_cost',
         'platform.compensation_cost',

@@ -1,13 +1,17 @@
 import { createHash } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
-import { and, count, desc, eq, gte, ilike, isNull, or, sql } from 'drizzle-orm';
+import { and, count, desc, eq, gte, ilike, inArray, isNull, or, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
 import { ContentRefusedError, ContentService } from '../content/index.js';
 import { FxService } from '../fx/index.js';
 import { GeoService } from '../geo/index.js';
-import { AdminSessionsService, CustomerAccountsService } from '../identity/index.js';
+import {
+  AdminSessionsService,
+  CustomerAccountRefusedError,
+  CustomerAccountsService,
+} from '../identity/index.js';
 import { LedgerService } from '../ledger/index.js';
 import { type CustomerCodeUse, PromoCodeUsesService } from '../marketing/index.js';
 import { SettingsService } from '../settings/index.js';
@@ -26,7 +30,6 @@ import {
   type CustomerOrders,
   type CustomerTicket,
   CustomersService,
-  customerOrderLock,
 } from './customers.service.js';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import {
@@ -52,6 +55,8 @@ export type CustomerAdminRefusal =
   | 'no_base_currency'
   | 'unknown_reason'
   | 'unknown_city'
+  | 'active_order'
+  | 'account_closed'
   | 'idempotency_key_reused';
 
 export class CustomerAdminRefusedError extends Error {
@@ -109,6 +114,18 @@ export interface CustomerProfileView {
   status: AccountStatus;
   block: ActiveBlock | null;
   reviewStop: { id: string; startedAt: Date } | null;
+  // D19 (slice 2.25c): when, by whom and why it was closed; null while open.
+  // The admin is null when the customer closed it from the app.
+  closed: { at: Date; byName: string | null; reason: string | null } | null;
+  // AP §9.8 «linked closed accounts» (AP §8.8): the other accounts of the
+  // line, newest first: the closed ones it continues, or the account that
+  // continues a closed one.
+  linkedAccounts: {
+    id: string;
+    status: 'active' | 'closed';
+    createdAt: Date;
+    closedAt: Date | null;
+  }[];
   trusted: boolean;
   delivered: number;
   trustedAfter: number;
@@ -192,8 +209,9 @@ export class CustomerAdminService {
   ): Promise<FoundCustomer[]> {
     let ids: string[];
     if (query.phone !== null) {
-      const id = await this.accounts.customerByPhone(query.phone);
-      ids = id === null ? [] : [id];
+      // Every account of the number, a closed one beside its new one (AP
+      // §8.8, owner decision 2026-11-17).
+      ids = (await this.accounts.customersByPhone(query.phone)).slice(0, SEARCH_RESULTS);
     } else {
       const text = query.text.trim();
       if (text.length < 2) return [];
@@ -238,10 +256,13 @@ export class CustomerAdminService {
       this.settings.get('customer.late_cancel_strikes', { cityId }),
       this.settings.get('customer.late_cancel_window_days', { cityId }),
     ]);
-    const [cleared, mark] = await Promise.all([
-      this.lastClear(accountId),
-      this.lastMark(accountId),
+    const line = await this.customers.lineage(accountId);
+    const [cleared, mark, states] = await Promise.all([
+      this.lastClear(line),
+      this.lastMark(line),
+      this.accounts.states(line),
     ]);
+    const state = states.get(accountId)!;
     const since = strikesSince(
       new Date(now.getTime() - windowDays * 24 * 60 * 60 * 1000),
       cleared?.at ?? null,
@@ -266,7 +287,7 @@ export class CustomerAdminService {
         this.database.db
           .select({ id: reviewStops.id, startedAt: reviewStops.startedAt })
           .from(reviewStops)
-          .where(and(eq(reviewStops.customerAccountId, accountId), isNull(reviewStops.endedAt))),
+          .where(and(inArray(reviewStops.customerAccountId, line), isNull(reviewStops.endedAt))),
         this.customers.ordersOf(accountId, cityId),
         this.database.db
           .select({
@@ -277,13 +298,14 @@ export class CustomerAdminService {
               ),
           })
           .from(lateCancelStrikes)
-          .where(eq(lateCancelStrikes.customerAccountId, accountId)),
+          .where(inArray(lateCancelStrikes.customerAccountId, line)),
         this.duesBalance(cityId, accountId),
-        this.blockRecords(accountId, now),
+        this.blockRecords(line, now),
         this.content.reasonsOf('customer_block'),
         this.admins.names([
           ...(cleared ? [cleared.by] : []),
           ...(mark ? [mark.by] : []),
+          ...(state.closedBy ? [state.closedBy] : []),
           ...noteRows.map((row) => row.authorId),
         ]),
       ]);
@@ -300,12 +322,25 @@ export class CustomerAdminService {
       birthday: profile?.birthday ?? null,
       maskedPhone: phone === null ? null : maskedPhone(phone),
       status: accountStatus({
+        closed: state.status === 'closed',
         blocked: block !== null,
         duesOwed: dues.amount > 0n,
         reviewStopped: stop.length > 0,
       }),
       block,
       reviewStop: stop[0] ?? null,
+      closed:
+        state.closedAt === null
+          ? null
+          : {
+              at: state.closedAt,
+              byName: state.closedBy === null ? null : (names.get(state.closedBy) ?? null),
+              reason: state.closeReason,
+            },
+      linkedAccounts: [...states.values()]
+        .filter((each) => each.id !== accountId)
+        .toSorted((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .map(({ id, status, createdAt, closedAt }) => ({ id, status, createdAt, closedAt })),
       trusted: orders.trusted,
       delivered: orders.delivered,
       trustedAfter: orders.trustedAfter,
@@ -395,16 +430,14 @@ export class CustomerAdminService {
     }
 
     await this.database.db.transaction(async (tx) => {
-      await tx.execute(
-        sql`SELECT pg_advisory_xact_lock(hashtextextended(${customerOrderLock(command.accountId)}, 0))`,
-      );
+      const line = await this.customers.lockLine(tx, command.accountId);
       if (await this.replayed(tx, admin.accountId, command.idempotencyKey, requestHash)) return;
       const open = await tx
         .select()
         .from(blocks)
         .where(
           and(
-            eq(blocks.customerAccountId, command.accountId),
+            inArray(blocks.customerAccountId, line),
             isNull(blocks.endedAt),
             sql`${blocks.kind} <> 'dues'`,
           ),
@@ -506,9 +539,7 @@ export class CustomerAdminService {
     now: Date,
   ): Promise<void> {
     await this.database.db.transaction(async (tx) => {
-      await tx.execute(
-        sql`SELECT pg_advisory_xact_lock(hashtextextended(${customerOrderLock(command.accountId)}, 0))`,
-      );
+      await this.customers.lockLine(tx, command.accountId);
       // Names the block the panel showed, so a late retry never lifts a
       // newer one.
       const block = await this.customers.activeBlock(command.accountId, now, tx);
@@ -681,18 +712,18 @@ export class CustomerAdminService {
   ): Promise<void> {
     await this.checkCustomer(command.cityId, command.accountId);
     await this.database.db.transaction(async (tx) => {
-      await this.lockCustomer(tx, command.accountId);
+      const line = await this.lockCustomer(tx, command.accountId);
       const cleared = await this.customers.strikesClearedAt(command.accountId, tx);
       const [counted] = await tx
         .select({ n: count() })
         .from(lateCancelStrikes)
         .where(
           and(
-            eq(lateCancelStrikes.customerAccountId, command.accountId),
+            inArray(lateCancelStrikes.customerAccountId, line),
             cleared === null ? undefined : sql`${lateCancelStrikes.at} > ${cleared}`,
           ),
         );
-      const stop = await this.openStop(tx, command.accountId);
+      const stop = await this.openStop(tx, line);
       if ((counted?.n ?? 0) === 0 && stop === null) {
         throw new CustomerAdminRefusedError('nothing_to_clear', 'no strike to clear');
       }
@@ -730,8 +761,8 @@ export class CustomerAdminService {
   ): Promise<void> {
     await this.checkCustomer(command.cityId, command.accountId);
     await this.database.db.transaction(async (tx) => {
-      await this.lockCustomer(tx, command.accountId);
-      if ((await this.openStop(tx, command.accountId)) !== command.stopId) {
+      const line = await this.lockCustomer(tx, command.accountId);
+      if ((await this.openStop(tx, line)) !== command.stopId) {
         throw new CustomerAdminRefusedError('not_stopped', 'that review stop is not open');
       }
       await this.endStop(tx, command.stopId, admin.accountId, command.note, now);
@@ -751,6 +782,58 @@ export class CustomerAdminService {
     });
   }
 
+  // AP §9.8 «إغلاق الحساب» (OWN, OPS, SUP, on the customer's request, a
+  // reason required; D19, AP §8.8; slice 2.25c): as the app's «حذف الحساب»
+  // (`closeAccount`). 409 active_order while an order is active,
+  // account_closed when it is closed already, so a repeat needs no key.
+  async close(
+    admin: CustomerAdmin,
+    command: { cityId: string; accountId: string; note: string },
+    now: Date,
+  ): Promise<void> {
+    await this.checkCustomer(command.cityId, command.accountId);
+    await this.closeAccount(
+      command.accountId,
+      {
+        admin: {
+          actor: admin.actor,
+          context: admin.context,
+          cityId: command.cityId,
+          reason: command.note,
+        },
+        context: admin.context,
+        cityId: command.cityId,
+      },
+      now,
+    );
+  }
+
+  // D19, AP §8.8, CU §5.6: under the line's ordering lock (placing takes it
+  // and checks the account again), refused with an active order; then
+  // identity closes the account and ends every session, all in one
+  // transaction, and the devices' connections end after the commit.
+  async closeAccount(
+    accountId: string,
+    by: Omit<Parameters<CustomerAccountsService['close']>[1], 'accountId'>,
+    now: Date,
+  ): Promise<void> {
+    const ended = await this.database.db.transaction(async (tx) => {
+      await this.customers.lockLine(tx, accountId);
+      if (await this.customers.hasActiveOrder(accountId, tx)) {
+        throw new CustomerAdminRefusedError('active_order', 'the customer has an active order');
+      }
+      try {
+        return await this.accounts.close(tx, { accountId, ...by }, now);
+      } catch (error) {
+        if (error instanceof CustomerAccountRefusedError && error.refusal === 'account_closed') {
+          throw new CustomerAdminRefusedError('account_closed', 'the account is closed already');
+        }
+        throw error;
+      }
+    });
+    this.accounts.notifyEnded(ended);
+  }
+
   // 404 unknown_city, unknown_customer.
   async checkCustomer(cityId: string, accountId: string): Promise<void> {
     await this.checkCity(cityId);
@@ -759,17 +842,20 @@ export class CustomerAdminService {
     }
   }
 
-  private async lockCustomer(tx: Tx, accountId: string): Promise<void> {
-    await tx.execute(
-      sql`SELECT pg_advisory_xact_lock(hashtextextended(${customerOrderLock(accountId)}, 0))`,
-    );
+  // The ordering lock of every account of the line (slice 2.25c).
+  private lockCustomer(tx: Tx, accountId: string): Promise<string[]> {
+    return this.customers.lockLine(tx, accountId);
   }
 
-  private async openStop(tx: Tx, accountId: string): Promise<string | null> {
+  // The line's open review stop (one per account; a closed account's
+  // carries over, AP §8.8), or null.
+  private async openStop(tx: Tx, line: string[]): Promise<string | null> {
     const [row] = await tx
       .select({ id: reviewStops.id })
       .from(reviewStops)
-      .where(and(eq(reviewStops.customerAccountId, accountId), isNull(reviewStops.endedAt)));
+      .where(and(inArray(reviewStops.customerAccountId, line), isNull(reviewStops.endedAt)))
+      .orderBy(desc(reviewStops.startedAt))
+      .limit(1);
     return row?.id ?? null;
   }
 
@@ -780,19 +866,19 @@ export class CustomerAdminService {
       .where(eq(reviewStops.id, id));
   }
 
-  // The latest strike clear of the account, or null.
-  private async lastClear(accountId: string) {
+  // The latest strike clear of the line, or null.
+  private async lastClear(line: string[]) {
     const [row] = await this.database.db
       .select({ at: strikeClears.at, by: strikeClears.by, note: strikeClears.note })
       .from(strikeClears)
-      .where(eq(strikeClears.customerAccountId, accountId))
+      .where(inArray(strikeClears.customerAccountId, line))
       .orderBy(desc(strikeClears.at), desc(strikeClears.id))
       .limit(1);
     return row ?? null;
   }
 
-  // The latest trust mark of the account, or null.
-  private async lastMark(accountId: string) {
+  // The latest trust mark of the line, or null.
+  private async lastMark(line: string[]) {
     const [row] = await this.database.db
       .select({
         at: trustMarks.at,
@@ -801,7 +887,7 @@ export class CustomerAdminService {
         trusted: trustMarks.trusted,
       })
       .from(trustMarks)
-      .where(eq(trustMarks.customerAccountId, accountId))
+      .where(inArray(trustMarks.customerAccountId, line))
       .orderBy(desc(trustMarks.at), desc(trustMarks.id))
       .limit(1);
     return row ?? null;
@@ -809,40 +895,42 @@ export class CustomerAdminService {
 
   // AP §9.8 «الحالة» for the search's list.
   private async status(cityId: string, accountId: string, now: Date): Promise<AccountStatus> {
-    const [block, dues, stopped] = await Promise.all([
+    const [block, dues, stopped, states] = await Promise.all([
       this.customers.activeBlock(accountId, now),
       this.customers.dues(cityId, accountId),
       this.customers.reviewStopped(accountId),
+      this.accounts.states([accountId]),
     ]);
     return accountStatus({
+      closed: states.get(accountId)?.status === 'closed',
       blocked: block !== null,
       duesOwed: dues !== null,
       reviewStopped: stopped,
     });
   }
 
-  // The dues balance in the city, a credit included (+ owes, − a credit).
+  // The line's dues balance in the city, a credit included (+ owes, − a
+  // credit; slice 2.25c).
   private async duesBalance(
     cityId: string,
     accountId: string,
   ): Promise<{ amount: bigint; currency: string | null }> {
-    const accounts = await this.ledger.ownerAccounts(cityId, accountId, 'customer.dues');
     let found: { amount: bigint; currency: string | null } = {
       amount: 0n,
       currency: await this.fx.baseCurrency(cityId),
     };
-    for (const account of accounts) {
-      const balance = await this.ledger.balance(account.id);
+    for (const balance of await this.customers.lineDues(cityId, accountId)) {
       if (balance.amount !== 0n || found.amount === 0n) found = balance;
     }
     return found;
   }
 
-  private async blockRecords(accountId: string, now: Date): Promise<BlockRecord[]> {
+  // The line's blocks (a closed account's carry over, AP §8.8).
+  private async blockRecords(line: string[], now: Date): Promise<BlockRecord[]> {
     const rows = await this.database.db
       .select()
       .from(blocks)
-      .where(eq(blocks.customerAccountId, accountId))
+      .where(inArray(blocks.customerAccountId, line))
       .orderBy(desc(blocks.startedAt), desc(blocks.id))
       .limit(BLOCKS_LISTED);
     const names = await this.admins.names([

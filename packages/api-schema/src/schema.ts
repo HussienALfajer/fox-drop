@@ -1956,6 +1956,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/customer/account/close-code": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["customerClosureRequestCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/account/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["customerClosureClose"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/customers/search": {
         parameters: {
             query?: never;
@@ -2062,6 +2094,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["adminCustomersChangePhone"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/customers/{customerId}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCustomersClose"];
         delete?: never;
         options?: never;
         head?: never;
@@ -6856,6 +6904,27 @@ export interface components {
                 opensAt: string | null;
             } | null;
         };
+        CustomerCloseCodeSentDto_Output: {
+            /**
+             * @description Where the code went (architecture §8.3.4).
+             * @constant
+             */
+            channel: "whatsapp";
+            /** @description When the app may offer «إعادة الإرسال». */
+            resendAfterSec: number;
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        CustomerCloseAccountDto: {
+            code: string;
+        };
+        CustomerAccountClosedDto_Output: {
+            /**
+             * @description Every session of the account ended; the app signs out (CU §5.6 item 4).
+             * @constant
+             */
+            status: "closed";
+        };
         AdminCustomerSearchDto: {
             /**
              * Format: uuid
@@ -6873,10 +6942,10 @@ export interface components {
                 name: string | null;
                 maskedPhone: string | null;
                 /**
-                 * @description «نشط», «محظور» (a block), «محظور» until the dues are paid, «موقوف حتى مراجعة الدعم» (AP §9.8).
+                 * @description «نشط», «محظور» (a block), «محظور» until the dues are paid, «موقوف حتى مراجعة الدعم», «مغلق» (AP §9.8).
                  * @enum {string}
                  */
-                status: "active" | "blocked" | "dues_unpaid" | "review_stop";
+                status: "active" | "blocked" | "dues_unpaid" | "review_stop" | "closed";
             }[];
         };
         AdminCustomerDto_Output: {
@@ -6888,10 +6957,10 @@ export interface components {
             birthday: string | null;
             maskedPhone: string | null;
             /**
-             * @description «نشط», «محظور» (a block), «محظور» until the dues are paid, «موقوف حتى مراجعة الدعم» (AP §9.8).
+             * @description «نشط», «محظور» (a block), «محظور» until the dues are paid, «موقوف حتى مراجعة الدعم», «مغلق» (AP §9.8).
              * @enum {string}
              */
-            status: "active" | "blocked" | "dues_unpaid" | "review_stop";
+            status: "active" | "blocked" | "dues_unpaid" | "review_stop" | "closed";
             /** @description The block in force: a duration or until further notice. */
             block: {
                 /** Format: uuid */
@@ -6912,6 +6981,24 @@ export interface components {
                 /** Format: date-time */
                 startedAt: string;
             } | null;
+            /** @description «مغلق» (D19): when, by whom and why; null while open. */
+            closed: {
+                /** Format: date-time */
+                at: string;
+                /** @description null when the customer closed it from the app. */
+                byName: string | null;
+                reason: string | null;
+            } | null;
+            /** @description The other accounts of the line, newest first: the closed accounts this one continues, or the account that continues it (AP §8.8). */
+            linkedAccounts: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                status: "active" | "closed";
+                /** Format: date-time */
+                createdAt: string;
+                closedAt: string | null;
+            }[];
             /** @description «موثوق» by D23 and the latest mark. */
             trusted: boolean;
             /** @description The normal deliveries that count toward the trust. */
@@ -7083,6 +7170,12 @@ export interface components {
             cityId: string;
             /** @description The new Syrian or Turkish mobile, in any usual form. */
             phone: string;
+            /** @description The required reason. */
+            note: string;
+        };
+        AdminCloseCustomerAccountDto: {
+            /** Format: uuid */
+            cityId: string;
             /** @description The required reason. */
             note: string;
         };
@@ -17865,6 +17958,53 @@ export interface operations {
             };
         };
     };
+    customerClosureRequestCode: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The Firebase App Check token. Refused with 403 app_check_failed when missing or invalid while the server requires it (otp.app_check_required). */
+                "X-Firebase-AppCheck"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerCloseCodeSentDto_Output"];
+                };
+            };
+        };
+    };
+    customerClosureClose: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerCloseAccountDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerAccountClosedDto_Output"];
+                };
+            };
+        };
+    };
     adminCustomersSearch: {
         parameters: {
             query?: never;
@@ -18035,6 +18175,32 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["AdminChangeCustomerPhoneDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCustomerDto_Output"];
+                };
+            };
+        };
+    };
+    adminCustomersClose: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                customerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCloseCustomerAccountDto"];
             };
         };
         responses: {

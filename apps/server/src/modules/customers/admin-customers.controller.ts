@@ -39,9 +39,9 @@ import { blockKinds, genders } from './schema.js';
 const minor = z.string().regex(/^-?\d{1,18}$/);
 const reason = z.string().trim().min(1).max(500);
 const status = z
-  .enum(['active', 'blocked', 'dues_unpaid', 'review_stop'])
+  .enum(['active', 'blocked', 'dues_unpaid', 'review_stop', 'closed'])
   .describe(
-    '«نشط», «محظور» (a block), «محظور» until the dues are paid, «موقوف حتى مراجعة الدعم» (AP §9.8).',
+    '«نشط», «محظور» (a block), «محظور» until the dues are paid, «موقوف حتى مراجعة الدعم», «مغلق» (AP §9.8).',
   );
 
 const adminMark = z.object({
@@ -104,6 +104,26 @@ class AdminCustomerDto extends createZodDto(
       .nullable()
       .describe('The block in force: a duration or until further notice.'),
     reviewStop: z.object({ id: z.uuid(), startedAt: z.iso.datetime() }).nullable(),
+    closed: z
+      .object({
+        at: z.iso.datetime(),
+        byName: z.string().nullable().describe('null when the customer closed it from the app.'),
+        reason: z.string().nullable(),
+      })
+      .nullable()
+      .describe('«مغلق» (D19): when, by whom and why; null while open.'),
+    linkedAccounts: z
+      .array(
+        z.object({
+          id: z.uuid(),
+          status: z.enum(['active', 'closed']),
+          createdAt: z.iso.datetime(),
+          closedAt: z.iso.datetime().nullable(),
+        }),
+      )
+      .describe(
+        'The other accounts of the line, newest first: the closed accounts this one continues, or the account that continues it (AP §8.8).',
+      ),
     trusted: z.boolean().describe('«موثوق» by D23 and the latest mark.'),
     delivered: z.int().describe('The normal deliveries that count toward the trust.'),
     trustedAfter: z.int(),
@@ -225,6 +245,10 @@ class AdminChangeCustomerPhoneDto extends createZodDto(
       .describe('The new Syrian or Turkish mobile, in any usual form.'),
     note: reason.describe('The required reason.'),
   }),
+) {}
+
+class AdminCloseCustomerAccountDto extends createZodDto(
+  z.object({ cityId: z.uuid(), note: reason.describe('The required reason.') }),
 ) {}
 
 class AdminCustomerSignOutDto extends createZodDto(
@@ -454,6 +478,31 @@ export class AdminCustomersController {
     });
   }
 
+  // «إغلاق الحساب» (OWN, OPS, SUP; AP §9.8, D19, §8.8; slice 2.25c): on the
+  // customer's request; every session ends and the data stays. A repeat is
+  // refused, so it takes no key. Answers the profile. 404
+  // unknown_customer, unknown_city; 409 active_order, account_closed.
+  @Post(':customerId/close')
+  @RequirePermission('customers.close_account')
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminCustomerDto })
+  close(
+    @Param() params: AdminCustomerParamsDto,
+    @Body() body: AdminCloseCustomerAccountDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(async () => {
+      const now = new Date();
+      await this.customers.close(
+        adminOf(session, request),
+        { cityId: body.cityId, accountId: params.customerId, note: body.note },
+        now,
+      );
+      return profileBody(await this.customers.profile(body.cityId, params.customerId, now));
+    });
+  }
+
   // «تسجيل الخروج من كل الأجهزة» (OWN, OPS, SUP; AP §9.8): after a lost or
   // sold phone. Active orders are untouched; a repeat ends nothing more.
   @Post(':customerId/sign-out-everywhere')
@@ -606,6 +655,12 @@ function profileBody(view: CustomerProfileView) {
       id: view.reviewStop.id,
       startedAt: view.reviewStop.startedAt.toISOString(),
     },
+    closed: view.closed && { ...view.closed, at: view.closed.at.toISOString() },
+    linkedAccounts: view.linkedAccounts.map((account) => ({
+      ...account,
+      createdAt: account.createdAt.toISOString(),
+      closedAt: account.closedAt?.toISOString() ?? null,
+    })),
     trustMark: view.trustMark && markBody(view.trustMark),
     lateCancels: {
       ...view.lateCancels,
@@ -672,6 +727,7 @@ async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
         case 'unknown_customer':
           throw new NotFoundException(body(HttpStatus.NOT_FOUND));
         case 'phone_taken':
+        case 'account_closed':
           throw new ConflictException(body(HttpStatus.CONFLICT));
       }
     }
@@ -691,6 +747,8 @@ async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
       case 'not_stopped':
       case 'nothing_to_clear':
       case 'no_base_currency':
+      case 'active_order':
+      case 'account_closed':
         throw new ConflictException(body(HttpStatus.CONFLICT));
     }
   }

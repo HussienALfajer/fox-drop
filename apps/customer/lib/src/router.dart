@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'account/delete_account_screen.dart';
 import 'account/my_account_screen.dart';
 import 'auth.dart';
 import 'blocked_screen.dart';
@@ -131,6 +132,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: 'profile',
             builder: (context, state) =>
                 const ProfileScreen(from: '/account', editing: true),
+          ),
+          // CU §5.6 «حذف الحساب» (slice 2.25c).
+          GoRoute(
+            path: 'delete',
+            builder: (context, state) => const DeleteAccountScreen(),
           ),
         ],
       ),

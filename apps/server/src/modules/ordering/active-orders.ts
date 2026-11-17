@@ -69,7 +69,11 @@ export class ActiveOrders {
     rules: CustomerLimitRules,
     executor: Executor = this.database.db,
   ): Promise<CustomerLimit> {
-    const whose = eq(orders.customerAccountId, accountId);
+    // AP §8.8 (slice 2.25c, owner decision 2026-11-17): the trust carries
+    // over from the closed accounts of the line, their fake outcomes and
+    // normal deliveries counting as the account's own.
+    const line = await this.customers.lineage(accountId, executor);
+    const whose = inArray(orders.customerAccountId, line);
     const [lastFake] = await executor
       // When the fake outcome happened: the order's first outcome, which a
       // change (slice 2.11c) does not move.
@@ -112,15 +116,25 @@ export class ActiveOrders {
     const limit = trusted ? rules.trustedMax : rules.newMax;
     const active = await countOrders(
       executor,
-      and(whose, isNull(orders.redeliveryOfId))!,
+      and(eq(orders.customerAccountId, accountId), isNull(orders.redeliveryOfId))!,
       UNTIL_ENDED,
     );
     return { reached: active >= limit, limit, trusted, delivered };
   }
 
+  // AP §8.8, CU §5.6 (slice 2.25c): whether the account has an order not
+  // ended, a free re-delivery included, which refuses its closure.
+  async customerHasActive(
+    accountId: string,
+    executor: Executor = this.database.db,
+  ): Promise<boolean> {
+    return (await countOrders(executor, eq(orders.customerAccountId, accountId), UNTIL_ENDED)) > 0;
+  }
+
   // AP §9.8 (slice 2.25a): the customer's fake orders, those whose outcome
-  // in force is fake, for the panel's profile.
+  // in force is fake, for the panel's profile; the line's (slice 2.25c).
   async fakeOrders(accountId: string, executor: Executor = this.database.db): Promise<number> {
+    const line = await this.customers.lineage(accountId, executor);
     const [row] = await executor
       .select({ n: count() })
       .from(orderOutcomeRows)
@@ -133,7 +147,7 @@ export class ActiveOrders {
       )
       .where(
         and(
-          eq(orders.customerAccountId, accountId),
+          inArray(orders.customerAccountId, line),
           eq(orderOutcomeRows.outcome, 'fake'),
           isNull(orderOutcomeRows.replacedAt),
         ),

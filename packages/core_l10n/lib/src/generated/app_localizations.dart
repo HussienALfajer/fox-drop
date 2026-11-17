@@ -6139,6 +6139,60 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'تجريبي'**
   String get customerTestMode;
+
+  /// «حسابي» → «حذف الحساب» (CU §5.6, D19).
+  ///
+  /// In ar, this message translates to:
+  /// **'حذف الحساب'**
+  String get customerDeleteAccount;
+
+  /// CU §5.6 item 2: the first point of the explanation (wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'لن تتمكن من تسجيل الدخول إلى هذا الحساب.'**
+  String get customerDeleteAccountNoSignIn;
+
+  /// CU §5.6 item 2: the second point (wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'ستفقد أكوادك ومفضلتك.'**
+  String get customerDeleteAccountLoses;
+
+  /// CU §5.6 item 2: the third point, AP §13 item 6 (wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'تُعامل بياناتك كما تنص سياسة الخصوصية.'**
+  String get customerDeleteAccountPrivacy;
+
+  /// CU §5.6 item 3 (Q20): a fresh code to the account's number (wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'إرسال رمز التحقق'**
+  String get customerDeleteAccountSendCode;
+
+  /// After the code was sent (wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'أرسلنا رمزاً إلى رقمك على واتساب. أدخله لتأكيد حذف الحساب.'**
+  String get customerDeleteAccountCodeSent;
+
+  /// Closes the account with the code (wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد حذف الحساب'**
+  String get customerDeleteAccountConfirm;
+
+  /// CU §5.6: refused with an active order.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يمكن حذف الحساب أثناء وجود طلب جارٍ'**
+  String get customerDeleteAccountActiveOrder;
+
+  /// Any other failure (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر حذف الحساب. حاول مرة أخرى.'**
+  String get customerDeleteAccountFailed;
 }
 
 class _AppLocalizationsDelegate

@@ -152,6 +152,10 @@ export class OrdersService implements OnModuleInit {
   // RA §7.4: the restaurant is busy at its maximum active orders.
   onModuleInit(): void {
     this.merchants.countActiveOrders((restaurantId) => this.activeOrders.restaurant(restaurantId));
+    // AP §8.8, CU §5.6 (slice 2.25c): an active order refuses a closure.
+    this.customers.useActiveOrders((accountId, executor) =>
+      this.activeOrders.customerHasActive(accountId, executor),
+    );
     // AP §9.8 (slice 2.25a): the panel's customer profile.
     this.customers.useOrderFacts(async (accountId, cityId) => {
       const rules = await this.activeOrders.rules(cityId);
@@ -284,6 +288,11 @@ export class OrdersService implements OnModuleInit {
         await lock(tx, customerOrderLock(command.accountId));
         const repeat = await this.replay(tx, command, requestHash, now);
         if (repeat !== null) return repeat;
+        // D19 (slice 2.25c): an account closed since the session was
+        // checked (the closure takes this lock) orders nothing.
+        if (!(await this.customers.accountOpen(command.accountId, tx))) {
+          throw new Requote('the account is closed');
+        }
         if ((await this.activeOrders.customer(command.accountId, rules, tx)).reached) {
           throw new Requote('the customer reached the active-order limit');
         }

@@ -233,6 +233,7 @@ describe('«تعويض الزبون»', () => {
     const clock = await uses.clock(azaz, now);
     const customer = (accountId: string) => ({
       accountId,
+      accountIds: [accountId],
       phoneHash: `hash-${accountId}`,
       deviceId: `device-${accountId}`,
       newUser: false,

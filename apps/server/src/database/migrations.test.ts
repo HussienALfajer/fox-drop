@@ -955,6 +955,19 @@ describe('the app sign-in tables (architecture §8.3.2, §15.1)', () => {
     await expect(appQuery(account)).rejects.toThrow(/customer_accounts_active_phone/);
   });
 
+  it("free a closed account's number, and close only with its moment (D19)", async () => {
+    const account =
+      "INSERT INTO identity.customer_accounts (phone_encrypted, phone_hash) VALUES ('e', 'p4')";
+    await appQuery(account);
+    await expect(
+      appQuery("UPDATE identity.customer_accounts SET status = 'closed' WHERE phone_hash = 'p4'"),
+    ).rejects.toThrow(/customer_accounts_closed/);
+    await appQuery(
+      "UPDATE identity.customer_accounts SET status = 'closed', closed_at = now() WHERE phone_hash = 'p4'",
+    );
+    await appQuery(account);
+  });
+
   it('refuse a party no app signs in with yet', async () => {
     await expect(appQuery(code('p3').replace("'customer'", "'courier'"))).rejects.toThrow(
       /app_sign_in_codes_party_values/,

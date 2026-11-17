@@ -398,6 +398,19 @@ export class LedgerService {
       );
   }
 
+  // One owner's accounts of a purpose in every city, such as a closed
+  // customer's dues moving to their new account (AP §8.8, slice 2.25c).
+  async ownedAccounts(
+    ownerId: string,
+    purpose: AccountPurpose,
+    executor: LedgerExecutor = this.database.db,
+  ): Promise<{ id: string; cityId: string; currency: string }[]> {
+    return executor
+      .select({ id: accounts.id, cityId: accounts.cityId, currency: accounts.currency })
+      .from(accounts)
+      .where(and(eq(accounts.purpose, purpose), eq(accounts.ownerId, ownerId)));
+  }
+
   // The newest entries of some accounts of one purpose, newest first, at
   // most `limit`, from the party's view (CA §10.2: every entry of the
   // custody).
