@@ -26,6 +26,8 @@ Serializers _$serializers =
           ..add(AdminApproveCompensationDtoValue.serializer)
           ..add(AdminApproveCompensationDtoValueKindEnum.serializer)
           ..add(AdminAssignDto.serializer)
+          ..add(AdminBlockCustomerDto.serializer)
+          ..add(AdminBlockCustomerDtoKindEnum.serializer)
           ..add(AdminBoardDtoOutput.serializer)
           ..add(AdminBoardDtoOutputOrdersInner.serializer)
           ..add(AdminBoardDtoOutputOrdersInnerAlertsEnum.serializer)
@@ -78,6 +80,14 @@ Serializers _$serializers =
           ..add(AdminCompensationDtoOutputKindEnum.serializer)
           ..add(AdminCompensationDtoOutputStatusEnum.serializer)
           ..add(AdminCompensationRequestsDtoOutput.serializer)
+          ..add(AdminCompensationRequestsDtoOutputRequestsInner.serializer)
+          ..add(
+            AdminCompensationRequestsDtoOutputRequestsInnerKindEnum.serializer,
+          )
+          ..add(
+            AdminCompensationRequestsDtoOutputRequestsInnerStatusEnum
+                .serializer,
+          )
           ..add(AdminConfirmPickupDto.serializer)
           ..add(AdminContactDtoOutput.serializer)
           ..add(AdminConversionQuoteDtoOutput.serializer)
@@ -111,6 +121,27 @@ Serializers _$serializers =
             AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner.serializer,
           )
           ..add(AdminCurrentDrawerSessionDtoOutputSessionKindEnum.serializer)
+          ..add(AdminCustomerDtoOutput.serializer)
+          ..add(AdminCustomerDtoOutputBlock.serializer)
+          ..add(AdminCustomerDtoOutputBlockKindEnum.serializer)
+          ..add(AdminCustomerDtoOutputBlockReasonsInner.serializer)
+          ..add(AdminCustomerDtoOutputBlocksInner.serializer)
+          ..add(AdminCustomerDtoOutputBlocksInnerKindEnum.serializer)
+          ..add(AdminCustomerDtoOutputDues.serializer)
+          ..add(AdminCustomerDtoOutputGenderEnum.serializer)
+          ..add(AdminCustomerDtoOutputLateCancels.serializer)
+          ..add(AdminCustomerDtoOutputReviewStop.serializer)
+          ..add(AdminCustomerDtoOutputStatusEnum.serializer)
+          ..add(AdminCustomerDuesPayDto.serializer)
+          ..add(AdminCustomerDuesPreviewDtoOutput.serializer)
+          ..add(AdminCustomerDuesPreviewRequestDto.serializer)
+          ..add(AdminCustomerReceiptDtoOutput.serializer)
+          ..add(AdminCustomerReceiptsDtoOutput.serializer)
+          ..add(AdminCustomerReceiptsDtoOutputReceiptsInner.serializer)
+          ..add(AdminCustomerSearchDto.serializer)
+          ..add(AdminCustomersFoundDtoOutput.serializer)
+          ..add(AdminCustomersFoundDtoOutputCustomersInner.serializer)
+          ..add(AdminCustomersFoundDtoOutputCustomersInnerStatusEnum.serializer)
           ..add(AdminDailyReportDtoOutput.serializer)
           ..add(AdminDailyReportDtoOutputCaptainPay.serializer)
           ..add(AdminDailyReportDtoOutputCashInner.serializer)
@@ -287,7 +318,6 @@ Serializers _$serializers =
           ..add(AdminOrderDtoOutputOrderAcceptance.serializer)
           ..add(AdminOrderDtoOutputOrderAlertsEnum.serializer)
           ..add(AdminOrderDtoOutputOrderCancelChoices.serializer)
-          ..add(AdminOrderDtoOutputOrderCancelChoicesReasonsInner.serializer)
           ..add(AdminOrderDtoOutputOrderCancellation.serializer)
           ..add(AdminOrderDtoOutputOrderCancellationBy.serializer)
           ..add(AdminOrderDtoOutputOrderCancellationCashEnum.serializer)
@@ -667,6 +697,7 @@ Serializers _$serializers =
           ..add(AdminTicketStatusDtoStatusEnum.serializer)
           ..add(AdminTicketTypesDtoOutput.serializer)
           ..add(AdminTicketsDtoOutput.serializer)
+          ..add(AdminUnblockCustomerDto.serializer)
           ..add(AdminUpdateContactDto.serializer)
           ..add(AdminUpdateNotificationTextDto.serializer)
           ..add(AdminUploadDtoOutput.serializer)
@@ -857,6 +888,10 @@ Serializers _$serializers =
           ..add(ContactDtoOutput.serializer)
           ..add(CreateUserDto.serializer)
           ..add(CreateUserDtoRolesEnum.serializer)
+          ..add(CustomerAccountStateDtoOutput.serializer)
+          ..add(CustomerAccountStateDtoOutputBlock.serializer)
+          ..add(CustomerAccountStateDtoOutputDues.serializer)
+          ..add(CustomerAccountStateDtoOutputOffice.serializer)
           ..add(CustomerActiveOrdersDtoOutput.serializer)
           ..add(CustomerActiveOrdersDtoOutputOrdersInner.serializer)
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerAddress.serializer)
@@ -1329,6 +1364,13 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminCompensationRequestsDtoOutputRequestsInner),
+            ]),
+            () =>
+                ListBuilder<AdminCompensationRequestsDtoOutputRequestsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminCostReportDtoOutputCompensationReasonsInner),
             ]),
             () =>
@@ -1390,6 +1432,30 @@ Serializers _$serializers =
                 ListBuilder<
                   AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCustomerDtoOutputBlocksInner),
+            ]),
+            () => ListBuilder<AdminCustomerDtoOutputBlocksInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCustomerDtoOutputBlockReasonsInner),
+            ]),
+            () => ListBuilder<AdminCustomerDtoOutputBlockReasonsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCustomerReceiptsDtoOutputReceiptsInner),
+            ]),
+            () => ListBuilder<AdminCustomerReceiptsDtoOutputReceiptsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCustomersFoundDtoOutputCustomersInner),
+            ]),
+            () => ListBuilder<AdminCustomersFoundDtoOutputCustomersInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -1629,6 +1695,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminOpenDrawerSessionDtoFloatsInner),
+            ]),
+            () => ListBuilder<AdminOpenDrawerSessionDtoFloatsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminOrderCardDtoOutputOrderAlertsEnum),
             ]),
             () => ListBuilder<AdminOrderCardDtoOutputOrderAlertsEnum>(),
@@ -1646,22 +1718,13 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
-              const FullType(
-                AdminOrderCompensationsDtoOutputCompensationsInner,
+              const FullType.nullable(
+                MerchantOrdersDtoOutputOrdersInnerItemReportNote,
               ),
             ]),
             () =>
                 ListBuilder<
-                  AdminOrderCompensationsDtoOutputCompensationsInner
-                >(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(AdminOrderDtoOutputOrderCancelChoicesReasonsInner),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminOrderDtoOutputOrderCancelChoicesReasonsInner
+                  MerchantOrdersDtoOutputOrdersInnerItemReportNote?
                 >(),
           )
           ..addBuilderFactory(
@@ -1699,55 +1762,6 @@ Serializers _$serializers =
               const FullType(AdminOrderDtoOutputOrderTimelineInner),
             ]),
             () => ListBuilder<AdminOrderDtoOutputOrderTimelineInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(AdminOrderDtoOutputOrderCancelChoicesReasonsInner),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminOrderDtoOutputOrderCancelChoicesReasonsInner
-                >(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(AdminOrderDtoOutputOrderCancelChoicesReasonsInner),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminOrderDtoOutputOrderCancelChoicesReasonsInner
-                >(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(AdminOrderDtoOutputOrderCancelChoicesReasonsInner),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminOrderDtoOutputOrderCancelChoicesReasonsInner
-                >(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(AdminOrderDtoOutputOrderCancelChoicesReasonsInner),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminOrderDtoOutputOrderCancelChoicesReasonsInner
-                >(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(AdminOrderDtoOutputOrderCancelChoicesReasonsInner),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminOrderDtoOutputOrderCancelChoicesReasonsInner
-                >(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [const FullType(int)]),
-            () => ListBuilder<int>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -2114,9 +2128,38 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminRestaurantReceiptDtoOutputLinesInner),
+            ]),
+            () => ListBuilder<AdminRestaurantReceiptDtoOutputLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminRestaurantReceiptDtoOutputLinesInner),
+            ]),
+            () => ListBuilder<AdminRestaurantReceiptDtoOutputLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminRestaurantSettleDtoLinesInner),
             ]),
             () => ListBuilder<AdminRestaurantSettleDtoLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminRestaurantSettleDtoLinesInner),
+            ]),
+            () => ListBuilder<AdminRestaurantSettleDtoLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminRestaurantSettlementPreviewDtoOutputLinesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminRestaurantSettlementPreviewDtoOutputLinesInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -2442,6 +2485,12 @@ Serializers _$serializers =
               const FullType(CaptainAvailabilityDtoOutputCustodyLimit),
             ]),
             () => ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainAvailabilityDtoOutputOfficeHoursInner),
+            ]),
+            () => ListBuilder<CaptainAvailabilityDtoOutputOfficeHoursInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -3719,6 +3768,55 @@ Serializers _$serializers =
                 ListBuilder<
                   CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType.nullable(
+                MerchantOrdersDtoOutputOrdersInnerItemReportNote,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantOrdersDtoOutputOrdersInnerItemReportNote?
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType.nullable(
+                MerchantOrdersDtoOutputOrdersInnerItemReportNote,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantOrdersDtoOutputOrdersInnerItemReportNote?
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCustomerDtoOutputBlockReasonsInner),
+            ]),
+            () => ListBuilder<AdminCustomerDtoOutputBlockReasonsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCustomerDtoOutputBlockReasonsInner),
+            ]),
+            () => ListBuilder<AdminCustomerDtoOutputBlockReasonsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType.nullable(
+                MerchantOrdersDtoOutputOrdersInnerItemReportNote,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantOrdersDtoOutputOrdersInnerItemReportNote?
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(int)]),
+            () => ListBuilder<int>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltMap, const [

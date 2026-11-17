@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../auth.dart';
 import '../cart/cart.dart';
 import 'problems.dart';
 import 'quote.dart';
@@ -67,6 +68,23 @@ class ProblemTile extends ConsumerWidget {
         l10n.customerCodeRemove,
         () => cart.setCode(null),
       ),
+      ProblemAction.contactSupport => switch (ref
+          .watch(customerAuth.contact)
+          .value) {
+        final contact? when contact.whatsapp != null => (
+          l10n.customerContactSupport,
+          () => ref.read(customerAuth.launch)(
+            Uri.https('wa.me', '/${contact.whatsapp!.substring(1)}'),
+          ),
+        ),
+        final contact? when contact.phone != null => (
+          l10n.customerContactSupport,
+          () => ref.read(customerAuth.launch)(
+            Uri(scheme: 'tel', path: contact.phone),
+          ),
+        ),
+        _ => (null, null),
+      },
       _ => (null, null),
     };
     return ListTile(

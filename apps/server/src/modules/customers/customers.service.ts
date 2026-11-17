@@ -6,10 +6,13 @@ import type { Database } from '../../database/database.js';
 import { TermsService } from '../content/index.js';
 import { GeoService, type Point } from '../geo/index.js';
 import { PhoneCipher } from '../identity/index.js';
+import { LedgerService } from '../ledger/index.js';
 import { MerchantsService } from '../merchants/index.js';
+import { type BlockKind, blockInForce } from './blocks.js';
 import {
   type addressLabels,
   addresses,
+  blocks,
   type genders,
   lateCancelStrikes,
   profiles,
@@ -37,6 +40,32 @@ export interface Profile {
   // YYYY-MM-DD.
   birthday: string | null;
 }
+
+// AP §9.8: a manual block in force (CU §5.5 «محظور»).
+export interface ActiveBlock {
+  id: string;
+  kind: BlockKind;
+  // A duration's end; null «حتى إشعار آخر».
+  until: Date | null;
+  reason: string;
+  reasonLabel: string;
+  // CU Appendix C «Customer block»: what the banner says.
+  customerText: string;
+  note: string;
+  startedAt: Date;
+  startedBy: string;
+}
+
+// What ordering registers (useOrderFacts): the trust of D23 by the city's
+// rules, the deliveries that count toward it, and the fake orders.
+export interface CustomerOrders {
+  trusted: boolean;
+  delivered: number;
+  trustedAfter: number;
+  fakeOrders: number;
+}
+
+export type CustomerOrderFacts = (accountId: string, cityId: string) => Promise<CustomerOrders>;
 
 export interface AddressFields {
   location: Point;
@@ -110,7 +139,74 @@ export class CustomersService {
     private readonly merchants: MerchantsService,
     private readonly phones: PhoneCipher,
     private readonly terms: TermsService,
+    private readonly ledger: LedgerService,
   ) {}
+
+  // What ordering knows of a customer, for the panel's profile (AP §9.8):
+  // registered by ordering at start, which customers cannot import.
+  private orderFacts: CustomerOrderFacts | null = null;
+
+  useOrderFacts(facts: CustomerOrderFacts): void {
+    this.orderFacts = facts;
+  }
+
+  ordersOf(accountId: string, cityId: string): Promise<CustomerOrders> {
+    if (this.orderFacts === null) throw new Error('ordering has not registered its facts');
+    return this.orderFacts(accountId, cityId);
+  }
+
+  // AP §9.8 «حظر» (slice 2.25a): the block that stops the account's ordering
+  // now, a duration or «حتى إشعار آخر» (the dues block is the dues balance,
+  // `dues`), or null. The quote shows it as account_blocked; placing reads it
+  // again under the customer's lock, which a block takes too.
+  async activeBlock(
+    accountId: string,
+    now: Date,
+    executor: Pick<NodePgDatabase, 'select'> = this.database.db,
+  ): Promise<ActiveBlock | null> {
+    const rows = await executor
+      .select()
+      .from(blocks)
+      .where(
+        and(
+          eq(blocks.customerAccountId, accountId),
+          isNull(blocks.endedAt),
+          sql`${blocks.kind} <> 'dues'`,
+        ),
+      );
+    const row = rows.find((each) => blockInForce(each, now));
+    if (!row) return null;
+    return {
+      id: row.id,
+      kind: row.kind,
+      until: row.until,
+      reason: row.reason,
+      reasonLabel: row.reasonLabel,
+      customerText: row.customerText,
+      note: row.note,
+      startedAt: row.startedAt,
+      startedBy: row.startedBy,
+    };
+  }
+
+  // AP §8.8 «مستحقات الزبون» (slice 2.11a): what the customer owes in the
+  // city, from their customer.dues accounts (the base currency; one per
+  // currency should another appear), or null when nothing is owed. A dues
+  // block lasts exactly while this is above zero, so it lifts by itself when
+  // the desk's payment, «تغيير النتيجة» or an adjustment brings the balance
+  // to 0 or less.
+  async dues(
+    cityId: string,
+    accountId: string,
+    executor?: Parameters<LedgerService['balance']>[1],
+  ): Promise<{ amount: bigint; currency: string } | null> {
+    const accounts = await this.ledger.ownerAccounts(cityId, accountId, 'customer.dues', executor);
+    for (const account of accounts) {
+      const balance = await this.ledger.balance(account.id, executor);
+      if (balance.amount > 0n) return balance;
+    }
+    return null;
+  }
 
   // CU §7.1: the zone check of a point, and whether any restaurant covers it.
   async location(point: Point): Promise<Location> {

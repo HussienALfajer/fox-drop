@@ -73,6 +73,7 @@ class TestApp {
     platform();
     terms();
     emergencyStop();
+    accountState();
     server.on('/v1/customer/status', [
       const FakeAnswer(200, {'status': 'ok', 'serverTime': 1}),
     ]);
@@ -137,6 +138,22 @@ class TestApp {
       'startedAt': active ? '2026-11-09T09:00:00.000Z' : null,
       'browseMessage': active ? browseMessage : null,
       'delayNotice': active ? delayNotice : null,
+    }),
+  ]);
+
+  /// The answer of `GET /v1/customer/account-state` (CU §5.5, slice
+  /// 2.25a): an account free to order unless a test says otherwise.
+  void accountState({
+    bool reviewStop = false,
+    Map<String, Object?>? block,
+    Map<String, Object?>? dues,
+    Map<String, Object?>? office,
+  }) => server.on('/v1/customer/account-state', [
+    FakeAnswer(200, {
+      'reviewStop': reviewStop,
+      'block': block,
+      'dues': dues,
+      'office': office,
     }),
   ]);
 

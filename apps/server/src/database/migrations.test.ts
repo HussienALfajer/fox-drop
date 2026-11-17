@@ -659,6 +659,37 @@ describe('the ordering tables (AP §8.1, §4.8; architecture §5.5)', () => {
     await stop();
   });
 
+  it("keep a customer's blocks as they started, one open at a time, the dues kind never ending", async () => {
+    const account = randomUUID();
+    const admin = randomUUID();
+    const block = (kind: string, extra = '') =>
+      appQuery(
+        `INSERT INTO customers.blocks (customer_account_id, kind, reason, reason_label, customer_text, note, started_at, started_by, idempotency_key, request_hash${extra === '' ? '' : ', ' + extra.split('|')[0]}) VALUES ('${account}', '${kind}', 'abuse', 'إساءة', 'مخالفة شروط الاستخدام', 'سبب', now(), '${admin}', '${randomUUID()}', 'h'${extra === '' ? '' : ', ' + extra.split('|')[1]}) RETURNING id`,
+      );
+    await expect(block('until')).rejects.toThrow(/blocks_until/);
+    await expect(block('dues')).rejects.toThrow(/blocks_dues/);
+    const dues = `city_id, dues_amount, dues_currency, dues_journal_id|'${randomUUID()}', 500, 'TRY', '${randomUUID()}'`;
+    const { rows: charged } = await block('dues', dues);
+    await block('dues', dues);
+    const { rows } = await block('indefinite');
+    await expect(block('until', `until|now() + interval '1 day'`)).rejects.toThrow(
+      /blocks_one_open/,
+    );
+    await expect(
+      appQuery(`UPDATE customers.blocks SET note = 'x' WHERE id = '${rows[0].id}'`),
+    ).rejects.toThrow(/permission denied/);
+    await expect(
+      appQuery(`UPDATE customers.blocks SET ended_at = now() WHERE id = '${charged[0].id}'`),
+    ).rejects.toThrow(/blocks_dues/);
+    await expect(
+      appQuery(`UPDATE customers.blocks SET ended_by = '${admin}' WHERE id = '${rows[0].id}'`),
+    ).rejects.toThrow(/blocks_end/);
+    await appQuery(
+      `UPDATE customers.blocks SET ended_at = now(), ended_by = '${admin}', end_note = 'فك' WHERE id = '${rows[0].id}'`,
+    );
+    await block('until', `until|now() + interval '1 day'`);
+  });
+
   it('keep an emergency stop as it started, one open per city, and its attempts unchanged', async () => {
     const admin = randomUUID();
     const start = (city: string) =>
@@ -951,6 +982,26 @@ describe('the cash desk tables (AP §9.10.3, §4.8)', () => {
         ),
       ),
     ).rejects.toThrow(/receipts_type_values/);
+    // A customer's dues payment (slice 2.25a) names the customer alone.
+    const customer = 'customer_id, customer_name, due_before, due_currency';
+    const duesReceipt = (sequence: number, columns: string, values: string) =>
+      restaurantReceipt(sequence, columns, values).replace(
+        'merchant_settlement',
+        'customer_dues_payment',
+      );
+    await appQuery(duesReceipt(5, customer, `'${randomUUID()}', 'زبون', 5000, 'TRY'`));
+    await expect(
+      appQuery(duesReceipt(6, restaurant, `'${randomUUID()}', 'مطعم', 6000, 'TRY'`)),
+    ).rejects.toThrow(/receipts_party/);
+    await expect(
+      appQuery(
+        restaurantReceipt(
+          7,
+          `customer_id, customer_name, ${restaurant}`,
+          `'${randomUUID()}', 'زبون', '${randomUUID()}', 'مطعم', 6000, 'TRY'`,
+        ),
+      ),
+    ).rejects.toThrow(/receipts_party/);
     const line = (values: string) =>
       `INSERT INTO cashdesk.receipt_lines (receipt_id, currency, expected, base_amount, amount, journal_id) VALUES ('${issued[0].id}', ${values}, '${randomUUID()}')`;
     await appQuery(line("'USD', NULL, 3000, 2"));

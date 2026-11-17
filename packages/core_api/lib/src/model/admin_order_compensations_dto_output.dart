@@ -3,7 +3,7 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/admin_order_dto_output_order_cancel_choices_reasons_inner.dart';
+import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_report_note.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_order_compensations_dto_output_compensations_inner.dart';
 import 'package:built_value/built_value.dart';
@@ -45,7 +45,7 @@ abstract class AdminOrderCompensationsDtoOutput
 
   /// The active «تعويض الزبون» reasons, in order; each takes an optional note.
   @BuiltValueField(wireName: r'reasons')
-  BuiltList<AdminOrderDtoOutputOrderCancelChoicesReasonsInner> get reasons;
+  BuiltList<MerchantOrdersDtoOutputOrdersInnerItemReportNote?> get reasons;
 
   AdminOrderCompensationsDtoOutput._();
 
@@ -105,7 +105,7 @@ class _$AdminOrderCompensationsDtoOutputSerializer
     yield serializers.serialize(
       object.reasons,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminOrderDtoOutputOrderCancelChoicesReasonsInner),
+        FullType.nullable(MerchantOrdersDtoOutputOrdersInnerItemReportNote),
       ]),
     );
   }
@@ -183,13 +183,13 @@ class _$AdminOrderCompensationsDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        AdminOrderDtoOutputOrderCancelChoicesReasonsInner,
+                      FullType.nullable(
+                        MerchantOrdersDtoOutputOrdersInnerItemReportNote,
                       ),
                     ]),
                   )
                   as BuiltList<
-                    AdminOrderDtoOutputOrderCancelChoicesReasonsInner
+                    MerchantOrdersDtoOutputOrdersInnerItemReportNote?
                   >;
           result.reasons.replace(valueDes);
           break;

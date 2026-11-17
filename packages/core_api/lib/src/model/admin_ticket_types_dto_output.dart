@@ -3,8 +3,9 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/admin_order_dto_output_order_cancel_choices_reasons_inner.dart';
+import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_report_note.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_block_reasons_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -21,13 +22,13 @@ abstract class AdminTicketTypesDtoOutput
     implements
         Built<AdminTicketTypesDtoOutput, AdminTicketTypesDtoOutputBuilder> {
   @BuiltValueField(wireName: r'customer')
-  BuiltList<AdminOrderDtoOutputOrderCancelChoicesReasonsInner> get customer;
+  BuiltList<MerchantOrdersDtoOutputOrdersInnerItemReportNote?> get customer;
 
   @BuiltValueField(wireName: r'restaurant')
-  BuiltList<AdminOrderDtoOutputOrderCancelChoicesReasonsInner> get restaurant;
+  BuiltList<AdminCustomerDtoOutputBlockReasonsInner> get restaurant;
 
   @BuiltValueField(wireName: r'captain')
-  BuiltList<AdminOrderDtoOutputOrderCancelChoicesReasonsInner> get captain;
+  BuiltList<AdminCustomerDtoOutputBlockReasonsInner> get captain;
 
   AdminTicketTypesDtoOutput._();
 
@@ -63,21 +64,21 @@ class _$AdminTicketTypesDtoOutputSerializer
     yield serializers.serialize(
       object.customer,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminOrderDtoOutputOrderCancelChoicesReasonsInner),
+        FullType.nullable(MerchantOrdersDtoOutputOrdersInnerItemReportNote),
       ]),
     );
     yield r'restaurant';
     yield serializers.serialize(
       object.restaurant,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminOrderDtoOutputOrderCancelChoicesReasonsInner),
+        FullType(AdminCustomerDtoOutputBlockReasonsInner),
       ]),
     );
     yield r'captain';
     yield serializers.serialize(
       object.captain,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminOrderDtoOutputOrderCancelChoicesReasonsInner),
+        FullType(AdminCustomerDtoOutputBlockReasonsInner),
       ]),
     );
   }
@@ -112,13 +113,13 @@ class _$AdminTicketTypesDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        AdminOrderDtoOutputOrderCancelChoicesReasonsInner,
+                      FullType.nullable(
+                        MerchantOrdersDtoOutputOrdersInnerItemReportNote,
                       ),
                     ]),
                   )
                   as BuiltList<
-                    AdminOrderDtoOutputOrderCancelChoicesReasonsInner
+                    MerchantOrdersDtoOutputOrdersInnerItemReportNote?
                   >;
           result.customer.replace(valueDes);
           break;
@@ -127,14 +128,10 @@ class _$AdminTicketTypesDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        AdminOrderDtoOutputOrderCancelChoicesReasonsInner,
-                      ),
+                      FullType(AdminCustomerDtoOutputBlockReasonsInner),
                     ]),
                   )
-                  as BuiltList<
-                    AdminOrderDtoOutputOrderCancelChoicesReasonsInner
-                  >;
+                  as BuiltList<AdminCustomerDtoOutputBlockReasonsInner>;
           result.restaurant.replace(valueDes);
           break;
         case r'captain':
@@ -142,14 +139,10 @@ class _$AdminTicketTypesDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        AdminOrderDtoOutputOrderCancelChoicesReasonsInner,
-                      ),
+                      FullType(AdminCustomerDtoOutputBlockReasonsInner),
                     ]),
                   )
-                  as BuiltList<
-                    AdminOrderDtoOutputOrderCancelChoicesReasonsInner
-                  >;
+                  as BuiltList<AdminCustomerDtoOutputBlockReasonsInner>;
           result.captain.replace(valueDes);
           break;
         default:

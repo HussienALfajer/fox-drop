@@ -8,11 +8,11 @@ part of 'admin_ticket_types_dto_output.dart';
 
 class _$AdminTicketTypesDtoOutput extends AdminTicketTypesDtoOutput {
   @override
-  final BuiltList<AdminOrderDtoOutputOrderCancelChoicesReasonsInner> customer;
+  final BuiltList<MerchantOrdersDtoOutputOrdersInnerItemReportNote?> customer;
   @override
-  final BuiltList<AdminOrderDtoOutputOrderCancelChoicesReasonsInner> restaurant;
+  final BuiltList<AdminCustomerDtoOutputBlockReasonsInner> restaurant;
   @override
-  final BuiltList<AdminOrderDtoOutputOrderCancelChoicesReasonsInner> captain;
+  final BuiltList<AdminCustomerDtoOutputBlockReasonsInner> captain;
 
   factory _$AdminTicketTypesDtoOutput([
     void Function(AdminTicketTypesDtoOutputBuilder)? updates,
@@ -66,29 +66,28 @@ class AdminTicketTypesDtoOutputBuilder
         Builder<AdminTicketTypesDtoOutput, AdminTicketTypesDtoOutputBuilder> {
   _$AdminTicketTypesDtoOutput? _$v;
 
-  ListBuilder<AdminOrderDtoOutputOrderCancelChoicesReasonsInner>? _customer;
-  ListBuilder<AdminOrderDtoOutputOrderCancelChoicesReasonsInner> get customer =>
+  ListBuilder<MerchantOrdersDtoOutputOrdersInnerItemReportNote?>? _customer;
+  ListBuilder<MerchantOrdersDtoOutputOrdersInnerItemReportNote?> get customer =>
       _$this._customer ??=
-          ListBuilder<AdminOrderDtoOutputOrderCancelChoicesReasonsInner>();
+          ListBuilder<MerchantOrdersDtoOutputOrdersInnerItemReportNote?>();
   set customer(
-    ListBuilder<AdminOrderDtoOutputOrderCancelChoicesReasonsInner>? customer,
+    ListBuilder<MerchantOrdersDtoOutputOrdersInnerItemReportNote?>? customer,
   ) => _$this._customer = customer;
 
-  ListBuilder<AdminOrderDtoOutputOrderCancelChoicesReasonsInner>? _restaurant;
-  ListBuilder<AdminOrderDtoOutputOrderCancelChoicesReasonsInner>
-  get restaurant => _$this._restaurant ??=
-      ListBuilder<AdminOrderDtoOutputOrderCancelChoicesReasonsInner>();
+  ListBuilder<AdminCustomerDtoOutputBlockReasonsInner>? _restaurant;
+  ListBuilder<AdminCustomerDtoOutputBlockReasonsInner> get restaurant =>
+      _$this._restaurant ??=
+          ListBuilder<AdminCustomerDtoOutputBlockReasonsInner>();
   set restaurant(
-    ListBuilder<AdminOrderDtoOutputOrderCancelChoicesReasonsInner>? restaurant,
+    ListBuilder<AdminCustomerDtoOutputBlockReasonsInner>? restaurant,
   ) => _$this._restaurant = restaurant;
 
-  ListBuilder<AdminOrderDtoOutputOrderCancelChoicesReasonsInner>? _captain;
-  ListBuilder<AdminOrderDtoOutputOrderCancelChoicesReasonsInner> get captain =>
+  ListBuilder<AdminCustomerDtoOutputBlockReasonsInner>? _captain;
+  ListBuilder<AdminCustomerDtoOutputBlockReasonsInner> get captain =>
       _$this._captain ??=
-          ListBuilder<AdminOrderDtoOutputOrderCancelChoicesReasonsInner>();
-  set captain(
-    ListBuilder<AdminOrderDtoOutputOrderCancelChoicesReasonsInner>? captain,
-  ) => _$this._captain = captain;
+          ListBuilder<AdminCustomerDtoOutputBlockReasonsInner>();
+  set captain(ListBuilder<AdminCustomerDtoOutputBlockReasonsInner>? captain) =>
+      _$this._captain = captain;
 
   AdminTicketTypesDtoOutputBuilder() {
     AdminTicketTypesDtoOutput._defaults(this);

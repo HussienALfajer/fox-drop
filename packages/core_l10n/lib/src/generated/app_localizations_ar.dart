@@ -2337,6 +2337,52 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String customerBlockedUntil(String date, String reason) {
+    return 'حسابك محظور حتى $date: $reason';
+  }
+
+  @override
+  String customerBlockedIndefinite(String reason) {
+    return 'حسابك محظور: $reason. تواصل مع الدعم.';
+  }
+
+  @override
+  String get customerOfficeShow => 'موقع المكتب وساعاته';
+
+  @override
+  String get customerOfficeTitle => 'المكتب';
+
+  @override
+  String customerOfficeOpenUntil(String time) {
+    return 'المكتب مفتوح حتى $time';
+  }
+
+  @override
+  String customerOfficeClosed(String day, String time) {
+    return 'المكتب مغلق الآن، يفتح $day $time.';
+  }
+
+  @override
+  String get customerOfficeClosedAlways => 'المكتب مغلق الآن.';
+
+  @override
+  String get customerOfficeUnset =>
+      'لم يُحدَّد موقع المكتب بعد. تواصل مع الدعم.';
+
+  @override
+  String customerOfficeDay(String day, String from, String to) {
+    return '$day: من $from إلى $to';
+  }
+
+  @override
+  String customerOfficeDayClosed(String day) {
+    return '$day: مغلق';
+  }
+
+  @override
+  String get customerOfficeMap => 'موقع المكتب على الخريطة';
+
+  @override
   String get customerReviewStop => 'حسابك موقوف حتى مراجعة فريق الدعم';
 
   @override

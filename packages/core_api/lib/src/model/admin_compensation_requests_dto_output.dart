@@ -4,7 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_order_compensations_dto_output_compensations_inner.dart';
+import 'package:core_api/src/model/admin_compensation_requests_dto_output_requests_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -23,7 +23,7 @@ abstract class AdminCompensationRequestsDtoOutput
         > {
   /// Oldest first.
   @BuiltValueField(wireName: r'requests')
-  BuiltList<AdminOrderCompensationsDtoOutputCompensationsInner> get requests;
+  BuiltList<AdminCompensationRequestsDtoOutputRequestsInner> get requests;
 
   AdminCompensationRequestsDtoOutput._();
 
@@ -59,7 +59,7 @@ class _$AdminCompensationRequestsDtoOutputSerializer
     yield serializers.serialize(
       object.requests,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminOrderCompensationsDtoOutputCompensationsInner),
+        FullType(AdminCompensationRequestsDtoOutputRequestsInner),
       ]),
     );
   }
@@ -94,14 +94,10 @@ class _$AdminCompensationRequestsDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        AdminOrderCompensationsDtoOutputCompensationsInner,
-                      ),
+                      FullType(AdminCompensationRequestsDtoOutputRequestsInner),
                     ]),
                   )
-                  as BuiltList<
-                    AdminOrderCompensationsDtoOutputCompensationsInner
-                  >;
+                  as BuiltList<AdminCompensationRequestsDtoOutputRequestsInner>;
           result.requests.replace(valueDes);
           break;
         default:

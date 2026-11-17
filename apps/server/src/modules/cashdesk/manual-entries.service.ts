@@ -26,6 +26,7 @@ import {
   type DeskUser,
   keepKey,
 } from './cashdesk.service.js';
+import { lockCustomerDues } from './customer-dues.service.js';
 import { lockRestaurantAccount } from './merchant-statements.service.js';
 import { type ManualEntryKind, type ManualEntryParty, manualEntries } from './schema.js';
 
@@ -581,7 +582,8 @@ export class ManualEntriesService {
   // The lock the desk takes on the party's balance (the ledger's
   // «Concurrency»): the captain's row, the restaurant's account lock, so a
   // hand-in, a settlement or a statement never reads a balance a manual
-  // entry is changing. A customer's dues have no desk lock yet (2.25).
+  // entry is changing; a customer's dues take the desk payment's lock (slice
+  // 2.25a).
   private async partyLock(
     party: ManualEntryParty,
     partyId: string,
@@ -597,7 +599,7 @@ export class ManualEntriesService {
       case 'restaurant':
         return (tx) => lockRestaurantAccount(tx, partyId);
       case 'customer':
-        return async () => {};
+        return (tx) => lockCustomerDues(tx, partyId);
     }
   }
 

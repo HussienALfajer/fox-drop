@@ -304,6 +304,7 @@ describe('the quote (CU §10.6)', () => {
         message: null,
         amount: null,
         refusal: null,
+        until: null,
       },
       {
         code: 'item_not_found',
@@ -312,8 +313,17 @@ describe('the quote (CU §10.6)', () => {
         message: null,
         amount: null,
         refusal: null,
+        until: null,
       },
-      { code: 'price_changed', line: 3, opensAt: null, message: null, amount: null, refusal: null },
+      {
+        code: 'price_changed',
+        line: 3,
+        opensAt: null,
+        message: null,
+        amount: null,
+        refusal: null,
+        until: null,
+      },
       {
         code: 'below_minimum_order',
         line: null,
@@ -321,6 +331,7 @@ describe('the quote (CU §10.6)', () => {
         message: null,
         amount: null,
         refusal: null,
+        until: null,
       },
     ]);
     // The lines that cannot be ordered are not in the money: 30 + 12.30.
@@ -379,6 +390,7 @@ describe('the quote (CU §10.6)', () => {
           message: null,
           amount: null,
           refusal: null,
+          until: null,
         },
         {
           code: 'platform_closed',
@@ -387,6 +399,7 @@ describe('the quote (CU §10.6)', () => {
           message: null,
           amount: null,
           refusal: null,
+          until: null,
         },
       ]);
     } finally {
@@ -462,6 +475,7 @@ describe('the quote (CU §10.6)', () => {
           message: null,
           amount: null,
           refusal: null,
+          until: null,
         },
       ]);
     } finally {
@@ -481,6 +495,7 @@ describe('the quote (CU §10.6)', () => {
           message: null,
           amount: null,
           refusal: null,
+          until: null,
         },
       ]);
       expect(body).toMatchObject({

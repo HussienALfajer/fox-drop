@@ -3850,6 +3850,72 @@ abstract class AppLocalizations {
   /// **'خُصم من مستحقاتك {amount}: {reason}'**
   String captainOutcomeCharge(String amount, String reason);
 
+  /// The banner and checkout problem of a block for a duration (CU §5.5, AP §9.8, slice 2.25a); {date} is formatDate and formatTime on the city's clock, {reason} the block reason's customer text (CU Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'حسابك محظور حتى {date}: {reason}'**
+  String customerBlockedUntil(String date, String reason);
+
+  /// The banner and checkout problem of a block until further notice (CU §5.5, AP §9.8, slice 2.25a).
+  ///
+  /// In ar, this message translates to:
+  /// **'حسابك محظور: {reason}. تواصل مع الدعم.'**
+  String customerBlockedIndefinite(String reason);
+
+  /// Opens the office sheet from the dues banner (CU §5.5, AP §9.12.1, slice 2.25a; our wording).
+  ///
+  /// In ar, this message translates to:
+  /// **'موقع المكتب وساعاته'**
+  String get customerOfficeShow;
+
+  /// The office sheet's title (CU §5.5, AP §9.12.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'المكتب'**
+  String get customerOfficeTitle;
+
+  /// The desk is open now (CU §5.5's office sheet).
+  ///
+  /// In ar, this message translates to:
+  /// **'المكتب مفتوح حتى {time}'**
+  String customerOfficeOpenUntil(String time);
+
+  /// The desk is closed now and when it opens (CU §5.5's office sheet).
+  ///
+  /// In ar, this message translates to:
+  /// **'المكتب مغلق الآن، يفتح {day} {time}.'**
+  String customerOfficeClosed(String day, String time);
+
+  /// The desk is closed and no day is open (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'المكتب مغلق الآن.'**
+  String get customerOfficeClosedAlways;
+
+  /// The office is not set yet in the city (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُحدَّد موقع المكتب بعد. تواصل مع الدعم.'**
+  String get customerOfficeUnset;
+
+  /// One weekday's desk hours in the office sheet.
+  ///
+  /// In ar, this message translates to:
+  /// **'{day}: من {from} إلى {to}'**
+  String customerOfficeDay(String day, String from, String to);
+
+  /// A weekday the desk is closed in the office sheet.
+  ///
+  /// In ar, this message translates to:
+  /// **'{day}: مغلق'**
+  String customerOfficeDayClosed(String day);
+
+  /// Opens the office on the map from the office sheet (CU §5.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'موقع المكتب على الخريطة'**
+  String get customerOfficeMap;
+
   /// The checkout problem review_stop: late cancellations stopped ordering until support reviews the account (docs/domain/08; owner decision 2026-11-09).
   ///
   /// In ar, this message translates to:

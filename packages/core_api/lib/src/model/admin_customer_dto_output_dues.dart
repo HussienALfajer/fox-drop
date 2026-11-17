@@ -6,76 +6,71 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_order_dto_output_order_cancel_choices_reasons_inner.g.dart';
+part 'admin_customer_dto_output_dues.g.dart';
 
-/// AdminOrderDtoOutputOrderCancelChoicesReasonsInner
+/// In the city's base: + the customer owes, − a credit (AP §8.8).
 ///
 /// Properties:
-/// * [code]
-/// * [label]
+/// * [amount]
+/// * [currency]
 @BuiltValue()
-abstract class AdminOrderDtoOutputOrderCancelChoicesReasonsInner
+abstract class AdminCustomerDtoOutputDues
     implements
-        Built<
-          AdminOrderDtoOutputOrderCancelChoicesReasonsInner,
-          AdminOrderDtoOutputOrderCancelChoicesReasonsInnerBuilder
-        > {
-  @BuiltValueField(wireName: r'code')
-  String get code;
+        Built<AdminCustomerDtoOutputDues, AdminCustomerDtoOutputDuesBuilder> {
+  @BuiltValueField(wireName: r'amount')
+  String get amount;
 
-  @BuiltValueField(wireName: r'label')
-  String get label;
+  @BuiltValueField(wireName: r'currency')
+  String? get currency;
 
-  AdminOrderDtoOutputOrderCancelChoicesReasonsInner._();
+  AdminCustomerDtoOutputDues._();
 
-  factory AdminOrderDtoOutputOrderCancelChoicesReasonsInner([
-    void updates(AdminOrderDtoOutputOrderCancelChoicesReasonsInnerBuilder b),
-  ]) = _$AdminOrderDtoOutputOrderCancelChoicesReasonsInner;
+  factory AdminCustomerDtoOutputDues([
+    void updates(AdminCustomerDtoOutputDuesBuilder b),
+  ]) = _$AdminCustomerDtoOutputDues;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    AdminOrderDtoOutputOrderCancelChoicesReasonsInnerBuilder b,
-  ) => b;
+  static void _defaults(AdminCustomerDtoOutputDuesBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminOrderDtoOutputOrderCancelChoicesReasonsInner>
-  get serializer =>
-      _$AdminOrderDtoOutputOrderCancelChoicesReasonsInnerSerializer();
+  static Serializer<AdminCustomerDtoOutputDues> get serializer =>
+      _$AdminCustomerDtoOutputDuesSerializer();
 }
 
-class _$AdminOrderDtoOutputOrderCancelChoicesReasonsInnerSerializer
-    implements
-        PrimitiveSerializer<AdminOrderDtoOutputOrderCancelChoicesReasonsInner> {
+class _$AdminCustomerDtoOutputDuesSerializer
+    implements PrimitiveSerializer<AdminCustomerDtoOutputDues> {
   @override
   final Iterable<Type> types = const [
-    AdminOrderDtoOutputOrderCancelChoicesReasonsInner,
-    _$AdminOrderDtoOutputOrderCancelChoicesReasonsInner,
+    AdminCustomerDtoOutputDues,
+    _$AdminCustomerDtoOutputDues,
   ];
 
   @override
-  final String wireName = r'AdminOrderDtoOutputOrderCancelChoicesReasonsInner';
+  final String wireName = r'AdminCustomerDtoOutputDues';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminOrderDtoOutputOrderCancelChoicesReasonsInner object, {
+    AdminCustomerDtoOutputDues object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'code';
+    yield r'amount';
     yield serializers.serialize(
-      object.code,
+      object.amount,
       specifiedType: const FullType(String),
     );
-    yield r'label';
-    yield serializers.serialize(
-      object.label,
-      specifiedType: const FullType(String),
-    );
+    yield r'currency';
+    yield object.currency == null
+        ? null
+        : serializers.serialize(
+            object.currency,
+            specifiedType: const FullType.nullable(String),
+          );
   }
 
   @override
   Object serialize(
     Serializers serializers,
-    AdminOrderDtoOutputOrderCancelChoicesReasonsInner object, {
+    AdminCustomerDtoOutputDues object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -90,30 +85,31 @@ class _$AdminOrderDtoOutputOrderCancelChoicesReasonsInnerSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminOrderDtoOutputOrderCancelChoicesReasonsInnerBuilder result,
+    required AdminCustomerDtoOutputDuesBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'code':
+        case r'amount':
           final valueDes =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(String),
                   )
                   as String;
-          result.code = valueDes;
+          result.amount = valueDes;
           break;
-        case r'label':
+        case r'currency':
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(String),
+                    specifiedType: const FullType.nullable(String),
                   )
-                  as String;
-          result.label = valueDes;
+                  as String?;
+          if (valueDes == null) continue;
+          result.currency = valueDes;
           break;
         default:
           unhandled.add(key);
@@ -124,12 +120,12 @@ class _$AdminOrderDtoOutputOrderCancelChoicesReasonsInnerSerializer
   }
 
   @override
-  AdminOrderDtoOutputOrderCancelChoicesReasonsInner deserialize(
+  AdminCustomerDtoOutputDues deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminOrderDtoOutputOrderCancelChoicesReasonsInnerBuilder();
+    final result = AdminCustomerDtoOutputDuesBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

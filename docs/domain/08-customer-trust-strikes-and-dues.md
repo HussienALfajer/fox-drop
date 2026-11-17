@@ -12,7 +12,7 @@
   - When the outcome is set to fake, the customer is blocked until they pay their dues.
   - Dues follow `customer.fake_order_dues_rule`: `fee_plus_merchant_net` (default: delivery fee + merchant net), `fee_plus_items_value`, or `fixed` (an amount set by OWN).
   - FIN records the payment at the desk, which unblocks the customer automatically.
-- **The device block (owner decision 2026-11-10, slice 2.25b):** a dues block or a manual block follows the account, its phone number and the phone itself, so a new account, another number, a reinstall or a VPN on the same phone cannot order. The device's identity must survive a reinstall (Android ID with Play Integrity's device recall on Android, a Keychain item with DeviceCheck on iOS); the IP address is only a signal, never the block, since a VPN changes it and many customers share one. OWN can lift a device's block with a reason, for a phone sold on.
+- **The device block (owner decision 2026-11-10, slice 2.25d):** a dues block or a manual block follows the account, its phone number and the phone itself, so a new account, another number, a reinstall or a VPN on the same phone cannot order. The device's identity must survive a reinstall (Android ID with Play Integrity's device recall on Android, a Keychain item with DeviceCheck on iOS); the IP address is only a signal, never the block, since a VPN changes it and many customers share one. OWN can lift a device's block with a reason, for a phone sold on.
 - **Dues ledger «مستحقات الزبون»** (base currency):
 
   | Entry             | Sign | When                                                                  |
@@ -29,3 +29,9 @@
   - Status becomes «مغلق»: the customer cannot sign in and drops out of active-customer lists.
   - All data is kept.
   - If the same phone number registers again, a new account is created and linked internally to the closed one. Blocks, unpaid dues, strikes, trust state and promo history carry over, so the new account is **not** a "new user" for promo codes.
+- **Owner decisions 2026-11-17 (slice 2.25):**
+  - A block «حتى دفع مستحق» from the panel posts a `dues.charge` of its amount, so the desk's payment lifts it by itself.
+  - The desk takes partial payments; the dues block stays until the balance is 0 or less.
+  - A credit left on the dues account (a «تغيير النتيجة» after the payment) stays there and covers later dues; V1 pays no cash back.
+  - Clearing strikes restarts the count; nothing is deleted.
+  - A closed account keeps all its data for now (AP §13 item 6 to check again before the store submission), stays searchable in the panel and drops out of the active lists.

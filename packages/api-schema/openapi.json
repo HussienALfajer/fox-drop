@@ -4721,6 +4721,238 @@
         ]
       }
     },
+    "/v1/customer/account-state": {
+      "get": {
+        "operationId": "customerAccountStateRead",
+        "parameters": [
+          {
+            "name": "latitude",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "name": "longitude",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerAccountStateDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
+    },
+    "/v1/admin/customers/search": {
+      "post": {
+        "operationId": "adminCustomersSearch",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCustomerSearchDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCustomersFoundDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/customers/{customerId}": {
+      "get": {
+        "operationId": "adminCustomersRead",
+        "parameters": [
+          {
+            "name": "customerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "cityId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCustomerDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/customers/{customerId}/block": {
+      "post": {
+        "operationId": "adminCustomersBlock",
+        "parameters": [
+          {
+            "name": "customerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminBlockCustomerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCustomerDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/customers/{customerId}/unblock": {
+      "post": {
+        "operationId": "adminCustomersUnblock",
+        "parameters": [
+          {
+            "name": "customerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUnblockCustomerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCustomerDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/customer/quote": {
       "post": {
         "operationId": "customerQuoteQuote",
@@ -11269,6 +11501,163 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminMerchantStatementDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/cash-desk/customer-dues/preview": {
+      "post": {
+        "operationId": "adminCustomerDuesPreview",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCustomerDuesPreviewRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCustomerDuesPreviewDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/cash-desk/customer-dues": {
+      "post": {
+        "operationId": "adminCustomerDuesPay",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCustomerDuesPayDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCustomerReceiptDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/cash-desk/customer-receipts/{receiptId}": {
+      "get": {
+        "operationId": "adminCustomerDuesReceipt",
+        "parameters": [
+          {
+            "name": "receiptId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCustomerReceiptDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/cash-desk/customers/{customerId}/receipts": {
+      "get": {
+        "operationId": "adminCustomerDuesReceipts",
+        "parameters": [
+          {
+            "name": "customerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCustomerReceiptsDto_Output"
                 }
               }
             },
@@ -20492,6 +20881,715 @@
         ],
         "additionalProperties": false
       },
+      "CustomerAccountStateDto_Output": {
+        "type": "object",
+        "properties": {
+          "reviewStop": {
+            "type": "boolean",
+            "description": "«حسابك موقوف حتى مراجعة فريق الدعم», with call and WhatsApp (CU §5.5)."
+          },
+          "block": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "until": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "«حسابك محظور حتى {التاريخ}: {السبب}»; null «حسابك محظور: {السبب}. تواصل مع الدعم.»"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "description": "The block reason's customer text (CU Appendix C)."
+                  }
+                },
+                "required": [
+                  "until",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dues": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "string",
+                    "pattern": "^\\d+$",
+                    "description": "Minor units, above zero."
+                  },
+                  "currency": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "amount",
+                  "currency"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«عليك {المبلغ} لـ FOX DROP. ادفعه في المكتب ليُفك الحظر تلقائياً.» in the city of the point (AP §8.8)."
+          },
+          "office": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "latitude": {
+                    "type": "number"
+                  },
+                  "longitude": {
+                    "type": "number"
+                  },
+                  "hours": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "weekday": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991,
+                          "description": "0 Sunday to 6 Saturday."
+                        },
+                        "opensAt": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991,
+                          "description": "Minutes after midnight on the city clock."
+                        },
+                        "closesAt": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991,
+                          "description": "Minutes after midnight; at or before the opening it runs past midnight."
+                        }
+                      },
+                      "required": [
+                        "weekday",
+                        "opensAt",
+                        "closesAt"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "description": "The desk hours per weekday; a weekday not listed is closed."
+                  },
+                  "timeZone": {
+                    "type": "string"
+                  },
+                  "open": {
+                    "type": "boolean"
+                  },
+                  "closesAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "opensAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "latitude",
+                  "longitude",
+                  "hours",
+                  "timeZone",
+                  "open",
+                  "closesAt",
+                  "opensAt"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The dues sheet's office and its hours (AP §9.12.1); null until the owner sets it."
+          }
+        },
+        "required": [
+          "reviewStop",
+          "block",
+          "dues",
+          "office"
+        ],
+        "additionalProperties": false
+      },
+      "AdminCustomerSearchDto": {
+        "type": "object",
+        "properties": {
+          "cityId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "The panel's city, whose dues the status reads."
+          },
+          "q": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60,
+            "description": "A number in any usual form, or a part of a name."
+          }
+        },
+        "required": [
+          "cityId",
+          "q"
+        ]
+      },
+      "AdminCustomersFoundDto_Output": {
+        "type": "object",
+        "properties": {
+          "customers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "name": {
+                  "description": "null until «أكمل بياناتك».",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "maskedPhone": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "active",
+                    "blocked",
+                    "dues_unpaid",
+                    "review_stop"
+                  ],
+                  "description": "«نشط», «محظور» (a block), «محظور» until the dues are paid, «موقوف حتى مراجعة الدعم» (AP §9.8)."
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "maskedPhone",
+                "status"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "customers"
+        ],
+        "additionalProperties": false
+      },
+      "AdminCustomerDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "firstName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lastName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "gender": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "male",
+                  "female"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "birthday": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "maskedPhone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "blocked",
+              "dues_unpaid",
+              "review_stop"
+            ],
+            "description": "«نشط», «محظور» (a block), «محظور» until the dues are paid, «موقوف حتى مراجعة الدعم» (AP §9.8)."
+          },
+          "block": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "until",
+                      "indefinite",
+                      "dues"
+                    ]
+                  },
+                  "until": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "reason": {
+                    "type": "string"
+                  },
+                  "reasonLabel": {
+                    "type": "string"
+                  },
+                  "customerText": {
+                    "type": "string"
+                  },
+                  "note": {
+                    "type": "string"
+                  },
+                  "startedAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  }
+                },
+                "required": [
+                  "id",
+                  "kind",
+                  "until",
+                  "reason",
+                  "reasonLabel",
+                  "customerText",
+                  "note",
+                  "startedAt"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The block in force: a duration or until further notice."
+          },
+          "reviewStop": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "startedAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  }
+                },
+                "required": [
+                  "startedAt"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "trusted": {
+            "type": "boolean",
+            "description": "«موثوق» by D23."
+          },
+          "delivered": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "The normal deliveries that count toward the trust."
+          },
+          "trustedAfter": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "lateCancels": {
+            "type": "object",
+            "properties": {
+              "inWindow": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "total": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "windowDays": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "inWindow",
+              "total",
+              "limit",
+              "windowDays"
+            ],
+            "additionalProperties": false
+          },
+          "fakeOrders": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "dues": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "string",
+                "pattern": "^-?\\d{1,18}$"
+              },
+              "currency": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "additionalProperties": false,
+            "description": "In the city's base: + the customer owes, − a credit (AP §8.8)."
+          },
+          "blocks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "until",
+                    "indefinite",
+                    "dues"
+                  ]
+                },
+                "reason": {
+                  "type": "string"
+                },
+                "reasonLabel": {
+                  "type": "string"
+                },
+                "note": {
+                  "type": "string"
+                },
+                "until": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "duesAmount": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^-?\\d{1,18}$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "duesCurrency": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "startedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "startedByName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "endedAt": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "A duration that ran out ends at its time."
+                },
+                "endedByName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "endNote": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "inForce": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "kind",
+                "reason",
+                "reasonLabel",
+                "note",
+                "until",
+                "duesAmount",
+                "duesCurrency",
+                "startedAt",
+                "startedByName",
+                "endedAt",
+                "endedByName",
+                "endNote",
+                "inForce"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "blockReasons": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "label"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Content's active customer_block reasons (AP Appendix B)."
+          }
+        },
+        "required": [
+          "id",
+          "firstName",
+          "lastName",
+          "gender",
+          "birthday",
+          "maskedPhone",
+          "status",
+          "block",
+          "reviewStop",
+          "trusted",
+          "delivered",
+          "trustedAfter",
+          "lateCancels",
+          "fakeOrders",
+          "dues",
+          "blocks",
+          "blockReasons"
+        ],
+        "additionalProperties": false
+      },
+      "AdminBlockCustomerDto": {
+        "type": "object",
+        "properties": {
+          "cityId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "until",
+              "indefinite",
+              "dues"
+            ],
+            "description": "«لمدة» until a moment, «حتى إشعار آخر», or «حتى دفع مستحق» of an amount."
+          },
+          "until": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The duration kind: when the block ends."
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{1,15}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The dues kind: the amount in minor units of the city's base."
+          },
+          "reason": {
+            "type": "string",
+            "description": "A code of Content's customer_block list (AP Appendix B)."
+          },
+          "note": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "The internal reason (AP §9.8: required)."
+          }
+        },
+        "required": [
+          "cityId",
+          "kind",
+          "until",
+          "amount",
+          "reason",
+          "note"
+        ]
+      },
+      "AdminUnblockCustomerDto": {
+        "type": "object",
+        "properties": {
+          "cityId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "blockId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "The block in force the panel showed."
+          },
+          "note": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "The required reason."
+          }
+        },
+        "required": [
+          "cityId",
+          "blockId",
+          "note"
+        ]
+      },
       "CustomerQuoteRequestDto": {
         "type": "object",
         "properties": {
@@ -21232,6 +22330,7 @@
                     "emergency_stop",
                     "review_stop",
                     "dues_unpaid",
+                    "account_blocked",
                     "promo_code",
                     "item_not_found",
                     "item_unavailable",
@@ -21269,7 +22368,7 @@
                   "description": "platform_closed: «FOX DROP يستقبل الطلبات من الساعة {الساعة}»."
                 },
                 "message": {
-                  "description": "emergency_stop: the browsing message (AP §9.1.6).",
+                  "description": "emergency_stop: the browsing message (AP §9.1.6); account_blocked: the block reason's customer text (CU Appendix C).",
                   "type": [
                     "string",
                     "null"
@@ -21323,6 +22422,19 @@
                     }
                   ],
                   "description": "promo_code: why the code does not apply (CU Appendix C «Code refusals»)."
+                },
+                "until": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "account_blocked: the block's end («حسابك محظور حتى {التاريخ}: {السبب}»); null until further notice («حسابك محظور: {السبب}. تواصل مع الدعم.»)."
                 }
               },
               "required": [
@@ -21331,7 +22443,8 @@
                 "opensAt",
                 "message",
                 "amount",
-                "refusal"
+                "refusal",
+                "until"
               ],
               "additionalProperties": false
             },
@@ -49880,6 +50993,478 @@
           "status",
           "unpaid",
           "lines"
+        ],
+        "additionalProperties": false
+      },
+      "AdminCustomerDuesPreviewRequestDto": {
+        "type": "object",
+        "properties": {
+          "cityId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "customerId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "lines": {
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "currency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                },
+                "amount": {
+                  "type": "string",
+                  "pattern": "^\\d{1,18}$"
+                }
+              },
+              "required": [
+                "currency",
+                "amount"
+              ]
+            },
+            "description": "The cash per currency; none to read the dues alone."
+          }
+        },
+        "required": [
+          "cityId",
+          "customerId",
+          "lines"
+        ]
+      },
+      "AdminCustomerDuesPreviewDto_Output": {
+        "type": "object",
+        "properties": {
+          "customerId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "customerName": {
+            "type": "string"
+          },
+          "cityId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "due": {
+            "type": "string",
+            "pattern": "^-?\\d{1,18}$",
+            "description": "+ the customer owes; 0 or less when nothing is owed."
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "currency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                },
+                "amount": {
+                  "type": "string",
+                  "pattern": "^\\d{1,18}$"
+                },
+                "base": {
+                  "type": "string",
+                  "pattern": "^\\d{1,18}$",
+                  "description": "The value in the base at the current rate."
+                },
+                "rates": {
+                  "maxItems": 10,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "pattern": "^[A-Z]{3}$"
+                      },
+                      "rateVersionId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      }
+                    },
+                    "required": [
+                      "currency",
+                      "rateVersionId"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "description": "The rate version of each currency but the base, as the quote gave it."
+                },
+                "unit": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "from": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{3}$"
+                        },
+                        "to": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{3}$"
+                        },
+                        "value": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "from",
+                        "to",
+                        "value"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "currency",
+                "amount",
+                "base",
+                "rates",
+                "unit"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "total": {
+            "type": "string",
+            "pattern": "^\\d{1,18}$"
+          },
+          "remaining": {
+            "type": "string",
+            "pattern": "^-?\\d{1,18}$",
+            "description": "What stays owed after the payment."
+          }
+        },
+        "required": [
+          "customerId",
+          "customerName",
+          "cityId",
+          "currency",
+          "due",
+          "lines",
+          "total",
+          "remaining"
+        ],
+        "additionalProperties": false
+      },
+      "AdminCustomerDuesPayDto": {
+        "type": "object",
+        "properties": {
+          "cityId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "customerId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "due": {
+            "type": "string",
+            "pattern": "^-?\\d{1,18}$",
+            "description": "The dues the screen showed."
+          },
+          "lines": {
+            "minItems": 1,
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "currency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                },
+                "amount": {
+                  "type": "string",
+                  "pattern": "^\\d{1,18}$"
+                },
+                "base": {
+                  "type": "string",
+                  "pattern": "^\\d{1,18}$"
+                },
+                "rates": {
+                  "maxItems": 10,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "pattern": "^[A-Z]{3}$"
+                      },
+                      "rateVersionId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      }
+                    },
+                    "required": [
+                      "currency",
+                      "rateVersionId"
+                    ]
+                  },
+                  "description": "The rate version of each currency but the base, as the quote gave it."
+                }
+              },
+              "required": [
+                "currency",
+                "amount",
+                "base",
+                "rates"
+              ]
+            }
+          }
+        },
+        "required": [
+          "cityId",
+          "customerId",
+          "due",
+          "lines"
+        ]
+      },
+      "AdminCustomerReceiptDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "cityId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "number": {
+            "type": "string"
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "cashierId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "cashierName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "customerId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "customerName": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "dueBefore": {
+            "type": "string",
+            "pattern": "^-?\\d{1,18}$"
+          },
+          "total": {
+            "type": "string",
+            "pattern": "^\\d{1,18}$"
+          },
+          "dueAfter": {
+            "type": "string",
+            "pattern": "^-?\\d{1,18}$"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "currency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                },
+                "amount": {
+                  "type": "string",
+                  "pattern": "^\\d{1,18}$"
+                },
+                "base": {
+                  "type": "string",
+                  "pattern": "^\\d{1,18}$"
+                }
+              },
+              "required": [
+                "currency",
+                "amount",
+                "base"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "cityId",
+          "number",
+          "sessionId",
+          "cashierId",
+          "cashierName",
+          "customerId",
+          "customerName",
+          "currency",
+          "dueBefore",
+          "total",
+          "dueAfter",
+          "createdAt",
+          "lines"
+        ],
+        "additionalProperties": false
+      },
+      "AdminCustomerReceiptsDto_Output": {
+        "type": "object",
+        "properties": {
+          "receipts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "cityId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "number": {
+                  "type": "string"
+                },
+                "sessionId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "cashierId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "cashierName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "customerId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "customerName": {
+                  "type": "string"
+                },
+                "currency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                },
+                "dueBefore": {
+                  "type": "string",
+                  "pattern": "^-?\\d{1,18}$"
+                },
+                "total": {
+                  "type": "string",
+                  "pattern": "^\\d{1,18}$"
+                },
+                "dueAfter": {
+                  "type": "string",
+                  "pattern": "^-?\\d{1,18}$"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "lines": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "pattern": "^[A-Z]{3}$"
+                      },
+                      "amount": {
+                        "type": "string",
+                        "pattern": "^\\d{1,18}$"
+                      },
+                      "base": {
+                        "type": "string",
+                        "pattern": "^\\d{1,18}$"
+                      }
+                    },
+                    "required": [
+                      "currency",
+                      "amount",
+                      "base"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "cityId",
+                "number",
+                "sessionId",
+                "cashierId",
+                "cashierName",
+                "customerId",
+                "customerName",
+                "currency",
+                "dueBefore",
+                "total",
+                "dueAfter",
+                "createdAt",
+                "lines"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "receipts"
         ],
         "additionalProperties": false
       },

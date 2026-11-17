@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'account/account_banners.dart';
 import 'auth.dart';
 import 'browsing/restaurant_list.dart';
 import 'cart/cart.dart';
@@ -77,6 +78,8 @@ class HomeScreen extends ConsumerWidget {
       bottomNavigationBar: signedIn ? const ActiveOrdersBar() : null,
       body: Column(
         children: [
+          // CU §5.5 (slice 2.25a): the block, the dues and the review stop.
+          const AccountStateBanners(),
           // CU §6.2 item 2: the emergency stop's browsing message.
           const EmergencyStopNotice(),
           // CU §6.2 item 5: terms waiting for acceptance.

@@ -100,6 +100,7 @@ describe('POST /v1/admin/orders/{orderId}/outcome (AP §9.3.2, §8.9)', () => {
       message: null,
       amount: { amount: '24400', currency: 'TRY' },
       refusal: null,
+      until: null,
     });
     // The captain is free, with the card until «حسناً».
     const active = (await order.captain.active()).json();

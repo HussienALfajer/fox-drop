@@ -553,8 +553,9 @@ export class MerchantSettlementService {
   }
 }
 
-// One line per currency, one at least, amounts above zero.
-function checkLines(lines: readonly CashLine[]): void {
+// One line per currency, one at least, amounts above zero (a customer's
+// dues payment shares it).
+export function checkLines(lines: readonly CashLine[]): void {
   if (
     lines.length === 0 ||
     new Set(lines.map((line) => line.currency)).size !== lines.length ||
@@ -564,7 +565,7 @@ function checkLines(lines: readonly CashLine[]): void {
   }
 }
 
-function sameRates(a: readonly ConversionRate[], b: readonly ConversionRate[]): boolean {
+export function sameRates(a: readonly ConversionRate[], b: readonly ConversionRate[]): boolean {
   const key = (rates: readonly ConversionRate[]) =>
     JSON.stringify(
       [...rates]

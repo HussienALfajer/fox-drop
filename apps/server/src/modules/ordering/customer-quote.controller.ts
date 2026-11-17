@@ -201,6 +201,7 @@ class CustomerQuoteDto extends createZodDto(
             'emergency_stop',
             'review_stop',
             'dues_unpaid',
+            'account_blocked',
             'promo_code',
             'item_not_found',
             'item_unavailable',
@@ -218,7 +219,9 @@ class CustomerQuoteDto extends createZodDto(
           message: z
             .string()
             .nullable()
-            .describe('emergency_stop: the browsing message (AP §9.1.6).'),
+            .describe(
+              "emergency_stop: the browsing message (AP §9.1.6); account_blocked: the block reason's customer text (CU Appendix C).",
+            ),
           amount: amount
             .nullable()
             .describe(
@@ -237,6 +240,12 @@ class CustomerQuoteDto extends createZodDto(
             ])
             .nullable()
             .describe('promo_code: why the code does not apply (CU Appendix C «Code refusals»).'),
+          until: z.iso
+            .datetime()
+            .nullable()
+            .describe(
+              "account_blocked: the block's end («حسابك محظور حتى {التاريخ}: {السبب}»); null until further notice («حسابك محظور: {السبب}. تواصل مع الدعم.»).",
+            ),
         }),
       )
       .describe('CU §10.6: every one blocks ordering; the texts are in Appendix C.'),
@@ -361,6 +370,7 @@ export function quoteBody(quote: Quote) {
     problems: quote.problems.map((entry) => ({
       ...entry,
       opensAt: entry.opensAt?.toISOString() ?? null,
+      until: entry.until?.toISOString() ?? null,
       amount: entry.amount && {
         amount: entry.amount.amount.toString(),
         currency: entry.amount.currency,

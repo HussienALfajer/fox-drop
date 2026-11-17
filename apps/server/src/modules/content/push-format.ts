@@ -46,4 +46,6 @@ export const receiptTypeLabels = {
   // paying a restaurant the platform owes.
   merchant_settlement: 'تسوية حساب المطعم',
   merchant_payout: 'صرف للمطعم',
+  // «تسجيل دفع المستحق» (slice 2.25a): a customer's dues paid at the desk.
+  customer_dues_payment: 'دفع مستحقات زبون',
 } as const;

@@ -1,6 +1,7 @@
 import 'package:core_api/core_api.dart';
 import 'package:core_l10n/core_l10n.dart';
 
+import '../account/account_state.dart';
 import '../browsing/browsing.dart';
 import '../cart/cart.dart';
 import 'quote.dart';
@@ -17,6 +18,10 @@ enum ProblemAction {
 
   /// «إزالة» on a refused code (CU §10.4): the order goes without it.
   removeCode,
+
+  /// «تواصل مع الدعم» on the account's state (CU Appendix C «Pre-order
+  /// problems», slice 2.25a): WhatsApp, or a call without it.
+  contactSupport,
 }
 
 /// A blocking problem as checkout shows it, at the top (CU §10.6).
@@ -126,13 +131,24 @@ List<ProblemView> problemViews(
                   ? ''
                   : l10n.formatMoney(amount.amount, amount.currency),
             ),
-            ProblemAction.none,
+            ProblemAction.contactSupport,
+          ),
+        );
+      case ProblemCode.accountBlocked:
+        // CU §5.5, AP §9.8 (slice 2.25a): a block from the panel, for a
+        // duration or until further notice; its reason's customer text.
+        views.add(
+          ProblemView(
+            blockText(l10n, problem.until, problem.message ?? ''),
+            ProblemAction.contactSupport,
           ),
         );
       case ProblemCode.reviewStop:
         // docs/domain/08: late cancellations stopped ordering until support
         // reviews the account; support lifts it, not the customer.
-        views.add(ProblemView(l10n.customerReviewStop, ProblemAction.none));
+        views.add(
+          ProblemView(l10n.customerReviewStop, ProblemAction.contactSupport),
+        );
       case ProblemCode.promoCode:
         // CU §10.4: a refused code blocks until it is removed, also when it
         // stopped working between the quote and «تأكيد الطلب».

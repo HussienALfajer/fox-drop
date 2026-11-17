@@ -725,6 +725,51 @@ void main() {
     await app.done(tester);
   });
 
+  // CU §5.5, AP §9.8 (slice 2.25a): a block from the panel refuses the order
+  // with its reason and end.
+  testWidgets('a block refuses the order with its reason and end', (
+    tester,
+  ) async {
+    final app = await _checkout(
+      tester,
+      quotes: [
+        FakeAnswer(
+          200,
+          _quote(
+            problems: [
+              {
+                'code': 'account_blocked',
+                'line': null,
+                'opensAt': null,
+                'message': 'مخالفة شروط الاستخدام',
+                'until': '2026-11-20T15:30:00.000Z',
+              },
+            ],
+          ),
+        ),
+      ],
+      before: (app) => app.server.on('/v1/customer/contact', [
+        const FakeAnswer(200, {
+          'phone': '+963944000000',
+          'whatsapp': '+963944000001',
+        }),
+      ]),
+    );
+    expect(
+      find.text('حسابك محظور حتى 20/11/2026 6:30 م: مخالفة شروط الاستخدام'),
+      findsOneWidget,
+    );
+    // CU Appendix C «Pre-order problems»: «تواصل مع الدعم».
+    await tester.tap(find.text('تواصل مع الدعم'));
+    await tester.pumpAndSettle();
+    expect(app.launched.last.host, 'wa.me');
+    final confirm = tester.widget<FilledButton>(
+      find.byKey(const Key('confirm-order')),
+    );
+    expect(confirm.onPressed, isNull);
+    await app.done(tester);
+  });
+
   testWidgets('a blocked order keeps the cart and shows the new quote', (
     tester,
   ) async {

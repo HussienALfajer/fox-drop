@@ -29,6 +29,8 @@ import { CaptainBalancesPage } from './captain-balances-page.js';
 import { CostReportPage } from './cost-report-page.js';
 import { DailyReportPage } from './daily-report-page.js';
 import { ExchangeRatesPage } from './exchange-rates-page.js';
+import { CASH_DESK_RECORD, CUSTOMERS_READ } from './customers.js';
+import { CustomerProfilePage, CustomerReceiptPage, CustomersPage } from './customers-page.js';
 import { MANUAL_ADJUSTMENT } from './manual-entries.js';
 import { ManualEntriesPage } from './manual-entries-page.js';
 import { CashDeskPage, CashDeskSessionsPage } from './cash-desk-page.js';
@@ -424,6 +426,37 @@ const manualEntriesRoute = createRoute({
   component: ManualEntriesPage,
 });
 
+// AP §9.8 «الزبائن» (slice 2.25a): the search and the profile
+// (customers.read), and a customer's receipt at the desk (cash_desk.record).
+const customersRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/customers',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, CUSTOMERS_READ)) throw redirect({ to: '/' });
+  },
+  component: CustomersPage,
+});
+
+const customerRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/customers/$customerId',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, CUSTOMERS_READ)) throw redirect({ to: '/' });
+  },
+  component: CustomerProfilePage,
+});
+
+const customerReceiptRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/cash-desk/customer-receipts/$receiptId',
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, CASH_DESK_RECORD)) throw redirect({ to: '/' });
+  },
+  component: CustomerReceiptPage,
+});
+
 const receiptRoute = createRoute({
   getParentRoute: () => signedInRoute,
   path: '/cash-desk/receipts/$receiptId',
@@ -547,6 +580,9 @@ const routeTree = rootRoute.addChildren([
     dailyReportRoute,
     costReportRoute,
     manualEntriesRoute,
+    customersRoute,
+    customerRoute,
+    customerReceiptRoute,
     receiptRoute,
     settlementsRoute,
     settleCaptainRoute,
