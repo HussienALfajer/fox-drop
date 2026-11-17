@@ -11,6 +11,13 @@ import { minorOf } from './format.js';
 export const CUSTOMERS_READ = 'customers.read';
 export const CUSTOMERS_BLOCK = 'customers.block';
 export const CASH_DESK_RECORD = 'cash_desk.record';
+// Slice 2.25b: «توثيق», «إزالة الثقة» and «تغيير الرقم» (OWN, OPS); clearing
+// strikes and ending a review stop (OWN, OPS, SUP); the admin test account
+// (OWN); «تسجيل الخروج من كل الأجهزة» (OWN, OPS, SUP).
+export const CUSTOMERS_MANAGE = 'customers.manage';
+export const CUSTOMERS_CLEAR_STRIKES = 'customers.clear_strikes';
+export const CUSTOMERS_TEST_ACCOUNT = 'customers.test_account';
+export const CUSTOMERS_SIGN_OUT = 'customers.sign_out_everywhere';
 
 export type FoundCustomer =
   components['schemas']['AdminCustomersFoundDto_Output']['customers'][number];
@@ -331,4 +338,126 @@ export function useCustomerReceipt(receiptId: string) {
       return data;
     },
   });
+}
+
+// Slice 2.25b: the profile's commands that answer the profile and take no
+// key (each sets a value or names its target), with the refusals the page
+// explains.
+export const actionRefusals = [
+  'nothing_to_clear',
+  'not_stopped',
+  'invalid_phone',
+  'phone_taken',
+  'unknown_customer',
+  'idempotency_key_reused',
+] as const;
+export type ActionRefusal = (typeof actionRefusals)[number];
+export type ActionResult =
+  { status: 'done'; profile: CustomerProfile } | { status: 'refused'; refusal: ActionRefusal };
+
+export type CustomerAction =
+  | { path: '/v1/admin/customers/{customerId}/trust'; body: { trusted: boolean; note: string } }
+  | { path: '/v1/admin/customers/{customerId}/clear-strikes'; body: { note: string } }
+  | {
+      path: '/v1/admin/customers/{customerId}/end-review-stop';
+      body: { stopId: string; note: string };
+    }
+  | { path: '/v1/admin/customers/{customerId}/test-account'; body: { flagged: boolean } }
+  | {
+      path: '/v1/admin/customers/{customerId}/change-phone';
+      body: { phone: string; note: string };
+    };
+
+function sendAction(
+  action: CustomerAction,
+  params: { path: { customerId: string } },
+  cityId: string,
+) {
+  switch (action.path) {
+    case '/v1/admin/customers/{customerId}/trust':
+      return api.POST(action.path, { params, body: { cityId, ...action.body } });
+    case '/v1/admin/customers/{customerId}/clear-strikes':
+      return api.POST(action.path, { params, body: { cityId, ...action.body } });
+    case '/v1/admin/customers/{customerId}/end-review-stop':
+      return api.POST(action.path, { params, body: { cityId, ...action.body } });
+    case '/v1/admin/customers/{customerId}/test-account':
+      return api.POST(action.path, { params, body: { cityId, ...action.body } });
+    case '/v1/admin/customers/{customerId}/change-phone':
+      return api.POST(action.path, { params, body: { cityId, ...action.body } });
+  }
+}
+
+export function useCustomerAction(cityId: string, customerId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (action: CustomerAction): Promise<ActionResult> => {
+      const params = { path: { customerId } };
+      const { data, error, response } = await sendAction(action, params, cityId);
+      if (data) return { status: 'done', profile: data };
+      const refusal = refusalOf(response.status, error, actionRefusals);
+      if (refusal) return { status: 'refused', refusal };
+      throw new Error(`The customer command failed with ${response.status}.`);
+    },
+    onSuccess: (result) => {
+      if (result.status === 'done') {
+        queryClient.setQueryData(customerKey(cityId, customerId), result.profile);
+      }
+    },
+  });
+}
+
+// «ملاحظة داخلية»: one Idempotency-Key per body until an answer arrives, so
+// a retry after a lost answer adds no second note.
+export function useAddNote(cityId: string, customerId: string) {
+  const queryClient = useQueryClient();
+  const keys = useRef(new Map<string, string>());
+  return useMutation({
+    mutationFn: async (body: string): Promise<CustomerProfile> => {
+      let key = keys.current.get(body);
+      if (key === undefined) {
+        key = crypto.randomUUID();
+        keys.current.set(body, key);
+      }
+      const { data, response } = await api.POST('/v1/admin/customers/{customerId}/notes', {
+        params: { path: { customerId }, header: { 'Idempotency-Key': key } },
+        body: { cityId, body },
+      });
+      if (!data) throw new Error(`The note failed with ${response.status}.`);
+      keys.current.delete(body);
+      return data;
+    },
+    onSuccess: (profile) => queryClient.setQueryData(customerKey(cityId, customerId), profile),
+  });
+}
+
+// «تسجيل الخروج من كل الأجهزة»: a repeat signs out nothing more, so no key.
+export function useSignOutEverywhere(cityId: string, customerId: string) {
+  return useMutation({
+    mutationFn: async (note: string): Promise<number> => {
+      const { data, response } = await api.POST(
+        '/v1/admin/customers/{customerId}/sign-out-everywhere',
+        { params: { path: { customerId } }, body: { cityId, note } },
+      );
+      if (!data) throw new Error(`The sign-out failed with ${response.status}.`);
+      return data.sessionsEnded;
+    },
+  });
+}
+
+// AP §9.8 «الأكواد المستخدمة»: a use's state, keyed by the API's values; a
+// state the panel does not know shows nothing.
+export const codeUseKeys: Record<string, string> = {
+  held: 'customers.codes.held',
+  spent: 'customers.codes.spent',
+  returned: 'customers.codes.returned',
+};
+
+// The saved address's label: «المنزل», «العمل», or the customer's own.
+export function addressLabelOf(
+  address: CustomerProfile['addresses'][number],
+  t: (key: 'customers.address.home' | 'customers.address.work') => string,
+): string {
+  if (address.label === 'home') return t('customers.address.home');
+  if (address.label === 'work') return t('customers.address.work');
+  return address.customLabel ?? '';
 }

@@ -65,6 +65,7 @@ export {
 } from './late-codes.service.js';
 export {
   PromoCodeUsesService,
+  type CustomerCodeUse,
   type AppliedCode,
   type CodeCart,
   type CodeCheck,

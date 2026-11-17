@@ -1,6 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { aboveDues, birthdayText, blockBodyOf, duesLinesOf, duesPayBodyOf } from './customers.js';
+import {
+  aboveDues,
+  addressLabelOf,
+  birthdayText,
+  blockBodyOf,
+  duesLinesOf,
+  duesPayBodyOf,
+} from './customers.js';
 
 vi.mock('./api.js', () => ({ api: {} }));
 
@@ -122,5 +129,17 @@ describe('the dues payment', () => {
 describe('birthdayText', () => {
   it('writes the birthday as AP §4.7 writes dates', () => {
     expect(birthdayText('1995-03-07')).toBe('07/03/1995');
+  });
+});
+
+describe('addressLabelOf (CU §7.3, AP §9.8)', () => {
+  const t = (key: string) => (key === 'customers.address.home' ? 'المنزل' : 'العمل');
+  const address = (label: string, customLabel: string | null) =>
+    ({ label, customLabel }) as Parameters<typeof addressLabelOf>[0];
+
+  it('names home and work, and keeps the customer’s own name for another', () => {
+    expect(addressLabelOf(address('home', null), t)).toBe('المنزل');
+    expect(addressLabelOf(address('work', null), t)).toBe('العمل');
+    expect(addressLabelOf(address('other', 'بيت أهلي'), t)).toBe('بيت أهلي');
   });
 });

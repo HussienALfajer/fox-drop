@@ -2020,6 +2020,438 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/customers/{customerId}/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCustomersAddNote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/customers/{customerId}/test-account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCustomersSetTestAccount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/customers/{customerId}/change-phone": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCustomersChangePhone"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/customers/{customerId}/sign-out-everywhere": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCustomersSignOutEverywhere"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/customers/{customerId}/trust": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCustomersMarkTrust"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/customers/{customerId}/clear-strikes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCustomersClearStrikes"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/customers/{customerId}/end-review-stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCustomersEndReviewStop"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/promo-codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminPromoCodesList"];
+        put?: never;
+        post: operations["adminPromoCodesCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/promo-codes/batch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminPromoCodesGenerate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/promo-codes/{codeId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminPromoCodesEdit"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/promo-codes/{codeId}/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminPromoCodesPause"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/promo-codes/{codeId}/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminPromoCodesReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/promo-codes/{codeId}/extend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminPromoCodesExtend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/promo-codes/{codeId}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminPromoCodesResume"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/compensations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCompensationsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/compensations/{compensationId}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCompensationsApprove"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/compensations/{compensationId}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCompensationsReject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/realtime/token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantRealtimeToken"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/realtime/token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["customerRealtimeToken"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/realtime/token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainRealtimeToken"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/realtime/token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminRealtimeToken"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/alerts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminAlertsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/alerts/{alertId}/acknowledge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminAlertsAcknowledge"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/push-token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["customerPushTokenRegister"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/push-token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["merchantPushTokenRegister"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/push-token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["captainPushTokenRegister"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["customerNotificationsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/customer/quote": {
         parameters: {
             query?: never;
@@ -3180,326 +3612,6 @@ export interface paths {
             cookie?: never;
         };
         get: operations["customerCodesList"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/promo-codes": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["adminPromoCodesList"];
-        put?: never;
-        post: operations["adminPromoCodesCreate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/promo-codes/batch": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["adminPromoCodesGenerate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/promo-codes/{codeId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["adminPromoCodesEdit"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/promo-codes/{codeId}/pause": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["adminPromoCodesPause"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/promo-codes/{codeId}/report": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["adminPromoCodesReport"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/promo-codes/{codeId}/extend": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["adminPromoCodesExtend"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/promo-codes/{codeId}/resume": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["adminPromoCodesResume"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/compensations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["adminCompensationsList"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/compensations/{compensationId}/approve": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["adminCompensationsApprove"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/compensations/{compensationId}/reject": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["adminCompensationsReject"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/merchant/realtime/token": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["merchantRealtimeToken"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/customer/realtime/token": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["customerRealtimeToken"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/captain/realtime/token": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["captainRealtimeToken"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/realtime/token": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["adminRealtimeToken"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/alerts": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["adminAlertsList"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/alerts/{alertId}/acknowledge": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["adminAlertsAcknowledge"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/customer/push-token": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["customerPushTokenRegister"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/merchant/push-token": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["merchantPushTokenRegister"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/captain/push-token": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["captainPushTokenRegister"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/customer/notifications": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["customerNotificationsList"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6396,6 +6508,8 @@ export interface components {
                 /** @description «تاريخ الميلاد», optional, a past date. */
                 birthday: string | null;
             } | null;
+            /** @description The account's own number, read-only in «حسابي» (CU §13; slice 2.25b). */
+            phone: string;
         };
         CustomerSaveProfileDto: {
             /** @description «الاسم»: 2 to 30 Arabic or Latin letters, spaces and «-». */
@@ -6550,6 +6664,8 @@ export interface components {
                 rating: number | null;
                 /** @description The number of ratings on the page (CU §9.1). */
                 ratingCount: number | null;
+                /** @description «تجريبي»: in test mode, seen only by an admin test account (CU §8.2, AP §9.8). */
+                testMode: boolean;
                 /** @description CU §8.4: «{fromMin}–{toMin} د». */
                 estimate: {
                     fromMin: number;
@@ -6597,6 +6713,8 @@ export interface components {
             rating: number | null;
             /** @description The number of ratings on the page (CU §9.1). */
             ratingCount: number | null;
+            /** @description «تجريبي»: in test mode, seen only by an admin test account (CU §8.2, AP §9.8). */
+            testMode: boolean;
             /** @description CU §8.4: «{fromMin}–{toMin} د». */
             estimate: {
                 fromMin: number;
@@ -6789,19 +6907,37 @@ export interface components {
                 startedAt: string;
             } | null;
             reviewStop: {
+                /** Format: uuid */
+                id: string;
                 /** Format: date-time */
                 startedAt: string;
             } | null;
-            /** @description «موثوق» by D23. */
+            /** @description «موثوق» by D23 and the latest mark. */
             trusted: boolean;
             /** @description The normal deliveries that count toward the trust. */
             delivered: number;
             trustedAfter: number;
+            /** @description The latest «توثيق» or «إزالة الثقة». */
+            trustMark: {
+                /** Format: date-time */
+                at: string;
+                byName: string | null;
+                note: string;
+                trusted: boolean;
+            } | null;
             lateCancels: {
+                /** @description Within the window, from the latest clear. */
                 inWindow: number;
                 total: number;
                 limit: number;
                 windowDays: number;
+                /** @description The latest «مسح المخالفات». */
+                cleared: {
+                    /** Format: date-time */
+                    at: string;
+                    byName: string | null;
+                    note: string;
+                } | null;
             };
             fakeOrders: number;
             /** @description In the city's base: + the customer owes, − a credit (AP §8.8). */
@@ -6834,6 +6970,74 @@ export interface components {
                 code: string;
                 label: string;
             }[];
+            /** @description «حساب تجريبي للإدارة»: sees the restaurants in test mode. */
+            testAccount: boolean;
+            orders: {
+                /** @description The customer's orders in the city, re-deliveries left out. */
+                count: number;
+                /** @description The delivered orders’ totals per currency. */
+                spent: {
+                    currency: string;
+                    amount: string;
+                }[];
+                last: {
+                    /** Format: uuid */
+                    id: string;
+                    number: string;
+                    status: string;
+                    /** Format: date-time */
+                    placedAt: string;
+                } | null;
+            };
+            tickets: {
+                /** Format: uuid */
+                id: string;
+                number: string;
+                typeLabel: string;
+                status: string;
+                orderNumber: string | null;
+                /** Format: date-time */
+                openedAt: string;
+            }[];
+            /** @description The codes used in the city, newest first. */
+            codes: {
+                code: string;
+                kind: string;
+                /** Format: uuid */
+                orderId: string;
+                currency: string;
+                discount: string;
+                /** @description held, spent, or returned (given back). */
+                status: string;
+                /** Format: date-time */
+                heldAt: string;
+            }[];
+            addresses: {
+                /** Format: uuid */
+                id: string;
+                label: string;
+                customLabel: string | null;
+                street: string;
+                floor: string | null;
+                landmark: string;
+                neighbourhood: string | null;
+                location: {
+                    latitude: number;
+                    longitude: number;
+                };
+                isDefault: boolean;
+                recipientName: string | null;
+                /** @description Another contact number, masked; null is the account's own. */
+                maskedContactPhone: string | null;
+            }[];
+            notes: {
+                /** Format: uuid */
+                id: string;
+                body: string;
+                authorName: string | null;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
         };
         AdminBlockCustomerDto: {
             /** Format: uuid */
@@ -6862,6 +7066,692 @@ export interface components {
             blockId: string;
             /** @description The required reason. */
             note: string;
+        };
+        AdminAddCustomerNoteDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description The note, up to 500 characters. */
+            body: string;
+        };
+        AdminSetCustomerTestAccountDto: {
+            /** Format: uuid */
+            cityId: string;
+            flagged: boolean;
+        };
+        AdminChangeCustomerPhoneDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description The new Syrian or Turkish mobile, in any usual form. */
+            phone: string;
+            /** @description The required reason. */
+            note: string;
+        };
+        AdminCustomerSignOutDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description The required reason. */
+            note: string;
+        };
+        AdminCustomerSignedOutDto_Output: {
+            /** @description The devices signed out. */
+            sessionsEnded: number;
+        };
+        AdminMarkCustomerTrustDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description «توثيق» (true) or «إزالة الثقة» (false). */
+            trusted: boolean;
+            /** @description The required reason. */
+            note: string;
+        };
+        AdminClearCustomerStrikesDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description The required reason. */
+            note: string;
+        };
+        AdminEndCustomerReviewStopDto: {
+            /** Format: uuid */
+            cityId: string;
+            /**
+             * Format: uuid
+             * @description The open review stop the panel showed.
+             */
+            stopId: string;
+            /** @description The required reason. */
+            note: string;
+        };
+        AdminPromoCodesDto_Output: {
+            codes: {
+                /** Format: uuid */
+                id: string;
+                code: string;
+                batchId: string | null;
+                /** @enum {string} */
+                kind: "percentage" | "fixed_amount" | "free_delivery";
+                /** @description A percentage code: 2000 is 20%. */
+                percentBp: number | null;
+                /** @description A fixed-amount code: minor units of the base currency. */
+                amount: string | null;
+                /** @description A percentage code's cap, or null for none. */
+                maxDiscount: string | null;
+                /** @description On the items value before discounts; null for none. */
+                minOrder: string | null;
+                /** Format: date-time */
+                validFrom: string;
+                /** Format: date-time */
+                validTo: string;
+                /** @description Optional hours: minutes from midnight on the city clock, 20:00 is 1200. */
+                startMinute: number | null;
+                /** @description At or before the start, the hours run past midnight. */
+                endMinute: number | null;
+                /** @description Null: no limit. */
+                totalLimit: number | null;
+                /** @description Null: no limit. */
+                perCustomerLimit: number | null;
+                /** @enum {string} */
+                audience: "everyone" | "new_users";
+                /** @description None: every restaurant. */
+                restaurantIds: string[];
+                /** @description None: every zone. */
+                zoneIds: string[];
+                /** @enum {string} */
+                funding: "platform" | "restaurant" | "shared";
+                /** @description A shared code: the restaurant's share, 4000 is 40%; null otherwise. */
+                sharedMerchantBp: number | null;
+                /** @description Pauses the code for the business day; null for none. */
+                dailyBudget: string | null;
+                /** @enum {string} */
+                visibility: "visible" | "secret";
+                currency: string;
+                /**
+                 * @description Set by OWN.
+                 * @enum {string}
+                 */
+                status: "active" | "paused";
+                /**
+                 * @description What the list shows: paused, not started, ended or running.
+                 * @enum {string}
+                 */
+                state: "active" | "paused" | "scheduled" | "expired";
+                /** @description Uses held or spent (not given back). */
+                uses: number;
+                /** @description The discounts of the uses not given back; null without marketing.read_costs. */
+                costToDate: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                updatedAt: string;
+            }[];
+            restaurants: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            }[];
+            zones: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                active: boolean;
+            }[];
+            /** @description The amounts are typed in it; null while the city has none. */
+            baseCurrency: string | null;
+            /** @description Whether this admin may create, edit, pause and resume. */
+            canManage: boolean;
+        };
+        AdminCreatePromoCodeDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description Letters and digits, saved in upper case. */
+            code: string;
+            /** @enum {string} */
+            kind: "percentage" | "fixed_amount" | "free_delivery";
+            /** @description A percentage code: 2000 is 20%. */
+            percentBp: number | null;
+            /** @description A fixed-amount code: minor units of the base currency. */
+            amount: string | null;
+            /** @description A percentage code's cap, or null for none. */
+            maxDiscount: string | null;
+            /** @description On the items value before discounts; null for none. */
+            minOrder: string | null;
+            /** Format: date-time */
+            validFrom: string;
+            /** Format: date-time */
+            validTo: string;
+            /** @description Optional hours: minutes from midnight on the city clock, 20:00 is 1200. */
+            startMinute: number | null;
+            /** @description At or before the start, the hours run past midnight. */
+            endMinute: number | null;
+            /** @description Null: no limit. */
+            totalLimit: number | null;
+            /** @description Null: no limit. */
+            perCustomerLimit: number | null;
+            /** @enum {string} */
+            audience: "everyone" | "new_users";
+            /** @description None: every restaurant. */
+            restaurantIds: string[];
+            /** @description None: every zone. */
+            zoneIds: string[];
+            /** @enum {string} */
+            funding: "platform" | "restaurant" | "shared";
+            /** @description A shared code: the restaurant's share, 4000 is 40%; null otherwise. */
+            sharedMerchantBp: number | null;
+            /** @description Pauses the code for the business day; null for none. */
+            dailyBudget: string | null;
+            /** @enum {string} */
+            visibility: "visible" | "secret";
+        };
+        AdminPromoCodesCreatedDto_Output: {
+            codes: {
+                /** Format: uuid */
+                id: string;
+                code: string;
+                batchId: string | null;
+                /** @enum {string} */
+                kind: "percentage" | "fixed_amount" | "free_delivery";
+                /** @description A percentage code: 2000 is 20%. */
+                percentBp: number | null;
+                /** @description A fixed-amount code: minor units of the base currency. */
+                amount: string | null;
+                /** @description A percentage code's cap, or null for none. */
+                maxDiscount: string | null;
+                /** @description On the items value before discounts; null for none. */
+                minOrder: string | null;
+                /** Format: date-time */
+                validFrom: string;
+                /** Format: date-time */
+                validTo: string;
+                /** @description Optional hours: minutes from midnight on the city clock, 20:00 is 1200. */
+                startMinute: number | null;
+                /** @description At or before the start, the hours run past midnight. */
+                endMinute: number | null;
+                /** @description Null: no limit. */
+                totalLimit: number | null;
+                /** @description Null: no limit. */
+                perCustomerLimit: number | null;
+                /** @enum {string} */
+                audience: "everyone" | "new_users";
+                /** @description None: every restaurant. */
+                restaurantIds: string[];
+                /** @description None: every zone. */
+                zoneIds: string[];
+                /** @enum {string} */
+                funding: "platform" | "restaurant" | "shared";
+                /** @description A shared code: the restaurant's share, 4000 is 40%; null otherwise. */
+                sharedMerchantBp: number | null;
+                /** @description Pauses the code for the business day; null for none. */
+                dailyBudget: string | null;
+                /** @enum {string} */
+                visibility: "visible" | "secret";
+                currency: string;
+                /**
+                 * @description Set by OWN.
+                 * @enum {string}
+                 */
+                status: "active" | "paused";
+                /**
+                 * @description What the list shows: paused, not started, ended or running.
+                 * @enum {string}
+                 */
+                state: "active" | "paused" | "scheduled" | "expired";
+                /** @description Uses held or spent (not given back). */
+                uses: number;
+                /** @description The discounts of the uses not given back; null without marketing.read_costs. */
+                costToDate: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                updatedAt: string;
+            }[];
+        };
+        AdminGeneratePromoCodesDto: {
+            /** Format: uuid */
+            cityId: string;
+            count: number;
+            /** @description Before 8 random characters; may be empty. */
+            prefix: string;
+            /** @enum {string} */
+            kind: "percentage" | "fixed_amount" | "free_delivery";
+            /** @description A percentage code: 2000 is 20%. */
+            percentBp: number | null;
+            /** @description A fixed-amount code: minor units of the base currency. */
+            amount: string | null;
+            /** @description A percentage code's cap, or null for none. */
+            maxDiscount: string | null;
+            /** @description On the items value before discounts; null for none. */
+            minOrder: string | null;
+            /** Format: date-time */
+            validFrom: string;
+            /** Format: date-time */
+            validTo: string;
+            /** @description Optional hours: minutes from midnight on the city clock, 20:00 is 1200. */
+            startMinute: number | null;
+            /** @description At or before the start, the hours run past midnight. */
+            endMinute: number | null;
+            /** @description Null: no limit. */
+            totalLimit: number | null;
+            /** @description Null: no limit. */
+            perCustomerLimit: number | null;
+            /** @enum {string} */
+            audience: "everyone" | "new_users";
+            /** @description None: every restaurant. */
+            restaurantIds: string[];
+            /** @description None: every zone. */
+            zoneIds: string[];
+            /** @enum {string} */
+            funding: "platform" | "restaurant" | "shared";
+            /** @description A shared code: the restaurant's share, 4000 is 40%; null otherwise. */
+            sharedMerchantBp: number | null;
+            /** @description Pauses the code for the business day; null for none. */
+            dailyBudget: string | null;
+            /** @enum {string} */
+            visibility: "visible" | "secret";
+        };
+        AdminEditPromoCodeDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @enum {string} */
+            kind: "percentage" | "fixed_amount" | "free_delivery";
+            /** @description A percentage code: 2000 is 20%. */
+            percentBp: number | null;
+            /** @description A fixed-amount code: minor units of the base currency. */
+            amount: string | null;
+            /** @description A percentage code's cap, or null for none. */
+            maxDiscount: string | null;
+            /** @description On the items value before discounts; null for none. */
+            minOrder: string | null;
+            /** Format: date-time */
+            validFrom: string;
+            /** Format: date-time */
+            validTo: string;
+            /** @description Optional hours: minutes from midnight on the city clock, 20:00 is 1200. */
+            startMinute: number | null;
+            /** @description At or before the start, the hours run past midnight. */
+            endMinute: number | null;
+            /** @description Null: no limit. */
+            totalLimit: number | null;
+            /** @description Null: no limit. */
+            perCustomerLimit: number | null;
+            /** @enum {string} */
+            audience: "everyone" | "new_users";
+            /** @description None: every restaurant. */
+            restaurantIds: string[];
+            /** @description None: every zone. */
+            zoneIds: string[];
+            /** @enum {string} */
+            funding: "platform" | "restaurant" | "shared";
+            /** @description A shared code: the restaurant's share, 4000 is 40%; null otherwise. */
+            sharedMerchantBp: number | null;
+            /** @description Pauses the code for the business day; null for none. */
+            dailyBudget: string | null;
+            /** @enum {string} */
+            visibility: "visible" | "secret";
+        };
+        AdminPromoCodeDto_Output: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            batchId: string | null;
+            /** @enum {string} */
+            kind: "percentage" | "fixed_amount" | "free_delivery";
+            /** @description A percentage code: 2000 is 20%. */
+            percentBp: number | null;
+            /** @description A fixed-amount code: minor units of the base currency. */
+            amount: string | null;
+            /** @description A percentage code's cap, or null for none. */
+            maxDiscount: string | null;
+            /** @description On the items value before discounts; null for none. */
+            minOrder: string | null;
+            /** Format: date-time */
+            validFrom: string;
+            /** Format: date-time */
+            validTo: string;
+            /** @description Optional hours: minutes from midnight on the city clock, 20:00 is 1200. */
+            startMinute: number | null;
+            /** @description At or before the start, the hours run past midnight. */
+            endMinute: number | null;
+            /** @description Null: no limit. */
+            totalLimit: number | null;
+            /** @description Null: no limit. */
+            perCustomerLimit: number | null;
+            /** @enum {string} */
+            audience: "everyone" | "new_users";
+            /** @description None: every restaurant. */
+            restaurantIds: string[];
+            /** @description None: every zone. */
+            zoneIds: string[];
+            /** @enum {string} */
+            funding: "platform" | "restaurant" | "shared";
+            /** @description A shared code: the restaurant's share, 4000 is 40%; null otherwise. */
+            sharedMerchantBp: number | null;
+            /** @description Pauses the code for the business day; null for none. */
+            dailyBudget: string | null;
+            /** @enum {string} */
+            visibility: "visible" | "secret";
+            currency: string;
+            /**
+             * @description Set by OWN.
+             * @enum {string}
+             */
+            status: "active" | "paused";
+            /**
+             * @description What the list shows: paused, not started, ended or running.
+             * @enum {string}
+             */
+            state: "active" | "paused" | "scheduled" | "expired";
+            /** @description Uses held or spent (not given back). */
+            uses: number;
+            /** @description The discounts of the uses not given back; null without marketing.read_costs. */
+            costToDate: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        AdminPromoCodeCityDto: {
+            /** Format: uuid */
+            cityId: string;
+        };
+        AdminPromoCodeReportDto_Output: {
+            code: {
+                /** Format: uuid */
+                id: string;
+                code: string;
+                batchId: string | null;
+                /** @enum {string} */
+                kind: "percentage" | "fixed_amount" | "free_delivery";
+                /** @description A percentage code: 2000 is 20%. */
+                percentBp: number | null;
+                /** @description A fixed-amount code: minor units of the base currency. */
+                amount: string | null;
+                /** @description A percentage code's cap, or null for none. */
+                maxDiscount: string | null;
+                /** @description On the items value before discounts; null for none. */
+                minOrder: string | null;
+                /** Format: date-time */
+                validFrom: string;
+                /** Format: date-time */
+                validTo: string;
+                /** @description Optional hours: minutes from midnight on the city clock, 20:00 is 1200. */
+                startMinute: number | null;
+                /** @description At or before the start, the hours run past midnight. */
+                endMinute: number | null;
+                /** @description Null: no limit. */
+                totalLimit: number | null;
+                /** @description Null: no limit. */
+                perCustomerLimit: number | null;
+                /** @enum {string} */
+                audience: "everyone" | "new_users";
+                /** @description None: every restaurant. */
+                restaurantIds: string[];
+                /** @description None: every zone. */
+                zoneIds: string[];
+                /** @enum {string} */
+                funding: "platform" | "restaurant" | "shared";
+                /** @description A shared code: the restaurant's share, 4000 is 40%; null otherwise. */
+                sharedMerchantBp: number | null;
+                /** @description Pauses the code for the business day; null for none. */
+                dailyBudget: string | null;
+                /** @enum {string} */
+                visibility: "visible" | "secret";
+                currency: string;
+                /**
+                 * @description Set by OWN.
+                 * @enum {string}
+                 */
+                status: "active" | "paused";
+                /**
+                 * @description What the list shows: paused, not started, ended or running.
+                 * @enum {string}
+                 */
+                state: "active" | "paused" | "scheduled" | "expired";
+                /** @description Uses held or spent (not given back). */
+                uses: number;
+                /** @description The discounts of the uses not given back; null without marketing.read_costs. */
+                costToDate: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                updatedAt: string;
+            };
+            /** @description AP §9.11.1 «Code report». */
+            report: {
+                /** @description Orders with the code, uses given back left out. */
+                orders: number;
+                /** @description Uses given back (rejected, cancelled, failed not by the customer). */
+                returned: number;
+                /** @description Customer accounts behind those orders. */
+                customers: number;
+                /** @description Numbers whose order with the code was placed with no delivered order before and ended delivered. */
+                newCustomers: number;
+                /** @description The discounts, minor units of the code currency; null without the cost permission. */
+                cost: string | null;
+                /** @description The restaurants part of the cost; null without the cost permission. */
+                merchantShare: string | null;
+            };
+            /** @description Pause, resume and extend (marketing.manage). */
+            canManage: boolean;
+        };
+        AdminExtendPromoCodeDto: {
+            /** Format: uuid */
+            cityId: string;
+            /**
+             * Format: date-time
+             * @description The new end.
+             */
+            validTo: string;
+        };
+        AdminCompensationRequestsDto_Output: {
+            /** @description Oldest first. */
+            requests: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                orderId: string;
+                orderNumber: string;
+                /** @enum {string} */
+                kind: "fixed_amount" | "percentage";
+                amount: string | null;
+                percentBp: number | null;
+                maxDiscount: string | null;
+                currency: string;
+                reason: {
+                    code: string;
+                    label: string;
+                };
+                note: string | null;
+                /**
+                 * @description issued: the customer has the code; waiting: in «طلبات الموافقة»; rejected by OWN.
+                 * @enum {string}
+                 */
+                status: "issued" | "waiting" | "rejected";
+                /** @description The admin's name, null when they have none. */
+                requestedBy: string | null;
+                /** Format: date-time */
+                requestedAt: string;
+                decidedBy: string | null;
+                decidedAt: string | null;
+                /** @description The personal code once issued. */
+                code: string | null;
+                codeValidTo: string | null;
+            }[];
+        };
+        AdminApproveCompensationDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description «تعديل القيمة»: the value OWN gives instead; null keeps the one asked. */
+            value: {
+                /** @enum {string} */
+                kind: "fixed_amount" | "percentage";
+                /** @description A fixed amount; null for a percentage. */
+                amount: string | null;
+                /** @description A percentage: 2000 is 20%; null for an amount. */
+                percentBp: number | null;
+                /** @description A percentage's maximum, what counts against the cap; null for an amount. */
+                maxDiscount: string | null;
+            } | null;
+        };
+        AdminCompensationDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            orderId: string;
+            orderNumber: string;
+            /** @enum {string} */
+            kind: "fixed_amount" | "percentage";
+            amount: string | null;
+            percentBp: number | null;
+            maxDiscount: string | null;
+            currency: string;
+            reason: {
+                code: string;
+                label: string;
+            };
+            note: string | null;
+            /**
+             * @description issued: the customer has the code; waiting: in «طلبات الموافقة»; rejected by OWN.
+             * @enum {string}
+             */
+            status: "issued" | "waiting" | "rejected";
+            /** @description The admin's name, null when they have none. */
+            requestedBy: string | null;
+            /** Format: date-time */
+            requestedAt: string;
+            decidedBy: string | null;
+            decidedAt: string | null;
+            /** @description The personal code once issued. */
+            code: string | null;
+            codeValidTo: string | null;
+        };
+        AdminRejectCompensationDto: {
+            /** Format: uuid */
+            cityId: string;
+        };
+        RealtimeTokenDto_Output: {
+            /** @description Centrifugo's connection token, valid 15 minutes; ask again when it expires. */
+            token: string;
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        AdminAlertsDto_Output: {
+            alerts: {
+                /** Format: uuid */
+                id: string;
+                /**
+                 * @description The rule of AP §9.1.3.
+                 * @enum {string}
+                 */
+                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket" | "urgent_dispute_ticket";
+                /**
+                 * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
+                 * @enum {string}
+                 */
+                severity: "critical" | "warning" | "information";
+                /** @enum {string} */
+                subjectType: "order" | "captain" | "otp_pool" | "otp_number" | "restaurant" | "currency" | "compensation" | "ticket";
+                /** @description The order, captain or sending number it is about. */
+                subjectId: string;
+                /** @description For an alert about an order. */
+                orderNumber: string | null;
+                /** @description For an alert about a captain. */
+                captainName: string | null;
+                /** @description For an alert about a restaurant. */
+                restaurantName: string | null;
+                /** @description «سعر صرف قديم» (AP §8.6, slice 2.20a): the currency; null for the others. */
+                currency: string | null;
+                /** @description «تذكرة عاجلة» (AP §9.1.3, slice 2.23a): the ticket number, T-{number}; the ticket is subjectId. Null for the others. */
+                ticketNumber: string | null;
+                /** @description «مطعم متأخر في التسوية» (AP §9.1.3, slice 2.19f): the oldest statement still unpaid, for «فتح الكشف»; null for the others. */
+                statementId: string | null;
+                /** @description «طوارئ كابتن» (AP §9.1.3, CA §9.11): the location the captain sent, for «فتح الخريطة»; null for the others and an emergency without a fix. */
+                location: {
+                    latitude: number;
+                    longitude: number;
+                    /** Format: date-time */
+                    at: string;
+                } | null;
+                /** Format: date-time */
+                raisedAt: string;
+                /** @description «استلام»: who took it, which every recipient sees. */
+                acknowledged: {
+                    /** Format: date-time */
+                    at: string;
+                    /** Format: uuid */
+                    byId: string;
+                    byName: string | null;
+                } | null;
+                resolvedAt: string | null;
+            }[];
+        };
+        AdminAlertDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /**
+             * @description The rule of AP §9.1.3.
+             * @enum {string}
+             */
+            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket" | "urgent_dispute_ticket";
+            /**
+             * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
+             * @enum {string}
+             */
+            severity: "critical" | "warning" | "information";
+            /** @enum {string} */
+            subjectType: "order" | "captain" | "otp_pool" | "otp_number" | "restaurant" | "currency" | "compensation" | "ticket";
+            /** @description The order, captain or sending number it is about. */
+            subjectId: string;
+            /** @description For an alert about an order. */
+            orderNumber: string | null;
+            /** @description For an alert about a captain. */
+            captainName: string | null;
+            /** @description For an alert about a restaurant. */
+            restaurantName: string | null;
+            /** @description «سعر صرف قديم» (AP §8.6, slice 2.20a): the currency; null for the others. */
+            currency: string | null;
+            /** @description «تذكرة عاجلة» (AP §9.1.3, slice 2.23a): the ticket number, T-{number}; the ticket is subjectId. Null for the others. */
+            ticketNumber: string | null;
+            /** @description «مطعم متأخر في التسوية» (AP §9.1.3, slice 2.19f): the oldest statement still unpaid, for «فتح الكشف»; null for the others. */
+            statementId: string | null;
+            /** @description «طوارئ كابتن» (AP §9.1.3, CA §9.11): the location the captain sent, for «فتح الخريطة»; null for the others and an emergency without a fix. */
+            location: {
+                latitude: number;
+                longitude: number;
+                /** Format: date-time */
+                at: string;
+            } | null;
+            /** Format: date-time */
+            raisedAt: string;
+            /** @description «استلام»: who took it, which every recipient sees. */
+            acknowledged: {
+                /** Format: date-time */
+                at: string;
+                /** Format: uuid */
+                byId: string;
+                byName: string | null;
+            } | null;
+            resolvedAt: string | null;
+        };
+        PushTokenDto: {
+            /** @description The app installation's Firebase Installation ID (FID), FCM's target for this device. */
+            token: string;
+            /** @enum {string} */
+            platform: "android";
+        };
+        PushTokenRegisteredDto_Output: {
+            /** @constant */
+            status: "registered";
+        };
+        CustomerNotificationsDto_Output: {
+            notifications: {
+                id: string;
+                /** Format: date-time */
+                at: string;
+                body: string;
+                /** @description What a tap opens: `target` (order, codes, account) and its ids. */
+                data: {
+                    [key: string]: string;
+                };
+            }[];
         };
         CustomerQuoteRequestDto: {
             /** Format: uuid */
@@ -10985,638 +11875,6 @@ export interface components {
                     /** Format: date-time */
                     at: string;
                 } | null;
-            }[];
-        };
-        AdminPromoCodesDto_Output: {
-            codes: {
-                /** Format: uuid */
-                id: string;
-                code: string;
-                batchId: string | null;
-                /** @enum {string} */
-                kind: "percentage" | "fixed_amount" | "free_delivery";
-                /** @description A percentage code: 2000 is 20%. */
-                percentBp: number | null;
-                /** @description A fixed-amount code: minor units of the base currency. */
-                amount: string | null;
-                /** @description A percentage code's cap, or null for none. */
-                maxDiscount: string | null;
-                /** @description On the items value before discounts; null for none. */
-                minOrder: string | null;
-                /** Format: date-time */
-                validFrom: string;
-                /** Format: date-time */
-                validTo: string;
-                /** @description Optional hours: minutes from midnight on the city clock, 20:00 is 1200. */
-                startMinute: number | null;
-                /** @description At or before the start, the hours run past midnight. */
-                endMinute: number | null;
-                /** @description Null: no limit. */
-                totalLimit: number | null;
-                /** @description Null: no limit. */
-                perCustomerLimit: number | null;
-                /** @enum {string} */
-                audience: "everyone" | "new_users";
-                /** @description None: every restaurant. */
-                restaurantIds: string[];
-                /** @description None: every zone. */
-                zoneIds: string[];
-                /** @enum {string} */
-                funding: "platform" | "restaurant" | "shared";
-                /** @description A shared code: the restaurant's share, 4000 is 40%; null otherwise. */
-                sharedMerchantBp: number | null;
-                /** @description Pauses the code for the business day; null for none. */
-                dailyBudget: string | null;
-                /** @enum {string} */
-                visibility: "visible" | "secret";
-                currency: string;
-                /**
-                 * @description Set by OWN.
-                 * @enum {string}
-                 */
-                status: "active" | "paused";
-                /**
-                 * @description What the list shows: paused, not started, ended or running.
-                 * @enum {string}
-                 */
-                state: "active" | "paused" | "scheduled" | "expired";
-                /** @description Uses held or spent (not given back). */
-                uses: number;
-                /** @description The discounts of the uses not given back; null without marketing.read_costs. */
-                costToDate: string | null;
-                /** Format: date-time */
-                createdAt: string;
-                /** Format: date-time */
-                updatedAt: string;
-            }[];
-            restaurants: {
-                /** Format: uuid */
-                id: string;
-                name: string;
-            }[];
-            zones: {
-                /** Format: uuid */
-                id: string;
-                name: string;
-                active: boolean;
-            }[];
-            /** @description The amounts are typed in it; null while the city has none. */
-            baseCurrency: string | null;
-            /** @description Whether this admin may create, edit, pause and resume. */
-            canManage: boolean;
-        };
-        AdminCreatePromoCodeDto: {
-            /** Format: uuid */
-            cityId: string;
-            /** @description Letters and digits, saved in upper case. */
-            code: string;
-            /** @enum {string} */
-            kind: "percentage" | "fixed_amount" | "free_delivery";
-            /** @description A percentage code: 2000 is 20%. */
-            percentBp: number | null;
-            /** @description A fixed-amount code: minor units of the base currency. */
-            amount: string | null;
-            /** @description A percentage code's cap, or null for none. */
-            maxDiscount: string | null;
-            /** @description On the items value before discounts; null for none. */
-            minOrder: string | null;
-            /** Format: date-time */
-            validFrom: string;
-            /** Format: date-time */
-            validTo: string;
-            /** @description Optional hours: minutes from midnight on the city clock, 20:00 is 1200. */
-            startMinute: number | null;
-            /** @description At or before the start, the hours run past midnight. */
-            endMinute: number | null;
-            /** @description Null: no limit. */
-            totalLimit: number | null;
-            /** @description Null: no limit. */
-            perCustomerLimit: number | null;
-            /** @enum {string} */
-            audience: "everyone" | "new_users";
-            /** @description None: every restaurant. */
-            restaurantIds: string[];
-            /** @description None: every zone. */
-            zoneIds: string[];
-            /** @enum {string} */
-            funding: "platform" | "restaurant" | "shared";
-            /** @description A shared code: the restaurant's share, 4000 is 40%; null otherwise. */
-            sharedMerchantBp: number | null;
-            /** @description Pauses the code for the business day; null for none. */
-            dailyBudget: string | null;
-            /** @enum {string} */
-            visibility: "visible" | "secret";
-        };
-        AdminPromoCodesCreatedDto_Output: {
-            codes: {
-                /** Format: uuid */
-                id: string;
-                code: string;
-                batchId: string | null;
-                /** @enum {string} */
-                kind: "percentage" | "fixed_amount" | "free_delivery";
-                /** @description A percentage code: 2000 is 20%. */
-                percentBp: number | null;
-                /** @description A fixed-amount code: minor units of the base currency. */
-                amount: string | null;
-                /** @description A percentage code's cap, or null for none. */
-                maxDiscount: string | null;
-                /** @description On the items value before discounts; null for none. */
-                minOrder: string | null;
-                /** Format: date-time */
-                validFrom: string;
-                /** Format: date-time */
-                validTo: string;
-                /** @description Optional hours: minutes from midnight on the city clock, 20:00 is 1200. */
-                startMinute: number | null;
-                /** @description At or before the start, the hours run past midnight. */
-                endMinute: number | null;
-                /** @description Null: no limit. */
-                totalLimit: number | null;
-                /** @description Null: no limit. */
-                perCustomerLimit: number | null;
-                /** @enum {string} */
-                audience: "everyone" | "new_users";
-                /** @description None: every restaurant. */
-                restaurantIds: string[];
-                /** @description None: every zone. */
-                zoneIds: string[];
-                /** @enum {string} */
-                funding: "platform" | "restaurant" | "shared";
-                /** @description A shared code: the restaurant's share, 4000 is 40%; null otherwise. */
-                sharedMerchantBp: number | null;
-                /** @description Pauses the code for the business day; null for none. */
-                dailyBudget: string | null;
-                /** @enum {string} */
-                visibility: "visible" | "secret";
-                currency: string;
-                /**
-                 * @description Set by OWN.
-                 * @enum {string}
-                 */
-                status: "active" | "paused";
-                /**
-                 * @description What the list shows: paused, not started, ended or running.
-                 * @enum {string}
-                 */
-                state: "active" | "paused" | "scheduled" | "expired";
-                /** @description Uses held or spent (not given back). */
-                uses: number;
-                /** @description The discounts of the uses not given back; null without marketing.read_costs. */
-                costToDate: string | null;
-                /** Format: date-time */
-                createdAt: string;
-                /** Format: date-time */
-                updatedAt: string;
-            }[];
-        };
-        AdminGeneratePromoCodesDto: {
-            /** Format: uuid */
-            cityId: string;
-            count: number;
-            /** @description Before 8 random characters; may be empty. */
-            prefix: string;
-            /** @enum {string} */
-            kind: "percentage" | "fixed_amount" | "free_delivery";
-            /** @description A percentage code: 2000 is 20%. */
-            percentBp: number | null;
-            /** @description A fixed-amount code: minor units of the base currency. */
-            amount: string | null;
-            /** @description A percentage code's cap, or null for none. */
-            maxDiscount: string | null;
-            /** @description On the items value before discounts; null for none. */
-            minOrder: string | null;
-            /** Format: date-time */
-            validFrom: string;
-            /** Format: date-time */
-            validTo: string;
-            /** @description Optional hours: minutes from midnight on the city clock, 20:00 is 1200. */
-            startMinute: number | null;
-            /** @description At or before the start, the hours run past midnight. */
-            endMinute: number | null;
-            /** @description Null: no limit. */
-            totalLimit: number | null;
-            /** @description Null: no limit. */
-            perCustomerLimit: number | null;
-            /** @enum {string} */
-            audience: "everyone" | "new_users";
-            /** @description None: every restaurant. */
-            restaurantIds: string[];
-            /** @description None: every zone. */
-            zoneIds: string[];
-            /** @enum {string} */
-            funding: "platform" | "restaurant" | "shared";
-            /** @description A shared code: the restaurant's share, 4000 is 40%; null otherwise. */
-            sharedMerchantBp: number | null;
-            /** @description Pauses the code for the business day; null for none. */
-            dailyBudget: string | null;
-            /** @enum {string} */
-            visibility: "visible" | "secret";
-        };
-        AdminEditPromoCodeDto: {
-            /** Format: uuid */
-            cityId: string;
-            /** @enum {string} */
-            kind: "percentage" | "fixed_amount" | "free_delivery";
-            /** @description A percentage code: 2000 is 20%. */
-            percentBp: number | null;
-            /** @description A fixed-amount code: minor units of the base currency. */
-            amount: string | null;
-            /** @description A percentage code's cap, or null for none. */
-            maxDiscount: string | null;
-            /** @description On the items value before discounts; null for none. */
-            minOrder: string | null;
-            /** Format: date-time */
-            validFrom: string;
-            /** Format: date-time */
-            validTo: string;
-            /** @description Optional hours: minutes from midnight on the city clock, 20:00 is 1200. */
-            startMinute: number | null;
-            /** @description At or before the start, the hours run past midnight. */
-            endMinute: number | null;
-            /** @description Null: no limit. */
-            totalLimit: number | null;
-            /** @description Null: no limit. */
-            perCustomerLimit: number | null;
-            /** @enum {string} */
-            audience: "everyone" | "new_users";
-            /** @description None: every restaurant. */
-            restaurantIds: string[];
-            /** @description None: every zone. */
-            zoneIds: string[];
-            /** @enum {string} */
-            funding: "platform" | "restaurant" | "shared";
-            /** @description A shared code: the restaurant's share, 4000 is 40%; null otherwise. */
-            sharedMerchantBp: number | null;
-            /** @description Pauses the code for the business day; null for none. */
-            dailyBudget: string | null;
-            /** @enum {string} */
-            visibility: "visible" | "secret";
-        };
-        AdminPromoCodeDto_Output: {
-            /** Format: uuid */
-            id: string;
-            code: string;
-            batchId: string | null;
-            /** @enum {string} */
-            kind: "percentage" | "fixed_amount" | "free_delivery";
-            /** @description A percentage code: 2000 is 20%. */
-            percentBp: number | null;
-            /** @description A fixed-amount code: minor units of the base currency. */
-            amount: string | null;
-            /** @description A percentage code's cap, or null for none. */
-            maxDiscount: string | null;
-            /** @description On the items value before discounts; null for none. */
-            minOrder: string | null;
-            /** Format: date-time */
-            validFrom: string;
-            /** Format: date-time */
-            validTo: string;
-            /** @description Optional hours: minutes from midnight on the city clock, 20:00 is 1200. */
-            startMinute: number | null;
-            /** @description At or before the start, the hours run past midnight. */
-            endMinute: number | null;
-            /** @description Null: no limit. */
-            totalLimit: number | null;
-            /** @description Null: no limit. */
-            perCustomerLimit: number | null;
-            /** @enum {string} */
-            audience: "everyone" | "new_users";
-            /** @description None: every restaurant. */
-            restaurantIds: string[];
-            /** @description None: every zone. */
-            zoneIds: string[];
-            /** @enum {string} */
-            funding: "platform" | "restaurant" | "shared";
-            /** @description A shared code: the restaurant's share, 4000 is 40%; null otherwise. */
-            sharedMerchantBp: number | null;
-            /** @description Pauses the code for the business day; null for none. */
-            dailyBudget: string | null;
-            /** @enum {string} */
-            visibility: "visible" | "secret";
-            currency: string;
-            /**
-             * @description Set by OWN.
-             * @enum {string}
-             */
-            status: "active" | "paused";
-            /**
-             * @description What the list shows: paused, not started, ended or running.
-             * @enum {string}
-             */
-            state: "active" | "paused" | "scheduled" | "expired";
-            /** @description Uses held or spent (not given back). */
-            uses: number;
-            /** @description The discounts of the uses not given back; null without marketing.read_costs. */
-            costToDate: string | null;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            updatedAt: string;
-        };
-        AdminPromoCodeCityDto: {
-            /** Format: uuid */
-            cityId: string;
-        };
-        AdminPromoCodeReportDto_Output: {
-            code: {
-                /** Format: uuid */
-                id: string;
-                code: string;
-                batchId: string | null;
-                /** @enum {string} */
-                kind: "percentage" | "fixed_amount" | "free_delivery";
-                /** @description A percentage code: 2000 is 20%. */
-                percentBp: number | null;
-                /** @description A fixed-amount code: minor units of the base currency. */
-                amount: string | null;
-                /** @description A percentage code's cap, or null for none. */
-                maxDiscount: string | null;
-                /** @description On the items value before discounts; null for none. */
-                minOrder: string | null;
-                /** Format: date-time */
-                validFrom: string;
-                /** Format: date-time */
-                validTo: string;
-                /** @description Optional hours: minutes from midnight on the city clock, 20:00 is 1200. */
-                startMinute: number | null;
-                /** @description At or before the start, the hours run past midnight. */
-                endMinute: number | null;
-                /** @description Null: no limit. */
-                totalLimit: number | null;
-                /** @description Null: no limit. */
-                perCustomerLimit: number | null;
-                /** @enum {string} */
-                audience: "everyone" | "new_users";
-                /** @description None: every restaurant. */
-                restaurantIds: string[];
-                /** @description None: every zone. */
-                zoneIds: string[];
-                /** @enum {string} */
-                funding: "platform" | "restaurant" | "shared";
-                /** @description A shared code: the restaurant's share, 4000 is 40%; null otherwise. */
-                sharedMerchantBp: number | null;
-                /** @description Pauses the code for the business day; null for none. */
-                dailyBudget: string | null;
-                /** @enum {string} */
-                visibility: "visible" | "secret";
-                currency: string;
-                /**
-                 * @description Set by OWN.
-                 * @enum {string}
-                 */
-                status: "active" | "paused";
-                /**
-                 * @description What the list shows: paused, not started, ended or running.
-                 * @enum {string}
-                 */
-                state: "active" | "paused" | "scheduled" | "expired";
-                /** @description Uses held or spent (not given back). */
-                uses: number;
-                /** @description The discounts of the uses not given back; null without marketing.read_costs. */
-                costToDate: string | null;
-                /** Format: date-time */
-                createdAt: string;
-                /** Format: date-time */
-                updatedAt: string;
-            };
-            /** @description AP §9.11.1 «Code report». */
-            report: {
-                /** @description Orders with the code, uses given back left out. */
-                orders: number;
-                /** @description Uses given back (rejected, cancelled, failed not by the customer). */
-                returned: number;
-                /** @description Customer accounts behind those orders. */
-                customers: number;
-                /** @description Numbers whose order with the code was placed with no delivered order before and ended delivered. */
-                newCustomers: number;
-                /** @description The discounts, minor units of the code currency; null without the cost permission. */
-                cost: string | null;
-                /** @description The restaurants part of the cost; null without the cost permission. */
-                merchantShare: string | null;
-            };
-            /** @description Pause, resume and extend (marketing.manage). */
-            canManage: boolean;
-        };
-        AdminExtendPromoCodeDto: {
-            /** Format: uuid */
-            cityId: string;
-            /**
-             * Format: date-time
-             * @description The new end.
-             */
-            validTo: string;
-        };
-        AdminCompensationRequestsDto_Output: {
-            /** @description Oldest first. */
-            requests: {
-                /** Format: uuid */
-                id: string;
-                /** Format: uuid */
-                orderId: string;
-                orderNumber: string;
-                /** @enum {string} */
-                kind: "fixed_amount" | "percentage";
-                amount: string | null;
-                percentBp: number | null;
-                maxDiscount: string | null;
-                currency: string;
-                reason: {
-                    code: string;
-                    label: string;
-                };
-                note: string | null;
-                /**
-                 * @description issued: the customer has the code; waiting: in «طلبات الموافقة»; rejected by OWN.
-                 * @enum {string}
-                 */
-                status: "issued" | "waiting" | "rejected";
-                /** @description The admin's name, null when they have none. */
-                requestedBy: string | null;
-                /** Format: date-time */
-                requestedAt: string;
-                decidedBy: string | null;
-                decidedAt: string | null;
-                /** @description The personal code once issued. */
-                code: string | null;
-                codeValidTo: string | null;
-            }[];
-        };
-        AdminApproveCompensationDto: {
-            /** Format: uuid */
-            cityId: string;
-            /** @description «تعديل القيمة»: the value OWN gives instead; null keeps the one asked. */
-            value: {
-                /** @enum {string} */
-                kind: "fixed_amount" | "percentage";
-                /** @description A fixed amount; null for a percentage. */
-                amount: string | null;
-                /** @description A percentage: 2000 is 20%; null for an amount. */
-                percentBp: number | null;
-                /** @description A percentage's maximum, what counts against the cap; null for an amount. */
-                maxDiscount: string | null;
-            } | null;
-        };
-        AdminCompensationDto_Output: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            orderId: string;
-            orderNumber: string;
-            /** @enum {string} */
-            kind: "fixed_amount" | "percentage";
-            amount: string | null;
-            percentBp: number | null;
-            maxDiscount: string | null;
-            currency: string;
-            reason: {
-                code: string;
-                label: string;
-            };
-            note: string | null;
-            /**
-             * @description issued: the customer has the code; waiting: in «طلبات الموافقة»; rejected by OWN.
-             * @enum {string}
-             */
-            status: "issued" | "waiting" | "rejected";
-            /** @description The admin's name, null when they have none. */
-            requestedBy: string | null;
-            /** Format: date-time */
-            requestedAt: string;
-            decidedBy: string | null;
-            decidedAt: string | null;
-            /** @description The personal code once issued. */
-            code: string | null;
-            codeValidTo: string | null;
-        };
-        AdminRejectCompensationDto: {
-            /** Format: uuid */
-            cityId: string;
-        };
-        RealtimeTokenDto_Output: {
-            /** @description Centrifugo's connection token, valid 15 minutes; ask again when it expires. */
-            token: string;
-            /** Format: date-time */
-            expiresAt: string;
-        };
-        AdminAlertsDto_Output: {
-            alerts: {
-                /** Format: uuid */
-                id: string;
-                /**
-                 * @description The rule of AP §9.1.3.
-                 * @enum {string}
-                 */
-                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket" | "urgent_dispute_ticket";
-                /**
-                 * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
-                 * @enum {string}
-                 */
-                severity: "critical" | "warning" | "information";
-                /** @enum {string} */
-                subjectType: "order" | "captain" | "otp_pool" | "otp_number" | "restaurant" | "currency" | "compensation" | "ticket";
-                /** @description The order, captain or sending number it is about. */
-                subjectId: string;
-                /** @description For an alert about an order. */
-                orderNumber: string | null;
-                /** @description For an alert about a captain. */
-                captainName: string | null;
-                /** @description For an alert about a restaurant. */
-                restaurantName: string | null;
-                /** @description «سعر صرف قديم» (AP §8.6, slice 2.20a): the currency; null for the others. */
-                currency: string | null;
-                /** @description «تذكرة عاجلة» (AP §9.1.3, slice 2.23a): the ticket number, T-{number}; the ticket is subjectId. Null for the others. */
-                ticketNumber: string | null;
-                /** @description «مطعم متأخر في التسوية» (AP §9.1.3, slice 2.19f): the oldest statement still unpaid, for «فتح الكشف»; null for the others. */
-                statementId: string | null;
-                /** @description «طوارئ كابتن» (AP §9.1.3, CA §9.11): the location the captain sent, for «فتح الخريطة»; null for the others and an emergency without a fix. */
-                location: {
-                    latitude: number;
-                    longitude: number;
-                    /** Format: date-time */
-                    at: string;
-                } | null;
-                /** Format: date-time */
-                raisedAt: string;
-                /** @description «استلام»: who took it, which every recipient sees. */
-                acknowledged: {
-                    /** Format: date-time */
-                    at: string;
-                    /** Format: uuid */
-                    byId: string;
-                    byName: string | null;
-                } | null;
-                resolvedAt: string | null;
-            }[];
-        };
-        AdminAlertDto_Output: {
-            /** Format: uuid */
-            id: string;
-            /**
-             * @description The rule of AP §9.1.3.
-             * @enum {string}
-             */
-            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket" | "urgent_dispute_ticket";
-            /**
-             * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
-             * @enum {string}
-             */
-            severity: "critical" | "warning" | "information";
-            /** @enum {string} */
-            subjectType: "order" | "captain" | "otp_pool" | "otp_number" | "restaurant" | "currency" | "compensation" | "ticket";
-            /** @description The order, captain or sending number it is about. */
-            subjectId: string;
-            /** @description For an alert about an order. */
-            orderNumber: string | null;
-            /** @description For an alert about a captain. */
-            captainName: string | null;
-            /** @description For an alert about a restaurant. */
-            restaurantName: string | null;
-            /** @description «سعر صرف قديم» (AP §8.6, slice 2.20a): the currency; null for the others. */
-            currency: string | null;
-            /** @description «تذكرة عاجلة» (AP §9.1.3, slice 2.23a): the ticket number, T-{number}; the ticket is subjectId. Null for the others. */
-            ticketNumber: string | null;
-            /** @description «مطعم متأخر في التسوية» (AP §9.1.3, slice 2.19f): the oldest statement still unpaid, for «فتح الكشف»; null for the others. */
-            statementId: string | null;
-            /** @description «طوارئ كابتن» (AP §9.1.3, CA §9.11): the location the captain sent, for «فتح الخريطة»; null for the others and an emergency without a fix. */
-            location: {
-                latitude: number;
-                longitude: number;
-                /** Format: date-time */
-                at: string;
-            } | null;
-            /** Format: date-time */
-            raisedAt: string;
-            /** @description «استلام»: who took it, which every recipient sees. */
-            acknowledged: {
-                /** Format: date-time */
-                at: string;
-                /** Format: uuid */
-                byId: string;
-                byName: string | null;
-            } | null;
-            resolvedAt: string | null;
-        };
-        PushTokenDto: {
-            /** @description The app installation's Firebase Installation ID (FID), FCM's target for this device. */
-            token: string;
-            /** @enum {string} */
-            platform: "android";
-        };
-        PushTokenRegisteredDto_Output: {
-            /** @constant */
-            status: "registered";
-        };
-        CustomerNotificationsDto_Output: {
-            notifications: {
-                id: string;
-                /** Format: date-time */
-                at: string;
-                body: string;
-                /** @description What a tap opens: `target` (order, codes, account) and its ids. */
-                data: {
-                    [key: string]: string;
-                };
             }[];
         };
         AdminTicketsDto_Output: {
@@ -17710,6 +17968,687 @@ export interface operations {
             };
         };
     };
+    adminCustomersAddNote: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                customerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminAddCustomerNoteDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCustomerDto_Output"];
+                };
+            };
+        };
+    };
+    adminCustomersSetTestAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                customerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminSetCustomerTestAccountDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCustomerDto_Output"];
+                };
+            };
+        };
+    };
+    adminCustomersChangePhone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                customerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminChangeCustomerPhoneDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCustomerDto_Output"];
+                };
+            };
+        };
+    };
+    adminCustomersSignOutEverywhere: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                customerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCustomerSignOutDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCustomerSignedOutDto_Output"];
+                };
+            };
+        };
+    };
+    adminCustomersMarkTrust: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                customerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMarkCustomerTrustDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCustomerDto_Output"];
+                };
+            };
+        };
+    };
+    adminCustomersClearStrikes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                customerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminClearCustomerStrikesDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCustomerDto_Output"];
+                };
+            };
+        };
+    };
+    adminCustomersEndReviewStop: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                customerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminEndCustomerReviewStopDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCustomerDto_Output"];
+                };
+            };
+        };
+    };
+    adminPromoCodesList: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPromoCodesDto_Output"];
+                };
+            };
+        };
+    };
+    adminPromoCodesCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCreatePromoCodeDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPromoCodesCreatedDto_Output"];
+                };
+            };
+        };
+    };
+    adminPromoCodesGenerate: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminGeneratePromoCodesDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPromoCodesCreatedDto_Output"];
+                };
+            };
+        };
+    };
+    adminPromoCodesEdit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                codeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminEditPromoCodeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPromoCodeDto_Output"];
+                };
+            };
+        };
+    };
+    adminPromoCodesPause: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                codeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminPromoCodeCityDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPromoCodeDto_Output"];
+                };
+            };
+        };
+    };
+    adminPromoCodesReport: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path: {
+                codeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPromoCodeReportDto_Output"];
+                };
+            };
+        };
+    };
+    adminPromoCodesExtend: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                codeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminExtendPromoCodeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPromoCodeDto_Output"];
+                };
+            };
+        };
+    };
+    adminPromoCodesResume: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                codeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminPromoCodeCityDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPromoCodeDto_Output"];
+                };
+            };
+        };
+    };
+    adminCompensationsList: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCompensationRequestsDto_Output"];
+                };
+            };
+        };
+    };
+    adminCompensationsApprove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                compensationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminApproveCompensationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCompensationDto_Output"];
+                };
+            };
+        };
+    };
+    adminCompensationsReject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                compensationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRejectCompensationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCompensationDto_Output"];
+                };
+            };
+        };
+    };
+    merchantRealtimeToken: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RealtimeTokenDto_Output"];
+                };
+            };
+        };
+    };
+    customerRealtimeToken: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RealtimeTokenDto_Output"];
+                };
+            };
+        };
+    };
+    captainRealtimeToken: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RealtimeTokenDto_Output"];
+                };
+            };
+        };
+    };
+    adminRealtimeToken: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RealtimeTokenDto_Output"];
+                };
+            };
+        };
+    };
+    adminAlertsList: {
+        parameters: {
+            query: {
+                cityId: string;
+                /** @description open: the alerts list (AP §9.1.3); closed: the latest 100 of the history. */
+                state?: "open" | "closed";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminAlertsDto_Output"];
+                };
+            };
+        };
+    };
+    adminAlertsAcknowledge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                alertId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminAlertDto_Output"];
+                };
+            };
+        };
+    };
+    customerPushTokenRegister: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushTokenDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushTokenRegisteredDto_Output"];
+                };
+            };
+        };
+    };
+    merchantPushTokenRegister: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushTokenDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushTokenRegisteredDto_Output"];
+                };
+            };
+        };
+    };
+    captainPushTokenRegister: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushTokenDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PushTokenRegisteredDto_Output"];
+                };
+            };
+        };
+    };
+    customerNotificationsList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerNotificationsDto_Output"];
+                };
+            };
+        };
+    };
     customerQuoteQuote: {
         parameters: {
             query?: never;
@@ -19740,502 +20679,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CustomerCodesDto_Output"];
-                };
-            };
-        };
-    };
-    adminPromoCodesList: {
-        parameters: {
-            query: {
-                cityId: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminPromoCodesDto_Output"];
-                };
-            };
-        };
-    };
-    adminPromoCodesCreate: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
-                "Idempotency-Key": string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminCreatePromoCodeDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminPromoCodesCreatedDto_Output"];
-                };
-            };
-        };
-    };
-    adminPromoCodesGenerate: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
-                "Idempotency-Key": string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminGeneratePromoCodesDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminPromoCodesCreatedDto_Output"];
-                };
-            };
-        };
-    };
-    adminPromoCodesEdit: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                codeId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminEditPromoCodeDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminPromoCodeDto_Output"];
-                };
-            };
-        };
-    };
-    adminPromoCodesPause: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                codeId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminPromoCodeCityDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminPromoCodeDto_Output"];
-                };
-            };
-        };
-    };
-    adminPromoCodesReport: {
-        parameters: {
-            query: {
-                cityId: string;
-            };
-            header?: never;
-            path: {
-                codeId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminPromoCodeReportDto_Output"];
-                };
-            };
-        };
-    };
-    adminPromoCodesExtend: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                codeId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminExtendPromoCodeDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminPromoCodeDto_Output"];
-                };
-            };
-        };
-    };
-    adminPromoCodesResume: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                codeId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminPromoCodeCityDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminPromoCodeDto_Output"];
-                };
-            };
-        };
-    };
-    adminCompensationsList: {
-        parameters: {
-            query: {
-                cityId: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminCompensationRequestsDto_Output"];
-                };
-            };
-        };
-    };
-    adminCompensationsApprove: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                compensationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminApproveCompensationDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminCompensationDto_Output"];
-                };
-            };
-        };
-    };
-    adminCompensationsReject: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                compensationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminRejectCompensationDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminCompensationDto_Output"];
-                };
-            };
-        };
-    };
-    merchantRealtimeToken: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RealtimeTokenDto_Output"];
-                };
-            };
-        };
-    };
-    customerRealtimeToken: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RealtimeTokenDto_Output"];
-                };
-            };
-        };
-    };
-    captainRealtimeToken: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RealtimeTokenDto_Output"];
-                };
-            };
-        };
-    };
-    adminRealtimeToken: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RealtimeTokenDto_Output"];
-                };
-            };
-        };
-    };
-    adminAlertsList: {
-        parameters: {
-            query: {
-                cityId: string;
-                /** @description open: the alerts list (AP §9.1.3); closed: the latest 100 of the history. */
-                state?: "open" | "closed";
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminAlertsDto_Output"];
-                };
-            };
-        };
-    };
-    adminAlertsAcknowledge: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                alertId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminAlertDto_Output"];
-                };
-            };
-        };
-    };
-    customerPushTokenRegister: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PushTokenDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PushTokenRegisteredDto_Output"];
-                };
-            };
-        };
-    };
-    merchantPushTokenRegister: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PushTokenDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PushTokenRegisteredDto_Output"];
-                };
-            };
-        };
-    };
-    captainPushTokenRegister: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PushTokenDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PushTokenRegisteredDto_Output"];
-                };
-            };
-        };
-    };
-    customerNotificationsList: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CustomerNotificationsDto_Output"];
                 };
             };
         };

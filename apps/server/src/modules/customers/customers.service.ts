@@ -17,7 +17,11 @@ import {
   lateCancelStrikes,
   profiles,
   reviewStops,
+  strikeClears,
+  testAccountFlags,
+  trustMarks,
 } from './schema.js';
+import { strikesSince, type TrustMark } from './trust.js';
 
 export type CustomersRefusal =
   'terms_required' | 'invalid_birthday' | 'outside_zones' | 'address_limit' | 'unknown_address';
@@ -63,7 +67,26 @@ export interface CustomerOrders {
   delivered: number;
   trustedAfter: number;
   fakeOrders: number;
+  // AP §9.8 «الطلبات» (slice 2.25b): the customer's orders in the city
+  // (free re-deliveries left out), what the delivered ones totalled per
+  // currency, and the latest.
+  count: number;
+  spent: { currency: string; amount: bigint }[];
+  last: { id: string; number: bigint; status: string; placedAt: Date } | null;
 }
+
+// AP §9.8 «التذاكر» (slice 2.25b): what support registers
+// (useCustomerTickets), the customer's latest tickets in the city.
+export interface CustomerTicket {
+  id: string;
+  number: bigint;
+  typeLabel: string;
+  status: string;
+  orderNumber: bigint | null;
+  openedAt: Date;
+}
+
+export type CustomerTickets = (accountId: string, cityId: string) => Promise<CustomerTicket[]>;
 
 export type CustomerOrderFacts = (accountId: string, cityId: string) => Promise<CustomerOrders>;
 
@@ -153,6 +176,18 @@ export class CustomersService {
   ordersOf(accountId: string, cityId: string): Promise<CustomerOrders> {
     if (this.orderFacts === null) throw new Error('ordering has not registered its facts');
     return this.orderFacts(accountId, cityId);
+  }
+
+  private tickets: CustomerTickets | null = null;
+
+  // Registered by support at start, which imports this module.
+  useCustomerTickets(tickets: CustomerTickets): void {
+    this.tickets = tickets;
+  }
+
+  ticketsOf(accountId: string, cityId: string): Promise<CustomerTicket[]> {
+    if (this.tickets === null) throw new Error('support has not registered its tickets');
+    return this.tickets(accountId, cityId);
   }
 
   // AP §9.8 «حظر» (slice 2.25a): the block that stops the account's ordering
@@ -251,7 +286,10 @@ export class CustomersService {
         at: strike.at,
       })
       .onConflictDoNothing({ target: lateCancelStrikes.orderId });
-    const since = new Date(strike.at.getTime() - strike.windowDays * 24 * 60 * 60 * 1000);
+    const since = strikesSince(
+      new Date(strike.at.getTime() - strike.windowDays * 24 * 60 * 60 * 1000),
+      await this.strikesClearedAt(strike.accountId, tx),
+    );
     const [counted] = await tx
       .select({ n: count() })
       .from(lateCancelStrikes)
@@ -289,6 +327,48 @@ export class CustomersService {
       .where(and(eq(reviewStops.customerAccountId, accountId), isNull(reviewStops.endedAt)))
       .limit(1);
     return rows.length > 0;
+  }
+
+  // AP §9.8 «مسح المخالفات» (slice 2.25b): the latest clear, from which the
+  // strikes count again (`strikesSince`), or null.
+  async strikesClearedAt(
+    accountId: string,
+    executor: Pick<NodePgDatabase, 'select'> = this.database.db,
+  ): Promise<Date | null> {
+    const [row] = await executor
+      .select({ at: strikeClears.at })
+      .from(strikeClears)
+      .where(eq(strikeClears.customerAccountId, accountId))
+      .orderBy(desc(strikeClears.at), desc(strikeClears.id))
+      .limit(1);
+    return row?.at ?? null;
+  }
+
+  // AP §9.8 «توثيق» and «إزالة الثقة» (slice 2.25b): the latest mark, which
+  // ordering's D23 count reads through `trustBasis`, or null.
+  async trustMark(
+    accountId: string,
+    executor: Pick<NodePgDatabase, 'select'> = this.database.db,
+  ): Promise<TrustMark | null> {
+    const [row] = await executor
+      .select({ trusted: trustMarks.trusted, at: trustMarks.at })
+      .from(trustMarks)
+      .where(eq(trustMarks.customerAccountId, accountId))
+      .orderBy(desc(trustMarks.at), desc(trustMarks.id))
+      .limit(1);
+    return row ?? null;
+  }
+
+  // AP §9.8 «حساب تجريبي للإدارة» (slice 2.25b): whether the latest flag
+  // says the account sees and orders from the restaurants in test mode.
+  async isTestAccount(accountId: string): Promise<boolean> {
+    const [row] = await this.database.db
+      .select({ flagged: testAccountFlags.flagged })
+      .from(testAccountFlags)
+      .where(eq(testAccountFlags.customerAccountId, accountId))
+      .orderBy(desc(testAccountFlags.at), desc(testAccountFlags.id))
+      .limit(1);
+    return row?.flagged ?? false;
   }
 
   // The details of CU §5.3; null until the customer completes them.

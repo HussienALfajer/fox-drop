@@ -11,6 +11,7 @@ import 'package:dio/dio.dart';
 import 'package:core_api/src/api_util.dart';
 import 'package:core_api/src/model/add_reason_dto.dart';
 import 'package:core_api/src/model/admin_accept_dto.dart';
+import 'package:core_api/src/model/admin_add_customer_note_dto.dart';
 import 'package:core_api/src/model/admin_alert_dto_output.dart';
 import 'package:core_api/src/model/admin_alerts_dto_output.dart';
 import 'package:core_api/src/model/admin_approve_compensation_dto.dart';
@@ -27,10 +28,12 @@ import 'package:core_api/src/model/admin_canned_replies_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_availability_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_balances_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_device_dto_output.dart';
+import 'package:core_api/src/model/admin_change_customer_phone_dto.dart';
 import 'package:core_api/src/model/admin_change_outcome_dto.dart';
 import 'package:core_api/src/model/admin_change_time_dto.dart';
 import 'package:core_api/src/model/admin_cities_dto_output.dart';
 import 'package:core_api/src/model/admin_city_office_dto_output.dart';
+import 'package:core_api/src/model/admin_clear_customer_strikes_dto.dart';
 import 'package:core_api/src/model/admin_close_drawer_session_dto.dart';
 import 'package:core_api/src/model/admin_close_item_report_dto.dart';
 import 'package:core_api/src/model/admin_compensate_dto.dart';
@@ -51,6 +54,8 @@ import 'package:core_api/src/model/admin_customer_dues_preview_request_dto.dart'
 import 'package:core_api/src/model/admin_customer_receipt_dto_output.dart';
 import 'package:core_api/src/model/admin_customer_receipts_dto_output.dart';
 import 'package:core_api/src/model/admin_customer_search_dto.dart';
+import 'package:core_api/src/model/admin_customer_sign_out_dto.dart';
+import 'package:core_api/src/model/admin_customer_signed_out_dto_output.dart';
 import 'package:core_api/src/model/admin_customers_found_dto_output.dart';
 import 'package:core_api/src/model/admin_daily_report_dto_output.dart';
 import 'package:core_api/src/model/admin_daily_report_export_dto.dart';
@@ -68,6 +73,7 @@ import 'package:core_api/src/model/admin_edit_promo_code_dto.dart';
 import 'package:core_api/src/model/admin_emergency_stop_dto_output.dart';
 import 'package:core_api/src/model/admin_emergency_stop_resumed_dto_output.dart';
 import 'package:core_api/src/model/admin_emergency_stop_state_dto_output.dart';
+import 'package:core_api/src/model/admin_end_customer_review_stop_dto.dart';
 import 'package:core_api/src/model/admin_exchange_rate_history_dto_output.dart';
 import 'package:core_api/src/model/admin_exchange_rates_dto_output.dart';
 import 'package:core_api/src/model/admin_export_dto_output.dart';
@@ -91,6 +97,7 @@ import 'package:core_api/src/model/admin_manual_entry_dto_output.dart';
 import 'package:core_api/src/model/admin_manual_parties_dto_output.dart';
 import 'package:core_api/src/model/admin_manual_party_search_dto.dart';
 import 'package:core_api/src/model/admin_manual_reversal_dto.dart';
+import 'package:core_api/src/model/admin_mark_customer_trust_dto.dart';
 import 'package:core_api/src/model/admin_merchant_statement_dto_output.dart';
 import 'package:core_api/src/model/admin_new_upload_dto.dart';
 import 'package:core_api/src/model/admin_no_answer_wait_dto.dart';
@@ -150,6 +157,7 @@ import 'package:core_api/src/model/admin_restaurants_dto_output.dart';
 import 'package:core_api/src/model/admin_resume_emergency_stop_dto.dart';
 import 'package:core_api/src/model/admin_session_dto_output.dart';
 import 'package:core_api/src/model/admin_set_city_office_dto.dart';
+import 'package:core_api/src/model/admin_set_customer_test_account_dto.dart';
 import 'package:core_api/src/model/admin_set_exchange_rate_dto.dart';
 import 'package:core_api/src/model/admin_set_image_dto.dart';
 import 'package:core_api/src/model/admin_set_outcome_dto.dart';
@@ -4538,6 +4546,113 @@ class AdminApi {
     );
   }
 
+  /// adminCustomersAddNote
+  ///
+  ///
+  /// Parameters:
+  /// * [customerId]
+  /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
+  /// * [adminAddCustomerNoteDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminCustomerDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminCustomerDtoOutput>> adminCustomersAddNote({
+    required String customerId,
+    required String idempotencyKey,
+    required AdminAddCustomerNoteDto adminAddCustomerNoteDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/customers/{customerId}/notes'.replaceAll(
+      '{'
+      r'customerId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        customerId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminAddCustomerNoteDto);
+      _bodyData = _serializers.serialize(
+        adminAddCustomerNoteDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminCustomerDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminCustomerDtoOutput),
+                )
+                as AdminCustomerDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminCustomerDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// adminCustomersBlock
   ///
   ///
@@ -4592,6 +4707,415 @@ class AdminApi {
       const _type = FullType(AdminBlockCustomerDto);
       _bodyData = _serializers.serialize(
         adminBlockCustomerDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminCustomerDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminCustomerDtoOutput),
+                )
+                as AdminCustomerDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminCustomerDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminCustomersChangePhone
+  ///
+  ///
+  /// Parameters:
+  /// * [customerId]
+  /// * [adminChangeCustomerPhoneDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminCustomerDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminCustomerDtoOutput>> adminCustomersChangePhone({
+    required String customerId,
+    required AdminChangeCustomerPhoneDto adminChangeCustomerPhoneDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/customers/{customerId}/change-phone'.replaceAll(
+      '{'
+      r'customerId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        customerId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminChangeCustomerPhoneDto);
+      _bodyData = _serializers.serialize(
+        adminChangeCustomerPhoneDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminCustomerDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminCustomerDtoOutput),
+                )
+                as AdminCustomerDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminCustomerDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminCustomersClearStrikes
+  ///
+  ///
+  /// Parameters:
+  /// * [customerId]
+  /// * [adminClearCustomerStrikesDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminCustomerDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminCustomerDtoOutput>> adminCustomersClearStrikes({
+    required String customerId,
+    required AdminClearCustomerStrikesDto adminClearCustomerStrikesDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/customers/{customerId}/clear-strikes'.replaceAll(
+      '{'
+      r'customerId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        customerId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminClearCustomerStrikesDto);
+      _bodyData = _serializers.serialize(
+        adminClearCustomerStrikesDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminCustomerDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminCustomerDtoOutput),
+                )
+                as AdminCustomerDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminCustomerDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminCustomersEndReviewStop
+  ///
+  ///
+  /// Parameters:
+  /// * [customerId]
+  /// * [adminEndCustomerReviewStopDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminCustomerDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminCustomerDtoOutput>> adminCustomersEndReviewStop({
+    required String customerId,
+    required AdminEndCustomerReviewStopDto adminEndCustomerReviewStopDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/customers/{customerId}/end-review-stop'
+        .replaceAll(
+          '{'
+          r'customerId'
+          '}',
+          encodeQueryParameter(
+            _serializers,
+            customerId,
+            const FullType(String),
+          ).toString(),
+        );
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminEndCustomerReviewStopDto);
+      _bodyData = _serializers.serialize(
+        adminEndCustomerReviewStopDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminCustomerDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminCustomerDtoOutput),
+                )
+                as AdminCustomerDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminCustomerDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminCustomersMarkTrust
+  ///
+  ///
+  /// Parameters:
+  /// * [customerId]
+  /// * [adminMarkCustomerTrustDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminCustomerDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminCustomerDtoOutput>> adminCustomersMarkTrust({
+    required String customerId,
+    required AdminMarkCustomerTrustDto adminMarkCustomerTrustDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/customers/{customerId}/trust'.replaceAll(
+      '{'
+      r'customerId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        customerId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminMarkCustomerTrustDto);
+      _bodyData = _serializers.serialize(
+        adminMarkCustomerTrustDto,
         specifiedType: _type,
       );
     } catch (error, stackTrace) {
@@ -4817,6 +5341,214 @@ class AdminApi {
     }
 
     return Response<AdminCustomersFoundDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminCustomersSetTestAccount
+  ///
+  ///
+  /// Parameters:
+  /// * [customerId]
+  /// * [adminSetCustomerTestAccountDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminCustomerDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminCustomerDtoOutput>> adminCustomersSetTestAccount({
+    required String customerId,
+    required AdminSetCustomerTestAccountDto adminSetCustomerTestAccountDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/customers/{customerId}/test-account'.replaceAll(
+      '{'
+      r'customerId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        customerId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminSetCustomerTestAccountDto);
+      _bodyData = _serializers.serialize(
+        adminSetCustomerTestAccountDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminCustomerDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminCustomerDtoOutput),
+                )
+                as AdminCustomerDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminCustomerDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminCustomersSignOutEverywhere
+  ///
+  ///
+  /// Parameters:
+  /// * [customerId]
+  /// * [adminCustomerSignOutDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminCustomerSignedOutDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminCustomerSignedOutDtoOutput>>
+  adminCustomersSignOutEverywhere({
+    required String customerId,
+    required AdminCustomerSignOutDto adminCustomerSignOutDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/customers/{customerId}/sign-out-everywhere'
+        .replaceAll(
+          '{'
+          r'customerId'
+          '}',
+          encodeQueryParameter(
+            _serializers,
+            customerId,
+            const FullType(String),
+          ).toString(),
+        );
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminCustomerSignOutDto);
+      _bodyData = _serializers.serialize(
+        adminCustomerSignOutDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminCustomerSignedOutDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(
+                    AdminCustomerSignedOutDtoOutput,
+                  ),
+                )
+                as AdminCustomerSignedOutDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminCustomerSignedOutDtoOutput>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

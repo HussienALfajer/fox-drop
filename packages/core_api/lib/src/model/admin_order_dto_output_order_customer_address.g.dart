@@ -9,7 +9,7 @@ part of 'admin_order_dto_output_order_customer_address.dart';
 class _$AdminOrderDtoOutputOrderCustomerAddress
     extends AdminOrderDtoOutputOrderCustomerAddress {
   @override
-  final CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation location;
+  final AdminCustomerDtoOutputAddressesInnerLocation location;
   @override
   final String neighbourhood;
   @override
@@ -91,13 +91,12 @@ class AdminOrderDtoOutputOrderCustomerAddressBuilder
         > {
   _$AdminOrderDtoOutputOrderCustomerAddress? _$v;
 
-  CustomerActiveOrdersDtoOutputOrdersInnerAddressLocationBuilder? _location;
-  CustomerActiveOrdersDtoOutputOrdersInnerAddressLocationBuilder get location =>
+  AdminCustomerDtoOutputAddressesInnerLocationBuilder? _location;
+  AdminCustomerDtoOutputAddressesInnerLocationBuilder get location =>
       _$this._location ??=
-          CustomerActiveOrdersDtoOutputOrdersInnerAddressLocationBuilder();
-  set location(
-    CustomerActiveOrdersDtoOutputOrdersInnerAddressLocationBuilder? location,
-  ) => _$this._location = location;
+          AdminCustomerDtoOutputAddressesInnerLocationBuilder();
+  set location(AdminCustomerDtoOutputAddressesInnerLocationBuilder? location) =>
+      _$this._location = location;
 
   String? _neighbourhood;
   String? get neighbourhood => _$this._neighbourhood;

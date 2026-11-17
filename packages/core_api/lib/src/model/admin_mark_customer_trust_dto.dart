@@ -6,68 +6,72 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'merchant_orders_dto_output_orders_inner_item_report_note.g.dart';
+part 'admin_mark_customer_trust_dto.g.dart';
 
-/// A reason of Content's item_unavailable_note list, its label as chosen.
+/// AdminMarkCustomerTrustDto
 ///
 /// Properties:
-/// * [code]
-/// * [label]
+/// * [cityId]
+/// * [trusted] - «توثيق» (true) or «إزالة الثقة» (false).
+/// * [note] - The required reason.
 @BuiltValue()
-abstract class MerchantOrdersDtoOutputOrdersInnerItemReportNote
+abstract class AdminMarkCustomerTrustDto
     implements
-        Built<
-          MerchantOrdersDtoOutputOrdersInnerItemReportNote,
-          MerchantOrdersDtoOutputOrdersInnerItemReportNoteBuilder
-        > {
-  @BuiltValueField(wireName: r'code')
-  String get code;
+        Built<AdminMarkCustomerTrustDto, AdminMarkCustomerTrustDtoBuilder> {
+  @BuiltValueField(wireName: r'cityId')
+  String get cityId;
 
-  @BuiltValueField(wireName: r'label')
-  String get label;
+  /// «توثيق» (true) or «إزالة الثقة» (false).
+  @BuiltValueField(wireName: r'trusted')
+  bool get trusted;
 
-  MerchantOrdersDtoOutputOrdersInnerItemReportNote._();
+  /// The required reason.
+  @BuiltValueField(wireName: r'note')
+  String get note;
 
-  factory MerchantOrdersDtoOutputOrdersInnerItemReportNote([
-    void updates(MerchantOrdersDtoOutputOrdersInnerItemReportNoteBuilder b),
-  ]) = _$MerchantOrdersDtoOutputOrdersInnerItemReportNote;
+  AdminMarkCustomerTrustDto._();
+
+  factory AdminMarkCustomerTrustDto([
+    void updates(AdminMarkCustomerTrustDtoBuilder b),
+  ]) = _$AdminMarkCustomerTrustDto;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    MerchantOrdersDtoOutputOrdersInnerItemReportNoteBuilder b,
-  ) => b;
+  static void _defaults(AdminMarkCustomerTrustDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantOrdersDtoOutputOrdersInnerItemReportNote>
-  get serializer =>
-      _$MerchantOrdersDtoOutputOrdersInnerItemReportNoteSerializer();
+  static Serializer<AdminMarkCustomerTrustDto> get serializer =>
+      _$AdminMarkCustomerTrustDtoSerializer();
 }
 
-class _$MerchantOrdersDtoOutputOrdersInnerItemReportNoteSerializer
-    implements
-        PrimitiveSerializer<MerchantOrdersDtoOutputOrdersInnerItemReportNote> {
+class _$AdminMarkCustomerTrustDtoSerializer
+    implements PrimitiveSerializer<AdminMarkCustomerTrustDto> {
   @override
   final Iterable<Type> types = const [
-    MerchantOrdersDtoOutputOrdersInnerItemReportNote,
-    _$MerchantOrdersDtoOutputOrdersInnerItemReportNote,
+    AdminMarkCustomerTrustDto,
+    _$AdminMarkCustomerTrustDto,
   ];
 
   @override
-  final String wireName = r'MerchantOrdersDtoOutputOrdersInnerItemReportNote';
+  final String wireName = r'AdminMarkCustomerTrustDto';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    MerchantOrdersDtoOutputOrdersInnerItemReportNote object, {
+    AdminMarkCustomerTrustDto object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'code';
+    yield r'cityId';
     yield serializers.serialize(
-      object.code,
+      object.cityId,
       specifiedType: const FullType(String),
     );
-    yield r'label';
+    yield r'trusted';
     yield serializers.serialize(
-      object.label,
+      object.trusted,
+      specifiedType: const FullType(bool),
+    );
+    yield r'note';
+    yield serializers.serialize(
+      object.note,
       specifiedType: const FullType(String),
     );
   }
@@ -75,7 +79,7 @@ class _$MerchantOrdersDtoOutputOrdersInnerItemReportNoteSerializer
   @override
   Object serialize(
     Serializers serializers,
-    MerchantOrdersDtoOutputOrdersInnerItemReportNote object, {
+    AdminMarkCustomerTrustDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -90,30 +94,39 @@ class _$MerchantOrdersDtoOutputOrdersInnerItemReportNoteSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required MerchantOrdersDtoOutputOrdersInnerItemReportNoteBuilder result,
+    required AdminMarkCustomerTrustDtoBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'code':
+        case r'cityId':
           final valueDes =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(String),
                   )
                   as String;
-          result.code = valueDes;
+          result.cityId = valueDes;
           break;
-        case r'label':
+        case r'trusted':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.trusted = valueDes;
+          break;
+        case r'note':
           final valueDes =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(String),
                   )
                   as String;
-          result.label = valueDes;
+          result.note = valueDes;
           break;
         default:
           unhandled.add(key);
@@ -124,12 +137,12 @@ class _$MerchantOrdersDtoOutputOrdersInnerItemReportNoteSerializer
   }
 
   @override
-  MerchantOrdersDtoOutputOrdersInnerItemReportNote deserialize(
+  AdminMarkCustomerTrustDto deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = MerchantOrdersDtoOutputOrdersInnerItemReportNoteBuilder();
+    final result = AdminMarkCustomerTrustDtoBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

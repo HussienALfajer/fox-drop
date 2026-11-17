@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { commissionAt } from './commission.js';
-import { operatingState, type OperatingInput, takesOrders } from './operating-state.js';
+import {
+  type AccountStatus,
+  operatingState,
+  type OperatingInput,
+  seenByCustomer,
+  takesOrders,
+} from './operating-state.js';
 
 // The restaurant's state of RA §7.1 and AP §9.6.1: the first that applies of
 // the account status, holiday close, schedule, pause and the active-orders
@@ -135,5 +141,23 @@ describe('commissionAt', () => {
       { id: '04', rateBp: 1200, effectiveFrom: versions[1]!.effectiveFrom },
     ];
     expect(commissionAt(replaced, new Date('2026-11-06T00:00:00Z'))?.rateBp).toBe(1200);
+  });
+});
+
+describe('seenByCustomer (CU §8.2, AP §9.6.3, §9.8)', () => {
+  const restaurant = (accountStatus: AccountStatus, visible = true) => ({ accountStatus, visible });
+
+  it('shows the active and visible restaurants to everyone', () => {
+    expect(seenByCustomer(restaurant('active'), false)).toBe(true);
+    expect(seenByCustomer(restaurant('active', false), false)).toBe(false);
+    expect(seenByCustomer(restaurant('active', false), true)).toBe(false);
+  });
+
+  it('shows the restaurants in test mode to an admin test account only', () => {
+    expect(seenByCustomer(restaurant('test'), false)).toBe(false);
+    expect(seenByCustomer(restaurant('test'), true)).toBe(true);
+    for (const status of ['draft', 'suspended', 'terminated'] as const) {
+      expect(seenByCustomer(restaurant(status), true)).toBe(false);
+    }
   });
 });

@@ -1,3 +1,4 @@
+import 'package:core_auth/testing.dart';
 import 'package:core_l10n/core_l10n.dart';
 import 'package:customer/src/browsing/browsing.dart';
 import 'package:customer/src/media.dart';
@@ -90,6 +91,30 @@ void main() {
       find.text(
         'شاورما · جديد · 30–40 د · رسوم التوصيل 10 ₺ · مغلق — يفتح الأحد 9:00 ص',
       ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('marks a restaurant in test mode «تجريبي» (CU §8.2)', (
+    tester,
+  ) async {
+    await browsingApp(
+      tester,
+      signedIn: true,
+      before: (app) => app.server.on('/v1/customer/restaurants', [
+        FakeAnswer(200, {
+          'restaurants': [
+            card(
+              '00000000-0000-4000-8000-0000000000b9',
+              'مطعم التجربة',
+              testMode: true,
+            ),
+          ],
+        }),
+      ]),
+    );
+    expect(
+      find.text('تجريبي · شاورما · جديد · 30–40 د · رسوم التوصيل 10 ₺'),
       findsOneWidget,
     );
   });

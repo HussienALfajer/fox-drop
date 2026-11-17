@@ -16,6 +16,7 @@ import 'package:core_api/src/model/date.dart';
 
 import 'package:core_api/src/model/add_reason_dto.dart';
 import 'package:core_api/src/model/admin_accept_dto.dart';
+import 'package:core_api/src/model/admin_add_customer_note_dto.dart';
 import 'package:core_api/src/model/admin_alert_dto_output.dart';
 import 'package:core_api/src/model/admin_alerts_dto_output.dart';
 import 'package:core_api/src/model/admin_alerts_dto_output_alerts_inner.dart';
@@ -47,6 +48,7 @@ import 'package:core_api/src/model/admin_captain_balances_dto_output_captains_in
 import 'package:core_api/src/model/admin_captain_balances_dto_output_captains_inner_earnings.dart';
 import 'package:core_api/src/model/admin_captain_device_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_device_dto_output_device.dart';
+import 'package:core_api/src/model/admin_change_customer_phone_dto.dart';
 import 'package:core_api/src/model/admin_change_outcome_dto.dart';
 import 'package:core_api/src/model/admin_change_time_dto.dart';
 import 'package:core_api/src/model/admin_cities_dto_output.dart';
@@ -55,12 +57,14 @@ import 'package:core_api/src/model/admin_city_office_dto_output.dart';
 import 'package:core_api/src/model/admin_city_office_dto_output_office.dart';
 import 'package:core_api/src/model/admin_city_office_dto_output_office_hours_inner.dart';
 import 'package:core_api/src/model/admin_city_office_dto_output_office_location.dart';
+import 'package:core_api/src/model/admin_clear_customer_strikes_dto.dart';
 import 'package:core_api/src/model/admin_close_drawer_session_dto.dart';
 import 'package:core_api/src/model/admin_close_item_report_dto.dart';
 import 'package:core_api/src/model/admin_compensate_dto.dart';
 import 'package:core_api/src/model/admin_compensation_dto_output.dart';
 import 'package:core_api/src/model/admin_compensation_requests_dto_output.dart';
 import 'package:core_api/src/model/admin_compensation_requests_dto_output_requests_inner.dart';
+import 'package:core_api/src/model/admin_compensation_requests_dto_output_requests_inner_reason.dart';
 import 'package:core_api/src/model/admin_confirm_pickup_dto.dart';
 import 'package:core_api/src/model/admin_contact_dto_output.dart';
 import 'package:core_api/src/model/admin_conversion_quote_dto_output.dart';
@@ -80,12 +84,22 @@ import 'package:core_api/src/model/admin_current_drawer_session_dto_output_field
 import 'package:core_api/src/model/admin_current_drawer_session_dto_output_session.dart';
 import 'package:core_api/src/model/admin_current_drawer_session_dto_output_session_currencies_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_addresses_inner.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_addresses_inner_location.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_block.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_block_reasons_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_blocks_inner.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_codes_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_dues.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_late_cancels.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_late_cancels_cleared.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_notes_inner.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_orders.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_orders_last.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_orders_spent_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_review_stop.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_tickets_inner.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_trust_mark.dart';
 import 'package:core_api/src/model/admin_customer_dues_pay_dto.dart';
 import 'package:core_api/src/model/admin_customer_dues_preview_dto_output.dart';
 import 'package:core_api/src/model/admin_customer_dues_preview_request_dto.dart';
@@ -93,6 +107,8 @@ import 'package:core_api/src/model/admin_customer_receipt_dto_output.dart';
 import 'package:core_api/src/model/admin_customer_receipts_dto_output.dart';
 import 'package:core_api/src/model/admin_customer_receipts_dto_output_receipts_inner.dart';
 import 'package:core_api/src/model/admin_customer_search_dto.dart';
+import 'package:core_api/src/model/admin_customer_sign_out_dto.dart';
+import 'package:core_api/src/model/admin_customer_signed_out_dto_output.dart';
 import 'package:core_api/src/model/admin_customers_found_dto_output.dart';
 import 'package:core_api/src/model/admin_customers_found_dto_output_customers_inner.dart';
 import 'package:core_api/src/model/admin_daily_report_dto_output.dart';
@@ -135,6 +151,7 @@ import 'package:core_api/src/model/admin_emergency_stop_resumed_dto_output.dart'
 import 'package:core_api/src/model/admin_emergency_stop_state_dto_output.dart';
 import 'package:core_api/src/model/admin_emergency_stop_state_dto_output_defaults.dart';
 import 'package:core_api/src/model/admin_emergency_stop_state_dto_output_stop.dart';
+import 'package:core_api/src/model/admin_end_customer_review_stop_dto.dart';
 import 'package:core_api/src/model/admin_exchange_rate_history_dto_output.dart';
 import 'package:core_api/src/model/admin_exchange_rate_history_dto_output_versions_inner.dart';
 import 'package:core_api/src/model/admin_exchange_rates_dto_output.dart';
@@ -170,6 +187,7 @@ import 'package:core_api/src/model/admin_manual_entry_dto_output.dart';
 import 'package:core_api/src/model/admin_manual_parties_dto_output.dart';
 import 'package:core_api/src/model/admin_manual_party_search_dto.dart';
 import 'package:core_api/src/model/admin_manual_reversal_dto.dart';
+import 'package:core_api/src/model/admin_mark_customer_trust_dto.dart';
 import 'package:core_api/src/model/admin_merchant_statement_dto_output.dart';
 import 'package:core_api/src/model/admin_merchant_statement_dto_output_lines_inner.dart';
 import 'package:core_api/src/model/admin_new_upload_dto.dart';
@@ -337,6 +355,7 @@ import 'package:core_api/src/model/admin_session_dto_output.dart';
 import 'package:core_api/src/model/admin_set_city_office_dto.dart';
 import 'package:core_api/src/model/admin_set_city_office_dto_hours_inner.dart';
 import 'package:core_api/src/model/admin_set_city_office_dto_location.dart';
+import 'package:core_api/src/model/admin_set_customer_test_account_dto.dart';
 import 'package:core_api/src/model/admin_set_exchange_rate_dto.dart';
 import 'package:core_api/src/model/admin_set_image_dto.dart';
 import 'package:core_api/src/model/admin_set_outcome_dto.dart';
@@ -389,7 +408,6 @@ import 'package:core_api/src/model/admin_ticket_money_preview_dto_output.dart';
 import 'package:core_api/src/model/admin_ticket_money_preview_dto_output_redelivery.dart';
 import 'package:core_api/src/model/admin_ticket_note_dto.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output.dart';
-import 'package:core_api/src/model/admin_ticket_page_dto_output_notes_inner.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output_order.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output_order_lines_inner.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output_pickup_dispute.dart';
@@ -554,7 +572,6 @@ import 'package:core_api/src/model/customer_account_state_dto_output_office.dart
 import 'package:core_api/src/model/customer_active_orders_dto_output.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_address.dart';
-import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_address_location.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation_compensation.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_captain.dart';
@@ -702,7 +719,6 @@ import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_edits
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_edits_inner_changes_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_report.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_report_items_inner.dart';
-import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_report_note.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_owner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_pickup.dart';
@@ -783,6 +799,7 @@ part 'serializers.g.dart';
 @SerializersFor([
   AddReasonDto,
   AdminAcceptDto,
+  AdminAddCustomerNoteDto,
   AdminAlertDtoOutput,
   AdminAlertsDtoOutput,
   AdminAlertsDtoOutputAlertsInner,
@@ -814,6 +831,7 @@ part 'serializers.g.dart';
   AdminCaptainBalancesDtoOutputCaptainsInnerEarnings,
   AdminCaptainDeviceDtoOutput,
   AdminCaptainDeviceDtoOutputDevice,
+  AdminChangeCustomerPhoneDto,
   AdminChangeOutcomeDto,
   AdminChangeTimeDto,
   AdminCitiesDtoOutput,
@@ -822,12 +840,14 @@ part 'serializers.g.dart';
   AdminCityOfficeDtoOutputOffice,
   AdminCityOfficeDtoOutputOfficeHoursInner,
   AdminCityOfficeDtoOutputOfficeLocation,
+  AdminClearCustomerStrikesDto,
   AdminCloseDrawerSessionDto,
   AdminCloseItemReportDto,
   AdminCompensateDto,
   AdminCompensationDtoOutput,
   AdminCompensationRequestsDtoOutput,
   AdminCompensationRequestsDtoOutputRequestsInner,
+  AdminCompensationRequestsDtoOutputRequestsInnerReason,
   AdminConfirmPickupDto,
   AdminContactDtoOutput,
   AdminConversionQuoteDtoOutput,
@@ -847,12 +867,22 @@ part 'serializers.g.dart';
   AdminCurrentDrawerSessionDtoOutputSession,
   AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner,
   AdminCustomerDtoOutput,
+  AdminCustomerDtoOutputAddressesInner,
+  AdminCustomerDtoOutputAddressesInnerLocation,
   AdminCustomerDtoOutputBlock,
   AdminCustomerDtoOutputBlockReasonsInner,
   AdminCustomerDtoOutputBlocksInner,
+  AdminCustomerDtoOutputCodesInner,
   AdminCustomerDtoOutputDues,
   AdminCustomerDtoOutputLateCancels,
+  AdminCustomerDtoOutputLateCancelsCleared,
+  AdminCustomerDtoOutputNotesInner,
+  AdminCustomerDtoOutputOrders,
+  AdminCustomerDtoOutputOrdersLast,
+  AdminCustomerDtoOutputOrdersSpentInner,
   AdminCustomerDtoOutputReviewStop,
+  AdminCustomerDtoOutputTicketsInner,
+  AdminCustomerDtoOutputTrustMark,
   AdminCustomerDuesPayDto,
   AdminCustomerDuesPreviewDtoOutput,
   AdminCustomerDuesPreviewRequestDto,
@@ -860,6 +890,8 @@ part 'serializers.g.dart';
   AdminCustomerReceiptsDtoOutput,
   AdminCustomerReceiptsDtoOutputReceiptsInner,
   AdminCustomerSearchDto,
+  AdminCustomerSignOutDto,
+  AdminCustomerSignedOutDtoOutput,
   AdminCustomersFoundDtoOutput,
   AdminCustomersFoundDtoOutputCustomersInner,
   AdminDailyReportDtoOutput,
@@ -902,6 +934,7 @@ part 'serializers.g.dart';
   AdminEmergencyStopStateDtoOutput,
   AdminEmergencyStopStateDtoOutputDefaults,
   AdminEmergencyStopStateDtoOutputStop,
+  AdminEndCustomerReviewStopDto,
   AdminExchangeRateHistoryDtoOutput,
   AdminExchangeRateHistoryDtoOutputVersionsInner,
   AdminExchangeRatesDtoOutput,
@@ -937,6 +970,7 @@ part 'serializers.g.dart';
   AdminManualPartiesDtoOutput,
   AdminManualPartySearchDto,
   AdminManualReversalDto,
+  AdminMarkCustomerTrustDto,
   AdminMerchantStatementDtoOutput,
   AdminMerchantStatementDtoOutputLinesInner,
   AdminNewUploadDto,
@@ -1104,6 +1138,7 @@ part 'serializers.g.dart';
   AdminSetCityOfficeDto,
   AdminSetCityOfficeDtoHoursInner,
   AdminSetCityOfficeDtoLocation,
+  AdminSetCustomerTestAccountDto,
   AdminSetExchangeRateDto,
   AdminSetImageDto,
   AdminSetOutcomeDto,
@@ -1156,7 +1191,6 @@ part 'serializers.g.dart';
   AdminTicketMoneyPreviewDtoOutputRedelivery,
   AdminTicketNoteDto,
   AdminTicketPageDtoOutput,
-  AdminTicketPageDtoOutputNotesInner,
   AdminTicketPageDtoOutputOrder,
   AdminTicketPageDtoOutputOrderLinesInner,
   AdminTicketPageDtoOutputPickupDispute,
@@ -1321,7 +1355,6 @@ part 'serializers.g.dart';
   CustomerActiveOrdersDtoOutput,
   CustomerActiveOrdersDtoOutputOrdersInner,
   CustomerActiveOrdersDtoOutputOrdersInnerAddress,
-  CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation,
   CustomerActiveOrdersDtoOutputOrdersInnerCancellation,
   CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensation,
   CustomerActiveOrdersDtoOutputOrdersInnerCaptain,
@@ -1469,7 +1502,6 @@ part 'serializers.g.dart';
   MerchantOrdersDtoOutputOrdersInnerEditsInnerChangesInner,
   MerchantOrdersDtoOutputOrdersInnerItemReport,
   MerchantOrdersDtoOutputOrdersInnerItemReportItemsInner,
-  MerchantOrdersDtoOutputOrdersInnerItemReportNote,
   MerchantOrdersDtoOutputOrdersInnerLinesInner,
   MerchantOrdersDtoOutputOrdersInnerOwner,
   MerchantOrdersDtoOutputOrdersInnerPickup,
@@ -1707,6 +1739,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminCustomerDtoOutputOrdersSpentInner),
+            ]),
+            () => ListBuilder<AdminCustomerDtoOutputOrdersSpentInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(CustomerReportOrderDtoItemsInner),
             ]),
             () => ListBuilder<CustomerReportOrderDtoItemsInner>(),
@@ -1801,6 +1839,12 @@ Serializers serializers =
               FullType(AdminTicketPageDtoOutputReportLinesInner),
             ]),
             () => ListBuilder<AdminTicketPageDtoOutputReportLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCustomerDtoOutputAddressesInner),
+            ]),
+            () => ListBuilder<AdminCustomerDtoOutputAddressesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltMap, [FullType(String), FullType(String)]),
@@ -2078,6 +2122,12 @@ Serializers serializers =
               FullType(AdminMerchantStatementDtoOutputLinesInner),
             ]),
             () => ListBuilder<AdminMerchantStatementDtoOutputLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCustomerDtoOutputCodesInner),
+            ]),
+            () => ListBuilder<AdminCustomerDtoOutputCodesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -2368,12 +2418,6 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
-              FullType(AdminTicketPageDtoOutputNotesInner),
-            ]),
-            () => ListBuilder<AdminTicketPageDtoOutputNotesInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, [
               FullType(MerchantHoursDtoOutputPeriodsInner),
             ]),
             () => ListBuilder<MerchantHoursDtoOutputPeriodsInner>(),
@@ -2408,6 +2452,12 @@ Serializers serializers =
                 ListBuilder<
                   MerchantOrdersDtoOutputOrdersInnerItemReportItemsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCustomerDtoOutputNotesInner),
+            ]),
+            () => ListBuilder<AdminCustomerDtoOutputNotesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -2480,14 +2530,14 @@ Serializers serializers =
             () => ListBuilder<AdminExchangeRateHistoryDtoOutputVersionsInner>(),
           )
           ..addBuilderFactory(
-            const FullType(BuiltList, [FullType(AdminRejectDtoItemsInner)]),
-            () => ListBuilder<AdminRejectDtoItemsInner>(),
-          )
-          ..addBuilderFactory(
             const FullType(BuiltList, [
               FullType(AdminAlertsDtoOutputAlertsInner),
             ]),
             () => ListBuilder<AdminAlertsDtoOutputAlertsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [FullType(AdminRejectDtoItemsInner)]),
+            () => ListBuilder<AdminRejectDtoItemsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -2518,6 +2568,12 @@ Serializers serializers =
               FullType(AdminSetCityOfficeDtoHoursInner),
             ]),
             () => ListBuilder<AdminSetCityOfficeDtoHoursInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCustomerDtoOutputTicketsInner),
+            ]),
+            () => ListBuilder<AdminCustomerDtoOutputTicketsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -2585,15 +2641,6 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
-              FullType.nullable(
-                MerchantOrdersDtoOutputOrdersInnerItemReportNote,
-              ),
-            ]),
-            () =>
-                ListBuilder<MerchantOrdersDtoOutputOrdersInnerItemReportNote>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, [
               FullType(CustomerQuoteRequestDtoLinesInner),
             ]),
             () => ListBuilder<CustomerQuoteRequestDtoLinesInner>(),
@@ -2603,6 +2650,17 @@ Serializers serializers =
               FullType(AdminCustomerDtoOutputBlocksInner),
             ]),
             () => ListBuilder<AdminCustomerDtoOutputBlocksInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType.nullable(
+                AdminCompensationRequestsDtoOutputRequestsInnerReason,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminCompensationRequestsDtoOutputRequestsInnerReason
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

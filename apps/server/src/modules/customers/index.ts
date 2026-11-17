@@ -6,6 +6,7 @@ import { FxModule } from '../fx/index.js';
 import { GeoModule } from '../geo/index.js';
 import { IdentityModule } from '../identity/index.js';
 import { LedgerModule } from '../ledger/index.js';
+import { MarketingModule } from '../marketing/index.js';
 import { MerchantsModule } from '../merchants/index.js';
 import { SettingsModule } from '../settings/index.js';
 import { AdminCustomersController } from './admin-customers.controller.js';
@@ -28,6 +29,7 @@ import { CustomersService } from './customers.service.js';
     IdentityModule,
     ContentModule,
     LedgerModule,
+    MarketingModule,
     FxModule,
     AuditModule,
   ],
@@ -48,6 +50,7 @@ export {
   type Address,
   type AddressFields,
   type CustomersRefusal,
+  type CustomerTicket,
   CustomersRefusedError,
   CustomersService,
   customerOrderLock,
@@ -57,3 +60,4 @@ export {
   type UnsavedAddressFields,
 } from './customers.service.js';
 export { pointQuery } from './point-query.js';
+export { trustBasis, type TrustMark } from './trust.js';

@@ -104,6 +104,7 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
           title: Text(r.nameAr),
           subtitle: Text(
             [
+              if (r.testMode) l10n.customerTestMode,
               ?r.category,
               r.rating == null
                   ? l10n.customerNew

@@ -6,9 +6,10 @@ import '../api.dart';
 import '../auth.dart';
 import '../terms.dart';
 
-/// The signed-in customer's details (CU §5.3); null for a guest. The server
-/// answers `completed: false` until the first save, so an app that stopped
-/// before «أكمل بياناتك» shows it again.
+/// The signed-in customer's details (CU §5.3) and own number (read-only in
+/// «حسابي», CU §13); null for a guest. The server answers `completed: false`
+/// until the first save, so an app that stopped before «أكمل بياناتك» shows
+/// it again.
 final profileProvider = FutureProvider<CustomerProfileDtoOutput?>((ref) async {
   final session = await ref.watch(customerAuth.session.future);
   if (session is! SignedIn) return null;
@@ -35,7 +36,7 @@ bool validName(String name) {
 
 enum Gender { male, female }
 
-/// What «أكمل بياناتك» sends.
+/// What «أكمل بياناتك», or an edit in «حسابي» (CU §13), sends.
 class ProfileDraft {
   const ProfileDraft({
     required this.firstName,
@@ -43,6 +44,7 @@ class ProfileDraft {
     required this.gender,
     required this.birthday,
     required this.acceptTerms,
+    this.editing = false,
   });
 
   final String firstName;
@@ -50,6 +52,11 @@ class ProfileDraft {
   final Gender? gender;
   final DateTime? birthday;
   final bool acceptTerms;
+
+  /// An edit of saved details: the terms were accepted with the first save,
+  /// and a later version is accepted on its own screen (AP §9.13), so an
+  /// edit never accepts them.
+  final bool editing;
 }
 
 /// Why a draft cannot be sent yet.
@@ -60,7 +67,7 @@ Set<ProfileProblem> profileProblems(ProfileDraft draft) => {
   if (draft.lastName.trim().isNotEmpty && !validName(draft.lastName))
     ProfileProblem.lastName,
   if (draft.gender == null) ProfileProblem.gender,
-  if (!draft.acceptTerms) ProfileProblem.terms,
+  if (!draft.editing && !draft.acceptTerms) ProfileProblem.terms,
 };
 
 sealed class ProfileSaveState {
@@ -84,7 +91,7 @@ class ProfileSaved extends ProfileSaveState {
   const ProfileSaved();
 }
 
-/// Saves «أكمل بياناتك» (`PUT /v1/customer/profile`).
+/// Saves «أكمل بياناتك» or an edit (`PUT /v1/customer/profile`).
 class ProfileSaveController extends Notifier<ProfileSaveState> {
   @override
   ProfileSaveState build() => const ProfileEditing();
@@ -114,7 +121,7 @@ class ProfileSaveController extends Notifier<ProfileSaveState> {
                 ..birthday = birthday == null
                     ? null
                     : Date(birthday.year, birthday.month, birthday.day)
-                ..acceptTerms = true,
+                ..acceptTerms = !draft.editing,
             ),
           );
       // The tick accepted the terms in force: read them before the router

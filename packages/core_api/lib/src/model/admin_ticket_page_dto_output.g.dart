@@ -292,7 +292,7 @@ class _$AdminTicketPageDtoOutput extends AdminTicketPageDtoOutput {
   @override
   final AdminOrderTicketsDtoOutputTicketsInnerClosure? closure;
   @override
-  final BuiltList<AdminTicketPageDtoOutputNotesInner> notes;
+  final BuiltList<AdminCustomerDtoOutputNotesInner> notes;
   @override
   final AdminTicketPageDtoOutputPickupDispute? pickupDispute;
   @override
@@ -565,10 +565,10 @@ class AdminTicketPageDtoOutputBuilder
   set closure(AdminOrderTicketsDtoOutputTicketsInnerClosureBuilder? closure) =>
       _$this._closure = closure;
 
-  ListBuilder<AdminTicketPageDtoOutputNotesInner>? _notes;
-  ListBuilder<AdminTicketPageDtoOutputNotesInner> get notes =>
-      _$this._notes ??= ListBuilder<AdminTicketPageDtoOutputNotesInner>();
-  set notes(ListBuilder<AdminTicketPageDtoOutputNotesInner>? notes) =>
+  ListBuilder<AdminCustomerDtoOutputNotesInner>? _notes;
+  ListBuilder<AdminCustomerDtoOutputNotesInner> get notes =>
+      _$this._notes ??= ListBuilder<AdminCustomerDtoOutputNotesInner>();
+  set notes(ListBuilder<AdminCustomerDtoOutputNotesInner>? notes) =>
       _$this._notes = notes;
 
   AdminTicketPageDtoOutputPickupDisputeBuilder? _pickupDispute;

@@ -146,6 +146,21 @@ beforeAll(async () => {
   );
   ({ id: restaurant, item } = await restaurantWith(azaz, 'مطعم الاختبار'));
   ({ id: otherRestaurant } = await restaurantWith(azaz, 'مطعم آخر'));
+  // The setup's own state changes (the schedule, «hours») reach the
+  // restaurants' channels through the worker's relay: wait for them, so a
+  // device a test subscribes later never receives them as if the test sent
+  // them.
+  const deadline = Date.now() + 60_000;
+  while (
+    (
+      await sql.query(
+        'SELECT count(*)::int AS n FROM merchants.state_outbox WHERE relayed_at IS NULL',
+      )
+    ).rows[0].n > 0
+  ) {
+    if (Date.now() > deadline) throw new Error('the state relay did not catch up');
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
 }, 300_000);
 
 afterAll(async () => {

@@ -9,13 +9,18 @@ part of 'admin_customer_dto_output_review_stop.dart';
 class _$AdminCustomerDtoOutputReviewStop
     extends AdminCustomerDtoOutputReviewStop {
   @override
+  final String id;
+  @override
   final DateTime startedAt;
 
   factory _$AdminCustomerDtoOutputReviewStop([
     void Function(AdminCustomerDtoOutputReviewStopBuilder)? updates,
   ]) => (AdminCustomerDtoOutputReviewStopBuilder()..update(updates))._build();
 
-  _$AdminCustomerDtoOutputReviewStop._({required this.startedAt}) : super._();
+  _$AdminCustomerDtoOutputReviewStop._({
+    required this.id,
+    required this.startedAt,
+  }) : super._();
   @override
   AdminCustomerDtoOutputReviewStop rebuild(
     void Function(AdminCustomerDtoOutputReviewStopBuilder) updates,
@@ -29,12 +34,14 @@ class _$AdminCustomerDtoOutputReviewStop
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is AdminCustomerDtoOutputReviewStop &&
+        id == other.id &&
         startedAt == other.startedAt;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, id.hashCode);
     _$hash = $jc(_$hash, startedAt.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -42,9 +49,10 @@ class _$AdminCustomerDtoOutputReviewStop
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(
-      r'AdminCustomerDtoOutputReviewStop',
-    )..add('startedAt', startedAt)).toString();
+    return (newBuiltValueToStringHelper(r'AdminCustomerDtoOutputReviewStop')
+          ..add('id', id)
+          ..add('startedAt', startedAt))
+        .toString();
   }
 }
 
@@ -55,6 +63,10 @@ class AdminCustomerDtoOutputReviewStopBuilder
           AdminCustomerDtoOutputReviewStopBuilder
         > {
   _$AdminCustomerDtoOutputReviewStop? _$v;
+
+  String? _id;
+  String? get id => _$this._id;
+  set id(String? id) => _$this._id = id;
 
   DateTime? _startedAt;
   DateTime? get startedAt => _$this._startedAt;
@@ -67,6 +79,7 @@ class AdminCustomerDtoOutputReviewStopBuilder
   AdminCustomerDtoOutputReviewStopBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _id = $v.id;
       _startedAt = $v.startedAt;
       _$v = null;
     }
@@ -90,6 +103,11 @@ class AdminCustomerDtoOutputReviewStopBuilder
     final _$result =
         _$v ??
         _$AdminCustomerDtoOutputReviewStop._(
+          id: BuiltValueNullFieldError.checkNotNull(
+            id,
+            r'AdminCustomerDtoOutputReviewStop',
+            'id',
+          ),
           startedAt: BuiltValueNullFieldError.checkNotNull(
             startedAt,
             r'AdminCustomerDtoOutputReviewStop',

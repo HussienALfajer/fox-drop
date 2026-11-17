@@ -13,6 +13,7 @@ import {
   type Money,
   type OpeningPeriod,
   type Restaurant,
+  seenByCustomer,
   type StorefrontState,
 } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
@@ -38,6 +39,9 @@ export interface RestaurantCard {
   // The fee to the point, or null while the city has no fee rule in its base.
   deliveryFee: { fee: Money; free: boolean } | null;
   state: StorefrontState;
+  // «تجريبي» (CU §8.2): a restaurant in test mode, which only an admin test
+  // account sees (AP §9.8).
+  testMode: boolean;
 }
 
 // CU §9.3: why an item cannot be ordered: «يتوفر غداً» when everything that
@@ -91,10 +95,10 @@ export class BrowsingService {
 
   // CU §8.2: open restaurants first, then busy and paused, then closed,
   // each group in the restaurants' own order.
-  async restaurants(point: Point, now: Date): Promise<RestaurantCard[]> {
+  async restaurants(point: Point, now: Date, testAccount = false): Promise<RestaurantCard[]> {
     const place = await this.geo.locate(point);
     if (place === null || place.zone === null) return [];
-    const ids = await this.merchants.coveringRestaurants(place.cityId, point);
+    const ids = await this.merchants.coveringRestaurants(place.cityId, point, testAccount);
     const cards = await Promise.all(
       ids.map(async (id) => {
         const restaurant = await this.merchants.restaurant(id, now);
@@ -113,12 +117,17 @@ export class BrowsingService {
   // the same category that deliver to the order's pin, in the list's own
   // order, without the restaurant itself. Open in busy mode is open. Empty
   // when the restaurant has no category.
-  async similar(id: string, point: Point, now: Date): Promise<RestaurantCard[]> {
+  async similar(
+    id: string,
+    point: Point,
+    now: Date,
+    testAccount = false,
+  ): Promise<RestaurantCard[]> {
     const source = await this.merchants.restaurant(id, now);
     if (source === null || source.category === null) return [];
     const place = await this.geo.locate(point);
     if (place === null || place.zone === null) return [];
-    const ids = await this.merchants.coveringRestaurants(place.cityId, point);
+    const ids = await this.merchants.coveringRestaurants(place.cityId, point, testAccount);
     const restaurants = await Promise.all(
       ids.filter((other) => other !== id).map((other) => this.merchants.restaurant(other, now)),
     );
@@ -138,11 +147,14 @@ export class BrowsingService {
   }
 
   // CU §9.1–9.4; null for a restaurant customers do not see (CU §8.2).
-  async restaurantPage(id: string, point: Point, now: Date): Promise<RestaurantPage | null> {
+  async restaurantPage(
+    id: string,
+    point: Point,
+    now: Date,
+    testAccount = false,
+  ): Promise<RestaurantPage | null> {
     const restaurant = await this.merchants.restaurant(id, now);
-    if (restaurant === null || restaurant.accountStatus !== 'active' || !restaurant.visible) {
-      return null;
-    }
+    if (restaurant === null || !seenByCustomer(restaurant, testAccount)) return null;
     const [card, deliversHere, rule, menu] = await Promise.all([
       this.card(restaurant, point, now),
       this.merchants.covers(id, point),
@@ -191,6 +203,7 @@ export class BrowsingService {
       }),
       deliveryFee: priced === null ? null : { fee: priced.fee, free: priced.free },
       state,
+      testMode: restaurant.accountStatus === 'test',
     };
   }
 

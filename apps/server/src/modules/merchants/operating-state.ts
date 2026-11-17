@@ -62,3 +62,16 @@ export function operatingState(input: OperatingInput, now: Date): OperatingState
 export function takesOrders(state: OperatingState): boolean {
   return state.state === 'open';
 }
+
+// CU §8.2, AP §9.6.3, §9.8 (slice 2.25b): customers see the active and
+// visible restaurants; an admin test account also sees those in test mode,
+// with the badge «تجريبي».
+export function seenByCustomer(
+  restaurant: { accountStatus: AccountStatus; visible: boolean },
+  testAccount: boolean,
+): boolean {
+  return (
+    (restaurant.accountStatus === 'active' && restaurant.visible) ||
+    (testAccount && restaurant.accountStatus === 'test')
+  );
+}

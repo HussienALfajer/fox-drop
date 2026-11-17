@@ -22,6 +22,7 @@ part 'customer_restaurant_list_dto_output_restaurants_inner.g.dart';
 /// * [coverKey] - Its key in public-media, shown through imgproxy (architecture §5.8); null without one.
 /// * [rating] - The average rating; null is «جديد» (Q16). Ratings arrive with their slice.
 /// * [ratingCount] - The number of ratings on the page (CU §9.1).
+/// * [testMode] - «تجريبي»: in test mode, seen only by an admin test account (CU §8.2, AP §9.8).
 /// * [estimate]
 /// * [deliveryFee]
 /// * [state]
@@ -59,6 +60,10 @@ abstract class CustomerRestaurantListDtoOutputRestaurantsInner
   /// The number of ratings on the page (CU §9.1).
   @BuiltValueField(wireName: r'ratingCount')
   int? get ratingCount;
+
+  /// «تجريبي»: in test mode, seen only by an admin test account (CU §8.2, AP §9.8).
+  @BuiltValueField(wireName: r'testMode')
+  bool get testMode;
 
   @BuiltValueField(wireName: r'estimate')
   CustomerRestaurantListDtoOutputRestaurantsInnerEstimate get estimate;
@@ -155,6 +160,11 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInnerSerializer
             object.ratingCount,
             specifiedType: const FullType.nullable(int),
           );
+    yield r'testMode';
+    yield serializers.serialize(
+      object.testMode,
+      specifiedType: const FullType(bool),
+    );
     yield r'estimate';
     yield serializers.serialize(
       object.estimate,
@@ -282,6 +292,15 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInnerSerializer
                   as int?;
           if (valueDes == null) continue;
           result.ratingCount = valueDes;
+          break;
+        case r'testMode':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.testMode = valueDes;
           break;
         case r'estimate':
           final valueDes =

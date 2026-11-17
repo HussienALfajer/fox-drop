@@ -654,9 +654,50 @@ describe('the ordering tables (AP §8.1, §4.8; architecture §5.5)', () => {
       appQuery(`UPDATE customers.review_stops SET ended_at = now() WHERE id = '${stops[0].id}'`),
     ).rejects.toThrow(/review_stops_end/);
     await appQuery(
-      `UPDATE customers.review_stops SET ended_at = now(), ended_by = '${randomUUID()}' WHERE id = '${stops[0].id}'`,
+      `UPDATE customers.review_stops SET ended_at = now(), ended_by = '${randomUUID()}', end_note = 'راجعنا' WHERE id = '${stops[0].id}'`,
     );
-    await stop();
+    const { rows: open } = await stop();
+    await expect(
+      appQuery(`UPDATE customers.review_stops SET end_note = 'x' WHERE id = '${open[0].id}'`),
+    ).rejects.toThrow(/review_stops_end_note/);
+  });
+
+  it("keep a customer's strike clears, trust marks, test-account flags and notes unchanged (slice 2.25b)", async () => {
+    const account = randomUUID();
+    const { rows: clears } = await appQuery(
+      `INSERT INTO customers.strike_clears (customer_account_id, at, by, note) VALUES ('${account}', now(), '${randomUUID()}', 'راجعنا') RETURNING id`,
+    );
+    await expect(
+      appQuery(`UPDATE customers.strike_clears SET at = now() WHERE id = '${clears[0].id}'`),
+    ).rejects.toThrow(/permission denied/);
+    await expect(
+      appQuery(
+        `INSERT INTO customers.trust_marks (customer_account_id, trusted, at, by, note) VALUES ('${account}', true, now(), '${randomUUID()}', '')`,
+      ),
+    ).rejects.toThrow(/trust_marks_note/);
+    const { rows: marks } = await appQuery(
+      `INSERT INTO customers.trust_marks (customer_account_id, trusted, at, by, note) VALUES ('${account}', true, now(), '${randomUUID()}', 'زبون معروف') RETURNING id`,
+    );
+    await expect(
+      appQuery(`UPDATE customers.trust_marks SET trusted = false WHERE id = '${marks[0].id}'`),
+    ).rejects.toThrow(/permission denied/);
+    const { rows: flags } = await appQuery(
+      `INSERT INTO customers.test_account_flags (customer_account_id, flagged, at, by) VALUES ('${account}', true, now(), '${account}') RETURNING id`,
+    );
+    await expect(
+      appQuery(
+        `UPDATE customers.test_account_flags SET flagged = false WHERE id = '${flags[0].id}'`,
+      ),
+    ).rejects.toThrow(/permission denied/);
+    const note = () =>
+      appQuery(
+        `INSERT INTO customers.notes (customer_account_id, body, author_id, created_at, idempotency_key, request_hash) VALUES ('${account}', 'يفضل الاتصال', '${account}', now(), 'k', 'h') RETURNING id`,
+      );
+    const { rows: noted } = await note();
+    await expect(note()).rejects.toThrow(/notes_key/);
+    await expect(
+      appQuery(`UPDATE customers.notes SET body = 'x' WHERE id = '${noted[0].id}'`),
+    ).rejects.toThrow(/permission denied/);
   });
 
   it("keep a customer's blocks as they started, one open at a time, the dues kind never ending", async () => {

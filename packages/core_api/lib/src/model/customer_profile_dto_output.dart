@@ -14,6 +14,7 @@ part 'customer_profile_dto_output.g.dart';
 /// Properties:
 /// * [completed] - false until «أكمل بياناتك» is sent (CU §5.3).
 /// * [profile]
+/// * [phone] - The account's own number, read-only in «حسابي» (CU §13; slice 2.25b).
 @BuiltValue()
 abstract class CustomerProfileDtoOutput
     implements
@@ -24,6 +25,10 @@ abstract class CustomerProfileDtoOutput
 
   @BuiltValueField(wireName: r'profile')
   CustomerProfileDtoOutputProfile? get profile;
+
+  /// The account's own number, read-only in «حسابي» (CU §13; slice 2.25b).
+  @BuiltValueField(wireName: r'phone')
+  String get phone;
 
   CustomerProfileDtoOutput._();
 
@@ -69,6 +74,11 @@ class _$CustomerProfileDtoOutputSerializer
               CustomerProfileDtoOutputProfile,
             ),
           );
+    yield r'phone';
+    yield serializers.serialize(
+      object.phone,
+      specifiedType: const FullType(String),
+    );
   }
 
   @override
@@ -116,6 +126,15 @@ class _$CustomerProfileDtoOutputSerializer
                   as CustomerProfileDtoOutputProfile?;
           if (valueDes == null) continue;
           result.profile.replace(valueDes);
+          break;
+        case r'phone':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.phone = valueDes;
           break;
         default:
           unhandled.add(key);

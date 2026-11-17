@@ -24,6 +24,8 @@ Future<TestApp> _notifications(
     FakeAnswer(200, {'notifications': list}),
   ]);
   await app.pump(tester);
+  await tester.tap(find.byKey(const Key('open-account')));
+  await tester.pumpAndSettle();
   await tester.tap(find.byKey(const Key('open-notifications')));
   await tester.pumpAndSettle();
   return app;
@@ -87,6 +89,8 @@ void main() {
       const FakeAnswer(200, {'notifications': <Object>[]}),
     ]);
     await app.pump(tester);
+    await tester.tap(find.byKey(const Key('open-account')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('open-notifications')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('حاول مجدداً'));

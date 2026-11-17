@@ -30,6 +30,7 @@ Future<void> _signIn(WidgetTester tester, TestApp app) async {
 
 const _saved = FakeAnswer(200, {
   'completed': true,
+  'phone': '+963944123456',
   'profile': {
     'firstName': 'أحمد',
     'lastName': 'الحلبي',
@@ -57,7 +58,11 @@ void main() {
     (tester) async {
       final app = TestApp();
       app.server.on('/v1/customer/profile', [
-        const FakeAnswer(200, {'completed': false, 'profile': null}),
+        const FakeAnswer(200, {
+          'completed': false,
+          'profile': null,
+          'phone': '+963944123456',
+        }),
         _saved,
       ]);
       await app.pump(tester);
@@ -119,7 +124,11 @@ void main() {
   ) async {
     final app = TestApp(signedIn: true);
     app.server.on('/v1/customer/profile', [
-      const FakeAnswer(200, {'completed': false, 'profile': null}),
+      const FakeAnswer(200, {
+        'completed': false,
+        'profile': null,
+        'phone': '+963944123456',
+      }),
     ]);
     await app.pump(tester);
 

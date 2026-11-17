@@ -63,6 +63,8 @@ void main() {
     final push = FakePush();
     final app = _app(push);
     await app.pump(tester);
+    await tester.tap(find.text('حسابي'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('تسجيل الخروج'));
     await tester.pumpAndSettle();
     expect(find.text('تسجيل الدخول'), findsWidgets);

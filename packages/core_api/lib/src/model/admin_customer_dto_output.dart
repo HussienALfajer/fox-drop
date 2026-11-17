@@ -3,12 +3,18 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/admin_customer_dto_output_tickets_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_late_cancels.dart';
 import 'package:core_api/src/model/date.dart';
-import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_block_reasons_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_review_stop.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_addresses_inner.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_notes_inner.dart';
+import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_codes_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_block.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_orders.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_trust_mark.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_blocks_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_dues.dart';
 import 'package:built_value/built_value.dart';
@@ -28,14 +34,21 @@ part 'admin_customer_dto_output.g.dart';
 /// * [status] - «نشط», «محظور» (a block), «محظور» until the dues are paid, «موقوف حتى مراجعة الدعم» (AP §9.8).
 /// * [block]
 /// * [reviewStop]
-/// * [trusted] - «موثوق» by D23.
+/// * [trusted] - «موثوق» by D23 and the latest mark.
 /// * [delivered] - The normal deliveries that count toward the trust.
 /// * [trustedAfter]
+/// * [trustMark]
 /// * [lateCancels]
 /// * [fakeOrders]
 /// * [dues]
 /// * [blocks]
 /// * [blockReasons] - Content's active customer_block reasons (AP Appendix B).
+/// * [testAccount] - «حساب تجريبي للإدارة»: sees the restaurants in test mode.
+/// * [orders]
+/// * [tickets]
+/// * [codes] - The codes used in the city, newest first.
+/// * [addresses]
+/// * [notes]
 @BuiltValue()
 abstract class AdminCustomerDtoOutput
     implements Built<AdminCustomerDtoOutput, AdminCustomerDtoOutputBuilder> {
@@ -69,7 +82,7 @@ abstract class AdminCustomerDtoOutput
   @BuiltValueField(wireName: r'reviewStop')
   AdminCustomerDtoOutputReviewStop? get reviewStop;
 
-  /// «موثوق» by D23.
+  /// «موثوق» by D23 and the latest mark.
   @BuiltValueField(wireName: r'trusted')
   bool get trusted;
 
@@ -79,6 +92,9 @@ abstract class AdminCustomerDtoOutput
 
   @BuiltValueField(wireName: r'trustedAfter')
   int get trustedAfter;
+
+  @BuiltValueField(wireName: r'trustMark')
+  AdminCustomerDtoOutputTrustMark? get trustMark;
 
   @BuiltValueField(wireName: r'lateCancels')
   AdminCustomerDtoOutputLateCancels get lateCancels;
@@ -95,6 +111,26 @@ abstract class AdminCustomerDtoOutput
   /// Content's active customer_block reasons (AP Appendix B).
   @BuiltValueField(wireName: r'blockReasons')
   BuiltList<AdminCustomerDtoOutputBlockReasonsInner> get blockReasons;
+
+  /// «حساب تجريبي للإدارة»: sees the restaurants in test mode.
+  @BuiltValueField(wireName: r'testAccount')
+  bool get testAccount;
+
+  @BuiltValueField(wireName: r'orders')
+  AdminCustomerDtoOutputOrders get orders;
+
+  @BuiltValueField(wireName: r'tickets')
+  BuiltList<AdminCustomerDtoOutputTicketsInner> get tickets;
+
+  /// The codes used in the city, newest first.
+  @BuiltValueField(wireName: r'codes')
+  BuiltList<AdminCustomerDtoOutputCodesInner> get codes;
+
+  @BuiltValueField(wireName: r'addresses')
+  BuiltList<AdminCustomerDtoOutputAddressesInner> get addresses;
+
+  @BuiltValueField(wireName: r'notes')
+  BuiltList<AdminCustomerDtoOutputNotesInner> get notes;
 
   AdminCustomerDtoOutput._();
 
@@ -204,6 +240,15 @@ class _$AdminCustomerDtoOutputSerializer
       object.trustedAfter,
       specifiedType: const FullType(int),
     );
+    yield r'trustMark';
+    yield object.trustMark == null
+        ? null
+        : serializers.serialize(
+            object.trustMark,
+            specifiedType: const FullType.nullable(
+              AdminCustomerDtoOutputTrustMark,
+            ),
+          );
     yield r'lateCancels';
     yield serializers.serialize(
       object.lateCancels,
@@ -231,6 +276,44 @@ class _$AdminCustomerDtoOutputSerializer
       object.blockReasons,
       specifiedType: const FullType(BuiltList, [
         FullType(AdminCustomerDtoOutputBlockReasonsInner),
+      ]),
+    );
+    yield r'testAccount';
+    yield serializers.serialize(
+      object.testAccount,
+      specifiedType: const FullType(bool),
+    );
+    yield r'orders';
+    yield serializers.serialize(
+      object.orders,
+      specifiedType: const FullType(AdminCustomerDtoOutputOrders),
+    );
+    yield r'tickets';
+    yield serializers.serialize(
+      object.tickets,
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminCustomerDtoOutputTicketsInner),
+      ]),
+    );
+    yield r'codes';
+    yield serializers.serialize(
+      object.codes,
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminCustomerDtoOutputCodesInner),
+      ]),
+    );
+    yield r'addresses';
+    yield serializers.serialize(
+      object.addresses,
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminCustomerDtoOutputAddressesInner),
+      ]),
+    );
+    yield r'notes';
+    yield serializers.serialize(
+      object.notes,
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminCustomerDtoOutputNotesInner),
       ]),
     );
   }
@@ -377,6 +460,18 @@ class _$AdminCustomerDtoOutputSerializer
                   as int;
           result.trustedAfter = valueDes;
           break;
+        case r'trustMark':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminCustomerDtoOutputTrustMark,
+                    ),
+                  )
+                  as AdminCustomerDtoOutputTrustMark?;
+          if (valueDes == null) continue;
+          result.trustMark.replace(valueDes);
+          break;
         case r'lateCancels':
           final valueDes =
               serializers.deserialize(
@@ -424,6 +519,68 @@ class _$AdminCustomerDtoOutputSerializer
                   )
                   as BuiltList<AdminCustomerDtoOutputBlockReasonsInner>;
           result.blockReasons.replace(valueDes);
+          break;
+        case r'testAccount':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.testAccount = valueDes;
+          break;
+        case r'orders':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(AdminCustomerDtoOutputOrders),
+                  )
+                  as AdminCustomerDtoOutputOrders;
+          result.orders.replace(valueDes);
+          break;
+        case r'tickets':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminCustomerDtoOutputTicketsInner),
+                    ]),
+                  )
+                  as BuiltList<AdminCustomerDtoOutputTicketsInner>;
+          result.tickets.replace(valueDes);
+          break;
+        case r'codes':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminCustomerDtoOutputCodesInner),
+                    ]),
+                  )
+                  as BuiltList<AdminCustomerDtoOutputCodesInner>;
+          result.codes.replace(valueDes);
+          break;
+        case r'addresses':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminCustomerDtoOutputAddressesInner),
+                    ]),
+                  )
+                  as BuiltList<AdminCustomerDtoOutputAddressesInner>;
+          result.addresses.replace(valueDes);
+          break;
+        case r'notes':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminCustomerDtoOutputNotesInner),
+                    ]),
+                  )
+                  as BuiltList<AdminCustomerDtoOutputNotesInner>;
+          result.notes.replace(valueDes);
           break;
         default:
           unhandled.add(key);

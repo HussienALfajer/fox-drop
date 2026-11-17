@@ -33,6 +33,7 @@ Map<String, Object?> card(
   String name, {
   String state = 'open',
   String? opensAt,
+  bool testMode = false,
 }) => {
   'id': id,
   'nameAr': name,
@@ -42,6 +43,7 @@ Map<String, Object?> card(
   'coverKey': null,
   'rating': null,
   'ratingCount': null,
+  'testMode': testMode,
   'estimate': {'fromMin': 30, 'toMin': 40},
   'deliveryFee': {'fee': try_(1000), 'free': false},
   'state': _state(state, opensAt: opensAt),

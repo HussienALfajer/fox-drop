@@ -155,17 +155,67 @@ export class OrdersService implements OnModuleInit {
     // AP §9.8 (slice 2.25a): the panel's customer profile.
     this.customers.useOrderFacts(async (accountId, cityId) => {
       const rules = await this.activeOrders.rules(cityId);
-      const [limit, fakeOrders] = await Promise.all([
+      const [limit, fakeOrders, summary] = await Promise.all([
         this.activeOrders.customer(accountId, rules),
         this.activeOrders.fakeOrders(accountId),
+        this.customerSummary(accountId, cityId),
       ]);
       return {
         trusted: limit.trusted,
         delivered: limit.delivered,
         trustedAfter: rules.trustedAfter,
         fakeOrders,
+        ...summary,
       };
     });
+  }
+
+  // AP §9.8 «الطلبات» (slice 2.25b): the customer's orders in the city
+  // (free re-deliveries left out), what the normal deliveries totalled per
+  // currency (test orders left out), and the latest. Reads every month's partition.
+  private async customerSummary(accountId: string, cityId: string) {
+    const whose = and(
+      eq(orders.customerAccountId, accountId),
+      eq(orders.cityId, cityId),
+      isNull(orders.redeliveryOfId),
+    );
+    const [counted, spent, [last]] = await Promise.all([
+      this.database.db
+        .select({ n: sql<number>`count(*)::int` })
+        .from(orders)
+        .where(whose),
+      this.database.db
+        .select({ currency: orders.currency, amount: sql<string>`sum(${orders.total})::text` })
+        .from(orders)
+        // What the customer paid: normal deliveries, test orders left out
+        // (an outcome may have collected less or nothing).
+        .where(
+          and(
+            whose,
+            eq(orders.status, 'delivered'),
+            eq(orders.outcome, 'normal'),
+            eq(orders.testOrder, false),
+          ),
+        )
+        .groupBy(orders.currency)
+        .orderBy(orders.currency),
+      this.database.db
+        .select({
+          id: orders.id,
+          number: orders.number,
+          status: orders.status,
+          placedAt: orders.placedAt,
+        })
+        .from(orders)
+        .where(whose)
+        .orderBy(desc(orders.placedAt))
+        .limit(1),
+    ]);
+    return {
+      count: counted[0]?.n ?? 0,
+      spent: spent.map((row) => ({ currency: row.currency, amount: BigInt(row.amount) })),
+      last: last ?? null,
+    };
   }
 
   async place(command: PlaceOrder, now: Date): Promise<OrderView> {

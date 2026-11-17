@@ -11,6 +11,7 @@ part 'admin_customer_dto_output_review_stop.g.dart';
 /// AdminCustomerDtoOutputReviewStop
 ///
 /// Properties:
+/// * [id]
 /// * [startedAt]
 @BuiltValue()
 abstract class AdminCustomerDtoOutputReviewStop
@@ -19,6 +20,9 @@ abstract class AdminCustomerDtoOutputReviewStop
           AdminCustomerDtoOutputReviewStop,
           AdminCustomerDtoOutputReviewStopBuilder
         > {
+  @BuiltValueField(wireName: r'id')
+  String get id;
+
   @BuiltValueField(wireName: r'startedAt')
   DateTime get startedAt;
 
@@ -52,6 +56,11 @@ class _$AdminCustomerDtoOutputReviewStopSerializer
     AdminCustomerDtoOutputReviewStop object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    yield r'id';
+    yield serializers.serialize(
+      object.id,
+      specifiedType: const FullType(String),
+    );
     yield r'startedAt';
     yield serializers.serialize(
       object.startedAt,
@@ -84,6 +93,15 @@ class _$AdminCustomerDtoOutputReviewStopSerializer
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'id':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.id = valueDes;
+          break;
         case r'startedAt':
           final valueDes =
               serializers.deserialize(

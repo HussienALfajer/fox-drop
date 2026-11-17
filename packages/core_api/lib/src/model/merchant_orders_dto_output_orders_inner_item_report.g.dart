@@ -13,7 +13,7 @@ class _$MerchantOrdersDtoOutputOrdersInnerItemReport
   @override
   final BuiltList<MerchantOrdersDtoOutputOrdersInnerItemReportItemsInner> items;
   @override
-  final MerchantOrdersDtoOutputOrdersInnerItemReportNote? note;
+  final AdminCompensationRequestsDtoOutputRequestsInnerReason? note;
 
   factory _$MerchantOrdersDtoOutputOrdersInnerItemReport([
     void Function(MerchantOrdersDtoOutputOrdersInnerItemReportBuilder)? updates,
@@ -85,12 +85,13 @@ class MerchantOrdersDtoOutputOrdersInnerItemReportBuilder
     ListBuilder<MerchantOrdersDtoOutputOrdersInnerItemReportItemsInner>? items,
   ) => _$this._items = items;
 
-  MerchantOrdersDtoOutputOrdersInnerItemReportNoteBuilder? _note;
-  MerchantOrdersDtoOutputOrdersInnerItemReportNoteBuilder get note =>
+  AdminCompensationRequestsDtoOutputRequestsInnerReasonBuilder? _note;
+  AdminCompensationRequestsDtoOutputRequestsInnerReasonBuilder get note =>
       _$this._note ??=
-          MerchantOrdersDtoOutputOrdersInnerItemReportNoteBuilder();
-  set note(MerchantOrdersDtoOutputOrdersInnerItemReportNoteBuilder? note) =>
-      _$this._note = note;
+          AdminCompensationRequestsDtoOutputRequestsInnerReasonBuilder();
+  set note(
+    AdminCompensationRequestsDtoOutputRequestsInnerReasonBuilder? note,
+  ) => _$this._note = note;
 
   MerchantOrdersDtoOutputOrdersInnerItemReportBuilder() {
     MerchantOrdersDtoOutputOrdersInnerItemReport._defaults(this);

@@ -73,7 +73,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('أين نوصل طلبك؟'), findsOneWidget);
-    expect(find.text('تسجيل الخروج'), findsOneWidget);
+    expect(find.text('حسابي'), findsOneWidget);
   });
 
   testWidgets('no operations code for customers when no code can be sent', (

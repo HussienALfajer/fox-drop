@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'account/my_account_screen.dart';
 import 'auth.dart';
 import 'blocked_screen.dart';
 import 'browsing/price_report_screen.dart';
@@ -116,6 +117,22 @@ final routerProvider = Provider<GoRouter>((ref) {
             ? null
             : signInFrom('/notifications'),
         builder: (context, state) => const NotificationsScreen(),
+      ),
+      // CU §13 «حسابي» and its «بياناتي»: signed-in customers only.
+      GoRoute(
+        path: '/account',
+        redirect: (context, state) =>
+            ref.read(customerAuth.session).value is SignedIn
+            ? null
+            : signInFrom('/account'),
+        builder: (context, state) => const MyAccountScreen(),
+        routes: [
+          GoRoute(
+            path: 'profile',
+            builder: (context, state) =>
+                const ProfileScreen(from: '/account', editing: true),
+          ),
+        ],
       ),
       // CU §12.4 «أكوادي»: the account's, so a guest signs in first.
       GoRoute(

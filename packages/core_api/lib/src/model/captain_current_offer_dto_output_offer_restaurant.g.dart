@@ -11,7 +11,7 @@ class _$CaptainCurrentOfferDtoOutputOfferRestaurant
   @override
   final String name;
   @override
-  final CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation location;
+  final AdminCustomerDtoOutputAddressesInnerLocation location;
   @override
   final int distanceMetres;
 
@@ -77,13 +77,12 @@ class CaptainCurrentOfferDtoOutputOfferRestaurantBuilder
   String? get name => _$this._name;
   set name(String? name) => _$this._name = name;
 
-  CustomerActiveOrdersDtoOutputOrdersInnerAddressLocationBuilder? _location;
-  CustomerActiveOrdersDtoOutputOrdersInnerAddressLocationBuilder get location =>
+  AdminCustomerDtoOutputAddressesInnerLocationBuilder? _location;
+  AdminCustomerDtoOutputAddressesInnerLocationBuilder get location =>
       _$this._location ??=
-          CustomerActiveOrdersDtoOutputOrdersInnerAddressLocationBuilder();
-  set location(
-    CustomerActiveOrdersDtoOutputOrdersInnerAddressLocationBuilder? location,
-  ) => _$this._location = location;
+          AdminCustomerDtoOutputAddressesInnerLocationBuilder();
+  set location(AdminCustomerDtoOutputAddressesInnerLocationBuilder? location) =>
+      _$this._location = location;
 
   int? _distanceMetres;
   int? get distanceMetres => _$this._distanceMetres;

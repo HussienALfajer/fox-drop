@@ -187,6 +187,7 @@ describe('the details (CU §5.3)', () => {
     expect((await call(headers, 'GET', '/v1/customer/profile')).json()).toEqual({
       completed: false,
       profile: null,
+      phone: expect.stringMatching(/^\+9639\d{8}$/),
     });
     const noTerms = await call(headers, 'PUT', '/v1/customer/profile', {
       ...details,
@@ -198,7 +199,7 @@ describe('the details (CU §5.3)', () => {
       ...details,
       acceptTerms: true,
     });
-    expect(saved.json()).toEqual({ completed: true, profile: details });
+    expect(saved.json()).toEqual({ completed: true, profile: details, phone: expect.any(String) });
     // The tick accepts the customer terms in force (AP §9.13).
     expect((await call(headers, 'GET', '/v1/customer/terms')).json()).toMatchObject({
       pending: false,
@@ -214,6 +215,7 @@ describe('the details (CU §5.3)', () => {
     expect((await call(headers, 'GET', '/v1/customer/profile')).json()).toEqual({
       completed: true,
       profile: { ...details, firstName: 'Ahmad-Ali', lastName: null, birthday: null },
+      phone: expect.any(String),
     });
   });
 

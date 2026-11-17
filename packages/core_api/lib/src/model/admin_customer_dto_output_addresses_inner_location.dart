@@ -6,19 +6,19 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'customer_active_orders_dto_output_orders_inner_address_location.g.dart';
+part 'admin_customer_dto_output_addresses_inner_location.g.dart';
 
-/// CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation
+/// AdminCustomerDtoOutputAddressesInnerLocation
 ///
 /// Properties:
 /// * [latitude]
 /// * [longitude]
 @BuiltValue()
-abstract class CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation
+abstract class AdminCustomerDtoOutputAddressesInnerLocation
     implements
         Built<
-          CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation,
-          CustomerActiveOrdersDtoOutputOrdersInnerAddressLocationBuilder
+          AdminCustomerDtoOutputAddressesInnerLocation,
+          AdminCustomerDtoOutputAddressesInnerLocationBuilder
         > {
   @BuiltValueField(wireName: r'latitude')
   num get latitude;
@@ -26,43 +26,37 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation
   @BuiltValueField(wireName: r'longitude')
   num get longitude;
 
-  CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation._();
+  AdminCustomerDtoOutputAddressesInnerLocation._();
 
-  factory CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation([
-    void updates(
-      CustomerActiveOrdersDtoOutputOrdersInnerAddressLocationBuilder b,
-    ),
-  ]) = _$CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation;
+  factory AdminCustomerDtoOutputAddressesInnerLocation([
+    void updates(AdminCustomerDtoOutputAddressesInnerLocationBuilder b),
+  ]) = _$AdminCustomerDtoOutputAddressesInnerLocation;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(
-    CustomerActiveOrdersDtoOutputOrdersInnerAddressLocationBuilder b,
+    AdminCustomerDtoOutputAddressesInnerLocationBuilder b,
   ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation>
-  get serializer =>
-      _$CustomerActiveOrdersDtoOutputOrdersInnerAddressLocationSerializer();
+  static Serializer<AdminCustomerDtoOutputAddressesInnerLocation>
+  get serializer => _$AdminCustomerDtoOutputAddressesInnerLocationSerializer();
 }
 
-class _$CustomerActiveOrdersDtoOutputOrdersInnerAddressLocationSerializer
+class _$AdminCustomerDtoOutputAddressesInnerLocationSerializer
     implements
-        PrimitiveSerializer<
-          CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation
-        > {
+        PrimitiveSerializer<AdminCustomerDtoOutputAddressesInnerLocation> {
   @override
   final Iterable<Type> types = const [
-    CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation,
-    _$CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation,
+    AdminCustomerDtoOutputAddressesInnerLocation,
+    _$AdminCustomerDtoOutputAddressesInnerLocation,
   ];
 
   @override
-  final String wireName =
-      r'CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation';
+  final String wireName = r'AdminCustomerDtoOutputAddressesInnerLocation';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation object, {
+    AdminCustomerDtoOutputAddressesInnerLocation object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'latitude';
@@ -80,7 +74,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerAddressLocationSerializer
   @override
   Object serialize(
     Serializers serializers,
-    CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation object, {
+    AdminCustomerDtoOutputAddressesInnerLocation object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -95,8 +89,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerAddressLocationSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required CustomerActiveOrdersDtoOutputOrdersInnerAddressLocationBuilder
-    result,
+    required AdminCustomerDtoOutputAddressesInnerLocationBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -124,13 +117,12 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerAddressLocationSerializer
   }
 
   @override
-  CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation deserialize(
+  AdminCustomerDtoOutputAddressesInnerLocation deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result =
-        CustomerActiveOrdersDtoOutputOrdersInnerAddressLocationBuilder();
+    final result = AdminCustomerDtoOutputAddressesInnerLocationBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

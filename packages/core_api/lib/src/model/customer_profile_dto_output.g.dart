@@ -11,13 +11,18 @@ class _$CustomerProfileDtoOutput extends CustomerProfileDtoOutput {
   final bool completed;
   @override
   final CustomerProfileDtoOutputProfile? profile;
+  @override
+  final String phone;
 
   factory _$CustomerProfileDtoOutput([
     void Function(CustomerProfileDtoOutputBuilder)? updates,
   ]) => (CustomerProfileDtoOutputBuilder()..update(updates))._build();
 
-  _$CustomerProfileDtoOutput._({required this.completed, this.profile})
-    : super._();
+  _$CustomerProfileDtoOutput._({
+    required this.completed,
+    this.profile,
+    required this.phone,
+  }) : super._();
   @override
   CustomerProfileDtoOutput rebuild(
     void Function(CustomerProfileDtoOutputBuilder) updates,
@@ -32,7 +37,8 @@ class _$CustomerProfileDtoOutput extends CustomerProfileDtoOutput {
     if (identical(other, this)) return true;
     return other is CustomerProfileDtoOutput &&
         completed == other.completed &&
-        profile == other.profile;
+        profile == other.profile &&
+        phone == other.phone;
   }
 
   @override
@@ -40,6 +46,7 @@ class _$CustomerProfileDtoOutput extends CustomerProfileDtoOutput {
     var _$hash = 0;
     _$hash = $jc(_$hash, completed.hashCode);
     _$hash = $jc(_$hash, profile.hashCode);
+    _$hash = $jc(_$hash, phone.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -48,7 +55,8 @@ class _$CustomerProfileDtoOutput extends CustomerProfileDtoOutput {
   String toString() {
     return (newBuiltValueToStringHelper(r'CustomerProfileDtoOutput')
           ..add('completed', completed)
-          ..add('profile', profile))
+          ..add('profile', profile)
+          ..add('phone', phone))
         .toString();
   }
 }
@@ -68,6 +76,10 @@ class CustomerProfileDtoOutputBuilder
   set profile(CustomerProfileDtoOutputProfileBuilder? profile) =>
       _$this._profile = profile;
 
+  String? _phone;
+  String? get phone => _$this._phone;
+  set phone(String? phone) => _$this._phone = phone;
+
   CustomerProfileDtoOutputBuilder() {
     CustomerProfileDtoOutput._defaults(this);
   }
@@ -77,6 +89,7 @@ class CustomerProfileDtoOutputBuilder
     if ($v != null) {
       _completed = $v.completed;
       _profile = $v.profile?.toBuilder();
+      _phone = $v.phone;
       _$v = null;
     }
     return this;
@@ -107,6 +120,11 @@ class CustomerProfileDtoOutputBuilder
               'completed',
             ),
             profile: _profile?.build(),
+            phone: BuiltValueNullFieldError.checkNotNull(
+              phone,
+              r'CustomerProfileDtoOutput',
+              'phone',
+            ),
           );
     } catch (_) {
       late String _$failedField;

@@ -4,7 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_customer_dto_output_block_reasons_inner.dart';
+import 'package:core_api/src/model/admin_compensation_requests_dto_output_requests_inner_reason.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -60,7 +60,7 @@ abstract class AdminCompensationDtoOutput
   String get currency;
 
   @BuiltValueField(wireName: r'reason')
-  AdminCustomerDtoOutputBlockReasonsInner get reason;
+  AdminCompensationRequestsDtoOutputRequestsInnerReason? get reason;
 
   @BuiltValueField(wireName: r'note')
   String? get note;
@@ -167,10 +167,14 @@ class _$AdminCompensationDtoOutputSerializer
       specifiedType: const FullType(String),
     );
     yield r'reason';
-    yield serializers.serialize(
-      object.reason,
-      specifiedType: const FullType(AdminCustomerDtoOutputBlockReasonsInner),
-    );
+    yield object.reason == null
+        ? null
+        : serializers.serialize(
+            object.reason,
+            specifiedType: const FullType.nullable(
+              AdminCompensationRequestsDtoOutputRequestsInnerReason,
+            ),
+          );
     yield r'note';
     yield object.note == null
         ? null
@@ -331,11 +335,12 @@ class _$AdminCompensationDtoOutputSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(
-                      AdminCustomerDtoOutputBlockReasonsInner,
+                    specifiedType: const FullType.nullable(
+                      AdminCompensationRequestsDtoOutputRequestsInnerReason,
                     ),
                   )
-                  as AdminCustomerDtoOutputBlockReasonsInner;
+                  as AdminCompensationRequestsDtoOutputRequestsInnerReason?;
+          if (valueDes == null) continue;
           result.reason.replace(valueDes);
           break;
         case r'note':

@@ -6,92 +6,83 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_ticket_page_dto_output_notes_inner.g.dart';
+part 'admin_customer_dto_output_late_cancels_cleared.g.dart';
 
-/// AdminTicketPageDtoOutputNotesInner
+/// The latest «مسح المخالفات».
 ///
 /// Properties:
-/// * [id]
-/// * [authorName]
-/// * [body]
-/// * [createdAt]
+/// * [at]
+/// * [byName]
+/// * [note]
 @BuiltValue()
-abstract class AdminTicketPageDtoOutputNotesInner
+abstract class AdminCustomerDtoOutputLateCancelsCleared
     implements
         Built<
-          AdminTicketPageDtoOutputNotesInner,
-          AdminTicketPageDtoOutputNotesInnerBuilder
+          AdminCustomerDtoOutputLateCancelsCleared,
+          AdminCustomerDtoOutputLateCancelsClearedBuilder
         > {
-  @BuiltValueField(wireName: r'id')
-  String get id;
+  @BuiltValueField(wireName: r'at')
+  DateTime get at;
 
-  @BuiltValueField(wireName: r'authorName')
-  String? get authorName;
+  @BuiltValueField(wireName: r'byName')
+  String? get byName;
 
-  @BuiltValueField(wireName: r'body')
-  String get body;
+  @BuiltValueField(wireName: r'note')
+  String get note;
 
-  @BuiltValueField(wireName: r'createdAt')
-  DateTime get createdAt;
+  AdminCustomerDtoOutputLateCancelsCleared._();
 
-  AdminTicketPageDtoOutputNotesInner._();
-
-  factory AdminTicketPageDtoOutputNotesInner([
-    void updates(AdminTicketPageDtoOutputNotesInnerBuilder b),
-  ]) = _$AdminTicketPageDtoOutputNotesInner;
+  factory AdminCustomerDtoOutputLateCancelsCleared([
+    void updates(AdminCustomerDtoOutputLateCancelsClearedBuilder b),
+  ]) = _$AdminCustomerDtoOutputLateCancelsCleared;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminTicketPageDtoOutputNotesInnerBuilder b) => b;
+  static void _defaults(AdminCustomerDtoOutputLateCancelsClearedBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminTicketPageDtoOutputNotesInner> get serializer =>
-      _$AdminTicketPageDtoOutputNotesInnerSerializer();
+  static Serializer<AdminCustomerDtoOutputLateCancelsCleared> get serializer =>
+      _$AdminCustomerDtoOutputLateCancelsClearedSerializer();
 }
 
-class _$AdminTicketPageDtoOutputNotesInnerSerializer
-    implements PrimitiveSerializer<AdminTicketPageDtoOutputNotesInner> {
+class _$AdminCustomerDtoOutputLateCancelsClearedSerializer
+    implements PrimitiveSerializer<AdminCustomerDtoOutputLateCancelsCleared> {
   @override
   final Iterable<Type> types = const [
-    AdminTicketPageDtoOutputNotesInner,
-    _$AdminTicketPageDtoOutputNotesInner,
+    AdminCustomerDtoOutputLateCancelsCleared,
+    _$AdminCustomerDtoOutputLateCancelsCleared,
   ];
 
   @override
-  final String wireName = r'AdminTicketPageDtoOutputNotesInner';
+  final String wireName = r'AdminCustomerDtoOutputLateCancelsCleared';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminTicketPageDtoOutputNotesInner object, {
+    AdminCustomerDtoOutputLateCancelsCleared object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'id';
+    yield r'at';
     yield serializers.serialize(
-      object.id,
-      specifiedType: const FullType(String),
+      object.at,
+      specifiedType: const FullType(DateTime),
     );
-    yield r'authorName';
-    yield object.authorName == null
+    yield r'byName';
+    yield object.byName == null
         ? null
         : serializers.serialize(
-            object.authorName,
+            object.byName,
             specifiedType: const FullType.nullable(String),
           );
-    yield r'body';
+    yield r'note';
     yield serializers.serialize(
-      object.body,
+      object.note,
       specifiedType: const FullType(String),
-    );
-    yield r'createdAt';
-    yield serializers.serialize(
-      object.createdAt,
-      specifiedType: const FullType(DateTime),
     );
   }
 
   @override
   Object serialize(
     Serializers serializers,
-    AdminTicketPageDtoOutputNotesInner object, {
+    AdminCustomerDtoOutputLateCancelsCleared object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -106,23 +97,23 @@ class _$AdminTicketPageDtoOutputNotesInnerSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminTicketPageDtoOutputNotesInnerBuilder result,
+    required AdminCustomerDtoOutputLateCancelsClearedBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'id':
+        case r'at':
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(String),
+                    specifiedType: const FullType(DateTime),
                   )
-                  as String;
-          result.id = valueDes;
+                  as DateTime;
+          result.at = valueDes;
           break;
-        case r'authorName':
+        case r'byName':
           final valueDes =
               serializers.deserialize(
                     value,
@@ -130,25 +121,16 @@ class _$AdminTicketPageDtoOutputNotesInnerSerializer
                   )
                   as String?;
           if (valueDes == null) continue;
-          result.authorName = valueDes;
+          result.byName = valueDes;
           break;
-        case r'body':
+        case r'note':
           final valueDes =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(String),
                   )
                   as String;
-          result.body = valueDes;
-          break;
-        case r'createdAt':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(DateTime),
-                  )
-                  as DateTime;
-          result.createdAt = valueDes;
+          result.note = valueDes;
           break;
         default:
           unhandled.add(key);
@@ -159,12 +141,12 @@ class _$AdminTicketPageDtoOutputNotesInnerSerializer
   }
 
   @override
-  AdminTicketPageDtoOutputNotesInner deserialize(
+  AdminCustomerDtoOutputLateCancelsCleared deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminTicketPageDtoOutputNotesInnerBuilder();
+    final result = AdminCustomerDtoOutputLateCancelsClearedBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

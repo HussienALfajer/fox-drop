@@ -32,7 +32,8 @@ const profile = (blocked: boolean) => ({
   trusted: false,
   delivered: 1,
   trustedAfter: 3,
-  lateCancels: { inWindow: 0, total: 0, limit: 2, windowDays: 30 },
+  trustMark: null,
+  lateCancels: { inWindow: 0, total: 0, limit: 2, windowDays: 30, cleared: null },
   fakeOrders: 0,
   dues: { amount: '0', currency: 'TRY' },
   blocks: blocked
@@ -59,6 +60,12 @@ const profile = (blocked: boolean) => ({
     { code: 'fake_order', label: 'طلب وهمي' },
     { code: 'abuse', label: 'إساءة' },
   ],
+  testAccount: false,
+  orders: { count: 0, spent: [], last: null },
+  tickets: [],
+  codes: [],
+  addresses: [],
+  notes: [],
 });
 
 // AP §9.8 (slice 2.25a): the owner finds a customer by the number and blocks
@@ -112,4 +119,31 @@ test('finds a customer and blocks them until further notice', async ({ page }) =
     reason: 'abuse',
     note: 'أساء للكابتن',
   });
+});
+
+// AP §9.8, CU §5.4 (slice 2.25b): the owner changes a customer's number.
+test("changes a customer's number with a reason", async ({ page }) => {
+  await fakeSession(page, ['customers.read', 'customers.manage']);
+  await page.route('**/v1/admin/cities', (route) => route.fulfill({ json: cities }));
+  const sent: unknown[] = [];
+  let changed = false;
+  await page.route('**/v1/admin/customers/**', (route) => {
+    const request = route.request();
+    if (new URL(request.url()).pathname.endsWith('/change-phone')) {
+      sent.push(request.postDataJSON());
+      changed = true;
+    }
+    return route.fulfill({
+      json: changed ? { ...profile(false), maskedPhone: '+963 ••• 789' } : profile(false),
+    });
+  });
+  await page.goto(`/customers/${customerId}`);
+  await expect(page.getByRole('heading', { name: 'سامر الحلبي' })).toBeVisible();
+  const form = page.locator('form', { has: page.getByRole('heading', { name: 'تغيير الرقم' }) });
+  await form.getByLabel('الرقم الجديد').fill('0991234789');
+  await form.getByLabel('السبب').fill('طلب الزبون عبر الدعم');
+  await form.getByRole('button', { name: 'تغيير الرقم' }).click();
+  await expect(page.getByText('تغيّر الرقم وسُجّل خروج الزبون من كل الأجهزة.')).toBeVisible();
+  await expect(page.getByText('+963 ••• 789')).toBeVisible();
+  expect(sent).toEqual([{ cityId, phone: '0991234789', note: 'طلب الزبون عبر الدعم' }]);
 });

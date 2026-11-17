@@ -11,7 +11,7 @@ class _$AdminOrderDtoOutputOrderOnBehalf
   @override
   final AdminOrderDtoOutputOrderOnBehalfPrepTime prepTime;
   @override
-  final BuiltList<MerchantOrdersDtoOutputOrdersInnerItemReportNote?>
+  final BuiltList<AdminCompensationRequestsDtoOutputRequestsInnerReason?>
   rejectionReasons;
   @override
   final BuiltList<int> busyExtraOptionsMin;
@@ -77,13 +77,13 @@ class AdminOrderDtoOutputOrderOnBehalfBuilder
   set prepTime(AdminOrderDtoOutputOrderOnBehalfPrepTimeBuilder? prepTime) =>
       _$this._prepTime = prepTime;
 
-  ListBuilder<MerchantOrdersDtoOutputOrdersInnerItemReportNote?>?
+  ListBuilder<AdminCompensationRequestsDtoOutputRequestsInnerReason?>?
   _rejectionReasons;
-  ListBuilder<MerchantOrdersDtoOutputOrdersInnerItemReportNote?>
+  ListBuilder<AdminCompensationRequestsDtoOutputRequestsInnerReason?>
   get rejectionReasons => _$this._rejectionReasons ??=
-      ListBuilder<MerchantOrdersDtoOutputOrdersInnerItemReportNote?>();
+      ListBuilder<AdminCompensationRequestsDtoOutputRequestsInnerReason?>();
   set rejectionReasons(
-    ListBuilder<MerchantOrdersDtoOutputOrdersInnerItemReportNote?>?
+    ListBuilder<AdminCompensationRequestsDtoOutputRequestsInnerReason?>?
     rejectionReasons,
   ) => _$this._rejectionReasons = rejectionReasons;
 

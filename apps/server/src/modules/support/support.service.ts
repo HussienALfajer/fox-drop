@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, type OnModuleInit } from '@nestjs/common';
 import { and, desc, eq, inArray, type SQL, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
@@ -13,7 +13,7 @@ import {
   NotificationTexts,
   type ReasonList,
 } from '../content/index.js';
-import { CustomersService } from '../customers/index.js';
+import { type CustomerTicket, CustomersService } from '../customers/index.js';
 import { FilesService } from '../files/index.js';
 import { FxService } from '../fx/index.js';
 import { GeoService, lastCutoff } from '../geo/index.js';
@@ -396,6 +396,8 @@ export class TicketRefusedError extends Error {
 
 // The list's length: the newest first.
 const LISTED = 200;
+// AP §9.8: the tickets a customer's profile lists (decided by us).
+const CUSTOMER_PROFILE_TICKETS = 20;
 
 // «بلاغاتي»'s length (RA §15), newest first.
 const MERCHANT_LISTED = 100;
@@ -426,7 +428,7 @@ const PUSH_TEMPLATES: Record<TicketParty, string> = {
 // ticket on an order under the order's lock and tells this module when an
 // order ends (`orderEnded`), since this module cannot read orders.
 @Injectable()
-export class SupportService {
+export class SupportService implements OnModuleInit {
   constructor(
     @Inject(DATABASE) private readonly database: Database,
     private readonly audit: AuditService,
@@ -446,6 +448,38 @@ export class SupportService {
     private readonly geo: GeoService,
     private readonly fx: FxService,
   ) {}
+
+  // AP §9.8 (slice 2.25b): the customer profile's tickets.
+  onModuleInit(): void {
+    this.customers.useCustomerTickets((accountId, cityId) =>
+      this.customerTickets(accountId, cityId),
+    );
+  }
+
+  // The customer's latest CUSTOMER_PROFILE_TICKETS tickets in the city,
+  // newest first.
+  async customerTickets(accountId: string, cityId: string): Promise<CustomerTicket[]> {
+    const rows = await this.database.db
+      .select()
+      .from(tickets)
+      .where(
+        and(
+          eq(tickets.cityId, cityId),
+          eq(tickets.party, 'customer'),
+          eq(tickets.partyId, accountId),
+        ),
+      )
+      .orderBy(desc(tickets.openedAt))
+      .limit(CUSTOMER_PROFILE_TICKETS);
+    return (await this.views(rows)).map((view) => ({
+      id: view.id,
+      number: view.number,
+      typeLabel: view.typeLabel,
+      status: view.status,
+      orderNumber: view.orderNumber,
+      openedAt: view.openedAt,
+    }));
+  }
 
   private disputes: PickupDisputes | null = null;
 

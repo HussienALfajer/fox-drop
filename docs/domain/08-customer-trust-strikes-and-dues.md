@@ -35,3 +35,8 @@
   - A credit left on the dues account (a «تغيير النتيجة» after the payment) stays there and covers later dues; V1 pays no cash back.
   - Clearing strikes restarts the count; nothing is deleted.
   - A closed account keeps all its data for now (AP §13 item 6 to check again before the store submission), stays searchable in the panel and drops out of the active lists.
+- **Owner decisions 2026-11-17 (slice 2.25b):**
+  - «توثيق» makes the account trusted at once, until a later fake outcome. «إزالة الثقة» acts as a fake outcome: the account is new again and its normal deliveries count from the removal.
+  - «فك الحظر» lifts a block for a duration or until further notice only; a dues block lifts only when the dues reach zero (the desk or a manual correction).
+  - A partial dues payment sends no push; reaching zero does.
+  - Ending a review stop leaves the strikes counted, so the next late cancellation stops the account again; clearing the strikes ends an open review stop with them.

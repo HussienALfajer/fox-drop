@@ -74,6 +74,8 @@ Future<TestApp> _myCodes(WidgetTester tester) async {
       }),
     ]),
   );
+  await tester.tap(find.byKey(const Key('open-account')));
+  await tester.pumpAndSettle();
   await tester.tap(find.byKey(const Key('open-codes')));
   await tester.pumpAndSettle();
   return app;

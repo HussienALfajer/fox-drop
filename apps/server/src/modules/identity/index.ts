@@ -99,7 +99,12 @@ export { AppSessionsService, type AppParty, type AppSession } from './app-sessio
 export { adminPermissions, type AdminPermission } from './permissions.js';
 export { deviceId, phone } from './app-auth.js';
 export { PhoneCipher } from './phone-cipher.js';
-export { CustomerAccountsService } from './customer-accounts.service.js';
+export {
+  type CustomerAccountAdmin,
+  type CustomerAccountRefusal,
+  CustomerAccountRefusedError,
+  CustomerAccountsService,
+} from './customer-accounts.service.js';
 // For the tests of other modules that sign an app user in.
 export { CODE_SENDER, type DevelopmentCodeSender } from './code-sender.js';
 export { APP_CHECK_VERIFIER, type AppCheckVerifier } from './app-check.js';

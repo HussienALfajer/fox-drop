@@ -178,6 +178,8 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
   @override
   final int trustedAfter;
   @override
+  final AdminCustomerDtoOutputTrustMark? trustMark;
+  @override
   final AdminCustomerDtoOutputLateCancels lateCancels;
   @override
   final int fakeOrders;
@@ -187,6 +189,18 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
   final BuiltList<AdminCustomerDtoOutputBlocksInner> blocks;
   @override
   final BuiltList<AdminCustomerDtoOutputBlockReasonsInner> blockReasons;
+  @override
+  final bool testAccount;
+  @override
+  final AdminCustomerDtoOutputOrders orders;
+  @override
+  final BuiltList<AdminCustomerDtoOutputTicketsInner> tickets;
+  @override
+  final BuiltList<AdminCustomerDtoOutputCodesInner> codes;
+  @override
+  final BuiltList<AdminCustomerDtoOutputAddressesInner> addresses;
+  @override
+  final BuiltList<AdminCustomerDtoOutputNotesInner> notes;
 
   factory _$AdminCustomerDtoOutput([
     void Function(AdminCustomerDtoOutputBuilder)? updates,
@@ -205,11 +219,18 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
     required this.trusted,
     required this.delivered,
     required this.trustedAfter,
+    this.trustMark,
     required this.lateCancels,
     required this.fakeOrders,
     required this.dues,
     required this.blocks,
     required this.blockReasons,
+    required this.testAccount,
+    required this.orders,
+    required this.tickets,
+    required this.codes,
+    required this.addresses,
+    required this.notes,
   }) : super._();
   @override
   AdminCustomerDtoOutput rebuild(
@@ -236,11 +257,18 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
         trusted == other.trusted &&
         delivered == other.delivered &&
         trustedAfter == other.trustedAfter &&
+        trustMark == other.trustMark &&
         lateCancels == other.lateCancels &&
         fakeOrders == other.fakeOrders &&
         dues == other.dues &&
         blocks == other.blocks &&
-        blockReasons == other.blockReasons;
+        blockReasons == other.blockReasons &&
+        testAccount == other.testAccount &&
+        orders == other.orders &&
+        tickets == other.tickets &&
+        codes == other.codes &&
+        addresses == other.addresses &&
+        notes == other.notes;
   }
 
   @override
@@ -258,11 +286,18 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
     _$hash = $jc(_$hash, trusted.hashCode);
     _$hash = $jc(_$hash, delivered.hashCode);
     _$hash = $jc(_$hash, trustedAfter.hashCode);
+    _$hash = $jc(_$hash, trustMark.hashCode);
     _$hash = $jc(_$hash, lateCancels.hashCode);
     _$hash = $jc(_$hash, fakeOrders.hashCode);
     _$hash = $jc(_$hash, dues.hashCode);
     _$hash = $jc(_$hash, blocks.hashCode);
     _$hash = $jc(_$hash, blockReasons.hashCode);
+    _$hash = $jc(_$hash, testAccount.hashCode);
+    _$hash = $jc(_$hash, orders.hashCode);
+    _$hash = $jc(_$hash, tickets.hashCode);
+    _$hash = $jc(_$hash, codes.hashCode);
+    _$hash = $jc(_$hash, addresses.hashCode);
+    _$hash = $jc(_$hash, notes.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -282,11 +317,18 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
           ..add('trusted', trusted)
           ..add('delivered', delivered)
           ..add('trustedAfter', trustedAfter)
+          ..add('trustMark', trustMark)
           ..add('lateCancels', lateCancels)
           ..add('fakeOrders', fakeOrders)
           ..add('dues', dues)
           ..add('blocks', blocks)
-          ..add('blockReasons', blockReasons))
+          ..add('blockReasons', blockReasons)
+          ..add('testAccount', testAccount)
+          ..add('orders', orders)
+          ..add('tickets', tickets)
+          ..add('codes', codes)
+          ..add('addresses', addresses)
+          ..add('notes', notes))
         .toString();
   }
 }
@@ -348,6 +390,12 @@ class AdminCustomerDtoOutputBuilder
   int? get trustedAfter => _$this._trustedAfter;
   set trustedAfter(int? trustedAfter) => _$this._trustedAfter = trustedAfter;
 
+  AdminCustomerDtoOutputTrustMarkBuilder? _trustMark;
+  AdminCustomerDtoOutputTrustMarkBuilder get trustMark =>
+      _$this._trustMark ??= AdminCustomerDtoOutputTrustMarkBuilder();
+  set trustMark(AdminCustomerDtoOutputTrustMarkBuilder? trustMark) =>
+      _$this._trustMark = trustMark;
+
   AdminCustomerDtoOutputLateCancelsBuilder? _lateCancels;
   AdminCustomerDtoOutputLateCancelsBuilder get lateCancels =>
       _$this._lateCancels ??= AdminCustomerDtoOutputLateCancelsBuilder();
@@ -377,6 +425,40 @@ class AdminCustomerDtoOutputBuilder
     ListBuilder<AdminCustomerDtoOutputBlockReasonsInner>? blockReasons,
   ) => _$this._blockReasons = blockReasons;
 
+  bool? _testAccount;
+  bool? get testAccount => _$this._testAccount;
+  set testAccount(bool? testAccount) => _$this._testAccount = testAccount;
+
+  AdminCustomerDtoOutputOrdersBuilder? _orders;
+  AdminCustomerDtoOutputOrdersBuilder get orders =>
+      _$this._orders ??= AdminCustomerDtoOutputOrdersBuilder();
+  set orders(AdminCustomerDtoOutputOrdersBuilder? orders) =>
+      _$this._orders = orders;
+
+  ListBuilder<AdminCustomerDtoOutputTicketsInner>? _tickets;
+  ListBuilder<AdminCustomerDtoOutputTicketsInner> get tickets =>
+      _$this._tickets ??= ListBuilder<AdminCustomerDtoOutputTicketsInner>();
+  set tickets(ListBuilder<AdminCustomerDtoOutputTicketsInner>? tickets) =>
+      _$this._tickets = tickets;
+
+  ListBuilder<AdminCustomerDtoOutputCodesInner>? _codes;
+  ListBuilder<AdminCustomerDtoOutputCodesInner> get codes =>
+      _$this._codes ??= ListBuilder<AdminCustomerDtoOutputCodesInner>();
+  set codes(ListBuilder<AdminCustomerDtoOutputCodesInner>? codes) =>
+      _$this._codes = codes;
+
+  ListBuilder<AdminCustomerDtoOutputAddressesInner>? _addresses;
+  ListBuilder<AdminCustomerDtoOutputAddressesInner> get addresses =>
+      _$this._addresses ??= ListBuilder<AdminCustomerDtoOutputAddressesInner>();
+  set addresses(ListBuilder<AdminCustomerDtoOutputAddressesInner>? addresses) =>
+      _$this._addresses = addresses;
+
+  ListBuilder<AdminCustomerDtoOutputNotesInner>? _notes;
+  ListBuilder<AdminCustomerDtoOutputNotesInner> get notes =>
+      _$this._notes ??= ListBuilder<AdminCustomerDtoOutputNotesInner>();
+  set notes(ListBuilder<AdminCustomerDtoOutputNotesInner>? notes) =>
+      _$this._notes = notes;
+
   AdminCustomerDtoOutputBuilder() {
     AdminCustomerDtoOutput._defaults(this);
   }
@@ -396,11 +478,18 @@ class AdminCustomerDtoOutputBuilder
       _trusted = $v.trusted;
       _delivered = $v.delivered;
       _trustedAfter = $v.trustedAfter;
+      _trustMark = $v.trustMark?.toBuilder();
       _lateCancels = $v.lateCancels.toBuilder();
       _fakeOrders = $v.fakeOrders;
       _dues = $v.dues.toBuilder();
       _blocks = $v.blocks.toBuilder();
       _blockReasons = $v.blockReasons.toBuilder();
+      _testAccount = $v.testAccount;
+      _orders = $v.orders.toBuilder();
+      _tickets = $v.tickets.toBuilder();
+      _codes = $v.codes.toBuilder();
+      _addresses = $v.addresses.toBuilder();
+      _notes = $v.notes.toBuilder();
       _$v = null;
     }
     return this;
@@ -457,6 +546,7 @@ class AdminCustomerDtoOutputBuilder
               r'AdminCustomerDtoOutput',
               'trustedAfter',
             ),
+            trustMark: _trustMark?.build(),
             lateCancels: lateCancels.build(),
             fakeOrders: BuiltValueNullFieldError.checkNotNull(
               fakeOrders,
@@ -466,6 +556,16 @@ class AdminCustomerDtoOutputBuilder
             dues: dues.build(),
             blocks: blocks.build(),
             blockReasons: blockReasons.build(),
+            testAccount: BuiltValueNullFieldError.checkNotNull(
+              testAccount,
+              r'AdminCustomerDtoOutput',
+              'testAccount',
+            ),
+            orders: orders.build(),
+            tickets: tickets.build(),
+            codes: codes.build(),
+            addresses: addresses.build(),
+            notes: notes.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -475,6 +575,8 @@ class AdminCustomerDtoOutputBuilder
         _$failedField = 'reviewStop';
         _reviewStop?.build();
 
+        _$failedField = 'trustMark';
+        _trustMark?.build();
         _$failedField = 'lateCancels';
         lateCancels.build();
 
@@ -484,6 +586,17 @@ class AdminCustomerDtoOutputBuilder
         blocks.build();
         _$failedField = 'blockReasons';
         blockReasons.build();
+
+        _$failedField = 'orders';
+        orders.build();
+        _$failedField = 'tickets';
+        tickets.build();
+        _$failedField = 'codes';
+        codes.build();
+        _$failedField = 'addresses';
+        addresses.build();
+        _$failedField = 'notes';
+        notes.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminCustomerDtoOutput',

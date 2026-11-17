@@ -6043,6 +6043,102 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'لم يعد هذا البلاغ متاحاً لهذا الطلب.'**
   String get captainProblemClosed;
+
+  /// The account screen and its link on home (CU §13).
+  ///
+  /// In ar, this message translates to:
+  /// **'حسابي'**
+  String get customerMyAccountTitle;
+
+  /// «حسابي»: the profile item and its edit screen's title (CU §13, §5.3; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'بياناتي'**
+  String get customerAccountProfile;
+
+  /// The read-only phone in the profile (CU §13).
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم الهاتف'**
+  String get customerAccountPhone;
+
+  /// Under the read-only phone (CU §13, §5.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'لتغيير رقمك تواصل مع الدعم'**
+  String get customerAccountPhoneHint;
+
+  /// «حسابي»: the FAQ and support contacts (CU §13).
+  ///
+  /// In ar, this message translates to:
+  /// **'المساعدة'**
+  String get customerAccountHelp;
+
+  /// «حسابي»: joining as a captain or a restaurant (CU §13).
+  ///
+  /// In ar, this message translates to:
+  /// **'انضم إلينا'**
+  String get customerJoinUs;
+
+  /// Opens the captain app's store page (CU §13).
+  ///
+  /// In ar, this message translates to:
+  /// **'انضم ككابتن'**
+  String get customerJoinAsCaptain;
+
+  /// Opens WhatsApp to support (CU §13).
+  ///
+  /// In ar, this message translates to:
+  /// **'أضف مطعمك'**
+  String get customerAddRestaurant;
+
+  /// The WhatsApp message «أضف مطعمك» prefills (CU §13).
+  ///
+  /// In ar, this message translates to:
+  /// **'أريد إضافة مطعمي إلى FOX DROP'**
+  String get customerAddRestaurantMessage;
+
+  /// «حسابي»: the terms and privacy in force (CU §13).
+  ///
+  /// In ar, this message translates to:
+  /// **'الشروط والخصوصية'**
+  String get customerTermsAndPrivacy;
+
+  /// «حسابي»: the app's version (CU §13).
+  ///
+  /// In ar, this message translates to:
+  /// **'عن التطبيق'**
+  String get customerAbout;
+
+  /// The app's version under «عن التطبيق» (CU §13).
+  ///
+  /// In ar, this message translates to:
+  /// **'الإصدار {version}'**
+  String customerAppVersion(String version);
+
+  /// Signs out every device of the account (CU §13, §5.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'تسجيل الخروج من كل الأجهزة'**
+  String get customerSignOutEverywhere;
+
+  /// The confirmation before signing out everywhere (CU §5.4; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'سيُسجَّل خروجك من كل الأجهزة، ومنها هذا الجهاز. لا تتأثر طلباتك الجارية.'**
+  String get customerSignOutEverywhereConfirm;
+
+  /// The call failed (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تسجيل الخروج من كل الأجهزة. حاول مرة أخرى.'**
+  String get customerSignOutEverywhereFailed;
+
+  /// A restaurant in test mode, seen only by an admin test account (CU §8.2, AP §9.8).
+  ///
+  /// In ar, this message translates to:
+  /// **'تجريبي'**
+  String get customerTestMode;
 }
 
 class _AppLocalizationsDelegate

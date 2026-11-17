@@ -17,7 +17,7 @@ import { z } from 'zod';
 import { AppSignedIn, CurrentAppSession, Public } from '../../http/access.js';
 import { CustomerController } from '../../http/route-groups.js';
 import { GeoRefusedError, GeoService } from '../geo/index.js';
-import { type AppSession, deviceId } from '../identity/index.js';
+import { type AppSession, CustomerAccountsService, deviceId } from '../identity/index.js';
 import { addressFields, checked, location, personName } from './address-fields.js';
 import {
   type AddressFields,
@@ -38,6 +38,9 @@ class CustomerProfileDto extends createZodDto(
   z.object({
     completed: z.boolean().describe('false until «أكمل بياناتك» is sent (CU §5.3).'),
     profile: profile.nullable(),
+    phone: z
+      .string()
+      .describe("The account's own number, read-only in «حسابي» (CU §13; slice 2.25b)."),
   }),
 ) {}
 
@@ -110,6 +113,7 @@ export class CustomerProfileController {
   constructor(
     private readonly customers: CustomersService,
     private readonly geo: GeoService,
+    private readonly accounts: CustomerAccountsService,
   ) {}
 
   @Get('location')
@@ -141,8 +145,11 @@ export class CustomerProfileController {
   @AppSignedIn()
   @ZodResponse({ status: 200, type: CustomerProfileDto })
   async profile(@CurrentAppSession() session: AppSession) {
-    const profile = await this.customers.profile(session.accountId);
-    return { completed: profile !== null, profile };
+    const [profile, phone] = await Promise.all([
+      this.customers.profile(session.accountId),
+      this.accounts.phone(session.accountId),
+    ]);
+    return { completed: profile !== null, profile, phone: phone ?? '' };
   }
 
   // «أكمل بياناتك» (CU §5.3); 400 terms_required the first time without the
@@ -158,7 +165,11 @@ export class CustomerProfileController {
     const profile = await refusalsAsHttp(() =>
       this.customers.saveProfile(session.accountId, fields, { acceptTerms, now: new Date() }),
     );
-    return { completed: true, profile };
+    return {
+      completed: true,
+      profile,
+      phone: (await this.accounts.phone(session.accountId)) ?? '',
+    };
   }
 
   @Get('addresses')

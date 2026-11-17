@@ -1,48 +1,48 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'admin_ticket_page_dto_output_notes_inner.dart';
+part of 'admin_customer_dto_output_notes_inner.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$AdminTicketPageDtoOutputNotesInner
-    extends AdminTicketPageDtoOutputNotesInner {
+class _$AdminCustomerDtoOutputNotesInner
+    extends AdminCustomerDtoOutputNotesInner {
   @override
   final String id;
   @override
-  final String? authorName;
-  @override
   final String body;
+  @override
+  final String? authorName;
   @override
   final DateTime createdAt;
 
-  factory _$AdminTicketPageDtoOutputNotesInner([
-    void Function(AdminTicketPageDtoOutputNotesInnerBuilder)? updates,
-  ]) => (AdminTicketPageDtoOutputNotesInnerBuilder()..update(updates))._build();
+  factory _$AdminCustomerDtoOutputNotesInner([
+    void Function(AdminCustomerDtoOutputNotesInnerBuilder)? updates,
+  ]) => (AdminCustomerDtoOutputNotesInnerBuilder()..update(updates))._build();
 
-  _$AdminTicketPageDtoOutputNotesInner._({
+  _$AdminCustomerDtoOutputNotesInner._({
     required this.id,
-    this.authorName,
     required this.body,
+    this.authorName,
     required this.createdAt,
   }) : super._();
   @override
-  AdminTicketPageDtoOutputNotesInner rebuild(
-    void Function(AdminTicketPageDtoOutputNotesInnerBuilder) updates,
+  AdminCustomerDtoOutputNotesInner rebuild(
+    void Function(AdminCustomerDtoOutputNotesInnerBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  AdminTicketPageDtoOutputNotesInnerBuilder toBuilder() =>
-      AdminTicketPageDtoOutputNotesInnerBuilder()..replace(this);
+  AdminCustomerDtoOutputNotesInnerBuilder toBuilder() =>
+      AdminCustomerDtoOutputNotesInnerBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is AdminTicketPageDtoOutputNotesInner &&
+    return other is AdminCustomerDtoOutputNotesInner &&
         id == other.id &&
-        authorName == other.authorName &&
         body == other.body &&
+        authorName == other.authorName &&
         createdAt == other.createdAt;
   }
 
@@ -50,8 +50,8 @@ class _$AdminTicketPageDtoOutputNotesInner
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, id.hashCode);
-    _$hash = $jc(_$hash, authorName.hashCode);
     _$hash = $jc(_$hash, body.hashCode);
+    _$hash = $jc(_$hash, authorName.hashCode);
     _$hash = $jc(_$hash, createdAt.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -59,49 +59,49 @@ class _$AdminTicketPageDtoOutputNotesInner
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'AdminTicketPageDtoOutputNotesInner')
+    return (newBuiltValueToStringHelper(r'AdminCustomerDtoOutputNotesInner')
           ..add('id', id)
-          ..add('authorName', authorName)
           ..add('body', body)
+          ..add('authorName', authorName)
           ..add('createdAt', createdAt))
         .toString();
   }
 }
 
-class AdminTicketPageDtoOutputNotesInnerBuilder
+class AdminCustomerDtoOutputNotesInnerBuilder
     implements
         Builder<
-          AdminTicketPageDtoOutputNotesInner,
-          AdminTicketPageDtoOutputNotesInnerBuilder
+          AdminCustomerDtoOutputNotesInner,
+          AdminCustomerDtoOutputNotesInnerBuilder
         > {
-  _$AdminTicketPageDtoOutputNotesInner? _$v;
+  _$AdminCustomerDtoOutputNotesInner? _$v;
 
   String? _id;
   String? get id => _$this._id;
   set id(String? id) => _$this._id = id;
 
-  String? _authorName;
-  String? get authorName => _$this._authorName;
-  set authorName(String? authorName) => _$this._authorName = authorName;
-
   String? _body;
   String? get body => _$this._body;
   set body(String? body) => _$this._body = body;
+
+  String? _authorName;
+  String? get authorName => _$this._authorName;
+  set authorName(String? authorName) => _$this._authorName = authorName;
 
   DateTime? _createdAt;
   DateTime? get createdAt => _$this._createdAt;
   set createdAt(DateTime? createdAt) => _$this._createdAt = createdAt;
 
-  AdminTicketPageDtoOutputNotesInnerBuilder() {
-    AdminTicketPageDtoOutputNotesInner._defaults(this);
+  AdminCustomerDtoOutputNotesInnerBuilder() {
+    AdminCustomerDtoOutputNotesInner._defaults(this);
   }
 
-  AdminTicketPageDtoOutputNotesInnerBuilder get _$this {
+  AdminCustomerDtoOutputNotesInnerBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _id = $v.id;
-      _authorName = $v.authorName;
       _body = $v.body;
+      _authorName = $v.authorName;
       _createdAt = $v.createdAt;
       _$v = null;
     }
@@ -109,38 +109,36 @@ class AdminTicketPageDtoOutputNotesInnerBuilder
   }
 
   @override
-  void replace(AdminTicketPageDtoOutputNotesInner other) {
-    _$v = other as _$AdminTicketPageDtoOutputNotesInner;
+  void replace(AdminCustomerDtoOutputNotesInner other) {
+    _$v = other as _$AdminCustomerDtoOutputNotesInner;
   }
 
   @override
-  void update(
-    void Function(AdminTicketPageDtoOutputNotesInnerBuilder)? updates,
-  ) {
+  void update(void Function(AdminCustomerDtoOutputNotesInnerBuilder)? updates) {
     if (updates != null) updates(this);
   }
 
   @override
-  AdminTicketPageDtoOutputNotesInner build() => _build();
+  AdminCustomerDtoOutputNotesInner build() => _build();
 
-  _$AdminTicketPageDtoOutputNotesInner _build() {
+  _$AdminCustomerDtoOutputNotesInner _build() {
     final _$result =
         _$v ??
-        _$AdminTicketPageDtoOutputNotesInner._(
+        _$AdminCustomerDtoOutputNotesInner._(
           id: BuiltValueNullFieldError.checkNotNull(
             id,
-            r'AdminTicketPageDtoOutputNotesInner',
+            r'AdminCustomerDtoOutputNotesInner',
             'id',
           ),
-          authorName: authorName,
           body: BuiltValueNullFieldError.checkNotNull(
             body,
-            r'AdminTicketPageDtoOutputNotesInner',
+            r'AdminCustomerDtoOutputNotesInner',
             'body',
           ),
+          authorName: authorName,
           createdAt: BuiltValueNullFieldError.checkNotNull(
             createdAt,
-            r'AdminTicketPageDtoOutputNotesInner',
+            r'AdminCustomerDtoOutputNotesInner',
             'createdAt',
           ),
         );
