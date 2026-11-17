@@ -535,6 +535,28 @@ describe('the ordering tables (AP §8.1, §4.8; architecture §5.5)', () => {
     ).rejects.toThrow(/order_lines_money/);
   });
 
+  // AP §9.9.3 (slice 2.23d): a free re-delivery's customer pays 0.
+  it('take a free re-delivery at a total of 0 with its link, and refuse an incomplete one', async () => {
+    const redelivery = (link: string) =>
+      `INSERT INTO ordering.orders (id, placed_at, city_id, number, customer_account_id, restaurant_id, status, version, currency, items_value, delivery_fee, discount, rounding, total, delivery_free, fee_rule_id, commission_bp, rate_snapshot, estimate_from_min, estimate_to_min, location, zone_id, neighbourhood, street, landmark, redelivery_of_id, redelivery_of_placed_at, redelivery_of_number, redelivery_ticket_id, redelivery_responsible, redelivery_charge_pay, redelivery_captain_id) VALUES ('${randomUUID()}', now(), ${azaz}, 10002, '${randomUUID()}', '${randomUUID()}', 'placed', 1, 'TRY', 12000, 0, 0, 0, 0, false, '${randomUUID()}', 1500, '{}', 30, 40, ST_SetSRID(ST_MakePoint(37.05, 36.59), 4326), '${randomUUID()}', 'أعزاز', 'شارع', 'جامع', ${link})`;
+    const link = (responsible: string, chargePay: string, captain: string) =>
+      `'${randomUUID()}', now(), 10001, '${randomUUID()}', '${responsible}', ${chargePay}, ${captain}`;
+    await appQuery(redelivery(link('captain', 'true', `'${randomUUID()}'`)));
+    await appQuery(redelivery(link('platform', 'false', 'NULL')));
+    await expect(appQuery(redelivery(link('platform', 'true', 'NULL')))).rejects.toThrow(
+      /orders_redelivery/,
+    );
+    await expect(appQuery(redelivery(link('captain', 'false', 'NULL')))).rejects.toThrow(
+      /orders_redelivery/,
+    );
+    await expect(appQuery(redelivery(link('customer', 'false', 'NULL')))).rejects.toThrow(
+      /orders_redelivery/,
+    );
+    await expect(appQuery(redelivery(`NULL, NULL, NULL, NULL, NULL, NULL, NULL`))).rejects.toThrow(
+      /orders_money/,
+    );
+  });
+
   it('refuse a note over 200 characters and another number without its recipient', async () => {
     await expect(appQuery(order(randomUUID(), { note: `'${'م'.repeat(201)}'` }))).rejects.toThrow(
       /orders_note/,
