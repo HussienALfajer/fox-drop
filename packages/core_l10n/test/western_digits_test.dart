@@ -75,6 +75,9 @@ void main() {
     expect(l10n.formatReplyWithin(24 * 60), '24 ساعة');
     expect(l10n.formatReplyWithin(15), '15 دقيقة');
     expect(l10n.customerCodeUsesLeft(12), 'متبقٍ لك: 12');
+    expect(l10n.customerRatingStar(4), '4 من 5');
+    expect(l10n.customerYourRestaurantRating(5), 'تقييمك للمطعم: 5 من 5');
+    expect(l10n.customerYourCaptainRating(3), 'تقييمك للكابتن: 3 من 5');
     expect(l10n.durationSeconds(45), '45 ث');
     expect(
       l10n.formatCountdown(const Duration(minutes: 6, seconds: 59)),

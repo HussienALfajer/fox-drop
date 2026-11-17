@@ -3785,4 +3785,43 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get customerDeleteAccountFailed => 'تعذّر حذف الحساب. حاول مرة أخرى.';
+
+  @override
+  String get customerRateOrder => 'قيّم طلبك';
+
+  @override
+  String get customerRateRestaurant => 'قيّم المطعم';
+
+  @override
+  String get customerRateCaptain => 'قيّم الكابتن';
+
+  @override
+  String customerRatingStar(int stars) {
+    return '$stars من 5';
+  }
+
+  @override
+  String get customerRatingComment => 'تعليق (اختياري)';
+
+  @override
+  String get customerRatingSend => 'إرسال التقييم';
+
+  @override
+  String get customerRatingThanks => 'شكراً لتقييمك';
+
+  @override
+  String get customerRatingRefused => 'لم يعد بالإمكان إرسال هذا التقييم';
+
+  @override
+  String get customerRatingReasonsChanged => 'تغيّرت الأسباب، اخترها من جديد';
+
+  @override
+  String customerYourRestaurantRating(int stars) {
+    return 'تقييمك للمطعم: $stars من 5';
+  }
+
+  @override
+  String customerYourCaptainRating(int stars) {
+    return 'تقييمك للكابتن: $stars من 5';
+  }
 }
