@@ -20,6 +20,7 @@ part 'admin_customer_dto_output_block.g.dart';
 /// * [customerText]
 /// * [note]
 /// * [startedAt]
+/// * [viaAccountId] - The device block (slice 2.25d): the account signed in on the same device whose block this is; null for the line's own, which «فك الحظر» ends.
 @BuiltValue()
 abstract class AdminCustomerDtoOutputBlock
     implements
@@ -48,6 +49,10 @@ abstract class AdminCustomerDtoOutputBlock
 
   @BuiltValueField(wireName: r'startedAt')
   DateTime get startedAt;
+
+  /// The device block (slice 2.25d): the account signed in on the same device whose block this is; null for the line's own, which «فك الحظر» ends.
+  @BuiltValueField(wireName: r'viaAccountId')
+  String? get viaAccountId;
 
   AdminCustomerDtoOutputBlock._();
 
@@ -121,6 +126,13 @@ class _$AdminCustomerDtoOutputBlockSerializer
       object.startedAt,
       specifiedType: const FullType(DateTime),
     );
+    yield r'viaAccountId';
+    yield object.viaAccountId == null
+        ? null
+        : serializers.serialize(
+            object.viaAccountId,
+            specifiedType: const FullType.nullable(String),
+          );
   }
 
   @override
@@ -222,6 +234,16 @@ class _$AdminCustomerDtoOutputBlockSerializer
                   )
                   as DateTime;
           result.startedAt = valueDes;
+          break;
+        case r'viaAccountId':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.viaAccountId = valueDes;
           break;
         default:
           unhandled.add(key);

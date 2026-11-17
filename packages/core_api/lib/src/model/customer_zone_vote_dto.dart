@@ -12,12 +12,12 @@ part 'customer_zone_vote_dto.g.dart';
 /// CustomerZoneVoteDto
 ///
 /// Properties:
-/// * [deviceId] - The app installation, generated once by the app and kept until it is removed.
+/// * [deviceId] - The device. The customer app's survives a reinstall (slice 2.25d: from Android ID on Android, a Keychain value on iOS), so a block follows the phone; the other apps' is the installation, kept until the app is removed.
 /// * [location]
 @BuiltValue()
 abstract class CustomerZoneVoteDto
     implements Built<CustomerZoneVoteDto, CustomerZoneVoteDtoBuilder> {
-  /// The app installation, generated once by the app and kept until it is removed.
+  /// The device. The customer app's survives a reinstall (slice 2.25d: from Android ID on Android, a Keychain value on iOS), so a block follows the phone; the other apps' is the installation, kept until the app is removed.
   @BuiltValueField(wireName: r'deviceId')
   String get deviceId;
 

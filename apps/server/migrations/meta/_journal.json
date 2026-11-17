@@ -736,6 +736,13 @@
       "when": 1794946931506,
       "tag": "0104_identity_customer_closure",
       "breakpoints": true
+    },
+    {
+      "idx": 105,
+      "version": "7",
+      "when": 1794952030921,
+      "tag": "0105_customers_device_lifts",
+      "breakpoints": true
     }
   ]
 }

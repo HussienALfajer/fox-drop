@@ -98,6 +98,8 @@ class _$AdminCustomerDtoOutputBlock extends AdminCustomerDtoOutputBlock {
   final String note;
   @override
   final DateTime startedAt;
+  @override
+  final String? viaAccountId;
 
   factory _$AdminCustomerDtoOutputBlock([
     void Function(AdminCustomerDtoOutputBlockBuilder)? updates,
@@ -112,6 +114,7 @@ class _$AdminCustomerDtoOutputBlock extends AdminCustomerDtoOutputBlock {
     required this.customerText,
     required this.note,
     required this.startedAt,
+    this.viaAccountId,
   }) : super._();
   @override
   AdminCustomerDtoOutputBlock rebuild(
@@ -133,7 +136,8 @@ class _$AdminCustomerDtoOutputBlock extends AdminCustomerDtoOutputBlock {
         reasonLabel == other.reasonLabel &&
         customerText == other.customerText &&
         note == other.note &&
-        startedAt == other.startedAt;
+        startedAt == other.startedAt &&
+        viaAccountId == other.viaAccountId;
   }
 
   @override
@@ -147,6 +151,7 @@ class _$AdminCustomerDtoOutputBlock extends AdminCustomerDtoOutputBlock {
     _$hash = $jc(_$hash, customerText.hashCode);
     _$hash = $jc(_$hash, note.hashCode);
     _$hash = $jc(_$hash, startedAt.hashCode);
+    _$hash = $jc(_$hash, viaAccountId.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -161,7 +166,8 @@ class _$AdminCustomerDtoOutputBlock extends AdminCustomerDtoOutputBlock {
           ..add('reasonLabel', reasonLabel)
           ..add('customerText', customerText)
           ..add('note', note)
-          ..add('startedAt', startedAt))
+          ..add('startedAt', startedAt)
+          ..add('viaAccountId', viaAccountId))
         .toString();
   }
 }
@@ -206,6 +212,10 @@ class AdminCustomerDtoOutputBlockBuilder
   DateTime? get startedAt => _$this._startedAt;
   set startedAt(DateTime? startedAt) => _$this._startedAt = startedAt;
 
+  String? _viaAccountId;
+  String? get viaAccountId => _$this._viaAccountId;
+  set viaAccountId(String? viaAccountId) => _$this._viaAccountId = viaAccountId;
+
   AdminCustomerDtoOutputBlockBuilder() {
     AdminCustomerDtoOutputBlock._defaults(this);
   }
@@ -221,6 +231,7 @@ class AdminCustomerDtoOutputBlockBuilder
       _customerText = $v.customerText;
       _note = $v.note;
       _startedAt = $v.startedAt;
+      _viaAccountId = $v.viaAccountId;
       _$v = null;
     }
     return this;
@@ -279,6 +290,7 @@ class AdminCustomerDtoOutputBlockBuilder
             r'AdminCustomerDtoOutputBlock',
             'startedAt',
           ),
+          viaAccountId: viaAccountId,
         );
     replace(_$result);
     return _$result;

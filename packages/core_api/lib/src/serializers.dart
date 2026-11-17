@@ -92,6 +92,9 @@ import 'package:core_api/src/model/admin_customer_dto_output_block_reasons_inner
 import 'package:core_api/src/model/admin_customer_dto_output_blocks_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_closed.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_codes_inner.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_devices_inner.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_devices_inner_accounts_inner.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_devices_inner_lift.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_dues.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_late_cancels.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_late_cancels_cleared.dart';
@@ -177,6 +180,7 @@ import 'package:core_api/src/model/admin_hand_in_grace_dto.dart';
 import 'package:core_api/src/model/admin_hand_in_receipts_dto_output.dart';
 import 'package:core_api/src/model/admin_handover_dto.dart';
 import 'package:core_api/src/model/admin_image_set_dto_output.dart';
+import 'package:core_api/src/model/admin_lift_customer_device_block_dto.dart';
 import 'package:core_api/src/model/admin_manual_account_dto_output.dart';
 import 'package:core_api/src/model/admin_manual_account_dto_output_entries_inner.dart';
 import 'package:core_api/src/model/admin_manual_adjustment_dto.dart';
@@ -881,6 +885,9 @@ part 'serializers.g.dart';
   AdminCustomerDtoOutputBlocksInner,
   AdminCustomerDtoOutputClosed,
   AdminCustomerDtoOutputCodesInner,
+  AdminCustomerDtoOutputDevicesInner,
+  AdminCustomerDtoOutputDevicesInnerAccountsInner,
+  AdminCustomerDtoOutputDevicesInnerLift,
   AdminCustomerDtoOutputDues,
   AdminCustomerDtoOutputLateCancels,
   AdminCustomerDtoOutputLateCancelsCleared,
@@ -966,6 +973,7 @@ part 'serializers.g.dart';
   AdminHandInReceiptsDtoOutput,
   AdminHandoverDto,
   AdminImageSetDtoOutput,
+  AdminLiftCustomerDeviceBlockDto,
   AdminManualAccountDtoOutput,
   AdminManualAccountDtoOutputEntriesInner,
   AdminManualAdjustmentDto,
@@ -1820,6 +1828,13 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminCustomerDtoOutputDevicesInnerAccountsInner),
+            ]),
+            () =>
+                ListBuilder<AdminCustomerDtoOutputDevicesInnerAccountsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminOrderDtoOutputOrderPickupRequestsInner),
             ]),
             () => ListBuilder<AdminOrderDtoOutputOrderPickupRequestsInner>(),
@@ -2609,6 +2624,12 @@ Serializers serializers =
               FullType(SenderPoolDtoOutputAlertsInner),
             ]),
             () => ListBuilder<SenderPoolDtoOutputAlertsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCustomerDtoOutputDevicesInner),
+            ]),
+            () => ListBuilder<AdminCustomerDtoOutputDevicesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

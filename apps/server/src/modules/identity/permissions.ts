@@ -86,6 +86,8 @@ export const adminPermissions = [
   'customers.test_account',
   // AP §9.8 (slice 2.25b): «تسجيل الخروج من كل الأجهزة», OWN, OPS and SUP.
   'customers.sign_out_everywhere',
+  // AP §9.8 (slice 2.25d, owner decision 2026-11-18): «فك حظر الجهاز», OWN alone.
+  'customers.lift_device_block',
 ] as const;
 
 export type AdminPermission = (typeof adminPermissions)[number];

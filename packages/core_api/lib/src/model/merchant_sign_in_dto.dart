@@ -12,7 +12,7 @@ part 'merchant_sign_in_dto.g.dart';
 ///
 /// Properties:
 /// * [phone] - The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
-/// * [deviceId] - The app installation, generated once by the app and kept until it is removed.
+/// * [deviceId] - The device. The customer app's survives a reinstall (slice 2.25d: from Android ID on Android, a Keychain value on iOS), so a block follows the phone; the other apps' is the installation, kept until the app is removed.
 /// * [code]
 @BuiltValue()
 abstract class MerchantSignInDto
@@ -21,7 +21,7 @@ abstract class MerchantSignInDto
   @BuiltValueField(wireName: r'phone')
   String get phone;
 
-  /// The app installation, generated once by the app and kept until it is removed.
+  /// The device. The customer app's survives a reinstall (slice 2.25d: from Android ID on Android, a Keychain value on iOS), so a block follows the phone; the other apps' is the installation, kept until the app is removed.
   @BuiltValueField(wireName: r'deviceId')
   String get deviceId;
 

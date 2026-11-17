@@ -57,6 +57,7 @@ export {
   CustomersRefusedError,
   CustomersService,
   customerOrderLock,
+  DEVICE_BLOCK_TEXT,
   lockCustomerDues,
   type Location,
   type OrderAddress,

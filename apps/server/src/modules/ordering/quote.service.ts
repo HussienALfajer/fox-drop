@@ -12,7 +12,7 @@ import {
   type AvailableCode,
 } from '../marketing/index.js';
 import { CaptainsService } from '../captains/index.js';
-import { CustomersService } from '../customers/index.js';
+import { CustomersService, DEVICE_BLOCK_TEXT } from '../customers/index.js';
 import { TermsService } from '../content/index.js';
 import { equivalent, FxRefusedError, FxService, type RateSnapshot } from '../fx/index.js';
 import {
@@ -298,7 +298,15 @@ export class QuoteService {
       }
       // AP §8.8: the dues block lifts by itself once the balance is 0 or less.
       const owed = await this.customers.dues(cityId, request.customerAccountId);
-      if (owed !== null) problem('dues_unpaid', null, null, null, owed);
+      // Slice 2.25d: another account's dues on the same phone are a device
+      // block, without that account's amount.
+      if (owed !== null && owed.viaAccountId !== null) {
+        if (block === null) {
+          problem('account_blocked', null, null, DEVICE_BLOCK_TEXT, null, null, null);
+        }
+      } else if (owed !== null) {
+        problem('dues_unpaid', null, null, null, owed);
+      }
     }
 
     const baseCurrency = snapshot?.baseCurrency ?? (await this.fx.baseCurrency(cityId));

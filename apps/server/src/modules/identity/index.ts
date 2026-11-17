@@ -114,6 +114,7 @@ export {
   CustomerAccountRefusedError,
   CustomerAccountsService,
   type CustomerAccountState,
+  type CustomerDeviceSighting,
 } from './customer-accounts.service.js';
 // For the tests of other modules that sign an app user in.
 export { CODE_SENDER, type DevelopmentCodeSender } from './code-sender.js';

@@ -689,6 +689,18 @@ describe('the ordering tables (AP §8.1, §4.8; architecture §5.5)', () => {
         `UPDATE customers.test_account_flags SET flagged = false WHERE id = '${flags[0].id}'`,
       ),
     ).rejects.toThrow(/permission denied/);
+    // Slice 2.25d: «فك حظر الجهاز», append-only, with its reason.
+    await expect(
+      appQuery(
+        `INSERT INTO customers.device_lifts (device_id, at, by, note) VALUES ('${randomUUID()}', now(), '${account}', '')`,
+      ),
+    ).rejects.toThrow(/device_lifts_note/);
+    const { rows: lifts } = await appQuery(
+      `INSERT INTO customers.device_lifts (device_id, at, by, note) VALUES ('${randomUUID()}', now(), '${account}', 'بيع الهاتف') RETURNING id`,
+    );
+    await expect(
+      appQuery(`UPDATE customers.device_lifts SET note = 'x' WHERE id = '${lifts[0].id}'`),
+    ).rejects.toThrow(/permission denied/);
     const note = () =>
       appQuery(
         `INSERT INTO customers.notes (customer_account_id, body, author_id, created_at, idempotency_key, request_hash) VALUES ('${account}', 'يفضل الاتصال', '${account}', now(), 'k', 'h') RETURNING id`,

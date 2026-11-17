@@ -24,7 +24,9 @@ export const phone = z
 
 export const deviceId = z
   .uuid()
-  .describe('The app installation, generated once by the app and kept until it is removed.');
+  .describe(
+    "The device. The customer app's survives a reinstall (slice 2.25d: from Android ID on Android, a Keychain value on iOS), so a block follows the phone; the other apps' is the installation, kept until the app is removed.",
+  );
 
 export const signInCode = z.string().regex(/^\d{6}$/);
 

@@ -2116,6 +2116,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/customers/{customerId}/lift-device-block": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCustomersLiftDeviceBlock"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/customers/{customerId}/sign-out-everywhere": {
         parameters: {
             query?: never;
@@ -4853,7 +4869,7 @@ export interface components {
             phone: string;
             /**
              * Format: uuid
-             * @description The app installation, generated once by the app and kept until it is removed.
+             * @description The device. The customer app's survives a reinstall (slice 2.25d: from Android ID on Android, a Keychain value on iOS), so a block follows the phone; the other apps' is the installation, kept until the app is removed.
              */
             deviceId: string;
         };
@@ -4873,7 +4889,7 @@ export interface components {
             phone: string;
             /**
              * Format: uuid
-             * @description The app installation, generated once by the app and kept until it is removed.
+             * @description The device. The customer app's survives a reinstall (slice 2.25d: from Android ID on Android, a Keychain value on iOS), so a block follows the phone; the other apps' is the installation, kept until the app is removed.
              */
             deviceId: string;
             code: string;
@@ -4916,7 +4932,7 @@ export interface components {
             phone: string;
             /**
              * Format: uuid
-             * @description The app installation, generated once by the app and kept until it is removed.
+             * @description The device. The customer app's survives a reinstall (slice 2.25d: from Android ID on Android, a Keychain value on iOS), so a block follows the phone; the other apps' is the installation, kept until the app is removed.
              */
             deviceId: string;
             /**
@@ -4941,7 +4957,7 @@ export interface components {
             phone: string;
             /**
              * Format: uuid
-             * @description The app installation, generated once by the app and kept until it is removed.
+             * @description The device. The customer app's survives a reinstall (slice 2.25d: from Android ID on Android, a Keychain value on iOS), so a block follows the phone; the other apps' is the installation, kept until the app is removed.
              */
             deviceId: string;
             code: string;
@@ -5013,7 +5029,7 @@ export interface components {
             phone: string;
             /**
              * Format: uuid
-             * @description The app installation, generated once by the app and kept until it is removed.
+             * @description The device. The customer app's survives a reinstall (slice 2.25d: from Android ID on Android, a Keychain value on iOS), so a block follows the phone; the other apps' is the installation, kept until the app is removed.
              */
             deviceId: string;
         };
@@ -5033,7 +5049,7 @@ export interface components {
             phone: string;
             /**
              * Format: uuid
-             * @description The app installation, generated once by the app and kept until it is removed.
+             * @description The device. The customer app's survives a reinstall (slice 2.25d: from Android ID on Android, a Keychain value on iOS), so a block follows the phone; the other apps' is the installation, kept until the app is removed.
              */
             deviceId: string;
             code: string;
@@ -6525,7 +6541,7 @@ export interface components {
         CustomerZoneVoteDto: {
             /**
              * Format: uuid
-             * @description The app installation, generated once by the app and kept until it is removed.
+             * @description The device. The customer app's survives a reinstall (slice 2.25d: from Android ID on Android, a Keychain value on iOS), so a block follows the phone; the other apps' is the installation, kept until the app is removed.
              */
             deviceId: string;
             location: {
@@ -6974,6 +6990,8 @@ export interface components {
                 note: string;
                 /** Format: date-time */
                 startedAt: string;
+                /** @description The device block (slice 2.25d): the account signed in on the same device whose block this is; null for the line's own, which «فك الحظر» ends. */
+                viaAccountId: string | null;
             } | null;
             reviewStop: {
                 /** Format: uuid */
@@ -7125,6 +7143,42 @@ export interface components {
                 /** Format: date-time */
                 createdAt: string;
             }[];
+            /** @description AP §9.8 «الأجهزة» (slice 2.25d): latest seen first. */
+            devices: {
+                deviceId: string;
+                /** Format: date-time */
+                firstSeenAt: string;
+                /** Format: date-time */
+                lastSeenAt: string;
+                /** @description The latest sign-in's; a signal only. */
+                ipAddress: string | null;
+                userAgent: string | null;
+                /** @description An account signed in on it since its latest lift is blocked or owes dues: «فك حظر الجهاز». */
+                blocked: boolean;
+                /** @description The other accounts signed in on it since its latest lift. */
+                accounts: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string | null;
+                    maskedPhone: string | null;
+                    /**
+                     * @description «نشط», «محظور» (a block), «محظور» until the dues are paid, «موقوف حتى مراجعة الدعم», «مغلق» (AP §9.8).
+                     * @enum {string}
+                     */
+                    status: "active" | "blocked" | "dues_unpaid" | "review_stop" | "closed";
+                    /** Format: date-time */
+                    lastSignedInAt: string;
+                }[];
+                /** @description The latest «فك حظر الجهاز». */
+                lift: {
+                    /** Format: date-time */
+                    at: string;
+                    byName: string | null;
+                    note: string;
+                } | null;
+            }[];
+            /** @description Slice 2.25d: the account on the same phone whose dues stop this one; the desk takes them on its profile. */
+            duesViaAccountId: string | null;
         };
         AdminBlockCustomerDto: {
             /** Format: uuid */
@@ -7177,6 +7231,14 @@ export interface components {
             /** Format: uuid */
             cityId: string;
             /** @description The required reason. */
+            note: string;
+        };
+        AdminLiftCustomerDeviceBlockDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description The device the profile listed. */
+            deviceId: string;
+            /** @description The required reason, such as a phone sold on. */
             note: string;
         };
         AdminCustomerSignOutDto: {
@@ -18201,6 +18263,32 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["AdminCloseCustomerAccountDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCustomerDto_Output"];
+                };
+            };
+        };
+    };
+    adminCustomersLiftDeviceBlock: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                customerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminLiftCustomerDeviceBlockDto"];
             };
         };
         responses: {
