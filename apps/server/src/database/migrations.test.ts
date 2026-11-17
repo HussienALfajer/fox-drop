@@ -1020,6 +1020,47 @@ describe('the cash desk tables (AP §9.10.3, §4.8)', () => {
     );
   });
 
+  it("keeps one customer report per order and a price report's fields together", async () => {
+    const order = randomUUID();
+    let next = 900_000;
+    const ticket = (source: string, columns = '', values = '', type = 'missing_item') => {
+      next += 1;
+      return `INSERT INTO support.tickets (city_id, number, source, party, party_id, order_id, order_number, order_active, type_code, type_label, description, status, sla_kind, sla_due_at, opened_by, opened_at, updated_at, idempotency_key, request_hash${columns}) VALUES (${azaz}, ${next}, '${source}', 'customer', '${randomUUID()}', ${type === 'price_difference' ? 'NULL, NULL' : `'${order}', 10001`}, false, '${type}', 'نوع', '', 'new', 'resolution', now(), '${randomUUID()}', now(), now(), '${randomUUID()}', ''${values})`;
+    };
+    await appQuery(ticket('customer_report', ', photo_keys', `, '["tickets/photos/a.jpg"]'`));
+    await expect(appQuery(ticket('customer_report'))).rejects.toThrow(/tickets_customer_report/);
+    await appQuery(ticket('manual'));
+    await expect(appQuery(ticket('price_report'))).rejects.toThrow(/tickets_app_sources/);
+    await appQuery(
+      ticket(
+        'price_report',
+        ', restaurant_id, shop_price, shop_price_currency',
+        `, '${randomUUID()}', 1500, 'TRY'`,
+        'price_difference',
+      ),
+    );
+    await expect(
+      appQuery(
+        ticket(
+          'price_report',
+          ', restaurant_id, shop_price',
+          `, '${randomUUID()}', 1500`,
+          'price_difference',
+        ),
+      ),
+    ).rejects.toThrow(/tickets_price_report/);
+    await expect(
+      appQuery(
+        ticket(
+          'price_report',
+          ', restaurant_id, shop_price, shop_price_currency',
+          `, '${randomUUID()}', 0, 'TRY'`,
+          'price_difference',
+        ),
+      ),
+    ).rejects.toThrow(/tickets_price_report/);
+  });
+
   it.each([
     ['change a receipt', "UPDATE cashdesk.receipts SET captain_name = 'x'"],
     ['change a receipt line', 'UPDATE cashdesk.receipt_lines SET amount = 1'],
@@ -1040,6 +1081,9 @@ describe('the cash desk tables (AP §9.10.3, §4.8)', () => {
     ['change the dispute of a ticket', 'UPDATE support.tickets SET pickup_dispute_id = city_id'],
     ['change the restaurant of a ticket', 'UPDATE support.tickets SET restaurant_id = city_id'],
     ['delete a ticket', 'DELETE FROM support.tickets'],
+    ['change the photos of a report', "UPDATE support.tickets SET photo_keys = '[]'"],
+    ['change the items of a report', "UPDATE support.tickets SET reported_lines = '[]'"],
+    ['change the shop price of a report', 'UPDATE support.tickets SET shop_price = 1'],
   ])('refuse the application role to %s', async (_, statement) => {
     await expect(appQuery(statement)).rejects.toThrow(/permission denied/);
   });

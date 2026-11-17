@@ -24,9 +24,10 @@ import {
 export const support = pgSchema('support');
 
 // Where a ticket came from (AP §9.9.1). 2.23a builds «تذكرة يدوية», 2.23b
-// the restaurant's dispute after the pickup; the apps' sources join with
-// 2.24.
-export const ticketSources = ['manual', 'pickup_dispute'] as const;
+// the restaurant's dispute after the pickup, 2.24a the customer app's
+// «الإبلاغ عن مشكلة» (`customer_report`) and «أبلغ عن سعر مختلف»
+// (`price_report`).
+export const ticketSources = ['manual', 'pickup_dispute', 'customer_report', 'price_report'] as const;
 export type TicketSource = (typeof ticketSources)[number];
 
 const inList = (values: readonly string[]) =>
@@ -108,6 +109,17 @@ export const tickets = support.table(
     shortAmount: bigint('short_amount', { mode: 'bigint' }),
     moneyCurrency: text('money_currency'),
     compensationId: uuid('compensation_id'),
+    // The customer app's reports (CU §12.2, §9.5; slice 2.24a), set at the
+    // opening and never changed: the lines the customer named (position,
+    // name, quantity), the photos' keys in private-docs, and a price
+    // report's item (its id and name as then) and the shop's price in the
+    // base currency.
+    reportedLines: jsonb('reported_lines'),
+    photoKeys: jsonb('photo_keys'),
+    reportedItemId: uuid('reported_item_id'),
+    reportedItemName: text('reported_item_name'),
+    shopPrice: bigint('shop_price', { mode: 'bigint' }),
+    shopPriceCurrency: text('shop_price_currency'),
   },
   (table) => [
     uniqueIndex('tickets_city_number').on(table.cityId, table.number),
@@ -143,6 +155,22 @@ export const tickets = support.table(
     check(
       'tickets_restaurant',
       sql`${table.restaurantId} IS NULL OR (${table.orderId} IS NULL AND ${table.party} = 'customer')`,
+    ),
+    // CU §12.2, Q17: one report per order.
+    uniqueIndex('tickets_customer_report')
+      .on(table.orderId)
+      .where(sql`${table.source} = 'customer_report'`),
+    // CU §9.5: a customer's price reports on a restaurant, by day.
+    index('tickets_price_reports')
+      .on(table.partyId, table.restaurantId, table.openedAt)
+      .where(sql`${table.source} = 'price_report'`),
+    check(
+      'tickets_app_sources',
+      sql`(${table.source} <> 'customer_report' OR (${table.party} = 'customer' AND ${table.orderId} IS NOT NULL)) AND (${table.source} <> 'price_report' OR ${table.typeCode} = 'price_difference')`,
+    ),
+    check(
+      'tickets_price_report',
+      sql`(${table.shopPrice} IS NULL) = (${table.shopPriceCurrency} IS NULL) AND (${table.shopPrice} IS NULL OR ${table.shopPrice} > 0) AND (${table.reportedItemId} IS NULL) = (${table.reportedItemName} IS NULL) AND ((${table.shopPrice} IS NULL AND ${table.reportedItemId} IS NULL) OR ${table.typeCode} = 'price_difference')`,
     ),
     check(
       'tickets_order',
