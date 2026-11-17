@@ -18,6 +18,8 @@ class _$CaptainActiveOrderDtoOutputOrderPickup
   final DateTime? pickedUpAt;
   @override
   final DateTime? disputedAt;
+  @override
+  final DateTime? reportedAt;
 
   factory _$CaptainActiveOrderDtoOutputOrderPickup([
     void Function(CaptainActiveOrderDtoOutputOrderPickupBuilder)? updates,
@@ -30,6 +32,7 @@ class _$CaptainActiveOrderDtoOutputOrderPickup
     this.request,
     this.pickedUpAt,
     this.disputedAt,
+    this.reportedAt,
   }) : super._();
   @override
   CaptainActiveOrderDtoOutputOrderPickup rebuild(
@@ -48,7 +51,8 @@ class _$CaptainActiveOrderDtoOutputOrderPickup
         currencies == other.currencies &&
         request == other.request &&
         pickedUpAt == other.pickedUpAt &&
-        disputedAt == other.disputedAt;
+        disputedAt == other.disputedAt &&
+        reportedAt == other.reportedAt;
   }
 
   @override
@@ -59,6 +63,7 @@ class _$CaptainActiveOrderDtoOutputOrderPickup
     _$hash = $jc(_$hash, request.hashCode);
     _$hash = $jc(_$hash, pickedUpAt.hashCode);
     _$hash = $jc(_$hash, disputedAt.hashCode);
+    _$hash = $jc(_$hash, reportedAt.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -72,7 +77,8 @@ class _$CaptainActiveOrderDtoOutputOrderPickup
           ..add('currencies', currencies)
           ..add('request', request)
           ..add('pickedUpAt', pickedUpAt)
-          ..add('disputedAt', disputedAt))
+          ..add('disputedAt', disputedAt)
+          ..add('reportedAt', reportedAt))
         .toString();
   }
 }
@@ -114,6 +120,10 @@ class CaptainActiveOrderDtoOutputOrderPickupBuilder
   DateTime? get disputedAt => _$this._disputedAt;
   set disputedAt(DateTime? disputedAt) => _$this._disputedAt = disputedAt;
 
+  DateTime? _reportedAt;
+  DateTime? get reportedAt => _$this._reportedAt;
+  set reportedAt(DateTime? reportedAt) => _$this._reportedAt = reportedAt;
+
   CaptainActiveOrderDtoOutputOrderPickupBuilder() {
     CaptainActiveOrderDtoOutputOrderPickup._defaults(this);
   }
@@ -126,6 +136,7 @@ class CaptainActiveOrderDtoOutputOrderPickupBuilder
       _request = $v.request?.toBuilder();
       _pickedUpAt = $v.pickedUpAt;
       _disputedAt = $v.disputedAt;
+      _reportedAt = $v.reportedAt;
       _$v = null;
     }
     return this;
@@ -157,6 +168,7 @@ class CaptainActiveOrderDtoOutputOrderPickupBuilder
             request: _request?.build(),
             pickedUpAt: pickedUpAt,
             disputedAt: disputedAt,
+            reportedAt: reportedAt,
           );
     } catch (_) {
       late String _$failedField;

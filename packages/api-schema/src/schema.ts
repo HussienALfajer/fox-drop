@@ -9905,6 +9905,8 @@ export interface components {
                     pickedUpAt: string | null;
                     /** @description «فتح المطعم بلاغاً عن مبلغ الاستلام — ستتواصل معك العمليات». */
                     disputedAt: string | null;
+                    /** @description The captain's own «مشكلة في مبلغ الاستلام» (CA §9.4 item 6), once per order whoever disputed first. */
+                    reportedAt: string | null;
                 };
                 /** @description Steps 3 and 4, to and at the customer (CA §9.5–9.6). */
                 customer: {
@@ -10250,6 +10252,8 @@ export interface components {
                     pickedUpAt: string | null;
                     /** @description «فتح المطعم بلاغاً عن مبلغ الاستلام — ستتواصل معك العمليات». */
                     disputedAt: string | null;
+                    /** @description The captain's own «مشكلة في مبلغ الاستلام» (CA §9.4 item 6), once per order whoever disputed first. */
+                    reportedAt: string | null;
                 };
                 /** @description Steps 3 and 4, to and at the customer (CA §9.5–9.6). */
                 customer: {

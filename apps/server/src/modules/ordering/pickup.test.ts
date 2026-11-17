@@ -403,6 +403,7 @@ describe('POST /v1/captain/orders/{orderId}/pickup-request (CA §9.4, RA §8.10)
       request: null,
       pickedUpAt: null,
       disputedAt: null,
+      reportedAt: null,
     });
     const started = Date.now();
     const answer = await at.requestPickup();

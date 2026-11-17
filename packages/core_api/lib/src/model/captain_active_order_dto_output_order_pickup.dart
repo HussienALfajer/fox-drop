@@ -19,6 +19,7 @@ part 'captain_active_order_dto_output_order_pickup.g.dart';
 /// * [request]
 /// * [pickedUpAt]
 /// * [disputedAt] - «فتح المطعم بلاغاً عن مبلغ الاستلام — ستتواصل معك العمليات».
+/// * [reportedAt] - The captain's own «مشكلة في مبلغ الاستلام» (CA §9.4 item 6), once per order whoever disputed first.
 @BuiltValue()
 abstract class CaptainActiveOrderDtoOutputOrderPickup
     implements
@@ -43,6 +44,10 @@ abstract class CaptainActiveOrderDtoOutputOrderPickup
   /// «فتح المطعم بلاغاً عن مبلغ الاستلام — ستتواصل معك العمليات».
   @BuiltValueField(wireName: r'disputedAt')
   DateTime? get disputedAt;
+
+  /// The captain's own «مشكلة في مبلغ الاستلام» (CA §9.4 item 6), once per order whoever disputed first.
+  @BuiltValueField(wireName: r'reportedAt')
+  DateTime? get reportedAt;
 
   CaptainActiveOrderDtoOutputOrderPickup._();
 
@@ -109,6 +114,13 @@ class _$CaptainActiveOrderDtoOutputOrderPickupSerializer
         ? null
         : serializers.serialize(
             object.disputedAt,
+            specifiedType: const FullType.nullable(DateTime),
+          );
+    yield r'reportedAt';
+    yield object.reportedAt == null
+        ? null
+        : serializers.serialize(
+            object.reportedAt,
             specifiedType: const FullType.nullable(DateTime),
           );
   }
@@ -191,6 +203,16 @@ class _$CaptainActiveOrderDtoOutputOrderPickupSerializer
                   as DateTime?;
           if (valueDes == null) continue;
           result.disputedAt = valueDes;
+          break;
+        case r'reportedAt':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(DateTime),
+                  )
+                  as DateTime?;
+          if (valueDes == null) continue;
+          result.reportedAt = valueDes;
           break;
         default:
           unhandled.add(key);

@@ -10,7 +10,7 @@ import {
   Post,
   Req,
 } from '@nestjs/common';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, gte } from 'drizzle-orm';
 import type { FastifyRequest } from 'fastify';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
@@ -35,7 +35,6 @@ import {
   captainProblemProblem,
   captainTicketBody,
   captainTicketOut,
-  openingHash,
   PICKUP_AMOUNT_REASON,
   type ReportingCaptain,
   SupportService,
@@ -95,6 +94,12 @@ class CaptainProblemBodyDto extends createZodDto(
       ),
   }),
 ) {}
+
+const DAY_MS = 24 * 3_600_000;
+// An order still active was placed within two days; a report may name one
+// of the last month's orders.
+const ACTIVE_PLACED_MS = 2 * DAY_MS;
+const REPORTED_PLACED_MS = 31 * DAY_MS;
 
 class CaptainProblemParamsDto extends createZodDto(z.object({ orderId: z.uuid() })) {}
 
@@ -199,17 +204,21 @@ export class CaptainTicketsController {
     report: CaptainReport,
   ) {
     const now = new Date();
-    const placed = orderId === null ? null : await this.ownOrder(orderId, by.captainId);
-    const cityId = placed?.cityId ?? (await this.captains.captain(by.captainId, now))?.cityId;
-    if (cityId === undefined) throw new ForbiddenException();
     const id = await answered(async () => {
-      // A repeat answers its ticket before any refusal.
+      // A repeat answers its ticket before any refusal, also once the order
+      // left the captain.
       const replayed = await this.support.replayed(
         by.accountId,
         idempotencyKey,
         this.support.captainReportHash(report, orderId),
       );
       if (replayed !== null) return replayed;
+      const placed =
+        orderId === null
+          ? null
+          : await this.ownOrder(orderId, by.captainId, now, report.kind === 'problem');
+      const cityId = placed?.cityId ?? (await this.captains.captain(by.captainId, now))?.cityId;
+      if (cityId === undefined) throw new ForbiddenException();
       const ready = await this.support.prepareCaptainReport(cityId, report, by, now);
       return this.database.db.transaction(async (tx) => {
         let order: TicketOrder | null = null;
@@ -241,25 +250,24 @@ export class CaptainTicketsController {
     input: { device: string; note: string | null; paid: PaymentLine[] },
   ) {
     const now = new Date();
-    const placed = await this.ownOrder(orderId, by.captainId);
-    const requestHash = openingHash(
+    const requestHash = this.support.captainReportHash(
       {
-        cityId: placed.cityId,
-        party: 'captain',
-        partyId: by.captainId,
+        kind: 'problem',
         typeCode: PICKUP_AMOUNT_REASON,
-        description: `${input.note?.trim() ?? ''}|${JSON.stringify(storedLines(input.paid))}`,
-        restaurantId: null,
+        note: `${input.note?.trim() ?? ''}|${JSON.stringify(storedLines(input.paid))}`,
+        photoUploadId: null,
       },
       orderId,
     );
     const id = await answered(async () => {
+      // A repeat answers its ticket before any refusal, also once the order
+      // left the captain.
       const replayed = await this.support.replayed(by.accountId, idempotencyKey, requestHash);
       if (replayed !== null) return replayed;
+      const placed = await this.ownOrder(orderId, by.captainId, now, true);
       const timers = await this.support.preparePickupDispute(placed.cityId);
       return this.database.db.transaction(async (tx) => {
         const order = await lockForPickup(tx, placed.id, placed.placedAt);
-        if (!order || order.captainId !== by.captainId) throw unknownOrder();
         const again = await this.support.captainDisputeReplayedIn(
           tx,
           by.accountId,
@@ -267,6 +275,7 @@ export class CaptainTicketsController {
           requestHash,
         );
         if (again !== null) return again;
+        if (!order || order.captainId !== by.captainId) throw unknownOrder();
         const [confirmed] = await tx
           .select({
             id: pickupRequests.id,
@@ -346,12 +355,17 @@ export class CaptainTicketsController {
   }
 
   // One of the captain's orders (its current captain); 404 unknown_order
-  // otherwise.
-  private async ownOrder(orderId: string, captainId: string) {
+  // otherwise. The placing time bounds the month partitions read: an active
+  // order was placed within ACTIVE_PLACED_MS, an order a report names within
+  // REPORTED_PLACED_MS (decided by us).
+  private async ownOrder(orderId: string, captainId: string, now: Date, active: boolean) {
+    const since = new Date(now.getTime() - (active ? ACTIVE_PLACED_MS : REPORTED_PLACED_MS));
     const [placed] = await this.database.db
       .select({ id: orders.id, placedAt: orders.placedAt, cityId: orders.cityId })
       .from(orders)
-      .where(and(eq(orders.id, orderId), eq(orders.captainId, captainId)));
+      .where(
+        and(eq(orders.id, orderId), eq(orders.captainId, captainId), gte(orders.placedAt, since)),
+      );
     if (!placed) throw unknownOrder();
     return placed;
   }

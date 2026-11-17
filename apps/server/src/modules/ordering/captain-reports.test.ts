@@ -6,6 +6,7 @@ import {
   assignedOrder,
   azaz,
   onlineCaptain,
+  orderAtDoor,
   pickedUpOrder,
   sql,
   TRY,
@@ -118,6 +119,40 @@ describe('«مشكلة» with a quick reason (CA §9.11)', () => {
     const other = await onlineCaptain();
     expect((await problem(other.headers, order.id, {})).statusCode).toBe(404);
   });
+
+  it('answers a repeat with its ticket after the order left the captain', async () => {
+    const { order, captain, ops } = await assignedOrder();
+    const key = randomUUID();
+    const sent = await problem(captain.headers, order.id, {}, key);
+    expect(sent.statusCode).toBe(200);
+    const reassigned = await ops.post(`/v1/admin/orders/${order.id}/reassign`, {
+      reassignment: 'captain_request',
+      captainFault: false,
+      cash: null,
+      reason: 'طلب الكابتن',
+    });
+    expect(reassigned.statusCode).toBe(200);
+    const again = await problem(captain.headers, order.id, {}, key);
+    expect(again.statusCode).toBe(200);
+    expect(again.json().ticket.id).toBe(sent.json().ticket.id);
+    // A new one is refused: the order is no longer theirs.
+    expect((await problem(captain.headers, order.id, {})).statusCode).toBe(404);
+  });
+
+  it('is refused once the order ended', async () => {
+    const door = await orderAtDoor();
+    expect((await door.deliver()).statusCode).toBe(200);
+    const late = await problem(door.captain.headers, door.order.id, {});
+    expect(late.statusCode).toBe(409);
+    expect(late.json().error).toBe('order_state_changed');
+    // «إبلاغ عن مشكلة» may still name it (CA §13).
+    const report_ = await report(door.captain.headers, {
+      typeCode: 'order_problem',
+      orderId: door.order.id,
+    });
+    expect(report_.statusCode).toBe(200);
+    expect(report_.json().ticket.replyWithinMinutes).toBe(24 * 60);
+  });
 });
 
 describe('«مشكلة في مبلغ الاستلام» (CA §9.4 item 6)', () => {
@@ -203,11 +238,36 @@ describe('«مشكلة في مبلغ الاستلام» (CA §9.4 item 6)', () =
     ]);
   });
 
-  it('is refused before the pickup and after the order left the captain', async () => {
+  it('is refused before the pickup and once the order ended', async () => {
     const { order, captain } = await assignedOrder();
     const early = await problem(captain.headers, order.id, pickupAmount(TRY('25000')));
     expect(early.statusCode).toBe(409);
     expect(early.json().error).toBe('order_state_changed');
+
+    const door = await orderAtDoor();
+    expect((await door.deliver()).statusCode).toBe(200);
+    const late = await problem(door.captain.headers, door.order.id, pickupAmount(TRY('25000')));
+    expect(late.statusCode).toBe(409);
+    expect(late.json().error).toBe('order_state_changed');
+  });
+
+  it("takes only the order's currencies", async () => {
+    const picked = await pickedUpOrder();
+    const refused = await problem(
+      picked.captain.headers,
+      picked.order.id,
+      pickupAmount([{ currency: 'EUR', amount: '1000' }]),
+    );
+    expect(refused.statusCode).toBe(400);
+    expect(refused.json().error).toBe('invalid_lines');
+    // The app stops offering it once the captain reported it.
+    expect(
+      (await problem(picked.captain.headers, picked.order.id, pickupAmount(TRY('25000'))))
+        .statusCode,
+    ).toBe(200);
+    const pickup = (await picked.captain.active()).json().order.pickup;
+    expect(pickup.disputedAt).toBeNull();
+    expect(pickup.reportedAt).not.toBeNull();
   });
 
   it('is refused once the restaurant disputed the pickup', async () => {

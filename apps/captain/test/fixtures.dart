@@ -238,6 +238,7 @@ Map<String, Object?> orderJson({
       'request': request,
       'pickedUpAt': pickedUp ? now.toIso8601String() : null,
       'disputedAt': disputedAt?.toIso8601String(),
+      'reportedAt': null,
     },
     'customer': {
       'name': 'أحمد',

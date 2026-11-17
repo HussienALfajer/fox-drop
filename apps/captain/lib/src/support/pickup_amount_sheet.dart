@@ -14,6 +14,7 @@ typedef PickupAmount = ({List<Money> lines, String? note});
 bool offersPickupAmount(ActiveOrder order) =>
     order.pickup.pickedUpAt != null &&
     order.pickup.disputedAt == null &&
+    order.pickup.reportedAt == null &&
     order.pickup.request?.status == RequestStatus.confirmed &&
     receiving(order) == null;
 

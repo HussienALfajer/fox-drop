@@ -35018,6 +35018,19 @@
                           }
                         ],
                         "description": "«فتح المطعم بلاغاً عن مبلغ الاستلام — ستتواصل معك العمليات»."
+                      },
+                      "reportedAt": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "The captain's own «مشكلة في مبلغ الاستلام» (CA §9.4 item 6), once per order whoever disputed first."
                       }
                     },
                     "required": [
@@ -35025,7 +35038,8 @@
                       "currencies",
                       "request",
                       "pickedUpAt",
-                      "disputedAt"
+                      "disputedAt",
+                      "reportedAt"
                     ],
                     "additionalProperties": false,
                     "description": "Step 2 and the pickup request (CA §9.3–9.4)."
@@ -36457,6 +36471,19 @@
                       }
                     ],
                     "description": "«فتح المطعم بلاغاً عن مبلغ الاستلام — ستتواصل معك العمليات»."
+                  },
+                  "reportedAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The captain's own «مشكلة في مبلغ الاستلام» (CA §9.4 item 6), once per order whoever disputed first."
                   }
                 },
                 "required": [
@@ -36464,7 +36491,8 @@
                   "currencies",
                   "request",
                   "pickedUpAt",
-                  "disputedAt"
+                  "disputedAt",
+                  "reportedAt"
                 ],
                 "additionalProperties": false,
                 "description": "Step 2 and the pickup request (CA §9.3–9.4)."
