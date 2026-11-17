@@ -8790,7 +8790,7 @@ export interface components {
                 stars: number;
                 /** @description Codes of Content's list for the stars: restaurant_rating_low (1–2), _mid (3), _high (4–5), or captain_rating_* for the captain. */
                 reasons: string[];
-                /** @description Up to 300 characters; null without one. */
+                /** @description Up to 300 characters, counted in code points; null without one. */
                 comment: string | null;
             } | null;
             /** @description «قيّم الكابتن», or null to skip it. */
@@ -8798,7 +8798,7 @@ export interface components {
                 stars: number;
                 /** @description Codes of Content's list for the stars: restaurant_rating_low (1–2), _mid (3), _high (4–5), or captain_rating_* for the captain. */
                 reasons: string[];
-                /** @description Up to 300 characters; null without one. */
+                /** @description Up to 300 characters, counted in code points; null without one. */
                 comment: string | null;
             } | null;
         };

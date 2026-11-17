@@ -29959,15 +29959,10 @@
                     "description": "Codes of Content's list for the stars: restaurant_rating_low (1–2), _mid (3), _high (4–5), or captain_rating_* for the captain."
                   },
                   "comment": {
-                    "description": "Up to 300 characters; null without one.",
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "maxLength": 300
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "description": "Up to 300 characters, counted in code points; null without one.",
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   }
                 },
@@ -30004,15 +29999,10 @@
                     "description": "Codes of Content's list for the stars: restaurant_rating_low (1–2), _mid (3), _high (4–5), or captain_rating_* for the captain."
                   },
                   "comment": {
-                    "description": "Up to 300 characters; null without one.",
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "maxLength": 300
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "description": "Up to 300 characters, counted in code points; null without one.",
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   }
                 },

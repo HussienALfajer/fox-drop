@@ -14,7 +14,7 @@ part 'customer_rate_order_dto_restaurant.g.dart';
 /// Properties:
 /// * [stars]
 /// * [reasons] - Codes of Content's list for the stars: restaurant_rating_low (1–2), _mid (3), _high (4–5), or captain_rating_* for the captain.
-/// * [comment] - Up to 300 characters; null without one.
+/// * [comment] - Up to 300 characters, counted in code points; null without one.
 @BuiltValue()
 abstract class CustomerRateOrderDtoRestaurant
     implements
@@ -29,7 +29,7 @@ abstract class CustomerRateOrderDtoRestaurant
   @BuiltValueField(wireName: r'reasons')
   BuiltList<String> get reasons;
 
-  /// Up to 300 characters; null without one.
+  /// Up to 300 characters, counted in code points; null without one.
   @BuiltValueField(wireName: r'comment')
   String? get comment;
 
