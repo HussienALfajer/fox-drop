@@ -97,4 +97,53 @@ void main() {
     );
     expect(find.text('تسجيل الدخول'), findsWidgets);
   });
+
+  // CU §5.6 «حذف الحساب» (slice 2.25c): the explanation, a fresh code, then
+  // the closure signs this device out and goes home as a guest.
+  testWidgets('deletes the account with a fresh code', (tester) async {
+    final app = await _account(tester);
+    await tester.tap(find.byKey(const Key('delete-account')));
+    await tester.pumpAndSettle();
+    expect(find.text('ستفقد أكوادك ومفضلتك.'), findsOneWidget);
+
+    app.server.on('/v1/customer/account/close-code', [
+      const FakeAnswer(200, {
+        'channel': 'whatsapp',
+        'resendAfterSec': 60,
+        'expiresAt': '2026-11-17T10:05:00.000Z',
+      }),
+    ]);
+    await tester.tap(find.byKey(const Key('send-delete-code')));
+    await tester.pumpAndSettle();
+
+    app.server.on('/v1/customer/account/close', [
+      const FakeAnswer(400, {'error': 'wrong_code', 'attemptsLeft': 2}),
+      const FakeAnswer(200, {'status': 'closed'}),
+    ]);
+    await tester.enterText(find.byKey(const Key('delete-code')), '111111');
+    await tester.tap(find.byKey(const Key('confirm-delete-account')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('delete-account-refusal')), findsOneWidget);
+
+    await tester.enterText(find.byKey(const Key('delete-code')), '123456');
+    await tester.tap(find.byKey(const Key('confirm-delete-account')));
+    await tester.pumpAndSettle();
+    final sent = app.server.to('/v1/customer/account/close');
+    expect(sent, hasLength(2));
+    expect((sent.last.data as Map)['code'], '123456');
+    expect(find.text('تسجيل الدخول'), findsWidgets);
+  });
+
+  testWidgets('says no while an order is active', (tester) async {
+    final app = await _account(tester);
+    await tester.tap(find.byKey(const Key('delete-account')));
+    await tester.pumpAndSettle();
+    app.server.on('/v1/customer/account/close-code', [
+      const FakeAnswer(409, {'error': 'active_order'}),
+    ]);
+    await tester.tap(find.byKey(const Key('send-delete-code')));
+    await tester.pumpAndSettle();
+    expect(find.text('لا يمكن حذف الحساب أثناء وجود طلب جارٍ'), findsOneWidget);
+    expect(find.byKey(const Key('delete-code')), findsNothing);
+  });
 }
