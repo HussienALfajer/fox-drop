@@ -8,6 +8,7 @@ import {
   appSignIn,
   azaz,
   db,
+  home,
   phoneNumber,
   place,
   quoteFor,
@@ -42,6 +43,14 @@ async function panel(roles: string[]) {
         })
       ).json(),
     trust: (customerId: string, trusted: boolean) => post(customerId, 'trust', { trusted }),
+    note: (customerId: string, body: string, key: string) =>
+      app.inject({
+        method: 'POST',
+        url: `/v1/admin/customers/${customerId}/notes`,
+        cookies,
+        headers: { 'idempotency-key': key },
+        payload: { cityId: azaz, body },
+      }),
     clear: (customerId: string) => post(customerId, 'clear-strikes', {}),
     endStop: (customerId: string, stopId: string) =>
       post(customerId, 'end-review-stop', { stopId }),
@@ -141,5 +150,66 @@ describe('«مسح المخالفات» and «إنهاء الإيقاف» (AP §
   it('is refused to finance', async () => {
     const buyer = await customer();
     expect((await (await panel(['FIN'])).clear(buyer.id)).statusCode).toBe(403);
+  });
+});
+
+describe("the profile's orders, addresses and notes (AP §9.8)", () => {
+  it('shows the orders in the city, the saved addresses with any other number masked, and the notes', async () => {
+    const buyer = await customer();
+    const fin = await panel(['FIN']);
+    const fresh = await fin.profile(buyer.id);
+    expect(fresh).toMatchObject({
+      orders: { count: 0, spent: [], last: null },
+      tickets: [],
+      codes: [],
+      addresses: [],
+      notes: [],
+    });
+
+    const order = await place(buyer.headers);
+    expect(order.statusCode).toBe(201);
+    const saved = await app.inject({
+      method: 'POST',
+      url: '/v1/customer/addresses',
+      headers: buyer.headers,
+      payload: {
+        location: home,
+        label: 'home',
+        customLabel: null,
+        street: 'شارع الجامع',
+        floor: null,
+        landmark: 'قرب الجامع',
+        contactPhone: '+905321234567',
+        recipientName: 'محمد',
+        directions: null,
+        isDefault: false,
+      },
+    });
+    expect(saved.statusCode).toBe(201);
+
+    const read = await fin.profile(buyer.id);
+    expect(read.orders).toMatchObject({
+      count: 1,
+      spent: [],
+      last: { id: order.json().order.id, status: 'placed' },
+    });
+    expect(read.addresses).toEqual([
+      expect.objectContaining({
+        street: 'شارع الجامع',
+        recipientName: 'محمد',
+        maskedContactPhone: '+90 ••• 567',
+        isDefault: true,
+      }),
+    ]);
+    expect(JSON.stringify(read)).not.toContain('5321234567');
+
+    const key = randomUUID();
+    const noted = await fin.note(buyer.id, 'يفضل الاتصال قبل الوصول', key);
+    expect(noted.statusCode).toBe(201);
+    expect(noted.json().notes).toEqual([
+      expect.objectContaining({ body: 'يفضل الاتصال قبل الوصول', authorName: expect.any(String) }),
+    ]);
+    expect((await fin.note(buyer.id, 'يفضل الاتصال قبل الوصول', key)).json().notes).toHaveLength(1);
+    expect((await fin.note(buyer.id, 'نص آخر', key)).statusCode).toBe(422);
   });
 });

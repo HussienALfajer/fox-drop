@@ -3,8 +3,8 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_report_note.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/admin_compensation_requests_dto_output_requests_inner_reason.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_report_items_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -31,7 +31,7 @@ abstract class MerchantOrdersDtoOutputOrdersInnerItemReport
   BuiltList<MerchantOrdersDtoOutputOrdersInnerItemReportItemsInner> get items;
 
   @BuiltValueField(wireName: r'note')
-  MerchantOrdersDtoOutputOrdersInnerItemReportNote? get note;
+  AdminCompensationRequestsDtoOutputRequestsInnerReason? get note;
 
   MerchantOrdersDtoOutputOrdersInnerItemReport._();
 
@@ -84,7 +84,7 @@ class _$MerchantOrdersDtoOutputOrdersInnerItemReportSerializer
         : serializers.serialize(
             object.note,
             specifiedType: const FullType.nullable(
-              MerchantOrdersDtoOutputOrdersInnerItemReportNote,
+              AdminCompensationRequestsDtoOutputRequestsInnerReason,
             ),
           );
   }
@@ -143,10 +143,10 @@ class _$MerchantOrdersDtoOutputOrdersInnerItemReportSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      MerchantOrdersDtoOutputOrdersInnerItemReportNote,
+                      AdminCompensationRequestsDtoOutputRequestsInnerReason,
                     ),
                   )
-                  as MerchantOrdersDtoOutputOrdersInnerItemReportNote?;
+                  as AdminCompensationRequestsDtoOutputRequestsInnerReason?;
           if (valueDes == null) continue;
           result.note.replace(valueDes);
           break;

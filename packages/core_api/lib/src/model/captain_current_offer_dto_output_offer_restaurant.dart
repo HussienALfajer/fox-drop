@@ -3,7 +3,7 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_address_location.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_addresses_inner_location.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -26,7 +26,7 @@ abstract class CaptainCurrentOfferDtoOutputOfferRestaurant
   String get name;
 
   @BuiltValueField(wireName: r'location')
-  CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation get location;
+  AdminCustomerDtoOutputAddressesInnerLocation get location;
 
   /// From the captain, by road, when the offer opened.
   @BuiltValueField(wireName: r'distanceMetres')
@@ -73,7 +73,7 @@ class _$CaptainCurrentOfferDtoOutputOfferRestaurantSerializer
     yield serializers.serialize(
       object.location,
       specifiedType: const FullType(
-        CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation,
+        AdminCustomerDtoOutputAddressesInnerLocation,
       ),
     );
     yield r'distanceMetres';
@@ -122,10 +122,10 @@ class _$CaptainCurrentOfferDtoOutputOfferRestaurantSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(
-                      CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation,
+                      AdminCustomerDtoOutputAddressesInnerLocation,
                     ),
                   )
-                  as CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation;
+                  as AdminCustomerDtoOutputAddressesInnerLocation;
           result.location.replace(valueDes);
           break;
         case r'distanceMetres':

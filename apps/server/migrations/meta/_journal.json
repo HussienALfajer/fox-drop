@@ -708,6 +708,13 @@
       "when": 1794939093148,
       "tag": "0100_customers_trust_marks",
       "breakpoints": true
+    },
+    {
+      "idx": 101,
+      "version": "7",
+      "when": 1794941332068,
+      "tag": "0101_customers_notes",
+      "breakpoints": true
     }
   ]
 }

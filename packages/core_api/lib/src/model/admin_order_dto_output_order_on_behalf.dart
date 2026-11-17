@@ -3,8 +3,8 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_report_note.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/admin_compensation_requests_dto_output_requests_inner_reason.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_on_behalf_prep_time.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -29,7 +29,7 @@ abstract class AdminOrderDtoOutputOrderOnBehalf
 
   /// «رفض نيابة عن المطعم»: the restaurant's reasons (AP Appendix B), in order.
   @BuiltValueField(wireName: r'rejectionReasons')
-  BuiltList<MerchantOrdersDtoOutputOrdersInnerItemReportNote?>
+  BuiltList<AdminCompensationRequestsDtoOutputRequestsInnerReason?>
   get rejectionReasons;
 
   /// «ضغط طلبات»: busy mode with one of merchant.busy_extra_options_min.
@@ -75,7 +75,9 @@ class _$AdminOrderDtoOutputOrderOnBehalfSerializer
     yield serializers.serialize(
       object.rejectionReasons,
       specifiedType: const FullType(BuiltList, [
-        FullType.nullable(MerchantOrdersDtoOutputOrdersInnerItemReportNote),
+        FullType.nullable(
+          AdminCompensationRequestsDtoOutputRequestsInnerReason,
+        ),
       ]),
     );
     yield r'busyExtraOptionsMin';
@@ -127,12 +129,12 @@ class _$AdminOrderDtoOutputOrderOnBehalfSerializer
                     value,
                     specifiedType: const FullType(BuiltList, [
                       FullType.nullable(
-                        MerchantOrdersDtoOutputOrdersInnerItemReportNote,
+                        AdminCompensationRequestsDtoOutputRequestsInnerReason,
                       ),
                     ]),
                   )
                   as BuiltList<
-                    MerchantOrdersDtoOutputOrdersInnerItemReportNote?
+                    AdminCompensationRequestsDtoOutputRequestsInnerReason?
                   >;
           result.rejectionReasons.replace(valueDes);
           break;

@@ -3,9 +3,9 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_report_note.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_block_reasons_inner.dart';
+import 'package:core_api/src/model/admin_compensation_requests_dto_output_requests_inner_reason.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -22,7 +22,8 @@ abstract class AdminTicketTypesDtoOutput
     implements
         Built<AdminTicketTypesDtoOutput, AdminTicketTypesDtoOutputBuilder> {
   @BuiltValueField(wireName: r'customer')
-  BuiltList<MerchantOrdersDtoOutputOrdersInnerItemReportNote?> get customer;
+  BuiltList<AdminCompensationRequestsDtoOutputRequestsInnerReason?>
+  get customer;
 
   @BuiltValueField(wireName: r'restaurant')
   BuiltList<AdminCustomerDtoOutputBlockReasonsInner> get restaurant;
@@ -64,7 +65,9 @@ class _$AdminTicketTypesDtoOutputSerializer
     yield serializers.serialize(
       object.customer,
       specifiedType: const FullType(BuiltList, [
-        FullType.nullable(MerchantOrdersDtoOutputOrdersInnerItemReportNote),
+        FullType.nullable(
+          AdminCompensationRequestsDtoOutputRequestsInnerReason,
+        ),
       ]),
     );
     yield r'restaurant';
@@ -114,12 +117,12 @@ class _$AdminTicketTypesDtoOutputSerializer
                     value,
                     specifiedType: const FullType(BuiltList, [
                       FullType.nullable(
-                        MerchantOrdersDtoOutputOrdersInnerItemReportNote,
+                        AdminCompensationRequestsDtoOutputRequestsInnerReason,
                       ),
                     ]),
                   )
                   as BuiltList<
-                    MerchantOrdersDtoOutputOrdersInnerItemReportNote?
+                    AdminCompensationRequestsDtoOutputRequestsInnerReason?
                   >;
           result.customer.replace(valueDes);
           break;

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq, gt, gte, inArray, lte, ne, or, sql } from 'drizzle-orm';
+import { and, desc, eq, gt, gte, inArray, lte, ne, or, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -50,6 +50,18 @@ export interface CodeCart {
     // AP §9.11.1, §8.8: no delivered order on any account of the number.
     newUser: boolean;
   } | null;
+}
+
+// AP §9.8 «الأكواد المستخدمة» (slice 2.25b): one use of a code by the
+// customer, newest first.
+export interface CustomerCodeUse {
+  code: string;
+  kind: (typeof promoCodes.$inferSelect)['kind'];
+  orderId: string;
+  currency: string;
+  discount: bigint;
+  status: PromoCodeUseStatus;
+  heldAt: Date;
 }
 
 export interface CodeClock {
@@ -317,6 +329,26 @@ export class PromoCodeUsesService {
       const by = b.ended.at.getTime() - a.ended.at.getTime();
       return by !== 0 ? by : a.code < b.code ? -1 : 1;
     });
+  }
+
+  // AP §9.8 (slice 2.25b): the customer's latest code uses in the city, for
+  // the panel's profile: held, spent or given back.
+  async usesOf(accountId: string, cityId: string, limit: number): Promise<CustomerCodeUse[]> {
+    return this.database.db
+      .select({
+        code: promoCodes.code,
+        kind: promoCodes.kind,
+        orderId: promoCodeUses.orderId,
+        currency: promoCodeUses.currency,
+        discount: promoCodeUses.discount,
+        status: promoCodeUses.status,
+        heldAt: promoCodeUses.heldAt,
+      })
+      .from(promoCodeUses)
+      .innerJoin(promoCodes, eq(promoCodes.id, promoCodeUses.codeId))
+      .where(and(eq(promoCodeUses.customerAccountId, accountId), eq(promoCodeUses.cityId, cityId)))
+      .orderBy(desc(promoCodeUses.heldAt), desc(promoCodeUses.id))
+      .limit(limit);
   }
 
   // AP §9.3.3 (slice 2.21b): an edit worked the order's discount out again

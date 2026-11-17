@@ -6,68 +6,61 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'merchant_orders_dto_output_orders_inner_item_report_note.g.dart';
+part 'admin_add_customer_note_dto.g.dart';
 
-/// A reason of Content's item_unavailable_note list, its label as chosen.
+/// AdminAddCustomerNoteDto
 ///
 /// Properties:
-/// * [code]
-/// * [label]
+/// * [cityId]
+/// * [body] - The note, up to 500 characters.
 @BuiltValue()
-abstract class MerchantOrdersDtoOutputOrdersInnerItemReportNote
-    implements
-        Built<
-          MerchantOrdersDtoOutputOrdersInnerItemReportNote,
-          MerchantOrdersDtoOutputOrdersInnerItemReportNoteBuilder
-        > {
-  @BuiltValueField(wireName: r'code')
-  String get code;
+abstract class AdminAddCustomerNoteDto
+    implements Built<AdminAddCustomerNoteDto, AdminAddCustomerNoteDtoBuilder> {
+  @BuiltValueField(wireName: r'cityId')
+  String get cityId;
 
-  @BuiltValueField(wireName: r'label')
-  String get label;
+  /// The note, up to 500 characters.
+  @BuiltValueField(wireName: r'body')
+  String get body;
 
-  MerchantOrdersDtoOutputOrdersInnerItemReportNote._();
+  AdminAddCustomerNoteDto._();
 
-  factory MerchantOrdersDtoOutputOrdersInnerItemReportNote([
-    void updates(MerchantOrdersDtoOutputOrdersInnerItemReportNoteBuilder b),
-  ]) = _$MerchantOrdersDtoOutputOrdersInnerItemReportNote;
+  factory AdminAddCustomerNoteDto([
+    void updates(AdminAddCustomerNoteDtoBuilder b),
+  ]) = _$AdminAddCustomerNoteDto;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    MerchantOrdersDtoOutputOrdersInnerItemReportNoteBuilder b,
-  ) => b;
+  static void _defaults(AdminAddCustomerNoteDtoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantOrdersDtoOutputOrdersInnerItemReportNote>
-  get serializer =>
-      _$MerchantOrdersDtoOutputOrdersInnerItemReportNoteSerializer();
+  static Serializer<AdminAddCustomerNoteDto> get serializer =>
+      _$AdminAddCustomerNoteDtoSerializer();
 }
 
-class _$MerchantOrdersDtoOutputOrdersInnerItemReportNoteSerializer
-    implements
-        PrimitiveSerializer<MerchantOrdersDtoOutputOrdersInnerItemReportNote> {
+class _$AdminAddCustomerNoteDtoSerializer
+    implements PrimitiveSerializer<AdminAddCustomerNoteDto> {
   @override
   final Iterable<Type> types = const [
-    MerchantOrdersDtoOutputOrdersInnerItemReportNote,
-    _$MerchantOrdersDtoOutputOrdersInnerItemReportNote,
+    AdminAddCustomerNoteDto,
+    _$AdminAddCustomerNoteDto,
   ];
 
   @override
-  final String wireName = r'MerchantOrdersDtoOutputOrdersInnerItemReportNote';
+  final String wireName = r'AdminAddCustomerNoteDto';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    MerchantOrdersDtoOutputOrdersInnerItemReportNote object, {
+    AdminAddCustomerNoteDto object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'code';
+    yield r'cityId';
     yield serializers.serialize(
-      object.code,
+      object.cityId,
       specifiedType: const FullType(String),
     );
-    yield r'label';
+    yield r'body';
     yield serializers.serialize(
-      object.label,
+      object.body,
       specifiedType: const FullType(String),
     );
   }
@@ -75,7 +68,7 @@ class _$MerchantOrdersDtoOutputOrdersInnerItemReportNoteSerializer
   @override
   Object serialize(
     Serializers serializers,
-    MerchantOrdersDtoOutputOrdersInnerItemReportNote object, {
+    AdminAddCustomerNoteDto object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -90,30 +83,30 @@ class _$MerchantOrdersDtoOutputOrdersInnerItemReportNoteSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required MerchantOrdersDtoOutputOrdersInnerItemReportNoteBuilder result,
+    required AdminAddCustomerNoteDtoBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'code':
+        case r'cityId':
           final valueDes =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(String),
                   )
                   as String;
-          result.code = valueDes;
+          result.cityId = valueDes;
           break;
-        case r'label':
+        case r'body':
           final valueDes =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(String),
                   )
                   as String;
-          result.label = valueDes;
+          result.body = valueDes;
           break;
         default:
           unhandled.add(key);
@@ -124,12 +117,12 @@ class _$MerchantOrdersDtoOutputOrdersInnerItemReportNoteSerializer
   }
 
   @override
-  MerchantOrdersDtoOutputOrdersInnerItemReportNote deserialize(
+  AdminAddCustomerNoteDto deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = MerchantOrdersDtoOutputOrdersInnerItemReportNoteBuilder();
+    final result = AdminAddCustomerNoteDtoBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

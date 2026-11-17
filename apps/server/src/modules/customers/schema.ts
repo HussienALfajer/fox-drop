@@ -253,3 +253,27 @@ export const blocks = customers.table(
     check('blocks_note', sql`length(${table.note}) BETWEEN 1 AND 500`),
   ],
 );
+
+// AP §9.8 «ملاحظات داخلية» (slice 2.25b): an admin's note on the customer,
+// such as «يفضل الاتصال قبل الوصول». Never changed; the command's
+// Idempotency-Key is kept with it, so a retry adds no second note.
+export const notes = customers.table(
+  'notes',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    customerAccountId: uuid('customer_account_id').notNull(),
+    body: text('body').notNull(),
+    // The admin account that wrote it.
+    authorId: uuid('author_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    idempotencyKey: text('idempotency_key').notNull(),
+    requestHash: text('request_hash').notNull(),
+  },
+  (table) => [
+    uniqueIndex('notes_key').on(table.authorId, table.idempotencyKey),
+    index('notes_account').on(table.customerAccountId, table.createdAt),
+    check('notes_body', sql`length(${table.body}) BETWEEN 1 AND 500`),
+  ],
+);

@@ -18,7 +18,8 @@ class _$AdminOrderCompensationsDtoOutput
   @override
   final bool canCompensate;
   @override
-  final BuiltList<MerchantOrdersDtoOutputOrdersInnerItemReportNote?> reasons;
+  final BuiltList<AdminCompensationRequestsDtoOutputRequestsInnerReason?>
+  reasons;
 
   factory _$AdminOrderCompensationsDtoOutput([
     void Function(AdminOrderCompensationsDtoOutputBuilder)? updates,
@@ -106,12 +107,13 @@ class AdminOrderCompensationsDtoOutputBuilder
   set canCompensate(bool? canCompensate) =>
       _$this._canCompensate = canCompensate;
 
-  ListBuilder<MerchantOrdersDtoOutputOrdersInnerItemReportNote?>? _reasons;
-  ListBuilder<MerchantOrdersDtoOutputOrdersInnerItemReportNote?> get reasons =>
-      _$this._reasons ??=
-          ListBuilder<MerchantOrdersDtoOutputOrdersInnerItemReportNote?>();
+  ListBuilder<AdminCompensationRequestsDtoOutputRequestsInnerReason?>? _reasons;
+  ListBuilder<AdminCompensationRequestsDtoOutputRequestsInnerReason?>
+  get reasons => _$this._reasons ??=
+      ListBuilder<AdminCompensationRequestsDtoOutputRequestsInnerReason?>();
   set reasons(
-    ListBuilder<MerchantOrdersDtoOutputOrdersInnerItemReportNote?>? reasons,
+    ListBuilder<AdminCompensationRequestsDtoOutputRequestsInnerReason?>?
+    reasons,
   ) => _$this._reasons = reasons;
 
   AdminOrderCompensationsDtoOutputBuilder() {

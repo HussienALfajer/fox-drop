@@ -3,8 +3,8 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/admin_customer_dto_output_addresses_inner_location.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_address_location.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -30,7 +30,7 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInnerAddress
           CustomerActiveOrdersDtoOutputOrdersInnerAddressBuilder
         > {
   @BuiltValueField(wireName: r'location')
-  CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation get location;
+  AdminCustomerDtoOutputAddressesInnerLocation get location;
 
   /// «الحي» at placing.
   @BuiltValueField(wireName: r'neighbourhood')
@@ -97,7 +97,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerAddressSerializer
     yield serializers.serialize(
       object.location,
       specifiedType: const FullType(
-        CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation,
+        AdminCustomerDtoOutputAddressesInnerLocation,
       ),
     );
     yield r'neighbourhood';
@@ -184,10 +184,10 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerAddressSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(
-                      CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation,
+                      AdminCustomerDtoOutputAddressesInnerLocation,
                     ),
                   )
-                  as CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation;
+                  as AdminCustomerDtoOutputAddressesInnerLocation;
           result.location.replace(valueDes);
           break;
         case r'neighbourhood':

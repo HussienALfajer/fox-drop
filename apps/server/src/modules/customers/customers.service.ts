@@ -66,7 +66,26 @@ export interface CustomerOrders {
   delivered: number;
   trustedAfter: number;
   fakeOrders: number;
+  // AP §9.8 «الطلبات» (slice 2.25b): the customer's orders in the city
+  // (free re-deliveries left out), what the delivered ones totalled per
+  // currency, and the latest.
+  count: number;
+  spent: { currency: string; amount: bigint }[];
+  last: { id: string; number: bigint; status: string; placedAt: Date } | null;
 }
+
+// AP §9.8 «التذاكر» (slice 2.25b): what support registers
+// (useCustomerTickets), the customer's latest tickets in the city.
+export interface CustomerTicket {
+  id: string;
+  number: bigint;
+  typeLabel: string;
+  status: string;
+  orderNumber: bigint | null;
+  openedAt: Date;
+}
+
+export type CustomerTickets = (accountId: string, cityId: string) => Promise<CustomerTicket[]>;
 
 export type CustomerOrderFacts = (accountId: string, cityId: string) => Promise<CustomerOrders>;
 
@@ -156,6 +175,18 @@ export class CustomersService {
   ordersOf(accountId: string, cityId: string): Promise<CustomerOrders> {
     if (this.orderFacts === null) throw new Error('ordering has not registered its facts');
     return this.orderFacts(accountId, cityId);
+  }
+
+  private tickets: CustomerTickets | null = null;
+
+  // Registered by support at start, which imports this module.
+  useCustomerTickets(tickets: CustomerTickets): void {
+    this.tickets = tickets;
+  }
+
+  ticketsOf(accountId: string, cityId: string): Promise<CustomerTicket[]> {
+    if (this.tickets === null) throw new Error('support has not registered its tickets');
+    return this.tickets(accountId, cityId);
   }
 
   // AP §9.8 «حظر» (slice 2.25a): the block that stops the account's ordering

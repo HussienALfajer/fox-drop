@@ -21,7 +21,7 @@ import { phoneOf } from '../../http/phone-search.js';
 import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
 import type { AdminSession } from '../identity/index.js';
-import { type BlockCommand } from './blocks.js';
+import { type BlockCommand, maskedPhone } from './blocks.js';
 import {
   type AdminMark,
   type CustomerAdmin,
@@ -138,7 +138,74 @@ class AdminCustomerDto extends createZodDto(
     blockReasons: z
       .array(z.object({ code: z.string(), label: z.string() }))
       .describe("Content's active customer_block reasons (AP Appendix B)."),
+    orders: z.object({
+      count: z.int().describe("The customer's orders in the city, re-deliveries left out."),
+      spent: z
+        .array(z.object({ currency: z.string(), amount: minor }))
+        .describe('The delivered orders’ totals per currency.'),
+      last: z
+        .object({
+          id: z.uuid(),
+          number: z.string(),
+          status: z.string(),
+          placedAt: z.iso.datetime(),
+        })
+        .nullable(),
+    }),
+    tickets: z.array(
+      z.object({
+        id: z.uuid(),
+        number: z.string(),
+        typeLabel: z.string(),
+        status: z.string(),
+        orderNumber: z.string().nullable(),
+        openedAt: z.iso.datetime(),
+      }),
+    ),
+    codes: z
+      .array(
+        z.object({
+          code: z.string(),
+          kind: z.string(),
+          orderId: z.uuid(),
+          currency: z.string(),
+          discount: minor,
+          status: z.string().describe('held, spent, or returned (given back).'),
+          heldAt: z.iso.datetime(),
+        }),
+      )
+      .describe('The codes used in the city, newest first.'),
+    addresses: z.array(
+      z.object({
+        id: z.uuid(),
+        label: z.string(),
+        customLabel: z.string().nullable(),
+        street: z.string(),
+        floor: z.string().nullable(),
+        landmark: z.string(),
+        neighbourhood: z.string().nullable(),
+        location: z.object({ latitude: z.number(), longitude: z.number() }),
+        isDefault: z.boolean(),
+        recipientName: z.string().nullable(),
+        maskedContactPhone: z
+          .string()
+          .nullable()
+          .describe("Another contact number, masked; null is the account's own."),
+      }),
+    ),
+    notes: z.array(
+      z.object({
+        id: z.uuid(),
+        body: z.string(),
+        authorName: z.string().nullable(),
+        createdAt: z.iso.datetime(),
+      }),
+    ),
   }),
+) {}
+
+class AdminAddCustomerNoteDto extends createZodDto(
+  z.object({ cityId: z.uuid(), body: reason.describe('The note, up to 500 characters.') }),
 ) {}
 
 class AdminBlockCustomerDto extends createZodDto(
@@ -277,6 +344,30 @@ export class AdminCustomersController {
     });
   }
 
+  // «ملاحظة داخلية» (everyone who reads the customers). Answers the profile.
+  // 422 idempotency_key_reused.
+  @Post(':customerId/notes')
+  @RequirePermission('customers.read')
+  @Idempotent()
+  @ZodResponse({ status: 201, type: AdminCustomerDto })
+  addNote(
+    @Param() params: AdminCustomerParamsDto,
+    @Body() body: AdminAddCustomerNoteDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(async () => {
+      const now = new Date();
+      await this.customers.addNote(
+        adminOf(session, request),
+        { cityId: body.cityId, accountId: params.customerId, body: body.body, idempotencyKey },
+        now,
+      );
+      return profileBody(await this.customers.profile(body.cityId, params.customerId, now));
+    });
+  }
+
   // «توثيق» or «إزالة الثقة» (OWN, OPS). Answers the profile.
   @Post(':customerId/trust')
   @RequirePermission('customers.manage')
@@ -402,6 +493,40 @@ function profileBody(view: CustomerProfileView) {
       cleared: view.lateCancels.cleared && markBody(view.lateCancels.cleared),
     },
     dues: { amount: view.dues.amount.toString(), currency: view.dues.currency },
+    orders: {
+      count: view.orders.count,
+      spent: view.orders.spent.map((line) => ({ ...line, amount: line.amount.toString() })),
+      last: view.orders.last && {
+        ...view.orders.last,
+        number: view.orders.last.number.toString(),
+        placedAt: view.orders.last.placedAt.toISOString(),
+      },
+    },
+    tickets: view.tickets.map((ticket) => ({
+      ...ticket,
+      number: ticket.number.toString(),
+      orderNumber: ticket.orderNumber?.toString() ?? null,
+      openedAt: ticket.openedAt.toISOString(),
+    })),
+    codes: view.codes.map((code) => ({
+      ...code,
+      discount: code.discount.toString(),
+      heldAt: code.heldAt.toISOString(),
+    })),
+    addresses: view.addresses.map((address) => ({
+      id: address.id,
+      label: address.label,
+      customLabel: address.customLabel,
+      street: address.street,
+      floor: address.floor,
+      landmark: address.landmark,
+      neighbourhood: address.neighbourhood,
+      location: address.location,
+      isDefault: address.isDefault,
+      recipientName: address.recipientName,
+      maskedContactPhone: address.contactPhone === null ? null : maskedPhone(address.contactPhone),
+    })),
+    notes: view.notes.map((note) => ({ ...note, createdAt: note.createdAt.toISOString() })),
     blocks: view.blocks.map((block) => ({
       ...block,
       until: block.until?.toISOString() ?? null,

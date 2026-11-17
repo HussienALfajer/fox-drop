@@ -9,6 +9,7 @@ import { FxService } from '../fx/index.js';
 import { GeoService } from '../geo/index.js';
 import { AdminSessionsService, CustomerAccountsService } from '../identity/index.js';
 import { LedgerService } from '../ledger/index.js';
+import { type CustomerCodeUse, PromoCodeUsesService } from '../marketing/index.js';
 import { SettingsService } from '../settings/index.js';
 import {
   type AccountStatus,
@@ -19,12 +20,20 @@ import {
   blockProblem,
   maskedPhone,
 } from './blocks.js';
-import { type ActiveBlock, CustomersService, customerOrderLock } from './customers.service.js';
+import {
+  type ActiveBlock,
+  type Address,
+  type CustomerOrders,
+  type CustomerTicket,
+  CustomersService,
+  customerOrderLock,
+} from './customers.service.js';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import {
   blocks,
   type genders,
   lateCancelStrikes,
+  notes,
   profiles,
   reviewStops,
   strikeClears,
@@ -120,6 +129,13 @@ export interface CustomerProfileView {
   blocks: BlockRecord[];
   // Content's active customer_block reasons, for «حظر» (AP Appendix B).
   blockReasons: { code: string; label: string }[];
+  // Slice 2.25b: the orders in the city, the tickets, the codes used, the
+  // saved addresses and the internal notes, newest first.
+  orders: Pick<CustomerOrders, 'count' | 'spent' | 'last'>;
+  tickets: CustomerTicket[];
+  codes: CustomerCodeUse[];
+  addresses: Address[];
+  notes: { id: string; body: string; authorName: string | null; createdAt: Date }[];
 }
 
 // An admin's mark with its reason, as the profile shows it.
@@ -134,6 +150,9 @@ type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
 // The latest blocks the profile lists (decided by us).
 const BLOCKS_LISTED = 20;
 const SEARCH_RESULTS = 20;
+// The codes used and the notes the profile lists (decided by us).
+const CODES_LISTED = 20;
+const NOTES_LISTED = 50;
 
 // AP §9.8 (slice 2.25a): the panel's customers: the search, the profile,
 // «حظر» and «فك الحظر».
@@ -150,6 +169,7 @@ export class CustomerAdminService {
     private readonly settings: SettingsService,
     private readonly audit: AuditService,
     private readonly geo: GeoService,
+    private readonly promoCodes: PromoCodeUsesService,
   ) {}
 
   // The panel's city: 404 unknown_city for another id.
@@ -223,6 +243,17 @@ export class CustomerAdminService {
       new Date(now.getTime() - windowDays * 24 * 60 * 60 * 1000),
       cleared?.at ?? null,
     );
+    const [tickets, codes, addresses, noteRows] = await Promise.all([
+      this.customers.ticketsOf(accountId, cityId),
+      this.promoCodes.usesOf(accountId, cityId, CODES_LISTED),
+      this.customers.addresses(accountId),
+      this.database.db
+        .select()
+        .from(notes)
+        .where(eq(notes.customerAccountId, accountId))
+        .orderBy(desc(notes.createdAt), desc(notes.id))
+        .limit(NOTES_LISTED),
+    ]);
     const [profile, phone, block, stop, orders, strikes, dues, records, reasons, names] =
       await Promise.all([
         this.customers.profile(accountId),
@@ -246,7 +277,11 @@ export class CustomerAdminService {
         this.duesBalance(cityId, accountId),
         this.blockRecords(accountId, now),
         this.content.reasonsOf('customer_block'),
-        this.admins.names([...(cleared ? [cleared.by] : []), ...(mark ? [mark.by] : [])]),
+        this.admins.names([
+          ...(cleared ? [cleared.by] : []),
+          ...(mark ? [mark.by] : []),
+          ...noteRows.map((row) => row.authorId),
+        ]),
       ]);
     const asMark = (row: { at: Date; by: string; note: string }): AdminMark => ({
       at: row.at,
@@ -284,6 +319,16 @@ export class CustomerAdminService {
       blockReasons: reasons
         .filter((reason) => reason.active)
         .map(({ code, label }) => ({ code, label })),
+      orders: { count: orders.count, spent: orders.spent, last: orders.last },
+      tickets,
+      codes,
+      addresses,
+      notes: noteRows.map((row) => ({
+        id: row.id,
+        body: row.body,
+        authorName: names.get(row.authorId) ?? null,
+        createdAt: row.createdAt,
+      })),
     };
   }
 
@@ -483,6 +528,65 @@ export class CustomerAdminService {
         tx,
       );
     });
+  }
+
+  // AP §9.8 «ملاحظة داخلية» (everyone with access to the customers): a note
+  // the panel shows on the profile. Its Idempotency-Key is kept with it, so
+  // a retry adds no second note; the same key with another body is 422.
+  async addNote(
+    admin: CustomerAdmin,
+    command: { cityId: string; accountId: string; body: string; idempotencyKey: string },
+    now: Date,
+  ): Promise<void> {
+    const requestHash = createHash('sha256')
+      .update(JSON.stringify({ accountId: command.accountId, body: command.body }))
+      .digest('hex');
+    const earlier = async (executor: Pick<Database['db'], 'select'>) => {
+      const [row] = await executor
+        .select({ requestHash: notes.requestHash })
+        .from(notes)
+        .where(
+          and(
+            eq(notes.authorId, admin.accountId),
+            eq(notes.idempotencyKey, command.idempotencyKey),
+          ),
+        );
+      if (row && row.requestHash !== requestHash) {
+        throw new CustomerAdminRefusedError('idempotency_key_reused', 'the key named another note');
+      }
+      return row !== undefined;
+    };
+    if (await earlier(this.database.db)) return;
+    await this.checkCustomer(command.cityId, command.accountId);
+    await this.database.db.transaction(async (tx) => {
+      await tx
+        .insert(notes)
+        .values({
+          customerAccountId: command.accountId,
+          body: command.body,
+          authorId: admin.accountId,
+          createdAt: now,
+          idempotencyKey: command.idempotencyKey,
+          requestHash,
+        })
+        .onConflictDoNothing({ target: [notes.authorId, notes.idempotencyKey] });
+      await this.audit.recordWrite(
+        {
+          actor: admin.actor,
+          context: admin.context,
+          cityId: command.cityId,
+          action: 'customer.note',
+          target: { type: 'customer', id: command.accountId },
+          reason: null,
+          before: null,
+          after: { body: command.body },
+        },
+        tx,
+      );
+    });
+    // A repeat sent with the first lands on the key's unique index: answer
+    // as the first, or 422 for another body.
+    await earlier(this.database.db);
   }
 
   // AP §9.8 «توثيق» and «إزالة الثقة» (OWN and OPS, a reason required):

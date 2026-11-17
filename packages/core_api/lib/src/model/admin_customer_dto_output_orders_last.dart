@@ -6,62 +6,62 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_ticket_page_dto_output_notes_inner.g.dart';
+part 'admin_customer_dto_output_orders_last.g.dart';
 
-/// AdminTicketPageDtoOutputNotesInner
+/// AdminCustomerDtoOutputOrdersLast
 ///
 /// Properties:
 /// * [id]
-/// * [authorName]
-/// * [body]
-/// * [createdAt]
+/// * [number]
+/// * [status]
+/// * [placedAt]
 @BuiltValue()
-abstract class AdminTicketPageDtoOutputNotesInner
+abstract class AdminCustomerDtoOutputOrdersLast
     implements
         Built<
-          AdminTicketPageDtoOutputNotesInner,
-          AdminTicketPageDtoOutputNotesInnerBuilder
+          AdminCustomerDtoOutputOrdersLast,
+          AdminCustomerDtoOutputOrdersLastBuilder
         > {
   @BuiltValueField(wireName: r'id')
   String get id;
 
-  @BuiltValueField(wireName: r'authorName')
-  String? get authorName;
+  @BuiltValueField(wireName: r'number')
+  String get number;
 
-  @BuiltValueField(wireName: r'body')
-  String get body;
+  @BuiltValueField(wireName: r'status')
+  String get status;
 
-  @BuiltValueField(wireName: r'createdAt')
-  DateTime get createdAt;
+  @BuiltValueField(wireName: r'placedAt')
+  DateTime get placedAt;
 
-  AdminTicketPageDtoOutputNotesInner._();
+  AdminCustomerDtoOutputOrdersLast._();
 
-  factory AdminTicketPageDtoOutputNotesInner([
-    void updates(AdminTicketPageDtoOutputNotesInnerBuilder b),
-  ]) = _$AdminTicketPageDtoOutputNotesInner;
+  factory AdminCustomerDtoOutputOrdersLast([
+    void updates(AdminCustomerDtoOutputOrdersLastBuilder b),
+  ]) = _$AdminCustomerDtoOutputOrdersLast;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminTicketPageDtoOutputNotesInnerBuilder b) => b;
+  static void _defaults(AdminCustomerDtoOutputOrdersLastBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminTicketPageDtoOutputNotesInner> get serializer =>
-      _$AdminTicketPageDtoOutputNotesInnerSerializer();
+  static Serializer<AdminCustomerDtoOutputOrdersLast> get serializer =>
+      _$AdminCustomerDtoOutputOrdersLastSerializer();
 }
 
-class _$AdminTicketPageDtoOutputNotesInnerSerializer
-    implements PrimitiveSerializer<AdminTicketPageDtoOutputNotesInner> {
+class _$AdminCustomerDtoOutputOrdersLastSerializer
+    implements PrimitiveSerializer<AdminCustomerDtoOutputOrdersLast> {
   @override
   final Iterable<Type> types = const [
-    AdminTicketPageDtoOutputNotesInner,
-    _$AdminTicketPageDtoOutputNotesInner,
+    AdminCustomerDtoOutputOrdersLast,
+    _$AdminCustomerDtoOutputOrdersLast,
   ];
 
   @override
-  final String wireName = r'AdminTicketPageDtoOutputNotesInner';
+  final String wireName = r'AdminCustomerDtoOutputOrdersLast';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminTicketPageDtoOutputNotesInner object, {
+    AdminCustomerDtoOutputOrdersLast object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'id';
@@ -69,21 +69,19 @@ class _$AdminTicketPageDtoOutputNotesInnerSerializer
       object.id,
       specifiedType: const FullType(String),
     );
-    yield r'authorName';
-    yield object.authorName == null
-        ? null
-        : serializers.serialize(
-            object.authorName,
-            specifiedType: const FullType.nullable(String),
-          );
-    yield r'body';
+    yield r'number';
     yield serializers.serialize(
-      object.body,
+      object.number,
       specifiedType: const FullType(String),
     );
-    yield r'createdAt';
+    yield r'status';
     yield serializers.serialize(
-      object.createdAt,
+      object.status,
+      specifiedType: const FullType(String),
+    );
+    yield r'placedAt';
+    yield serializers.serialize(
+      object.placedAt,
       specifiedType: const FullType(DateTime),
     );
   }
@@ -91,7 +89,7 @@ class _$AdminTicketPageDtoOutputNotesInnerSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminTicketPageDtoOutputNotesInner object, {
+    AdminCustomerDtoOutputOrdersLast object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -106,7 +104,7 @@ class _$AdminTicketPageDtoOutputNotesInnerSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminTicketPageDtoOutputNotesInnerBuilder result,
+    required AdminCustomerDtoOutputOrdersLastBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -122,33 +120,32 @@ class _$AdminTicketPageDtoOutputNotesInnerSerializer
                   as String;
           result.id = valueDes;
           break;
-        case r'authorName':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
-          if (valueDes == null) continue;
-          result.authorName = valueDes;
-          break;
-        case r'body':
+        case r'number':
           final valueDes =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(String),
                   )
                   as String;
-          result.body = valueDes;
+          result.number = valueDes;
           break;
-        case r'createdAt':
+        case r'status':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.status = valueDes;
+          break;
+        case r'placedAt':
           final valueDes =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(DateTime),
                   )
                   as DateTime;
-          result.createdAt = valueDes;
+          result.placedAt = valueDes;
           break;
         default:
           unhandled.add(key);
@@ -159,12 +156,12 @@ class _$AdminTicketPageDtoOutputNotesInnerSerializer
   }
 
   @override
-  AdminTicketPageDtoOutputNotesInner deserialize(
+  AdminCustomerDtoOutputOrdersLast deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminTicketPageDtoOutputNotesInnerBuilder();
+    final result = AdminCustomerDtoOutputOrdersLastBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

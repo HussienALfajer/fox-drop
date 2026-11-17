@@ -8,7 +8,8 @@ part of 'admin_ticket_types_dto_output.dart';
 
 class _$AdminTicketTypesDtoOutput extends AdminTicketTypesDtoOutput {
   @override
-  final BuiltList<MerchantOrdersDtoOutputOrdersInnerItemReportNote?> customer;
+  final BuiltList<AdminCompensationRequestsDtoOutputRequestsInnerReason?>
+  customer;
   @override
   final BuiltList<AdminCustomerDtoOutputBlockReasonsInner> restaurant;
   @override
@@ -66,12 +67,14 @@ class AdminTicketTypesDtoOutputBuilder
         Builder<AdminTicketTypesDtoOutput, AdminTicketTypesDtoOutputBuilder> {
   _$AdminTicketTypesDtoOutput? _$v;
 
-  ListBuilder<MerchantOrdersDtoOutputOrdersInnerItemReportNote?>? _customer;
-  ListBuilder<MerchantOrdersDtoOutputOrdersInnerItemReportNote?> get customer =>
-      _$this._customer ??=
-          ListBuilder<MerchantOrdersDtoOutputOrdersInnerItemReportNote?>();
+  ListBuilder<AdminCompensationRequestsDtoOutputRequestsInnerReason?>?
+  _customer;
+  ListBuilder<AdminCompensationRequestsDtoOutputRequestsInnerReason?>
+  get customer => _$this._customer ??=
+      ListBuilder<AdminCompensationRequestsDtoOutputRequestsInnerReason?>();
   set customer(
-    ListBuilder<MerchantOrdersDtoOutputOrdersInnerItemReportNote?>? customer,
+    ListBuilder<AdminCompensationRequestsDtoOutputRequestsInnerReason?>?
+    customer,
   ) => _$this._customer = customer;
 
   ListBuilder<AdminCustomerDtoOutputBlockReasonsInner>? _restaurant;

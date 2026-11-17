@@ -88,7 +88,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerAddressLabelEnumSerializer
 class _$CustomerActiveOrdersDtoOutputOrdersInnerAddress
     extends CustomerActiveOrdersDtoOutputOrdersInnerAddress {
   @override
-  final CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation location;
+  final AdminCustomerDtoOutputAddressesInnerLocation location;
   @override
   final String neighbourhood;
   @override
@@ -192,13 +192,12 @@ class CustomerActiveOrdersDtoOutputOrdersInnerAddressBuilder
         > {
   _$CustomerActiveOrdersDtoOutputOrdersInnerAddress? _$v;
 
-  CustomerActiveOrdersDtoOutputOrdersInnerAddressLocationBuilder? _location;
-  CustomerActiveOrdersDtoOutputOrdersInnerAddressLocationBuilder get location =>
+  AdminCustomerDtoOutputAddressesInnerLocationBuilder? _location;
+  AdminCustomerDtoOutputAddressesInnerLocationBuilder get location =>
       _$this._location ??=
-          CustomerActiveOrdersDtoOutputOrdersInnerAddressLocationBuilder();
-  set location(
-    CustomerActiveOrdersDtoOutputOrdersInnerAddressLocationBuilder? location,
-  ) => _$this._location = location;
+          AdminCustomerDtoOutputAddressesInnerLocationBuilder();
+  set location(AdminCustomerDtoOutputAddressesInnerLocationBuilder? location) =>
+      _$this._location = location;
 
   String? _neighbourhood;
   String? get neighbourhood => _$this._neighbourhood;

@@ -3,8 +3,8 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_report_note.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/admin_compensation_requests_dto_output_requests_inner_reason.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -23,7 +23,7 @@ abstract class AdminOrderDtoOutputOrderCancelChoices
         > {
   /// Content's active ops_cancel reasons, in order (AP Appendix B).
   @BuiltValueField(wireName: r'reasons')
-  BuiltList<MerchantOrdersDtoOutputOrdersInnerItemReportNote?> get reasons;
+  BuiltList<AdminCompensationRequestsDtoOutputRequestsInnerReason?> get reasons;
 
   AdminOrderDtoOutputOrderCancelChoices._();
 
@@ -59,7 +59,9 @@ class _$AdminOrderDtoOutputOrderCancelChoicesSerializer
     yield serializers.serialize(
       object.reasons,
       specifiedType: const FullType(BuiltList, [
-        FullType.nullable(MerchantOrdersDtoOutputOrdersInnerItemReportNote),
+        FullType.nullable(
+          AdminCompensationRequestsDtoOutputRequestsInnerReason,
+        ),
       ]),
     );
   }
@@ -95,12 +97,12 @@ class _$AdminOrderDtoOutputOrderCancelChoicesSerializer
                     value,
                     specifiedType: const FullType(BuiltList, [
                       FullType.nullable(
-                        MerchantOrdersDtoOutputOrdersInnerItemReportNote,
+                        AdminCompensationRequestsDtoOutputRequestsInnerReason,
                       ),
                     ]),
                   )
                   as BuiltList<
-                    MerchantOrdersDtoOutputOrdersInnerItemReportNote?
+                    AdminCompensationRequestsDtoOutputRequestsInnerReason?
                   >;
           result.reasons.replace(valueDes);
           break;

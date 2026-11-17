@@ -5,11 +5,11 @@
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_closure.dart';
-import 'package:core_api/src/model/admin_ticket_page_dto_output_notes_inner.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output_report.dart';
 import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_resolution.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output_pickup_dispute.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output_redeliveries_inner.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_notes_inner.dart';
 import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_sla.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output_order.dart';
 import 'package:built_value/built_value.dart';
@@ -135,7 +135,7 @@ abstract class AdminTicketPageDtoOutput
 
   /// Oldest first.
   @BuiltValueField(wireName: r'notes')
-  BuiltList<AdminTicketPageDtoOutputNotesInner> get notes;
+  BuiltList<AdminCustomerDtoOutputNotesInner> get notes;
 
   @BuiltValueField(wireName: r'pickupDispute')
   AdminTicketPageDtoOutputPickupDispute? get pickupDispute;
@@ -326,7 +326,7 @@ class _$AdminTicketPageDtoOutputSerializer
     yield serializers.serialize(
       object.notes,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminTicketPageDtoOutputNotesInner),
+        FullType(AdminCustomerDtoOutputNotesInner),
       ]),
     );
     yield r'pickupDispute';
@@ -632,10 +632,10 @@ class _$AdminTicketPageDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(AdminTicketPageDtoOutputNotesInner),
+                      FullType(AdminCustomerDtoOutputNotesInner),
                     ]),
                   )
-                  as BuiltList<AdminTicketPageDtoOutputNotesInner>;
+                  as BuiltList<AdminCustomerDtoOutputNotesInner>;
           result.notes.replace(valueDes);
           break;
         case r'pickupDispute':
