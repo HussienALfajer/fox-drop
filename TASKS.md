@@ -4,19 +4,21 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.25a, the block and the dues end to end (`docs/roadmap.md`, Phase 2, Support and trust; owner decision 2026-11-17: 2.25 splits into 2.25a–2.25d).
+Slice 2.25b, the rest of the profile and «حسابي» (`docs/roadmap.md`, Phase 2, Support and trust). Not started.
 
-- **Roadmap line:** 2.25a The block and the dues end to end: the panel's customer search and basic profile (status, trust, strikes, dues), «حظر» for a duration, until further notice or until dues of a set amount are paid and «فك الحظر», with a reason of AP Appendix B, «تسجيل دفع المستحق» at the desk with a receipt, and the customer app's banners of every CU §5.5 state with the office sheet; the quote and placing refuse a blocked account.
-- **Specs:** AP §8.8 (`docs/domain/08`), AP §9.8, AP §4.8 (receipts), AP §9.10.3, AP §9.12.1 (the office), CU §5.5, CU Appendix C («Customer block»).
-- **Branch:** `ccr-c33b2220-ux1brc` (the cloud session's branch).
-- **Owner decisions 2026-11-17:** the split; a block «حتى دفع مستحق» posts a `dues.charge` of its amount; partial desk payments; a credit stays on the dues account and covers later dues (no cash back in V1); clearing strikes restarts the count, nothing deleted; a closed account keeps all its data for now, searchable in the panel and out of the active lists (`docs/domain/08`).
+- **Roadmap line:** 2.25b The rest of the profile and «حسابي»: the profile's orders, tickets and codes, internal notes, «توثيق» and «إزالة الثقة», clearing strikes (the count restarts, nothing deleted, owner decision 2026-11-17) and ending a review stop, the admin test account, «تغيير الرقم» and «تسجيل الخروج من كل الأجهزة» in the panel, and the customer app's «حسابي» (AP §9.8, CU §5.4, §13). The owner changes a customer's number, who is signed out everywhere and signs in with the new one.
+- **Specs:** AP §9.8 (the profile's rest and its actions), AP §8.8 (trust overrides), CU §5.4, CU §13; what exists: the panel's `/customers` and `/customers/$customerId` (2.25a), `CustomerAdminService`, `ActiveOrders` (D23's trust, which a manual override must change), `review_stops`, `late_cancel_strikes`, identity's `AppSessionsService.signOutEverywhere` and `POST /v1/customer/auth/sign-out-everywhere` (no app button yet), the home links to «أكوادي», «الإشعارات», the terms and the FAQ that «حسابي» gathers.
+- **Branch:** the cloud session's branch, or `feat/customer-account`.
 - **Plan:**
-  - [x] Record the split and the decisions (roadmap, `docs/domain/08`, this plan).
-  - [x] Server: `customers.blocks` (duration, until further notice, dues with its `dues.charge`), «حظر» and «فك الحظر» (`customers.block`), the panel's search and profile (`customers.read`), the quote's and placing's `account_blocked`, and the app's `GET /v1/customer/account-state` (the review stop, the block, the dues and the office).
-  - [x] Server: «تسجيل دفع المستحق» at the desk (`dues.payment`, a `customer_dues_payment` receipt, `cash_desk.record`: OWN, FIN, the same roles as `customers.dues`).
-  - [x] Panel: «الزبائن» (search, profile, «حظر», «فك الحظر», «تسجيل دفع المستحق» and its receipt).
-  - [x] Customer app: the banners of CU §5.5 with call and WhatsApp, the office sheet, checkout's `account_blocked`.
-  - [ ] Review, then hand over to 2.25b.
+  - [ ] Read the cited sections; write the plan here as a checklist, one step per commit (server, panel, app).
+- **To ask the owner first:** whether «فك الحظر» should also lift a dues block (2.25a decided no: dues go through the desk or «القيود التصحيحية»); whether a partial dues payment pushes the customer (2.25a pushes only once the dues reach zero); what «حساب اختبار» sees (AP §9.8: restaurants in test mode) and whether its orders are test orders.
+
+### Left from 2.25a (`ccr-c33b2220-ux1brc`)
+
+- **Before deploying to staging:** migration 0098 adds `customers.blocks` (the end columns only updatable, `blocks_one_open`, `blocks_key`); 0099 adds `cashdesk.receipts.customer_id` and `customer_name`, the receipt type `customer_dues_payment` and the journal type `dues.payment` (`receipts_type_values`, `receipts_party`, `journals_type_values` replaced, `NOT VALID` then `VALIDATE`). Expand only. New routes: `POST /v1/admin/customers/search`, `GET /v1/admin/customers/{customerId}`, `POST …/block`, `POST …/unblock`, `POST /v1/admin/cash-desk/customer-dues/preview`, `POST …/customer-dues`, `GET …/customer-receipts/{receiptId}`, `GET …/customers/{customerId}/receipts`, `GET /v1/customer/account-state`; the quote's new problem `account_blocked` (with `until`). The ledger lets `dues.charge` go against `platform.adjustments`. Deploy the server (API and worker) before the panel and the app (an old app shows `account_blocked` as «تعذّر التسعير»).
+- **To check on staging (after the merge and the deploy):** in the panel «الزبائن», find a customer by the number, open the profile; as OWN or OPS «حظر» «حتى إشعار آخر» with «إساءة»: the customer app's home shows «حسابك محظور: مخالفة شروط الاستخدام. تواصل مع الدعم.» with call and WhatsApp (after reopening the app), and checkout refuses with «تواصل مع الدعم»; «فك الحظر» and the customer orders again. «حظر» «حتى دفع مستحق» 50 ₺: the banner «عليك 50 ₺ لـ FOX DROP…» with «موقع المكتب وساعاته». As FIN with the drawer open, «تسجيل دفع المستحق» 20 ₺, then the rest in dollars: two receipts, the second pushes «تم استلام 0.75 $. حسابك فعّال من جديد» (30 ₺ at 40 ₺ the dollar) and the banner goes.
+- **Decided by us:** «فك الحظر» lifts a duration or «حتى إشعار آخر» only, never dues (to confirm, above); a dues block's charge goes against `platform.adjustments` with the reason «{السبب}: {الملاحظة}»; a duration lasts a year at most; the masked number shows the country code and the last three digits; the account state is read at the delivery point (the dues and the office are a city's) and on returning to the app, not by real time; the push only when the dues reach zero; the search scans names without an index (fine until the customers grow).
+- **Not yet:** the block arriving by real time (CU §5.4 «applies at once»: the server refuses at once, the banner waits for the next read); a trigram index for the name search.
 
 ### Left from 2.24c (`claude/slice-2-24c-urd7e4`)
 
