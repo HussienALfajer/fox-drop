@@ -4,15 +4,19 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.25, customer trust and the account (`docs/roadmap.md`, Phase 2, Support and trust). Not started.
+Slice 2.25a, the block and the dues end to end (`docs/roadmap.md`, Phase 2, Support and trust; owner decision 2026-11-17: 2.25 splits into 2.25a–2.25d).
 
-- **Roadmap line:** 2.25 Customer trust and the account: trust levels, strikes, the fake-order block, dues and their banner, account states, closure with a fresh code and re-registration linking, «تغيير الرقم», «تسجيل الخروج من كل الأجهزة», the panel's customers module (AP §8.8, §9.8, CU §5.5–5.6, §13, `docs/domain/08`). The owner blocks a customer, who sees the banner and cannot order.
-- **Specs:** AP §8.8, AP §9.8 (the customers module), CU §5.5–5.6, CU §13, `docs/domain/08`; what exists already: D23's active-order limits and the trust count (`ordering/active-orders.ts`), the strike of a late cancellation (`CustomersService.recordLateCancel`), the dues account and the `dues_unpaid` block (`ordering` «تحديد النتيجة», «حلّ النقص»), «القيود التصحيحية» on the customer's dues.
-- **Branch:** the cloud session's branch, or `feat/customer-trust`.
+- **Roadmap line:** 2.25a The block and the dues end to end: the panel's customer search and basic profile (status, trust, strikes, dues), «حظر» for a duration, until further notice or until dues of a set amount are paid and «فك الحظر», with a reason of AP Appendix B, «تسجيل دفع المستحق» at the desk with a receipt, and the customer app's banners of every CU §5.5 state with the office sheet; the quote and placing refuse a blocked account.
+- **Specs:** AP §8.8 (`docs/domain/08`), AP §9.8, AP §4.8 (receipts), AP §9.10.3, AP §9.12.1 (the office), CU §5.5, CU Appendix C («Customer block»).
+- **Branch:** `ccr-c33b2220-ux1brc` (the cloud session's branch).
+- **Owner decisions 2026-11-17:** the split; a block «حتى دفع مستحق» posts a `dues.charge` of its amount; partial desk payments; a credit stays on the dues account and covers later dues (no cash back in V1); clearing strikes restarts the count, nothing deleted; a closed account keeps all its data for now, searchable in the panel and out of the active lists (`docs/domain/08`).
 - **Plan:**
-  - [ ] Read the cited sections. The line spans the customer app, the server and the panel: split it into slices with the `slice-plan` skill and get the owner's approval of the split before building (root `CLAUDE.md`: a feature's split into pull requests).
-  - [ ] Write the first slice's plan here as a checklist, one step per commit.
-- **To ask the owner first:** the split; how a customer pays dues at the desk (2.11c's «تغيير النتيجة» after a payment leaves a credit, ordering's «Not yet»); everything `docs/open-questions.md` lists for the customer's account.
+  - [x] Record the split and the decisions (roadmap, `docs/domain/08`, this plan).
+  - [ ] Server: `customers.blocks` (duration, until further notice, dues with its `dues.charge`), «حظر» and «فك الحظر» (`customers.block`), the panel's search and profile (`customers.read`), the quote's and placing's `account_blocked`, and the app's `GET /v1/customer/account-state` (the review stop, the block, the dues and the office).
+  - [ ] Server: «تسجيل دفع المستحق» at the desk (`dues.payment`, a `customer_dues_payment` receipt, `cash_desk.record` with `customers.dues`).
+  - [ ] Panel: «الزبائن» (search, profile, «حظر», «فك الحظر», «تسجيل دفع المستحق» and its receipt).
+  - [ ] Customer app: the banners of CU §5.5 with call and WhatsApp, the office sheet, checkout's `account_blocked`.
+  - [ ] Review, then hand over to 2.25b.
 
 ### Left from 2.24c (`claude/slice-2-24c-urd7e4`)
 
