@@ -798,6 +798,12 @@
       "answer": "الجواب",
       "addQuestion": "إضافة سؤال"
     },
+    "canned": {
+      "title": "الردود الجاهزة",
+      "replyTitle": "العنوان",
+      "body": "نص الرد",
+      "add": "إضافة رد"
+    },
     "workRules": {
       "title": "قواعد عمل الكابتن",
       "explain": "قاعدة في كل سطر"
@@ -942,7 +948,8 @@
           "document_expiring": "قرب انتهاء مستند",
           "document_rejected": "رفض مستند",
           "contract_phase": "مرحلة العقد",
-          "ticket_resolved": "الرد على بلاغ"
+          "ticket_resolved": "الرد على بلاغ",
+          "pickup_corrected": "تصحيح دفعة استلام"
         }
       }
     },
@@ -2055,7 +2062,72 @@
       "captain": "كابتن"
     },
     "source": {
-      "manual": "تذكرة يدوية"
+      "manual": "تذكرة يدوية",
+      "pickupDispute": "خلاف على دفعة الاستلام"
+    },
+    "restaurant": "المطعم",
+    "chooseRestaurant": "المطعم الذي يخصّه البلاغ",
+    "resolution": {
+      "noneExplained": "لا شيء مع توضيح",
+      "priceCorrected": "تم تصحيح السعر",
+      "priceCorrect": "السعر صحيح",
+      "captainPaid": "دفع الكابتن الفرق",
+      "accountsCorrected": "تصحيح في الحسابات",
+      "paymentCorrect": "الدفعة صحيحة"
+    },
+    "responsible": {
+      "restaurant": "المطعم",
+      "captain": "الكابتن",
+      "customer": "الزبون",
+      "platform": "المنصة"
+    },
+    "resolve": {
+      "title": "حل التذكرة",
+      "resolution": "الحل",
+      "responsible": "الطرف المسؤول",
+      "message": "رسالة الحل",
+      "messageNote": "تُرسل الرسالة إلى {{party}} فور الحل.",
+      "received": "ما استلمه المطعم فعلاً",
+      "preview": "القيود قبل الحل",
+      "captainHandsIn": "يسلّم الكابتن {{amount}} للمكتب",
+      "captainReimbursed": "يعيد المكتب للكابتن {{amount}}",
+      "merchantCredit": "يُقيَّد للمطعم {{amount}}",
+      "merchantDebit": "يُقيَّد على المطعم {{amount}}",
+      "submit": "حل التذكرة"
+    },
+    "close": {
+      "title": "إغلاق دون حل",
+      "note": "لا تُرسل رسالة ولا قيود.",
+      "reason": "سبب الإغلاق (داخلي)",
+      "submit": "إغلاق التذكرة"
+    },
+    "resolved": {
+      "heading": "الحل",
+      "by": "بواسطة {{name}} في {{time}}",
+      "message": "الرسالة المرسلة",
+      "corrected": "ما استلمه المطعم بعد التصحيح"
+    },
+    "closed": {
+      "heading": "أُغلقت دون حل",
+      "reason": "السبب"
+    },
+    "dispute": {
+      "heading": "دفعة الاستلام",
+      "pickupPayment": "مبلغ الاستلام",
+      "recorded": "ما سجّله الكابتن",
+      "received": "ما يقول المطعم إنه استلمه",
+      "captain": "الكابتن",
+      "confirmed": "تأكيد الاستلام",
+      "disputedAt": "وقت البلاغ",
+      "confirmedBy": {
+        "restaurant": "أكّده المطعم",
+        "automatic": "تأكيد تلقائي",
+        "operations": "أكّدته العمليات"
+      }
+    },
+    "canned": {
+      "pick": "ردود جاهزة",
+      "use": "إدراج"
     },
     "priority": {
       "urgent": "عاجلة",
@@ -2080,8 +2152,16 @@
       "unknownTicket": "لم يُعثر على هذه التذكرة.",
       "notOpen": "هذه التذكرة لم تعد مفتوحة.",
       "unknownAssignee": "لا يمكن إسناد التذكرة إلى هذا الموظف.",
-      "statusChanged": "تغيّرت حالة التذكرة. أعد فتحها."
+      "statusChanged": "تغيّرت حالة التذكرة. أعد فتحها.",
+      "invalidResolution": "هذا الحل لا يناسب هذه التذكرة.",
+      "responsibleRequired": "اختر الطرف المسؤول.",
+      "linesRequired": "أدخل ما استلمه المطعم.",
+      "invalidLines": "المبالغ غير صالحة: سطر واحد لكل عملة من عملات الطلب، أكبر من صفر.",
+      "noDifference": "المبالغ مطابقة لما سجّله الكابتن: لا شيء للتصحيح.",
+      "forbidden": "لا تملك صلاحية حل هذه التذكرة.",
+      "invalidRestaurant": "اختر المطعم لتذكرة «سعر مختلف عن المحل» وحدها."
     },
-    "partyLine": "{{party}}: {{name}}"
+    "partyLine": "{{party}}: {{name}}",
+    "field": "{{label}}: {{value}}"
   }
 }

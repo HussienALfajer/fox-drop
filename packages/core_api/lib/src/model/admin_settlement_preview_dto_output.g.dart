@@ -203,7 +203,10 @@ class _$AdminSettlementPreviewDtoOutput
   @override
   final String? collect;
   @override
-  final BuiltList<AdminDeskCustodyDtoOutputUsage> net;
+  final BuiltList<
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+  >
+  net;
 
   factory _$AdminSettlementPreviewDtoOutput([
     void Function(AdminSettlementPreviewDtoOutputBuilder)? updates,
@@ -346,11 +349,23 @@ class AdminSettlementPreviewDtoOutputBuilder
   String? get collect => _$this._collect;
   set collect(String? collect) => _$this._collect = collect;
 
-  ListBuilder<AdminDeskCustodyDtoOutputUsage>? _net;
-  ListBuilder<AdminDeskCustodyDtoOutputUsage> get net =>
-      _$this._net ??= ListBuilder<AdminDeskCustodyDtoOutputUsage>();
-  set net(ListBuilder<AdminDeskCustodyDtoOutputUsage>? net) =>
-      _$this._net = net;
+  ListBuilder<
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+  >?
+  _net;
+  ListBuilder<
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+  >
+  get net => _$this._net ??=
+      ListBuilder<
+        AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+      >();
+  set net(
+    ListBuilder<
+      AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+    >?
+    net,
+  ) => _$this._net = net;
 
   AdminSettlementPreviewDtoOutputBuilder() {
     AdminSettlementPreviewDtoOutput._defaults(this);

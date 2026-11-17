@@ -67,6 +67,9 @@ _$adminAlertDtoOutputCodeEnum_compensationApproval =
     const AdminAlertDtoOutputCodeEnum._('compensationApproval');
 const AdminAlertDtoOutputCodeEnum _$adminAlertDtoOutputCodeEnum_urgentTicket =
     const AdminAlertDtoOutputCodeEnum._('urgentTicket');
+const AdminAlertDtoOutputCodeEnum
+_$adminAlertDtoOutputCodeEnum_urgentDisputeTicket =
+    const AdminAlertDtoOutputCodeEnum._('urgentDisputeTicket');
 
 AdminAlertDtoOutputCodeEnum _$adminAlertDtoOutputCodeEnumValueOf(String name) {
   switch (name) {
@@ -116,6 +119,8 @@ AdminAlertDtoOutputCodeEnum _$adminAlertDtoOutputCodeEnumValueOf(String name) {
       return _$adminAlertDtoOutputCodeEnum_compensationApproval;
     case 'urgentTicket':
       return _$adminAlertDtoOutputCodeEnum_urgentTicket;
+    case 'urgentDisputeTicket':
+      return _$adminAlertDtoOutputCodeEnum_urgentDisputeTicket;
     default:
       throw ArgumentError(name);
   }
@@ -147,6 +152,7 @@ _$adminAlertDtoOutputCodeEnumValues =
       _$adminAlertDtoOutputCodeEnum_rateStale,
       _$adminAlertDtoOutputCodeEnum_compensationApproval,
       _$adminAlertDtoOutputCodeEnum_urgentTicket,
+      _$adminAlertDtoOutputCodeEnum_urgentDisputeTicket,
     ]);
 
 const AdminAlertDtoOutputSeverityEnum
@@ -285,6 +291,7 @@ class _$AdminAlertDtoOutputCodeEnumSerializer
     'rateStale': 'rate_stale',
     'compensationApproval': 'compensation_approval',
     'urgentTicket': 'urgent_ticket',
+    'urgentDisputeTicket': 'urgent_dispute_ticket',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_not_accepted': 'restaurantNotAccepted',
@@ -310,6 +317,7 @@ class _$AdminAlertDtoOutputCodeEnumSerializer
     'rate_stale': 'rateStale',
     'compensation_approval': 'compensationApproval',
     'urgent_ticket': 'urgentTicket',
+    'urgent_dispute_ticket': 'urgentDisputeTicket',
   };
 
   @override

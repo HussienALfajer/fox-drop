@@ -1,38 +1,40 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'admin_desk_custody_dto_output_usage.dart';
+part of 'admin_ticket_correction_dto_output_merchant.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$AdminDeskCustodyDtoOutputUsage extends AdminDeskCustodyDtoOutputUsage {
+class _$AdminTicketCorrectionDtoOutputMerchant
+    extends AdminTicketCorrectionDtoOutputMerchant {
   @override
   final String amount;
   @override
   final String currency;
 
-  factory _$AdminDeskCustodyDtoOutputUsage([
-    void Function(AdminDeskCustodyDtoOutputUsageBuilder)? updates,
-  ]) => (AdminDeskCustodyDtoOutputUsageBuilder()..update(updates))._build();
+  factory _$AdminTicketCorrectionDtoOutputMerchant([
+    void Function(AdminTicketCorrectionDtoOutputMerchantBuilder)? updates,
+  ]) => (AdminTicketCorrectionDtoOutputMerchantBuilder()..update(updates))
+      ._build();
 
-  _$AdminDeskCustodyDtoOutputUsage._({
+  _$AdminTicketCorrectionDtoOutputMerchant._({
     required this.amount,
     required this.currency,
   }) : super._();
   @override
-  AdminDeskCustodyDtoOutputUsage rebuild(
-    void Function(AdminDeskCustodyDtoOutputUsageBuilder) updates,
+  AdminTicketCorrectionDtoOutputMerchant rebuild(
+    void Function(AdminTicketCorrectionDtoOutputMerchantBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  AdminDeskCustodyDtoOutputUsageBuilder toBuilder() =>
-      AdminDeskCustodyDtoOutputUsageBuilder()..replace(this);
+  AdminTicketCorrectionDtoOutputMerchantBuilder toBuilder() =>
+      AdminTicketCorrectionDtoOutputMerchantBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is AdminDeskCustodyDtoOutputUsage &&
+    return other is AdminTicketCorrectionDtoOutputMerchant &&
         amount == other.amount &&
         currency == other.currency;
   }
@@ -48,20 +50,22 @@ class _$AdminDeskCustodyDtoOutputUsage extends AdminDeskCustodyDtoOutputUsage {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'AdminDeskCustodyDtoOutputUsage')
+    return (newBuiltValueToStringHelper(
+            r'AdminTicketCorrectionDtoOutputMerchant',
+          )
           ..add('amount', amount)
           ..add('currency', currency))
         .toString();
   }
 }
 
-class AdminDeskCustodyDtoOutputUsageBuilder
+class AdminTicketCorrectionDtoOutputMerchantBuilder
     implements
         Builder<
-          AdminDeskCustodyDtoOutputUsage,
-          AdminDeskCustodyDtoOutputUsageBuilder
+          AdminTicketCorrectionDtoOutputMerchant,
+          AdminTicketCorrectionDtoOutputMerchantBuilder
         > {
-  _$AdminDeskCustodyDtoOutputUsage? _$v;
+  _$AdminTicketCorrectionDtoOutputMerchant? _$v;
 
   String? _amount;
   String? get amount => _$this._amount;
@@ -71,11 +75,11 @@ class AdminDeskCustodyDtoOutputUsageBuilder
   String? get currency => _$this._currency;
   set currency(String? currency) => _$this._currency = currency;
 
-  AdminDeskCustodyDtoOutputUsageBuilder() {
-    AdminDeskCustodyDtoOutputUsage._defaults(this);
+  AdminTicketCorrectionDtoOutputMerchantBuilder() {
+    AdminTicketCorrectionDtoOutputMerchant._defaults(this);
   }
 
-  AdminDeskCustodyDtoOutputUsageBuilder get _$this {
+  AdminTicketCorrectionDtoOutputMerchantBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _amount = $v.amount;
@@ -86,30 +90,32 @@ class AdminDeskCustodyDtoOutputUsageBuilder
   }
 
   @override
-  void replace(AdminDeskCustodyDtoOutputUsage other) {
-    _$v = other as _$AdminDeskCustodyDtoOutputUsage;
+  void replace(AdminTicketCorrectionDtoOutputMerchant other) {
+    _$v = other as _$AdminTicketCorrectionDtoOutputMerchant;
   }
 
   @override
-  void update(void Function(AdminDeskCustodyDtoOutputUsageBuilder)? updates) {
+  void update(
+    void Function(AdminTicketCorrectionDtoOutputMerchantBuilder)? updates,
+  ) {
     if (updates != null) updates(this);
   }
 
   @override
-  AdminDeskCustodyDtoOutputUsage build() => _build();
+  AdminTicketCorrectionDtoOutputMerchant build() => _build();
 
-  _$AdminDeskCustodyDtoOutputUsage _build() {
+  _$AdminTicketCorrectionDtoOutputMerchant _build() {
     final _$result =
         _$v ??
-        _$AdminDeskCustodyDtoOutputUsage._(
+        _$AdminTicketCorrectionDtoOutputMerchant._(
           amount: BuiltValueNullFieldError.checkNotNull(
             amount,
-            r'AdminDeskCustodyDtoOutputUsage',
+            r'AdminTicketCorrectionDtoOutputMerchant',
             'amount',
           ),
           currency: BuiltValueNullFieldError.checkNotNull(
             currency,
-            r'AdminDeskCustodyDtoOutputUsage',
+            r'AdminTicketCorrectionDtoOutputMerchant',
             'currency',
           ),
         );

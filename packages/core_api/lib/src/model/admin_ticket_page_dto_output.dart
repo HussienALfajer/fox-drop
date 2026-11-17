@@ -4,7 +4,10 @@
 
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_closure.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output_notes_inner.dart';
+import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_resolution.dart';
+import 'package:core_api/src/model/admin_ticket_page_dto_output_pickup_dispute.dart';
 import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_sla.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -16,13 +19,16 @@ part 'admin_ticket_page_dto_output.g.dart';
 /// Properties:
 /// * [id]
 /// * [number] - Shown as `T-{number}` (AP §4.8).
-/// * [source_] - Where the ticket came from (AP §9.9.1): manual so far.
+/// * [source_] - Where the ticket came from (AP §9.9.1): manual, pickup_dispute so far.
 /// * [party]
 /// * [partyId]
 /// * [partyName]
 /// * [orderId]
 /// * [orderNumber]
-/// * [urgent] - «عاجلة»: open, on an order still active.
+/// * [urgent] - «عاجلة»: open, on an order still active, or a pickup dispute while open.
+/// * [kind] - Which resolutions it takes (AP §9.9.3): general, price_difference, pickup_dispute.
+/// * [restaurantId] - «سعر مختلف عن المحل»: the restaurant.
+/// * [restaurantName]
 /// * [typeCode]
 /// * [typeLabel]
 /// * [description]
@@ -33,7 +39,10 @@ part 'admin_ticket_page_dto_output.g.dart';
 /// * [openedByName]
 /// * [openedAt]
 /// * [updatedAt]
+/// * [resolution]
+/// * [closure]
 /// * [notes] - Oldest first.
+/// * [pickupDispute]
 @BuiltValue()
 abstract class AdminTicketPageDtoOutput
     implements
@@ -45,7 +54,7 @@ abstract class AdminTicketPageDtoOutput
   @BuiltValueField(wireName: r'number')
   String get number;
 
-  /// Where the ticket came from (AP §9.9.1): manual so far.
+  /// Where the ticket came from (AP §9.9.1): manual, pickup_dispute so far.
   @BuiltValueField(wireName: r'source')
   String get source_;
 
@@ -65,9 +74,21 @@ abstract class AdminTicketPageDtoOutput
   @BuiltValueField(wireName: r'orderNumber')
   String? get orderNumber;
 
-  /// «عاجلة»: open, on an order still active.
+  /// «عاجلة»: open, on an order still active, or a pickup dispute while open.
   @BuiltValueField(wireName: r'urgent')
   bool get urgent;
+
+  /// Which resolutions it takes (AP §9.9.3): general, price_difference, pickup_dispute.
+  @BuiltValueField(wireName: r'kind')
+  AdminTicketPageDtoOutputKindEnum get kind;
+  // enum kindEnum {  general,  price_difference,  pickup_dispute,  };
+
+  /// «سعر مختلف عن المحل»: the restaurant.
+  @BuiltValueField(wireName: r'restaurantId')
+  String? get restaurantId;
+
+  @BuiltValueField(wireName: r'restaurantName')
+  String? get restaurantName;
 
   @BuiltValueField(wireName: r'typeCode')
   String get typeCode;
@@ -100,9 +121,18 @@ abstract class AdminTicketPageDtoOutput
   @BuiltValueField(wireName: r'updatedAt')
   DateTime get updatedAt;
 
+  @BuiltValueField(wireName: r'resolution')
+  AdminOrderTicketsDtoOutputTicketsInnerResolution? get resolution;
+
+  @BuiltValueField(wireName: r'closure')
+  AdminOrderTicketsDtoOutputTicketsInnerClosure? get closure;
+
   /// Oldest first.
   @BuiltValueField(wireName: r'notes')
   BuiltList<AdminTicketPageDtoOutputNotesInner> get notes;
+
+  @BuiltValueField(wireName: r'pickupDispute')
+  AdminTicketPageDtoOutputPickupDispute? get pickupDispute;
 
   AdminTicketPageDtoOutput._();
 
@@ -183,6 +213,25 @@ class _$AdminTicketPageDtoOutputSerializer
       object.urgent,
       specifiedType: const FullType(bool),
     );
+    yield r'kind';
+    yield serializers.serialize(
+      object.kind,
+      specifiedType: const FullType(AdminTicketPageDtoOutputKindEnum),
+    );
+    yield r'restaurantId';
+    yield object.restaurantId == null
+        ? null
+        : serializers.serialize(
+            object.restaurantId,
+            specifiedType: const FullType.nullable(String),
+          );
+    yield r'restaurantName';
+    yield object.restaurantName == null
+        ? null
+        : serializers.serialize(
+            object.restaurantName,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'typeCode';
     yield serializers.serialize(
       object.typeCode,
@@ -239,6 +288,24 @@ class _$AdminTicketPageDtoOutputSerializer
       object.updatedAt,
       specifiedType: const FullType(DateTime),
     );
+    yield r'resolution';
+    yield object.resolution == null
+        ? null
+        : serializers.serialize(
+            object.resolution,
+            specifiedType: const FullType.nullable(
+              AdminOrderTicketsDtoOutputTicketsInnerResolution,
+            ),
+          );
+    yield r'closure';
+    yield object.closure == null
+        ? null
+        : serializers.serialize(
+            object.closure,
+            specifiedType: const FullType.nullable(
+              AdminOrderTicketsDtoOutputTicketsInnerClosure,
+            ),
+          );
     yield r'notes';
     yield serializers.serialize(
       object.notes,
@@ -246,6 +313,15 @@ class _$AdminTicketPageDtoOutputSerializer
         FullType(AdminTicketPageDtoOutputNotesInner),
       ]),
     );
+    yield r'pickupDispute';
+    yield object.pickupDispute == null
+        ? null
+        : serializers.serialize(
+            object.pickupDispute,
+            specifiedType: const FullType.nullable(
+              AdminTicketPageDtoOutputPickupDispute,
+            ),
+          );
   }
 
   @override
@@ -358,6 +434,37 @@ class _$AdminTicketPageDtoOutputSerializer
                   as bool;
           result.urgent = valueDes;
           break;
+        case r'kind':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminTicketPageDtoOutputKindEnum,
+                    ),
+                  )
+                  as AdminTicketPageDtoOutputKindEnum;
+          result.kind = valueDes;
+          break;
+        case r'restaurantId':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.restaurantId = valueDes;
+          break;
+        case r'restaurantName':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.restaurantName = valueDes;
+          break;
         case r'typeCode':
           final valueDes =
               serializers.deserialize(
@@ -455,6 +562,30 @@ class _$AdminTicketPageDtoOutputSerializer
                   as DateTime;
           result.updatedAt = valueDes;
           break;
+        case r'resolution':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminOrderTicketsDtoOutputTicketsInnerResolution,
+                    ),
+                  )
+                  as AdminOrderTicketsDtoOutputTicketsInnerResolution?;
+          if (valueDes == null) continue;
+          result.resolution.replace(valueDes);
+          break;
+        case r'closure':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminOrderTicketsDtoOutputTicketsInnerClosure,
+                    ),
+                  )
+                  as AdminOrderTicketsDtoOutputTicketsInnerClosure?;
+          if (valueDes == null) continue;
+          result.closure.replace(valueDes);
+          break;
         case r'notes':
           final valueDes =
               serializers.deserialize(
@@ -465,6 +596,18 @@ class _$AdminTicketPageDtoOutputSerializer
                   )
                   as BuiltList<AdminTicketPageDtoOutputNotesInner>;
           result.notes.replace(valueDes);
+          break;
+        case r'pickupDispute':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminTicketPageDtoOutputPickupDispute,
+                    ),
+                  )
+                  as AdminTicketPageDtoOutputPickupDispute?;
+          if (valueDes == null) continue;
+          result.pickupDispute.replace(valueDes);
           break;
         default:
           unhandled.add(key);
@@ -515,6 +658,29 @@ class AdminTicketPageDtoOutputPartyEnum extends EnumClass {
       _$adminTicketPageDtoOutputPartyEnumValues;
   static AdminTicketPageDtoOutputPartyEnum valueOf(String name) =>
       _$adminTicketPageDtoOutputPartyEnumValueOf(name);
+}
+
+/// Which resolutions it takes (AP §9.9.3): general, price_difference, pickup_dispute.
+class AdminTicketPageDtoOutputKindEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'general')
+  static const AdminTicketPageDtoOutputKindEnum general =
+      _$adminTicketPageDtoOutputKindEnum_general;
+  @BuiltValueEnumConst(wireName: r'price_difference')
+  static const AdminTicketPageDtoOutputKindEnum priceDifference =
+      _$adminTicketPageDtoOutputKindEnum_priceDifference;
+  @BuiltValueEnumConst(wireName: r'pickup_dispute')
+  static const AdminTicketPageDtoOutputKindEnum pickupDispute =
+      _$adminTicketPageDtoOutputKindEnum_pickupDispute;
+
+  static Serializer<AdminTicketPageDtoOutputKindEnum> get serializer =>
+      _$adminTicketPageDtoOutputKindEnumSerializer;
+
+  const AdminTicketPageDtoOutputKindEnum._(String name) : super(name);
+
+  static BuiltSet<AdminTicketPageDtoOutputKindEnum> get values =>
+      _$adminTicketPageDtoOutputKindEnumValues;
+  static AdminTicketPageDtoOutputKindEnum valueOf(String name) =>
+      _$adminTicketPageDtoOutputKindEnumValueOf(name);
 }
 
 class AdminTicketPageDtoOutputStatusEnum extends EnumClass {

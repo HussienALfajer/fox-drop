@@ -41,6 +41,41 @@ _$adminTicketPageDtoOutputPartyEnumValues =
       ],
     );
 
+const AdminTicketPageDtoOutputKindEnum
+_$adminTicketPageDtoOutputKindEnum_general =
+    const AdminTicketPageDtoOutputKindEnum._('general');
+const AdminTicketPageDtoOutputKindEnum
+_$adminTicketPageDtoOutputKindEnum_priceDifference =
+    const AdminTicketPageDtoOutputKindEnum._('priceDifference');
+const AdminTicketPageDtoOutputKindEnum
+_$adminTicketPageDtoOutputKindEnum_pickupDispute =
+    const AdminTicketPageDtoOutputKindEnum._('pickupDispute');
+
+AdminTicketPageDtoOutputKindEnum _$adminTicketPageDtoOutputKindEnumValueOf(
+  String name,
+) {
+  switch (name) {
+    case 'general':
+      return _$adminTicketPageDtoOutputKindEnum_general;
+    case 'priceDifference':
+      return _$adminTicketPageDtoOutputKindEnum_priceDifference;
+    case 'pickupDispute':
+      return _$adminTicketPageDtoOutputKindEnum_pickupDispute;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<AdminTicketPageDtoOutputKindEnum>
+_$adminTicketPageDtoOutputKindEnumValues =
+    BuiltSet<AdminTicketPageDtoOutputKindEnum>(
+      const <AdminTicketPageDtoOutputKindEnum>[
+        _$adminTicketPageDtoOutputKindEnum_general,
+        _$adminTicketPageDtoOutputKindEnum_priceDifference,
+        _$adminTicketPageDtoOutputKindEnum_pickupDispute,
+      ],
+    );
+
 const AdminTicketPageDtoOutputStatusEnum
 _$adminTicketPageDtoOutputStatusEnum_new_ =
     const AdminTicketPageDtoOutputStatusEnum._('new_');
@@ -91,6 +126,9 @@ _$adminTicketPageDtoOutputStatusEnumValues =
 Serializer<AdminTicketPageDtoOutputPartyEnum>
 _$adminTicketPageDtoOutputPartyEnumSerializer =
     _$AdminTicketPageDtoOutputPartyEnumSerializer();
+Serializer<AdminTicketPageDtoOutputKindEnum>
+_$adminTicketPageDtoOutputKindEnumSerializer =
+    _$AdminTicketPageDtoOutputKindEnumSerializer();
 Serializer<AdminTicketPageDtoOutputStatusEnum>
 _$adminTicketPageDtoOutputStatusEnumSerializer =
     _$AdminTicketPageDtoOutputStatusEnumSerializer();
@@ -126,6 +164,41 @@ class _$AdminTicketPageDtoOutputPartyEnumSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) => AdminTicketPageDtoOutputPartyEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
+class _$AdminTicketPageDtoOutputKindEnumSerializer
+    implements PrimitiveSerializer<AdminTicketPageDtoOutputKindEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'general': 'general',
+    'priceDifference': 'price_difference',
+    'pickupDispute': 'pickup_dispute',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'general': 'general',
+    'price_difference': 'priceDifference',
+    'pickup_dispute': 'pickupDispute',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[AdminTicketPageDtoOutputKindEnum];
+  @override
+  final String wireName = 'AdminTicketPageDtoOutputKindEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    AdminTicketPageDtoOutputKindEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  AdminTicketPageDtoOutputKindEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => AdminTicketPageDtoOutputKindEnum.valueOf(
     _fromWire[serialized] ?? (serialized is String ? serialized : ''),
   );
 }
@@ -189,6 +262,12 @@ class _$AdminTicketPageDtoOutput extends AdminTicketPageDtoOutput {
   @override
   final bool urgent;
   @override
+  final AdminTicketPageDtoOutputKindEnum kind;
+  @override
+  final String? restaurantId;
+  @override
+  final String? restaurantName;
+  @override
   final String typeCode;
   @override
   final String typeLabel;
@@ -209,7 +288,13 @@ class _$AdminTicketPageDtoOutput extends AdminTicketPageDtoOutput {
   @override
   final DateTime updatedAt;
   @override
+  final AdminOrderTicketsDtoOutputTicketsInnerResolution? resolution;
+  @override
+  final AdminOrderTicketsDtoOutputTicketsInnerClosure? closure;
+  @override
   final BuiltList<AdminTicketPageDtoOutputNotesInner> notes;
+  @override
+  final AdminTicketPageDtoOutputPickupDispute? pickupDispute;
 
   factory _$AdminTicketPageDtoOutput([
     void Function(AdminTicketPageDtoOutputBuilder)? updates,
@@ -225,6 +310,9 @@ class _$AdminTicketPageDtoOutput extends AdminTicketPageDtoOutput {
     this.orderId,
     this.orderNumber,
     required this.urgent,
+    required this.kind,
+    this.restaurantId,
+    this.restaurantName,
     required this.typeCode,
     required this.typeLabel,
     required this.description,
@@ -235,7 +323,10 @@ class _$AdminTicketPageDtoOutput extends AdminTicketPageDtoOutput {
     this.openedByName,
     required this.openedAt,
     required this.updatedAt,
+    this.resolution,
+    this.closure,
     required this.notes,
+    this.pickupDispute,
   }) : super._();
   @override
   AdminTicketPageDtoOutput rebuild(
@@ -259,6 +350,9 @@ class _$AdminTicketPageDtoOutput extends AdminTicketPageDtoOutput {
         orderId == other.orderId &&
         orderNumber == other.orderNumber &&
         urgent == other.urgent &&
+        kind == other.kind &&
+        restaurantId == other.restaurantId &&
+        restaurantName == other.restaurantName &&
         typeCode == other.typeCode &&
         typeLabel == other.typeLabel &&
         description == other.description &&
@@ -269,7 +363,10 @@ class _$AdminTicketPageDtoOutput extends AdminTicketPageDtoOutput {
         openedByName == other.openedByName &&
         openedAt == other.openedAt &&
         updatedAt == other.updatedAt &&
-        notes == other.notes;
+        resolution == other.resolution &&
+        closure == other.closure &&
+        notes == other.notes &&
+        pickupDispute == other.pickupDispute;
   }
 
   @override
@@ -284,6 +381,9 @@ class _$AdminTicketPageDtoOutput extends AdminTicketPageDtoOutput {
     _$hash = $jc(_$hash, orderId.hashCode);
     _$hash = $jc(_$hash, orderNumber.hashCode);
     _$hash = $jc(_$hash, urgent.hashCode);
+    _$hash = $jc(_$hash, kind.hashCode);
+    _$hash = $jc(_$hash, restaurantId.hashCode);
+    _$hash = $jc(_$hash, restaurantName.hashCode);
     _$hash = $jc(_$hash, typeCode.hashCode);
     _$hash = $jc(_$hash, typeLabel.hashCode);
     _$hash = $jc(_$hash, description.hashCode);
@@ -294,7 +394,10 @@ class _$AdminTicketPageDtoOutput extends AdminTicketPageDtoOutput {
     _$hash = $jc(_$hash, openedByName.hashCode);
     _$hash = $jc(_$hash, openedAt.hashCode);
     _$hash = $jc(_$hash, updatedAt.hashCode);
+    _$hash = $jc(_$hash, resolution.hashCode);
+    _$hash = $jc(_$hash, closure.hashCode);
     _$hash = $jc(_$hash, notes.hashCode);
+    _$hash = $jc(_$hash, pickupDispute.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -311,6 +414,9 @@ class _$AdminTicketPageDtoOutput extends AdminTicketPageDtoOutput {
           ..add('orderId', orderId)
           ..add('orderNumber', orderNumber)
           ..add('urgent', urgent)
+          ..add('kind', kind)
+          ..add('restaurantId', restaurantId)
+          ..add('restaurantName', restaurantName)
           ..add('typeCode', typeCode)
           ..add('typeLabel', typeLabel)
           ..add('description', description)
@@ -321,7 +427,10 @@ class _$AdminTicketPageDtoOutput extends AdminTicketPageDtoOutput {
           ..add('openedByName', openedByName)
           ..add('openedAt', openedAt)
           ..add('updatedAt', updatedAt)
-          ..add('notes', notes))
+          ..add('resolution', resolution)
+          ..add('closure', closure)
+          ..add('notes', notes)
+          ..add('pickupDispute', pickupDispute))
         .toString();
   }
 }
@@ -367,6 +476,19 @@ class AdminTicketPageDtoOutputBuilder
   bool? get urgent => _$this._urgent;
   set urgent(bool? urgent) => _$this._urgent = urgent;
 
+  AdminTicketPageDtoOutputKindEnum? _kind;
+  AdminTicketPageDtoOutputKindEnum? get kind => _$this._kind;
+  set kind(AdminTicketPageDtoOutputKindEnum? kind) => _$this._kind = kind;
+
+  String? _restaurantId;
+  String? get restaurantId => _$this._restaurantId;
+  set restaurantId(String? restaurantId) => _$this._restaurantId = restaurantId;
+
+  String? _restaurantName;
+  String? get restaurantName => _$this._restaurantName;
+  set restaurantName(String? restaurantName) =>
+      _$this._restaurantName = restaurantName;
+
   String? _typeCode;
   String? get typeCode => _$this._typeCode;
   set typeCode(String? typeCode) => _$this._typeCode = typeCode;
@@ -410,11 +532,33 @@ class AdminTicketPageDtoOutputBuilder
   DateTime? get updatedAt => _$this._updatedAt;
   set updatedAt(DateTime? updatedAt) => _$this._updatedAt = updatedAt;
 
+  AdminOrderTicketsDtoOutputTicketsInnerResolutionBuilder? _resolution;
+  AdminOrderTicketsDtoOutputTicketsInnerResolutionBuilder get resolution =>
+      _$this._resolution ??=
+          AdminOrderTicketsDtoOutputTicketsInnerResolutionBuilder();
+  set resolution(
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionBuilder? resolution,
+  ) => _$this._resolution = resolution;
+
+  AdminOrderTicketsDtoOutputTicketsInnerClosureBuilder? _closure;
+  AdminOrderTicketsDtoOutputTicketsInnerClosureBuilder get closure =>
+      _$this._closure ??=
+          AdminOrderTicketsDtoOutputTicketsInnerClosureBuilder();
+  set closure(AdminOrderTicketsDtoOutputTicketsInnerClosureBuilder? closure) =>
+      _$this._closure = closure;
+
   ListBuilder<AdminTicketPageDtoOutputNotesInner>? _notes;
   ListBuilder<AdminTicketPageDtoOutputNotesInner> get notes =>
       _$this._notes ??= ListBuilder<AdminTicketPageDtoOutputNotesInner>();
   set notes(ListBuilder<AdminTicketPageDtoOutputNotesInner>? notes) =>
       _$this._notes = notes;
+
+  AdminTicketPageDtoOutputPickupDisputeBuilder? _pickupDispute;
+  AdminTicketPageDtoOutputPickupDisputeBuilder get pickupDispute =>
+      _$this._pickupDispute ??= AdminTicketPageDtoOutputPickupDisputeBuilder();
+  set pickupDispute(
+    AdminTicketPageDtoOutputPickupDisputeBuilder? pickupDispute,
+  ) => _$this._pickupDispute = pickupDispute;
 
   AdminTicketPageDtoOutputBuilder() {
     AdminTicketPageDtoOutput._defaults(this);
@@ -432,6 +576,9 @@ class AdminTicketPageDtoOutputBuilder
       _orderId = $v.orderId;
       _orderNumber = $v.orderNumber;
       _urgent = $v.urgent;
+      _kind = $v.kind;
+      _restaurantId = $v.restaurantId;
+      _restaurantName = $v.restaurantName;
       _typeCode = $v.typeCode;
       _typeLabel = $v.typeLabel;
       _description = $v.description;
@@ -442,7 +589,10 @@ class AdminTicketPageDtoOutputBuilder
       _openedByName = $v.openedByName;
       _openedAt = $v.openedAt;
       _updatedAt = $v.updatedAt;
+      _resolution = $v.resolution?.toBuilder();
+      _closure = $v.closure?.toBuilder();
       _notes = $v.notes.toBuilder();
+      _pickupDispute = $v.pickupDispute?.toBuilder();
       _$v = null;
     }
     return this;
@@ -504,6 +654,13 @@ class AdminTicketPageDtoOutputBuilder
               r'AdminTicketPageDtoOutput',
               'urgent',
             ),
+            kind: BuiltValueNullFieldError.checkNotNull(
+              kind,
+              r'AdminTicketPageDtoOutput',
+              'kind',
+            ),
+            restaurantId: restaurantId,
+            restaurantName: restaurantName,
             typeCode: BuiltValueNullFieldError.checkNotNull(
               typeCode,
               r'AdminTicketPageDtoOutput',
@@ -538,7 +695,10 @@ class AdminTicketPageDtoOutputBuilder
               r'AdminTicketPageDtoOutput',
               'updatedAt',
             ),
+            resolution: _resolution?.build(),
+            closure: _closure?.build(),
             notes: notes.build(),
+            pickupDispute: _pickupDispute?.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -546,8 +706,14 @@ class AdminTicketPageDtoOutputBuilder
         _$failedField = 'sla';
         sla.build();
 
+        _$failedField = 'resolution';
+        _resolution?.build();
+        _$failedField = 'closure';
+        _closure?.build();
         _$failedField = 'notes';
         notes.build();
+        _$failedField = 'pickupDispute';
+        _pickupDispute?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminTicketPageDtoOutput',

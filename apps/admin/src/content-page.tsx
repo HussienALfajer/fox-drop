@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query';
 import { getRouteApi, Link } from '@tanstack/react-router';
 import { type FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -31,8 +32,10 @@ import {
   termsAudiences,
   usePublishTerms,
   useTerms,
+  useUpdateCannedReplies,
 } from './content.js';
 import { can } from './session.js';
+import { type CannedReply, cannedRepliesQuery } from './tickets.js';
 
 const signedIn = getRouteApi('/signed-in');
 
@@ -79,6 +82,7 @@ export function ContentPage() {
       </p>
       {read && <ReasonLists manage={manage} />}
       {(read || faqs) && <Faqs edit={faqs} />}
+      {(read || faqs) && <CannedReplies edit={faqs} />}
       {read && <Texts manage={manage} />}
       {read && <NotificationTexts manage={manage} />}
       {read && <Terms manage={manage} />}
@@ -349,6 +353,72 @@ function FaqSet({
       </fieldset>
       <Outcome result={update.data} failed={update.isError} />
     </form>
+  );
+}
+
+// «الردود الجاهزة» (slice 2.23b): OWN and SUP edit them (content.faqs), OPS
+// reads; the ticket page offers them for a note or a resolution message.
+function CannedReplies({ edit }: { edit: boolean }) {
+  const { t } = useTranslation();
+  const replies = useQuery(cannedRepliesQuery);
+  if (replies.isPending) return <p role="status">{t('status.loading')}</p>;
+  if (replies.isError) return <p role="alert">{t('common.failed')}</p>;
+  return <CannedRepliesForm items={replies.data} edit={edit} />;
+}
+
+function CannedRepliesForm({ items, edit }: { items: CannedReply[]; edit: boolean }) {
+  const { t } = useTranslation();
+  const update = useUpdateCannedReplies();
+  const [rows, setRows] = useState<CannedReply[]>([...items, { title: '', body: '' }]);
+  function change(index: number, field: keyof CannedReply, value: string) {
+    setRows((current) =>
+      current.map((row, at) => (at === index ? { ...row, [field]: value } : row)),
+    );
+  }
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    update.mutate(rows);
+  }
+  return (
+    <section>
+      <h2>{t('content.canned.title')}</h2>
+      <form onSubmit={submit}>
+        <fieldset disabled={!edit || update.isPending}>
+          {rows.map((row, index) => (
+            <p key={index}>
+              <label>
+                {t('content.canned.replyTitle')}
+                <input
+                  value={row.title}
+                  maxLength={60}
+                  onChange={(event) => change(index, 'title', event.target.value)}
+                />
+              </label>
+              <label>
+                {t('content.canned.body')}
+                <textarea
+                  value={row.body}
+                  maxLength={500}
+                  onChange={(event) => change(index, 'body', event.target.value)}
+                />
+              </label>
+            </p>
+          ))}
+          {edit && (
+            <>
+              <button
+                type="button"
+                onClick={() => setRows((current) => [...current, { title: '', body: '' }])}
+              >
+                {t('content.canned.add')}
+              </button>
+              <button type="submit">{t('content.save')}</button>
+            </>
+          )}
+        </fieldset>
+        <Outcome result={update.data} failed={update.isError} />
+      </form>
+    </section>
   );
 }
 

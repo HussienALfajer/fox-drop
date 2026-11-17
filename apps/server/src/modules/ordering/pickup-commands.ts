@@ -7,6 +7,8 @@ import { Jobs } from '../../jobs/jobs.module.js';
 import { AuditService } from '../audit/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
+import { SupportService } from '../support/index.js';
+import { UNTIL_ENDED } from './active-orders.js';
 import { openItemReport } from './item-reports.js';
 import type { AdminOrderCommand } from './captain-orders.js';
 import { commandHash, IdempotencyKeyReusedError, keepKey, replayKey } from './idempotency-keys.js';
@@ -50,6 +52,7 @@ export class PickupCommands {
     private readonly settings: SettingsService,
     private readonly audit: AuditService,
     private readonly merchants: MerchantsService,
+    private readonly support: SupportService,
   ) {}
 
   // Each order's pickup requests, newest first, and its dispute after the
@@ -100,9 +103,11 @@ export class PickupCommands {
     command: MerchantCommand & { receivedLines: PaymentLine[] },
     now: Date,
   ): Promise<OrderView> {
-    const windowMin = await this.settings.get('order.pickup_dispute_window_min', {
-      cityId: (await this.find(command)).cityId,
-    });
+    const { cityId } = await this.find(command);
+    const [windowMin, ticketTimers] = await Promise.all([
+      this.settings.get('order.pickup_dispute_window_min', { cityId }),
+      this.support.preparePickupDispute(cityId),
+    ]);
     return this.restaurant(
       command,
       { verb: 'dispute_pickup', receivedLines: storedLines(command.receivedLines) },
@@ -151,17 +156,41 @@ export class PickupCommands {
           .select({ id: pickupRequests.id })
           .from(pickupRequests)
           .where(and(eq(pickupRequests.orderId, order.id), eq(pickupRequests.status, 'confirmed')));
-        await tx.insert(pickupDisputes).values({
-          orderId: order.id,
-          orderPlacedAt: order.placedAt,
-          cityId: order.cityId,
-          pickupRequestId: confirmed!.id,
-          accountId: command.accountId,
-          device: command.deviceId,
-          receivedLines: storedLines(command.receivedLines),
-          createdAt: now,
-          status: 'open',
-        });
+        const [dispute] = await tx
+          .insert(pickupDisputes)
+          .values({
+            orderId: order.id,
+            orderPlacedAt: order.placedAt,
+            cityId: order.cityId,
+            pickupRequestId: confirmed!.id,
+            accountId: command.accountId,
+            device: command.deviceId,
+            receivedLines: storedLines(command.receivedLines),
+            createdAt: now,
+            status: 'open',
+          })
+          .returning({ id: pickupDisputes.id });
+        // AP §9.9.1 (slice 2.23b): the ticket «خلاف على دفعة الاستلام»,
+        // always urgent, linked to the order, in the dispute's transaction.
+        await this.support.openPickupDisputeIn(
+          tx,
+          ticketTimers,
+          {
+            order: {
+              id: order.id,
+              cityId: order.cityId,
+              number: order.number,
+              active: UNTIL_ENDED.includes(order.status),
+              customerId: order.customerAccountId,
+              restaurantId: order.restaurantId,
+              captainId: order.captainId,
+            },
+            disputeId: dispute!.id,
+            openedBy: command.accountId,
+            device: command.deviceId,
+          },
+          now,
+        );
         const version = order.version + 1;
         await setVersion(tx, order, version);
         await recordTransition(tx, this.jobs, order, {

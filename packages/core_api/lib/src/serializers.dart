@@ -36,6 +36,10 @@ import 'package:core_api/src/model/admin_cancel_dto_compensation_value.dart';
 import 'package:core_api/src/model/admin_cancel_preview_answer_dto_output.dart';
 import 'package:core_api/src/model/admin_cancel_preview_answer_dto_output_entries_inner.dart';
 import 'package:core_api/src/model/admin_cancel_preview_dto.dart';
+import 'package:core_api/src/model/admin_canned_replies_dto.dart';
+import 'package:core_api/src/model/admin_canned_replies_dto_output.dart';
+import 'package:core_api/src/model/admin_canned_replies_dto_output_replies_inner.dart';
+import 'package:core_api/src/model/admin_canned_replies_dto_replies_inner.dart';
 import 'package:core_api/src/model/admin_captain_availability_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_balances_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_balances_dto_output_captains_inner.dart';
@@ -90,7 +94,6 @@ import 'package:core_api/src/model/admin_desk_custody_dto_output.dart';
 import 'package:core_api/src/model/admin_desk_custody_dto_output_closed_due.dart';
 import 'package:core_api/src/model/admin_desk_custody_dto_output_currencies_inner.dart';
 import 'package:core_api/src/model/admin_desk_custody_dto_output_hand_in_grace.dart';
-import 'package:core_api/src/model/admin_desk_custody_dto_output_usage.dart';
 import 'package:core_api/src/model/admin_device_released_dto_output.dart';
 import 'package:core_api/src/model/admin_dispatch_state_dto_output.dart';
 import 'package:core_api/src/model/admin_dispatch_state_dto_output_order.dart';
@@ -232,6 +235,9 @@ import 'package:core_api/src/model/admin_order_offers_dto_output_offers_inner.da
 import 'package:core_api/src/model/admin_order_ticket_dto_output.dart';
 import 'package:core_api/src/model/admin_order_tickets_dto_output.dart';
 import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner.dart';
+import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_closure.dart';
+import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_resolution.dart';
+import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_resolution_corrected_lines_inner.dart';
 import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_sla.dart';
 import 'package:core_api/src/model/admin_outcome_change_preview_answer_dto_output.dart';
 import 'package:core_api/src/model/admin_outcome_change_preview_answer_dto_output_dues.dart';
@@ -349,12 +355,21 @@ import 'package:core_api/src/model/admin_texts_dto_output.dart';
 import 'package:core_api/src/model/admin_texts_dto_output_contact.dart';
 import 'package:core_api/src/model/admin_ticket_assignee_dto.dart';
 import 'package:core_api/src/model/admin_ticket_assignees_dto_output.dart';
+import 'package:core_api/src/model/admin_ticket_close_dto.dart';
+import 'package:core_api/src/model/admin_ticket_correction_dto_output.dart';
+import 'package:core_api/src/model/admin_ticket_correction_dto_output_entries_inner.dart';
+import 'package:core_api/src/model/admin_ticket_correction_dto_output_entries_inner_amount.dart';
+import 'package:core_api/src/model/admin_ticket_correction_dto_output_merchant.dart';
+import 'package:core_api/src/model/admin_ticket_correction_preview_dto.dart';
+import 'package:core_api/src/model/admin_ticket_correction_preview_dto_received_lines_inner.dart';
 import 'package:core_api/src/model/admin_ticket_dto_output.dart';
 import 'package:core_api/src/model/admin_ticket_note_dto.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output_notes_inner.dart';
+import 'package:core_api/src/model/admin_ticket_page_dto_output_pickup_dispute.dart';
 import 'package:core_api/src/model/admin_ticket_parties_dto_output.dart';
 import 'package:core_api/src/model/admin_ticket_party_search_dto.dart';
+import 'package:core_api/src/model/admin_ticket_resolve_dto.dart';
 import 'package:core_api/src/model/admin_ticket_status_dto.dart';
 import 'package:core_api/src/model/admin_ticket_types_dto_output.dart';
 import 'package:core_api/src/model/admin_tickets_dto_output.dart';
@@ -730,6 +745,10 @@ part 'serializers.g.dart';
   AdminCancelPreviewAnswerDtoOutput,
   AdminCancelPreviewAnswerDtoOutputEntriesInner,
   AdminCancelPreviewDto,
+  AdminCannedRepliesDto,
+  AdminCannedRepliesDtoOutput,
+  AdminCannedRepliesDtoOutputRepliesInner,
+  AdminCannedRepliesDtoRepliesInner,
   AdminCaptainAvailabilityDtoOutput,
   AdminCaptainBalancesDtoOutput,
   AdminCaptainBalancesDtoOutputCaptainsInner,
@@ -784,7 +803,6 @@ part 'serializers.g.dart';
   AdminDeskCustodyDtoOutputClosedDue,
   AdminDeskCustodyDtoOutputCurrenciesInner,
   AdminDeskCustodyDtoOutputHandInGrace,
-  AdminDeskCustodyDtoOutputUsage,
   AdminDeviceReleasedDtoOutput,
   AdminDispatchStateDtoOutput,
   AdminDispatchStateDtoOutputOrder,
@@ -926,6 +944,9 @@ part 'serializers.g.dart';
   AdminOrderTicketDtoOutput,
   AdminOrderTicketsDtoOutput,
   AdminOrderTicketsDtoOutputTicketsInner,
+  AdminOrderTicketsDtoOutputTicketsInnerClosure,
+  AdminOrderTicketsDtoOutputTicketsInnerResolution,
+  AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
   AdminOrderTicketsDtoOutputTicketsInnerSla,
   AdminOutcomeChangePreviewAnswerDtoOutput,
   AdminOutcomeChangePreviewAnswerDtoOutputDues,
@@ -1043,12 +1064,21 @@ part 'serializers.g.dart';
   AdminTextsDtoOutputContact,
   AdminTicketAssigneeDto,
   AdminTicketAssigneesDtoOutput,
+  AdminTicketCloseDto,
+  AdminTicketCorrectionDtoOutput,
+  AdminTicketCorrectionDtoOutputEntriesInner,
+  AdminTicketCorrectionDtoOutputEntriesInnerAmount,
+  AdminTicketCorrectionDtoOutputMerchant,
+  AdminTicketCorrectionPreviewDto,
+  AdminTicketCorrectionPreviewDtoReceivedLinesInner,
   AdminTicketDtoOutput,
   AdminTicketNoteDto,
   AdminTicketPageDtoOutput,
   AdminTicketPageDtoOutputNotesInner,
+  AdminTicketPageDtoOutputPickupDispute,
   AdminTicketPartiesDtoOutput,
   AdminTicketPartySearchDto,
+  AdminTicketResolveDto,
   AdminTicketStatusDto,
   AdminTicketTypesDtoOutput,
   AdminTicketsDtoOutput,
@@ -1410,6 +1440,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminCannedRepliesDtoRepliesInner),
+            ]),
+            () => ListBuilder<AdminCannedRepliesDtoRepliesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(MerchantMenuDtoOutputCategoriesInnerItemsInner),
             ]),
             () => ListBuilder<MerchantMenuDtoOutputCategoriesInnerItemsInner>(),
@@ -1434,6 +1470,12 @@ Serializers serializers =
                 ListBuilder<
                   CustomerRestaurantPageDtoOutputMenuInnerItemsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminTicketCorrectionDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<AdminTicketCorrectionDtoOutputEntriesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -1464,12 +1506,6 @@ Serializers serializers =
               FullType(CaptainCustodyDtoOutputEntriesInner),
             ]),
             () => ListBuilder<CaptainCustodyDtoOutputEntriesInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, [
-              FullType(AdminDeskCustodyDtoOutputUsage),
-            ]),
-            () => ListBuilder<AdminDeskCustodyDtoOutputUsage>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -1984,6 +2020,17 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(
+                AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminNotificationTextsDtoOutputTemplatesInner),
             ]),
             () => ListBuilder<AdminNotificationTextsDtoOutputTemplatesInner>(),
@@ -2039,6 +2086,12 @@ Serializers serializers =
               FullType(CustomerQuoteDtoOutputAvailableCodesInner),
             ]),
             () => ListBuilder<CustomerQuoteDtoOutputAvailableCodesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCannedRepliesDtoOutputRepliesInner),
+            ]),
+            () => ListBuilder<AdminCannedRepliesDtoOutputRepliesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -2190,6 +2243,15 @@ Serializers serializers =
               FullType(MerchantOrdersDtoOutputOrdersInnerEditsInner),
             ]),
             () => ListBuilder<MerchantOrdersDtoOutputOrdersInnerEditsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminTicketCorrectionPreviewDtoReceivedLinesInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminTicketCorrectionPreviewDtoReceivedLinesInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

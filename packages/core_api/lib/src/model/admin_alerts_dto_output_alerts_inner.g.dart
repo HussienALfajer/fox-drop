@@ -77,6 +77,9 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnum_compensationApproval =
 const AdminAlertsDtoOutputAlertsInnerCodeEnum
 _$adminAlertsDtoOutputAlertsInnerCodeEnum_urgentTicket =
     const AdminAlertsDtoOutputAlertsInnerCodeEnum._('urgentTicket');
+const AdminAlertsDtoOutputAlertsInnerCodeEnum
+_$adminAlertsDtoOutputAlertsInnerCodeEnum_urgentDisputeTicket =
+    const AdminAlertsDtoOutputAlertsInnerCodeEnum._('urgentDisputeTicket');
 
 AdminAlertsDtoOutputAlertsInnerCodeEnum
 _$adminAlertsDtoOutputAlertsInnerCodeEnumValueOf(String name) {
@@ -127,6 +130,8 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnumValueOf(String name) {
       return _$adminAlertsDtoOutputAlertsInnerCodeEnum_compensationApproval;
     case 'urgentTicket':
       return _$adminAlertsDtoOutputAlertsInnerCodeEnum_urgentTicket;
+    case 'urgentDisputeTicket':
+      return _$adminAlertsDtoOutputAlertsInnerCodeEnum_urgentDisputeTicket;
     default:
       throw ArgumentError(name);
   }
@@ -159,6 +164,7 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnumValues =
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_rateStale,
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_compensationApproval,
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_urgentTicket,
+        _$adminAlertsDtoOutputAlertsInnerCodeEnum_urgentDisputeTicket,
       ],
     );
 
@@ -296,6 +302,7 @@ class _$AdminAlertsDtoOutputAlertsInnerCodeEnumSerializer
     'rateStale': 'rate_stale',
     'compensationApproval': 'compensation_approval',
     'urgentTicket': 'urgent_ticket',
+    'urgentDisputeTicket': 'urgent_dispute_ticket',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_not_accepted': 'restaurantNotAccepted',
@@ -321,6 +328,7 @@ class _$AdminAlertsDtoOutputAlertsInnerCodeEnumSerializer
     'rate_stale': 'rateStale',
     'compensation_approval': 'compensationApproval',
     'urgent_ticket': 'urgentTicket',
+    'urgent_dispute_ticket': 'urgentDisputeTicket',
   };
 
   @override

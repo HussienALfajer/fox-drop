@@ -3,8 +3,8 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_resolution_corrected_lines_inner.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_desk_custody_dto_output_usage.dart';
 import 'package:core_api/src/model/admin_manual_account_dto_output_entries_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -30,7 +30,8 @@ abstract class AdminManualAccountDtoOutput
   String get partyName;
 
   @BuiltValueField(wireName: r'balances')
-  BuiltList<AdminDeskCustodyDtoOutputUsage> get balances;
+  BuiltList<AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner>
+  get balances;
 
   /// What an adjustment takes: custody any enabled currency, the others the base.
   @BuiltValueField(wireName: r'currencies')
@@ -83,7 +84,9 @@ class _$AdminManualAccountDtoOutputSerializer
     yield serializers.serialize(
       object.balances,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminDeskCustodyDtoOutputUsage),
+        FullType(
+          AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
+        ),
       ]),
     );
     yield r'currencies';
@@ -148,10 +151,14 @@ class _$AdminManualAccountDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(AdminDeskCustodyDtoOutputUsage),
+                      FullType(
+                        AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
+                      ),
                     ]),
                   )
-                  as BuiltList<AdminDeskCustodyDtoOutputUsage>;
+                  as BuiltList<
+                    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+                  >;
           result.balances.replace(valueDes);
           break;
         case r'currencies':

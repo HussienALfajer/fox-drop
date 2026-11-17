@@ -356,6 +356,10 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/admin/content/reasons/{list}/order': 'content.manage',
   'GET /v1/admin/content/faqs': { anyOf: ['content.read', 'content.faqs'] },
   'PUT /v1/admin/content/faqs/{audience}': 'content.faqs',
+  'GET /v1/admin/content/canned-replies': {
+    anyOf: ['content.read', 'content.faqs', 'support.read'],
+  },
+  'PUT /v1/admin/content/canned-replies': 'content.faqs',
   'GET /v1/admin/content/texts': 'content.read',
   'PUT /v1/admin/content/work-rules': 'content.manage',
   'PUT /v1/admin/content/contact': 'content.manage',
@@ -419,6 +423,13 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/admin/tickets/{ticketId}/notes': 'support.manage',
   'PUT /v1/admin/tickets/{ticketId}/assignee': 'support.manage',
   'PUT /v1/admin/tickets/{ticketId}/status': 'support.manage',
+  'POST /v1/admin/tickets/{ticketId}/correction-preview': 'support.resolve_pickup_dispute',
+  'POST /v1/admin/tickets/{ticketId}/resolve': {
+    anyOf: ['support.manage', 'support.resolve_pickup_dispute'],
+  },
+  'POST /v1/admin/tickets/{ticketId}/close': {
+    anyOf: ['support.manage', 'support.resolve_pickup_dispute'],
+  },
   'GET /v1/admin/orders/{orderId}/tickets': 'support.read',
   'POST /v1/admin/orders/{orderId}/tickets': 'support.manage',
   'POST /v1/admin/cash-desk/captains/search': 'cash_desk.record',

@@ -3,8 +3,8 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_resolution_corrected_lines_inner.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_desk_custody_dto_output_usage.dart';
 import 'package:core_api/src/model/admin_captain_balances_dto_output_captains_inner_earnings.dart';
 import 'package:core_api/src/model/admin_settlement_preview_dto_output_custody_inner.dart';
 import 'package:core_api/src/model/admin_settlement_preview_dto_output_payout.dart';
@@ -71,7 +71,8 @@ abstract class AdminSettlementPreviewDtoOutput
 
   /// The cash per currency: + the captain gives, − the desk pays.
   @BuiltValueField(wireName: r'net')
-  BuiltList<AdminDeskCustodyDtoOutputUsage> get net;
+  BuiltList<AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner>
+  get net;
 
   AdminSettlementPreviewDtoOutput._();
 
@@ -169,7 +170,9 @@ class _$AdminSettlementPreviewDtoOutputSerializer
     yield serializers.serialize(
       object.net,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminDeskCustodyDtoOutputUsage),
+        FullType(
+          AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
+        ),
       ]),
     );
   }
@@ -306,10 +309,14 @@ class _$AdminSettlementPreviewDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(AdminDeskCustodyDtoOutputUsage),
+                      FullType(
+                        AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
+                      ),
                     ]),
                   )
-                  as BuiltList<AdminDeskCustodyDtoOutputUsage>;
+                  as BuiltList<
+                    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+                  >;
           result.net.replace(valueDes);
           break;
         default:

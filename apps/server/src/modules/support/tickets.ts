@@ -32,10 +32,99 @@ export function isOpen(status: TicketStatus): boolean {
   return OPEN.includes(status);
 }
 
+// The kinds of ticket whose resolutions differ (AP §9.9.3; slice 2.23b): a
+// price difference (linked to a restaurant, not an order) and a pickup
+// dispute have fixed types outside the Content lists; every other type is
+// general.
+export const PRICE_DIFFERENCE_TYPE = 'price_difference';
+export const PICKUP_DISPUTE_TYPE = 'pickup_dispute';
+export const FIXED_TYPE_LABELS = {
+  [PRICE_DIFFERENCE_TYPE]: 'سعر مختلف عن المحل',
+  [PICKUP_DISPUTE_TYPE]: 'خلاف على دفعة الاستلام',
+} as const;
+
+export const ticketKinds = ['general', 'price_difference', 'pickup_dispute'] as const;
+export type TicketKind = (typeof ticketKinds)[number];
+
+export function ticketKind(typeCode: string): TicketKind {
+  if (typeCode === PRICE_DIFFERENCE_TYPE) return 'price_difference';
+  if (typeCode === PICKUP_DISPUTE_TYPE) return 'pickup_dispute';
+  return 'general';
+}
+
+// AP §9.9.3: «لا شيء مع توضيح»; a price difference's «تم تصحيح السعر» and
+// «السعر صحيح»; a pickup dispute's «دفع الكابتن الفرق», «تصحيح في
+// الحسابات» and «الدفعة صحيحة». The compensation code (2.23c) and the free
+// re-delivery (2.23d) join the general ones with their slices.
+export const ticketResolutions = [
+  'none_explained',
+  'price_corrected',
+  'price_correct',
+  'captain_paid',
+  'accounts_corrected',
+  'payment_correct',
+] as const;
+export type TicketResolution = (typeof ticketResolutions)[number];
+
+const RESOLUTIONS: Record<TicketKind, readonly TicketResolution[]> = {
+  general: ['none_explained'],
+  price_difference: ['price_corrected', 'price_correct'],
+  pickup_dispute: ['captain_paid', 'accounts_corrected', 'payment_correct'],
+};
+
+export function resolutionsOf(kind: TicketKind): readonly TicketResolution[] {
+  return RESOLUTIONS[kind];
+}
+
+// AP §9.9.3 «Responsible party»: restaurant, captain, customer or platform.
+export const responsibleParties = ['restaurant', 'captain', 'customer', 'platform'] as const;
+export type ResponsibleParty = (typeof responsibleParties)[number];
+
+export type ResolutionProblem = 'invalid_resolution' | 'responsible_required' | 'lines_required';
+
+// AP §9.9.3: the responsible party is required to resolve, except for a
+// price difference, which takes none. The lines the restaurant received go
+// with «تصحيح في الحسابات» only.
+export function resolutionProblem(input: {
+  kind: TicketKind;
+  resolution: TicketResolution;
+  responsible: ResponsibleParty | null;
+  lines: readonly unknown[] | null;
+}): ResolutionProblem | null {
+  if (!RESOLUTIONS[input.kind].includes(input.resolution)) return 'invalid_resolution';
+  if (input.kind === 'price_difference') {
+    if (input.responsible !== null) return 'invalid_resolution';
+  } else if (input.responsible === null) {
+    return 'responsible_required';
+  }
+  if (input.resolution === 'accounts_corrected') {
+    return input.lines === null || input.lines.length === 0 ? 'lines_required' : null;
+  }
+  return input.lines === null ? null : 'invalid_resolution';
+}
+
+// «إغلاق» (owner decision 2026-11-17): an open ticket ends without a
+// resolution, message or entries.
+export function canClose(status: TicketStatus): boolean {
+  return isOpen(status);
+}
+
+// AP §6.3: who may resolve or close a ticket of this kind: a pickup dispute
+// only OWN, OPS and FIN.
+export function managingPermission(kind: TicketKind): string {
+  return kind === 'pickup_dispute' ? 'support.resolve_pickup_dispute' : 'support.manage';
+}
+
 // «عاجلة» while the ticket is open and its order active; «عادية» otherwise
-// (owner decision 2026-11-17: the priority follows the order's state now).
-export function isUrgent(ticket: { status: TicketStatus; orderActive: boolean }): boolean {
-  return ticket.orderActive && isOpen(ticket.status);
+// (owner decision 2026-11-17: the priority follows the order's state now). A
+// pickup-dispute ticket is urgent while open, whatever its order (AP §9.9.2).
+export function isUrgent(ticket: {
+  status: TicketStatus;
+  orderActive: boolean;
+  kind: TicketKind;
+}): boolean {
+  if (!isOpen(ticket.status)) return false;
+  return ticket.orderActive || ticket.kind === 'pickup_dispute';
 }
 
 // The timer is chosen once, at the opening, and keeps its kind (owner

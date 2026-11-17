@@ -12,7 +12,10 @@ class _$AdminManualAccountDtoOutput extends AdminManualAccountDtoOutput {
   @override
   final String partyName;
   @override
-  final BuiltList<AdminDeskCustodyDtoOutputUsage> balances;
+  final BuiltList<
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+  >
+  balances;
   @override
   final BuiltList<String> currencies;
   @override
@@ -89,11 +92,23 @@ class AdminManualAccountDtoOutputBuilder
   String? get partyName => _$this._partyName;
   set partyName(String? partyName) => _$this._partyName = partyName;
 
-  ListBuilder<AdminDeskCustodyDtoOutputUsage>? _balances;
-  ListBuilder<AdminDeskCustodyDtoOutputUsage> get balances =>
-      _$this._balances ??= ListBuilder<AdminDeskCustodyDtoOutputUsage>();
-  set balances(ListBuilder<AdminDeskCustodyDtoOutputUsage>? balances) =>
-      _$this._balances = balances;
+  ListBuilder<
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+  >?
+  _balances;
+  ListBuilder<
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+  >
+  get balances => _$this._balances ??=
+      ListBuilder<
+        AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+      >();
+  set balances(
+    ListBuilder<
+      AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+    >?
+    balances,
+  ) => _$this._balances = balances;
 
   ListBuilder<String>? _currencies;
   ListBuilder<String> get currencies =>

@@ -187,6 +187,23 @@ export function useUpdateFaq() {
   });
 }
 
+// AP §9.13 «الردود الجاهزة» (slice 2.23b): read through the tickets'
+// `cannedRepliesQuery`; a pair left empty is dropped.
+export function cannedReplyItems(items: { title: string; body: string }[]) {
+  return items
+    .map((item) => ({ title: item.title.trim(), body: item.body.trim() }))
+    .filter((item) => item.title !== '' && item.body !== '');
+}
+
+export function useUpdateCannedReplies() {
+  return useEdit(['canned-replies'], async (items: { title: string; body: string }[]) => {
+    const { data, error, response } = await api.PUT('/v1/admin/content/canned-replies', {
+      body: { replies: cannedReplyItems(items) },
+    });
+    return data ? { status: 'saved' } : refused(error, response.status);
+  });
+}
+
 export function useUpdateWorkRules() {
   return useEdit(keys.texts, async (workRules: string) => {
     const { data, error, response } = await api.PUT('/v1/admin/content/work-rules', {

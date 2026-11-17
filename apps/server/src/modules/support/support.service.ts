@@ -6,7 +6,12 @@ import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
 import { CaptainsService } from '../captains/index.js';
-import { ContentRefusedError, ContentService, NOTE_MAX } from '../content/index.js';
+import {
+  ContentRefusedError,
+  ContentService,
+  NOTE_MAX,
+  NotificationTexts,
+} from '../content/index.js';
 import { CustomersService } from '../customers/index.js';
 import {
   AdminSessionsService,
@@ -14,13 +19,25 @@ import {
   CustomerAccountsService,
 } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
+import { type PushRecipient, PushQueue } from '../notifications/index.js';
 import { SettingsService } from '../settings/index.js';
+import type { MoneyLine, PickupDisputeFacts, PickupDisputes } from './pickup-disputes.js';
 import { TicketSync } from './ticket-sync.js';
 import { noteKeys, ticketNotes, ticketNumbers, tickets, type TicketSource } from './schema.js';
 import {
   afterFirstHandling,
+  canClose,
   canSetStatus,
+  FIXED_TYPE_LABELS,
   isUrgent,
+  managingPermission,
+  PICKUP_DISPUTE_TYPE,
+  PRICE_DIFFERENCE_TYPE,
+  resolutionProblem,
+  type ResponsibleParty,
+  ticketKind,
+  type TicketKind,
+  type TicketResolution,
   type SlaKind,
   slaAtOpening,
   slaStop,
@@ -44,11 +61,13 @@ export interface TicketOrder {
   captainId: string | null;
 }
 
-// Who acts on a ticket.
+// Who acts on a ticket, with what they may do (AP §6.3: a pickup dispute is
+// resolved with support.resolve_pickup_dispute).
 export interface TicketAdmin {
   accountId: string;
   actor: AuditActor;
   context: AuditRequestContext;
+  permissions: readonly string[];
 }
 
 export interface OpenTicket {
@@ -58,6 +77,8 @@ export interface OpenTicket {
   partyId: string | null;
   typeCode: string;
   description: string;
+  // «سعر مختلف عن المحل»: the restaurant it is about; null for every other.
+  restaurantId: string | null;
 }
 
 export interface TicketNote {
@@ -80,6 +101,9 @@ export interface Ticket {
   orderNumber: bigint | null;
   orderActive: boolean;
   urgent: boolean;
+  kind: TicketKind;
+  restaurantId: string | null;
+  restaurantName: string | null;
   typeCode: string;
   typeLabel: string;
   description: string;
@@ -91,7 +115,29 @@ export interface Ticket {
   openedByName: string | null;
   openedAt: Date;
   updatedAt: Date;
+  resolution: {
+    code: TicketResolution;
+    responsible: ResponsibleParty | null;
+    message: string;
+    correctedLines: MoneyLine[] | null;
+    resolvedAt: Date;
+    resolvedByName: string | null;
+  } | null;
+  closure: { reason: string; closedAt: Date; closedByName: string | null } | null;
 }
+
+export interface TicketResolutionInput {
+  resolution: TicketResolution;
+  responsible: ResponsibleParty | null;
+  message: string;
+  // «تصحيح في الحسابات»: the lines the restaurant received, as corrected.
+  lines: MoneyLine[] | null;
+}
+
+export type TicketPage = Ticket & {
+  notes: TicketNote[];
+  pickupDispute: PickupDisputeFacts | null;
+};
 
 export interface TicketFilters {
   status: TicketStatus | null;
@@ -108,7 +154,15 @@ export type TicketRefusal =
   | 'unknown_assignee'
   | 'invalid_status_change'
   | 'ticket_not_open'
-  | 'idempotency_key_reused';
+  | 'idempotency_key_reused'
+  | 'invalid_restaurant'
+  | 'invalid_resolution'
+  | 'responsible_required'
+  | 'lines_required'
+  | 'invalid_lines'
+  | 'no_difference'
+  | 'not_pickup_dispute'
+  | 'forbidden';
 
 export class TicketRefusedError extends Error {
   constructor(
@@ -121,6 +175,15 @@ export class TicketRefusedError extends Error {
 
 // The list's length: the newest first.
 const LISTED = 200;
+
+// How long the resolution message's push may wait for a phone that is off.
+const MESSAGE_PUSH_MS = 24 * 3_600_000;
+
+const PUSH_TEMPLATES: Record<TicketParty, string> = {
+  customer: 'customer.ticket_resolved',
+  restaurant: 'merchant.ticket_resolved',
+  captain: 'captain.ticket_resolved',
+};
 
 // AP §9.9 (slice 2.23a): manual tickets, their list, page, notes, assignee
 // and status, their SLA timer and the alert «تذكرة عاجلة». Ordering opens a
@@ -140,7 +203,21 @@ export class SupportService {
     private readonly customers: CustomersService,
     private readonly captainAccounts: CaptainAccountsService,
     private readonly customerAccounts: CustomerAccountsService,
+    private readonly pushes: PushQueue,
+    private readonly texts: NotificationTexts,
   ) {}
+
+  private disputes: PickupDisputes | null = null;
+
+  // Ordering registers what it reads and posts of a pickup dispute.
+  usePickupDisputes(disputes: PickupDisputes): void {
+    this.disputes = disputes;
+  }
+
+  private pickupDisputes(): PickupDisputes {
+    if (this.disputes === null) throw new Error('no pickup disputes registered');
+    return this.disputes;
+  }
 
   // The type lists of the three parties (AP Appendix B), active reasons only.
   async types(): Promise<Record<TicketParty, { code: string; label: string }[]>> {
@@ -151,7 +228,17 @@ export class SupportService {
           .map(({ code, label }) => ({ code, label })),
       ),
     );
-    return { customer: customer!, restaurant: restaurant!, captain: captain! };
+    // «سعر مختلف عن المحل» (AP §9.9.1) is a customer's ticket outside the
+    // Content list, opened by hand until the app's report (owner decision
+    // 2026-11-17).
+    return {
+      customer: [
+        ...customer!,
+        { code: PRICE_DIFFERENCE_TYPE, label: FIXED_TYPE_LABELS[PRICE_DIFFERENCE_TYPE] },
+      ],
+      restaurant: restaurant!,
+      captain: captain!,
+    };
   }
 
   // Whom a ticket may be assigned to: the team that manages support.
@@ -210,6 +297,14 @@ export class SupportService {
       throw new TicketRefusedError('unknown_party', 'no such party in the city');
     }
     const prepared = await this.prepare(input);
+    if (
+      input.restaurantId !== null &&
+      !(await this.merchants.restaurantIds(input.cityId)).some(
+        (each) => each.id === input.restaurantId,
+      )
+    ) {
+      throw new TicketRefusedError('unknown_party', 'no such restaurant in the city');
+    }
     const id = await this.database.db.transaction((tx) =>
       this.openIn(tx, prepared, null, admin, idempotencyKey, now),
     );
@@ -239,22 +334,82 @@ export class SupportService {
   // text («أخرى») takes the ticket's description as it.
   async prepare(input: OpenTicket) {
     const list = TICKET_TYPE_LISTS[input.party];
-    const chosen = await this.content
-      .choose(list, { code: input.typeCode, note: null })
-      .catch((error: unknown) => {
-        if (error instanceof ContentRefusedError && error.refusal === 'reason_note_required') {
-          return this.content.choose(list, {
-            code: input.typeCode,
-            note: input.description.trim().slice(0, NOTE_MAX),
+    // «سعر مختلف عن المحل»: a customer's, naming the restaurant (400
+    // invalid_restaurant otherwise); no other type names one.
+    const priceDifference = input.typeCode === PRICE_DIFFERENCE_TYPE;
+    if (
+      priceDifference !== (input.restaurantId !== null) ||
+      (priceDifference && input.party !== 'customer')
+    ) {
+      throw new TicketRefusedError(
+        'invalid_restaurant',
+        'a price difference names its restaurant, and only it',
+      );
+    }
+    const chosen = priceDifference
+      ? { code: PRICE_DIFFERENCE_TYPE, label: FIXED_TYPE_LABELS[PRICE_DIFFERENCE_TYPE] }
+      : await this.content
+          .choose(list, { code: input.typeCode, note: null })
+          .catch((error: unknown) => {
+            if (error instanceof ContentRefusedError && error.refusal === 'reason_note_required') {
+              return this.content.choose(list, {
+                code: input.typeCode,
+                note: input.description.trim().slice(0, NOTE_MAX),
+              });
+            }
+            throw error;
           });
-        }
-        throw error;
-      });
+    return { input, chosen, ...(await this.timers(input.cityId)) };
+  }
+
+  private async timers(cityId: string) {
     const [firstResponseMinutes, resolutionHours] = await Promise.all([
-      this.settings.get('support.first_response_active_min', { cityId: input.cityId }),
-      this.settings.get('support.resolution_post_delivery_hours', { cityId: input.cityId }),
+      this.settings.get('support.first_response_active_min', { cityId }),
+      this.settings.get('support.resolution_post_delivery_hours', { cityId }),
     ]);
-    return { input, chosen, firstResponseMinutes, resolutionHours };
+    return { firstResponseMinutes, resolutionHours };
+  }
+
+  // What the pickup dispute's ticket reads before ordering's transaction.
+  preparePickupDispute(cityId: string) {
+    return this.timers(cityId);
+  }
+
+  // RA §8.10 item 8, AP §9.9.1 (slice 2.23b): the restaurant's «المبلغ غير
+  // صحيح» after the pickup opens «خلاف على دفعة الاستلام», always urgent and
+  // linked to the order, in ordering's transaction under the order's lock.
+  // The restaurant's user opens it; its key is the dispute's.
+  async openPickupDisputeIn(
+    tx: Tx,
+    timers: Awaited<ReturnType<SupportService['preparePickupDispute']>>,
+    input: { order: TicketOrder; disputeId: string; openedBy: string; device: string },
+    now: Date,
+  ): Promise<string> {
+    const label = FIXED_TYPE_LABELS[PICKUP_DISPUTE_TYPE];
+    return this.insertTicket(
+      tx,
+      {
+        cityId: input.order.cityId,
+        source: 'pickup_dispute',
+        party: 'restaurant',
+        partyId: input.order.restaurantId,
+        order: input.order,
+        typeCode: PICKUP_DISPUTE_TYPE,
+        typeLabel: label,
+        description: '',
+        restaurantId: null,
+        pickupDisputeId: input.disputeId,
+        openedBy: input.openedBy,
+        idempotencyKey: `pickup_dispute:${input.disputeId}`,
+        requestHash: '',
+      },
+      timers,
+      {
+        actor: { type: 'merchant', id: input.openedBy, role: null },
+        context: { ipAddress: null, device: input.device },
+      },
+      now,
+    );
   }
 
   // The opening in the caller's transaction: ordering's holds the order's
@@ -270,11 +425,14 @@ export class SupportService {
     now: Date,
   ): Promise<string> {
     const { input, chosen } = prepared;
+    // A price difference is linked to a restaurant, never an order.
+    if (order !== null && input.restaurantId !== null) {
+      throw new TicketRefusedError('invalid_restaurant', 'a price difference has no order');
+    }
     const partyId = order === null ? input.partyId : orderParty(order, input.party);
     if (partyId === null) {
       throw new TicketRefusedError('no_captain', 'the order has no captain');
     }
-    const description = input.description.trim();
     const requestHash = openingHash(input, order?.id ?? null);
     await tx.execute(
       sql`SELECT pg_advisory_xact_lock(hashtext(${`support.ticket_key:${admin.accountId}:${idempotencyKey}`}))`,
@@ -294,16 +452,62 @@ export class SupportService {
       }
       return replayed.id;
     }
+    return this.insertTicket(
+      tx,
+      {
+        cityId: input.cityId,
+        source: 'manual',
+        party: input.party,
+        partyId,
+        order,
+        typeCode: chosen.code,
+        typeLabel: chosen.label,
+        description: input.description.trim(),
+        restaurantId: input.restaurantId,
+        pickupDisputeId: null,
+        openedBy: admin.accountId,
+        idempotencyKey,
+        requestHash,
+      },
+      prepared,
+      { actor: admin.actor, context: admin.context },
+      now,
+    );
+  }
+
+  // The new ticket: its number, row, audit line and alert.
+  private async insertTicket(
+    tx: Tx,
+    fields: {
+      cityId: string;
+      source: TicketSource;
+      party: TicketParty;
+      partyId: string;
+      order: TicketOrder | null;
+      typeCode: string;
+      typeLabel: string;
+      description: string;
+      restaurantId: string | null;
+      pickupDisputeId: string | null;
+      openedBy: string;
+      idempotencyKey: string;
+      requestHash: string;
+    },
+    timers: { firstResponseMinutes: number; resolutionHours: number },
+    by: { actor: AuditActor; context: AuditRequestContext | null },
+    now: Date,
+  ): Promise<string> {
+    const { order } = fields;
     const active = order?.active ?? false;
     const sla = slaAtOpening({
       orderActive: active,
       openedAt: now,
-      firstResponseMinutes: prepared.firstResponseMinutes,
-      resolutionHours: prepared.resolutionHours,
+      firstResponseMinutes: timers.firstResponseMinutes,
+      resolutionHours: timers.resolutionHours,
     });
     const [{ number }] = (await tx
       .insert(ticketNumbers)
-      .values({ cityId: input.cityId, lastNumber: 1n })
+      .values({ cityId: fields.cityId, lastNumber: 1n })
       .onConflictDoUpdate({
         target: ticketNumbers.cityId,
         set: { lastNumber: sql`${ticketNumbers.lastNumber} + 1` },
@@ -312,32 +516,34 @@ export class SupportService {
     const [row] = (await tx
       .insert(tickets)
       .values({
-        cityId: input.cityId,
+        cityId: fields.cityId,
         number,
-        source: 'manual',
-        party: input.party,
-        partyId,
+        source: fields.source,
+        party: fields.party,
+        partyId: fields.partyId,
         orderId: order?.id ?? null,
         orderNumber: order?.number ?? null,
         orderActive: active,
-        typeCode: chosen.code,
-        typeLabel: chosen.label,
-        description,
+        typeCode: fields.typeCode,
+        typeLabel: fields.typeLabel,
+        description: fields.description,
         status: 'new',
         slaKind: sla.kind,
         slaDueAt: sla.dueAt,
-        openedBy: admin.accountId,
+        openedBy: fields.openedBy,
         openedAt: now,
         updatedAt: now,
-        idempotencyKey,
-        requestHash,
+        idempotencyKey: fields.idempotencyKey,
+        requestHash: fields.requestHash,
+        restaurantId: fields.restaurantId,
+        pickupDisputeId: fields.pickupDisputeId,
       })
       .returning()) as [TicketRow];
     await this.audit.recordWrite(
       {
-        actor: admin.actor,
-        context: admin.context,
-        cityId: input.cityId,
+        actor: by.actor,
+        context: by.context ?? { ipAddress: null, device: null },
+        cityId: fields.cityId,
         action: 'ticket.open',
         target: { type: 'ticket', id: row.id },
         before: null,
@@ -370,21 +576,24 @@ export class SupportService {
   }
 
   // One ticket with its internal notes, oldest first. 404 unknown_ticket.
-  async ticket(cityId: string, id: string): Promise<Ticket & { notes: TicketNote[] }> {
-    const [row] = await this.database.db
-      .select()
-      .from(tickets)
-      .where(and(eq(tickets.id, id), eq(tickets.cityId, cityId)));
-    if (!row) throw new TicketRefusedError('unknown_ticket', 'no such ticket');
+  // A pickup dispute's adds what ordering reads of it (AP §9.9.3).
+  async ticket(cityId: string, id: string): Promise<TicketPage> {
+    const row = await this.row(cityId, id);
     const notes = await this.database.db
       .select()
       .from(ticketNotes)
       .where(eq(ticketNotes.ticketId, id))
       .orderBy(ticketNotes.createdAt, ticketNotes.id);
-    const [view] = await this.views([row]);
-    const names = await this.admins.names(notes.map((note) => note.authorId));
+    const [[view], names, pickupDispute] = await Promise.all([
+      this.views([row]),
+      this.admins.names(notes.map((note) => note.authorId)),
+      row.pickupDisputeId === null
+        ? Promise.resolve(null)
+        : this.pickupDisputes().facts(row.pickupDisputeId),
+    ]);
     return {
       ...view!,
+      pickupDispute,
       notes: notes.map((note) => ({
         id: note.id,
         authorId: note.authorId,
@@ -429,7 +638,7 @@ export class SupportService {
     admin: TicketAdmin,
     idempotencyKey: string,
     now: Date,
-  ): Promise<Ticket & { notes: TicketNote[] }> {
+  ): Promise<TicketPage> {
     const text = body.trim();
     const requestHash = hashOf([id, text]);
     await this.database.db.transaction(async (tx) => {
@@ -492,7 +701,7 @@ export class SupportService {
     assigneeId: string | null,
     admin: TicketAdmin,
     now: Date,
-  ): Promise<Ticket & { notes: TicketNote[] }> {
+  ): Promise<TicketPage> {
     if (assigneeId !== null) {
       const team = await this.assignees();
       if (!team.some((member) => member.id === assigneeId)) {
@@ -532,7 +741,7 @@ export class SupportService {
     status: TicketStatus,
     admin: TicketAdmin,
     now: Date,
-  ): Promise<Ticket & { notes: TicketNote[] }> {
+  ): Promise<TicketPage> {
     await this.database.db.transaction(async (tx) => {
       const before = await lockTicket(tx, cityId, id);
       if (!isOpenStatus(before.status)) {
@@ -562,12 +771,202 @@ export class SupportService {
     return this.ticket(cityId, id);
   }
 
+  // AP §9.9.3 «Preview» of «تصحيح في الحسابات»: the entries the lines the
+  // restaurant received would post. 404 unknown_ticket; 409
+  // not_pickup_dispute, ticket_not_open; 400 invalid_lines, no_difference.
+  async previewCorrection(cityId: string, id: string, lines: MoneyLine[], now: Date) {
+    const row = await this.row(cityId, id);
+    if (row.pickupDisputeId === null) {
+      throw new TicketRefusedError('not_pickup_dispute', 'not a pickup-dispute ticket');
+    }
+    if (!isOpenStatus(row.status)) {
+      throw new TicketRefusedError('ticket_not_open', 'the ticket is no longer open');
+    }
+    return this.pickupDisputes().preview(row.pickupDisputeId, lines, now);
+  }
+
+  // «حل التذكرة» (AP §9.9.3; owner decision 2026-11-17): the resolution, the
+  // responsible party of a general ticket and the message; the ticket
+  // becomes «محلولة», its timer stops, «تصحيح في الحسابات» posts its entries
+  // and the message goes to the ticket's party at once, all in one
+  // transaction. A pickup dispute needs support.resolve_pickup_dispute (OWN,
+  // OPS, FIN), every other ticket support.manage. A repeat is refused by
+  // what the first changed (409 ticket_not_open), so it takes no key.
+  // 400 invalid_resolution, responsible_required, lines_required,
+  // invalid_lines, no_difference; 403 forbidden; 404 unknown_ticket.
+  async resolve(
+    cityId: string,
+    id: string,
+    input: TicketResolutionInput,
+    admin: TicketAdmin,
+    now: Date,
+  ): Promise<TicketPage> {
+    const found = await this.row(cityId, id);
+    const kind = ticketKind(found.typeCode);
+    const needed = managingPermission(kind);
+    if (!admin.permissions.includes(needed)) {
+      throw new TicketRefusedError('forbidden', `resolving this ticket needs ${needed}`);
+    }
+    const problem = resolutionProblem({
+      kind,
+      resolution: input.resolution,
+      responsible: input.responsible,
+      lines: input.lines,
+    });
+    if (problem !== null) throw new TicketRefusedError(problem, `the resolution is ${problem}`);
+    const message = input.message.trim();
+    const lines = input.resolution === 'accounts_corrected' ? input.lines! : null;
+    // The lines' checks (invalid_lines, no_difference) before the transaction.
+    if (lines !== null) await this.pickupDisputes().preview(found.pickupDisputeId!, lines, now);
+    const pushKey = PUSH_TEMPLATES[found.party];
+    const rendered = await this.texts.render(pushKey, {
+      رقم: found.number.toString(),
+      الرد: message,
+    });
+    await this.database.db.transaction(async (tx) => {
+      const before = await lockTicket(tx, cityId, id);
+      if (!isOpenStatus(before.status)) {
+        throw new TicketRefusedError('ticket_not_open', 'the ticket is no longer open');
+      }
+      const journalIds =
+        lines === null
+          ? null
+          : await this.pickupDisputes().correct(tx, {
+              disputeId: before.pickupDisputeId!,
+              received: lines,
+              actor: { type: 'admin', id: admin.accountId },
+              now,
+            });
+      const after = await this.move(
+        tx,
+        before,
+        'resolved',
+        {
+          resolution: input.resolution,
+          responsible: input.responsible,
+          message,
+          correctedLines: lines === null ? null : storedLines(lines),
+          journalIds,
+          resolvedBy: admin.accountId,
+          resolvedAt: now,
+        },
+        now,
+      );
+      await this.pushes.enqueue(
+        tx,
+        [
+          {
+            source: `support:ticket_resolved:${id}`,
+            recipient: recipientOf(after),
+            templateKey: pushKey,
+            body: rendered.body,
+            level: rendered.level,
+            priority: rendered.priority,
+            data: { target: 'ticket', ticketId: id },
+            at: now,
+            expiresAt: new Date(now.getTime() + MESSAGE_PUSH_MS),
+          },
+        ],
+        now,
+      );
+      await this.audit.recordWrite(
+        {
+          actor: admin.actor,
+          context: admin.context,
+          cityId,
+          action: 'ticket.resolve',
+          target: { type: 'ticket', id },
+          before: { status: before.status },
+          after: {
+            status: after.status,
+            resolution: after.resolution,
+            responsible: after.responsible,
+            correctedLines: after.correctedLines,
+            journalIds: after.journalIds,
+          },
+          reason: message,
+        },
+        tx,
+      );
+    });
+    return this.ticket(cityId, id);
+  }
+
+  // «إغلاق» (owner decision 2026-11-17): an open ticket ends without a
+  // resolution, with an internal reason; no message, no entries. A pickup
+  // dispute is closed by whoever may resolve it (403 forbidden). A repeat
+  // is 409 ticket_not_open, so no key. 404 unknown_ticket.
+  async close(
+    cityId: string,
+    id: string,
+    reason: string,
+    admin: TicketAdmin,
+    now: Date,
+  ): Promise<TicketPage> {
+    const text = reason.trim();
+    const needed = managingPermission(ticketKind((await this.row(cityId, id)).typeCode));
+    if (!admin.permissions.includes(needed)) {
+      throw new TicketRefusedError('forbidden', `closing this ticket needs ${needed}`);
+    }
+    await this.database.db.transaction(async (tx) => {
+      const before = await lockTicket(tx, cityId, id);
+      if (!canClose(before.status)) {
+        throw new TicketRefusedError('ticket_not_open', 'the ticket is no longer open');
+      }
+      await this.move(
+        tx,
+        before,
+        'closed',
+        { closeReason: text, closedBy: admin.accountId, closedAt: now },
+        now,
+      );
+      await this.audit.recordWrite(
+        {
+          actor: admin.actor,
+          context: admin.context,
+          cityId,
+          action: 'ticket.close',
+          target: { type: 'ticket', id },
+          before: { status: before.status },
+          after: { status: 'closed' },
+          reason: text,
+        },
+        tx,
+      );
+    });
+    return this.ticket(cityId, id);
+  }
+
+  private async row(cityId: string, id: string): Promise<TicketRow> {
+    const [row] = await this.database.db
+      .select()
+      .from(tickets)
+      .where(and(eq(tickets.id, id), eq(tickets.cityId, cityId)));
+    if (!row) throw new TicketRefusedError('unknown_ticket', 'no such ticket');
+    return row;
+  }
+
   // The status move, the timer's stop and the change's alert and broadcast.
   private async move(
     tx: Tx,
     before: TicketRow,
     status: TicketStatus,
-    fields: Partial<Pick<TicketRow, 'assigneeId'>>,
+    fields: Partial<
+      Pick<
+        TicketRow,
+        | 'assigneeId'
+        | 'resolution'
+        | 'responsible'
+        | 'message'
+        | 'correctedLines'
+        | 'journalIds'
+        | 'resolvedBy'
+        | 'resolvedAt'
+        | 'closeReason'
+        | 'closedBy'
+        | 'closedAt'
+      >
+    >,
     now: Date,
   ): Promise<TicketRow> {
     const [after] = (await tx
@@ -603,10 +1002,16 @@ export class SupportService {
     ];
     const [admins, captains, restaurants, customers] = await Promise.all([
       this.admins.names(
-        rows.flatMap((row) => [row.openedBy, ...(row.assigneeId ? [row.assigneeId] : [])]),
+        rows.flatMap((row) => [
+          row.openedBy,
+          ...[row.assigneeId, row.resolvedBy, row.closedBy].filter((each) => each !== null),
+        ]),
       ),
       this.captains.names(of('captain')),
-      this.merchants.names(of('restaurant')),
+      this.merchants.names([
+        ...of('restaurant'),
+        ...rows.flatMap((row) => (row.restaurantId === null ? [] : [row.restaurantId])),
+      ]),
       this.customers.firstNames(of('customer')),
     ]);
     const partyName = (row: TicketRow) =>
@@ -626,7 +1031,15 @@ export class SupportService {
       orderId: row.orderId,
       orderNumber: row.orderNumber,
       orderActive: row.orderActive,
-      urgent: isUrgent({ status: row.status, orderActive: row.orderActive }),
+      urgent: isUrgent({
+        status: row.status,
+        orderActive: row.orderActive,
+        kind: ticketKind(row.typeCode),
+      }),
+      kind: ticketKind(row.typeCode),
+      restaurantId: row.restaurantId,
+      restaurantName:
+        row.restaurantId === null ? null : (restaurants.get(row.restaurantId)?.nameAr ?? null),
       typeCode: row.typeCode,
       typeLabel: row.typeLabel,
       description: row.description,
@@ -640,15 +1053,62 @@ export class SupportService {
         stoppedAt: row.slaStoppedAt,
       },
       openedBy: row.openedBy,
-      openedByName: admins.get(row.openedBy) ?? null,
+      // A pickup dispute's ticket is opened by the restaurant (its party).
+      openedByName:
+        row.source === 'pickup_dispute'
+          ? (partyName(row) ?? null)
+          : (admins.get(row.openedBy) ?? null),
       openedAt: row.openedAt,
       updatedAt: row.updatedAt,
+      resolution:
+        row.resolution === null
+          ? null
+          : {
+              code: row.resolution,
+              responsible: row.responsible,
+              message: row.message!,
+              correctedLines: row.correctedLines === null ? null : linesOf(row.correctedLines),
+              resolvedAt: row.resolvedAt!,
+              resolvedByName: admins.get(row.resolvedBy!) ?? null,
+            },
+      closure:
+        row.closeReason === null
+          ? null
+          : {
+              reason: row.closeReason,
+              closedAt: row.closedAt!,
+              closedByName: admins.get(row.closedBy!) ?? null,
+            },
     }));
   }
 }
 
 function isOpenStatus(status: TicketStatus): boolean {
   return status === 'new' || status === 'in_progress' || status === 'waiting';
+}
+
+// The resolution message goes to the ticket's party (AP §9.9.3 «Close»): a
+// restaurant's owners (RA §16 #29).
+function recipientOf(row: TicketRow): PushRecipient {
+  switch (row.party) {
+    case 'customer':
+      return { party: 'customer', accountId: row.partyId };
+    case 'restaurant':
+      return { party: 'merchant', restaurantId: row.partyId, owners: true };
+    case 'captain':
+      return { party: 'captain', captainId: row.partyId };
+  }
+}
+
+function storedLines(lines: MoneyLine[]): { currency: string; amount: string }[] {
+  return lines.map((line) => ({ currency: line.currency, amount: line.amount.toString() }));
+}
+
+function linesOf(stored: unknown): MoneyLine[] {
+  return (stored as { currency: string; amount: string }[]).map((line) => ({
+    currency: line.currency,
+    amount: BigInt(line.amount),
+  }));
 }
 
 function orderParty(order: TicketOrder, party: TicketParty): string | null {
@@ -690,6 +1150,9 @@ export function openingHash(input: OpenTicket, orderId: string | null): string {
     orderId === null ? input.partyId : null,
     input.typeCode,
     input.description.trim(),
+    // Only a price difference names a restaurant: the other tickets' hashes
+    // stay as they were before 2.23b.
+    ...(input.restaurantId === null ? [] : [input.restaurantId]),
   ]);
 }
 

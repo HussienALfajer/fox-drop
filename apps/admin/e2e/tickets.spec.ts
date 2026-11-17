@@ -19,6 +19,9 @@ function ticket(overrides: Record<string, unknown> = {}) {
     orderId: null,
     orderNumber: null,
     urgent: false,
+    kind: 'general',
+    restaurantId: null,
+    restaurantName: null,
     typeCode: 'finance_inquiry',
     typeLabel: 'استفسار مالي',
     description: 'يسأل عن الكشف',
@@ -34,6 +37,8 @@ function ticket(overrides: Record<string, unknown> = {}) {
     openedByName: 'ليلى',
     openedAt: new Date(now).toISOString(),
     updatedAt: new Date(now).toISOString(),
+    resolution: null,
+    closure: null,
     ...overrides,
   };
 }
@@ -90,8 +95,63 @@ test('opens a manual ticket on a restaurant and lists it', async ({ page }) => {
     partyId: restaurantId,
     typeCode: 'finance_inquiry',
     description: 'يسأل عن الكشف',
+    restaurantId: null,
   });
   await expect(page.getByRole('cell', { name: 'استفسار مالي' })).toBeVisible();
   await expect(page.getByText('مطعم: مطعم الساحة').last()).toBeVisible();
   await expect(page.getByText('الحل ضمن المهلة', { exact: false }).first()).toBeVisible();
+});
+
+// AP §9.9.3 (slice 2.23b): support resolves a ticket with its responsible
+// party and a canned reply as the message, sent to the party at once.
+test('resolves a ticket with a canned reply as the message', async ({ page }) => {
+  await fakeSession(page, ['support.read', 'support.manage']);
+  const id = '01900000-0000-7000-8000-0000000000f1';
+  const message = 'راجعنا بلاغك ولم نجد ما يستدعي تعويضاً.';
+  await page.route('**/v1/admin/cities', (route) => route.fulfill({ json: cities }));
+  await page.route('**/v1/admin/alerts**', (route) => route.fulfill({ json: { alerts: [] } }));
+  await page.route('**/v1/admin/tickets/assignees', (route) =>
+    route.fulfill({ json: { assignees: [] } }),
+  );
+  await page.route('**/v1/admin/tickets?**', (route) => route.fulfill({ json: { tickets: [] } }));
+  await page.route('**/v1/admin/content/canned-replies', (route) =>
+    route.fulfill({ json: { replies: [{ title: 'لم نجد مشكلة', body: message }] } }),
+  );
+  const page0 = { ...ticket(), notes: [], pickupDispute: null };
+  let current: Record<string, unknown> = page0;
+  let resolved: unknown = null;
+  await page.route(`**/v1/admin/tickets/${id}?**`, (route) => route.fulfill({ json: current }));
+  await page.route(`**/v1/admin/tickets/${id}/resolve`, (route) => {
+    resolved = route.request().postDataJSON();
+    current = {
+      ...page0,
+      status: 'resolved',
+      resolution: {
+        code: 'none_explained',
+        responsible: 'restaurant',
+        message,
+        correctedLines: null,
+        resolvedAt: new Date().toISOString(),
+        resolvedByName: 'ليلى',
+      },
+    };
+    return route.fulfill({ json: current });
+  });
+
+  await page.goto(`/tickets/${id}?city=AZ`);
+  await page.getByRole('combobox', { name: 'الطرف المسؤول' }).selectOption('restaurant');
+  const form = page.locator('form', { hasText: 'رسالة الحل' });
+  await form.getByRole('combobox', { name: 'ردود جاهزة' }).selectOption('0');
+  await form.getByRole('button', { name: 'إدراج' }).click();
+  await form.getByRole('button', { name: 'حل التذكرة' }).click();
+
+  await expect(page.getByText('لا شيء مع توضيح (المطعم)')).toBeVisible();
+  expect(resolved).toEqual({
+    cityId,
+    resolution: 'none_explained',
+    responsible: 'restaurant',
+    message,
+    receivedLines: null,
+  });
+  await expect(page.getByText(`الرسالة المرسلة: ${message}`)).toBeVisible();
 });

@@ -3,8 +3,8 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_resolution_corrected_lines_inner.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_desk_custody_dto_output_usage.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -52,7 +52,10 @@ abstract class AdminMerchantStatementDtoOutputLinesInner
   String? get itemsValue;
 
   @BuiltValueField(wireName: r'pickupLines')
-  BuiltList<AdminDeskCustodyDtoOutputUsage>? get pickupLines;
+  BuiltList<
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+  >?
+  get pickupLines;
 
   @BuiltValueField(wireName: r'commission')
   String? get commission;
@@ -145,7 +148,9 @@ class _$AdminMerchantStatementDtoOutputLinesInnerSerializer
         : serializers.serialize(
             object.pickupLines,
             specifiedType: const FullType.nullable(BuiltList, [
-              FullType(AdminDeskCustodyDtoOutputUsage),
+              FullType(
+                AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
+              ),
             ]),
           );
     yield r'commission';
@@ -273,10 +278,14 @@ class _$AdminMerchantStatementDtoOutputLinesInnerSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(BuiltList, [
-                      FullType(AdminDeskCustodyDtoOutputUsage),
+                      FullType(
+                        AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
+                      ),
                     ]),
                   )
-                  as BuiltList<AdminDeskCustodyDtoOutputUsage>?;
+                  as BuiltList<
+                    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+                  >?;
           if (valueDes == null) continue;
           result.pickupLines.replace(valueDes);
           break;

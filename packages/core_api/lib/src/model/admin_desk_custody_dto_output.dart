@@ -4,9 +4,9 @@
 
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/admin_desk_custody_dto_output_closed_due.dart';
+import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_resolution_corrected_lines_inner.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_desk_custody_dto_output_currencies_inner.dart';
-import 'package:core_api/src/model/admin_desk_custody_dto_output_usage.dart';
 import 'package:core_api/src/model/admin_desk_custody_dto_output_hand_in_grace.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -41,10 +41,10 @@ abstract class AdminDeskCustodyDtoOutput
   // enum statusEnum {  active,  suspended,  terminated,  };
 
   @BuiltValueField(wireName: r'usage')
-  AdminDeskCustodyDtoOutputUsage get usage;
+  AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner get usage;
 
   @BuiltValueField(wireName: r'limit')
-  AdminDeskCustodyDtoOutputUsage get limit;
+  AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner get limit;
 
   @BuiltValueField(wireName: r'closedDue')
   AdminDeskCustodyDtoOutputClosedDue get closedDue;
@@ -110,12 +110,16 @@ class _$AdminDeskCustodyDtoOutputSerializer
     yield r'usage';
     yield serializers.serialize(
       object.usage,
-      specifiedType: const FullType(AdminDeskCustodyDtoOutputUsage),
+      specifiedType: const FullType(
+        AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
+      ),
     );
     yield r'limit';
     yield serializers.serialize(
       object.limit,
-      specifiedType: const FullType(AdminDeskCustodyDtoOutputUsage),
+      specifiedType: const FullType(
+        AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
+      ),
     );
     yield r'closedDue';
     yield serializers.serialize(
@@ -209,10 +213,10 @@ class _$AdminDeskCustodyDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(
-                      AdminDeskCustodyDtoOutputUsage,
+                      AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
                     ),
                   )
-                  as AdminDeskCustodyDtoOutputUsage;
+                  as AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner;
           result.usage.replace(valueDes);
           break;
         case r'limit':
@@ -220,10 +224,10 @@ class _$AdminDeskCustodyDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(
-                      AdminDeskCustodyDtoOutputUsage,
+                      AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
                     ),
                   )
-                  as AdminDeskCustodyDtoOutputUsage;
+                  as AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner;
           result.limit.replace(valueDes);
           break;
         case r'closedDue':
