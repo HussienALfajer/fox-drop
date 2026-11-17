@@ -13,7 +13,7 @@ Slice 2.26a, rating an order (`docs/roadmap.md`, Phase 2, Support and trust; own
   - [x] Split 2.26 with the owner (2.26a, 2.26b, 2.26c) and record it in the roadmap.
   - [x] The server: `ordering.ratings` (migration 0106, append-only), `POST /v1/customer/orders/{orderId}/rating`, the order's `rating`, the cards' `rating` and `ratingCount`, the profile's `ratings`; the regenerated clients.
   - [x] The customer app: the rating sheet once after the delivery, «قيّم طلبك» on the order detail within the window, each part's stars, reason chips and comment, the sent parts shown; the cards' average or «جديد».
-  - [ ] The panel: «التقييمات المكتوبة» on the customer profile.
+  - [x] The panel: «التقييمات المكتوبة» on the customer profile.
 - **Decided by us:** the rating takes no `Idempotency-Key` (a sent part is never edited, so a repeat is `409 already_rated` and the order shows it); test orders' ratings never count in the average; the captain rated is the order's captain at the rating (after a handover the second, who delivered); the sheet opens once per order on each phone (kept on the phone); the profile lists the account's own ratings, not its line's.
 
 ### Left from 2.25d (`feat/customer-device-block`)

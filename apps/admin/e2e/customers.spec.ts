@@ -71,6 +71,19 @@ const profile = (blocked: boolean) => ({
   testAccount: false,
   orders: { count: 0, spent: [], last: null },
   tickets: [],
+  ratings: [
+    {
+      orderId: '00000000-0000-4000-8000-0000000000e7',
+      orderNumber: '10423',
+      party: 'captain',
+      restaurantName: 'مطعم الشام',
+      captainName: 'أحمد الخطيب',
+      stars: 1,
+      reasons: [{ code: 'late', label: 'تأخر' }],
+      comment: 'تأخر كثيراً',
+      at: '2026-11-16T12:00:00.000Z',
+    },
+  ],
   codes: [],
   addresses: [],
   notes: [],
@@ -110,6 +123,9 @@ test('finds a customer and blocks them until further notice', async ({ page }) =
   await page.getByRole('link', { name: 'سامر الحلبي' }).click();
   await expect(page.getByRole('heading', { name: 'سامر الحلبي' })).toBeVisible();
   await expect(page.getByText('جديد: 1 من 3 طلبات مسلّمة')).toBeVisible();
+  // AP §9.8 (slice 2.26a): the ratings written, comments included.
+  await expect(page.getByText('الكابتن أحمد الخطيب: 1 من 5 تأخر')).toBeVisible();
+  await expect(page.getByText('تأخر كثيراً')).toBeVisible();
 
   await page.getByLabel('حتى إشعار آخر').check();
   await page.getByRole('combobox').selectOption('abuse');

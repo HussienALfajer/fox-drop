@@ -109,7 +109,7 @@ export function CustomersPage() {
 
 // AP §9.8 «ملف الزبون»: the details, the status, the trust, the strikes,
 // the dues, the blocks, «حظر», «فك الحظر» and «تسجيل دفع المستحق» (slice
-// 2.25a); the orders, tickets, codes, addresses and notes, «توثيق»,
+// 2.25a); the orders, tickets, ratings written (slice 2.26a), codes, addresses and notes, «توثيق»,
 // «إزالة الثقة», «مسح المخالفات», «إنهاء الإيقاف», the test account,
 // «تغيير الرقم» and «تسجيل الخروج من كل الأجهزة» (slice 2.25b).
 export function CustomerProfilePage() {
@@ -431,7 +431,29 @@ function Profile({
         </ul>
       )}
       <h2>{t('customers.ratings.title')}</h2>
-      <p>{t('customers.ratings.notYet')}</p>
+      {profile.ratings.length === 0 ? (
+        <p>{t('customers.ratings.none')}</p>
+      ) : (
+        <ul>
+          {profile.ratings.map((rating) => (
+            <li key={rating.orderId + rating.party}>
+              {rating.party === 'restaurant'
+                ? t('customers.ratings.restaurant', {
+                    name: rating.restaurantName ?? '',
+                    stars: rating.stars,
+                  })
+                : t('customers.ratings.captain', {
+                    name: rating.captainName ?? '',
+                    stars: rating.stars,
+                  })}{' '}
+              {rating.reasons.map((reason) => reason.label).join(t('captainBalances.and'))}{' '}
+              {rating.comment && <q>{rating.comment}</q>}{' '}
+              {t('customers.tickets.order', { number: rating.orderNumber })}{' '}
+              {formatDateTime(rating.at, city.timeZone)}
+            </li>
+          ))}
+        </ul>
+      )}
       <h2>{t('customers.codes.title')}</h2>
       {profile.codes.length === 0 ? (
         <p>{t('customers.codes.none')}</p>
