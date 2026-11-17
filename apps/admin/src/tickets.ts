@@ -63,7 +63,17 @@ export const ticketSourceKeys = {
   pickup_dispute: 'tickets.source.pickupDispute',
   customer_report: 'tickets.source.customerReport',
   price_report: 'tickets.source.priceReport',
+  merchant_report: 'tickets.source.merchantReport',
+  order_problem: 'tickets.source.orderProblem',
 } as const;
+
+// RA §15 (slice 2.24b): what «طلب تعديل بيانات» asks to change.
+export const dataChangeSubjectKeys = {
+  min_order: 'tickets.report.subjects.minOrder',
+  coverage: 'tickets.report.subjects.coverage',
+  owners: 'tickets.report.subjects.owners',
+  owner_phone: 'tickets.report.subjects.ownerPhone',
+} as const satisfies Record<NonNullable<TicketReport['subject']>, string>;
 export type TicketSource = keyof typeof ticketSourceKeys;
 
 export function sourceKey(source: string): (typeof ticketSourceKeys)[TicketSource] | null {

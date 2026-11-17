@@ -36,6 +36,8 @@ import {
   WRONG_CHANGE_TYPE,
   type PickupDispute,
   type TicketReport,
+  type TicketParty,
+  dataChangeSubjectKeys,
   receivedLinesOf,
   resolutionChoices,
   resolutionKeys,
@@ -195,7 +197,7 @@ function TicketDetail({ ticket, city }: { ticket: TicketPageData; city: City }) 
       {ticket.pickupDispute && (
         <PickupDisputeFacts dispute={ticket.pickupDispute} timeZone={city.timeZone} />
       )}
-      {ticket.report && <TicketReportFacts report={ticket.report} />}
+      {ticket.report && <TicketReportFacts report={ticket.report} party={ticket.party} />}
       {ticket.order && <TicketOrderFacts order={ticket.order} />}
       {ticket.redeliveries.length > 0 && (
         <section>
@@ -904,13 +906,22 @@ function CloseTicket({ ticketId, cityId }: { ticketId: string; cityId: string })
 
 // AP §9.9.3 «photos and the customer's note» (slice 2.24a): what the customer
 // app sent: the items, a price report's item and shop price, and the photos,
-// whose signed links work for 10 minutes.
-function TicketReportFacts({ report }: { report: TicketReport }) {
+// whose signed links work for 10 minutes; the restaurant app's (slice 2.24b)
+// adds a data change's subject.
+function TicketReportFacts({ report, party }: { report: TicketReport; party: TicketParty }) {
   const { t } = useTranslation();
   return (
     <section>
-      <h2>{t('tickets.report.heading')}</h2>
+      <h2>
+        {t(party === 'restaurant' ? 'tickets.report.headingRestaurant' : 'tickets.report.heading')}
+      </h2>
       <dl>
+        {report.subject && (
+          <>
+            <dt>{t('tickets.report.subject')}</dt>
+            <dd>{t(dataChangeSubjectKeys[report.subject])}</dd>
+          </>
+        )}
         {report.lines.length > 0 && (
           <>
             <dt>{t('tickets.report.items')}</dt>
