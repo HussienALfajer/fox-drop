@@ -50,6 +50,12 @@ export {
   TicketRefusedError,
   SupportService,
 } from './support.service.js';
+export {
+  type MoneyLine,
+  type PickupCorrectionPreview,
+  type PickupDisputeFacts,
+  type PickupDisputes,
+} from './pickup-disputes.js';
 export { TicketSync } from './ticket-sync.js';
 export {
   answered as ticketAnswered,

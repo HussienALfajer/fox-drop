@@ -89,6 +89,7 @@ async function admin(roles: string[]) {
     accountId,
     actor: { type: 'admin', id: accountId, role: roles.join(',') },
     context: { ipAddress: null, device: null },
+    permissions: [],
   };
   return {
     accountId,
@@ -153,6 +154,7 @@ async function openOnOrder(
     cityId: azaz,
     party,
     partyId: null,
+    restaurantId: null,
     typeCode: party === 'customer' ? 'missing_item' : 'order_problem',
     description: 'اتصل الزبون',
   });
@@ -246,9 +248,11 @@ describe('«تذكرة يدوية»', () => {
   it('gives the three type lists, the assignees and finds a party by name', async () => {
     const sup = await admin(['SUP']);
     const types = (await sup.get('/v1/admin/tickets/types')).json();
-    expect(types.customer.map((each: { code: string }) => each.code)).toEqual(
-      await typeCodes('customer_problem'),
-    );
+    // «سعر مختلف عن المحل» after the Content list, opened by hand (2.23b).
+    expect(types.customer.map((each: { code: string }) => each.code)).toEqual([
+      ...(await typeCodes('customer_problem')),
+      'price_difference',
+    ]);
     expect(types.restaurant.map((each: { code: string }) => each.code)).toEqual(
       await typeCodes('merchant_ticket_type'),
     );
@@ -336,6 +340,7 @@ describe('a ticket on an active order', () => {
       cityId: azaz,
       party: 'customer',
       partyId: null,
+      restaurantId: null,
       typeCode: 'other',
       description: 'الزبون يريد تغيير العنوان',
     });
@@ -434,5 +439,213 @@ describe('the list', () => {
     );
     expect(await list(`&assigneeId=${sup.accountId}`)).toEqual([fresh.id]);
     expect(await list('&status=new')).not.toContain(fresh.id);
+  });
+});
+
+const pushOf = async (ticketId: string) =>
+  (
+    await sql.query(
+      'SELECT template_key, party, account_id, captain_id, body, data FROM notifications.push_messages WHERE source = $1',
+      [`support:ticket_resolved:${ticketId}`],
+    )
+  ).rows;
+
+// AP §9.9.3 (slice 2.23b; owner decisions 2026-11-17): resolving sends the
+// message to the party at once; «إغلاق» ends a ticket without one.
+describe('resolving and closing', () => {
+  it('resolves a general ticket with its responsible party and tells the customer', async () => {
+    const sup = await admin(['SUP']);
+    const target = order(true);
+    const ticket = await openOnOrder(target, 'customer', sup.ticketAdmin);
+    expect(ticket.urgent).toBe(true);
+    const url = `/v1/admin/tickets/${ticket.id}/resolve`;
+    const resolution = {
+      cityId: azaz,
+      resolution: 'none_explained',
+      responsible: null,
+      message: 'راجعنا بلاغك ولم نجد ما يستدعي تعويضاً.',
+      receivedLines: null,
+    };
+    const missing = await sup.post(url, resolution, null);
+    expect(missing.statusCode).toBe(400);
+    expect(missing.json().error).toBe('responsible_required');
+    const other = await sup.post(
+      url,
+      { ...resolution, resolution: 'price_correct', responsible: 'customer' },
+      null,
+    );
+    expect(other.json().error).toBe('invalid_resolution');
+    // FIN reads tickets but resolves only a pickup dispute.
+    const fin = await admin(['FIN']);
+    expect((await fin.post(url, { ...resolution, responsible: 'customer' }, null)).statusCode).toBe(
+      403,
+    );
+
+    const resolved = await sup.post(url, { ...resolution, responsible: 'customer' }, null);
+    expect(resolved.statusCode).toBe(200);
+    expect(resolved.json()).toMatchObject({
+      status: 'resolved',
+      urgent: false,
+      resolution: {
+        code: 'none_explained',
+        responsible: 'customer',
+        message: resolution.message,
+        correctedLines: null,
+        resolvedByName: sup.name,
+      },
+      closure: null,
+    });
+    expect(resolved.json().sla.stoppedAt).not.toBeNull();
+    expect(await openAlerts(ticket.id)).toEqual([]);
+    expect(await pushOf(ticket.id)).toEqual([
+      {
+        template_key: 'customer.ticket_resolved',
+        party: 'customer',
+        account_id: target.customerId,
+        captain_id: null,
+        body: `تم الرد على بلاغك T-${ticket.number}`,
+        data: { target: 'ticket', ticketId: ticket.id },
+      },
+    ]);
+    const again = await sup.post(url, { ...resolution, responsible: 'customer' }, null);
+    expect(again.statusCode).toBe(409);
+    expect(again.json().error).toBe('ticket_not_open');
+    expect(
+      (await sup.post(`/v1/admin/tickets/${ticket.id}/close`, { cityId: azaz, reason: 'x' }, null))
+        .statusCode,
+    ).toBe(409);
+    const audit = await sql.query(
+      "SELECT reason FROM audit.events WHERE action = 'ticket.resolve' AND target_id = $1",
+      [ticket.id],
+    );
+    expect(audit.rows).toEqual([{ reason: resolution.message }]);
+  });
+
+  it("sends a captain's message to the captain", async () => {
+    const sup = await admin(['SUP']);
+    const captainId = await captain();
+    const ticket = await openOnOrder(order(false, captainId), 'captain', sup.ticketAdmin);
+    const resolved = await sup.post(
+      `/v1/admin/tickets/${ticket.id}/resolve`,
+      {
+        cityId: azaz,
+        resolution: 'none_explained',
+        responsible: 'platform',
+        message: 'تمت المراجعة',
+        receivedLines: null,
+      },
+      null,
+    );
+    expect(resolved.statusCode).toBe(200);
+    expect(await pushOf(ticket.id)).toMatchObject([
+      { template_key: 'captain.ticket_resolved', party: 'captain', captain_id: captainId },
+    ]);
+  });
+
+  it('closes an open ticket without a resolution or a message', async () => {
+    const sup = await admin(['SUP']);
+    const ticket = await openOnOrder(order(true), 'customer', sup.ticketAdmin);
+    const url = `/v1/admin/tickets/${ticket.id}/close`;
+    expect((await sup.post(url, { cityId: azaz, reason: '' }, null)).statusCode).toBe(400);
+    const closed = await sup.post(url, { cityId: azaz, reason: 'تذكرة مكررة' }, null);
+    expect(closed.statusCode).toBe(200);
+    expect(closed.json()).toMatchObject({
+      status: 'closed',
+      urgent: false,
+      resolution: null,
+      closure: { reason: 'تذكرة مكررة', closedByName: sup.name },
+    });
+    expect(await openAlerts(ticket.id)).toEqual([]);
+    expect(await pushOf(ticket.id)).toEqual([]);
+    expect((await sup.post(url, { cityId: azaz, reason: 'مرة أخرى' }, null)).json().error).toBe(
+      'ticket_not_open',
+    );
+  });
+});
+
+// AP §9.9.1, §9.9.3: «سعر مختلف عن المحل», a customer's ticket on a
+// restaurant, opened by hand until the app's report (owner decision
+// 2026-11-17).
+describe('«سعر مختلف عن المحل»', () => {
+  it('names the restaurant, needs no responsible party and offers its two resolutions', async () => {
+    const sup = await admin(['SUP']);
+    const restaurantId = await restaurant();
+    const customerId = (
+      await sql.query(
+        "INSERT INTO identity.customer_accounts (phone_hash, phone_encrypted, status) VALUES ($1, 'x', 'active') RETURNING id",
+        [randomUUID()],
+      )
+    ).rows[0].id as string;
+    const body = {
+      cityId: azaz,
+      party: 'customer',
+      partyId: customerId,
+      typeCode: 'price_difference',
+      description: 'سعر الشاورما في المحل 50 وفي التطبيق 60',
+    };
+    const without = await sup.post('/v1/admin/tickets', body);
+    expect(without.statusCode).toBe(400);
+    expect(without.json().error).toBe('invalid_restaurant');
+    const elsewhere = await sup.post('/v1/admin/tickets', {
+      ...body,
+      typeCode: 'missing_item',
+      restaurantId,
+    });
+    expect(elsewhere.json().error).toBe('invalid_restaurant');
+    const opened = await sup.post('/v1/admin/tickets', { ...body, restaurantId });
+    expect(opened.statusCode).toBe(200);
+    const ticket = opened.json();
+    expect(ticket).toMatchObject({
+      kind: 'price_difference',
+      typeLabel: 'سعر مختلف عن المحل',
+      restaurantId,
+      orderId: null,
+      urgent: false,
+      sla: { kind: 'resolution' },
+    });
+    expect(ticket.restaurantName).toContain('مطعم التذاكر');
+    const url = `/v1/admin/tickets/${ticket.id}/resolve`;
+    const resolution = {
+      cityId: azaz,
+      resolution: 'price_correct',
+      responsible: null,
+      message: 'السعر في التطبيق هو سعر المحل',
+      receivedLines: null,
+    };
+    expect(
+      (await sup.post(url, { ...resolution, responsible: 'restaurant' }, null)).json().error,
+    ).toBe('invalid_resolution');
+    expect(
+      (await sup.post(url, { ...resolution, resolution: 'none_explained' }, null)).json().error,
+    ).toBe('invalid_resolution');
+    const resolved = await sup.post(url, resolution, null);
+    expect(resolved.statusCode).toBe(200);
+    expect(resolved.json().resolution).toMatchObject({ code: 'price_correct', responsible: null });
+    expect(await pushOf(ticket.id)).toMatchObject([
+      { template_key: 'customer.ticket_resolved', account_id: customerId },
+    ]);
+  });
+});
+
+// AP §9.13 «الردود الجاهزة»: the draft, read on the ticket page, edited by
+// OWN and SUP.
+describe('«الردود الجاهزة»', () => {
+  it('starts from the draft, reads for support and edits for SUP only', async () => {
+    const sup = await admin(['SUP']);
+    const fin = await admin(['FIN']);
+    const read = await fin.get('/v1/admin/content/canned-replies');
+    expect(read.statusCode).toBe(200);
+    expect(read.json().replies.length).toBeGreaterThan(0);
+    expect(read.json().replies[0]).toEqual({
+      title: 'لم نجد مشكلة',
+      body: 'راجعنا بلاغك ولم نجد ما يستدعي تعويضاً. شكراً لتواصلك معنا.',
+    });
+    const replies = [{ title: 'شكر', body: 'شكراً لتواصلك معنا.' }];
+    expect((await fin.put('/v1/admin/content/canned-replies', { replies }, null)).statusCode).toBe(
+      403,
+    );
+    const edited = await sup.put('/v1/admin/content/canned-replies', { replies }, null);
+    expect(edited.statusCode).toBe(200);
+    expect((await sup.get('/v1/admin/content/canned-replies')).json()).toEqual({ replies });
   });
 });

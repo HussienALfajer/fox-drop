@@ -1047,3 +1047,174 @@ describe('the pickup in another currency (RA §12.7, CA §10.5)', () => {
     });
   });
 });
+
+describe("the pickup dispute's ticket (AP §9.9.1, §9.9.3; slice 2.23b)", () => {
+  it('opens «خلاف على دفعة الاستلام» and corrects 3 $ + 116.50 ₺ of which the restaurant got 116.50 ₺', async () => {
+    const fx = app.get(FxService);
+    const fin = { ...change, actor: { type: 'admin', id: randomUUID(), role: 'FIN' } } as const;
+    await fx.setCityCurrency(azaz, { currency: 'USD', displayOrder: 2, enabled: false }, change);
+    await fx.setRate(azaz, 'USD', { value: '41.20', direction: 'base_per_unit' }, fin);
+    await app
+      .get(SettingsService)
+      .update(
+        'currency.<code>.rounding_unit',
+        { cityId: azaz, parameter: 'USD' },
+        { amountMinor: 50 },
+        bySystem,
+      );
+    await fx.setCityCurrency(azaz, { currency: 'USD', displayOrder: 2, enabled: true }, change);
+    const at = await captainAtRestaurant();
+    const ops = await admin(['OPS']);
+    const pickupCurrencies = (currencies: string[]) =>
+      app.inject({
+        method: 'PUT',
+        url: `/v1/admin/restaurants/${restaurant}/pickup-currencies`,
+        cookies: ops.cookies,
+        payload: { currencies },
+      });
+    expect((await pickupCurrencies(['USD'])).statusCode).toBe(200);
+    // 3 USD (123.60 TRY) and 116.50 TRY for the 240 TRY items.
+    const lines = [
+      { currency: 'TRY', amount: '11650' },
+      { currency: 'USD', amount: '300' },
+    ];
+    expect((await at.requestPickup(lines)).statusCode).toBe(200);
+    expect((await at.restaurant('confirm')).statusCode).toBe(200);
+    expect((await at.restaurant('dispute', { receivedLines: TRY('11650') })).statusCode).toBe(200);
+
+    // The ticket, opened in the dispute's transaction: always urgent, the
+    // restaurant its party, its alert for FIN too (AP §9.1.3).
+    const listed = await ops.get(`/v1/admin/tickets?cityId=${azaz}&source=pickup_dispute`);
+    expect(listed.statusCode).toBe(200);
+    const ticket = listed
+      .json()
+      .tickets.find((each: { orderId: string }) => each.orderId === at.order.id);
+    expect(ticket).toMatchObject({
+      source: 'pickup_dispute',
+      kind: 'pickup_dispute',
+      party: 'restaurant',
+      partyId: restaurant,
+      typeLabel: 'خلاف على دفعة الاستلام',
+      urgent: true,
+      status: 'new',
+      sla: { kind: 'first_response' },
+      resolution: null,
+    });
+    const alerts = await sql.query(
+      'SELECT code FROM notifications.alerts WHERE subject_id = $1 AND resolved_at IS NULL',
+      [ticket.id],
+    );
+    expect(alerts.rows).toEqual([{ code: 'urgent_dispute_ticket' }]);
+    const page = (await ops.get(`/v1/admin/tickets/${ticket.id}?cityId=${azaz}`)).json();
+    expect(page.pickupDispute).toMatchObject({
+      pickupPayment: { amount: '24000', currency: 'TRY' },
+      recorded: [
+        { currency: 'TRY', amount: '11650' },
+        { currency: 'USD', amount: '300' },
+      ],
+      received: TRY('11650'),
+      confirmedBy: 'restaurant',
+      currencies: ['TRY', 'USD'],
+    });
+
+    const resolveAs = (who: { cookies: Record<string, string> }, payload: object) =>
+      app.inject({
+        method: 'POST',
+        url: `/v1/admin/tickets/${ticket.id}/resolve`,
+        cookies: who.cookies,
+        payload: { cityId: azaz, ...payload },
+      });
+    const corrected = {
+      resolution: 'accounts_corrected',
+      responsible: null,
+      message: 'صحّحنا الفرق في حسابكم',
+      receivedLines: TRY('11650'),
+    };
+    // AP §6.3: SUP manages tickets but does not resolve a pickup dispute.
+    const sup = await admin(['SUP']);
+    const forbidden = await resolveAs(sup, corrected);
+    expect(forbidden.statusCode).toBe(403);
+    expect(forbidden.json().error).toBe('forbidden');
+
+    const finance = await admin(['FIN']);
+    const preview = await app.inject({
+      method: 'POST',
+      url: `/v1/admin/tickets/${ticket.id}/correction-preview`,
+      cookies: finance.cookies,
+      payload: { cityId: azaz, receivedLines: TRY('11650') },
+    });
+    expect(preview.statusCode).toBe(200);
+    expect(preview.json()).toMatchObject({
+      captainChanges: [{ currency: 'USD', amount: '300' }],
+      merchant: { currency: 'TRY', amount: '12360' },
+    });
+    const same = await app.inject({
+      method: 'POST',
+      url: `/v1/admin/tickets/${ticket.id}/correction-preview`,
+      cookies: finance.cookies,
+      payload: { cityId: azaz, receivedLines: lines },
+    });
+    expect(same.json().error).toBe('no_difference');
+
+    const ledger = app.get(LedgerService);
+    const balanceOf = async (purpose: 'captain.custody' | 'merchant.account', currency: string) => {
+      const id = await ledger.openAccount({
+        cityId: azaz,
+        purpose,
+        ownerId: purpose === 'captain.custody' ? at.captain.captainId : restaurant,
+        currency,
+      });
+      return (await ledger.balance(id)).amount;
+    };
+    const [usdBefore, owedBefore, clearingBefore] = [
+      await balanceOf('captain.custody', 'USD'),
+      await balanceOf('merchant.account', 'TRY'),
+      await clearing(),
+    ];
+    const resolved = await resolveAs(finance, corrected);
+    expect(resolved.statusCode).toBe(200);
+    expect(resolved.json()).toMatchObject({
+      status: 'resolved',
+      urgent: false,
+      resolution: {
+        code: 'accounts_corrected',
+        responsible: null,
+        message: 'صحّحنا الفرق في حسابكم',
+        correctedLines: TRY('11650'),
+      },
+    });
+    // +3 USD the captain still holds and hands in; 123.60 TRY credited to
+    // the restaurant; the order clearing account untouched.
+    expect((await balanceOf('captain.custody', 'USD')) - usdBefore).toBe(300n);
+    expect((await balanceOf('merchant.account', 'TRY')) - owedBefore).toBe(12_360n);
+    expect((await clearing()) - clearingBefore).toBe(0n);
+    const pushes = await sql.query(
+      `SELECT template_key, party, owners_only, body FROM notifications.push_messages
+        WHERE source = $1`,
+      [`support:ticket_resolved:${ticket.id}`],
+    );
+    expect(pushes.rows[0]).toMatchObject({
+      template_key: 'merchant.ticket_resolved',
+      party: 'merchant',
+      owners_only: true,
+    });
+    expect(pushes.rows[0].body).toContain('صحّحنا الفرق في حسابكم');
+    const captainPush = await sql.query(
+      `SELECT body FROM notifications.push_messages
+        WHERE template_key = 'captain.pickup_corrected' AND captain_id = $1`,
+      [at.captain.captainId],
+    );
+    expect(captainPush.rows).toHaveLength(1);
+    expect(captainPush.rows[0].body).toContain('+3');
+    const closed = await sql.query(
+      'SELECT code FROM notifications.alerts WHERE subject_id = $1 AND resolved_at IS NULL',
+      [ticket.id],
+    );
+    expect(closed.rows).toEqual([]);
+    const again = await resolveAs(finance, corrected);
+    expect(again.statusCode).toBe(409);
+    expect(again.json().error).toBe('ticket_not_open');
+
+    await pickupCurrencies([]);
+  });
+});

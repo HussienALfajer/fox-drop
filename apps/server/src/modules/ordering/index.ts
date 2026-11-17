@@ -18,6 +18,7 @@ import { CaptainOrdersController } from './captain-orders.controller.js';
 import { DeliveryBooking } from './delivery-booking.js';
 import { PickupBooking, PickupTimersWorker } from './pickup-booking.js';
 import { PickupCommands } from './pickup-commands.js';
+import { PickupCorrections } from './pickup-corrections.js';
 import { IdentityModule } from '../identity/index.js';
 import { MarketingModule } from '../marketing/index.js';
 import { LedgerModule } from '../ledger/index.js';
@@ -96,6 +97,7 @@ import {
     CaptainOrders,
     PickupBooking,
     PickupCommands,
+    PickupCorrections,
     DeliveryBooking,
     ResendNotification,
     EmergencyStops,

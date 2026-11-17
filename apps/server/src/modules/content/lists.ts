@@ -82,6 +82,11 @@ export const NOTE_MAX = 300;
 export const FAQ_MAX_ITEMS = 50;
 export const QUESTION_MAX = 200;
 export const ANSWER_MAX = 2000;
+// AP §9.13 «الردود الجاهزة» (slice 2.23b): a title to pick it by and the
+// text it puts in a ticket's note or resolution message.
+export const CANNED_REPLIES_MAX = 50;
+export const CANNED_TITLE_MAX = 60;
+export const CANNED_BODY_MAX = 500;
 export const WORK_RULES_MAX = 10_000;
 
 // AP §9.13 «الشروط والخصوصية»: one document per audience.

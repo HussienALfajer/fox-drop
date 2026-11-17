@@ -250,6 +250,9 @@ const captain: Entry[] = [
   ['document_rejected', '27', 'رُفض {المستند}: {السبب}', 'silent'],
   ['contract_phase', '28', 'بدأت {المرحلة} من {التاريخ}', 'silent'],
   ['ticket_resolved', '30', 'تم الرد على بلاغك T-{رقم}', 'silent'],
+  // AP §9.9.3 «تصحيح في الحسابات» (slice 2.23b, owner decision 2026-11-17):
+  // the captain's custody changed per currency; the wording is ours.
+  ['pickup_corrected', '30', 'صُحّحت دفعة استلام الطلب #{رقم}. تغيّرت عهدتك: {التغيير}', 'silent'],
 ];
 
 const SPEC: Record<NotificationAudience, string> = {

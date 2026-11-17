@@ -14,7 +14,12 @@ import {
 import type { FastifyRequest } from 'fastify';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
-import { CurrentAdminSession, RequirePermission, SignedIn } from '../../http/access.js';
+import {
+  CurrentAdminSession,
+  RequireAnyPermission,
+  RequirePermission,
+  SignedIn,
+} from '../../http/access.js';
 import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
 import type { AdminSession } from '../identity/index.js';
@@ -28,6 +33,9 @@ import {
 import { NotificationTexts } from './notification-texts.service.js';
 import {
   ANSWER_MAX,
+  CANNED_BODY_MAX,
+  CANNED_REPLIES_MAX,
+  CANNED_TITLE_MAX,
   CUSTOMER_TEXT_MAX,
   FAQ_MAX_ITEMS,
   faqAudiences,
@@ -125,6 +133,19 @@ class AdminFaqsDto extends createZodDto(
 class FaqParamsDto extends createZodDto(z.object({ audience: z.enum(faqAudiences) })) {}
 
 class AdminFaqDto extends createZodDto(z.object({ items: faqItems })) {}
+
+class AdminCannedRepliesDto extends createZodDto(
+  z.object({
+    replies: z
+      .array(
+        z.object({
+          title: z.string().trim().min(1).max(CANNED_TITLE_MAX),
+          body: z.string().trim().min(1).max(CANNED_BODY_MAX),
+        }),
+      )
+      .max(CANNED_REPLIES_MAX),
+  }),
+) {}
 
 class AdminTextsDto extends createZodDto(
   z.object({
@@ -305,6 +326,29 @@ export class AdminContentController {
   ) {
     return refusalsAsHttp(async () => ({
       items: await this.content.updateFaq(params.audience, body.items, editBy(session, request)),
+    }));
+  }
+
+  // AP §9.13 «الردود الجاهزة» (slice 2.23b): read by «المحتوى» and by the
+  // ticket page (support.read), edited by OWN and SUP (content.faqs: AP §6
+  // «FAQs and canned replies»).
+  @Get('canned-replies')
+  @RequireAnyPermission('content.read', 'content.faqs', 'support.read')
+  @ZodResponse({ status: 200, type: AdminCannedRepliesDto })
+  async cannedReplies() {
+    return { replies: await this.content.cannedReplies() } as AdminCannedRepliesDto;
+  }
+
+  @Put('canned-replies')
+  @RequirePermission('content.faqs')
+  @ZodResponse({ status: 200, type: AdminCannedRepliesDto })
+  updateCannedReplies(
+    @Body() body: AdminCannedRepliesDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(async () => ({
+      replies: await this.content.updateCannedReplies(body.replies, editBy(session, request)),
     }));
   }
 

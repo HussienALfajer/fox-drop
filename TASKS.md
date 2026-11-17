@@ -14,7 +14,7 @@ Slice 2.23b, resolving, closing and the pickup dispute (`docs/roadmap.md`, Phase
   - [x] Read the cited sections, `apps/server/src/modules/support/CLAUDE.md` (2.23a), ordering's `pickup_disputes` and the cancellation's preview; ask the owner the questions below.
   - [x] The failing tests first: which resolutions each ticket type allows, the responsible party's requirement, and the per-currency entries of «تصحيح في الحسابات» (AP §9.9.3's example: 5 $ + 195 ₺ recorded, 195 ₺ received → +5 $ custody on the captain, a 206 ₺ credit to the restaurant).
   - [x] Migration: the resolution columns on `support.tickets` (and the column grants of 0088), the source `pickup_dispute`, canned replies in `content`.
-  - [ ] The server: resolve with its preview, close, the resolution message's push; the pickup dispute's ticket opened in the dispute's transaction (ordering calls support) with «تذكرة عاجلة» for FIN too.
+  - [x] The server: resolve with its preview, close, the resolution message's push; the pickup dispute's ticket opened in the dispute's transaction (ordering calls support) with «تذكرة عاجلة» for FIN too.
   - [ ] `pnpm generate:api`, then the panel: the resolution form and preview, «الردود الجاهزة» in «المحتوى» and on the ticket page, the pickup dispute's details.
   - [ ] The `checker` agent, the `reviewer` agent on AP §9.9.3, then the pull request and the handover to 2.23c.
 

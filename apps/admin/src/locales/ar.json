@@ -942,7 +942,8 @@
           "document_expiring": "قرب انتهاء مستند",
           "document_rejected": "رفض مستند",
           "contract_phase": "مرحلة العقد",
-          "ticket_resolved": "الرد على بلاغ"
+          "ticket_resolved": "الرد على بلاغ",
+          "pickup_corrected": "تصحيح دفعة استلام"
         }
       }
     },

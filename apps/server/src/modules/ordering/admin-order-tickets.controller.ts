@@ -86,13 +86,17 @@ export class AdminOrderTicketsController {
       const replayed = await this.support.replayed(
         session.accountId,
         idempotencyKey,
-        openingHash({ ...body, cityId: placed.cityId, partyId: null }, params.orderId),
+        openingHash(
+          { ...body, cityId: placed.cityId, partyId: null, restaurantId: null },
+          params.orderId,
+        ),
       );
       if (replayed !== null) return this.support.ticket(placed.cityId, replayed);
       const prepared = await this.support.prepare({
         ...body,
         cityId: placed.cityId,
         partyId: null,
+        restaurantId: null,
       });
       const id = await this.database.db.transaction(async (tx) => {
         const order = await lockOrder(tx, params.orderId, placed.placedAt);

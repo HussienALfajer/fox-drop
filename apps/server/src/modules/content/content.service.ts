@@ -9,6 +9,9 @@ import {
   ANSWER_MAX,
   type ContentApp,
   CUSTOMER_TEXT_MAX,
+  CANNED_BODY_MAX,
+  CANNED_REPLIES_MAX,
+  CANNED_TITLE_MAX,
   FAQ_MAX_ITEMS,
   type FaqAudience,
   GENERIC_CUSTOMER_TEXT,
@@ -117,6 +120,20 @@ const faqSchema = z
     }),
   )
   .max(FAQ_MAX_ITEMS);
+
+const cannedRepliesSchema = z
+  .array(
+    z.object({
+      title: z.string().trim().min(1).max(CANNED_TITLE_MAX),
+      body: z.string().trim().min(1).max(CANNED_BODY_MAX),
+    }),
+  )
+  .max(CANNED_REPLIES_MAX);
+
+export interface CannedReply {
+  title: string;
+  body: string;
+}
 
 const workRulesSchema = z.object({ body: z.string().max(WORK_RULES_MAX) });
 
@@ -339,6 +356,20 @@ export class ContentService {
     const parsed = faqSchema.safeParse(items);
     if (!parsed.success) throw new ContentRefusedError('invalid_value', parsed.error.message);
     await this.writeText(`faq.${audience}`, parsed.data, edit);
+    return parsed.data;
+  }
+
+  // AP §9.13 «الردود الجاهزة» (slice 2.23b): seeded with a draft (migration
+  // 0090, owner decision 2026-11-17); none when the row is missing.
+  async cannedReplies(): Promise<CannedReply[]> {
+    const parsed = cannedRepliesSchema.safeParse(await this.text('canned_replies'));
+    return parsed.success ? parsed.data : [];
+  }
+
+  async updateCannedReplies(items: CannedReply[], edit: ContentEdit): Promise<CannedReply[]> {
+    const parsed = cannedRepliesSchema.safeParse(items);
+    if (!parsed.success) throw new ContentRefusedError('invalid_value', parsed.error.message);
+    await this.writeText('canned_replies', parsed.data, edit);
     return parsed.data;
   }
 

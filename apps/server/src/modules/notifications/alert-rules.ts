@@ -84,8 +84,11 @@ export const alertCodes = [
   'compensation_approval',
   // «تذكرة عاجلة»: an open ticket on an active order (AP §9.9.2, slice
   // 2.23a), until the ticket is resolved or its order ends (owner decision
-  // 2026-11-17). The pickup dispute's ticket, for FIN too, joins with 2.23b.
+  // 2026-11-17).
   'urgent_ticket',
+  // «تذكرة عاجلة» on a pickup-dispute ticket (AP §9.1.3, §9.9.2; slice
+  // 2.23b): for FIN too, who resolves it, until it is resolved or closed.
+  'urgent_dispute_ticket',
 ] as const;
 export type AlertCode = (typeof alertCodes)[number];
 
@@ -128,6 +131,7 @@ export const ALERT_RULES: Record<AlertCode, AlertRule> = {
   rate_stale: rule('information', ['OWN', 'FIN'], 'currency'),
   compensation_approval: rule('information', ['OWN'], 'compensation'),
   urgent_ticket: rule('critical', ['OWN', 'OPS', 'SUP'], 'ticket'),
+  urgent_dispute_ticket: rule('critical', ['OWN', 'OPS', 'SUP', 'FIN'], 'ticket'),
 };
 
 function rule(

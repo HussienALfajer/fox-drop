@@ -24,13 +24,14 @@ export class TicketSync {
   async changed(tx: Tx, row: TicketRow, now: Date): Promise<void> {
     const details: Record<string, string> = { ticketNumber: row.number.toString() };
     if (row.orderNumber !== null) details.orderNumber = row.orderNumber.toString();
+    // A pickup dispute's alert reaches FIN too (AP §9.1.3; slice 2.23b).
+    const kind = ticketKind(row.typeCode);
+    const code = kind === 'pickup_dispute' ? 'urgent_dispute_ticket' : 'urgent_ticket';
     await this.alerts.sync(
       tx,
       { type: 'ticket', id: row.id, cityId: row.cityId, details },
-      ['urgent_ticket'],
-      isUrgent({ status: row.status, orderActive: row.orderActive, kind: ticketKind(row.typeCode) })
-        ? ['urgent_ticket']
-        : [],
+      ['urgent_ticket', 'urgent_dispute_ticket'],
+      isUrgent({ status: row.status, orderActive: row.orderActive, kind }) ? [code] : [],
       now,
     );
     await this.broadcasts.enqueue(tx, {
