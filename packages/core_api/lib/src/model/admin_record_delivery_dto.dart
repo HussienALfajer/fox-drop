@@ -15,7 +15,7 @@ part 'admin_record_delivery_dto.g.dart';
 /// AdminRecordDeliveryDto
 ///
 /// Properties:
-/// * [received] - What the customer paid, one line per currency.
+/// * [received] - What the customer paid, one line per currency; none only for an amount of 0.
 /// * [change] - The change given back, one line per currency; a tip is recorded as given (K14).
 /// * [amountDue]
 /// * [shortfall]
@@ -23,7 +23,7 @@ part 'admin_record_delivery_dto.g.dart';
 @BuiltValue()
 abstract class AdminRecordDeliveryDto
     implements Built<AdminRecordDeliveryDto, AdminRecordDeliveryDtoBuilder> {
-  /// What the customer paid, one line per currency.
+  /// What the customer paid, one line per currency; none only for an amount of 0.
   @BuiltValueField(wireName: r'received')
   BuiltList<AdminRecordDeliveryDtoReceivedInner> get received;
 

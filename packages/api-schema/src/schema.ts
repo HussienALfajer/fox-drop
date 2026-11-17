@@ -6589,6 +6589,12 @@ export interface components {
                 id: string;
                 /** @description Shown as #10423 (AP §4.8). */
                 number: string;
+                /** @description CU §11.2: «إعادة توصيل مجانية لطلب #{رقم}» (AP §9.9.3): the order whose items it re-delivers; a total of 0, never cancelled or rated. */
+                redeliveryOf: {
+                    /** Format: uuid */
+                    orderId: string;
+                    number: string;
+                } | null;
                 /**
                  * @description AP §8.1.
                  * @enum {string}
@@ -6821,6 +6827,12 @@ export interface components {
                 id: string;
                 /** @description Shown as #10423 (AP §4.8). */
                 number: string;
+                /** @description CU §11.2: «إعادة توصيل مجانية لطلب #{رقم}» (AP §9.9.3): the order whose items it re-delivers; a total of 0, never cancelled or rated. */
+                redeliveryOf: {
+                    /** Format: uuid */
+                    orderId: string;
+                    number: string;
+                } | null;
                 /**
                  * @description AP §8.1.
                  * @enum {string}
@@ -7109,6 +7121,12 @@ export interface components {
                 id: string;
                 /** @description Shown as #10423 (AP §4.8). */
                 number: string;
+                /** @description «إعادة توصيل مجانية لطلب #{رقم}» (AP §9.9.3): the order whose items it re-delivers (owner decision 2026-11-17: the badge); its items carry no price when the restaurant replaces them. */
+                redeliveryOf: {
+                    /** Format: uuid */
+                    orderId: string;
+                    number: string;
+                } | null;
                 /**
                  * @description AP §8.1; the board column (RA §8.1–8.2).
                  * @enum {string}
@@ -7318,6 +7336,12 @@ export interface components {
                 id: string;
                 /** @description Shown as #10423 (AP §4.8). */
                 number: string;
+                /** @description «إعادة توصيل مجانية لطلب #{رقم}» (AP §9.9.3): the order whose items it re-delivers (owner decision 2026-11-17: the badge); its items carry no price when the restaurant replaces them. */
+                redeliveryOf: {
+                    /** Format: uuid */
+                    orderId: string;
+                    number: string;
+                } | null;
                 /**
                  * @description AP §8.1; the board column (RA §8.1–8.2).
                  * @enum {string}
@@ -8207,7 +8231,7 @@ export interface components {
             reason: string;
         };
         AdminRecordDeliveryDto: {
-            /** @description What the customer paid, one line per currency. */
+            /** @description What the customer paid, one line per currency; none only for an amount of 0. */
             received: {
                 /** @description Integer minor units (AP §8.6). */
                 amount: string;
@@ -8518,6 +8542,18 @@ export interface components {
                     acknowledgedAt: string | null;
                     /** @description The captain's «حسناً». */
                     captainSeenAt: string | null;
+                } | null;
+                /** @description «إعادة توصيل مجانية» (AP §9.9.3): the order and ticket it comes from. */
+                redelivery: {
+                    /** Format: uuid */
+                    ofOrderId: string;
+                    ofNumber: string;
+                    /** Format: uuid */
+                    ticketId: string;
+                    /** @enum {string} */
+                    responsible: "restaurant" | "captain" | "platform";
+                    /** @description Its captain's pay charged to the responsible party. */
+                    chargePay: boolean;
                 } | null;
                 /** @description While placed, accepted or ready: the choices of «إلغاء الطلب» (AP §9.3.2). */
                 cancelChoices: {
@@ -9263,7 +9299,7 @@ export interface components {
                 /** @description «محلولة» */
                 resolution: {
                     /** @enum {string} */
-                    code: "none_explained" | "compensation_code" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
+                    code: "none_explained" | "compensation_code" | "free_redelivery" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
                     responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
                     /** @description Sent to the ticket's party. */
                     message: string;
@@ -9355,7 +9391,7 @@ export interface components {
             /** @description «محلولة» */
             resolution: {
                 /** @enum {string} */
-                code: "none_explained" | "compensation_code" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
+                code: "none_explained" | "compensation_code" | "free_redelivery" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
                 responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
                 /** @description Sent to the ticket's party. */
                 message: string;
@@ -9397,6 +9433,12 @@ export interface components {
                 id: string;
                 /** @description Shown as #10423 (AP §4.8). */
                 number: string;
+                /** @description «إعادة توصيل مجانية لطلب #{رقم}» (AP §9.9.3): the order whose items it re-delivers (owner decision 2026-11-17: the badge); the customer pays 0. */
+                redeliveryOf: {
+                    /** Format: uuid */
+                    orderId: string;
+                    number: string;
+                } | null;
                 /** @enum {string} */
                 status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
                 /** @description Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown. */
@@ -9736,6 +9778,12 @@ export interface components {
                 id: string;
                 /** @description Shown as #10423 (AP §4.8). */
                 number: string;
+                /** @description «إعادة توصيل مجانية لطلب #{رقم}» (AP §9.9.3): the order whose items it re-delivers (owner decision 2026-11-17: the badge); the customer pays 0. */
+                redeliveryOf: {
+                    /** Format: uuid */
+                    orderId: string;
+                    number: string;
+                } | null;
                 /** @enum {string} */
                 status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
                 /** @description Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown. */
@@ -10035,7 +10083,7 @@ export interface components {
             } | null;
         };
         CaptainDeliverDto: {
-            /** @description What the customer paid, one line per currency. */
+            /** @description What the customer paid, one line per currency; none only for an amount of 0. */
             received: {
                 /** @description Integer minor units (AP §8.6). */
                 amount: string;
@@ -10114,7 +10162,7 @@ export interface components {
             };
         };
         CaptainOutcomePaymentDto: {
-            /** @description What the customer paid, one line per currency. */
+            /** @description What the customer paid, one line per currency; none only for an amount of 0. */
             received: {
                 /** @description Integer minor units (AP §8.6). */
                 amount: string;
@@ -10982,7 +11030,7 @@ export interface components {
                 /** @description «محلولة» */
                 resolution: {
                     /** @enum {string} */
-                    code: "none_explained" | "compensation_code" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
+                    code: "none_explained" | "compensation_code" | "free_redelivery" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
                     responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
                     /** @description Sent to the ticket's party. */
                     message: string;
@@ -11116,7 +11164,7 @@ export interface components {
             /** @description «محلولة» */
             resolution: {
                 /** @enum {string} */
-                code: "none_explained" | "compensation_code" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
+                code: "none_explained" | "compensation_code" | "free_redelivery" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
                 responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
                 /** @description Sent to the ticket's party. */
                 message: string;
@@ -11200,7 +11248,7 @@ export interface components {
             /** @description «محلولة» */
             resolution: {
                 /** @enum {string} */
-                code: "none_explained" | "compensation_code" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
+                code: "none_explained" | "compensation_code" | "free_redelivery" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
                 responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
                 /** @description Sent to the ticket's party. */
                 message: string;
@@ -11295,6 +11343,13 @@ export interface components {
                     currency: string;
                 }[];
             } | null;
+            /** @description «إعادة توصيل مجانية» orders placed for it, newest first (AP §9.9.3). */
+            redeliveries: {
+                /** Format: uuid */
+                orderId: string;
+                number: string;
+                status: string;
+            }[];
         };
         AdminTicketNoteDto: {
             /** Format: uuid */
@@ -11365,6 +11420,11 @@ export interface components {
             shortAmount: string | null;
             /** @description Whether the resolution is «كود تعويض». */
             code: boolean;
+            /**
+             * @description Whether the resolution is «إعادة توصيل مجانية».
+             * @default false
+             */
+            redelivery: boolean;
         };
         AdminTicketMoneyPreviewDto_Output: {
             currency: string | null;
@@ -11389,6 +11449,14 @@ export interface components {
                     currency: string;
                 };
             }[];
+            /** @description «إعادة توصيل مجانية» (AP §9.9.3): posted at its delivery, not now. */
+            redelivery: {
+                /** @description What its pickup pays the restaurant: 0 when it is responsible. */
+                pickupPayment: string;
+                commission: string;
+                /** @description What the responsible party bears at its delivery. */
+                merchantNet: string;
+            } | null;
         };
         AdminTicketResolveDto: {
             /** Format: uuid */
@@ -11397,7 +11465,7 @@ export interface components {
              * @description From the ticket kind's (AP §9.9.3).
              * @enum {string}
              */
-            resolution: "none_explained" | "compensation_code" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
+            resolution: "none_explained" | "compensation_code" | "free_redelivery" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
             /** @description Required for a general ticket; none for a price difference or a pickup dispute. */
             responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
             /** @description Sent to the ticket's party. */
@@ -11440,6 +11508,11 @@ export interface components {
                     note: string | null;
                 };
             } | null;
+            /**
+             * @description «إعادة توصيل مجانية»: its captain's pay charged to the responsible restaurant or captain.
+             * @default false
+             */
+            chargePay: boolean;
         };
         AdminTicketCloseDto: {
             /** Format: uuid */

@@ -51,7 +51,11 @@ describe('the resolution', () => {
   });
 
   it('offers each kind its own resolutions', () => {
-    expect(resolutionsOf('general')).toEqual(['compensation_code', 'none_explained']);
+    expect(resolutionsOf('general')).toEqual([
+      'compensation_code',
+      'free_redelivery',
+      'none_explained',
+    ]);
     expect(resolutionsOf('price_difference')).toEqual(['price_corrected', 'price_correct']);
     expect(resolutionsOf('pickup_dispute')).toEqual([
       'captain_paid',
@@ -344,5 +348,32 @@ describe('the money of a resolution', () => {
       }),
     ).toBeNull();
     expect(moneyProblem({ ...wrong, deliveredNormally: false })).toBe('not_delivered');
+  });
+
+  // AP §9.9.3, docs/domain/10 (slice 2.23d).
+  it('re-delivers the affected items of a normal delivery, never with the customer responsible', () => {
+    const redelivery = {
+      ...missing,
+      resolution: 'free_redelivery' as const,
+      codeValue: false,
+      chargePay: false,
+    };
+    expect(moneyProblem(redelivery)).toBeNull();
+    expect(moneyProblem({ ...redelivery, responsible: 'captain', chargePay: true })).toBeNull();
+    expect(moneyProblem({ ...redelivery, responsible: 'platform' })).toBeNull();
+    expect(moneyProblem({ ...redelivery, affectedLines: 0 })).toBe('affected_required');
+    expect(moneyProblem({ ...redelivery, responsible: 'customer' })).toBe('invalid_resolution');
+    expect(moneyProblem({ ...redelivery, codeValue: true })).toBe('invalid_resolution');
+    expect(moneyProblem({ ...redelivery, deliveredNormally: false })).toBe('not_delivered');
+    expect(moneyProblem({ ...redelivery, hasOrder: false })).toBe('order_required');
+    expect(moneyProblem({ ...redelivery, party: 'restaurant' })).toBe('invalid_resolution');
+    expect(moneyProblem({ ...redelivery, typeCode: 'amount_or_change', affectedLines: 0 })).toBe(
+      'invalid_resolution',
+    );
+    // The pay is charged to a responsible restaurant or captain only.
+    expect(moneyProblem({ ...redelivery, responsible: 'platform', chargePay: true })).toBe(
+      'invalid_resolution',
+    );
+    expect(moneyProblem({ ...missing, chargePay: true })).toBe('invalid_resolution');
   });
 });

@@ -5,7 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { type City, chosenCity, citiesQuery } from './cities.js';
 import { formatDateTime, formatMoney } from './format.js';
 import { useOpsChannel } from './live.js';
+import { statusKeys } from './order-labels.js';
 import { OPERATIONS_READ } from './orders-board.js';
+import { OPERATIONS_MANAGE } from './assign-captain.js';
 import {
   compensationOf,
   type CompensationForm,
@@ -18,6 +20,8 @@ import { type AdminSession, can } from './session.js';
 import { SlaTimer } from './tickets-page.js';
 import {
   cannedRepliesQuery,
+  chargesPay,
+  redeliveryParties,
   canManageTickets,
   canCloseTicket,
   canResolve,
@@ -82,6 +86,10 @@ const resolveRefusalKeys = {
   no_base_currency: 'tickets.refusal.noBaseCurrency',
   currency_changed: 'tickets.refusal.currencyChanged',
   money_already_resolved: 'tickets.refusal.moneyAlreadyResolved',
+  affected_required: 'tickets.refusal.affectedRequired',
+  captain_pay_unset: 'tickets.refusal.captainPayUnset',
+  restaurant_closed: 'tickets.refusal.restaurantClosed',
+  emergency_stop: 'tickets.refusal.emergencyStop',
   forbidden: 'tickets.refusal.forbidden',
 } as const satisfies Record<ResolveRefusal, string>;
 
@@ -187,6 +195,37 @@ function TicketDetail({ ticket, city }: { ticket: TicketPageData; city: City }) 
         <PickupDisputeFacts dispute={ticket.pickupDispute} timeZone={city.timeZone} />
       )}
       {ticket.order && <TicketOrderFacts order={ticket.order} />}
+      {ticket.redeliveries.length > 0 && (
+        <section>
+          <h2>{t('tickets.redelivery.heading')}</h2>
+          <ul>
+            {ticket.redeliveries.map((each) => {
+              const name = t('tickets.redelivery.order', { number: each.number });
+              const status =
+                each.status in statusKeys
+                  ? t(statusKeys[each.status as keyof typeof statusKeys])
+                  : null;
+              return (
+                <li key={each.orderId}>
+                  {can(session, OPERATIONS_READ) ? (
+                    <Link
+                      to="/orders/$orderId"
+                      params={{ orderId: each.orderId }}
+                      search={{ city: city.code }}
+                    >
+                      {name}
+                    </Link>
+                  ) : (
+                    name
+                  )}
+                  {status && ` — ${status}`}
+                </li>
+              );
+            })}
+          </ul>
+          <p>{t('tickets.redelivery.reopened')}</p>
+        </section>
+      )}
       {ticket.resolution && (
         <section>
           <h2>{t('tickets.resolved.heading')}</h2>
@@ -468,6 +507,9 @@ function ResolveTicket({
   const order = ticket.order;
   const wrongChange = ticket.typeCode === WRONG_CHANGE_TYPE;
   const coding = resolution === 'compensation_code';
+  // AP §9.9.3 (slice 2.23d).
+  const redelivering = resolution === 'free_redelivery';
+  const [chargePay, setChargePay] = useState(false);
   const [quantities, setQuantities] = useState<Record<number, string>>({});
   const [short, setShort] = useState('');
   const [codeForm, setCodeForm] = useState<CompensationForm>(emptyCompensation);
@@ -486,14 +528,16 @@ function ResolveTicket({
     coding && !wrongChange && order !== null ? compensationOf(codeForm, order.currency) : null;
   const asksMoney =
     responsible !== '' && affected !== null && (affected.length > 0 || shortAmount !== null);
+  const charging = redelivering && chargePay && chargesPay(responsible);
   const money = useQuery({
     ...moneyPreviewQuery(cityId, ticket.id, {
       responsible: responsible === '' ? 'platform' : responsible,
       affected: affected ?? [],
       shortAmount,
       code: coding,
+      redelivery: redelivering,
     }),
-    enabled: asksMoney,
+    enabled: asksMoney && (!redelivering || responsible !== 'customer'),
   });
   const moneyPreviewed = money.data?.status === 'done' ? money.data.preview : null;
   const ready =
@@ -505,6 +549,7 @@ function ResolveTicket({
     (!takesShort || shortAmount !== null) &&
     (!coding || wrongChange || code !== null) &&
     (!coding || !wrongChange || shortAmount !== null) &&
+    (!redelivering || (responsible !== 'customer' && affected !== null && affected.length > 0)) &&
     (!asksMoney || (moneyPreviewed !== null && !money.isFetching));
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -519,6 +564,7 @@ function ResolveTicket({
         affected: affected ?? [],
         shortAmount,
         code,
+        chargePay: charging,
       },
     });
   };
@@ -549,6 +595,9 @@ function ResolveTicket({
             <option value="">{t('tickets.choose')}</option>
             {Object.entries(responsibleKeys)
               .filter(([party]) => !(wrongChange && order !== null && party === 'restaurant'))
+              .filter(
+                ([party]) => !redelivering || redeliveryParties.includes(party as ResponsibleParty),
+              )
               .map(([party, key]) => (
                 <option key={party} value={party}>
                   {t(key)}
@@ -618,6 +667,22 @@ function ResolveTicket({
           onShort={setShort}
           invalid={affected === null || shortInvalid}
         />
+      )}
+      {redelivering && (
+        <>
+          <p>{t('tickets.redelivery.note')}</p>
+          {chargesPay(responsible) && can(session, OPERATIONS_MANAGE) && (
+            <label>
+              <input
+                type="checkbox"
+                checked={chargePay}
+                onChange={(event) => setChargePay(event.target.checked)}
+              />
+              {t('tickets.redelivery.chargePay')}
+            </label>
+          )}
+          {!charging && <p>{t('tickets.redelivery.chargePayNote')}</p>}
+        </>
       )}
       {coding && wrongChange && <p>{t('tickets.money.wrongChangeCode')}</p>}
       {coding && !wrongChange && compensations.data && (
@@ -747,11 +812,46 @@ function MoneyPreviewLines({
     affectedValue: string;
     merchantDebit: string;
     captainCharge: string;
+    redelivery: { pickupPayment: string; commission: string; merchantNet: string } | null;
   };
 }) {
   const { t } = useTranslation();
   if (preview.currency === null) return null;
   const money = (amount: string) => formatMoney({ amount, currency: preview.currency! });
+  // AP §9.9.3 (slice 2.23d): nothing is posted now; what its delivery will.
+  const redelivery = preview.redelivery;
+  if (redelivery !== null) {
+    return (
+      <section>
+        <h3>{t('tickets.resolve.preview')}</h3>
+        <ul>
+          <li>{t('tickets.money.affectedValue', { amount: money(preview.affectedValue) })}</li>
+          {redelivery.pickupPayment === '0' ? (
+            <li>{t('tickets.redelivery.restaurantFree')}</li>
+          ) : (
+            <>
+              <li>
+                {t('tickets.redelivery.pickupPayment', {
+                  amount: money(redelivery.pickupPayment),
+                })}
+              </li>
+              <li>
+                {t('tickets.redelivery.commission', { amount: money(redelivery.commission) })}
+              </li>
+              <li>
+                {t(
+                  preview.captainCharge !== '0'
+                    ? 'tickets.redelivery.captainBears'
+                    : 'tickets.redelivery.platformBears',
+                  { amount: money(redelivery.merchantNet) },
+                )}
+              </li>
+            </>
+          )}
+        </ul>
+      </section>
+    );
+  }
   return (
     <section>
       <h3>{t('tickets.resolve.preview')}</h3>

@@ -57,6 +57,7 @@ import {
   useResendNotification,
 } from './resend-notification.js';
 import { can } from './session.js';
+import { canReadTickets } from './tickets.js';
 
 const route = getRouteApi('/signed-in/orders/$orderId');
 
@@ -118,6 +119,27 @@ export function OrderDetailPage() {
         {detail.captainTrack && <span> {t(trackKeys[detail.captainTrack])}</span>}
         {delivery && <span> {t(outcomeKeys[delivery.outcome])}</span>}
       </p>
+      {detail.redelivery && (
+        <p>
+          {/* AP §9.9.3 (slice 2.23d): the order and ticket it comes from. */}
+          <Link
+            to="/orders/$orderId"
+            params={{ orderId: detail.redelivery.ofOrderId }}
+            search={{ city: city.code }}
+          >
+            {t('order.redeliveryOf', { number: detail.redelivery.ofNumber })}
+          </Link>{' '}
+          {canReadTickets(session) && (
+            <Link
+              to="/tickets/$ticketId"
+              params={{ ticketId: detail.redelivery.ticketId }}
+              search={{ city: city.code }}
+            >
+              {t('order.redeliveryTicket')}
+            </Link>
+          )}
+        </p>
+      )}
       {detail.promisedAt && <p>{t('order.promisedAt', { time: time(detail.promisedAt) })}</p>}
       {detail.acceptance && (
         <p>

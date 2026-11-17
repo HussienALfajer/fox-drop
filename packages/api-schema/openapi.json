@@ -20842,6 +20842,32 @@
                   "type": "string",
                   "description": "Shown as #10423 (AP §4.8)."
                 },
+                "redeliveryOf": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "orderId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "number": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "orderId",
+                        "number"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "CU §11.2: «إعادة توصيل مجانية لطلب #{رقم}» (AP §9.9.3): the order whose items it re-delivers; a total of 0, never cancelled or rated."
+                },
                 "status": {
                   "type": "string",
                   "enum": [
@@ -21794,6 +21820,7 @@
               "required": [
                 "id",
                 "number",
+                "redeliveryOf",
                 "status",
                 "version",
                 "placedAt",
@@ -21843,6 +21870,32 @@
               "number": {
                 "type": "string",
                 "description": "Shown as #10423 (AP §4.8)."
+              },
+              "redeliveryOf": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "orderId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "number": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "orderId",
+                      "number"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "CU §11.2: «إعادة توصيل مجانية لطلب #{رقم}» (AP §9.9.3): the order whose items it re-delivers; a total of 0, never cancelled or rated."
               },
               "status": {
                 "type": "string",
@@ -22796,6 +22849,7 @@
             "required": [
               "id",
               "number",
+              "redeliveryOf",
               "status",
               "version",
               "placedAt",
@@ -23115,6 +23169,32 @@
                 "number": {
                   "type": "string",
                   "description": "Shown as #10423 (AP §4.8)."
+                },
+                "redeliveryOf": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "orderId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "number": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "orderId",
+                        "number"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "«إعادة توصيل مجانية لطلب #{رقم}» (AP §9.9.3): the order whose items it re-delivers (owner decision 2026-11-17: the badge); its items carry no price when the restaurant replaces them."
                 },
                 "status": {
                   "type": "string",
@@ -23753,7 +23833,6 @@
                               "additionalProperties": false
                             },
                             "lines": {
-                              "minItems": 1,
                               "maxItems": 5,
                               "type": "array",
                               "items": {
@@ -23892,6 +23971,7 @@
               "required": [
                 "id",
                 "number",
+                "redeliveryOf",
                 "status",
                 "version",
                 "placedAt",
@@ -23997,6 +24077,32 @@
               "number": {
                 "type": "string",
                 "description": "Shown as #10423 (AP §4.8)."
+              },
+              "redeliveryOf": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "orderId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "number": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "orderId",
+                      "number"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "«إعادة توصيل مجانية لطلب #{رقم}» (AP §9.9.3): the order whose items it re-delivers (owner decision 2026-11-17: the badge); its items carry no price when the restaurant replaces them."
               },
               "status": {
                 "type": "string",
@@ -24635,7 +24741,6 @@
                             "additionalProperties": false
                           },
                           "lines": {
-                            "minItems": 1,
                             "maxItems": 5,
                             "type": "array",
                             "items": {
@@ -24774,6 +24879,7 @@
             "required": [
               "id",
               "number",
+              "redeliveryOf",
               "status",
               "version",
               "placedAt",
@@ -24876,7 +24982,6 @@
         "type": "object",
         "properties": {
           "receivedLines": {
-            "minItems": 1,
             "maxItems": 5,
             "type": "array",
             "items": {
@@ -25002,7 +25107,6 @@
         "type": "object",
         "properties": {
           "lines": {
-            "minItems": 1,
             "maxItems": 5,
             "type": "array",
             "items": {
@@ -27634,7 +27738,6 @@
         "type": "object",
         "properties": {
           "received": {
-            "minItems": 1,
             "maxItems": 5,
             "type": "array",
             "items": {
@@ -27656,7 +27759,7 @@
                 "currency"
               ]
             },
-            "description": "What the customer paid, one line per currency."
+            "description": "What the customer paid, one line per currency; none only for an amount of 0."
           },
           "change": {
             "maxItems": 5,
@@ -28984,6 +29087,52 @@
                   }
                 ],
                 "description": "AP §9.3.1 «cancellation (reason and party)»."
+              },
+              "redelivery": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "ofOrderId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "ofNumber": {
+                        "type": "string"
+                      },
+                      "ticketId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "responsible": {
+                        "type": "string",
+                        "enum": [
+                          "restaurant",
+                          "captain",
+                          "platform"
+                        ]
+                      },
+                      "chargePay": {
+                        "type": "boolean",
+                        "description": "Its captain's pay charged to the responsible party."
+                      }
+                    },
+                    "required": [
+                      "ofOrderId",
+                      "ofNumber",
+                      "ticketId",
+                      "responsible",
+                      "chargePay"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "«إعادة توصيل مجانية» (AP §9.9.3): the order and ticket it comes from."
               },
               "cancelChoices": {
                 "anyOf": [
@@ -30889,7 +31038,6 @@
                           "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                         },
                         "lines": {
-                          "minItems": 1,
                           "maxItems": 5,
                           "type": "array",
                           "items": {
@@ -30917,7 +31065,6 @@
                         "bookedLines": {
                           "anyOf": [
                             {
-                              "minItems": 1,
                               "maxItems": 5,
                               "type": "array",
                               "items": {
@@ -30950,7 +31097,6 @@
                         "receivedLines": {
                           "anyOf": [
                             {
-                              "minItems": 1,
                               "maxItems": 5,
                               "type": "array",
                               "items": {
@@ -31074,7 +31220,6 @@
                             "type": "string"
                           },
                           "receivedLines": {
-                            "minItems": 1,
                             "maxItems": 5,
                             "type": "array",
                             "items": {
@@ -31145,7 +31290,6 @@
                         ]
                       },
                       "received": {
-                        "minItems": 1,
                         "maxItems": 5,
                         "type": "array",
                         "items": {
@@ -31599,6 +31743,7 @@
               "acceptance",
               "readyAt",
               "cancellation",
+              "redelivery",
               "cancelChoices",
               "reassignChoices",
               "handover",
@@ -32306,6 +32451,7 @@
                           "enum": [
                             "none_explained",
                             "compensation_code",
+                            "free_redelivery",
                             "price_corrected",
                             "price_correct",
                             "captain_paid",
@@ -32759,6 +32905,7 @@
                     "enum": [
                       "none_explained",
                       "compensation_code",
+                      "free_redelivery",
                       "price_corrected",
                       "price_correct",
                       "captain_paid",
@@ -32998,6 +33145,32 @@
                   "number": {
                     "type": "string",
                     "description": "Shown as #10423 (AP §4.8)."
+                  },
+                  "redeliveryOf": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "orderId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "number": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "orderId",
+                          "number"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "«إعادة توصيل مجانية لطلب #{رقم}» (AP §9.9.3): the order whose items it re-delivers (owner decision 2026-11-17: the badge); the customer pays 0."
                   },
                   "status": {
                     "type": "string",
@@ -33316,7 +33489,6 @@
                     "type": "object",
                     "properties": {
                       "proposedLines": {
-                        "minItems": 1,
                         "maxItems": 5,
                         "type": "array",
                         "items": {
@@ -33342,7 +33514,6 @@
                         "description": "«ادفع للمطعم: {المبلغ}» proposes them (CA §10.5): one line, in the base when the restaurant and the captain both have it, else in their first common currency, else in the base."
                       },
                       "currencies": {
-                        "minItems": 1,
                         "maxItems": 5,
                         "type": "array",
                         "items": {
@@ -33427,7 +33598,6 @@
                                 "description": "The pickup payment of the request."
                               },
                               "lines": {
-                                "minItems": 1,
                                 "maxItems": 5,
                                 "type": "array",
                                 "items": {
@@ -33455,7 +33625,6 @@
                               "receivedLines": {
                                 "anyOf": [
                                   {
-                                    "minItems": 1,
                                     "maxItems": 5,
                                     "type": "array",
                                     "items": {
@@ -34014,6 +34183,7 @@
                 "required": [
                   "id",
                   "number",
+                  "redeliveryOf",
                   "status",
                   "version",
                   "captainTrack",
@@ -34415,6 +34585,32 @@
                 "type": "string",
                 "description": "Shown as #10423 (AP §4.8)."
               },
+              "redeliveryOf": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "orderId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "number": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "orderId",
+                      "number"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "«إعادة توصيل مجانية لطلب #{رقم}» (AP §9.9.3): the order whose items it re-delivers (owner decision 2026-11-17: the badge); the customer pays 0."
+              },
               "status": {
                 "type": "string",
                 "enum": [
@@ -34732,7 +34928,6 @@
                 "type": "object",
                 "properties": {
                   "proposedLines": {
-                    "minItems": 1,
                     "maxItems": 5,
                     "type": "array",
                     "items": {
@@ -34758,7 +34953,6 @@
                     "description": "«ادفع للمطعم: {المبلغ}» proposes them (CA §10.5): one line, in the base when the restaurant and the captain both have it, else in their first common currency, else in the base."
                   },
                   "currencies": {
-                    "minItems": 1,
                     "maxItems": 5,
                     "type": "array",
                     "items": {
@@ -34843,7 +35037,6 @@
                             "description": "The pickup payment of the request."
                           },
                           "lines": {
-                            "minItems": 1,
                             "maxItems": 5,
                             "type": "array",
                             "items": {
@@ -34871,7 +35064,6 @@
                           "receivedLines": {
                             "anyOf": [
                               {
-                                "minItems": 1,
                                 "maxItems": 5,
                                 "type": "array",
                                 "items": {
@@ -35430,6 +35622,7 @@
             "required": [
               "id",
               "number",
+              "redeliveryOf",
               "status",
               "version",
               "captainTrack",
@@ -35661,7 +35854,6 @@
         "type": "object",
         "properties": {
           "received": {
-            "minItems": 1,
             "maxItems": 5,
             "type": "array",
             "items": {
@@ -35683,7 +35875,7 @@
                 "currency"
               ]
             },
-            "description": "What the customer paid, one line per currency."
+            "description": "What the customer paid, one line per currency; none only for an amount of 0."
           },
           "change": {
             "maxItems": 5,
@@ -35972,7 +36164,6 @@
         "type": "object",
         "properties": {
           "received": {
-            "minItems": 1,
             "maxItems": 5,
             "type": "array",
             "items": {
@@ -35994,7 +36185,7 @@
                 "currency"
               ]
             },
-            "description": "What the customer paid, one line per currency."
+            "description": "What the customer paid, one line per currency; none only for an amount of 0."
           },
           "change": {
             "maxItems": 5,
@@ -36132,7 +36323,6 @@
         "type": "object",
         "properties": {
           "lines": {
-            "minItems": 1,
             "maxItems": 5,
             "type": "array",
             "items": {
@@ -40016,6 +40206,7 @@
                           "enum": [
                             "none_explained",
                             "compensation_code",
+                            "free_redelivery",
                             "price_corrected",
                             "price_correct",
                             "captain_paid",
@@ -40651,6 +40842,7 @@
                     "enum": [
                       "none_explained",
                       "compensation_code",
+                      "free_redelivery",
                       "price_corrected",
                       "price_correct",
                       "captain_paid",
@@ -41067,6 +41259,7 @@
                     "enum": [
                       "none_explained",
                       "compensation_code",
+                      "free_redelivery",
                       "price_corrected",
                       "price_correct",
                       "captain_paid",
@@ -41532,6 +41725,32 @@
               }
             ],
             "description": "A customer's general ticket on an order: its lines and money (AP §8.10)."
+          },
+          "redeliveries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "orderId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "number": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "orderId",
+                "number",
+                "status"
+              ],
+              "additionalProperties": false
+            },
+            "description": "«إعادة توصيل مجانية» orders placed for it, newest first (AP §9.9.3)."
           }
         },
         "required": [
@@ -41561,7 +41780,8 @@
           "closure",
           "notes",
           "pickupDispute",
-          "order"
+          "order",
+          "redeliveries"
         ],
         "additionalProperties": false
       },
@@ -41860,6 +42080,11 @@
           "code": {
             "type": "boolean",
             "description": "Whether the resolution is «كود تعويض»."
+          },
+          "redelivery": {
+            "default": false,
+            "description": "Whether the resolution is «إعادة توصيل مجانية».",
+            "type": "boolean"
           }
         },
         "required": [
@@ -41973,6 +42198,36 @@
               ],
               "additionalProperties": false
             }
+          },
+          "redelivery": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "pickupPayment": {
+                    "type": "string",
+                    "description": "What its pickup pays the restaurant: 0 when it is responsible."
+                  },
+                  "commission": {
+                    "type": "string"
+                  },
+                  "merchantNet": {
+                    "type": "string",
+                    "description": "What the responsible party bears at its delivery."
+                  }
+                },
+                "required": [
+                  "pickupPayment",
+                  "commission",
+                  "merchantNet"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«إعادة توصيل مجانية» (AP §9.9.3): posted at its delivery, not now."
           }
         },
         "required": [
@@ -41980,7 +42235,8 @@
           "affectedValue",
           "merchantDebit",
           "captainCharge",
-          "entries"
+          "entries",
+          "redelivery"
         ],
         "additionalProperties": false
       },
@@ -41997,6 +42253,7 @@
             "enum": [
               "none_explained",
               "compensation_code",
+              "free_redelivery",
               "price_corrected",
               "price_correct",
               "captain_paid",
@@ -42193,6 +42450,11 @@
                 "type": "null"
               }
             ]
+          },
+          "chargePay": {
+            "default": false,
+            "description": "«إعادة توصيل مجانية»: its captain's pay charged to the responsible restaurant or captain.",
+            "type": "boolean"
           }
         },
         "required": [

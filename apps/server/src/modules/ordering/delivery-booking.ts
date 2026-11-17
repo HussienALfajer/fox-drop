@@ -18,6 +18,7 @@ import { frozenAtPickup } from './order-edits.js';
 import { type OrderRow, recordTransition } from './order-events.js';
 import { orderKey, snapshotOf } from './order-views.js';
 import { postOrderJournals } from './outcome-facts.js';
+import { redeliveryEntries } from './redelivery.js';
 import { captainNet, type OutcomeJournal, type SetOutcome } from './outcome.js';
 import { journalRates } from './journal-rates.js';
 import {
@@ -184,7 +185,24 @@ export class DeliveryBooking {
     // under the order's lock, so an edit committed since counts.
     const frozen = await frozenAtPickup(tx, order);
     const discount = orderDiscount(order);
+    const [redelivery] = await tx
+      .select({
+        responsible: orders.redeliveryResponsible,
+        chargePay: orders.redeliveryChargePay,
+        captainId: orders.redeliveryCaptainId,
+      })
+      .from(orders)
+      .where(orderKey(order.id, order.placedAt));
     await this.post(tx, order, order.captainId, delivery, by.actor, {
+      redelivery:
+        redelivery?.responsible == null
+          ? null
+          : {
+              responsible: redelivery.responsible,
+              chargePay: redelivery.chargePay ?? false,
+              captainId: redelivery.captainId,
+              itemsValue: frozen.itemsValue,
+            },
       // docs/domain/04: after the restaurant-funded item discount.
       commission:
         delivery.commissionBp === null
@@ -393,6 +411,13 @@ export class DeliveryBooking {
     delivery: Delivery,
     actor: DeliveredBy['actor'],
     money: {
+      // AP §9.9.3 (slice 2.23d): a free re-delivery's party and pickup.
+      redelivery: {
+        responsible: 'restaurant' | 'captain' | 'platform';
+        chargePay: boolean;
+        captainId: string | null;
+        itemsValue: bigint;
+      } | null;
       commission: bigint | null;
       commissionToClearing: bigint;
       deliveryFee: bigint;
@@ -465,9 +490,14 @@ export class DeliveryBooking {
       },
       { accountId: clearing, currency: base, amount: -share },
     ]);
-    // AP §8.5.2, AP §9.6.3: a test order's pay is the platform's test cost.
+    // AP §8.5.2, AP §9.6.3: a test order's pay is the platform's test cost;
+    // a free re-delivery's the remedy's cost (AP §9.9.3).
     const payCounter = await account(
-      money.commission === null ? 'platform.test_cost' : 'platform.captain_pay',
+      money.commission === null
+        ? 'platform.test_cost'
+        : money.redelivery !== null
+          ? 'platform.compensation_cost'
+          : 'platform.captain_pay',
       base,
     );
     const earnings = await account('captain.earnings', base, captainId);
@@ -481,6 +511,28 @@ export class DeliveryBooking {
         { accountId: earnings, currency: base, amount: -amount },
         { accountId: payCounter, currency: base, amount },
       ]);
+    }
+    // AP §9.9.3, docs/domain/10: the re-delivery's items and pay borne by
+    // its responsible party.
+    if (money.redelivery !== null) {
+      await postOrderJournals(
+        tx,
+        this.ledger,
+        order,
+        ledgerActor,
+        redeliveryEntries({
+          responsible: money.redelivery.responsible,
+          restaurantId: order.restaurantId,
+          responsibleCaptainId: money.redelivery.captainId,
+          currency: base,
+          itemsValue: money.redelivery.itemsValue,
+          commission: money.commission ?? 0n,
+          payTotal:
+            delivery.pay.orderPay + delivery.pay.waiting + (delivery.peakBonus?.amount ?? 0n),
+          chargePay: money.redelivery.chargePay,
+          testOrder: money.commission === null,
+        }),
+      );
     }
   }
 }

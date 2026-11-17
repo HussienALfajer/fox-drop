@@ -29,9 +29,11 @@ Map<String, Object?> _order({
   String? promoCode,
   String discount = '0',
   String total = '14000',
+  Map<String, Object?>? redeliveryOf,
 }) => {
   'id': _orderId,
   'number': '10423',
+  'redeliveryOf': redeliveryOf,
   'status': status,
   'version': version,
   'placedAt': '2026-11-07T12:00:00.000Z',
@@ -677,6 +679,28 @@ void main() {
       await tester.tap(find.byKey(const Key('help-cancel')));
       await tester.pumpAndSettle();
     }
+
+    // CU §11.2, AP §9.9.3 (slice 2.23d).
+    testWidgets(
+      'shows a free re-delivery with its badge and offers no cancellation',
+      (tester) async {
+        final app = await open(tester, [
+          FakeAnswer(200, {
+            'order': _order(
+              total: '0',
+              redeliveryOf: {'orderId': _orderId, 'number': '10401'},
+            ),
+          }),
+        ], before: reasons);
+        expect(find.text('إعادة توصيل مجانية لطلب #10401'), findsOneWidget);
+        expect(find.byKey(const Key('order-cancel')), findsNothing);
+        await tester.tap(find.byKey(const Key('order-help')));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const Key('help-cancel')), findsNothing);
+        expect(find.byKey(const Key('help-cancel-via-support')), findsNothing);
+        await app.done(tester);
+      },
+    );
 
     testWidgets(
       'cancels a placed order with a reason, then shows «ألغيت طلبك»',

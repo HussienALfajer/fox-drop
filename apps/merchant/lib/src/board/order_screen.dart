@@ -71,6 +71,12 @@ class OrderScreen extends ConsumerWidget {
               ),
               subtitle: timer == null ? null : Text(timer),
             ),
+            // AP §9.9.3 (owner decision 2026-11-17): the badge.
+            if (order.redeliveryOf case final of?)
+              ListTile(
+                key: const Key('redelivery-of'),
+                title: Text(l10n.redeliveryOf(of.number)),
+              ),
             // RA §8.15: «قبلته العمليات».
             if (order.acceptance?.byOperations ?? false)
               ListTile(title: Text(l10n.merchantBadgeByOperations)),

@@ -23,6 +23,7 @@ part 'admin_ticket_resolve_dto.g.dart';
 /// * [affected] - A problem after delivery: the affected lines (V).
 /// * [shortAmount] - «مشكلة في المبلغ أو الباقي»: M, what the customer was short.
 /// * [code]
+/// * [chargePay] - «إعادة توصيل مجانية»: its captain's pay charged to the responsible restaurant or captain.
 @BuiltValue()
 abstract class AdminTicketResolveDto
     implements Built<AdminTicketResolveDto, AdminTicketResolveDtoBuilder> {
@@ -32,7 +33,7 @@ abstract class AdminTicketResolveDto
   /// From the ticket kind's (AP §9.9.3).
   @BuiltValueField(wireName: r'resolution')
   AdminTicketResolveDtoResolutionEnum get resolution;
-  // enum resolutionEnum {  none_explained,  compensation_code,  price_corrected,  price_correct,  captain_paid,  accounts_corrected,  payment_correct,  };
+  // enum resolutionEnum {  none_explained,  compensation_code,  free_redelivery,  price_corrected,  price_correct,  captain_paid,  accounts_corrected,  payment_correct,  };
 
   /// Required for a general ticket; none for a price difference or a pickup dispute.
   @BuiltValueField(wireName: r'responsible')
@@ -59,6 +60,10 @@ abstract class AdminTicketResolveDto
   @BuiltValueField(wireName: r'code')
   AdminTicketResolveDtoCode? get code;
 
+  /// «إعادة توصيل مجانية»: its captain's pay charged to the responsible restaurant or captain.
+  @BuiltValueField(wireName: r'chargePay')
+  bool? get chargePay;
+
   AdminTicketResolveDto._();
 
   factory AdminTicketResolveDto([
@@ -66,8 +71,9 @@ abstract class AdminTicketResolveDto
   ]) = _$AdminTicketResolveDto;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminTicketResolveDtoBuilder b) =>
-      b..affected = ListBuilder();
+  static void _defaults(AdminTicketResolveDtoBuilder b) => b
+    ..affected = ListBuilder()
+    ..chargePay = false;
 
   @BuiltValueSerializer(custom: true)
   static Serializer<AdminTicketResolveDto> get serializer =>
@@ -144,6 +150,13 @@ class _$AdminTicketResolveDtoSerializer
       yield serializers.serialize(
         object.code,
         specifiedType: const FullType.nullable(AdminTicketResolveDtoCode),
+      );
+    }
+    if (object.chargePay != null) {
+      yield r'chargePay';
+      yield serializers.serialize(
+        object.chargePay,
+        specifiedType: const FullType(bool),
       );
     }
   }
@@ -264,6 +277,16 @@ class _$AdminTicketResolveDtoSerializer
           if (valueDes == null) continue;
           result.code.replace(valueDes);
           break;
+        case r'chargePay':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(bool),
+                  )
+                  as bool?;
+          if (valueDes == null) continue;
+          result.chargePay = valueDes;
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -301,6 +324,9 @@ class AdminTicketResolveDtoResolutionEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'compensation_code')
   static const AdminTicketResolveDtoResolutionEnum compensationCode =
       _$adminTicketResolveDtoResolutionEnum_compensationCode;
+  @BuiltValueEnumConst(wireName: r'free_redelivery')
+  static const AdminTicketResolveDtoResolutionEnum freeRedelivery =
+      _$adminTicketResolveDtoResolutionEnum_freeRedelivery;
   @BuiltValueEnumConst(wireName: r'price_corrected')
   static const AdminTicketResolveDtoResolutionEnum priceCorrected =
       _$adminTicketResolveDtoResolutionEnum_priceCorrected;

@@ -58,7 +58,10 @@ export function checkLines(
   accepted: readonly string[],
 ): LinesRefusal | null {
   const currencies = new Set(lines.map((line) => line.currency));
-  if (lines.length === 0 || currencies.size !== lines.length) return 'invalid_lines';
+  // A pickup payment of 0 (a free re-delivery the restaurant replaces, AP
+  // §9.9.3) is paid with no lines; any other needs one at least.
+  if (lines.length === 0) return due === 0n ? null : 'invalid_lines';
+  if (currencies.size !== lines.length) return 'invalid_lines';
   if (lines.some((line) => line.amount <= 0n)) return 'invalid_lines';
   if (lines.some((line) => !accepted.includes(line.currency))) return 'currency_not_accepted';
   if (due === null) return null;
@@ -111,6 +114,7 @@ export function proposeLines(
   due: bigint,
 ): PaymentLine[] {
   const base = snapshot.baseCurrency;
+  if (due === 0n) return [];
   const carries = carried ?? [base];
   if (carries.includes(base) && accepted.includes(base)) return [{ currency: base, amount: due }];
   for (const entry of snapshot.currencies) {
@@ -338,6 +342,9 @@ export class PickupBooking {
         },
       );
     }
+    // A pickup payment of 0 (a free re-delivery the restaurant replaces, AP
+    // §9.9.3) moves no cash.
+    if (entries.length === 0) return;
     await this.ledger.post(
       {
         cityId,

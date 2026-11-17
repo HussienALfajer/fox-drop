@@ -13,6 +13,9 @@ const AdminTicketResolveDtoResolutionEnum
 _$adminTicketResolveDtoResolutionEnum_compensationCode =
     const AdminTicketResolveDtoResolutionEnum._('compensationCode');
 const AdminTicketResolveDtoResolutionEnum
+_$adminTicketResolveDtoResolutionEnum_freeRedelivery =
+    const AdminTicketResolveDtoResolutionEnum._('freeRedelivery');
+const AdminTicketResolveDtoResolutionEnum
 _$adminTicketResolveDtoResolutionEnum_priceCorrected =
     const AdminTicketResolveDtoResolutionEnum._('priceCorrected');
 const AdminTicketResolveDtoResolutionEnum
@@ -35,6 +38,8 @@ _$adminTicketResolveDtoResolutionEnumValueOf(String name) {
       return _$adminTicketResolveDtoResolutionEnum_noneExplained;
     case 'compensationCode':
       return _$adminTicketResolveDtoResolutionEnum_compensationCode;
+    case 'freeRedelivery':
+      return _$adminTicketResolveDtoResolutionEnum_freeRedelivery;
     case 'priceCorrected':
       return _$adminTicketResolveDtoResolutionEnum_priceCorrected;
     case 'priceCorrect':
@@ -56,6 +61,7 @@ _$adminTicketResolveDtoResolutionEnumValues =
       const <AdminTicketResolveDtoResolutionEnum>[
         _$adminTicketResolveDtoResolutionEnum_noneExplained,
         _$adminTicketResolveDtoResolutionEnum_compensationCode,
+        _$adminTicketResolveDtoResolutionEnum_freeRedelivery,
         _$adminTicketResolveDtoResolutionEnum_priceCorrected,
         _$adminTicketResolveDtoResolutionEnum_priceCorrect,
         _$adminTicketResolveDtoResolutionEnum_captainPaid,
@@ -116,6 +122,7 @@ class _$AdminTicketResolveDtoResolutionEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'noneExplained': 'none_explained',
     'compensationCode': 'compensation_code',
+    'freeRedelivery': 'free_redelivery',
     'priceCorrected': 'price_corrected',
     'priceCorrect': 'price_correct',
     'captainPaid': 'captain_paid',
@@ -125,6 +132,7 @@ class _$AdminTicketResolveDtoResolutionEnumSerializer
   static const Map<Object, String> _fromWire = const <Object, String>{
     'none_explained': 'noneExplained',
     'compensation_code': 'compensationCode',
+    'free_redelivery': 'freeRedelivery',
     'price_corrected': 'priceCorrected',
     'price_correct': 'priceCorrect',
     'captain_paid': 'captainPaid',
@@ -213,6 +221,8 @@ class _$AdminTicketResolveDto extends AdminTicketResolveDto {
   final String? shortAmount;
   @override
   final AdminTicketResolveDtoCode? code;
+  @override
+  final bool? chargePay;
 
   factory _$AdminTicketResolveDto([
     void Function(AdminTicketResolveDtoBuilder)? updates,
@@ -227,6 +237,7 @@ class _$AdminTicketResolveDto extends AdminTicketResolveDto {
     this.affected,
     this.shortAmount,
     this.code,
+    this.chargePay,
   }) : super._();
   @override
   AdminTicketResolveDto rebuild(
@@ -248,7 +259,8 @@ class _$AdminTicketResolveDto extends AdminTicketResolveDto {
         receivedLines == other.receivedLines &&
         affected == other.affected &&
         shortAmount == other.shortAmount &&
-        code == other.code;
+        code == other.code &&
+        chargePay == other.chargePay;
   }
 
   @override
@@ -262,6 +274,7 @@ class _$AdminTicketResolveDto extends AdminTicketResolveDto {
     _$hash = $jc(_$hash, affected.hashCode);
     _$hash = $jc(_$hash, shortAmount.hashCode);
     _$hash = $jc(_$hash, code.hashCode);
+    _$hash = $jc(_$hash, chargePay.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -276,7 +289,8 @@ class _$AdminTicketResolveDto extends AdminTicketResolveDto {
           ..add('receivedLines', receivedLines)
           ..add('affected', affected)
           ..add('shortAmount', shortAmount)
-          ..add('code', code))
+          ..add('code', code)
+          ..add('chargePay', chargePay))
         .toString();
   }
 }
@@ -330,6 +344,10 @@ class AdminTicketResolveDtoBuilder
       _$this._code ??= AdminTicketResolveDtoCodeBuilder();
   set code(AdminTicketResolveDtoCodeBuilder? code) => _$this._code = code;
 
+  bool? _chargePay;
+  bool? get chargePay => _$this._chargePay;
+  set chargePay(bool? chargePay) => _$this._chargePay = chargePay;
+
   AdminTicketResolveDtoBuilder() {
     AdminTicketResolveDto._defaults(this);
   }
@@ -345,6 +363,7 @@ class AdminTicketResolveDtoBuilder
       _affected = $v.affected?.toBuilder();
       _shortAmount = $v.shortAmount;
       _code = $v.code?.toBuilder();
+      _chargePay = $v.chargePay;
       _$v = null;
     }
     return this;
@@ -389,6 +408,7 @@ class AdminTicketResolveDtoBuilder
             affected: _affected?.build(),
             shortAmount: shortAmount,
             code: _code?.build(),
+            chargePay: chargePay,
           );
     } catch (_) {
       late String _$failedField;

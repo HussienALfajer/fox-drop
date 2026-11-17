@@ -250,6 +250,8 @@ class _$MerchantOrderDtoOutputOrder extends MerchantOrderDtoOutputOrder {
   @override
   final String number;
   @override
+  final MerchantOrdersDtoOutputOrdersInnerRedeliveryOf? redeliveryOf;
+  @override
   final MerchantOrderDtoOutputOrderStatusEnum status;
   @override
   final int version;
@@ -297,6 +299,7 @@ class _$MerchantOrderDtoOutputOrder extends MerchantOrderDtoOutputOrder {
   _$MerchantOrderDtoOutputOrder._({
     required this.id,
     required this.number,
+    this.redeliveryOf,
     required this.status,
     required this.version,
     required this.placedAt,
@@ -333,6 +336,7 @@ class _$MerchantOrderDtoOutputOrder extends MerchantOrderDtoOutputOrder {
     return other is MerchantOrderDtoOutputOrder &&
         id == other.id &&
         number == other.number &&
+        redeliveryOf == other.redeliveryOf &&
         status == other.status &&
         version == other.version &&
         placedAt == other.placedAt &&
@@ -360,6 +364,7 @@ class _$MerchantOrderDtoOutputOrder extends MerchantOrderDtoOutputOrder {
     var _$hash = 0;
     _$hash = $jc(_$hash, id.hashCode);
     _$hash = $jc(_$hash, number.hashCode);
+    _$hash = $jc(_$hash, redeliveryOf.hashCode);
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, version.hashCode);
     _$hash = $jc(_$hash, placedAt.hashCode);
@@ -389,6 +394,7 @@ class _$MerchantOrderDtoOutputOrder extends MerchantOrderDtoOutputOrder {
     return (newBuiltValueToStringHelper(r'MerchantOrderDtoOutputOrder')
           ..add('id', id)
           ..add('number', number)
+          ..add('redeliveryOf', redeliveryOf)
           ..add('status', status)
           ..add('version', version)
           ..add('placedAt', placedAt)
@@ -428,6 +434,14 @@ class MerchantOrderDtoOutputOrderBuilder
   String? _number;
   String? get number => _$this._number;
   set number(String? number) => _$this._number = number;
+
+  MerchantOrdersDtoOutputOrdersInnerRedeliveryOfBuilder? _redeliveryOf;
+  MerchantOrdersDtoOutputOrdersInnerRedeliveryOfBuilder get redeliveryOf =>
+      _$this._redeliveryOf ??=
+          MerchantOrdersDtoOutputOrdersInnerRedeliveryOfBuilder();
+  set redeliveryOf(
+    MerchantOrdersDtoOutputOrdersInnerRedeliveryOfBuilder? redeliveryOf,
+  ) => _$this._redeliveryOf = redeliveryOf;
 
   MerchantOrderDtoOutputOrderStatusEnum? _status;
   MerchantOrderDtoOutputOrderStatusEnum? get status => _$this._status;
@@ -553,6 +567,7 @@ class MerchantOrderDtoOutputOrderBuilder
     if ($v != null) {
       _id = $v.id;
       _number = $v.number;
+      _redeliveryOf = $v.redeliveryOf?.toBuilder();
       _status = $v.status;
       _version = $v.version;
       _placedAt = $v.placedAt;
@@ -607,6 +622,7 @@ class MerchantOrderDtoOutputOrderBuilder
               r'MerchantOrderDtoOutputOrder',
               'number',
             ),
+            redeliveryOf: _redeliveryOf?.build(),
             status: BuiltValueNullFieldError.checkNotNull(
               status,
               r'MerchantOrderDtoOutputOrder',
@@ -651,6 +667,9 @@ class MerchantOrderDtoOutputOrderBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'redeliveryOf';
+        _redeliveryOf?.build();
+
         _$failedField = 'acceptance';
         _acceptance?.build();
 

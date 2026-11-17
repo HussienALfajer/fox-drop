@@ -98,6 +98,8 @@ describe('checkDoorPayment (AP §8.6, CA §9.7)', () => {
     expect(checkDoorPayment(snapshot, [], [], 44_000n)).toBe('invalid_lines');
     expect(checkDoorPayment(snapshot, [TRY(1n), TRY(2n)], [], 3n)).toBe('invalid_lines');
     expect(checkDoorPayment(snapshot, [TRY(0n)], [], 0n)).toBe('invalid_lines');
+    // A free re-delivery's amount of 0 (AP §9.9.3) is collected with no line.
+    expect(checkDoorPayment(snapshot, [], [], 0n)).toMatchObject({ netBase: 0n, shortfall: 0n });
     expect(checkDoorPayment(snapshot, [TRY(44_000n)], [TRY(0n)], 44_000n)).toBe('invalid_lines');
     expect(checkDoorPayment(snapshot, [{ currency: 'EUR', amount: 1_000n }], [], 1_000n)).toBe(
       'currency_not_accepted',

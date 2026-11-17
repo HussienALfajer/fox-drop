@@ -73,6 +73,9 @@ class OrderView extends ConsumerWidget {
         LinearProgressIndicator(value: step / 4),
         const SizedBox(height: 8),
         Text(l10n.captainOrderItems(order.number, order.itemCount)),
+        // AP §9.9.3 (owner decision 2026-11-17): the badge, on every step.
+        if (order.redeliveryOf case final of?)
+          Text(l10n.redeliveryOf(of.number), key: const Key('redelivery-of')),
         switch (step) {
           1 => _ToRestaurant(order: order),
           // A refusal for missing items, or other lines, starts the item
@@ -347,9 +350,16 @@ class _AtRestaurantState extends ConsumerState<_AtRestaurant> {
                   )
           // The payment shows once every item is ticked (C7).
           else if (allTicked) ...[
-            Text(
-              l10n.captainPayRestaurant(proposed.map(l10n.moneyOf).join(' + ')),
-            ),
+            // A free re-delivery the restaurant replaces pays nothing (AP
+            // §9.9.3): no lines and no split.
+            if (proposed.isEmpty)
+              Text(l10n.captainPayNothing, key: const Key('pay-nothing'))
+            else
+              Text(
+                l10n.captainPayRestaurant(
+                  proposed.map(l10n.moneyOf).join(' + '),
+                ),
+              ),
             if (_split case final split?) ...[
               for (final line in order.pickup.currencies.nonNulls)
                 TextField(
@@ -366,7 +376,8 @@ class _AtRestaurantState extends ConsumerState<_AtRestaurant> {
                   onChanged: (_) => setState(() => _invalid = false),
                 ),
               if (_invalid) Text(l10n.captainInvalidAmount),
-            ] else if (order.pickup.currencies.length > 1)
+            ] else if (proposed.isNotEmpty &&
+                order.pickup.currencies.length > 1)
               TextButton(
                 onPressed: () => _startSplit(proposed),
                 child: Text(l10n.captainSplitPickup),

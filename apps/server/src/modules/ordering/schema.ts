@@ -1,4 +1,5 @@
 import { sql } from 'drizzle-orm';
+import { redeliveryParties } from './redelivery.js';
 import {
   bigint,
   boolean,
@@ -250,6 +251,18 @@ export const orders = ordering.table(
     rejectReasonLabel: text('reject_reason_label'),
     rejectCustomerText: text('reject_customer_text'),
     rejectItemIds: jsonb('reject_item_ids'),
+    // AP §9.9.3 «إعادة توصيل مجانية» (slice 2.23d): a re-delivery support
+    // created from a ticket keeps the order it replaces items of (its id,
+    // `placed_at` and number), the ticket, who bears it, whether its
+    // captain's pay is charged to that party, and the captain who delivered
+    // the original order when it is the captain. The customer pays 0.
+    redeliveryOfId: uuid('redelivery_of_id'),
+    redeliveryOfPlacedAt: timestamp('redelivery_of_placed_at', { withTimezone: true }),
+    redeliveryOfNumber: bigint('redelivery_of_number', { mode: 'bigint' }),
+    redeliveryTicketId: uuid('redelivery_ticket_id'),
+    redeliveryResponsible: text('redelivery_responsible', { enum: redeliveryParties }),
+    redeliveryChargePay: boolean('redelivery_charge_pay'),
+    redeliveryCaptainId: uuid('redelivery_captain_id'),
   },
   (table) => [
     primaryKey({ columns: [table.id, table.placedAt] }),
@@ -291,8 +304,18 @@ export const orders = ordering.table(
     check('orders_version', sql`${table.version} >= 1`),
     check(
       'orders_money',
-      sql`${table.itemsValue} >= 0 AND ${table.deliveryFee} >= 0 AND ${table.discount} >= 0 AND ${table.total} >= 0 AND ${table.total} = ${table.itemsValue} + ${table.deliveryFee} - ${table.discount} + ${table.rounding}`,
+      sql`${table.itemsValue} >= 0 AND ${table.deliveryFee} >= 0 AND ${table.discount} >= 0 AND ${table.total} >= 0 AND (${table.redeliveryOfId} IS NOT NULL OR ${table.total} = ${table.itemsValue} + ${table.deliveryFee} - ${table.discount} + ${table.rounding}) AND (${table.redeliveryOfId} IS NULL OR (${table.total} = 0 AND ${table.deliveryFee} = 0 AND ${table.discount} = 0 AND ${table.rounding} = 0))`,
     ),
+    check(
+      'orders_redelivery',
+      sql`(${table.redeliveryOfId} IS NULL) = (${table.redeliveryOfPlacedAt} IS NULL) AND (${table.redeliveryOfId} IS NULL) = (${table.redeliveryOfNumber} IS NULL) AND (${table.redeliveryOfId} IS NULL) = (${table.redeliveryTicketId} IS NULL) AND (${table.redeliveryOfId} IS NULL) = (${table.redeliveryResponsible} IS NULL) AND (${table.redeliveryOfId} IS NULL) = (${table.redeliveryChargePay} IS NULL) AND (${table.redeliveryResponsible} IS NULL OR ${table.redeliveryResponsible} IN ('restaurant', 'captain', 'platform')) AND (coalesce(${table.redeliveryResponsible}, '') = 'captain') = (${table.redeliveryCaptainId} IS NOT NULL) AND (coalesce(${table.redeliveryResponsible}, '') <> 'platform' OR NOT ${table.redeliveryChargePay})`,
+    ),
+    index('orders_redelivery_ticket')
+      .on(table.redeliveryTicketId)
+      .where(sql`${table.redeliveryTicketId} IS NOT NULL`),
+    index('orders_redelivery_of')
+      .on(table.redeliveryOfId)
+      .where(sql`${table.redeliveryOfId} IS NOT NULL`),
     check(
       'orders_promo_code',
       sql`(${table.promoCodeId} IS NULL) = (${table.promoCode} IS NULL) AND (${table.promoCodeId} IS NULL) = (${table.promoTerms} IS NULL) AND (${table.promoCodeId} IS NOT NULL OR ${table.discount} = 0) AND ${table.discountMerchant} BETWEEN 0 AND ${table.discount}`,

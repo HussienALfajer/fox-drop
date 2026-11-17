@@ -8,6 +8,7 @@ import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_
 import 'package:core_api/src/model/admin_ticket_page_dto_output_notes_inner.dart';
 import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_resolution.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output_pickup_dispute.dart';
+import 'package:core_api/src/model/admin_ticket_page_dto_output_redeliveries_inner.dart';
 import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_sla.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output_order.dart';
 import 'package:built_value/built_value.dart';
@@ -45,6 +46,7 @@ part 'admin_ticket_page_dto_output.g.dart';
 /// * [notes] - Oldest first.
 /// * [pickupDispute]
 /// * [order]
+/// * [redeliveries] - «إعادة توصيل مجانية» orders placed for it, newest first (AP §9.9.3).
 @BuiltValue()
 abstract class AdminTicketPageDtoOutput
     implements
@@ -138,6 +140,10 @@ abstract class AdminTicketPageDtoOutput
 
   @BuiltValueField(wireName: r'order')
   AdminTicketPageDtoOutputOrder? get order;
+
+  /// «إعادة توصيل مجانية» orders placed for it, newest first (AP §9.9.3).
+  @BuiltValueField(wireName: r'redeliveries')
+  BuiltList<AdminTicketPageDtoOutputRedeliveriesInner> get redeliveries;
 
   AdminTicketPageDtoOutput._();
 
@@ -336,6 +342,13 @@ class _$AdminTicketPageDtoOutputSerializer
               AdminTicketPageDtoOutputOrder,
             ),
           );
+    yield r'redeliveries';
+    yield serializers.serialize(
+      object.redeliveries,
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminTicketPageDtoOutputRedeliveriesInner),
+      ]),
+    );
   }
 
   @override
@@ -634,6 +647,17 @@ class _$AdminTicketPageDtoOutputSerializer
                   as AdminTicketPageDtoOutputOrder?;
           if (valueDes == null) continue;
           result.order.replace(valueDes);
+          break;
+        case r'redeliveries':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminTicketPageDtoOutputRedeliveriesInner),
+                    ]),
+                  )
+                  as BuiltList<AdminTicketPageDtoOutputRedeliveriesInner>;
+          result.redeliveries.replace(valueDes);
           break;
         default:
           unhandled.add(key);

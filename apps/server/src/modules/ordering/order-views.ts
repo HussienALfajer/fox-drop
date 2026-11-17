@@ -69,6 +69,15 @@ export interface OrderView {
   // (no commission), for the owners' money lines (RA §8.4).
   commissionBp: number;
   testOrder: boolean;
+  // AP §9.9.3, CU §11.2 (slice 2.23d): a free re-delivery support placed
+  // from a ticket, with the order it re-delivers items of; null otherwise.
+  redelivery: {
+    ofOrderId: string;
+    ofNumber: bigint;
+    ticketId: string;
+    responsible: 'restaurant' | 'captain' | 'platform';
+    chargePay: boolean;
+  } | null;
   // Architecture §5.3, RA §4.3: every transition increments it; the apps
   // ignore an event not newer than the version they show.
   version: number;
@@ -300,6 +309,11 @@ export async function readOrders(
       restaurantId: orders.restaurantId,
       commissionBp: orders.commissionBp,
       testOrder: orders.testOrder,
+      redeliveryOfId: orders.redeliveryOfId,
+      redeliveryOfNumber: orders.redeliveryOfNumber,
+      redeliveryTicketId: orders.redeliveryTicketId,
+      redeliveryResponsible: orders.redeliveryResponsible,
+      redeliveryChargePay: orders.redeliveryChargePay,
       status: orders.status,
       version: orders.version,
       placedAt: orders.placedAt,
@@ -549,6 +563,16 @@ export async function readOrders(
       restaurantId: row.restaurantId,
       commissionBp: row.commissionBp,
       testOrder: row.testOrder,
+      redelivery:
+        row.redeliveryOfId === null
+          ? null
+          : {
+              ofOrderId: row.redeliveryOfId,
+              ofNumber: row.redeliveryOfNumber!,
+              ticketId: row.redeliveryTicketId!,
+              responsible: row.redeliveryResponsible!,
+              chargePay: row.redeliveryChargePay!,
+            },
       status: row.status,
       version: row.version,
       placedAt: row.placedAt,

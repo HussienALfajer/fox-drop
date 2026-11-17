@@ -94,6 +94,12 @@ class CustomerPlaceOrderDto extends createZodDto(
 const customerOrder = z.object({
   id: z.uuid(),
   number: z.string().describe('Shown as #10423 (AP §4.8).'),
+  redeliveryOf: z
+    .object({ orderId: z.uuid(), number: z.string() })
+    .nullable()
+    .describe(
+      'CU §11.2: «إعادة توصيل مجانية لطلب #{رقم}» (AP §9.9.3): the order whose items it re-delivers; a total of 0, never cancelled or rated.',
+    ),
   status: z.enum(orderStatuses).describe('AP §8.1.'),
   version: z
     .int()
@@ -571,6 +577,10 @@ function orderBody(
   return {
     id: order.id,
     number: text(order.number),
+    redeliveryOf:
+      order.redelivery === null
+        ? null
+        : { orderId: order.redelivery.ofOrderId, number: text(order.redelivery.ofNumber) },
     status: order.status,
     version: order.version,
     placedAt: order.placedAt.toISOString(),

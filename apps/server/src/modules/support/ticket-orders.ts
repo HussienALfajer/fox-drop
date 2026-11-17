@@ -49,6 +49,9 @@ export interface TicketMoneyInput {
   responsible: ResponsibleParty;
   affected: AffectedLine[];
   wrongChange: { amount: bigint; code: boolean } | null;
+  // «إعادة توصيل مجانية» (slice 2.23d): no entries now; the re-delivery's
+  // own come with its delivery.
+  redelivery: boolean;
 }
 
 export interface TicketMoneyPreview {
@@ -59,12 +62,23 @@ export interface TicketMoneyPreview {
   merchantDebit: bigint;
   captainCharge: bigint;
   entries: CorrectionEntry[];
+  // A free re-delivery (slice 2.23d): what its pickup will pay the
+  // restaurant, the commission on it and the merchant net its responsible
+  // party bears at its delivery.
+  redelivery: { pickupPayment: bigint; commission: bigint; merchantNet: bigint } | null;
 }
 
 // The affected lines as kept on the ticket, with their value.
 export interface StoredAffectedLine extends AffectedLine {
   name: string;
   value: bigint;
+}
+
+// A free re-delivery an order has for a ticket (slice 2.23d).
+export interface TicketRedelivery {
+  orderId: string;
+  number: bigint;
+  status: string;
 }
 
 // A problem after delivery's side that only ordering can read and post (it
@@ -89,4 +103,27 @@ export interface TicketOrders {
       now: Date;
     },
   ): Promise<{ journalIds: string[]; affected: StoredAffectedLine[]; affectedValue: bigint }>;
+  // «إعادة توصيل مجانية» (AP §9.9.3, slice 2.23d): what the re-delivery
+  // reads before the resolution's transaction, then the order placed in it
+  // (its money is posted at its delivery, so the affected items' entries of
+  // `post` are not); answers the new order and the affected lines.
+  prepareRedelivery(orderId: string, now: Date): Promise<object>;
+  redeliver(
+    tx: Tx,
+    input: {
+      orderId: string;
+      ticketId: string;
+      money: TicketMoneyInput;
+      chargePay: boolean;
+      prepared: object;
+      adminId: string;
+      now: Date;
+    },
+  ): Promise<{
+    redelivery: { orderId: string; number: bigint };
+    affected: StoredAffectedLine[];
+    affectedValue: bigint;
+  }>;
+  // The re-deliveries placed for a ticket, newest first.
+  redeliveries(ticketId: string): Promise<TicketRedelivery[]>;
 }

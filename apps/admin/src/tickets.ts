@@ -104,6 +104,7 @@ export const isOpenTicket = (status: TicketStatus): boolean =>
 export const resolutionKeys = {
   none_explained: 'tickets.resolution.noneExplained',
   compensation_code: 'tickets.resolution.compensationCode',
+  free_redelivery: 'tickets.resolution.freeRedelivery',
   price_corrected: 'tickets.resolution.priceCorrected',
   price_correct: 'tickets.resolution.priceCorrect',
   captain_paid: 'tickets.resolution.captainPaid',
@@ -127,7 +128,7 @@ export const confirmedByKeys = {
 export function resolutionChoices(kind: TicketKind): TicketResolution[] {
   switch (kind) {
     case 'general':
-      return ['compensation_code', 'none_explained'];
+      return ['compensation_code', 'free_redelivery', 'none_explained'];
     case 'price_difference':
       return ['price_corrected', 'price_correct'];
     case 'pickup_dispute':
@@ -142,14 +143,30 @@ export function resolutionChoices(kind: TicketKind): TicketResolution[] {
 // M (its code is M, uncapped), every other type the affected items.
 export const WRONG_CHANGE_TYPE = 'amount_or_change';
 
+// «إعادة توصيل مجانية» (AP §9.9.3, slice 2.23d) re-delivers the affected
+// items of a normal delivery, so never for the wrong change.
 export function generalChoices(
-  ticket: Pick<TicketPage, 'kind' | 'order'>,
+  ticket: Pick<TicketPage, 'kind' | 'order' | 'typeCode'>,
   compensates: boolean,
 ): TicketResolution[] {
-  return resolutionChoices(ticket.kind).filter(
-    (choice) => choice !== 'compensation_code' || (ticket.order !== null && compensates),
-  );
+  return resolutionChoices(ticket.kind).filter((choice) => {
+    if (choice === 'compensation_code') return ticket.order !== null && compensates;
+    if (choice === 'free_redelivery') {
+      return (
+        ticket.order !== null &&
+        ticket.order.deliveredNormally &&
+        ticket.typeCode !== WRONG_CHANGE_TYPE
+      );
+    }
+    return true;
+  });
 }
+
+// AP §9.9.3: a re-delivery is never at the customer's fault, and its
+// captain's pay can be charged to a responsible restaurant or captain only.
+export const redeliveryParties: ResponsibleParty[] = ['restaurant', 'captain', 'platform'];
+export const chargesPay = (responsible: ResponsibleParty | ''): boolean =>
+  responsible === 'restaurant' || responsible === 'captain';
 
 // The affected quantities typed per line position: the lines with one or
 // more, each within its quantity; null when one is not a whole number in it.
@@ -186,6 +203,7 @@ export function moneyPreviewQuery(
     affected: AffectedLine[];
     shortAmount: string | null;
     code: boolean;
+    redelivery: boolean;
   },
 ) {
   return queryOptions({
@@ -576,6 +594,10 @@ export type ResolveRefusal =
   | 'no_base_currency'
   | 'currency_changed'
   | 'money_already_resolved'
+  | 'affected_required'
+  | 'captain_pay_unset'
+  | 'restaurant_closed'
+  | 'emergency_stop'
   | 'forbidden';
 
 const resolveRefusals: readonly string[] = [
@@ -596,6 +618,10 @@ const resolveRefusals: readonly string[] = [
   'no_base_currency',
   'currency_changed',
   'money_already_resolved',
+  'affected_required',
+  'captain_pay_unset',
+  'restaurant_closed',
+  'emergency_stop',
   'forbidden',
 ] satisfies ResolveRefusal[];
 
@@ -611,6 +637,8 @@ export interface ResolveBody {
   affected: AffectedLine[];
   shortAmount: string | null;
   code: CompensateBody | null;
+  // «إعادة توصيل مجانية» (slice 2.23d).
+  chargePay: boolean;
 }
 
 // AP §9.9.3 «Preview» of «تصحيح في الحسابات», asked for each set of lines.

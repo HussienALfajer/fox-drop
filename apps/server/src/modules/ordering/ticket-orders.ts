@@ -1,14 +1,16 @@
 import { Inject, Injectable, type OnModuleInit } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
+import { Jobs } from '../../jobs/jobs.module.js';
 import { CaptainsService } from '../captains/index.js';
 import { formatMoney, NotificationTexts } from '../content/index.js';
 import { FxService, toBase } from '../fx/index.js';
 import { type LedgerActor, LedgerService } from '../ledger/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { PushQueue, type QueuedPush } from '../notifications/index.js';
+import { SettingsService } from '../settings/index.js';
 import {
   type StoredAffectedLine,
   SupportService,
@@ -16,11 +18,15 @@ import {
   type TicketMoneyPreview,
   type TicketOrderFacts,
   type TicketOrders,
+  type TicketRedelivery,
   TicketRefusedError,
 } from '../support/index.js';
 import { merchantItemDiscount } from './order-discount.js';
 import { orderKey, type OrderView, readOrders } from './order-views.js';
+import { EmergencyStops } from './emergency-stop.js';
 import { postOrderJournals } from './outcome-facts.js';
+import { placeRedelivery, type RedeliveryBasis } from './redeliveries.js';
+import type { RedeliveryParty } from './redelivery.js';
 import { orders as schemaOrders } from './schema.js';
 import { affectedValue, commissionOn, ticketMoneyEntries } from './ticket-money.js';
 
@@ -45,6 +51,9 @@ export class TicketMoney implements TicketOrders, OnModuleInit {
     private readonly fx: FxService,
     private readonly texts: NotificationTexts,
     private readonly pushes: PushQueue,
+    private readonly settings: SettingsService,
+    private readonly jobs: Jobs,
+    private readonly emergencyStops: EmergencyStops,
   ) {}
 
   onModuleInit(): void {
@@ -99,6 +108,7 @@ export class TicketMoney implements TicketOrders, OnModuleInit {
     return {
       currency: order.currency,
       affectedValue: value,
+      redelivery: booking.redelivery,
       merchantDebit: merchantOwes(booking.journals),
       captainCharge: booking.captainCharge,
       entries: booking.journals.flatMap((journal) =>
@@ -204,6 +214,89 @@ export class TicketMoney implements TicketOrders, OnModuleInit {
     };
   }
 
+  // AP §9.9.3 (slice 2.23d): the restaurant's timers and the pay table in
+  // force, read through the pool before the resolution's transaction.
+  async prepareRedelivery(orderId: string, now: Date): Promise<RedeliveryBasis> {
+    const order = await this.read(orderId);
+    const [acceptAlertMin, autoCancelMin, payTable, storefront, stop] = await Promise.all([
+      this.settings.get('order.merchant_accept_alert_min', { cityId: order.cityId }),
+      this.settings.get('order.merchant_auto_cancel_min', { cityId: order.cityId }),
+      this.captains.payTable(order.cityId, now),
+      this.merchants.storefrontState(order.restaurantId, now),
+      this.emergencyStops.active(order.cityId),
+    ]);
+    if (payTable === null)
+      throw new TicketRefusedError('captain_pay_unset', 'no pay table in force');
+    // AP §9.1.6: no new order during the emergency stop; a restaurant not
+    // taking orders now would let it ring no one and cancel it as unanswered
+    // (RA §11), so support picks another remedy or tries later.
+    if (stop !== null) throw new TicketRefusedError('emergency_stop', 'the emergency stop is on');
+    if (storefront.state.state !== 'open') {
+      throw new TicketRefusedError('restaurant_closed', 'the restaurant takes no orders now');
+    }
+    // pg-boss connects before the resolution's locks are taken.
+    await this.jobs.ready();
+    return { acceptAlertMin, autoCancelMin, payTableId: payTable.id };
+  }
+
+  // In the resolution's transaction (support holds the ticket's lock and the
+  // order's money lock): the re-delivery placed, and the affected lines
+  // with their value (V) for the ticket. Nothing else is posted now: its
+  // money comes with its delivery (docs/domain/10).
+  async redeliver(
+    tx: Tx,
+    input: {
+      orderId: string;
+      ticketId: string;
+      money: TicketMoneyInput;
+      chargePay: boolean;
+      prepared: object;
+      adminId: string;
+      now: Date;
+    },
+  ) {
+    const order = await this.read(input.orderId, tx);
+    const value = affectedValue(order.lines, input.money.affected);
+    if (value === null || value === 0n) {
+      throw new TicketRefusedError('invalid_affected', 'the affected lines');
+    }
+    const placed = await placeRedelivery(
+      tx,
+      { jobs: this.jobs, fx: this.fx, emergencyStops: this.emergencyStops },
+      {
+        original: { id: order.id, placedAt: order.placedAt },
+        ticketId: input.ticketId,
+        responsible: input.money.responsible as RedeliveryParty,
+        chargePay: input.chargePay,
+        affected: input.money.affected,
+        basis: input.prepared as RedeliveryBasis,
+        adminId: input.adminId,
+        now: input.now,
+      },
+    );
+    const byPosition = new Map(order.lines.map((line) => [line.position, line]));
+    return {
+      redelivery: { orderId: placed.id, number: placed.number },
+      affectedValue: value,
+      affected: input.money.affected.map((each) => {
+        const line = byPosition.get(each.position)!;
+        return { ...each, name: line.name, value: line.unitPrice * BigInt(each.quantity) };
+      }),
+    };
+  }
+
+  async redeliveries(ticketId: string): Promise<TicketRedelivery[]> {
+    return this.database.db
+      .select({
+        orderId: schemaOrders.id,
+        number: schemaOrders.number,
+        status: schemaOrders.status,
+      })
+      .from(schemaOrders)
+      .where(eq(schemaOrders.redeliveryTicketId, ticketId))
+      .orderBy(desc(schemaOrders.placedAt));
+  }
+
   private async booking(
     orderId: string,
     money: TicketMoneyInput,
@@ -220,6 +313,26 @@ export class TicketMoney implements TicketOrders, OnModuleInit {
       merchant: order.discountMerchant,
       onDelivery: order.discountOnDelivery,
     });
+    // AP §9.9.3 (slice 2.23d): a free re-delivery posts nothing now; its
+    // pickup pays the items at their prices (nothing with the restaurant
+    // responsible), its commission is on them, and the merchant net is
+    // what its responsible party bears at its delivery.
+    if (money.redelivery) {
+      const pickupPayment = money.responsible === 'restaurant' ? 0n : value;
+      const commission = commissionOn(order.commissionBp, 0n, order.testOrder)(pickupPayment);
+      return {
+        order,
+        value,
+        booking: {
+          journals: [],
+          merchantDebit: 0n,
+          // A test order's re-delivery charges nobody (redeliveryEntries).
+          captainCharge:
+            money.responsible === 'captain' && !order.testOrder ? pickupPayment - commission : 0n,
+          redelivery: { pickupPayment, commission, merchantNet: pickupPayment - commission },
+        },
+      };
+    }
     const booking = ticketMoneyEntries({
       responsible: money.responsible,
       restaurantId: order.restaurantId,
@@ -235,8 +348,12 @@ export class TicketMoney implements TicketOrders, OnModuleInit {
     // AP §9.6.3 (decided by us): a test order's problem keeps V and M on the
     // ticket and posts nothing, so no test money reaches the costs.
     if (order.testOrder)
-      return { order, booking: { ...booking, journals: [], captainCharge: 0n }, value };
-    return { order, booking, value };
+      return {
+        order,
+        booking: { ...booking, journals: [], captainCharge: 0n, redelivery: null },
+        value,
+      };
+    return { order, booking: { ...booking, redelivery: null }, value };
   }
 
   // The order by its id alone (support keeps no `placed_at`), in any month's

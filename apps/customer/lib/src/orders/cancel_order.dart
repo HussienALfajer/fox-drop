@@ -115,11 +115,14 @@ final cancelOrderProvider = Provider.autoDispose.family<CancelOrder, String>(
 
 /// CU §11.4–11.5: what «مساعدة» offers about cancelling at a status: the
 /// cancellation itself while placed, the explanation and its warning until
-/// the pickup, nothing after it (Q24).
+/// the pickup, nothing after it (Q24). A free re-delivery is never
+/// cancelled by the customer (CU §11.2, AP §9.9.3).
 enum CancelHelp { cancel, viaSupport, none }
 
-CancelHelp cancelHelpAt(String status) => switch (status) {
-  'placed' => CancelHelp.cancel,
-  'accepted' || 'ready' => CancelHelp.viaSupport,
-  _ => CancelHelp.none,
-};
+CancelHelp cancelHelpAt(String status, {bool redelivery = false}) =>
+    switch (status) {
+      _ when redelivery => CancelHelp.none,
+      'placed' => CancelHelp.cancel,
+      'accepted' || 'ready' => CancelHelp.viaSupport,
+      _ => CancelHelp.none,
+    };

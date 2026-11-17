@@ -117,7 +117,7 @@ test('resolves a ticket with a canned reply as the message', async ({ page }) =>
   await page.route('**/v1/admin/content/canned-replies', (route) =>
     route.fulfill({ json: { replies: [{ title: 'لم نجد مشكلة', body: message }] } }),
   );
-  const page0 = { ...ticket(), notes: [], pickupDispute: null, order: null };
+  const page0 = { ...ticket(), notes: [], pickupDispute: null, order: null, redeliveries: [] };
   let current: Record<string, unknown> = page0;
   let resolved: unknown = null;
   await page.route(`**/v1/admin/tickets/${id}?**`, (route) => route.fulfill({ json: current }));
@@ -155,6 +155,7 @@ test('resolves a ticket with a canned reply as the message', async ({ page }) =>
     affected: [],
     shortAmount: null,
     code: null,
+    chargePay: false,
   });
   await expect(page.getByText(`الرسالة المرسلة: ${message}`)).toBeVisible();
 });
@@ -209,6 +210,7 @@ test('resolves a missing item with the restaurant responsible and a code', async
       received: [{ currency: 'TRY', amount: '25000' }],
       change: [],
     },
+    redeliveries: [],
   };
   let previewed: unknown = null;
   let resolved: unknown = null;
@@ -222,6 +224,7 @@ test('resolves a missing item with the restaurant responsible and a code', async
         merchantDebit: '10200',
         captainCharge: '0',
         entries: [],
+        redelivery: null,
       },
     });
   });
@@ -262,5 +265,6 @@ test('resolves a missing item with the restaurant responsible and a code', async
       value: { kind: 'fixed_amount', amount: '5000', percentBp: null, maxDiscount: null },
       reason: { code: 'missing_item', note: null },
     },
+    chargePay: false,
   });
 });

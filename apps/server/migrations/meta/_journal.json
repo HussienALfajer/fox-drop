@@ -645,6 +645,13 @@
       "when": 1794912058920,
       "tag": "0091_support_ticket_money",
       "breakpoints": true
+    },
+    {
+      "idx": 92,
+      "version": "7",
+      "when": 1794915767298,
+      "tag": "0092_ordering_free_redelivery",
+      "breakpoints": true
     }
   ]
 }

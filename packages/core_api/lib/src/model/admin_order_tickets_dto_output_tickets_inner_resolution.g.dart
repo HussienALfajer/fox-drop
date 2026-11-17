@@ -17,6 +17,11 @@ _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_compensationCode =
       'compensationCode',
     );
 const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
+_$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_freeRedelivery =
+    const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum._(
+      'freeRedelivery',
+    );
+const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
 _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_priceCorrected =
     const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum._(
       'priceCorrected',
@@ -49,6 +54,8 @@ _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnumValueOf(String name) {
       return _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_noneExplained;
     case 'compensationCode':
       return _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_compensationCode;
+    case 'freeRedelivery':
+      return _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_freeRedelivery;
     case 'priceCorrected':
       return _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_priceCorrected;
     case 'priceCorrect':
@@ -71,6 +78,7 @@ _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnumValues =
     >[
       _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_noneExplained,
       _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_compensationCode,
+      _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_freeRedelivery,
       _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_priceCorrected,
       _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_priceCorrect,
       _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_captainPaid,
@@ -143,6 +151,7 @@ class _$AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'noneExplained': 'none_explained',
     'compensationCode': 'compensation_code',
+    'freeRedelivery': 'free_redelivery',
     'priceCorrected': 'price_corrected',
     'priceCorrect': 'price_correct',
     'captainPaid': 'captain_paid',
@@ -152,6 +161,7 @@ class _$AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnumSerializer
   static const Map<Object, String> _fromWire = const <Object, String>{
     'none_explained': 'noneExplained',
     'compensation_code': 'compensationCode',
+    'free_redelivery': 'freeRedelivery',
     'price_corrected': 'priceCorrected',
     'price_correct': 'priceCorrect',
     'captain_paid': 'captainPaid',

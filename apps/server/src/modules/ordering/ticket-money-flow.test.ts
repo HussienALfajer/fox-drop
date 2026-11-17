@@ -380,6 +380,7 @@ describe('one problem paid once', () => {
           affected: [],
           shortAmount: 1_000n,
           code: null,
+          chargePay: false,
         },
         admin,
         new Date(),

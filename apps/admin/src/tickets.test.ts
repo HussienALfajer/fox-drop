@@ -2,7 +2,9 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   affectedOf,
   canResolve,
+  chargesPay,
   generalChoices,
+  redeliveryParties,
   shortAmountOf,
   minutesLeft,
   needsResponsible,
@@ -65,7 +67,11 @@ describe('the resolution form', () => {
   const session = (permissions: string[]) => ({ permissions }) as unknown as AdminSession;
 
   it("offers each kind its resolutions and asks a general ticket's party only", () => {
-    expect(resolutionChoices('general')).toEqual(['compensation_code', 'none_explained']);
+    expect(resolutionChoices('general')).toEqual([
+      'compensation_code',
+      'free_redelivery',
+      'none_explained',
+    ]);
     expect(resolutionChoices('price_difference')).toEqual(['price_corrected', 'price_correct']);
     expect(resolutionChoices('pickup_dispute')).toEqual([
       'captain_paid',
@@ -117,10 +123,31 @@ describe('the money of a problem after delivery', () => {
   ];
 
   it('offers «كود تعويض» on a ticket with an order to who may compensate', () => {
-    const order = { kind: 'general' as const, order: { lines } as never };
+    const order = {
+      kind: 'general' as const,
+      typeCode: 'missing_item',
+      order: { lines, deliveredNormally: false } as never,
+    };
     expect(generalChoices(order, true)).toEqual(['compensation_code', 'none_explained']);
     expect(generalChoices(order, false)).toEqual(['none_explained']);
-    expect(generalChoices({ kind: 'general', order: null }, true)).toEqual(['none_explained']);
+    expect(generalChoices({ ...order, order: null }, true)).toEqual(['none_explained']);
+  });
+
+  // AP §9.9.3 (slice 2.23d).
+  it('offers «إعادة توصيل مجانية» for the items of a normal delivery only', () => {
+    const delivered = {
+      kind: 'general' as const,
+      typeCode: 'missing_item',
+      order: { lines, deliveredNormally: true } as never,
+    };
+    expect(generalChoices(delivered, false)).toEqual(['free_redelivery', 'none_explained']);
+    expect(generalChoices({ ...delivered, typeCode: 'amount_or_change' }, false)).toEqual([
+      'none_explained',
+    ]);
+    expect(chargesPay('restaurant')).toBe(true);
+    expect(chargesPay('captain')).toBe(true);
+    expect(chargesPay('platform')).toBe(false);
+    expect(redeliveryParties).not.toContain('customer');
   });
 
   it('reads the affected quantities within each line', () => {

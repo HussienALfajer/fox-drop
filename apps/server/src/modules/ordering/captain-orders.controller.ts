@@ -34,8 +34,10 @@ import { minor } from './customer-quote.controller.js';
 import { captainTracks, cashAnswers, orderStatuses } from './schema.js';
 
 const money = z.object({ amount: minor, currency: z.string().length(3) });
-// RA §8.10: one line per currency, the amounts in minor units.
-export const paymentLines = z.array(money).min(1).max(5);
+// RA §8.10: one line per currency, the amounts in minor units; none only
+// for a pickup payment of 0 (a free re-delivery the restaurant replaces, AP
+// §9.9.3), which the server checks.
+export const paymentLines = z.array(money).max(5);
 
 const pickupRequest = z
   .object({
@@ -94,6 +96,12 @@ const activeOrder = z
   .object({
     id: z.uuid(),
     number: z.string().describe('Shown as #10423 (AP §4.8).'),
+    redeliveryOf: z
+      .object({ orderId: z.uuid(), number: z.string() })
+      .nullable()
+      .describe(
+        '«إعادة توصيل مجانية لطلب #{رقم}» (AP §9.9.3): the order whose items it re-delivers (owner decision 2026-11-17: the badge); the customer pays 0.',
+      ),
     status: z.enum(orderStatuses),
     version: z
       .int()
@@ -586,9 +594,8 @@ const doorLine = z.object({
 export const doorPayment = {
   received: z
     .array(doorLine)
-    .min(1)
     .max(5)
-    .describe('What the customer paid, one line per currency.'),
+    .describe('What the customer paid, one line per currency; none only for an amount of 0.'),
   change: z
     .array(doorLine)
     .max(5)
@@ -709,6 +716,13 @@ function activeOrderBody({
   const money = (amount: bigint) => ({ amount: amount.toString(), currency: order.currency });
   return {
     id: order.id,
+    redeliveryOf:
+      order.redelivery === null
+        ? null
+        : {
+            orderId: order.redelivery.ofOrderId,
+            number: order.redelivery.ofNumber.toString(),
+          },
     number: order.number.toString(),
     status: order.status,
     version: order.version,

@@ -26,6 +26,7 @@ import {
   ticketBody,
   ticketNoteBody,
   ticketOrderBody,
+  ticketRedeliveryBody,
   ticketOrderOut,
   ticketOut,
 } from './ticket-body.js';
@@ -105,6 +106,9 @@ class AdminTicketPageDto extends createZodDto(
     order: ticketOrderBody
       .nullable()
       .describe("A customer's general ticket on an order: its lines and money (AP §8.10)."),
+    redeliveries: z
+      .array(ticketRedeliveryBody)
+      .describe('«إعادة توصيل مجانية» orders placed for it, newest first (AP §9.9.3).'),
   }),
 ) {}
 
@@ -149,6 +153,12 @@ class AdminTicketResolveDto extends createZodDto(
       .nullable()
       .default(null)
       .describe('«كود تعويض»: its value and reason; null for the wrong change, whose code is M.'),
+    chargePay: z
+      .boolean()
+      .default(false)
+      .describe(
+        "«إعادة توصيل مجانية»: its captain's pay charged to the responsible restaurant or captain.",
+      ),
   }),
 ) {}
 
@@ -159,6 +169,10 @@ class AdminTicketMoneyPreviewBodyDto extends createZodDto(
     affected: affectedLines,
     shortAmount: minor.nullable(),
     code: z.boolean().describe('Whether the resolution is «كود تعويض».'),
+    redelivery: z
+      .boolean()
+      .default(false)
+      .describe('Whether the resolution is «إعادة توصيل مجانية».'),
   }),
 ) {}
 
@@ -393,6 +407,7 @@ export class AdminTicketsController {
         affected: body.affected,
         shortAmount: body.shortAmount === null ? null : BigInt(body.shortAmount),
         code: body.code,
+        redelivery: body.redelivery,
       }),
     );
     return moneyPreviewOut(preview) as AdminTicketMoneyPreviewDto;
@@ -427,6 +442,7 @@ export class AdminTicketsController {
             affected: body.affected,
             shortAmount: body.shortAmount === null ? null : BigInt(body.shortAmount),
             code: codeIn(body.code),
+            chargePay: body.chargePay,
           },
           ticketAdminOf(session, request),
           new Date(),
@@ -468,6 +484,11 @@ function pageOut(page: Awaited<ReturnType<SupportService['ticket']>>): AdminTick
     notes: page.notes.map(noteOut),
     pickupDispute: page.pickupDispute === null ? null : pickupDisputeOut(page.pickupDispute),
     order: page.order === null ? null : ticketOrderOut(page.order),
+    redeliveries: page.redeliveries.map((each) => ({
+      orderId: each.orderId,
+      number: each.number.toString(),
+      status: each.status,
+    })),
   } as AdminTicketPageDto;
 }
 

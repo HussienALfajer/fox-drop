@@ -223,6 +223,7 @@ import 'package:core_api/src/model/admin_order_dto_output_order_pickup_requests_
 import 'package:core_api/src/model/admin_order_dto_output_order_reassign_choices.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_reassign_choices_reasons_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_reassignments_inner.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_redelivery.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_rejection.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_removed_lines_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_time_change.dart';
@@ -367,12 +368,14 @@ import 'package:core_api/src/model/admin_ticket_dto_output.dart';
 import 'package:core_api/src/model/admin_ticket_money_preview_body_dto.dart';
 import 'package:core_api/src/model/admin_ticket_money_preview_body_dto_affected_inner.dart';
 import 'package:core_api/src/model/admin_ticket_money_preview_dto_output.dart';
+import 'package:core_api/src/model/admin_ticket_money_preview_dto_output_redelivery.dart';
 import 'package:core_api/src/model/admin_ticket_note_dto.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output_notes_inner.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output_order.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output_order_lines_inner.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output_pickup_dispute.dart';
+import 'package:core_api/src/model/admin_ticket_page_dto_output_redeliveries_inner.dart';
 import 'package:core_api/src/model/admin_ticket_parties_dto_output.dart';
 import 'package:core_api/src/model/admin_ticket_party_search_dto.dart';
 import 'package:core_api/src/model/admin_ticket_resolve_dto.dart';
@@ -490,6 +493,7 @@ import 'package:core_api/src/model/captain_order_dto_output_order_customer.dart'
 import 'package:core_api/src/model/captain_order_dto_output_order_outcome_to_collect.dart';
 import 'package:core_api/src/model/captain_order_dto_output_order_pickup.dart';
 import 'package:core_api/src/model/captain_order_dto_output_order_pickup_request.dart';
+import 'package:core_api/src/model/captain_order_dto_output_order_redelivery_of.dart';
 import 'package:core_api/src/model/captain_outcome_payment_dto.dart';
 import 'package:core_api/src/model/captain_peak_bonus_dto_output.dart';
 import 'package:core_api/src/model/captain_peak_bonus_dto_output_active_inner.dart';
@@ -534,6 +538,7 @@ import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inne
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_money.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_outcome.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_outcome_amount_to_collect.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_redelivery_of.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_rejection.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_removed_lines_inner.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_removed_lines_inner_options_inner.dart';
@@ -661,6 +666,7 @@ import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_owner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_pickup.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_pickup_request.dart';
+import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_redelivery_of.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_prep_time.dart';
 import 'package:core_api/src/model/merchant_overdue_dto_output.dart';
 import 'package:core_api/src/model/merchant_overdue_dto_output_overdue.dart';
@@ -940,6 +946,7 @@ part 'serializers.g.dart';
   AdminOrderDtoOutputOrderReassignChoices,
   AdminOrderDtoOutputOrderReassignChoicesReasonsInner,
   AdminOrderDtoOutputOrderReassignmentsInner,
+  AdminOrderDtoOutputOrderRedelivery,
   AdminOrderDtoOutputOrderRejection,
   AdminOrderDtoOutputOrderRemovedLinesInner,
   AdminOrderDtoOutputOrderTimeChange,
@@ -1084,12 +1091,14 @@ part 'serializers.g.dart';
   AdminTicketMoneyPreviewBodyDto,
   AdminTicketMoneyPreviewBodyDtoAffectedInner,
   AdminTicketMoneyPreviewDtoOutput,
+  AdminTicketMoneyPreviewDtoOutputRedelivery,
   AdminTicketNoteDto,
   AdminTicketPageDtoOutput,
   AdminTicketPageDtoOutputNotesInner,
   AdminTicketPageDtoOutputOrder,
   AdminTicketPageDtoOutputOrderLinesInner,
   AdminTicketPageDtoOutputPickupDispute,
+  AdminTicketPageDtoOutputRedeliveriesInner,
   AdminTicketPartiesDtoOutput,
   AdminTicketPartySearchDto,
   AdminTicketResolveDto,
@@ -1207,6 +1216,7 @@ part 'serializers.g.dart';
   CaptainOrderDtoOutputOrderOutcomeToCollect,
   CaptainOrderDtoOutputOrderPickup,
   CaptainOrderDtoOutputOrderPickupRequest,
+  CaptainOrderDtoOutputOrderRedeliveryOf,
   CaptainOutcomePaymentDto,
   CaptainPeakBonusDtoOutput,
   CaptainPeakBonusDtoOutputActiveInner,
@@ -1251,6 +1261,7 @@ part 'serializers.g.dart';
   CustomerActiveOrdersDtoOutputOrdersInnerMoney,
   CustomerActiveOrdersDtoOutputOrdersInnerOutcome,
   CustomerActiveOrdersDtoOutputOrdersInnerOutcomeAmountToCollect,
+  CustomerActiveOrdersDtoOutputOrdersInnerRedeliveryOf,
   CustomerActiveOrdersDtoOutputOrdersInnerRejection,
   CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner,
   CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInnerOptionsInner,
@@ -1378,6 +1389,7 @@ part 'serializers.g.dart';
   MerchantOrdersDtoOutputOrdersInnerOwner,
   MerchantOrdersDtoOutputOrdersInnerPickup,
   MerchantOrdersDtoOutputOrdersInnerPickupRequest,
+  MerchantOrdersDtoOutputOrdersInnerRedeliveryOf,
   MerchantOrdersDtoOutputPrepTime,
   MerchantOverdueDtoOutput,
   MerchantOverdueDtoOutputOverdue,
@@ -2167,6 +2179,12 @@ Serializers serializers =
                 ListBuilder<
                   AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminTicketPageDtoOutputRedeliveriesInner),
+            ]),
+            () => ListBuilder<AdminTicketPageDtoOutputRedeliveriesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

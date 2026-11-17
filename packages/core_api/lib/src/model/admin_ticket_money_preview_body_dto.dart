@@ -18,6 +18,7 @@ part 'admin_ticket_money_preview_body_dto.g.dart';
 /// * [affected] - The order's lines by position, each once, with how many were affected.
 /// * [shortAmount]
 /// * [code] - Whether the resolution is «كود تعويض».
+/// * [redelivery] - Whether the resolution is «إعادة توصيل مجانية».
 @BuiltValue()
 abstract class AdminTicketMoneyPreviewBodyDto
     implements
@@ -43,6 +44,10 @@ abstract class AdminTicketMoneyPreviewBodyDto
   @BuiltValueField(wireName: r'code')
   bool get code;
 
+  /// Whether the resolution is «إعادة توصيل مجانية».
+  @BuiltValueField(wireName: r'redelivery')
+  bool? get redelivery;
+
   AdminTicketMoneyPreviewBodyDto._();
 
   factory AdminTicketMoneyPreviewBodyDto([
@@ -50,7 +55,8 @@ abstract class AdminTicketMoneyPreviewBodyDto
   ]) = _$AdminTicketMoneyPreviewBodyDto;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminTicketMoneyPreviewBodyDtoBuilder b) => b;
+  static void _defaults(AdminTicketMoneyPreviewBodyDtoBuilder b) =>
+      b..redelivery = false;
 
   @BuiltValueSerializer(custom: true)
   static Serializer<AdminTicketMoneyPreviewBodyDto> get serializer =>
@@ -104,6 +110,13 @@ class _$AdminTicketMoneyPreviewBodyDtoSerializer
       object.code,
       specifiedType: const FullType(bool),
     );
+    if (object.redelivery != null) {
+      yield r'redelivery';
+      yield serializers.serialize(
+        object.redelivery,
+        specifiedType: const FullType(bool),
+      );
+    }
   }
 
   @override
@@ -180,6 +193,16 @@ class _$AdminTicketMoneyPreviewBodyDtoSerializer
                   )
                   as bool;
           result.code = valueDes;
+          break;
+        case r'redelivery':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(bool),
+                  )
+                  as bool?;
+          if (valueDes == null) continue;
+          result.redelivery = valueDes;
           break;
         default:
           unhandled.add(key);

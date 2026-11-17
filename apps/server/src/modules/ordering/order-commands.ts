@@ -137,6 +137,9 @@ export type OrderCommandRefusal =
   // CU §11.4: «سبب آخر» takes its optional text; the other reasons none.
   | 'reason_note_required'
   | 'reason_note_not_allowed'
+  // CU §11.2, AP §9.9.3 (slice 2.23d): the customer cannot cancel a free
+  // re-delivery.
+  | 'redelivery_not_cancellable'
   // RA §8.10: payment lines (pickup-commands.ts).
   | 'invalid_lines'
   | 'currency_not_accepted'
@@ -554,7 +557,8 @@ export class OrderCommands {
   // applies and the restaurant's unanswered count is left alone (only the
   // automatic cancellation counts). Once the order left placed (the race
   // with acceptance) it answers order_state_changed with the order as it is
-  // now. 400 unknown_reason, reason_note_required, reason_note_not_allowed.
+  // now. 400 unknown_reason, reason_note_required, reason_note_not_allowed,
+  // redelivery_not_cancellable (AP §9.9.3).
   async cancelByCustomer(
     command: CustomerCommand & { reason: string; note: string | null },
     now: Date,
@@ -564,7 +568,13 @@ export class OrderCommands {
       { verb: 'cancel', from: ['placed'], to: 'cancelled' },
       { reason: command.reason, note: command.note },
       now,
-      async () => {
+      async (order) => {
+        if (order.redeliveryOfId !== null) {
+          throw new OrderCommandRefusedError(
+            'redelivery_not_cancellable',
+            'the customer cannot cancel a free re-delivery',
+          );
+        }
         let chosen: { code: string; note: string | null };
         try {
           chosen = await this.content.choose('customer_cancel', {
@@ -2696,6 +2706,11 @@ export class OrderCommands {
       .from(orders)
       .where(orderKey(order.id, order.placedAt));
     if (!row || !EDITABLE.includes(row.status)) throw await this.stateChanged(order);
+    // AP §9.9.3 (slice 2.23d): a free re-delivery's total stays 0 and its
+    // money is booked from its pickup, so it takes no edit.
+    if (order.redeliveryOfId !== null) {
+      throw new OrderCommandRefusedError('invalid_edit', 'a free re-delivery takes no edit');
+    }
     // AP §9.3.3: the edit is the one previewed; an order that moved since
     // (picked up under the dialog, say) is order_state_changed first.
     if (version !== undefined && row.version !== version) throw await this.stateChanged(order);
@@ -3122,6 +3137,7 @@ export class OrderCommands {
         tripSeconds: orders.tripSeconds,
         tripMetres: orders.tripMetres,
         searchStartAt: orders.searchStartAt,
+        redeliveryOfId: orders.redeliveryOfId,
       })
       .from(orders)
       .where(
@@ -3228,6 +3244,8 @@ type OrderAtStart = {
   tripSeconds: number | null;
   tripMetres: number | null;
   searchStartAt: Date | null;
+  // AP §9.9.3 (slice 2.23d): a free re-delivery support placed.
+  redeliveryOfId: string | null;
 };
 
 // AP §9.3.3: a ready order sent back to accepted by an edit that adds items.

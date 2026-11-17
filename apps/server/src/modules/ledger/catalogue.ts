@@ -87,6 +87,8 @@ const captainPayCounter = [
   // Captain pay borne by the platform under AP §8.9, and on test orders.
   'platform.operating_cost',
   'platform.test_cost',
+  // A free re-delivery's captain pay is the remedy's cost (AP §9.9.3).
+  'platform.compensation_cost',
 ] as const;
 // After a normal delivery the order is settled; a ticket's charge or debit
 // (AP §8.10) recovers the cost of its remedy instead.

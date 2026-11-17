@@ -187,6 +187,22 @@ export const moneyPreviewBody = z.object({
     .describe('What the restaurant ends up owing: V less the commission reversed.'),
   captainCharge: z.string(),
   entries: correctionPreviewBody.shape.entries,
+  redelivery: z
+    .object({
+      pickupPayment: z
+        .string()
+        .describe('What its pickup pays the restaurant: 0 when it is responsible.'),
+      commission: z.string(),
+      merchantNet: z.string().describe('What the responsible party bears at its delivery.'),
+    })
+    .nullable()
+    .describe('«إعادة توصيل مجانية» (AP §9.9.3): posted at its delivery, not now.'),
+});
+
+export const ticketRedeliveryBody = z.object({
+  orderId: z.uuid(),
+  number: z.string(),
+  status: z.string(),
 });
 
 const moneyOut = (line: MoneyLine) => ({
@@ -238,6 +254,14 @@ export function moneyPreviewOut(
     affectedValue: preview.affectedValue.toString(),
     merchantDebit: preview.merchantDebit.toString(),
     captainCharge: preview.captainCharge.toString(),
+    redelivery:
+      preview.redelivery === null
+        ? null
+        : {
+            pickupPayment: preview.redelivery.pickupPayment.toString(),
+            commission: preview.redelivery.commission.toString(),
+            merchantNet: preview.redelivery.merchantNet.toString(),
+          },
     entries: preview.entries.map((entry) => ({
       type: entry.type,
       reason: entry.reason,
@@ -387,6 +411,7 @@ export async function answered<T>(run: () => Promise<T>): Promise<T> {
       case 'value_required':
       case 'invalid_affected':
       case 'invalid_value':
+      case 'affected_required':
         throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, error: error.refusal });
       case 'idempotency_key_reused':
         throw new UnprocessableEntityException({
