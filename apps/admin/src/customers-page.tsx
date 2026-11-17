@@ -6,6 +6,7 @@ import { type CashLine, type Paper, useCurrentSession } from './cash-desk.js';
 import { chosenCity, citiesQuery, type City } from './cities.js';
 import {
   aboveDues,
+  addressLabelOf,
   BLOCK_KINDS,
   type BlockForm,
   type BlockKind,
@@ -13,21 +14,33 @@ import {
   blockBodyOf,
   blockKindKeys,
   CASH_DESK_RECORD,
+  codeUseKeys,
   CUSTOMERS_BLOCK,
+  CUSTOMERS_CLEAR_STRIKES,
+  CUSTOMERS_MANAGE,
+  CUSTOMERS_READ,
+  CUSTOMERS_SIGN_OUT,
+  CUSTOMERS_TEST_ACCOUNT,
+  type CustomerAction,
   type CustomerProfile,
   type CustomerReceipt,
   duesLinesOf,
   duesPayBodyOf,
   statusKeys,
+  useAddNote,
   useBlockCustomer,
   useCustomer,
+  useCustomerAction,
   useCustomerReceipt,
   useCustomerReceipts,
   useCustomerSearch,
   useDuesPreview,
   usePayDues,
+  useSignOutEverywhere,
   useUnblockCustomer,
 } from './customers.js';
+import { statusKeys as orderStatusKeys } from './order-labels.js';
+import { canReadTickets, ticketStatusKeys } from './tickets.js';
 import { formatDateTime, formatMoney } from './format.js';
 import { can } from './session.js';
 import './receipt-print.css';
@@ -91,14 +104,15 @@ export function CustomersPage() {
   );
 }
 
-// AP §9.8 «ملف الزبون» as slice 2.25a builds it: the details, the status,
-// the trust, the strikes, the dues, the blocks, «حظر», «فك الحظر» and
-// «تسجيل دفع المستحق».
+// AP §9.8 «ملف الزبون»: the details, the status, the trust, the strikes,
+// the dues, the blocks, «حظر», «فك الحظر» and «تسجيل دفع المستحق» (slice
+// 2.25a); the orders, tickets, codes, addresses and notes, «توثيق»,
+// «إزالة الثقة», «مسح المخالفات», «إنهاء الإيقاف», the test account,
+// «تغيير الرقم» and «تسجيل الخروج من كل الأجهزة» (slice 2.25b).
 export function CustomerProfilePage() {
   const { t } = useTranslation();
   const { customerId } = profileRoute.useParams();
   const search = profileRoute.useSearch();
-  const { session } = signedIn.useRouteContext();
   const cities = useQuery(citiesQuery);
   const city = cities.data ? chosenCity(cities.data, search.city) : undefined;
   const profile = useCustomer(city?.id, customerId);
@@ -116,37 +130,109 @@ export function CustomerProfilePage() {
       ) : !profile.data || !city ? (
         <p role="status">{t('status.loading')}</p>
       ) : (
-        <>
-          <Profile profile={profile.data} city={city} />
-          {can(session, CUSTOMERS_BLOCK) && (
-            <>
-              {profile.data.block && (
-                <Unblock cityId={city.id} customerId={customerId} blockId={profile.data.block.id} />
-              )}
-              {/* A block in force still takes dues on top (AP §9.8). */}
-              <Block
-                key={profile.data.block?.id ?? 'none'}
-                profile={profile.data}
-                city={city}
-                kinds={profile.data.block ? ['dues'] : BLOCK_KINDS}
-              />
-            </>
-          )}
-          {can(session, CASH_DESK_RECORD) && (
-            <>
-              {BigInt(profile.data.dues.amount) > 0n && (
-                <PayDues cityId={city.id} customerId={customerId} />
-              )}
-              <Receipts customerId={customerId} timeZone={city.timeZone} />
-            </>
-          )}
-        </>
+        <ProfileWithActions profile={profile.data} city={city} />
       )}
     </main>
   );
 }
 
-function Profile({ profile, city }: { profile: CustomerProfile; city: City }) {
+function ProfileWithActions({ profile, city }: { profile: CustomerProfile; city: City }) {
+  const { t } = useTranslation();
+  const { session } = signedIn.useRouteContext();
+  const customerId = profile.id;
+  const stopId = profile.reviewStop?.id ?? null;
+  return (
+    <>
+      <Profile
+        profile={profile}
+        city={city}
+        linksOrders={can(session, 'operations.read')}
+        linksTickets={canReadTickets(session)}
+      />
+      {can(session, CUSTOMERS_READ) && <AddNote cityId={city.id} customerId={customerId} />}
+      {can(session, CUSTOMERS_MANAGE) && (
+        <>
+          <ProfileAction
+            key={profile.trusted ? 1 : 0}
+            cityId={city.id}
+            customerId={customerId}
+            title={t(profile.trusted ? 'customers.untrust.title' : 'customers.trustMark.title')}
+            action={(note) => ({
+              path: '/v1/admin/customers/{customerId}/trust',
+              body: { trusted: !profile.trusted, note },
+            })}
+          />
+          <ChangePhone cityId={city.id} customerId={customerId} />
+        </>
+      )}
+      {can(session, CUSTOMERS_CLEAR_STRIKES) && (
+        <>
+          {stopId !== null && (
+            <ProfileAction
+              key={stopId}
+              cityId={city.id}
+              customerId={customerId}
+              title={t('customers.endStop.title')}
+              action={(note) => ({
+                path: '/v1/admin/customers/{customerId}/end-review-stop',
+                body: { stopId, note },
+              })}
+            />
+          )}
+          <ProfileAction
+            key={profile.lateCancels.cleared?.at ?? 0}
+            cityId={city.id}
+            customerId={customerId}
+            title={t('customers.clearStrikes.title')}
+            hint={t('customers.clearStrikes.hint')}
+            action={(note) => ({
+              path: '/v1/admin/customers/{customerId}/clear-strikes',
+              body: { note },
+            })}
+          />
+        </>
+      )}
+      {can(session, CUSTOMERS_TEST_ACCOUNT) && (
+        <TestAccount cityId={city.id} customerId={customerId} flagged={profile.testAccount} />
+      )}
+      {can(session, CUSTOMERS_SIGN_OUT) && (
+        <SignOutEverywhere cityId={city.id} customerId={customerId} />
+      )}
+      {can(session, CUSTOMERS_BLOCK) && (
+        <>
+          {profile.block && (
+            <Unblock cityId={city.id} customerId={customerId} blockId={profile.block.id} />
+          )}
+          {/* A block in force still takes dues on top (AP §9.8). */}
+          <Block
+            key={profile.block?.id ?? 'none'}
+            profile={profile}
+            city={city}
+            kinds={profile.block ? ['dues'] : BLOCK_KINDS}
+          />
+        </>
+      )}
+      {can(session, CASH_DESK_RECORD) && (
+        <>
+          {BigInt(profile.dues.amount) > 0n && <PayDues cityId={city.id} customerId={customerId} />}
+          <Receipts customerId={customerId} timeZone={city.timeZone} />
+        </>
+      )}
+    </>
+  );
+}
+
+function Profile({
+  profile,
+  city,
+  linksOrders,
+  linksTickets,
+}: {
+  profile: CustomerProfile;
+  city: City;
+  linksOrders: boolean;
+  linksTickets: boolean;
+}) {
   const { t } = useTranslation();
   const name = [profile.firstName, profile.lastName].filter(Boolean).join(' ');
   const dues = BigInt(profile.dues.amount);
@@ -173,6 +259,15 @@ function Profile({ profile, city }: { profile: CustomerProfile; city: City }) {
                 needed: profile.trustedAfter,
               })}
         </dd>
+        {profile.trustMark && (
+          <dd>
+            {t(profile.trustMark.trusted ? 'customers.trustMarked' : 'customers.trustRemoved', {
+              at: formatDateTime(profile.trustMark.at, city.timeZone),
+              name: profile.trustMark.byName ?? '—',
+              note: profile.trustMark.note,
+            })}
+          </dd>
+        )}
         <dt>{t('customers.lateCancels')}</dt>
         <dd>
           {t('customers.lateCancelsValue', {
@@ -182,6 +277,17 @@ function Profile({ profile, city }: { profile: CustomerProfile; city: City }) {
             total: profile.lateCancels.total,
           })}
         </dd>
+        {profile.lateCancels.cleared && (
+          <dd>
+            {t('customers.strikesCleared', {
+              at: formatDateTime(profile.lateCancels.cleared.at, city.timeZone),
+              name: profile.lateCancels.cleared.byName ?? '—',
+              note: profile.lateCancels.cleared.note,
+            })}
+          </dd>
+        )}
+        <dt>{t('customers.testAccount')}</dt>
+        <dd>{t(profile.testAccount ? 'customers.yes' : 'customers.no')}</dd>
         <dt>{t('customers.fakeOrders')}</dt>
         <dd>{profile.fakeOrders}</dd>
         <dt>{t('customers.dues')}</dt>
@@ -222,6 +328,132 @@ function Profile({ profile, city }: { profile: CustomerProfile; city: City }) {
             : t('customers.blockedIndefinite', { reason: profile.block.reasonLabel })}{' '}
           {t('customers.customerSees', { text: profile.block.customerText })}
         </p>
+      )}
+      <h2>{t('customers.orders.title')}</h2>
+      <p>
+        {t('customers.orders.count', { count: profile.orders.count })}{' '}
+        {profile.orders.spent.length > 0 &&
+          t('customers.orders.spent', {
+            amounts: profile.orders.spent.map((line) => formatMoney(line)).join(' + '),
+          })}
+      </p>
+      {profile.orders.last && (
+        <p>
+          {t('customers.orders.last', {
+            number: profile.orders.last.number,
+            at: formatDateTime(profile.orders.last.placedAt, city.timeZone),
+            status:
+              profile.orders.last.status in orderStatusKeys
+                ? t(orderStatusKeys[profile.orders.last.status as keyof typeof orderStatusKeys])
+                : '',
+          })}{' '}
+          {linksOrders && (
+            <Link
+              to="/orders/$orderId"
+              params={{ orderId: profile.orders.last.id }}
+              search={{ city: city.code }}
+            >
+              {t('customers.orders.open')}
+            </Link>
+          )}
+        </p>
+      )}
+      <h2>{t('customers.tickets.title')}</h2>
+      {profile.tickets.length === 0 ? (
+        <p>{t('customers.tickets.none')}</p>
+      ) : (
+        <ul>
+          {profile.tickets.map((ticket) => (
+            <li key={ticket.id}>
+              {linksTickets ? (
+                <Link
+                  to="/tickets/$ticketId"
+                  params={{ ticketId: ticket.id }}
+                  search={{ city: city.code }}
+                >
+                  {t('customers.tickets.number', { number: ticket.number })}
+                </Link>
+              ) : (
+                t('customers.tickets.number', { number: ticket.number })
+              )}{' '}
+              {ticket.typeLabel}{' '}
+              {ticket.status in ticketStatusKeys &&
+                t(ticketStatusKeys[ticket.status as keyof typeof ticketStatusKeys])}{' '}
+              {ticket.orderNumber && t('customers.tickets.order', { number: ticket.orderNumber })}{' '}
+              {formatDateTime(ticket.openedAt, city.timeZone)}
+            </li>
+          ))}
+        </ul>
+      )}
+      <h2>{t('customers.ratings.title')}</h2>
+      <p>{t('customers.ratings.notYet')}</p>
+      <h2>{t('customers.codes.title')}</h2>
+      {profile.codes.length === 0 ? (
+        <p>{t('customers.codes.none')}</p>
+      ) : (
+        <ul>
+          {profile.codes.map((code) => (
+            <li key={code.orderId}>
+              <bdi dir="ltr">{code.code}</bdi>{' '}
+              {t('customers.codes.discount', {
+                amount: formatMoney({ amount: code.discount, currency: code.currency }),
+              })}{' '}
+              {codeUseKeys[code.status] !== undefined &&
+                t(codeUseKeys[code.status] as 'customers.codes.held')}{' '}
+              {formatDateTime(code.heldAt, city.timeZone)}
+            </li>
+          ))}
+        </ul>
+      )}
+      <h2>{t('customers.addresses.title')}</h2>
+      {profile.addresses.length === 0 ? (
+        <p>{t('customers.addresses.none')}</p>
+      ) : (
+        <ul>
+          {profile.addresses.map((address) => (
+            <li key={address.id}>
+              {t(
+                address.isDefault ? 'customers.addresses.lineDefault' : 'customers.addresses.line',
+                {
+                  label: addressLabelOf(address, t),
+                  street: address.street,
+                  floor: address.floor ?? '—',
+                  landmark: address.landmark,
+                  neighbourhood: address.neighbourhood ?? t('customers.addresses.outside'),
+                },
+              )}{' '}
+              <bdi dir="ltr">
+                {t('customers.addresses.point', {
+                  latitude: address.location.latitude.toFixed(5),
+                  longitude: address.location.longitude.toFixed(5),
+                })}
+              </bdi>
+              {address.recipientName && (
+                <>
+                  {' '}
+                  {t('customers.addresses.recipient', { name: address.recipientName })}{' '}
+                  <bdi dir="ltr">{address.maskedContactPhone}</bdi>
+                </>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      <h2>{t('customers.notes.title')}</h2>
+      {profile.notes.length === 0 ? (
+        <p>{t('customers.notes.none')}</p>
+      ) : (
+        <ul>
+          {profile.notes.map((note) => (
+            <li key={note.id}>
+              {note.body}{' '}
+              {t('customers.by', {
+                at: formatDateTime(note.createdAt, city.timeZone),
+                name: note.authorName ?? '—',
+              })}
+            </li>
+          ))}
+        </ul>
       )}
       <h2>{t('customers.blocks')}</h2>
       {profile.blocks.length === 0 ? (
@@ -436,6 +668,208 @@ function Unblock({
         <p role="alert">{t(`customers.refused.${result.refusal}`)}</p>
       )}
       {unblock.isError && <p role="alert">{t('common.failed')}</p>}
+    </form>
+  );
+}
+
+// Slice 2.25b: a profile command that needs only its reason («توثيق»,
+// «إزالة الثقة», «مسح المخالفات», «إنهاء الإيقاف»).
+function ProfileAction({
+  cityId,
+  customerId,
+  title,
+  hint,
+  action,
+}: {
+  cityId: string;
+  customerId: string;
+  title: string;
+  hint?: string;
+  action: (note: string) => CustomerAction;
+}) {
+  const { t } = useTranslation();
+  const command = useCustomerAction(cityId, customerId);
+  const [note, setNote] = useState('');
+  const result = command.data;
+  return (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (note.trim() !== '') command.mutate(action(note.trim()));
+      }}
+    >
+      <h2>{title}</h2>
+      {hint && <p>{hint}</p>}
+      <p>
+        <label>
+          {t('customers.action.note')}{' '}
+          <textarea value={note} onChange={(event) => setNote(event.target.value)} />
+        </label>
+      </p>
+      <p>
+        <button type="submit" disabled={command.isPending || note.trim() === ''}>
+          {title}
+        </button>
+      </p>
+      {result?.status === 'refused' && (
+        <p role="alert">{t(`customers.refused.${result.refusal}`)}</p>
+      )}
+      {command.isError && <p role="alert">{t('common.failed')}</p>}
+    </form>
+  );
+}
+
+// «تغيير الرقم» (AP §9.8, CU §5.4): the customer signs in again everywhere.
+function ChangePhone({ cityId, customerId }: { cityId: string; customerId: string }) {
+  const { t } = useTranslation();
+  const command = useCustomerAction(cityId, customerId);
+  const [phone, setPhone] = useState('');
+  const [note, setNote] = useState('');
+  const result = command.data;
+  const ready = phone.trim() !== '' && note.trim() !== '';
+  return (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (ready) {
+          command.mutate({
+            path: '/v1/admin/customers/{customerId}/change-phone',
+            body: { phone: phone.trim(), note: note.trim() },
+          });
+        }
+      }}
+    >
+      <h2>{t('customers.changePhone.title')}</h2>
+      <p>{t('customers.changePhone.hint')}</p>
+      <p>
+        <label>
+          {t('customers.changePhone.phone')}{' '}
+          <input
+            dir="ltr"
+            inputMode="tel"
+            value={phone}
+            onChange={(event) => setPhone(event.target.value)}
+          />
+        </label>
+      </p>
+      <p>
+        <label>
+          {t('customers.action.note')}{' '}
+          <textarea value={note} onChange={(event) => setNote(event.target.value)} />
+        </label>
+      </p>
+      <p>
+        <button type="submit" disabled={command.isPending || !ready}>
+          {t('customers.changePhone.submit')}
+        </button>
+      </p>
+      {result?.status === 'done' && <p role="status">{t('customers.changePhone.done')}</p>}
+      {result?.status === 'refused' && (
+        <p role="alert">{t(`customers.refused.${result.refusal}`)}</p>
+      )}
+      {command.isError && <p role="alert">{t('common.failed')}</p>}
+    </form>
+  );
+}
+
+// «حساب تجريبي للإدارة» (OWN): sees the restaurants in test mode.
+function TestAccount({
+  cityId,
+  customerId,
+  flagged,
+}: {
+  cityId: string;
+  customerId: string;
+  flagged: boolean;
+}) {
+  const { t } = useTranslation();
+  const command = useCustomerAction(cityId, customerId);
+  return (
+    <section>
+      <h2>{t('customers.testAccountAction.title')}</h2>
+      <p>{t('customers.testAccountAction.hint')}</p>
+      <p>
+        <button
+          type="button"
+          disabled={command.isPending}
+          onClick={() =>
+            command.mutate({
+              path: '/v1/admin/customers/{customerId}/test-account',
+              body: { flagged: !flagged },
+            })
+          }
+        >
+          {t(flagged ? 'customers.testAccountAction.off' : 'customers.testAccountAction.on')}
+        </button>
+      </p>
+      {command.isError && <p role="alert">{t('common.failed')}</p>}
+    </section>
+  );
+}
+
+// «تسجيل الخروج من كل الأجهزة» (AP §9.8): after a lost or sold phone.
+function SignOutEverywhere({ cityId, customerId }: { cityId: string; customerId: string }) {
+  const { t } = useTranslation();
+  const signOut = useSignOutEverywhere(cityId, customerId);
+  const [note, setNote] = useState('');
+  return (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (note.trim() !== '') signOut.mutate(note.trim());
+      }}
+    >
+      <h2>{t('customers.signOut.title')}</h2>
+      <p>{t('customers.signOut.hint')}</p>
+      <p>
+        <label>
+          {t('customers.action.note')}{' '}
+          <textarea value={note} onChange={(event) => setNote(event.target.value)} />
+        </label>
+      </p>
+      <p>
+        <button type="submit" disabled={signOut.isPending || note.trim() === ''}>
+          {t('customers.signOut.title')}
+        </button>
+      </p>
+      {signOut.data !== undefined && (
+        <p role="status">{t('customers.signOut.done', { count: signOut.data })}</p>
+      )}
+      {signOut.isError && <p role="alert">{t('common.failed')}</p>}
+    </form>
+  );
+}
+
+// «ملاحظة داخلية»: everyone who reads the customers.
+function AddNote({ cityId, customerId }: { cityId: string; customerId: string }) {
+  const { t } = useTranslation();
+  const add = useAddNote(cityId, customerId);
+  const [body, setBody] = useState('');
+  return (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        const text = body.trim();
+        if (text !== '') add.mutate(text, { onSuccess: () => setBody('') });
+      }}
+    >
+      <h2>{t('customers.notes.add')}</h2>
+      <p>
+        <label>
+          {t('customers.notes.body')}{' '}
+          <textarea
+            maxLength={500}
+            value={body}
+            onChange={(event) => setBody(event.target.value)}
+          />
+        </label>
+      </p>
+      <p>
+        <button type="submit" disabled={add.isPending || body.trim() === ''}>
+          {t('customers.notes.submit')}
+        </button>
+      </p>
+      {add.isError && <p role="alert">{t('common.failed')}</p>}
     </form>
   );
 }
