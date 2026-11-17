@@ -11,13 +11,14 @@ import { SettingsModule } from '../settings/index.js';
 import { AdminCompensationsController } from './admin-compensations.controller.js';
 import { AdminPromoCodesController } from './admin-promo-codes.controller.js';
 import { CompensationsService } from './compensations.service.js';
+import { LateCodesService } from './late-codes.service.js';
 import { PromoCodeUsesService } from './promo-code-uses.service.js';
 import { PromoCodesService } from './promo-codes.service.js';
 
 // The marketing module (architecture §4.2): promo codes «أكواد الخصم»
 // (AP §9.11.1, slice 2.21a), their use in orders (slice 2.21b), and picking
 // them, «أكوادي» and the code report (slice 2.21d), and «تعويض الزبون»
-// with its caps and approvals (slice 2.22a). Banners, home sections
+// with its caps and approvals (slice 2.22a), and the late code (slice 2.22c). Banners, home sections
 // and mass pushes come with 2.27.
 @Module({
   imports: [
@@ -32,8 +33,8 @@ import { PromoCodesService } from './promo-codes.service.js';
     SettingsModule,
   ],
   controllers: [AdminPromoCodesController, AdminCompensationsController],
-  providers: [PromoCodesService, PromoCodeUsesService, CompensationsService],
-  exports: [PromoCodeUsesService, CompensationsService],
+  providers: [PromoCodesService, PromoCodeUsesService, CompensationsService, LateCodesService],
+  exports: [PromoCodeUsesService, CompensationsService, LateCodesService],
 })
 export class MarketingModule {}
 
@@ -54,6 +55,12 @@ export {
   type CompensationValue,
   type PreparedCompensation,
 } from './compensations.service.js';
+export {
+  type LateCode,
+  type LateCodeOrder,
+  LateCodesService,
+  type LateCodeSkip,
+} from './late-codes.service.js';
 export {
   PromoCodeUsesService,
   type AppliedCode,

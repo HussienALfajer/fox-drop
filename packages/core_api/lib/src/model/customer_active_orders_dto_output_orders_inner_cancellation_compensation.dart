@@ -3,9 +3,9 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation_compensation_amount.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation_compensation_max_discount.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_late_code_amount.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_late_code_max_discount.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -36,16 +36,14 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensation
   // enum kindEnum {  fixed_amount,  percentage,  };
 
   @BuiltValueField(wireName: r'amount')
-  CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmount?
-  get amount;
+  CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmount? get amount;
 
   /// A percentage in basis points.
   @BuiltValueField(wireName: r'percentBp')
   int? get percentBp;
 
   @BuiltValueField(wireName: r'maxDiscount')
-  CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscount?
-  get maxDiscount;
+  CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscount? get maxDiscount;
 
   @BuiltValueField(wireName: r'validTo')
   DateTime get validTo;
@@ -109,7 +107,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationSerializ
         : serializers.serialize(
             object.amount,
             specifiedType: const FullType.nullable(
-              CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmount,
+              CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmount,
             ),
           );
     yield r'percentBp';
@@ -125,7 +123,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationSerializ
         : serializers.serialize(
             object.maxDiscount,
             specifiedType: const FullType.nullable(
-              CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscount,
+              CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscount,
             ),
           );
     yield r'validTo';
@@ -186,10 +184,10 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationSerializ
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmount,
+                      CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmount,
                     ),
                   )
-                  as CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmount?;
+                  as CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmount?;
           if (valueDes == null) continue;
           result.amount.replace(valueDes);
           break;
@@ -208,10 +206,10 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationSerializ
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscount,
+                      CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscount,
                     ),
                   )
-                  as CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscount?;
+                  as CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscount?;
           if (valueDes == null) continue;
           result.maxDiscount.replace(valueDes);
           break;

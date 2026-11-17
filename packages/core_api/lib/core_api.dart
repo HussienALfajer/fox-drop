@@ -475,13 +475,14 @@ export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inne
 export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_address_location.dart';
 export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation.dart';
 export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation_compensation.dart';
-export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation_compensation_amount.dart';
-export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation_compensation_max_discount.dart';
 export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_captain.dart';
 export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_delivery.dart';
 export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_door_ping.dart';
 export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_estimate.dart';
 export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_item_report.dart';
+export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_late_code.dart';
+export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_late_code_amount.dart';
+export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_late_code_max_discount.dart';
 export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_lines_inner.dart';
 export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_money.dart';
 export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_outcome.dart';

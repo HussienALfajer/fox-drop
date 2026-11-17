@@ -474,13 +474,14 @@ import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inne
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_address_location.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation_compensation.dart';
-import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation_compensation_amount.dart';
-import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation_compensation_max_discount.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_captain.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_delivery.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_door_ping.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_estimate.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_item_report.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_late_code.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_late_code_amount.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_late_code_max_discount.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_lines_inner.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_money.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_outcome.dart';
@@ -1142,13 +1143,14 @@ part 'serializers.g.dart';
   CustomerActiveOrdersDtoOutputOrdersInnerAddressLocation,
   CustomerActiveOrdersDtoOutputOrdersInnerCancellation,
   CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensation,
-  CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmount,
-  CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscount,
   CustomerActiveOrdersDtoOutputOrdersInnerCaptain,
   CustomerActiveOrdersDtoOutputOrdersInnerDelivery,
   CustomerActiveOrdersDtoOutputOrdersInnerDoorPing,
   CustomerActiveOrdersDtoOutputOrdersInnerEstimate,
   CustomerActiveOrdersDtoOutputOrdersInnerItemReport,
+  CustomerActiveOrdersDtoOutputOrdersInnerLateCode,
+  CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmount,
+  CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscount,
   CustomerActiveOrdersDtoOutputOrdersInnerLinesInner,
   CustomerActiveOrdersDtoOutputOrdersInnerMoney,
   CustomerActiveOrdersDtoOutputOrdersInnerOutcome,

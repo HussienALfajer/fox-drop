@@ -6330,6 +6330,28 @@ export interface components {
                 version: number;
                 /** Format: date-time */
                 placedAt: string;
+                /** @description CU §11.6, AP §8.3 (slice 2.22c): the late code the order earned, still not delivered at the promised time + order.delivery_late_compensation_min; it is also in «أكوادي». Null without one, and in the list of active orders. */
+                lateCode: {
+                    code: string;
+                    /** @enum {string} */
+                    kind: "fixed_amount" | "percentage";
+                    /** @description A fixed amount; null for a percentage. */
+                    amount: {
+                        amount: string;
+                        currency: string;
+                    } | null;
+                    /** @description A percentage in basis points. */
+                    percentBp: number | null;
+                    /** @description A percentage's maximum; null for the late code's without one. */
+                    maxDiscount: {
+                        amount: string;
+                        currency: string;
+                    } | null;
+                    /** Format: date-time */
+                    validTo: string;
+                    /** Format: date-time */
+                    issuedAt: string;
+                } | null;
                 /** @description «يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows. */
                 promisedAt: string | null;
                 /** @description CU §11.7 (slice 2.13d): the captain's latest «تنبيه الزبون» while at the door. Unanswered and under 30 seconds old, the open app rings full screen «الكابتن عند الباب ويحاول الوصول إليك» (or «… إلى {المستلم}») with «أنا قادم» (or «سأتصل بالمستلم») and «اتصال بالكابتن». Null without one. */
@@ -6367,7 +6389,7 @@ export interface components {
                         } | null;
                         /** @description A percentage in basis points. */
                         percentBp: number | null;
-                        /** @description A percentage's maximum. */
+                        /** @description A percentage's maximum; null for the late code's without one. */
                         maxDiscount: {
                             amount: string;
                             currency: string;
@@ -6540,6 +6562,28 @@ export interface components {
                 version: number;
                 /** Format: date-time */
                 placedAt: string;
+                /** @description CU §11.6, AP §8.3 (slice 2.22c): the late code the order earned, still not delivered at the promised time + order.delivery_late_compensation_min; it is also in «أكوادي». Null without one, and in the list of active orders. */
+                lateCode: {
+                    code: string;
+                    /** @enum {string} */
+                    kind: "fixed_amount" | "percentage";
+                    /** @description A fixed amount; null for a percentage. */
+                    amount: {
+                        amount: string;
+                        currency: string;
+                    } | null;
+                    /** @description A percentage in basis points. */
+                    percentBp: number | null;
+                    /** @description A percentage's maximum; null for the late code's without one. */
+                    maxDiscount: {
+                        amount: string;
+                        currency: string;
+                    } | null;
+                    /** Format: date-time */
+                    validTo: string;
+                    /** Format: date-time */
+                    issuedAt: string;
+                } | null;
                 /** @description «يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows. */
                 promisedAt: string | null;
                 /** @description CU §11.7 (slice 2.13d): the captain's latest «تنبيه الزبون» while at the door. Unanswered and under 30 seconds old, the open app rings full screen «الكابتن عند الباب ويحاول الوصول إليك» (or «… إلى {المستلم}») with «أنا قادم» (or «سأتصل بالمستلم») and «اتصال بالكابتن». Null without one. */
@@ -6577,7 +6621,7 @@ export interface components {
                         } | null;
                         /** @description A percentage in basis points. */
                         percentBp: number | null;
-                        /** @description A percentage's maximum. */
+                        /** @description A percentage's maximum; null for the late code's without one. */
                         maxDiscount: {
                             amount: string;
                             currency: string;

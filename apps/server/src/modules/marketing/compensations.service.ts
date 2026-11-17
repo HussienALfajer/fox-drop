@@ -9,7 +9,7 @@ import { ContentService, formatMoney, NotificationTexts } from '../content/index
 import { FxService } from '../fx/index.js';
 import { AlertsService, PushQueue } from '../notifications/index.js';
 import { lockCityCurrencies, SettingsService } from '../settings/index.js';
-import { generatedCode } from './promo-codes.js';
+import { createPersonalCode } from './personal-codes.js';
 import {
   type CompensationKind,
   compensations,
@@ -78,8 +78,6 @@ export class CompensationRefusedError extends Error {
   }
 }
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-const DRAWS = 5;
 // AP §6.4: the roles with a cap of their own; another role that may
 // compensate has none, so every request of it waits for OWN.
 const CAPPED_ROLES = ['SUP', 'OPS'] as const;
@@ -356,49 +354,11 @@ export class CompensationsService {
     now: Date,
   ): Promise<Compensation> {
     // The caller holds the city's codes lock (`marketing.codes:<cityId>`).
-    // Through the transaction: it may be the order's (slice 2.22b), which
-    // never waits on a second connection.
-    const days = await this.settings.get(
-      'support.personal_code_valid_days',
-      { cityId: row.cityId },
-      tx,
-    );
-    let code: string | null = null;
-    for (let i = 0; i < DRAWS && code === null; i += 1) {
-      const candidate = generatedCode('');
-      const [taken] = await tx
-        .select({ id: promoCodes.id })
-        .from(promoCodes)
-        .where(and(eq(promoCodes.cityId, row.cityId), eq(promoCodes.code, candidate)));
-      if (!taken) code = candidate;
-    }
-    if (code === null) throw new Error('could not draw a free code');
-    const validTo = new Date(now.getTime() + days * DAY_MS);
-    const [created] = (await tx
-      .insert(promoCodes)
-      .values({
-        cityId: row.cityId,
-        code,
-        kind: row.kind,
-        percentBp: row.percentBp,
-        amount: row.amount,
-        maxDiscount: row.maxDiscount,
-        currency: row.currency,
-        validFrom: now,
-        validTo,
-        totalLimit: 1,
-        perCustomerLimit: 1,
-        audience: 'everyone',
-        restaurantIds: [],
-        zoneIds: [],
-        funding: 'platform',
-        merchantShareBp: 0,
-        visibility: 'personal',
-        customerAccountId: row.customerAccountId,
-        createdBy,
-        updatedBy: createdBy,
-      })
-      .returning({ id: promoCodes.id })) as [{ id: string }];
+    const {
+      id: codeId,
+      code,
+      validTo,
+    } = await createPersonalCode(tx, this.settings, row, createdBy, now);
     const [issued] = (await tx
       .update(compensations)
       .set({
@@ -407,7 +367,7 @@ export class CompensationsService {
         percentBp: row.percentBp,
         maxDiscount: row.maxDiscount,
         status: 'issued',
-        codeId: created.id,
+        codeId,
         decidedBy: row.decidedBy,
         decidedAt: row.decidedAt,
       })

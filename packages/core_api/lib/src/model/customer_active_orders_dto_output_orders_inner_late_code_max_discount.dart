@@ -6,19 +6,19 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'customer_active_orders_dto_output_orders_inner_cancellation_compensation_max_discount.g.dart';
+part 'customer_active_orders_dto_output_orders_inner_late_code_max_discount.g.dart';
 
-/// A percentage's maximum.
+/// A percentage's maximum; null for the late code's without one.
 ///
 /// Properties:
 /// * [amount]
 /// * [currency]
 @BuiltValue()
-abstract class CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscount
+abstract class CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscount
     implements
         Built<
-          CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscount,
-          CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscountBuilder
+          CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscount,
+          CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscountBuilder
         > {
   @BuiltValueField(wireName: r'amount')
   String get amount;
@@ -26,49 +26,43 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationM
   @BuiltValueField(wireName: r'currency')
   String get currency;
 
-  CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscount._();
+  CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscount._();
 
-  factory CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscount([
+  factory CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscount([
     void updates(
-      CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscountBuilder
-      b,
+      CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscountBuilder b,
     ),
-  ]) =
-      _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscount;
+  ]) = _$CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscount;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(
-    CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscountBuilder
-    b,
+    CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscountBuilder b,
   ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<
-    CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscount
-  >
+  static Serializer<CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscount>
   get serializer =>
-      _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscountSerializer();
+      _$CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscountSerializer();
 }
 
-class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscountSerializer
+class _$CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscountSerializer
     implements
         PrimitiveSerializer<
-          CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscount
+          CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscount
         > {
   @override
   final Iterable<Type> types = const [
-    CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscount,
-    _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscount,
+    CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscount,
+    _$CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscount,
   ];
 
   @override
   final String wireName =
-      r'CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscount';
+      r'CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscount';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscount
-    object, {
+    CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscount object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'amount';
@@ -86,8 +80,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDisco
   @override
   Object serialize(
     Serializers serializers,
-    CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscount
-    object, {
+    CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscount object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -102,7 +95,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDisco
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscountBuilder
+    required CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscountBuilder
     result,
     required List<Object?> unhandled,
   }) {
@@ -137,14 +130,13 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDisco
   }
 
   @override
-  CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscount
-  deserialize(
+  CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscount deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
     final result =
-        CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscountBuilder();
+        CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscountBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

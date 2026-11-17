@@ -15,6 +15,9 @@ export const QUEUES = {
   merchantAutoCancel: 'ordering-merchant-auto-cancel',
   // AP §8.3, §9.12.6: the search-start moment of an accepted order.
   searchStart: 'ordering-search-start',
+  // AP §8.3, docs/domain/03 (slice 2.22c): the late code at the promised time
+  // + order.delivery_late_compensation_min.
+  lateCode: 'ordering-late-code',
   // Architecture §5.5: a run of the outbox relay, sent with each transition.
   outboxRelay: 'ordering-outbox-relay',
   // AP §8.3: an offer the captain did not answer in dispatch.offer_timeout_sec.

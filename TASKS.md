@@ -11,8 +11,8 @@ Slice 2.22c, the late code (`docs/roadmap.md`, Phase 2, Money; the third of 2.22
 - **Branch:** `feat/late-code`.
 - **Before starting, ask the owner:** `order.late_compensation_value` is «Before launch» (AP §13): its value, or whether the slice builds with the setting unset (no code issued while it is unset).
 - **Plan:**
-  - [ ] The server: the late-code timer (a pg-boss job sent with the acceptance's `promised_at` + the setting, sent again by «تعديل الوقت» and an edit back to preparing; the worker acts only on an order still not delivered or ended whose promised time is the job's), one late code per order (a personal code through marketing, funded by the platform, booked to `platform.compensation_cost` when used, outside the cumulative cap), the push #15, the order's read of its late code; the OpenAPI document and the clients.
-  - [ ] The customer app: the late apology with its code on the order (CU §11.6), the push opening «أكوادي».
+  - [x] The server: the late-code timer (a pg-boss job sent with the acceptance's `promised_at` + the setting, sent again by «تعديل الوقت» and an edit back to preparing; the worker acts only on an order still not delivered or ended whose promised time is the job's), one late code per order (a personal code through marketing, funded by the platform, booked to `platform.compensation_cost` when used, outside the cumulative cap), the push #15, the order's read of its late code; the OpenAPI document and the clients.
+  - [x] The customer app: the late apology with its code on the order (CU §11.6), the push opening «أكوادي».
   - [ ] Review, then hand over to 2.22d.
 
 ### Left from 2.22b (`feat/compensation-codes-use`)

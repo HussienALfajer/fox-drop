@@ -762,15 +762,7 @@ Serializers _$serializers =
                 .serializer,
           )
           ..add(
-            CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmount
-                .serializer,
-          )
-          ..add(
             CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationKindEnum
-                .serializer,
-          )
-          ..add(
-            CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscount
                 .serializer,
           )
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerCaptain.serializer)
@@ -786,6 +778,17 @@ Serializers _$serializers =
           )
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerEstimate.serializer)
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerItemReport.serializer)
+          ..add(CustomerActiveOrdersDtoOutputOrdersInnerLateCode.serializer)
+          ..add(
+            CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmount.serializer,
+          )
+          ..add(
+            CustomerActiveOrdersDtoOutputOrdersInnerLateCodeKindEnum.serializer,
+          )
+          ..add(
+            CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscount
+                .serializer,
+          )
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerLinesInner.serializer)
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerMoney.serializer)
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerOutcome.serializer)

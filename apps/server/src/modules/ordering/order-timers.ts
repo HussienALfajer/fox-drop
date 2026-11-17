@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
 import { and, eq } from 'drizzle-orm';
 import { ContentService } from '../content/index.js';
 import { GeoService } from '../geo/index.js';
-import { PromoCodeUsesService } from '../marketing/index.js';
+import { LateCodesService, PromoCodeUsesService } from '../marketing/index.js';
 import { RestaurantStatusService } from '../merchants/index.js';
 import { SettingsService } from '../settings/index.js';
 import { DATABASE } from '../../database/database.module.js';
@@ -39,6 +39,21 @@ export interface SearchStartJob {
   noCaptainAlertMin?: number;
 }
 
+// The late code's timer (AP §8.3, docs/domain/03; slice 2.22c), sent with
+// every new promised time for order.delivery_late_compensation_min after it.
+export interface LateCodeJob {
+  orderId: string;
+  // ISO time, the order's partition key.
+  placedAt: string;
+  // ISO time, the promised time it was set for: one moved since («تعديل
+  // الوقت», an edit back to preparing) leaves this job without effect.
+  promisedAt: string;
+}
+
+// The order is still on its way: it gets the late code (owner decision
+// 2026-11-17: an order that ended before the moment gets none).
+const NOT_DELIVERED = ['accepted', 'ready', 'picked_up', 'arrived'];
+
 const MINUTE_MS = 60_000;
 
 // AP §8.3: the reason of the automatic cancellation, «المطعم لم يستجب», kept
@@ -59,7 +74,48 @@ export class OrderTimers {
     private readonly settings: SettingsService,
     private readonly status: RestaurantStatusService,
     private readonly promoCodes: PromoCodeUsesService,
+    private readonly lateCodes: LateCodesService,
   ) {}
+
+  // AP §8.3, §6.4 (slice 2.22c): the order is still not delivered at its
+  // promised time + order.delivery_late_compensation_min, so the customer
+  // gets the late code, once per order. A promised time moved since, or an
+  // order ended, delivered or a test order (decided by us: a test order's code
+  // would cost real money) gets none. The issue or why none.
+  async lateCode(job: LateCodeJob, now: Date) {
+    const placedAt = new Date(job.placedAt);
+    return this.database.db.transaction(async (tx) => {
+      const order = await lockOrder(tx, job.orderId, placedAt);
+      if (!order || !NOT_DELIVERED.includes(order.status)) return 'not_late' as const;
+      const [row] = await tx
+        .select({
+          promisedAt: orders.promisedAt,
+          currency: orders.currency,
+          testOrder: orders.testOrder,
+        })
+        .from(orders)
+        .where(and(eq(orders.id, order.id), eq(orders.placedAt, placedAt)));
+      if (
+        !row?.promisedAt ||
+        row.testOrder ||
+        row.promisedAt.getTime() !== new Date(job.promisedAt).getTime()
+      ) {
+        return 'not_late' as const;
+      }
+      return this.lateCodes.issue(
+        tx,
+        {
+          id: order.id,
+          cityId: order.cityId,
+          number: order.number,
+          customerAccountId: order.customerAccountId,
+          currency: row.currency,
+          promisedAt: row.promisedAt,
+        },
+        now,
+      );
+    });
+  }
 
   // AP §8.3: cancels a placed order the restaurant did not accept in time;
   // true when it did. The order keeps the customer's text as it is now (CU
@@ -185,6 +241,26 @@ export class OrderTimersWorker implements OnModuleInit {
   ) {}
 
   async onModuleInit(): Promise<void> {
+    await this.jobs.work<LateCodeJob>(QUEUES.lateCode, async (batch) => {
+      for (const job of batch) {
+        try {
+          const result = await this.timers.lateCode(job.data, new Date());
+          if (typeof result === 'object') {
+            this.logger.log({ orderId: job.data.orderId }, 'late code issued');
+          } else if (result === 'unset' || result === 'other_currency') {
+            this.logger.warn(
+              { orderId: job.data.orderId, skip: result },
+              'late order without a late code: order.late_compensation_value',
+            );
+          }
+        } catch (error) {
+          // pg-boss tries it again (QUEUE_OPTIONS); each failure is reported.
+          this.logger.error({ err: error, orderId: job.data.orderId }, 'late code failed');
+          reportError(error);
+          throw error;
+        }
+      }
+    });
     await this.jobs.work<SearchStartJob>(QUEUES.searchStart, async (batch) => {
       for (const job of batch) {
         try {

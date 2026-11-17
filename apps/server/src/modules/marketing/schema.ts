@@ -89,10 +89,11 @@ export const promoCodes = marketing.table(
     // A personal code's customer (identity's account id, a plain value).
     customerAccountId: uuid('customer_account_id'),
     status: text('status', { enum: promoCodeStatuses }).notNull().default('active'),
-    // The admin accounts (identity's ids, plain values).
-    createdBy: uuid('created_by').notNull(),
+    // The admin accounts (identity's ids, plain values); null for a code the
+    // system issued, the late code (slice 2.22c).
+    createdBy: uuid('created_by'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-    updatedBy: uuid('updated_by').notNull(),
+    updatedBy: uuid('updated_by'),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
@@ -152,12 +153,13 @@ export const promoCodes = marketing.table(
       sql`${table.visibility} IN ('visible', 'secret', 'personal')`,
     ),
     // A personal code (slice 2.22a): one use by its customer, an amount or a
-    // percentage with a maximum, funded by the platform, with no other rule.
+    // percentage, funded by the platform, with no other rule. A compensation's
+    // percentage has its maximum (`compensations_value`); the late code's may
+    // have none (AP Appendix A, slice 2.22c).
     check(
       'promo_codes_personal',
       sql`(${table.visibility} = 'personal') = (${table.customerAccountId} IS NOT NULL)
           AND (${table.visibility} <> 'personal' OR (${table.kind} <> 'free_delivery'
-            AND (${table.kind} <> 'percentage' OR ${table.maxDiscount} IS NOT NULL)
             AND ${table.totalLimit} = 1 AND ${table.perCustomerLimit} = 1
             AND ${table.audience} = 'everyone' AND ${table.funding} = 'platform'
             AND cardinality(${table.restaurantIds}) = 0 AND cardinality(${table.zoneIds}) = 0
@@ -165,6 +167,12 @@ export const promoCodes = marketing.table(
             AND ${table.startMinute} IS NULL AND ${table.batchId} IS NULL))`,
     ),
     check('promo_codes_status_values', sql`${table.status} IN ('active', 'paused')`),
+    // Only a personal code is issued by the system, without an admin.
+    check(
+      'promo_codes_admins',
+      sql`${table.visibility} = 'personal'
+          OR (${table.createdBy} IS NOT NULL AND ${table.updatedBy} IS NOT NULL)`,
+    ),
   ],
 );
 
@@ -317,4 +325,26 @@ export const compensations = marketing.table(
           AND (${table.status} <> 'rejected' OR ${table.decidedAt} IS NOT NULL)`,
     ),
   ],
+);
+
+// The late code (AP §8.3, §6.4, docs/domain/03; slice 2.22c): the personal
+// code the system issues once per order still not delivered at the promised
+// time + order.delivery_late_compensation_min. Outside every compensation cap
+// and the order's cumulative total. The order, its customer and the city are
+// other modules' ids, plain values. Never changed (no UPDATE).
+export const lateCodes = marketing.table(
+  'late_codes',
+  {
+    orderId: uuid('order_id').primaryKey(),
+    cityId: uuid('city_id').notNull(),
+    orderNumber: bigint('order_number', { mode: 'bigint' }).notNull(),
+    customerAccountId: uuid('customer_account_id').notNull(),
+    codeId: uuid('code_id')
+      .notNull()
+      .references(() => promoCodes.id),
+    // The promised time the order was late against.
+    promisedAt: timestamp('promised_at', { withTimezone: true }).notNull(),
+    issuedAt: timestamp('issued_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [uniqueIndex('late_codes_code').on(table.codeId)],
 );

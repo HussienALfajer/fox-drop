@@ -145,6 +145,8 @@ class _$CustomerActiveOrdersDtoOutputOrdersInner
   @override
   final DateTime placedAt;
   @override
+  final CustomerActiveOrdersDtoOutputOrdersInnerLateCode? lateCode;
+  @override
   final DateTime? promisedAt;
   @override
   final CustomerActiveOrdersDtoOutputOrdersInnerDoorPing? doorPing;
@@ -197,6 +199,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInner
     required this.status,
     required this.version,
     required this.placedAt,
+    this.lateCode,
     this.promisedAt,
     this.doorPing,
     this.itemReport,
@@ -236,6 +239,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInner
         status == other.status &&
         version == other.version &&
         placedAt == other.placedAt &&
+        lateCode == other.lateCode &&
         promisedAt == other.promisedAt &&
         doorPing == other.doorPing &&
         itemReport == other.itemReport &&
@@ -266,6 +270,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInner
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, version.hashCode);
     _$hash = $jc(_$hash, placedAt.hashCode);
+    _$hash = $jc(_$hash, lateCode.hashCode);
     _$hash = $jc(_$hash, promisedAt.hashCode);
     _$hash = $jc(_$hash, doorPing.hashCode);
     _$hash = $jc(_$hash, itemReport.hashCode);
@@ -300,6 +305,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInner
           ..add('status', status)
           ..add('version', version)
           ..add('placedAt', placedAt)
+          ..add('lateCode', lateCode)
           ..add('promisedAt', promisedAt)
           ..add('doorPing', doorPing)
           ..add('itemReport', itemReport)
@@ -353,6 +359,14 @@ class CustomerActiveOrdersDtoOutputOrdersInnerBuilder
   DateTime? _placedAt;
   DateTime? get placedAt => _$this._placedAt;
   set placedAt(DateTime? placedAt) => _$this._placedAt = placedAt;
+
+  CustomerActiveOrdersDtoOutputOrdersInnerLateCodeBuilder? _lateCode;
+  CustomerActiveOrdersDtoOutputOrdersInnerLateCodeBuilder get lateCode =>
+      _$this._lateCode ??=
+          CustomerActiveOrdersDtoOutputOrdersInnerLateCodeBuilder();
+  set lateCode(
+    CustomerActiveOrdersDtoOutputOrdersInnerLateCodeBuilder? lateCode,
+  ) => _$this._lateCode = lateCode;
 
   DateTime? _promisedAt;
   DateTime? get promisedAt => _$this._promisedAt;
@@ -501,6 +515,7 @@ class CustomerActiveOrdersDtoOutputOrdersInnerBuilder
       _status = $v.status;
       _version = $v.version;
       _placedAt = $v.placedAt;
+      _lateCode = $v.lateCode?.toBuilder();
       _promisedAt = $v.promisedAt;
       _doorPing = $v.doorPing?.toBuilder();
       _itemReport = $v.itemReport?.toBuilder();
@@ -572,6 +587,7 @@ class CustomerActiveOrdersDtoOutputOrdersInnerBuilder
               r'CustomerActiveOrdersDtoOutputOrdersInner',
               'placedAt',
             ),
+            lateCode: _lateCode?.build(),
             promisedAt: promisedAt,
             doorPing: _doorPing?.build(),
             itemReport: _itemReport?.build(),
@@ -604,6 +620,9 @@ class CustomerActiveOrdersDtoOutputOrdersInnerBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'lateCode';
+        _lateCode?.build();
+
         _$failedField = 'doorPing';
         _doorPing?.build();
         _$failedField = 'itemReport';
