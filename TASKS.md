@@ -4,16 +4,24 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.22c, the late code (`docs/roadmap.md`, Phase 2, Money; the third of 2.22a–d).
+Slice 2.22d, the compensation and discount costs (`docs/roadmap.md`, Phase 2, Money; the last of 2.22a–d).
 
-- **Roadmap line:** 2.22c The late code: a timer at the promised time + `order.delivery_late_compensation_min` (45) while the order is not delivered, moved when the promised time changes and dropped when the order ends (owner decision 2026-11-17), issuing once per order a personal code of `order.late_compensation_value` without a cap and outside the cumulative total, and the push «تأخر طلبك، وهذا كود خصم لطلبك القادم: {الكود}» (AP §8.3, §6.4, `docs/domain/03`, CU §11.6, §14 #15). An order 45 minutes late gets a code.
-- **Specs:** AP §8.3 (timers), AP §6.4 (the late code is not a compensation within a cap), AP Appendix A (`order.delivery_late_compensation_min`, `order.late_compensation_value`, «Before launch»), `docs/domain/03` (the timer row), `docs/domain/11` (`platform.compensation_cost`: automatic late codes), CU §11.6 (the late apology on the order), CU §14 #15; `apps/server/src/modules/marketing/CLAUDE.md` (personal codes, `CompensationsService.issue`, slices 2.22a–b), `apps/server/src/modules/ordering/CLAUDE.md` (timers, «تعديل الوقت», the order's end), `apps/customer/CLAUDE.md`, `packages/core_l10n/CLAUDE.md`.
-- **Branch:** `feat/late-code`.
-- **Before starting, ask the owner:** `order.late_compensation_value` is «Before launch» (AP §13): its value, or whether the slice builds with the setting unset (no code issued while it is unset).
+- **Roadmap line:** 2.22d «كلفة التعويضات والخصومات» in finance: for a period, the cost of codes, compensations and operating costs split by reason, by code, by responsible party and by restaurant, exported to Excel (AP §9.10.6). The owner reads a week's compensation by reason.
+- **Specs:** AP §9.10.6, AP §6 (who reads finance: FIN, OWN), `docs/domain/11` (`platform.discount_cost`, `platform.compensation_cost`, `platform.operating_cost`, `platform.test_cost`), `docs/domain/07`, AP §9.10.1 (the daily report's business day, slice 2.20d), architecture §5.9 (Excel exports, `reporting`); `apps/server/src/modules/marketing/CLAUDE.md` (compensations with their reason, late codes in `marketing.late_codes`, uses), `apps/server/src/modules/ordering/CLAUDE.md` (what books each cost and its party), `apps/admin/CLAUDE.md`.
+- **Branch:** `feat/compensation-costs`.
+- **Before starting, ask the owner:** the period's boundaries (business days like the daily report, or calendar days); whether a compensation's cost counts when the code is issued or when it is used (`docs/domain/11` books `platform.compensation_cost` when used); the late codes' line (their own reason «تأخير التوصيل» beside the compensation reasons).
 - **Plan:**
-  - [x] The server: the late-code timer (a pg-boss job sent with the acceptance's `promised_at` + the setting, sent again by «تعديل الوقت» and an edit back to preparing; the worker acts only on an order still not delivered or ended whose promised time is the job's), one late code per order (a personal code through marketing, funded by the platform, booked to `platform.compensation_cost` when used, outside the cumulative cap), the push #15, the order's read of its late code; the OpenAPI document and the clients.
-  - [x] The customer app: the late apology with its code on the order (CU §11.6), the push opening the order (CU §14: rows 1 to 15 open the order).
-  - [ ] Review, then hand over to 2.22d.
+  - [ ] The server: the period's costs from the ledger and marketing, split by reason (compensations' reasons, the late code, the operating costs' reasons), by code, by responsible party and by restaurant; the route, its permissions and the Excel export; the OpenAPI document and the clients.
+  - [ ] The panel: «كلفة التعويضات والخصومات» in finance with the period, the splits and «تصدير Excel».
+  - [ ] Review, then hand over to the next slice.
+
+### Left from 2.22c (`feat/late-code`)
+
+- **Before deploying to staging:** migration 0086 adds `marketing.late_codes` (new table, no `UPDATE` for the application role), makes `marketing.promo_codes.created_by` and `updated_by` nullable with the `CHECK` `promo_codes_admins` (null only for a personal code), and drops the personal percentage's maximum from `promo_codes_personal` (expand only). New pg-boss queue `ordering-late-code` (created by the migration run). The customer's order adds `lateCode`. Deploy the server (API and worker) before the app. Orders accepted before the deploy have no late-code timer.
+- **To check on staging (with the APK of this slice):** as OWN set «order.late_compensation_value» to 25.00 in «الإعدادات»; place an order, accept it, then (rather than waiting 45 minutes) as OPS leave it unpicked: at the promised time + 45 minutes the customer's phone gets «تأخر طلبك، وهذا كود خصم لطلبك القادم: …», which opens the order; the order screen shows «تأخر طلبك، وهذا كود خصم 25 ₺ لطلبك القادم: …» with «ينتهي …» and «أكوادي», and «أكوادي» lists the code. «تعديل الوقت» +10 before the moment moves it 10 minutes later. Deliver the order first: no code. Order with the code, deliver it: «التقرير اليومي» shows it under «كلفة التعويضات».
+- **To confirm with the owner:** what a percentage late code is a percentage of (built: the next order's items value, no maximum; the setting is unset, so nothing depends on it yet); the push's words: CU §14 #15 «تأخر طلبك، وهذا كود خصم لطلبك القادم: {الكود}» (the push) against CU §11.6 «… كود خصم {القيمة} لطلبك القادم …» (the order screen's line); the order screen's line itself (CU §11.6 lists only the push and «أكوادي»).
+- **Decided by us:** a test order gets no late code (its code would cost real money); an order placed in an earlier base than the setting's amount gets none (`other_currency`, logged); the late code is not a compensation row (no reason, no cap, not in the cumulative total) but its own table; the push opens the order (CU §14: rows 1 to 15), and any push of the order on screen reads the order again.
+- **Not yet:** the late apology at 20 minutes (CU §14 #14, «نعتذر، طلبك متأخر قليلاً»); the late codes in the cost report (2.22d).
 
 ### Left from 2.22b (`feat/compensation-codes-use`)
 
