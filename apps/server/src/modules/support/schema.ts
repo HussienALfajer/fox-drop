@@ -4,6 +4,7 @@ import {
   boolean,
   check,
   index,
+  jsonb,
   primaryKey,
   pgSchema,
   text,
@@ -11,14 +12,21 @@ import {
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
-import { slaKinds, ticketParties, ticketStatuses } from './tickets.js';
+import {
+  responsibleParties,
+  slaKinds,
+  ticketParties,
+  ticketResolutions,
+  ticketStatuses,
+} from './tickets.js';
 
 // Architecture §4.3: the support module owns the support schema.
 export const support = pgSchema('support');
 
-// Where a ticket came from (AP §9.9.1). 2.23a builds «تذكرة يدوية»; the
-// apps' sources and the pickup dispute join with their slices.
-export const ticketSources = ['manual'] as const;
+// Where a ticket came from (AP §9.9.1). 2.23a builds «تذكرة يدوية», 2.23b
+// the restaurant's dispute after the pickup; the apps' sources join with
+// 2.24.
+export const ticketSources = ['manual', 'pickup_dispute'] as const;
 export type TicketSource = (typeof ticketSources)[number];
 
 const inList = (values: readonly string[]) =>
@@ -66,8 +74,30 @@ export const tickets = support.table(
     openedAt: timestamp('opened_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
     // The opening's Idempotency-Key, kept for good, and its request's hash.
+    // A pickup dispute's ticket is opened by the restaurant's user
+    // (`opened_by`) with the key `pickup_dispute:<dispute id>`.
     idempotencyKey: text('idempotency_key').notNull(),
     requestHash: text('request_hash').notNull(),
+    // «سعر مختلف عن المحل»: the restaurant it is about (AP §9.9.1), no order.
+    restaurantId: uuid('restaurant_id'),
+    // «خلاف على دفعة الاستلام»: ordering's pickup_disputes row.
+    pickupDisputeId: uuid('pickup_dispute_id'),
+    // AP §9.9.3 (slice 2.23b): the resolution, the responsible party (a
+    // general ticket's), the message sent to the party, for «تصحيح في
+    // الحسابات» the lines the restaurant received as corrected and the
+    // journals posted, who resolved it and when.
+    resolution: text('resolution', { enum: ticketResolutions }),
+    responsible: text('responsible', { enum: responsibleParties }),
+    message: text('message'),
+    correctedLines: jsonb('corrected_lines'),
+    journalIds: jsonb('journal_ids'),
+    resolvedBy: uuid('resolved_by'),
+    resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+    // «إغلاق» without a resolution (owner decision 2026-11-17): the internal
+    // reason, who and when.
+    closeReason: text('close_reason'),
+    closedBy: uuid('closed_by'),
+    closedAt: timestamp('closed_at', { withTimezone: true }),
   },
   (table) => [
     uniqueIndex('tickets_city_number').on(table.cityId, table.number),
@@ -78,6 +108,28 @@ export const tickets = support.table(
     check('tickets_party_values', sql`${table.party} IN (${inList(ticketParties)})`),
     check('tickets_status_values', sql`${table.status} IN (${inList(ticketStatuses)})`),
     check('tickets_sla_kind_values', sql`${table.slaKind} IN (${inList(slaKinds)})`),
+    uniqueIndex('tickets_pickup_dispute').on(table.pickupDisputeId),
+    check('tickets_resolution_values', sql`${table.resolution} IN (${inList(ticketResolutions)})`),
+    check(
+      'tickets_responsible_values',
+      sql`${table.responsible} IN (${inList(responsibleParties)})`,
+    ),
+    check(
+      'tickets_resolved',
+      sql`(${table.status} = 'resolved') = (${table.resolution} IS NOT NULL AND ${table.message} IS NOT NULL AND ${table.resolvedBy} IS NOT NULL AND ${table.resolvedAt} IS NOT NULL) AND (${table.resolution} IS NOT NULL OR (${table.responsible} IS NULL AND ${table.correctedLines} IS NULL AND ${table.journalIds} IS NULL))`,
+    ),
+    check(
+      'tickets_closed',
+      sql`(${table.status} = 'closed') = (${table.closeReason} IS NOT NULL AND ${table.closedBy} IS NOT NULL AND ${table.closedAt} IS NOT NULL)`,
+    ),
+    check(
+      'tickets_pickup_dispute_source',
+      sql`(${table.source} = 'pickup_dispute') = (${table.pickupDisputeId} IS NOT NULL) AND (${table.pickupDisputeId} IS NULL OR ${table.orderId} IS NOT NULL)`,
+    ),
+    check(
+      'tickets_restaurant',
+      sql`${table.restaurantId} IS NULL OR (${table.orderId} IS NULL AND ${table.party} = 'customer')`,
+    ),
     check(
       'tickets_order',
       sql`(${table.orderId} IS NULL) = (${table.orderNumber} IS NULL) AND (${table.orderId} IS NOT NULL OR NOT ${table.orderActive})`,

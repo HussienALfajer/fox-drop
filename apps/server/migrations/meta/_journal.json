@@ -624,6 +624,20 @@
       "when": 1794903418511,
       "tag": "0088_support_tickets",
       "breakpoints": true
+    },
+    {
+      "idx": 89,
+      "version": "7",
+      "when": 1794908956461,
+      "tag": "0089_support_ticket_resolution",
+      "breakpoints": true
+    },
+    {
+      "idx": 90,
+      "version": "7",
+      "when": 1794908978774,
+      "tag": "0090_content_canned_replies",
+      "breakpoints": true
     }
   ]
 }

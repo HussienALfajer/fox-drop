@@ -1015,6 +1015,8 @@ describe('the cash desk tables (AP §9.10.3, §4.8)', () => {
     ['change a ticket note', "UPDATE support.ticket_notes SET body = 'x'"],
     ['change a ticket number', 'UPDATE support.tickets SET number = 1'],
     ['change a ticket party', 'UPDATE support.tickets SET party_id = city_id'],
+    ['change the dispute of a ticket', 'UPDATE support.tickets SET pickup_dispute_id = city_id'],
+    ['change the restaurant of a ticket', 'UPDATE support.tickets SET restaurant_id = city_id'],
     ['delete a ticket', 'DELETE FROM support.tickets'],
   ])('refuse the application role to %s', async (_, statement) => {
     await expect(appQuery(statement)).rejects.toThrow(/permission denied/);
