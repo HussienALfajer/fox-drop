@@ -1,0 +1,203 @@
+//
+// AUTO-GENERATED FILE, DO NOT MODIFY!
+//
+
+// ignore_for_file: unused_element
+import 'package:core_api/src/model/admin_ticket_page_dto_output_pickup_dispute_pickup_payment.dart';
+import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/admin_ticket_page_dto_output_report_lines_inner.dart';
+import 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force_windows_inner_zones_inner.dart';
+import 'package:built_value/built_value.dart';
+import 'package:built_value/serializer.dart';
+
+part 'admin_ticket_page_dto_output_report.g.dart';
+
+/// A report from the customer app (source customer_report or price_report).
+///
+/// Properties:
+/// * [lines] - The items the customer named (CU §12.2).
+/// * [photoUrls] - Signed links to the photos, valid 10 minutes: read the page again for new ones.
+/// * [item]
+/// * [shopPrice]
+@BuiltValue()
+abstract class AdminTicketPageDtoOutputReport
+    implements
+        Built<
+          AdminTicketPageDtoOutputReport,
+          AdminTicketPageDtoOutputReportBuilder
+        > {
+  /// The items the customer named (CU §12.2).
+  @BuiltValueField(wireName: r'lines')
+  BuiltList<AdminTicketPageDtoOutputReportLinesInner> get lines;
+
+  /// Signed links to the photos, valid 10 minutes: read the page again for new ones.
+  @BuiltValueField(wireName: r'photoUrls')
+  BuiltList<String> get photoUrls;
+
+  @BuiltValueField(wireName: r'item')
+  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner? get item;
+
+  @BuiltValueField(wireName: r'shopPrice')
+  AdminTicketPageDtoOutputPickupDisputePickupPayment? get shopPrice;
+
+  AdminTicketPageDtoOutputReport._();
+
+  factory AdminTicketPageDtoOutputReport([
+    void updates(AdminTicketPageDtoOutputReportBuilder b),
+  ]) = _$AdminTicketPageDtoOutputReport;
+
+  @BuiltValueHook(initializeBuilder: true)
+  static void _defaults(AdminTicketPageDtoOutputReportBuilder b) => b;
+
+  @BuiltValueSerializer(custom: true)
+  static Serializer<AdminTicketPageDtoOutputReport> get serializer =>
+      _$AdminTicketPageDtoOutputReportSerializer();
+}
+
+class _$AdminTicketPageDtoOutputReportSerializer
+    implements PrimitiveSerializer<AdminTicketPageDtoOutputReport> {
+  @override
+  final Iterable<Type> types = const [
+    AdminTicketPageDtoOutputReport,
+    _$AdminTicketPageDtoOutputReport,
+  ];
+
+  @override
+  final String wireName = r'AdminTicketPageDtoOutputReport';
+
+  Iterable<Object?> _serializeProperties(
+    Serializers serializers,
+    AdminTicketPageDtoOutputReport object, {
+    FullType specifiedType = FullType.unspecified,
+  }) sync* {
+    yield r'lines';
+    yield serializers.serialize(
+      object.lines,
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminTicketPageDtoOutputReportLinesInner),
+      ]),
+    );
+    yield r'photoUrls';
+    yield serializers.serialize(
+      object.photoUrls,
+      specifiedType: const FullType(BuiltList, [FullType(String)]),
+    );
+    yield r'item';
+    yield object.item == null
+        ? null
+        : serializers.serialize(
+            object.item,
+            specifiedType: const FullType.nullable(
+              AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+            ),
+          );
+    yield r'shopPrice';
+    yield object.shopPrice == null
+        ? null
+        : serializers.serialize(
+            object.shopPrice,
+            specifiedType: const FullType.nullable(
+              AdminTicketPageDtoOutputPickupDisputePickupPayment,
+            ),
+          );
+  }
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    AdminTicketPageDtoOutputReport object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
+  }
+
+  void _deserializeProperties(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+    required List<Object?> serializedList,
+    required AdminTicketPageDtoOutputReportBuilder result,
+    required List<Object?> unhandled,
+  }) {
+    for (var i = 0; i < serializedList.length; i += 2) {
+      final key = serializedList[i] as String;
+      final value = serializedList[i + 1];
+      switch (key) {
+        case r'lines':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminTicketPageDtoOutputReportLinesInner),
+                    ]),
+                  )
+                  as BuiltList<AdminTicketPageDtoOutputReportLinesInner>;
+          result.lines.replace(valueDes);
+          break;
+        case r'photoUrls':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltList<String>;
+          result.photoUrls.replace(valueDes);
+          break;
+        case r'item':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+                    ),
+                  )
+                  as AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?;
+          if (valueDes == null) continue;
+          result.item.replace(valueDes);
+          break;
+        case r'shopPrice':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminTicketPageDtoOutputPickupDisputePickupPayment,
+                    ),
+                  )
+                  as AdminTicketPageDtoOutputPickupDisputePickupPayment?;
+          if (valueDes == null) continue;
+          result.shopPrice.replace(valueDes);
+          break;
+        default:
+          unhandled.add(key);
+          unhandled.add(value);
+          break;
+      }
+    }
+  }
+
+  @override
+  AdminTicketPageDtoOutputReport deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    final result = AdminTicketPageDtoOutputReportBuilder();
+    final serializedList = (serialized as Iterable<Object?>).toList();
+    final unhandled = <Object?>[];
+    _deserializeProperties(
+      serializers,
+      serialized,
+      specifiedType: specifiedType,
+      serializedList: serializedList,
+      unhandled: unhandled,
+      result: result,
+    );
+    return result.build();
+  }
+}

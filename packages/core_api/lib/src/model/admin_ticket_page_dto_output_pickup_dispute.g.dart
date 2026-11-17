@@ -88,18 +88,11 @@ class _$AdminTicketPageDtoOutputPickupDisputeConfirmedByEnumSerializer
 class _$AdminTicketPageDtoOutputPickupDispute
     extends AdminTicketPageDtoOutputPickupDispute {
   @override
-  final AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-  pickupPayment;
+  final AdminTicketPageDtoOutputPickupDisputePickupPayment? pickupPayment;
   @override
-  final BuiltList<
-    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-  >
-  recorded;
+  final BuiltList<AdminTicketPageDtoOutputPickupDisputePickupPayment?> recorded;
   @override
-  final BuiltList<
-    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-  >
-  received;
+  final BuiltList<AdminTicketPageDtoOutputPickupDisputePickupPayment?> received;
   @override
   final AdminTicketPageDtoOutputPickupDisputeConfirmedByEnum confirmedBy;
   @override
@@ -115,7 +108,7 @@ class _$AdminTicketPageDtoOutputPickupDispute
       ._build();
 
   _$AdminTicketPageDtoOutputPickupDispute._({
-    required this.pickupPayment,
+    this.pickupPayment,
     required this.recorded,
     required this.received,
     required this.confirmedBy,
@@ -183,50 +176,28 @@ class AdminTicketPageDtoOutputPickupDisputeBuilder
         > {
   _$AdminTicketPageDtoOutputPickupDispute? _$v;
 
-  AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerBuilder?
-  _pickupPayment;
-  AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerBuilder
-  get pickupPayment => _$this._pickupPayment ??=
-      AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerBuilder();
+  AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder? _pickupPayment;
+  AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder get pickupPayment =>
+      _$this._pickupPayment ??=
+          AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder();
   set pickupPayment(
-    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerBuilder?
-    pickupPayment,
+    AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder? pickupPayment,
   ) => _$this._pickupPayment = pickupPayment;
 
-  ListBuilder<
-    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-  >?
-  _recorded;
-  ListBuilder<
-    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-  >
+  ListBuilder<AdminTicketPageDtoOutputPickupDisputePickupPayment?>? _recorded;
+  ListBuilder<AdminTicketPageDtoOutputPickupDisputePickupPayment?>
   get recorded => _$this._recorded ??=
-      ListBuilder<
-        AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-      >();
+      ListBuilder<AdminTicketPageDtoOutputPickupDisputePickupPayment?>();
   set recorded(
-    ListBuilder<
-      AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-    >?
-    recorded,
+    ListBuilder<AdminTicketPageDtoOutputPickupDisputePickupPayment?>? recorded,
   ) => _$this._recorded = recorded;
 
-  ListBuilder<
-    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-  >?
-  _received;
-  ListBuilder<
-    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-  >
+  ListBuilder<AdminTicketPageDtoOutputPickupDisputePickupPayment?>? _received;
+  ListBuilder<AdminTicketPageDtoOutputPickupDisputePickupPayment?>
   get received => _$this._received ??=
-      ListBuilder<
-        AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-      >();
+      ListBuilder<AdminTicketPageDtoOutputPickupDisputePickupPayment?>();
   set received(
-    ListBuilder<
-      AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-    >?
-    received,
+    ListBuilder<AdminTicketPageDtoOutputPickupDisputePickupPayment?>? received,
   ) => _$this._received = received;
 
   AdminTicketPageDtoOutputPickupDisputeConfirmedByEnum? _confirmedBy;
@@ -257,7 +228,7 @@ class AdminTicketPageDtoOutputPickupDisputeBuilder
   AdminTicketPageDtoOutputPickupDisputeBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _pickupPayment = $v.pickupPayment.toBuilder();
+      _pickupPayment = $v.pickupPayment?.toBuilder();
       _recorded = $v.recorded.toBuilder();
       _received = $v.received.toBuilder();
       _confirmedBy = $v.confirmedBy;
@@ -290,7 +261,7 @@ class AdminTicketPageDtoOutputPickupDisputeBuilder
       _$result =
           _$v ??
           _$AdminTicketPageDtoOutputPickupDispute._(
-            pickupPayment: pickupPayment.build(),
+            pickupPayment: _pickupPayment?.build(),
             recorded: recorded.build(),
             received: received.build(),
             confirmedBy: BuiltValueNullFieldError.checkNotNull(
@@ -310,7 +281,7 @@ class AdminTicketPageDtoOutputPickupDisputeBuilder
       late String _$failedField;
       try {
         _$failedField = 'pickupPayment';
-        pickupPayment.build();
+        _pickupPayment?.build();
         _$failedField = 'recorded';
         recorded.build();
         _$failedField = 'received';

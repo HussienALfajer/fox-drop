@@ -254,7 +254,7 @@ class _$MerchantOrdersDtoOutputOrdersInner
   @override
   final String number;
   @override
-  final MerchantOrdersDtoOutputOrdersInnerRedeliveryOf? redeliveryOf;
+  final CustomerActiveOrdersDtoOutputOrdersInnerRedeliveriesInner? redeliveryOf;
   @override
   final MerchantOrdersDtoOutputOrdersInnerStatusEnum status;
   @override
@@ -439,12 +439,14 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
   String? get number => _$this._number;
   set number(String? number) => _$this._number = number;
 
-  MerchantOrdersDtoOutputOrdersInnerRedeliveryOfBuilder? _redeliveryOf;
-  MerchantOrdersDtoOutputOrdersInnerRedeliveryOfBuilder get redeliveryOf =>
-      _$this._redeliveryOf ??=
-          MerchantOrdersDtoOutputOrdersInnerRedeliveryOfBuilder();
+  CustomerActiveOrdersDtoOutputOrdersInnerRedeliveriesInnerBuilder?
+  _redeliveryOf;
+  CustomerActiveOrdersDtoOutputOrdersInnerRedeliveriesInnerBuilder
+  get redeliveryOf => _$this._redeliveryOf ??=
+      CustomerActiveOrdersDtoOutputOrdersInnerRedeliveriesInnerBuilder();
   set redeliveryOf(
-    MerchantOrdersDtoOutputOrdersInnerRedeliveryOfBuilder? redeliveryOf,
+    CustomerActiveOrdersDtoOutputOrdersInnerRedeliveriesInnerBuilder?
+    redeliveryOf,
   ) => _$this._redeliveryOf = redeliveryOf;
 
   MerchantOrdersDtoOutputOrdersInnerStatusEnum? _status;

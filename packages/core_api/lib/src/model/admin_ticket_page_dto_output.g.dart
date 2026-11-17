@@ -299,6 +299,8 @@ class _$AdminTicketPageDtoOutput extends AdminTicketPageDtoOutput {
   final AdminTicketPageDtoOutputOrder? order;
   @override
   final BuiltList<AdminTicketPageDtoOutputRedeliveriesInner> redeliveries;
+  @override
+  final AdminTicketPageDtoOutputReport? report;
 
   factory _$AdminTicketPageDtoOutput([
     void Function(AdminTicketPageDtoOutputBuilder)? updates,
@@ -333,6 +335,7 @@ class _$AdminTicketPageDtoOutput extends AdminTicketPageDtoOutput {
     this.pickupDispute,
     this.order,
     required this.redeliveries,
+    this.report,
   }) : super._();
   @override
   AdminTicketPageDtoOutput rebuild(
@@ -374,7 +377,8 @@ class _$AdminTicketPageDtoOutput extends AdminTicketPageDtoOutput {
         notes == other.notes &&
         pickupDispute == other.pickupDispute &&
         order == other.order &&
-        redeliveries == other.redeliveries;
+        redeliveries == other.redeliveries &&
+        report == other.report;
   }
 
   @override
@@ -408,6 +412,7 @@ class _$AdminTicketPageDtoOutput extends AdminTicketPageDtoOutput {
     _$hash = $jc(_$hash, pickupDispute.hashCode);
     _$hash = $jc(_$hash, order.hashCode);
     _$hash = $jc(_$hash, redeliveries.hashCode);
+    _$hash = $jc(_$hash, report.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -442,7 +447,8 @@ class _$AdminTicketPageDtoOutput extends AdminTicketPageDtoOutput {
           ..add('notes', notes)
           ..add('pickupDispute', pickupDispute)
           ..add('order', order)
-          ..add('redeliveries', redeliveries))
+          ..add('redeliveries', redeliveries)
+          ..add('report', report))
         .toString();
   }
 }
@@ -586,6 +592,12 @@ class AdminTicketPageDtoOutputBuilder
     ListBuilder<AdminTicketPageDtoOutputRedeliveriesInner>? redeliveries,
   ) => _$this._redeliveries = redeliveries;
 
+  AdminTicketPageDtoOutputReportBuilder? _report;
+  AdminTicketPageDtoOutputReportBuilder get report =>
+      _$this._report ??= AdminTicketPageDtoOutputReportBuilder();
+  set report(AdminTicketPageDtoOutputReportBuilder? report) =>
+      _$this._report = report;
+
   AdminTicketPageDtoOutputBuilder() {
     AdminTicketPageDtoOutput._defaults(this);
   }
@@ -621,6 +633,7 @@ class AdminTicketPageDtoOutputBuilder
       _pickupDispute = $v.pickupDispute?.toBuilder();
       _order = $v.order?.toBuilder();
       _redeliveries = $v.redeliveries.toBuilder();
+      _report = $v.report?.toBuilder();
       _$v = null;
     }
     return this;
@@ -729,6 +742,7 @@ class AdminTicketPageDtoOutputBuilder
             pickupDispute: _pickupDispute?.build(),
             order: _order?.build(),
             redeliveries: redeliveries.build(),
+            report: _report?.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -748,6 +762,8 @@ class AdminTicketPageDtoOutputBuilder
         _order?.build();
         _$failedField = 'redeliveries';
         redeliveries.build();
+        _$failedField = 'report';
+        _report?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminTicketPageDtoOutput',

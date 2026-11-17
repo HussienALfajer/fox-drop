@@ -166,11 +166,9 @@ class _$AdminCaptainBalancesDtoOutputCaptainsInner
   @override
   final String custodyInBase;
   @override
-  final AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-  usage;
+  final AdminTicketPageDtoOutputPickupDisputePickupPayment? usage;
   @override
-  final AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-  limit;
+  final AdminTicketPageDtoOutputPickupDisputePickupPayment? limit;
   @override
   final AdminDeskCustodyDtoOutputClosedDue closedDue;
   @override
@@ -198,8 +196,8 @@ class _$AdminCaptainBalancesDtoOutputCaptainsInner
     required this.name,
     required this.status,
     required this.custodyInBase,
-    required this.usage,
-    required this.limit,
+    this.usage,
+    this.limit,
     required this.closedDue,
     required this.lastCutoff,
     required this.currencies,
@@ -309,25 +307,19 @@ class AdminCaptainBalancesDtoOutputCaptainsInnerBuilder
   set custodyInBase(String? custodyInBase) =>
       _$this._custodyInBase = custodyInBase;
 
-  AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerBuilder?
-  _usage;
-  AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerBuilder
-  get usage => _$this._usage ??=
-      AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerBuilder();
-  set usage(
-    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerBuilder?
-    usage,
-  ) => _$this._usage = usage;
+  AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder? _usage;
+  AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder get usage =>
+      _$this._usage ??=
+          AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder();
+  set usage(AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder? usage) =>
+      _$this._usage = usage;
 
-  AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerBuilder?
-  _limit;
-  AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerBuilder
-  get limit => _$this._limit ??=
-      AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerBuilder();
-  set limit(
-    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerBuilder?
-    limit,
-  ) => _$this._limit = limit;
+  AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder? _limit;
+  AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder get limit =>
+      _$this._limit ??=
+          AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder();
+  set limit(AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder? limit) =>
+      _$this._limit = limit;
 
   AdminDeskCustodyDtoOutputClosedDueBuilder? _closedDue;
   AdminDeskCustodyDtoOutputClosedDueBuilder get closedDue =>
@@ -390,8 +382,8 @@ class AdminCaptainBalancesDtoOutputCaptainsInnerBuilder
       _name = $v.name;
       _status = $v.status;
       _custodyInBase = $v.custodyInBase;
-      _usage = $v.usage.toBuilder();
-      _limit = $v.limit.toBuilder();
+      _usage = $v.usage?.toBuilder();
+      _limit = $v.limit?.toBuilder();
       _closedDue = $v.closedDue.toBuilder();
       _lastCutoff = $v.lastCutoff;
       _currencies = $v.currencies.toBuilder();
@@ -446,8 +438,8 @@ class AdminCaptainBalancesDtoOutputCaptainsInnerBuilder
               r'AdminCaptainBalancesDtoOutputCaptainsInner',
               'custodyInBase',
             ),
-            usage: usage.build(),
-            limit: limit.build(),
+            usage: _usage?.build(),
+            limit: _limit?.build(),
             closedDue: closedDue.build(),
             lastCutoff: BuiltValueNullFieldError.checkNotNull(
               lastCutoff,
@@ -465,9 +457,9 @@ class AdminCaptainBalancesDtoOutputCaptainsInnerBuilder
       late String _$failedField;
       try {
         _$failedField = 'usage';
-        usage.build();
+        _usage?.build();
         _$failedField = 'limit';
-        limit.build();
+        _limit?.build();
         _$failedField = 'closedDue';
         closedDue.build();
 

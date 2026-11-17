@@ -8,9 +8,7 @@ part of 'admin_ticket_correction_dto_output.dart';
 
 class _$AdminTicketCorrectionDtoOutput extends AdminTicketCorrectionDtoOutput {
   @override
-  final BuiltList<
-    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-  >
+  final BuiltList<AdminTicketPageDtoOutputPickupDisputePickupPayment?>
   captainChanges;
   @override
   final AdminTicketCorrectionDtoOutputMerchant merchant;
@@ -72,21 +70,13 @@ class AdminTicketCorrectionDtoOutputBuilder
         > {
   _$AdminTicketCorrectionDtoOutput? _$v;
 
-  ListBuilder<
-    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-  >?
+  ListBuilder<AdminTicketPageDtoOutputPickupDisputePickupPayment?>?
   _captainChanges;
-  ListBuilder<
-    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-  >
+  ListBuilder<AdminTicketPageDtoOutputPickupDisputePickupPayment?>
   get captainChanges => _$this._captainChanges ??=
-      ListBuilder<
-        AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-      >();
+      ListBuilder<AdminTicketPageDtoOutputPickupDisputePickupPayment?>();
   set captainChanges(
-    ListBuilder<
-      AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-    >?
+    ListBuilder<AdminTicketPageDtoOutputPickupDisputePickupPayment?>?
     captainChanges,
   ) => _$this._captainChanges = captainChanges;
 

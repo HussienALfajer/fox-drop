@@ -203,10 +203,7 @@ class _$AdminSettlementPreviewDtoOutput
   @override
   final String? collect;
   @override
-  final BuiltList<
-    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-  >
-  net;
+  final BuiltList<AdminTicketPageDtoOutputPickupDisputePickupPayment?> net;
 
   factory _$AdminSettlementPreviewDtoOutput([
     void Function(AdminSettlementPreviewDtoOutputBuilder)? updates,
@@ -349,22 +346,12 @@ class AdminSettlementPreviewDtoOutputBuilder
   String? get collect => _$this._collect;
   set collect(String? collect) => _$this._collect = collect;
 
-  ListBuilder<
-    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-  >?
-  _net;
-  ListBuilder<
-    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-  >
-  get net => _$this._net ??=
-      ListBuilder<
-        AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-      >();
+  ListBuilder<AdminTicketPageDtoOutputPickupDisputePickupPayment?>? _net;
+  ListBuilder<AdminTicketPageDtoOutputPickupDisputePickupPayment?> get net =>
+      _$this._net ??=
+          ListBuilder<AdminTicketPageDtoOutputPickupDisputePickupPayment?>();
   set net(
-    ListBuilder<
-      AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-    >?
-    net,
+    ListBuilder<AdminTicketPageDtoOutputPickupDisputePickupPayment?>? net,
   ) => _$this._net = net;
 
   AdminSettlementPreviewDtoOutputBuilder() {

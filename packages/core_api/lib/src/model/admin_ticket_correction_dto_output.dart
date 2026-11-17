@@ -3,9 +3,9 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_resolution_corrected_lines_inner.dart';
 import 'package:core_api/src/model/admin_ticket_correction_dto_output_merchant.dart';
 import 'package:core_api/src/model/admin_ticket_correction_dto_output_entries_inner.dart';
+import 'package:core_api/src/model/admin_ticket_page_dto_output_pickup_dispute_pickup_payment.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -27,7 +27,7 @@ abstract class AdminTicketCorrectionDtoOutput
         > {
   /// Per currency: + the captain hands it in, − the desk reimburses them.
   @BuiltValueField(wireName: r'captainChanges')
-  BuiltList<AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner>
+  BuiltList<AdminTicketPageDtoOutputPickupDisputePickupPayment?>
   get captainChanges;
 
   @BuiltValueField(wireName: r'merchant')
@@ -70,9 +70,7 @@ class _$AdminTicketCorrectionDtoOutputSerializer
     yield serializers.serialize(
       object.captainChanges,
       specifiedType: const FullType(BuiltList, [
-        FullType(
-          AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
-        ),
+        FullType.nullable(AdminTicketPageDtoOutputPickupDisputePickupPayment),
       ]),
     );
     yield r'merchant';
@@ -119,13 +117,13 @@ class _$AdminTicketCorrectionDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
+                      FullType.nullable(
+                        AdminTicketPageDtoOutputPickupDisputePickupPayment,
                       ),
                     ]),
                   )
                   as BuiltList<
-                    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+                    AdminTicketPageDtoOutputPickupDisputePickupPayment?
                   >;
           result.captainChanges.replace(valueDes);
           break;

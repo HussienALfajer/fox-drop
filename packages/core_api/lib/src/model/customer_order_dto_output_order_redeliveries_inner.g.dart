@@ -1,43 +1,40 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'merchant_orders_dto_output_orders_inner_redelivery_of.dart';
+part of 'customer_order_dto_output_order_redeliveries_inner.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$MerchantOrdersDtoOutputOrdersInnerRedeliveryOf
-    extends MerchantOrdersDtoOutputOrdersInnerRedeliveryOf {
+class _$CustomerOrderDtoOutputOrderRedeliveriesInner
+    extends CustomerOrderDtoOutputOrderRedeliveriesInner {
   @override
   final String orderId;
   @override
   final String number;
 
-  factory _$MerchantOrdersDtoOutputOrdersInnerRedeliveryOf([
-    void Function(MerchantOrdersDtoOutputOrdersInnerRedeliveryOfBuilder)?
-    updates,
-  ]) =>
-      (MerchantOrdersDtoOutputOrdersInnerRedeliveryOfBuilder()..update(updates))
-          ._build();
+  factory _$CustomerOrderDtoOutputOrderRedeliveriesInner([
+    void Function(CustomerOrderDtoOutputOrderRedeliveriesInnerBuilder)? updates,
+  ]) => (CustomerOrderDtoOutputOrderRedeliveriesInnerBuilder()..update(updates))
+      ._build();
 
-  _$MerchantOrdersDtoOutputOrdersInnerRedeliveryOf._({
+  _$CustomerOrderDtoOutputOrderRedeliveriesInner._({
     required this.orderId,
     required this.number,
   }) : super._();
   @override
-  MerchantOrdersDtoOutputOrdersInnerRedeliveryOf rebuild(
-    void Function(MerchantOrdersDtoOutputOrdersInnerRedeliveryOfBuilder)
-    updates,
+  CustomerOrderDtoOutputOrderRedeliveriesInner rebuild(
+    void Function(CustomerOrderDtoOutputOrderRedeliveriesInnerBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  MerchantOrdersDtoOutputOrdersInnerRedeliveryOfBuilder toBuilder() =>
-      MerchantOrdersDtoOutputOrdersInnerRedeliveryOfBuilder()..replace(this);
+  CustomerOrderDtoOutputOrderRedeliveriesInnerBuilder toBuilder() =>
+      CustomerOrderDtoOutputOrderRedeliveriesInnerBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is MerchantOrdersDtoOutputOrdersInnerRedeliveryOf &&
+    return other is CustomerOrderDtoOutputOrderRedeliveriesInner &&
         orderId == other.orderId &&
         number == other.number;
   }
@@ -54,7 +51,7 @@ class _$MerchantOrdersDtoOutputOrdersInnerRedeliveryOf
   @override
   String toString() {
     return (newBuiltValueToStringHelper(
-            r'MerchantOrdersDtoOutputOrdersInnerRedeliveryOf',
+            r'CustomerOrderDtoOutputOrderRedeliveriesInner',
           )
           ..add('orderId', orderId)
           ..add('number', number))
@@ -62,13 +59,13 @@ class _$MerchantOrdersDtoOutputOrdersInnerRedeliveryOf
   }
 }
 
-class MerchantOrdersDtoOutputOrdersInnerRedeliveryOfBuilder
+class CustomerOrderDtoOutputOrderRedeliveriesInnerBuilder
     implements
         Builder<
-          MerchantOrdersDtoOutputOrdersInnerRedeliveryOf,
-          MerchantOrdersDtoOutputOrdersInnerRedeliveryOfBuilder
+          CustomerOrderDtoOutputOrderRedeliveriesInner,
+          CustomerOrderDtoOutputOrderRedeliveriesInnerBuilder
         > {
-  _$MerchantOrdersDtoOutputOrdersInnerRedeliveryOf? _$v;
+  _$CustomerOrderDtoOutputOrderRedeliveriesInner? _$v;
 
   String? _orderId;
   String? get orderId => _$this._orderId;
@@ -78,11 +75,11 @@ class MerchantOrdersDtoOutputOrdersInnerRedeliveryOfBuilder
   String? get number => _$this._number;
   set number(String? number) => _$this._number = number;
 
-  MerchantOrdersDtoOutputOrdersInnerRedeliveryOfBuilder() {
-    MerchantOrdersDtoOutputOrdersInnerRedeliveryOf._defaults(this);
+  CustomerOrderDtoOutputOrderRedeliveriesInnerBuilder() {
+    CustomerOrderDtoOutputOrderRedeliveriesInner._defaults(this);
   }
 
-  MerchantOrdersDtoOutputOrdersInnerRedeliveryOfBuilder get _$this {
+  CustomerOrderDtoOutputOrderRedeliveriesInnerBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _orderId = $v.orderId;
@@ -93,33 +90,32 @@ class MerchantOrdersDtoOutputOrdersInnerRedeliveryOfBuilder
   }
 
   @override
-  void replace(MerchantOrdersDtoOutputOrdersInnerRedeliveryOf other) {
-    _$v = other as _$MerchantOrdersDtoOutputOrdersInnerRedeliveryOf;
+  void replace(CustomerOrderDtoOutputOrderRedeliveriesInner other) {
+    _$v = other as _$CustomerOrderDtoOutputOrderRedeliveriesInner;
   }
 
   @override
   void update(
-    void Function(MerchantOrdersDtoOutputOrdersInnerRedeliveryOfBuilder)?
-    updates,
+    void Function(CustomerOrderDtoOutputOrderRedeliveriesInnerBuilder)? updates,
   ) {
     if (updates != null) updates(this);
   }
 
   @override
-  MerchantOrdersDtoOutputOrdersInnerRedeliveryOf build() => _build();
+  CustomerOrderDtoOutputOrderRedeliveriesInner build() => _build();
 
-  _$MerchantOrdersDtoOutputOrdersInnerRedeliveryOf _build() {
+  _$CustomerOrderDtoOutputOrderRedeliveriesInner _build() {
     final _$result =
         _$v ??
-        _$MerchantOrdersDtoOutputOrdersInnerRedeliveryOf._(
+        _$CustomerOrderDtoOutputOrderRedeliveriesInner._(
           orderId: BuiltValueNullFieldError.checkNotNull(
             orderId,
-            r'MerchantOrdersDtoOutputOrdersInnerRedeliveryOf',
+            r'CustomerOrderDtoOutputOrderRedeliveriesInner',
             'orderId',
           ),
           number: BuiltValueNullFieldError.checkNotNull(
             number,
-            r'MerchantOrdersDtoOutputOrdersInnerRedeliveryOf',
+            r'CustomerOrderDtoOutputOrderRedeliveriesInner',
             'number',
           ),
         );

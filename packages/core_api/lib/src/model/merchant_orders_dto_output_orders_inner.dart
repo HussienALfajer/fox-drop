@@ -9,12 +9,12 @@ import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_accep
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_owner.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_captain.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_redeliveries_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_pickup.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_edits_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_customer.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_captain_arrival.dart';
-import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_redelivery_of.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -61,7 +61,7 @@ abstract class MerchantOrdersDtoOutputOrdersInner
   String get number;
 
   @BuiltValueField(wireName: r'redeliveryOf')
-  MerchantOrdersDtoOutputOrdersInnerRedeliveryOf? get redeliveryOf;
+  CustomerActiveOrdersDtoOutputOrdersInnerRedeliveriesInner? get redeliveryOf;
 
   /// AP §8.1; the board column (RA §8.1–8.2).
   @BuiltValueField(wireName: r'status')
@@ -180,7 +180,7 @@ class _$MerchantOrdersDtoOutputOrdersInnerSerializer
         : serializers.serialize(
             object.redeliveryOf,
             specifiedType: const FullType.nullable(
-              MerchantOrdersDtoOutputOrdersInnerRedeliveryOf,
+              CustomerActiveOrdersDtoOutputOrdersInnerRedeliveriesInner,
             ),
           );
     yield r'status';
@@ -375,10 +375,10 @@ class _$MerchantOrdersDtoOutputOrdersInnerSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      MerchantOrdersDtoOutputOrdersInnerRedeliveryOf,
+                      CustomerActiveOrdersDtoOutputOrdersInnerRedeliveriesInner,
                     ),
                   )
-                  as MerchantOrdersDtoOutputOrdersInnerRedeliveryOf?;
+                  as CustomerActiveOrdersDtoOutputOrdersInnerRedeliveriesInner?;
           if (valueDes == null) continue;
           result.redeliveryOf.replace(valueDes);
           break;

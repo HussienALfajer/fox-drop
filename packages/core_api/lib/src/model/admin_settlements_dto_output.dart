@@ -4,7 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_captain_balances_dto_output_captains_inner.dart';
+import 'package:core_api/src/model/admin_settlements_dto_output_captains_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -36,7 +36,7 @@ abstract class AdminSettlementsDtoOutput
 
   /// Every captain with an earnings balance or open custody, highest custody first.
   @BuiltValueField(wireName: r'captains')
-  BuiltList<AdminCaptainBalancesDtoOutputCaptainsInner> get captains;
+  BuiltList<AdminSettlementsDtoOutputCaptainsInner> get captains;
 
   AdminSettlementsDtoOutput._();
 
@@ -87,7 +87,7 @@ class _$AdminSettlementsDtoOutputSerializer
     yield serializers.serialize(
       object.captains,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminCaptainBalancesDtoOutputCaptainsInner),
+        FullType(AdminSettlementsDtoOutputCaptainsInner),
       ]),
     );
   }
@@ -153,10 +153,10 @@ class _$AdminSettlementsDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(AdminCaptainBalancesDtoOutputCaptainsInner),
+                      FullType(AdminSettlementsDtoOutputCaptainsInner),
                     ]),
                   )
-                  as BuiltList<AdminCaptainBalancesDtoOutputCaptainsInner>;
+                  as BuiltList<AdminSettlementsDtoOutputCaptainsInner>;
           result.captains.replace(valueDes);
           break;
         default:

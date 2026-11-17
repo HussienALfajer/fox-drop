@@ -4,8 +4,8 @@
 
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/captain_active_order_dto_output_order_handover.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_redeliveries_inner.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_customer.dart';
-import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_redelivery_of.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_outcome_to_collect.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_preparation.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_collect.dart';
@@ -66,7 +66,7 @@ abstract class CaptainActiveOrderDtoOutputOrder
   String get number;
 
   @BuiltValueField(wireName: r'redeliveryOf')
-  MerchantOrdersDtoOutputOrdersInnerRedeliveryOf? get redeliveryOf;
+  CustomerActiveOrdersDtoOutputOrdersInnerRedeliveriesInner? get redeliveryOf;
 
   @BuiltValueField(wireName: r'status')
   CaptainActiveOrderDtoOutputOrderStatusEnum get status;
@@ -185,7 +185,7 @@ class _$CaptainActiveOrderDtoOutputOrderSerializer
         : serializers.serialize(
             object.redeliveryOf,
             specifiedType: const FullType.nullable(
-              MerchantOrdersDtoOutputOrdersInnerRedeliveryOf,
+              CustomerActiveOrdersDtoOutputOrdersInnerRedeliveriesInner,
             ),
           );
     yield r'status';
@@ -377,10 +377,10 @@ class _$CaptainActiveOrderDtoOutputOrderSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      MerchantOrdersDtoOutputOrdersInnerRedeliveryOf,
+                      CustomerActiveOrdersDtoOutputOrdersInnerRedeliveriesInner,
                     ),
                   )
-                  as MerchantOrdersDtoOutputOrdersInnerRedeliveryOf?;
+                  as CustomerActiveOrdersDtoOutputOrdersInnerRedeliveriesInner?;
           if (valueDes == null) continue;
           result.redeliveryOf.replace(valueDes);
           break;
