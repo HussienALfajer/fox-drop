@@ -23,6 +23,7 @@ import {
 } from '../support/index.js';
 import { merchantItemDiscount } from './order-discount.js';
 import { orderKey, type OrderView, readOrders } from './order-views.js';
+import { EmergencyStops } from './emergency-stop.js';
 import { postOrderJournals } from './outcome-facts.js';
 import { placeRedelivery, type RedeliveryBasis } from './redeliveries.js';
 import type { RedeliveryParty } from './redelivery.js';
@@ -52,6 +53,7 @@ export class TicketMoney implements TicketOrders, OnModuleInit {
     private readonly pushes: PushQueue,
     private readonly settings: SettingsService,
     private readonly jobs: Jobs,
+    private readonly emergencyStops: EmergencyStops,
   ) {}
 
   onModuleInit(): void {
@@ -216,13 +218,22 @@ export class TicketMoney implements TicketOrders, OnModuleInit {
   // force, read through the pool before the resolution's transaction.
   async prepareRedelivery(orderId: string, now: Date): Promise<RedeliveryBasis> {
     const order = await this.read(orderId);
-    const [acceptAlertMin, autoCancelMin, payTable] = await Promise.all([
+    const [acceptAlertMin, autoCancelMin, payTable, storefront, stop] = await Promise.all([
       this.settings.get('order.merchant_accept_alert_min', { cityId: order.cityId }),
       this.settings.get('order.merchant_auto_cancel_min', { cityId: order.cityId }),
       this.captains.payTable(order.cityId, now),
+      this.merchants.storefrontState(order.restaurantId, now),
+      this.emergencyStops.active(order.cityId),
     ]);
     if (payTable === null)
       throw new TicketRefusedError('captain_pay_unset', 'no pay table in force');
+    // AP §9.1.6: no new order during the emergency stop; a restaurant not
+    // taking orders now would let it ring no one and cancel it as unanswered
+    // (RA §11), so support picks another remedy or tries later.
+    if (stop !== null) throw new TicketRefusedError('emergency_stop', 'the emergency stop is on');
+    if (storefront.state.state !== 'open') {
+      throw new TicketRefusedError('restaurant_closed', 'the restaurant takes no orders now');
+    }
     // pg-boss connects before the resolution's locks are taken.
     await this.jobs.ready();
     return { acceptAlertMin, autoCancelMin, payTableId: payTable.id };
@@ -251,7 +262,7 @@ export class TicketMoney implements TicketOrders, OnModuleInit {
     }
     const placed = await placeRedelivery(
       tx,
-      { jobs: this.jobs, fx: this.fx },
+      { jobs: this.jobs, fx: this.fx, emergencyStops: this.emergencyStops },
       {
         original: { id: order.id, placedAt: order.placedAt },
         ticketId: input.ticketId,
@@ -315,7 +326,9 @@ export class TicketMoney implements TicketOrders, OnModuleInit {
         booking: {
           journals: [],
           merchantDebit: 0n,
-          captainCharge: money.responsible === 'captain' ? pickupPayment - commission : 0n,
+          // A test order's re-delivery charges nobody (redeliveryEntries).
+          captainCharge:
+            money.responsible === 'captain' && !order.testOrder ? pickupPayment - commission : 0n,
           redelivery: { pickupPayment, commission, merchantNet: pickupPayment - commission },
         },
       };

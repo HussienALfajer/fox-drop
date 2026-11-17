@@ -190,12 +190,14 @@ Map<String, Object?> orderJson({
   Map<String, Object?>? noAnswer,
   List<Map<String, Object?>>? proposedLines,
   List<Map<String, Object?>>? pickupCurrencies,
+  Map<String, Object?>? redeliveryOf,
 }) {
   final atRestaurant = track != 'assigned';
   final atCustomer = track == 'at_customer';
   return {
     'id': orderId,
     'number': '10423',
+    'redeliveryOf': redeliveryOf,
     'status': status,
     'version': version,
     'captainTrack': track,

@@ -367,6 +367,37 @@ void main() {
     await app.done(tester);
   });
 
+  // AP §9.9.3, CU §11.2 (slice 2.23d).
+  testWidgets('delivers a free re-delivery with nothing to collect', (
+    tester,
+  ) async {
+    final app = TestApp();
+    final atCustomer = orderJson(
+      status: 'arrived',
+      track: 'at_customer',
+      pickupPayment: '0',
+      collect: '0',
+      redeliveryOf: {'orderId': orderId, 'number': '10401'},
+    );
+    app.work(
+      availability: [availabilityJson(state: 'busy')],
+      orders: [atCustomer],
+    );
+    app.location.fix = fixAt(pin);
+    await app.pump(tester);
+    await app.live(tester);
+    expect(find.text('إعادة توصيل مجانية لطلب #10401'), findsOneWidget);
+    app.server.on('/v1/captain/orders/$orderId/deliver', [
+      FakeAnswer(200, summaryJson()),
+    ]);
+    await app.tapVisible(tester, find.text('تم التسليم'));
+    await app.settle(tester);
+    final deliver = bodyOf(app, '/v1/captain/orders/$orderId/deliver');
+    expect(deliver['received'], isEmpty);
+    expect(deliver['amountDue'], moneyJson('0'));
+    await app.done(tester);
+  });
+
   testWidgets('asks the shortfall reason the server requires (K16)', (
     tester,
   ) async {

@@ -6,7 +6,7 @@ import {
   type OnApplicationShutdown,
   type OnModuleInit,
 } from '@nestjs/common';
-import { and, eq, gte, inArray, isNotNull, or, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, isNotNull, or, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -250,7 +250,19 @@ export class OrderAlerts {
             .select({ ticketId: orders.redeliveryTicketId })
             .from(orders)
             .where(and(eq(orders.id, order.id), eq(orders.placedAt, placedAt)));
-          if (link?.ticketId) await this.tickets.redeliveryEnded(tx, link.ticketId, order.id, now);
+          // Only the ticket's newest re-delivery reopens it: a late or
+          // repeated sync of one it replaced changes nothing.
+          const [newest] = link?.ticketId
+            ? await tx
+                .select({ id: orders.id })
+                .from(orders)
+                .where(eq(orders.redeliveryTicketId, link.ticketId))
+                .orderBy(desc(orders.placedAt), desc(orders.id))
+                .limit(1)
+            : [];
+          if (link?.ticketId && newest?.id === order.id) {
+            await this.tickets.redeliveryEnded(tx, link.ticketId, order.id, now);
+          }
         }
       }
       if (timer && next) {

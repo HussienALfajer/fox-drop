@@ -41,8 +41,8 @@ async function deliveredOrder() {
   return at;
 }
 
-async function ticketOn(orderId: string) {
-  const sup = await admin(['SUP']);
+async function ticketOn(orderId: string, roles = ['SUP']) {
+  const sup = await admin(roles);
   const opened = await app.inject({
     method: 'POST',
     url: `/v1/admin/orders/${orderId}/tickets`,
@@ -280,7 +280,13 @@ describe('«إعادة توصيل مجانية» with the restaurant responsible
 describe('«إعادة توصيل مجانية» with the captain responsible', () => {
   it('pays the restaurant at the pickup and charges the original captain the merchant net and the pay', async () => {
     const original = await deliveredOrder();
-    const ticket = await ticketOn(original.order.id);
+    // AP §9.9.3: OPS charge the pay; SUP may not.
+    const ticket = await ticketOn(original.order.id, ['OPS']);
+    const bySupport = await ticketOn(original.order.id);
+    expect(
+      (await bySupport.resolve({ responsible: 'captain', affected: oneShawarma, chargePay: true }))
+        .statusCode,
+    ).toBe(403);
     const preview = await ticket.preview({
       responsible: 'captain',
       affected: oneShawarma,
@@ -304,6 +310,9 @@ describe('«إعادة توصيل مجانية» with the captain responsible', 
     });
     expect(resolved.statusCode).toBe(200);
     const { orderId } = (await ticket.page()).redeliveries[0];
+    // Its total stays 0: no edit.
+    const ops = await admin(['OPS']);
+    expect((await ops.detail(orderId)).editChoices).toBeNull();
 
     const responsible = original.captain.captainId;
     const before = await balances(responsible);
@@ -348,14 +357,17 @@ describe('a re-delivery that does not happen', () => {
     const [{ placed_at: placedAt }] = (
       await sql.query('SELECT placed_at FROM ordering.orders WHERE id = $1', [orderId])
     ).rows;
-    await new OrderAlerts(
+    const alerts = new OrderAlerts(
       app.get(DATABASE),
       app.get(Jobs),
       app.get(AlertsService),
       app.get(CaptainsService),
       app.get(SettingsService),
       app.get(TicketSync),
-    ).sync({ orderId, placedAt: new Date(placedAt).toISOString() }, new Date(), false);
+    );
+    const sync = () =>
+      alerts.sync({ orderId, placedAt: new Date(placedAt).toISOString() }, new Date(), false);
+    await sync();
     const page = await ticket.page();
     expect(page).toMatchObject({ status: 'in_progress', resolution: null });
     // The items are free again for another remedy, such as a code.
@@ -376,5 +388,14 @@ describe('a re-delivery that does not happen', () => {
       )
     ).rows;
     expect(audit).toEqual({ actor_type: 'system' });
+
+    // Resolved again with a second re-delivery: a late sync of the first
+    // changes nothing.
+    expect(
+      (await ticket.resolve({ responsible: 'platform', affected: oneShawarma })).statusCode,
+    ).toBe(200);
+    expect((await ticket.page()).redeliveries).toHaveLength(2);
+    await sync();
+    expect(await ticket.page()).toMatchObject({ status: 'resolved' });
   });
 });

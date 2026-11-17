@@ -2,7 +2,9 @@ import { and, eq, isNull, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { inTransaction, QUEUES } from '../../jobs/job-queue.js';
 import type { Jobs } from '../../jobs/jobs.module.js';
-import type { FxService } from '../fx/index.js';
+import { FxRefusedError, type FxService } from '../fx/index.js';
+import { TicketRefusedError } from '../support/index.js';
+import type { EmergencyStops } from './emergency-stop.js';
 import { recordTransition } from './order-events.js';
 import type { AutoCancelJob } from './order-timers.js';
 import { orderKey } from './order-views.js';
@@ -32,7 +34,7 @@ export interface RedeliveryBasis {
 // table the one in force, its rates the city's now.
 export async function placeRedelivery(
   tx: Tx,
-  deps: { jobs: Jobs; fx: FxService },
+  deps: { jobs: Jobs; fx: FxService; emergencyStops: EmergencyStops },
   input: {
     original: { id: string; placedAt: Date };
     ticketId: string;
@@ -76,7 +78,17 @@ export async function placeRedelivery(
   });
   const itemsValue = newLines.reduce((sum, line) => sum + line.lineTotal, 0n);
   const { cityId } = original;
-  const snapshot = await deps.fx.snapshotForOrder(cityId, tx);
+  // AP §9.1.6: a stop started since the check refuses it, as a placing.
+  if (await deps.emergencyStops.stopsOrders(tx, cityId)) {
+    throw new TicketRefusedError('emergency_stop', 'the emergency stop is on');
+  }
+  // AP §8.6: the city's rates now; without them no order is placed.
+  const snapshot = await deps.fx.snapshotForOrder(cityId, tx).catch((error: unknown) => {
+    if (error instanceof FxRefusedError) {
+      throw new TicketRefusedError('no_base_currency', error.message);
+    }
+    throw error;
+  });
   const [{ number }] = (await tx
     .insert(orderNumbers)
     .values({ cityId, lastNumber: FIRST_ORDER_NUMBER })

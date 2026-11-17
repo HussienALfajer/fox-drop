@@ -2706,6 +2706,11 @@ export class OrderCommands {
       .from(orders)
       .where(orderKey(order.id, order.placedAt));
     if (!row || !EDITABLE.includes(row.status)) throw await this.stateChanged(order);
+    // AP §9.9.3 (slice 2.23d): a free re-delivery's total stays 0 and its
+    // money is booked from its pickup, so it takes no edit.
+    if (order.redeliveryOfId !== null) {
+      throw new OrderCommandRefusedError('invalid_edit', 'a free re-delivery takes no edit');
+    }
     // AP §9.3.3: the edit is the one previewed; an order that moved since
     // (picked up under the dialog, say) is order_state_changed first.
     if (version !== undefined && row.version !== version) throw await this.stateChanged(order);

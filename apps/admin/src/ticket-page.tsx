@@ -7,6 +7,7 @@ import { formatDateTime, formatMoney } from './format.js';
 import { useOpsChannel } from './live.js';
 import { statusKeys } from './order-labels.js';
 import { OPERATIONS_READ } from './orders-board.js';
+import { OPERATIONS_MANAGE } from './assign-captain.js';
 import {
   compensationOf,
   type CompensationForm,
@@ -87,6 +88,8 @@ const resolveRefusalKeys = {
   money_already_resolved: 'tickets.refusal.moneyAlreadyResolved',
   affected_required: 'tickets.refusal.affectedRequired',
   captain_pay_unset: 'tickets.refusal.captainPayUnset',
+  restaurant_closed: 'tickets.refusal.restaurantClosed',
+  emergency_stop: 'tickets.refusal.emergencyStop',
   forbidden: 'tickets.refusal.forbidden',
 } as const satisfies Record<ResolveRefusal, string>;
 
@@ -668,7 +671,7 @@ function ResolveTicket({
       {redelivering && (
         <>
           <p>{t('tickets.redelivery.note')}</p>
-          {chargesPay(responsible) && (
+          {chargesPay(responsible) && can(session, OPERATIONS_MANAGE) && (
             <label>
               <input
                 type="checkbox"

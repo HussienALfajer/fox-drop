@@ -137,7 +137,10 @@ class _PaymentFormState extends ConsumerState<PaymentForm> {
   Future<void> _deliver() async {
     final received = _lines(_received);
     final change = _lines(_change);
-    if (received == null || change == null || received.isEmpty) {
+    // A free re-delivery's amount due is 0 (AP §9.9.3): nothing received.
+    if (received == null ||
+        change == null ||
+        (received.isEmpty && _amountDue.minor != BigInt.zero)) {
       setState(() => _invalid = true);
       return;
     }

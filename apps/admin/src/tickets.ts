@@ -596,6 +596,8 @@ export type ResolveRefusal =
   | 'money_already_resolved'
   | 'affected_required'
   | 'captain_pay_unset'
+  | 'restaurant_closed'
+  | 'emergency_stop'
   | 'forbidden';
 
 const resolveRefusals: readonly string[] = [
@@ -618,6 +620,8 @@ const resolveRefusals: readonly string[] = [
   'money_already_resolved',
   'affected_required',
   'captain_pay_unset',
+  'restaurant_closed',
+  'emergency_stop',
   'forbidden',
 ] satisfies ResolveRefusal[];
 

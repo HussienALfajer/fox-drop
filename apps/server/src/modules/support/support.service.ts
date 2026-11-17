@@ -221,6 +221,8 @@ export type TicketRefusal =
   | 'money_already_resolved'
   | 'affected_required'
   | 'captain_pay_unset'
+  | 'restaurant_closed'
+  | 'emergency_stop'
   | 'forbidden';
 
 export class TicketRefusedError extends Error {
@@ -1002,6 +1004,14 @@ export class SupportService {
       !admin.permissions.includes('operations.compensate')
     ) {
       throw new TicketRefusedError('forbidden', 'a compensation code needs operations.compensate');
+    }
+    // AP §9.9.3: the re-delivery's pay goes to the remedy's cost «unless OPS
+    // charges it» to the responsible party (operations.manage: OWN, OPS).
+    if (input.chargePay && !admin.permissions.includes('operations.manage')) {
+      throw new TicketRefusedError(
+        'forbidden',
+        "charging the captain's pay needs operations.manage",
+      );
     }
     const { facts, money } = await this.checkMoney(found, {
       resolution: input.resolution,

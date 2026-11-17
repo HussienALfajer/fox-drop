@@ -2349,7 +2349,9 @@ export class AdminOrdersController {
       CANCELLABLE.includes(order.status) ? this.commands.cancelReasons() : null,
       cancellation?.byCustomer ? this.commands.customerCancelLabel(cancellation.reason) : null,
       TIME_CHANGEABLE.includes(order.status) ? this.commands.timeChangeChoices(order.cityId) : null,
-      EDITABLE.includes(order.status) && !order.outcome?.awaitingCollection
+      // AP §9.9.3 (slice 2.23d): a free re-delivery's total stays 0, so it
+      // takes no edit.
+      EDITABLE.includes(order.status) && !order.outcome?.awaitingCollection && !order.redelivery
         ? this.commands.editChoices(order, now)
         : null,
       this.commands.editsOf(order),
