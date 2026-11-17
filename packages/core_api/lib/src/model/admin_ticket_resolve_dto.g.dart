@@ -10,6 +10,9 @@ const AdminTicketResolveDtoResolutionEnum
 _$adminTicketResolveDtoResolutionEnum_noneExplained =
     const AdminTicketResolveDtoResolutionEnum._('noneExplained');
 const AdminTicketResolveDtoResolutionEnum
+_$adminTicketResolveDtoResolutionEnum_compensationCode =
+    const AdminTicketResolveDtoResolutionEnum._('compensationCode');
+const AdminTicketResolveDtoResolutionEnum
 _$adminTicketResolveDtoResolutionEnum_priceCorrected =
     const AdminTicketResolveDtoResolutionEnum._('priceCorrected');
 const AdminTicketResolveDtoResolutionEnum
@@ -30,6 +33,8 @@ _$adminTicketResolveDtoResolutionEnumValueOf(String name) {
   switch (name) {
     case 'noneExplained':
       return _$adminTicketResolveDtoResolutionEnum_noneExplained;
+    case 'compensationCode':
+      return _$adminTicketResolveDtoResolutionEnum_compensationCode;
     case 'priceCorrected':
       return _$adminTicketResolveDtoResolutionEnum_priceCorrected;
     case 'priceCorrect':
@@ -50,6 +55,7 @@ _$adminTicketResolveDtoResolutionEnumValues =
     BuiltSet<AdminTicketResolveDtoResolutionEnum>(
       const <AdminTicketResolveDtoResolutionEnum>[
         _$adminTicketResolveDtoResolutionEnum_noneExplained,
+        _$adminTicketResolveDtoResolutionEnum_compensationCode,
         _$adminTicketResolveDtoResolutionEnum_priceCorrected,
         _$adminTicketResolveDtoResolutionEnum_priceCorrect,
         _$adminTicketResolveDtoResolutionEnum_captainPaid,
@@ -109,6 +115,7 @@ class _$AdminTicketResolveDtoResolutionEnumSerializer
     implements PrimitiveSerializer<AdminTicketResolveDtoResolutionEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'noneExplained': 'none_explained',
+    'compensationCode': 'compensation_code',
     'priceCorrected': 'price_corrected',
     'priceCorrect': 'price_correct',
     'captainPaid': 'captain_paid',
@@ -117,6 +124,7 @@ class _$AdminTicketResolveDtoResolutionEnumSerializer
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'none_explained': 'noneExplained',
+    'compensation_code': 'compensationCode',
     'price_corrected': 'priceCorrected',
     'price_correct': 'priceCorrect',
     'captain_paid': 'captainPaid',
@@ -199,6 +207,12 @@ class _$AdminTicketResolveDto extends AdminTicketResolveDto {
   @override
   final BuiltList<AdminTicketCorrectionPreviewDtoReceivedLinesInner>?
   receivedLines;
+  @override
+  final BuiltList<AdminTicketMoneyPreviewBodyDtoAffectedInner>? affected;
+  @override
+  final String? shortAmount;
+  @override
+  final AdminTicketResolveDtoCode? code;
 
   factory _$AdminTicketResolveDto([
     void Function(AdminTicketResolveDtoBuilder)? updates,
@@ -210,6 +224,9 @@ class _$AdminTicketResolveDto extends AdminTicketResolveDto {
     this.responsible,
     required this.message,
     this.receivedLines,
+    this.affected,
+    this.shortAmount,
+    this.code,
   }) : super._();
   @override
   AdminTicketResolveDto rebuild(
@@ -228,7 +245,10 @@ class _$AdminTicketResolveDto extends AdminTicketResolveDto {
         resolution == other.resolution &&
         responsible == other.responsible &&
         message == other.message &&
-        receivedLines == other.receivedLines;
+        receivedLines == other.receivedLines &&
+        affected == other.affected &&
+        shortAmount == other.shortAmount &&
+        code == other.code;
   }
 
   @override
@@ -239,6 +259,9 @@ class _$AdminTicketResolveDto extends AdminTicketResolveDto {
     _$hash = $jc(_$hash, responsible.hashCode);
     _$hash = $jc(_$hash, message.hashCode);
     _$hash = $jc(_$hash, receivedLines.hashCode);
+    _$hash = $jc(_$hash, affected.hashCode);
+    _$hash = $jc(_$hash, shortAmount.hashCode);
+    _$hash = $jc(_$hash, code.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -250,7 +273,10 @@ class _$AdminTicketResolveDto extends AdminTicketResolveDto {
           ..add('resolution', resolution)
           ..add('responsible', responsible)
           ..add('message', message)
-          ..add('receivedLines', receivedLines))
+          ..add('receivedLines', receivedLines)
+          ..add('affected', affected)
+          ..add('shortAmount', shortAmount)
+          ..add('code', code))
         .toString();
   }
 }
@@ -287,6 +313,23 @@ class AdminTicketResolveDtoBuilder
     receivedLines,
   ) => _$this._receivedLines = receivedLines;
 
+  ListBuilder<AdminTicketMoneyPreviewBodyDtoAffectedInner>? _affected;
+  ListBuilder<AdminTicketMoneyPreviewBodyDtoAffectedInner> get affected =>
+      _$this._affected ??=
+          ListBuilder<AdminTicketMoneyPreviewBodyDtoAffectedInner>();
+  set affected(
+    ListBuilder<AdminTicketMoneyPreviewBodyDtoAffectedInner>? affected,
+  ) => _$this._affected = affected;
+
+  String? _shortAmount;
+  String? get shortAmount => _$this._shortAmount;
+  set shortAmount(String? shortAmount) => _$this._shortAmount = shortAmount;
+
+  AdminTicketResolveDtoCodeBuilder? _code;
+  AdminTicketResolveDtoCodeBuilder get code =>
+      _$this._code ??= AdminTicketResolveDtoCodeBuilder();
+  set code(AdminTicketResolveDtoCodeBuilder? code) => _$this._code = code;
+
   AdminTicketResolveDtoBuilder() {
     AdminTicketResolveDto._defaults(this);
   }
@@ -299,6 +342,9 @@ class AdminTicketResolveDtoBuilder
       _responsible = $v.responsible;
       _message = $v.message;
       _receivedLines = $v.receivedLines?.toBuilder();
+      _affected = $v.affected?.toBuilder();
+      _shortAmount = $v.shortAmount;
+      _code = $v.code?.toBuilder();
       _$v = null;
     }
     return this;
@@ -340,12 +386,20 @@ class AdminTicketResolveDtoBuilder
               'message',
             ),
             receivedLines: _receivedLines?.build(),
+            affected: _affected?.build(),
+            shortAmount: shortAmount,
+            code: _code?.build(),
           );
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'receivedLines';
         _receivedLines?.build();
+        _$failedField = 'affected';
+        _affected?.build();
+
+        _$failedField = 'code';
+        _code?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminTicketResolveDto',

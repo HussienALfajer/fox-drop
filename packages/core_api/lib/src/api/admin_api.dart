@@ -165,6 +165,8 @@ import 'package:core_api/src/model/admin_ticket_close_dto.dart';
 import 'package:core_api/src/model/admin_ticket_correction_dto_output.dart';
 import 'package:core_api/src/model/admin_ticket_correction_preview_dto.dart';
 import 'package:core_api/src/model/admin_ticket_dto_output.dart';
+import 'package:core_api/src/model/admin_ticket_money_preview_body_dto.dart';
+import 'package:core_api/src/model/admin_ticket_money_preview_dto_output.dart';
 import 'package:core_api/src/model/admin_ticket_note_dto.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output.dart';
 import 'package:core_api/src/model/admin_ticket_parties_dto_output.dart';
@@ -13645,6 +13647,110 @@ class AdminApi {
     }
 
     return Response<AdminTicketsDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminTicketsMoneyPreview
+  ///
+  ///
+  /// Parameters:
+  /// * [ticketId]
+  /// * [adminTicketMoneyPreviewBodyDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminTicketMoneyPreviewDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminTicketMoneyPreviewDtoOutput>> adminTicketsMoneyPreview({
+    required String ticketId,
+    required AdminTicketMoneyPreviewBodyDto adminTicketMoneyPreviewBodyDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/tickets/{ticketId}/money-preview'.replaceAll(
+      '{'
+      r'ticketId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        ticketId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminTicketMoneyPreviewBodyDto);
+      _bodyData = _serializers.serialize(
+        adminTicketMoneyPreviewBodyDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminTicketMoneyPreviewDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(
+                    AdminTicketMoneyPreviewDtoOutput,
+                  ),
+                )
+                as AdminTicketMoneyPreviewDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminTicketMoneyPreviewDtoOutput>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

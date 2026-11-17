@@ -9305,6 +9305,53 @@
         ]
       }
     },
+    "/v1/admin/tickets/{ticketId}/money-preview": {
+      "post": {
+        "operationId": "adminTicketsMoneyPreview",
+        "parameters": [
+          {
+            "name": "ticketId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminTicketMoneyPreviewBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTicketMoneyPreviewDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/tickets/{ticketId}/resolve": {
       "post": {
         "operationId": "adminTicketsResolve",
@@ -32258,6 +32305,7 @@
                           "type": "string",
                           "enum": [
                             "none_explained",
+                            "compensation_code",
                             "price_corrected",
                             "price_correct",
                             "captain_paid",
@@ -32324,6 +32372,78 @@
                             "string",
                             "null"
                           ]
+                        },
+                        "affectedLines": {
+                          "anyOf": [
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "position": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "quantity": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 20
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "value": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "position",
+                                  "quantity",
+                                  "name",
+                                  "value"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "A problem after delivery (AP §8.10): the affected lines as chosen."
+                        },
+                        "affectedValue": {
+                          "description": "V, in `moneyCurrency`.",
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "shortAmount": {
+                          "description": "«مشكلة في المبلغ أو الباقي»: M, what the customer was short.",
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "moneyCurrency": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "compensationId": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "«كود تعويض»: the compensation asked (issued, or waiting for OWN)."
                         }
                       },
                       "required": [
@@ -32332,7 +32452,12 @@
                         "message",
                         "correctedLines",
                         "resolvedAt",
-                        "resolvedByName"
+                        "resolvedByName",
+                        "affectedLines",
+                        "affectedValue",
+                        "shortAmount",
+                        "moneyCurrency",
+                        "compensationId"
                       ],
                       "additionalProperties": false
                     },
@@ -32633,6 +32758,7 @@
                     "type": "string",
                     "enum": [
                       "none_explained",
+                      "compensation_code",
                       "price_corrected",
                       "price_correct",
                       "captain_paid",
@@ -32699,6 +32825,78 @@
                       "string",
                       "null"
                     ]
+                  },
+                  "affectedLines": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "position": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "quantity": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 20
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "position",
+                            "quantity",
+                            "name",
+                            "value"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "A problem after delivery (AP §8.10): the affected lines as chosen."
+                  },
+                  "affectedValue": {
+                    "description": "V, in `moneyCurrency`.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "shortAmount": {
+                    "description": "«مشكلة في المبلغ أو الباقي»: M, what the customer was short.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "moneyCurrency": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "compensationId": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "«كود تعويض»: the compensation asked (issued, or waiting for OWN)."
                   }
                 },
                 "required": [
@@ -32707,7 +32905,12 @@
                   "message",
                   "correctedLines",
                   "resolvedAt",
-                  "resolvedByName"
+                  "resolvedByName",
+                  "affectedLines",
+                  "affectedValue",
+                  "shortAmount",
+                  "moneyCurrency",
+                  "compensationId"
                 ],
                 "additionalProperties": false
               },
@@ -39812,6 +40015,7 @@
                           "type": "string",
                           "enum": [
                             "none_explained",
+                            "compensation_code",
                             "price_corrected",
                             "price_correct",
                             "captain_paid",
@@ -39878,6 +40082,78 @@
                             "string",
                             "null"
                           ]
+                        },
+                        "affectedLines": {
+                          "anyOf": [
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "position": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "quantity": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 20
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "value": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "position",
+                                  "quantity",
+                                  "name",
+                                  "value"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "A problem after delivery (AP §8.10): the affected lines as chosen."
+                        },
+                        "affectedValue": {
+                          "description": "V, in `moneyCurrency`.",
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "shortAmount": {
+                          "description": "«مشكلة في المبلغ أو الباقي»: M, what the customer was short.",
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "moneyCurrency": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "compensationId": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "«كود تعويض»: the compensation asked (issued, or waiting for OWN)."
                         }
                       },
                       "required": [
@@ -39886,7 +40162,12 @@
                         "message",
                         "correctedLines",
                         "resolvedAt",
-                        "resolvedByName"
+                        "resolvedByName",
+                        "affectedLines",
+                        "affectedValue",
+                        "shortAmount",
+                        "moneyCurrency",
+                        "compensationId"
                       ],
                       "additionalProperties": false
                     },
@@ -40369,6 +40650,7 @@
                     "type": "string",
                     "enum": [
                       "none_explained",
+                      "compensation_code",
                       "price_corrected",
                       "price_correct",
                       "captain_paid",
@@ -40435,6 +40717,78 @@
                       "string",
                       "null"
                     ]
+                  },
+                  "affectedLines": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "position": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "quantity": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 20
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "position",
+                            "quantity",
+                            "name",
+                            "value"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "A problem after delivery (AP §8.10): the affected lines as chosen."
+                  },
+                  "affectedValue": {
+                    "description": "V, in `moneyCurrency`.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "shortAmount": {
+                    "description": "«مشكلة في المبلغ أو الباقي»: M, what the customer was short.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "moneyCurrency": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "compensationId": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "«كود تعويض»: the compensation asked (issued, or waiting for OWN)."
                   }
                 },
                 "required": [
@@ -40443,7 +40797,12 @@
                   "message",
                   "correctedLines",
                   "resolvedAt",
-                  "resolvedByName"
+                  "resolvedByName",
+                  "affectedLines",
+                  "affectedValue",
+                  "shortAmount",
+                  "moneyCurrency",
+                  "compensationId"
                 ],
                 "additionalProperties": false
               },
@@ -40707,6 +41066,7 @@
                     "type": "string",
                     "enum": [
                       "none_explained",
+                      "compensation_code",
                       "price_corrected",
                       "price_correct",
                       "captain_paid",
@@ -40773,6 +41133,78 @@
                       "string",
                       "null"
                     ]
+                  },
+                  "affectedLines": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "position": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "quantity": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 20
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "position",
+                            "quantity",
+                            "name",
+                            "value"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "A problem after delivery (AP §8.10): the affected lines as chosen."
+                  },
+                  "affectedValue": {
+                    "description": "V, in `moneyCurrency`.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "shortAmount": {
+                    "description": "«مشكلة في المبلغ أو الباقي»: M, what the customer was short.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "moneyCurrency": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "compensationId": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "«كود تعويض»: the compensation asked (issued, or waiting for OWN)."
                   }
                 },
                 "required": [
@@ -40781,7 +41213,12 @@
                   "message",
                   "correctedLines",
                   "resolvedAt",
-                  "resolvedByName"
+                  "resolvedByName",
+                  "affectedLines",
+                  "affectedValue",
+                  "shortAmount",
+                  "moneyCurrency",
+                  "compensationId"
                 ],
                 "additionalProperties": false
               },
@@ -40969,6 +41406,132 @@
               }
             ],
             "description": "«خلاف على دفعة الاستلام» only."
+          },
+          "order": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "orderId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "number": {
+                    "type": "string",
+                    "pattern": "^\\d{1,18}$"
+                  },
+                  "currency": {
+                    "type": "string"
+                  },
+                  "total": {
+                    "type": "string"
+                  },
+                  "itemsValue": {
+                    "type": "string"
+                  },
+                  "deliveredNormally": {
+                    "type": "boolean",
+                    "description": "Delivered with the outcome «تم التسليم»: the affected items and M apply."
+                  },
+                  "lines": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "position": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "quantity": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "unitPrice": {
+                          "type": "string"
+                        },
+                        "lineTotal": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "position",
+                        "name",
+                        "quantity",
+                        "unitPrice",
+                        "lineTotal"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "received": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "amount": {
+                          "type": "string",
+                          "pattern": "^-?\\d{1,18}$"
+                        },
+                        "currency": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{3}$"
+                        }
+                      },
+                      "required": [
+                        "amount",
+                        "currency"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "description": "«استلم الكابتن» (CU Q23)."
+                  },
+                  "change": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "amount": {
+                          "type": "string",
+                          "pattern": "^-?\\d{1,18}$"
+                        },
+                        "currency": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{3}$"
+                        }
+                      },
+                      "required": [
+                        "amount",
+                        "currency"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "description": "«أعاد لك»."
+                  }
+                },
+                "required": [
+                  "orderId",
+                  "number",
+                  "currency",
+                  "total",
+                  "itemsValue",
+                  "deliveredNormally",
+                  "lines",
+                  "received",
+                  "change"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A customer's general ticket on an order: its lines and money (AP §8.10)."
           }
         },
         "required": [
@@ -40997,7 +41560,8 @@
           "resolution",
           "closure",
           "notes",
-          "pickupDispute"
+          "pickupDispute",
+          "order"
         ],
         "additionalProperties": false
       },
@@ -41241,6 +41805,185 @@
         ],
         "additionalProperties": false
       },
+      "AdminTicketMoneyPreviewBodyDto": {
+        "type": "object",
+        "properties": {
+          "cityId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "responsible": {
+            "type": "string",
+            "enum": [
+              "restaurant",
+              "captain",
+              "customer",
+              "platform"
+            ]
+          },
+          "affected": {
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "position": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 20
+                }
+              },
+              "required": [
+                "position",
+                "quantity"
+              ]
+            },
+            "description": "The order's lines by position, each once, with how many were affected."
+          },
+          "shortAmount": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{1,15}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "code": {
+            "type": "boolean",
+            "description": "Whether the resolution is «كود تعويض»."
+          }
+        },
+        "required": [
+          "cityId",
+          "responsible",
+          "affected",
+          "shortAmount",
+          "code"
+        ]
+      },
+      "AdminTicketMoneyPreviewDto_Output": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "affectedValue": {
+            "type": "string",
+            "description": "V."
+          },
+          "merchantDebit": {
+            "type": "string",
+            "description": "What the restaurant ends up owing: V less the commission reversed."
+          },
+          "captainCharge": {
+            "type": "string"
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "account": {
+                  "type": "string"
+                },
+                "party": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "merchant",
+                        "captain",
+                        "platform"
+                      ]
+                    },
+                    "id": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "id",
+                    "name"
+                  ],
+                  "additionalProperties": false
+                },
+                "amount": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "string",
+                      "pattern": "^-?\\d{1,18}$"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "pattern": "^[A-Z]{3}$"
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "currency"
+                  ],
+                  "additionalProperties": false,
+                  "description": "From the platform's side: + a debit, − a credit."
+                }
+              },
+              "required": [
+                "type",
+                "reason",
+                "account",
+                "party",
+                "amount"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "currency",
+          "affectedValue",
+          "merchantDebit",
+          "captainCharge",
+          "entries"
+        ],
+        "additionalProperties": false
+      },
       "AdminTicketResolveDto": {
         "type": "object",
         "properties": {
@@ -41253,6 +41996,7 @@
             "type": "string",
             "enum": [
               "none_explained",
+              "compensation_code",
               "price_corrected",
               "price_correct",
               "captain_paid",
@@ -41314,6 +42058,141 @@
               }
             ],
             "description": "«تصحيح في الحسابات» only."
+          },
+          "affected": {
+            "default": [],
+            "description": "A problem after delivery: the affected lines (V).",
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "position": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 20
+                }
+              },
+              "required": [
+                "position",
+                "quantity"
+              ]
+            }
+          },
+          "shortAmount": {
+            "default": null,
+            "description": "«مشكلة في المبلغ أو الباقي»: M, what the customer was short.",
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{1,15}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "code": {
+            "default": null,
+            "description": "«كود تعويض»: its value and reason; null for the wrong change, whose code is M.",
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "fixed_amount",
+                          "percentage"
+                        ]
+                      },
+                      "amount": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^\\d{1,18}$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "A fixed amount; null for a percentage."
+                      },
+                      "percentBp": {
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 10000
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "A percentage: 2000 is 20%; null for an amount."
+                      },
+                      "maxDiscount": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^\\d{1,18}$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "A percentage's maximum, what counts against the cap; null for an amount."
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "amount",
+                      "percentBp",
+                      "maxDiscount"
+                    ]
+                  },
+                  "reason": {
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "string",
+                        "maxLength": 60
+                      },
+                      "note": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 300
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "note"
+                    ]
+                  }
+                },
+                "required": [
+                  "value",
+                  "reason"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -50050,6 +50929,8 @@
                   "enum": [
                     "reason",
                     "late_delivery",
+                    "recovered_restaurant",
+                    "recovered_captain",
                     "other"
                   ],
                   "description": "`reason`: a reason of the compensation list; `late_delivery`: the automatic late codes; `other`: the rest."

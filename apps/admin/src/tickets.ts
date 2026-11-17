@@ -24,6 +24,10 @@ export type TicketResolution = NonNullable<Ticket['resolution']>['code'];
 export type ResponsibleParty = NonNullable<NonNullable<Ticket['resolution']>['responsible']>;
 export type PickupDispute = NonNullable<TicketPage['pickupDispute']>;
 export type CorrectionPreview = components['schemas']['AdminTicketCorrectionDto_Output'];
+export type TicketOrder = NonNullable<TicketPage['order']>;
+export type MoneyPreview = components['schemas']['AdminTicketMoneyPreviewDto_Output'];
+export type AffectedLine = { position: number; quantity: number };
+type CompensateBody = components['schemas']['AdminCompensateDto'];
 export type CannedReply = components['schemas']['AdminCannedRepliesDto_Output']['replies'][number];
 
 export const canReadTickets = (session: AdminSession | null | undefined) =>
@@ -99,6 +103,7 @@ export const isOpenTicket = (status: TicketStatus): boolean =>
 // support/tickets.ts.
 export const resolutionKeys = {
   none_explained: 'tickets.resolution.noneExplained',
+  compensation_code: 'tickets.resolution.compensationCode',
   price_corrected: 'tickets.resolution.priceCorrected',
   price_correct: 'tickets.resolution.priceCorrect',
   captain_paid: 'tickets.resolution.captainPaid',
@@ -122,12 +127,85 @@ export const confirmedByKeys = {
 export function resolutionChoices(kind: TicketKind): TicketResolution[] {
   switch (kind) {
     case 'general':
-      return ['none_explained'];
+      return ['compensation_code', 'none_explained'];
     case 'price_difference':
       return ['price_corrected', 'price_correct'];
     case 'pickup_dispute':
       return ['captain_paid', 'accounts_corrected', 'payment_correct'];
   }
+}
+
+// AP §8.10, §9.9.3 (slice 2.23c): the money a general ticket's resolution
+// takes is a customer's ticket on an order (the server's `order`): «كود
+// تعويض» for a session holding operations.compensate, the affected items and
+// M once the order was delivered normally. «مشكلة في المبلغ أو الباقي» takes
+// M (its code is M, uncapped), every other type the affected items.
+export const WRONG_CHANGE_TYPE = 'amount_or_change';
+
+export function generalChoices(
+  ticket: Pick<TicketPage, 'kind' | 'order'>,
+  compensates: boolean,
+): TicketResolution[] {
+  return resolutionChoices(ticket.kind).filter(
+    (choice) => choice !== 'compensation_code' || (ticket.order !== null && compensates),
+  );
+}
+
+// The affected quantities typed per line position: the lines with one or
+// more, each within its quantity; null when one is not a whole number in it.
+export function affectedOf(
+  lines: TicketOrder['lines'],
+  typed: Record<number, string>,
+): AffectedLine[] | null {
+  const affected: AffectedLine[] = [];
+  for (const line of lines) {
+    const text = (typed[line.position] ?? '').trim();
+    if (text === '' || text === '0') continue;
+    if (!/^\d{1,2}$/.test(text)) return null;
+    const quantity = Number(text);
+    if (quantity > line.quantity) return null;
+    affected.push({ position: line.position, quantity });
+  }
+  return affected;
+}
+
+// M typed in major units, as minor units; null when it is not an amount
+// above zero.
+export function shortAmountOf(typed: string, currency: string): string | null {
+  const amount = minorOf(typed, currency);
+  return amount === null || amount === '0' ? null : amount;
+}
+
+// AP §8.10 «previewed before the ticket is resolved»: the entries for the
+// responsible party, the affected lines and M.
+export function moneyPreviewQuery(
+  cityId: string,
+  ticketId: string,
+  body: {
+    responsible: ResponsibleParty;
+    affected: AffectedLine[];
+    shortAmount: string | null;
+    code: boolean;
+  },
+) {
+  return queryOptions({
+    queryKey: ['ticket', ticketId, 'money', body],
+    queryFn: async (): Promise<
+      { status: 'done'; preview: MoneyPreview } | { status: 'refused'; refusal: ResolveRefusal }
+    > => {
+      const { data, error, response } = await api.POST(
+        '/v1/admin/tickets/{ticketId}/money-preview',
+        {
+          params: { path: { ticketId } },
+          body: { cityId, ...body },
+        },
+      );
+      if (data) return { status: 'done', preview: data };
+      const refusal = refusalOf<ResolveRefusal>(error, resolveRefusals);
+      if (refusal) return { status: 'refused', refusal };
+      throw new Error(`The money preview failed with ${response.status}.`);
+    },
+  });
 }
 
 // AP §9.9.3: the responsible party is asked for every ticket but a price
@@ -488,6 +566,15 @@ export type ResolveRefusal =
   | 'lines_required'
   | 'invalid_lines'
   | 'no_difference'
+  | 'order_required'
+  | 'not_delivered'
+  | 'amount_required'
+  | 'value_required'
+  | 'invalid_affected'
+  | 'invalid_value'
+  | 'unknown_reason'
+  | 'no_base_currency'
+  | 'currency_changed'
   | 'forbidden';
 
 const resolveRefusals: readonly string[] = [
@@ -498,6 +585,15 @@ const resolveRefusals: readonly string[] = [
   'lines_required',
   'invalid_lines',
   'no_difference',
+  'order_required',
+  'not_delivered',
+  'amount_required',
+  'value_required',
+  'invalid_affected',
+  'invalid_value',
+  'unknown_reason',
+  'no_base_currency',
+  'currency_changed',
   'forbidden',
 ] satisfies ResolveRefusal[];
 
@@ -509,6 +605,10 @@ export interface ResolveBody {
   responsible: ResponsibleParty | null;
   message: string;
   receivedLines: { currency: string; amount: string }[] | null;
+  // AP §8.10 (slice 2.23c).
+  affected: AffectedLine[];
+  shortAmount: string | null;
+  code: CompensateBody | null;
 }
 
 // AP §9.9.3 «Preview» of «تصحيح في الحسابات», asked for each set of lines.

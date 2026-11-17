@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  affectedOf,
   canResolve,
+  generalChoices,
+  shortAmountOf,
   minutesLeft,
   needsResponsible,
   receivedLinesOf,
@@ -62,7 +65,7 @@ describe('the resolution form', () => {
   const session = (permissions: string[]) => ({ permissions }) as unknown as AdminSession;
 
   it("offers each kind its resolutions and asks a general ticket's party only", () => {
-    expect(resolutionChoices('general')).toEqual(['none_explained']);
+    expect(resolutionChoices('general')).toEqual(['compensation_code', 'none_explained']);
     expect(resolutionChoices('price_difference')).toEqual(['price_corrected', 'price_correct']);
     expect(resolutionChoices('pickup_dispute')).toEqual([
       'captain_paid',
@@ -103,5 +106,33 @@ describe('the resolution form', () => {
     ]);
     expect(receivedLinesOf({ TRY: '0', USD: '' })).toEqual([]);
     expect(receivedLinesOf({ TRY: 'abc' })).toBeNull();
+  });
+});
+
+// AP §8.10, §9.9.3 (slice 2.23c): the money of a general ticket's resolution.
+describe('the money of a problem after delivery', () => {
+  const lines = [
+    { position: 0, name: 'شاورما', quantity: 2, unitPrice: '12000', lineTotal: '24000' },
+    { position: 1, name: 'بطاطا', quantity: 1, unitPrice: '3000', lineTotal: '3000' },
+  ];
+
+  it('offers «كود تعويض» on a ticket with an order to who may compensate', () => {
+    const order = { kind: 'general' as const, order: { lines } as never };
+    expect(generalChoices(order, true)).toEqual(['compensation_code', 'none_explained']);
+    expect(generalChoices(order, false)).toEqual(['none_explained']);
+    expect(generalChoices({ kind: 'general', order: null }, true)).toEqual(['none_explained']);
+  });
+
+  it('reads the affected quantities within each line', () => {
+    expect(affectedOf(lines, { 0: '1', 1: '' })).toEqual([{ position: 0, quantity: 1 }]);
+    expect(affectedOf(lines, { 0: '0' })).toEqual([]);
+    expect(affectedOf(lines, { 1: '2' })).toBeNull();
+    expect(affectedOf(lines, { 0: '1.5' })).toBeNull();
+  });
+
+  it('reads M in minor units, above zero', () => {
+    expect(shortAmountOf('20', 'TRY')).toBe('2000');
+    expect(shortAmountOf('0', 'TRY')).toBeNull();
+    expect(shortAmountOf('x', 'TRY')).toBeNull();
   });
 });

@@ -237,6 +237,7 @@ import 'package:core_api/src/model/admin_order_tickets_dto_output.dart';
 import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner.dart';
 import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_closure.dart';
 import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_resolution.dart';
+import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_resolution_affected_lines_inner.dart';
 import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_resolution_corrected_lines_inner.dart';
 import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_sla.dart';
 import 'package:core_api/src/model/admin_outcome_change_preview_answer_dto_output.dart';
@@ -363,13 +364,20 @@ import 'package:core_api/src/model/admin_ticket_correction_dto_output_merchant.d
 import 'package:core_api/src/model/admin_ticket_correction_preview_dto.dart';
 import 'package:core_api/src/model/admin_ticket_correction_preview_dto_received_lines_inner.dart';
 import 'package:core_api/src/model/admin_ticket_dto_output.dart';
+import 'package:core_api/src/model/admin_ticket_money_preview_body_dto.dart';
+import 'package:core_api/src/model/admin_ticket_money_preview_body_dto_affected_inner.dart';
+import 'package:core_api/src/model/admin_ticket_money_preview_dto_output.dart';
 import 'package:core_api/src/model/admin_ticket_note_dto.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output_notes_inner.dart';
+import 'package:core_api/src/model/admin_ticket_page_dto_output_order.dart';
+import 'package:core_api/src/model/admin_ticket_page_dto_output_order_lines_inner.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output_pickup_dispute.dart';
 import 'package:core_api/src/model/admin_ticket_parties_dto_output.dart';
 import 'package:core_api/src/model/admin_ticket_party_search_dto.dart';
 import 'package:core_api/src/model/admin_ticket_resolve_dto.dart';
+import 'package:core_api/src/model/admin_ticket_resolve_dto_code.dart';
+import 'package:core_api/src/model/admin_ticket_resolve_dto_code_reason.dart';
 import 'package:core_api/src/model/admin_ticket_status_dto.dart';
 import 'package:core_api/src/model/admin_ticket_types_dto_output.dart';
 import 'package:core_api/src/model/admin_tickets_dto_output.dart';
@@ -946,6 +954,7 @@ part 'serializers.g.dart';
   AdminOrderTicketsDtoOutputTicketsInner,
   AdminOrderTicketsDtoOutputTicketsInnerClosure,
   AdminOrderTicketsDtoOutputTicketsInnerResolution,
+  AdminOrderTicketsDtoOutputTicketsInnerResolutionAffectedLinesInner,
   AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
   AdminOrderTicketsDtoOutputTicketsInnerSla,
   AdminOutcomeChangePreviewAnswerDtoOutput,
@@ -1072,13 +1081,20 @@ part 'serializers.g.dart';
   AdminTicketCorrectionPreviewDto,
   AdminTicketCorrectionPreviewDtoReceivedLinesInner,
   AdminTicketDtoOutput,
+  AdminTicketMoneyPreviewBodyDto,
+  AdminTicketMoneyPreviewBodyDtoAffectedInner,
+  AdminTicketMoneyPreviewDtoOutput,
   AdminTicketNoteDto,
   AdminTicketPageDtoOutput,
   AdminTicketPageDtoOutputNotesInner,
+  AdminTicketPageDtoOutputOrder,
+  AdminTicketPageDtoOutputOrderLinesInner,
   AdminTicketPageDtoOutputPickupDispute,
   AdminTicketPartiesDtoOutput,
   AdminTicketPartySearchDto,
   AdminTicketResolveDto,
+  AdminTicketResolveDtoCode,
+  AdminTicketResolveDtoCodeReason,
   AdminTicketStatusDto,
   AdminTicketTypesDtoOutput,
   AdminTicketsDtoOutput,
@@ -1512,6 +1528,17 @@ Serializers serializers =
               FullType(CaptainAvailabilityDtoOutputCustodyLimit),
             ]),
             () => ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(
+                AdminOrderTicketsDtoOutputTicketsInnerResolutionAffectedLinesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminOrderTicketsDtoOutputTicketsInnerResolutionAffectedLinesInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -2140,6 +2167,18 @@ Serializers serializers =
                 ListBuilder<
                   AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminTicketMoneyPreviewBodyDtoAffectedInner),
+            ]),
+            () => ListBuilder<AdminTicketMoneyPreviewBodyDtoAffectedInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminTicketPageDtoOutputOrderLinesInner),
+            ]),
+            () => ListBuilder<AdminTicketPageDtoOutputOrderLinesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

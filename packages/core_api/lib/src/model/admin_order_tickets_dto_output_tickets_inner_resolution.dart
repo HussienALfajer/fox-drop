@@ -5,6 +5,7 @@
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_resolution_corrected_lines_inner.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_resolution_affected_lines_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -19,6 +20,11 @@ part 'admin_order_tickets_dto_output_tickets_inner_resolution.g.dart';
 /// * [correctedLines] - «تصحيح في الحسابات»: what the restaurant received, as corrected.
 /// * [resolvedAt]
 /// * [resolvedByName]
+/// * [affectedLines] - A problem after delivery (AP §8.10): the affected lines as chosen.
+/// * [affectedValue] - V, in `moneyCurrency`.
+/// * [shortAmount] - «مشكلة في المبلغ أو الباقي»: M, what the customer was short.
+/// * [moneyCurrency]
+/// * [compensationId] - «كود تعويض»: the compensation asked (issued, or waiting for OWN).
 @BuiltValue()
 abstract class AdminOrderTicketsDtoOutputTicketsInnerResolution
     implements
@@ -28,7 +34,7 @@ abstract class AdminOrderTicketsDtoOutputTicketsInnerResolution
         > {
   @BuiltValueField(wireName: r'code')
   AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum get code;
-  // enum codeEnum {  none_explained,  price_corrected,  price_correct,  captain_paid,  accounts_corrected,  payment_correct,  };
+  // enum codeEnum {  none_explained,  compensation_code,  price_corrected,  price_correct,  captain_paid,  accounts_corrected,  payment_correct,  };
 
   @BuiltValueField(wireName: r'responsible')
   AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum?
@@ -51,6 +57,26 @@ abstract class AdminOrderTicketsDtoOutputTicketsInnerResolution
 
   @BuiltValueField(wireName: r'resolvedByName')
   String? get resolvedByName;
+
+  /// A problem after delivery (AP §8.10): the affected lines as chosen.
+  @BuiltValueField(wireName: r'affectedLines')
+  BuiltList<AdminOrderTicketsDtoOutputTicketsInnerResolutionAffectedLinesInner>?
+  get affectedLines;
+
+  /// V, in `moneyCurrency`.
+  @BuiltValueField(wireName: r'affectedValue')
+  String? get affectedValue;
+
+  /// «مشكلة في المبلغ أو الباقي»: M, what the customer was short.
+  @BuiltValueField(wireName: r'shortAmount')
+  String? get shortAmount;
+
+  @BuiltValueField(wireName: r'moneyCurrency')
+  String? get moneyCurrency;
+
+  /// «كود تعويض»: the compensation asked (issued, or waiting for OWN).
+  @BuiltValueField(wireName: r'compensationId')
+  String? get compensationId;
 
   AdminOrderTicketsDtoOutputTicketsInnerResolution._();
 
@@ -128,6 +154,45 @@ class _$AdminOrderTicketsDtoOutputTicketsInnerResolutionSerializer
         ? null
         : serializers.serialize(
             object.resolvedByName,
+            specifiedType: const FullType.nullable(String),
+          );
+    yield r'affectedLines';
+    yield object.affectedLines == null
+        ? null
+        : serializers.serialize(
+            object.affectedLines,
+            specifiedType: const FullType.nullable(BuiltList, [
+              FullType(
+                AdminOrderTicketsDtoOutputTicketsInnerResolutionAffectedLinesInner,
+              ),
+            ]),
+          );
+    yield r'affectedValue';
+    yield object.affectedValue == null
+        ? null
+        : serializers.serialize(
+            object.affectedValue,
+            specifiedType: const FullType.nullable(String),
+          );
+    yield r'shortAmount';
+    yield object.shortAmount == null
+        ? null
+        : serializers.serialize(
+            object.shortAmount,
+            specifiedType: const FullType.nullable(String),
+          );
+    yield r'moneyCurrency';
+    yield object.moneyCurrency == null
+        ? null
+        : serializers.serialize(
+            object.moneyCurrency,
+            specifiedType: const FullType.nullable(String),
+          );
+    yield r'compensationId';
+    yield object.compensationId == null
+        ? null
+        : serializers.serialize(
+            object.compensationId,
             specifiedType: const FullType.nullable(String),
           );
   }
@@ -224,6 +289,62 @@ class _$AdminOrderTicketsDtoOutputTicketsInnerResolutionSerializer
           if (valueDes == null) continue;
           result.resolvedByName = valueDes;
           break;
+        case r'affectedLines':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(BuiltList, [
+                      FullType(
+                        AdminOrderTicketsDtoOutputTicketsInnerResolutionAffectedLinesInner,
+                      ),
+                    ]),
+                  )
+                  as BuiltList<
+                    AdminOrderTicketsDtoOutputTicketsInnerResolutionAffectedLinesInner
+                  >?;
+          if (valueDes == null) continue;
+          result.affectedLines.replace(valueDes);
+          break;
+        case r'affectedValue':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.affectedValue = valueDes;
+          break;
+        case r'shortAmount':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.shortAmount = valueDes;
+          break;
+        case r'moneyCurrency':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.moneyCurrency = valueDes;
+          break;
+        case r'compensationId':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.compensationId = valueDes;
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -259,6 +380,10 @@ class AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
   static const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
   noneExplained =
       _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_noneExplained;
+  @BuiltValueEnumConst(wireName: r'compensation_code')
+  static const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
+  compensationCode =
+      _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_compensationCode;
   @BuiltValueEnumConst(wireName: r'price_corrected')
   static const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
   priceCorrected =

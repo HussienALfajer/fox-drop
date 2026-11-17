@@ -6,7 +6,15 @@ import { type City, chosenCity, citiesQuery } from './cities.js';
 import { formatDateTime, formatMoney } from './format.js';
 import { useOpsChannel } from './live.js';
 import { OPERATIONS_READ } from './orders-board.js';
-import { can } from './session.js';
+import {
+  compensationOf,
+  type CompensationForm,
+  emptyCompensation,
+  OPERATIONS_COMPENSATE,
+  orderCompensationsQuery,
+} from './order-compensation.js';
+import { CompensationFields } from './order-compensation-page.js';
+import { type AdminSession, can } from './session.js';
 import { SlaTimer } from './tickets-page.js';
 import {
   cannedRepliesQuery,
@@ -15,7 +23,13 @@ import {
   canResolve,
   confirmedByKeys,
   correctionPreviewQuery,
+  affectedOf,
+  generalChoices,
+  moneyPreviewQuery,
   needsResponsible,
+  shortAmountOf,
+  type TicketOrder,
+  WRONG_CHANGE_TYPE,
   type PickupDispute,
   receivedLinesOf,
   resolutionChoices,
@@ -58,6 +72,15 @@ const resolveRefusalKeys = {
   lines_required: 'tickets.refusal.linesRequired',
   invalid_lines: 'tickets.refusal.invalidLines',
   no_difference: 'tickets.refusal.noDifference',
+  order_required: 'tickets.refusal.orderRequired',
+  not_delivered: 'tickets.refusal.notDelivered',
+  amount_required: 'tickets.refusal.amountRequired',
+  value_required: 'tickets.refusal.valueRequired',
+  invalid_affected: 'tickets.refusal.invalidAffected',
+  invalid_value: 'tickets.refusal.invalidValue',
+  unknown_reason: 'tickets.refusal.unknownReason',
+  no_base_currency: 'tickets.refusal.noBaseCurrency',
+  currency_changed: 'tickets.refusal.currencyChanged',
   forbidden: 'tickets.refusal.forbidden',
 } as const satisfies Record<ResolveRefusal, string>;
 
@@ -162,6 +185,7 @@ function TicketDetail({ ticket, city }: { ticket: TicketPageData; city: City }) 
       {ticket.pickupDispute && (
         <PickupDisputeFacts dispute={ticket.pickupDispute} timeZone={city.timeZone} />
       )}
+      {ticket.order && <TicketOrderFacts order={ticket.order} />}
       {ticket.resolution && (
         <section>
           <h2>{t('tickets.resolved.heading')}</h2>
@@ -182,6 +206,43 @@ function TicketDetail({ ticket, city }: { ticket: TicketPageData; city: City }) 
               value: ticket.resolution.message,
             })}
           </p>
+          {ticket.resolution.affectedLines && ticket.resolution.moneyCurrency && (
+            <>
+              <ul>
+                {ticket.resolution.affectedLines.map((line) => (
+                  <li key={line.position}>
+                    {t('tickets.money.affectedLine', {
+                      name: line.name,
+                      quantity: line.quantity,
+                      value: formatMoney({
+                        amount: line.value,
+                        currency: ticket.resolution!.moneyCurrency!,
+                      }),
+                    })}
+                  </li>
+                ))}
+              </ul>
+              <p>
+                {t('tickets.money.affectedValue', {
+                  amount: formatMoney({
+                    amount: ticket.resolution.affectedValue!,
+                    currency: ticket.resolution.moneyCurrency,
+                  }),
+                })}
+              </p>
+            </>
+          )}
+          {ticket.resolution.shortAmount && ticket.resolution.moneyCurrency && (
+            <p>
+              {t('tickets.money.shortAmount', {
+                amount: formatMoney({
+                  amount: ticket.resolution.shortAmount,
+                  currency: ticket.resolution.moneyCurrency,
+                }),
+              })}
+            </p>
+          )}
+          {ticket.resolution.compensationId && <p>{t('tickets.money.codeAsked')}</p>}
           {ticket.resolution.correctedLines && (
             <p>
               {t('tickets.field', {
@@ -210,7 +271,9 @@ function TicketDetail({ ticket, city }: { ticket: TicketPageData; city: City }) 
         </section>
       )}
       {manage && <TicketActions ticket={ticket} cityId={city.id} />}
-      {canResolve(session, ticket) && <ResolveTicket ticket={ticket} cityId={city.id} />}
+      {canResolve(session, ticket) && (
+        <ResolveTicket ticket={ticket} cityId={city.id} session={session} />
+      )}
       {canCloseTicket(session, ticket) && <CloseTicket ticketId={ticket.id} cityId={city.id} />}
       <section>
         <h2>{t('tickets.notes')}</h2>
@@ -372,9 +435,20 @@ function PickupDisputeFacts({ dispute, timeZone }: { dispute: PickupDispute; tim
 // resolutions, the responsible party of a general ticket, the message sent
 // to the party at once, and for «تصحيح في الحسابات» the lines received with
 // the preview of the entries, which the confirm waits for.
-function ResolveTicket({ ticket, cityId }: { ticket: TicketPageData; cityId: string }) {
+function ResolveTicket({
+  ticket,
+  cityId,
+  session,
+}: {
+  ticket: TicketPageData;
+  cityId: string;
+  session: AdminSession | null | undefined;
+}) {
   const { t } = useTranslation();
-  const choices = resolutionChoices(ticket.kind);
+  const choices =
+    ticket.kind === 'general'
+      ? generalChoices(ticket, can(session, OPERATIONS_COMPENSATE))
+      : resolutionChoices(ticket.kind);
   const [resolution, setResolution] = useState<TicketResolution>(choices[0]!);
   const [responsible, setResponsible] = useState<ResponsibleParty | ''>('');
   const [message, setMessage] = useState('');
@@ -389,10 +463,47 @@ function ResolveTicket({ ticket, cityId }: { ticket: TicketPageData; cityId: str
     enabled: correcting && lines !== null && lines.length > 0,
   });
   const previewed = preview.data?.status === 'done' ? preview.data.preview : null;
+  // AP §8.10 (slice 2.23c): a customer's ticket on an order.
+  const order = ticket.order;
+  const wrongChange = ticket.typeCode === WRONG_CHANGE_TYPE;
+  const coding = resolution === 'compensation_code';
+  const [quantities, setQuantities] = useState<Record<number, string>>({});
+  const [short, setShort] = useState('');
+  const [codeForm, setCodeForm] = useState<CompensationForm>(emptyCompensation);
+  const takesItems = order !== null && order.deliveredNormally && !wrongChange;
+  const takesShort =
+    order !== null && order.deliveredNormally && wrongChange && responsible !== 'customer';
+  const affected = takesItems ? affectedOf(order.lines, quantities) : [];
+  const shortAmount =
+    takesShort && short.trim() !== '' ? shortAmountOf(short, order.currency) : null;
+  const shortInvalid = takesShort && short.trim() !== '' && shortAmount === null;
+  const compensations = useQuery({
+    ...orderCompensationsQuery(order?.orderId ?? ''),
+    enabled: coding && order !== null && !wrongChange,
+  });
+  const code =
+    coding && !wrongChange && order !== null ? compensationOf(codeForm, order.currency) : null;
+  const asksMoney =
+    responsible !== '' && affected !== null && (affected.length > 0 || shortAmount !== null);
+  const money = useQuery({
+    ...moneyPreviewQuery(cityId, ticket.id, {
+      responsible: responsible === '' ? 'platform' : responsible,
+      affected: affected ?? [],
+      shortAmount,
+      code: coding,
+    }),
+    enabled: asksMoney,
+  });
+  const moneyPreviewed = money.data?.status === 'done' ? money.data.preview : null;
   const ready =
     message.trim() !== '' &&
     (!needsResponsible(ticket.kind) || responsible !== '') &&
-    (!correcting || (previewed !== null && !preview.isFetching));
+    (!correcting || (previewed !== null && !preview.isFetching)) &&
+    affected !== null &&
+    !shortInvalid &&
+    (!coding || wrongChange || code !== null) &&
+    (!coding || !wrongChange || shortAmount !== null) &&
+    (!asksMoney || (moneyPreviewed !== null && !money.isFetching));
   const submit = (event: FormEvent) => {
     event.preventDefault();
     if (!ready) return;
@@ -403,6 +514,9 @@ function ResolveTicket({ ticket, cityId }: { ticket: TicketPageData; cityId: str
         responsible: needsResponsible(ticket.kind) && responsible !== '' ? responsible : null,
         message: message.trim(),
         receivedLines: correcting ? lines : null,
+        affected: affected ?? [],
+        shortAmount,
+        code,
       },
     });
   };
@@ -489,6 +603,31 @@ function ResolveTicket({ ticket, cityId }: { ticket: TicketPageData; cityId: str
           )}
         </fieldset>
       )}
+      {order !== null && ticket.kind === 'general' && (
+        <ProblemMoney
+          order={order}
+          takesItems={takesItems}
+          takesShort={takesShort}
+          quantities={quantities}
+          onQuantities={setQuantities}
+          short={short}
+          onShort={setShort}
+          invalid={affected === null || shortInvalid}
+        />
+      )}
+      {coding && wrongChange && <p>{t('tickets.money.wrongChangeCode')}</p>}
+      {coding && !wrongChange && compensations.data && (
+        <fieldset>
+          <legend>{t('tickets.money.code')}</legend>
+          <CompensationFields data={compensations.data} fields={codeForm} onChange={setCodeForm} />
+        </fieldset>
+      )}
+      {compensations.isError && <p role="alert">{t('common.failed')}</p>}
+      {money.data?.status === 'refused' && (
+        <p role="alert">{t(resolveRefusalKeys[money.data.refusal])}</p>
+      )}
+      {money.isError && <p role="alert">{t('common.failed')}</p>}
+      {asksMoney && moneyPreviewed && <MoneyPreviewLines preview={moneyPreviewed} />}
       <label>
         {t('tickets.resolve.message')}
         <textarea
@@ -505,6 +644,128 @@ function ResolveTicket({ ticket, cityId }: { ticket: TicketPageData; cityId: str
       {resolve.isError && <p role="alert">{t('common.failed')}</p>}
       {result?.status === 'refused' && <p role="alert">{t(resolveRefusalKeys[result.refusal])}</p>}
     </form>
+  );
+}
+
+// AP §8.10, CU Q23 (slice 2.23c): the order's lines and what the captain
+// recorded at the door.
+function TicketOrderFacts({ order }: { order: TicketOrder }) {
+  const { t } = useTranslation();
+  const money = (amount: string) => formatMoney({ amount, currency: order.currency });
+  return (
+    <section>
+      <h2>{t('tickets.money.orderHeading')}</h2>
+      {!order.deliveredNormally && <p>{t('tickets.money.notDelivered')}</p>}
+      <ul>
+        {order.lines.map((line) => (
+          <li key={line.position}>
+            {t('tickets.money.line', {
+              name: line.name,
+              quantity: line.quantity,
+              price: money(line.unitPrice),
+            })}
+          </li>
+        ))}
+      </ul>
+      <p>{t('tickets.money.total', { amount: money(order.total) })}</p>
+      {order.received.length > 0 && (
+        <p>
+          {t('tickets.money.received', { amount: order.received.map(formatMoney).join(' + ') })}
+        </p>
+      )}
+      {order.change.length > 0 && (
+        <p>{t('tickets.money.change', { amount: order.change.map(formatMoney).join(' + ') })}</p>
+      )}
+    </section>
+  );
+}
+
+// The affected items (V) or the wrong change (M) of a problem after delivery.
+function ProblemMoney({
+  order,
+  takesItems,
+  takesShort,
+  quantities,
+  onQuantities,
+  short,
+  onShort,
+  invalid,
+}: {
+  order: TicketOrder;
+  takesItems: boolean;
+  takesShort: boolean;
+  quantities: Record<number, string>;
+  onQuantities: (quantities: Record<number, string>) => void;
+  short: string;
+  onShort: (short: string) => void;
+  invalid: boolean;
+}) {
+  const { t } = useTranslation();
+  if (!takesItems && !takesShort) return null;
+  return (
+    <fieldset>
+      <legend>{t(takesItems ? 'tickets.money.affected' : 'tickets.money.short')}</legend>
+      {takesItems &&
+        order.lines.map((line) => (
+          <label key={line.position}>
+            {t('tickets.money.affectedOf', { name: line.name, quantity: line.quantity })}
+            <input
+              inputMode="numeric"
+              value={quantities[line.position] ?? ''}
+              onChange={(event) =>
+                onQuantities({ ...quantities, [line.position]: event.target.value })
+              }
+            />
+          </label>
+        ))}
+      {takesShort && (
+        <label>
+          {t('tickets.money.shortAmountLabel', { currency: order.currency })}
+          <input
+            inputMode="decimal"
+            value={short}
+            onChange={(event) => onShort(event.target.value)}
+          />
+        </label>
+      )}
+      {invalid && <p role="alert">{t('tickets.refusal.invalidAffected')}</p>}
+    </fieldset>
+  );
+}
+
+// The entries in words: V, what the restaurant ends up owing and what the
+// captain is charged; nothing for the platform or the customer.
+function MoneyPreviewLines({
+  preview,
+}: {
+  preview: {
+    currency: string | null;
+    affectedValue: string;
+    merchantDebit: string;
+    captainCharge: string;
+  };
+}) {
+  const { t } = useTranslation();
+  if (preview.currency === null) return null;
+  const money = (amount: string) => formatMoney({ amount, currency: preview.currency! });
+  return (
+    <section>
+      <h3>{t('tickets.resolve.preview')}</h3>
+      <ul>
+        {preview.affectedValue !== '0' && (
+          <li>{t('tickets.money.affectedValue', { amount: money(preview.affectedValue) })}</li>
+        )}
+        {preview.merchantDebit !== '0' && (
+          <li>{t('tickets.money.merchantOwes', { amount: money(preview.merchantDebit) })}</li>
+        )}
+        {preview.captainCharge !== '0' && (
+          <li>{t('tickets.money.captainCharged', { amount: money(preview.captainCharge) })}</li>
+        )}
+        {preview.merchantDebit === '0' && preview.captainCharge === '0' && (
+          <li>{t('tickets.money.noEntries')}</li>
+        )}
+      </ul>
+    </section>
   );
 }
 

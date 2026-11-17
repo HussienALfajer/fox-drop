@@ -15,6 +15,16 @@ _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_lateDelivery =
       'lateDelivery',
     );
 const AdminCostReportDtoOutputCompensationReasonsInnerKindEnum
+_$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_recoveredRestaurant =
+    const AdminCostReportDtoOutputCompensationReasonsInnerKindEnum._(
+      'recoveredRestaurant',
+    );
+const AdminCostReportDtoOutputCompensationReasonsInnerKindEnum
+_$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_recoveredCaptain =
+    const AdminCostReportDtoOutputCompensationReasonsInnerKindEnum._(
+      'recoveredCaptain',
+    );
+const AdminCostReportDtoOutputCompensationReasonsInnerKindEnum
 _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_other =
     const AdminCostReportDtoOutputCompensationReasonsInnerKindEnum._('other');
 
@@ -25,6 +35,10 @@ _$adminCostReportDtoOutputCompensationReasonsInnerKindEnumValueOf(String name) {
       return _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_reason;
     case 'lateDelivery':
       return _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_lateDelivery;
+    case 'recoveredRestaurant':
+      return _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_recoveredRestaurant;
+    case 'recoveredCaptain':
+      return _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_recoveredCaptain;
     case 'other':
       return _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_other;
     default:
@@ -34,13 +48,15 @@ _$adminCostReportDtoOutputCompensationReasonsInnerKindEnumValueOf(String name) {
 
 final BuiltSet<AdminCostReportDtoOutputCompensationReasonsInnerKindEnum>
 _$adminCostReportDtoOutputCompensationReasonsInnerKindEnumValues =
-    BuiltSet<AdminCostReportDtoOutputCompensationReasonsInnerKindEnum>(
-      const <AdminCostReportDtoOutputCompensationReasonsInnerKindEnum>[
-        _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_reason,
-        _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_lateDelivery,
-        _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_other,
-      ],
-    );
+    BuiltSet<AdminCostReportDtoOutputCompensationReasonsInnerKindEnum>(const <
+      AdminCostReportDtoOutputCompensationReasonsInnerKindEnum
+    >[
+      _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_reason,
+      _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_lateDelivery,
+      _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_recoveredRestaurant,
+      _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_recoveredCaptain,
+      _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_other,
+    ]);
 
 Serializer<AdminCostReportDtoOutputCompensationReasonsInnerKindEnum>
 _$adminCostReportDtoOutputCompensationReasonsInnerKindEnumSerializer =
@@ -54,11 +70,15 @@ class _$AdminCostReportDtoOutputCompensationReasonsInnerKindEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'reason': 'reason',
     'lateDelivery': 'late_delivery',
+    'recoveredRestaurant': 'recovered_restaurant',
+    'recoveredCaptain': 'recovered_captain',
     'other': 'other',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'reason': 'reason',
     'late_delivery': 'lateDelivery',
+    'recovered_restaurant': 'recoveredRestaurant',
+    'recovered_captain': 'recoveredCaptain',
     'other': 'other',
   };
 

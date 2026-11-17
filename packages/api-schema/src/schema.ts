@@ -3444,6 +3444,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/tickets/{ticketId}/money-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminTicketsMoneyPreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/tickets/{ticketId}/resolve": {
         parameters: {
             query?: never;
@@ -9247,7 +9263,7 @@ export interface components {
                 /** @description «محلولة» */
                 resolution: {
                     /** @enum {string} */
-                    code: "none_explained" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
+                    code: "none_explained" | "compensation_code" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
                     responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
                     /** @description Sent to the ticket's party. */
                     message: string;
@@ -9259,6 +9275,20 @@ export interface components {
                     /** Format: date-time */
                     resolvedAt: string;
                     resolvedByName: string | null;
+                    /** @description A problem after delivery (AP §8.10): the affected lines as chosen. */
+                    affectedLines: {
+                        position: number;
+                        quantity: number;
+                        name: string;
+                        value: string;
+                    }[] | null;
+                    /** @description V, in `moneyCurrency`. */
+                    affectedValue: string | null;
+                    /** @description «مشكلة في المبلغ أو الباقي»: M, what the customer was short. */
+                    shortAmount: string | null;
+                    moneyCurrency: string | null;
+                    /** @description «كود تعويض»: the compensation asked (issued, or waiting for OWN). */
+                    compensationId: string | null;
                 } | null;
                 /** @description «مغلقة» without a resolution. */
                 closure: {
@@ -9325,7 +9355,7 @@ export interface components {
             /** @description «محلولة» */
             resolution: {
                 /** @enum {string} */
-                code: "none_explained" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
+                code: "none_explained" | "compensation_code" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
                 responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
                 /** @description Sent to the ticket's party. */
                 message: string;
@@ -9337,6 +9367,20 @@ export interface components {
                 /** Format: date-time */
                 resolvedAt: string;
                 resolvedByName: string | null;
+                /** @description A problem after delivery (AP §8.10): the affected lines as chosen. */
+                affectedLines: {
+                    position: number;
+                    quantity: number;
+                    name: string;
+                    value: string;
+                }[] | null;
+                /** @description V, in `moneyCurrency`. */
+                affectedValue: string | null;
+                /** @description «مشكلة في المبلغ أو الباقي»: M, what the customer was short. */
+                shortAmount: string | null;
+                moneyCurrency: string | null;
+                /** @description «كود تعويض»: the compensation asked (issued, or waiting for OWN). */
+                compensationId: string | null;
             } | null;
             /** @description «مغلقة» without a resolution. */
             closure: {
@@ -10938,7 +10982,7 @@ export interface components {
                 /** @description «محلولة» */
                 resolution: {
                     /** @enum {string} */
-                    code: "none_explained" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
+                    code: "none_explained" | "compensation_code" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
                     responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
                     /** @description Sent to the ticket's party. */
                     message: string;
@@ -10950,6 +10994,20 @@ export interface components {
                     /** Format: date-time */
                     resolvedAt: string;
                     resolvedByName: string | null;
+                    /** @description A problem after delivery (AP §8.10): the affected lines as chosen. */
+                    affectedLines: {
+                        position: number;
+                        quantity: number;
+                        name: string;
+                        value: string;
+                    }[] | null;
+                    /** @description V, in `moneyCurrency`. */
+                    affectedValue: string | null;
+                    /** @description «مشكلة في المبلغ أو الباقي»: M, what the customer was short. */
+                    shortAmount: string | null;
+                    moneyCurrency: string | null;
+                    /** @description «كود تعويض»: the compensation asked (issued, or waiting for OWN). */
+                    compensationId: string | null;
                 } | null;
                 /** @description «مغلقة» without a resolution. */
                 closure: {
@@ -11058,7 +11116,7 @@ export interface components {
             /** @description «محلولة» */
             resolution: {
                 /** @enum {string} */
-                code: "none_explained" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
+                code: "none_explained" | "compensation_code" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
                 responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
                 /** @description Sent to the ticket's party. */
                 message: string;
@@ -11070,6 +11128,20 @@ export interface components {
                 /** Format: date-time */
                 resolvedAt: string;
                 resolvedByName: string | null;
+                /** @description A problem after delivery (AP §8.10): the affected lines as chosen. */
+                affectedLines: {
+                    position: number;
+                    quantity: number;
+                    name: string;
+                    value: string;
+                }[] | null;
+                /** @description V, in `moneyCurrency`. */
+                affectedValue: string | null;
+                /** @description «مشكلة في المبلغ أو الباقي»: M, what the customer was short. */
+                shortAmount: string | null;
+                moneyCurrency: string | null;
+                /** @description «كود تعويض»: the compensation asked (issued, or waiting for OWN). */
+                compensationId: string | null;
             } | null;
             /** @description «مغلقة» without a resolution. */
             closure: {
@@ -11128,7 +11200,7 @@ export interface components {
             /** @description «محلولة» */
             resolution: {
                 /** @enum {string} */
-                code: "none_explained" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
+                code: "none_explained" | "compensation_code" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
                 responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
                 /** @description Sent to the ticket's party. */
                 message: string;
@@ -11140,6 +11212,20 @@ export interface components {
                 /** Format: date-time */
                 resolvedAt: string;
                 resolvedByName: string | null;
+                /** @description A problem after delivery (AP §8.10): the affected lines as chosen. */
+                affectedLines: {
+                    position: number;
+                    quantity: number;
+                    name: string;
+                    value: string;
+                }[] | null;
+                /** @description V, in `moneyCurrency`. */
+                affectedValue: string | null;
+                /** @description «مشكلة في المبلغ أو الباقي»: M, what the customer was short. */
+                shortAmount: string | null;
+                moneyCurrency: string | null;
+                /** @description «كود تعويض»: the compensation asked (issued, or waiting for OWN). */
+                compensationId: string | null;
             } | null;
             /** @description «مغلقة» without a resolution. */
             closure: {
@@ -11180,6 +11266,34 @@ export interface components {
                 disputedAt: string;
                 /** @description The currencies the corrected lines may use. */
                 currencies: string[];
+            } | null;
+            /** @description A customer's general ticket on an order: its lines and money (AP §8.10). */
+            order: {
+                /** Format: uuid */
+                orderId: string;
+                number: string;
+                currency: string;
+                total: string;
+                itemsValue: string;
+                /** @description Delivered with the outcome «تم التسليم»: the affected items and M apply. */
+                deliveredNormally: boolean;
+                lines: {
+                    position: number;
+                    name: string;
+                    quantity: number;
+                    unitPrice: string;
+                    lineTotal: string;
+                }[];
+                /** @description «استلم الكابتن» (CU Q23). */
+                received: {
+                    amount: string;
+                    currency: string;
+                }[];
+                /** @description «أعاد لك». */
+                change: {
+                    amount: string;
+                    currency: string;
+                }[];
             } | null;
         };
         AdminTicketNoteDto: {
@@ -11238,6 +11352,44 @@ export interface components {
                 };
             }[];
         };
+        AdminTicketMoneyPreviewBodyDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @enum {string} */
+            responsible: "restaurant" | "captain" | "customer" | "platform";
+            /** @description The order's lines by position, each once, with how many were affected. */
+            affected: {
+                position: number;
+                quantity: number;
+            }[];
+            shortAmount: string | null;
+            /** @description Whether the resolution is «كود تعويض». */
+            code: boolean;
+        };
+        AdminTicketMoneyPreviewDto_Output: {
+            currency: string | null;
+            /** @description V. */
+            affectedValue: string;
+            /** @description What the restaurant ends up owing: V less the commission reversed. */
+            merchantDebit: string;
+            captainCharge: string;
+            entries: {
+                type: string;
+                reason: string | null;
+                account: string;
+                party: {
+                    /** @enum {string} */
+                    kind: "merchant" | "captain" | "platform";
+                    id: string | null;
+                    name: string | null;
+                };
+                /** @description From the platform's side: + a debit, − a credit. */
+                amount: {
+                    amount: string;
+                    currency: string;
+                };
+            }[];
+        };
         AdminTicketResolveDto: {
             /** Format: uuid */
             cityId: string;
@@ -11245,7 +11397,7 @@ export interface components {
              * @description From the ticket kind's (AP §9.9.3).
              * @enum {string}
              */
-            resolution: "none_explained" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
+            resolution: "none_explained" | "compensation_code" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
             /** @description Required for a general ticket; none for a price difference or a pickup dispute. */
             responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
             /** @description Sent to the ticket's party. */
@@ -11255,6 +11407,39 @@ export interface components {
                 amount: string;
                 currency: string;
             }[] | null;
+            /**
+             * @description A problem after delivery: the affected lines (V).
+             * @default []
+             */
+            affected: {
+                position: number;
+                quantity: number;
+            }[];
+            /**
+             * @description «مشكلة في المبلغ أو الباقي»: M, what the customer was short.
+             * @default null
+             */
+            shortAmount: string | null;
+            /**
+             * @description «كود تعويض»: its value and reason; null for the wrong change, whose code is M.
+             * @default null
+             */
+            code: {
+                value: {
+                    /** @enum {string} */
+                    kind: "fixed_amount" | "percentage";
+                    /** @description A fixed amount; null for a percentage. */
+                    amount: string | null;
+                    /** @description A percentage: 2000 is 20%; null for an amount. */
+                    percentBp: number | null;
+                    /** @description A percentage's maximum, what counts against the cap; null for an amount. */
+                    maxDiscount: string | null;
+                };
+                reason: {
+                    code: string;
+                    note: string | null;
+                };
+            } | null;
         };
         AdminTicketCloseDto: {
             /** Format: uuid */
@@ -13327,7 +13512,7 @@ export interface components {
                  * @description `reason`: a reason of the compensation list; `late_delivery`: the automatic late codes; `other`: the rest.
                  * @enum {string}
                  */
-                kind: "reason" | "late_delivery" | "other";
+                kind: "reason" | "late_delivery" | "recovered_restaurant" | "recovered_captain" | "other";
                 /** @description The reason’s code, for `reason` only. */
                 reason: string | null;
                 /** @description The reason’s label as chosen; null for the two fixed lines. */
@@ -18988,6 +19173,32 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminTicketCorrectionDto_Output"];
+                };
+            };
+        };
+    };
+    adminTicketsMoneyPreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticketId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminTicketMoneyPreviewBodyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminTicketMoneyPreviewDto_Output"];
                 };
             };
         };
