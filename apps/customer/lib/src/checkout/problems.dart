@@ -1,6 +1,7 @@
 import 'package:core_api/core_api.dart';
 import 'package:core_l10n/core_l10n.dart';
 
+import '../account/account_state.dart';
 import '../browsing/browsing.dart';
 import '../cart/cart.dart';
 import 'quote.dart';
@@ -126,6 +127,15 @@ List<ProblemView> problemViews(
                   ? ''
                   : l10n.formatMoney(amount.amount, amount.currency),
             ),
+            ProblemAction.none,
+          ),
+        );
+      case ProblemCode.accountBlocked:
+        // CU §5.5, AP §9.8 (slice 2.25a): a block from the panel, for a
+        // duration or until further notice; its reason's customer text.
+        views.add(
+          ProblemView(
+            blockText(l10n, problem.until, problem.message ?? ''),
             ProblemAction.none,
           ),
         );
