@@ -2020,6 +2020,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/customers/{customerId}/trust": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCustomersMarkTrust"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/customers/{customerId}/clear-strikes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCustomersClearStrikes"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/customers/{customerId}/end-review-stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCustomersEndReviewStop"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/customer/quote": {
         parameters: {
             query?: never;
@@ -6789,19 +6837,37 @@ export interface components {
                 startedAt: string;
             } | null;
             reviewStop: {
+                /** Format: uuid */
+                id: string;
                 /** Format: date-time */
                 startedAt: string;
             } | null;
-            /** @description «موثوق» by D23. */
+            /** @description «موثوق» by D23 and the latest mark. */
             trusted: boolean;
             /** @description The normal deliveries that count toward the trust. */
             delivered: number;
             trustedAfter: number;
+            /** @description The latest «توثيق» or «إزالة الثقة». */
+            trustMark: {
+                /** Format: date-time */
+                at: string;
+                byName: string | null;
+                note: string;
+                trusted: boolean;
+            } | null;
             lateCancels: {
+                /** @description Within the window, from the latest clear. */
                 inWindow: number;
                 total: number;
                 limit: number;
                 windowDays: number;
+                /** @description The latest «مسح المخالفات». */
+                cleared: {
+                    /** Format: date-time */
+                    at: string;
+                    byName: string | null;
+                    note: string;
+                } | null;
             };
             fakeOrders: number;
             /** @description In the city's base: + the customer owes, − a credit (AP §8.8). */
@@ -6860,6 +6926,31 @@ export interface components {
              * @description The block in force the panel showed.
              */
             blockId: string;
+            /** @description The required reason. */
+            note: string;
+        };
+        AdminMarkCustomerTrustDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description «توثيق» (true) or «إزالة الثقة» (false). */
+            trusted: boolean;
+            /** @description The required reason. */
+            note: string;
+        };
+        AdminClearCustomerStrikesDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description The required reason. */
+            note: string;
+        };
+        AdminEndCustomerReviewStopDto: {
+            /** Format: uuid */
+            cityId: string;
+            /**
+             * Format: uuid
+             * @description The open review stop the panel showed.
+             */
+            stopId: string;
             /** @description The required reason. */
             note: string;
         };
@@ -17696,6 +17787,84 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["AdminUnblockCustomerDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCustomerDto_Output"];
+                };
+            };
+        };
+    };
+    adminCustomersMarkTrust: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                customerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMarkCustomerTrustDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCustomerDto_Output"];
+                };
+            };
+        };
+    };
+    adminCustomersClearStrikes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                customerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminClearCustomerStrikesDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCustomerDto_Output"];
+                };
+            };
+        };
+    };
+    adminCustomersEndReviewStop: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                customerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminEndCustomerReviewStopDto"];
             };
         };
         responses: {

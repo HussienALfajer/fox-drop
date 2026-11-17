@@ -701,6 +701,13 @@
       "when": 1794934733135,
       "tag": "0099_cashdesk_customer_dues",
       "breakpoints": true
+    },
+    {
+      "idx": 100,
+      "version": "7",
+      "when": 1794939093148,
+      "tag": "0100_customers_trust_marks",
+      "breakpoints": true
     }
   ]
 }

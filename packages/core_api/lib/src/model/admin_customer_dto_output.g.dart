@@ -178,6 +178,8 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
   @override
   final int trustedAfter;
   @override
+  final AdminCustomerDtoOutputTrustMark? trustMark;
+  @override
   final AdminCustomerDtoOutputLateCancels lateCancels;
   @override
   final int fakeOrders;
@@ -205,6 +207,7 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
     required this.trusted,
     required this.delivered,
     required this.trustedAfter,
+    this.trustMark,
     required this.lateCancels,
     required this.fakeOrders,
     required this.dues,
@@ -236,6 +239,7 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
         trusted == other.trusted &&
         delivered == other.delivered &&
         trustedAfter == other.trustedAfter &&
+        trustMark == other.trustMark &&
         lateCancels == other.lateCancels &&
         fakeOrders == other.fakeOrders &&
         dues == other.dues &&
@@ -258,6 +262,7 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
     _$hash = $jc(_$hash, trusted.hashCode);
     _$hash = $jc(_$hash, delivered.hashCode);
     _$hash = $jc(_$hash, trustedAfter.hashCode);
+    _$hash = $jc(_$hash, trustMark.hashCode);
     _$hash = $jc(_$hash, lateCancels.hashCode);
     _$hash = $jc(_$hash, fakeOrders.hashCode);
     _$hash = $jc(_$hash, dues.hashCode);
@@ -282,6 +287,7 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
           ..add('trusted', trusted)
           ..add('delivered', delivered)
           ..add('trustedAfter', trustedAfter)
+          ..add('trustMark', trustMark)
           ..add('lateCancels', lateCancels)
           ..add('fakeOrders', fakeOrders)
           ..add('dues', dues)
@@ -348,6 +354,12 @@ class AdminCustomerDtoOutputBuilder
   int? get trustedAfter => _$this._trustedAfter;
   set trustedAfter(int? trustedAfter) => _$this._trustedAfter = trustedAfter;
 
+  AdminCustomerDtoOutputTrustMarkBuilder? _trustMark;
+  AdminCustomerDtoOutputTrustMarkBuilder get trustMark =>
+      _$this._trustMark ??= AdminCustomerDtoOutputTrustMarkBuilder();
+  set trustMark(AdminCustomerDtoOutputTrustMarkBuilder? trustMark) =>
+      _$this._trustMark = trustMark;
+
   AdminCustomerDtoOutputLateCancelsBuilder? _lateCancels;
   AdminCustomerDtoOutputLateCancelsBuilder get lateCancels =>
       _$this._lateCancels ??= AdminCustomerDtoOutputLateCancelsBuilder();
@@ -396,6 +408,7 @@ class AdminCustomerDtoOutputBuilder
       _trusted = $v.trusted;
       _delivered = $v.delivered;
       _trustedAfter = $v.trustedAfter;
+      _trustMark = $v.trustMark?.toBuilder();
       _lateCancels = $v.lateCancels.toBuilder();
       _fakeOrders = $v.fakeOrders;
       _dues = $v.dues.toBuilder();
@@ -457,6 +470,7 @@ class AdminCustomerDtoOutputBuilder
               r'AdminCustomerDtoOutput',
               'trustedAfter',
             ),
+            trustMark: _trustMark?.build(),
             lateCancels: lateCancels.build(),
             fakeOrders: BuiltValueNullFieldError.checkNotNull(
               fakeOrders,
@@ -475,6 +489,8 @@ class AdminCustomerDtoOutputBuilder
         _$failedField = 'reviewStop';
         _reviewStop?.build();
 
+        _$failedField = 'trustMark';
+        _trustMark?.build();
         _$failedField = 'lateCancels';
         lateCancels.build();
 

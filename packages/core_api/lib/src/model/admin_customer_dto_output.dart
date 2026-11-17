@@ -9,6 +9,7 @@ import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_block_reasons_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_review_stop.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_block.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_trust_mark.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_blocks_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_dues.dart';
 import 'package:built_value/built_value.dart';
@@ -28,9 +29,10 @@ part 'admin_customer_dto_output.g.dart';
 /// * [status] - «نشط», «محظور» (a block), «محظور» until the dues are paid, «موقوف حتى مراجعة الدعم» (AP §9.8).
 /// * [block]
 /// * [reviewStop]
-/// * [trusted] - «موثوق» by D23.
+/// * [trusted] - «موثوق» by D23 and the latest mark.
 /// * [delivered] - The normal deliveries that count toward the trust.
 /// * [trustedAfter]
+/// * [trustMark]
 /// * [lateCancels]
 /// * [fakeOrders]
 /// * [dues]
@@ -69,7 +71,7 @@ abstract class AdminCustomerDtoOutput
   @BuiltValueField(wireName: r'reviewStop')
   AdminCustomerDtoOutputReviewStop? get reviewStop;
 
-  /// «موثوق» by D23.
+  /// «موثوق» by D23 and the latest mark.
   @BuiltValueField(wireName: r'trusted')
   bool get trusted;
 
@@ -79,6 +81,9 @@ abstract class AdminCustomerDtoOutput
 
   @BuiltValueField(wireName: r'trustedAfter')
   int get trustedAfter;
+
+  @BuiltValueField(wireName: r'trustMark')
+  AdminCustomerDtoOutputTrustMark? get trustMark;
 
   @BuiltValueField(wireName: r'lateCancels')
   AdminCustomerDtoOutputLateCancels get lateCancels;
@@ -204,6 +209,15 @@ class _$AdminCustomerDtoOutputSerializer
       object.trustedAfter,
       specifiedType: const FullType(int),
     );
+    yield r'trustMark';
+    yield object.trustMark == null
+        ? null
+        : serializers.serialize(
+            object.trustMark,
+            specifiedType: const FullType.nullable(
+              AdminCustomerDtoOutputTrustMark,
+            ),
+          );
     yield r'lateCancels';
     yield serializers.serialize(
       object.lateCancels,
@@ -376,6 +390,18 @@ class _$AdminCustomerDtoOutputSerializer
               serializers.deserialize(value, specifiedType: const FullType(int))
                   as int;
           result.trustedAfter = valueDes;
+          break;
+        case r'trustMark':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminCustomerDtoOutputTrustMark,
+                    ),
+                  )
+                  as AdminCustomerDtoOutputTrustMark?;
+          if (valueDes == null) continue;
+          result.trustMark.replace(valueDes);
           break;
         case r'lateCancels':
           final valueDes =

@@ -3,6 +3,7 @@ import { and, count, eq, gt, inArray, isNull, type SQL, sql } from 'drizzle-orm'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
+import { CustomersService, trustBasis } from '../customers/index.js';
 import { SettingsService } from '../settings/index.js';
 import { orderOutcomeRows, orders, type orderStatuses } from './schema.js';
 
@@ -41,6 +42,7 @@ export class ActiveOrders {
   constructor(
     @Inject(DATABASE) private readonly database: Database,
     private readonly settings: SettingsService,
+    private readonly customers: CustomersService,
   ) {}
 
   restaurant(restaurantId: string, executor: Executor = this.database.db): Promise<number> {
@@ -60,6 +62,8 @@ export class ActiveOrders {
   // trusted; a fake outcome removes the trust and starts the count again
   // (docs/domain/08, slice 2.11a), so only the deliveries after the latest
   // one count. A fake outcome changed since (slice 2.11c) counts no more.
+  // An admin's latest mark (slice 2.25b, `trustBasis`): «توثيق» trusts the
+  // account until a later fake outcome, «إزالة الثقة» restarts the count.
   async customer(
     accountId: string,
     rules: CustomerLimitRules,
@@ -84,6 +88,10 @@ export class ActiveOrders {
         ),
       )
       .where(and(whose, eq(orderOutcomeRows.outcome, 'fake'), isNull(orderOutcomeRows.replacedAt)));
+    const basis = trustBasis(
+      lastFake?.at ?? null,
+      await this.customers.trustMark(accountId, executor),
+    );
     // AP §9.9.3, CU §11.2 (slice 2.23d): a free re-delivery counts toward
     // neither the trust nor the limit.
     const delivered = await countOrders(
@@ -92,11 +100,11 @@ export class ActiveOrders {
         whose,
         isNull(orders.redeliveryOfId),
         eq(orders.outcome, 'normal'),
-        lastFake?.at ? gt(orders.deliveredAt, lastFake.at) : undefined,
+        basis.since ? gt(orders.deliveredAt, basis.since) : undefined,
       )!,
       ['delivered'],
     );
-    const trusted = delivered >= rules.trustedAfter;
+    const trusted = basis.marked || delivered >= rules.trustedAfter;
     const limit = trusted ? rules.trustedMax : rules.newMax;
     const active = await countOrders(
       executor,

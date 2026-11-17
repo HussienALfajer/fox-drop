@@ -20,13 +20,25 @@ import {
   maskedPhone,
 } from './blocks.js';
 import { type ActiveBlock, CustomersService, customerOrderLock } from './customers.service.js';
-import { blocks, type genders, lateCancelStrikes, profiles, reviewStops } from './schema.js';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import {
+  blocks,
+  type genders,
+  lateCancelStrikes,
+  profiles,
+  reviewStops,
+  strikeClears,
+  trustMarks,
+} from './schema.js';
+import { strikesSince } from './trust.js';
 
 export type CustomerAdminRefusal =
   | 'unknown_customer'
   | 'invalid_block'
   | 'already_blocked'
   | 'not_blocked'
+  | 'not_stopped'
+  | 'nothing_to_clear'
   | 'no_base_currency'
   | 'unknown_reason'
   | 'unknown_city'
@@ -86,11 +98,21 @@ export interface CustomerProfileView {
   maskedPhone: string | null;
   status: AccountStatus;
   block: ActiveBlock | null;
-  reviewStop: { startedAt: Date } | null;
+  reviewStop: { id: string; startedAt: Date } | null;
   trusted: boolean;
   delivered: number;
   trustedAfter: number;
-  lateCancels: { inWindow: number; total: number; limit: number; windowDays: number };
+  // The latest «توثيق» or «إزالة الثقة» (slice 2.25b), or null.
+  trustMark: (AdminMark & { trusted: boolean }) | null;
+  // inWindow counts from the latest clear (`strikesSince`); total is every
+  // strike ever, nothing being deleted.
+  lateCancels: {
+    inWindow: number;
+    total: number;
+    limit: number;
+    windowDays: number;
+    cleared: AdminMark | null;
+  };
   fakeOrders: number;
   // What the customer owes in the city's base (+ owes, − a credit), 0 with
   // no dues account.
@@ -99,6 +121,15 @@ export interface CustomerProfileView {
   // Content's active customer_block reasons, for «حظر» (AP Appendix B).
   blockReasons: { code: string; label: string }[];
 }
+
+// An admin's mark with its reason, as the profile shows it.
+export interface AdminMark {
+  at: Date;
+  byName: string | null;
+  note: string;
+}
+
+type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
 
 // The latest blocks the profile lists (decided by us).
 const BLOCKS_LISTED = 20;
@@ -184,14 +215,21 @@ export class CustomerAdminService {
       this.settings.get('customer.late_cancel_strikes', { cityId }),
       this.settings.get('customer.late_cancel_window_days', { cityId }),
     ]);
-    const since = new Date(now.getTime() - windowDays * 24 * 60 * 60 * 1000);
-    const [profile, phone, block, stop, orders, strikes, dues, records, reasons] =
+    const [cleared, mark] = await Promise.all([
+      this.lastClear(accountId),
+      this.lastMark(accountId),
+    ]);
+    const since = strikesSince(
+      new Date(now.getTime() - windowDays * 24 * 60 * 60 * 1000),
+      cleared?.at ?? null,
+    );
+    const [profile, phone, block, stop, orders, strikes, dues, records, reasons, names] =
       await Promise.all([
         this.customers.profile(accountId),
         this.accounts.phone(accountId),
         this.customers.activeBlock(accountId, now),
         this.database.db
-          .select({ startedAt: reviewStops.startedAt })
+          .select({ id: reviewStops.id, startedAt: reviewStops.startedAt })
           .from(reviewStops)
           .where(and(eq(reviewStops.customerAccountId, accountId), isNull(reviewStops.endedAt))),
         this.customers.ordersOf(accountId, cityId),
@@ -208,7 +246,13 @@ export class CustomerAdminService {
         this.duesBalance(cityId, accountId),
         this.blockRecords(accountId, now),
         this.content.reasonsOf('customer_block'),
+        this.admins.names([...(cleared ? [cleared.by] : []), ...(mark ? [mark.by] : [])]),
       ]);
+    const asMark = (row: { at: Date; by: string; note: string }): AdminMark => ({
+      at: row.at,
+      byName: names.get(row.by) ?? null,
+      note: row.note,
+    });
     return {
       id: accountId,
       firstName: profile?.firstName ?? null,
@@ -226,11 +270,13 @@ export class CustomerAdminService {
       trusted: orders.trusted,
       delivered: orders.delivered,
       trustedAfter: orders.trustedAfter,
+      trustMark: mark && { ...asMark(mark), trusted: mark.trusted },
       lateCancels: {
         inWindow: strikes[0]?.inWindow ?? 0,
         total: strikes[0]?.total ?? 0,
         limit: strikesLimit,
         windowDays,
+        cleared: cleared && asMark(cleared),
       },
       fakeOrders: orders.fakeOrders,
       dues,
@@ -402,7 +448,7 @@ export class CustomerAdminService {
   // «فك الحظر» (AP §9.8, OWN and OPS, a reason required): ends the block in
   // force, a duration or «حتى إشعار آخر», named by its id. The dues are
   // lifted by paying them at the desk or by «القيود التصحيحية», never here
-  // (decided by us, to confirm with the owner); 409 not_blocked when that
+  // (owner decision 2026-11-17); 409 not_blocked when that
   // block is not in force, so a repeat needs no key.
   async unblock(
     admin: CustomerAdmin,
@@ -437,6 +483,178 @@ export class CustomerAdminService {
         tx,
       );
     });
+  }
+
+  // AP §9.8 «توثيق» and «إزالة الثقة» (OWN and OPS, a reason required):
+  // overrides D23's rule from now (`trustBasis`; owner decisions
+  // 2026-11-17). Sets the trust to a value, so a repeat needs no key. Under
+  // the customer's ordering lock, so a placing counts with it or before it.
+  async markTrust(
+    admin: CustomerAdmin,
+    command: { cityId: string; accountId: string; trusted: boolean; note: string },
+    now: Date,
+  ): Promise<void> {
+    await this.checkCustomer(command.cityId, command.accountId);
+    await this.database.db.transaction(async (tx) => {
+      await this.lockCustomer(tx, command.accountId);
+      await tx.insert(trustMarks).values({
+        customerAccountId: command.accountId,
+        trusted: command.trusted,
+        at: now,
+        by: admin.accountId,
+        note: command.note,
+      });
+      await this.audit.recordWrite(
+        {
+          actor: admin.actor,
+          context: admin.context,
+          cityId: command.cityId,
+          action: 'customer.trust_mark',
+          target: { type: 'customer', id: command.accountId },
+          reason: command.note,
+          before: null,
+          after: { trusted: command.trusted },
+        },
+        tx,
+      );
+    });
+  }
+
+  // AP §9.8 «مسح المخالفات» (OWN, OPS and SUP, after a support review, a
+  // reason required; owner decision 2026-11-17): the strikes count again
+  // from now and nothing is deleted; an open review stop ends with it, as it
+  // stood on those strikes. 409 nothing_to_clear without a strike counted
+  // since the latest clear nor a stop, so a repeat changes nothing.
+  async clearStrikes(
+    admin: CustomerAdmin,
+    command: { cityId: string; accountId: string; note: string },
+    now: Date,
+  ): Promise<void> {
+    await this.checkCustomer(command.cityId, command.accountId);
+    await this.database.db.transaction(async (tx) => {
+      await this.lockCustomer(tx, command.accountId);
+      const cleared = await this.customers.strikesClearedAt(command.accountId, tx);
+      const [counted] = await tx
+        .select({ n: count() })
+        .from(lateCancelStrikes)
+        .where(
+          and(
+            eq(lateCancelStrikes.customerAccountId, command.accountId),
+            cleared === null ? undefined : sql`${lateCancelStrikes.at} > ${cleared}`,
+          ),
+        );
+      const stop = await this.openStop(tx, command.accountId);
+      if ((counted?.n ?? 0) === 0 && stop === null) {
+        throw new CustomerAdminRefusedError('nothing_to_clear', 'no strike to clear');
+      }
+      await tx.insert(strikeClears).values({
+        customerAccountId: command.accountId,
+        at: now,
+        by: admin.accountId,
+        note: command.note,
+      });
+      if (stop !== null) await this.endStop(tx, stop, admin.accountId, command.note, now);
+      await this.audit.recordWrite(
+        {
+          actor: admin.actor,
+          context: admin.context,
+          cityId: command.cityId,
+          action: 'customer.clear_strikes',
+          target: { type: 'customer', id: command.accountId },
+          reason: command.note,
+          before: { strikes: counted?.n ?? 0, reviewStopId: stop },
+          after: null,
+        },
+        tx,
+      );
+    });
+  }
+
+  // AP §9.8 «إنهاء الإيقاف» (OWN, OPS and SUP, a reason required): ends the
+  // review stop the panel showed and leaves the strikes counted, so the next
+  // late cancellation stops the account again. 409 not_stopped when that
+  // stop is no longer open, so a repeat needs no key.
+  async endReviewStop(
+    admin: CustomerAdmin,
+    command: { cityId: string; accountId: string; stopId: string; note: string },
+    now: Date,
+  ): Promise<void> {
+    await this.checkCustomer(command.cityId, command.accountId);
+    await this.database.db.transaction(async (tx) => {
+      await this.lockCustomer(tx, command.accountId);
+      if ((await this.openStop(tx, command.accountId)) !== command.stopId) {
+        throw new CustomerAdminRefusedError('not_stopped', 'that review stop is not open');
+      }
+      await this.endStop(tx, command.stopId, admin.accountId, command.note, now);
+      await this.audit.recordWrite(
+        {
+          actor: admin.actor,
+          context: admin.context,
+          cityId: command.cityId,
+          action: 'customer.end_review_stop',
+          target: { type: 'customer', id: command.accountId },
+          reason: command.note,
+          before: { reviewStopId: command.stopId },
+          after: null,
+        },
+        tx,
+      );
+    });
+  }
+
+  private async checkCustomer(cityId: string, accountId: string): Promise<void> {
+    await this.checkCity(cityId);
+    if (!(await this.accounts.exists(accountId))) {
+      throw new CustomerAdminRefusedError('unknown_customer', 'no such customer');
+    }
+  }
+
+  private async lockCustomer(tx: Tx, accountId: string): Promise<void> {
+    await tx.execute(
+      sql`SELECT pg_advisory_xact_lock(hashtextextended(${customerOrderLock(accountId)}, 0))`,
+    );
+  }
+
+  private async openStop(tx: Tx, accountId: string): Promise<string | null> {
+    const [row] = await tx
+      .select({ id: reviewStops.id })
+      .from(reviewStops)
+      .where(and(eq(reviewStops.customerAccountId, accountId), isNull(reviewStops.endedAt)));
+    return row?.id ?? null;
+  }
+
+  private async endStop(tx: Tx, id: string, by: string, note: string, now: Date): Promise<void> {
+    await tx
+      .update(reviewStops)
+      .set({ endedAt: now, endedBy: by, endNote: note })
+      .where(eq(reviewStops.id, id));
+  }
+
+  // The latest strike clear of the account, or null.
+  private async lastClear(accountId: string) {
+    const [row] = await this.database.db
+      .select({ at: strikeClears.at, by: strikeClears.by, note: strikeClears.note })
+      .from(strikeClears)
+      .where(eq(strikeClears.customerAccountId, accountId))
+      .orderBy(desc(strikeClears.at), desc(strikeClears.id))
+      .limit(1);
+    return row ?? null;
+  }
+
+  // The latest trust mark of the account, or null.
+  private async lastMark(accountId: string) {
+    const [row] = await this.database.db
+      .select({
+        at: trustMarks.at,
+        by: trustMarks.by,
+        note: trustMarks.note,
+        trusted: trustMarks.trusted,
+      })
+      .from(trustMarks)
+      .where(eq(trustMarks.customerAccountId, accountId))
+      .orderBy(desc(trustMarks.at), desc(trustMarks.id))
+      .limit(1);
+    return row ?? null;
   }
 
   // AP §9.8 «الحالة» for the search's list.

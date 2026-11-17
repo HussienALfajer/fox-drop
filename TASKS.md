@@ -4,14 +4,21 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.25b, the rest of the profile and «حسابي» (`docs/roadmap.md`, Phase 2, Support and trust). Not started.
+Slice 2.25b, the rest of the profile and «حسابي» (`docs/roadmap.md`, Phase 2, Support and trust). In progress.
 
 - **Roadmap line:** 2.25b The rest of the profile and «حسابي»: the profile's orders, tickets and codes, internal notes, «توثيق» and «إزالة الثقة», clearing strikes (the count restarts, nothing deleted, owner decision 2026-11-17) and ending a review stop, the admin test account, «تغيير الرقم» and «تسجيل الخروج من كل الأجهزة» in the panel, and the customer app's «حسابي» (AP §9.8, CU §5.4, §13). The owner changes a customer's number, who is signed out everywhere and signs in with the new one.
 - **Specs:** AP §9.8 (the profile's rest and its actions), AP §8.8 (trust overrides), CU §5.4, CU §13; what exists: the panel's `/customers` and `/customers/$customerId` (2.25a), `CustomerAdminService`, `ActiveOrders` (D23's trust, which a manual override must change), `review_stops`, `late_cancel_strikes`, identity's `AppSessionsService.signOutEverywhere` and `POST /v1/customer/auth/sign-out-everywhere` (no app button yet), the home links to «أكوادي», «الإشعارات», the terms and the FAQ that «حسابي» gathers.
 - **Branch:** the cloud session's branch, or `feat/customer-account`.
 - **Plan:**
-  - [ ] Read the cited sections; write the plan here as a checklist, one step per commit (server, panel, app).
-- **To ask the owner first:** whether «فك الحظر» should also lift a dues block (2.25a decided no: dues go through the desk or «القيود التصحيحية»); whether a partial dues payment pushes the customer (2.25a pushes only once the dues reach zero); what «حساب اختبار» sees (AP §9.8: restaurants in test mode) and whether its orders are test orders.
+  - [x] Read the cited sections; write the plan here as a checklist, one step per commit (server, panel, app).
+  - [ ] Server: «توثيق» and «إزالة الثقة» (D23 follows the latest mark as a fake outcome would), clearing strikes (the count restarts from the clear) and ending a review stop, with their routes, audit and the profile's fields.
+  - [ ] Server: internal notes, and the profile's orders (count, total spent, last order), tickets, codes used and saved addresses.
+  - [ ] Server: the admin test account (OWN, a new permission `customers.test_account`, AP §6.3 row): test-mode restaurants in its list with «تجريبي», their page, quote and placing.
+  - [ ] Server: «تغيير الرقم» (Syrian or Turkish, not another open account's; every session ends) and «تسجيل الخروج من كل الأجهزة» from the panel.
+  - [ ] Panel: the profile's new sections and the dialogs of every action above.
+  - [ ] Customer app: «حسابي» (CU §13) without «عناويني», «المفضلة» (2.28, 2.29) and «حذف الحساب» (2.25c).
+  - [ ] Review, fixes, hand over to 2.25c.
+- **Owner decisions 2026-11-17 (asked at the start of 2.25b):** an order is a test order only when its restaurant is in test mode (the test account's order at an active restaurant is a normal one); «فك الحظر» never lifts a dues block (2.25a stays); a partial dues payment pushes nothing (only reaching zero does); «عناويني» and «المفضلة» join «حسابي» with their slices (2.29, 2.28); «توثيق» makes the account trusted until a later fake outcome, and «إزالة الثقة» acts as a fake outcome (the count of normal deliveries restarts after it).
 
 ### Left from 2.25a (`ccr-c33b2220-ux1brc`)
 

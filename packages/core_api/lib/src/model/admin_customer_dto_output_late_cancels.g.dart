@@ -16,6 +16,8 @@ class _$AdminCustomerDtoOutputLateCancels
   final int limit;
   @override
   final int windowDays;
+  @override
+  final AdminCustomerDtoOutputLateCancelsCleared? cleared;
 
   factory _$AdminCustomerDtoOutputLateCancels([
     void Function(AdminCustomerDtoOutputLateCancelsBuilder)? updates,
@@ -26,6 +28,7 @@ class _$AdminCustomerDtoOutputLateCancels
     required this.total,
     required this.limit,
     required this.windowDays,
+    this.cleared,
   }) : super._();
   @override
   AdminCustomerDtoOutputLateCancels rebuild(
@@ -43,7 +46,8 @@ class _$AdminCustomerDtoOutputLateCancels
         inWindow == other.inWindow &&
         total == other.total &&
         limit == other.limit &&
-        windowDays == other.windowDays;
+        windowDays == other.windowDays &&
+        cleared == other.cleared;
   }
 
   @override
@@ -53,6 +57,7 @@ class _$AdminCustomerDtoOutputLateCancels
     _$hash = $jc(_$hash, total.hashCode);
     _$hash = $jc(_$hash, limit.hashCode);
     _$hash = $jc(_$hash, windowDays.hashCode);
+    _$hash = $jc(_$hash, cleared.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -63,7 +68,8 @@ class _$AdminCustomerDtoOutputLateCancels
           ..add('inWindow', inWindow)
           ..add('total', total)
           ..add('limit', limit)
-          ..add('windowDays', windowDays))
+          ..add('windowDays', windowDays)
+          ..add('cleared', cleared))
         .toString();
   }
 }
@@ -92,6 +98,12 @@ class AdminCustomerDtoOutputLateCancelsBuilder
   int? get windowDays => _$this._windowDays;
   set windowDays(int? windowDays) => _$this._windowDays = windowDays;
 
+  AdminCustomerDtoOutputLateCancelsClearedBuilder? _cleared;
+  AdminCustomerDtoOutputLateCancelsClearedBuilder get cleared =>
+      _$this._cleared ??= AdminCustomerDtoOutputLateCancelsClearedBuilder();
+  set cleared(AdminCustomerDtoOutputLateCancelsClearedBuilder? cleared) =>
+      _$this._cleared = cleared;
+
   AdminCustomerDtoOutputLateCancelsBuilder() {
     AdminCustomerDtoOutputLateCancels._defaults(this);
   }
@@ -103,6 +115,7 @@ class AdminCustomerDtoOutputLateCancelsBuilder
       _total = $v.total;
       _limit = $v.limit;
       _windowDays = $v.windowDays;
+      _cleared = $v.cleared?.toBuilder();
       _$v = null;
     }
     return this;
@@ -124,30 +137,47 @@ class AdminCustomerDtoOutputLateCancelsBuilder
   AdminCustomerDtoOutputLateCancels build() => _build();
 
   _$AdminCustomerDtoOutputLateCancels _build() {
-    final _$result =
-        _$v ??
-        _$AdminCustomerDtoOutputLateCancels._(
-          inWindow: BuiltValueNullFieldError.checkNotNull(
-            inWindow,
-            r'AdminCustomerDtoOutputLateCancels',
-            'inWindow',
-          ),
-          total: BuiltValueNullFieldError.checkNotNull(
-            total,
-            r'AdminCustomerDtoOutputLateCancels',
-            'total',
-          ),
-          limit: BuiltValueNullFieldError.checkNotNull(
-            limit,
-            r'AdminCustomerDtoOutputLateCancels',
-            'limit',
-          ),
-          windowDays: BuiltValueNullFieldError.checkNotNull(
-            windowDays,
-            r'AdminCustomerDtoOutputLateCancels',
-            'windowDays',
-          ),
+    _$AdminCustomerDtoOutputLateCancels _$result;
+    try {
+      _$result =
+          _$v ??
+          _$AdminCustomerDtoOutputLateCancels._(
+            inWindow: BuiltValueNullFieldError.checkNotNull(
+              inWindow,
+              r'AdminCustomerDtoOutputLateCancels',
+              'inWindow',
+            ),
+            total: BuiltValueNullFieldError.checkNotNull(
+              total,
+              r'AdminCustomerDtoOutputLateCancels',
+              'total',
+            ),
+            limit: BuiltValueNullFieldError.checkNotNull(
+              limit,
+              r'AdminCustomerDtoOutputLateCancels',
+              'limit',
+            ),
+            windowDays: BuiltValueNullFieldError.checkNotNull(
+              windowDays,
+              r'AdminCustomerDtoOutputLateCancels',
+              'windowDays',
+            ),
+            cleared: _cleared?.build(),
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'cleared';
+        _cleared?.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+          r'AdminCustomerDtoOutputLateCancels',
+          _$failedField,
+          e.toString(),
         );
+      }
+      rethrow;
+    }
     replace(_$result);
     return _$result;
   }

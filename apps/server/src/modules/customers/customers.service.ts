@@ -17,7 +17,10 @@ import {
   lateCancelStrikes,
   profiles,
   reviewStops,
+  strikeClears,
+  trustMarks,
 } from './schema.js';
+import { strikesSince, type TrustMark } from './trust.js';
 
 export type CustomersRefusal =
   'terms_required' | 'invalid_birthday' | 'outside_zones' | 'address_limit' | 'unknown_address';
@@ -251,7 +254,10 @@ export class CustomersService {
         at: strike.at,
       })
       .onConflictDoNothing({ target: lateCancelStrikes.orderId });
-    const since = new Date(strike.at.getTime() - strike.windowDays * 24 * 60 * 60 * 1000);
+    const since = strikesSince(
+      new Date(strike.at.getTime() - strike.windowDays * 24 * 60 * 60 * 1000),
+      await this.strikesClearedAt(strike.accountId, tx),
+    );
     const [counted] = await tx
       .select({ n: count() })
       .from(lateCancelStrikes)
@@ -289,6 +295,36 @@ export class CustomersService {
       .where(and(eq(reviewStops.customerAccountId, accountId), isNull(reviewStops.endedAt)))
       .limit(1);
     return rows.length > 0;
+  }
+
+  // AP §9.8 «مسح المخالفات» (slice 2.25b): the latest clear, from which the
+  // strikes count again (`strikesSince`), or null.
+  async strikesClearedAt(
+    accountId: string,
+    executor: Pick<NodePgDatabase, 'select'> = this.database.db,
+  ): Promise<Date | null> {
+    const [row] = await executor
+      .select({ at: strikeClears.at })
+      .from(strikeClears)
+      .where(eq(strikeClears.customerAccountId, accountId))
+      .orderBy(desc(strikeClears.at), desc(strikeClears.id))
+      .limit(1);
+    return row?.at ?? null;
+  }
+
+  // AP §9.8 «توثيق» and «إزالة الثقة» (slice 2.25b): the latest mark, which
+  // ordering's D23 count reads through `trustBasis`, or null.
+  async trustMark(
+    accountId: string,
+    executor: Pick<NodePgDatabase, 'select'> = this.database.db,
+  ): Promise<TrustMark | null> {
+    const [row] = await executor
+      .select({ trusted: trustMarks.trusted, at: trustMarks.at })
+      .from(trustMarks)
+      .where(eq(trustMarks.customerAccountId, accountId))
+      .orderBy(desc(trustMarks.at), desc(trustMarks.id))
+      .limit(1);
+    return row ?? null;
   }
 
   // The details of CU §5.3; null until the customer completes them.

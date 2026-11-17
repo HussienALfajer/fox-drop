@@ -132,12 +132,61 @@ export const reviewStops = customers.table(
     endedAt: timestamp('ended_at', { withTimezone: true }),
     // The admin account that ended it.
     endedBy: uuid('ended_by'),
+    // The admin's required reason (AP §9.8, slice 2.25b); null on a stop
+    // ended before it.
+    endNote: text('end_note'),
   },
   (table) => [
     uniqueIndex('review_stops_one_open')
       .on(table.customerAccountId)
       .where(sql`${table.endedAt} IS NULL`),
     check('review_stops_end', sql`(${table.endedAt} IS NULL) = (${table.endedBy} IS NULL)`),
+    check(
+      'review_stops_end_note',
+      sql`${table.endNote} IS NULL OR (${table.endedAt} IS NOT NULL AND length(${table.endNote}) BETWEEN 1 AND 500)`,
+    ),
+  ],
+);
+
+// AP §9.8 «مسح المخالفات» (slice 2.25b; owner decision 2026-11-17): the
+// late-cancellation strikes count again from the latest clear; nothing is
+// deleted. Never changed.
+export const strikeClears = customers.table(
+  'strike_clears',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    customerAccountId: uuid('customer_account_id').notNull(),
+    at: timestamp('at', { withTimezone: true }).notNull(),
+    // The admin account and its required reason.
+    by: uuid('by').notNull(),
+    note: text('note').notNull(),
+  },
+  (table) => [
+    index('strike_clears_account_at').on(table.customerAccountId, table.at),
+    check('strike_clears_note', sql`length(${table.note}) BETWEEN 1 AND 500`),
+  ],
+);
+
+// AP §9.8, §8.8 «توثيق» and «إزالة الثقة» (slice 2.25b; owner decisions
+// 2026-11-17): the latest mark overrides D23's count (`trustBasis`). Never
+// changed.
+export const trustMarks = customers.table(
+  'trust_marks',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    customerAccountId: uuid('customer_account_id').notNull(),
+    trusted: boolean('trusted').notNull(),
+    at: timestamp('at', { withTimezone: true }).notNull(),
+    by: uuid('by').notNull(),
+    note: text('note').notNull(),
+  },
+  (table) => [
+    index('trust_marks_account_at').on(table.customerAccountId, table.at),
+    check('trust_marks_note', sql`length(${table.note}) BETWEEN 1 AND 500`),
   ],
 );
 

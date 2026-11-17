@@ -55,6 +55,7 @@ import 'package:core_api/src/model/admin_city_office_dto_output.dart';
 import 'package:core_api/src/model/admin_city_office_dto_output_office.dart';
 import 'package:core_api/src/model/admin_city_office_dto_output_office_hours_inner.dart';
 import 'package:core_api/src/model/admin_city_office_dto_output_office_location.dart';
+import 'package:core_api/src/model/admin_clear_customer_strikes_dto.dart';
 import 'package:core_api/src/model/admin_close_drawer_session_dto.dart';
 import 'package:core_api/src/model/admin_close_item_report_dto.dart';
 import 'package:core_api/src/model/admin_compensate_dto.dart';
@@ -85,7 +86,9 @@ import 'package:core_api/src/model/admin_customer_dto_output_block_reasons_inner
 import 'package:core_api/src/model/admin_customer_dto_output_blocks_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_dues.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_late_cancels.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_late_cancels_cleared.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_review_stop.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_trust_mark.dart';
 import 'package:core_api/src/model/admin_customer_dues_pay_dto.dart';
 import 'package:core_api/src/model/admin_customer_dues_preview_dto_output.dart';
 import 'package:core_api/src/model/admin_customer_dues_preview_request_dto.dart';
@@ -135,6 +138,7 @@ import 'package:core_api/src/model/admin_emergency_stop_resumed_dto_output.dart'
 import 'package:core_api/src/model/admin_emergency_stop_state_dto_output.dart';
 import 'package:core_api/src/model/admin_emergency_stop_state_dto_output_defaults.dart';
 import 'package:core_api/src/model/admin_emergency_stop_state_dto_output_stop.dart';
+import 'package:core_api/src/model/admin_end_customer_review_stop_dto.dart';
 import 'package:core_api/src/model/admin_exchange_rate_history_dto_output.dart';
 import 'package:core_api/src/model/admin_exchange_rate_history_dto_output_versions_inner.dart';
 import 'package:core_api/src/model/admin_exchange_rates_dto_output.dart';
@@ -170,6 +174,7 @@ import 'package:core_api/src/model/admin_manual_entry_dto_output.dart';
 import 'package:core_api/src/model/admin_manual_parties_dto_output.dart';
 import 'package:core_api/src/model/admin_manual_party_search_dto.dart';
 import 'package:core_api/src/model/admin_manual_reversal_dto.dart';
+import 'package:core_api/src/model/admin_mark_customer_trust_dto.dart';
 import 'package:core_api/src/model/admin_merchant_statement_dto_output.dart';
 import 'package:core_api/src/model/admin_merchant_statement_dto_output_lines_inner.dart';
 import 'package:core_api/src/model/admin_new_upload_dto.dart';
@@ -822,6 +827,7 @@ part 'serializers.g.dart';
   AdminCityOfficeDtoOutputOffice,
   AdminCityOfficeDtoOutputOfficeHoursInner,
   AdminCityOfficeDtoOutputOfficeLocation,
+  AdminClearCustomerStrikesDto,
   AdminCloseDrawerSessionDto,
   AdminCloseItemReportDto,
   AdminCompensateDto,
@@ -852,7 +858,9 @@ part 'serializers.g.dart';
   AdminCustomerDtoOutputBlocksInner,
   AdminCustomerDtoOutputDues,
   AdminCustomerDtoOutputLateCancels,
+  AdminCustomerDtoOutputLateCancelsCleared,
   AdminCustomerDtoOutputReviewStop,
+  AdminCustomerDtoOutputTrustMark,
   AdminCustomerDuesPayDto,
   AdminCustomerDuesPreviewDtoOutput,
   AdminCustomerDuesPreviewRequestDto,
@@ -902,6 +910,7 @@ part 'serializers.g.dart';
   AdminEmergencyStopStateDtoOutput,
   AdminEmergencyStopStateDtoOutputDefaults,
   AdminEmergencyStopStateDtoOutputStop,
+  AdminEndCustomerReviewStopDto,
   AdminExchangeRateHistoryDtoOutput,
   AdminExchangeRateHistoryDtoOutputVersionsInner,
   AdminExchangeRatesDtoOutput,
@@ -937,6 +946,7 @@ part 'serializers.g.dart';
   AdminManualPartiesDtoOutput,
   AdminManualPartySearchDto,
   AdminManualReversalDto,
+  AdminMarkCustomerTrustDto,
   AdminMerchantStatementDtoOutput,
   AdminMerchantStatementDtoOutputLinesInner,
   AdminNewUploadDto,

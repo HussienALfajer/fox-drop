@@ -23,6 +23,7 @@ import { AdminController } from '../../http/route-groups.js';
 import type { AdminSession } from '../identity/index.js';
 import { type BlockCommand } from './blocks.js';
 import {
+  type AdminMark,
   type CustomerAdmin,
   CustomerAdminRefusedError,
   CustomerAdminService,
@@ -37,6 +38,12 @@ const status = z
   .describe(
     '«نشط», «محظور» (a block), «محظور» until the dues are paid, «موقوف حتى مراجعة الدعم» (AP §9.8).',
   );
+
+const adminMark = z.object({
+  at: z.iso.datetime(),
+  byName: z.string().nullable(),
+  note: z.string(),
+});
 
 class AdminCustomerSearchDto extends createZodDto(
   z.object({
@@ -91,15 +98,20 @@ class AdminCustomerDto extends createZodDto(
       })
       .nullable()
       .describe('The block in force: a duration or until further notice.'),
-    reviewStop: z.object({ startedAt: z.iso.datetime() }).nullable(),
-    trusted: z.boolean().describe('«موثوق» by D23.'),
+    reviewStop: z.object({ id: z.uuid(), startedAt: z.iso.datetime() }).nullable(),
+    trusted: z.boolean().describe('«موثوق» by D23 and the latest mark.'),
     delivered: z.int().describe('The normal deliveries that count toward the trust.'),
     trustedAfter: z.int(),
+    trustMark: adminMark
+      .extend({ trusted: z.boolean() })
+      .nullable()
+      .describe('The latest «توثيق» or «إزالة الثقة».'),
     lateCancels: z.object({
-      inWindow: z.int(),
+      inWindow: z.int().describe('Within the window, from the latest clear.'),
       total: z.int(),
       limit: z.int(),
       windowDays: z.int(),
+      cleared: adminMark.nullable().describe('The latest «مسح المخالفات».'),
     }),
     fakeOrders: z.int(),
     dues: z
@@ -154,8 +166,28 @@ class AdminUnblockCustomerDto extends createZodDto(
   }),
 ) {}
 
-// AP §9.8 «الزبائن» (slice 2.25a): the search, the profile, «حظر» and
-// «فك الحظر».
+class AdminMarkCustomerTrustDto extends createZodDto(
+  z.object({
+    cityId: z.uuid(),
+    trusted: z.boolean().describe('«توثيق» (true) or «إزالة الثقة» (false).'),
+    note: reason.describe('The required reason.'),
+  }),
+) {}
+
+class AdminClearCustomerStrikesDto extends createZodDto(
+  z.object({ cityId: z.uuid(), note: reason.describe('The required reason.') }),
+) {}
+
+class AdminEndCustomerReviewStopDto extends createZodDto(
+  z.object({
+    cityId: z.uuid(),
+    stopId: z.uuid().describe('The open review stop the panel showed.'),
+    note: reason.describe('The required reason.'),
+  }),
+) {}
+
+// AP §9.8 «الزبائن» (slices 2.25a, 2.25b): the search, the profile and its
+// actions.
 @AdminController('customers')
 export class AdminCustomersController {
   constructor(private readonly customers: CustomerAdminService) {}
@@ -244,6 +276,83 @@ export class AdminCustomersController {
       return profileBody(await this.customers.profile(body.cityId, params.customerId, now));
     });
   }
+
+  // «توثيق» or «إزالة الثقة» (OWN, OPS). Answers the profile.
+  @Post(':customerId/trust')
+  @RequirePermission('customers.manage')
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminCustomerDto })
+  markTrust(
+    @Param() params: AdminCustomerParamsDto,
+    @Body() body: AdminMarkCustomerTrustDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(async () => {
+      const now = new Date();
+      await this.customers.markTrust(
+        adminOf(session, request),
+        {
+          cityId: body.cityId,
+          accountId: params.customerId,
+          trusted: body.trusted,
+          note: body.note,
+        },
+        now,
+      );
+      return profileBody(await this.customers.profile(body.cityId, params.customerId, now));
+    });
+  }
+
+  // «مسح المخالفات» (OWN, OPS, SUP), which ends an open review stop too.
+  // Answers the profile. 409 nothing_to_clear.
+  @Post(':customerId/clear-strikes')
+  @RequirePermission('customers.clear_strikes')
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminCustomerDto })
+  clearStrikes(
+    @Param() params: AdminCustomerParamsDto,
+    @Body() body: AdminClearCustomerStrikesDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(async () => {
+      const now = new Date();
+      await this.customers.clearStrikes(
+        adminOf(session, request),
+        { cityId: body.cityId, accountId: params.customerId, note: body.note },
+        now,
+      );
+      return profileBody(await this.customers.profile(body.cityId, params.customerId, now));
+    });
+  }
+
+  // «إنهاء الإيقاف» (OWN, OPS, SUP). Answers the profile. 409 not_stopped.
+  @Post(':customerId/end-review-stop')
+  @RequirePermission('customers.clear_strikes')
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminCustomerDto })
+  endReviewStop(
+    @Param() params: AdminCustomerParamsDto,
+    @Body() body: AdminEndCustomerReviewStopDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(async () => {
+      const now = new Date();
+      await this.customers.endReviewStop(
+        adminOf(session, request),
+        {
+          cityId: body.cityId,
+          accountId: params.customerId,
+          stopId: body.stopId,
+          note: body.note,
+        },
+        now,
+      );
+      return profileBody(await this.customers.profile(body.cityId, params.customerId, now));
+    });
+  }
 }
 
 function adminOf(session: AdminSession, request: FastifyRequest): CustomerAdmin {
@@ -283,7 +392,15 @@ function profileBody(view: CustomerProfileView) {
       note: view.block.note,
       startedAt: view.block.startedAt.toISOString(),
     },
-    reviewStop: view.reviewStop && { startedAt: view.reviewStop.startedAt.toISOString() },
+    reviewStop: view.reviewStop && {
+      id: view.reviewStop.id,
+      startedAt: view.reviewStop.startedAt.toISOString(),
+    },
+    trustMark: view.trustMark && markBody(view.trustMark),
+    lateCancels: {
+      ...view.lateCancels,
+      cleared: view.lateCancels.cleared && markBody(view.lateCancels.cleared),
+    },
     dues: { amount: view.dues.amount.toString(), currency: view.dues.currency },
     blocks: view.blocks.map((block) => ({
       ...block,
@@ -293,6 +410,10 @@ function profileBody(view: CustomerProfileView) {
       endedAt: block.endedAt?.toISOString() ?? null,
     })),
   };
+}
+
+function markBody<T extends AdminMark>(mark: T) {
+  return { ...mark, at: mark.at.toISOString() };
 }
 
 async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
@@ -312,6 +433,8 @@ async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
         throw new UnprocessableEntityException(body(HttpStatus.UNPROCESSABLE_ENTITY));
       case 'already_blocked':
       case 'not_blocked':
+      case 'not_stopped':
+      case 'nothing_to_clear':
       case 'no_base_currency':
         throw new ConflictException(body(HttpStatus.CONFLICT));
     }

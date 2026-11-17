@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/admin_customer_dto_output_late_cancels_cleared.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -11,10 +12,11 @@ part 'admin_customer_dto_output_late_cancels.g.dart';
 /// AdminCustomerDtoOutputLateCancels
 ///
 /// Properties:
-/// * [inWindow]
+/// * [inWindow] - Within the window, from the latest clear.
 /// * [total]
 /// * [limit]
 /// * [windowDays]
+/// * [cleared]
 @BuiltValue()
 abstract class AdminCustomerDtoOutputLateCancels
     implements
@@ -22,6 +24,7 @@ abstract class AdminCustomerDtoOutputLateCancels
           AdminCustomerDtoOutputLateCancels,
           AdminCustomerDtoOutputLateCancelsBuilder
         > {
+  /// Within the window, from the latest clear.
   @BuiltValueField(wireName: r'inWindow')
   int get inWindow;
 
@@ -33,6 +36,9 @@ abstract class AdminCustomerDtoOutputLateCancels
 
   @BuiltValueField(wireName: r'windowDays')
   int get windowDays;
+
+  @BuiltValueField(wireName: r'cleared')
+  AdminCustomerDtoOutputLateCancelsCleared? get cleared;
 
   AdminCustomerDtoOutputLateCancels._();
 
@@ -84,6 +90,15 @@ class _$AdminCustomerDtoOutputLateCancelsSerializer
       object.windowDays,
       specifiedType: const FullType(int),
     );
+    yield r'cleared';
+    yield object.cleared == null
+        ? null
+        : serializers.serialize(
+            object.cleared,
+            specifiedType: const FullType.nullable(
+              AdminCustomerDtoOutputLateCancelsCleared,
+            ),
+          );
   }
 
   @override
@@ -134,6 +149,18 @@ class _$AdminCustomerDtoOutputLateCancelsSerializer
               serializers.deserialize(value, specifiedType: const FullType(int))
                   as int;
           result.windowDays = valueDes;
+          break;
+        case r'cleared':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminCustomerDtoOutputLateCancelsCleared,
+                    ),
+                  )
+                  as AdminCustomerDtoOutputLateCancelsCleared?;
+          if (valueDes == null) continue;
+          result.cleared.replace(valueDes);
           break;
         default:
           unhandled.add(key);

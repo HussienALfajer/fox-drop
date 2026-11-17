@@ -57,3 +57,4 @@ export {
   type UnsavedAddressFields,
 } from './customers.service.js';
 export { pointQuery } from './point-query.js';
+export { trustBasis, type TrustMark } from './trust.js';
