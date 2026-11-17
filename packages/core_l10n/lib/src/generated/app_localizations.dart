@@ -5460,25 +5460,25 @@ abstract class AppLocalizations {
   ///
   /// In ar, this message translates to:
   /// **'التقاط صورة'**
-  String get customerPhotoCamera;
+  String get photoCamera;
 
   /// Picks a photo from the phone for a report (no wording in the spec).
   ///
   /// In ar, this message translates to:
   /// **'من المعرض'**
-  String get customerPhotoGallery;
+  String get photoGallery;
 
   /// Removes a photo from a report before sending (no wording in the spec).
   ///
   /// In ar, this message translates to:
   /// **'حذف الصورة'**
-  String get customerPhotoRemove;
+  String get photoRemove;
 
   /// A photo above 8 MB (architecture §5.8; no wording in the spec).
   ///
   /// In ar, this message translates to:
   /// **'الصورة كبيرة جداً، اختر صورة أصغر.'**
-  String get customerPhotoTooLarge;
+  String get photoTooLarge;
 
   /// Sends a report (no wording in the spec).
   ///
@@ -5556,37 +5556,37 @@ abstract class AppLocalizations {
   ///
   /// In ar, this message translates to:
   /// **'جديدة'**
-  String get customerTicketNew;
+  String get ticketNew;
 
   /// A report's status (AP Appendix C).
   ///
   /// In ar, this message translates to:
   /// **'قيد المعالجة'**
-  String get customerTicketInProgress;
+  String get ticketInProgress;
 
   /// A report's status (AP Appendix C).
   ///
   /// In ar, this message translates to:
   /// **'بانتظار رد'**
-  String get customerTicketWaiting;
+  String get ticketWaiting;
 
   /// A report's status (AP Appendix C).
   ///
   /// In ar, this message translates to:
   /// **'محلولة'**
-  String get customerTicketResolved;
+  String get ticketResolved;
 
   /// A report's status (AP Appendix C).
   ///
   /// In ar, this message translates to:
   /// **'مغلقة'**
-  String get customerTicketClosed;
+  String get ticketClosed;
 
-  /// The report's answer (CU §12.2): the ticket's number.
+  /// The report's answer (CU §12.2): the ticket's number and its timer («24 ساعة», support.resolution_post_delivery_hours; owner decision 2026-11-17).
   ///
   /// In ar, this message translates to:
-  /// **'استلمنا بلاغك T-{number}. سنرد عليك خلال 24 ساعة.'**
-  String customerReportSent(String number);
+  /// **'استلمنا بلاغك T-{number}. سنرد عليك خلال {within}.'**
+  String customerReportSent(String number, String within);
 
   /// The order's report and its status (CU §12.2).
   ///
@@ -5605,6 +5605,210 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'إعادة التوصيل: الطلب #{number}'**
   String customerRedeliveryOrder(String number);
+
+  /// A ticket's timer in whole hours, in «سنرد عليك خلال …».
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} ساعة'**
+  String replyWithinHours(int count);
+
+  /// A ticket's timer in minutes, in «سنرد عليك خلال …».
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} دقيقة'**
+  String replyWithinMinutes(int count);
+
+  /// The support screen (RA §15).
+  ///
+  /// In ar, this message translates to:
+  /// **'الدعم'**
+  String get merchantSupport;
+
+  /// RA §15: calls operations with the number from Content.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتصال بالعمليات'**
+  String get merchantCallOperations;
+
+  /// RA §15: WhatsApp to operations with the number from Content.
+  ///
+  /// In ar, this message translates to:
+  /// **'واتساب العمليات'**
+  String get merchantWhatsappOperations;
+
+  /// RA §15: opens the report form.
+  ///
+  /// In ar, this message translates to:
+  /// **'إبلاغ عن مشكلة'**
+  String get merchantReportProblem;
+
+  /// RA §15: the restaurant's tickets.
+  ///
+  /// In ar, this message translates to:
+  /// **'بلاغاتي'**
+  String get merchantMyReports;
+
+  /// «بلاغاتي» with none (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا بلاغات بعد.'**
+  String get merchantMyReportsEmpty;
+
+  /// «بلاغاتي» could not be read (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل البلاغات.'**
+  String get merchantReportsFailed;
+
+  /// Reads «بلاغاتي» again.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة المحاولة'**
+  String get merchantReportsRetry;
+
+  /// The report's type (RA Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'نوع المشكلة'**
+  String get merchantReportType;
+
+  /// Content's lists could not be read (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل أنواع البلاغات.'**
+  String get merchantReportTypesFailed;
+
+  /// RA §15: optionally an order of the board.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلب (اختياري)'**
+  String get merchantReportOrder;
+
+  /// No order linked to the report.
+  ///
+  /// In ar, this message translates to:
+  /// **'بدون طلب'**
+  String get merchantReportNoOrder;
+
+  /// «طلب تعديل بيانات»: what it asks to change (owner decision 2026-11-17).
+  ///
+  /// In ar, this message translates to:
+  /// **'المطلوب تعديله'**
+  String get merchantReportSubject;
+
+  /// RA §15: a data change of the minimum order.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحد الأدنى للطلب'**
+  String get merchantSubjectMinOrder;
+
+  /// RA §15: a data change of the delivery coverage.
+  ///
+  /// In ar, this message translates to:
+  /// **'منطقة التوصيل'**
+  String get merchantSubjectCoverage;
+
+  /// RA §15: adding or removing an owner.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة مالك أو إزالته'**
+  String get merchantSubjectOwners;
+
+  /// RA §15: changing the owner's phone.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم هاتف المالك'**
+  String get merchantSubjectOwnerPhone;
+
+  /// The report's note.
+  ///
+  /// In ar, this message translates to:
+  /// **'ملاحظة'**
+  String get merchantReportNote;
+
+  /// Sends the report.
+  ///
+  /// In ar, this message translates to:
+  /// **'إرسال البلاغ'**
+  String get merchantReportSend;
+
+  /// No answer or a refusal (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُرسل البلاغ، حاول مرة أخرى.'**
+  String get merchantReportFailed;
+
+  /// Content changed the types meanwhile (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيّرت أنواع البلاغات، اختر مرة أخرى.'**
+  String get merchantReportTypeChanged;
+
+  /// The photo could not be uploaded or was refused (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر رفع الصورة، حاول مرة أخرى.'**
+  String get merchantReportPhotoFailed;
+
+  /// The order is not the restaurant's any more (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُعثر على الطلب.'**
+  String get merchantReportOrderGone;
+
+  /// An owner's «بلاغاتي»: a ticket another user of the restaurant opened.
+  ///
+  /// In ar, this message translates to:
+  /// **'من مستخدم آخر'**
+  String get merchantReportBy;
+
+  /// RA §8.19: the order's problem options.
+  ///
+  /// In ar, this message translates to:
+  /// **'مشكلة في الطلب'**
+  String get merchantOrderProblem;
+
+  /// RA §8.19: the quick reasons below the call and WhatsApp (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'أو أبلغ العمليات بسبب سريع:'**
+  String get merchantOrderProblemHint;
+
+  /// RA §15: the ticket opened, with its timer.
+  ///
+  /// In ar, this message translates to:
+  /// **'استلمنا بلاغك T-{number}. سنرد عليك خلال {within}.'**
+  String merchantReportSent(String number, String within);
+
+  /// A ticket in «بلاغاتي»: its number and type.
+  ///
+  /// In ar, this message translates to:
+  /// **'T-{number} · {type}'**
+  String merchantReportTitle(String number, String type);
+
+  /// A ticket's order in «بلاغاتي».
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلب #{number}'**
+  String merchantReportOrderLine(String number);
+
+  /// The resolution message in «بلاغاتي».
+  ///
+  /// In ar, this message translates to:
+  /// **'الرد: {message}'**
+  String merchantReportReply(String message);
+
+  /// The WhatsApp text of «مشكلة في الطلب».
+  ///
+  /// In ar, this message translates to:
+  /// **'بخصوص الطلب #{number}'**
+  String merchantWhatsappOrderMessage(String number);
+
+  /// An owner's «بلاغاتي»: a ticket operations opened on the restaurant (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'من العمليات'**
+  String get merchantReportByOperations;
 }
 
 class _AppLocalizationsDelegate

@@ -594,6 +594,10 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/captain/orders/{orderId}/emergency': 'app_session',
   'POST /v1/merchant/orders/{orderId}/reject': 'app_session',
   'POST /v1/merchant/orders/{orderId}/item-report': 'app_session',
+  'POST /v1/merchant/orders/{orderId}/problem': 'app_session',
+  'POST /v1/merchant/reports': 'app_session',
+  'GET /v1/merchant/reports': 'app_session',
+  'POST /v1/merchant/uploads/report-photo': 'app_session',
   'POST /v1/merchant/orders/{orderId}/item-report/withdraw': 'app_session',
   'POST /v1/admin/orders/{orderId}/resend-notification': {
     anyOf: ['operations.manage', 'operations.compensate'],

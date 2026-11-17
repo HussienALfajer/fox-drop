@@ -94,9 +94,9 @@ String ticketStatusText(
   AppLocalizations l10n,
   CustomerActiveOrdersDtoOutputOrdersInnerReportStatusEnum status,
 ) => switch (status.name) {
-  'new_' || 'new' => l10n.customerTicketNew,
-  'inProgress' => l10n.customerTicketInProgress,
-  'waiting' => l10n.customerTicketWaiting,
-  'resolved' => l10n.customerTicketResolved,
-  _ => l10n.customerTicketClosed,
+  'new_' || 'new' => l10n.ticketNew,
+  'inProgress' => l10n.ticketInProgress,
+  'waiting' => l10n.ticketWaiting,
+  'resolved' => l10n.ticketResolved,
+  _ => l10n.ticketClosed,
 };

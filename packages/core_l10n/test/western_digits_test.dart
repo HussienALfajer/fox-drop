@@ -72,6 +72,8 @@ void main() {
     expect(l10n.weekdayName(0), 'الأحد');
     expect(l10n.weekdayName(6), 'السبت');
     expect(l10n.durationMinutes(12), '12 د');
+    expect(l10n.formatReplyWithin(24 * 60), '24 ساعة');
+    expect(l10n.formatReplyWithin(15), '15 دقيقة');
     expect(l10n.customerCodeUsesLeft(12), 'متبقٍ لك: 12');
     expect(l10n.durationSeconds(45), '45 ث');
     expect(

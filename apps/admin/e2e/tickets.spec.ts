@@ -300,6 +300,7 @@ test('shows the items and the photos of a customer report', async ({ page }) => 
           photoUrls: ['/private-docs/tickets/photos/a.png?X-Amz-Signature=x'],
           item: null,
           shopPrice: null,
+          subject: null,
         },
       },
     }),
@@ -310,4 +311,36 @@ test('shows the items and the photos of a customer report', async ({ page }) => 
   await expect(page.getByRole('heading', { name: 'ما أرسله الزبون' })).toBeVisible();
   await expect(page.getByText('شاورما × 1')).toBeVisible();
   await expect(page.getByRole('img', { name: 'صورة 1' })).toBeVisible();
+});
+
+// RA §15 (slice 2.24b): a data change the restaurant app sent shows its
+// source and what it asks to change.
+test("shows a restaurant's data change with its subject", async ({ page }) => {
+  await fakeSession(page, ['support.read']);
+  const id = '01900000-0000-7000-8000-0000000000f4';
+  await page.route('**/v1/admin/cities', (route) => route.fulfill({ json: cities }));
+  await page.route('**/v1/admin/alerts**', (route) => route.fulfill({ json: { alerts: [] } }));
+  await page.route(`**/v1/admin/tickets/${id}?**`, (route) =>
+    route.fulfill({
+      json: {
+        ...ticket({
+          id,
+          source: 'merchant_report',
+          typeCode: 'data_change',
+          typeLabel: 'طلب تعديل بيانات',
+          description: 'نريد الحد الأدنى 50',
+        }),
+        notes: [],
+        pickupDispute: null,
+        order: null,
+        redeliveries: [],
+        report: { lines: [], photoUrls: [], item: null, shopPrice: null, subject: 'min_order' },
+      },
+    }),
+  );
+
+  await page.goto(`/tickets/${id}?city=AZ`);
+  await expect(page.getByText('إبلاغ من المطعم')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'ما أرسله المطعم' })).toBeVisible();
+  await expect(page.getByText('الحد الأدنى للطلب')).toBeVisible();
 });

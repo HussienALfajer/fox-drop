@@ -13,6 +13,7 @@ import 'dispute_sheet.dart';
 import 'item_report_sheet.dart';
 import 'prompts.dart';
 import 'texts.dart';
+import '../support/order_problem_sheet.dart';
 
 /// The order detail (RA §8.4) from the board's state: header, customer,
 /// items, the money line everyone sees, the captain, the pickup and the
@@ -241,6 +242,16 @@ class OrderScreen extends ConsumerWidget {
                       ),
                 child: Text(l10n.merchantItemReportWithdraw),
               ),
+            // RA §8.19: «مشكلة في الطلب» on every order.
+            OutlinedButton(
+              key: const Key('order-problem'),
+              onPressed: () => showOrderProblem(
+                context,
+                orderId: order.id,
+                orderNumber: order.number,
+              ),
+              child: Text(l10n.merchantOrderProblem),
+            ),
             // RA §8.10 item 8: «المبلغ غير صحيح» after the pickup, within the
             // dispute window.
             if (disputeOpen && pickup.request != null)

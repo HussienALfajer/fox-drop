@@ -1458,4 +1458,214 @@ void main() {
       await app.done(tester);
     });
   });
+
+  // RA §15, §8.19, §16 #29 (slice 2.24b): «الدعم» and «مشكلة في الطلب».
+  group('support', () {
+    Map<String, Object?> ticketJson(Map<String, Object?> fields) => {
+      'id': '00000000-0000-4000-8000-0000000000d1',
+      'number': '17',
+      'typeLabel': 'استفسار مالي',
+      'subject': null,
+      'orderId': null,
+      'orderNumber': null,
+      'description': '',
+      'status': 'new',
+      'openedAt': '2026-11-07T12:00:00.000Z',
+      'openedBy': 'me',
+      'replyWithinMinutes': 1440,
+      'message': null,
+      'resolvedAt': null,
+      ...fields,
+    };
+    final content = FakeAnswer(200, {
+      'reasons': {
+        'merchant_rejection': <Object?>[],
+        'merchant_problem': [
+          {'code': 'captain_late', 'label': 'الكابتن تأخر', 'note': 'none'},
+          {'code': 'other', 'label': 'أخرى', 'note': 'required'},
+        ],
+        'item_unavailable_note': <Object?>[],
+        'merchant_ticket_type': [
+          {'code': 'finance_inquiry', 'label': 'استفسار مالي', 'note': 'none'},
+          {'code': 'data_change', 'label': 'طلب تعديل بيانات', 'note': 'none'},
+        ],
+      },
+      'faq': [
+        {'question': 'متى تُدفع المستحقات؟', 'answer': 'يوم السبت.'},
+      ],
+    });
+
+    testWidgets('«بلاغاتي» shows the status and the reply; a data change '
+        'asks its subject and is sent with the order', (tester) async {
+      final app = _Board();
+      app.server.on('/v1/merchant/content', [content]);
+      app.server.on('/v1/merchant/contact', [
+        const FakeAnswer(200, {'phone': '+963900000001'}),
+      ]);
+      app.server.on('/v1/merchant/reports', [
+        FakeAnswer(200, {
+          'tickets': [
+            ticketJson({
+              'status': 'resolved',
+              'message': 'الكشف يصل السبت.',
+              'openedBy': 'restaurant',
+            }),
+          ],
+        }),
+      ]);
+      final accepted = orderJson(
+        status: 'accepted',
+        version: 2,
+        acceptedAfter: Duration.zero,
+      );
+      await app.pump(tester, [
+        FakeAnswer(200, boardJson([accepted])),
+      ]);
+      await app.up(tester);
+
+      await tester.tap(find.byKey(const Key('open-support')));
+      await tester.pumpAndSettle();
+      expect(find.text('اتصال بالعمليات'), findsOneWidget);
+      expect(find.text('واتساب العمليات'), findsNothing);
+      expect(find.text('T-17 · استفسار مالي'), findsOneWidget);
+      expect(find.text('محلولة'), findsOneWidget);
+      expect(find.textContaining('الرد: الكشف يصل السبت.'), findsOneWidget);
+      expect(find.textContaining('من مستخدم آخر'), findsOneWidget);
+      expect(find.text('متى تُدفع المستحقات؟'), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('report-problem')));
+      await tester.pumpAndSettle();
+      final send = find.byKey(const Key('report-send'));
+      await tester.tap(find.byKey(const Key('type-data_change')));
+      await tester.pumpAndSettle();
+      expect(tester.widget<FilledButton>(send).onPressed, isNull);
+      await tester.tap(find.byKey(const Key('subject-minOrder')));
+      await tester.tap(find.byKey(const Key('order-$_orderId')));
+      await tester.enterText(
+        find.byKey(const Key('report-note')),
+        'نريد الحد الأدنى 50',
+      );
+      await tester.pumpAndSettle();
+      app.server.on('/v1/merchant/reports', [
+        FakeAnswer(200, {
+          'ticket': ticketJson({
+            'number': '18',
+            'typeLabel': 'طلب تعديل بيانات',
+            'subject': 'min_order',
+          }),
+        }),
+      ]);
+      await tester.ensureVisible(send);
+      await tester.tap(send);
+      await tester.pumpAndSettle();
+      final sent = app.server.requests
+          .where(
+            (r) => r.uri.path == '/v1/merchant/reports' && r.method == 'POST',
+          )
+          .single;
+      expect(sent.data, {
+        'typeCode': 'data_change',
+        'orderId': _orderId,
+        'note': 'نريد الحد الأدنى 50',
+        'subject': 'min_order',
+        'photoUploadId': null,
+      });
+      expect(sent.headers['Idempotency-Key'], isNotEmpty);
+      expect(
+        find.text('استلمنا بلاغك T-18. سنرد عليك خلال 24 ساعة.'),
+        findsOneWidget,
+      );
+      await app.done(tester);
+    });
+
+    testWidgets('«مشكلة في الطلب» sends a quick reason on the order', (
+      tester,
+    ) async {
+      final app = _Board();
+      app.server.on('/v1/merchant/content', [content]);
+      app.server.on('/v1/merchant/contact', [
+        const FakeAnswer(200, {'whatsapp': '+963900000002'}),
+      ]);
+      final accepted = orderJson(
+        status: 'accepted',
+        version: 2,
+        acceptedAfter: Duration.zero,
+      );
+      await app.pump(tester, [
+        FakeAnswer(200, boardJson([accepted])),
+      ]);
+      await app.up(tester);
+      app.container.read(routerProvider).push('/orders/$_orderId');
+      await tester.pumpAndSettle();
+
+      final button = find.byKey(const Key('order-problem'));
+      await tester.ensureVisible(button);
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+      expect(find.text('واتساب العمليات'), findsOneWidget);
+      app.server.on('/v1/merchant/orders/$_orderId/problem', [
+        FakeAnswer(200, {
+          'ticket': ticketJson({
+            'typeLabel': 'الكابتن تأخر',
+            'orderId': _orderId,
+            'orderNumber': '10001',
+            'replyWithinMinutes': 15,
+          }),
+        }),
+      ]);
+      await tester.tap(find.byKey(const Key('problem-captain_late')));
+      await tester.pumpAndSettle();
+      final sent = app.server
+          .to('/v1/merchant/orders/$_orderId/problem')
+          .single;
+      expect(sent.data, {'reasonCode': 'captain_late', 'note': null});
+      expect(
+        find.text('استلمنا بلاغك T-17. سنرد عليك خلال 15 دقيقة.'),
+        findsOneWidget,
+      );
+      await app.done(tester);
+    });
+    testWidgets('a reason whose text is required asks for it first', (
+      tester,
+    ) async {
+      final app = _Board();
+      app.server.on('/v1/merchant/content', [content]);
+      final accepted = orderJson(
+        status: 'accepted',
+        version: 2,
+        acceptedAfter: Duration.zero,
+      );
+      await app.pump(tester, [
+        FakeAnswer(200, boardJson([accepted])),
+      ]);
+      await app.up(tester);
+      app.container.read(routerProvider).push('/orders/$_orderId');
+      await tester.pumpAndSettle();
+      final button = find.byKey(const Key('order-problem'));
+      await tester.ensureVisible(button);
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+      app.server.on('/v1/merchant/orders/$_orderId/problem', [
+        FakeAnswer(200, {
+          'ticket': ticketJson({'typeLabel': 'أخرى'}),
+        }),
+      ]);
+      await tester.tap(find.byKey(const Key('problem-other')));
+      await tester.pumpAndSettle();
+      final send = find.byKey(const Key('problem-note-send'));
+      expect(tester.widget<TextButton>(send).onPressed, isNull);
+      await tester.enterText(
+        find.byKey(const Key('problem-note')),
+        'الكيس ممزق',
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(send);
+      await tester.pumpAndSettle();
+      final sent = app.server
+          .to('/v1/merchant/orders/$_orderId/problem')
+          .single;
+      expect(sent.data, {'reasonCode': 'other', 'note': 'الكيس ممزق'});
+      await app.done(tester);
+    });
+  });
 }

@@ -116,6 +116,12 @@ extension Formats on AppLocalizations {
     return '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
   }
 
+  /// A ticket's timer for «سنرد عليك خلال …» (CU §12.2, RA §15): whole
+  /// hours as «24 ساعة», anything else as «15 دقيقة».
+  String formatReplyWithin(int minutes) => minutes >= 60 && minutes % 60 == 0
+      ? replyWithinHours(minutes ~/ 60)
+      : replyWithinMinutes(minutes);
+
   /// A distance: metres below 1 km, kilometres with one decimal above.
   String formatDistance(int metres) => metres < 1000
       ? distanceMetres(metres)

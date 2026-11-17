@@ -191,6 +191,13 @@ class _BoardScreenState extends ConsumerState<BoardScreen>
                 onPressed: () => context.push('/status-and-hours'),
                 icon: const Icon(Icons.schedule),
               ),
+              // RA §15: «الدعم», until the navigation of RA §6.2.
+              IconButton(
+                key: const Key('open-support'),
+                tooltip: l10n.merchantSupport,
+                onPressed: () => context.push('/support'),
+                icon: const Icon(Icons.support_agent),
+              ),
               // RA §12.2, §14.3, owners only, until the navigation of RA §6.2.
               if (ref.watch(
                 merchantSessionProvider.select(

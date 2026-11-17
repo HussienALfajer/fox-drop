@@ -176,6 +176,8 @@ export const pushMessages = notifications.table(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     source: text('source').notNull().unique(),
     party: text('party', { enum: ['customer', 'merchant', 'captain'] }).notNull(),
+    // A customer's account; for a restaurant's owners, the restaurant user
+    // who reported, told too (RA §16 #29, slice 2.24b).
     accountId: uuid('account_id'),
     restaurantId: uuid('restaurant_id'),
     // RA §16 «Owners»: the restaurant's owner devices only.
@@ -208,7 +210,7 @@ export const pushMessages = notifications.table(
     check('push_messages_party', sql`${table.party} IN ('customer', 'merchant', 'captain')`),
     check(
       'push_messages_recipient',
-      sql`(${table.party} = 'customer') = (${table.accountId} IS NOT NULL) AND (${table.party} = 'merchant') = (${table.restaurantId} IS NOT NULL) AND (${table.party} = 'captain') = (${table.captainId} IS NOT NULL) AND (NOT ${table.ownersOnly} OR ${table.party} = 'merchant')`,
+      sql`(${table.party} <> 'customer' OR ${table.accountId} IS NOT NULL) AND (${table.accountId} IS NULL OR ${table.party} = 'customer' OR (${table.party} = 'merchant' AND ${table.ownersOnly})) AND (${table.party} = 'merchant') = (${table.restaurantId} IS NOT NULL) AND (${table.party} = 'captain') = (${table.captainId} IS NOT NULL) AND (NOT ${table.ownersOnly} OR ${table.party} = 'merchant')`,
     ),
     check('push_messages_priority', sql`${table.priority} IN ('high', 'normal')`),
     check('push_messages_done', sql`${table.sentAt} IS NULL OR ${table.gaveUpAt} IS NULL`),

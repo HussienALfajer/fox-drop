@@ -1061,6 +1061,35 @@ describe('the cash desk tables (AP §9.10.3, §4.8)', () => {
     ).rejects.toThrow(/tickets_price_report/);
   });
 
+  it("keeps the restaurant app's tickets the restaurant's and a data change's subject", async () => {
+    let next = 950_000;
+    const ticket = (
+      source: string,
+      party: string,
+      withOrder: boolean,
+      type: string,
+      subject: string | null = null,
+    ) => {
+      next += 1;
+      return `INSERT INTO support.tickets (city_id, number, source, party, party_id, order_id, order_number, order_active, type_code, type_label, description, status, sla_kind, sla_due_at, opened_by, opened_at, updated_at, idempotency_key, request_hash, request_subject) VALUES (${azaz}, ${next}, '${source}', '${party}', '${randomUUID()}', ${withOrder ? `'${randomUUID()}', 10001` : 'NULL, NULL'}, false, '${type}', 'نوع', '', 'new', 'resolution', now(), '${randomUUID()}', now(), now(), '${randomUUID()}', '', ${subject === null ? 'NULL' : `'${subject}'`})`;
+    };
+    await appQuery(ticket('merchant_report', 'restaurant', false, 'finance_inquiry'));
+    await appQuery(ticket('merchant_report', 'restaurant', false, 'data_change', 'coverage'));
+    await appQuery(ticket('order_problem', 'restaurant', true, 'captain_late'));
+    await expect(
+      appQuery(ticket('merchant_report', 'customer', false, 'finance_inquiry')),
+    ).rejects.toThrow(/tickets_merchant_sources/);
+    await expect(
+      appQuery(ticket('order_problem', 'restaurant', false, 'captain_late')),
+    ).rejects.toThrow(/tickets_merchant_sources/);
+    await expect(
+      appQuery(ticket('merchant_report', 'restaurant', false, 'finance_inquiry', 'coverage')),
+    ).rejects.toThrow(/tickets_merchant_sources/);
+    await expect(
+      appQuery(ticket('merchant_report', 'restaurant', false, 'data_change', 'menu')),
+    ).rejects.toThrow(/tickets_request_subject_values/);
+  });
+
   it.each([
     ['change a receipt', "UPDATE cashdesk.receipts SET captain_name = 'x'"],
     ['change a receipt line', 'UPDATE cashdesk.receipt_lines SET amount = 1'],

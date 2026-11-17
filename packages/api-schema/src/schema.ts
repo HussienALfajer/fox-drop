@@ -2228,6 +2228,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/uploads/report-photo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantTicketsUploadPhoto"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantReportsList"];
+        put?: never;
+        post: operations["merchantTicketsReport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/orders/{orderId}/problem": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantTicketsProblem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/orders/{orderId}/resend-notification": {
         parameters: {
             query?: never;
@@ -6682,6 +6730,8 @@ export interface components {
                     /** @description The resolution message, once resolved. */
                     message: string | null;
                     resolvedAt: string | null;
+                    /** @description «سنرد عليك خلال {المدة}»: the ticket's timer from its opening (support.resolution_post_delivery_hours then). */
+                    replyWithinMinutes: number;
                 } | null;
                 /** @description «الإبلاغ عن مشكلة» until then, on a delivered order without a report (CU §12.2: customer.report_problem_window_hours after the delivery); null otherwise, when the detail offers «تواصل مع الدعم». */
                 reportUntil: string | null;
@@ -6945,6 +6995,8 @@ export interface components {
                     /** @description The resolution message, once resolved. */
                     message: string | null;
                     resolvedAt: string | null;
+                    /** @description «سنرد عليك خلال {المدة}»: the ticket's timer from its opening (support.resolution_post_delivery_hours then). */
+                    replyWithinMinutes: number;
                 } | null;
                 /** @description «الإبلاغ عن مشكلة» until then, on a delivered order without a report (CU §12.2: customer.report_problem_window_hours after the delivery); null otherwise, when the detail offers «تواصل مع الدعم». */
                 reportUntil: string | null;
@@ -7702,6 +7754,56 @@ export interface components {
                 until: "tomorrow" | "turned_back_on";
             }[];
             /** @description Optional: a code of Content's item_unavailable_note list (GET /v1/merchant/content); 400 unknown_reason otherwise. */
+            note: string | null;
+        };
+        MerchantReportBodyDto: {
+            /** @description A code of Content's merchant_ticket_type list (RA Appendix C). */
+            typeCode: string;
+            /** @description Optional: one of the restaurant's orders. */
+            orderId: string | null;
+            /** @description Optional, up to 300 characters; the text of «أخرى». */
+            note: string | null;
+            /** @description «طلب تعديل بيانات» (data_change) only, and required with it. */
+            subject: ("min_order" | "coverage" | "owners" | "owner_phone") | null;
+            /** @description One photo at most, from POST /v1/merchant/uploads/report-photo once uploaded. */
+            photoUploadId: string | null;
+        };
+        MerchantReportTicketDto_Output: {
+            ticket: {
+                /** Format: uuid */
+                id: string;
+                /** @description Shown as `T-{number}`. */
+                number: string;
+                typeLabel: string;
+                /** @description «طلب تعديل بيانات»: what it asks. */
+                subject: ("min_order" | "coverage" | "owners" | "owner_phone") | null;
+                orderId: string | null;
+                orderNumber: string | null;
+                /** @description The note sent. */
+                description: string;
+                /**
+                 * @description AP Appendix C: «جديدة», «قيد المعالجة», «بانتظار رد», «محلولة», «مغلقة».
+                 * @enum {string}
+                 */
+                status: "new" | "in_progress" | "waiting" | "resolved" | "closed";
+                /** Format: date-time */
+                openedAt: string;
+                /**
+                 * @description Who opened it: the session's user, another user of the restaurant, or the panel.
+                 * @enum {string}
+                 */
+                openedBy: "me" | "restaurant" | "operations";
+                /** @description «سنرد عليك خلال {المدة}»: the ticket's timer from its opening. */
+                replyWithinMinutes: number;
+                /** @description The resolution message, once resolved. */
+                message: string | null;
+                resolvedAt: string | null;
+            };
+        };
+        MerchantOrderProblemBodyDto: {
+            /** @description A code of Content's merchant_problem list (RA Appendix C). */
+            reasonCode: string;
+            /** @description Optional, up to 300 characters; the text of «أخرى». */
             note: string | null;
         };
         AdminResendNotificationDto: {
@@ -9382,7 +9484,7 @@ export interface components {
                 id: string;
                 /** @description Shown as `T-{number}` (AP §4.8). */
                 number: string;
-                /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report so far. */
+                /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem so far. */
                 source: string;
                 /** @enum {string} */
                 party: "customer" | "restaurant" | "captain";
@@ -9474,7 +9576,7 @@ export interface components {
             id: string;
             /** @description Shown as `T-{number}` (AP §4.8). */
             number: string;
-            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report so far. */
+            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem so far. */
             source: string;
             /** @enum {string} */
             party: "customer" | "restaurant" | "captain";
@@ -11113,7 +11215,7 @@ export interface components {
                 id: string;
                 /** @description Shown as `T-{number}` (AP §4.8). */
                 number: string;
-                /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report so far. */
+                /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem so far. */
                 source: string;
                 /** @enum {string} */
                 party: "customer" | "restaurant" | "captain";
@@ -11247,7 +11349,7 @@ export interface components {
             id: string;
             /** @description Shown as `T-{number}` (AP §4.8). */
             number: string;
-            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report so far. */
+            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem so far. */
             source: string;
             /** @enum {string} */
             party: "customer" | "restaurant" | "captain";
@@ -11331,7 +11433,7 @@ export interface components {
             id: string;
             /** @description Shown as `T-{number}` (AP §4.8). */
             number: string;
-            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report so far. */
+            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem so far. */
             source: string;
             /** @enum {string} */
             party: "customer" | "restaurant" | "captain";
@@ -11498,6 +11600,8 @@ export interface components {
                     amount: string;
                     currency: string;
                 } | null;
+                /** @description «طلب تعديل بيانات» from the restaurant app (RA §15): min_order, coverage, owners, owner_phone. */
+                subject: ("min_order" | "coverage" | "owners" | "owner_phone") | null;
             } | null;
         };
         AdminTicketNoteDto: {
@@ -11682,6 +11786,39 @@ export interface components {
         CustomerPriceReportDto_Output: {
             /** @description The ticket «سعر مختلف عن المحل», shown as T-{number}. */
             number: string;
+        };
+        MerchantReportsDto_Output: {
+            /** @description Newest first, the latest 100: an owner's every ticket of the restaurant, a cashier's own. */
+            tickets: {
+                /** Format: uuid */
+                id: string;
+                /** @description Shown as `T-{number}`. */
+                number: string;
+                typeLabel: string;
+                /** @description «طلب تعديل بيانات»: what it asks. */
+                subject: ("min_order" | "coverage" | "owners" | "owner_phone") | null;
+                orderId: string | null;
+                orderNumber: string | null;
+                /** @description The note sent. */
+                description: string;
+                /**
+                 * @description AP Appendix C: «جديدة», «قيد المعالجة», «بانتظار رد», «محلولة», «مغلقة».
+                 * @enum {string}
+                 */
+                status: "new" | "in_progress" | "waiting" | "resolved" | "closed";
+                /** Format: date-time */
+                openedAt: string;
+                /**
+                 * @description Who opened it: the session's user, another user of the restaurant, or the panel.
+                 * @enum {string}
+                 */
+                openedBy: "me" | "restaurant" | "operations";
+                /** @description «سنرد عليك خلال {المدة}»: the ticket's timer from its opening. */
+                replyWithinMinutes: number;
+                /** @description The resolution message, once resolved. */
+                message: string | null;
+                resolvedAt: string | null;
+            }[];
         };
         AdminPickerDto_Output: {
             /** @description «تعيين» reaches the captain as an offer (dispatch.manual_assign_requires_accept), the only way to send one greyed out only for «المبلغ أكبر مما يحمله» (CA §8.4, K2). */
@@ -17352,6 +17489,106 @@ export interface operations {
             };
         };
     };
+    merchantTicketsUploadPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerNewUploadDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerUploadDto_Output"];
+                };
+            };
+        };
+    };
+    merchantReportsList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantReportsDto_Output"];
+                };
+            };
+        };
+    };
+    merchantTicketsReport: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantReportBodyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantReportTicketDto_Output"];
+                };
+            };
+        };
+    };
+    merchantTicketsProblem: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantOrderProblemBodyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantReportTicketDto_Output"];
+                };
+            };
+        };
+    };
     adminOrdersResendNotification: {
         parameters: {
             query?: never;
@@ -19223,7 +19460,7 @@ export interface operations {
                 status?: "new" | "in_progress" | "waiting" | "resolved" | "closed";
                 typeCode?: string;
                 assigneeId?: string;
-                source?: "manual" | "pickup_dispute" | "customer_report" | "price_report";
+                source?: "manual" | "pickup_dispute" | "customer_report" | "price_report" | "merchant_report" | "order_problem";
                 /** @description «تجاوز المهلة»: only the tickets whose SLA timer is breached. */
                 breached?: "true" | "false";
             };

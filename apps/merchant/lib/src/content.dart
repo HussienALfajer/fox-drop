@@ -4,14 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'api.dart';
 
 /// RA Appendix C, AP Appendix B: the restaurant app's reason lists of
-/// Content (`GET /v1/merchant/content`). Read once and kept; a failed read
-/// is read again when a list is next needed (`ref.invalidate` on this
-/// provider), and the screens fall back to the built-in labels.
-final merchantContentProvider = FutureProvider<MerchantContentDtoOutputReasons>(
+/// Content and its FAQ (`GET /v1/merchant/content`, RA §15). Read once and
+/// kept; a failed read is read again when a list is next needed
+/// (`ref.invalidate` on this provider), and the screens fall back to the
+/// built-in labels.
+final merchantContentProvider = FutureProvider<MerchantContentDtoOutput>(
   (ref) async =>
       (await ref.watch(coreApiProvider).getMerchantApi().merchantContentGet())
-          .data!
-          .reasons,
+          .data!,
 );
 
 /// The active rejection reasons (the closed list `merchant_rejection`),
@@ -19,7 +19,7 @@ final merchantContentProvider = FutureProvider<MerchantContentDtoOutputReasons>(
 final rejectionReasonsProvider = FutureProvider<Map<String, String>>((
   ref,
 ) async {
-  final reasons = await ref.watch(merchantContentProvider.future);
+  final reasons = (await ref.watch(merchantContentProvider.future)).reasons;
   return {
     for (final reason in reasons.merchantRejection) reason.code: reason.label,
   };
@@ -31,7 +31,7 @@ final rejectionReasonsProvider = FutureProvider<Map<String, String>>((
 final itemReportNotesProvider = FutureProvider<Map<String, String>>((
   ref,
 ) async {
-  final reasons = await ref.watch(merchantContentProvider.future);
+  final reasons = (await ref.watch(merchantContentProvider.future)).reasons;
   return {
     for (final note in reasons.itemUnavailableNote) note.code: note.label,
   };

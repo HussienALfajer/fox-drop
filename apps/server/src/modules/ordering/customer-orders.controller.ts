@@ -132,6 +132,11 @@ const customerOrder = z.object({
         .describe('AP Appendix C: «جديدة», «قيد المعالجة», «بانتظار رد», «محلولة», «مغلقة».'),
       message: z.string().nullable().describe('The resolution message, once resolved.'),
       resolvedAt: z.iso.datetime().nullable(),
+      replyWithinMinutes: z
+        .int()
+        .describe(
+          "«سنرد عليك خلال {المدة}»: the ticket's timer from its opening (support.resolution_post_delivery_hours then).",
+        ),
     })
     .nullable()
     .describe(
@@ -762,6 +767,7 @@ function orderBody(
       status: after.report.status,
       message: after.report.message,
       resolvedAt: after.report.resolvedAt?.toISOString() ?? null,
+      replyWithinMinutes: after.report.replyWithinMinutes,
     },
     reportUntil: after.reportUntil?.toISOString() ?? null,
     redeliveries: after.redeliveries.map((each) => ({

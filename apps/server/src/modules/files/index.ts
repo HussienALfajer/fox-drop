@@ -17,6 +17,11 @@ export class FilesModule {}
 
 export { RESTAURANT_PROFILE } from './admin-uploads.controller.js';
 export {
+  CustomerNewUploadDto,
+  CustomerUploadDto,
+  reportPhoto,
+} from './customer-uploads.controller.js';
+export {
   FilesRefusedError,
   type FilesExecutor,
   type FilesRefusal,

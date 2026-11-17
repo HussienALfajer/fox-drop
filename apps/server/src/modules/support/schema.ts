@@ -12,6 +12,7 @@ import {
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
+import { dataChangeSubjects } from './merchant-reports.js';
 import {
   responsibleParties,
   slaKinds,
@@ -26,12 +27,15 @@ export const support = pgSchema('support');
 // Where a ticket came from (AP §9.9.1). 2.23a builds «تذكرة يدوية», 2.23b
 // the restaurant's dispute after the pickup, 2.24a the customer app's
 // «الإبلاغ عن مشكلة» (`customer_report`) and «أبلغ عن سعر مختلف»
-// (`price_report`).
+// (`price_report`), 2.24b the restaurant app's «إبلاغ عن مشكلة»
+// (`merchant_report`) and «مشكلة في الطلب» (`order_problem`).
 export const ticketSources = [
   'manual',
   'pickup_dispute',
   'customer_report',
   'price_report',
+  'merchant_report',
+  'order_problem',
 ] as const;
 export type TicketSource = (typeof ticketSources)[number];
 
@@ -125,6 +129,9 @@ export const tickets = support.table(
     reportedItemName: text('reported_item_name'),
     shopPrice: bigint('shop_price', { mode: 'bigint' }),
     shopPriceCurrency: text('shop_price_currency'),
+    // «طلب تعديل بيانات» from the restaurant app (RA §15; slice 2.24b, owner
+    // decision 2026-11-17): what it asks to change. Set at the opening.
+    requestSubject: text('request_subject', { enum: dataChangeSubjects }),
   },
   (table) => [
     uniqueIndex('tickets_city_number').on(table.cityId, table.number),
@@ -173,6 +180,19 @@ export const tickets = support.table(
       'tickets_app_sources',
       sql`(${table.source} <> 'customer_report' OR (${table.party} = 'customer' AND ${table.orderId} IS NOT NULL)) AND (${table.source} <> 'price_report' OR ${table.typeCode} = 'price_difference')`,
     ),
+    // RA §15, §8.19 (slice 2.24b): the restaurant app's tickets are the
+    // restaurant's; «مشكلة في الطلب» names its order; only a report asks a
+    // data change.
+    check(
+      'tickets_merchant_sources',
+      sql`(${table.source} NOT IN ('merchant_report', 'order_problem') OR ${table.party} = 'restaurant') AND (${table.source} <> 'order_problem' OR ${table.orderId} IS NOT NULL) AND (${table.requestSubject} IS NULL OR (${table.source} = 'merchant_report' AND ${table.typeCode} = 'data_change'))`,
+    ),
+    check(
+      'tickets_request_subject_values',
+      sql`${table.requestSubject} IN (${inList(dataChangeSubjects)})`,
+    ),
+    // RA §15 «بلاغاتي»: a restaurant's tickets, newest first.
+    index('tickets_party').on(table.party, table.partyId, table.openedAt),
     check(
       'tickets_price_report',
       sql`(${table.shopPrice} IS NULL) = (${table.shopPriceCurrency} IS NULL) AND (${table.shopPrice} IS NULL OR ${table.shopPrice} > 0) AND (${table.reportedItemId} IS NULL) = (${table.reportedItemName} IS NULL) AND ((${table.shopPrice} IS NULL AND ${table.reportedItemId} IS NULL) OR ${table.typeCode} = 'price_difference')`,

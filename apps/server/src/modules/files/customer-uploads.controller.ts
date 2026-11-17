@@ -7,14 +7,14 @@ import type { AppSession } from '../identity/index.js';
 import { FilesRefusedError, FilesService, MAX_IMAGE_BYTES } from './files.service.js';
 import { imageTypes } from './schema.js';
 
-class CustomerNewUploadDto extends createZodDto(
+export class CustomerNewUploadDto extends createZodDto(
   z.object({
     contentType: z.enum(imageTypes),
     sizeBytes: z.int().min(1).max(MAX_IMAGE_BYTES),
   }),
 ) {}
 
-class CustomerUploadDto extends createZodDto(
+export class CustomerUploadDto extends createZodDto(
   z.object({
     uploadId: z.uuid().describe('Sent with the report once the file is uploaded.'),
     url: z.string().describe('A PUT of the exact bytes, with the same Content-Type.'),
@@ -34,18 +34,28 @@ export class CustomerUploadsController {
   @AppSignedIn()
   @HttpCode(201)
   @ZodResponse({ status: 201, type: CustomerUploadDto })
-  async create(@Body() body: CustomerNewUploadDto, @CurrentAppSession() session: AppSession) {
-    const upload = await this.files
-      .createUpload({ ...body, purpose: 'report_photo' }, session.accountId)
-      .catch((error: unknown) => {
-        if (error instanceof FilesRefusedError && error.refusal === 'too_many_uploads') {
-          throw new HttpException(
-            { statusCode: HttpStatus.TOO_MANY_REQUESTS, error: error.refusal },
-            HttpStatus.TOO_MANY_REQUESTS,
-          );
-        }
-        throw error;
-      });
-    return { ...upload, expiresAt: upload.expiresAt.toISOString() };
+  create(@Body() body: CustomerNewUploadDto, @CurrentAppSession() session: AppSession) {
+    return reportPhoto(this.files, body, session.accountId);
   }
+}
+
+// A report's photo for an app user (CU §12.2, RA §15): the same purpose,
+// bucket and hourly limit per account. 429 too_many_uploads.
+export async function reportPhoto(
+  files: FilesService,
+  body: CustomerNewUploadDto,
+  accountId: string,
+): Promise<CustomerUploadDto> {
+  const upload = await files
+    .createUpload({ ...body, purpose: 'report_photo' }, accountId)
+    .catch((error: unknown) => {
+      if (error instanceof FilesRefusedError && error.refusal === 'too_many_uploads') {
+        throw new HttpException(
+          { statusCode: HttpStatus.TOO_MANY_REQUESTS, error: error.refusal },
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
+      }
+      throw error;
+    });
+  return { ...upload, expiresAt: upload.expiresAt.toISOString() };
 }

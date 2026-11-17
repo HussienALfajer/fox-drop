@@ -2070,7 +2070,9 @@
       "manual": "تذكرة يدوية",
       "pickupDispute": "خلاف على دفعة الاستلام",
       "customerReport": "الإبلاغ عن مشكلة",
-      "priceReport": "أبلغ عن سعر مختلف"
+      "priceReport": "أبلغ عن سعر مختلف",
+      "merchantReport": "إبلاغ من المطعم",
+      "orderProblem": "مشكلة في الطلب من المطعم"
     },
     "restaurant": "المطعم",
     "chooseRestaurant": "المطعم الذي يخصّه البلاغ",
@@ -2222,6 +2224,14 @@
     },
     "report": {
       "heading": "ما أرسله الزبون",
+      "headingRestaurant": "ما أرسله المطعم",
+      "subject": "المطلوب تعديله",
+      "subjects": {
+        "minOrder": "الحد الأدنى للطلب",
+        "coverage": "منطقة التوصيل",
+        "owners": "إضافة مالك أو إزالته",
+        "ownerPhone": "رقم هاتف المالك"
+      },
       "items": "الأصناف",
       "line": "{{name}} × {{quantity}}",
       "item": "الصنف",

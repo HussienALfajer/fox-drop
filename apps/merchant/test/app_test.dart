@@ -386,6 +386,11 @@ void main() {
       );
       expect(pushTargetPath({'target': 'order'}), isNull);
       expect(pushTargetPath({'target': 'statement'}), isNull);
+      // RA §16 #29 (slice 2.24b): «تم حل بلاغك» opens «الدعم».
+      expect(
+        pushTargetPath({'target': 'ticket', 'ticketId': 't1'}),
+        '/support',
+      );
       // RA §16 #30–#31 (slice 2.19e).
       expect(
         pushTargetPath({'target': 'statement', 'statementId': 's1'}),

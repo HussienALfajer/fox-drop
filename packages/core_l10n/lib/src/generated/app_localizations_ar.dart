@@ -3359,16 +3359,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get customerReportPhoto => 'صورة (اختياري)';
 
   @override
-  String get customerPhotoCamera => 'التقاط صورة';
+  String get photoCamera => 'التقاط صورة';
 
   @override
-  String get customerPhotoGallery => 'من المعرض';
+  String get photoGallery => 'من المعرض';
 
   @override
-  String get customerPhotoRemove => 'حذف الصورة';
+  String get photoRemove => 'حذف الصورة';
 
   @override
-  String get customerPhotoTooLarge => 'الصورة كبيرة جداً، اختر صورة أصغر.';
+  String get photoTooLarge => 'الصورة كبيرة جداً، اختر صورة أصغر.';
 
   @override
   String get customerReportSend => 'إرسال البلاغ';
@@ -3408,23 +3408,23 @@ class AppLocalizationsAr extends AppLocalizations {
   String get customerPriceToday => 'أرسلت بلاغاً عن هذا المطعم اليوم';
 
   @override
-  String get customerTicketNew => 'جديدة';
+  String get ticketNew => 'جديدة';
 
   @override
-  String get customerTicketInProgress => 'قيد المعالجة';
+  String get ticketInProgress => 'قيد المعالجة';
 
   @override
-  String get customerTicketWaiting => 'بانتظار رد';
+  String get ticketWaiting => 'بانتظار رد';
 
   @override
-  String get customerTicketResolved => 'محلولة';
+  String get ticketResolved => 'محلولة';
 
   @override
-  String get customerTicketClosed => 'مغلقة';
+  String get ticketClosed => 'مغلقة';
 
   @override
-  String customerReportSent(String number) {
-    return 'استلمنا بلاغك T-$number. سنرد عليك خلال 24 ساعة.';
+  String customerReportSent(String number, String within) {
+    return 'استلمنا بلاغك T-$number. سنرد عليك خلال $within.';
   }
 
   @override
@@ -3441,4 +3441,121 @@ class AppLocalizationsAr extends AppLocalizations {
   String customerRedeliveryOrder(String number) {
     return 'إعادة التوصيل: الطلب #$number';
   }
+
+  @override
+  String replyWithinHours(int count) {
+    return '$count ساعة';
+  }
+
+  @override
+  String replyWithinMinutes(int count) {
+    return '$count دقيقة';
+  }
+
+  @override
+  String get merchantSupport => 'الدعم';
+
+  @override
+  String get merchantCallOperations => 'اتصال بالعمليات';
+
+  @override
+  String get merchantWhatsappOperations => 'واتساب العمليات';
+
+  @override
+  String get merchantReportProblem => 'إبلاغ عن مشكلة';
+
+  @override
+  String get merchantMyReports => 'بلاغاتي';
+
+  @override
+  String get merchantMyReportsEmpty => 'لا بلاغات بعد.';
+
+  @override
+  String get merchantReportsFailed => 'تعذّر تحميل البلاغات.';
+
+  @override
+  String get merchantReportsRetry => 'إعادة المحاولة';
+
+  @override
+  String get merchantReportType => 'نوع المشكلة';
+
+  @override
+  String get merchantReportTypesFailed => 'تعذّر تحميل أنواع البلاغات.';
+
+  @override
+  String get merchantReportOrder => 'الطلب (اختياري)';
+
+  @override
+  String get merchantReportNoOrder => 'بدون طلب';
+
+  @override
+  String get merchantReportSubject => 'المطلوب تعديله';
+
+  @override
+  String get merchantSubjectMinOrder => 'الحد الأدنى للطلب';
+
+  @override
+  String get merchantSubjectCoverage => 'منطقة التوصيل';
+
+  @override
+  String get merchantSubjectOwners => 'إضافة مالك أو إزالته';
+
+  @override
+  String get merchantSubjectOwnerPhone => 'رقم هاتف المالك';
+
+  @override
+  String get merchantReportNote => 'ملاحظة';
+
+  @override
+  String get merchantReportSend => 'إرسال البلاغ';
+
+  @override
+  String get merchantReportFailed => 'لم يُرسل البلاغ، حاول مرة أخرى.';
+
+  @override
+  String get merchantReportTypeChanged =>
+      'تغيّرت أنواع البلاغات، اختر مرة أخرى.';
+
+  @override
+  String get merchantReportPhotoFailed => 'تعذّر رفع الصورة، حاول مرة أخرى.';
+
+  @override
+  String get merchantReportOrderGone => 'لم يُعثر على الطلب.';
+
+  @override
+  String get merchantReportBy => 'من مستخدم آخر';
+
+  @override
+  String get merchantOrderProblem => 'مشكلة في الطلب';
+
+  @override
+  String get merchantOrderProblemHint => 'أو أبلغ العمليات بسبب سريع:';
+
+  @override
+  String merchantReportSent(String number, String within) {
+    return 'استلمنا بلاغك T-$number. سنرد عليك خلال $within.';
+  }
+
+  @override
+  String merchantReportTitle(String number, String type) {
+    return 'T-$number · $type';
+  }
+
+  @override
+  String merchantReportOrderLine(String number) {
+    return 'الطلب #$number';
+  }
+
+  @override
+  String merchantReportReply(String message) {
+    return 'الرد: $message';
+  }
+
+  @override
+  String merchantWhatsappOrderMessage(String number) {
+    return 'بخصوص الطلب #$number';
+  }
+
+  @override
+  String get merchantReportByOperations => 'من العمليات';
 }

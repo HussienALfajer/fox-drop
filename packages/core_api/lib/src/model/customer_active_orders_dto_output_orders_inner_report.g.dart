@@ -117,6 +117,8 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerReport
   final String? message;
   @override
   final DateTime? resolvedAt;
+  @override
+  final int replyWithinMinutes;
 
   factory _$CustomerActiveOrdersDtoOutputOrdersInnerReport([
     void Function(CustomerActiveOrdersDtoOutputOrdersInnerReportBuilder)?
@@ -131,6 +133,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerReport
     required this.status,
     this.message,
     this.resolvedAt,
+    required this.replyWithinMinutes,
   }) : super._();
   @override
   CustomerActiveOrdersDtoOutputOrdersInnerReport rebuild(
@@ -150,7 +153,8 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerReport
         number == other.number &&
         status == other.status &&
         message == other.message &&
-        resolvedAt == other.resolvedAt;
+        resolvedAt == other.resolvedAt &&
+        replyWithinMinutes == other.replyWithinMinutes;
   }
 
   @override
@@ -161,6 +165,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerReport
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, message.hashCode);
     _$hash = $jc(_$hash, resolvedAt.hashCode);
+    _$hash = $jc(_$hash, replyWithinMinutes.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -174,7 +179,8 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerReport
           ..add('number', number)
           ..add('status', status)
           ..add('message', message)
-          ..add('resolvedAt', resolvedAt))
+          ..add('resolvedAt', resolvedAt)
+          ..add('replyWithinMinutes', replyWithinMinutes))
         .toString();
   }
 }
@@ -210,6 +216,11 @@ class CustomerActiveOrdersDtoOutputOrdersInnerReportBuilder
   DateTime? get resolvedAt => _$this._resolvedAt;
   set resolvedAt(DateTime? resolvedAt) => _$this._resolvedAt = resolvedAt;
 
+  int? _replyWithinMinutes;
+  int? get replyWithinMinutes => _$this._replyWithinMinutes;
+  set replyWithinMinutes(int? replyWithinMinutes) =>
+      _$this._replyWithinMinutes = replyWithinMinutes;
+
   CustomerActiveOrdersDtoOutputOrdersInnerReportBuilder() {
     CustomerActiveOrdersDtoOutputOrdersInnerReport._defaults(this);
   }
@@ -222,6 +233,7 @@ class CustomerActiveOrdersDtoOutputOrdersInnerReportBuilder
       _status = $v.status;
       _message = $v.message;
       _resolvedAt = $v.resolvedAt;
+      _replyWithinMinutes = $v.replyWithinMinutes;
       _$v = null;
     }
     return this;
@@ -264,6 +276,11 @@ class CustomerActiveOrdersDtoOutputOrdersInnerReportBuilder
           ),
           message: message,
           resolvedAt: resolvedAt,
+          replyWithinMinutes: BuiltValueNullFieldError.checkNotNull(
+            replyWithinMinutes,
+            r'CustomerActiveOrdersDtoOutputOrdersInnerReport',
+            'replyWithinMinutes',
+          ),
         );
     replace(_$result);
     return _$result;

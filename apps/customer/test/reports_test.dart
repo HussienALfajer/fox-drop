@@ -159,6 +159,7 @@ void main() {
               'status': 'new',
               'message': null,
               'resolvedAt': null,
+              'replyWithinMinutes': 1440,
             },
           ),
         }),
@@ -179,6 +180,7 @@ void main() {
               'status': 'new',
               'message': null,
               'resolvedAt': null,
+              'replyWithinMinutes': 1440,
             },
           ),
         }),
@@ -238,6 +240,7 @@ void main() {
             'status': 'resolved',
             'message': 'نعتذر، أرسلنا لك كود تعويض.',
             'resolvedAt': '2026-11-07T14:00:00.000Z',
+            'replyWithinMinutes': 1440,
           },
           redeliveries: [
             {

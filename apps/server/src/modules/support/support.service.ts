@@ -11,6 +11,7 @@ import {
   ContentService,
   NOTE_MAX,
   NotificationTexts,
+  type ReasonList,
 } from '../content/index.js';
 import { CustomersService } from '../customers/index.js';
 import { FilesService } from '../files/index.js';
@@ -40,6 +41,13 @@ import type {
   TicketRedelivery,
 } from './ticket-orders.js';
 import { TicketSync } from './ticket-sync.js';
+import {
+  type DataChangeSubject,
+  MERCHANT_OPENED_SOURCES,
+  merchantReportProblem,
+  reporterOf,
+  seesTicket,
+} from './merchant-reports.js';
 import { priceReportProblem, type ReportedItem, reportProblem, reportUntil } from './reports.js';
 import { noteKeys, ticketNotes, ticketNumbers, tickets, type TicketSource } from './schema.js';
 import {
@@ -141,6 +149,48 @@ export interface CustomerReportView {
   status: TicketStatus;
   message: string | null;
   resolvedAt: Date | null;
+  // «سنرد عليك خلال {المدة}»: the ticket's timer as set at its opening
+  // (owner decision 2026-11-17: it follows the setting).
+  replyWithinMinutes: number;
+}
+
+// RA §15, §8.19 (slice 2.24b): the restaurant app's «إبلاغ عن مشكلة» (a type
+// of merchant_ticket_type, optionally an order, a note, a photo; a data
+// change's subject) and «مشكلة في الطلب» (a quick reason of
+// merchant_problem on an order).
+export interface MerchantReport {
+  kind: 'report' | 'order_problem';
+  typeCode: string;
+  note: string | null;
+  subject: DataChangeSubject | null;
+  photoUploadId: string | null;
+}
+
+// The restaurant user who reports, from the session.
+export interface ReportingMerchant {
+  accountId: string;
+  restaurantId: string;
+  role: 'owner' | 'cashier';
+  context: AuditRequestContext;
+}
+
+// RA §15 «بلاغاتي»: a ticket as the restaurant app shows it, never the
+// internal notes, the assignee or a closing's reason.
+export interface MerchantTicketView {
+  id: string;
+  number: bigint;
+  typeLabel: string;
+  subject: DataChangeSubject | null;
+  orderId: string | null;
+  orderNumber: bigint | null;
+  description: string;
+  status: TicketStatus;
+  openedAt: Date;
+  // Who opened it: the viewer, another user of the restaurant, or the panel.
+  openedBy: 'me' | 'restaurant' | 'operations';
+  replyWithinMinutes: number;
+  message: string | null;
+  resolvedAt: Date | null;
 }
 
 // What the panel's ticket page shows of a report from the app (AP §9.9.3:
@@ -150,6 +200,8 @@ export interface TicketReport {
   photoUrls: string[];
   item: { id: string; name: string } | null;
   shopPrice: { amount: bigint; currency: string } | null;
+  // «طلب تعديل بيانات» from the restaurant app (slice 2.24b).
+  subject: DataChangeSubject | null;
 }
 
 export interface TicketNote {
@@ -289,7 +341,10 @@ export type TicketRefusal =
   | 'already_reported_today'
   | 'unknown_restaurant'
   | 'unknown_item'
-  | 'upload_used';
+  | 'upload_used'
+  | 'subject_required'
+  | 'invalid_subject'
+  | 'unknown_order';
 
 export class TicketRefusedError extends Error {
   constructor(
@@ -302,6 +357,12 @@ export class TicketRefusedError extends Error {
 
 // The list's length: the newest first.
 const LISTED = 200;
+
+// «بلاغاتي»'s length (RA §15), newest first.
+const MERCHANT_LISTED = 100;
+
+// RA §8.19, Appendix C: «مشكلة في الطلب»'s quick reasons.
+const MERCHANT_PROBLEM_LIST: ReasonList = 'merchant_problem';
 
 // How long the panel's signed link to a report's photo works.
 const PHOTO_URL_SECONDS = 10 * 60;
@@ -487,8 +548,7 @@ export class SupportService {
   // What an opening reads through the pool before its transaction: the type
   // (400 unknown_reason) and the timers' settings. A type that asks for its
   // text («أخرى») takes the ticket's description as it.
-  async prepare(input: OpenTicket) {
-    const list = TICKET_TYPE_LISTS[input.party];
+  async prepare(input: OpenTicket, list: ReasonList = TICKET_TYPE_LISTS[input.party]) {
     // «سعر مختلف عن المحل»: a customer's, naming the restaurant (400
     // invalid_restaurant otherwise); no other type names one.
     const priceDifference = input.typeCode === PRICE_DIFFERENCE_TYPE;
@@ -656,6 +716,7 @@ export class SupportService {
         | 'reportedItemName'
         | 'shopPrice'
         | 'shopPriceCurrency'
+        | 'requestSubject'
       >;
     },
     timers: { firstResponseMinutes: number; resolutionHours: number },
@@ -735,6 +796,7 @@ export class SupportService {
       status: row.status,
       message: row.message,
       resolvedAt: row.resolvedAt,
+      replyWithinMinutes: replyWithin(row),
     };
   }
 
@@ -1023,6 +1085,138 @@ export class SupportService {
     return found !== undefined;
   }
 
+  // A restaurant report's hash: a repeat of the key answers its ticket.
+  merchantReportHash(report: MerchantReport, orderId: string | null): string {
+    return hashOf([
+      report.kind === 'report' ? 'merchant_report' : 'order_problem',
+      orderId,
+      report.typeCode,
+      report.note?.trim() ?? '',
+      report.subject,
+      report.photoUploadId,
+    ]);
+  }
+
+  // What a restaurant's report reads and checks through the pool before the
+  // opening's transaction (RA §15, §8.19): the photo count and the data
+  // change's subject (400 too_many_photos, subject_required,
+  // invalid_subject), the type from merchant_ticket_type for a report or
+  // merchant_problem for «مشكلة في الطلب» (400 unknown_reason; «أخرى» takes
+  // the note), and the photo, the user's own upload copied and checked.
+  async prepareMerchantReport(
+    cityId: string,
+    report: MerchantReport,
+    by: ReportingMerchant,
+    now: Date,
+  ) {
+    const photos = report.photoUploadId === null ? [] : [report.photoUploadId];
+    const problem = merchantReportProblem({
+      typeCode: report.kind === 'report' ? report.typeCode : '',
+      subject: report.subject,
+      photos: photos.length,
+    });
+    if (problem !== null) {
+      throw new TicketRefusedError(problem, `the report is refused: ${problem}`);
+    }
+    const prepared = await this.prepare(
+      {
+        cityId,
+        party: 'restaurant',
+        partyId: by.restaurantId,
+        typeCode: report.typeCode,
+        description: report.note ?? '',
+        restaurantId: null,
+      },
+      report.kind === 'report' ? TICKET_TYPE_LISTS.restaurant : MERCHANT_PROBLEM_LIST,
+    );
+    await this.preparePhotos(photos, by.accountId, now);
+    return { prepared, report, photos };
+  }
+
+  // RA §15, §8.19, AP §9.9.1: the restaurant's ticket, in the caller's
+  // transaction: ordering's holds the order's lock when it names one, so
+  // the ticket is urgent exactly while the order is active (RA §8.19). The
+  // restaurant's user opens it (`opened_by`, audited with the actor
+  // `merchant`). A repeat of the key answers its ticket.
+  async openMerchantReportIn(
+    tx: Tx,
+    ready: Awaited<ReturnType<SupportService['prepareMerchantReport']>>,
+    order: TicketOrder | null,
+    by: ReportingMerchant,
+    idempotencyKey: string,
+    now: Date,
+  ): Promise<string> {
+    const { prepared, report } = ready;
+    if (order !== null && order.restaurantId !== by.restaurantId) {
+      throw new TicketRefusedError('unknown_order', "not the restaurant's order");
+    }
+    if (report.kind === 'order_problem' && order === null) {
+      throw new TicketRefusedError('unknown_order', 'a problem on an order names it');
+    }
+    const requestHash = this.merchantReportHash(report, order?.id ?? null);
+    const replayed = await this.replayedIn(tx, by.accountId, idempotencyKey, requestHash);
+    if (replayed !== null) return replayed;
+    const photoKeys = await this.linkPhotos(tx, ready.photos, now);
+    return this.insertTicket(
+      tx,
+      {
+        cityId: prepared.input.cityId,
+        source: report.kind === 'report' ? 'merchant_report' : 'order_problem',
+        party: 'restaurant',
+        partyId: by.restaurantId,
+        order,
+        typeCode: prepared.chosen.code,
+        typeLabel: prepared.chosen.label,
+        description: prepared.input.description.trim(),
+        restaurantId: null,
+        pickupDisputeId: null,
+        openedBy: by.accountId,
+        idempotencyKey,
+        requestHash,
+        report: {
+          photoKeys: photoKeys.length === 0 ? null : photoKeys,
+          requestSubject: report.subject,
+        },
+      },
+      prepared,
+      { actor: { type: 'merchant', id: by.accountId, role: by.role }, context: by.context },
+      now,
+    );
+  }
+
+  // RA §15 «بلاغاتي» (owner decision 2026-11-17): an owner's the
+  // restaurant's tickets, whoever opened them; a cashier's the ones they
+  // opened; newest first, the latest MERCHANT_LISTED.
+  async merchantTickets(viewer: {
+    accountId: string;
+    restaurantId: string;
+    role: 'owner' | 'cashier';
+  }): Promise<MerchantTicketView[]> {
+    const where: SQL[] = [
+      eq(tickets.party, 'restaurant'),
+      eq(tickets.partyId, viewer.restaurantId),
+    ];
+    if (viewer.role !== 'owner') where.push(eq(tickets.openedBy, viewer.accountId));
+    const rows = await this.database.db
+      .select()
+      .from(tickets)
+      .where(and(...where))
+      .orderBy(desc(tickets.openedAt))
+      .limit(MERCHANT_LISTED);
+    return rows
+      .filter((row) => seesTicket(viewer, row))
+      .map((row) => merchantTicketOf(row, viewer.accountId));
+  }
+
+  // One ticket of «بلاغاتي», null when the viewer does not see it.
+  async merchantTicket(
+    viewer: { accountId: string; restaurantId: string; role: 'owner' | 'cashier' },
+    id: string,
+  ): Promise<MerchantTicketView | null> {
+    const [row] = await this.database.db.select().from(tickets).where(eq(tickets.id, id));
+    return row && seesTicket(viewer, row) ? merchantTicketOf(row, viewer.accountId) : null;
+  }
+
   // A key's ticket in the opening's transaction, under the key's advisory
   // lock, so two repeats sent together open one ticket.
   private async replayedIn(
@@ -1047,7 +1241,13 @@ export class SupportService {
 
   // The page's view of an app's report, its photos signed for a few minutes.
   private async reportOf(row: TicketRow): Promise<TicketReport | null> {
-    if (row.source !== 'customer_report' && row.source !== 'price_report') return null;
+    if (
+      row.source !== 'customer_report' &&
+      row.source !== 'price_report' &&
+      row.source !== 'merchant_report'
+    ) {
+      return null;
+    }
     const keys = (row.photoKeys as string[] | null) ?? [];
     return {
       lines: (row.reportedLines as TicketReport['lines'] | null) ?? [],
@@ -1060,6 +1260,7 @@ export class SupportService {
           : { id: row.reportedItemId, name: row.reportedItemName! },
       shopPrice:
         row.shopPrice === null ? null : { amount: row.shopPrice, currency: row.shopPriceCurrency! },
+      subject: row.requestSubject,
     };
   }
 
@@ -1863,16 +2064,51 @@ function isOpenStatus(status: TicketStatus): boolean {
 }
 
 // The resolution message goes to the ticket's party (AP §9.9.3 «Close»): a
-// restaurant's owners (RA §16 #29).
+// restaurant's owners and the user who reported from the app (RA §16 #29,
+// owner decision 2026-11-17).
 function recipientOf(row: TicketRow): PushRecipient {
   switch (row.party) {
     case 'customer':
       return { party: 'customer', accountId: row.partyId };
     case 'restaurant':
-      return { party: 'merchant', restaurantId: row.partyId, owners: true };
+      return {
+        party: 'merchant',
+        restaurantId: row.partyId,
+        owners: true,
+        reporter: reporterOf(row),
+      };
     case 'captain':
       return { party: 'captain', captainId: row.partyId };
   }
+}
+
+// The ticket's timer from its opening, in whole minutes: «سنرد عليك خلال …».
+function replyWithin(row: TicketRow): number {
+  return Math.round((row.slaDueAt.getTime() - row.openedAt.getTime()) / 60_000);
+}
+
+// RA §15 «بلاغاتي»: what the restaurant app shows of a ticket.
+function merchantTicketOf(row: TicketRow, accountId: string): MerchantTicketView {
+  return {
+    id: row.id,
+    number: row.number,
+    typeLabel: row.typeLabel,
+    subject: row.requestSubject,
+    orderId: row.orderId,
+    orderNumber: row.orderNumber,
+    description: row.description,
+    status: row.status,
+    openedAt: row.openedAt,
+    openedBy:
+      row.openedBy === accountId
+        ? 'me'
+        : MERCHANT_OPENED_SOURCES.includes(row.source)
+          ? 'restaurant'
+          : 'operations',
+    replyWithinMinutes: replyWithin(row),
+    message: row.message,
+    resolvedAt: row.resolvedAt,
+  };
 }
 
 function storedLines(lines: MoneyLine[]): { currency: string; amount: string }[] {
