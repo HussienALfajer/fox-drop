@@ -13,7 +13,7 @@ Slice 2.26b, the restaurant's «التقييمات» (`docs/roadmap.md`, Phase 2
 - **Plan:**
   - [x] Read the cited sections and the restaurant app's `CLAUDE.md`; write the plan.
   - [x] Server: `GET /v1/merchant/ratings?period=&stars=&before=` (owners only, `403 owner_only`; terminated `403 restaurant_terminated`): the period's count, average and distribution by stars, and a page of its ratings (stars, reasons, comment, date; never the customer or the order) filtered by stars, newest first, test orders left out; tests, the route table, the contract.
-  - [ ] Restaurant app: «التقييمات» (owners only, the board's button until the navigation): the summary, the distribution, the period and stars filters, the list with «عرض المزيد»; tests, strings.
+  - [x] Restaurant app: «التقييمات» (owners only, the board's button until the navigation): the summary, the distribution, the period and stars filters, the list with «عرض المزيد»; tests, strings.
   - [ ] Docs and hand-over: RA §13 with the decisions, the roadmap (2.26b done, the portal's page in 2.45), the `CLAUDE.md` files, `TASKS.md` for 2.26c.
 
 ### Left from 2.26a (`claude/bold-hawking-5w6p9w`)

@@ -3824,4 +3824,76 @@ class AppLocalizationsAr extends AppLocalizations {
   String customerYourCaptainRating(int stars) {
     return 'تقييمك للكابتن: $stars من 5';
   }
+
+  @override
+  String get merchantRatings => 'التقييمات';
+
+  @override
+  String merchantRatingsAverage(String average) {
+    return '$average من 5';
+  }
+
+  @override
+  String merchantRatingsCount(int count) {
+    return 'عدد التقييمات: $count';
+  }
+
+  @override
+  String get merchantRatingsNone => 'لا تقييم بعد';
+
+  @override
+  String merchantRatingsStarsRow(int stars) {
+    return '$stars ★';
+  }
+
+  @override
+  String get merchantRatingsAllStars => 'كل النجوم';
+
+  @override
+  String get merchantRatingsPeriodAll => 'الكل';
+
+  @override
+  String get merchantRatingsPeriodToday => 'اليوم';
+
+  @override
+  String get merchantRatingsPeriodYesterday => 'أمس';
+
+  @override
+  String get merchantRatingsPeriodLast7Days => 'آخر 7 أيام';
+
+  @override
+  String get merchantRatingsPeriodLast30Days => 'آخر 30 يوماً';
+
+  @override
+  String get merchantRatingsEmpty => 'لا تقييمات في هذه الفترة.';
+
+  @override
+  String get merchantRatingsMore => 'عرض المزيد';
+
+  @override
+  String get merchantRatingsMoreFailed => 'تعذّر التحميل، حاول مرة أخرى';
+
+  @override
+  String get merchantRatingsFailed => 'تعذّر تحميل التقييمات.';
+
+  @override
+  String get merchantRatingsNotAllowed => 'التقييمات للمالكين فقط.';
+
+  @override
+  String merchantRatingStars(int stars) {
+    return '$stars من 5';
+  }
+
+  @override
+  String merchantRatingComment(String comment) {
+    return '«$comment»';
+  }
+
+  @override
+  String merchantRatingAt(String date, String time) {
+    return '$date $time';
+  }
+
+  @override
+  String get merchantRatingsReasonSeparator => '، ';
 }

@@ -6259,6 +6259,126 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'تقييمك للكابتن: {stars} من 5'**
   String customerYourCaptainRating(int stars);
+
+  /// The owners' ratings screen (RA §13, §6.1 row 7).
+  ///
+  /// In ar, this message translates to:
+  /// **'التقييمات'**
+  String get merchantRatings;
+
+  /// The period's average stars, to one decimal (RA §13; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'{average} من 5'**
+  String merchantRatingsAverage(String average);
+
+  /// The period's number of ratings, test orders left out (RA §13; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'عدد التقييمات: {count}'**
+  String merchantRatingsCount(int count);
+
+  /// In place of the average when the period has no rating (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا تقييم بعد'**
+  String get merchantRatingsNone;
+
+  /// A star of the distribution and of the stars filter (RA §13).
+  ///
+  /// In ar, this message translates to:
+  /// **'{stars} ★'**
+  String merchantRatingsStarsRow(int stars);
+
+  /// The stars filter's choice of every star (RA §13; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'كل النجوم'**
+  String get merchantRatingsAllStars;
+
+  /// The period filter's whole history (owner decision 2026-11-17).
+  ///
+  /// In ar, this message translates to:
+  /// **'الكل'**
+  String get merchantRatingsPeriodAll;
+
+  /// Today's business day (RA §11).
+  ///
+  /// In ar, this message translates to:
+  /// **'اليوم'**
+  String get merchantRatingsPeriodToday;
+
+  /// Yesterday's business day (RA §11).
+  ///
+  /// In ar, this message translates to:
+  /// **'أمس'**
+  String get merchantRatingsPeriodYesterday;
+
+  /// The last 7 business days, today included (RA §11).
+  ///
+  /// In ar, this message translates to:
+  /// **'آخر 7 أيام'**
+  String get merchantRatingsPeriodLast7Days;
+
+  /// The last 30 business days, today included (RA §11).
+  ///
+  /// In ar, this message translates to:
+  /// **'آخر 30 يوماً'**
+  String get merchantRatingsPeriodLast30Days;
+
+  /// No rating matches the filters (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا تقييمات في هذه الفترة.'**
+  String get merchantRatingsEmpty;
+
+  /// Reads the next page of ratings (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض المزيد'**
+  String get merchantRatingsMore;
+
+  /// The next page could not be read; tapping tries again (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر التحميل، حاول مرة أخرى'**
+  String get merchantRatingsMoreFailed;
+
+  /// The ratings could not be read (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل التقييمات.'**
+  String get merchantRatingsFailed;
+
+  /// A cashier's or a terminated restaurant's read is refused (RA §5.4, §5.5; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'التقييمات للمالكين فقط.'**
+  String get merchantRatingsNotAllowed;
+
+  /// A rating's stars (RA §13).
+  ///
+  /// In ar, this message translates to:
+  /// **'{stars} من 5'**
+  String merchantRatingStars(int stars);
+
+  /// A rating's comment as the customer wrote it (RA §13).
+  ///
+  /// In ar, this message translates to:
+  /// **'«{comment}»'**
+  String merchantRatingComment(String comment);
+
+  /// When the rating was sent, on the city's clock (RA §13).
+  ///
+  /// In ar, this message translates to:
+  /// **'{date} {time}'**
+  String merchantRatingAt(String date, String time);
+
+  /// Between a rating's reasons.
+  ///
+  /// In ar, this message translates to:
+  /// **'، '**
+  String get merchantRatingsReasonSeparator;
 }
 
 class _AppLocalizationsDelegate
