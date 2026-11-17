@@ -353,6 +353,7 @@ export 'package:core_api/src/model/admin_session_dto_output.dart';
 export 'package:core_api/src/model/admin_set_city_office_dto.dart';
 export 'package:core_api/src/model/admin_set_city_office_dto_hours_inner.dart';
 export 'package:core_api/src/model/admin_set_city_office_dto_location.dart';
+export 'package:core_api/src/model/admin_set_customer_test_account_dto.dart';
 export 'package:core_api/src/model/admin_set_exchange_rate_dto.dart';
 export 'package:core_api/src/model/admin_set_image_dto.dart';
 export 'package:core_api/src/model/admin_set_outcome_dto.dart';

@@ -1,7 +1,8 @@
 import { Get, HttpStatus, NotFoundException, Param, Query } from '@nestjs/common';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
-import { Public } from '../../http/access.js';
+import { AppSignedInOrGuest, OptionalAppSession } from '../../http/access.js';
+import type { AppSession } from '../identity/index.js';
 import { CustomerController } from '../../http/route-groups.js';
 import type { Money, StorefrontState } from '../merchants/index.js';
 import {
@@ -10,6 +11,7 @@ import {
   type RestaurantPage,
   type StorefrontCategory,
 } from './browsing.service.js';
+import { CustomersService } from './customers.service.js';
 import { pointQuery } from './point-query.js';
 
 const money = z.object({
@@ -61,6 +63,9 @@ const card = z.object({
     .nullable()
     .describe('The average rating; null is «جديد» (Q16). Ratings arrive with their slice.'),
   ratingCount: z.int().nullable().describe('The number of ratings on the page (CU §9.1).'),
+  testMode: z
+    .boolean()
+    .describe('«تجريبي»: in test mode, seen only by an admin test account (CU §8.2, AP §9.8).'),
   estimate: z
     .object({ fromMin: z.int(), toMin: z.int() })
     .describe('CU §8.4: «{fromMin}–{toMin} د».'),
@@ -169,30 +174,51 @@ class CustomerRestaurantParamsDto extends createZodDto(z.object({ restaurantId: 
 // restaurant's page, open to guests (CU §5.1).
 @CustomerController('restaurants')
 export class CustomerBrowsingController {
-  constructor(private readonly browsing: BrowsingService) {}
+  constructor(
+    private readonly browsing: BrowsingService,
+    private readonly customers: CustomersService,
+  ) {}
+
+  // A signed-in admin test account also sees the restaurants in test mode
+  // (AP §9.8, slice 2.25b); a guest never does.
+  private testAccount(session: AppSession | null): Promise<boolean> {
+    return session === null
+      ? Promise.resolve(false)
+      : this.customers.isTestAccount(session.accountId);
+  }
 
   @Get()
-  @Public()
+  @AppSignedInOrGuest()
   @ZodResponse({ status: 200, type: CustomerRestaurantListDto })
-  async list(@Query() query: CustomerRestaurantListQueryDto) {
+  async list(
+    @Query() query: CustomerRestaurantListQueryDto,
+    @OptionalAppSession() session: AppSession | null,
+  ) {
     const { similarTo, ...point } = query;
     const now = new Date();
+    const testAccount = await this.testAccount(session);
     const cards =
       similarTo === undefined
-        ? await this.browsing.restaurants(point, now)
-        : await this.browsing.similar(similarTo, point, now);
+        ? await this.browsing.restaurants(point, now, testAccount)
+        : await this.browsing.similar(similarTo, point, now, testAccount);
     return { restaurants: cards.map(cardBody) };
   }
 
   // 404 for a restaurant customers do not see.
   @Get(':restaurantId')
-  @Public()
+  @AppSignedInOrGuest()
   @ZodResponse({ status: 200, type: CustomerRestaurantPageDto })
   async page(
     @Param() params: CustomerRestaurantParamsDto,
     @Query() query: CustomerRestaurantPointQueryDto,
+    @OptionalAppSession() session: AppSession | null,
   ) {
-    const page = await this.browsing.restaurantPage(params.restaurantId, query, new Date());
+    const page = await this.browsing.restaurantPage(
+      params.restaurantId,
+      query,
+      new Date(),
+      await this.testAccount(session),
+    );
     if (page === null) throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND });
     return pageBody(page);
   }

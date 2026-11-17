@@ -49,7 +49,7 @@ export type { CommissionVersion } from './commission.js';
 // A restaurant's week uses geo's weekly hours.
 export type { OpeningPeriod } from '../geo/index.js';
 export type { AccountStatus, OperatingState, PauseSource } from './operating-state.js';
-export { takesOrders } from './operating-state.js';
+export { seenByCustomer, takesOrders } from './operating-state.js';
 export { devicePlatforms } from './schema.js';
 export {
   type ActiveOrderCount,

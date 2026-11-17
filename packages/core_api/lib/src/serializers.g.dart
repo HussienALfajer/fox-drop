@@ -618,6 +618,7 @@ Serializers _$serializers =
           ..add(AdminSetCityOfficeDto.serializer)
           ..add(AdminSetCityOfficeDtoHoursInner.serializer)
           ..add(AdminSetCityOfficeDtoLocation.serializer)
+          ..add(AdminSetCustomerTestAccountDto.serializer)
           ..add(AdminSetExchangeRateDto.serializer)
           ..add(AdminSetExchangeRateDtoDirectionEnum.serializer)
           ..add(AdminSetImageDto.serializer)

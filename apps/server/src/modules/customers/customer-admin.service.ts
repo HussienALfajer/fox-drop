@@ -37,6 +37,7 @@ import {
   profiles,
   reviewStops,
   strikeClears,
+  testAccountFlags,
   trustMarks,
 } from './schema.js';
 import { strikesSince } from './trust.js';
@@ -129,6 +130,8 @@ export interface CustomerProfileView {
   blocks: BlockRecord[];
   // Content's active customer_block reasons, for «حظر» (AP Appendix B).
   blockReasons: { code: string; label: string }[];
+  // «حساب تجريبي للإدارة» (AP §9.8, slice 2.25b).
+  testAccount: boolean;
   // Slice 2.25b: the orders in the city, the tickets, the codes used, the
   // saved addresses and the internal notes, newest first.
   orders: Pick<CustomerOrders, 'count' | 'spent' | 'last'>;
@@ -243,7 +246,7 @@ export class CustomerAdminService {
       new Date(now.getTime() - windowDays * 24 * 60 * 60 * 1000),
       cleared?.at ?? null,
     );
-    const [tickets, codes, addresses, noteRows] = await Promise.all([
+    const [tickets, codes, addresses, noteRows, testAccount] = await Promise.all([
       this.customers.ticketsOf(accountId, cityId),
       this.promoCodes.usesOf(accountId, cityId, CODES_LISTED),
       this.customers.addresses(accountId),
@@ -253,6 +256,7 @@ export class CustomerAdminService {
         .where(eq(notes.customerAccountId, accountId))
         .orderBy(desc(notes.createdAt), desc(notes.id))
         .limit(NOTES_LISTED),
+      this.customers.isTestAccount(accountId),
     ]);
     const [profile, phone, block, stop, orders, strikes, dues, records, reasons, names] =
       await Promise.all([
@@ -319,6 +323,7 @@ export class CustomerAdminService {
       blockReasons: reasons
         .filter((reason) => reason.active)
         .map(({ code, label }) => ({ code, label })),
+      testAccount,
       orders: { count: orders.count, spent: orders.spent, last: orders.last },
       tickets,
       codes,
@@ -587,6 +592,38 @@ export class CustomerAdminService {
     // A repeat sent with the first lands on the key's unique index: answer
     // as the first, or 422 for another body.
     await earlier(this.database.db);
+  }
+
+  // AP §9.8 «حساب تجريبي للإدارة» (OWN): the account sees the restaurants
+  // in test mode (AP §9.6.3) and may order from them, or no longer. Sets a
+  // value, so a repeat needs no key.
+  async setTestAccount(
+    admin: CustomerAdmin,
+    command: { cityId: string; accountId: string; flagged: boolean },
+    now: Date,
+  ): Promise<void> {
+    await this.checkCustomer(command.cityId, command.accountId);
+    await this.database.db.transaction(async (tx) => {
+      await tx.insert(testAccountFlags).values({
+        customerAccountId: command.accountId,
+        flagged: command.flagged,
+        at: now,
+        by: admin.accountId,
+      });
+      await this.audit.recordWrite(
+        {
+          actor: admin.actor,
+          context: admin.context,
+          cityId: command.cityId,
+          action: 'customer.test_account',
+          target: { type: 'customer', id: command.accountId },
+          reason: null,
+          before: null,
+          after: { flagged: command.flagged },
+        },
+        tx,
+      );
+    });
   }
 
   // AP §9.8 «توثيق» and «إزالة الثقة» (OWN and OPS, a reason required):

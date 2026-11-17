@@ -138,6 +138,7 @@ class AdminCustomerDto extends createZodDto(
     blockReasons: z
       .array(z.object({ code: z.string(), label: z.string() }))
       .describe("Content's active customer_block reasons (AP Appendix B)."),
+    testAccount: z.boolean().describe('«حساب تجريبي للإدارة»: sees the restaurants in test mode.'),
     orders: z.object({
       count: z.int().describe("The customer's orders in the city, re-deliveries left out."),
       spent: z
@@ -202,6 +203,10 @@ class AdminCustomerDto extends createZodDto(
       }),
     ),
   }),
+) {}
+
+class AdminSetCustomerTestAccountDto extends createZodDto(
+  z.object({ cityId: z.uuid(), flagged: z.boolean() }),
 ) {}
 
 class AdminAddCustomerNoteDto extends createZodDto(
@@ -362,6 +367,28 @@ export class AdminCustomersController {
       await this.customers.addNote(
         adminOf(session, request),
         { cityId: body.cityId, accountId: params.customerId, body: body.body, idempotencyKey },
+        now,
+      );
+      return profileBody(await this.customers.profile(body.cityId, params.customerId, now));
+    });
+  }
+
+  // «حساب تجريبي للإدارة» (OWN). Answers the profile.
+  @Post(':customerId/test-account')
+  @RequirePermission('customers.test_account')
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminCustomerDto })
+  setTestAccount(
+    @Param() params: AdminCustomerParamsDto,
+    @Body() body: AdminSetCustomerTestAccountDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(async () => {
+      const now = new Date();
+      await this.customers.setTestAccount(
+        adminOf(session, request),
+        { cityId: body.cityId, accountId: params.customerId, flagged: body.flagged },
         now,
       );
       return profileBody(await this.customers.profile(body.cityId, params.customerId, now));

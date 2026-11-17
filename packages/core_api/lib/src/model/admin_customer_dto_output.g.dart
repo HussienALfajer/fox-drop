@@ -190,6 +190,8 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
   @override
   final BuiltList<AdminCustomerDtoOutputBlockReasonsInner> blockReasons;
   @override
+  final bool testAccount;
+  @override
   final AdminCustomerDtoOutputOrders orders;
   @override
   final BuiltList<AdminCustomerDtoOutputTicketsInner> tickets;
@@ -223,6 +225,7 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
     required this.dues,
     required this.blocks,
     required this.blockReasons,
+    required this.testAccount,
     required this.orders,
     required this.tickets,
     required this.codes,
@@ -260,6 +263,7 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
         dues == other.dues &&
         blocks == other.blocks &&
         blockReasons == other.blockReasons &&
+        testAccount == other.testAccount &&
         orders == other.orders &&
         tickets == other.tickets &&
         codes == other.codes &&
@@ -288,6 +292,7 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
     _$hash = $jc(_$hash, dues.hashCode);
     _$hash = $jc(_$hash, blocks.hashCode);
     _$hash = $jc(_$hash, blockReasons.hashCode);
+    _$hash = $jc(_$hash, testAccount.hashCode);
     _$hash = $jc(_$hash, orders.hashCode);
     _$hash = $jc(_$hash, tickets.hashCode);
     _$hash = $jc(_$hash, codes.hashCode);
@@ -318,6 +323,7 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
           ..add('dues', dues)
           ..add('blocks', blocks)
           ..add('blockReasons', blockReasons)
+          ..add('testAccount', testAccount)
           ..add('orders', orders)
           ..add('tickets', tickets)
           ..add('codes', codes)
@@ -419,6 +425,10 @@ class AdminCustomerDtoOutputBuilder
     ListBuilder<AdminCustomerDtoOutputBlockReasonsInner>? blockReasons,
   ) => _$this._blockReasons = blockReasons;
 
+  bool? _testAccount;
+  bool? get testAccount => _$this._testAccount;
+  set testAccount(bool? testAccount) => _$this._testAccount = testAccount;
+
   AdminCustomerDtoOutputOrdersBuilder? _orders;
   AdminCustomerDtoOutputOrdersBuilder get orders =>
       _$this._orders ??= AdminCustomerDtoOutputOrdersBuilder();
@@ -474,6 +484,7 @@ class AdminCustomerDtoOutputBuilder
       _dues = $v.dues.toBuilder();
       _blocks = $v.blocks.toBuilder();
       _blockReasons = $v.blockReasons.toBuilder();
+      _testAccount = $v.testAccount;
       _orders = $v.orders.toBuilder();
       _tickets = $v.tickets.toBuilder();
       _codes = $v.codes.toBuilder();
@@ -545,6 +556,11 @@ class AdminCustomerDtoOutputBuilder
             dues: dues.build(),
             blocks: blocks.build(),
             blockReasons: blockReasons.build(),
+            testAccount: BuiltValueNullFieldError.checkNotNull(
+              testAccount,
+              r'AdminCustomerDtoOutput',
+              'testAccount',
+            ),
             orders: orders.build(),
             tickets: tickets.build(),
             codes: codes.build(),
@@ -570,6 +586,7 @@ class AdminCustomerDtoOutputBuilder
         blocks.build();
         _$failedField = 'blockReasons';
         blockReasons.build();
+
         _$failedField = 'orders';
         orders.build();
         _$failedField = 'tickets';

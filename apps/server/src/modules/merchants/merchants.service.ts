@@ -1,5 +1,5 @@
 import { Inject, Injectable, type OnModuleInit } from '@nestjs/common';
-import { and, asc, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import { DATABASE } from '../../database/database.module.js';
@@ -730,9 +730,9 @@ export class MerchantsService implements OnModuleInit {
 
   // The restaurants a customer at the point sees (CU §8.2): active and
   // visible, covering it as covers() does, whatever their operating state.
-  // Test-mode restaurants are left out until admin test accounts exist
-  // (AP §9.8).
-  async coveringRestaurants(cityId: string, point: Point): Promise<string[]> {
+  // An admin test account (AP §9.8, slice 2.25b) also sees the restaurants
+  // in test mode (AP §9.6.3), `seenByCustomer`.
+  async coveringRestaurants(cityId: string, point: Point, testAccount = false): Promise<string[]> {
     if (!validPoint(point)) return [];
     const zone = await this.geo.zoneAt(cityId, point);
     if (zone === null) return [];
@@ -743,8 +743,10 @@ export class MerchantsService implements OnModuleInit {
       .where(
         and(
           eq(restaurants.cityId, cityId),
-          eq(restaurants.accountStatus, 'active'),
-          eq(restaurants.visible, true),
+          or(
+            and(eq(restaurants.accountStatus, 'active'), eq(restaurants.visible, true)),
+            testAccount ? eq(restaurants.accountStatus, 'test') : undefined,
+          ),
           sql`CASE ${restaurants.coverageKind}
             WHEN 'radius' THEN ST_DWithin(${restaurants.location}::geography, ${at}, ${restaurants.coverageRadiusMetres})
             ELSE EXISTS (SELECT 1 FROM ${coverageZones} WHERE ${coverageZones.restaurantId} = ${restaurants.id} AND ${coverageZones.zoneId} = ${zone.id} AND ${coverageZones.removedAt} IS NULL)

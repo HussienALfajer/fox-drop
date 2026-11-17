@@ -277,3 +277,20 @@ export const notes = customers.table(
     check('notes_body', sql`length(${table.body}) BETWEEN 1 AND 500`),
   ],
 );
+
+// AP §9.8 «حساب تجريبي للإدارة» (slice 2.25b; OWN): the latest row says
+// whether the account sees the restaurants in test mode (AP §9.6.3) and may
+// order from them. Never changed.
+export const testAccountFlags = customers.table(
+  'test_account_flags',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    customerAccountId: uuid('customer_account_id').notNull(),
+    flagged: boolean('flagged').notNull(),
+    at: timestamp('at', { withTimezone: true }).notNull(),
+    by: uuid('by').notNull(),
+  },
+  (table) => [index('test_account_flags_account_at').on(table.customerAccountId, table.at)],
+);

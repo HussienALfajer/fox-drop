@@ -352,6 +352,7 @@ import 'package:core_api/src/model/admin_session_dto_output.dart';
 import 'package:core_api/src/model/admin_set_city_office_dto.dart';
 import 'package:core_api/src/model/admin_set_city_office_dto_hours_inner.dart';
 import 'package:core_api/src/model/admin_set_city_office_dto_location.dart';
+import 'package:core_api/src/model/admin_set_customer_test_account_dto.dart';
 import 'package:core_api/src/model/admin_set_exchange_rate_dto.dart';
 import 'package:core_api/src/model/admin_set_image_dto.dart';
 import 'package:core_api/src/model/admin_set_outcome_dto.dart';
@@ -1131,6 +1132,7 @@ part 'serializers.g.dart';
   AdminSetCityOfficeDto,
   AdminSetCityOfficeDtoHoursInner,
   AdminSetCityOfficeDtoLocation,
+  AdminSetCustomerTestAccountDto,
   AdminSetExchangeRateDto,
   AdminSetImageDto,
   AdminSetOutcomeDto,

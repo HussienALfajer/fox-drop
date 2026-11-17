@@ -82,6 +82,8 @@ export const adminPermissions = [
   'exports.phone_numbers',
   // W4 (owner decision 2026-11-07): the emergency sign-in code.
   'sign_in.emergency_code',
+  // AP §9.8 (slice 2.25b): «حساب تجريبي للإدارة», OWN alone.
+  'customers.test_account',
 ] as const;
 
 export type AdminPermission = (typeof adminPermissions)[number];

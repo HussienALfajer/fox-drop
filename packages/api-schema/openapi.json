@@ -5010,6 +5010,53 @@
         ]
       }
     },
+    "/v1/admin/customers/{customerId}/test-account": {
+      "post": {
+        "operationId": "adminCustomersSetTestAccount",
+        "parameters": [
+          {
+            "name": "customerId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminSetCustomerTestAccountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCustomerDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/customers/{customerId}/trust": {
       "post": {
         "operationId": "adminCustomersMarkTrust",
@@ -20394,6 +20441,10 @@
                   ],
                   "description": "The number of ratings on the page (CU §9.1)."
                 },
+                "testMode": {
+                  "type": "boolean",
+                  "description": "«تجريبي»: in test mode, seen only by an admin test account (CU §8.2, AP §9.8)."
+                },
                 "estimate": {
                   "type": "object",
                   "properties": {
@@ -20529,6 +20580,7 @@
                 "coverKey",
                 "rating",
                 "ratingCount",
+                "testMode",
                 "estimate",
                 "deliveryFee",
                 "state"
@@ -20599,6 +20651,10 @@
               }
             ],
             "description": "The number of ratings on the page (CU §9.1)."
+          },
+          "testMode": {
+            "type": "boolean",
+            "description": "«تجريبي»: in test mode, seen only by an admin test account (CU §8.2, AP §9.8)."
           },
           "estimate": {
             "type": "object",
@@ -21067,6 +21123,7 @@
           "coverKey",
           "rating",
           "ratingCount",
+          "testMode",
           "estimate",
           "deliveryFee",
           "state",
@@ -21755,6 +21812,10 @@
             },
             "description": "Content's active customer_block reasons (AP Appendix B)."
           },
+          "testAccount": {
+            "type": "boolean",
+            "description": "«حساب تجريبي للإدارة»: sees the restaurants in test mode."
+          },
           "orders": {
             "type": "object",
             "properties": {
@@ -22056,6 +22117,7 @@
           "dues",
           "blocks",
           "blockReasons",
+          "testAccount",
           "orders",
           "tickets",
           "codes",
@@ -22171,6 +22233,23 @@
         "required": [
           "cityId",
           "body"
+        ]
+      },
+      "AdminSetCustomerTestAccountDto": {
+        "type": "object",
+        "properties": {
+          "cityId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "flagged": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "cityId",
+          "flagged"
         ]
       },
       "AdminMarkCustomerTrustDto": {

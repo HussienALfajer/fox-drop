@@ -715,6 +715,13 @@
       "when": 1794941332068,
       "tag": "0101_customers_notes",
       "breakpoints": true
+    },
+    {
+      "idx": 102,
+      "version": "7",
+      "when": 1794941747614,
+      "tag": "0102_customers_test_accounts",
+      "breakpoints": true
     }
   ]
 }

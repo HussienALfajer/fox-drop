@@ -23,7 +23,12 @@ import {
   type Point,
   tripMinutes,
 } from '../geo/index.js';
-import { MerchantsService, type Restaurant, type StorefrontState } from '../merchants/index.js';
+import {
+  MerchantsService,
+  type Restaurant,
+  seenByCustomer,
+  type StorefrontState,
+} from '../merchants/index.js';
 import { SettingsService, versionBelow } from '../settings/index.js';
 import { ActiveOrders } from './active-orders.js';
 import { EmergencyStops } from './emergency-stop.js';
@@ -211,7 +216,13 @@ export class QuoteService {
   // priced with, the fee rule version and the restaurant (CU §10.7).
   async price(request: QuoteRequest, now: Date): Promise<PricedQuote> {
     const restaurant = await this.merchants.restaurant(request.restaurantId, now);
-    if (restaurant === null || restaurant.accountStatus !== 'active' || !restaurant.visible) {
+    // An admin test account orders from the restaurants in test mode too
+    // (AP §9.8, slice 2.25b); such an order is a test order (AP §9.6.3).
+    const testAccount =
+      request.customerAccountId !== null &&
+      restaurant?.accountStatus === 'test' &&
+      (await this.customers.isTestAccount(request.customerAccountId));
+    if (restaurant === null || !seenByCustomer(restaurant, testAccount)) {
       throw new QuoteRefusedError('unknown_restaurant', 'no restaurant customers see');
     }
     const { cityId } = restaurant;

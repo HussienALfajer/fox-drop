@@ -290,6 +290,7 @@ describe('the restaurant list (CU §8.2)', () => {
       coverKey: null,
       rating: null,
       ratingCount: null,
+      testMode: false,
       // 20 prep + 0 trip + 10 buffer.
       estimate: { fromMin: 30, toMin: 40 },
       deliveryFee: { fee: { amount: '4000', currency: 'TRY' }, free: false },

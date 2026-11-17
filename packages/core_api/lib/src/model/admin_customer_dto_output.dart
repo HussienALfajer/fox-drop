@@ -43,6 +43,7 @@ part 'admin_customer_dto_output.g.dart';
 /// * [dues]
 /// * [blocks]
 /// * [blockReasons] - Content's active customer_block reasons (AP Appendix B).
+/// * [testAccount] - «حساب تجريبي للإدارة»: sees the restaurants in test mode.
 /// * [orders]
 /// * [tickets]
 /// * [codes] - The codes used in the city, newest first.
@@ -110,6 +111,10 @@ abstract class AdminCustomerDtoOutput
   /// Content's active customer_block reasons (AP Appendix B).
   @BuiltValueField(wireName: r'blockReasons')
   BuiltList<AdminCustomerDtoOutputBlockReasonsInner> get blockReasons;
+
+  /// «حساب تجريبي للإدارة»: sees the restaurants in test mode.
+  @BuiltValueField(wireName: r'testAccount')
+  bool get testAccount;
 
   @BuiltValueField(wireName: r'orders')
   AdminCustomerDtoOutputOrders get orders;
@@ -272,6 +277,11 @@ class _$AdminCustomerDtoOutputSerializer
       specifiedType: const FullType(BuiltList, [
         FullType(AdminCustomerDtoOutputBlockReasonsInner),
       ]),
+    );
+    yield r'testAccount';
+    yield serializers.serialize(
+      object.testAccount,
+      specifiedType: const FullType(bool),
     );
     yield r'orders';
     yield serializers.serialize(
@@ -509,6 +519,15 @@ class _$AdminCustomerDtoOutputSerializer
                   )
                   as BuiltList<AdminCustomerDtoOutputBlockReasonsInner>;
           result.blockReasons.replace(valueDes);
+          break;
+        case r'testAccount':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.testAccount = valueDes;
           break;
         case r'orders':
           final valueDes =

@@ -25,6 +25,8 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInner
   @override
   final int? ratingCount;
   @override
+  final bool testMode;
+  @override
   final CustomerRestaurantListDtoOutputRestaurantsInnerEstimate estimate;
   @override
   final CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee? deliveryFee;
@@ -48,6 +50,7 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInner
     this.coverKey,
     this.rating,
     this.ratingCount,
+    required this.testMode,
     required this.estimate,
     this.deliveryFee,
     required this.state,
@@ -74,6 +77,7 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInner
         coverKey == other.coverKey &&
         rating == other.rating &&
         ratingCount == other.ratingCount &&
+        testMode == other.testMode &&
         estimate == other.estimate &&
         deliveryFee == other.deliveryFee &&
         state == other.state;
@@ -90,6 +94,7 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInner
     _$hash = $jc(_$hash, coverKey.hashCode);
     _$hash = $jc(_$hash, rating.hashCode);
     _$hash = $jc(_$hash, ratingCount.hashCode);
+    _$hash = $jc(_$hash, testMode.hashCode);
     _$hash = $jc(_$hash, estimate.hashCode);
     _$hash = $jc(_$hash, deliveryFee.hashCode);
     _$hash = $jc(_$hash, state.hashCode);
@@ -110,6 +115,7 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInner
           ..add('coverKey', coverKey)
           ..add('rating', rating)
           ..add('ratingCount', ratingCount)
+          ..add('testMode', testMode)
           ..add('estimate', estimate)
           ..add('deliveryFee', deliveryFee)
           ..add('state', state))
@@ -157,6 +163,10 @@ class CustomerRestaurantListDtoOutputRestaurantsInnerBuilder
   int? get ratingCount => _$this._ratingCount;
   set ratingCount(int? ratingCount) => _$this._ratingCount = ratingCount;
 
+  bool? _testMode;
+  bool? get testMode => _$this._testMode;
+  set testMode(bool? testMode) => _$this._testMode = testMode;
+
   CustomerRestaurantListDtoOutputRestaurantsInnerEstimateBuilder? _estimate;
   CustomerRestaurantListDtoOutputRestaurantsInnerEstimateBuilder get estimate =>
       _$this._estimate ??=
@@ -198,6 +208,7 @@ class CustomerRestaurantListDtoOutputRestaurantsInnerBuilder
       _coverKey = $v.coverKey;
       _rating = $v.rating;
       _ratingCount = $v.ratingCount;
+      _testMode = $v.testMode;
       _estimate = $v.estimate.toBuilder();
       _deliveryFee = $v.deliveryFee?.toBuilder();
       _state = $v.state.toBuilder();
@@ -244,6 +255,11 @@ class CustomerRestaurantListDtoOutputRestaurantsInnerBuilder
             coverKey: coverKey,
             rating: rating,
             ratingCount: ratingCount,
+            testMode: BuiltValueNullFieldError.checkNotNull(
+              testMode,
+              r'CustomerRestaurantListDtoOutputRestaurantsInner',
+              'testMode',
+            ),
             estimate: estimate.build(),
             deliveryFee: _deliveryFee?.build(),
             state: state.build(),

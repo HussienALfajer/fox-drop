@@ -324,6 +324,7 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/admin/customers/{customerId}/unblock': 'customers.block',
   'POST /v1/admin/customers/{customerId}/trust': 'customers.manage',
   'POST /v1/admin/customers/{customerId}/notes': 'customers.read',
+  'POST /v1/admin/customers/{customerId}/test-account': 'customers.test_account',
   'POST /v1/admin/customers/{customerId}/clear-strikes': 'customers.clear_strikes',
   'POST /v1/admin/customers/{customerId}/end-review-stop': 'customers.clear_strikes',
   'GET /v1/admin/content/terms': 'content.read',

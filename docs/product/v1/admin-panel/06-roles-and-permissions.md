@@ -72,6 +72,7 @@ V1 has five fixed roles. Permissions are stored as data, so V2 can add custom ro
 | Close a customer account                                                                           | OWN, OPS, SUP                                                         |
 | Clear customer strikes or end a review stop                                                        | OWN, OPS, SUP                                                         |
 | Block or unblock a customer                                                                        | OWN, OPS                                                              |
+| Flag a customer as an admin test account (§9.8)                                                    | OWN                                                                   |
 | Suspend or terminate a captain                                                                     | OWN, OPS (the final earnings payout at termination needs OWN, §9.7.5) |
 | Export data that contains phone numbers                                                            | OWN, OPS, SUP                                                         |
 | Issue an emergency sign-in code to a captain or a restaurant user (architecture §8.3.5)            | OWN, OPS                                                              |

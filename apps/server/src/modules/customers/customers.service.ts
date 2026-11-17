@@ -18,6 +18,7 @@ import {
   profiles,
   reviewStops,
   strikeClears,
+  testAccountFlags,
   trustMarks,
 } from './schema.js';
 import { strikesSince, type TrustMark } from './trust.js';
@@ -356,6 +357,18 @@ export class CustomersService {
       .orderBy(desc(trustMarks.at), desc(trustMarks.id))
       .limit(1);
     return row ?? null;
+  }
+
+  // AP §9.8 «حساب تجريبي للإدارة» (slice 2.25b): whether the latest flag
+  // says the account sees and orders from the restaurants in test mode.
+  async isTestAccount(accountId: string): Promise<boolean> {
+    const [row] = await this.database.db
+      .select({ flagged: testAccountFlags.flagged })
+      .from(testAccountFlags)
+      .where(eq(testAccountFlags.customerAccountId, accountId))
+      .orderBy(desc(testAccountFlags.at), desc(testAccountFlags.id))
+      .limit(1);
+    return row?.flagged ?? false;
   }
 
   // The details of CU §5.3; null until the customer completes them.

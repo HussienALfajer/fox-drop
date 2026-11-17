@@ -2036,6 +2036,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/customers/{customerId}/test-account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCustomersSetTestAccount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/customers/{customerId}/trust": {
         parameters: {
             query?: never;
@@ -6614,6 +6630,8 @@ export interface components {
                 rating: number | null;
                 /** @description The number of ratings on the page (CU §9.1). */
                 ratingCount: number | null;
+                /** @description «تجريبي»: in test mode, seen only by an admin test account (CU §8.2, AP §9.8). */
+                testMode: boolean;
                 /** @description CU §8.4: «{fromMin}–{toMin} د». */
                 estimate: {
                     fromMin: number;
@@ -6661,6 +6679,8 @@ export interface components {
             rating: number | null;
             /** @description The number of ratings on the page (CU §9.1). */
             ratingCount: number | null;
+            /** @description «تجريبي»: in test mode, seen only by an admin test account (CU §8.2, AP §9.8). */
+            testMode: boolean;
             /** @description CU §8.4: «{fromMin}–{toMin} د». */
             estimate: {
                 fromMin: number;
@@ -6916,6 +6936,8 @@ export interface components {
                 code: string;
                 label: string;
             }[];
+            /** @description «حساب تجريبي للإدارة»: sees the restaurants in test mode. */
+            testAccount: boolean;
             orders: {
                 /** @description The customer's orders in the city, re-deliveries left out. */
                 count: number;
@@ -7016,6 +7038,11 @@ export interface components {
             cityId: string;
             /** @description The note, up to 500 characters. */
             body: string;
+        };
+        AdminSetCustomerTestAccountDto: {
+            /** Format: uuid */
+            cityId: string;
+            flagged: boolean;
         };
         AdminMarkCustomerTrustDto: {
             /** Format: uuid */
@@ -17908,6 +17935,32 @@ export interface operations {
         };
         responses: {
             201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCustomerDto_Output"];
+                };
+            };
+        };
+    };
+    adminCustomersSetTestAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                customerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminSetCustomerTestAccountDto"];
+            };
+        };
+        responses: {
+            200: {
                 headers: {
                     "Server-Time": components["headers"]["Server-Time"];
                     [name: string]: unknown;

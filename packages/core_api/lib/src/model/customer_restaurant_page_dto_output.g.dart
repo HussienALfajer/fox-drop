@@ -25,6 +25,8 @@ class _$CustomerRestaurantPageDtoOutput
   @override
   final int? ratingCount;
   @override
+  final bool testMode;
+  @override
   final CustomerRestaurantListDtoOutputRestaurantsInnerEstimate estimate;
   @override
   final CustomerRestaurantPageDtoOutputDeliveryFee? deliveryFee;
@@ -56,6 +58,7 @@ class _$CustomerRestaurantPageDtoOutput
     this.coverKey,
     this.rating,
     this.ratingCount,
+    required this.testMode,
     required this.estimate,
     this.deliveryFee,
     required this.state,
@@ -87,6 +90,7 @@ class _$CustomerRestaurantPageDtoOutput
         coverKey == other.coverKey &&
         rating == other.rating &&
         ratingCount == other.ratingCount &&
+        testMode == other.testMode &&
         estimate == other.estimate &&
         deliveryFee == other.deliveryFee &&
         state == other.state &&
@@ -109,6 +113,7 @@ class _$CustomerRestaurantPageDtoOutput
     _$hash = $jc(_$hash, coverKey.hashCode);
     _$hash = $jc(_$hash, rating.hashCode);
     _$hash = $jc(_$hash, ratingCount.hashCode);
+    _$hash = $jc(_$hash, testMode.hashCode);
     _$hash = $jc(_$hash, estimate.hashCode);
     _$hash = $jc(_$hash, deliveryFee.hashCode);
     _$hash = $jc(_$hash, state.hashCode);
@@ -133,6 +138,7 @@ class _$CustomerRestaurantPageDtoOutput
           ..add('coverKey', coverKey)
           ..add('rating', rating)
           ..add('ratingCount', ratingCount)
+          ..add('testMode', testMode)
           ..add('estimate', estimate)
           ..add('deliveryFee', deliveryFee)
           ..add('state', state)
@@ -185,6 +191,10 @@ class CustomerRestaurantPageDtoOutputBuilder
   int? _ratingCount;
   int? get ratingCount => _$this._ratingCount;
   set ratingCount(int? ratingCount) => _$this._ratingCount = ratingCount;
+
+  bool? _testMode;
+  bool? get testMode => _$this._testMode;
+  set testMode(bool? testMode) => _$this._testMode = testMode;
 
   CustomerRestaurantListDtoOutputRestaurantsInnerEstimateBuilder? _estimate;
   CustomerRestaurantListDtoOutputRestaurantsInnerEstimateBuilder get estimate =>
@@ -260,6 +270,7 @@ class CustomerRestaurantPageDtoOutputBuilder
       _coverKey = $v.coverKey;
       _rating = $v.rating;
       _ratingCount = $v.ratingCount;
+      _testMode = $v.testMode;
       _estimate = $v.estimate.toBuilder();
       _deliveryFee = $v.deliveryFee?.toBuilder();
       _state = $v.state.toBuilder();
@@ -309,6 +320,11 @@ class CustomerRestaurantPageDtoOutputBuilder
             coverKey: coverKey,
             rating: rating,
             ratingCount: ratingCount,
+            testMode: BuiltValueNullFieldError.checkNotNull(
+              testMode,
+              r'CustomerRestaurantPageDtoOutput',
+              'testMode',
+            ),
             estimate: estimate.build(),
             deliveryFee: _deliveryFee?.build(),
             state: state.build(),
