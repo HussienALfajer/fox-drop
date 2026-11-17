@@ -6,11 +6,14 @@ import 'package:go_router/go_router.dart';
 import 'profile.dart';
 
 /// «أكمل بياناتك» (CU §5.3), after a new account's first sign-in; then the
-/// customer returns to [from]. Unstyled until the design.
+/// customer returns to [from]. With [editing], «بياناتي» in «حسابي» (CU §13):
+/// the saved details to edit, the phone read-only, no terms tick. Unstyled
+/// until the design.
 class ProfileScreen extends ConsumerStatefulWidget {
-  const ProfileScreen({super.key, required this.from});
+  const ProfileScreen({super.key, required this.from, this.editing = false});
 
   final String from;
+  final bool editing;
 
   @override
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
@@ -22,6 +25,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Gender? _gender;
   DateTime? _birthday;
   bool _acceptTerms = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!widget.editing) return;
+    // The saved details, read before the screen opened.
+    final saved = ref.read(profileProvider).value?.profile;
+    if (saved == null) return;
+    _firstName.text = saved.firstName;
+    _lastName.text = saved.lastName ?? '';
+    _gender = saved.gender.name == 'male' ? Gender.male : Gender.female;
+    final birthday = saved.birthday;
+    if (birthday != null) {
+      _birthday = DateTime(birthday.year, birthday.month, birthday.day);
+    }
+  }
 
   @override
   void dispose() {
@@ -50,6 +69,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           gender: _gender,
           birthday: _birthday,
           acceptTerms: _acceptTerms,
+          editing: widget.editing,
         ),
       );
 
@@ -65,7 +85,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         : const <ProfileProblem>{};
     final birthday = _birthday;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.customerProfileTitle)),
+      appBar: AppBar(
+        title: Text(
+          widget.editing
+              ? l10n.customerAccountProfile
+              : l10n.customerProfileTitle,
+        ),
+      ),
       body: ListView(
         padding: const EdgeInsetsDirectional.all(16),
         children: [
@@ -114,24 +140,36 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             subtitle: birthday == null ? null : Text(l10n.formatDate(birthday)),
             onTap: _pickBirthday,
           ),
-          CheckboxListTile(
-            key: const Key('profile-terms'),
-            value: _acceptTerms,
-            onChanged: (value) => setState(() => _acceptTerms = value ?? false),
-            title: Text(l10n.customerProfileTerms),
-            subtitle: problems.contains(ProfileProblem.terms)
-                ? Text(l10n.customerProfileTermsRequired)
-                : null,
-          ),
-          // CU §5.3: the tick links to the terms and privacy.
-          Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: TextButton(
-              key: const Key('profile-open-terms'),
-              onPressed: () => context.push('/terms'),
-              child: Text(l10n.termsTitle),
+          if (widget.editing)
+            ListTile(
+              key: const Key('profile-phone'),
+              title: Text(l10n.customerAccountPhone),
+              subtitle: Text(
+                '${ref.watch(profileProvider).value?.phone ?? ''}\n'
+                '${l10n.customerAccountPhoneHint}',
+              ),
             ),
-          ),
+          if (!widget.editing) ...[
+            CheckboxListTile(
+              key: const Key('profile-terms'),
+              value: _acceptTerms,
+              onChanged: (value) =>
+                  setState(() => _acceptTerms = value ?? false),
+              title: Text(l10n.customerProfileTerms),
+              subtitle: problems.contains(ProfileProblem.terms)
+                  ? Text(l10n.customerProfileTermsRequired)
+                  : null,
+            ),
+            // CU §5.3: the tick links to the terms and privacy.
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TextButton(
+                key: const Key('profile-open-terms'),
+                onPressed: () => context.push('/terms'),
+                child: Text(l10n.termsTitle),
+              ),
+            ),
+          ],
           if (state is ProfileEditing && state.failed)
             Text(l10n.customerSaveFailed),
           FilledButton(

@@ -16,7 +16,7 @@ Slice 2.25b, the rest of the profile and «حسابي» (`docs/roadmap.md`, Phas
   - [x] Server: the admin test account (OWN, a new permission `customers.test_account`, AP §6.3 row): test-mode restaurants in its list with «تجريبي», their page, quote and placing.
   - [x] Server: «تغيير الرقم» (Syrian or Turkish, not another open account's; every session ends) and «تسجيل الخروج من كل الأجهزة» from the panel.
   - [x] Panel: the profile's new sections and the dialogs of every action above.
-  - [ ] Customer app: «حسابي» (CU §13) without «عناويني», «المفضلة» (2.28, 2.29) and «حذف الحساب» (2.25c).
+  - [x] Customer app: «حسابي» (CU §13) without «عناويني», «المفضلة» (2.28, 2.29) and «حذف الحساب» (2.25c).
   - [ ] Review, fixes, hand over to 2.25c.
 - **Owner decisions 2026-11-17 (asked at the start of 2.25b):** an order is a test order only when its restaurant is in test mode (the test account's order at an active restaurant is a normal one); «فك الحظر» never lifts a dues block (2.25a stays); a partial dues payment pushes nothing (only reaching zero does); «عناويني» and «المفضلة» join «حسابي» with their slices (2.29, 2.28); «توثيق» makes the account trusted until a later fake outcome, and «إزالة الثقة» acts as a fake outcome (the count of normal deliveries restarts after it).
 

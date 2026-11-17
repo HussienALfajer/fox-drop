@@ -3702,4 +3702,56 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get captainProblemClosed => 'لم يعد هذا البلاغ متاحاً لهذا الطلب.';
+
+  @override
+  String get customerMyAccountTitle => 'حسابي';
+
+  @override
+  String get customerAccountProfile => 'بياناتي';
+
+  @override
+  String get customerAccountPhone => 'رقم الهاتف';
+
+  @override
+  String get customerAccountPhoneHint => 'لتغيير رقمك تواصل مع الدعم';
+
+  @override
+  String get customerAccountHelp => 'المساعدة';
+
+  @override
+  String get customerJoinUs => 'انضم إلينا';
+
+  @override
+  String get customerJoinAsCaptain => 'انضم ككابتن';
+
+  @override
+  String get customerAddRestaurant => 'أضف مطعمك';
+
+  @override
+  String get customerAddRestaurantMessage => 'أريد إضافة مطعمي إلى FOX DROP';
+
+  @override
+  String get customerTermsAndPrivacy => 'الشروط والخصوصية';
+
+  @override
+  String get customerAbout => 'عن التطبيق';
+
+  @override
+  String customerAppVersion(String version) {
+    return 'الإصدار $version';
+  }
+
+  @override
+  String get customerSignOutEverywhere => 'تسجيل الخروج من كل الأجهزة';
+
+  @override
+  String get customerSignOutEverywhereConfirm =>
+      'سيُسجَّل خروجك من كل الأجهزة، ومنها هذا الجهاز. لا تتأثر طلباتك الجارية.';
+
+  @override
+  String get customerSignOutEverywhereFailed =>
+      'تعذّر تسجيل الخروج من كل الأجهزة. حاول مرة أخرى.';
+
+  @override
+  String get customerTestMode => 'تجريبي';
 }

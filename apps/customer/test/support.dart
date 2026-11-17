@@ -176,6 +176,7 @@ class TestApp {
   void completedProfile() => server.on('/v1/customer/profile', [
     const FakeAnswer(200, {
       'completed': true,
+      'phone': '+963944123456',
       'profile': {
         'firstName': 'سارة',
         'lastName': null,

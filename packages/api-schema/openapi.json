@@ -19845,11 +19845,16 @@
                 "type": "null"
               }
             ]
+          },
+          "phone": {
+            "type": "string",
+            "description": "The account's own number, read-only in «حسابي» (CU §13; slice 2.25b)."
           }
         },
         "required": [
           "completed",
-          "profile"
+          "profile",
+          "phone"
         ],
         "additionalProperties": false
       },

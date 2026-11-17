@@ -6508,6 +6508,8 @@ export interface components {
                 /** @description «تاريخ الميلاد», optional, a past date. */
                 birthday: string | null;
             } | null;
+            /** @description The account's own number, read-only in «حسابي» (CU §13; slice 2.25b). */
+            phone: string;
         };
         CustomerSaveProfileDto: {
             /** @description «الاسم»: 2 to 30 Arabic or Latin letters, spaces and «-». */

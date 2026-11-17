@@ -40,6 +40,8 @@ class RestaurantList extends ConsumerWidget {
                 title: Text(card.nameAr),
                 subtitle: Text(
                   [
+                    // CU §8.2: only an admin test account sees one.
+                    if (card.testMode) l10n.customerTestMode,
                     ?card.category,
                     card.rating == null
                         ? l10n.customerNew
