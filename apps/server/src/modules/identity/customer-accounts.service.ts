@@ -144,7 +144,12 @@ export class CustomerAccountsService {
           await tx
             .update(appSignInCodes)
             .set({ endedAt: now, endReason: 'replaced' })
-            .where(inArray(appSignInCodes.id, open.map((code) => code.id)));
+            .where(
+              inArray(
+                appSignInCodes.id,
+                open.map((code) => code.id),
+              ),
+            );
         }
         const [taken] = await tx
           .select({ id: customerAccounts.id })
