@@ -81,6 +81,7 @@ const resolveRefusalKeys = {
   unknown_reason: 'tickets.refusal.unknownReason',
   no_base_currency: 'tickets.refusal.noBaseCurrency',
   currency_changed: 'tickets.refusal.currencyChanged',
+  money_already_resolved: 'tickets.refusal.moneyAlreadyResolved',
   forbidden: 'tickets.refusal.forbidden',
 } as const satisfies Record<ResolveRefusal, string>;
 
@@ -501,6 +502,7 @@ function ResolveTicket({
     (!correcting || (previewed !== null && !preview.isFetching)) &&
     affected !== null &&
     !shortInvalid &&
+    (!takesShort || shortAmount !== null) &&
     (!coding || wrongChange || code !== null) &&
     (!coding || !wrongChange || shortAmount !== null) &&
     (!asksMoney || (moneyPreviewed !== null && !money.isFetching));
@@ -545,11 +547,13 @@ function ResolveTicket({
             onChange={(event) => setResponsible(event.target.value as ResponsibleParty | '')}
           >
             <option value="">{t('tickets.choose')}</option>
-            {Object.entries(responsibleKeys).map(([party, key]) => (
-              <option key={party} value={party}>
-                {t(key)}
-              </option>
-            ))}
+            {Object.entries(responsibleKeys)
+              .filter(([party]) => !(wrongChange && order !== null && party === 'restaurant'))
+              .map(([party, key]) => (
+                <option key={party} value={party}>
+                  {t(key)}
+                </option>
+              ))}
           </select>
         </label>
       )}

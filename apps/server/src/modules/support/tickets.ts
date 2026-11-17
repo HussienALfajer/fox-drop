@@ -232,6 +232,8 @@ export function moneyProblem(input: {
   if (!input.hasOrder) return 'order_required';
   if (wrongChange) {
     if (input.affectedLines > 0) return 'invalid_resolution';
+    // docs/domain/10 names the captain, the platform or the customer.
+    if (input.responsible === 'restaurant') return 'invalid_resolution';
     if (input.responsible === 'customer') {
       if (input.shortAmount !== null) return 'invalid_resolution';
     } else if (input.shortAmount === null) {

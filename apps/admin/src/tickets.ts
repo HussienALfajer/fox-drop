@@ -575,6 +575,7 @@ export type ResolveRefusal =
   | 'unknown_reason'
   | 'no_base_currency'
   | 'currency_changed'
+  | 'money_already_resolved'
   | 'forbidden';
 
 const resolveRefusals: readonly string[] = [
@@ -594,6 +595,7 @@ const resolveRefusals: readonly string[] = [
   'unknown_reason',
   'no_base_currency',
   'currency_changed',
+  'money_already_resolved',
   'forbidden',
 ] satisfies ResolveRefusal[];
 

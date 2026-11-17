@@ -35,6 +35,11 @@ export interface TicketOrderFacts {
   }[];
   received: MoneyLine[];
   change: MoneyLine[];
+  // What the captain recorded as received, in the order's currency by its
+  // snapshot: the most the customer can have been short (M).
+  receivedTotal: bigint;
+  // AP §9.6.3: a test order's problem posts no entries.
+  testOrder: boolean;
 }
 
 // The money a resolution asks (docs/domain/10): the responsible party, the

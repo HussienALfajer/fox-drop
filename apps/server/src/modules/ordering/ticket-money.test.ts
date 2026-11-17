@@ -3,6 +3,7 @@ import { commission } from './door-payment.js';
 import { COMMISSION_REVERSED_REASON } from './order-edits.js';
 import {
   affectedValue,
+  commissionOn,
   POST_DELIVERY_PROBLEM_REASON,
   ticketMoneyEntries,
   WRONG_CHANGE_REASON,
@@ -127,6 +128,21 @@ describe('ticketMoneyEntries', () => {
       wrongChange: null,
     });
     expect(booking.captainCharge).toBe(6_000n);
+  });
+
+  it('never reverses more commission than a restaurant-funded code left booked', () => {
+    // Items 10 000, the restaurant funds 2 000 of item discount, 15%: the
+    // delivery booked 1 200. Every item missing reverses those 1 200.
+    const booking = ticketMoneyEntries({
+      ...order,
+      itemsValue: 10_000n,
+      commissionOf: commissionOn(1500, 2_000n, false),
+      responsible: 'captain',
+      affected: 10_000n,
+      wrongChange: null,
+    });
+    expect(booking.captainCharge).toBe(8_800n);
+    expect(commissionOn(1500, 2_000n, true)(10_000n)).toBe(0n);
   });
 
   it('charges the captain M for the wrong change returned as a code', () => {

@@ -211,6 +211,7 @@ export type TicketRefusal =
   | 'invalid_value'
   | 'no_base_currency'
   | 'currency_changed'
+  | 'money_already_resolved'
   | 'forbidden';
 
 export class TicketRefusedError extends Error {
@@ -915,8 +916,13 @@ export class SupportService {
       codeValue: input.codeValue,
     });
     if (problem !== null) throw new TicketRefusedError(problem, `the money is ${problem}`);
-    if (input.shortAmount !== null && input.shortAmount <= 0n) {
-      throw new TicketRefusedError('invalid_value', 'M is above zero');
+    // M is above zero and at most what the captain recorded as received
+    // (decided by us: the customer cannot have been short of more).
+    if (
+      input.shortAmount !== null &&
+      (input.shortAmount <= 0n || (facts !== null && input.shortAmount > facts.receivedTotal))
+    ) {
+      throw new TicketRefusedError('invalid_value', 'M is above zero and within what was received');
     }
     const money =
       facts !== null &&
@@ -971,7 +977,10 @@ export class SupportService {
       lines: input.lines,
     });
     if (problem !== null) throw new TicketRefusedError(problem, `the resolution is ${problem}`);
-    if (input.code !== null && !admin.permissions.includes('operations.compensate')) {
+    if (
+      input.resolution === 'compensation_code' &&
+      !admin.permissions.includes('operations.compensate')
+    ) {
       throw new TicketRefusedError('forbidden', 'a compensation code needs operations.compensate');
     }
     const { facts, money } = await this.checkMoney(found, {
@@ -1002,6 +1011,7 @@ export class SupportService {
         throw new TicketRefusedError('ticket_not_open', 'the ticket is no longer open');
       }
       const actor = { type: 'admin' as const, id: admin.accountId };
+      if (money !== null) await this.checkEarlierMoney(tx, before, money, facts!);
       let journalIds: string[] | null =
         lines === null
           ? null
@@ -1105,6 +1115,41 @@ export class SupportService {
       );
     });
     return this.ticket(cityId, id);
+  }
+
+  // One order's problem is paid once (docs/domain/10): under the order's
+  // lock, the affected quantities of every resolved ticket on it, these
+  // included, stay within each line (400 invalid_affected), and the wrong
+  // change is resolved with M once (409 money_already_resolved).
+  private async checkEarlierMoney(
+    tx: Tx,
+    ticket: TicketRow,
+    money: TicketMoneyInput,
+    facts: TicketOrderFacts,
+  ): Promise<void> {
+    await tx.execute(
+      sql`SELECT pg_advisory_xact_lock(hashtextextended(${`support.ticket_money:${ticket.orderId}`}, 0))`,
+    );
+    const earlier = await tx
+      .select({ affectedLines: tickets.affectedLines, shortAmount: tickets.shortAmount })
+      .from(tickets)
+      .where(and(eq(tickets.orderId, ticket.orderId!), eq(tickets.status, 'resolved')));
+    if (money.wrongChange !== null && earlier.some((row) => row.shortAmount !== null)) {
+      throw new TicketRefusedError('money_already_resolved', 'the wrong change was resolved');
+    }
+    const taken = new Map<number, number>();
+    for (const row of earlier) {
+      if (row.affectedLines === null) continue;
+      for (const line of affectedLinesOf(row.affectedLines)) {
+        taken.set(line.position, (taken.get(line.position) ?? 0) + line.quantity);
+      }
+    }
+    for (const each of money.affected) {
+      const line = facts.lines.find((one) => one.position === each.position);
+      if (line && (taken.get(each.position) ?? 0) + each.quantity > line.quantity) {
+        throw new TicketRefusedError('invalid_affected', 'the lines were affected already');
+      }
+    }
   }
 
   // «كود تعويض» read before the transaction (AP §6.4): the order it is

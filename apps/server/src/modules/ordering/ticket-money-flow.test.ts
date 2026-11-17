@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { LedgerService } from '../ledger/index.js';
+import { SupportService, TicketRefusedError } from '../support/index.js';
 import {
   admin,
+  admin as admin_,
   app,
   azaz,
   balances,
@@ -286,5 +288,129 @@ describe('«مشكلة في المبلغ أو الباقي»', () => {
     expect(moneyMoved(before, await balances(order.captain.captainId))).toMatchObject({
       earnings: 0n,
     });
+  });
+});
+
+describe('one problem paid once', () => {
+  it('keeps every ticket on the order within each line, and the wrong change once', async () => {
+    const order = await deliveredOrder();
+    const first = await ticketOn(order.order.id, 'missing_item');
+    const second = await ticketOn(order.order.id, 'wrong_item');
+    const half = {
+      resolution: 'none_explained',
+      responsible: 'restaurant',
+      receivedLines: null,
+      affected: [{ position: 0, quantity: 1 }],
+    };
+    expect((await first.resolve(half)).statusCode).toBe(200);
+    // Two of the line's two now: the second shawarma only.
+    expect(
+      (await second.resolve({ ...half, affected: [{ position: 0, quantity: 2 }] })).json(),
+    ).toMatchObject({ statusCode: 400, error: 'invalid_affected' });
+    expect((await second.resolve(half)).statusCode).toBe(200);
+
+    const change = await ticketOn(order.order.id, 'amount_or_change');
+    const again = await ticketOn(order.order.id, 'amount_or_change');
+    const short = {
+      resolution: 'none_explained',
+      responsible: 'captain',
+      receivedLines: null,
+      shortAmount: '1000',
+    };
+    // M is at most what the captain recorded as received.
+    expect(
+      (await change.resolve({ ...short, shortAmount: String(order.total + 1n) })).json(),
+    ).toMatchObject({ statusCode: 400, error: 'invalid_value' });
+    expect((await change.resolve({ ...short, responsible: 'restaurant' })).json()).toMatchObject({
+      statusCode: 400,
+      error: 'invalid_resolution',
+    });
+    expect((await change.resolve(short)).statusCode).toBe(200);
+    expect((await again.resolve(short)).json()).toMatchObject({
+      statusCode: 409,
+      error: 'money_already_resolved',
+    });
+  });
+
+  it('keeps an uncapped wrong-change code out of the cap of the next code', async () => {
+    const order = await deliveredOrder();
+    const change = await ticketOn(order.order.id, 'amount_or_change');
+    expect(
+      (
+        await change.resolve({
+          resolution: 'compensation_code',
+          responsible: 'platform',
+          receivedLines: null,
+          shortAmount: String(order.total),
+        })
+      ).statusCode,
+    ).toBe(200);
+    const missing = await ticketOn(order.order.id, 'missing_item');
+    const resolved = await missing.resolve({
+      resolution: 'compensation_code',
+      responsible: 'platform',
+      receivedLines: null,
+      code: fixed('5000'),
+    });
+    expect(await compensation(resolved.json().resolution.compensationId)).toMatchObject({
+      status: 'issued',
+    });
+  });
+
+  it('asks operations.compensate for any code, and keeps the preview to the city', async () => {
+    const order = await deliveredOrder();
+    const ticket = await ticketOn(order.order.id, 'amount_or_change');
+    const support = app.get(SupportService);
+    const admin = {
+      accountId: crypto.randomUUID(),
+      actor: { type: 'admin' as const, id: crypto.randomUUID(), role: 'X' },
+      context: { ipAddress: null, device: null },
+      permissions: ['support.manage'],
+      roles: [],
+    };
+    await expect(
+      support.resolve(
+        azaz,
+        ticket.id,
+        {
+          resolution: 'compensation_code',
+          responsible: 'captain',
+          message: 'x',
+          lines: null,
+          affected: [],
+          shortAmount: 1_000n,
+          code: null,
+        },
+        admin,
+        new Date(),
+      ),
+    ).rejects.toThrow(TicketRefusedError);
+    const otherCity = crypto.randomUUID();
+    const sup = await admin_(['SUP']);
+    const preview = await app.inject({
+      method: 'POST',
+      url: `/v1/admin/tickets/${ticket.id}/money-preview`,
+      cookies: sup.cookies,
+      payload: {
+        cityId: otherCity,
+        responsible: 'captain',
+        affected: [],
+        shortAmount: '1000',
+        code: false,
+      },
+    });
+    expect(preview.json()).toMatchObject({ statusCode: 404, error: 'unknown_ticket' });
+    const anonymous = await app.inject({
+      method: 'POST',
+      url: `/v1/admin/tickets/${ticket.id}/money-preview`,
+      payload: {
+        cityId: azaz,
+        responsible: 'captain',
+        affected: [],
+        shortAmount: null,
+        code: false,
+      },
+    });
+    expect(anonymous.statusCode).toBe(401);
   });
 });

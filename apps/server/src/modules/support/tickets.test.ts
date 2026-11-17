@@ -330,6 +330,7 @@ describe('the money of a resolution', () => {
     expect(moneyProblem({ ...wrong, shortAmount: null })).toBe('amount_required');
     expect(moneyProblem({ ...wrong, codeValue: true })).toBe('invalid_resolution');
     expect(moneyProblem({ ...wrong, affectedLines: 1 })).toBe('invalid_resolution');
+    expect(moneyProblem({ ...wrong, responsible: 'restaurant' })).toBe('invalid_resolution');
     expect(moneyProblem({ ...missing, shortAmount: 2_000n })).toBe('invalid_resolution');
     expect(moneyProblem({ ...wrong, responsible: 'customer', resolution: 'none_explained' })).toBe(
       'invalid_resolution',

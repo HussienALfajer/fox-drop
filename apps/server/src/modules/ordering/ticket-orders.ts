@@ -5,7 +5,7 @@ import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { CaptainsService } from '../captains/index.js';
 import { formatMoney, NotificationTexts } from '../content/index.js';
-import { FxService } from '../fx/index.js';
+import { FxService, toBase } from '../fx/index.js';
 import { type LedgerActor, LedgerService } from '../ledger/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { PushQueue, type QueuedPush } from '../notifications/index.js';
@@ -18,12 +18,11 @@ import {
   type TicketOrders,
   TicketRefusedError,
 } from '../support/index.js';
-import { commission } from './door-payment.js';
 import { merchantItemDiscount } from './order-discount.js';
 import { orderKey, type OrderView, readOrders } from './order-views.js';
 import { postOrderJournals } from './outcome-facts.js';
 import { orders as schemaOrders } from './schema.js';
-import { affectedValue, ticketMoneyEntries } from './ticket-money.js';
+import { affectedValue, commissionOn, ticketMoneyEntries } from './ticket-money.js';
 
 type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
 
@@ -75,6 +74,11 @@ export class TicketMoney implements TicketOrders, OnModuleInit {
       })),
       received: order.delivery?.received ?? [],
       change: order.delivery?.change ?? [],
+      receivedTotal: (order.delivery?.received ?? []).reduce(
+        (sum, line) => sum + toBase(order.snapshot, line.amount, line.currency),
+        0n,
+      ),
+      testOrder: order.testOrder,
     };
   }
 
@@ -207,7 +211,10 @@ export class TicketMoney implements TicketOrders, OnModuleInit {
   ) {
     const order = await this.read(orderId, executor);
     const value = affectedValue(order.lines, money.affected);
-    if (value === null) throw new TicketRefusedError('invalid_affected', 'the affected lines');
+    // A line at no price affects nothing: V is above zero once items are named.
+    if (value === null || (money.affected.length > 0 && value === 0n)) {
+      throw new TicketRefusedError('invalid_affected', 'the affected lines');
+    }
     const itemDiscount = merchantItemDiscount({
       total: order.money.discount,
       merchant: order.discountMerchant,
@@ -221,11 +228,14 @@ export class TicketMoney implements TicketOrders, OnModuleInit {
       itemsValue: order.money.itemsValue,
       // AP §8.4: on the items value after the restaurant-funded item
       // discount; none on a test order (AP §9.6.3).
-      commissionOf: (itemsValue) =>
-        order.testOrder ? 0n : commission(itemsValue - itemDiscount, order.commissionBp),
+      commissionOf: commissionOn(order.commissionBp, itemDiscount, order.testOrder),
       affected: value,
       wrongChange: money.wrongChange,
     });
+    // AP §9.6.3 (decided by us): a test order's problem keeps V and M on the
+    // ticket and posts nothing, so no test money reaches the costs.
+    if (order.testOrder)
+      return { order, booking: { ...booking, journals: [], captainCharge: 0n }, value };
     return { order, booking, value };
   }
 

@@ -1,4 +1,5 @@
 import type { ResponsibleParty } from './cancellation.js';
+import { commission } from './door-payment.js';
 import {
   type AfterPickupEntry,
   type AfterPickupJournal,
@@ -38,6 +39,20 @@ export function affectedValue(
     value += line.unitPrice * BigInt(each.quantity);
   }
   return value;
+}
+
+// AP §8.4: the commission on an items value after the restaurant-funded
+// item discount, its base never below zero (V can reach the discounted
+// part, and a reversal never exceeds what was booked); none on a test order.
+export function commissionOn(
+  commissionBp: number,
+  itemDiscount: bigint,
+  testOrder: boolean,
+): (itemsValue: bigint) => bigint {
+  return (itemsValue) =>
+    testOrder
+      ? 0n
+      : commission(itemsValue > itemDiscount ? itemsValue - itemDiscount : 0n, commissionBp);
 }
 
 export interface TicketMoneyBooking {
