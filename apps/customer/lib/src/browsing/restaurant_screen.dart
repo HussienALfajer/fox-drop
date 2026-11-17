@@ -147,11 +147,20 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
             TextButton(
               onPressed: () => showDialog<void>(
                 context: context,
-                builder: (context) => AlertDialog(
+                builder: (dialog) => AlertDialog(
                   content: Text(l10n.customerSamePricesExplained),
                   actions: [
+                    // CU §9.5: the price report (a guest signs in first).
                     TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
+                      key: const Key('report-price'),
+                      onPressed: () {
+                        Navigator.of(dialog).pop();
+                        context.push('/restaurants/${r.id}/price-report');
+                      },
+                      child: Text(l10n.customerReportPrice),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(dialog).pop(),
                       child: Text(l10n.customerOk),
                     ),
                   ],

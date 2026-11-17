@@ -19,17 +19,22 @@ class ReasonChoice {
 
 /// What the customer app reads from Content (`GET /v1/customer/content`, AP
 /// §9.13): «الملاحظات الجاهزة» at checkout (CU §10.3), the self-cancel
-/// reasons (CU §11.4, AP Appendix B) and the customer FAQ set (CU §13). The
+/// reasons (CU §11.4, AP Appendix B), the problem report's types (CU §12.2)
+/// and the customer FAQ set (CU §13). The
 /// other lists come with their screens.
 class CustomerContent {
   const CustomerContent({
     required this.orderNotes,
     required this.cancelReasons,
+    required this.problemTypes,
     required this.faq,
   });
 
   final List<String> orderNotes;
   final List<ReasonChoice> cancelReasons;
+
+  /// «الإبلاغ عن مشكلة»'s types (CU §12.2, AP Appendix B).
+  final List<ReasonChoice> problemTypes;
   final List<({String question, String answer})> faq;
 }
 
@@ -45,6 +50,10 @@ final contentProvider = FutureProvider<CustomerContent>((ref) async {
     orderNotes: [for (final note in body.reasons.orderNote) note.label],
     cancelReasons: [
       for (final reason in body.reasons.customerCancel)
+        ReasonChoice(reason.code, reason.label, note: reason.note.name),
+    ],
+    problemTypes: [
+      for (final reason in body.reasons.customerProblem)
         ReasonChoice(reason.code, reason.label, note: reason.note.name),
     ],
     faq: [
