@@ -4,14 +4,22 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.26, ratings (`docs/roadmap.md`, Phase 2, Support and trust). Not started.
+Slice 2.26b, the restaurant's «التقييمات» (`docs/roadmap.md`, Phase 2, Support and trust; owner decision 2026-11-17: 2.26 in three slices). Not started.
 
-- **Roadmap line:** 2.26 Ratings: the restaurant and the captain rated apart within 3 days, «جديد» below 5, shown without names (CU §12.1, RA §13, CA §11). A customer rates and the restaurant sees it without a name.
-- **Specs:** CU §12.1 (the rating sheet once after delivery, then from the order detail for `customer.rating_window_days`; what each party sees), RA §13 (the restaurant's ratings, no replies, R16), CA §11 (the captain's rating), AP §9.8 «ratings written» on the customer profile (left by 2.25b), AP §9.6 and §9.7 where the panel shows a restaurant's or a captain's ratings, Appendix A (`customer.rating_window_days`); what exists: the cards' `rating` and `ratingCount` always null («جديد», customers' browsing), a re-delivery is never rated by the customer (2.23d).
-- **Branch:** the cloud session's branch, or `feat/ratings`.
+- **Roadmap line:** 2.26b The restaurant's «التقييمات», in the restaurant app (owner only) and the owner web portal: the average, the count and the distribution by stars, each rating's stars, reasons, comment and date without the customer's name or the order number, filters by stars and period, no replies (RA §13, R16, §6.1). A customer rates and the restaurant's owner sees it without a name.
+- **Specs:** RA §13 (summary, each rating, filters, no replies), RA §6.1 row 7 (owner yes, cashier no, portal yes), RA §5 (the owner's screens), RA §17 (the owner web portal), RA §22 item 24, CU §12.1 «Who sees what» (the restaurant: stars, reasons and comments without the customer's name); what exists: `ordering.ratings` (slice 2.26a, `ratings.ts`, the index `ratings_restaurant`), the cards' average from 5 ratings, the portal's one status page (`apps/merchant-portal/src`).
+- **Branch:** the cloud session's branch, or `feat/restaurant-ratings`.
 - **Plan:**
-  - [ ] Read the cited sections; if the slice is larger than one pull request (server, customer app, restaurant app, captain app, panel), split it with the `slice-plan` skill and ask the owner; write the plan here as a checklist, one step per commit.
-- **To ask the owner first:** any open item the sections name (`docs/open-questions.md`, AP §13); whether a failed or cancelled order can be rated (CU §12.1 says after delivery).
+  - [ ] Read the cited sections and the portal's and the restaurant app's `CLAUDE.md`; write the plan here as a checklist, one step per commit (likely: the server's owner route with the summary, the distribution and a page of ratings filtered by stars and period, test orders left out; the restaurant app's screen; the portal's page).
+- **To ask the owner first:** whether the period filter's choices are fixed (today, 7 days, 30 days, as AP §9.6.4's overview) or any dates; whether test orders' ratings show to the restaurant (in 2.26a they never count in the customers' average).
+
+### Left from 2.26a (`claude/bold-hawking-5w6p9w`)
+
+- **Before deploying to staging:** migration 0106, expand only: `ordering.ratings` (append-only, `UPDATE` revoked; `ratings_one_per_party`, the partial indexes `ratings_restaurant` and `ratings_captain`, `ratings_customer`). New route: `POST /v1/customer/orders/{orderId}/rating`; the customer's order adds `rating`, the cards and the restaurant page fill `rating` and `ratingCount`, the panel's customer profile adds `ratings`. Deploy the server (API and worker) before the panel and the app (an older app ignores `rating`; the cards already showed «جديد» for null).
+- **To check on staging (after the merge and the deploy):** place a test customer's order at a restaurant that is not in test mode and deliver it. The customer app's order opens the rating sheet by itself: give the restaurant 2 stars, pick «الطعام بارد», write a comment, skip the captain, «إرسال التقييم»: «شكراً لتقييمك», and the order shows «تقييمك للمطعم: 2 من 5» with «قيّم طلبك» still offering the captain. Leave and open the order again: the sheet does not open by itself. Rate the captain from «قيّم طلبك»: nothing is left to rate. In the panel «الزبائن», open that customer: «التقييمات المكتوبة» lists both with the comment. The restaurant's card says «جديد» until it has 5 ratings, then its average and count.
+- **Decided by us:** the rating takes no `Idempotency-Key` (a sent part is never edited, so a repeat is `409 already_rated` and the order shows it); test orders' ratings never count in the average; the captain rated is the order's captain at the rating (after a handover the second, who delivered); the sheet opens once per order on each phone (kept on the phone); the profile lists the account's own ratings, not its line's.; a rating's reasons are checked against the list's active reasons whatever their note mode (a chip takes no text); the comment is counted in code points; a retried `already_rated` resends only the parts still left and says «شكراً لتقييمك» when none is.
+- **To confirm with the owner:** a rating sent on a delivered order stays counted after «تغيير النتيجة» to failed (CU §12.1 says failed orders cannot be rated, not what happens to a rating already sent); the app's own words «تقييمك للمطعم: {النجوم} من 5», «شكراً لتقييمك», «لم يعد بالإمكان إرسال هذا التقييم», «تعليق (اختياري)», «إرسال التقييم».
+- **Not yet:** the restaurant's screens (2.26b); the captain's rating and the panel's restaurant and captain ratings (2.26c).
 
 ### Left from 2.25d (`feat/customer-device-block`)
 

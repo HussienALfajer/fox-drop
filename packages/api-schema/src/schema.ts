@@ -2628,6 +2628,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/customer/orders/{orderId}/rating": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["customerOrdersRate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/orders": {
         parameters: {
             query?: never;
@@ -6724,9 +6740,9 @@ export interface components {
                 logoKey: string | null;
                 /** @description Its key in public-media, shown through imgproxy (architecture §5.8); null without one. */
                 coverKey: string | null;
-                /** @description The average rating; null is «جديد» (Q16). Ratings arrive with their slice. */
+                /** @description The restaurant's average stars to one decimal; null is «جديد», below 5 ratings (CU §12.1, Q16). */
                 rating: number | null;
-                /** @description The number of ratings on the page (CU §9.1). */
+                /** @description The number of ratings beside the average (CU §8.2, §9.1); null with «جديد». */
                 ratingCount: number | null;
                 /** @description «تجريبي»: in test mode, seen only by an admin test account (CU §8.2, AP §9.8). */
                 testMode: boolean;
@@ -6773,9 +6789,9 @@ export interface components {
             logoKey: string | null;
             /** @description Its key in public-media, shown through imgproxy (architecture §5.8); null without one. */
             coverKey: string | null;
-            /** @description The average rating; null is «جديد» (Q16). Ratings arrive with their slice. */
+            /** @description The restaurant's average stars to one decimal; null is «جديد», below 5 ratings (CU §12.1, Q16). */
             rating: number | null;
-            /** @description The number of ratings on the page (CU §9.1). */
+            /** @description The number of ratings beside the average (CU §8.2, §9.1); null with «جديد». */
             ratingCount: number | null;
             /** @description «تجريبي»: in test mode, seen only by an admin test account (CU §8.2, AP §9.8). */
             testMode: boolean;
@@ -7103,6 +7119,25 @@ export interface components {
                 orderNumber: string | null;
                 /** Format: date-time */
                 openedAt: string;
+            }[];
+            /** @description AP §9.8 «التقييمات المكتوبة» (CU §12.1): the latest 20 in the city, newest first; admins see everything. */
+            ratings: {
+                /** Format: uuid */
+                orderId: string;
+                orderNumber: string;
+                /** @enum {string} */
+                party: "restaurant" | "captain";
+                restaurantName: string | null;
+                /** @description The captain rated; null on the restaurant's part. */
+                captainName: string | null;
+                stars: number;
+                reasons: {
+                    code: string;
+                    label: string;
+                }[];
+                comment: string | null;
+                /** Format: date-time */
+                at: string;
             }[];
             /** @description The codes used in the city, newest first. */
             codes: {
@@ -8139,6 +8174,35 @@ export interface components {
                     orderId: string;
                     number: string;
                 }[];
+                /** @description CU §12.1 (slice 2.26a): the order's ratings; the app opens the sheet once after the delivery, then offers it on the detail until `until`. Null in the list of active orders. */
+                rating: {
+                    /** @description «قيّم طلبك» until then (CU §12.1: customer.rating_window_days after the delivery), while a part is left to send; null once both are sent, past the window, or for an order that cannot be rated (not delivered, or a free re-delivery). */
+                    until: string | null;
+                    /** @description «قيّم الكابتن» is offered: a captain delivered the order (after a handover, the second). */
+                    captainRatable: boolean;
+                    /** @description «قيّم المطعم» as sent; never edited (Q16). */
+                    restaurant: {
+                        stars: number;
+                        reasons: {
+                            code: string;
+                            label: string;
+                        }[];
+                        comment: string | null;
+                        /** Format: date-time */
+                        at: string;
+                    } | null;
+                    /** @description «قيّم الكابتن» as sent; never edited (Q16). */
+                    captain: {
+                        stars: number;
+                        reasons: {
+                            code: string;
+                            label: string;
+                        }[];
+                        comment: string | null;
+                        /** Format: date-time */
+                        at: string;
+                    } | null;
+                } | null;
                 /** @description CU §11.6, AP §8.3 (slice 2.22c): the late code the order earned, still not delivered at the promised time + order.delivery_late_compensation_min; it is also in «أكوادي». Null without one, and in the list of active orders. */
                 lateCode: {
                     code: string;
@@ -8404,6 +8468,35 @@ export interface components {
                     orderId: string;
                     number: string;
                 }[];
+                /** @description CU §12.1 (slice 2.26a): the order's ratings; the app opens the sheet once after the delivery, then offers it on the detail until `until`. Null in the list of active orders. */
+                rating: {
+                    /** @description «قيّم طلبك» until then (CU §12.1: customer.rating_window_days after the delivery), while a part is left to send; null once both are sent, past the window, or for an order that cannot be rated (not delivered, or a free re-delivery). */
+                    until: string | null;
+                    /** @description «قيّم الكابتن» is offered: a captain delivered the order (after a handover, the second). */
+                    captainRatable: boolean;
+                    /** @description «قيّم المطعم» as sent; never edited (Q16). */
+                    restaurant: {
+                        stars: number;
+                        reasons: {
+                            code: string;
+                            label: string;
+                        }[];
+                        comment: string | null;
+                        /** Format: date-time */
+                        at: string;
+                    } | null;
+                    /** @description «قيّم الكابتن» as sent; never edited (Q16). */
+                    captain: {
+                        stars: number;
+                        reasons: {
+                            code: string;
+                            label: string;
+                        }[];
+                        comment: string | null;
+                        /** Format: date-time */
+                        at: string;
+                    } | null;
+                } | null;
                 /** @description CU §11.6, AP §8.3 (slice 2.22c): the late code the order earned, still not delivered at the promised time + order.delivery_late_compensation_min; it is also in «أكوادي». Null without one, and in the list of active orders. */
                 lateCode: {
                     code: string;
@@ -8690,6 +8783,24 @@ export interface components {
             }[];
             /** @description Up to 3 photos, each from POST /v1/customer/uploads/report-photo once uploaded. */
             photoUploadIds: string[];
+        };
+        CustomerRateOrderDto: {
+            /** @description «قيّم المطعم», or null to skip it. */
+            restaurant: {
+                stars: number;
+                /** @description Codes of Content's list for the stars: restaurant_rating_low (1–2), _mid (3), _high (4–5), or captain_rating_* for the captain. */
+                reasons: string[];
+                /** @description Up to 300 characters, counted in code points; null without one. */
+                comment: string | null;
+            } | null;
+            /** @description «قيّم الكابتن», or null to skip it. */
+            captain: {
+                stars: number;
+                /** @description Codes of Content's list for the stars: restaurant_rating_low (1–2), _mid (3), _high (4–5), or captain_rating_* for the captain. */
+                reasons: string[];
+                /** @description Up to 300 characters, counted in code points; null without one. */
+                comment: string | null;
+            } | null;
         };
         MerchantOrdersDto_Output: {
             /** @description Every order until it is delivered or ends, oldest first (RA §8.2). */
@@ -19065,6 +19176,32 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["CustomerReportOrderDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerOrderDto_Output"];
+                };
+            };
+        };
+    };
+    customerOrdersRate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerRateOrderDto"];
             };
         };
         responses: {

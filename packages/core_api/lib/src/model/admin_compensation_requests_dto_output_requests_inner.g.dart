@@ -184,7 +184,7 @@ class _$AdminCompensationRequestsDtoOutputRequestsInner
   @override
   final String currency;
   @override
-  final AdminCompensationRequestsDtoOutputRequestsInnerReason? reason;
+  final AdminCustomerDtoOutputRatingsInnerReasonsInner? reason;
   @override
   final String? note;
   @override
@@ -354,13 +354,12 @@ class AdminCompensationRequestsDtoOutputRequestsInnerBuilder
   String? get currency => _$this._currency;
   set currency(String? currency) => _$this._currency = currency;
 
-  AdminCompensationRequestsDtoOutputRequestsInnerReasonBuilder? _reason;
-  AdminCompensationRequestsDtoOutputRequestsInnerReasonBuilder get reason =>
+  AdminCustomerDtoOutputRatingsInnerReasonsInnerBuilder? _reason;
+  AdminCustomerDtoOutputRatingsInnerReasonsInnerBuilder get reason =>
       _$this._reason ??=
-          AdminCompensationRequestsDtoOutputRequestsInnerReasonBuilder();
-  set reason(
-    AdminCompensationRequestsDtoOutputRequestsInnerReasonBuilder? reason,
-  ) => _$this._reason = reason;
+          AdminCustomerDtoOutputRatingsInnerReasonsInnerBuilder();
+  set reason(AdminCustomerDtoOutputRatingsInnerReasonsInnerBuilder? reason) =>
+      _$this._reason = reason;
 
   String? _note;
   String? get note => _$this._note;

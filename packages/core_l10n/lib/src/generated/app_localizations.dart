@@ -6193,6 +6193,72 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'تعذّر حذف الحساب. حاول مرة أخرى.'**
   String get customerDeleteAccountFailed;
+
+  /// Opens the rating sheet from the order's detail while a part is left within customer.rating_window_days (CU §12.1, §14 #6).
+  ///
+  /// In ar, this message translates to:
+  /// **'قيّم طلبك'**
+  String get customerRateOrder;
+
+  /// The rating sheet's restaurant part (CU §12.1, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'قيّم المطعم'**
+  String get customerRateRestaurant;
+
+  /// The rating sheet's captain part, the captain who delivered (CU §12.1, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'قيّم الكابتن'**
+  String get customerRateCaptain;
+
+  /// A star's button in a rating part, for screen readers (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'{stars} من 5'**
+  String customerRatingStar(int stars);
+
+  /// A rating part's comment, up to 300 characters (CU §12.1; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعليق (اختياري)'**
+  String get customerRatingComment;
+
+  /// Sends the parts with stars; a part without stars is skipped (CU §12.1; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'إرسال التقييم'**
+  String get customerRatingSend;
+
+  /// After the rating is sent (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'شكراً لتقييمك'**
+  String get customerRatingThanks;
+
+  /// The window closed, or the part was sent already from another phone (CU §12.1, Q16; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يعد بالإمكان إرسال هذا التقييم'**
+  String get customerRatingRefused;
+
+  /// The panel changed the reason chips meanwhile (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيّرت الأسباب، اخترها من جديد'**
+  String get customerRatingReasonsChanged;
+
+  /// The restaurant part as sent, never edited (CU §12.1, Q16; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'تقييمك للمطعم: {stars} من 5'**
+  String customerYourRestaurantRating(int stars);
+
+  /// The captain part as sent, never edited (CU §12.1, Q16; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'تقييمك للكابتن: {stars} من 5'**
+  String customerYourCaptainRating(int stars);
 }
 
 class _AppLocalizationsDelegate

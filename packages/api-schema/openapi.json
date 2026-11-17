@@ -6586,6 +6586,53 @@
         ]
       }
     },
+    "/v1/customer/orders/{orderId}/rating": {
+      "post": {
+        "operationId": "customerOrdersRate",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerRateOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerOrderDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
+    },
     "/v1/merchant/orders": {
       "get": {
         "operationId": "merchantOrdersBoard",
@@ -20687,7 +20734,7 @@
                   ]
                 },
                 "rating": {
-                  "description": "The average rating; null is «جديد» (Q16). Ratings arrive with their slice.",
+                  "description": "The restaurant's average stars to one decimal; null is «جديد», below 5 ratings (CU §12.1, Q16).",
                   "type": [
                     "number",
                     "null"
@@ -20704,7 +20751,7 @@
                       "type": "null"
                     }
                   ],
-                  "description": "The number of ratings on the page (CU §9.1)."
+                  "description": "The number of ratings beside the average (CU §8.2, §9.1); null with «جديد»."
                 },
                 "testMode": {
                   "type": "boolean",
@@ -20898,7 +20945,7 @@
             ]
           },
           "rating": {
-            "description": "The average rating; null is «جديد» (Q16). Ratings arrive with their slice.",
+            "description": "The restaurant's average stars to one decimal; null is «جديد», below 5 ratings (CU §12.1, Q16).",
             "type": [
               "number",
               "null"
@@ -20915,7 +20962,7 @@
                 "type": "null"
               }
             ],
-            "description": "The number of ratings on the page (CU §9.1)."
+            "description": "The number of ratings beside the average (CU §8.2, §9.1); null with «جديد»."
           },
           "testMode": {
             "type": "boolean",
@@ -22347,6 +22394,90 @@
               "additionalProperties": false
             }
           },
+          "ratings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "orderId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "orderNumber": {
+                  "type": "string"
+                },
+                "party": {
+                  "type": "string",
+                  "enum": [
+                    "restaurant",
+                    "captain"
+                  ]
+                },
+                "restaurantName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "captainName": {
+                  "description": "The captain rated; null on the restaurant's part.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "stars": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "reasons": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "label": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "label"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "comment": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "orderId",
+                "orderNumber",
+                "party",
+                "restaurantName",
+                "captainName",
+                "stars",
+                "reasons",
+                "comment",
+                "at"
+              ],
+              "additionalProperties": false
+            },
+            "description": "AP §9.8 «التقييمات المكتوبة» (CU §12.1): the latest 20 in the city, newest first; admins see everything."
+          },
           "codes": {
             "type": "array",
             "items": {
@@ -22684,6 +22815,7 @@
           "testAccount",
           "orders",
           "tickets",
+          "ratings",
           "codes",
           "addresses",
           "notes",
@@ -27063,6 +27195,153 @@
                   },
                   "description": "CU §12.3: the free re-deliveries placed for this order, newest first."
                 },
+                "rating": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "until": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "«قيّم طلبك» until then (CU §12.1: customer.rating_window_days after the delivery), while a part is left to send; null once both are sent, past the window, or for an order that cannot be rated (not delivered, or a free re-delivery)."
+                        },
+                        "captainRatable": {
+                          "type": "boolean",
+                          "description": "«قيّم الكابتن» is offered: a captain delivered the order (after a handover, the second)."
+                        },
+                        "restaurant": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "stars": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 5
+                                },
+                                "reasons": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "code": {
+                                        "type": "string"
+                                      },
+                                      "label": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "code",
+                                      "label"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "comment": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "at": {
+                                  "type": "string",
+                                  "format": "date-time",
+                                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                                }
+                              },
+                              "required": [
+                                "stars",
+                                "reasons",
+                                "comment",
+                                "at"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "«قيّم المطعم» as sent; never edited (Q16)."
+                        },
+                        "captain": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "stars": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 5
+                                },
+                                "reasons": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "code": {
+                                        "type": "string"
+                                      },
+                                      "label": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "code",
+                                      "label"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "comment": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "at": {
+                                  "type": "string",
+                                  "format": "date-time",
+                                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                                }
+                              },
+                              "required": [
+                                "stars",
+                                "reasons",
+                                "comment",
+                                "at"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "«قيّم الكابتن» as sent; never edited (Q16)."
+                        }
+                      },
+                      "required": [
+                        "until",
+                        "captainRatable",
+                        "restaurant",
+                        "captain"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "CU §12.1 (slice 2.26a): the order's ratings; the app opens the sheet once after the delivery, then offers it on the detail until `until`. Null in the list of active orders."
+                },
                 "lateCode": {
                   "anyOf": [
                     {
@@ -28003,6 +28282,7 @@
                 "report",
                 "reportUntil",
                 "redeliveries",
+                "rating",
                 "lateCode",
                 "promisedAt",
                 "doorPing",
@@ -28203,6 +28483,153 @@
                   "additionalProperties": false
                 },
                 "description": "CU §12.3: the free re-deliveries placed for this order, newest first."
+              },
+              "rating": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "until": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "«قيّم طلبك» until then (CU §12.1: customer.rating_window_days after the delivery), while a part is left to send; null once both are sent, past the window, or for an order that cannot be rated (not delivered, or a free re-delivery)."
+                      },
+                      "captainRatable": {
+                        "type": "boolean",
+                        "description": "«قيّم الكابتن» is offered: a captain delivered the order (after a handover, the second)."
+                      },
+                      "restaurant": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "stars": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 5
+                              },
+                              "reasons": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "code": {
+                                      "type": "string"
+                                    },
+                                    "label": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "code",
+                                    "label"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "comment": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "at": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                              }
+                            },
+                            "required": [
+                              "stars",
+                              "reasons",
+                              "comment",
+                              "at"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "«قيّم المطعم» as sent; never edited (Q16)."
+                      },
+                      "captain": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "stars": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 5
+                              },
+                              "reasons": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "code": {
+                                      "type": "string"
+                                    },
+                                    "label": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "code",
+                                    "label"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "comment": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "at": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                              }
+                            },
+                            "required": [
+                              "stars",
+                              "reasons",
+                              "comment",
+                              "at"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "«قيّم الكابتن» as sent; never edited (Q16)."
+                      }
+                    },
+                    "required": [
+                      "until",
+                      "captainRatable",
+                      "restaurant",
+                      "captain"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "CU §12.1 (slice 2.26a): the order's ratings; the app opens the sheet once after the delivery, then offers it on the detail until `until`. Null in the list of active orders."
               },
               "lateCode": {
                 "anyOf": [
@@ -29144,6 +29571,7 @@
               "report",
               "reportUntil",
               "redeliveries",
+              "rating",
               "lateCode",
               "promisedAt",
               "doorPing",
@@ -29505,6 +29933,95 @@
           "note",
           "items",
           "photoUploadIds"
+        ]
+      },
+      "CustomerRateOrderDto": {
+        "type": "object",
+        "properties": {
+          "restaurant": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "stars": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5
+                  },
+                  "reasons": {
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 64
+                    },
+                    "description": "Codes of Content's list for the stars: restaurant_rating_low (1–2), _mid (3), _high (4–5), or captain_rating_* for the captain."
+                  },
+                  "comment": {
+                    "description": "Up to 300 characters, counted in code points; null without one.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "stars",
+                  "reasons",
+                  "comment"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«قيّم المطعم», or null to skip it."
+          },
+          "captain": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "stars": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5
+                  },
+                  "reasons": {
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 64
+                    },
+                    "description": "Codes of Content's list for the stars: restaurant_rating_low (1–2), _mid (3), _high (4–5), or captain_rating_* for the captain."
+                  },
+                  "comment": {
+                    "description": "Up to 300 characters, counted in code points; null without one.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "stars",
+                  "reasons",
+                  "comment"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«قيّم الكابتن», or null to skip it."
+          }
+        },
+        "required": [
+          "restaurant",
+          "captain"
         ]
       },
       "MerchantOrdersDto_Output": {

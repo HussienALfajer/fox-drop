@@ -208,6 +208,8 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
   @override
   final BuiltList<AdminCustomerDtoOutputTicketsInner> tickets;
   @override
+  final BuiltList<AdminCustomerDtoOutputRatingsInner> ratings;
+  @override
   final BuiltList<AdminCustomerDtoOutputCodesInner> codes;
   @override
   final BuiltList<AdminCustomerDtoOutputAddressesInner> addresses;
@@ -246,6 +248,7 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
     required this.testAccount,
     required this.orders,
     required this.tickets,
+    required this.ratings,
     required this.codes,
     required this.addresses,
     required this.notes,
@@ -288,6 +291,7 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
         testAccount == other.testAccount &&
         orders == other.orders &&
         tickets == other.tickets &&
+        ratings == other.ratings &&
         codes == other.codes &&
         addresses == other.addresses &&
         notes == other.notes &&
@@ -321,6 +325,7 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
     _$hash = $jc(_$hash, testAccount.hashCode);
     _$hash = $jc(_$hash, orders.hashCode);
     _$hash = $jc(_$hash, tickets.hashCode);
+    _$hash = $jc(_$hash, ratings.hashCode);
     _$hash = $jc(_$hash, codes.hashCode);
     _$hash = $jc(_$hash, addresses.hashCode);
     _$hash = $jc(_$hash, notes.hashCode);
@@ -356,6 +361,7 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
           ..add('testAccount', testAccount)
           ..add('orders', orders)
           ..add('tickets', tickets)
+          ..add('ratings', ratings)
           ..add('codes', codes)
           ..add('addresses', addresses)
           ..add('notes', notes)
@@ -487,6 +493,12 @@ class AdminCustomerDtoOutputBuilder
   set tickets(ListBuilder<AdminCustomerDtoOutputTicketsInner>? tickets) =>
       _$this._tickets = tickets;
 
+  ListBuilder<AdminCustomerDtoOutputRatingsInner>? _ratings;
+  ListBuilder<AdminCustomerDtoOutputRatingsInner> get ratings =>
+      _$this._ratings ??= ListBuilder<AdminCustomerDtoOutputRatingsInner>();
+  set ratings(ListBuilder<AdminCustomerDtoOutputRatingsInner>? ratings) =>
+      _$this._ratings = ratings;
+
   ListBuilder<AdminCustomerDtoOutputCodesInner>? _codes;
   ListBuilder<AdminCustomerDtoOutputCodesInner> get codes =>
       _$this._codes ??= ListBuilder<AdminCustomerDtoOutputCodesInner>();
@@ -546,6 +558,7 @@ class AdminCustomerDtoOutputBuilder
       _testAccount = $v.testAccount;
       _orders = $v.orders.toBuilder();
       _tickets = $v.tickets.toBuilder();
+      _ratings = $v.ratings.toBuilder();
       _codes = $v.codes.toBuilder();
       _addresses = $v.addresses.toBuilder();
       _notes = $v.notes.toBuilder();
@@ -626,6 +639,7 @@ class AdminCustomerDtoOutputBuilder
             ),
             orders: orders.build(),
             tickets: tickets.build(),
+            ratings: ratings.build(),
             codes: codes.build(),
             addresses: addresses.build(),
             notes: notes.build(),
@@ -660,6 +674,8 @@ class AdminCustomerDtoOutputBuilder
         orders.build();
         _$failedField = 'tickets';
         tickets.build();
+        _$failedField = 'ratings';
+        ratings.build();
         _$failedField = 'codes';
         codes.build();
         _$failedField = 'addresses';

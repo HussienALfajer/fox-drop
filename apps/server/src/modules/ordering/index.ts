@@ -46,6 +46,7 @@ import { OutboxRelay, OutboxRelayWorker } from './outbox-relay.js';
 import { QuoteService } from './quote.service.js';
 import { ResendNotification } from './resend-notification.js';
 import { EmergencyStops, EmergencyStopWorker } from './emergency-stop.js';
+import { RatingsService } from './ratings.js';
 import {
   AdminEmergencyStopController,
   CaptainEmergencyStopController,
@@ -109,6 +110,7 @@ import {
     DeliveryBooking,
     ResendNotification,
     EmergencyStops,
+    RatingsService,
   ],
   exports: [QuoteService, OrdersService],
 })

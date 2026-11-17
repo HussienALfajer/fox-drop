@@ -54,6 +54,12 @@ import {
   type LateCode,
   LateCodesService,
 } from '../marketing/index.js';
+import {
+  RATING_COMMENT_MAX,
+  RatingRefusedError,
+  RatingsService,
+  type RatingView,
+} from './ratings.js';
 import { orderStatuses } from './schema.js';
 
 // A personal code with its value (CU §11.6, §11.9): a compensation's or the
@@ -72,6 +78,46 @@ const personalCode = z.object({
     .describe("A percentage's maximum; null for the late code's without one."),
   validTo: z.iso.datetime(),
 });
+
+// A sent part of a rating, as the customer wrote it (CU §12.1).
+const sentRating = z.object({
+  stars: z.int().min(1).max(5),
+  reasons: z.array(z.object({ code: z.string(), label: z.string() })),
+  comment: z.string().nullable(),
+  at: z.iso.datetime(),
+});
+
+// A part to send: the stars, the reason chips of Content's list for them
+// (AP Appendix B) and an optional comment.
+const ratingPart = z.object({
+  stars: z.int().min(1).max(5),
+  reasons: z
+    .array(z.string().min(1).max(64))
+    .max(10)
+    .describe(
+      "Codes of Content's list for the stars: restaurant_rating_low (1–2), _mid (3), _high (4–5), or captain_rating_* for the captain.",
+    ),
+  comment: z
+    .string()
+    .trim()
+    // Counted in code points, as the database's length() and the app count.
+    .refine((value) => [...value].length <= RATING_COMMENT_MAX, 'up to 300 characters')
+    .nullable()
+    .transform((value) => (value === '' ? null : value))
+    .describe('Up to 300 characters, counted in code points; null without one.'),
+});
+
+class CustomerRateOrderDto extends createZodDto(
+  z
+    .object({
+      restaurant: ratingPart.nullable().describe('«قيّم المطعم», or null to skip it.'),
+      captain: ratingPart.nullable().describe('«قيّم الكابتن», or null to skip it.'),
+    })
+    .refine((body) => body.restaurant !== null || body.captain !== null, {
+      message: 'at least one part',
+      path: ['restaurant'],
+    }),
+) {}
 
 class CustomerPlaceOrderDto extends createZodDto(
   z
@@ -151,6 +197,26 @@ const customerOrder = z.object({
   redeliveries: z
     .array(z.object({ orderId: z.uuid(), number: z.string() }))
     .describe('CU §12.3: the free re-deliveries placed for this order, newest first.'),
+  rating: z
+    .object({
+      until: z.iso
+        .datetime()
+        .nullable()
+        .describe(
+          '«قيّم طلبك» until then (CU §12.1: customer.rating_window_days after the delivery), while a part is left to send; null once both are sent, past the window, or for an order that cannot be rated (not delivered, or a free re-delivery).',
+        ),
+      captainRatable: z
+        .boolean()
+        .describe(
+          '«قيّم الكابتن» is offered: a captain delivered the order (after a handover, the second).',
+        ),
+      restaurant: sentRating.nullable().describe('«قيّم المطعم» as sent; never edited (Q16).'),
+      captain: sentRating.nullable().describe('«قيّم الكابتن» as sent; never edited (Q16).'),
+    })
+    .nullable()
+    .describe(
+      "CU §12.1 (slice 2.26a): the order's ratings; the app opens the sheet once after the delivery, then offers it on the detail until `until`. Null in the list of active orders.",
+    ),
   lateCode: personalCode
     .extend({ issuedAt: z.iso.datetime() })
     .nullable()
@@ -410,6 +476,7 @@ export class CustomerOrdersController {
     private readonly compensations: CompensationsService,
     private readonly lateCodes: LateCodesService,
     private readonly support: SupportService,
+    private readonly ratings: RatingsService,
     @Inject(DATABASE) private readonly database: Database,
   ) {}
 
@@ -671,12 +738,53 @@ export class CustomerOrdersController {
     return { order: await this.withNames(after!) };
   }
 
+  // CU §12.1, U15, Q16 (slice 2.26a): «قيّم المطعم» and «قيّم الكابتن»,
+  // either or both, on a delivered order within customer.rating_window_days.
+  // A sent part is never edited, so no Idempotency-Key: a repeat is
+  // 409 already_rated, and the order it answers shows the part. Answers the
+  // order with its `rating`. 404 unknown_order; 409 not_ratable (not
+  // delivered, a free re-delivery, or the captain's part without a captain),
+  // rating_closed, already_rated; 400 unknown_reason, invalid_rating.
+  @Post('orders/:orderId/rating')
+  @AppSignedIn()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: CustomerOrderDto })
+  async rate(
+    @CurrentAppSession() session: AppSession,
+    @Param() params: CustomerOrderParamsDto,
+    @Body() body: CustomerRateOrderDto,
+  ) {
+    try {
+      await this.ratings.rate(
+        session.accountId,
+        params.orderId,
+        {
+          ...(body.restaurant === null ? {} : { restaurant: body.restaurant }),
+          ...(body.captain === null ? {} : { captain: body.captain }),
+        },
+        new Date(),
+      );
+    } catch (error) {
+      if (!(error instanceof RatingRefusedError)) throw error;
+      const { refusal } = error;
+      if (refusal === 'unknown_order') {
+        throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: refusal });
+      }
+      if (refusal === 'unknown_reason' || refusal === 'invalid_rating') {
+        throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, error: refusal });
+      }
+      throw new ConflictException({ statusCode: HttpStatus.CONFLICT, error: refusal });
+    }
+    const order = await this.orders.customerOrder(session.accountId, params.orderId);
+    return { order: await this.withNames(order!) };
+  }
+
   private async withNames(order: OrderView) {
     const delivered = order.status === 'delivered';
     // A report stays on its order whatever the order became since (an
     // outcome changed to failed included); only its window needs delivered.
     const ended = !UNTIL_ENDED.includes(order.status);
-    const [names, captains, compensation, lateCode, report, deliveredAt, redeliveries] =
+    const [names, captains, compensation, lateCode, report, deliveredAt, redeliveries, ratings] =
       await Promise.all([
         this.merchants.names([order.restaurantId]),
         this.captainsOf([order]),
@@ -685,7 +793,11 @@ export class CustomerOrdersController {
         ended ? this.support.reportOn(order.id) : null,
         delivered ? this.orders.deliveredAt(order.id, order.placedAt) : null,
         this.orders.redeliveriesOf(order.id),
+        this.ratings.ofOrder(order.id),
       ]);
+    const ratingUntil = await this.ratings.until(order, deliveredAt);
+    const captainRatable = order.captainId !== null && ratingUntil !== null;
+    const left = ratings.length < (captainRatable ? 2 : 1);
     const until =
       report === null
         ? await this.support.reportUntil({
@@ -699,6 +811,13 @@ export class CustomerOrdersController {
       // Past its end the window is closed: the detail offers «تواصل مع الدعم».
       reportUntil: until !== null && until.getTime() > Date.now() ? until : null,
       redeliveries,
+      rating: {
+        until:
+          left && ratingUntil !== null && ratingUntil.getTime() > Date.now() ? ratingUntil : null,
+        captainRatable,
+        restaurant: ratings.find((each) => each.party === 'restaurant') ?? null,
+        captain: ratings.find((each) => each.party === 'captain') ?? null,
+      },
     });
   }
 
@@ -746,7 +865,14 @@ function orderBody(
     report: CustomerReportView | null;
     reportUntil: Date | null;
     redeliveries: { orderId: string; number: bigint }[];
-  } = { report: null, reportUntil: null, redeliveries: [] },
+    // CU §12.1 (slice 2.26a): its ratings and their window.
+    rating: {
+      until: Date | null;
+      captainRatable: boolean;
+      restaurant: RatingView | null;
+      captain: RatingView | null;
+    } | null;
+  } = { report: null, reportUntil: null, redeliveries: [], rating: null },
 ) {
   const captain = order.captainId === null ? undefined : captains.get(order.captainId);
   const restaurant = names.get(order.restaurantId);
@@ -770,6 +896,12 @@ function orderBody(
       replyWithinMinutes: after.report.replyWithinMinutes,
     },
     reportUntil: after.reportUntil?.toISOString() ?? null,
+    rating: after.rating && {
+      until: after.rating.until?.toISOString() ?? null,
+      captainRatable: after.rating.captainRatable,
+      restaurant: after.rating.restaurant && sentBody(after.rating.restaurant),
+      captain: after.rating.captain && sentBody(after.rating.captain),
+    },
     redeliveries: after.redeliveries.map((each) => ({
       orderId: each.orderId,
       number: text(each.number),
@@ -867,6 +999,15 @@ function orderBody(
 }
 
 const text = (value: bigint) => value.toString();
+
+function sentBody(rating: RatingView) {
+  return {
+    stars: rating.stars,
+    reasons: rating.reasons,
+    comment: rating.comment,
+    at: rating.at.toISOString(),
+  };
+}
 
 function personalCodeBody(value: {
   code: string;

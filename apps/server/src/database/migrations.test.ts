@@ -515,6 +515,24 @@ describe('the ordering tables (AP §8.1, §4.8; architecture §5.5)', () => {
     ]);
   });
 
+  it('keep a rating as sent, one per order and party (CU §12.1, Q16; slice 2.26a)', async () => {
+    const id = randomUUID();
+    await appQuery(order(id));
+    const rating = (party: string, captain: string, stars = 4, comment = 'NULL') =>
+      appQuery(
+        `INSERT INTO ordering.ratings (order_id, order_placed_at, city_id, customer_id, party, restaurant_id, captain_id, stars, reasons, comment, test_order, at) VALUES ('${id}', ${placedAt(id)}, ${azaz}, '${randomUUID()}', '${party}', '${randomUUID()}', ${captain}, ${stars}, '[]', ${comment}, false, now())`,
+      );
+    await expect(rating('restaurant', 'NULL', 6)).rejects.toThrow(/ratings_stars/);
+    await expect(rating('captain', 'NULL')).rejects.toThrow(/ratings_party/);
+    await expect(rating('restaurant', 'NULL', 4, "''")).rejects.toThrow(/ratings_comment/);
+    await rating('restaurant', 'NULL');
+    await expect(rating('restaurant', 'NULL')).rejects.toThrow(/ratings_one_per_party/);
+    await rating('captain', `'${randomUUID()}'`);
+    await expect(
+      appQuery(`UPDATE ordering.ratings SET stars = 5 WHERE order_id = '${id}'`),
+    ).rejects.toThrow(/permission denied/);
+  });
+
   it('take an order with its line and event, and refuse money that does not add up', async () => {
     const id = randomUUID();
     await appQuery(order(id));

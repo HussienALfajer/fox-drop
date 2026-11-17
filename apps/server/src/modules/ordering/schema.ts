@@ -1359,3 +1359,56 @@ export const noAnswerReports = ordering.table(
     ),
   ],
 );
+
+// CU §12.1, U15, Q16 (slice 2.26a): the customer's ratings of a delivered
+// order, the restaurant and the captain apart, one each at most (Q16: a sent
+// part is never edited), so the application role cannot update them. The
+// order's restaurant, its captain who delivered and the test flag are copied,
+// so the averages never read the partitioned orders.
+export const ratingParties = ['restaurant', 'captain'] as const;
+
+export const ratings = ordering.table(
+  'ratings',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    orderId: uuid('order_id').notNull(),
+    orderPlacedAt: timestamp('order_placed_at', { withTimezone: true }).notNull(),
+    cityId: uuid('city_id').notNull(),
+    customerId: uuid('customer_id').notNull(),
+    party: text('party', { enum: ratingParties }).notNull(),
+    restaurantId: uuid('restaurant_id').notNull(),
+    // The captain rated; null on the restaurant's part.
+    captainId: uuid('captain_id'),
+    stars: smallint('stars').notNull(),
+    // [{ code, label }] of Content's list for the stars, the labels as chosen.
+    reasons: jsonb('reasons').notNull(),
+    comment: text('comment'),
+    testOrder: boolean('test_order').notNull(),
+    at: timestamp('at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.orderId, table.orderPlacedAt],
+      foreignColumns: [orders.id, orders.placedAt],
+    }),
+    uniqueIndex('ratings_one_per_party').on(table.orderId, table.party),
+    index('ratings_restaurant')
+      .on(table.restaurantId, table.at)
+      .where(sql`${table.party} = 'restaurant'`),
+    index('ratings_captain')
+      .on(table.captainId, table.at)
+      .where(sql`${table.party} = 'captain'`),
+    index('ratings_customer').on(table.customerId, table.at),
+    check('ratings_stars', sql`${table.stars} BETWEEN 1 AND 5`),
+    check(
+      'ratings_party',
+      sql`${table.party} IN ('restaurant', 'captain') AND (${table.party} = 'captain') = (${table.captainId} IS NOT NULL)`,
+    ),
+    check(
+      'ratings_comment',
+      sql`${table.comment} IS NULL OR length(${table.comment}) BETWEEN 1 AND 300`,
+    ),
+  ],
+);

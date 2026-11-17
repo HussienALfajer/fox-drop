@@ -100,6 +100,26 @@ export type CustomerActiveOrders = (
 
 export type CustomerOrderFacts = (accountId: string, cityId: string) => Promise<CustomerOrders>;
 
+// CU §12.1, AP §9.8 (slice 2.26a): what ordering registers (useRatings), the
+// ratings it keeps: each restaurant's count and average for the cards, and
+// the ratings a customer wrote for the profile.
+export interface CustomerRating {
+  orderId: string;
+  orderNumber: bigint;
+  party: 'restaurant' | 'captain';
+  restaurantName: string | null;
+  captainName: string | null;
+  stars: number;
+  reasons: { code: string; label: string }[];
+  comment: string | null;
+  at: Date;
+}
+
+export interface CustomerRatings {
+  restaurants(restaurantIds: string[]): Promise<Map<string, { count: number; average: number }>>;
+  written(accountId: string, cityId: string): Promise<CustomerRating[]>;
+}
+
 export interface AddressFields {
   location: Point;
   label: (typeof addressLabels)[number];
@@ -280,6 +300,19 @@ export class CustomersService {
   ordersOf(accountId: string, cityId: string): Promise<CustomerOrders> {
     if (this.orderFacts === null) throw new Error('ordering has not registered its facts');
     return this.orderFacts(accountId, cityId);
+  }
+
+  // CU §12.1, AP §9.8 (slice 2.26a): the ratings ordering keeps, registered
+  // at start.
+  private ratingsPort: CustomerRatings | null = null;
+
+  useRatings(port: CustomerRatings): void {
+    this.ratingsPort = port;
+  }
+
+  get ratings(): CustomerRatings {
+    if (this.ratingsPort === null) throw new Error('ordering has not registered its ratings');
+    return this.ratingsPort;
   }
 
   // AP §8.8, CU §5.6 (slice 2.25c): whether the account has an order not

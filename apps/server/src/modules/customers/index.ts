@@ -59,6 +59,8 @@ export {
   customerOrderLock,
   DEVICE_BLOCK_TEXT,
   lockCustomerDues,
+  type CustomerRating,
+  type CustomerRatings,
   type Location,
   type OrderAddress,
   type Profile,

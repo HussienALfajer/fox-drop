@@ -3,8 +3,8 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/admin_customer_dto_output_ratings_inner_reasons_inner.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_compensation_requests_dto_output_requests_inner_reason.dart';
 import 'package:core_api/src/model/admin_order_compensations_dto_output_compensations_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -45,7 +45,7 @@ abstract class AdminOrderCompensationsDtoOutput
 
   /// The active «تعويض الزبون» reasons, in order; each takes an optional note.
   @BuiltValueField(wireName: r'reasons')
-  BuiltList<AdminCompensationRequestsDtoOutputRequestsInnerReason?> get reasons;
+  BuiltList<AdminCustomerDtoOutputRatingsInnerReasonsInner?> get reasons;
 
   AdminOrderCompensationsDtoOutput._();
 
@@ -105,9 +105,7 @@ class _$AdminOrderCompensationsDtoOutputSerializer
     yield serializers.serialize(
       object.reasons,
       specifiedType: const FullType(BuiltList, [
-        FullType.nullable(
-          AdminCompensationRequestsDtoOutputRequestsInnerReason,
-        ),
+        FullType.nullable(AdminCustomerDtoOutputRatingsInnerReasonsInner),
       ]),
     );
   }
@@ -186,13 +184,11 @@ class _$AdminOrderCompensationsDtoOutputSerializer
                     value,
                     specifiedType: const FullType(BuiltList, [
                       FullType.nullable(
-                        AdminCompensationRequestsDtoOutputRequestsInnerReason,
+                        AdminCustomerDtoOutputRatingsInnerReasonsInner,
                       ),
                     ]),
                   )
-                  as BuiltList<
-                    AdminCompensationRequestsDtoOutputRequestsInnerReason?
-                  >;
+                  as BuiltList<AdminCustomerDtoOutputRatingsInnerReasonsInner?>;
           result.reasons.replace(valueDes);
           break;
         default:

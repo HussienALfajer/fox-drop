@@ -19,14 +19,15 @@ class ReasonChoice {
 
 /// What the customer app reads from Content (`GET /v1/customer/content`, AP
 /// §9.13): «الملاحظات الجاهزة» at checkout (CU §10.3), the self-cancel
-/// reasons (CU §11.4, AP Appendix B), the problem report's types (CU §12.2)
-/// and the customer FAQ set (CU §13). The
+/// reasons (CU §11.4, AP Appendix B), the problem report's types (CU §12.2),
+/// the rating reasons by stars (CU §12.1) and the customer FAQ set (CU §13). The
 /// other lists come with their screens.
 class CustomerContent {
   const CustomerContent({
     required this.orderNotes,
     required this.cancelReasons,
     required this.problemTypes,
+    required this.ratingReasons,
     required this.faq,
   });
 
@@ -35,6 +36,11 @@ class CustomerContent {
 
   /// «الإبلاغ عن مشكلة»'s types (CU §12.2, AP Appendix B).
   final List<ReasonChoice> problemTypes;
+
+  /// The rating's reason chips (CU §12.1, AP Appendix B), by Content's list
+  /// name: `restaurant_rating_low` (1–2 stars), `_mid` (3), `_high` (4–5),
+  /// and the same for `captain_rating_*`.
+  final Map<String, List<ReasonChoice>> ratingReasons;
   final List<({String question, String answer})> faq;
 }
 
@@ -56,6 +62,19 @@ final contentProvider = FutureProvider<CustomerContent>((ref) async {
       for (final reason in body.reasons.customerProblem)
         ReasonChoice(reason.code, reason.label, note: reason.note.name),
     ],
+    ratingReasons: {
+      for (final (name, list) in [
+        ('restaurant_rating_low', body.reasons.restaurantRatingLow),
+        ('restaurant_rating_mid', body.reasons.restaurantRatingMid),
+        ('restaurant_rating_high', body.reasons.restaurantRatingHigh),
+        ('captain_rating_low', body.reasons.captainRatingLow),
+        ('captain_rating_mid', body.reasons.captainRatingMid),
+        ('captain_rating_high', body.reasons.captainRatingHigh),
+      ])
+        name: [
+          for (final reason in list) ReasonChoice(reason.code, reason.label),
+        ],
+    },
     faq: [
       for (final item in body.faq)
         (question: item.question, answer: item.answer),

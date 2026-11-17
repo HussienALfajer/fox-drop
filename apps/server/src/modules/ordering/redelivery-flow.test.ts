@@ -293,6 +293,16 @@ describe('«إعادة توصيل مجانية» with the restaurant responsible
     expect(reported.statusCode).toBe(200);
     expect(reported.json().order.report).toMatchObject({ status: 'new' });
     expect((await report(randomUUID())).json().error).toBe('already_reported');
+    // CU §12.1 (slice 2.26a): a free re-delivery is never rated.
+    const rated = await app.inject({
+      method: 'POST',
+      url: `/v1/customer/orders/${orderId}/rating`,
+      headers: original.order.customer,
+      payload: { restaurant: { stars: 5, reasons: [], comment: null }, captain: null },
+    });
+    expect(rated.statusCode).toBe(409);
+    expect(rated.json().error).toBe('not_ratable');
+    expect(reported.json().order.rating).toMatchObject({ until: null, restaurant: null });
     expect(await earningsEntries(captain.captainId, orderId)).toEqual([
       { type: 'earn.order_pay', reason: null, amount: ORDER_PAY },
     ]);

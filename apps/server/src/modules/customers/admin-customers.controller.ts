@@ -194,6 +194,26 @@ class AdminCustomerDto extends createZodDto(
         openedAt: z.iso.datetime(),
       }),
     ),
+    ratings: z
+      .array(
+        z.object({
+          orderId: z.uuid(),
+          orderNumber: z.string(),
+          party: z.enum(['restaurant', 'captain']),
+          restaurantName: z.string().nullable(),
+          captainName: z
+            .string()
+            .nullable()
+            .describe("The captain rated; null on the restaurant's part."),
+          stars: z.int(),
+          reasons: z.array(z.object({ code: z.string(), label: z.string() })),
+          comment: z.string().nullable(),
+          at: z.iso.datetime(),
+        }),
+      )
+      .describe(
+        'AP §9.8 «التقييمات المكتوبة» (CU §12.1): the latest 20 in the city, newest first; admins see everything.',
+      ),
     codes: z
       .array(
         z.object({
@@ -763,6 +783,11 @@ function profileBody(view: CustomerProfileView) {
       number: ticket.number.toString(),
       orderNumber: ticket.orderNumber?.toString() ?? null,
       openedAt: ticket.openedAt.toISOString(),
+    })),
+    ratings: view.ratings.map((rating) => ({
+      ...rating,
+      orderNumber: rating.orderNumber.toString(),
+      at: rating.at.toISOString(),
     })),
     codes: view.codes.map((code) => ({
       ...code,
