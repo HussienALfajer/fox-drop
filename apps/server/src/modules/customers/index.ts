@@ -11,6 +11,7 @@ import { MerchantsModule } from '../merchants/index.js';
 import { SettingsModule } from '../settings/index.js';
 import { AdminCustomersController } from './admin-customers.controller.js';
 import { BrowsingService } from './browsing.service.js';
+import { CustomerClosureController } from './customer-closure.controller.js';
 import { CustomerAccountStateController } from './customer-account-state.controller.js';
 import { CustomerAdminService } from './customer-admin.service.js';
 import { CustomerBrowsingController } from './customer-browsing.controller.js';
@@ -37,6 +38,7 @@ import { CustomersService } from './customers.service.js';
     CustomerProfileController,
     CustomerBrowsingController,
     CustomerAccountStateController,
+    CustomerClosureController,
     AdminCustomersController,
   ],
   providers: [CustomersService, BrowsingService, CustomerAdminService],
@@ -51,6 +53,7 @@ export {
   type AddressFields,
   type CustomersRefusal,
   type CustomerTicket,
+  type CustomerActiveOrders,
   CustomersRefusedError,
   CustomersService,
   customerOrderLock,

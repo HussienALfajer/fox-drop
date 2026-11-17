@@ -46,6 +46,9 @@ _$adminCustomerDtoOutputStatusEnum_duesUnpaid =
 const AdminCustomerDtoOutputStatusEnum
 _$adminCustomerDtoOutputStatusEnum_reviewStop =
     const AdminCustomerDtoOutputStatusEnum._('reviewStop');
+const AdminCustomerDtoOutputStatusEnum
+_$adminCustomerDtoOutputStatusEnum_closed =
+    const AdminCustomerDtoOutputStatusEnum._('closed');
 
 AdminCustomerDtoOutputStatusEnum _$adminCustomerDtoOutputStatusEnumValueOf(
   String name,
@@ -59,6 +62,8 @@ AdminCustomerDtoOutputStatusEnum _$adminCustomerDtoOutputStatusEnumValueOf(
       return _$adminCustomerDtoOutputStatusEnum_duesUnpaid;
     case 'reviewStop':
       return _$adminCustomerDtoOutputStatusEnum_reviewStop;
+    case 'closed':
+      return _$adminCustomerDtoOutputStatusEnum_closed;
     default:
       throw ArgumentError(name);
   }
@@ -72,6 +77,7 @@ _$adminCustomerDtoOutputStatusEnumValues =
         _$adminCustomerDtoOutputStatusEnum_blocked,
         _$adminCustomerDtoOutputStatusEnum_duesUnpaid,
         _$adminCustomerDtoOutputStatusEnum_reviewStop,
+        _$adminCustomerDtoOutputStatusEnum_closed,
       ],
     );
 
@@ -122,12 +128,14 @@ class _$AdminCustomerDtoOutputStatusEnumSerializer
     'blocked': 'blocked',
     'duesUnpaid': 'dues_unpaid',
     'reviewStop': 'review_stop',
+    'closed': 'closed',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'active': 'active',
     'blocked': 'blocked',
     'dues_unpaid': 'duesUnpaid',
     'review_stop': 'reviewStop',
+    'closed': 'closed',
   };
 
   @override
@@ -171,6 +179,10 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
   final AdminCustomerDtoOutputBlock? block;
   @override
   final AdminCustomerDtoOutputReviewStop? reviewStop;
+  @override
+  final AdminCustomerDtoOutputClosed? closed;
+  @override
+  final BuiltList<AdminCustomerDtoOutputLinkedAccountsInner> linkedAccounts;
   @override
   final bool trusted;
   @override
@@ -216,6 +228,8 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
     required this.status,
     this.block,
     this.reviewStop,
+    this.closed,
+    required this.linkedAccounts,
     required this.trusted,
     required this.delivered,
     required this.trustedAfter,
@@ -254,6 +268,8 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
         status == other.status &&
         block == other.block &&
         reviewStop == other.reviewStop &&
+        closed == other.closed &&
+        linkedAccounts == other.linkedAccounts &&
         trusted == other.trusted &&
         delivered == other.delivered &&
         trustedAfter == other.trustedAfter &&
@@ -283,6 +299,8 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, block.hashCode);
     _$hash = $jc(_$hash, reviewStop.hashCode);
+    _$hash = $jc(_$hash, closed.hashCode);
+    _$hash = $jc(_$hash, linkedAccounts.hashCode);
     _$hash = $jc(_$hash, trusted.hashCode);
     _$hash = $jc(_$hash, delivered.hashCode);
     _$hash = $jc(_$hash, trustedAfter.hashCode);
@@ -314,6 +332,8 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
           ..add('status', status)
           ..add('block', block)
           ..add('reviewStop', reviewStop)
+          ..add('closed', closed)
+          ..add('linkedAccounts', linkedAccounts)
           ..add('trusted', trusted)
           ..add('delivered', delivered)
           ..add('trustedAfter', trustedAfter)
@@ -377,6 +397,20 @@ class AdminCustomerDtoOutputBuilder
       _$this._reviewStop ??= AdminCustomerDtoOutputReviewStopBuilder();
   set reviewStop(AdminCustomerDtoOutputReviewStopBuilder? reviewStop) =>
       _$this._reviewStop = reviewStop;
+
+  AdminCustomerDtoOutputClosedBuilder? _closed;
+  AdminCustomerDtoOutputClosedBuilder get closed =>
+      _$this._closed ??= AdminCustomerDtoOutputClosedBuilder();
+  set closed(AdminCustomerDtoOutputClosedBuilder? closed) =>
+      _$this._closed = closed;
+
+  ListBuilder<AdminCustomerDtoOutputLinkedAccountsInner>? _linkedAccounts;
+  ListBuilder<AdminCustomerDtoOutputLinkedAccountsInner> get linkedAccounts =>
+      _$this._linkedAccounts ??=
+          ListBuilder<AdminCustomerDtoOutputLinkedAccountsInner>();
+  set linkedAccounts(
+    ListBuilder<AdminCustomerDtoOutputLinkedAccountsInner>? linkedAccounts,
+  ) => _$this._linkedAccounts = linkedAccounts;
 
   bool? _trusted;
   bool? get trusted => _$this._trusted;
@@ -475,6 +509,8 @@ class AdminCustomerDtoOutputBuilder
       _status = $v.status;
       _block = $v.block?.toBuilder();
       _reviewStop = $v.reviewStop?.toBuilder();
+      _closed = $v.closed?.toBuilder();
+      _linkedAccounts = $v.linkedAccounts.toBuilder();
       _trusted = $v.trusted;
       _delivered = $v.delivered;
       _trustedAfter = $v.trustedAfter;
@@ -531,6 +567,8 @@ class AdminCustomerDtoOutputBuilder
             ),
             block: _block?.build(),
             reviewStop: _reviewStop?.build(),
+            closed: _closed?.build(),
+            linkedAccounts: linkedAccounts.build(),
             trusted: BuiltValueNullFieldError.checkNotNull(
               trusted,
               r'AdminCustomerDtoOutput',
@@ -574,6 +612,10 @@ class AdminCustomerDtoOutputBuilder
         _block?.build();
         _$failedField = 'reviewStop';
         _reviewStop?.build();
+        _$failedField = 'closed';
+        _closed?.build();
+        _$failedField = 'linkedAccounts';
+        linkedAccounts.build();
 
         _$failedField = 'trustMark';
         _trustMark?.build();

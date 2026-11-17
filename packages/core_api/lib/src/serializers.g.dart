@@ -76,6 +76,7 @@ Serializers _$serializers =
           ..add(AdminCityOfficeDtoOutputOfficeHoursInner.serializer)
           ..add(AdminCityOfficeDtoOutputOfficeLocation.serializer)
           ..add(AdminClearCustomerStrikesDto.serializer)
+          ..add(AdminCloseCustomerAccountDto.serializer)
           ..add(AdminCloseDrawerSessionDto.serializer)
           ..add(AdminCloseItemReportDto.serializer)
           ..add(AdminCompensateDto.serializer)
@@ -135,11 +136,14 @@ Serializers _$serializers =
           ..add(AdminCustomerDtoOutputBlockReasonsInner.serializer)
           ..add(AdminCustomerDtoOutputBlocksInner.serializer)
           ..add(AdminCustomerDtoOutputBlocksInnerKindEnum.serializer)
+          ..add(AdminCustomerDtoOutputClosed.serializer)
           ..add(AdminCustomerDtoOutputCodesInner.serializer)
           ..add(AdminCustomerDtoOutputDues.serializer)
           ..add(AdminCustomerDtoOutputGenderEnum.serializer)
           ..add(AdminCustomerDtoOutputLateCancels.serializer)
           ..add(AdminCustomerDtoOutputLateCancelsCleared.serializer)
+          ..add(AdminCustomerDtoOutputLinkedAccountsInner.serializer)
+          ..add(AdminCustomerDtoOutputLinkedAccountsInnerStatusEnum.serializer)
           ..add(AdminCustomerDtoOutputNotesInner.serializer)
           ..add(AdminCustomerDtoOutputOrders.serializer)
           ..add(AdminCustomerDtoOutputOrdersLast.serializer)
@@ -908,6 +912,8 @@ Serializers _$serializers =
           ..add(ContactDtoOutput.serializer)
           ..add(CreateUserDto.serializer)
           ..add(CreateUserDtoRolesEnum.serializer)
+          ..add(CustomerAccountClosedDtoOutput.serializer)
+          ..add(CustomerAccountClosedDtoOutputStatusEnum.serializer)
           ..add(CustomerAccountStateDtoOutput.serializer)
           ..add(CustomerAccountStateDtoOutputBlock.serializer)
           ..add(CustomerAccountStateDtoOutputDues.serializer)
@@ -997,6 +1003,9 @@ Serializers _$serializers =
           ..add(CustomerAddressListDtoOutputAddressesInnerLabelEnum.serializer)
           ..add(CustomerAddressListDtoOutputAddressesInnerLocation.serializer)
           ..add(CustomerCancelOrderDto.serializer)
+          ..add(CustomerCloseAccountDto.serializer)
+          ..add(CustomerCloseCodeSentDtoOutput.serializer)
+          ..add(CustomerCloseCodeSentDtoOutputChannelEnum.serializer)
           ..add(CustomerCodeRequestDto.serializer)
           ..add(CustomerCodeSentDtoOutput.serializer)
           ..add(CustomerCodeSentDtoOutputChannelEnum.serializer)
@@ -1448,6 +1457,12 @@ Serializers _$serializers =
                 ListBuilder<
                   AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCustomerDtoOutputLinkedAccountsInner),
+            ]),
+            () => ListBuilder<AdminCustomerDtoOutputLinkedAccountsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

@@ -4,12 +4,14 @@
 
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/admin_customer_dto_output_tickets_inner.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_linked_accounts_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_late_cancels.dart';
 import 'package:core_api/src/model/date.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_block_reasons_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_review_stop.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_addresses_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_notes_inner.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_closed.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_codes_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_block.dart';
@@ -31,9 +33,11 @@ part 'admin_customer_dto_output.g.dart';
 /// * [gender]
 /// * [birthday]
 /// * [maskedPhone]
-/// * [status] - «نشط», «محظور» (a block), «محظور» until the dues are paid, «موقوف حتى مراجعة الدعم» (AP §9.8).
+/// * [status] - «نشط», «محظور» (a block), «محظور» until the dues are paid, «موقوف حتى مراجعة الدعم», «مغلق» (AP §9.8).
 /// * [block]
 /// * [reviewStop]
+/// * [closed]
+/// * [linkedAccounts] - The other accounts of the line, newest first: the closed accounts this one continues, or the account that continues it (AP §8.8).
 /// * [trusted] - «موثوق» by D23 and the latest mark.
 /// * [delivered] - The normal deliveries that count toward the trust.
 /// * [trustedAfter]
@@ -71,16 +75,23 @@ abstract class AdminCustomerDtoOutput
   @BuiltValueField(wireName: r'maskedPhone')
   String? get maskedPhone;
 
-  /// «نشط», «محظور» (a block), «محظور» until the dues are paid, «موقوف حتى مراجعة الدعم» (AP §9.8).
+  /// «نشط», «محظور» (a block), «محظور» until the dues are paid, «موقوف حتى مراجعة الدعم», «مغلق» (AP §9.8).
   @BuiltValueField(wireName: r'status')
   AdminCustomerDtoOutputStatusEnum get status;
-  // enum statusEnum {  active,  blocked,  dues_unpaid,  review_stop,  };
+  // enum statusEnum {  active,  blocked,  dues_unpaid,  review_stop,  closed,  };
 
   @BuiltValueField(wireName: r'block')
   AdminCustomerDtoOutputBlock? get block;
 
   @BuiltValueField(wireName: r'reviewStop')
   AdminCustomerDtoOutputReviewStop? get reviewStop;
+
+  @BuiltValueField(wireName: r'closed')
+  AdminCustomerDtoOutputClosed? get closed;
+
+  /// The other accounts of the line, newest first: the closed accounts this one continues, or the account that continues it (AP §8.8).
+  @BuiltValueField(wireName: r'linkedAccounts')
+  BuiltList<AdminCustomerDtoOutputLinkedAccountsInner> get linkedAccounts;
 
   /// «موثوق» by D23 and the latest mark.
   @BuiltValueField(wireName: r'trusted')
@@ -225,6 +236,22 @@ class _$AdminCustomerDtoOutputSerializer
               AdminCustomerDtoOutputReviewStop,
             ),
           );
+    yield r'closed';
+    yield object.closed == null
+        ? null
+        : serializers.serialize(
+            object.closed,
+            specifiedType: const FullType.nullable(
+              AdminCustomerDtoOutputClosed,
+            ),
+          );
+    yield r'linkedAccounts';
+    yield serializers.serialize(
+      object.linkedAccounts,
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminCustomerDtoOutputLinkedAccountsInner),
+      ]),
+    );
     yield r'trusted';
     yield serializers.serialize(
       object.trusted,
@@ -439,6 +466,29 @@ class _$AdminCustomerDtoOutputSerializer
           if (valueDes == null) continue;
           result.reviewStop.replace(valueDes);
           break;
+        case r'closed':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminCustomerDtoOutputClosed,
+                    ),
+                  )
+                  as AdminCustomerDtoOutputClosed?;
+          if (valueDes == null) continue;
+          result.closed.replace(valueDes);
+          break;
+        case r'linkedAccounts':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminCustomerDtoOutputLinkedAccountsInner),
+                    ]),
+                  )
+                  as BuiltList<AdminCustomerDtoOutputLinkedAccountsInner>;
+          result.linkedAccounts.replace(valueDes);
+          break;
         case r'trusted':
           final valueDes =
               serializers.deserialize(
@@ -630,7 +680,7 @@ class AdminCustomerDtoOutputGenderEnum extends EnumClass {
       _$adminCustomerDtoOutputGenderEnumValueOf(name);
 }
 
-/// «نشط», «محظور» (a block), «محظور» until the dues are paid, «موقوف حتى مراجعة الدعم» (AP §9.8).
+/// «نشط», «محظور» (a block), «محظور» until the dues are paid, «موقوف حتى مراجعة الدعم», «مغلق» (AP §9.8).
 class AdminCustomerDtoOutputStatusEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'active')
   static const AdminCustomerDtoOutputStatusEnum active =
@@ -644,6 +694,9 @@ class AdminCustomerDtoOutputStatusEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'review_stop')
   static const AdminCustomerDtoOutputStatusEnum reviewStop =
       _$adminCustomerDtoOutputStatusEnum_reviewStop;
+  @BuiltValueEnumConst(wireName: r'closed')
+  static const AdminCustomerDtoOutputStatusEnum closed =
+      _$adminCustomerDtoOutputStatusEnum_closed;
 
   static Serializer<AdminCustomerDtoOutputStatusEnum> get serializer =>
       _$adminCustomerDtoOutputStatusEnumSerializer;

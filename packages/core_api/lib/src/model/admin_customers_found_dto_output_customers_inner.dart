@@ -15,7 +15,7 @@ part 'admin_customers_found_dto_output_customers_inner.g.dart';
 /// * [id]
 /// * [name] - null until «أكمل بياناتك».
 /// * [maskedPhone]
-/// * [status] - «نشط», «محظور» (a block), «محظور» until the dues are paid, «موقوف حتى مراجعة الدعم» (AP §9.8).
+/// * [status] - «نشط», «محظور» (a block), «محظور» until the dues are paid, «موقوف حتى مراجعة الدعم», «مغلق» (AP §9.8).
 @BuiltValue()
 abstract class AdminCustomersFoundDtoOutputCustomersInner
     implements
@@ -33,10 +33,10 @@ abstract class AdminCustomersFoundDtoOutputCustomersInner
   @BuiltValueField(wireName: r'maskedPhone')
   String? get maskedPhone;
 
-  /// «نشط», «محظور» (a block), «محظور» until the dues are paid, «موقوف حتى مراجعة الدعم» (AP §9.8).
+  /// «نشط», «محظور» (a block), «محظور» until the dues are paid, «موقوف حتى مراجعة الدعم», «مغلق» (AP §9.8).
   @BuiltValueField(wireName: r'status')
   AdminCustomersFoundDtoOutputCustomersInnerStatusEnum get status;
-  // enum statusEnum {  active,  blocked,  dues_unpaid,  review_stop,  };
+  // enum statusEnum {  active,  blocked,  dues_unpaid,  review_stop,  closed,  };
 
   AdminCustomersFoundDtoOutputCustomersInner._();
 
@@ -191,7 +191,7 @@ class _$AdminCustomersFoundDtoOutputCustomersInnerSerializer
   }
 }
 
-/// «نشط», «محظور» (a block), «محظور» until the dues are paid, «موقوف حتى مراجعة الدعم» (AP §9.8).
+/// «نشط», «محظور» (a block), «محظور» until the dues are paid, «موقوف حتى مراجعة الدعم», «مغلق» (AP §9.8).
 class AdminCustomersFoundDtoOutputCustomersInnerStatusEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'active')
   static const AdminCustomersFoundDtoOutputCustomersInnerStatusEnum active =
@@ -205,6 +205,9 @@ class AdminCustomersFoundDtoOutputCustomersInnerStatusEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'review_stop')
   static const AdminCustomersFoundDtoOutputCustomersInnerStatusEnum reviewStop =
       _$adminCustomersFoundDtoOutputCustomersInnerStatusEnum_reviewStop;
+  @BuiltValueEnumConst(wireName: r'closed')
+  static const AdminCustomersFoundDtoOutputCustomersInnerStatusEnum closed =
+      _$adminCustomersFoundDtoOutputCustomersInnerStatusEnum_closed;
 
   static Serializer<AdminCustomersFoundDtoOutputCustomersInnerStatusEnum>
   get serializer =>

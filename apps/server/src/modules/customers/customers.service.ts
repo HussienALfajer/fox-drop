@@ -5,7 +5,7 @@ import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { TermsService } from '../content/index.js';
 import { GeoService, type Point } from '../geo/index.js';
-import { PhoneCipher } from '../identity/index.js';
+import { CustomerAccountsService, PhoneCipher } from '../identity/index.js';
 import { LedgerService } from '../ledger/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { type BlockKind, blockInForce } from './blocks.js';
@@ -88,6 +88,11 @@ export interface CustomerTicket {
 
 export type CustomerTickets = (accountId: string, cityId: string) => Promise<CustomerTicket[]>;
 
+export type CustomerActiveOrders = (
+  accountId: string,
+  executor?: Pick<NodePgDatabase, 'select'>,
+) => Promise<boolean>;
+
 export type CustomerOrderFacts = (accountId: string, cityId: string) => Promise<CustomerOrders>;
 
 export interface AddressFields {
@@ -143,6 +148,11 @@ export interface Location {
   zone: { id: string; name: string } | null;
 }
 
+// The reasons of the two `dues.transfer` journals (AP §8.8, slice 2.25c;
+// the wording ours).
+export const DUES_MOVED_OUT = 'نقل المستحقات إلى الحساب الجديد بالرقم نفسه';
+export const DUES_MOVED_IN = 'مستحقات منقولة من حساب مغلق بالرقم نفسه';
+
 // A customer belongs to no city; V1 serves Syria only, so «a past date»
 // is on Syria's clock.
 const PROFILE_TIME_ZONE = 'Asia/Damascus';
@@ -163,7 +173,79 @@ export class CustomersService {
     private readonly phones: PhoneCipher,
     private readonly terms: TermsService,
     private readonly ledger: LedgerService,
+    private readonly accounts: CustomerAccountsService,
   ) {}
+
+  // AP §8.8 (slice 2.25c): a new account on the number of a closed one
+  // continues its line; its blocks, review stops, strikes, trust marks and
+  // fake outcomes count for the line (`lineage`), and its dues move over
+  // in the sign-in's transaction (`moveDues`).
+  onModuleInit(): void {
+    this.accounts.onRelinked((tx, link) => this.moveDues(tx, link));
+  }
+
+  // Every account of the account's line, itself included (identity's
+  // `lineage`): what reads the customer's standing take.
+  lineage(accountId: string, executor?: Pick<NodePgDatabase, 'select'>): Promise<string[]> {
+    return this.accounts.lineage(accountId, executor);
+  }
+
+  // D19 (slice 2.25c): whether the account is not closed; placing reads it
+  // under the customer's lock, which the closure takes.
+  accountOpen(accountId: string, executor?: Pick<NodePgDatabase, 'select'>): Promise<boolean> {
+    return this.accounts.isOpen(accountId, executor);
+  }
+
+  // The customer's ordering lock on every account of the line, in order:
+  // placing takes its own account's, so a command on any account of the
+  // line takes turns with it.
+  async lockLine(tx: Tx, accountId: string): Promise<string[]> {
+    const line = await this.lineage(accountId, tx);
+    for (const id of line.toSorted()) {
+      await tx.execute(
+        sql`SELECT pg_advisory_xact_lock(hashtextextended(${customerOrderLock(id)}, 0))`,
+      );
+    }
+    return line;
+  }
+
+  // AP §8.8 (owner decision 2026-11-17): the closed account's dues in each
+  // city, owed or a credit, move to the new account: one `dues.transfer`
+  // per account against platform.adjustments, so the two net to zero there.
+  private async moveDues(
+    tx: Tx,
+    link: { accountId: string; closedAccountId: string; now: Date },
+  ): Promise<void> {
+    const owned = await this.ledger.ownedAccounts(link.closedAccountId, 'customer.dues', tx);
+    for (const from of owned) {
+      const balance = await this.ledger.balance(from.id, tx);
+      if (balance.amount === 0n) continue;
+      const open = (purpose: 'customer.dues' | 'platform.adjustments', ownerId: string | null) =>
+        this.ledger.openAccount(
+          { cityId: from.cityId, purpose, ownerId, currency: from.currency },
+          tx,
+        );
+      const adjustments = await open('platform.adjustments', null);
+      const to = await open('customer.dues', link.accountId);
+      const journal = (accountId: string, amount: bigint, reason: string) =>
+        this.ledger.post(
+          {
+            cityId: from.cityId,
+            type: 'dues.transfer',
+            source: null,
+            actor: { type: 'system', id: null },
+            reason,
+            entries: [
+              { accountId, currency: from.currency, amount },
+              { accountId: adjustments, currency: from.currency, amount: -amount },
+            ],
+          },
+          tx,
+        );
+      await journal(from.id, -balance.amount, DUES_MOVED_OUT);
+      await journal(to, balance.amount, DUES_MOVED_IN);
+    }
+  }
 
   // What ordering knows of a customer, for the panel's profile (AP §9.8):
   // registered by ordering at start, which customers cannot import.
@@ -176,6 +258,20 @@ export class CustomersService {
   ordersOf(accountId: string, cityId: string): Promise<CustomerOrders> {
     if (this.orderFacts === null) throw new Error('ordering has not registered its facts');
     return this.orderFacts(accountId, cityId);
+  }
+
+  // AP §8.8, CU §5.6 (slice 2.25c): whether the account has an order not
+  // ended, which refuses its closure; registered by ordering at start.
+  private activeOrders: CustomerActiveOrders | null = null;
+
+  useActiveOrders(check: CustomerActiveOrders): void {
+    this.activeOrders = check;
+  }
+
+  hasActiveOrder(accountId: string, executor?: Pick<NodePgDatabase, 'select'>): Promise<boolean> {
+    if (this.activeOrders === null)
+      throw new Error('ordering has not registered its active orders');
+    return this.activeOrders(accountId, executor);
   }
 
   private tickets: CustomerTickets | null = null;
@@ -199,12 +295,13 @@ export class CustomersService {
     now: Date,
     executor: Pick<NodePgDatabase, 'select'> = this.database.db,
   ): Promise<ActiveBlock | null> {
+    const line = await this.lineage(accountId, executor);
     const rows = await executor
       .select()
       .from(blocks)
       .where(
         and(
-          eq(blocks.customerAccountId, accountId),
+          inArray(blocks.customerAccountId, line),
           isNull(blocks.endedAt),
           sql`${blocks.kind} <> 'dues'`,
         ),
@@ -274,9 +371,7 @@ export class CustomersService {
       windowDays: number;
     },
   ): Promise<{ reviewStopped: boolean }> {
-    await tx.execute(
-      sql`SELECT pg_advisory_xact_lock(hashtextextended(${customerOrderLock(strike.accountId)}, 0))`,
-    );
+    const line = await this.lockLine(tx, strike.accountId);
     await tx
       .insert(lateCancelStrikes)
       .values({
@@ -294,10 +389,7 @@ export class CustomersService {
       .select({ n: count() })
       .from(lateCancelStrikes)
       .where(
-        and(
-          eq(lateCancelStrikes.customerAccountId, strike.accountId),
-          gte(lateCancelStrikes.at, since),
-        ),
+        and(inArray(lateCancelStrikes.customerAccountId, line), gte(lateCancelStrikes.at, since)),
       );
     if ((counted?.n ?? 0) < strike.strikes) return { reviewStopped: false };
     await tx
@@ -324,7 +416,12 @@ export class CustomersService {
     const rows = await executor
       .select({ id: reviewStops.id })
       .from(reviewStops)
-      .where(and(eq(reviewStops.customerAccountId, accountId), isNull(reviewStops.endedAt)))
+      .where(
+        and(
+          inArray(reviewStops.customerAccountId, await this.lineage(accountId, executor)),
+          isNull(reviewStops.endedAt),
+        ),
+      )
       .limit(1);
     return rows.length > 0;
   }
@@ -338,7 +435,7 @@ export class CustomersService {
     const [row] = await executor
       .select({ at: strikeClears.at })
       .from(strikeClears)
-      .where(eq(strikeClears.customerAccountId, accountId))
+      .where(inArray(strikeClears.customerAccountId, await this.lineage(accountId, executor)))
       .orderBy(desc(strikeClears.at), desc(strikeClears.id))
       .limit(1);
     return row?.at ?? null;
@@ -353,7 +450,7 @@ export class CustomersService {
     const [row] = await executor
       .select({ trusted: trustMarks.trusted, at: trustMarks.at })
       .from(trustMarks)
-      .where(eq(trustMarks.customerAccountId, accountId))
+      .where(inArray(trustMarks.customerAccountId, await this.lineage(accountId, executor)))
       .orderBy(desc(trustMarks.at), desc(trustMarks.id))
       .limit(1);
     return row ?? null;

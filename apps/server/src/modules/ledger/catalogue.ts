@@ -147,6 +147,11 @@ export const journalRules = {
   'dues.payment': { account: 'customer.dues', ...deskInAnyCurrency },
   // AP §8.8 ±, §9.10.7 (owner decision 2026-11-16, slice 2.20c).
   'dues.adjustment': { account: 'customer.dues', ...adjustment },
+  // AP §8.8 (slice 2.25c, owner decision 2026-11-17): a closed account's
+  // dues move to the new account on its number, one journal per account
+  // (a journal reaches one party only), each against platform.adjustments,
+  // so the two net to zero there.
+  'dues.transfer': { account: 'customer.dues', ...adjustment },
   'platform.revenue_delivery': { account: 'platform.revenue_delivery', counters: orderCounter },
   'platform.discount_cost': { account: 'platform.discount_cost', counters: orderCounter },
   'platform.compensation_cost': {

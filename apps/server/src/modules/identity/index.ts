@@ -97,13 +97,23 @@ export { ADMIN_SESSION_COOKIE, RouteAccessGuard } from './route-access.guard.js'
 export { AdminSessionsService, type AdminSession } from './admin-sessions.service.js';
 export { AppSessionsService, type AppParty, type AppSession } from './app-sessions.service.js';
 export { adminPermissions, type AdminPermission } from './permissions.js';
-export { deviceId, phone } from './app-auth.js';
+export {
+  AppCheckHeader,
+  AppCheckToken,
+  codeRequestAnswer,
+  codeSent,
+  deviceId,
+  phone,
+  signInCode,
+} from './app-auth.js';
+export { SignInCodeRefusedError } from './app-sign-in.service.js';
 export { PhoneCipher } from './phone-cipher.js';
 export {
   type CustomerAccountAdmin,
   type CustomerAccountRefusal,
   CustomerAccountRefusedError,
   CustomerAccountsService,
+  type CustomerAccountState,
 } from './customer-accounts.service.js';
 // For the tests of other modules that sign an app user in.
 export { CODE_SENDER, type DevelopmentCodeSender } from './code-sender.js';

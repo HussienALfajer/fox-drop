@@ -18,6 +18,9 @@ _$adminCustomersFoundDtoOutputCustomersInnerStatusEnum_duesUnpaid =
 const AdminCustomersFoundDtoOutputCustomersInnerStatusEnum
 _$adminCustomersFoundDtoOutputCustomersInnerStatusEnum_reviewStop =
     const AdminCustomersFoundDtoOutputCustomersInnerStatusEnum._('reviewStop');
+const AdminCustomersFoundDtoOutputCustomersInnerStatusEnum
+_$adminCustomersFoundDtoOutputCustomersInnerStatusEnum_closed =
+    const AdminCustomersFoundDtoOutputCustomersInnerStatusEnum._('closed');
 
 AdminCustomersFoundDtoOutputCustomersInnerStatusEnum
 _$adminCustomersFoundDtoOutputCustomersInnerStatusEnumValueOf(String name) {
@@ -30,6 +33,8 @@ _$adminCustomersFoundDtoOutputCustomersInnerStatusEnumValueOf(String name) {
       return _$adminCustomersFoundDtoOutputCustomersInnerStatusEnum_duesUnpaid;
     case 'reviewStop':
       return _$adminCustomersFoundDtoOutputCustomersInnerStatusEnum_reviewStop;
+    case 'closed':
+      return _$adminCustomersFoundDtoOutputCustomersInnerStatusEnum_closed;
     default:
       throw ArgumentError(name);
   }
@@ -43,6 +48,7 @@ _$adminCustomersFoundDtoOutputCustomersInnerStatusEnumValues =
         _$adminCustomersFoundDtoOutputCustomersInnerStatusEnum_blocked,
         _$adminCustomersFoundDtoOutputCustomersInnerStatusEnum_duesUnpaid,
         _$adminCustomersFoundDtoOutputCustomersInnerStatusEnum_reviewStop,
+        _$adminCustomersFoundDtoOutputCustomersInnerStatusEnum_closed,
       ],
     );
 
@@ -60,12 +66,14 @@ class _$AdminCustomersFoundDtoOutputCustomersInnerStatusEnumSerializer
     'blocked': 'blocked',
     'duesUnpaid': 'dues_unpaid',
     'reviewStop': 'review_stop',
+    'closed': 'closed',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'active': 'active',
     'blocked': 'blocked',
     'dues_unpaid': 'duesUnpaid',
     'review_stop': 'reviewStop',
+    'closed': 'closed',
   };
 
   @override

@@ -41,15 +41,18 @@ export function blockInForce(
 }
 
 // AP §9.8 «الحالة»: what the panel and the app show, the first that applies.
-// A manual block before the dues (its own banner names the reason), the dues
+// A closed account is «مغلق» whatever else holds (D19, slice 2.25c); a
+// manual block before the dues (its own banner names the reason), the dues
 // before the review stop (paying them is what the customer can do).
-export type AccountStatus = 'active' | 'blocked' | 'dues_unpaid' | 'review_stop';
+export type AccountStatus = 'active' | 'blocked' | 'dues_unpaid' | 'review_stop' | 'closed';
 
 export function accountStatus(state: {
+  closed: boolean;
   blocked: boolean;
   duesOwed: boolean;
   reviewStopped: boolean;
 }): AccountStatus {
+  if (state.closed) return 'closed';
   if (state.blocked) return 'blocked';
   if (state.duesOwed) return 'dues_unpaid';
   if (state.reviewStopped) return 'review_stop';
