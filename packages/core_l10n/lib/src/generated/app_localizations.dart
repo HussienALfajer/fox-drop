@@ -1294,6 +1294,12 @@ abstract class AppLocalizations {
   /// **'{percent}% بحد أقصى {amount}'**
   String customerCompensationPercent(String percent, String amount);
 
+  /// A personal code's percentage without a maximum, the late code's (CU §11.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'{percent}%'**
+  String customerPersonalPercent(String percent);
+
   /// The late code on the order screen (CU §11.6, the 45-minute row), with its value; the push (CU §14 #15) says it without the value.
   ///
   /// In ar, this message translates to:

@@ -247,7 +247,7 @@ export class OrderTimersWorker implements OnModuleInit {
           const result = await this.timers.lateCode(job.data, new Date());
           if (typeof result === 'object') {
             this.logger.log({ orderId: job.data.orderId }, 'late code issued');
-          } else if (result === 'unset' || result === 'other_currency') {
+          } else if (result === 'unset' || result === 'zero' || result === 'other_currency') {
             this.logger.warn(
               { orderId: job.data.orderId, skip: result },
               'late order without a late code: order.late_compensation_value',

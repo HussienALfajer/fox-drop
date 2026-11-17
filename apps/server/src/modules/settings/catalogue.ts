@@ -151,7 +151,9 @@ export const catalogue = {
   'order.prep_late_ops_alert_min': minutes(10),
   'order.delivery_late_alert_min': minutes(20),
   'order.delivery_late_compensation_min': minutes(45),
-  // An amount or a percentage of the order (AP Appendix A).
+  // An amount, or a percentage of the next order's items value without a
+  // maximum (AP Appendix A; our reading, to confirm with the owner before a
+  // value is set: slice 2.22c).
   'order.late_compensation_value': beforeLaunch({
     type: 'money',
     scope: 'city',

@@ -420,6 +420,34 @@ describe('the late code', () => {
     expect(await lateCodes(order.id)).toEqual([]);
   });
 
+  it('gives a test order none (decided by us: its code would cost real money)', async () => {
+    await setValue({ kind: 'amount', amountMinor: 2_500, currency: 'TRY' });
+    const order = await acceptedOrder();
+    await sql.query('UPDATE ordering.orders SET test_order = true WHERE id = $1', [order.id]);
+    const [job] = await jobs(order.id);
+    expect(
+      await app
+        .get(OrderTimers)
+        .lateCode(job!.data, new Date(order.promisedAt.getTime() + 45 * MINUTE_MS)),
+    ).toBe('not_late');
+    expect(await lateCodes(order.id)).toEqual([]);
+  });
+
+  it('issues nothing for an amount in another currency than the order', async () => {
+    // The setting is saved in the city's base; an order placed in an earlier
+    // base keeps its own currency.
+    await setValue({ kind: 'amount', amountMinor: 2_500, currency: 'TRY' });
+    const order = await acceptedOrder();
+    await sql.query("UPDATE ordering.orders SET currency = 'USD' WHERE id = $1", [order.id]);
+    const [job] = await jobs(order.id);
+    expect(
+      await app
+        .get(OrderTimers)
+        .lateCode(job!.data, new Date(order.promisedAt.getTime() + 45 * MINUTE_MS)),
+    ).toBe('other_currency');
+    expect(await lateCodes(order.id)).toEqual([]);
+  });
+
   it('never lets the application role change or delete a late code', async () => {
     await expect(sql.query('UPDATE marketing.late_codes SET issued_at = now()')).rejects.toThrow(
       /permission denied/,

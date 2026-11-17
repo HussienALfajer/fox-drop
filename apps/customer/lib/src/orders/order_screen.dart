@@ -315,7 +315,7 @@ String personalCodeValueText(
 }) {
   if (amount != null) return l10n.formatMoney(amount.amount, amount.currency);
   final percent = percentText(percentBp ?? 0);
-  if (maxDiscount == null) return '$percent%';
+  if (maxDiscount == null) return l10n.customerPersonalPercent(percent);
   return l10n.customerCompensationPercent(
     percent,
     l10n.formatMoney(maxDiscount.amount, maxDiscount.currency),

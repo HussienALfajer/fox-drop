@@ -30,9 +30,9 @@ export interface LateCode extends PersonalCodeValue {
 }
 
 // Why no late code was issued: the setting has no value yet («Before
-// launch», AP §13), its amount is in another currency than the order's, or
+// launch», AP §13), its percentage rounds to nothing, its amount is in another currency than the order's, or
 // the order has one already.
-export type LateCodeSkip = 'unset' | 'other_currency' | 'already_issued';
+export type LateCodeSkip = 'unset' | 'zero' | 'other_currency' | 'already_issued';
 
 // AP §8.3, §6.4, docs/domain/03 (slice 2.22c): the automatic late code, a
 // personal code of order.late_compensation_value issued once per order by the
@@ -74,7 +74,7 @@ export class LateCodesService {
     } else {
       const percentBp = Math.round(setting.percent * 100);
       // 0% gives nothing: no code.
-      if (percentBp < 1) return 'unset';
+      if (percentBp < 1) return 'zero';
       value = {
         kind: 'percentage',
         amount: null,
