@@ -4,19 +4,26 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.23b, resolving, closing and the pickup dispute (`docs/roadmap.md`, Phase 2, Support and trust). Not started.
+Slice 2.23b, resolving, closing and the pickup dispute (`docs/roadmap.md`, Phase 2, Support and trust). In progress.
 
 - **Roadmap line:** 2.23b Resolving, closing and the pickup dispute: the responsible party, «لا شيء مع توضيح», the resolutions of «سعر مختلف عن المحل», «الردود الجاهزة» in content, the resolution message pushed to the ticket's party, and the ticket «خلاف على دفعة الاستلام» opened by the restaurant's dispute after the pickup, with its three resolutions and the per-currency entries of «تصحيح في الحسابات» behind a preview (AP §9.9.3, §9.13, §10, RA §8.10 item 8, S10). Operations correct a pickup of 5 $ + 195 ₺ of which the restaurant received 195 ₺.
 - **Specs:** AP §9.9.1 (the pickup dispute's ticket), §9.9.3 (the responsible party, «لا شيء مع توضيح», «سعر مختلف عن المحل», the pickup dispute's three resolutions and «تصحيح في الحسابات», «Close» and the resolution message), §9.13 («الردود الجاهزة»), §9.1.3 («تذكرة عاجلة» for FIN on a pickup-dispute ticket), §6.3 (`support.resolve_pickup_dispute`: OWN, OPS, FIN), §10 (the resolution message to the party), §8.10, Appendix C; RA §8.10 item 8, S10; `docs/domain/10`; architecture §4.3 (`support` and `ledger`).
-- **Branch:** `feat/ticket-resolution` (not created yet).
+- **Branch:** `claude/build-slide-2-23b-fu2yfs` (the session's branch, in place of `feat/ticket-resolution`).
 - **Not in this slice:** the money of a problem after delivery and the wrong change (2.23c); «إعادة توصيل مجانية» (2.23d); the captain's «مشكلة في مبلغ الاستلام» ticket and the apps' sources (2.24).
 - **Plan:**
-  - [ ] Read the cited sections, `apps/server/src/modules/support/CLAUDE.md` (2.23a), ordering's `pickup_disputes` and the cancellation's preview; ask the owner the questions below.
+  - [x] Read the cited sections, `apps/server/src/modules/support/CLAUDE.md` (2.23a), ordering's `pickup_disputes` and the cancellation's preview; ask the owner the questions below.
   - [ ] The failing tests first: which resolutions each ticket type allows, the responsible party's requirement, and the per-currency entries of «تصحيح في الحسابات» (AP §9.9.3's example: 5 $ + 195 ₺ recorded, 195 ₺ received → +5 $ custody on the captain, a 206 ₺ credit to the restaurant).
   - [ ] Migration: the resolution columns on `support.tickets` (and the column grants of 0088), the source `pickup_dispute`, canned replies in `content`.
   - [ ] The server: resolve with its preview, close, the resolution message's push; the pickup dispute's ticket opened in the dispute's transaction (ordering calls support) with «تذكرة عاجلة» for FIN too.
   - [ ] `pnpm generate:api`, then the panel: the resolution form and preview, «الردود الجاهزة» in «المحتوى» and on the ticket page, the pickup dispute's details.
   - [ ] The `checker` agent, the `reviewer` agent on AP §9.9.3, then the pull request and the handover to 2.23c.
+
+### Owner decisions for 2.23b (2026-11-17)
+
+- «حل التذكرة» chooses the resolution, the responsible party where needed and the resolution message: the ticket becomes «محلولة» and the message goes to the ticket's party at once. «إغلاق» is its own button for a ticket that ends without a resolution (a duplicate, opened by mistake, the party unreachable), with an internal reason, no message and no entries: the ticket becomes «مغلقة».
+- «سعر مختلف عن المحل» is opened in this slice as a manual ticket for a customer, with the restaurant chosen and no order, so its two resolutions can be tried before the app's report (2.24).
+- «الردود الجاهزة» start from a draft list we write, which the owner or support edit in «المحتوى».
+- «تصحيح في الحسابات» tells the captain with a silent push of the change to their custody in each currency (the wording ours, to confirm); the restaurant gets the resolution message.
 
 ### Owner decisions for 2.23 (2026-11-17)
 
