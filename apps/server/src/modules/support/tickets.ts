@@ -54,11 +54,12 @@ export function ticketKind(typeCode: string): TicketKind {
 
 // AP §9.9.3: «لا شيء مع توضيح»; a price difference's «تم تصحيح السعر» and
 // «السعر صحيح»; a pickup dispute's «دفع الكابتن الفرق», «تصحيح في
-// الحسابات» and «الدفعة صحيحة». «كود تعويض» (slice 2.23c) is a general
-// one; the free re-delivery (2.23d) joins with its slice.
+// الحسابات» and «الدفعة صحيحة». «كود تعويض» (slice 2.23c) and «إعادة توصيل
+// مجانية» (slice 2.23d) are general ones.
 export const ticketResolutions = [
   'none_explained',
   'compensation_code',
+  'free_redelivery',
   'price_corrected',
   'price_correct',
   'captain_paid',
@@ -68,7 +69,7 @@ export const ticketResolutions = [
 export type TicketResolution = (typeof ticketResolutions)[number];
 
 const RESOLUTIONS: Record<TicketKind, readonly TicketResolution[]> = {
-  general: ['compensation_code', 'none_explained'],
+  general: ['compensation_code', 'free_redelivery', 'none_explained'],
   price_difference: ['price_corrected', 'price_correct'],
   pickup_dispute: ['captain_paid', 'accounts_corrected', 'payment_correct'],
 };
@@ -199,7 +200,12 @@ export function ticketLabel(number: bigint): string {
 export const WRONG_CHANGE_TYPE = 'amount_or_change';
 
 export type MoneyProblem =
-  'invalid_resolution' | 'order_required' | 'not_delivered' | 'amount_required' | 'value_required';
+  | 'invalid_resolution'
+  | 'order_required'
+  | 'not_delivered'
+  | 'amount_required'
+  | 'value_required'
+  | 'affected_required';
 
 // AP §8.10, §9.9.3, §6.4 (slice 2.23c; owner decisions 2026-11-17): the
 // money a general ticket's resolution may carry. A customer's ticket only
@@ -210,6 +216,10 @@ export type MoneyProblem =
 // gets nothing) and no items; its code is M itself, so it takes no value.
 // Every other ticket takes items and no M, and its code a value. A code is
 // never given when the customer is responsible.
+// «إعادة توصيل مجانية» (AP §9.9.3, slice 2.23d) takes the affected items of a
+// normal delivery (not the wrong change, no M, no code), never with the
+// customer responsible; its captain's pay may be charged (`chargePay`) to a
+// responsible restaurant or captain only.
 export function moneyProblem(input: {
   kind: TicketKind;
   party: TicketParty;
@@ -221,12 +231,34 @@ export function moneyProblem(input: {
   affectedLines: number;
   shortAmount: bigint | null;
   codeValue: boolean;
+  chargePay?: boolean;
 }): MoneyProblem | null {
   const code = input.resolution === 'compensation_code';
+  const redelivery = input.resolution === 'free_redelivery';
+  const chargePay = input.chargePay ?? false;
   const wrongChange = input.typeCode === WRONG_CHANGE_TYPE;
-  const asked = code || input.affectedLines > 0 || input.shortAmount !== null || input.codeValue;
+  const asked =
+    code ||
+    redelivery ||
+    chargePay ||
+    input.affectedLines > 0 ||
+    input.shortAmount !== null ||
+    input.codeValue;
   if (!asked) return null;
   if (input.kind !== 'general' || input.party !== 'customer') return 'invalid_resolution';
+  if (
+    chargePay &&
+    !(redelivery && (input.responsible === 'restaurant' || input.responsible === 'captain'))
+  ) {
+    return 'invalid_resolution';
+  }
+  if (redelivery) {
+    if (wrongChange || input.shortAmount !== null || input.codeValue) return 'invalid_resolution';
+    if (input.responsible === 'customer') return 'invalid_resolution';
+    if (!input.hasOrder) return 'order_required';
+    if (input.affectedLines === 0) return 'affected_required';
+    return input.deliveredNormally ? null : 'not_delivered';
+  }
   if (input.codeValue && (!code || wrongChange)) return 'invalid_resolution';
   if (code && input.responsible === 'customer') return 'invalid_resolution';
   if (!input.hasOrder) return 'order_required';
