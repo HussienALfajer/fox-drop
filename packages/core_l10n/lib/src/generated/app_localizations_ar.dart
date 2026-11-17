@@ -728,6 +728,16 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String customerPersonalPercent(String percent) {
+    return '$percent%';
+  }
+
+  @override
+  String customerLateCode(String value, String code) {
+    return 'تأخر طلبك، وهذا كود خصم $value لطلبك القادم: $code';
+  }
+
+  @override
   String customerCodeReplaceAsk(String current, String code) {
     return 'طلبك يحمل الكود $current. هل تستبدله بالكود $code؟';
   }

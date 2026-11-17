@@ -122,6 +122,25 @@ void main() {
     await app.done(tester);
   });
 
+  testWidgets('any push of the order on screen reads it again (CU §11.6)', (
+    tester,
+  ) async {
+    final push = FakePush();
+    final app = _app(push);
+    await app.pump(tester);
+    push.receive({'target': 'order', 'orderId': _orderId, 'kind': 'door_ping'});
+    await tester.pumpAndSettle();
+    final reads = app.server.to('/v1/customer/orders/$_orderId').length;
+    // The late code's push (CU §14 #15) carries no kind.
+    push.receive({'target': 'order', 'orderId': _orderId});
+    await tester.pumpAndSettle();
+    expect(
+      app.server.to('/v1/customer/orders/$_orderId').length,
+      greaterThan(reads),
+    );
+    await app.done(tester);
+  });
+
   test('only an order target has a route yet', () {
     expect(
       pushTargetPath({'target': 'order', 'orderId': 'a b'}),

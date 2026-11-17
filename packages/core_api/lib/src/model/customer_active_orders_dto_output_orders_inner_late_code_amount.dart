@@ -6,7 +6,7 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'customer_active_orders_dto_output_orders_inner_cancellation_compensation_amount.g.dart';
+part 'customer_active_orders_dto_output_orders_inner_late_code_amount.g.dart';
 
 /// A fixed amount; null for a percentage.
 ///
@@ -14,11 +14,11 @@ part 'customer_active_orders_dto_output_orders_inner_cancellation_compensation_a
 /// * [amount]
 /// * [currency]
 @BuiltValue()
-abstract class CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmount
+abstract class CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmount
     implements
         Built<
-          CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmount,
-          CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmountBuilder
+          CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmount,
+          CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmountBuilder
         > {
   @BuiltValueField(wireName: r'amount')
   String get amount;
@@ -26,48 +26,43 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationA
   @BuiltValueField(wireName: r'currency')
   String get currency;
 
-  CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmount._();
+  CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmount._();
 
-  factory CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmount([
+  factory CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmount([
     void updates(
-      CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmountBuilder
-      b,
+      CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmountBuilder b,
     ),
-  ]) = _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmount;
+  ]) = _$CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmount;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(
-    CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmountBuilder
-    b,
+    CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmountBuilder b,
   ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<
-    CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmount
-  >
+  static Serializer<CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmount>
   get serializer =>
-      _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmountSerializer();
+      _$CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmountSerializer();
 }
 
-class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmountSerializer
+class _$CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmountSerializer
     implements
         PrimitiveSerializer<
-          CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmount
+          CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmount
         > {
   @override
   final Iterable<Type> types = const [
-    CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmount,
-    _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmount,
+    CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmount,
+    _$CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmount,
   ];
 
   @override
   final String wireName =
-      r'CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmount';
+      r'CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmount';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmount
-    object, {
+    CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmount object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'amount';
@@ -85,8 +80,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmountSe
   @override
   Object serialize(
     Serializers serializers,
-    CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmount
-    object, {
+    CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmount object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -101,7 +95,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmountSe
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmountBuilder
+    required CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmountBuilder
     result,
     required List<Object?> unhandled,
   }) {
@@ -136,14 +130,13 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmountSe
   }
 
   @override
-  CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmount
-  deserialize(
+  CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmount deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
     final result =
-        CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmountBuilder();
+        CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmountBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

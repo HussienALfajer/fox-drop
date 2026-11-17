@@ -83,7 +83,7 @@ import { OrderAssignments } from './order-assignments.js';
 import { canHandOver } from './handover.js';
 import { leaveCaptain } from './cannot-complete.js';
 import { baseTotal, linesOf } from './pickup-booking.js';
-import type { SearchStartJob } from './order-timers.js';
+import type { LateCodeJob, SearchStartJob } from './order-timers.js';
 import type { AfterCommit } from './delivery-booking.js';
 import {
   AFTER_PICKUP,
@@ -2970,6 +2970,15 @@ export class OrderCommands {
     const noCaptainAlertMin = prepared.searchStartAt
       ? await this.settings.get('dispatch.no_captain_alert_min', { cityId: order.cityId })
       : 0;
+    // AP §8.3 (slice 2.22c): every new promised time sets the late code's
+    // timer; the one set for an earlier time finds it moved.
+    const promisedAt = prepared.set.promisedAt instanceof Date ? prepared.set.promisedAt : null;
+    const lateCodeMin =
+      promisedAt === null
+        ? 0
+        : await this.settings.get('order.delivery_late_compensation_min', {
+            cityId: order.cityId,
+          });
     const publicReason = prepared.publicReason ?? null;
 
     // pg-boss connects before the lock is taken, never while it is held.
@@ -3024,6 +3033,17 @@ export class OrderCommands {
         };
         await this.jobs.send(QUEUES.searchStart, job, {
           startAfter: prepared.searchStartAt,
+          db: inTransaction(tx),
+        });
+      }
+      if (promisedAt !== null) {
+        const job: LateCodeJob = {
+          orderId: order.id,
+          placedAt: order.placedAt.toISOString(),
+          promisedAt: promisedAt.toISOString(),
+        };
+        await this.jobs.send(QUEUES.lateCode, job, {
+          startAfter: new Date(promisedAt.getTime() + lateCodeMin * MINUTE_MS),
           db: inTransaction(tx),
         });
       }

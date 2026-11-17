@@ -605,6 +605,41 @@ void main() {
     await app.done(tester);
   });
 
+  testWidgets('a late order shows its late code (CU §11.6)', (tester) async {
+    final app = await open(tester, [
+      FakeAnswer(200, {
+        'order': {
+          ..._order(status: 'picked_up', version: 6),
+          'lateCode': {
+            'code': 'L4TECODE',
+            'kind': 'percentage',
+            'amount': null,
+            'percentBp': 1500,
+            'maxDiscount': null,
+            'validTo': '2026-12-07T13:20:00.000Z',
+            'issuedAt': '2026-11-07T13:20:00.000Z',
+          },
+        },
+      }),
+    ]);
+    final tile = find.byKey(const Key('late-code'));
+    expect(
+      find.descendant(
+        of: tile,
+        matching: find.text(
+          'تأخر طلبك، وهذا كود خصم 15% لطلبك القادم: L4TECODE',
+        ),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: tile, matching: find.text('ينتهي 07/12/2026')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('late-code-codes')), findsOneWidget);
+    await app.done(tester);
+  });
+
   group('«مساعدة» and «إلغاء الطلب» (CU §11.4–11.5)', () {
     void reasons(TestApp app) {
       app.server.on('/v1/customer/content', [

@@ -100,12 +100,11 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensation
   final CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationKindEnum
   kind;
   @override
-  final CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmount?
-  amount;
+  final CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmount? amount;
   @override
   final int? percentBp;
   @override
-  final CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscount?
+  final CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscount?
   maxDiscount;
   @override
   final DateTime validTo;
@@ -204,27 +203,25 @@ class CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationBuilder
     kind,
   ) => _$this._kind = kind;
 
-  CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmountBuilder?
-  _amount;
-  CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmountBuilder
-  get amount => _$this._amount ??=
-      CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmountBuilder();
+  CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmountBuilder? _amount;
+  CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmountBuilder get amount =>
+      _$this._amount ??=
+          CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmountBuilder();
   set amount(
-    CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationAmountBuilder?
-    amount,
+    CustomerActiveOrdersDtoOutputOrdersInnerLateCodeAmountBuilder? amount,
   ) => _$this._amount = amount;
 
   int? _percentBp;
   int? get percentBp => _$this._percentBp;
   set percentBp(int? percentBp) => _$this._percentBp = percentBp;
 
-  CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscountBuilder?
+  CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscountBuilder?
   _maxDiscount;
-  CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscountBuilder
+  CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscountBuilder
   get maxDiscount => _$this._maxDiscount ??=
-      CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscountBuilder();
+      CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscountBuilder();
   set maxDiscount(
-    CustomerActiveOrdersDtoOutputOrdersInnerCancellationCompensationMaxDiscountBuilder?
+    CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscountBuilder?
     maxDiscount,
   ) => _$this._maxDiscount = maxDiscount;
 

@@ -13,6 +13,7 @@ import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inne
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_estimate.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_outcome.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_rejection.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_late_code.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_door_ping.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_removed_lines_inner.dart';
 import 'package:built_collection/built_collection.dart';
@@ -31,6 +32,7 @@ part 'customer_order_dto_output_order.g.dart';
 /// * [status] - AP §8.1.
 /// * [version] - Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown (RA §4.3).
 /// * [placedAt]
+/// * [lateCode]
 /// * [promisedAt] - «يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows.
 /// * [doorPing]
 /// * [itemReport]
@@ -73,6 +75,9 @@ abstract class CustomerOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'placedAt')
   DateTime get placedAt;
+
+  @BuiltValueField(wireName: r'lateCode')
+  CustomerActiveOrdersDtoOutputOrdersInnerLateCode? get lateCode;
 
   /// «يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows.
   @BuiltValueField(wireName: r'promisedAt')
@@ -196,6 +201,15 @@ class _$CustomerOrderDtoOutputOrderSerializer
       object.placedAt,
       specifiedType: const FullType(DateTime),
     );
+    yield r'lateCode';
+    yield object.lateCode == null
+        ? null
+        : serializers.serialize(
+            object.lateCode,
+            specifiedType: const FullType.nullable(
+              CustomerActiveOrdersDtoOutputOrdersInnerLateCode,
+            ),
+          );
     yield r'promisedAt';
     yield object.promisedAt == null
         ? null
@@ -416,6 +430,18 @@ class _$CustomerOrderDtoOutputOrderSerializer
                   )
                   as DateTime;
           result.placedAt = valueDes;
+          break;
+        case r'lateCode':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CustomerActiveOrdersDtoOutputOrdersInnerLateCode,
+                    ),
+                  )
+                  as CustomerActiveOrdersDtoOutputOrdersInnerLateCode?;
+          if (valueDes == null) continue;
+          result.lateCode.replace(valueDes);
           break;
         case r'promisedAt':
           final valueDes =

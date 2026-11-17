@@ -76,19 +76,21 @@ final pushTapsProvider = Provider<void>((ref) {
 
 /// CU §11.7 (slice 2.13d): the door ping that arrives while the app is open
 /// opens its order over the screen the customer is on, whose screen rings
-/// full screen; an order screen already open reads the order now, its socket
-/// may be down. The system shows no notification in the foreground.
+/// full screen. Any push of the order on screen reads the order now: its
+/// socket may be down, and the late code (CU §11.6, slice 2.22c) changes the
+/// order without an event. The system shows no notification in the
+/// foreground.
 final doorPingsProvider = Provider<void>((ref) {
   final push = ref.watch(pushProvider);
   final router = ref.watch(routerProvider);
   final pings = push.received.listen((data) {
     final orderId = data['orderId'];
     final path = pushTargetPath(data);
-    if (data['kind'] != 'door_ping' || orderId == null || path == null) return;
+    if (orderId == null || path == null || data['target'] != 'order') return;
     final here = router.state.uri.toString();
     if (here == path) {
       unawaited(ref.read(orderFeedProvider(orderId)).refresh());
-    } else {
+    } else if (data['kind'] == 'door_ping') {
       unawaited(router.push(path));
     }
   });

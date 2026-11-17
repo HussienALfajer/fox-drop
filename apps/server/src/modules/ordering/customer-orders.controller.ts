@@ -32,8 +32,30 @@ import {
 import { OrderCommandRefusedError, OrderCommands } from './order-commands.js';
 import type { OrderView } from './order-views.js';
 import { OrderRefusedError, OrdersService } from './orders.service.js';
-import { type Compensation, CompensationsService } from '../marketing/index.js';
+import {
+  type Compensation,
+  CompensationsService,
+  type LateCode,
+  LateCodesService,
+} from '../marketing/index.js';
 import { orderStatuses } from './schema.js';
+
+// A personal code with its value (CU §11.6, §11.9): a compensation's or the
+// late code.
+const personalCode = z.object({
+  code: z.string(),
+  kind: z.enum(['fixed_amount', 'percentage']),
+  amount: z
+    .object({ amount: z.string(), currency: z.string() })
+    .nullable()
+    .describe('A fixed amount; null for a percentage.'),
+  percentBp: z.number().int().nullable().describe('A percentage in basis points.'),
+  maxDiscount: z
+    .object({ amount: z.string(), currency: z.string() })
+    .nullable()
+    .describe("A percentage's maximum; null for the late code's without one."),
+  validTo: z.iso.datetime(),
+});
 
 class CustomerPlaceOrderDto extends createZodDto(
   z
@@ -79,6 +101,12 @@ const customerOrder = z.object({
       'Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown (RA §4.3).',
     ),
   placedAt: z.iso.datetime(),
+  lateCode: personalCode
+    .extend({ issuedAt: z.iso.datetime() })
+    .nullable()
+    .describe(
+      'CU §11.6, AP §8.3 (slice 2.22c): the late code the order earned, still not delivered at the promised time + order.delivery_late_compensation_min; it is also in «أكوادي». Null without one, and in the list of active orders.',
+    ),
   promisedAt: z.iso
     .datetime()
     .nullable()
@@ -120,21 +148,7 @@ const customerOrder = z.object({
         .describe(
           'The customer cancelled it themselves while placed: «ألغيت طلبك» instead of the text (CU §11.4, §11.9).',
         ),
-      compensation: z
-        .object({
-          code: z.string(),
-          kind: z.enum(['fixed_amount', 'percentage']),
-          amount: z
-            .object({ amount: z.string(), currency: z.string() })
-            .nullable()
-            .describe('A fixed amount; null for a percentage.'),
-          percentBp: z.number().int().nullable().describe('A percentage in basis points.'),
-          maxDiscount: z
-            .object({ amount: z.string(), currency: z.string() })
-            .nullable()
-            .describe("A percentage's maximum."),
-          validTo: z.iso.datetime(),
-        })
+      compensation: personalCode
         .nullable()
         .describe(
           "CU §11.9 (slice 2.22b): the compensation code given on this order, the latest issued, shown on «أُلغي طلبك»; it is also in «أكوادي». Null without one, and while OWN's approval waits.",
@@ -317,6 +331,7 @@ export class CustomerOrdersController {
     private readonly commands: OrderCommands,
     private readonly captainAccounts: CaptainAccountsService,
     private readonly compensations: CompensationsService,
+    private readonly lateCodes: LateCodesService,
   ) {}
 
   @Get('orders/active')
@@ -502,12 +517,13 @@ export class CustomerOrdersController {
   }
 
   private async withNames(order: OrderView) {
-    const [names, captains, compensation] = await Promise.all([
+    const [names, captains, compensation, lateCode] = await Promise.all([
       this.merchants.names([order.restaurantId]),
       this.captainsOf([order]),
       order.cancellation === null ? null : this.compensations.issuedCode(order.id),
+      order.acceptance === null ? null : this.lateCodes.forOrder(order.id),
     ]);
-    return orderBody(order, names, captains, compensation);
+    return orderBody(order, names, captains, compensation, lateCode);
   }
 
   // The captains of these orders; with their number once one of their orders
@@ -546,6 +562,8 @@ function orderBody(
   captains: Map<string, CardCaptain>,
   // CU §11.9: the compensation code on a cancelled order (slice 2.22b).
   compensation: Compensation | null = null,
+  // CU §11.6: the order's late code (slice 2.22c).
+  lateCode: LateCode | null = null,
 ) {
   const captain = order.captainId === null ? undefined : captains.get(order.captainId);
   const restaurant = names.get(order.restaurantId);
@@ -557,6 +575,10 @@ function orderBody(
     version: order.version,
     placedAt: order.placedAt.toISOString(),
     promisedAt: order.acceptance?.promisedAt.toISOString() ?? null,
+    lateCode: lateCode && {
+      ...personalCodeBody(lateCode),
+      issuedAt: lateCode.issuedAt.toISOString(),
+    },
     doorPing: order.doorPing && {
       at: order.doorPing.at.toISOString(),
       answer: order.doorPing.answer,
@@ -577,20 +599,11 @@ function orderBody(
       compensation:
         compensation === null || compensation.code === null
           ? null
-          : {
+          : personalCodeBody({
+              ...compensation,
               code: compensation.code,
-              kind: compensation.kind,
-              amount:
-                compensation.amount === null
-                  ? null
-                  : { amount: text(compensation.amount), currency: compensation.currency },
-              percentBp: compensation.percentBp,
-              maxDiscount:
-                compensation.maxDiscount === null
-                  ? null
-                  : { amount: text(compensation.maxDiscount), currency: compensation.currency },
-              validTo: compensation.codeValidTo!.toISOString(),
-            },
+              validTo: compensation.codeValidTo!,
+            }),
     },
     outcome: order.outcome && {
       at: order.outcome.at.toISOString(),
@@ -654,3 +667,25 @@ function orderBody(
 }
 
 const text = (value: bigint) => value.toString();
+
+function personalCodeBody(value: {
+  code: string;
+  kind: 'fixed_amount' | 'percentage';
+  amount: bigint | null;
+  percentBp: number | null;
+  maxDiscount: bigint | null;
+  currency: string;
+  validTo: Date;
+}) {
+  return {
+    code: value.code,
+    kind: value.kind,
+    amount: value.amount === null ? null : { amount: text(value.amount), currency: value.currency },
+    percentBp: value.percentBp,
+    maxDiscount:
+      value.maxDiscount === null
+        ? null
+        : { amount: text(value.maxDiscount), currency: value.currency },
+    validTo: value.validTo.toISOString(),
+  };
+}
