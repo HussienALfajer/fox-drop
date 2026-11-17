@@ -133,7 +133,9 @@ const customerOrder = z.object({
       resolvedAt: z.iso.datetime().nullable(),
     })
     .nullable()
-    .describe('CU §12.2, Q17 (slice 2.24a): the customer\'s one report on the order; null without one.'),
+    .describe(
+      "CU §12.2, Q17 (slice 2.24a): the customer's one report on the order; null without one.",
+    ),
   reportUntil: z.iso
     .datetime()
     .nullable()
@@ -287,6 +289,7 @@ const customerOrder = z.object({
     .describe("The total in the city's other currencies, by the order's own rates (CU §11.1)."),
   lines: z.array(
     z.object({
+      position: z.int().describe("The line's place in the order, for a report's items (CU §12.2)."),
       itemId: z.uuid(),
       name: z.string(),
       quantity: z.int(),
@@ -675,7 +678,11 @@ export class CustomerOrdersController {
       ]);
     const until =
       report === null
-        ? await this.support.reportUntil({ cityId: order.cityId, status: order.status, deliveredAt })
+        ? await this.support.reportUntil({
+            cityId: order.cityId,
+            status: order.status,
+            deliveredAt,
+          })
         : null;
     return orderBody(order, names, captains, compensation, lateCode, {
       report,

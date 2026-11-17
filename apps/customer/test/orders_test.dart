@@ -61,6 +61,7 @@ Map<String, Object?> _order({
       lines ??
       [
         {
+          'position': 0,
           'itemId': shawarmaId,
           'name': 'شاورما دجاج',
           'quantity': 2,
@@ -323,6 +324,7 @@ void main() {
       String? note,
       int quantity = 1,
     }) => {
+      'position': 0,
       'itemId': itemId,
       'name': name,
       'quantity': quantity,
@@ -942,6 +944,7 @@ void main() {
             promisedAt: '2026-11-07T12:45:00.000Z',
             lines: [
               {
+                'position': 0,
                 'itemId': shawarmaId,
                 'name': 'شاورما دجاج',
                 'quantity': 3,
@@ -953,6 +956,7 @@ void main() {
                 'quantityBefore': 2,
               },
               {
+                'position': 1,
                 'itemId': shawarmaId,
                 'name': 'بطاطا',
                 'quantity': 1,

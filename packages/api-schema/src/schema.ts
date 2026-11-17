@@ -6851,6 +6851,8 @@ export interface components {
                     amount: string;
                 }[];
                 lines: {
+                    /** @description The line's place in the order, for a report's items (CU §12.2). */
+                    position: number;
                     /** Format: uuid */
                     itemId: string;
                     name: string;
@@ -7112,6 +7114,8 @@ export interface components {
                     amount: string;
                 }[];
                 lines: {
+                    /** @description The line's place in the order, for a report's items (CU §12.2). */
+                    position: number;
                     /** Format: uuid */
                     itemId: string;
                     name: string;

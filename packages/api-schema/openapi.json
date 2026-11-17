@@ -21858,6 +21858,12 @@
                   "items": {
                     "type": "object",
                     "properties": {
+                      "position": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991,
+                        "description": "The line's place in the order, for a report's items (CU §12.2)."
+                      },
                       "itemId": {
                         "type": "string",
                         "format": "uuid",
@@ -21933,6 +21939,7 @@
                       }
                     },
                     "required": [
+                      "position",
                       "itemId",
                       "name",
                       "quantity",
@@ -22985,6 +22992,12 @@
                 "items": {
                   "type": "object",
                   "properties": {
+                    "position": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "description": "The line's place in the order, for a report's items (CU §12.2)."
+                    },
                     "itemId": {
                       "type": "string",
                       "format": "uuid",
@@ -23060,6 +23073,7 @@
                     }
                   },
                   "required": [
+                    "position",
                     "itemId",
                     "name",
                     "quantity",
