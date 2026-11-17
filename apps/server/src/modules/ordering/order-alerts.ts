@@ -6,7 +6,7 @@ import {
   type OnApplicationShutdown,
   type OnModuleInit,
 } from '@nestjs/common';
-import { and, eq, gte, inArray, isNotNull, sql } from 'drizzle-orm';
+import { and, eq, gte, inArray, isNotNull, or, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -16,6 +16,7 @@ import { reportError } from '../../observability/error-tracking.js';
 import { CaptainsService } from '../captains/index.js';
 import { type AlertCode, AlertsService } from '../notifications/index.js';
 import { SettingsService } from '../settings/index.js';
+import { TicketSync } from '../support/index.js';
 import { UNTIL_ENDED } from './active-orders.js';
 import { openCannotComplete } from './cannot-complete.js';
 import { type OpenEmergency, openEmergency } from './emergencies.js';
@@ -180,6 +181,7 @@ export class OrderAlerts {
     private readonly alerts: AlertsService,
     private readonly captains: CaptainsService,
     private readonly settings: SettingsService,
+    private readonly tickets: TicketSync,
   ) {}
 
   // With `timer`, it also sends the job of the next moment: a transition's
@@ -235,6 +237,11 @@ export class OrderAlerts {
         open,
         now,
       );
+      // AP §9.9.2 (slice 2.23a): an order that ended takes its tickets out of
+      // «عاجلة» and closes their «تذكرة عاجلة».
+      if (!UNTIL_ENDED.includes(order.status)) {
+        await this.tickets.orderEnded(tx, order.id, now);
+      }
       if (timer && next) {
         await this.jobs.send(
           QUEUES.orderAlerts,
@@ -251,16 +258,21 @@ export class OrderAlerts {
   }
 
   // The live orders, for the worker's start, or those a captain is on, for
-  // the GPS sweep.
+  // the GPS sweep. The start also takes the orders whose tickets are still
+  // urgent (slice 2.23a), so an ended order whose sync ran out of retries
+  // closes their «تذكرة عاجلة».
   async liveOrders(withCaptain: boolean): Promise<OrderAlertsJob[]> {
+    const urgent = withCaptain ? [] : await this.tickets.urgentOrderIds();
     const rows = await this.database.db
       .select({ orderId: orders.id, placedAt: orders.placedAt })
       .from(orders)
       .where(
-        and(
-          inArray(orders.status, UNTIL_ENDED),
-          withCaptain ? isNotNull(orders.captainId) : undefined,
-        ),
+        withCaptain
+          ? and(inArray(orders.status, UNTIL_ENDED), isNotNull(orders.captainId))
+          : or(
+              inArray(orders.status, UNTIL_ENDED),
+              urgent.length > 0 ? inArray(orders.id, urgent) : undefined,
+            ),
       );
     return rows.map((row) => ({ orderId: row.orderId, placedAt: row.placedAt.toISOString() }));
   }

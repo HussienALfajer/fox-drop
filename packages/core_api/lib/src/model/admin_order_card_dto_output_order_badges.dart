@@ -19,6 +19,7 @@ part 'admin_order_card_dto_output_order_badges.g.dart';
 /// * [itemReport] - «صنف نفد»: an open item-unavailable report (RA §8.12).
 /// * [cannotComplete] - «بانتظار العمليات»: the captain's open «لا أستطيع إكمال الطلب» (CA §9.11, slice 2.13b).
 /// * [emergency] - «طوارئ»: the captain's open emergency (CA §9.11, slice 2.13c).
+/// * [ticket] - «لها تذكرة» (AP §9.2, slice 2.23a): an open ticket on the order.
 @BuiltValue()
 abstract class AdminOrderCardDtoOutputOrderBadges
     implements
@@ -57,6 +58,10 @@ abstract class AdminOrderCardDtoOutputOrderBadges
   /// «طوارئ»: the captain's open emergency (CA §9.11, slice 2.13c).
   @BuiltValueField(wireName: r'emergency')
   bool get emergency;
+
+  /// «لها تذكرة» (AP §9.2, slice 2.23a): an open ticket on the order.
+  @BuiltValueField(wireName: r'ticket')
+  bool get ticket;
 
   AdminOrderCardDtoOutputOrderBadges._();
 
@@ -126,6 +131,11 @@ class _$AdminOrderCardDtoOutputOrderBadgesSerializer
     yield r'emergency';
     yield serializers.serialize(
       object.emergency,
+      specifiedType: const FullType(bool),
+    );
+    yield r'ticket';
+    yield serializers.serialize(
+      object.ticket,
       specifiedType: const FullType(bool),
     );
   }
@@ -226,6 +236,15 @@ class _$AdminOrderCardDtoOutputOrderBadgesSerializer
                   )
                   as bool;
           result.emergency = valueDes;
+          break;
+        case r'ticket':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.ticket = valueDes;
           break;
         default:
           unhandled.add(key);

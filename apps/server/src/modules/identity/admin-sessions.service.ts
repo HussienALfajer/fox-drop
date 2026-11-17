@@ -273,6 +273,37 @@ export class AdminSessionsService {
     return new Map(rows.flatMap((row) => (row.name === null ? [] : [[row.id, row.name] as const])));
   }
 
+  // The active team members with a name and a permission, by name: whom a
+  // ticket may be assigned to (AP §9.9.2, slice 2.23a).
+  async teamWith(permission: AdminPermission): Promise<{ id: string; name: string }[]> {
+    const holders = this.database.db
+      .select({ id: adminAccountRoles.accountId })
+      .from(adminAccountRoles)
+      .innerJoin(
+        adminRolePermissions,
+        eq(adminRolePermissions.roleCode, adminAccountRoles.roleCode),
+      )
+      .where(
+        and(
+          isNull(adminAccountRoles.revokedAt),
+          eq(adminRolePermissions.permissionCode, permission),
+        ),
+      );
+    const rows = await this.database.db
+      .select({ id: adminAccounts.id, name: adminAccounts.name })
+      .from(adminAccounts)
+      .where(
+        and(
+          eq(adminAccounts.status, 'active'),
+          isNotNull(adminAccounts.name),
+          ne(adminAccounts.name, ''),
+          inArray(adminAccounts.id, holders),
+        ),
+      )
+      .orderBy(asc(adminAccounts.name));
+    return rows.map((row) => ({ id: row.id, name: row.name! }));
+  }
+
   // The active team members with a name and without a permission, by name:
   // the staff member without FIN a desk names on a field visit (AP §9.10.3,
   // slice 2.19c; an OWN or FIN visitor records it in a field session).

@@ -87,11 +87,15 @@ import 'package:core_api/src/model/admin_notification_resent_dto_output.dart';
 import 'package:core_api/src/model/admin_notification_text_dto_output.dart';
 import 'package:core_api/src/model/admin_notification_texts_dto_output.dart';
 import 'package:core_api/src/model/admin_open_drawer_session_dto.dart';
+import 'package:core_api/src/model/admin_open_order_ticket_dto.dart';
+import 'package:core_api/src/model/admin_open_ticket_dto.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output.dart';
 import 'package:core_api/src/model/admin_order_compensation_dto_output.dart';
 import 'package:core_api/src/model/admin_order_compensations_dto_output.dart';
 import 'package:core_api/src/model/admin_order_dto_output.dart';
 import 'package:core_api/src/model/admin_order_offers_dto_output.dart';
+import 'package:core_api/src/model/admin_order_ticket_dto_output.dart';
+import 'package:core_api/src/model/admin_order_tickets_dto_output.dart';
 import 'package:core_api/src/model/admin_outcome_change_preview_answer_dto_output.dart';
 import 'package:core_api/src/model/admin_outcome_change_preview_dto.dart';
 import 'package:core_api/src/model/admin_outcome_preview_answer_dto_output.dart';
@@ -153,6 +157,16 @@ import 'package:core_api/src/model/admin_statement_restaurants_dto_output.dart';
 import 'package:core_api/src/model/admin_terms_dto_output.dart';
 import 'package:core_api/src/model/admin_terms_version_dto_output.dart';
 import 'package:core_api/src/model/admin_texts_dto_output.dart';
+import 'package:core_api/src/model/admin_ticket_assignee_dto.dart';
+import 'package:core_api/src/model/admin_ticket_assignees_dto_output.dart';
+import 'package:core_api/src/model/admin_ticket_dto_output.dart';
+import 'package:core_api/src/model/admin_ticket_note_dto.dart';
+import 'package:core_api/src/model/admin_ticket_page_dto_output.dart';
+import 'package:core_api/src/model/admin_ticket_parties_dto_output.dart';
+import 'package:core_api/src/model/admin_ticket_party_search_dto.dart';
+import 'package:core_api/src/model/admin_ticket_status_dto.dart';
+import 'package:core_api/src/model/admin_ticket_types_dto_output.dart';
+import 'package:core_api/src/model/admin_tickets_dto_output.dart';
 import 'package:core_api/src/model/admin_update_contact_dto.dart';
 import 'package:core_api/src/model/admin_update_notification_text_dto.dart';
 import 'package:core_api/src/model/admin_upload_dto_output.dart';
@@ -6096,6 +6110,194 @@ class AdminApi {
     }
 
     return Response<AdminOrderCompensationsDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminOrderTicketsList
+  ///
+  ///
+  /// Parameters:
+  /// * [orderId]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminOrderTicketsDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminOrderTicketsDtoOutput>> adminOrderTicketsList({
+    required String orderId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/orders/{orderId}/tickets'.replaceAll(
+      '{'
+      r'orderId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        orderId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminOrderTicketsDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminOrderTicketsDtoOutput),
+                )
+                as AdminOrderTicketsDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminOrderTicketsDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminOrderTicketsOpen
+  ///
+  ///
+  /// Parameters:
+  /// * [orderId]
+  /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
+  /// * [adminOpenOrderTicketDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminOrderTicketDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminOrderTicketDtoOutput>> adminOrderTicketsOpen({
+    required String orderId,
+    required String idempotencyKey,
+    required AdminOpenOrderTicketDto adminOpenOrderTicketDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/orders/{orderId}/tickets'.replaceAll(
+      '{'
+      r'orderId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        orderId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminOpenOrderTicketDto);
+      _bodyData = _serializers.serialize(
+        adminOpenOrderTicketDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminOrderTicketDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminOrderTicketDtoOutput),
+                )
+                as AdminOrderTicketDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminOrderTicketDtoOutput>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,
@@ -12579,6 +12781,857 @@ class AdminApi {
     }
 
     return Response<AdminTermsVersionDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminTicketsAddNote
+  ///
+  ///
+  /// Parameters:
+  /// * [ticketId]
+  /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
+  /// * [adminTicketNoteDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminTicketPageDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminTicketPageDtoOutput>> adminTicketsAddNote({
+    required String ticketId,
+    required String idempotencyKey,
+    required AdminTicketNoteDto adminTicketNoteDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/tickets/{ticketId}/notes'.replaceAll(
+      '{'
+      r'ticketId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        ticketId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminTicketNoteDto);
+      _bodyData = _serializers.serialize(
+        adminTicketNoteDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminTicketPageDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminTicketPageDtoOutput),
+                )
+                as AdminTicketPageDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminTicketPageDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminTicketsAssign
+  ///
+  ///
+  /// Parameters:
+  /// * [ticketId]
+  /// * [adminTicketAssigneeDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminTicketPageDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminTicketPageDtoOutput>> adminTicketsAssign({
+    required String ticketId,
+    required AdminTicketAssigneeDto adminTicketAssigneeDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/tickets/{ticketId}/assignee'.replaceAll(
+      '{'
+      r'ticketId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        ticketId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'PUT',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminTicketAssigneeDto);
+      _bodyData = _serializers.serialize(
+        adminTicketAssigneeDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminTicketPageDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminTicketPageDtoOutput),
+                )
+                as AdminTicketPageDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminTicketPageDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminTicketsAssignees
+  ///
+  ///
+  /// Parameters:
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminTicketAssigneesDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminTicketAssigneesDtoOutput>> adminTicketsAssignees({
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/tickets/assignees';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminTicketAssigneesDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminTicketAssigneesDtoOutput),
+                )
+                as AdminTicketAssigneesDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminTicketAssigneesDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminTicketsFindParties
+  ///
+  ///
+  /// Parameters:
+  /// * [adminTicketPartySearchDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminTicketPartiesDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminTicketPartiesDtoOutput>> adminTicketsFindParties({
+    required AdminTicketPartySearchDto adminTicketPartySearchDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/tickets/parties/search';
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminTicketPartySearchDto);
+      _bodyData = _serializers.serialize(
+        adminTicketPartySearchDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminTicketPartiesDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminTicketPartiesDtoOutput),
+                )
+                as AdminTicketPartiesDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminTicketPartiesDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminTicketsList
+  ///
+  ///
+  /// Parameters:
+  /// * [cityId]
+  /// * [status]
+  /// * [typeCode]
+  /// * [assigneeId]
+  /// * [source_]
+  /// * [breached] - «تجاوز المهلة»: only the tickets whose SLA timer is breached.
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminTicketsDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminTicketsDtoOutput>> adminTicketsList({
+    required String cityId,
+    String? status,
+    String? typeCode,
+    String? assigneeId,
+    String? source_,
+    String? breached,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/tickets';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      r'cityId': encodeQueryParameter(
+        _serializers,
+        cityId,
+        const FullType(String),
+      ),
+      if (status != null)
+        r'status': encodeQueryParameter(
+          _serializers,
+          status,
+          const FullType(String),
+        ),
+      if (typeCode != null)
+        r'typeCode': encodeQueryParameter(
+          _serializers,
+          typeCode,
+          const FullType(String),
+        ),
+      if (assigneeId != null)
+        r'assigneeId': encodeQueryParameter(
+          _serializers,
+          assigneeId,
+          const FullType(String),
+        ),
+      if (source_ != null)
+        r'source': encodeQueryParameter(
+          _serializers,
+          source_,
+          const FullType(String),
+        ),
+      if (breached != null)
+        r'breached': encodeQueryParameter(
+          _serializers,
+          breached,
+          const FullType(String),
+        ),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminTicketsDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminTicketsDtoOutput),
+                )
+                as AdminTicketsDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminTicketsDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminTicketsOpen
+  ///
+  ///
+  /// Parameters:
+  /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
+  /// * [adminOpenTicketDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminTicketDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminTicketDtoOutput>> adminTicketsOpen({
+    required String idempotencyKey,
+    required AdminOpenTicketDto adminOpenTicketDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/tickets';
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminOpenTicketDto);
+      _bodyData = _serializers.serialize(
+        adminOpenTicketDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminTicketDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminTicketDtoOutput),
+                )
+                as AdminTicketDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminTicketDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminTicketsSetStatus
+  ///
+  ///
+  /// Parameters:
+  /// * [ticketId]
+  /// * [adminTicketStatusDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminTicketPageDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminTicketPageDtoOutput>> adminTicketsSetStatus({
+    required String ticketId,
+    required AdminTicketStatusDto adminTicketStatusDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/tickets/{ticketId}/status'.replaceAll(
+      '{'
+      r'ticketId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        ticketId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'PUT',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminTicketStatusDto);
+      _bodyData = _serializers.serialize(
+        adminTicketStatusDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminTicketPageDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminTicketPageDtoOutput),
+                )
+                as AdminTicketPageDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminTicketPageDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminTicketsTicket
+  ///
+  ///
+  /// Parameters:
+  /// * [ticketId]
+  /// * [cityId]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminTicketPageDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminTicketPageDtoOutput>> adminTicketsTicket({
+    required String ticketId,
+    required String cityId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/tickets/{ticketId}'.replaceAll(
+      '{'
+      r'ticketId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        ticketId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      r'cityId': encodeQueryParameter(
+        _serializers,
+        cityId,
+        const FullType(String),
+      ),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminTicketPageDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminTicketPageDtoOutput),
+                )
+                as AdminTicketPageDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminTicketPageDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminTicketsTypes
+  ///
+  ///
+  /// Parameters:
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminTicketTypesDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminTicketTypesDtoOutput>> adminTicketsTypes({
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/tickets/types';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminTicketTypesDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminTicketTypesDtoOutput),
+                )
+                as AdminTicketTypesDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminTicketTypesDtoOutput>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

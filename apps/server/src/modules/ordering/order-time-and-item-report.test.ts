@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { TicketSync } from '../support/index.js';
 import { randomBytes, randomInt, randomUUID } from 'node:crypto';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import pg from 'pg';
@@ -685,6 +686,7 @@ describe('slice 2.9: the remaining branches', () => {
       app.get(AlertsService),
       app.get(CaptainsService),
       app.get(SettingsService),
+      app.get(TicketSync),
     );
   const storedAlerts = async (orderId: string) =>
     (

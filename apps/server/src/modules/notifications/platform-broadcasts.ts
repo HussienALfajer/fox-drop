@@ -23,7 +23,10 @@ export type PlatformBroadcast =
   // CA §7.6, AP §10 (slice 2.13a): one captain's availability changed
   // outside an order event (a force offline, the end of a last order); only
   // that captain's channel hears it, and the app reads its state again.
-  | { type: 'captain.availability_changed'; cityId: string; captainId: string; at: Date };
+  | { type: 'captain.availability_changed'; cityId: string; captainId: string; at: Date }
+  // AP §9.9.2, architecture §6.2 (slice 2.23a): a ticket was opened or
+  // changed; the panel's ops channel hears it and reads the tickets again.
+  | { type: 'ticket.changed'; cityId: string; ticketId: string; at: Date };
 
 type Executor = Pick<Database['db'], 'insert'>;
 
@@ -53,6 +56,17 @@ export class PlatformBroadcasts {
         apps: ['captain'],
         ops: false,
         payload: { schema: 1, captainId: broadcast.captainId, at: broadcast.at.toISOString() },
+      });
+      return;
+    }
+    if (broadcast.type === 'ticket.changed') {
+      await executor.insert(platformOutbox).values({
+        createdAt: broadcast.at,
+        cityId: broadcast.cityId,
+        type: broadcast.type,
+        apps: [],
+        ops: true,
+        payload: { schema: 1, ticketId: broadcast.ticketId, at: broadcast.at.toISOString() },
       });
       return;
     }

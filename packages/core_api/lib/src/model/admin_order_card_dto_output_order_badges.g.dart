@@ -24,6 +24,8 @@ class _$AdminOrderCardDtoOutputOrderBadges
   final bool cannotComplete;
   @override
   final bool emergency;
+  @override
+  final bool ticket;
 
   factory _$AdminOrderCardDtoOutputOrderBadges([
     void Function(AdminOrderCardDtoOutputOrderBadgesBuilder)? updates,
@@ -38,6 +40,7 @@ class _$AdminOrderCardDtoOutputOrderBadges
     required this.itemReport,
     required this.cannotComplete,
     required this.emergency,
+    required this.ticket,
   }) : super._();
   @override
   AdminOrderCardDtoOutputOrderBadges rebuild(
@@ -59,7 +62,8 @@ class _$AdminOrderCardDtoOutputOrderBadges
         awaitingCollection == other.awaitingCollection &&
         itemReport == other.itemReport &&
         cannotComplete == other.cannotComplete &&
-        emergency == other.emergency;
+        emergency == other.emergency &&
+        ticket == other.ticket;
   }
 
   @override
@@ -73,6 +77,7 @@ class _$AdminOrderCardDtoOutputOrderBadges
     _$hash = $jc(_$hash, itemReport.hashCode);
     _$hash = $jc(_$hash, cannotComplete.hashCode);
     _$hash = $jc(_$hash, emergency.hashCode);
+    _$hash = $jc(_$hash, ticket.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -87,7 +92,8 @@ class _$AdminOrderCardDtoOutputOrderBadges
           ..add('awaitingCollection', awaitingCollection)
           ..add('itemReport', itemReport)
           ..add('cannotComplete', cannotComplete)
-          ..add('emergency', emergency))
+          ..add('emergency', emergency)
+          ..add('ticket', ticket))
         .toString();
   }
 }
@@ -136,6 +142,10 @@ class AdminOrderCardDtoOutputOrderBadgesBuilder
   bool? get emergency => _$this._emergency;
   set emergency(bool? emergency) => _$this._emergency = emergency;
 
+  bool? _ticket;
+  bool? get ticket => _$this._ticket;
+  set ticket(bool? ticket) => _$this._ticket = ticket;
+
   AdminOrderCardDtoOutputOrderBadgesBuilder() {
     AdminOrderCardDtoOutputOrderBadges._defaults(this);
   }
@@ -151,6 +161,7 @@ class AdminOrderCardDtoOutputOrderBadgesBuilder
       _itemReport = $v.itemReport;
       _cannotComplete = $v.cannotComplete;
       _emergency = $v.emergency;
+      _ticket = $v.ticket;
       _$v = null;
     }
     return this;
@@ -214,6 +225,11 @@ class AdminOrderCardDtoOutputOrderBadgesBuilder
             emergency,
             r'AdminOrderCardDtoOutputOrderBadges',
             'emergency',
+          ),
+          ticket: BuiltValueNullFieldError.checkNotNull(
+            ticket,
+            r'AdminOrderCardDtoOutputOrderBadges',
+            'ticket',
           ),
         );
     replace(_$result);

@@ -128,6 +128,14 @@ export function OrdersBoardPage() {
           />
           {t('board.noCaptainOnly')}
         </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={filter.ticketOnly}
+            onChange={(event) => setFilter({ ...filter, ticketOnly: event.target.checked })}
+          />
+          {t('board.ticketOnly')}
+        </label>
       </fieldset>
       {board.isError && <p role="alert">{t('board.failed')}</p>}
       {board.isPending ? (

@@ -18,6 +18,7 @@ function alert(overrides: Partial<AdminAlert>): AdminAlert {
     subjectId: 'o1',
     orderNumber: '10001',
     captainName: null,
+    ticketNumber: null,
     restaurantName: null,
     currency: null,
     statementId: null,
@@ -67,10 +68,10 @@ describe('receivesAlerts', () => {
     expiresAt: '',
   });
 
-  it('is true for OWN, OPS and FIN, and false for a SUP or DATA user alone', () => {
+  it('is true for OWN, OPS, FIN and SUP («تذكرة عاجلة», slice 2.23a), and false for DATA alone', () => {
     expect(receivesAlerts(session(['OPS']))).toBe(true);
     expect(receivesAlerts(session(['FIN']))).toBe(true);
-    expect(receivesAlerts(session(['SUP']))).toBe(false);
+    expect(receivesAlerts(session(['SUP']))).toBe(true);
     expect(receivesAlerts(session(['DATA']))).toBe(false);
   });
 });

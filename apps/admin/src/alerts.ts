@@ -10,7 +10,7 @@ export type AlertCode = AdminAlert['code'];
 // AP §9.1.3: the roles some alert rule names as its recipients. Only they
 // hear alerts (AP §7.3), so only they get the sound banner; the server still
 // answers each one the alerts its roles receive.
-const RECIPIENT_ROLES = ['OWN', 'OPS', 'FIN'];
+const RECIPIENT_ROLES = ['OWN', 'OPS', 'FIN', 'SUP'];
 
 export function receivesAlerts(session: AdminSession | null | undefined): boolean {
   return session?.roles.some((role) => RECIPIENT_ROLES.includes(role)) ?? false;

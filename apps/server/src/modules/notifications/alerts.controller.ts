@@ -37,6 +37,12 @@ class AdminAlertDto extends createZodDto(
       .string()
       .nullable()
       .describe('«سعر صرف قديم» (AP §8.6, slice 2.20a): the currency; null for the others.'),
+    ticketNumber: z
+      .string()
+      .nullable()
+      .describe(
+        '«تذكرة عاجلة» (AP §9.1.3, slice 2.23a): the ticket number, T-{number}; the ticket is subjectId. Null for the others.',
+      ),
     statementId: z
       .uuid()
       .nullable()
@@ -113,6 +119,7 @@ export class AdminAlertsController {
       captainName: alert.details.captainName ?? null,
       restaurantName: alert.details.restaurantName ?? null,
       currency: alert.details.currency ?? null,
+      ticketNumber: alert.details.ticketNumber ?? null,
       statementId: alert.details.statementId ?? null,
       location: locationOf(alert.details),
       raisedAt: alert.raisedAt.toISOString(),

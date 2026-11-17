@@ -37,6 +37,9 @@ import { PeakBonusPage } from './peak-bonus-page.js';
 import { CompensationApprovalsPage } from './compensation-approvals-page.js';
 import { canApproveCompensations } from './order-compensation.js';
 import { canSeePromoCodes } from './promo-codes.js';
+import { canReadTickets } from './tickets.js';
+import { TicketsPage } from './tickets-page.js';
+import { TicketPage } from './ticket-page.js';
 import { PromoCodesPage } from './promo-codes-page.js';
 import { PromoCodeReportPage } from './promo-code-report-page.js';
 import { OfficePage } from './office-page.js';
@@ -265,6 +268,28 @@ const compensationsRoute = createRoute({
     if (!canApproveCompensations(context.session)) throw redirect({ to: '/' });
   },
   component: CompensationApprovalsPage,
+});
+
+// AP §9.9 «الدعم» (slice 2.23a): the tickets' list and a ticket's page
+// (support.read: OWN, OPS, SUP, FIN; changes need support.manage).
+const ticketsRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/tickets',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!canReadTickets(context.session)) throw redirect({ to: '/' });
+  },
+  component: TicketsPage,
+});
+
+const ticketRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/tickets/$ticketId',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!canReadTickets(context.session)) throw redirect({ to: '/' });
+  },
+  component: TicketPage,
 });
 
 // AP §9.11.1 «أكواد الخصم» (slice 2.21a): OPS reads the codes, FIN reads
@@ -510,6 +535,8 @@ const routeTree = rootRoute.addChildren([
     appSettingsRoute,
     peakBonusRoute,
     compensationsRoute,
+    ticketsRoute,
+    ticketRoute,
     promoCodesRoute,
     promoCodeReportRoute,
     officeRoute,

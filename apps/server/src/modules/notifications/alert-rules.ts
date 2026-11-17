@@ -6,7 +6,8 @@ export type AlertSeverity = (typeof alertSeverities)[number];
 
 // What an alert is about: an order, a captain, the WhatsApp code senders
 // (the pool as a whole, or one number), a restaurant, or one currency of a
-// city (`<cityId>:<code>`), or a compensation request (slice 2.22a).
+// city (`<cityId>:<code>`), a compensation request (slice 2.22a), or a
+// ticket (slice 2.23a).
 export const alertSubjects = [
   'order',
   'captain',
@@ -15,6 +16,7 @@ export const alertSubjects = [
   'restaurant',
   'currency',
   'compensation',
+  'ticket',
 ] as const;
 export type AlertSubject = (typeof alertSubjects)[number];
 
@@ -80,10 +82,14 @@ export const alertCodes = [
   // «طلب موافقة تعويض»: SUP or OPS asked for a compensation above their cap
   // (AP §6.4, slice 2.22a), until OWN approves or rejects it.
   'compensation_approval',
+  // «تذكرة عاجلة»: an open ticket on an active order (AP §9.9.2, slice
+  // 2.23a), until the ticket is resolved or its order ends (owner decision
+  // 2026-11-17). The pickup dispute's ticket, for FIN too, joins with 2.23b.
+  'urgent_ticket',
 ] as const;
 export type AlertCode = (typeof alertCodes)[number];
 
-export type AlertRole = 'OWN' | 'OPS' | 'FIN';
+export type AlertRole = 'OWN' | 'OPS' | 'FIN' | 'SUP';
 
 export interface AlertRule {
   severity: AlertSeverity;
@@ -121,6 +127,7 @@ export const ALERT_RULES: Record<AlertCode, AlertRule> = {
   restaurant_settlement_overdue: rule('warning', ['OWN', 'FIN'], 'restaurant'),
   rate_stale: rule('information', ['OWN', 'FIN'], 'currency'),
   compensation_approval: rule('information', ['OWN'], 'compensation'),
+  urgent_ticket: rule('critical', ['OWN', 'OPS', 'SUP'], 'ticket'),
 };
 
 function rule(
@@ -131,7 +138,7 @@ function rule(
   return { severity, recipients, subject, resolvesItself: true };
 }
 
-// Whether the roles receive any alert (AP §7.3): OWN, OPS and FIN so far.
+// Whether the roles receive any alert (AP §7.3): OWN, OPS, FIN and SUP so far.
 export function receivesAlerts(roles: readonly string[]): boolean {
   return receivedCodes(roles).length > 0;
 }

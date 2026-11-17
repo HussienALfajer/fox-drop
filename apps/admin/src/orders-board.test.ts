@@ -45,6 +45,7 @@ function card(overrides: Partial<OrderCard>): OrderCard {
       itemReport: false,
       cannotComplete: false,
       emergency: false,
+      ticket: false,
     },
     moments: {
       acceptAlertAt: null,
@@ -113,6 +114,9 @@ describe('filterCards', () => {
     ]);
     expect(ids(filterCards(cards, { ...NO_FILTER, restaurantId: 'r2' }, now(12)))).toEqual(['c']);
     expect(ids(filterCards(cards, { ...NO_FILTER, captainId: 'k1' }, now(12)))).toEqual(['b']);
+    // «لها تذكرة» (slice 2.23a).
+    const ticketed = [...cards, card({ id: 'd', badges: { ...cards[0]!.badges, ticket: true } })];
+    expect(ids(filterCards(ticketed, { ...NO_FILTER, ticketOnly: true }, now(12)))).toEqual(['d']);
     expect(
       ids(filterCards(cards, { ...NO_FILTER, neighbourhood: 'الحي الثاني' }, now(12))),
     ).toEqual(['c']);

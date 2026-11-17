@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { TicketSync } from '../support/index.js';
 import { randomBytes, randomInt, randomUUID } from 'node:crypto';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import pg from 'pg';
@@ -471,6 +472,7 @@ const syncAlerts = async (order: { id: string }) => {
     app.get(AlertsService),
     app.get(CaptainsService),
     app.get(SettingsService),
+    app.get(TicketSync),
   ).sync({ orderId: order.id, placedAt: rows[0].placed_at.toISOString() }, new Date(), false);
 };
 

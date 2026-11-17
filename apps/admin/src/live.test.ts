@@ -43,6 +43,13 @@ describe('the ops channel', () => {
       ['restaurant-status', 'r1'],
     ]);
     expect(staleQueries({ type: 'ticket.opened' }, city)).toEqual([]);
+    // Slice 2.23a: a ticket opened or changed.
+    expect(staleQueries({ type: 'ticket.changed', ticketId: 't1' }, city)).toEqual([
+      ['tickets', city],
+      ['ticket', 't1'],
+      ['orders-board', city],
+      ['order'],
+    ]);
   });
 
   it('reads everything of the city again after a subscription', () => {
@@ -52,6 +59,8 @@ describe('the ops channel', () => {
       ['alerts', city],
       ['emergency-stop', city],
       ['restaurant-status'],
+      ['tickets', city],
+      ['ticket'],
     ]);
   });
 

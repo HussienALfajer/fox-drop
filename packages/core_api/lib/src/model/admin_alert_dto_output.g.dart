@@ -65,6 +65,8 @@ const AdminAlertDtoOutputCodeEnum _$adminAlertDtoOutputCodeEnum_rateStale =
 const AdminAlertDtoOutputCodeEnum
 _$adminAlertDtoOutputCodeEnum_compensationApproval =
     const AdminAlertDtoOutputCodeEnum._('compensationApproval');
+const AdminAlertDtoOutputCodeEnum _$adminAlertDtoOutputCodeEnum_urgentTicket =
+    const AdminAlertDtoOutputCodeEnum._('urgentTicket');
 
 AdminAlertDtoOutputCodeEnum _$adminAlertDtoOutputCodeEnumValueOf(String name) {
   switch (name) {
@@ -112,6 +114,8 @@ AdminAlertDtoOutputCodeEnum _$adminAlertDtoOutputCodeEnumValueOf(String name) {
       return _$adminAlertDtoOutputCodeEnum_rateStale;
     case 'compensationApproval':
       return _$adminAlertDtoOutputCodeEnum_compensationApproval;
+    case 'urgentTicket':
+      return _$adminAlertDtoOutputCodeEnum_urgentTicket;
     default:
       throw ArgumentError(name);
   }
@@ -142,6 +146,7 @@ _$adminAlertDtoOutputCodeEnumValues =
       _$adminAlertDtoOutputCodeEnum_restaurantSettlementOverdue,
       _$adminAlertDtoOutputCodeEnum_rateStale,
       _$adminAlertDtoOutputCodeEnum_compensationApproval,
+      _$adminAlertDtoOutputCodeEnum_urgentTicket,
     ]);
 
 const AdminAlertDtoOutputSeverityEnum
@@ -200,6 +205,9 @@ _$adminAlertDtoOutputSubjectTypeEnum_currency =
 const AdminAlertDtoOutputSubjectTypeEnum
 _$adminAlertDtoOutputSubjectTypeEnum_compensation =
     const AdminAlertDtoOutputSubjectTypeEnum._('compensation');
+const AdminAlertDtoOutputSubjectTypeEnum
+_$adminAlertDtoOutputSubjectTypeEnum_ticket =
+    const AdminAlertDtoOutputSubjectTypeEnum._('ticket');
 
 AdminAlertDtoOutputSubjectTypeEnum _$adminAlertDtoOutputSubjectTypeEnumValueOf(
   String name,
@@ -219,6 +227,8 @@ AdminAlertDtoOutputSubjectTypeEnum _$adminAlertDtoOutputSubjectTypeEnumValueOf(
       return _$adminAlertDtoOutputSubjectTypeEnum_currency;
     case 'compensation':
       return _$adminAlertDtoOutputSubjectTypeEnum_compensation;
+    case 'ticket':
+      return _$adminAlertDtoOutputSubjectTypeEnum_ticket;
     default:
       throw ArgumentError(name);
   }
@@ -235,6 +245,7 @@ _$adminAlertDtoOutputSubjectTypeEnumValues =
         _$adminAlertDtoOutputSubjectTypeEnum_restaurant,
         _$adminAlertDtoOutputSubjectTypeEnum_currency,
         _$adminAlertDtoOutputSubjectTypeEnum_compensation,
+        _$adminAlertDtoOutputSubjectTypeEnum_ticket,
       ],
     );
 
@@ -273,6 +284,7 @@ class _$AdminAlertDtoOutputCodeEnumSerializer
     'restaurantSettlementOverdue': 'restaurant_settlement_overdue',
     'rateStale': 'rate_stale',
     'compensationApproval': 'compensation_approval',
+    'urgentTicket': 'urgent_ticket',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_not_accepted': 'restaurantNotAccepted',
@@ -297,6 +309,7 @@ class _$AdminAlertDtoOutputCodeEnumSerializer
     'restaurant_settlement_overdue': 'restaurantSettlementOverdue',
     'rate_stale': 'rateStale',
     'compensation_approval': 'compensationApproval',
+    'urgent_ticket': 'urgentTicket',
   };
 
   @override
@@ -366,6 +379,7 @@ class _$AdminAlertDtoOutputSubjectTypeEnumSerializer
     'restaurant': 'restaurant',
     'currency': 'currency',
     'compensation': 'compensation',
+    'ticket': 'ticket',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'order': 'order',
@@ -375,6 +389,7 @@ class _$AdminAlertDtoOutputSubjectTypeEnumSerializer
     'restaurant': 'restaurant',
     'currency': 'currency',
     'compensation': 'compensation',
+    'ticket': 'ticket',
   };
 
   @override
@@ -419,6 +434,8 @@ class _$AdminAlertDtoOutput extends AdminAlertDtoOutput {
   @override
   final String? currency;
   @override
+  final String? ticketNumber;
+  @override
   final String? statementId;
   @override
   final AdminAlertsDtoOutputAlertsInnerLocation? location;
@@ -443,6 +460,7 @@ class _$AdminAlertDtoOutput extends AdminAlertDtoOutput {
     this.captainName,
     this.restaurantName,
     this.currency,
+    this.ticketNumber,
     this.statementId,
     this.location,
     required this.raisedAt,
@@ -471,6 +489,7 @@ class _$AdminAlertDtoOutput extends AdminAlertDtoOutput {
         captainName == other.captainName &&
         restaurantName == other.restaurantName &&
         currency == other.currency &&
+        ticketNumber == other.ticketNumber &&
         statementId == other.statementId &&
         location == other.location &&
         raisedAt == other.raisedAt &&
@@ -490,6 +509,7 @@ class _$AdminAlertDtoOutput extends AdminAlertDtoOutput {
     _$hash = $jc(_$hash, captainName.hashCode);
     _$hash = $jc(_$hash, restaurantName.hashCode);
     _$hash = $jc(_$hash, currency.hashCode);
+    _$hash = $jc(_$hash, ticketNumber.hashCode);
     _$hash = $jc(_$hash, statementId.hashCode);
     _$hash = $jc(_$hash, location.hashCode);
     _$hash = $jc(_$hash, raisedAt.hashCode);
@@ -511,6 +531,7 @@ class _$AdminAlertDtoOutput extends AdminAlertDtoOutput {
           ..add('captainName', captainName)
           ..add('restaurantName', restaurantName)
           ..add('currency', currency)
+          ..add('ticketNumber', ticketNumber)
           ..add('statementId', statementId)
           ..add('location', location)
           ..add('raisedAt', raisedAt)
@@ -563,6 +584,10 @@ class AdminAlertDtoOutputBuilder
   String? get currency => _$this._currency;
   set currency(String? currency) => _$this._currency = currency;
 
+  String? _ticketNumber;
+  String? get ticketNumber => _$this._ticketNumber;
+  set ticketNumber(String? ticketNumber) => _$this._ticketNumber = ticketNumber;
+
   String? _statementId;
   String? get statementId => _$this._statementId;
   set statementId(String? statementId) => _$this._statementId = statementId;
@@ -605,6 +630,7 @@ class AdminAlertDtoOutputBuilder
       _captainName = $v.captainName;
       _restaurantName = $v.restaurantName;
       _currency = $v.currency;
+      _ticketNumber = $v.ticketNumber;
       _statementId = $v.statementId;
       _location = $v.location?.toBuilder();
       _raisedAt = $v.raisedAt;
@@ -663,6 +689,7 @@ class AdminAlertDtoOutputBuilder
             captainName: captainName,
             restaurantName: restaurantName,
             currency: currency,
+            ticketNumber: ticketNumber,
             statementId: statementId,
             location: _location?.build(),
             raisedAt: BuiltValueNullFieldError.checkNotNull(

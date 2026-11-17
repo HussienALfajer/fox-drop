@@ -21,6 +21,7 @@ import { canApproveCompensations } from './order-compensation.js';
 import { OPERATIONS_READ } from './orders-board.js';
 import { can } from './session.js';
 import { alertKeys } from './order-labels.js';
+import { canReadTickets, ticketLabel } from './tickets.js';
 import { OPERATIONS_MANAGE } from './assign-captain.js';
 import { WaitForCustomer } from './order-no-answer-page.js';
 import { canChangeRestaurantStatus, useResumeRestaurant } from './restaurant-status.js';
@@ -152,6 +153,9 @@ function AlertLine({ alert, city }: { alert: AdminAlert; city: City }) {
   const staleCurrency = can(session, FINANCE_READ) ? staleRateOf(alert) : null;
   // AP §9.1.3 «طلب موافقة تعويض» (slice 2.22a): «فتح طلبات الموافقة».
   const approval = alert.code === 'compensation_approval' && canApproveCompensations(session);
+  // AP §9.1.3 «تذكرة عاجلة» (slice 2.23a): «فتح التذكرة».
+  const ticketId =
+    alert.code === 'urgent_ticket' && canReadTickets(session) ? alert.subjectId : null;
   return (
     <>
       <strong>{t(`alerts.severity.${alert.severity}`)}</strong>{' '}
@@ -162,6 +166,9 @@ function AlertLine({ alert, city }: { alert: AdminAlert; city: City }) {
         <span>{t('alerts.restaurant', { name: alert.restaurantName })}</span>
       )}{' '}
       {alert.currency && <span>{t('alerts.currency', { code: alert.currency })}</span>}{' '}
+      {alert.ticketNumber && (
+        <span>{t('alerts.ticket', { number: ticketLabel(alert.ticketNumber) })}</span>
+      )}{' '}
       {alert.location && (
         <>
           <span>{t('alerts.locatedAt', { time: time(alert.location.at) })}</span>{' '}
@@ -184,6 +191,11 @@ function AlertLine({ alert, city }: { alert: AdminAlert; city: City }) {
       {approval && (
         <Link to="/compensations" search={{ city: city.code }}>
           {t('alerts.openApprovals')}
+        </Link>
+      )}
+      {ticketId && (
+        <Link to="/tickets/$ticketId" params={{ ticketId }} search={{ city: city.code }}>
+          {t('alerts.openTicket')}
         </Link>
       )}
       {staleCurrency && (

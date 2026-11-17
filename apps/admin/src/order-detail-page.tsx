@@ -48,6 +48,7 @@ import { canEdit } from './order-edit.js';
 import { ChangeTime } from './order-time-change-page.js';
 import { canChangeTime } from './order-time-change.js';
 import { OrderCompensations } from './order-compensation-page.js';
+import { OrderTickets } from './order-tickets-page.js';
 import { Badges } from './orders-board-page.js';
 import {
   canResend,
@@ -247,6 +248,8 @@ export function OrderDetailPage() {
       {canCloseItemReport(session, detail) && <CloseItemReport key={orderId} orderId={orderId} />}
       {/* AP §9.3.2 «تعويض الزبون», in any status (slice 2.22a). */}
       <OrderCompensations orderId={orderId} timeZone={city.timeZone} />
+      {/* AP §9.3.1 «tickets linked», §9.3.2 «فتح تذكرة» (slice 2.23a). */}
+      <OrderTickets orderId={orderId} hasCaptain={detail.captain !== null} city={city} />
       {canChangeTime(session, detail) && (
         <ChangeTime
           key={orderId}

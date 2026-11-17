@@ -249,6 +249,10 @@ Serializers _$serializers =
           ..add(AdminOpenDrawerSessionDto.serializer)
           ..add(AdminOpenDrawerSessionDtoFloatsInner.serializer)
           ..add(AdminOpenDrawerSessionDtoKindEnum.serializer)
+          ..add(AdminOpenOrderTicketDto.serializer)
+          ..add(AdminOpenOrderTicketDtoPartyEnum.serializer)
+          ..add(AdminOpenTicketDto.serializer)
+          ..add(AdminOpenTicketDtoPartyEnum.serializer)
           ..add(AdminOrderCardDtoOutput.serializer)
           ..add(AdminOrderCardDtoOutputOrder.serializer)
           ..add(AdminOrderCardDtoOutputOrderAlertsEnum.serializer)
@@ -389,6 +393,15 @@ Serializers _$serializers =
           ..add(AdminOrderOffersDtoOutputOffersInner.serializer)
           ..add(AdminOrderOffersDtoOutputOffersInnerKindEnum.serializer)
           ..add(AdminOrderOffersDtoOutputOffersInnerStatusEnum.serializer)
+          ..add(AdminOrderTicketDtoOutput.serializer)
+          ..add(AdminOrderTicketDtoOutputPartyEnum.serializer)
+          ..add(AdminOrderTicketDtoOutputStatusEnum.serializer)
+          ..add(AdminOrderTicketsDtoOutput.serializer)
+          ..add(AdminOrderTicketsDtoOutputTicketsInner.serializer)
+          ..add(AdminOrderTicketsDtoOutputTicketsInnerPartyEnum.serializer)
+          ..add(AdminOrderTicketsDtoOutputTicketsInnerSla.serializer)
+          ..add(AdminOrderTicketsDtoOutputTicketsInnerSlaKindEnum.serializer)
+          ..add(AdminOrderTicketsDtoOutputTicketsInnerStatusEnum.serializer)
           ..add(AdminOutcomeChangePreviewAnswerDtoOutput.serializer)
           ..add(AdminOutcomeChangePreviewAnswerDtoOutputDues.serializer)
           ..add(AdminOutcomeChangePreviewAnswerDtoOutputStatusEnum.serializer)
@@ -580,6 +593,23 @@ Serializers _$serializers =
           ..add(AdminTermsVersionDtoOutput.serializer)
           ..add(AdminTextsDtoOutput.serializer)
           ..add(AdminTextsDtoOutputContact.serializer)
+          ..add(AdminTicketAssigneeDto.serializer)
+          ..add(AdminTicketAssigneesDtoOutput.serializer)
+          ..add(AdminTicketDtoOutput.serializer)
+          ..add(AdminTicketDtoOutputPartyEnum.serializer)
+          ..add(AdminTicketDtoOutputStatusEnum.serializer)
+          ..add(AdminTicketNoteDto.serializer)
+          ..add(AdminTicketPageDtoOutput.serializer)
+          ..add(AdminTicketPageDtoOutputNotesInner.serializer)
+          ..add(AdminTicketPageDtoOutputPartyEnum.serializer)
+          ..add(AdminTicketPageDtoOutputStatusEnum.serializer)
+          ..add(AdminTicketPartiesDtoOutput.serializer)
+          ..add(AdminTicketPartySearchDto.serializer)
+          ..add(AdminTicketPartySearchDtoPartyEnum.serializer)
+          ..add(AdminTicketStatusDto.serializer)
+          ..add(AdminTicketStatusDtoStatusEnum.serializer)
+          ..add(AdminTicketTypesDtoOutput.serializer)
+          ..add(AdminTicketsDtoOutput.serializer)
           ..add(AdminUpdateContactDto.serializer)
           ..add(AdminUpdateNotificationTextDto.serializer)
           ..add(AdminUploadDtoOutput.serializer)
@@ -1607,6 +1637,33 @@ Serializers _$serializers =
                 >(),
           )
           ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOrderDtoOutputOrderCancelChoicesReasonsInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminOrderDtoOutputOrderCancelChoicesReasonsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOrderDtoOutputOrderCancelChoicesReasonsInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminOrderDtoOutputOrderCancelChoicesReasonsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOrderDtoOutputOrderCancelChoicesReasonsInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminOrderDtoOutputOrderCancelChoicesReasonsInner
+                >(),
+          )
+          ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(int)]),
             () => ListBuilder<int>(),
           )
@@ -1699,6 +1756,18 @@ Serializers _$serializers =
               const FullType(AdminOrderOffersDtoOutputOffersInner),
             ]),
             () => ListBuilder<AdminOrderOffersDtoOutputOffersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOrderTicketsDtoOutputTicketsInner),
+            ]),
+            () => ListBuilder<AdminOrderTicketsDtoOutputTicketsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOrderTicketsDtoOutputTicketsInner),
+            ]),
+            () => ListBuilder<AdminOrderTicketsDtoOutputTicketsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -2055,6 +2124,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminTicketPageDtoOutputNotesInner),
+            ]),
+            () => ListBuilder<AdminTicketPageDtoOutputNotesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(CaptainActiveOrderDtoOutputOrderLinesInner),
             ]),
             () => ListBuilder<CaptainActiveOrderDtoOutputOrderLinesInner>(),
@@ -2228,6 +2303,20 @@ Serializers _$serializers =
               const FullType(CaptainPeakBonusDtoOutputActiveInner),
             ]),
             () => ListBuilder<CaptainPeakBonusDtoOutputActiveInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+            ]),
+            () =>
+                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+            ]),
+            () =>
+                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

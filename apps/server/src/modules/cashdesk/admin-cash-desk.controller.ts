@@ -23,6 +23,7 @@ import {
   type DrawerSession,
   type Receipt,
 } from './cashdesk.service.js';
+import { phoneOf } from '../../http/phone-search.js';
 import { deskUser, refusalsAsHttp } from './desk-http.js';
 import { captainReceiptTypes, sessionKinds } from './schema.js';
 import { type SettlementPreview, SettlementService, type Statement } from './settlement.service.js';
@@ -365,16 +366,6 @@ class AdminSettlementDto extends createZodDto(
 ) {}
 
 class AdminStatementParamsDto extends createZodDto(z.object({ statementId: z.uuid() })) {}
-
-// A number as the desk types it: international (+ or 00), or the local
-// Syrian 09… and Turkish 05… mobiles the captains sign in with.
-export function phoneOf(text: string): string | null {
-  const compact = text.replace(/[\s-]/g, '');
-  if (/^(\+|00)\d{8,15}$/.test(compact)) return compact.replace(/^00/, '+');
-  if (/^09\d{8}$/.test(compact)) return `+963${compact.slice(1)}`;
-  if (/^05\d{9}$/.test(compact)) return `+90${compact.slice(1)}`;
-  return null;
-}
 
 // AP §9.10.3 «الصندوق» (slice 2.17a): the drawer sessions and the daily
 // hand-in, for OWN and FIN (AP §6.3 `cash_desk.record`).

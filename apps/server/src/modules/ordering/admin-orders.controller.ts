@@ -57,6 +57,7 @@ import { REASSIGNABLE } from './reassignment.js';
 import { shortfallParties } from './shortfall.js';
 import { ResendNotification, ResendRefusedError } from './resend-notification.js';
 import { minor } from './customer-quote.controller.js';
+import { SupportService } from '../support/index.js';
 import { type OperationsOrder, OperationsViews } from './operations-views.js';
 import {
   captainTracks,
@@ -146,6 +147,9 @@ const card = z.object({
     emergency: z
       .boolean()
       .describe("«طوارئ»: the captain's open emergency (CA §9.11, slice 2.13c)."),
+    ticket: z
+      .boolean()
+      .describe('«لها تذكرة» (AP §9.2, slice 2.23a): an open ticket on the order.'),
   }),
   moments: z
     .object({
@@ -1303,7 +1307,7 @@ function outcomePreviewBody(preview: OutcomePreview) {
   };
 }
 
-function cardBody(item: OperationsOrder) {
+function cardBody(item: OperationsOrder, ticket: boolean) {
   const { order } = item;
   const at = (moment: Date | null) => moment?.toISOString() ?? null;
   return {
@@ -1335,6 +1339,7 @@ function cardBody(item: OperationsOrder) {
       itemReport: order.itemReport !== null,
       cannotComplete: order.cannotComplete !== null,
       emergency: order.emergency !== null,
+      ticket,
     },
     moments: {
       acceptAlertAt: at(item.moments.acceptAlertAt),
@@ -1360,6 +1365,7 @@ export class AdminOrdersController {
     private readonly pickups: PickupCommands,
     private readonly resends: ResendNotification,
     private readonly commands: OrderCommands,
+    private readonly support: SupportService,
   ) {}
 
   // AP §9.3.2 «إعادة إرسال الإشعار», for OWN, OPS and SUP (operations.manage
@@ -2264,7 +2270,7 @@ export class AdminOrdersController {
   private async card(orderId: string) {
     const item = await this.views.order(orderId, new Date());
     if (item === null) throw new Error(`order ${orderId} not found`);
-    return cardBody(item);
+    return cardBody(item, (await this.support.ordersWithOpenTickets([orderId])).has(orderId));
   }
 
   // AP §8.6: the open collection shortfalls of the city, «نقص في التحصيل».
@@ -2293,7 +2299,9 @@ export class AdminOrdersController {
   @RequirePermission('operations.read')
   @ZodResponse({ status: 200, type: AdminBoardDto })
   async board(@Query() query: AdminBoardQueryDto) {
-    return { orders: (await this.views.board(query.cityId, new Date())).map(cardBody) };
+    const items = await this.views.board(query.cityId, new Date());
+    const ticketed = await this.support.ordersWithOpenTickets(items.map(({ order }) => order.id));
+    return { orders: items.map((item) => cardBody(item, ticketed.has(item.order.id))) };
   }
 
   @Get(':orderId')
@@ -2361,7 +2369,7 @@ export class AdminOrdersController {
       amount === null ? null : { amount: amount.toString(), currency: order.currency };
     return {
       order: {
-        ...cardBody(item),
+        ...cardBody(item, (await this.support.ordersWithOpenTickets([order.id])).has(order.id)),
         promisedAt: acceptance?.promisedAt.toISOString() ?? null,
         acceptance: acceptance && {
           at: acceptance.at.toISOString(),
