@@ -15,7 +15,7 @@ part 'admin_ticket_dto_output.g.dart';
 /// Properties:
 /// * [id]
 /// * [number] - Shown as `T-{number}` (AP §4.8).
-/// * [source_]
+/// * [source_] - Where the ticket came from (AP §9.9.1): manual so far.
 /// * [party]
 /// * [partyId]
 /// * [partyName]
@@ -42,9 +42,9 @@ abstract class AdminTicketDtoOutput
   @BuiltValueField(wireName: r'number')
   String get number;
 
+  /// Where the ticket came from (AP §9.9.1): manual so far.
   @BuiltValueField(wireName: r'source')
-  AdminTicketDtoOutputSource_Enum get source_;
-  // enum source_Enum {  manual,  };
+  String get source_;
 
   @BuiltValueField(wireName: r'party')
   AdminTicketDtoOutputPartyEnum get party;
@@ -139,7 +139,7 @@ class _$AdminTicketDtoOutputSerializer
     yield r'source';
     yield serializers.serialize(
       object.source_,
-      specifiedType: const FullType(AdminTicketDtoOutputSource_Enum),
+      specifiedType: const FullType(String),
     );
     yield r'party';
     yield serializers.serialize(
@@ -280,11 +280,9 @@ class _$AdminTicketDtoOutputSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(
-                      AdminTicketDtoOutputSource_Enum,
-                    ),
+                    specifiedType: const FullType(String),
                   )
-                  as AdminTicketDtoOutputSource_Enum;
+                  as String;
           result.source_ = valueDes;
           break;
         case r'party':
@@ -469,22 +467,6 @@ class _$AdminTicketDtoOutputSerializer
     );
     return result.build();
   }
-}
-
-class AdminTicketDtoOutputSource_Enum extends EnumClass {
-  @BuiltValueEnumConst(wireName: r'manual')
-  static const AdminTicketDtoOutputSource_Enum manual =
-      _$adminTicketDtoOutputSourceEnum_manual;
-
-  static Serializer<AdminTicketDtoOutputSource_Enum> get serializer =>
-      _$adminTicketDtoOutputSourceEnumSerializer;
-
-  const AdminTicketDtoOutputSource_Enum._(String name) : super(name);
-
-  static BuiltSet<AdminTicketDtoOutputSource_Enum> get values =>
-      _$adminTicketDtoOutputSourceEnumValues;
-  static AdminTicketDtoOutputSource_Enum valueOf(String name) =>
-      _$adminTicketDtoOutputSourceEnumValueOf(name);
 }
 
 class AdminTicketDtoOutputPartyEnum extends EnumClass {

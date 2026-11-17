@@ -9127,8 +9127,8 @@ export interface components {
                 id: string;
                 /** @description Shown as `T-{number}` (AP §4.8). */
                 number: string;
-                /** @enum {string} */
-                source: "manual";
+                /** @description Where the ticket came from (AP §9.9.1): manual so far. */
+                source: string;
                 /** @enum {string} */
                 party: "customer" | "restaurant" | "captain";
                 /** Format: uuid */
@@ -9174,8 +9174,8 @@ export interface components {
             id: string;
             /** @description Shown as `T-{number}` (AP §4.8). */
             number: string;
-            /** @enum {string} */
-            source: "manual";
+            /** @description Where the ticket came from (AP §9.9.1): manual so far. */
+            source: string;
             /** @enum {string} */
             party: "customer" | "restaurant" | "captain";
             /** Format: uuid */
@@ -10756,8 +10756,8 @@ export interface components {
                 id: string;
                 /** @description Shown as `T-{number}` (AP §4.8). */
                 number: string;
-                /** @enum {string} */
-                source: "manual";
+                /** @description Where the ticket came from (AP §9.9.1): manual so far. */
+                source: string;
                 /** @enum {string} */
                 party: "customer" | "restaurant" | "captain";
                 /** Format: uuid */
@@ -10843,8 +10843,8 @@ export interface components {
             id: string;
             /** @description Shown as `T-{number}` (AP §4.8). */
             number: string;
-            /** @enum {string} */
-            source: "manual";
+            /** @description Where the ticket came from (AP §9.9.1): manual so far. */
+            source: string;
             /** @enum {string} */
             party: "customer" | "restaurant" | "captain";
             /** Format: uuid */
@@ -10882,8 +10882,8 @@ export interface components {
             id: string;
             /** @description Shown as `T-{number}` (AP §4.8). */
             number: string;
-            /** @enum {string} */
-            source: "manual";
+            /** @description Where the ticket came from (AP §9.9.1): manual so far. */
+            source: string;
             /** @enum {string} */
             party: "customer" | "restaurant" | "captain";
             /** Format: uuid */

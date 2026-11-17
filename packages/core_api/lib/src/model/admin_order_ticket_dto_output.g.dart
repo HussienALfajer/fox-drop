@@ -6,28 +6,6 @@ part of 'admin_order_ticket_dto_output.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const AdminOrderTicketDtoOutputSource_Enum
-_$adminOrderTicketDtoOutputSourceEnum_manual =
-    const AdminOrderTicketDtoOutputSource_Enum._('manual');
-
-AdminOrderTicketDtoOutputSource_Enum
-_$adminOrderTicketDtoOutputSourceEnumValueOf(String name) {
-  switch (name) {
-    case 'manual':
-      return _$adminOrderTicketDtoOutputSourceEnum_manual;
-    default:
-      throw ArgumentError(name);
-  }
-}
-
-final BuiltSet<AdminOrderTicketDtoOutputSource_Enum>
-_$adminOrderTicketDtoOutputSourceEnumValues =
-    BuiltSet<AdminOrderTicketDtoOutputSource_Enum>(
-      const <AdminOrderTicketDtoOutputSource_Enum>[
-        _$adminOrderTicketDtoOutputSourceEnum_manual,
-      ],
-    );
-
 const AdminOrderTicketDtoOutputPartyEnum
 _$adminOrderTicketDtoOutputPartyEnum_customer =
     const AdminOrderTicketDtoOutputPartyEnum._('customer');
@@ -109,48 +87,12 @@ _$adminOrderTicketDtoOutputStatusEnumValues =
       ],
     );
 
-Serializer<AdminOrderTicketDtoOutputSource_Enum>
-_$adminOrderTicketDtoOutputSourceEnumSerializer =
-    _$AdminOrderTicketDtoOutputSource_EnumSerializer();
 Serializer<AdminOrderTicketDtoOutputPartyEnum>
 _$adminOrderTicketDtoOutputPartyEnumSerializer =
     _$AdminOrderTicketDtoOutputPartyEnumSerializer();
 Serializer<AdminOrderTicketDtoOutputStatusEnum>
 _$adminOrderTicketDtoOutputStatusEnumSerializer =
     _$AdminOrderTicketDtoOutputStatusEnumSerializer();
-
-class _$AdminOrderTicketDtoOutputSource_EnumSerializer
-    implements PrimitiveSerializer<AdminOrderTicketDtoOutputSource_Enum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'manual': 'manual',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'manual': 'manual',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    AdminOrderTicketDtoOutputSource_Enum,
-  ];
-  @override
-  final String wireName = 'AdminOrderTicketDtoOutputSource_Enum';
-
-  @override
-  Object serialize(
-    Serializers serializers,
-    AdminOrderTicketDtoOutputSource_Enum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
-
-  @override
-  AdminOrderTicketDtoOutputSource_Enum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => AdminOrderTicketDtoOutputSource_Enum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
-}
 
 class _$AdminOrderTicketDtoOutputPartyEnumSerializer
     implements PrimitiveSerializer<AdminOrderTicketDtoOutputPartyEnum> {
@@ -234,7 +176,7 @@ class _$AdminOrderTicketDtoOutput extends AdminOrderTicketDtoOutput {
   @override
   final String number;
   @override
-  final AdminOrderTicketDtoOutputSource_Enum source_;
+  final String source_;
   @override
   final AdminOrderTicketDtoOutputPartyEnum party;
   @override
@@ -392,10 +334,9 @@ class AdminOrderTicketDtoOutputBuilder
   String? get number => _$this._number;
   set number(String? number) => _$this._number = number;
 
-  AdminOrderTicketDtoOutputSource_Enum? _source_;
-  AdminOrderTicketDtoOutputSource_Enum? get source_ => _$this._source_;
-  set source_(AdminOrderTicketDtoOutputSource_Enum? source_) =>
-      _$this._source_ = source_;
+  String? _source_;
+  String? get source_ => _$this._source_;
+  set source_(String? source_) => _$this._source_ = source_;
 
   AdminOrderTicketDtoOutputPartyEnum? _party;
   AdminOrderTicketDtoOutputPartyEnum? get party => _$this._party;

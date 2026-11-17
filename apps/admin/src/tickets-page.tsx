@@ -21,6 +21,7 @@ import {
   ticketLabel,
   type TicketParty,
   ticketPartyKeys,
+  sourceKey,
   ticketSourceKeys,
   ticketStatusKeys,
   ticketsQuery,
@@ -185,6 +186,7 @@ export function TicketTable({ tickets, city }: { tickets: Ticket[]; city: City }
 
 function TicketRow({ ticket, city }: { ticket: Ticket; city: City }) {
   const { t } = useTranslation();
+  const source = sourceKey(ticket.source);
   const { session } = signedIn.useRouteContext();
   return (
     <tr>
@@ -192,7 +194,7 @@ function TicketRow({ ticket, city }: { ticket: Ticket; city: City }) {
         <Link to="/tickets/$ticketId" params={{ ticketId: ticket.id }} search={{ city: city.code }}>
           {ticketLabel(ticket.number)}
         </Link>{' '}
-        {t(ticketSourceKeys[ticket.source])}
+        {source && t(source)}
       </td>
       <td>
         {ticket.orderId && ticket.orderNumber ? (

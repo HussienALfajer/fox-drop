@@ -18,7 +18,7 @@ import {
   type TicketPage as TicketPageData,
   ticketPartyKeys,
   ticketQuery,
-  ticketSourceKeys,
+  sourceKey,
   ticketStatusKeys,
   useChangeTicket,
 } from './tickets.js';
@@ -70,12 +70,13 @@ function TicketDetail({ ticket, city }: { ticket: TicketPageData; city: City }) 
   const { session } = signedIn.useRouteContext();
   const time = (at: string) => formatDateTime(at, city.timeZone);
   const manage = canManageTickets(session) && isOpenTicket(ticket.status);
+  const source = sourceKey(ticket.source);
   return (
     <>
       <h1>{t('tickets.heading', { number: ticketLabel(ticket.number) })}</h1>
       <dl>
         <dt>{t('tickets.column.source')}</dt>
-        <dd>{t(ticketSourceKeys[ticket.source])}</dd>
+        <dd>{source && t(source)}</dd>
         <dt>{t('tickets.column.party')}</dt>
         <dd>
           {t('tickets.partyLine', {

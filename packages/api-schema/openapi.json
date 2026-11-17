@@ -31815,9 +31815,7 @@
                 },
                 "source": {
                   "type": "string",
-                  "enum": [
-                    "manual"
-                  ]
+                  "description": "Where the ticket came from (AP §9.9.1): manual so far."
                 },
                 "party": {
                   "type": "string",
@@ -32033,9 +32031,7 @@
           },
           "source": {
             "type": "string",
-            "enum": [
-              "manual"
-            ]
+            "description": "Where the ticket came from (AP §9.9.1): manual so far."
           },
           "party": {
             "type": "string",
@@ -39053,9 +39049,7 @@
                 },
                 "source": {
                   "type": "string",
-                  "enum": [
-                    "manual"
-                  ]
+                  "description": "Where the ticket came from (AP §9.9.1): manual so far."
                 },
                 "party": {
                   "type": "string",
@@ -39440,9 +39434,7 @@
           },
           "source": {
             "type": "string",
-            "enum": [
-              "manual"
-            ]
+            "description": "Where the ticket came from (AP §9.9.1): manual so far."
           },
           "party": {
             "type": "string",
@@ -39621,9 +39613,7 @@
           },
           "source": {
             "type": "string",
-            "enum": [
-              "manual"
-            ]
+            "description": "Where the ticket came from (AP §9.9.1): manual so far."
           },
           "party": {
             "type": "string",

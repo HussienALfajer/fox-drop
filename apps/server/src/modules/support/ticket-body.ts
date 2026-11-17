@@ -22,7 +22,12 @@ const number = z.string().regex(/^\d{1,18}$/);
 export const ticketBody = z.object({
   id: z.uuid(),
   number: number.describe('Shown as `T-{number}` (AP §4.8).'),
-  source: z.enum(ticketSources),
+  // A string, not an enum: the sources of the apps join with their slices
+  // (2.23b, 2.24), and a one-value enum makes the Dart client's names fail
+  // its analysis.
+  source: z
+    .string()
+    .describe(`Where the ticket came from (AP §9.9.1): ${ticketSources.join(', ')} so far.`),
   party: z.enum(ticketParties),
   partyId: z.uuid(),
   partyName: z.string(),

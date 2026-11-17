@@ -15,7 +15,7 @@ part 'admin_order_tickets_dto_output_tickets_inner.g.dart';
 /// Properties:
 /// * [id]
 /// * [number] - Shown as `T-{number}` (AP §4.8).
-/// * [source_]
+/// * [source_] - Where the ticket came from (AP §9.9.1): manual so far.
 /// * [party]
 /// * [partyId]
 /// * [partyName]
@@ -46,9 +46,9 @@ abstract class AdminOrderTicketsDtoOutputTicketsInner
   @BuiltValueField(wireName: r'number')
   String get number;
 
+  /// Where the ticket came from (AP §9.9.1): manual so far.
   @BuiltValueField(wireName: r'source')
-  AdminOrderTicketsDtoOutputTicketsInnerSource_Enum get source_;
-  // enum source_Enum {  manual,  };
+  String get source_;
 
   @BuiltValueField(wireName: r'party')
   AdminOrderTicketsDtoOutputTicketsInnerPartyEnum get party;
@@ -144,9 +144,7 @@ class _$AdminOrderTicketsDtoOutputTicketsInnerSerializer
     yield r'source';
     yield serializers.serialize(
       object.source_,
-      specifiedType: const FullType(
-        AdminOrderTicketsDtoOutputTicketsInnerSource_Enum,
-      ),
+      specifiedType: const FullType(String),
     );
     yield r'party';
     yield serializers.serialize(
@@ -291,11 +289,9 @@ class _$AdminOrderTicketsDtoOutputTicketsInnerSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(
-                      AdminOrderTicketsDtoOutputTicketsInnerSource_Enum,
-                    ),
+                    specifiedType: const FullType(String),
                   )
-                  as AdminOrderTicketsDtoOutputTicketsInnerSource_Enum;
+                  as String;
           result.source_ = valueDes;
           break;
         case r'party':
@@ -480,25 +476,6 @@ class _$AdminOrderTicketsDtoOutputTicketsInnerSerializer
     );
     return result.build();
   }
-}
-
-class AdminOrderTicketsDtoOutputTicketsInnerSource_Enum extends EnumClass {
-  @BuiltValueEnumConst(wireName: r'manual')
-  static const AdminOrderTicketsDtoOutputTicketsInnerSource_Enum manual =
-      _$adminOrderTicketsDtoOutputTicketsInnerSourceEnum_manual;
-
-  static Serializer<AdminOrderTicketsDtoOutputTicketsInnerSource_Enum>
-  get serializer =>
-      _$adminOrderTicketsDtoOutputTicketsInnerSourceEnumSerializer;
-
-  const AdminOrderTicketsDtoOutputTicketsInnerSource_Enum._(String name)
-    : super(name);
-
-  static BuiltSet<AdminOrderTicketsDtoOutputTicketsInnerSource_Enum>
-  get values => _$adminOrderTicketsDtoOutputTicketsInnerSourceEnumValues;
-  static AdminOrderTicketsDtoOutputTicketsInnerSource_Enum valueOf(
-    String name,
-  ) => _$adminOrderTicketsDtoOutputTicketsInnerSourceEnumValueOf(name);
 }
 
 class AdminOrderTicketsDtoOutputTicketsInnerPartyEnum extends EnumClass {

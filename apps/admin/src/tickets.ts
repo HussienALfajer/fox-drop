@@ -42,9 +42,16 @@ export const slaKindKeys = {
   resolution: 'tickets.sla.resolution',
 } as const satisfies Record<TicketSla['kind'], string>;
 
+// The sources the panel names; the server's `source` is a string, and a code
+// the panel does not know is hidden.
 export const ticketSourceKeys = {
   manual: 'tickets.source.manual',
-} as const satisfies Record<Ticket['source'], string>;
+} as const;
+export type TicketSource = keyof typeof ticketSourceKeys;
+
+export function sourceKey(source: string): (typeof ticketSourceKeys)[TicketSource] | null {
+  return Object.hasOwn(ticketSourceKeys, source) ? ticketSourceKeys[source as TicketSource] : null;
+}
 
 // AP §4.8.
 export const ticketLabel = (number: string): string => `T-${number}`;
@@ -82,7 +89,7 @@ export interface TicketFilters {
   status: TicketStatus | '';
   typeCode: string;
   assigneeId: string;
-  source: Ticket['source'] | '';
+  source: TicketSource | '';
   breached: boolean;
 }
 

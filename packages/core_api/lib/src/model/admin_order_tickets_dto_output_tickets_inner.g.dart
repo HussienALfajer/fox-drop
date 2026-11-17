@@ -6,28 +6,6 @@ part of 'admin_order_tickets_dto_output_tickets_inner.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const AdminOrderTicketsDtoOutputTicketsInnerSource_Enum
-_$adminOrderTicketsDtoOutputTicketsInnerSourceEnum_manual =
-    const AdminOrderTicketsDtoOutputTicketsInnerSource_Enum._('manual');
-
-AdminOrderTicketsDtoOutputTicketsInnerSource_Enum
-_$adminOrderTicketsDtoOutputTicketsInnerSourceEnumValueOf(String name) {
-  switch (name) {
-    case 'manual':
-      return _$adminOrderTicketsDtoOutputTicketsInnerSourceEnum_manual;
-    default:
-      throw ArgumentError(name);
-  }
-}
-
-final BuiltSet<AdminOrderTicketsDtoOutputTicketsInnerSource_Enum>
-_$adminOrderTicketsDtoOutputTicketsInnerSourceEnumValues =
-    BuiltSet<AdminOrderTicketsDtoOutputTicketsInnerSource_Enum>(
-      const <AdminOrderTicketsDtoOutputTicketsInnerSource_Enum>[
-        _$adminOrderTicketsDtoOutputTicketsInnerSourceEnum_manual,
-      ],
-    );
-
 const AdminOrderTicketsDtoOutputTicketsInnerPartyEnum
 _$adminOrderTicketsDtoOutputTicketsInnerPartyEnum_customer =
     const AdminOrderTicketsDtoOutputTicketsInnerPartyEnum._('customer');
@@ -108,49 +86,12 @@ _$adminOrderTicketsDtoOutputTicketsInnerStatusEnumValues =
       ],
     );
 
-Serializer<AdminOrderTicketsDtoOutputTicketsInnerSource_Enum>
-_$adminOrderTicketsDtoOutputTicketsInnerSourceEnumSerializer =
-    _$AdminOrderTicketsDtoOutputTicketsInnerSource_EnumSerializer();
 Serializer<AdminOrderTicketsDtoOutputTicketsInnerPartyEnum>
 _$adminOrderTicketsDtoOutputTicketsInnerPartyEnumSerializer =
     _$AdminOrderTicketsDtoOutputTicketsInnerPartyEnumSerializer();
 Serializer<AdminOrderTicketsDtoOutputTicketsInnerStatusEnum>
 _$adminOrderTicketsDtoOutputTicketsInnerStatusEnumSerializer =
     _$AdminOrderTicketsDtoOutputTicketsInnerStatusEnumSerializer();
-
-class _$AdminOrderTicketsDtoOutputTicketsInnerSource_EnumSerializer
-    implements
-        PrimitiveSerializer<AdminOrderTicketsDtoOutputTicketsInnerSource_Enum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'manual': 'manual',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'manual': 'manual',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    AdminOrderTicketsDtoOutputTicketsInnerSource_Enum,
-  ];
-  @override
-  final String wireName = 'AdminOrderTicketsDtoOutputTicketsInnerSource_Enum';
-
-  @override
-  Object serialize(
-    Serializers serializers,
-    AdminOrderTicketsDtoOutputTicketsInnerSource_Enum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
-
-  @override
-  AdminOrderTicketsDtoOutputTicketsInnerSource_Enum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => AdminOrderTicketsDtoOutputTicketsInnerSource_Enum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
-}
 
 class _$AdminOrderTicketsDtoOutputTicketsInnerPartyEnumSerializer
     implements
@@ -239,7 +180,7 @@ class _$AdminOrderTicketsDtoOutputTicketsInner
   @override
   final String number;
   @override
-  final AdminOrderTicketsDtoOutputTicketsInnerSource_Enum source_;
+  final String source_;
   @override
   final AdminOrderTicketsDtoOutputTicketsInnerPartyEnum party;
   @override
@@ -403,11 +344,9 @@ class AdminOrderTicketsDtoOutputTicketsInnerBuilder
   String? get number => _$this._number;
   set number(String? number) => _$this._number = number;
 
-  AdminOrderTicketsDtoOutputTicketsInnerSource_Enum? _source_;
-  AdminOrderTicketsDtoOutputTicketsInnerSource_Enum? get source_ =>
-      _$this._source_;
-  set source_(AdminOrderTicketsDtoOutputTicketsInnerSource_Enum? source_) =>
-      _$this._source_ = source_;
+  String? _source_;
+  String? get source_ => _$this._source_;
+  set source_(String? source_) => _$this._source_ = source_;
 
   AdminOrderTicketsDtoOutputTicketsInnerPartyEnum? _party;
   AdminOrderTicketsDtoOutputTicketsInnerPartyEnum? get party => _$this._party;

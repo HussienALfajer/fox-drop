@@ -6,29 +6,6 @@ part of 'admin_ticket_page_dto_output.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const AdminTicketPageDtoOutputSource_Enum
-_$adminTicketPageDtoOutputSourceEnum_manual =
-    const AdminTicketPageDtoOutputSource_Enum._('manual');
-
-AdminTicketPageDtoOutputSource_Enum _$adminTicketPageDtoOutputSourceEnumValueOf(
-  String name,
-) {
-  switch (name) {
-    case 'manual':
-      return _$adminTicketPageDtoOutputSourceEnum_manual;
-    default:
-      throw ArgumentError(name);
-  }
-}
-
-final BuiltSet<AdminTicketPageDtoOutputSource_Enum>
-_$adminTicketPageDtoOutputSourceEnumValues =
-    BuiltSet<AdminTicketPageDtoOutputSource_Enum>(
-      const <AdminTicketPageDtoOutputSource_Enum>[
-        _$adminTicketPageDtoOutputSourceEnum_manual,
-      ],
-    );
-
 const AdminTicketPageDtoOutputPartyEnum
 _$adminTicketPageDtoOutputPartyEnum_customer =
     const AdminTicketPageDtoOutputPartyEnum._('customer');
@@ -111,48 +88,12 @@ _$adminTicketPageDtoOutputStatusEnumValues =
       ],
     );
 
-Serializer<AdminTicketPageDtoOutputSource_Enum>
-_$adminTicketPageDtoOutputSourceEnumSerializer =
-    _$AdminTicketPageDtoOutputSource_EnumSerializer();
 Serializer<AdminTicketPageDtoOutputPartyEnum>
 _$adminTicketPageDtoOutputPartyEnumSerializer =
     _$AdminTicketPageDtoOutputPartyEnumSerializer();
 Serializer<AdminTicketPageDtoOutputStatusEnum>
 _$adminTicketPageDtoOutputStatusEnumSerializer =
     _$AdminTicketPageDtoOutputStatusEnumSerializer();
-
-class _$AdminTicketPageDtoOutputSource_EnumSerializer
-    implements PrimitiveSerializer<AdminTicketPageDtoOutputSource_Enum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'manual': 'manual',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'manual': 'manual',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    AdminTicketPageDtoOutputSource_Enum,
-  ];
-  @override
-  final String wireName = 'AdminTicketPageDtoOutputSource_Enum';
-
-  @override
-  Object serialize(
-    Serializers serializers,
-    AdminTicketPageDtoOutputSource_Enum object, {
-    FullType specifiedType = FullType.unspecified,
-  }) => _toWire[object.name] ?? object.name;
-
-  @override
-  AdminTicketPageDtoOutputSource_Enum deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) => AdminTicketPageDtoOutputSource_Enum.valueOf(
-    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
-  );
-}
 
 class _$AdminTicketPageDtoOutputPartyEnumSerializer
     implements PrimitiveSerializer<AdminTicketPageDtoOutputPartyEnum> {
@@ -234,7 +175,7 @@ class _$AdminTicketPageDtoOutput extends AdminTicketPageDtoOutput {
   @override
   final String number;
   @override
-  final AdminTicketPageDtoOutputSource_Enum source_;
+  final String source_;
   @override
   final AdminTicketPageDtoOutputPartyEnum party;
   @override
@@ -398,10 +339,9 @@ class AdminTicketPageDtoOutputBuilder
   String? get number => _$this._number;
   set number(String? number) => _$this._number = number;
 
-  AdminTicketPageDtoOutputSource_Enum? _source_;
-  AdminTicketPageDtoOutputSource_Enum? get source_ => _$this._source_;
-  set source_(AdminTicketPageDtoOutputSource_Enum? source_) =>
-      _$this._source_ = source_;
+  String? _source_;
+  String? get source_ => _$this._source_;
+  set source_(String? source_) => _$this._source_ = source_;
 
   AdminTicketPageDtoOutputPartyEnum? _party;
   AdminTicketPageDtoOutputPartyEnum? get party => _$this._party;
