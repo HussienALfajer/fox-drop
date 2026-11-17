@@ -18,11 +18,11 @@ describe('the cost report words', () => {
   });
 
   it('names a compensation line by its reason’s label, the late codes apart', () => {
-    expect(compensationName({ reason: 'late', label: 'تأخير' })).toEqual({ label: 'تأخير' });
-    expect(compensationName({ reason: 'late_delivery', label: null })).toEqual({
+    expect(compensationName({ kind: 'reason', label: 'تأخير' })).toEqual({ label: 'تأخير' });
+    expect(compensationName({ kind: 'late_delivery', label: null })).toEqual({
       key: 'costReport.lateDelivery',
     });
-    expect(compensationName({ reason: 'other', label: null })).toEqual({
+    expect(compensationName({ kind: 'other', label: null })).toEqual({
       key: 'costReport.operating.other',
     });
   });

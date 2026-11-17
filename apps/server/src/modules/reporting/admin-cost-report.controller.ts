@@ -12,6 +12,7 @@ import { RequirePermission } from '../../http/access.js';
 import { AdminController } from '../../http/route-groups.js';
 import { operatingCostCauses } from '../ordering/index.js';
 import { day } from './admin-restaurant-statements.controller.js';
+import { compensationLineKinds } from './cost-report.js';
 import {
   type CostReport,
   CostReportRefusedError,
@@ -47,11 +48,12 @@ class AdminCostReportDto extends createZodDto(
     totals: z.object(totals),
     compensationReasons: z.array(
       z.object({
-        reason: z
-          .string()
+        kind: z
+          .enum(compensationLineKinds)
           .describe(
-            'The compensation reason’s code, `late_delivery` for the automatic late codes, `other` for the rest.',
+            '`reason`: a reason of the compensation list; `late_delivery`: the automatic late codes; `other`: the rest.',
           ),
+        reason: z.string().nullable().describe('The reason’s code, for `reason` only.'),
         label: z
           .string()
           .nullable()

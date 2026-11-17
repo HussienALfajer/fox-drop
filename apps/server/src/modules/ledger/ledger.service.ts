@@ -117,8 +117,10 @@ export interface CityTotal {
 }
 
 // A city's entries on some accounts in a period (`sourceCosts`), summed by
-// type, reason and order, from the platform's side.
+// journal, from the platform's side.
 export interface SourceCost {
+  // The journal; a reversal's is the journal it reverses.
+  journalId: string;
   purpose: AccountPurpose;
   type: JournalType;
   // The journal's reason; a reversal's is the reason of the journal reversed.
@@ -557,10 +559,11 @@ export class LedgerService {
   }
 
   // AP §9.10.6 (slice 2.22d): the city's entries on some platform accounts
-  // from `from` (included) to `to` (excluded), summed by account purpose,
-  // journal type, reason, order and currency, from the platform's side. A
-  // reversal counts under the reason of the journal it reverses, so the two
-  // cancel; `orderId` is null for a journal whose source is no order.
+  // from `from` (included) to `to` (excluded), summed by journal, account
+  // purpose and currency, from the platform's side. A reversal counts with
+  // the journal it reverses, under its id and reason, so the two cancel when
+  // both fall in the period and the reversal alone shows what it took back;
+  // `orderId` is null for a journal whose source is no order.
   async sourceCosts(
     cityId: string,
     purposes: readonly AccountPurpose[],
@@ -573,11 +576,13 @@ export class LedgerService {
     const reason = sql<
       string | null
     >`CASE WHEN ${journals.reversesJournalId} IS NULL THEN ${journals.reason} ELSE ${reversed.reason} END`;
+    const journalId = sql<string>`coalesce(${journals.reversesJournalId}, ${journals.id})`;
     const orderId = sql<
       string | null
     >`CASE WHEN ${journals.sourceKind} = 'order' THEN ${journals.sourceId} END`;
     const rows = await executor
       .select({
+        journalId,
         purpose: accounts.purpose,
         type: journals.type,
         reason,
@@ -597,9 +602,10 @@ export class LedgerService {
           lt(entries.createdAt, to),
         ),
       )
-      .groupBy(accounts.purpose, journals.type, sql`3`, sql`4`, entries.currency);
+      .groupBy(sql`1`, accounts.purpose, journals.type, sql`4`, sql`5`, entries.currency);
     return rows
       .map((row) => ({
+        journalId: row.journalId,
         purpose: row.purpose as AccountPurpose,
         type: row.type as JournalType,
         reason: row.reason,

@@ -17,6 +17,13 @@ export interface CostOrder {
   // The outcome in force and its party (null for a normal delivery).
   outcome: OrderOutcome | null;
   outcomeResponsible: ResponsibleParty | null;
+  // Every outcome operations set that posted journals, a replaced one
+  // included, with the journals it posted («تغيير النتيجة» reverses them).
+  outcomes: readonly {
+    outcome: OrderOutcome;
+    responsible: ResponsibleParty;
+    journalIds: readonly string[];
+  }[];
   promoCodeId: string | null;
   promoCode: string | null;
 }
@@ -50,23 +57,31 @@ const editReasons: readonly (string | null)[] = [
 ];
 
 // The cause of an entry on platform.operating_cost and the party operations
-// named responsible, from its journal's type, its reason (a reversal's: the
-// reason of the journal it reverses, so both fall under one cause) and the
-// order as it is now. A shortfall and an edit are known by the reasons this
-// module posts them with; the rest by how the order ended, so a changed
-// outcome's old entries and their reversals cancel under the new one.
+// named responsible, from its journal (a reversal's: the journal it
+// reverses, with that journal's reason) and the order. A shortfall and an
+// edit are known by the reasons this module posts them with; a cancelled
+// order's by its cancellation; an outcome's by the outcome that posted the
+// journal, so what «تغيير النتيجة» takes back counts against the outcome and
+// the party that were replaced, in whatever period it falls. A journal no
+// outcome row names (posted before slice 2.11c) counts under the outcome in
+// force.
 export function operatingCostCause(
-  type: string,
-  reason: string | null,
+  journal: { id: string; type: string; reason: string | null },
   order: CostOrder | undefined,
 ): { cause: OperatingCostCause; responsible: ResponsibleParty | null } {
-  if (reason === SHORTFALL_REASON) return { cause: 'shortfall', responsible: 'platform' };
-  if (editReasons.includes(reason)) return { cause: 'edit_after_pickup', responsible: 'platform' };
+  if (journal.reason === SHORTFALL_REASON) return { cause: 'shortfall', responsible: 'platform' };
+  if (editReasons.includes(journal.reason)) {
+    return { cause: 'edit_after_pickup', responsible: 'platform' };
+  }
   if (order?.status === 'cancelled') {
     return {
-      cause: type.startsWith('earn.') ? 'captain_compensation' : 'cancelled_prepared',
+      cause: journal.type.startsWith('earn.') ? 'captain_compensation' : 'cancelled_prepared',
       responsible: order.cancelResponsible,
     };
+  }
+  const posted = order?.outcomes.find((each) => each.journalIds.includes(journal.id));
+  if (posted && posted.outcome !== 'normal') {
+    return { cause: posted.outcome, responsible: posted.responsible };
   }
   if (order?.outcome != null && order.outcome !== 'normal') {
     return { cause: order.outcome, responsible: order.outcomeResponsible };

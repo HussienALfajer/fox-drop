@@ -6,10 +6,93 @@ part of 'admin_cost_report_dto_output_compensation_reasons_inner.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const AdminCostReportDtoOutputCompensationReasonsInnerKindEnum
+_$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_reason =
+    const AdminCostReportDtoOutputCompensationReasonsInnerKindEnum._('reason');
+const AdminCostReportDtoOutputCompensationReasonsInnerKindEnum
+_$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_lateDelivery =
+    const AdminCostReportDtoOutputCompensationReasonsInnerKindEnum._(
+      'lateDelivery',
+    );
+const AdminCostReportDtoOutputCompensationReasonsInnerKindEnum
+_$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_other =
+    const AdminCostReportDtoOutputCompensationReasonsInnerKindEnum._('other');
+
+AdminCostReportDtoOutputCompensationReasonsInnerKindEnum
+_$adminCostReportDtoOutputCompensationReasonsInnerKindEnumValueOf(String name) {
+  switch (name) {
+    case 'reason':
+      return _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_reason;
+    case 'lateDelivery':
+      return _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_lateDelivery;
+    case 'other':
+      return _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_other;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<AdminCostReportDtoOutputCompensationReasonsInnerKindEnum>
+_$adminCostReportDtoOutputCompensationReasonsInnerKindEnumValues =
+    BuiltSet<AdminCostReportDtoOutputCompensationReasonsInnerKindEnum>(
+      const <AdminCostReportDtoOutputCompensationReasonsInnerKindEnum>[
+        _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_reason,
+        _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_lateDelivery,
+        _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_other,
+      ],
+    );
+
+Serializer<AdminCostReportDtoOutputCompensationReasonsInnerKindEnum>
+_$adminCostReportDtoOutputCompensationReasonsInnerKindEnumSerializer =
+    _$AdminCostReportDtoOutputCompensationReasonsInnerKindEnumSerializer();
+
+class _$AdminCostReportDtoOutputCompensationReasonsInnerKindEnumSerializer
+    implements
+        PrimitiveSerializer<
+          AdminCostReportDtoOutputCompensationReasonsInnerKindEnum
+        > {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'reason': 'reason',
+    'lateDelivery': 'late_delivery',
+    'other': 'other',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'reason': 'reason',
+    'late_delivery': 'lateDelivery',
+    'other': 'other',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    AdminCostReportDtoOutputCompensationReasonsInnerKindEnum,
+  ];
+  @override
+  final String wireName =
+      'AdminCostReportDtoOutputCompensationReasonsInnerKindEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    AdminCostReportDtoOutputCompensationReasonsInnerKindEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  AdminCostReportDtoOutputCompensationReasonsInnerKindEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => AdminCostReportDtoOutputCompensationReasonsInnerKindEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
 class _$AdminCostReportDtoOutputCompensationReasonsInner
     extends AdminCostReportDtoOutputCompensationReasonsInner {
   @override
-  final String reason;
+  final AdminCostReportDtoOutputCompensationReasonsInnerKindEnum kind;
+  @override
+  final String? reason;
   @override
   final String? label;
   @override
@@ -26,7 +109,8 @@ class _$AdminCostReportDtoOutputCompensationReasonsInner
           ._build();
 
   _$AdminCostReportDtoOutputCompensationReasonsInner._({
-    required this.reason,
+    required this.kind,
+    this.reason,
     this.label,
     required this.orders,
     required this.amount,
@@ -45,6 +129,7 @@ class _$AdminCostReportDtoOutputCompensationReasonsInner
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is AdminCostReportDtoOutputCompensationReasonsInner &&
+        kind == other.kind &&
         reason == other.reason &&
         label == other.label &&
         orders == other.orders &&
@@ -54,6 +139,7 @@ class _$AdminCostReportDtoOutputCompensationReasonsInner
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, kind.hashCode);
     _$hash = $jc(_$hash, reason.hashCode);
     _$hash = $jc(_$hash, label.hashCode);
     _$hash = $jc(_$hash, orders.hashCode);
@@ -67,6 +153,7 @@ class _$AdminCostReportDtoOutputCompensationReasonsInner
     return (newBuiltValueToStringHelper(
             r'AdminCostReportDtoOutputCompensationReasonsInner',
           )
+          ..add('kind', kind)
           ..add('reason', reason)
           ..add('label', label)
           ..add('orders', orders)
@@ -82,6 +169,12 @@ class AdminCostReportDtoOutputCompensationReasonsInnerBuilder
           AdminCostReportDtoOutputCompensationReasonsInnerBuilder
         > {
   _$AdminCostReportDtoOutputCompensationReasonsInner? _$v;
+
+  AdminCostReportDtoOutputCompensationReasonsInnerKindEnum? _kind;
+  AdminCostReportDtoOutputCompensationReasonsInnerKindEnum? get kind =>
+      _$this._kind;
+  set kind(AdminCostReportDtoOutputCompensationReasonsInnerKindEnum? kind) =>
+      _$this._kind = kind;
 
   String? _reason;
   String? get reason => _$this._reason;
@@ -106,6 +199,7 @@ class AdminCostReportDtoOutputCompensationReasonsInnerBuilder
   AdminCostReportDtoOutputCompensationReasonsInnerBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _kind = $v.kind;
       _reason = $v.reason;
       _label = $v.label;
       _orders = $v.orders;
@@ -135,11 +229,12 @@ class AdminCostReportDtoOutputCompensationReasonsInnerBuilder
     final _$result =
         _$v ??
         _$AdminCostReportDtoOutputCompensationReasonsInner._(
-          reason: BuiltValueNullFieldError.checkNotNull(
-            reason,
+          kind: BuiltValueNullFieldError.checkNotNull(
+            kind,
             r'AdminCostReportDtoOutputCompensationReasonsInner',
-            'reason',
+            'kind',
           ),
+          reason: reason,
           label: label,
           orders: BuiltValueNullFieldError.checkNotNull(
             orders,

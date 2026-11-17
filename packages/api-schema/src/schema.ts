@@ -12568,8 +12568,13 @@ export interface components {
                 total: string;
             };
             compensationReasons: {
-                /** @description The compensation reason’s code, `late_delivery` for the automatic late codes, `other` for the rest. */
-                reason: string;
+                /**
+                 * @description `reason`: a reason of the compensation list; `late_delivery`: the automatic late codes; `other`: the rest.
+                 * @enum {string}
+                 */
+                kind: "reason" | "late_delivery" | "other";
+                /** @description The reason’s code, for `reason` only. */
+                reason: string | null;
                 /** @description The reason’s label as chosen; null for the two fixed lines. */
                 label: string | null;
                 /** @description The orders the codes were used on. */

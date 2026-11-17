@@ -1,6 +1,5 @@
 import ExcelJS from 'exceljs';
 import { costReportLabels as labels } from '../content/index.js';
-import { LATE_DELIVERY } from './cost-report.js';
 import type { CostReport } from './cost-report.service.js';
 import { majorOf } from './statement-workbook.js';
 
@@ -49,7 +48,7 @@ export async function costReportWorkbook(
   ]);
   for (const row of report.compensationReasons) {
     const name =
-      row.label ?? (row.reason === LATE_DELIVERY ? labels.lateDelivery : labels.operating.other);
+      row.label ?? (row.kind === 'late_delivery' ? labels.lateDelivery : labels.operating.other);
     amounts([name, row.orders, money(row.amount)], 3);
   }
 

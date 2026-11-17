@@ -317,6 +317,13 @@ describe('an outcome of an order with a code', () => {
       cancelResponsible: null,
       outcome: 'wrong_refused',
       outcomeResponsible: 'restaurant',
+      outcomes: [
+        {
+          outcome: 'wrong_refused',
+          responsible: 'restaurant',
+          journalIds: expect.arrayContaining([expect.any(String)]),
+        },
+      ],
       promoCodeId: expect.any(String),
       promoCode: expect.any(String),
     });
@@ -383,6 +390,7 @@ describe('the other ends of an order with a code', () => {
       cancelResponsible: 'platform',
       outcome: null,
       outcomeResponsible: null,
+      outcomes: [],
     });
   });
 

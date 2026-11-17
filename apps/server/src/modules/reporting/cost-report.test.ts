@@ -12,13 +12,24 @@ const id = (n: number) => `0190f3a0-0000-7000-8000-${n.toString().padStart(12, '
 const [pizza, grill] = [id(1), id(2)];
 const [fox10, eid, personal, late] = [id(11), id(12), id(13), id(14)];
 
+let journals = 0;
 function cost(
   purpose: (typeof costAccounts)[number],
   orderId: string | null,
   amount: bigint,
   overrides: Partial<SourceCost> = {},
 ): SourceCost {
-  return { purpose, type: purpose, reason: null, orderId, currency: 'TRY', amount, ...overrides };
+  journals += 1;
+  return {
+    journalId: `j-${journals}`,
+    purpose,
+    type: purpose,
+    reason: null,
+    orderId,
+    currency: 'TRY',
+    amount,
+    ...overrides,
+  };
 }
 
 function order(restaurantId: string, overrides: Partial<CostOrder> = {}): CostOrder {
@@ -28,6 +39,7 @@ function order(restaurantId: string, overrides: Partial<CostOrder> = {}): CostOr
     cancelResponsible: null,
     outcome: 'normal',
     outcomeResponsible: null,
+    outcomes: [],
     promoCodeId: null,
     promoCode: null,
     ...overrides,
@@ -100,8 +112,8 @@ describe('costReport', () => {
           cost('platform.compensation_cost', id(201), 2_500n),
           cost('platform.compensation_cost', id(202), 1_500n),
           cost('platform.compensation_cost', id(203), 2_000n),
-          // A ticket's remedy (slice 2.23): no personal code behind it.
-          cost('platform.compensation_cost', id(204), 700n, { type: 'merchant.debit' }),
+          // No personal code the report can read behind it.
+          cost('platform.compensation_cost', id(204), 700n),
         ],
         [
           // The orders the codes were used on, all at the grill.
@@ -115,11 +127,11 @@ describe('costReport', () => {
         [
           [
             personal,
-            { kind: 'compensation', reasonCode: 'delay', reasonLabel: 'تأخير', orderId: id(301) },
+            { kind: 'compensation', reasonCode: 'other', reasonLabel: 'أخرى', orderId: id(301) },
           ],
           [
             id(15),
-            { kind: 'compensation', reasonCode: 'delay', reasonLabel: 'تأخير', orderId: id(301) },
+            { kind: 'compensation', reasonCode: 'other', reasonLabel: 'أخرى', orderId: id(301) },
           ],
           [late, { kind: 'late', orderId: id(301) }],
         ],
@@ -127,9 +139,11 @@ describe('costReport', () => {
     );
     expect(report.totals.compensation).toBe(6_700n);
     expect(report.compensationReasons).toEqual([
-      { reason: 'delay', label: 'تأخير', orders: 2, amount: 4_000n },
-      { reason: 'late_delivery', label: null, orders: 1, amount: 2_000n },
-      { reason: 'other', label: null, orders: 1, amount: 700n },
+      // The reason «أخرى» of Content's list (its code `other`) stays apart
+      // from the line of what no personal code explains.
+      { kind: 'reason', reason: 'other', label: 'أخرى', orders: 2, amount: 4_000n },
+      { kind: 'late_delivery', reason: null, label: null, orders: 1, amount: 2_000n },
+      { kind: 'other', reason: null, label: null, orders: 1, amount: 700n },
     ]);
     // A personal code is no code of «أكواد الخصم».
     expect(report.codes).toEqual([]);
@@ -186,6 +200,32 @@ describe('costReport', () => {
     expect(report.restaurants.map((row) => [row.restaurantId, row.operating])).toEqual([
       [pizza, 36_500n],
       [grill, 32_900n],
+    ]);
+  });
+
+  it('counts a changed outcome against the outcome that posted each journal', () => {
+    // Week 1: «تالف», platform responsible, 325.00 (j-a). Week 2: OWN makes
+    // the captain responsible; the reversal of j-a falls in week 2.
+    const changed = order(grill, {
+      status: 'failed',
+      outcome: 'damaged',
+      outcomeResponsible: 'captain',
+      outcomes: [
+        { outcome: 'damaged', responsible: 'platform', journalIds: ['j-a'] },
+        { outcome: 'damaged', responsible: 'captain', journalIds: ['j-b'] },
+      ],
+    });
+    const week = (amount: bigint) =>
+      costReport(
+        input(
+          [cost('platform.operating_cost', id(601), amount, { journalId: 'j-a' })],
+          [[id(601), changed]],
+        ),
+      );
+    expect(week(32_500n).parties).toEqual([{ party: 'platform', orders: 1, amount: 32_500n }]);
+    expect(week(-32_500n).parties).toEqual([{ party: 'platform', orders: 1, amount: -32_500n }]);
+    expect(week(-32_500n).operatingReasons).toEqual([
+      { reason: 'damaged', orders: 1, amount: -32_500n },
     ]);
   });
 

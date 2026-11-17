@@ -82,6 +82,9 @@ Serializers _$serializers =
           ..add(AdminCostReportDtoOutput.serializer)
           ..add(AdminCostReportDtoOutputCodesInner.serializer)
           ..add(AdminCostReportDtoOutputCompensationReasonsInner.serializer)
+          ..add(
+            AdminCostReportDtoOutputCompensationReasonsInnerKindEnum.serializer,
+          )
           ..add(AdminCostReportDtoOutputOperatingReasonsInner.serializer)
           ..add(
             AdminCostReportDtoOutputOperatingReasonsInnerReasonEnum.serializer,

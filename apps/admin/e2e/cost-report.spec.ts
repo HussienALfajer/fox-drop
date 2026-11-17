@@ -15,8 +15,8 @@ const report = {
   currency: 'TRY',
   totals: { discounts: '9000', compensation: '6500', operating: '36500', total: '52000' },
   compensationReasons: [
-    { reason: 'late', label: 'تأخير', orders: 2, amount: '4000' },
-    { reason: 'late_delivery', label: null, orders: 1, amount: '2500' },
+    { kind: 'reason', reason: 'late', label: 'تأخير', orders: 2, amount: '4000' },
+    { kind: 'late_delivery', reason: null, label: null, orders: 1, amount: '2500' },
   ],
   operatingReasons: [
     { reason: 'cancelled_prepared', orders: 1, amount: '34000' },

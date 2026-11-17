@@ -46777,9 +46777,21 @@
             "items": {
               "type": "object",
               "properties": {
-                "reason": {
+                "kind": {
                   "type": "string",
-                  "description": "The compensation reason’s code, `late_delivery` for the automatic late codes, `other` for the rest."
+                  "enum": [
+                    "reason",
+                    "late_delivery",
+                    "other"
+                  ],
+                  "description": "`reason`: a reason of the compensation list; `late_delivery`: the automatic late codes; `other`: the rest."
+                },
+                "reason": {
+                  "description": "The reason’s code, for `reason` only.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "label": {
                   "description": "The reason’s label as chosen; null for the two fixed lines.",
@@ -46800,6 +46812,7 @@
                 }
               },
               "required": [
+                "kind",
                 "reason",
                 "label",
                 "orders",

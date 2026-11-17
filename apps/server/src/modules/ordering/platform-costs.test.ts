@@ -13,14 +13,19 @@ const order = (overrides: Partial<CostOrder> = {}): CostOrder => ({
   cancelResponsible: null,
   outcome: 'normal',
   outcomeResponsible: null,
+  outcomes: [],
   promoCodeId: null,
   promoCode: null,
   ...overrides,
 });
 
+const journal = (type: string, reason: string | null, id = 'j-0') => ({ id, type, reason });
+
 describe('operatingCostCause', () => {
   it('names a shortfall the platform bears, whatever the order became', () => {
-    expect(operatingCostCause('platform.operating_cost', SHORTFALL_REASON, order())).toEqual({
+    expect(
+      operatingCostCause(journal('platform.operating_cost', SHORTFALL_REASON), order()),
+    ).toEqual({
       cause: 'shortfall',
       responsible: 'platform',
     });
@@ -38,7 +43,7 @@ describe('operatingCostCause', () => {
       CHARGE_RETURNED_REASON,
       FEE_CUT_RETURNED_REASON,
     ]) {
-      expect(operatingCostCause('platform.operating_cost', reason, failed)).toEqual({
+      expect(operatingCostCause(journal('platform.operating_cost', reason), failed)).toEqual({
         cause: 'edit_after_pickup',
         responsible: 'platform',
       });
@@ -47,11 +52,11 @@ describe('operatingCostCause', () => {
 
   it('splits a cancelled order into the food prepared and the captain’s compensation, by the cancellation’s party', () => {
     const cancelled = order({ status: 'cancelled', outcome: null, cancelResponsible: 'customer' });
-    expect(operatingCostCause('platform.operating_cost', null, cancelled)).toEqual({
+    expect(operatingCostCause(journal('platform.operating_cost', null), cancelled)).toEqual({
       cause: 'cancelled_prepared',
       responsible: 'customer',
     });
-    expect(operatingCostCause('earn.order_pay', null, cancelled)).toEqual({
+    expect(operatingCostCause(journal('earn.order_pay', null), cancelled)).toEqual({
       cause: 'captain_compensation',
       responsible: 'customer',
     });
@@ -69,19 +74,46 @@ describe('operatingCostCause', () => {
       ['earn.waiting_pay', null],
       ['platform.operating_cost', PAY_OFFSET_REASON],
     ] as const) {
-      expect(operatingCostCause(type, reason, failed)).toEqual({
+      expect(operatingCostCause(journal(type, reason), failed)).toEqual({
         cause: 'wrong_refused',
         responsible: 'restaurant',
       });
     }
   });
 
+  it('counts what «تغيير النتيجة» took back against the outcome and the party replaced', () => {
+    // «تالف» with the platform responsible posted j-1; OWN changed it to the
+    // captain responsible, which posts nothing on the operating cost.
+    const changed = order({
+      status: 'failed',
+      outcome: 'damaged',
+      outcomeResponsible: 'captain',
+      outcomes: [
+        { outcome: 'damaged', responsible: 'platform', journalIds: ['j-1', 'j-2'] },
+        { outcome: 'wrong_refused', responsible: 'captain', journalIds: ['j-3'] },
+      ],
+    });
+    expect(operatingCostCause(journal('platform.operating_cost', null, 'j-1'), changed)).toEqual({
+      cause: 'damaged',
+      responsible: 'platform',
+    });
+    expect(operatingCostCause(journal('earn.order_pay', null, 'j-3'), changed)).toEqual({
+      cause: 'wrong_refused',
+      responsible: 'captain',
+    });
+    // A journal no outcome row names counts under the outcome in force.
+    expect(operatingCostCause(journal('platform.operating_cost', null, 'j-9'), changed)).toEqual({
+      cause: 'damaged',
+      responsible: 'captain',
+    });
+  });
+
   it('answers other for an order it cannot place', () => {
-    expect(operatingCostCause('platform.operating_cost', null, undefined)).toEqual({
+    expect(operatingCostCause(journal('platform.operating_cost', null), undefined)).toEqual({
       cause: 'other',
       responsible: null,
     });
-    expect(operatingCostCause('platform.operating_cost', null, order())).toEqual({
+    expect(operatingCostCause(journal('platform.operating_cost', null), order())).toEqual({
       cause: 'other',
       responsible: null,
     });

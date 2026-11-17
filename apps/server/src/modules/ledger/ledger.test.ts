@@ -748,16 +748,18 @@ describe('LedgerService.cityTotals and cityBalancesAt (AP §9.10.1)', () => {
       ],
     });
     await post(cost(999n));
+    // An outcome's loss posted before the period and reversed within it.
+    const old = await post(cost(325n));
     const from = await databaseNow();
-    await post(cost(300n));
-    await post(cost(200n));
+    const loss = await post(cost(300n));
     const edit = await post(cost(70n, 'أصناف حُذفت بعد الاستلام'));
-    await db.transaction((tx) =>
-      ledger.reverse(edit, { actor: system, reason: 'تغيير النتيجة' }, tx),
-    );
-    await post(cost(40n, 'نقص في التحصيل'));
+    const reverse = (id: string) =>
+      db.transaction((tx) => ledger.reverse(id, { actor: system, reason: 'تغيير النتيجة' }, tx));
+    await reverse(edit);
+    await reverse(old);
+    const shortfall = await post(cost(40n, 'نقص في التحصيل'));
     // The captain's pay the platform bears, and a discount on another order.
-    await post({
+    const pay = await post({
       cityId,
       type: 'earn.order_pay',
       source: { kind: 'order', id: order },
@@ -768,7 +770,7 @@ describe('LedgerService.cityTotals and cityBalancesAt (AP §9.10.1)', () => {
       ],
     });
     const other = randomUUID();
-    await post({
+    const code = await post({
       cityId,
       type: 'platform.discount_cost',
       source: { kind: 'order', id: other },
@@ -787,40 +789,29 @@ describe('LedgerService.cityTotals and cityBalancesAt (AP §9.10.1)', () => {
       from,
       to,
     );
-    const key = (row: (typeof costs)[number]) => `${row.purpose}${row.type}${row.reason}`;
-    const line = { currency: 'TRY', orderId: order };
-    // The edit and its reversal cancel under the edit's reason, so they
-    // leave no line; the clearing account's side is never read.
-    expect([...costs].sort((a, b) => key(a).localeCompare(key(b)))).toEqual([
+    const line = {
+      purpose: 'platform.operating_cost',
+      type: 'platform.operating_cost',
+      reason: null,
+      currency: 'TRY',
+      orderId: order,
+    };
+    // The edit and its reversal cancel, so they leave no line; the reversal
+    // of the earlier loss counts under that journal; the clearing account's
+    // side is never read.
+    expect([...costs].sort((a, b) => Number(a.amount - b.amount))).toEqual([
+      { ...line, journalId: old, amount: -325n },
+      { ...line, journalId: pay, type: 'earn.order_pay', amount: 25n },
       {
+        ...line,
+        journalId: code,
         purpose: 'platform.discount_cost',
         type: 'platform.discount_cost',
-        reason: null,
-        currency: 'TRY',
         orderId: other,
         amount: 30n,
       },
-      {
-        ...line,
-        purpose: 'platform.operating_cost',
-        type: 'earn.order_pay',
-        reason: null,
-        amount: 25n,
-      },
-      {
-        ...line,
-        purpose: 'platform.operating_cost',
-        type: 'platform.operating_cost',
-        reason: null,
-        amount: 500n,
-      },
-      {
-        ...line,
-        purpose: 'platform.operating_cost',
-        type: 'platform.operating_cost',
-        reason: 'نقص في التحصيل',
-        amount: 40n,
-      },
+      { ...line, journalId: shortfall, reason: 'نقص في التحصيل', amount: 40n },
+      { ...line, journalId: loss, amount: 300n },
     ]);
   });
 

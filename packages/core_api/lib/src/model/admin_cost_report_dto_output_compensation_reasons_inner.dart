@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -11,7 +12,8 @@ part 'admin_cost_report_dto_output_compensation_reasons_inner.g.dart';
 /// AdminCostReportDtoOutputCompensationReasonsInner
 ///
 /// Properties:
-/// * [reason] - The compensation reason’s code, `late_delivery` for the automatic late codes, `other` for the rest.
+/// * [kind] - `reason`: a reason of the compensation list; `late_delivery`: the automatic late codes; `other`: the rest.
+/// * [reason] - The reason’s code, for `reason` only.
 /// * [label] - The reason’s label as chosen; null for the two fixed lines.
 /// * [orders] - The orders the codes were used on.
 /// * [amount]
@@ -22,9 +24,14 @@ abstract class AdminCostReportDtoOutputCompensationReasonsInner
           AdminCostReportDtoOutputCompensationReasonsInner,
           AdminCostReportDtoOutputCompensationReasonsInnerBuilder
         > {
-  /// The compensation reason’s code, `late_delivery` for the automatic late codes, `other` for the rest.
+  /// `reason`: a reason of the compensation list; `late_delivery`: the automatic late codes; `other`: the rest.
+  @BuiltValueField(wireName: r'kind')
+  AdminCostReportDtoOutputCompensationReasonsInnerKindEnum get kind;
+  // enum kindEnum {  reason,  late_delivery,  other,  };
+
+  /// The reason’s code, for `reason` only.
   @BuiltValueField(wireName: r'reason')
-  String get reason;
+  String? get reason;
 
   /// The reason’s label as chosen; null for the two fixed lines.
   @BuiltValueField(wireName: r'label')
@@ -71,11 +78,20 @@ class _$AdminCostReportDtoOutputCompensationReasonsInnerSerializer
     AdminCostReportDtoOutputCompensationReasonsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'reason';
+    yield r'kind';
     yield serializers.serialize(
-      object.reason,
-      specifiedType: const FullType(String),
+      object.kind,
+      specifiedType: const FullType(
+        AdminCostReportDtoOutputCompensationReasonsInnerKindEnum,
+      ),
     );
+    yield r'reason';
+    yield object.reason == null
+        ? null
+        : serializers.serialize(
+            object.reason,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'label';
     yield object.label == null
         ? null
@@ -120,13 +136,25 @@ class _$AdminCostReportDtoOutputCompensationReasonsInnerSerializer
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'kind':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminCostReportDtoOutputCompensationReasonsInnerKindEnum,
+                    ),
+                  )
+                  as AdminCostReportDtoOutputCompensationReasonsInnerKindEnum;
+          result.kind = valueDes;
+          break;
         case r'reason':
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(String),
+                    specifiedType: const FullType.nullable(String),
                   )
-                  as String;
+                  as String?;
+          if (valueDes == null) continue;
           result.reason = valueDes;
           break;
         case r'label':
@@ -181,4 +209,33 @@ class _$AdminCostReportDtoOutputCompensationReasonsInnerSerializer
     );
     return result.build();
   }
+}
+
+/// `reason`: a reason of the compensation list; `late_delivery`: the automatic late codes; `other`: the rest.
+class AdminCostReportDtoOutputCompensationReasonsInnerKindEnum
+    extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'reason')
+  static const AdminCostReportDtoOutputCompensationReasonsInnerKindEnum reason =
+      _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_reason;
+  @BuiltValueEnumConst(wireName: r'late_delivery')
+  static const AdminCostReportDtoOutputCompensationReasonsInnerKindEnum
+  lateDelivery =
+      _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_lateDelivery;
+  @BuiltValueEnumConst(wireName: r'other')
+  static const AdminCostReportDtoOutputCompensationReasonsInnerKindEnum other =
+      _$adminCostReportDtoOutputCompensationReasonsInnerKindEnum_other;
+
+  static Serializer<AdminCostReportDtoOutputCompensationReasonsInnerKindEnum>
+  get serializer =>
+      _$adminCostReportDtoOutputCompensationReasonsInnerKindEnumSerializer;
+
+  const AdminCostReportDtoOutputCompensationReasonsInnerKindEnum._(String name)
+    : super(name);
+
+  static BuiltSet<AdminCostReportDtoOutputCompensationReasonsInnerKindEnum>
+  get values =>
+      _$adminCostReportDtoOutputCompensationReasonsInnerKindEnumValues;
+  static AdminCostReportDtoOutputCompensationReasonsInnerKindEnum valueOf(
+    String name,
+  ) => _$adminCostReportDtoOutputCompensationReasonsInnerKindEnumValueOf(name);
 }

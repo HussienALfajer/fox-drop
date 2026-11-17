@@ -38,11 +38,11 @@ export const partyKeys = {
 // A compensation line's name: the reason's label as it was chosen, the late
 // codes' own line, or «أخرى» for a cost with no personal code behind it.
 export function compensationName(
-  row: Pick<CompensationReason, 'reason' | 'label'>,
+  row: Pick<CompensationReason, 'kind' | 'label'>,
 ): { label: string } | { key: 'costReport.lateDelivery' | 'costReport.operating.other' } {
-  if (row.label !== null) return { label: row.label };
+  if (row.kind === 'reason' && row.label !== null) return { label: row.label };
   return {
-    key: row.reason === 'late_delivery' ? 'costReport.lateDelivery' : 'costReport.operating.other',
+    key: row.kind === 'late_delivery' ? 'costReport.lateDelivery' : 'costReport.operating.other',
   };
 }
 

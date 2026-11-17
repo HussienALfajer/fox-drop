@@ -201,7 +201,11 @@ function ReportView({ report, timeZone }: { report: CostReport; timeZone: string
         currency={currency}
         rows={report.compensationReasons.map((row) => {
           const name = compensationName(row);
-          return { ...row, key: row.reason, name: 'label' in name ? name.label : t(name.key) };
+          return {
+            ...row,
+            key: row.kind + (row.reason ?? ''),
+            name: 'label' in name ? name.label : t(name.key),
+          };
         })}
       />
       <Split

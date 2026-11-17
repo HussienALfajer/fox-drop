@@ -17,10 +17,11 @@ export const costAccounts = [
 
 export type CostParty = NonNullable<CostOrder['cancelResponsible']>;
 
-// The automatic late code's line beside the compensations' reasons, and the
-// line of a compensation cost with no personal code behind it.
-export const LATE_DELIVERY = 'late_delivery';
-export const OTHER = 'other';
+// A line of the compensation cost: a reason of «تعويض الزبون», the automatic
+// late codes' own line, or the cost with no personal code the report can
+// read behind it.
+export const compensationLineKinds = ['reason', 'late_delivery', 'other'] as const;
+export type CompensationLineKind = (typeof compensationLineKinds)[number];
 
 export interface CostInput {
   base: string;
@@ -44,11 +45,17 @@ export interface CostTotals {
 export interface CostReportFigures {
   currency: string;
   totals: CostTotals;
-  // The compensation cost by the compensation's reason (its code in
-  // «تعويض الزبون», with the label as chosen), `late_delivery` for the late
-  // codes and `other` for the rest. `orders` counts the orders the codes
-  // were used on.
-  compensationReasons: { reason: string; label: string | null; orders: number; amount: bigint }[];
+  // The compensation cost by line: `reason` with the reason's code in
+  // «تعويض الزبون» and its label as chosen, `late_delivery` for the late
+  // codes, `other` for the rest (both without a code). `orders` counts the
+  // orders the codes were used on.
+  compensationReasons: {
+    kind: CompensationLineKind;
+    reason: string | null;
+    label: string | null;
+    orders: number;
+    amount: bigint;
+  }[];
   operatingReasons: { reason: OperatingCostCause; orders: number; amount: bigint }[];
   // The discounts by code; `codeId` null for an order the report cannot read.
   codes: { codeId: string | null; code: string | null; orders: number; amount: bigint }[];
@@ -124,12 +131,14 @@ export function costReport(input: CostInput): CostReportFigures {
       case 'platform.compensation_cost': {
         const origin =
           order?.promoCodeId == null ? undefined : input.origins.get(order.promoCodeId);
-        let reason = OTHER;
+        // A reason's key is prefixed, so no code of Content's list can
+        // take a fixed line's.
+        let reason: string = 'other';
         if (origin?.kind === 'compensation') {
-          reason = origin.reasonCode;
+          reason = `reason:${origin.reasonCode}`;
           labels.set(reason, origin.reasonLabel);
         } else if (origin?.kind === 'late') {
-          reason = LATE_DELIVERY;
+          reason = 'late_delivery';
         }
         compensationReasons.add(reason, amount, entry.orderId);
         // The restaurant of the order compensated, where the cost began.
@@ -138,7 +147,10 @@ export function costReport(input: CostInput): CostReportFigures {
         break;
       }
       case 'platform.operating_cost': {
-        const { cause, responsible } = operatingCostCause(entry.type, entry.reason, order);
+        const { cause, responsible } = operatingCostCause(
+          { id: entry.journalId, type: entry.type, reason: entry.reason },
+          order,
+        );
         operatingReasons.add(cause, amount, entry.orderId);
         parties.add(responsible, amount, entry.orderId);
         book(order?.restaurantId ?? null, 'operating', amount);
@@ -152,11 +164,16 @@ export function costReport(input: CostInput): CostReportFigures {
   return {
     currency: input.base,
     totals,
-    compensationReasons: compensationReasons.lines().map(({ key, ...line }) => ({
-      reason: key,
-      label: labels.get(key) ?? null,
-      ...line,
-    })),
+    compensationReasons: compensationReasons.lines().map(({ key, ...line }) =>
+      key === 'late_delivery' || key === 'other'
+        ? { kind: key, reason: null, label: null, ...line }
+        : {
+            kind: 'reason' as const,
+            reason: key.slice('reason:'.length),
+            label: labels.get(key) ?? null,
+            ...line,
+          },
+    ),
     operatingReasons: operatingReasons
       .lines()
       .map(({ key, ...line }) => ({ reason: key, ...line })),
