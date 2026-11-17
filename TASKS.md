@@ -4,20 +4,20 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.24b, the restaurant's support (`docs/roadmap.md`, Phase 2, Support and trust; owner decision 2026-11-17: 2.24 splits into 2.24a customer, 2.24b restaurant, 2.24c captain). Not started.
+Slice 2.24b, the restaurant's support (`docs/roadmap.md`, Phase 2, Support and trust; owner decision 2026-11-17: 2.24 splits into 2.24a customer, 2.24b restaurant, 2.24c captain). In progress.
 
 - **Roadmap line:** 2.24 Reports from the apps: the customer's problem report within 24 hours with items and up to 3 photos, «أبلغ عن سعر مختلف», the restaurant's and the captain's support with «بلاغاتي», the captain's «مشكلة في مبلغ الاستلام» (CU §9.5, §12.2, RA §15, CA §13). A customer sends a report with a photo and a ticket arrives.
-- **This part (2.24b):** the restaurant app's support (RA §15): «إبلاغ عن مشكلة» with a type of Content's `merchant_ticket_type` (Appendix C), optionally an order, a note and a photo; «مشكلة في الطلب» on every order (RA §8.19) with call, WhatsApp and a quick reason of `merchant_problem`, a ticket linked to the order, urgent while it is active; «بلاغاتي» (owners see the restaurant's tickets, cashiers their own) with status and resolution message; the resolution message to the reporter too (RA §16 #29, left from 2.23b); the data change requests as a type. The restaurant's photo in `private-docs` like 2.24a's.
+- **This part (2.24b):** the restaurant app's support (RA §15): «إبلاغ عن مشكلة» with a type of Content's `merchant_ticket_type` (Appendix C), optionally an order, a note and a photo; «مشكلة في الطلب» on every order (RA §8.19) with call, WhatsApp and a quick reason of `merchant_problem`, a ticket linked to the order, urgent while it is active; «بلاغاتي» (owners see the restaurant's tickets, cashiers their own) with status and resolution message; the resolution message to the reporter too (RA §16 #29, left from 2.23b); the data change requests as a type with a subject. The restaurant's photo in `private-docs` like 2.24a's. Contact and the FAQ come from `GET /v1/merchant/contact` and `/content`.
 - **Specs:** RA §15 (`docs/product/v1/restaurant-app/15-support.md`), RA §8.19 (`08-orders/19-problems-on-an-order.md`), RA Appendix C, RA §16 #29; AP §9.9.1; the support and files modules' `CLAUDE.md` (2.24a's `customer_report` and photos are the pattern).
-- **Branch:** the cloud session's branch, or `feat/merchant-reports`.
+- **Branch:** `claude/slice-2-24b-cqvdw4` (the cloud session's).
+- **Owner decisions (2026-11-17):** «طلب تعديل بيانات» takes a subject (the minimum order, delivery coverage, adding or removing an owner, the owner's phone) and a note, the subject shown on the ticket; a cashier's «بلاغاتي» shows only the tickets they opened, an owner's every ticket of the restaurant; the confirmation «سنرد عليك خلال {س} ساعة» follows `support.resolution_post_delivery_hours` (the customer app's too); «تم حل بلاغك» goes to the owners and to the reporter.
 - **Plan:**
-  - [ ] Read the cited sections; ask the owner the open questions below.
-  - [ ] The failing tests first: who sees which ticket in «بلاغاتي» (owner, cashier), the order's ticket urgent while active, the photo count.
-  - [ ] Migration: the restaurant app's sources, the reporting user; the upload purpose for a restaurant's photo if it differs.
-  - [ ] The server routes (report, report on an order, «بلاغاتي») and the reporter's push.
-  - [ ] `pnpm generate:api`, then the restaurant app's screens and the panel's sources.
+  - [x] Read the cited sections; ask the owner the open questions.
+  - [ ] The failing tests first: who sees which ticket in «بلاغاتي» (owner, cashier), the data change's subject, the photo count.
+  - [ ] Migration: the sources `merchant_report` and `order_problem`, the data change's `request_subject`, the index for «بلاغاتي».
+  - [ ] The server routes (the photo upload, the report, the report on an order, «بلاغاتي»), the reporter's push, the confirmation hours on the customer's report.
+  - [ ] `pnpm generate:api`, the panel's sources and subject, then the restaurant app's support screen and the order's «مشكلة في الطلب», and the customer app's hours.
   - [ ] The `checker` agent, the `reviewer` agent on the cited sections, then the pull request and the handover.
-- **To ask the owner first:** whether «طلب تعديل بيانات» needs fields of its own (the minimum order, coverage, an owner, the owner's phone) or a note is enough; whether a cashier's «بلاغاتي» shows only the tickets they opened; whether the confirmation text «سنرد عليك خلال 24 ساعة» of CU §12.2 should follow `support.resolution_post_delivery_hours` (2.24a writes 24 as the spec does).
 
 ### Left from 2.24a (`claude/slide-2-24-m1cjw5`)
 
