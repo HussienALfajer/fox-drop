@@ -15,7 +15,8 @@ part 'admin_ticket_page_dto_output_pickup_dispute.g.dart';
 /// Properties:
 /// * [pickupPayment]
 /// * [recorded] - The captain's payment lines as booked.
-/// * [received] - What the restaurant says it received.
+/// * [received] - What the restaurant says it received, or, opened by the captain, what the captain says they handed over.
+/// * [openedBy] - Who disputed: the restaurant's «المبلغ غير صحيح» or the captain's «مشكلة في مبلغ الاستلام».
 /// * [confirmedBy]
 /// * [captainName]
 /// * [disputedAt]
@@ -34,9 +35,14 @@ abstract class AdminTicketPageDtoOutputPickupDispute
   @BuiltValueField(wireName: r'recorded')
   BuiltList<AdminTicketPageDtoOutputPickupDisputePickupPayment?> get recorded;
 
-  /// What the restaurant says it received.
+  /// What the restaurant says it received, or, opened by the captain, what the captain says they handed over.
   @BuiltValueField(wireName: r'received')
   BuiltList<AdminTicketPageDtoOutputPickupDisputePickupPayment?> get received;
+
+  /// Who disputed: the restaurant's «المبلغ غير صحيح» or the captain's «مشكلة في مبلغ الاستلام».
+  @BuiltValueField(wireName: r'openedBy')
+  AdminTicketPageDtoOutputPickupDisputeOpenedByEnum get openedBy;
+  // enum openedByEnum {  restaurant,  captain,  };
 
   @BuiltValueField(wireName: r'confirmedBy')
   AdminTicketPageDtoOutputPickupDisputeConfirmedByEnum get confirmedBy;
@@ -104,6 +110,13 @@ class _$AdminTicketPageDtoOutputPickupDisputeSerializer
       specifiedType: const FullType(BuiltList, [
         FullType.nullable(AdminTicketPageDtoOutputPickupDisputePickupPayment),
       ]),
+    );
+    yield r'openedBy';
+    yield serializers.serialize(
+      object.openedBy,
+      specifiedType: const FullType(
+        AdminTicketPageDtoOutputPickupDisputeOpenedByEnum,
+      ),
     );
     yield r'confirmedBy';
     yield serializers.serialize(
@@ -198,6 +211,17 @@ class _$AdminTicketPageDtoOutputPickupDisputeSerializer
                   >;
           result.received.replace(valueDes);
           break;
+        case r'openedBy':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminTicketPageDtoOutputPickupDisputeOpenedByEnum,
+                    ),
+                  )
+                  as AdminTicketPageDtoOutputPickupDisputeOpenedByEnum;
+          result.openedBy = valueDes;
+          break;
         case r'confirmedBy':
           final valueDes =
               serializers.deserialize(
@@ -266,6 +290,29 @@ class _$AdminTicketPageDtoOutputPickupDisputeSerializer
     );
     return result.build();
   }
+}
+
+/// Who disputed: the restaurant's «المبلغ غير صحيح» or the captain's «مشكلة في مبلغ الاستلام».
+class AdminTicketPageDtoOutputPickupDisputeOpenedByEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'restaurant')
+  static const AdminTicketPageDtoOutputPickupDisputeOpenedByEnum restaurant =
+      _$adminTicketPageDtoOutputPickupDisputeOpenedByEnum_restaurant;
+  @BuiltValueEnumConst(wireName: r'captain')
+  static const AdminTicketPageDtoOutputPickupDisputeOpenedByEnum captain =
+      _$adminTicketPageDtoOutputPickupDisputeOpenedByEnum_captain;
+
+  static Serializer<AdminTicketPageDtoOutputPickupDisputeOpenedByEnum>
+  get serializer =>
+      _$adminTicketPageDtoOutputPickupDisputeOpenedByEnumSerializer;
+
+  const AdminTicketPageDtoOutputPickupDisputeOpenedByEnum._(String name)
+    : super(name);
+
+  static BuiltSet<AdminTicketPageDtoOutputPickupDisputeOpenedByEnum>
+  get values => _$adminTicketPageDtoOutputPickupDisputeOpenedByEnumValues;
+  static AdminTicketPageDtoOutputPickupDisputeOpenedByEnum valueOf(
+    String name,
+  ) => _$adminTicketPageDtoOutputPickupDisputeOpenedByEnumValueOf(name);
 }
 
 class AdminTicketPageDtoOutputPickupDisputeConfirmedByEnum extends EnumClass {

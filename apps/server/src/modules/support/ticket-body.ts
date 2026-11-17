@@ -14,7 +14,13 @@ import type { AdminSession } from '../identity/index.js';
 import { ticketSources } from './schema.js';
 import type { MoneyLine, PickupCorrectionPreview, PickupDisputeFacts } from './pickup-disputes.js';
 import { dataChangeSubjects } from './merchant-reports.js';
-import type { MerchantTicketView, Ticket, TicketAdmin, TicketNote } from './support.service.js';
+import type {
+  CaptainTicketView,
+  MerchantTicketView,
+  Ticket,
+  TicketAdmin,
+  TicketNote,
+} from './support.service.js';
 import type { TicketMoneyPreview, TicketOrderFacts } from './ticket-orders.js';
 import { TicketRefusedError } from './support.service.js';
 import {
@@ -129,7 +135,16 @@ export const ticketBody = z.object({
 export const pickupDisputeBody = z.object({
   pickupPayment: moneyLine,
   recorded: z.array(moneyLine).describe("The captain's payment lines as booked."),
-  received: z.array(moneyLine).describe('What the restaurant says it received.'),
+  received: z
+    .array(moneyLine)
+    .describe(
+      'What the restaurant says it received, or, opened by the captain, what the captain says they handed over.',
+    ),
+  openedBy: z
+    .enum(['restaurant', 'captain'])
+    .describe(
+      "Who disputed: the restaurant's «المبلغ غير صحيح» or the captain's «مشكلة في مبلغ الاستلام».",
+    ),
   confirmedBy: z.enum(['restaurant', 'automatic', 'operations']),
   captainName: z.string().nullable(),
   disputedAt: z.iso.datetime(),
@@ -263,6 +278,43 @@ export function merchantTicketOut(ticket: MerchantTicketView): z.infer<typeof me
   };
 }
 
+// CA §13 «بلاغاتي»: a ticket as the captain app shows it.
+export const captainTicketBody = z.object({
+  id: z.uuid(),
+  number: number.describe('Shown as `T-{number}`.'),
+  typeLabel: z.string(),
+  orderId: z.uuid().nullable(),
+  orderNumber: number.nullable(),
+  description: z.string().describe('The note sent.'),
+  status: z
+    .enum(ticketStatuses)
+    .describe('AP Appendix C: «جديدة», «قيد المعالجة», «بانتظار رد», «محلولة», «مغلقة».'),
+  openedAt: z.iso.datetime(),
+  openedBy: z.enum(['me', 'operations']).describe('Who opened it: the captain, or the panel.'),
+  replyWithinMinutes: z
+    .int()
+    .describe("«سنرد عليك خلال {المدة}»: the ticket's timer from its opening."),
+  message: z.string().nullable().describe('The resolution message, once resolved.'),
+  resolvedAt: z.iso.datetime().nullable(),
+});
+
+export function captainTicketOut(ticket: CaptainTicketView): z.infer<typeof captainTicketBody> {
+  return {
+    id: ticket.id,
+    number: ticket.number.toString(),
+    typeLabel: ticket.typeLabel,
+    orderId: ticket.orderId,
+    orderNumber: ticket.orderNumber?.toString() ?? null,
+    description: ticket.description,
+    status: ticket.status,
+    openedAt: ticket.openedAt.toISOString(),
+    openedBy: ticket.openedBy,
+    replyWithinMinutes: ticket.replyWithinMinutes,
+    message: ticket.message,
+    resolvedAt: ticket.resolvedAt?.toISOString() ?? null,
+  };
+}
+
 export const ticketRedeliveryBody = z.object({
   orderId: z.uuid(),
   number: z.string(),
@@ -283,6 +335,7 @@ export function pickupDisputeOut(facts: PickupDisputeFacts): z.infer<typeof pick
     pickupPayment: moneyOut(facts.pickupPayment),
     recorded: facts.recorded.map(moneyOut),
     received: facts.received.map(moneyOut),
+    openedBy: facts.openedBy,
     confirmedBy: facts.confirmedBy,
     captainName: facts.captainName,
     disputedAt: facts.disputedAt.toISOString(),
@@ -469,6 +522,7 @@ export async function answered<T>(run: () => Promise<T>): Promise<T> {
       case 'invalid_resolution':
       case 'responsible_required':
       case 'lines_required':
+      case 'lines_not_allowed':
       case 'invalid_lines':
       case 'no_difference':
       case 'order_required':

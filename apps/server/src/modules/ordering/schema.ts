@@ -548,6 +548,10 @@ export const pickupDisputes = ordering.table(
     receivedLines: jsonb('received_lines').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     status: text('status').notNull(),
+    // CA §9.4 item 6 (slice 2.24c): the captain's «مشكلة في مبلغ الاستلام»
+    // records the same dispute; `account_id` is then the captain's account
+    // and `received_lines` what the captain says they handed over.
+    openedBy: text('opened_by').notNull().default('restaurant'),
   },
   (table) => [
     foreignKey({
@@ -557,6 +561,7 @@ export const pickupDisputes = ordering.table(
     uniqueIndex('pickup_disputes_one_per_order').on(table.orderId),
     index('pickup_disputes_request').on(table.pickupRequestId),
     check('pickup_disputes_status_values', sql`${table.status} IN ('open')`),
+    check('pickup_disputes_opened_by_values', sql`${table.openedBy} IN ('restaurant', 'captain')`),
   ],
 );
 

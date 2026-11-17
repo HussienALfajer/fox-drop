@@ -65,6 +65,8 @@ export const ticketSourceKeys = {
   price_report: 'tickets.source.priceReport',
   merchant_report: 'tickets.source.merchantReport',
   order_problem: 'tickets.source.orderProblem',
+  captain_report: 'tickets.source.captainReport',
+  captain_problem: 'tickets.source.captainProblem',
 } as const;
 
 // RA §15 (slice 2.24b): what «طلب تعديل بيانات» asks to change.

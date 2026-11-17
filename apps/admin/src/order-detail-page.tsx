@@ -619,7 +619,12 @@ export function OrderDetailPage() {
         <p>
           <strong>
             {t('order.pickupDisputed')}{' '}
-            {t('order.request.received', { lines: linesText(pickup.dispute.receivedLines) })}
+            {t(
+              pickup.dispute.openedBy === 'captain'
+                ? 'order.request.handedOver'
+                : 'order.request.received',
+              { lines: linesText(pickup.dispute.receivedLines) },
+            )}
           </strong>
         </p>
       )}

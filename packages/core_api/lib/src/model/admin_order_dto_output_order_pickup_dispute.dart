@@ -14,9 +14,10 @@ part 'admin_order_dto_output_order_pickup_dispute.g.dart';
 ///
 /// Properties:
 /// * [at]
-/// * [accountId] - The restaurant user.
+/// * [accountId] - The restaurant user, or the captain's account when the captain opened it.
 /// * [device]
-/// * [receivedLines] - What the restaurant says it received.
+/// * [receivedLines] - What the restaurant says it received, or what the captain says they handed over.
+/// * [openedBy]
 @BuiltValue()
 abstract class AdminOrderDtoOutputOrderPickupDispute
     implements
@@ -27,16 +28,20 @@ abstract class AdminOrderDtoOutputOrderPickupDispute
   @BuiltValueField(wireName: r'at')
   DateTime get at;
 
-  /// The restaurant user.
+  /// The restaurant user, or the captain's account when the captain opened it.
   @BuiltValueField(wireName: r'accountId')
   String get accountId;
 
   @BuiltValueField(wireName: r'device')
   String get device;
 
-  /// What the restaurant says it received.
+  /// What the restaurant says it received, or what the captain says they handed over.
   @BuiltValueField(wireName: r'receivedLines')
   BuiltList<CaptainWentOfflineDtoOutputHandIn?> get receivedLines;
+
+  @BuiltValueField(wireName: r'openedBy')
+  AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum get openedBy;
+  // enum openedByEnum {  restaurant,  captain,  };
 
   AdminOrderDtoOutputOrderPickupDispute._();
 
@@ -89,6 +94,13 @@ class _$AdminOrderDtoOutputOrderPickupDisputeSerializer
       specifiedType: const FullType(BuiltList, [
         FullType.nullable(CaptainWentOfflineDtoOutputHandIn),
       ]),
+    );
+    yield r'openedBy';
+    yield serializers.serialize(
+      object.openedBy,
+      specifiedType: const FullType(
+        AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum,
+      ),
     );
   }
 
@@ -155,6 +167,17 @@ class _$AdminOrderDtoOutputOrderPickupDisputeSerializer
                   as BuiltList<CaptainWentOfflineDtoOutputHandIn?>;
           result.receivedLines.replace(valueDes);
           break;
+        case r'openedBy':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum;
+          result.openedBy = valueDes;
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -182,4 +205,26 @@ class _$AdminOrderDtoOutputOrderPickupDisputeSerializer
     );
     return result.build();
   }
+}
+
+class AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'restaurant')
+  static const AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum restaurant =
+      _$adminOrderDtoOutputOrderPickupDisputeOpenedByEnum_restaurant;
+  @BuiltValueEnumConst(wireName: r'captain')
+  static const AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum captain =
+      _$adminOrderDtoOutputOrderPickupDisputeOpenedByEnum_captain;
+
+  static Serializer<AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum>
+  get serializer =>
+      _$adminOrderDtoOutputOrderPickupDisputeOpenedByEnumSerializer;
+
+  const AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum._(String name)
+    : super(name);
+
+  static BuiltSet<AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum>
+  get values => _$adminOrderDtoOutputOrderPickupDisputeOpenedByEnumValues;
+  static AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum valueOf(
+    String name,
+  ) => _$adminOrderDtoOutputOrderPickupDisputeOpenedByEnumValueOf(name);
 }

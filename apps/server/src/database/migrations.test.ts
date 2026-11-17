@@ -1090,6 +1090,22 @@ describe('the cash desk tables (AP §9.10.3, §4.8)', () => {
     ).rejects.toThrow(/tickets_request_subject_values/);
   });
 
+  it("keeps the captain app's tickets the captain's, a problem on its order", async () => {
+    let next = 960_000;
+    const ticket = (source: string, party: string, withOrder: boolean) => {
+      next += 1;
+      return `INSERT INTO support.tickets (city_id, number, source, party, party_id, order_id, order_number, order_active, type_code, type_label, description, status, sla_kind, sla_due_at, opened_by, opened_at, updated_at, idempotency_key, request_hash) VALUES (${azaz}, ${next}, '${source}', '${party}', '${randomUUID()}', ${withOrder ? `'${randomUUID()}', 10001` : 'NULL, NULL'}, false, 'other', 'نوع', '', 'new', 'resolution', now(), '${randomUUID()}', now(), now(), '${randomUUID()}', '')`;
+    };
+    await appQuery(ticket('captain_report', 'captain', false));
+    await appQuery(ticket('captain_problem', 'captain', true));
+    await expect(appQuery(ticket('captain_report', 'restaurant', false))).rejects.toThrow(
+      /tickets_captain_sources/,
+    );
+    await expect(appQuery(ticket('captain_problem', 'captain', false))).rejects.toThrow(
+      /tickets_captain_sources/,
+    );
+  });
+
   it.each([
     ['change a receipt', "UPDATE cashdesk.receipts SET captain_name = 'x'"],
     ['change a receipt line', 'UPDATE cashdesk.receipt_lines SET amount = 1'],

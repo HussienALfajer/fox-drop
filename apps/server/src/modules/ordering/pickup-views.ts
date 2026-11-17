@@ -36,6 +36,9 @@ export interface PickupDisputeView {
   accountId: string;
   device: string;
   receivedLines: PaymentLine[];
+  // Slice 2.24c: the restaurant's «المبلغ غير صحيح», or the captain's
+  // «مشكلة في مبلغ الاستلام» (then the account is the captain's).
+  openedBy: 'restaurant' | 'captain';
 }
 
 // AP §8.1, slice 2.12a: the requests of the order's current assignment,
@@ -130,6 +133,7 @@ export async function pickupDisputesOf(
         accountId: row.accountId,
         device: row.device,
         receivedLines: linesOf(row.receivedLines),
+        openedBy: row.openedBy as 'restaurant' | 'captain',
       },
     ]),
   );

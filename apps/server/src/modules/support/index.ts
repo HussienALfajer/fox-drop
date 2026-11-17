@@ -13,6 +13,7 @@ import { MerchantsModule } from '../merchants/index.js';
 import { NotificationsModule, NotificationsWorkerModule } from '../notifications/index.js';
 import { SettingsModule } from '../settings/index.js';
 import { AdminTicketsController } from './admin-tickets.controller.js';
+import { CaptainReportsController } from './captain-reports.controller.js';
 import { CustomerPriceReportsController } from './customer-price-reports.controller.js';
 import { MerchantReportsController } from './merchant-reports.controller.js';
 import { SupportService } from './support.service.js';
@@ -37,7 +38,12 @@ import { TicketSync } from './ticket-sync.js';
     FxModule,
     GeoModule,
   ],
-  controllers: [AdminTicketsController, CustomerPriceReportsController, MerchantReportsController],
+  controllers: [
+    AdminTicketsController,
+    CustomerPriceReportsController,
+    MerchantReportsController,
+    CaptainReportsController,
+  ],
   providers: [SupportService, TicketSync],
   exports: [SupportService, TicketSync],
 })
@@ -52,6 +58,8 @@ export class SupportModule {}
 export class SupportWorkerModule {}
 
 export {
+  type CaptainReport,
+  type CaptainTicketView,
   type CustomerReport,
   type CustomerReportView,
   type MerchantReport,
@@ -59,6 +67,7 @@ export {
   type ReportingMerchant,
   type OpenTicket,
   type ReportedOrder,
+  type ReportingCaptain,
   type ReportingCustomer,
   type Ticket,
   type TicketAdmin,
@@ -86,6 +95,8 @@ export {
 export { TicketSync } from './ticket-sync.js';
 export {
   answered as ticketAnswered,
+  captainTicketBody,
+  captainTicketOut,
   merchantTicketBody,
   merchantTicketOut,
   openTicketFields,
@@ -95,3 +106,8 @@ export {
 } from './ticket-body.js';
 export { type TicketParty } from './tickets.js';
 export { dataChangeSubjects, MERCHANT_REPORT_PHOTOS_MAX } from './merchant-reports.js';
+export {
+  CAPTAIN_REPORT_PHOTOS_MAX,
+  captainProblemProblem,
+  PICKUP_AMOUNT_REASON,
+} from './captain-reports.js';

@@ -105,6 +105,12 @@ class MoreScreen extends StatelessWidget {
             title: Text(l10n.faqTitle),
             onTap: () => context.push('/faq'),
           ),
+          // CA §13 (slice 2.24c): «الدعم».
+          ListTile(
+            key: const Key('more-support'),
+            title: Text(l10n.captainSupport),
+            onTap: () => context.push('/support'),
+          ),
         ],
       ),
     );

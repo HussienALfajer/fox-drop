@@ -6,6 +6,74 @@ part of 'admin_order_dto_output_order_pickup_dispute.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum
+_$adminOrderDtoOutputOrderPickupDisputeOpenedByEnum_restaurant =
+    const AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum._('restaurant');
+const AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum
+_$adminOrderDtoOutputOrderPickupDisputeOpenedByEnum_captain =
+    const AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum._('captain');
+
+AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum
+_$adminOrderDtoOutputOrderPickupDisputeOpenedByEnumValueOf(String name) {
+  switch (name) {
+    case 'restaurant':
+      return _$adminOrderDtoOutputOrderPickupDisputeOpenedByEnum_restaurant;
+    case 'captain':
+      return _$adminOrderDtoOutputOrderPickupDisputeOpenedByEnum_captain;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum>
+_$adminOrderDtoOutputOrderPickupDisputeOpenedByEnumValues =
+    BuiltSet<AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum>(
+      const <AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum>[
+        _$adminOrderDtoOutputOrderPickupDisputeOpenedByEnum_restaurant,
+        _$adminOrderDtoOutputOrderPickupDisputeOpenedByEnum_captain,
+      ],
+    );
+
+Serializer<AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum>
+_$adminOrderDtoOutputOrderPickupDisputeOpenedByEnumSerializer =
+    _$AdminOrderDtoOutputOrderPickupDisputeOpenedByEnumSerializer();
+
+class _$AdminOrderDtoOutputOrderPickupDisputeOpenedByEnumSerializer
+    implements
+        PrimitiveSerializer<AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'restaurant': 'restaurant',
+    'captain': 'captain',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'restaurant': 'restaurant',
+    'captain': 'captain',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum,
+  ];
+  @override
+  final String wireName = 'AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
 class _$AdminOrderDtoOutputOrderPickupDispute
     extends AdminOrderDtoOutputOrderPickupDispute {
   @override
@@ -16,6 +84,8 @@ class _$AdminOrderDtoOutputOrderPickupDispute
   final String device;
   @override
   final BuiltList<CaptainWentOfflineDtoOutputHandIn?> receivedLines;
+  @override
+  final AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum openedBy;
 
   factory _$AdminOrderDtoOutputOrderPickupDispute([
     void Function(AdminOrderDtoOutputOrderPickupDisputeBuilder)? updates,
@@ -27,6 +97,7 @@ class _$AdminOrderDtoOutputOrderPickupDispute
     required this.accountId,
     required this.device,
     required this.receivedLines,
+    required this.openedBy,
   }) : super._();
   @override
   AdminOrderDtoOutputOrderPickupDispute rebuild(
@@ -44,7 +115,8 @@ class _$AdminOrderDtoOutputOrderPickupDispute
         at == other.at &&
         accountId == other.accountId &&
         device == other.device &&
-        receivedLines == other.receivedLines;
+        receivedLines == other.receivedLines &&
+        openedBy == other.openedBy;
   }
 
   @override
@@ -54,6 +126,7 @@ class _$AdminOrderDtoOutputOrderPickupDispute
     _$hash = $jc(_$hash, accountId.hashCode);
     _$hash = $jc(_$hash, device.hashCode);
     _$hash = $jc(_$hash, receivedLines.hashCode);
+    _$hash = $jc(_$hash, openedBy.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -66,7 +139,8 @@ class _$AdminOrderDtoOutputOrderPickupDispute
           ..add('at', at)
           ..add('accountId', accountId)
           ..add('device', device)
-          ..add('receivedLines', receivedLines))
+          ..add('receivedLines', receivedLines)
+          ..add('openedBy', openedBy))
         .toString();
   }
 }
@@ -99,6 +173,12 @@ class AdminOrderDtoOutputOrderPickupDisputeBuilder
     ListBuilder<CaptainWentOfflineDtoOutputHandIn?>? receivedLines,
   ) => _$this._receivedLines = receivedLines;
 
+  AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum? _openedBy;
+  AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum? get openedBy =>
+      _$this._openedBy;
+  set openedBy(AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum? openedBy) =>
+      _$this._openedBy = openedBy;
+
   AdminOrderDtoOutputOrderPickupDisputeBuilder() {
     AdminOrderDtoOutputOrderPickupDispute._defaults(this);
   }
@@ -110,6 +190,7 @@ class AdminOrderDtoOutputOrderPickupDisputeBuilder
       _accountId = $v.accountId;
       _device = $v.device;
       _receivedLines = $v.receivedLines.toBuilder();
+      _openedBy = $v.openedBy;
       _$v = null;
     }
     return this;
@@ -152,6 +233,11 @@ class AdminOrderDtoOutputOrderPickupDisputeBuilder
               'device',
             ),
             receivedLines: receivedLines.build(),
+            openedBy: BuiltValueNullFieldError.checkNotNull(
+              openedBy,
+              r'AdminOrderDtoOutputOrderPickupDispute',
+              'openedBy',
+            ),
           );
     } catch (_) {
       late String _$failedField;

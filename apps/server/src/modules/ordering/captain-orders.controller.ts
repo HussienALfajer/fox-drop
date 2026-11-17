@@ -182,6 +182,12 @@ const activeOrder = z
           .datetime()
           .nullable()
           .describe('«فتح المطعم بلاغاً عن مبلغ الاستلام — ستتواصل معك العمليات».'),
+        reportedAt: z.iso
+          .datetime()
+          .nullable()
+          .describe(
+            "The captain's own «مشكلة في مبلغ الاستلام» (CA §9.4 item 6), once per order whoever disputed first.",
+          ),
       })
       .describe('Step 2 and the pickup request (CA §9.3–9.4).'),
     customer: z
@@ -764,7 +770,9 @@ function activeOrderBody({
       currencies: linesBody(pickupCurrencies),
       request: pickupRequest && pickupRequestBody(pickupRequest),
       pickedUpAt: order.pickup?.at.toISOString() ?? null,
-      disputedAt: pickupDispute?.at.toISOString() ?? null,
+      // «فتح المطعم بلاغاً…»: the restaurant's dispute, not the captain's own.
+      disputedAt: pickupDispute?.openedBy === 'restaurant' ? pickupDispute.at.toISOString() : null,
+      reportedAt: pickupDispute?.openedBy === 'captain' ? pickupDispute.at.toISOString() : null,
     },
     customer: {
       name: customer.name,

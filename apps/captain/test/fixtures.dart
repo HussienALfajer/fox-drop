@@ -238,6 +238,7 @@ Map<String, Object?> orderJson({
       'request': request,
       'pickedUpAt': pickedUp ? now.toIso8601String() : null,
       'disputedAt': disputedAt?.toIso8601String(),
+      'reportedAt': null,
     },
     'customer': {
       'name': 'أحمد',
@@ -346,8 +347,15 @@ Map<String, Object?> contentJson() => {
       _reason('other', 'أخرى', true),
     ],
     'food_after_failed': [_reason('destroyed', 'أُتلف')],
-    'captain_ticket_type': [_reason('other', 'أخرى')],
-    'captain_problem': [_reason('other', 'أخرى')],
+    'captain_ticket_type': [
+      _reason('app_problem', 'مشكلة في التطبيق'),
+      _reason('other', 'أخرى'),
+    ],
+    'captain_problem': [
+      _reason('restaurant_late', 'المطعم متأخر'),
+      _reason('pickup_amount', 'مشكلة في مبلغ الاستلام'),
+      _reason('other', 'أخرى'),
+    ],
   },
   'faq': [
     {'question': 'متى أستلم أرباحي؟', 'answer': 'كل يوم خميس.'},

@@ -57,6 +57,7 @@ export class PickupCorrections implements PickupDisputes, OnModuleInit {
       pickupPayment: { currency: dispute.currency, amount: dispute.amount },
       recorded: dispute.recorded,
       received: dispute.received,
+      openedBy: dispute.openedBy,
       confirmedBy: dispute.confirmedBy,
       captainId: dispute.captainId,
       captainName: names.get(dispute.captainId) ?? null,
@@ -194,6 +195,7 @@ export class PickupCorrections implements PickupDisputes, OnModuleInit {
         cityId: pickupDisputes.cityId,
         received: pickupDisputes.receivedLines,
         disputedAt: pickupDisputes.createdAt,
+        openedBy: pickupDisputes.openedBy,
         captainId: pickupRequests.captainId,
         currency: pickupRequests.currency,
         amount: pickupRequests.amount,
@@ -227,6 +229,7 @@ export class PickupCorrections implements PickupDisputes, OnModuleInit {
       received: linesOf(row.received),
       confirmedBy: (row.outcome ?? 'restaurant') as PickupDisputeFacts['confirmedBy'],
       disputedAt: row.disputedAt,
+      openedBy: row.openedBy as PickupDisputeFacts['openedBy'],
     };
   }
 }

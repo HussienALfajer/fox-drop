@@ -506,7 +506,12 @@ import 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner.d
 import 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_amount.dart';
 import 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_zones_inner.dart';
 import 'package:core_api/src/model/captain_pickup_request_dto.dart';
+import 'package:core_api/src/model/captain_problem_body_dto.dart';
 import 'package:core_api/src/model/captain_refresh_dto.dart';
+import 'package:core_api/src/model/captain_report_body_dto.dart';
+import 'package:core_api/src/model/captain_report_ticket_dto_output.dart';
+import 'package:core_api/src/model/captain_report_ticket_dto_output_ticket.dart';
+import 'package:core_api/src/model/captain_reports_dto_output.dart';
 import 'package:core_api/src/model/captain_session_dto_output.dart';
 import 'package:core_api/src/model/captain_set_carried_currencies_dto.dart';
 import 'package:core_api/src/model/captain_set_max_pickup_dto.dart';
@@ -1246,7 +1251,12 @@ part 'serializers.g.dart';
   CaptainPeakBonusDtoOutputWindowsInnerAmount,
   CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
   CaptainPickupRequestDto,
+  CaptainProblemBodyDto,
   CaptainRefreshDto,
+  CaptainReportBodyDto,
+  CaptainReportTicketDtoOutput,
+  CaptainReportTicketDtoOutputTicket,
+  CaptainReportsDtoOutput,
   CaptainSessionDtoOutput,
   CaptainSetCarriedCurrenciesDto,
   CaptainSetMaxPickupDto,
@@ -2582,6 +2592,12 @@ Serializers serializers =
             ]),
             () =>
                 ListBuilder<AdminReassignPreviewAnswerDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CaptainReportTicketDtoOutputTicket),
+            ]),
+            () => ListBuilder<CaptainReportTicketDtoOutputTicket>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [FullType(AdminSettleDtoCustodyInner)]),

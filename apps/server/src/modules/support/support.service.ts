@@ -48,6 +48,7 @@ import {
   reporterOf,
   seesTicket,
 } from './merchant-reports.js';
+import { captainReportProblem, seesCaptainTicket } from './captain-reports.js';
 import { priceReportProblem, type ReportedItem, reportProblem, reportUntil } from './reports.js';
 import { noteKeys, ticketNotes, ticketNumbers, tickets, type TicketSource } from './schema.js';
 import {
@@ -172,6 +173,41 @@ export interface ReportingMerchant {
   restaurantId: string;
   role: 'owner' | 'cashier';
   context: AuditRequestContext;
+}
+
+// CA §13, §9.11 (slice 2.24c): the captain app's «إبلاغ عن مشكلة» (a type
+// of captain_ticket_type, optionally an order, a note, a photo) and
+// «مشكلة» with a quick reason of captain_problem on the active order.
+export interface CaptainReport {
+  kind: 'report' | 'problem';
+  typeCode: string;
+  note: string | null;
+  photoUploadId: string | null;
+}
+
+// The captain who reports, from the session.
+export interface ReportingCaptain {
+  accountId: string;
+  captainId: string;
+  context: AuditRequestContext;
+}
+
+// CA §13 «بلاغاتي»: a ticket as the captain app shows it, never the
+// internal notes, the assignee or a closing's reason.
+export interface CaptainTicketView {
+  id: string;
+  number: bigint;
+  typeLabel: string;
+  orderId: string | null;
+  orderNumber: bigint | null;
+  description: string;
+  status: TicketStatus;
+  openedAt: Date;
+  // Who opened it: the captain, or the panel.
+  openedBy: 'me' | 'operations';
+  replyWithinMinutes: number;
+  message: string | null;
+  resolvedAt: Date | null;
 }
 
 // RA §15 «بلاغاتي»: a ticket as the restaurant app shows it, never the
@@ -344,7 +380,10 @@ export type TicketRefusal =
   | 'upload_used'
   | 'subject_required'
   | 'invalid_subject'
-  | 'unknown_order';
+  | 'unknown_order'
+  | 'lines_not_allowed'
+  | 'order_state_changed'
+  | 'pickup_already_disputed';
 
 export class TicketRefusedError extends Error {
   constructor(
@@ -363,6 +402,12 @@ const MERCHANT_LISTED = 100;
 
 // RA §8.19, Appendix C: «مشكلة في الطلب»'s quick reasons.
 const MERCHANT_PROBLEM_LIST: ReasonList = 'merchant_problem';
+
+// CA §9.11, Appendix C: «مشكلة»'s quick reasons.
+const CAPTAIN_PROBLEM_LIST: ReasonList = 'captain_problem';
+
+// «بلاغاتي»'s length for a captain (CA §13), newest first.
+const CAPTAIN_LISTED = 100;
 
 // How long the panel's signed link to a report's photo works.
 const PHOTO_URL_SECONDS = 10 * 60;
@@ -1184,6 +1229,177 @@ export class SupportService {
     );
   }
 
+  // A captain report's hash: a repeat of the key answers its ticket.
+  captainReportHash(report: CaptainReport, orderId: string | null): string {
+    return hashOf([
+      report.kind === 'report' ? 'captain_report' : 'captain_problem',
+      orderId,
+      report.typeCode,
+      report.note?.trim() ?? '',
+      report.photoUploadId,
+    ]);
+  }
+
+  // What a captain's report reads and checks through the pool before the
+  // opening's transaction (CA §13, §9.11): the photo count (400
+  // too_many_photos), the type from captain_ticket_type for a report or
+  // captain_problem for «مشكلة» (400 unknown_reason; «أخرى» takes the
+  // note), and the photo, the captain's own upload.
+  async prepareCaptainReport(
+    cityId: string,
+    report: CaptainReport,
+    by: ReportingCaptain,
+    now: Date,
+  ) {
+    const photos = report.photoUploadId === null ? [] : [report.photoUploadId];
+    const problem = captainReportProblem({ photos: photos.length });
+    if (problem !== null) {
+      throw new TicketRefusedError(problem, `the report is refused: ${problem}`);
+    }
+    const prepared = await this.prepare(
+      {
+        cityId,
+        party: 'captain',
+        partyId: by.captainId,
+        typeCode: report.typeCode,
+        description: report.note ?? '',
+        restaurantId: null,
+      },
+      report.kind === 'report' ? TICKET_TYPE_LISTS.captain : CAPTAIN_PROBLEM_LIST,
+    );
+    await this.preparePhotos(photos, by.accountId, now);
+    return { prepared, report, photos };
+  }
+
+  // CA §13, §9.11, AP §9.9.1: the captain's ticket, in the caller's
+  // transaction: ordering's holds the order's lock when it names one, so the
+  // ticket is urgent exactly while the order is active. The captain opens it
+  // (`opened_by` their account, audited with the actor `captain`). A repeat
+  // of the key answers its ticket.
+  async openCaptainReportIn(
+    tx: Tx,
+    ready: Awaited<ReturnType<SupportService['prepareCaptainReport']>>,
+    order: TicketOrder | null,
+    by: ReportingCaptain,
+    idempotencyKey: string,
+    now: Date,
+  ): Promise<string> {
+    const { prepared, report } = ready;
+    if (report.kind === 'problem' && order === null) {
+      throw new TicketRefusedError('unknown_order', 'a problem on an order names it');
+    }
+    const requestHash = this.captainReportHash(report, order?.id ?? null);
+    const replayed = await this.replayedIn(tx, by.accountId, idempotencyKey, requestHash);
+    if (replayed !== null) return replayed;
+    const photoKeys = await this.linkPhotos(tx, ready.photos, now);
+    return this.insertTicket(
+      tx,
+      {
+        cityId: prepared.input.cityId,
+        source: report.kind === 'report' ? 'captain_report' : 'captain_problem',
+        party: 'captain',
+        partyId: by.captainId,
+        order,
+        typeCode: prepared.chosen.code,
+        typeLabel: prepared.chosen.label,
+        description: prepared.input.description.trim(),
+        restaurantId: null,
+        pickupDisputeId: null,
+        openedBy: by.accountId,
+        idempotencyKey,
+        requestHash,
+        report: { photoKeys: photoKeys.length === 0 ? null : photoKeys },
+      },
+      prepared,
+      { actor: { type: 'captain', id: by.captainId, role: null }, context: by.context },
+      now,
+    );
+  }
+
+  // The ticket of the captain's «مشكلة في مبلغ الاستلام» a key already
+  // opened, under the key's advisory lock in ordering's transaction; null
+  // for a new key (422 idempotency_key_reused for another request).
+  captainDisputeReplayedIn(
+    tx: Tx,
+    accountId: string,
+    idempotencyKey: string,
+    requestHash: string,
+  ): Promise<string | null> {
+    return this.replayedIn(tx, accountId, idempotencyKey, requestHash);
+  }
+
+  // CA §9.4 item 6, AP §9.9.1 (slice 2.24c, owner decision 2026-11-17): the
+  // captain's «مشكلة في مبلغ الاستلام» opens «خلاف على دفعة الاستلام», the
+  // same ticket as the restaurant's, in ordering's transaction under the
+  // order's lock; its party is the captain (the resolution's message goes to
+  // them), its description the captain's note, its key the captain's.
+  async openCaptainPickupDisputeIn(
+    tx: Tx,
+    timers: Awaited<ReturnType<SupportService['preparePickupDispute']>>,
+    input: {
+      order: TicketOrder;
+      disputeId: string;
+      by: ReportingCaptain;
+      note: string | null;
+      idempotencyKey: string;
+      requestHash: string;
+    },
+    now: Date,
+  ): Promise<string> {
+    return this.insertTicket(
+      tx,
+      {
+        cityId: input.order.cityId,
+        source: 'pickup_dispute',
+        party: 'captain',
+        partyId: input.by.captainId,
+        order: input.order,
+        typeCode: PICKUP_DISPUTE_TYPE,
+        typeLabel: FIXED_TYPE_LABELS[PICKUP_DISPUTE_TYPE],
+        description: input.note?.trim().slice(0, NOTE_MAX) ?? '',
+        restaurantId: null,
+        pickupDisputeId: input.disputeId,
+        openedBy: input.by.accountId,
+        idempotencyKey: input.idempotencyKey,
+        requestHash: input.requestHash,
+      },
+      timers,
+      {
+        actor: { type: 'captain', id: input.by.captainId, role: null },
+        context: input.by.context,
+      },
+      now,
+    );
+  }
+
+  // CA §13 «بلاغاتي»: the captain's tickets, whoever opened them, newest
+  // first, the latest CAPTAIN_LISTED.
+  async captainTickets(viewer: {
+    accountId: string;
+    captainId: string;
+  }): Promise<CaptainTicketView[]> {
+    const rows = await this.database.db
+      .select()
+      .from(tickets)
+      .where(and(eq(tickets.party, 'captain'), eq(tickets.partyId, viewer.captainId)))
+      .orderBy(desc(tickets.openedAt))
+      .limit(CAPTAIN_LISTED);
+    return rows
+      .filter((row) => seesCaptainTicket(viewer.captainId, row))
+      .map((row) => captainTicketOf(row, viewer.accountId));
+  }
+
+  // One ticket of the captain's «بلاغاتي», null when it is not theirs.
+  async captainTicket(
+    viewer: { accountId: string; captainId: string },
+    id: string,
+  ): Promise<CaptainTicketView | null> {
+    const [row] = await this.database.db.select().from(tickets).where(eq(tickets.id, id));
+    return row && seesCaptainTicket(viewer.captainId, row)
+      ? captainTicketOf(row, viewer.accountId)
+      : null;
+  }
+
   // RA §15 «بلاغاتي» (owner decision 2026-11-17): an owner's the
   // restaurant's tickets, whoever opened them; a cashier's the ones they
   // opened; newest first, the latest MERCHANT_LISTED.
@@ -1244,7 +1460,8 @@ export class SupportService {
     if (
       row.source !== 'customer_report' &&
       row.source !== 'price_report' &&
-      row.source !== 'merchant_report'
+      row.source !== 'merchant_report' &&
+      row.source !== 'captain_report'
     ) {
       return null;
     }
@@ -2105,6 +2322,24 @@ function merchantTicketOf(row: TicketRow, accountId: string): MerchantTicketView
         : MERCHANT_OPENED_SOURCES.includes(row.source)
           ? 'restaurant'
           : 'operations',
+    replyWithinMinutes: replyWithin(row),
+    message: row.message,
+    resolvedAt: row.resolvedAt,
+  };
+}
+
+// CA §13 «بلاغاتي»: what the captain app shows of a ticket.
+function captainTicketOf(row: TicketRow, accountId: string): CaptainTicketView {
+  return {
+    id: row.id,
+    number: row.number,
+    typeLabel: row.typeLabel,
+    orderId: row.orderId,
+    orderNumber: row.orderNumber,
+    description: row.description,
+    status: row.status,
+    openedAt: row.openedAt,
+    openedBy: row.openedBy === accountId ? 'me' : 'operations',
     replyWithinMinutes: replyWithin(row),
     message: row.message,
     resolvedAt: row.resolvedAt,

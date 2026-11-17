@@ -5809,6 +5809,174 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'من العمليات'**
   String get merchantReportByOperations;
+
+  /// CA §13: the support screen, from «المزيد».
+  ///
+  /// In ar, this message translates to:
+  /// **'الدعم'**
+  String get captainSupport;
+
+  /// CA §13: report a problem.
+  ///
+  /// In ar, this message translates to:
+  /// **'إبلاغ عن مشكلة'**
+  String get captainReportProblem;
+
+  /// CA §13: the captain's tickets.
+  ///
+  /// In ar, this message translates to:
+  /// **'بلاغاتي'**
+  String get captainMyReports;
+
+  /// «بلاغاتي» with no ticket (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا بلاغات بعد.'**
+  String get captainMyReportsEmpty;
+
+  /// «بلاغاتي» could not be read.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل البلاغات.'**
+  String get captainReportsFailed;
+
+  /// Read «بلاغاتي» or the types again.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة المحاولة'**
+  String get captainReportsRetry;
+
+  /// CA §13: the report's type (Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'نوع المشكلة'**
+  String get captainReportType;
+
+  /// The types could not be read.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل أنواع البلاغات.'**
+  String get captainReportTypesFailed;
+
+  /// CA §13: the report names the active order (optional).
+  ///
+  /// In ar, this message translates to:
+  /// **'عن الطلب الجاري #{number}'**
+  String captainReportAboutOrder(String number);
+
+  /// The report's note, up to 300 characters.
+  ///
+  /// In ar, this message translates to:
+  /// **'ملاحظة'**
+  String get captainReportNote;
+
+  /// Send the report.
+  ///
+  /// In ar, this message translates to:
+  /// **'إرسال البلاغ'**
+  String get captainReportSend;
+
+  /// No answer or a refusal: send again.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُرسل البلاغ، حاول مرة أخرى.'**
+  String get captainReportFailed;
+
+  /// Content changed the types meanwhile.
+  ///
+  /// In ar, this message translates to:
+  /// **'تغيّرت أنواع البلاغات، اختر مرة أخرى.'**
+  String get captainReportTypeChanged;
+
+  /// The photo could not be uploaded.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر رفع الصورة، حاول مرة أخرى.'**
+  String get captainReportPhotoFailed;
+
+  /// The order is not the captain's any more (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يعد الطلب طلبك.'**
+  String get captainReportOrderGone;
+
+  /// CA §13: the ticket opened, with its timer.
+  ///
+  /// In ar, this message translates to:
+  /// **'استلمنا بلاغك T-{number}. سنرد عليك خلال {within}.'**
+  String captainReportSent(String number, String within);
+
+  /// A ticket in «بلاغاتي»: its number and type.
+  ///
+  /// In ar, this message translates to:
+  /// **'T-{number} · {type}'**
+  String captainReportTitle(String number, String type);
+
+  /// A ticket's order in «بلاغاتي».
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلب #{number}'**
+  String captainReportOrderLine(String number);
+
+  /// The resolution message in «بلاغاتي».
+  ///
+  /// In ar, this message translates to:
+  /// **'الرد: {message}'**
+  String captainReportReply(String message);
+
+  /// «بلاغاتي»: a ticket operations opened on the captain (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'من العمليات'**
+  String get captainReportByOperations;
+
+  /// CA §9.11: «مشكلة»'s report with a quick reason (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'إبلاغ العمليات بسبب سريع'**
+  String get captainProblemQuickReason;
+
+  /// CA §9.4 item 6: what the captain handed the restaurant.
+  ///
+  /// In ar, this message translates to:
+  /// **'مشكلة في مبلغ الاستلام'**
+  String get captainPickupAmountTitle;
+
+  /// CA §9.4 item 6 (owner decision 2026-11-17): the lines the captain actually paid.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب ما دفعته للمطعم فعلاً بكل عملة.'**
+  String get captainPickupAmountHint;
+
+  /// The lines recorded at the pickup.
+  ///
+  /// In ar, this message translates to:
+  /// **'المسجّل عند الاستلام: {lines}'**
+  String captainPickupAmountRecorded(String lines);
+
+  /// A typed amount is not a positive number.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب ما دفعته بأرقام صحيحة.'**
+  String get captainPickupAmountInvalid;
+
+  /// 400 no_difference (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'ما كتبته يطابق المسجّل عند الاستلام.'**
+  String get captainPickupAmountSame;
+
+  /// 409 pickup_already_disputed (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'سبق الإبلاغ عن مبلغ استلام هذا الطلب.'**
+  String get captainPickupAmountDisputed;
+
+  /// 409 order_state_changed (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يعد هذا البلاغ متاحاً لهذا الطلب.'**
+  String get captainProblemClosed;
 }
 
 class _AppLocalizationsDelegate

@@ -368,6 +368,7 @@
     "request": {
       "line": "طلب استلام الساعة {{time}}: {{status}}، {{lines}}",
       "received": "يقول المطعم إنه استلم {{lines}}",
+      "handedOver": "يقول الكابتن إنه دفع {{lines}}",
       "open": "بانتظار المطعم",
       "confirmed": "مؤكَّد",
       "rejected": "مرفوض",
@@ -2072,7 +2073,9 @@
       "customerReport": "الإبلاغ عن مشكلة",
       "priceReport": "أبلغ عن سعر مختلف",
       "merchantReport": "إبلاغ من المطعم",
-      "orderProblem": "مشكلة في الطلب من المطعم"
+      "orderProblem": "مشكلة في الطلب من المطعم",
+      "captainReport": "إبلاغ من الكابتن",
+      "captainProblem": "مشكلة في الطلب من الكابتن"
     },
     "restaurant": "المطعم",
     "chooseRestaurant": "المطعم الذي يخصّه البلاغ",
@@ -2148,6 +2151,7 @@
       "pickupPayment": "مبلغ الاستلام",
       "recorded": "ما سجّله الكابتن",
       "received": "ما يقول المطعم إنه استلمه",
+      "handedOver": "ما يقول الكابتن إنه دفعه للمطعم",
       "captain": "الكابتن",
       "confirmed": "تأكيد الاستلام",
       "disputedAt": "وقت البلاغ",

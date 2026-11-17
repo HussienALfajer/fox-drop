@@ -4,12 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../auth.dart';
 import '../content.dart';
+import '../support/pickup_amount_sheet.dart';
+import '../support/support.dart';
 import 'commands.dart';
 import 'order_view.dart';
 import 'reason_sheet.dart';
 import 'work.dart';
 
-/// CA §9.11 (slice 2.13b): above every step of the active order, «مشكلة»
+/// CA §9.11 (slices 2.13b, 2.24c): above every step of the active order, «مشكلة»
 /// and, while the captain's «لا أستطيع إكمال الطلب» is open, «بانتظار
 /// العمليات» with its reason and «تراجع». Every step stays open (owner
 /// decision 2026-11-11). Unstyled until the design.
@@ -54,7 +56,7 @@ class ProblemBar extends ConsumerWidget {
 }
 
 /// What the captain chose in «مشكلة».
-enum _Problem { cannotComplete }
+enum _Problem { cannotComplete, report }
 
 Future<void> _openProblem(
   BuildContext context,
@@ -64,15 +66,20 @@ Future<void> _openProblem(
   final chosen = await showModalBottomSheet<_Problem>(
     context: context,
     // The second captain of a handover does not have the order yet: only the
-    // order's own captain can ask (CA §15).
+    // order's own captain can ask or report (CA §15).
     builder: (context) => _ProblemSheet(
       canAsk: order.cannotComplete == null && receiving(order) == null,
+      canReport: receiving(order) == null,
     ),
   );
-  if (chosen != _Problem.cannotComplete || !context.mounted) return;
+  if (chosen == null || !context.mounted) return;
   final l10n = AppLocalizations.of(context);
   final content = await readContent(context, ref);
   if (content == null || !context.mounted) return;
+  if (chosen == _Problem.report) {
+    await _report(context, ref, order, content);
+    return;
+  }
   final reason = await pickReason(
     context,
     title: l10n.captainCannotCompleteTitle,
@@ -85,13 +92,70 @@ Future<void> _openProblem(
   if (context.mounted) showNotice(context, notice);
 }
 
+/// CA §9.11 (slice 2.24c): a quick reason of Content's captain_problem list
+/// opens a ticket on the order, urgent while it is active; «مشكلة في مبلغ
+/// الاستلام» asks first for the lines the captain handed over and opens the
+/// pickup dispute (CA §9.4 item 6), offered only while it can be.
+Future<void> _report(
+  BuildContext context,
+  WidgetRef ref,
+  ActiveOrder order,
+  CaptainContent content,
+) async {
+  final l10n = AppLocalizations.of(context);
+  final reason = await pickReason(
+    context,
+    title: l10n.captainProblemQuickReason,
+    reasons: [
+      for (final choice in content.problems)
+        if (choice.code != pickupAmountReason || offersPickupAmount(order))
+          choice,
+    ],
+  );
+  if (reason == null || !context.mounted) return;
+  final reports = ref.read(captainReportsProvider);
+  final ReportOutcome outcome;
+  if (reason.reason == pickupAmountReason) {
+    final amount = await askPickupAmount(context, order);
+    if (amount == null || !context.mounted) return;
+    outcome = await reports.problem(
+      orderId: order.id,
+      reasonCode: reason.reason,
+      note: amount.note,
+      paidLines: amount.lines,
+    );
+  } else {
+    outcome = await reports.problem(
+      orderId: order.id,
+      reasonCode: reason.reason,
+      note: reason.note,
+    );
+  }
+  if (!context.mounted) return;
+  final text = switch (outcome) {
+    ReportSent(:final ticket) => l10n.captainReportSent(
+      ticket.number,
+      l10n.formatReplyWithin(ticket.replyWithinMinutes),
+    ),
+    ReportTypeChanged() => l10n.captainReportTypeChanged,
+    ReportOrderGone() => l10n.captainReportOrderGone,
+    ReportClosed() => l10n.captainProblemClosed,
+    PickupAlreadyDisputed() => l10n.captainPickupAmountDisputed,
+    PickupAmountSame() => l10n.captainPickupAmountSame,
+    ReportPhotoFailed() || ReportFailed() => l10n.captainReportFailed,
+  };
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+}
+
 /// «مشكلة»: call or WhatsApp operations (the support numbers, AP §9.13; a
 /// missing one hides its button), and «لا أستطيع إكمال الطلب» for the
-/// order's own captain while no request is open. The report with a quick reason waits for slice 2.24.
+/// order's own captain while no request is open, and the report with a
+/// quick reason for the order's own captain (slice 2.24c).
 class _ProblemSheet extends ConsumerWidget {
-  const _ProblemSheet({required this.canAsk});
+  const _ProblemSheet({required this.canAsk, required this.canReport});
 
   final bool canAsk;
+  final bool canReport;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -122,6 +186,12 @@ class _ProblemSheet extends ConsumerWidget {
                   ),
                 ),
                 child: Text(l10n.signInWhatsappOperations),
+              ),
+            if (canReport)
+              OutlinedButton(
+                key: const Key('problem-report'),
+                onPressed: () => Navigator.of(context).pop(_Problem.report),
+                child: Text(l10n.captainProblemQuickReason),
               ),
             if (canAsk)
               FilledButton(
