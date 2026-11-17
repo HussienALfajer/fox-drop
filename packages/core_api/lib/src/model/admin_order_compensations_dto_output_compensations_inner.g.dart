@@ -188,7 +188,7 @@ class _$AdminOrderCompensationsDtoOutputCompensationsInner
   @override
   final String currency;
   @override
-  final AdminOrderDtoOutputOrderCancelChoicesReasonsInner reason;
+  final MerchantOrdersDtoOutputOrdersInnerItemReportNote? reason;
   @override
   final String? note;
   @override
@@ -223,7 +223,7 @@ class _$AdminOrderCompensationsDtoOutputCompensationsInner
     this.percentBp,
     this.maxDiscount,
     required this.currency,
-    required this.reason,
+    this.reason,
     this.note,
     required this.status,
     this.requestedBy,
@@ -359,13 +359,12 @@ class AdminOrderCompensationsDtoOutputCompensationsInnerBuilder
   String? get currency => _$this._currency;
   set currency(String? currency) => _$this._currency = currency;
 
-  AdminOrderDtoOutputOrderCancelChoicesReasonsInnerBuilder? _reason;
-  AdminOrderDtoOutputOrderCancelChoicesReasonsInnerBuilder get reason =>
+  MerchantOrdersDtoOutputOrdersInnerItemReportNoteBuilder? _reason;
+  MerchantOrdersDtoOutputOrdersInnerItemReportNoteBuilder get reason =>
       _$this._reason ??=
-          AdminOrderDtoOutputOrderCancelChoicesReasonsInnerBuilder();
-  set reason(
-    AdminOrderDtoOutputOrderCancelChoicesReasonsInnerBuilder? reason,
-  ) => _$this._reason = reason;
+          MerchantOrdersDtoOutputOrdersInnerItemReportNoteBuilder();
+  set reason(MerchantOrdersDtoOutputOrdersInnerItemReportNoteBuilder? reason) =>
+      _$this._reason = reason;
 
   String? _note;
   String? get note => _$this._note;
@@ -417,7 +416,7 @@ class AdminOrderCompensationsDtoOutputCompensationsInnerBuilder
       _percentBp = $v.percentBp;
       _maxDiscount = $v.maxDiscount;
       _currency = $v.currency;
-      _reason = $v.reason.toBuilder();
+      _reason = $v.reason?.toBuilder();
       _note = $v.note;
       _status = $v.status;
       _requestedBy = $v.requestedBy;
@@ -481,7 +480,7 @@ class AdminOrderCompensationsDtoOutputCompensationsInnerBuilder
               r'AdminOrderCompensationsDtoOutputCompensationsInner',
               'currency',
             ),
-            reason: reason.build(),
+            reason: _reason?.build(),
             note: note,
             status: BuiltValueNullFieldError.checkNotNull(
               status,
@@ -503,7 +502,7 @@ class AdminOrderCompensationsDtoOutputCompensationsInnerBuilder
       late String _$failedField;
       try {
         _$failedField = 'reason';
-        reason.build();
+        _reason?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminOrderCompensationsDtoOutputCompensationsInner',

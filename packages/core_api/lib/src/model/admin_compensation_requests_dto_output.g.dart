@@ -9,7 +9,7 @@ part of 'admin_compensation_requests_dto_output.dart';
 class _$AdminCompensationRequestsDtoOutput
     extends AdminCompensationRequestsDtoOutput {
   @override
-  final BuiltList<AdminOrderCompensationsDtoOutputCompensationsInner> requests;
+  final BuiltList<AdminCompensationRequestsDtoOutputRequestsInner> requests;
 
   factory _$AdminCompensationRequestsDtoOutput([
     void Function(AdminCompensationRequestsDtoOutputBuilder)? updates,
@@ -56,12 +56,12 @@ class AdminCompensationRequestsDtoOutputBuilder
         > {
   _$AdminCompensationRequestsDtoOutput? _$v;
 
-  ListBuilder<AdminOrderCompensationsDtoOutputCompensationsInner>? _requests;
-  ListBuilder<AdminOrderCompensationsDtoOutputCompensationsInner>
-  get requests => _$this._requests ??=
-      ListBuilder<AdminOrderCompensationsDtoOutputCompensationsInner>();
+  ListBuilder<AdminCompensationRequestsDtoOutputRequestsInner>? _requests;
+  ListBuilder<AdminCompensationRequestsDtoOutputRequestsInner> get requests =>
+      _$this._requests ??=
+          ListBuilder<AdminCompensationRequestsDtoOutputRequestsInner>();
   set requests(
-    ListBuilder<AdminOrderCompensationsDtoOutputCompensationsInner>? requests,
+    ListBuilder<AdminCompensationRequestsDtoOutputRequestsInner>? requests,
   ) => _$this._requests = requests;
 
   AdminCompensationRequestsDtoOutputBuilder() {

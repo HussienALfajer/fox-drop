@@ -123,6 +123,9 @@ class AdminCustomerDto extends createZodDto(
         inForce: z.boolean(),
       }),
     ),
+    blockReasons: z
+      .array(z.object({ code: z.string(), label: z.string() }))
+      .describe("Content's active customer_block reasons (AP Appendix B)."),
   }),
 ) {}
 

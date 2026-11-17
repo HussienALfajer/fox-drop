@@ -13,6 +13,7 @@ import { canSeePromoCodes } from './promo-codes.js';
 import { RESTAURANT_STATEMENTS } from './restaurant-statements.js';
 import { canSeeImages } from './restaurant-images.js';
 import { canSeeRestaurantStatus } from './restaurant-status.js';
+import { CUSTOMERS_READ } from './customers.js';
 import { MANUAL_ADJUSTMENT } from './manual-entries.js';
 import { can, useSignOut } from './session.js';
 import { useServerStatus } from './status.js';
@@ -112,6 +113,11 @@ export function HomePage() {
           {can(session, FINANCE_READ) && (
             <li>
               <Link to="/exchange-rates">{t('exchangeRates.title')}</Link>
+            </li>
+          )}
+          {can(session, CUSTOMERS_READ) && (
+            <li>
+              <Link to="/customers">{t('customers.title')}</Link>
             </li>
           )}
           {can(session, MANUAL_ADJUSTMENT) && (

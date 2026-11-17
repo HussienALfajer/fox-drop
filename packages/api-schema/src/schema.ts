@@ -6829,6 +6829,11 @@ export interface components {
                 endNote: string | null;
                 inForce: boolean;
             }[];
+            /** @description Content's active customer_block reasons (AP Appendix B). */
+            blockReasons: {
+                code: string;
+                label: string;
+            }[];
         };
         AdminBlockCustomerDto: {
             /** Format: uuid */

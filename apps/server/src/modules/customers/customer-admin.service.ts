@@ -94,6 +94,8 @@ export interface CustomerProfileView {
   // no dues account.
   dues: { amount: bigint; currency: string | null };
   blocks: BlockRecord[];
+  // Content's active customer_block reasons, for «حظر» (AP Appendix B).
+  blockReasons: { code: string; label: string }[];
 }
 
 // The latest blocks the profile lists (decided by us).
@@ -172,28 +174,30 @@ export class CustomerAdminService {
       this.settings.get('customer.late_cancel_window_days', { cityId }),
     ]);
     const since = new Date(now.getTime() - windowDays * 24 * 60 * 60 * 1000);
-    const [profile, phone, block, stop, orders, strikes, dues, records] = await Promise.all([
-      this.customers.profile(accountId),
-      this.accounts.phone(accountId),
-      this.customers.activeBlock(accountId, now),
-      this.database.db
-        .select({ startedAt: reviewStops.startedAt })
-        .from(reviewStops)
-        .where(and(eq(reviewStops.customerAccountId, accountId), isNull(reviewStops.endedAt))),
-      this.customers.ordersOf(accountId, cityId),
-      this.database.db
-        .select({
-          total: count(),
-          inWindow:
-            sql<number>`count(*) FILTER (WHERE ${gte(lateCancelStrikes.at, since)})`.mapWith(
-              Number,
-            ),
-        })
-        .from(lateCancelStrikes)
-        .where(eq(lateCancelStrikes.customerAccountId, accountId)),
-      this.duesBalance(cityId, accountId),
-      this.blockRecords(accountId, now),
-    ]);
+    const [profile, phone, block, stop, orders, strikes, dues, records, reasons] =
+      await Promise.all([
+        this.customers.profile(accountId),
+        this.accounts.phone(accountId),
+        this.customers.activeBlock(accountId, now),
+        this.database.db
+          .select({ startedAt: reviewStops.startedAt })
+          .from(reviewStops)
+          .where(and(eq(reviewStops.customerAccountId, accountId), isNull(reviewStops.endedAt))),
+        this.customers.ordersOf(accountId, cityId),
+        this.database.db
+          .select({
+            total: count(),
+            inWindow:
+              sql<number>`count(*) FILTER (WHERE ${gte(lateCancelStrikes.at, since)})`.mapWith(
+                Number,
+              ),
+          })
+          .from(lateCancelStrikes)
+          .where(eq(lateCancelStrikes.customerAccountId, accountId)),
+        this.duesBalance(cityId, accountId),
+        this.blockRecords(accountId, now),
+        this.content.reasonsOf('customer_block'),
+      ]);
     return {
       id: accountId,
       firstName: profile?.firstName ?? null,
@@ -220,6 +224,9 @@ export class CustomerAdminService {
       fakeOrders: orders.fakeOrders,
       dues,
       blocks: records,
+      blockReasons: reasons
+        .filter((reason) => reason.active)
+        .map(({ code, label }) => ({ code, label })),
     };
   }
 

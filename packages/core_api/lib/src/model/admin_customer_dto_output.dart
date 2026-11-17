@@ -6,6 +6,7 @@
 import 'package:core_api/src/model/admin_customer_dto_output_late_cancels.dart';
 import 'package:core_api/src/model/date.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_block_reasons_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_review_stop.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_block.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_blocks_inner.dart';
@@ -34,6 +35,7 @@ part 'admin_customer_dto_output.g.dart';
 /// * [fakeOrders]
 /// * [dues]
 /// * [blocks]
+/// * [blockReasons] - Content's active customer_block reasons (AP Appendix B).
 @BuiltValue()
 abstract class AdminCustomerDtoOutput
     implements Built<AdminCustomerDtoOutput, AdminCustomerDtoOutputBuilder> {
@@ -89,6 +91,10 @@ abstract class AdminCustomerDtoOutput
 
   @BuiltValueField(wireName: r'blocks')
   BuiltList<AdminCustomerDtoOutputBlocksInner> get blocks;
+
+  /// Content's active customer_block reasons (AP Appendix B).
+  @BuiltValueField(wireName: r'blockReasons')
+  BuiltList<AdminCustomerDtoOutputBlockReasonsInner> get blockReasons;
 
   AdminCustomerDtoOutput._();
 
@@ -218,6 +224,13 @@ class _$AdminCustomerDtoOutputSerializer
       object.blocks,
       specifiedType: const FullType(BuiltList, [
         FullType(AdminCustomerDtoOutputBlocksInner),
+      ]),
+    );
+    yield r'blockReasons';
+    yield serializers.serialize(
+      object.blockReasons,
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminCustomerDtoOutputBlockReasonsInner),
       ]),
     );
   }
@@ -400,6 +413,17 @@ class _$AdminCustomerDtoOutputSerializer
                   )
                   as BuiltList<AdminCustomerDtoOutputBlocksInner>;
           result.blocks.replace(valueDes);
+          break;
+        case r'blockReasons':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminCustomerDtoOutputBlockReasonsInner),
+                    ]),
+                  )
+                  as BuiltList<AdminCustomerDtoOutputBlockReasonsInner>;
+          result.blockReasons.replace(valueDes);
           break;
         default:
           unhandled.add(key);

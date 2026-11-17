@@ -9,7 +9,7 @@ part of 'admin_order_dto_output_order_cancel_choices.dart';
 class _$AdminOrderDtoOutputOrderCancelChoices
     extends AdminOrderDtoOutputOrderCancelChoices {
   @override
-  final BuiltList<AdminOrderDtoOutputOrderCancelChoicesReasonsInner> reasons;
+  final BuiltList<MerchantOrdersDtoOutputOrdersInnerItemReportNote?> reasons;
 
   factory _$AdminOrderDtoOutputOrderCancelChoices([
     void Function(AdminOrderDtoOutputOrderCancelChoicesBuilder)? updates,
@@ -58,12 +58,12 @@ class AdminOrderDtoOutputOrderCancelChoicesBuilder
         > {
   _$AdminOrderDtoOutputOrderCancelChoices? _$v;
 
-  ListBuilder<AdminOrderDtoOutputOrderCancelChoicesReasonsInner>? _reasons;
-  ListBuilder<AdminOrderDtoOutputOrderCancelChoicesReasonsInner> get reasons =>
+  ListBuilder<MerchantOrdersDtoOutputOrdersInnerItemReportNote?>? _reasons;
+  ListBuilder<MerchantOrdersDtoOutputOrdersInnerItemReportNote?> get reasons =>
       _$this._reasons ??=
-          ListBuilder<AdminOrderDtoOutputOrderCancelChoicesReasonsInner>();
+          ListBuilder<MerchantOrdersDtoOutputOrdersInnerItemReportNote?>();
   set reasons(
-    ListBuilder<AdminOrderDtoOutputOrderCancelChoicesReasonsInner>? reasons,
+    ListBuilder<MerchantOrdersDtoOutputOrdersInnerItemReportNote?>? reasons,
   ) => _$this._reasons = reasons;
 
   AdminOrderDtoOutputOrderCancelChoicesBuilder() {

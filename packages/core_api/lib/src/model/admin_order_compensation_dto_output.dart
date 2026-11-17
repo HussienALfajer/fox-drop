@@ -3,7 +3,7 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/admin_order_dto_output_order_cancel_choices_reasons_inner.dart';
+import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_item_report_note.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -63,7 +63,7 @@ abstract class AdminOrderCompensationDtoOutput
   String get currency;
 
   @BuiltValueField(wireName: r'reason')
-  AdminOrderDtoOutputOrderCancelChoicesReasonsInner get reason;
+  MerchantOrdersDtoOutputOrdersInnerItemReportNote? get reason;
 
   @BuiltValueField(wireName: r'note')
   String? get note;
@@ -170,12 +170,14 @@ class _$AdminOrderCompensationDtoOutputSerializer
       specifiedType: const FullType(String),
     );
     yield r'reason';
-    yield serializers.serialize(
-      object.reason,
-      specifiedType: const FullType(
-        AdminOrderDtoOutputOrderCancelChoicesReasonsInner,
-      ),
-    );
+    yield object.reason == null
+        ? null
+        : serializers.serialize(
+            object.reason,
+            specifiedType: const FullType.nullable(
+              MerchantOrdersDtoOutputOrdersInnerItemReportNote,
+            ),
+          );
     yield r'note';
     yield object.note == null
         ? null
@@ -336,11 +338,12 @@ class _$AdminOrderCompensationDtoOutputSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(
-                      AdminOrderDtoOutputOrderCancelChoicesReasonsInner,
+                    specifiedType: const FullType.nullable(
+                      MerchantOrdersDtoOutputOrdersInnerItemReportNote,
                     ),
                   )
-                  as AdminOrderDtoOutputOrderCancelChoicesReasonsInner;
+                  as MerchantOrdersDtoOutputOrdersInnerItemReportNote?;
+          if (valueDes == null) continue;
           result.reason.replace(valueDes);
           break;
         case r'note':

@@ -21458,6 +21458,26 @@
               ],
               "additionalProperties": false
             }
+          },
+          "blockReasons": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "label"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Content's active customer_block reasons (AP Appendix B)."
           }
         },
         "required": [
@@ -21476,7 +21496,8 @@
           "lateCancels",
           "fakeOrders",
           "dues",
-          "blocks"
+          "blocks",
+          "blockReasons"
         ],
         "additionalProperties": false
       },

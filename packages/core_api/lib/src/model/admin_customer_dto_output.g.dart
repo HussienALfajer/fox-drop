@@ -185,6 +185,8 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
   final AdminCustomerDtoOutputDues dues;
   @override
   final BuiltList<AdminCustomerDtoOutputBlocksInner> blocks;
+  @override
+  final BuiltList<AdminCustomerDtoOutputBlockReasonsInner> blockReasons;
 
   factory _$AdminCustomerDtoOutput([
     void Function(AdminCustomerDtoOutputBuilder)? updates,
@@ -207,6 +209,7 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
     required this.fakeOrders,
     required this.dues,
     required this.blocks,
+    required this.blockReasons,
   }) : super._();
   @override
   AdminCustomerDtoOutput rebuild(
@@ -236,7 +239,8 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
         lateCancels == other.lateCancels &&
         fakeOrders == other.fakeOrders &&
         dues == other.dues &&
-        blocks == other.blocks;
+        blocks == other.blocks &&
+        blockReasons == other.blockReasons;
   }
 
   @override
@@ -258,6 +262,7 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
     _$hash = $jc(_$hash, fakeOrders.hashCode);
     _$hash = $jc(_$hash, dues.hashCode);
     _$hash = $jc(_$hash, blocks.hashCode);
+    _$hash = $jc(_$hash, blockReasons.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -280,7 +285,8 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
           ..add('lateCancels', lateCancels)
           ..add('fakeOrders', fakeOrders)
           ..add('dues', dues)
-          ..add('blocks', blocks))
+          ..add('blocks', blocks)
+          ..add('blockReasons', blockReasons))
         .toString();
   }
 }
@@ -363,6 +369,14 @@ class AdminCustomerDtoOutputBuilder
   set blocks(ListBuilder<AdminCustomerDtoOutputBlocksInner>? blocks) =>
       _$this._blocks = blocks;
 
+  ListBuilder<AdminCustomerDtoOutputBlockReasonsInner>? _blockReasons;
+  ListBuilder<AdminCustomerDtoOutputBlockReasonsInner> get blockReasons =>
+      _$this._blockReasons ??=
+          ListBuilder<AdminCustomerDtoOutputBlockReasonsInner>();
+  set blockReasons(
+    ListBuilder<AdminCustomerDtoOutputBlockReasonsInner>? blockReasons,
+  ) => _$this._blockReasons = blockReasons;
+
   AdminCustomerDtoOutputBuilder() {
     AdminCustomerDtoOutput._defaults(this);
   }
@@ -386,6 +400,7 @@ class AdminCustomerDtoOutputBuilder
       _fakeOrders = $v.fakeOrders;
       _dues = $v.dues.toBuilder();
       _blocks = $v.blocks.toBuilder();
+      _blockReasons = $v.blockReasons.toBuilder();
       _$v = null;
     }
     return this;
@@ -450,6 +465,7 @@ class AdminCustomerDtoOutputBuilder
             ),
             dues: dues.build(),
             blocks: blocks.build(),
+            blockReasons: blockReasons.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -466,6 +482,8 @@ class AdminCustomerDtoOutputBuilder
         dues.build();
         _$failedField = 'blocks';
         blocks.build();
+        _$failedField = 'blockReasons';
+        blockReasons.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminCustomerDtoOutput',

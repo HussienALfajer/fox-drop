@@ -164,7 +164,7 @@ class _$AdminCompensationDtoOutput extends AdminCompensationDtoOutput {
   @override
   final String currency;
   @override
-  final AdminOrderDtoOutputOrderCancelChoicesReasonsInner reason;
+  final AdminCustomerDtoOutputBlockReasonsInner reason;
   @override
   final String? note;
   @override
@@ -322,13 +322,11 @@ class AdminCompensationDtoOutputBuilder
   String? get currency => _$this._currency;
   set currency(String? currency) => _$this._currency = currency;
 
-  AdminOrderDtoOutputOrderCancelChoicesReasonsInnerBuilder? _reason;
-  AdminOrderDtoOutputOrderCancelChoicesReasonsInnerBuilder get reason =>
-      _$this._reason ??=
-          AdminOrderDtoOutputOrderCancelChoicesReasonsInnerBuilder();
-  set reason(
-    AdminOrderDtoOutputOrderCancelChoicesReasonsInnerBuilder? reason,
-  ) => _$this._reason = reason;
+  AdminCustomerDtoOutputBlockReasonsInnerBuilder? _reason;
+  AdminCustomerDtoOutputBlockReasonsInnerBuilder get reason =>
+      _$this._reason ??= AdminCustomerDtoOutputBlockReasonsInnerBuilder();
+  set reason(AdminCustomerDtoOutputBlockReasonsInnerBuilder? reason) =>
+      _$this._reason = reason;
 
   String? _note;
   String? get note => _$this._note;

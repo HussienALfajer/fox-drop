@@ -60,6 +60,7 @@ import 'package:core_api/src/model/admin_close_item_report_dto.dart';
 import 'package:core_api/src/model/admin_compensate_dto.dart';
 import 'package:core_api/src/model/admin_compensation_dto_output.dart';
 import 'package:core_api/src/model/admin_compensation_requests_dto_output.dart';
+import 'package:core_api/src/model/admin_compensation_requests_dto_output_requests_inner.dart';
 import 'package:core_api/src/model/admin_confirm_pickup_dto.dart';
 import 'package:core_api/src/model/admin_contact_dto_output.dart';
 import 'package:core_api/src/model/admin_conversion_quote_dto_output.dart';
@@ -80,6 +81,7 @@ import 'package:core_api/src/model/admin_current_drawer_session_dto_output_sessi
 import 'package:core_api/src/model/admin_current_drawer_session_dto_output_session_currencies_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_block.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_block_reasons_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_blocks_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_dues.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_late_cancels.dart';
@@ -195,7 +197,6 @@ import 'package:core_api/src/model/admin_order_dto_output.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_acceptance.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_cancel_choices.dart';
-import 'package:core_api/src/model/admin_order_dto_output_order_cancel_choices_reasons_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_cancellation.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_cancellation_by.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_cannot_complete.dart';
@@ -826,6 +827,7 @@ part 'serializers.g.dart';
   AdminCompensateDto,
   AdminCompensationDtoOutput,
   AdminCompensationRequestsDtoOutput,
+  AdminCompensationRequestsDtoOutputRequestsInner,
   AdminConfirmPickupDto,
   AdminContactDtoOutput,
   AdminConversionQuoteDtoOutput,
@@ -846,6 +848,7 @@ part 'serializers.g.dart';
   AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner,
   AdminCustomerDtoOutput,
   AdminCustomerDtoOutputBlock,
+  AdminCustomerDtoOutputBlockReasonsInner,
   AdminCustomerDtoOutputBlocksInner,
   AdminCustomerDtoOutputDues,
   AdminCustomerDtoOutputLateCancels,
@@ -961,7 +964,6 @@ part 'serializers.g.dart';
   AdminOrderDtoOutputOrder,
   AdminOrderDtoOutputOrderAcceptance,
   AdminOrderDtoOutputOrderCancelChoices,
-  AdminOrderDtoOutputOrderCancelChoicesReasonsInner,
   AdminOrderDtoOutputOrderCancellation,
   AdminOrderDtoOutputOrderCancellationBy,
   AdminOrderDtoOutputOrderCannotComplete,
@@ -1837,6 +1839,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminCustomerDtoOutputBlockReasonsInner),
+            ]),
+            () => ListBuilder<AdminCustomerDtoOutputBlockReasonsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
             ]),
             () =>
@@ -2227,15 +2235,6 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
-              FullType(AdminOrderDtoOutputOrderCancelChoicesReasonsInner),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminOrderDtoOutputOrderCancelChoicesReasonsInner
-                >(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, [
               FullType(MerchantMenuDtoOutputCategoriesInner),
             ]),
             () => ListBuilder<MerchantMenuDtoOutputCategoriesInner>(),
@@ -2463,6 +2462,13 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminCompensationRequestsDtoOutputRequestsInner),
+            ]),
+            () =>
+                ListBuilder<AdminCompensationRequestsDtoOutputRequestsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminCaptainBalancesDtoOutputCaptainsInner),
             ]),
             () => ListBuilder<AdminCaptainBalancesDtoOutputCaptainsInner>(),
@@ -2576,6 +2582,15 @@ Serializers serializers =
               FullType(MerchantContentDtoOutputFaqInner),
             ]),
             () => ListBuilder<MerchantContentDtoOutputFaqInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType.nullable(
+                MerchantOrdersDtoOutputOrdersInnerItemReportNote,
+              ),
+            ]),
+            () =>
+                ListBuilder<MerchantOrdersDtoOutputOrdersInnerItemReportNote>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

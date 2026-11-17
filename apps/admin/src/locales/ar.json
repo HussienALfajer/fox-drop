@@ -1259,7 +1259,8 @@
       "captain_payout": "صرف المستحقات",
       "captain_earnings_collection": "تحصيل رصيد سالب",
       "merchant_settlement": "تسوية حساب المطعم",
-      "merchant_payout": "صرف للمطعم"
+      "merchant_payout": "صرف للمطعم",
+      "customer_dues_payment": "دفع مستحقات زبون"
     },
     "receipt": {
       "printThermal": "طباعة 80 مم",
@@ -2244,5 +2245,125 @@
       "photo": "صورة {{number}}",
       "photosExpire": "روابط الصور صالحة 10 دقائق: أعد فتح الصفحة لروابط جديدة."
     }
+  },
+  "customers": {
+    "title": "الزبائن",
+    "search": "بحث بالرقم أو الاسم",
+    "searchHint": "اكتب الرقم كاملاً أو جزءاً من الاسم (حرفان على الأقل).",
+    "none": "لا يوجد زبون بهذا البحث.",
+    "noName": "زبون لم يكمل بياناته",
+    "unknown": "لا يوجد هذا الزبون.",
+    "phone": "الرقم",
+    "gender": "الجنس",
+    "genderName": {
+      "male": "ذكر",
+      "female": "أنثى"
+    },
+    "birthday": "تاريخ الميلاد",
+    "statusLabel": "الحالة",
+    "status": {
+      "active": "نشط",
+      "blocked": "محظور",
+      "dues_unpaid": "محظور حتى دفع المستحق",
+      "review_stop": "موقوف حتى مراجعة الدعم"
+    },
+    "trust": "الثقة",
+    "trusted": "موثوق",
+    "notTrusted": "جديد: {{delivered}} من {{needed}} طلبات مسلّمة",
+    "lateCancels": "الإلغاءات المتأخرة",
+    "lateCancelsValue": "{{inWindow}} من {{limit}} خلال {{days}} يوماً ({{total}} في المجموع)",
+    "fakeOrders": "الطلبات الوهمية",
+    "dues": "المستحقات",
+    "duesOwed": "عليه {{amount}}",
+    "duesCredit": "له رصيد {{amount}}",
+    "duesNone": "لا شيء",
+    "reviewStop": "موقوف حتى مراجعة الدعم منذ {{at}}.",
+    "blockedUntil": "محظور حتى {{until}}: {{reason}}.",
+    "blockedIndefinite": "محظور حتى إشعار آخر: {{reason}}.",
+    "customerSees": "يرى الزبون: «{{text}}»",
+    "blocks": "سجل الحظر",
+    "noBlocks": "لم يُحظر هذا الزبون.",
+    "blockTable": {
+      "kind": "النوع",
+      "reason": "السبب",
+      "started": "البداية",
+      "ended": "النهاية"
+    },
+    "by": "{{at}} بواسطة {{name}}",
+    "inForce": "سارٍ",
+    "duesBlockEnds": "يُفك عند دفع المستحقات",
+    "liftedBy": "فُكّ في {{at}} بواسطة {{name}}: {{note}}",
+    "ranOut": "انتهت مدته في {{at}}",
+    "block": {
+      "title": "حظر",
+      "kindLabel": "نوع الحظر",
+      "kind": {
+        "until": "لمدة",
+        "indefinite": "حتى إشعار آخر",
+        "dues": "حتى دفع مستحق"
+      },
+      "until": "حتى",
+      "amount": "المبلغ ({{currency}})",
+      "duesHint": "يُسجَّل المبلغ مستحقاً على الزبون، ويُفك الحظر تلقائياً عند دفعه في المكتب.",
+      "reason": "السبب",
+      "chooseReason": "اختر السبب",
+      "note": "السبب الداخلي",
+      "submit": "حظر",
+      "problem": {
+        "until": "اختر وقتاً قادماً لنهاية الحظر.",
+        "amount": "اكتب مبلغاً أكبر من صفر.",
+        "reason": "اختر السبب.",
+        "note": "اكتب السبب الداخلي."
+      }
+    },
+    "unblock": {
+      "title": "فك الحظر",
+      "note": "السبب",
+      "submit": "فك الحظر"
+    },
+    "refused": {
+      "invalid_block": "لا يناسب الحظر نوعه: المدة لسنة على الأكثر من الآن، والمبلغ أكبر من صفر.",
+      "unknown_reason": "لم يعد هذا السبب متاحاً. اختر سبباً آخر.",
+      "already_blocked": "الزبون محظور الآن. فك الحظر أولاً.",
+      "not_blocked": "لا حظر ساري على الزبون الآن.",
+      "no_base_currency": "لم تُحدد العملة الأساسية للمدينة بعد.",
+      "unknown_customer": "لا يوجد هذا الزبون."
+    },
+    "pay": {
+      "title": "تسجيل دفع المستحق",
+      "noSession": "افتح الصندوق لتسجيل الدفع.",
+      "hint": "اكتب ما دفعه الزبون بكل عملة، كاملاً أو جزءاً.",
+      "amount": "المبلغ بـ{{currency}}",
+      "review": "مراجعة",
+      "invalid": "المبلغ بـ{{currency}} غير صحيح.",
+      "empty": "اكتب مبلغاً واحداً على الأقل.",
+      "quoteRefused": "تعذّر حساب القيمة بسعر الصرف الحالي.",
+      "line": "{{amount}} = {{base}}",
+      "rate": "(1 {{from}} = {{value}} {{to}})",
+      "total": "المجموع: {{amount}}",
+      "above": "المبلغ أكبر من المستحق على الزبون.",
+      "remaining": "يبقى على الزبون: {{amount}}",
+      "confirm": "تأكيد وإصدار الإيصال",
+      "done": "صدر الإيصال {{number}}",
+      "refused": {
+        "above_balance": "المبلغ أكبر من المستحق على الزبون.",
+        "balance_changed": "تغيّرت المستحقات منذ المراجعة. راجع مرة أخرى.",
+        "rate_changed": "تغيّر سعر الصرف منذ المراجعة. راجع مرة أخرى.",
+        "rate_missing": "لا يوجد سعر صرف لهذه العملة.",
+        "nothing_due": "لا مستحقات على الزبون.",
+        "no_open_session": "افتح الصندوق لتسجيل الدفع.",
+        "unknown_party": "لا يوجد هذا الزبون في صندوق هذه المدينة.",
+        "invalid_amounts": "اكتب مبلغاً واحداً لكل عملة أكبر من صفر."
+      }
+    },
+    "receipts": "إيصالات الزبون",
+    "backToProfile": "ملف الزبون",
+    "receipt": {
+      "customer": "الزبون: {{name}}",
+      "total": "المدفوع: {{amount}}",
+      "before": "المستحق قبل: {{amount}}",
+      "after": "المستحق بعد: {{amount}}"
+    },
+    "reasonWithNote": "{{reason}}: {{note}}"
   }
 }
