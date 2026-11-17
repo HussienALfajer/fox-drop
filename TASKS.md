@@ -4,20 +4,26 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.23d, «إعادة توصيل مجانية» (`docs/roadmap.md`, Phase 2, Support and trust). Not started.
+Slice 2.23d, «إعادة توصيل مجانية» (`docs/roadmap.md`, Phase 2, Support and trust). In progress.
 
 - **Roadmap line:** 2.23d «إعادة توصيل مجانية»: the linked order with a customer total of 0 and the affected items to the original address, never cancelled or rated by the customer and outside the active-order limit and trust; the restaurant responsible (a pickup payment of 0, no commission), the captain or the platform responsible (a normal pickup, the commission, the merchant net borne by the party), and the captain pay on `platform.compensation_cost` or charged to the responsible party, through the three apps (AP §9.9.3, §8.10, §8.9, §6.4, CU §12.2). The owner resolves a ticket with a free re-delivery.
 - **Specs:** AP §9.9.3 «إعادة توصيل مجانية», `docs/domain/10` (with a free re-delivery the restaurant posts nothing; the captain's `earn.charge` once, on the re-delivery order), §8.9, §6.4 (not capped), §8.8 (outside trust), CU §12.2; RA and CA for how the re-delivery shows; `apps/server/src/modules/{support,ordering,dispatch}/CLAUDE.md`; 2.23c's `TicketOrders` port and `moneyProblem` (`support/tickets.ts`), which the re-delivery joins as a resolution.
 - **Branch:** `feat/free-redelivery` (not created yet; a cloud session works on the branch it is given).
 - **Not in this slice:** the apps' sources (2.24).
 - **Plan:**
-  - [ ] Read the cited sections and 2.23c's money; ask the owner the question below and how the re-delivery order shows in the three apps.
+  - [x] Read the cited sections and 2.23c's money; ask the owner the question below and how the re-delivery order shows in the three apps.
   - [ ] The failing tests first: the re-delivery's entries per responsible party (restaurant: pickup 0, no commission, nothing else; captain or platform: a normal pickup, the commission, the merchant net on the party, the captain's pay on `platform.compensation_cost` or charged), and that V's entries of 2.23c are not posted with it.
   - [ ] Migration: the linked order (its source ticket, total 0) and the resolution `free_redelivery`.
   - [ ] The server: the resolution creates the order under the ticket's lock, through ordering and dispatch; the customer cannot cancel or rate it; it stays out of the active-order limit and trust.
   - [ ] `pnpm generate:api`, then the panel and the apps' reads.
   - [ ] The `checker` agent, the `reviewer` agent on AP §9.9.3 and `docs/domain/10`, then the pull request and the handover to 2.24.
 - **To ask the owner first:** whether the restaurant accepts a re-delivery like any order, and what a rejected or failed one does (owner decisions for 2.23, "To ask at their slices").
+
+### Owner decisions for 2.23d (2026-11-17)
+
+- The restaurant accepts or rejects a re-delivery like any order: it rings, takes a preparation time or a rejection reason, and the acceptance timer runs.
+- A re-delivery that is rejected, cancelled or fails posts no ticket money; its ticket returns to «قيد المعالجة» (no longer «محلولة») so support picks another remedy, such as a code.
+- The restaurant and captain apps show it as a normal order with the badge «إعادة توصيل مجانية لطلب #{رقم}»; the customer collects 0 always, and the pickup payment is 0 when the restaurant is responsible.
 
 ### Left from 2.23c (`claude/slice-2-23c-afde65`)
 
