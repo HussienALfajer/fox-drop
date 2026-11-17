@@ -19,6 +19,7 @@ import { DeliveryBooking } from './delivery-booking.js';
 import { PickupBooking, PickupTimersWorker } from './pickup-booking.js';
 import { PickupCommands } from './pickup-commands.js';
 import { PickupCorrections } from './pickup-corrections.js';
+import { TicketMoney } from './ticket-orders.js';
 import { IdentityModule } from '../identity/index.js';
 import { MarketingModule } from '../marketing/index.js';
 import { LedgerModule } from '../ledger/index.js';
@@ -98,6 +99,7 @@ import {
     PickupBooking,
     PickupCommands,
     PickupCorrections,
+    TicketMoney,
     DeliveryBooking,
     ResendNotification,
     EmergencyStops,

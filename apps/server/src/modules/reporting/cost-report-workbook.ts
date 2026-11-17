@@ -48,7 +48,14 @@ export async function costReportWorkbook(
   ]);
   for (const row of report.compensationReasons) {
     const name =
-      row.label ?? (row.kind === 'late_delivery' ? labels.lateDelivery : labels.operating.other);
+      row.label ??
+      (row.kind === 'late_delivery'
+        ? labels.lateDelivery
+        : row.kind === 'recovered_restaurant'
+          ? labels.recoveredRestaurant
+          : row.kind === 'recovered_captain'
+            ? labels.recoveredCaptain
+            : labels.operating.other);
     amounts([name, row.orders, money(row.amount)], 3);
   }
 

@@ -638,6 +638,13 @@
       "when": 1794908978774,
       "tag": "0090_content_canned_replies",
       "breakpoints": true
+    },
+    {
+      "idx": 91,
+      "version": "7",
+      "when": 1794912058920,
+      "tag": "0091_support_ticket_money",
+      "breakpoints": true
     }
   ]
 }

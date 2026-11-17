@@ -117,6 +117,9 @@ export const costReportLabels = {
   currency: 'العملة الأساسية',
   note: 'كلفة كود التعويض تُحسب عند استخدامه، وتُنسب إلى مطعم الطلب المعوَّض عنه.',
   lateDelivery: 'تأخير التوصيل',
+  // AP §8.10 (slice 2.23c): what tickets took back from the party responsible.
+  recoveredRestaurant: 'استرداد من المطعم المسؤول (تذاكر)',
+  recoveredCaptain: 'استرداد من الكابتن المسؤول (تذاكر)',
   unknown: 'غير محدد',
   line: {
     discounts: 'كلفة الخصومات',

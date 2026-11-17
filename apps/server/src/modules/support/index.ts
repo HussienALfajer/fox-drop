@@ -5,6 +5,7 @@ import { CaptainsModule } from '../captains/index.js';
 import { ContentModule } from '../content/index.js';
 import { CustomersModule } from '../customers/index.js';
 import { IdentityModule } from '../identity/index.js';
+import { MarketingModule } from '../marketing/index.js';
 import { MerchantsModule } from '../merchants/index.js';
 import { NotificationsModule, NotificationsWorkerModule } from '../notifications/index.js';
 import { SettingsModule } from '../settings/index.js';
@@ -26,6 +27,7 @@ import { TicketSync } from './ticket-sync.js';
     CaptainsModule,
     MerchantsModule,
     CustomersModule,
+    MarketingModule,
   ],
   controllers: [AdminTicketsController],
   providers: [SupportService, TicketSync],
@@ -51,11 +53,20 @@ export {
   SupportService,
 } from './support.service.js';
 export {
+  type CorrectionEntry,
   type MoneyLine,
   type PickupCorrectionPreview,
   type PickupDisputeFacts,
   type PickupDisputes,
 } from './pickup-disputes.js';
+export {
+  type AffectedLine,
+  type StoredAffectedLine,
+  type TicketMoneyInput,
+  type TicketMoneyPreview,
+  type TicketOrderFacts,
+  type TicketOrders,
+} from './ticket-orders.js';
 export { TicketSync } from './ticket-sync.js';
 export {
   answered as ticketAnswered,

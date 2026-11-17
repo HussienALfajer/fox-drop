@@ -54,10 +54,11 @@ export function ticketKind(typeCode: string): TicketKind {
 
 // AP §9.9.3: «لا شيء مع توضيح»; a price difference's «تم تصحيح السعر» and
 // «السعر صحيح»; a pickup dispute's «دفع الكابتن الفرق», «تصحيح في
-// الحسابات» and «الدفعة صحيحة». The compensation code (2.23c) and the free
-// re-delivery (2.23d) join the general ones with their slices.
+// الحسابات» and «الدفعة صحيحة». «كود تعويض» (slice 2.23c) is a general
+// one; the free re-delivery (2.23d) joins with its slice.
 export const ticketResolutions = [
   'none_explained',
+  'compensation_code',
   'price_corrected',
   'price_correct',
   'captain_paid',
@@ -67,7 +68,7 @@ export const ticketResolutions = [
 export type TicketResolution = (typeof ticketResolutions)[number];
 
 const RESOLUTIONS: Record<TicketKind, readonly TicketResolution[]> = {
-  general: ['none_explained'],
+  general: ['compensation_code', 'none_explained'],
   price_difference: ['price_corrected', 'price_correct'],
   pickup_dispute: ['captain_paid', 'accounts_corrected', 'payment_correct'],
 };
@@ -191,4 +192,57 @@ export function canSetStatus(from: TicketStatus, to: TicketStatus): boolean {
 // AP §4.8: `T-5521`.
 export function ticketLabel(number: bigint): string {
   return `T-${number}`;
+}
+
+// «مشكلة في المبلغ أو الباقي» in the customer's problem list (CU Q23): its
+// money is the wrong change M, not affected items.
+export const WRONG_CHANGE_TYPE = 'amount_or_change';
+
+export type MoneyProblem =
+  'invalid_resolution' | 'order_required' | 'not_delivered' | 'amount_required' | 'value_required';
+
+// AP §8.10, §9.9.3, §6.4 (slice 2.23c; owner decisions 2026-11-17): the
+// money a general ticket's resolution may carry. A customer's ticket only
+// (the code and V are the customer's), on an order (owner decision for 2.23:
+// the order is required only for a resolution with money). The affected
+// items and the wrong change need the order delivered normally. The wrong
+// change's ticket takes M (required unless the customer is responsible, who
+// gets nothing) and no items; its code is M itself, so it takes no value.
+// Every other ticket takes items and no M, and its code a value. A code is
+// never given when the customer is responsible.
+export function moneyProblem(input: {
+  kind: TicketKind;
+  party: TicketParty;
+  typeCode: string;
+  resolution: TicketResolution;
+  responsible: ResponsibleParty | null;
+  hasOrder: boolean;
+  deliveredNormally: boolean;
+  affectedLines: number;
+  shortAmount: bigint | null;
+  codeValue: boolean;
+}): MoneyProblem | null {
+  const code = input.resolution === 'compensation_code';
+  const wrongChange = input.typeCode === WRONG_CHANGE_TYPE;
+  const asked = code || input.affectedLines > 0 || input.shortAmount !== null || input.codeValue;
+  if (!asked) return null;
+  if (input.kind !== 'general' || input.party !== 'customer') return 'invalid_resolution';
+  if (input.codeValue && (!code || wrongChange)) return 'invalid_resolution';
+  if (code && input.responsible === 'customer') return 'invalid_resolution';
+  if (!input.hasOrder) return 'order_required';
+  if (wrongChange) {
+    if (input.affectedLines > 0) return 'invalid_resolution';
+    if (input.responsible === 'customer') {
+      if (input.shortAmount !== null) return 'invalid_resolution';
+    } else if (input.shortAmount === null) {
+      return 'amount_required';
+    }
+  } else {
+    if (input.shortAmount !== null) return 'invalid_resolution';
+    if (code && !input.codeValue) return 'value_required';
+  }
+  if ((input.affectedLines > 0 || input.shortAmount !== null) && !input.deliveredNormally) {
+    return 'not_delivered';
+  }
+  return null;
 }

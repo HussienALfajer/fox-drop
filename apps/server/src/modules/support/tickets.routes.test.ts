@@ -90,6 +90,7 @@ async function admin(roles: string[]) {
     actor: { type: 'admin', id: accountId, role: roles.join(',') },
     context: { ipAddress: null, device: null },
     permissions: [],
+    roles,
   };
   return {
     accountId,

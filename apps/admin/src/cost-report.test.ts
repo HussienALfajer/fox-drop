@@ -22,6 +22,9 @@ describe('the cost report words', () => {
     expect(compensationName({ kind: 'late_delivery', label: null })).toEqual({
       key: 'costReport.lateDelivery',
     });
+    expect(compensationName({ kind: 'recovered_captain', label: null })).toEqual({
+      key: 'costReport.recoveredCaptain',
+    });
     expect(compensationName({ kind: 'other', label: null })).toEqual({
       key: 'costReport.operating.other',
     });

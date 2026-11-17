@@ -18,10 +18,23 @@ import {
   CaptainAccountsService,
   CustomerAccountsService,
 } from '../identity/index.js';
+import {
+  CompensationRefusedError,
+  CompensationsService,
+  type CompensationValue,
+  type PreparedCompensation,
+} from '../marketing/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { type PushRecipient, PushQueue } from '../notifications/index.js';
 import { SettingsService } from '../settings/index.js';
 import type { MoneyLine, PickupDisputeFacts, PickupDisputes } from './pickup-disputes.js';
+import type {
+  AffectedLine,
+  StoredAffectedLine,
+  TicketMoneyInput,
+  TicketOrderFacts,
+  TicketOrders,
+} from './ticket-orders.js';
 import { TicketSync } from './ticket-sync.js';
 import { noteKeys, ticketNotes, ticketNumbers, tickets, type TicketSource } from './schema.js';
 import {
@@ -31,6 +44,7 @@ import {
   FIXED_TYPE_LABELS,
   isUrgent,
   managingPermission,
+  moneyProblem,
   PICKUP_DISPUTE_TYPE,
   PRICE_DIFFERENCE_TYPE,
   resolutionProblem,
@@ -43,6 +57,7 @@ import {
   slaStop,
   TICKET_TYPE_LISTS,
   type TicketParty,
+  WRONG_CHANGE_TYPE,
   type TicketStatus,
 } from './tickets.js';
 
@@ -68,6 +83,8 @@ export interface TicketAdmin {
   actor: AuditActor;
   context: AuditRequestContext;
   permissions: readonly string[];
+  // The roles decide a compensation code's cap (AP §6.4).
+  roles: readonly string[];
 }
 
 export interface OpenTicket {
@@ -122,6 +139,13 @@ export interface Ticket {
     correctedLines: MoneyLine[] | null;
     resolvedAt: Date;
     resolvedByName: string | null;
+    // AP §8.10 (slice 2.23c): the affected lines and V, the wrong change M,
+    // in `moneyCurrency`, and the compensation asked (marketing's id).
+    affectedLines: StoredAffectedLine[] | null;
+    affectedValue: bigint | null;
+    shortAmount: bigint | null;
+    moneyCurrency: string | null;
+    compensationId: string | null;
   } | null;
   closure: { reason: string; closedAt: Date; closedByName: string | null } | null;
 }
@@ -132,11 +156,28 @@ export interface TicketResolutionInput {
   message: string;
   // «تصحيح في الحسابات»: the lines the restaurant received, as corrected.
   lines: MoneyLine[] | null;
+  // AP §8.10 (slice 2.23c): the affected lines, the wrong change M, and
+  // «كود تعويض»'s value and reason (the wrong change's code is M itself).
+  affected: AffectedLine[];
+  shortAmount: bigint | null;
+  code: { value: CompensationValue; reason: { code: string; note: string | null } } | null;
+}
+
+// The money a resolution's preview asks (slice 2.23c).
+export interface TicketMoneyQuestion {
+  responsible: ResponsibleParty;
+  affected: AffectedLine[];
+  shortAmount: bigint | null;
+  code: boolean;
 }
 
 export type TicketPage = Ticket & {
   notes: TicketNote[];
   pickupDispute: PickupDisputeFacts | null;
+  // A customer's general ticket on an order (slice 2.23c): the order's
+  // lines, money and the captain's record at the door, for the affected
+  // items, M and the code.
+  order: TicketOrderFacts | null;
 };
 
 export interface TicketFilters {
@@ -162,6 +203,14 @@ export type TicketRefusal =
   | 'invalid_lines'
   | 'no_difference'
   | 'not_pickup_dispute'
+  | 'order_required'
+  | 'not_delivered'
+  | 'amount_required'
+  | 'value_required'
+  | 'invalid_affected'
+  | 'invalid_value'
+  | 'no_base_currency'
+  | 'currency_changed'
   | 'forbidden';
 
 export class TicketRefusedError extends Error {
@@ -205,6 +254,7 @@ export class SupportService {
     private readonly customerAccounts: CustomerAccountsService,
     private readonly pushes: PushQueue,
     private readonly texts: NotificationTexts,
+    private readonly compensations: CompensationsService,
   ) {}
 
   private disputes: PickupDisputes | null = null;
@@ -217,6 +267,27 @@ export class SupportService {
   private pickupDisputes(): PickupDisputes {
     if (this.disputes === null) throw new Error('no pickup disputes registered');
     return this.disputes;
+  }
+
+  private orders: TicketOrders | null = null;
+
+  // Ordering registers what it reads and posts of a ticket's order (slice
+  // 2.23c).
+  useTicketOrders(orders: TicketOrders): void {
+    this.orders = orders;
+  }
+
+  private ticketOrders(): TicketOrders {
+    if (this.orders === null) throw new Error('no ticket orders registered');
+    return this.orders;
+  }
+
+  // Whether the ticket's page reads its order's money: a customer's general
+  // ticket on an order.
+  private readsOrder(row: TicketRow): row is TicketRow & { orderId: string } {
+    return (
+      row.orderId !== null && row.party === 'customer' && ticketKind(row.typeCode) === 'general'
+    );
   }
 
   // The type lists of the three parties (AP Appendix B), active reasons only.
@@ -584,16 +655,18 @@ export class SupportService {
       .from(ticketNotes)
       .where(eq(ticketNotes.ticketId, id))
       .orderBy(ticketNotes.createdAt, ticketNotes.id);
-    const [[view], names, pickupDispute] = await Promise.all([
+    const [[view], names, pickupDispute, order] = await Promise.all([
       this.views([row]),
       this.admins.names(notes.map((note) => note.authorId)),
       row.pickupDisputeId === null
         ? Promise.resolve(null)
         : this.pickupDisputes().facts(row.pickupDisputeId),
+      this.readsOrder(row) ? this.ticketOrders().facts(row.orderId) : Promise.resolve(null),
     ]);
     return {
       ...view!,
       pickupDispute,
+      order,
       notes: notes.map((note) => ({
         id: note.id,
         authorId: note.authorId,
@@ -785,6 +858,82 @@ export class SupportService {
     return this.pickupDisputes().preview(row.pickupDisputeId, lines, now);
   }
 
+  // AP §8.10, §9.9.3 «previewed before the ticket is resolved» (slice
+  // 2.23c): the entries a problem after delivery would post for this
+  // responsible party, affected lines and M. Writes nothing. 400
+  // invalid_resolution, order_required, not_delivered, amount_required,
+  // invalid_affected; 409 ticket_not_open; 404 unknown_ticket.
+  async previewMoney(cityId: string, id: string, question: TicketMoneyQuestion) {
+    const row = await this.row(cityId, id);
+    if (!isOpenStatus(row.status)) {
+      throw new TicketRefusedError('ticket_not_open', 'the ticket is no longer open');
+    }
+    const { money } = await this.checkMoney(row, {
+      resolution: question.code ? 'compensation_code' : 'none_explained',
+      responsible: question.responsible,
+      affected: question.affected,
+      shortAmount: question.shortAmount,
+      // The value is the dialog's to fill; the preview's entries do not
+      // depend on it.
+      codeValue: question.code && row.typeCode !== WRONG_CHANGE_TYPE,
+    });
+    if (money === null) {
+      return {
+        currency: null,
+        affectedValue: 0n,
+        merchantDebit: 0n,
+        captainCharge: 0n,
+        entries: [],
+      };
+    }
+    return this.ticketOrders().preview(row.orderId!, money);
+  }
+
+  // moneyProblem's checks with the order's facts, and the money to post
+  // (null when the resolution has none).
+  private async checkMoney(
+    row: TicketRow,
+    input: {
+      resolution: TicketResolution;
+      responsible: ResponsibleParty | null;
+      affected: AffectedLine[];
+      shortAmount: bigint | null;
+      codeValue: boolean;
+    },
+  ): Promise<{ facts: TicketOrderFacts | null; money: TicketMoneyInput | null }> {
+    const facts = this.readsOrder(row) ? await this.ticketOrders().facts(row.orderId) : null;
+    const problem = moneyProblem({
+      kind: ticketKind(row.typeCode),
+      party: row.party,
+      typeCode: row.typeCode,
+      resolution: input.resolution,
+      responsible: input.responsible,
+      hasOrder: facts !== null,
+      deliveredNormally: facts?.deliveredNormally ?? false,
+      affectedLines: input.affected.length,
+      shortAmount: input.shortAmount,
+      codeValue: input.codeValue,
+    });
+    if (problem !== null) throw new TicketRefusedError(problem, `the money is ${problem}`);
+    if (input.shortAmount !== null && input.shortAmount <= 0n) {
+      throw new TicketRefusedError('invalid_value', 'M is above zero');
+    }
+    const money =
+      facts !== null &&
+      input.responsible !== null &&
+      (input.affected.length > 0 || input.shortAmount !== null)
+        ? {
+            responsible: input.responsible,
+            affected: input.affected,
+            wrongChange:
+              input.shortAmount === null
+                ? null
+                : { amount: input.shortAmount, code: input.resolution === 'compensation_code' },
+          }
+        : null;
+    return { facts, money };
+  }
+
   // «حل التذكرة» (AP §9.9.3; owner decision 2026-11-17): the resolution, the
   // responsible party of a general ticket and the message; the ticket
   // becomes «محلولة», its timer stops, «تصحيح في الحسابات» posts its entries
@@ -792,8 +941,16 @@ export class SupportService {
   // transaction. A pickup dispute needs support.resolve_pickup_dispute (OWN,
   // OPS, FIN), every other ticket support.manage. A repeat is refused by
   // what the first changed (409 ticket_not_open), so it takes no key.
+  // A problem after delivery (slice 2.23c, owner decisions 2026-11-17) posts
+  // the responsible party's entries for V or M in the same transaction, and
+  // «كود تعويض» asks marketing's compensation there: issued within the
+  // resolver's cap (the wrong change's uncapped), else waiting for OWN while
+  // the ticket is resolved all the same.
   // 400 invalid_resolution, responsible_required, lines_required,
-  // invalid_lines, no_difference; 403 forbidden; 404 unknown_ticket.
+  // invalid_lines, no_difference, order_required, not_delivered,
+  // amount_required, value_required, invalid_affected, invalid_value,
+  // unknown_reason; 403 forbidden; 404 unknown_ticket; 409 ticket_not_open,
+  // no_base_currency, currency_changed.
   async resolve(
     cityId: string,
     id: string,
@@ -814,6 +971,22 @@ export class SupportService {
       lines: input.lines,
     });
     if (problem !== null) throw new TicketRefusedError(problem, `the resolution is ${problem}`);
+    if (input.code !== null && !admin.permissions.includes('operations.compensate')) {
+      throw new TicketRefusedError('forbidden', 'a compensation code needs operations.compensate');
+    }
+    const { facts, money } = await this.checkMoney(found, {
+      resolution: input.resolution,
+      responsible: input.responsible,
+      affected: input.affected,
+      shortAmount: input.shortAmount,
+      codeValue: input.code !== null,
+    });
+    // V's lines are checked before the transaction (invalid_affected).
+    if (money !== null) await this.ticketOrders().preview(found.orderId!, money);
+    const compensation =
+      input.resolution === 'compensation_code'
+        ? await this.prepareCode(found, facts, input, admin)
+        : null;
     const message = input.message.trim();
     const lines = input.resolution === 'accounts_corrected' ? input.lines! : null;
     // The lines' checks (invalid_lines, no_difference) before the transaction.
@@ -828,15 +1001,45 @@ export class SupportService {
       if (!isOpenStatus(before.status)) {
         throw new TicketRefusedError('ticket_not_open', 'the ticket is no longer open');
       }
-      const journalIds =
+      const actor = { type: 'admin' as const, id: admin.accountId };
+      let journalIds: string[] | null =
         lines === null
           ? null
           : await this.pickupDisputes().correct(tx, {
               disputeId: before.pickupDisputeId!,
               received: lines,
-              actor: { type: 'admin', id: admin.accountId },
+              actor,
               now,
             });
+      let affected: { lines: StoredAffectedLine[]; value: bigint } | null = null;
+      if (money !== null) {
+        const posted = await this.ticketOrders().post(tx, {
+          orderId: before.orderId!,
+          ticketId: id,
+          ticketNumber: before.number,
+          money,
+          actor,
+          now,
+        });
+        journalIds = posted.journalIds;
+        if (posted.affected.length > 0) {
+          affected = { lines: posted.affected, value: posted.affectedValue };
+        }
+      }
+      const asked =
+        compensation === null
+          ? null
+          : await this.compensations
+              .requestIn(tx, compensation, `ticket:${id}`, now)
+              .catch((error: unknown) => {
+                if (
+                  error instanceof CompensationRefusedError &&
+                  (error.refusal === 'no_base_currency' || error.refusal === 'currency_changed')
+                ) {
+                  throw new TicketRefusedError(error.refusal, error.message);
+                }
+                throw error;
+              });
       const after = await this.move(
         tx,
         before,
@@ -849,6 +1052,14 @@ export class SupportService {
           journalIds,
           resolvedBy: admin.accountId,
           resolvedAt: now,
+          affectedLines:
+            affected === null
+              ? null
+              : affected.lines.map((line) => ({ ...line, value: line.value.toString() })),
+          affectedValue: affected?.value ?? null,
+          shortAmount: input.shortAmount,
+          moneyCurrency: affected !== null || input.shortAmount !== null ? facts!.currency : null,
+          compensationId: asked?.id ?? null,
         },
         now,
       );
@@ -883,6 +1094,10 @@ export class SupportService {
             responsible: after.responsible,
             correctedLines: after.correctedLines,
             journalIds: after.journalIds,
+            affectedLines: after.affectedLines,
+            affectedValue: after.affectedValue?.toString() ?? null,
+            shortAmount: after.shortAmount?.toString() ?? null,
+            compensationId: after.compensationId,
           },
           reason: message,
         },
@@ -890,6 +1105,35 @@ export class SupportService {
       );
     });
     return this.ticket(cityId, id);
+  }
+
+  // «كود تعويض» read before the transaction (AP §6.4): the order it is
+  // linked to, the value (the wrong change's is M, uncapped with its fixed
+  // reason) and the resolver's cap.
+  private async prepareCode(
+    row: TicketRow,
+    facts: TicketOrderFacts | null,
+    input: TicketResolutionInput,
+    admin: TicketAdmin,
+  ): Promise<PreparedCompensation> {
+    if (facts === null) throw new Error('a code is asked on a customer ticket with an order');
+    const wrongChange = row.typeCode === WRONG_CHANGE_TYPE;
+    const value: CompensationValue = wrongChange
+      ? { kind: 'fixed_amount', amount: input.shortAmount! }
+      : input.code!.value;
+    return this.compensations.prepare(
+      {
+        id: facts.orderId,
+        cityId: facts.cityId,
+        number: facts.number,
+        customerAccountId: facts.customerAccountId,
+        total: facts.total,
+        currency: facts.currency,
+      },
+      value,
+      wrongChange ? 'wrong_change' : input.code!.reason,
+      { ...admin, roles: admin.roles },
+    );
   }
 
   // «إغلاق» (owner decision 2026-11-17): an open ticket ends without a
@@ -965,6 +1209,11 @@ export class SupportService {
         | 'closeReason'
         | 'closedBy'
         | 'closedAt'
+        | 'affectedLines'
+        | 'affectedValue'
+        | 'shortAmount'
+        | 'moneyCurrency'
+        | 'compensationId'
       >
     >,
     now: Date,
@@ -1070,6 +1319,11 @@ export class SupportService {
               correctedLines: row.correctedLines === null ? null : linesOf(row.correctedLines),
               resolvedAt: row.resolvedAt!,
               resolvedByName: admins.get(row.resolvedBy!) ?? null,
+              affectedLines: row.affectedLines === null ? null : affectedLinesOf(row.affectedLines),
+              affectedValue: row.affectedValue,
+              shortAmount: row.shortAmount,
+              moneyCurrency: row.moneyCurrency,
+              compensationId: row.compensationId,
             },
       closure:
         row.closeReason === null
@@ -1109,6 +1363,12 @@ function linesOf(stored: unknown): MoneyLine[] {
     currency: line.currency,
     amount: BigInt(line.amount),
   }));
+}
+
+function affectedLinesOf(stored: unknown): StoredAffectedLine[] {
+  return (stored as { position: number; quantity: number; name: string; value: string }[]).map(
+    (line) => ({ ...line, value: BigInt(line.value) }),
+  );
 }
 
 function orderParty(order: TicketOrder, party: TicketParty): string | null {

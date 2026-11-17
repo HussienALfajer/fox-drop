@@ -5,6 +5,7 @@ import {
   canSetStatus,
   isBreached,
   isUrgent,
+  moneyProblem,
   resolutionProblem,
   resolutionsOf,
   slaAtOpening,
@@ -50,7 +51,7 @@ describe('the resolution', () => {
   });
 
   it('offers each kind its own resolutions', () => {
-    expect(resolutionsOf('general')).toEqual(['none_explained']);
+    expect(resolutionsOf('general')).toEqual(['compensation_code', 'none_explained']);
     expect(resolutionsOf('price_difference')).toEqual(['price_corrected', 'price_correct']);
     expect(resolutionsOf('pickup_dispute')).toEqual([
       'captain_paid',
@@ -253,5 +254,94 @@ describe('the type', () => {
       restaurant: 'merchant_ticket_type',
       captain: 'captain_ticket_type',
     });
+  });
+});
+
+// AP §8.10, §9.9.3, §6.4 (slice 2.23c): the money a general ticket's
+// resolution may carry.
+describe('the money of a resolution', () => {
+  const missing = {
+    kind: 'general' as const,
+    party: 'customer' as const,
+    typeCode: 'missing_item',
+    resolution: 'compensation_code' as const,
+    responsible: 'restaurant' as const,
+    hasOrder: true,
+    deliveredNormally: true,
+    affectedLines: 1,
+    shortAmount: null,
+    codeValue: true,
+  };
+  const wrong = {
+    ...missing,
+    typeCode: 'amount_or_change',
+    responsible: 'captain' as const,
+    affectedLines: 0,
+    shortAmount: 2_000n,
+    codeValue: false,
+  };
+
+  it('takes the affected items and a code with its value on a delivered order', () => {
+    expect(moneyProblem(missing)).toBeNull();
+    expect(moneyProblem({ ...missing, resolution: 'none_explained', codeValue: false })).toBeNull();
+    expect(moneyProblem({ ...missing, affectedLines: 0 })).toBeNull();
+  });
+
+  it('asks nothing of a resolution without money', () => {
+    expect(
+      moneyProblem({
+        ...missing,
+        resolution: 'none_explained',
+        affectedLines: 0,
+        codeValue: false,
+        hasOrder: false,
+        party: 'restaurant',
+      }),
+    ).toBeNull();
+  });
+
+  it('needs an order, a customer ticket and a value for the code', () => {
+    expect(moneyProblem({ ...missing, hasOrder: false })).toBe('order_required');
+    expect(moneyProblem({ ...missing, party: 'captain' })).toBe('invalid_resolution');
+    expect(moneyProblem({ ...missing, codeValue: false })).toBe('value_required');
+    expect(moneyProblem({ ...missing, resolution: 'none_explained' })).toBe('invalid_resolution');
+  });
+
+  it('gives no code when the customer is responsible', () => {
+    expect(moneyProblem({ ...missing, responsible: 'customer' })).toBe('invalid_resolution');
+  });
+
+  it('takes the affected items only after a normal delivery', () => {
+    expect(
+      moneyProblem({
+        ...missing,
+        deliveredNormally: false,
+        resolution: 'none_explained',
+        codeValue: false,
+      }),
+    ).toBe('not_delivered');
+    // A code alone can go with an order in any state.
+    expect(moneyProblem({ ...missing, deliveredNormally: false, affectedLines: 0 })).toBeNull();
+  });
+
+  it('takes M for the wrong change, its code without a value, and no items', () => {
+    expect(moneyProblem(wrong)).toBeNull();
+    expect(moneyProblem({ ...wrong, resolution: 'none_explained' })).toBeNull();
+    expect(moneyProblem({ ...wrong, shortAmount: null })).toBe('amount_required');
+    expect(moneyProblem({ ...wrong, codeValue: true })).toBe('invalid_resolution');
+    expect(moneyProblem({ ...wrong, affectedLines: 1 })).toBe('invalid_resolution');
+    expect(moneyProblem({ ...missing, shortAmount: 2_000n })).toBe('invalid_resolution');
+    expect(moneyProblem({ ...wrong, responsible: 'customer', resolution: 'none_explained' })).toBe(
+      'invalid_resolution',
+    );
+    expect(
+      moneyProblem({
+        ...wrong,
+        responsible: 'customer',
+        resolution: 'none_explained',
+        shortAmount: null,
+      }),
+    ).toBeNull();
+    expect(moneyProblem({ ...wrong, deliveredNormally: false })).toBe('not_delivered');
   });
 });
