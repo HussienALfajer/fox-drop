@@ -23,6 +23,7 @@ export type TicketKind = Ticket['kind'];
 export type TicketResolution = NonNullable<Ticket['resolution']>['code'];
 export type ResponsibleParty = NonNullable<NonNullable<Ticket['resolution']>['responsible']>;
 export type PickupDispute = NonNullable<TicketPage['pickupDispute']>;
+export type TicketReport = NonNullable<TicketPage['report']>;
 export type CorrectionPreview = components['schemas']['AdminTicketCorrectionDto_Output'];
 export type TicketOrder = NonNullable<TicketPage['order']>;
 export type MoneyPreview = components['schemas']['AdminTicketMoneyPreviewDto_Output'];
@@ -60,6 +61,8 @@ export const slaKindKeys = {
 export const ticketSourceKeys = {
   manual: 'tickets.source.manual',
   pickup_dispute: 'tickets.source.pickupDispute',
+  customer_report: 'tickets.source.customerReport',
+  price_report: 'tickets.source.priceReport',
 } as const;
 export type TicketSource = keyof typeof ticketSourceKeys;
 

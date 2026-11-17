@@ -35,6 +35,7 @@ import {
   type TicketOrder,
   WRONG_CHANGE_TYPE,
   type PickupDispute,
+  type TicketReport,
   receivedLinesOf,
   resolutionChoices,
   resolutionKeys,
@@ -194,6 +195,7 @@ function TicketDetail({ ticket, city }: { ticket: TicketPageData; city: City }) 
       {ticket.pickupDispute && (
         <PickupDisputeFacts dispute={ticket.pickupDispute} timeZone={city.timeZone} />
       )}
+      {ticket.report && <TicketReportFacts report={ticket.report} />}
       {ticket.order && <TicketOrderFacts order={ticket.order} />}
       {ticket.redeliveries.length > 0 && (
         <section>
@@ -897,5 +899,60 @@ function CloseTicket({ ticketId, cityId }: { ticketId: string; cityId: string })
       {close.isError && <p role="alert">{t('common.failed')}</p>}
       {result?.status === 'refused' && <p role="alert">{t(resolveRefusalKeys[result.refusal])}</p>}
     </form>
+  );
+}
+
+// AP §9.9.3 «photos and the customer's note» (slice 2.24a): what the customer
+// app sent: the items, a price report's item and shop price, and the photos,
+// whose signed links work for 10 minutes.
+function TicketReportFacts({ report }: { report: TicketReport }) {
+  const { t } = useTranslation();
+  return (
+    <section>
+      <h2>{t('tickets.report.heading')}</h2>
+      <dl>
+        {report.lines.length > 0 && (
+          <>
+            <dt>{t('tickets.report.items')}</dt>
+            <dd>
+              <ul>
+                {report.lines.map((line) => (
+                  <li key={line.position}>
+                    {t('tickets.report.line', { name: line.name, quantity: line.quantity })}
+                  </li>
+                ))}
+              </ul>
+            </dd>
+          </>
+        )}
+        {report.item && (
+          <>
+            <dt>{t('tickets.report.item')}</dt>
+            <dd>{report.item.name}</dd>
+          </>
+        )}
+        {report.shopPrice && (
+          <>
+            <dt>{t('tickets.report.shopPrice')}</dt>
+            <dd>{formatMoney(report.shopPrice)}</dd>
+          </>
+        )}
+      </dl>
+      {report.photoUrls.length > 0 && (
+        <>
+          <h3>{t('tickets.report.photos')}</h3>
+          <ul>
+            {report.photoUrls.map((url, index) => (
+              <li key={url}>
+                <a href={url} target="_blank" rel="noreferrer">
+                  <img src={url} alt={t('tickets.report.photo', { number: index + 1 })} />
+                </a>
+              </li>
+            ))}
+          </ul>
+          <p>{t('tickets.report.photosExpire')}</p>
+        </>
+      )}
+    </section>
   );
 }
