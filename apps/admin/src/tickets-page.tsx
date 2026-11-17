@@ -28,6 +28,7 @@ import {
   ticketTypesQuery,
   useFindParties,
   useOpenTicket,
+  PICKUP_DISPUTE,
   PRICE_DIFFERENCE,
 } from './tickets.js';
 
@@ -70,6 +71,11 @@ export function TicketsPage() {
         (each, index, list) => list.findIndex((other) => other.code === each.code) === index,
       )
     : [];
+  // «خلاف على دفعة الاستلام» is opened by the restaurant's dispute only, so
+  // it is not among the types to open, but the list filters by it.
+  const filterTypes = types.data
+    ? [...allTypes, { code: PICKUP_DISPUTE, label: t('tickets.source.pickupDispute') }]
+    : [];
   return (
     <main>
       <h1>{t('tickets.title')}</h1>
@@ -102,7 +108,7 @@ export function TicketsPage() {
             onChange={(event) => setFilters({ ...filters, typeCode: event.target.value })}
           >
             <option value="">{t('tickets.all')}</option>
-            {allTypes.map((type) => (
+            {filterTypes.map((type) => (
               <option key={type.code} value={type.code}>
                 {type.label}
               </option>

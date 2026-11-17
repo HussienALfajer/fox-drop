@@ -1126,7 +1126,7 @@ describe("the pickup dispute's ticket (AP §9.9.1, §9.9.3; slice 2.23b)", () =>
       });
     const corrected = {
       resolution: 'accounts_corrected',
-      responsible: null,
+      responsible: 'captain',
       message: 'صحّحنا الفرق في حسابكم',
       receivedLines: TRY('11650'),
     };
@@ -1178,7 +1178,7 @@ describe("the pickup dispute's ticket (AP §9.9.1, §9.9.3; slice 2.23b)", () =>
       urgent: false,
       resolution: {
         code: 'accounts_corrected',
-        responsible: null,
+        responsible: 'captain',
         message: 'صحّحنا الفرق في حسابكم',
         correctedLines: TRY('11650'),
       },
@@ -1216,5 +1216,89 @@ describe("the pickup dispute's ticket (AP §9.9.1, §9.9.3; slice 2.23b)", () =>
     expect(again.json().error).toBe('ticket_not_open');
 
     await pickupCurrencies([]);
+  });
+});
+
+describe("resolving a pickup dispute's ticket (AP §9.9.3; slice 2.23b)", () => {
+  async function disputed(lines: { currency: string; amount: string }[], received: object[]) {
+    const at = await captainAtRestaurant();
+    expect((await at.requestPickup(lines)).statusCode).toBe(200);
+    expect((await at.restaurant('confirm')).statusCode).toBe(200);
+    expect((await at.restaurant('dispute', { receivedLines: received })).statusCode).toBe(200);
+    const ops = await admin(['OPS']);
+    const ticket = (await ops.get(`/v1/admin/tickets?cityId=${azaz}&source=pickup_dispute`))
+      .json()
+      .tickets.find((each: { orderId: string }) => each.orderId === at.order.id);
+    return { at, ops, ticket };
+  }
+  const post = (who: { cookies: Record<string, string> }, url: string, payload: object) =>
+    app.inject({
+      method: 'POST',
+      url,
+      cookies: who.cookies,
+      payload: { cityId: azaz, ...payload },
+    });
+
+  it('«الدفعة صحيحة» posts nothing and tells the restaurant; SUP cannot close it', async () => {
+    const { at, ticket } = await disputed(TRY('24000'), TRY('23000'));
+    const sup = await admin(['SUP']);
+    const closing = await post(sup, `/v1/admin/tickets/${ticket.id}/close`, { reason: 'مكررة' });
+    expect(closing.statusCode).toBe(403);
+    expect(closing.json().error).toBe('forbidden');
+    const custodyBefore = await custody(at.captain.captainId);
+    const clearingBefore = await clearing();
+    const finance = await admin(['FIN']);
+    const resolved = await post(finance, `/v1/admin/tickets/${ticket.id}/resolve`, {
+      resolution: 'payment_correct',
+      responsible: 'restaurant',
+      message: 'المبلغ المسجّل هو ما دُفع لكم',
+      receivedLines: null,
+    });
+    expect(resolved.statusCode).toBe(200);
+    expect(resolved.json()).toMatchObject({
+      status: 'resolved',
+      resolution: { code: 'payment_correct', responsible: 'restaurant', correctedLines: null },
+    });
+    expect(await custody(at.captain.captainId)).toBe(custodyBefore);
+    expect(await clearing()).toBe(clearingBefore);
+    const pushes = await sql.query(
+      'SELECT template_key FROM notifications.push_messages WHERE source = $1',
+      [`support:ticket_resolved:${ticket.id}`],
+    );
+    expect(pushes.rows).toEqual([{ template_key: 'merchant.ticket_resolved' }]);
+    const late = await post(finance, `/v1/admin/tickets/${ticket.id}/correction-preview`, {
+      receivedLines: TRY('23000'),
+    });
+    expect(late.statusCode).toBe(409);
+    expect(late.json().error).toBe('ticket_not_open');
+  });
+
+  it('debits the restaurant what it received beyond the record, and pays the captain back', async () => {
+    const { at, ticket } = await disputed(TRY('24000'), TRY('24500'));
+    const ledger = app.get(LedgerService);
+    const merchantAccount = await ledger.openAccount({
+      cityId: azaz,
+      purpose: 'merchant.account',
+      ownerId: restaurant,
+      currency: 'TRY',
+    });
+    const [owedBefore, custodyBefore, clearingBefore] = [
+      (await ledger.balance(merchantAccount)).amount,
+      await custody(at.captain.captainId),
+      await clearing(),
+    ];
+    const ops = await admin(['OPS']);
+    const resolved = await post(ops, `/v1/admin/tickets/${ticket.id}/resolve`, {
+      resolution: 'accounts_corrected',
+      responsible: 'captain',
+      message: 'صحّحنا الفرق في حسابكم',
+      receivedLines: TRY('24500'),
+    });
+    expect(resolved.statusCode).toBe(200);
+    // −5 TRY on the captain's custody (the desk pays it back); a 5 TRY debit
+    // on the restaurant (its balance from its side: − it owes).
+    expect((await custody(at.captain.captainId)) - custodyBefore).toBe(-500n);
+    expect((await ledger.balance(merchantAccount)).amount - owedBefore).toBe(-500n);
+    expect(await clearing()).toBe(clearingBefore);
   });
 });

@@ -130,8 +130,9 @@ export function resolutionChoices(kind: TicketKind): TicketResolution[] {
   }
 }
 
-// The responsible party is asked for a general ticket only (AP §9.9.3).
-export const needsResponsible = (kind: TicketKind): boolean => kind === 'general';
+// AP §9.9.3: the responsible party is asked for every ticket but a price
+// difference.
+export const needsResponsible = (kind: TicketKind): boolean => kind !== 'price_difference';
 
 // Who may resolve the ticket (AP §6.3): a pickup dispute with its own
 // permission, every other with support.manage.
@@ -142,6 +143,9 @@ export function canResolve(
   if (!isOpenTicket(ticket.status)) return false;
   return can(session, ticket.kind === 'pickup_dispute' ? RESOLVE_PICKUP_DISPUTE : SUPPORT_MANAGE);
 }
+
+// «إغلاق»: whoever may resolve the ticket (AP §6.3).
+export const canCloseTicket = canResolve;
 
 // «تصحيح في الحسابات»: the amounts typed per currency in major units, as
 // lines in minor units; an empty field or a zero is left out; null when one
@@ -290,6 +294,7 @@ export interface OpenTicketBody {
 // «سعر مختلف عن المحل» (owner decision 2026-11-17): a customer's, naming the
 // restaurant.
 export const PRICE_DIFFERENCE = 'price_difference';
+export const PICKUP_DISPUTE = 'pickup_dispute';
 
 function refusalOf<T extends string>(error: unknown, known: readonly string[]): T | null {
   const refusal = (error as { error?: unknown } | undefined)?.error;

@@ -106,7 +106,7 @@ export class PickupCorrections implements PickupDisputes, OnModuleInit {
     tx: Tx,
     input: { disputeId: string; received: MoneyLine[]; actor: LedgerActor; now: Date },
   ): Promise<string[]> {
-    const { dispute, correction } = await this.correction(input.disputeId, input.received);
+    const { dispute, correction } = await this.correction(input.disputeId, input.received, tx);
     const ids = await postOrderJournals(
       tx,
       this.ledger,
@@ -154,8 +154,12 @@ export class PickupCorrections implements PickupDisputes, OnModuleInit {
     return ids;
   }
 
-  private async correction(disputeId: string, received: MoneyLine[]) {
-    const dispute = await this.read(disputeId);
+  private async correction(
+    disputeId: string,
+    received: MoneyLine[],
+    executor: Pick<Database['db'], 'select'> = this.database.db,
+  ) {
+    const dispute = await this.read(disputeId, executor);
     const refusal = checkLines(
       dispute.snapshot,
       received,
@@ -178,9 +182,12 @@ export class PickupCorrections implements PickupDisputes, OnModuleInit {
 
   // The dispute, the confirmed request it is about (its booked lines and its
   // captain, who paid) and the order's rates. Nothing of it changes after
-  // the pickup, so it is read through the pool.
-  private async read(disputeId: string) {
-    const [row] = await this.database.db
+  // the pickup; posting reads it in the resolution's transaction.
+  private async read(
+    disputeId: string,
+    executor: Pick<Database['db'], 'select'> = this.database.db,
+  ) {
+    const [row] = await executor
       .select({
         orderId: pickupDisputes.orderId,
         placedAt: pickupDisputes.orderPlacedAt,
@@ -198,7 +205,7 @@ export class PickupCorrections implements PickupDisputes, OnModuleInit {
       .innerJoin(pickupRequests, eq(pickupRequests.id, pickupDisputes.pickupRequestId))
       .where(eq(pickupDisputes.id, disputeId));
     if (!row) throw new Error(`pickup dispute ${disputeId} not found`);
-    const [order] = await this.database.db
+    const [order] = await executor
       .select({
         number: orders.number,
         restaurantId: orders.restaurantId,

@@ -71,7 +71,7 @@ describe('the resolution form', () => {
     ]);
     expect(needsResponsible('general')).toBe(true);
     expect(needsResponsible('price_difference')).toBe(false);
-    expect(needsResponsible('pickup_dispute')).toBe(false);
+    expect(needsResponsible('pickup_dispute')).toBe(true);
   });
 
   it('lets support.manage resolve a ticket and support.resolve_pickup_dispute a dispute', () => {

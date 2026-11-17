@@ -82,10 +82,9 @@ export type ResponsibleParty = (typeof responsibleParties)[number];
 
 export type ResolutionProblem = 'invalid_resolution' | 'responsible_required' | 'lines_required';
 
-// The responsible party is required for a general ticket (AP §9.9.3). A
-// price difference needs none, and a pickup dispute's resolution names who
-// bears what (decided by us), so neither takes one. The lines the
-// restaurant received go with «تصحيح في الحسابات» only.
+// AP §9.9.3: the responsible party is required to resolve, except for a
+// price difference, which takes none. The lines the restaurant received go
+// with «تصحيح في الحسابات» only.
 export function resolutionProblem(input: {
   kind: TicketKind;
   resolution: TicketResolution;
@@ -93,10 +92,10 @@ export function resolutionProblem(input: {
   lines: readonly unknown[] | null;
 }): ResolutionProblem | null {
   if (!RESOLUTIONS[input.kind].includes(input.resolution)) return 'invalid_resolution';
-  if (input.kind === 'general') {
-    if (input.responsible === null) return 'responsible_required';
-  } else if (input.responsible !== null) {
-    return 'invalid_resolution';
+  if (input.kind === 'price_difference') {
+    if (input.responsible !== null) return 'invalid_resolution';
+  } else if (input.responsible === null) {
+    return 'responsible_required';
   }
   if (input.resolution === 'accounts_corrected') {
     return input.lines === null || input.lines.length === 0 ? 'lines_required' : null;
@@ -108,6 +107,12 @@ export function resolutionProblem(input: {
 // resolution, message or entries.
 export function canClose(status: TicketStatus): boolean {
   return isOpen(status);
+}
+
+// AP §6.3: who may resolve or close a ticket of this kind: a pickup dispute
+// only OWN, OPS and FIN.
+export function managingPermission(kind: TicketKind): string {
+  return kind === 'pickup_dispute' ? 'support.resolve_pickup_dispute' : 'support.manage';
 }
 
 // «عاجلة» while the ticket is open and its order active; «عادية» otherwise

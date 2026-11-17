@@ -13,6 +13,7 @@ import {
   ticketPartyKeys,
   ticketTypesQuery,
   useOpenOrderTicket,
+  PRICE_DIFFERENCE,
 } from './tickets.js';
 
 const signedIn = getRouteApi('/signed-in');
@@ -92,11 +93,14 @@ function OpenOrderTicket({ orderId, hasCaptain }: { orderId: string; hasCaptain:
           {t('tickets.column.type')}
           <select value={typeCode} onChange={(event) => setTypeCode(event.target.value)}>
             <option value="">{t('tickets.choose')}</option>
-            {types.data?.[party].map((type) => (
-              <option key={type.code} value={type.code}>
-                {type.label}
-              </option>
-            ))}
+            {/* «سعر مختلف عن المحل» names a restaurant, never an order. */}
+            {types.data?.[party]
+              .filter((type) => type.code !== PRICE_DIFFERENCE)
+              .map((type) => (
+                <option key={type.code} value={type.code}>
+                  {type.label}
+                </option>
+              ))}
           </select>
         </label>
         <label>

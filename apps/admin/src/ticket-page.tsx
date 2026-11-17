@@ -11,6 +11,7 @@ import { SlaTimer } from './tickets-page.js';
 import {
   cannedRepliesQuery,
   canManageTickets,
+  canCloseTicket,
   canResolve,
   confirmedByKeys,
   correctionPreviewQuery,
@@ -210,7 +211,7 @@ function TicketDetail({ ticket, city }: { ticket: TicketPageData; city: City }) 
       )}
       {manage && <TicketActions ticket={ticket} cityId={city.id} />}
       {canResolve(session, ticket) && <ResolveTicket ticket={ticket} cityId={city.id} />}
-      {manage && <CloseTicket ticketId={ticket.id} cityId={city.id} />}
+      {canCloseTicket(session, ticket) && <CloseTicket ticketId={ticket.id} cityId={city.id} />}
       <section>
         <h2>{t('tickets.notes')}</h2>
         {ticket.notes.length === 0 ? (

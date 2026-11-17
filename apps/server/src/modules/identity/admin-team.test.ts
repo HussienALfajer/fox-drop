@@ -427,7 +427,9 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/admin/tickets/{ticketId}/resolve': {
     anyOf: ['support.manage', 'support.resolve_pickup_dispute'],
   },
-  'POST /v1/admin/tickets/{ticketId}/close': 'support.manage',
+  'POST /v1/admin/tickets/{ticketId}/close': {
+    anyOf: ['support.manage', 'support.resolve_pickup_dispute'],
+  },
   'GET /v1/admin/orders/{orderId}/tickets': 'support.read',
   'POST /v1/admin/orders/{orderId}/tickets': 'support.manage',
   'POST /v1/admin/cash-desk/captains/search': 'cash_desk.record',

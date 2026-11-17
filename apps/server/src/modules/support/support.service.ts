@@ -30,6 +30,7 @@ import {
   canSetStatus,
   FIXED_TYPE_LABELS,
   isUrgent,
+  managingPermission,
   PICKUP_DISPUTE_TYPE,
   PRICE_DIFFERENCE_TYPE,
   resolutionProblem,
@@ -802,7 +803,7 @@ export class SupportService {
   ): Promise<TicketPage> {
     const found = await this.row(cityId, id);
     const kind = ticketKind(found.typeCode);
-    const needed = kind === 'pickup_dispute' ? 'support.resolve_pickup_dispute' : 'support.manage';
+    const needed = managingPermission(kind);
     if (!admin.permissions.includes(needed)) {
       throw new TicketRefusedError('forbidden', `resolving this ticket needs ${needed}`);
     }
@@ -892,7 +893,8 @@ export class SupportService {
   }
 
   // «إغلاق» (owner decision 2026-11-17): an open ticket ends without a
-  // resolution, with an internal reason; no message, no entries. A repeat
+  // resolution, with an internal reason; no message, no entries. A pickup
+  // dispute is closed by whoever may resolve it (403 forbidden). A repeat
   // is 409 ticket_not_open, so no key. 404 unknown_ticket.
   async close(
     cityId: string,
@@ -902,6 +904,10 @@ export class SupportService {
     now: Date,
   ): Promise<TicketPage> {
     const text = reason.trim();
+    const needed = managingPermission(ticketKind((await this.row(cityId, id)).typeCode));
+    if (!admin.permissions.includes(needed)) {
+      throw new TicketRefusedError('forbidden', `closing this ticket needs ${needed}`);
+    }
     await this.database.db.transaction(async (tx) => {
       const before = await lockTicket(tx, cityId, id);
       if (!canClose(before.status)) {
@@ -1047,7 +1053,11 @@ export class SupportService {
         stoppedAt: row.slaStoppedAt,
       },
       openedBy: row.openedBy,
-      openedByName: admins.get(row.openedBy) ?? null,
+      // A pickup dispute's ticket is opened by the restaurant (its party).
+      openedByName:
+        row.source === 'pickup_dispute'
+          ? (partyName(row) ?? null)
+          : (admins.get(row.openedBy) ?? null),
       openedAt: row.openedAt,
       updatedAt: row.updatedAt,
       resolution:

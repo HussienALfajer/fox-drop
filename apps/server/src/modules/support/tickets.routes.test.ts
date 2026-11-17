@@ -521,6 +521,40 @@ describe('resolving and closing', () => {
     expect(audit.rows).toEqual([{ reason: resolution.message }]);
   });
 
+  it('answers 404 for a ticket of another city and refuses the preview of a general ticket', async () => {
+    const own = await admin(['OWN']);
+    const ticket = await openOnOrder(order(true), 'customer', own.ticketAdmin);
+    const elsewhere = randomUUID();
+    const resolution = {
+      resolution: 'none_explained',
+      responsible: 'platform',
+      message: 'تمت المراجعة',
+      receivedLines: null,
+    };
+    for (const [url, body] of [
+      [`/v1/admin/tickets/${ticket.id}/resolve`, resolution],
+      [`/v1/admin/tickets/${ticket.id}/close`, { reason: 'مكررة' }],
+      [
+        `/v1/admin/tickets/${ticket.id}/correction-preview`,
+        { receivedLines: [{ currency: 'TRY', amount: '100' }] },
+      ],
+    ] as const) {
+      const answer = await own.post(url, { cityId: elsewhere, ...body }, null);
+      expect(answer.statusCode).toBe(404);
+      expect(answer.json().error).toBe('unknown_ticket');
+    }
+    const preview = await own.post(
+      `/v1/admin/tickets/${ticket.id}/correction-preview`,
+      { cityId: azaz, receivedLines: [{ currency: 'TRY', amount: '100' }] },
+      null,
+    );
+    expect(preview.statusCode).toBe(409);
+    expect(preview.json().error).toBe('not_pickup_dispute');
+    expect((await own.get(`/v1/admin/tickets/${ticket.id}?cityId=${azaz}`)).json().status).toBe(
+      'new',
+    );
+  });
+
   it("sends a captain's message to the captain", async () => {
     const sup = await admin(['SUP']);
     const captainId = await captain();

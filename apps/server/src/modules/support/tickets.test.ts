@@ -59,7 +59,7 @@ describe('the resolution', () => {
     ]);
   });
 
-  it('requires the responsible party except for a price difference and a pickup dispute', () => {
+  it('requires the responsible party except for a price difference (AP §9.9.3)', () => {
     const lines = null;
     expect(
       resolutionProblem({
@@ -94,10 +94,18 @@ describe('the resolution', () => {
       resolutionProblem({
         kind: 'pickup_dispute',
         resolution: 'captain_paid',
+        responsible: null,
+        lines,
+      }),
+    ).toBe('responsible_required');
+    expect(
+      resolutionProblem({
+        kind: 'pickup_dispute',
+        resolution: 'captain_paid',
         responsible: 'captain',
         lines,
       }),
-    ).toBe('invalid_resolution');
+    ).toBeNull();
   });
 
   it("refuses another kind's resolution", () => {
@@ -133,7 +141,7 @@ describe('the resolution', () => {
       resolutionProblem({
         kind: 'pickup_dispute',
         resolution: 'accounts_corrected',
-        responsible: null,
+        responsible: 'captain',
         lines,
       }),
     ).toBeNull();
@@ -141,7 +149,7 @@ describe('the resolution', () => {
       resolutionProblem({
         kind: 'pickup_dispute',
         resolution: 'accounts_corrected',
-        responsible: null,
+        responsible: 'captain',
         lines: null,
       }),
     ).toBe('lines_required');
@@ -149,7 +157,7 @@ describe('the resolution', () => {
       resolutionProblem({
         kind: 'pickup_dispute',
         resolution: 'payment_correct',
-        responsible: null,
+        responsible: 'captain',
         lines,
       }),
     ).toBe('invalid_resolution');

@@ -362,9 +362,10 @@ export class AdminTicketsController {
   }
 
   // «إغلاق» (owner decision 2026-11-17): «مغلقة» without a resolution, with
-  // an internal reason. 404 unknown_ticket; 409 ticket_not_open.
+  // an internal reason; a pickup dispute needs support.resolve_pickup_dispute
+  // (403 forbidden). 404 unknown_ticket; 409 ticket_not_open.
   @Post(':ticketId/close')
-  @RequirePermission('support.manage')
+  @RequireAnyPermission('support.manage', 'support.resolve_pickup_dispute')
   @HttpCode(200)
   @ZodResponse({ status: 200, type: AdminTicketPageDto })
   async close(
