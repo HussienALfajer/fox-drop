@@ -694,6 +694,13 @@
       "when": 1794934131343,
       "tag": "0098_customers_blocks",
       "breakpoints": true
+    },
+    {
+      "idx": 99,
+      "version": "7",
+      "when": 1794934733135,
+      "tag": "0099_cashdesk_customer_dues",
+      "breakpoints": true
     }
   ]
 }

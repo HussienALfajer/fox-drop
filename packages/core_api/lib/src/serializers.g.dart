@@ -123,6 +123,12 @@ Serializers _$serializers =
           ..add(AdminCustomerDtoOutputLateCancels.serializer)
           ..add(AdminCustomerDtoOutputReviewStop.serializer)
           ..add(AdminCustomerDtoOutputStatusEnum.serializer)
+          ..add(AdminCustomerDuesPayDto.serializer)
+          ..add(AdminCustomerDuesPreviewDtoOutput.serializer)
+          ..add(AdminCustomerDuesPreviewRequestDto.serializer)
+          ..add(AdminCustomerReceiptDtoOutput.serializer)
+          ..add(AdminCustomerReceiptsDtoOutput.serializer)
+          ..add(AdminCustomerReceiptsDtoOutputReceiptsInner.serializer)
           ..add(AdminCustomerSearchDto.serializer)
           ..add(AdminCustomersFoundDtoOutput.serializer)
           ..add(AdminCustomersFoundDtoOutputCustomersInner.serializer)
@@ -1420,6 +1426,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminCustomerReceiptsDtoOutputReceiptsInner),
+            ]),
+            () => ListBuilder<AdminCustomerReceiptsDtoOutputReceiptsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminCustomersFoundDtoOutputCustomersInner),
             ]),
             () => ListBuilder<AdminCustomersFoundDtoOutputCustomersInner>(),
@@ -1641,6 +1653,12 @@ Serializers _$serializers =
               const FullType(AdminNotificationTextsDtoOutputTemplatesInner),
             ]),
             () => ListBuilder<AdminNotificationTextsDtoOutputTemplatesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminOpenDrawerSessionDtoFloatsInner),
+            ]),
+            () => ListBuilder<AdminOpenDrawerSessionDtoFloatsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -2147,9 +2165,38 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminRestaurantReceiptDtoOutputLinesInner),
+            ]),
+            () => ListBuilder<AdminRestaurantReceiptDtoOutputLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminRestaurantReceiptDtoOutputLinesInner),
+            ]),
+            () => ListBuilder<AdminRestaurantReceiptDtoOutputLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminRestaurantSettleDtoLinesInner),
             ]),
             () => ListBuilder<AdminRestaurantSettleDtoLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminRestaurantSettleDtoLinesInner),
+            ]),
+            () => ListBuilder<AdminRestaurantSettleDtoLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminRestaurantSettlementPreviewDtoOutputLinesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminRestaurantSettlementPreviewDtoOutputLinesInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

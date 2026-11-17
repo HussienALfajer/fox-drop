@@ -4196,6 +4196,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/cash-desk/customer-dues/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCustomerDuesPreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cash-desk/customer-dues": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCustomerDuesPay"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cash-desk/customer-receipts/{receiptId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCustomerDuesReceipt"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cash-desk/customers/{customerId}/receipts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCustomerDuesReceipts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/exchange-rates": {
         parameters: {
             query?: never;
@@ -13488,6 +13552,120 @@ export interface components {
                 reason: string | null;
             }[];
         };
+        AdminCustomerDuesPreviewRequestDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** Format: uuid */
+            customerId: string;
+            /** @description The cash per currency; none to read the dues alone. */
+            lines: {
+                currency: string;
+                amount: string;
+            }[];
+        };
+        AdminCustomerDuesPreviewDto_Output: {
+            /** Format: uuid */
+            customerId: string;
+            customerName: string;
+            /** Format: uuid */
+            cityId: string;
+            currency: string;
+            /** @description + the customer owes; 0 or less when nothing is owed. */
+            due: string;
+            lines: {
+                currency: string;
+                amount: string;
+                /** @description The value in the base at the current rate. */
+                base: string;
+                /** @description The rate version of each currency but the base, as the quote gave it. */
+                rates: {
+                    currency: string;
+                    /** Format: uuid */
+                    rateVersionId: string;
+                }[];
+                unit: {
+                    from: string;
+                    to: string;
+                    value: string;
+                } | null;
+            }[];
+            total: string;
+            /** @description What stays owed after the payment. */
+            remaining: string;
+        };
+        AdminCustomerDuesPayDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** Format: uuid */
+            customerId: string;
+            /** @description The dues the screen showed. */
+            due: string;
+            lines: {
+                currency: string;
+                amount: string;
+                base: string;
+                /** @description The rate version of each currency but the base, as the quote gave it. */
+                rates: {
+                    currency: string;
+                    /** Format: uuid */
+                    rateVersionId: string;
+                }[];
+            }[];
+        };
+        AdminCustomerReceiptDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            cityId: string;
+            number: string;
+            /** Format: uuid */
+            sessionId: string;
+            /** Format: uuid */
+            cashierId: string;
+            cashierName: string | null;
+            /** Format: uuid */
+            customerId: string;
+            customerName: string;
+            currency: string;
+            dueBefore: string;
+            total: string;
+            dueAfter: string;
+            /** Format: date-time */
+            createdAt: string;
+            lines: {
+                currency: string;
+                amount: string;
+                base: string;
+            }[];
+        };
+        AdminCustomerReceiptsDto_Output: {
+            receipts: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                cityId: string;
+                number: string;
+                /** Format: uuid */
+                sessionId: string;
+                /** Format: uuid */
+                cashierId: string;
+                cashierName: string | null;
+                /** Format: uuid */
+                customerId: string;
+                customerName: string;
+                currency: string;
+                dueBefore: string;
+                total: string;
+                dueAfter: string;
+                /** Format: date-time */
+                createdAt: string;
+                lines: {
+                    currency: string;
+                    amount: string;
+                    base: string;
+                }[];
+            }[];
+        };
         AdminExchangeRatesDto_Output: {
             /** @description Null while the city has no base currency. */
             baseCurrency: string | null;
@@ -21194,6 +21372,101 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminMerchantStatementDto_Output"];
+                };
+            };
+        };
+    };
+    adminCustomerDuesPreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCustomerDuesPreviewRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCustomerDuesPreviewDto_Output"];
+                };
+            };
+        };
+    };
+    adminCustomerDuesPay: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCustomerDuesPayDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCustomerReceiptDto_Output"];
+                };
+            };
+        };
+    };
+    adminCustomerDuesReceipt: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                receiptId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCustomerReceiptDto_Output"];
+                };
+            };
+        };
+    };
+    adminCustomerDuesReceipts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                customerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCustomerReceiptsDto_Output"];
                 };
             };
         };

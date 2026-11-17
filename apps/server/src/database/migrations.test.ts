@@ -982,6 +982,26 @@ describe('the cash desk tables (AP §9.10.3, §4.8)', () => {
         ),
       ),
     ).rejects.toThrow(/receipts_type_values/);
+    // A customer's dues payment (slice 2.25a) names the customer alone.
+    const customer = 'customer_id, customer_name, due_before, due_currency';
+    const duesReceipt = (sequence: number, columns: string, values: string) =>
+      restaurantReceipt(sequence, columns, values).replace(
+        'merchant_settlement',
+        'customer_dues_payment',
+      );
+    await appQuery(duesReceipt(5, customer, `'${randomUUID()}', 'زبون', 5000, 'TRY'`));
+    await expect(
+      appQuery(duesReceipt(6, restaurant, `'${randomUUID()}', 'مطعم', 6000, 'TRY'`)),
+    ).rejects.toThrow(/receipts_party/);
+    await expect(
+      appQuery(
+        restaurantReceipt(
+          7,
+          `customer_id, customer_name, ${restaurant}`,
+          `'${randomUUID()}', 'زبون', '${randomUUID()}', 'مطعم', 6000, 'TRY'`,
+        ),
+      ),
+    ).rejects.toThrow(/receipts_party/);
     const line = (values: string) =>
       `INSERT INTO cashdesk.receipt_lines (receipt_id, currency, expected, base_amount, amount, journal_id) VALUES ('${issued[0].id}', ${values}, '${randomUUID()}')`;
     await appQuery(line("'USD', NULL, 3000, 2"));

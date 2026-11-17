@@ -84,6 +84,12 @@ import 'package:core_api/src/model/admin_customer_dto_output_blocks_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_dues.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_late_cancels.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_review_stop.dart';
+import 'package:core_api/src/model/admin_customer_dues_pay_dto.dart';
+import 'package:core_api/src/model/admin_customer_dues_preview_dto_output.dart';
+import 'package:core_api/src/model/admin_customer_dues_preview_request_dto.dart';
+import 'package:core_api/src/model/admin_customer_receipt_dto_output.dart';
+import 'package:core_api/src/model/admin_customer_receipts_dto_output.dart';
+import 'package:core_api/src/model/admin_customer_receipts_dto_output_receipts_inner.dart';
 import 'package:core_api/src/model/admin_customer_search_dto.dart';
 import 'package:core_api/src/model/admin_customers_found_dto_output.dart';
 import 'package:core_api/src/model/admin_customers_found_dto_output_customers_inner.dart';
@@ -844,6 +850,12 @@ part 'serializers.g.dart';
   AdminCustomerDtoOutputDues,
   AdminCustomerDtoOutputLateCancels,
   AdminCustomerDtoOutputReviewStop,
+  AdminCustomerDuesPayDto,
+  AdminCustomerDuesPreviewDtoOutput,
+  AdminCustomerDuesPreviewRequestDto,
+  AdminCustomerReceiptDtoOutput,
+  AdminCustomerReceiptsDtoOutput,
+  AdminCustomerReceiptsDtoOutputReceiptsInner,
   AdminCustomerSearchDto,
   AdminCustomersFoundDtoOutput,
   AdminCustomersFoundDtoOutputCustomersInner,
@@ -1975,6 +1987,12 @@ Serializers serializers =
               FullType(AdminOrderDtoOutputOrderOutcomeHistoryInner),
             ]),
             () => ListBuilder<AdminOrderDtoOutputOrderOutcomeHistoryInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCustomerReceiptsDtoOutputReceiptsInner),
+            ]),
+            () => ListBuilder<AdminCustomerReceiptsDtoOutputReceiptsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

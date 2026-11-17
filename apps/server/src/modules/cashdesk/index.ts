@@ -13,6 +13,7 @@ import { NotificationsModule } from '../notifications/index.js';
 import { OrderingModule } from '../ordering/index.js';
 import { SettingsModule } from '../settings/index.js';
 import { AdminCashDeskController } from './admin-cash-desk.controller.js';
+import { AdminCustomerDuesController } from './admin-customer-dues.controller.js';
 import { AdminExchangeRatesController } from './admin-exchange-rates.controller.js';
 import { AdminRestaurantSettlementController } from './admin-restaurant-settlement.controller.js';
 import { CaptainCustodyController } from './captain-custody.controller.js';
@@ -20,6 +21,7 @@ import { CaptainEarningsController } from './captain-earnings.controller.js';
 import { CaptainStatementsController } from './captain-statements.controller.js';
 import { AdminManualEntriesController } from './admin-manual-entries.controller.js';
 import { CashDeskService } from './cashdesk.service.js';
+import { CustomerDuesService } from './customer-dues.service.js';
 import { ManualEntriesService } from './manual-entries.service.js';
 import { EarningsService } from './earnings.service.js';
 import { MerchantAccountController } from './merchant-account.controller.js';
@@ -54,6 +56,7 @@ import { SettlementService } from './settlement.service.js';
     AdminCashDeskController,
     AdminManualEntriesController,
     AdminRestaurantSettlementController,
+    AdminCustomerDuesController,
     AdminExchangeRatesController,
     CaptainCustodyController,
     CaptainEarningsController,
@@ -70,6 +73,7 @@ import { SettlementService } from './settlement.service.js';
     MerchantStatementsService,
     MerchantSettlementService,
     ManualEntriesService,
+    CustomerDuesService,
   ],
   exports: [CashDeskService, SettlementService],
 })

@@ -141,6 +141,10 @@ export const journalRules = {
     account: 'customer.dues',
     counters: ['platform.order_clearing', 'platform.revenue_delivery', 'platform.adjustments'],
   },
+  // AP §8.8 «تسجيل دفع المستحق» at the desk (slice 2.25a): the drawer's cash
+  // in any accepted currency, through platform.fx_rounding for another than
+  // the base.
+  'dues.payment': { account: 'customer.dues', ...deskInAnyCurrency },
   // AP §8.8 ±, §9.10.7 (owner decision 2026-11-16, slice 2.20c).
   'dues.adjustment': { account: 'customer.dues', ...adjustment },
   'platform.revenue_delivery': { account: 'platform.revenue_delivery', counters: orderCounter },

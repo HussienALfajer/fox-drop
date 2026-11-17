@@ -130,6 +130,9 @@ export const receiptTypes = [
   // the platform owed it.
   'merchant_settlement',
   'merchant_payout',
+  // «تسجيل دفع المستحق» (AP §8.8, §9.8, slice 2.25a): what a customer paid
+  // against their dues (dues.payment).
+  'customer_dues_payment',
 ] as const;
 
 // A desk receipt (AP §9.10.3), never changed: the application role may only
@@ -155,7 +158,10 @@ export const receipts = cashdesk.table(
     captainName: text('captain_name'),
     restaurantId: uuid('restaurant_id'),
     restaurantName: text('restaurant_name'),
-    // A restaurant's receipt: what it owed before (+ it owes, − the platform
+    // A customer's receipt (slice 2.25a): the account and its name as issued.
+    customerId: uuid('customer_id'),
+    customerName: text('customer_name'),
+    // A restaurant's or a customer's receipt: what it owed before (+ it owes, − the platform
     // owes it), in the base currency of its account.
     dueBefore: bigint('due_before', { mode: 'bigint' }),
     dueCurrency: text('due_currency'),
@@ -173,6 +179,7 @@ export const receipts = cashdesk.table(
     index('receipts_session').on(table.sessionId),
     index('receipts_captain_created').on(table.captainId, table.createdAt),
     index('receipts_restaurant_created').on(table.restaurantId, table.createdAt),
+    index('receipts_customer_created').on(table.customerId, table.createdAt),
     foreignKey({
       columns: [table.sessionId],
       foreignColumns: [drawerSessions.id],
@@ -181,11 +188,11 @@ export const receipts = cashdesk.table(
     check('receipts_sequence', sql`${table.sequence} > 0`),
     check(
       'receipts_type_values',
-      sql`${table.type} IN ('captain_hand_in', 'captain_reimbursement', 'captain_payout', 'captain_earnings_collection', 'merchant_settlement', 'merchant_payout')`,
+      sql`${table.type} IN ('captain_hand_in', 'captain_reimbursement', 'captain_payout', 'captain_earnings_collection', 'merchant_settlement', 'merchant_payout', 'customer_dues_payment')`,
     ),
     check(
       'receipts_party',
-      sql`CASE WHEN ${table.type} IN ('captain_hand_in', 'captain_reimbursement', 'captain_payout', 'captain_earnings_collection') THEN ${table.captainId} IS NOT NULL AND ${table.captainName} IS NOT NULL AND ${table.restaurantId} IS NULL AND ${table.restaurantName} IS NULL AND ${table.dueBefore} IS NULL AND ${table.dueCurrency} IS NULL ELSE ${table.captainId} IS NULL AND ${table.captainName} IS NULL AND ${table.restaurantId} IS NOT NULL AND ${table.restaurantName} IS NOT NULL AND ${table.dueBefore} IS NOT NULL AND ${table.dueCurrency} IS NOT NULL END`,
+      sql`CASE WHEN ${table.type} IN ('captain_hand_in', 'captain_reimbursement', 'captain_payout', 'captain_earnings_collection') THEN ${table.captainId} IS NOT NULL AND ${table.captainName} IS NOT NULL AND ${table.restaurantId} IS NULL AND ${table.restaurantName} IS NULL AND ${table.customerId} IS NULL AND ${table.customerName} IS NULL AND ${table.dueBefore} IS NULL AND ${table.dueCurrency} IS NULL WHEN ${table.type} = 'customer_dues_payment' THEN ${table.captainId} IS NULL AND ${table.captainName} IS NULL AND ${table.restaurantId} IS NULL AND ${table.restaurantName} IS NULL AND ${table.customerId} IS NOT NULL AND ${table.customerName} IS NOT NULL AND ${table.dueBefore} IS NOT NULL AND ${table.dueCurrency} IS NOT NULL ELSE ${table.captainId} IS NULL AND ${table.captainName} IS NULL AND ${table.restaurantId} IS NOT NULL AND ${table.restaurantName} IS NOT NULL AND ${table.customerId} IS NULL AND ${table.customerName} IS NULL AND ${table.dueBefore} IS NOT NULL AND ${table.dueCurrency} IS NOT NULL END`,
     ),
     check('receipts_method_values', sql`${table.method} IN ('office', 'field')`),
     check(
