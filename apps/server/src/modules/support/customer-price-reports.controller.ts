@@ -1,12 +1,4 @@
-import {
-  BadRequestException,
-  Body,
-  HttpCode,
-  HttpStatus,
-  Param,
-  Post,
-  Req,
-} from '@nestjs/common';
+import { BadRequestException, Body, HttpCode, HttpStatus, Param, Post, Req } from '@nestjs/common';
 import type { FastifyRequest } from 'fastify';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
@@ -34,7 +26,9 @@ class CustomerPriceReportBodyDto extends createZodDto(
     photoUploadId: z
       .uuid()
       .nullable()
-      .describe("Optional, 1, such as of the shop's menu board (POST /v1/customer/uploads/report-photo)."),
+      .describe(
+        "Optional, 1, such as of the shop's menu board (POST /v1/customer/uploads/report-photo).",
+      ),
   }),
 ) {}
 

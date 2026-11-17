@@ -27,7 +27,12 @@ export const support = pgSchema('support');
 // the restaurant's dispute after the pickup, 2.24a the customer app's
 // «الإبلاغ عن مشكلة» (`customer_report`) and «أبلغ عن سعر مختلف»
 // (`price_report`).
-export const ticketSources = ['manual', 'pickup_dispute', 'customer_report', 'price_report'] as const;
+export const ticketSources = [
+  'manual',
+  'pickup_dispute',
+  'customer_report',
+  'price_report',
+] as const;
 export type TicketSource = (typeof ticketSources)[number];
 
 const inList = (values: readonly string[]) =>

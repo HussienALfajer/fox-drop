@@ -650,7 +650,12 @@ export class SupportService {
       // An app's report (slice 2.24a): what it named, set once.
       report?: Pick<
         typeof tickets.$inferInsert,
-        'reportedLines' | 'photoKeys' | 'reportedItemId' | 'reportedItemName' | 'shopPrice' | 'shopPriceCurrency'
+        | 'reportedLines'
+        | 'photoKeys'
+        | 'reportedItemId'
+        | 'reportedItemName'
+        | 'shopPrice'
+        | 'shopPriceCurrency'
       >;
     },
     timers: { firstResponseMinutes: number; resolutionHours: number },
@@ -799,7 +804,8 @@ export class SupportService {
       lines: order.lines,
       photos: report.photoUploadIds.length,
     });
-    if (problem !== null) throw new TicketRefusedError(problem, `the report is refused: ${problem}`);
+    if (problem !== null)
+      throw new TicketRefusedError(problem, `the report is refused: ${problem}`);
   }
 
   private async preparePhotos(uploadIds: string[], owner: string, now: Date): Promise<void> {
@@ -912,7 +918,8 @@ export class SupportService {
     if (replayed !== null) return answer(replayed);
     const photos = report.photoUploadId === null ? [] : [report.photoUploadId];
     const problem = priceReportProblem({ photos: photos.length, shopPrice: report.shopPrice });
-    if (problem !== null) throw new TicketRefusedError(problem, `the report is refused: ${problem}`);
+    if (problem !== null)
+      throw new TicketRefusedError(problem, `the report is refused: ${problem}`);
     const restaurant = await this.merchants.restaurant(report.restaurantId, now);
     if (restaurant === null || restaurant.accountStatus !== 'active' || !restaurant.visible) {
       throw new TicketRefusedError('unknown_restaurant', 'customers do not see the restaurant');
