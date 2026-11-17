@@ -17,7 +17,7 @@ part 'admin_order_ticket_dto_output.g.dart';
 /// Properties:
 /// * [id]
 /// * [number] - Shown as `T-{number}` (AP §4.8).
-/// * [source_] - Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem so far.
+/// * [source_] - Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem so far.
 /// * [party]
 /// * [partyId]
 /// * [partyName]
@@ -50,7 +50,7 @@ abstract class AdminOrderTicketDtoOutput
   @BuiltValueField(wireName: r'number')
   String get number;
 
-  /// Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem so far.
+  /// Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem so far.
   @BuiltValueField(wireName: r'source')
   String get source_;
 

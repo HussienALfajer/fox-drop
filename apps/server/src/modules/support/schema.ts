@@ -36,6 +36,8 @@ export const ticketSources = [
   'price_report',
   'merchant_report',
   'order_problem',
+  'captain_report',
+  'captain_problem',
 ] as const;
 export type TicketSource = (typeof ticketSources)[number];
 
@@ -186,6 +188,13 @@ export const tickets = support.table(
     check(
       'tickets_merchant_sources',
       sql`(${table.source} NOT IN ('merchant_report', 'order_problem') OR ${table.party} = 'restaurant') AND (${table.source} <> 'order_problem' OR ${table.orderId} IS NOT NULL) AND (${table.requestSubject} IS NULL OR (${table.source} = 'merchant_report' AND ${table.typeCode} = 'data_change'))`,
+    ),
+    // CA §13, §9.11 (slice 2.24c): the captain app's tickets are the
+    // captain's; «مشكلة» with a quick reason names its order. A captain's
+    // «مشكلة في مبلغ الاستلام» is a pickup dispute whose party is the captain.
+    check(
+      'tickets_captain_sources',
+      sql`(${table.source} NOT IN ('captain_report', 'captain_problem') OR ${table.party} = 'captain') AND (${table.source} <> 'captain_problem' OR ${table.orderId} IS NOT NULL) AND (${table.source} <> 'pickup_dispute' OR ${table.party} IN ('restaurant', 'captain'))`,
     ),
     check(
       'tickets_request_subject_values',

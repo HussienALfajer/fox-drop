@@ -507,7 +507,12 @@ export 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner.d
 export 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_amount.dart';
 export 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_zones_inner.dart';
 export 'package:core_api/src/model/captain_pickup_request_dto.dart';
+export 'package:core_api/src/model/captain_problem_body_dto.dart';
 export 'package:core_api/src/model/captain_refresh_dto.dart';
+export 'package:core_api/src/model/captain_report_body_dto.dart';
+export 'package:core_api/src/model/captain_report_ticket_dto_output.dart';
+export 'package:core_api/src/model/captain_report_ticket_dto_output_ticket.dart';
+export 'package:core_api/src/model/captain_reports_dto_output.dart';
 export 'package:core_api/src/model/captain_session_dto_output.dart';
 export 'package:core_api/src/model/captain_set_carried_currencies_dto.dart';
 export 'package:core_api/src/model/captain_set_max_pickup_dto.dart';

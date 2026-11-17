@@ -5738,6 +5738,170 @@
         ]
       }
     },
+    "/v1/captain/uploads/report-photo": {
+      "post": {
+        "operationId": "captainTicketsUploadPhoto",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerNewUploadDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerUploadDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
+    "/v1/captain/reports": {
+      "post": {
+        "operationId": "captainTicketsReport",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaptainReportBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainReportTicketDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      },
+      "get": {
+        "operationId": "captainReportsList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainReportsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
+    "/v1/captain/orders/{orderId}/problem": {
+      "post": {
+        "operationId": "captainTicketsProblem",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaptainProblemBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainReportTicketDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
     "/v1/admin/orders/{orderId}/resend-notification": {
       "post": {
         "operationId": "adminOrdersResendNotification",
@@ -9148,7 +9312,9 @@
                 "customer_report",
                 "price_report",
                 "merchant_report",
-                "order_problem"
+                "order_problem",
+                "captain_report",
+                "captain_problem"
               ]
             }
           },
@@ -25963,6 +26129,238 @@
           "note"
         ]
       },
+      "CaptainReportBodyDto": {
+        "type": "object",
+        "properties": {
+          "typeCode": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "A code of Content's captain_ticket_type list (CA Appendix C)."
+          },
+          "orderId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional: one of the captain's orders."
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional, up to 300 characters; the text of «أخرى»."
+          },
+          "photoUploadId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "One photo at most, from POST /v1/captain/uploads/report-photo once uploaded."
+          }
+        },
+        "required": [
+          "typeCode",
+          "orderId",
+          "note",
+          "photoUploadId"
+        ]
+      },
+      "CaptainReportTicketDto_Output": {
+        "type": "object",
+        "properties": {
+          "ticket": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "number": {
+                "type": "string",
+                "pattern": "^\\d{1,18}$",
+                "description": "Shown as `T-{number}`."
+              },
+              "typeLabel": {
+                "type": "string"
+              },
+              "orderId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "orderNumber": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^\\d{1,18}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "description": "The note sent."
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "new",
+                  "in_progress",
+                  "waiting",
+                  "resolved",
+                  "closed"
+                ],
+                "description": "AP Appendix C: «جديدة», «قيد المعالجة», «بانتظار رد», «محلولة», «مغلقة»."
+              },
+              "openedAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              "openedBy": {
+                "type": "string",
+                "enum": [
+                  "me",
+                  "operations"
+                ],
+                "description": "Who opened it: the captain, or the panel."
+              },
+              "replyWithinMinutes": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "description": "«سنرد عليك خلال {المدة}»: the ticket's timer from its opening."
+              },
+              "message": {
+                "description": "The resolution message, once resolved.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "resolvedAt": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "number",
+              "typeLabel",
+              "orderId",
+              "orderNumber",
+              "description",
+              "status",
+              "openedAt",
+              "openedBy",
+              "replyWithinMinutes",
+              "message",
+              "resolvedAt"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ticket"
+        ],
+        "additionalProperties": false
+      },
+      "CaptainProblemBodyDto": {
+        "type": "object",
+        "properties": {
+          "reasonCode": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "A code of Content's captain_problem list (CA Appendix C)."
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional, up to 300 characters; the text of «أخرى»."
+          },
+          "paidLines": {
+            "anyOf": [
+              {
+                "maxItems": 5,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    },
+                    "currency": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "currency"
+                  ]
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«مشكلة في مبلغ الاستلام» (pickup_amount) only, and required with it: the lines the captain actually handed the restaurant."
+          }
+        },
+        "required": [
+          "reasonCode",
+          "note",
+          "paidLines"
+        ]
+      },
       "AdminResendNotificationDto": {
         "type": "object",
         "properties": {
@@ -32104,7 +32502,7 @@
                             "type": "string",
                             "format": "uuid",
                             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-                            "description": "The restaurant user."
+                            "description": "The restaurant user, or the captain's account when the captain opened it."
                           },
                           "device": {
                             "type": "string"
@@ -32132,14 +32530,22 @@
                               ],
                               "additionalProperties": false
                             },
-                            "description": "What the restaurant says it received."
+                            "description": "What the restaurant says it received, or what the captain says they handed over."
+                          },
+                          "openedBy": {
+                            "type": "string",
+                            "enum": [
+                              "restaurant",
+                              "captain"
+                            ]
                           }
                         },
                         "required": [
                           "at",
                           "accountId",
                           "device",
-                          "receivedLines"
+                          "receivedLines",
+                          "openedBy"
                         ],
                         "additionalProperties": false
                       },
@@ -33163,7 +33569,7 @@
                 },
                 "source": {
                   "type": "string",
-                  "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem so far."
+                  "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem so far."
                 },
                 "party": {
                   "type": "string",
@@ -33617,7 +34023,7 @@
           },
           "source": {
             "type": "string",
-            "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem so far."
+            "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem so far."
           },
           "party": {
             "type": "string",
@@ -40918,7 +41324,7 @@
                 },
                 "source": {
                   "type": "string",
-                  "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem so far."
+                  "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem so far."
                 },
                 "party": {
                   "type": "string",
@@ -41554,7 +41960,7 @@
           },
           "source": {
             "type": "string",
-            "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem so far."
+            "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem so far."
           },
           "party": {
             "type": "string",
@@ -41971,7 +42377,7 @@
           },
           "source": {
             "type": "string",
-            "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem so far."
+            "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem so far."
           },
           "party": {
             "type": "string",
@@ -42444,7 +42850,15 @@
                       ],
                       "additionalProperties": false
                     },
-                    "description": "What the restaurant says it received."
+                    "description": "What the restaurant says it received, or, opened by the captain, what the captain says they handed over."
+                  },
+                  "openedBy": {
+                    "type": "string",
+                    "enum": [
+                      "restaurant",
+                      "captain"
+                    ],
+                    "description": "Who disputed: the restaurant's «المبلغ غير صحيح» or the captain's «مشكلة في مبلغ الاستلام»."
                   },
                   "confirmedBy": {
                     "type": "string",
@@ -42477,6 +42891,7 @@
                   "pickupPayment",
                   "recorded",
                   "received",
+                  "openedBy",
                   "confirmedBy",
                   "captainName",
                   "disputedAt",
@@ -43709,6 +44124,128 @@
               "additionalProperties": false
             },
             "description": "Newest first, the latest 100: an owner's every ticket of the restaurant, a cashier's own."
+          }
+        },
+        "required": [
+          "tickets"
+        ],
+        "additionalProperties": false
+      },
+      "CaptainReportsDto_Output": {
+        "type": "object",
+        "properties": {
+          "tickets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "number": {
+                  "type": "string",
+                  "pattern": "^\\d{1,18}$",
+                  "description": "Shown as `T-{number}`."
+                },
+                "typeLabel": {
+                  "type": "string"
+                },
+                "orderId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "orderNumber": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^\\d{1,18}$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "description": {
+                  "type": "string",
+                  "description": "The note sent."
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "new",
+                    "in_progress",
+                    "waiting",
+                    "resolved",
+                    "closed"
+                  ],
+                  "description": "AP Appendix C: «جديدة», «قيد المعالجة», «بانتظار رد», «محلولة», «مغلقة»."
+                },
+                "openedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "openedBy": {
+                  "type": "string",
+                  "enum": [
+                    "me",
+                    "operations"
+                  ],
+                  "description": "Who opened it: the captain, or the panel."
+                },
+                "replyWithinMinutes": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "description": "«سنرد عليك خلال {المدة}»: the ticket's timer from its opening."
+                },
+                "message": {
+                  "description": "The resolution message, once resolved.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "resolvedAt": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "number",
+                "typeLabel",
+                "orderId",
+                "orderNumber",
+                "description",
+                "status",
+                "openedAt",
+                "openedBy",
+                "replyWithinMinutes",
+                "message",
+                "resolvedAt"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Newest first, the latest 100: the captain's tickets, the panel's included."
           }
         },
         "required": [

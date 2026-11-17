@@ -29,6 +29,7 @@ import { AdminOrdersController } from './admin-orders.controller.js';
 import { CustomerOrdersController } from './customer-orders.controller.js';
 import { CustomerCodesController } from './customer-codes.controller.js';
 import { CustomerQuoteController } from './customer-quote.controller.js';
+import { CaptainTicketsController } from './captain-reports.controller.js';
 import { MerchantTicketsController } from './merchant-reports.controller.js';
 import { MerchantOrdersController } from './merchant-orders.controller.js';
 import { OrderAlerts, OrderAlertsWorker } from './order-alerts.js';
@@ -81,6 +82,7 @@ import {
     CustomerOrdersController,
     MerchantOrdersController,
     MerchantTicketsController,
+    CaptainTicketsController,
     AdminOrdersController,
     AdminOrderCompensationsController,
     AdminOrderTicketsController,

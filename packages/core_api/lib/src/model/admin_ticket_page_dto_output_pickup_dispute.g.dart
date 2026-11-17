@@ -6,6 +6,34 @@ part of 'admin_ticket_page_dto_output_pickup_dispute.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const AdminTicketPageDtoOutputPickupDisputeOpenedByEnum
+_$adminTicketPageDtoOutputPickupDisputeOpenedByEnum_restaurant =
+    const AdminTicketPageDtoOutputPickupDisputeOpenedByEnum._('restaurant');
+const AdminTicketPageDtoOutputPickupDisputeOpenedByEnum
+_$adminTicketPageDtoOutputPickupDisputeOpenedByEnum_captain =
+    const AdminTicketPageDtoOutputPickupDisputeOpenedByEnum._('captain');
+
+AdminTicketPageDtoOutputPickupDisputeOpenedByEnum
+_$adminTicketPageDtoOutputPickupDisputeOpenedByEnumValueOf(String name) {
+  switch (name) {
+    case 'restaurant':
+      return _$adminTicketPageDtoOutputPickupDisputeOpenedByEnum_restaurant;
+    case 'captain':
+      return _$adminTicketPageDtoOutputPickupDisputeOpenedByEnum_captain;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<AdminTicketPageDtoOutputPickupDisputeOpenedByEnum>
+_$adminTicketPageDtoOutputPickupDisputeOpenedByEnumValues =
+    BuiltSet<AdminTicketPageDtoOutputPickupDisputeOpenedByEnum>(
+      const <AdminTicketPageDtoOutputPickupDisputeOpenedByEnum>[
+        _$adminTicketPageDtoOutputPickupDisputeOpenedByEnum_restaurant,
+        _$adminTicketPageDtoOutputPickupDisputeOpenedByEnum_captain,
+      ],
+    );
+
 const AdminTicketPageDtoOutputPickupDisputeConfirmedByEnum
 _$adminTicketPageDtoOutputPickupDisputeConfirmedByEnum_restaurant =
     const AdminTicketPageDtoOutputPickupDisputeConfirmedByEnum._('restaurant');
@@ -40,9 +68,48 @@ _$adminTicketPageDtoOutputPickupDisputeConfirmedByEnumValues =
       ],
     );
 
+Serializer<AdminTicketPageDtoOutputPickupDisputeOpenedByEnum>
+_$adminTicketPageDtoOutputPickupDisputeOpenedByEnumSerializer =
+    _$AdminTicketPageDtoOutputPickupDisputeOpenedByEnumSerializer();
 Serializer<AdminTicketPageDtoOutputPickupDisputeConfirmedByEnum>
 _$adminTicketPageDtoOutputPickupDisputeConfirmedByEnumSerializer =
     _$AdminTicketPageDtoOutputPickupDisputeConfirmedByEnumSerializer();
+
+class _$AdminTicketPageDtoOutputPickupDisputeOpenedByEnumSerializer
+    implements
+        PrimitiveSerializer<AdminTicketPageDtoOutputPickupDisputeOpenedByEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'restaurant': 'restaurant',
+    'captain': 'captain',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'restaurant': 'restaurant',
+    'captain': 'captain',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    AdminTicketPageDtoOutputPickupDisputeOpenedByEnum,
+  ];
+  @override
+  final String wireName = 'AdminTicketPageDtoOutputPickupDisputeOpenedByEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    AdminTicketPageDtoOutputPickupDisputeOpenedByEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  AdminTicketPageDtoOutputPickupDisputeOpenedByEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => AdminTicketPageDtoOutputPickupDisputeOpenedByEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
 
 class _$AdminTicketPageDtoOutputPickupDisputeConfirmedByEnumSerializer
     implements
@@ -94,6 +161,8 @@ class _$AdminTicketPageDtoOutputPickupDispute
   @override
   final BuiltList<AdminTicketPageDtoOutputPickupDisputePickupPayment?> received;
   @override
+  final AdminTicketPageDtoOutputPickupDisputeOpenedByEnum openedBy;
+  @override
   final AdminTicketPageDtoOutputPickupDisputeConfirmedByEnum confirmedBy;
   @override
   final String? captainName;
@@ -111,6 +180,7 @@ class _$AdminTicketPageDtoOutputPickupDispute
     this.pickupPayment,
     required this.recorded,
     required this.received,
+    required this.openedBy,
     required this.confirmedBy,
     this.captainName,
     required this.disputedAt,
@@ -132,6 +202,7 @@ class _$AdminTicketPageDtoOutputPickupDispute
         pickupPayment == other.pickupPayment &&
         recorded == other.recorded &&
         received == other.received &&
+        openedBy == other.openedBy &&
         confirmedBy == other.confirmedBy &&
         captainName == other.captainName &&
         disputedAt == other.disputedAt &&
@@ -144,6 +215,7 @@ class _$AdminTicketPageDtoOutputPickupDispute
     _$hash = $jc(_$hash, pickupPayment.hashCode);
     _$hash = $jc(_$hash, recorded.hashCode);
     _$hash = $jc(_$hash, received.hashCode);
+    _$hash = $jc(_$hash, openedBy.hashCode);
     _$hash = $jc(_$hash, confirmedBy.hashCode);
     _$hash = $jc(_$hash, captainName.hashCode);
     _$hash = $jc(_$hash, disputedAt.hashCode);
@@ -160,6 +232,7 @@ class _$AdminTicketPageDtoOutputPickupDispute
           ..add('pickupPayment', pickupPayment)
           ..add('recorded', recorded)
           ..add('received', received)
+          ..add('openedBy', openedBy)
           ..add('confirmedBy', confirmedBy)
           ..add('captainName', captainName)
           ..add('disputedAt', disputedAt)
@@ -200,6 +273,12 @@ class AdminTicketPageDtoOutputPickupDisputeBuilder
     ListBuilder<AdminTicketPageDtoOutputPickupDisputePickupPayment?>? received,
   ) => _$this._received = received;
 
+  AdminTicketPageDtoOutputPickupDisputeOpenedByEnum? _openedBy;
+  AdminTicketPageDtoOutputPickupDisputeOpenedByEnum? get openedBy =>
+      _$this._openedBy;
+  set openedBy(AdminTicketPageDtoOutputPickupDisputeOpenedByEnum? openedBy) =>
+      _$this._openedBy = openedBy;
+
   AdminTicketPageDtoOutputPickupDisputeConfirmedByEnum? _confirmedBy;
   AdminTicketPageDtoOutputPickupDisputeConfirmedByEnum? get confirmedBy =>
       _$this._confirmedBy;
@@ -231,6 +310,7 @@ class AdminTicketPageDtoOutputPickupDisputeBuilder
       _pickupPayment = $v.pickupPayment?.toBuilder();
       _recorded = $v.recorded.toBuilder();
       _received = $v.received.toBuilder();
+      _openedBy = $v.openedBy;
       _confirmedBy = $v.confirmedBy;
       _captainName = $v.captainName;
       _disputedAt = $v.disputedAt;
@@ -264,6 +344,11 @@ class AdminTicketPageDtoOutputPickupDisputeBuilder
             pickupPayment: _pickupPayment?.build(),
             recorded: recorded.build(),
             received: received.build(),
+            openedBy: BuiltValueNullFieldError.checkNotNull(
+              openedBy,
+              r'AdminTicketPageDtoOutputPickupDispute',
+              'openedBy',
+            ),
             confirmedBy: BuiltValueNullFieldError.checkNotNull(
               confirmedBy,
               r'AdminTicketPageDtoOutputPickupDispute',

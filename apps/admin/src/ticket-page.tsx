@@ -462,7 +462,13 @@ function PickupDisputeFacts({ dispute, timeZone }: { dispute: PickupDispute; tim
         <dd>{formatMoney(dispute.pickupPayment)}</dd>
         <dt>{t('tickets.dispute.recorded')}</dt>
         <dd>{dispute.recorded.map(formatMoney).join(' + ')}</dd>
-        <dt>{t('tickets.dispute.received')}</dt>
+        <dt>
+          {t(
+            dispute.openedBy === 'captain'
+              ? 'tickets.dispute.handedOver'
+              : 'tickets.dispute.received',
+          )}
+        </dt>
         <dd>{dispute.received.map(formatMoney).join(' + ')}</dd>
         <dt>{t('tickets.dispute.captain')}</dt>
         <dd>{dispute.captainName ?? t('tickets.unnamed')}</dd>

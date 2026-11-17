@@ -842,7 +842,7 @@ export class MerchantOrdersController {
       pickup: pickupBody(
         order,
         latest.get(order.id) ?? null,
-        disputes.get(order.id)?.at ?? null,
+        disputes.get(order.id) ?? null,
         windowMin,
         deviceNames,
         userNames,
@@ -877,7 +877,7 @@ function captainLine(
 function pickupBody(
   order: OrderView,
   request: PickupRequestView | null,
-  disputedAt: Date | null,
+  dispute: { at: Date; openedBy: 'restaurant' | 'captain' } | null,
   windowMin: number,
   deviceNames: Map<string, string>,
   userNames: Map<string, string | null>,
@@ -903,10 +903,13 @@ function pickupBody(
     },
     pickedUpAt: order.pickup?.at.toISOString() ?? null,
     readyNotPressed: order.pickup?.readyByPickup ?? false,
+    // Once per order, whoever disputed first (slice 2.24c): the captain's
+    // «مشكلة في مبلغ الاستلام» ends the window too, but is not the
+    // restaurant's «تم الإبلاغ».
     disputeUntil:
-      order.pickup && disputedAt === null
+      order.pickup && dispute === null
         ? new Date(order.pickup.at.getTime() + windowMin * 60_000).toISOString()
         : null,
-    disputedAt: disputedAt?.toISOString() ?? null,
+    disputedAt: dispute?.openedBy === 'restaurant' ? dispute.at.toISOString() : null,
   };
 }

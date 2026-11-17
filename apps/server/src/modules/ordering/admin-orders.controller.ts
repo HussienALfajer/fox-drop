@@ -1217,9 +1217,14 @@ class AdminOrderDto extends createZodDto(
         dispute: z
           .object({
             at: z.iso.datetime(),
-            accountId: z.uuid().describe('The restaurant user.'),
+            accountId: z
+              .uuid()
+              .describe("The restaurant user, or the captain's account when the captain opened it."),
             device: z.string(),
-            receivedLines: paymentLines.describe('What the restaurant says it received.'),
+            receivedLines: paymentLines.describe(
+              'What the restaurant says it received, or what the captain says they handed over.',
+            ),
+            openedBy: z.enum(['restaurant', 'captain']),
           })
           .nullable()
           .describe('«خلاف على دفعة الاستلام» after the pickup (RA §8.10 item 8), always urgent.'),
@@ -2609,6 +2614,7 @@ export class AdminOrdersController {
             accountId: item.pickupDispute.accountId,
             device: item.pickupDispute.device,
             receivedLines: linesBody(item.pickupDispute.receivedLines),
+            openedBy: item.pickupDispute.openedBy,
           },
         },
         delivery: order.delivery && {

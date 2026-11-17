@@ -99,6 +99,7 @@ describe('the resolution form', () => {
       pickupPayment: { amount: '40100', currency: 'TRY' },
       recorded: [],
       received: [{ amount: '19500', currency: 'TRY' }],
+      openedBy: 'restaurant',
       confirmedBy: 'automatic',
       captainName: null,
       disputedAt: '2026-12-10T12:00:00Z',

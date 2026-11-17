@@ -16,6 +16,9 @@ export interface PickupDisputeFacts {
   pickupPayment: MoneyLine;
   recorded: MoneyLine[];
   received: MoneyLine[];
+  // Who disputed (slice 2.24c): the restaurant, or the captain, whose
+  // `received` is what they say they handed over.
+  openedBy: 'restaurant' | 'captain';
   confirmedBy: 'restaurant' | 'automatic' | 'operations';
   captainId: string;
   captainName: string | null;

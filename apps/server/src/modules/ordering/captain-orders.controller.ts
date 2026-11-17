@@ -764,7 +764,9 @@ function activeOrderBody({
       currencies: linesBody(pickupCurrencies),
       request: pickupRequest && pickupRequestBody(pickupRequest),
       pickedUpAt: order.pickup?.at.toISOString() ?? null,
-      disputedAt: pickupDispute?.at.toISOString() ?? null,
+      // «فتح المطعم بلاغاً…»: the restaurant's dispute, not the captain's own.
+      disputedAt:
+        pickupDispute?.openedBy === 'restaurant' ? pickupDispute.at.toISOString() : null,
     },
     customer: {
       name: customer.name,

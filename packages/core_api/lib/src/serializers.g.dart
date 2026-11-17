@@ -370,6 +370,7 @@ Serializers _$serializers =
           ..add(AdminOrderDtoOutputOrderOutcomeStatusEnum.serializer)
           ..add(AdminOrderDtoOutputOrderPickup.serializer)
           ..add(AdminOrderDtoOutputOrderPickupDispute.serializer)
+          ..add(AdminOrderDtoOutputOrderPickupDisputeOpenedByEnum.serializer)
           ..add(AdminOrderDtoOutputOrderPickupRequestsInner.serializer)
           ..add(AdminOrderDtoOutputOrderPickupRequestsInnerClosedBy.serializer)
           ..add(
@@ -647,6 +648,7 @@ Serializers _$serializers =
           ..add(AdminTicketPageDtoOutputPartyEnum.serializer)
           ..add(AdminTicketPageDtoOutputPickupDispute.serializer)
           ..add(AdminTicketPageDtoOutputPickupDisputeConfirmedByEnum.serializer)
+          ..add(AdminTicketPageDtoOutputPickupDisputeOpenedByEnum.serializer)
           ..add(AdminTicketPageDtoOutputPickupDisputePickupPayment.serializer)
           ..add(AdminTicketPageDtoOutputRedeliveriesInner.serializer)
           ..add(AdminTicketPageDtoOutputReport.serializer)
@@ -827,7 +829,14 @@ Serializers _$serializers =
           ..add(CaptainPeakBonusDtoOutputWindowsInnerAmount.serializer)
           ..add(CaptainPeakBonusDtoOutputWindowsInnerZonesInner.serializer)
           ..add(CaptainPickupRequestDto.serializer)
+          ..add(CaptainProblemBodyDto.serializer)
           ..add(CaptainRefreshDto.serializer)
+          ..add(CaptainReportBodyDto.serializer)
+          ..add(CaptainReportTicketDtoOutput.serializer)
+          ..add(CaptainReportTicketDtoOutputTicket.serializer)
+          ..add(CaptainReportTicketDtoOutputTicketOpenedByEnum.serializer)
+          ..add(CaptainReportTicketDtoOutputTicketStatusEnum.serializer)
+          ..add(CaptainReportsDtoOutput.serializer)
           ..add(CaptainSessionDtoOutput.serializer)
           ..add(CaptainSetCarriedCurrenciesDto.serializer)
           ..add(CaptainSetMaxPickupDto.serializer)
@@ -2549,6 +2558,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(CaptainReportTicketDtoOutputTicket),
+            ]),
+            () => ListBuilder<CaptainReportTicketDtoOutputTicket>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(CaptainStatementListDtoOutputStatementsInner),
             ]),
             () => ListBuilder<CaptainStatementListDtoOutputStatementsInner>(),
@@ -3126,6 +3141,12 @@ Serializers _$serializers =
               const FullType(MerchantOrdersDtoOutputOrdersInnerEditsInner),
             ]),
             () => ListBuilder<MerchantOrdersDtoOutputOrdersInnerEditsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantPickupDisputeDtoReceivedLinesInner),
+            ]),
+            () => ListBuilder<MerchantPickupDisputeDtoReceivedLinesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

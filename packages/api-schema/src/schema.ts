@@ -2276,6 +2276,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/captain/uploads/report-photo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainTicketsUploadPhoto"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainReportsList"];
+        put?: never;
+        post: operations["captainTicketsReport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/orders/{orderId}/problem": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainTicketsProblem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/orders/{orderId}/resend-notification": {
         parameters: {
             query?: never;
@@ -7806,6 +7854,58 @@ export interface components {
             /** @description Optional, up to 300 characters; the text of «أخرى». */
             note: string | null;
         };
+        CaptainReportBodyDto: {
+            /** @description A code of Content's captain_ticket_type list (CA Appendix C). */
+            typeCode: string;
+            /** @description Optional: one of the captain's orders. */
+            orderId: string | null;
+            /** @description Optional, up to 300 characters; the text of «أخرى». */
+            note: string | null;
+            /** @description One photo at most, from POST /v1/captain/uploads/report-photo once uploaded. */
+            photoUploadId: string | null;
+        };
+        CaptainReportTicketDto_Output: {
+            ticket: {
+                /** Format: uuid */
+                id: string;
+                /** @description Shown as `T-{number}`. */
+                number: string;
+                typeLabel: string;
+                orderId: string | null;
+                orderNumber: string | null;
+                /** @description The note sent. */
+                description: string;
+                /**
+                 * @description AP Appendix C: «جديدة», «قيد المعالجة», «بانتظار رد», «محلولة», «مغلقة».
+                 * @enum {string}
+                 */
+                status: "new" | "in_progress" | "waiting" | "resolved" | "closed";
+                /** Format: date-time */
+                openedAt: string;
+                /**
+                 * @description Who opened it: the captain, or the panel.
+                 * @enum {string}
+                 */
+                openedBy: "me" | "operations";
+                /** @description «سنرد عليك خلال {المدة}»: the ticket's timer from its opening. */
+                replyWithinMinutes: number;
+                /** @description The resolution message, once resolved. */
+                message: string | null;
+                resolvedAt: string | null;
+            };
+        };
+        CaptainProblemBodyDto: {
+            /** @description A code of Content's captain_problem list (CA Appendix C). */
+            reasonCode: string;
+            /** @description Optional, up to 300 characters; the text of «أخرى». */
+            note: string | null;
+            /** @description «مشكلة في مبلغ الاستلام» (pickup_amount) only, and required with it: the lines the captain actually handed the restaurant. */
+            paidLines: {
+                /** @description Integer minor units (AP §8.6). */
+                amount: string;
+                currency: string;
+            }[] | null;
+        };
         AdminResendNotificationDto: {
             /**
              * @description The customer, the restaurant's devices or the assigned captain.
@@ -9271,16 +9371,18 @@ export interface components {
                         at: string;
                         /**
                          * Format: uuid
-                         * @description The restaurant user.
+                         * @description The restaurant user, or the captain's account when the captain opened it.
                          */
                         accountId: string;
                         device: string;
-                        /** @description What the restaurant says it received. */
+                        /** @description What the restaurant says it received, or what the captain says they handed over. */
                         receivedLines: {
                             /** @description Integer minor units (AP §8.6). */
                             amount: string;
                             currency: string;
                         }[];
+                        /** @enum {string} */
+                        openedBy: "restaurant" | "captain";
                     } | null;
                 };
                 /** @description After «تم التسليم» (AP §9.3.1). */
@@ -9484,7 +9586,7 @@ export interface components {
                 id: string;
                 /** @description Shown as `T-{number}` (AP §4.8). */
                 number: string;
-                /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem so far. */
+                /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem so far. */
                 source: string;
                 /** @enum {string} */
                 party: "customer" | "restaurant" | "captain";
@@ -9576,7 +9678,7 @@ export interface components {
             id: string;
             /** @description Shown as `T-{number}` (AP §4.8). */
             number: string;
-            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem so far. */
+            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem so far. */
             source: string;
             /** @enum {string} */
             party: "customer" | "restaurant" | "captain";
@@ -11215,7 +11317,7 @@ export interface components {
                 id: string;
                 /** @description Shown as `T-{number}` (AP §4.8). */
                 number: string;
-                /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem so far. */
+                /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem so far. */
                 source: string;
                 /** @enum {string} */
                 party: "customer" | "restaurant" | "captain";
@@ -11349,7 +11451,7 @@ export interface components {
             id: string;
             /** @description Shown as `T-{number}` (AP §4.8). */
             number: string;
-            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem so far. */
+            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem so far. */
             source: string;
             /** @enum {string} */
             party: "customer" | "restaurant" | "captain";
@@ -11433,7 +11535,7 @@ export interface components {
             id: string;
             /** @description Shown as `T-{number}` (AP §4.8). */
             number: string;
-            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem so far. */
+            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem so far. */
             source: string;
             /** @enum {string} */
             party: "customer" | "restaurant" | "captain";
@@ -11531,11 +11633,16 @@ export interface components {
                     amount: string;
                     currency: string;
                 }[];
-                /** @description What the restaurant says it received. */
+                /** @description What the restaurant says it received, or, opened by the captain, what the captain says they handed over. */
                 received: {
                     amount: string;
                     currency: string;
                 }[];
+                /**
+                 * @description Who disputed: the restaurant's «المبلغ غير صحيح» or the captain's «مشكلة في مبلغ الاستلام».
+                 * @enum {string}
+                 */
+                openedBy: "restaurant" | "captain";
                 /** @enum {string} */
                 confirmedBy: "restaurant" | "automatic" | "operations";
                 captainName: string | null;
@@ -11813,6 +11920,37 @@ export interface components {
                  * @enum {string}
                  */
                 openedBy: "me" | "restaurant" | "operations";
+                /** @description «سنرد عليك خلال {المدة}»: the ticket's timer from its opening. */
+                replyWithinMinutes: number;
+                /** @description The resolution message, once resolved. */
+                message: string | null;
+                resolvedAt: string | null;
+            }[];
+        };
+        CaptainReportsDto_Output: {
+            /** @description Newest first, the latest 100: the captain's tickets, the panel's included. */
+            tickets: {
+                /** Format: uuid */
+                id: string;
+                /** @description Shown as `T-{number}`. */
+                number: string;
+                typeLabel: string;
+                orderId: string | null;
+                orderNumber: string | null;
+                /** @description The note sent. */
+                description: string;
+                /**
+                 * @description AP Appendix C: «جديدة», «قيد المعالجة», «بانتظار رد», «محلولة», «مغلقة».
+                 * @enum {string}
+                 */
+                status: "new" | "in_progress" | "waiting" | "resolved" | "closed";
+                /** Format: date-time */
+                openedAt: string;
+                /**
+                 * @description Who opened it: the captain, or the panel.
+                 * @enum {string}
+                 */
+                openedBy: "me" | "operations";
                 /** @description «سنرد عليك خلال {المدة}»: the ticket's timer from its opening. */
                 replyWithinMinutes: number;
                 /** @description The resolution message, once resolved. */
@@ -17589,6 +17727,106 @@ export interface operations {
             };
         };
     };
+    captainTicketsUploadPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerNewUploadDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerUploadDto_Output"];
+                };
+            };
+        };
+    };
+    captainReportsList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainReportsDto_Output"];
+                };
+            };
+        };
+    };
+    captainTicketsReport: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainReportBodyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainReportTicketDto_Output"];
+                };
+            };
+        };
+    };
+    captainTicketsProblem: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainProblemBodyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainReportTicketDto_Output"];
+                };
+            };
+        };
+    };
     adminOrdersResendNotification: {
         parameters: {
             query?: never;
@@ -19460,7 +19698,7 @@ export interface operations {
                 status?: "new" | "in_progress" | "waiting" | "resolved" | "closed";
                 typeCode?: string;
                 assigneeId?: string;
-                source?: "manual" | "pickup_dispute" | "customer_report" | "price_report" | "merchant_report" | "order_problem";
+                source?: "manual" | "pickup_dispute" | "customer_report" | "price_report" | "merchant_report" | "order_problem" | "captain_report" | "captain_problem";
                 /** @description «تجاوز المهلة»: only the tickets whose SLA timer is breached. */
                 breached?: "true" | "false";
             };
