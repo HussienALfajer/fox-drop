@@ -142,6 +142,7 @@ Map<String, Object?> _order() => {
     'equivalents': <Object>[],
     'lines': [
       {
+        'position': 0,
         'itemId': shawarmaId,
         'name': 'شاورما دجاج',
         'quantity': 2,

@@ -2813,6 +2813,42 @@
         ]
       }
     },
+    "/v1/customer/uploads/report-photo": {
+      "post": {
+        "operationId": "customerUploadsCreate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerNewUploadDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerUploadDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
+    },
     "/v1/captain/availability": {
       "get": {
         "operationId": "captainAvailabilityState",
@@ -4913,6 +4949,63 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerOrderDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
+    },
+    "/v1/customer/orders/{orderId}/report": {
+      "post": {
+        "operationId": "customerOrdersReport",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerReportOrderDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "",
@@ -8887,7 +8980,9 @@
               "type": "string",
               "enum": [
                 "manual",
-                "pickup_dispute"
+                "pickup_dispute",
+                "customer_report",
+                "price_report"
               ]
             }
           },
@@ -9443,6 +9538,63 @@
         },
         "tags": [
           "admin"
+        ]
+      }
+    },
+    "/v1/customer/restaurants/{restaurantId}/price-report": {
+      "post": {
+        "operationId": "customerPriceReportsReport",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerPriceReportBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerPriceReportDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
         ]
       }
     },
@@ -15315,6 +15467,54 @@
         ],
         "additionalProperties": false
       },
+      "CustomerNewUploadDto": {
+        "type": "object",
+        "properties": {
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ]
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8388608
+          }
+        },
+        "required": [
+          "contentType",
+          "sizeBytes"
+        ]
+      },
+      "CustomerUploadDto_Output": {
+        "type": "object",
+        "properties": {
+          "uploadId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "Sent with the report once the file is uploaded."
+          },
+          "url": {
+            "type": "string",
+            "description": "A PUT of the exact bytes, with the same Content-Type."
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "uploadId",
+          "url",
+          "expiresAt"
+        ],
+        "additionalProperties": false
+      },
       "CaptainAvailabilityDto_Output": {
         "type": "object",
         "properties": {
@@ -20894,6 +21094,101 @@
                   "format": "date-time",
                   "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
                 },
+                "report": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "ticketId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "number": {
+                          "type": "string",
+                          "description": "«بلاغك T-{رقم}: {الحالة}» (CU §12.2)."
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "new",
+                            "in_progress",
+                            "waiting",
+                            "resolved",
+                            "closed"
+                          ],
+                          "description": "AP Appendix C: «جديدة», «قيد المعالجة», «بانتظار رد», «محلولة», «مغلقة»."
+                        },
+                        "message": {
+                          "description": "The resolution message, once resolved.",
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "resolvedAt": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "ticketId",
+                        "number",
+                        "status",
+                        "message",
+                        "resolvedAt"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "CU §12.2, Q17 (slice 2.24a): the customer's one report on the order; null without one."
+                },
+                "reportUntil": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "«الإبلاغ عن مشكلة» until then, on a delivered order without a report (CU §12.2: customer.report_problem_window_hours after the delivery); null otherwise, when the detail offers «تواصل مع الدعم»."
+                },
+                "redeliveries": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "orderId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "number": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "orderId",
+                      "number"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "description": "CU §12.3: the free re-deliveries placed for this order, newest first."
+                },
                 "lateCode": {
                   "anyOf": [
                     {
@@ -21563,6 +21858,12 @@
                   "items": {
                     "type": "object",
                     "properties": {
+                      "position": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991,
+                        "description": "The line's place in the order, for a report's items (CU §12.2)."
+                      },
                       "itemId": {
                         "type": "string",
                         "format": "uuid",
@@ -21638,6 +21939,7 @@
                       }
                     },
                     "required": [
+                      "position",
                       "itemId",
                       "name",
                       "quantity",
@@ -21824,6 +22126,9 @@
                 "status",
                 "version",
                 "placedAt",
+                "report",
+                "reportUntil",
+                "redeliveries",
                 "lateCode",
                 "promisedAt",
                 "doorPing",
@@ -21922,6 +22227,101 @@
                 "type": "string",
                 "format": "date-time",
                 "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              "report": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "ticketId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "number": {
+                        "type": "string",
+                        "description": "«بلاغك T-{رقم}: {الحالة}» (CU §12.2)."
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "new",
+                          "in_progress",
+                          "waiting",
+                          "resolved",
+                          "closed"
+                        ],
+                        "description": "AP Appendix C: «جديدة», «قيد المعالجة», «بانتظار رد», «محلولة», «مغلقة»."
+                      },
+                      "message": {
+                        "description": "The resolution message, once resolved.",
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "resolvedAt": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "ticketId",
+                      "number",
+                      "status",
+                      "message",
+                      "resolvedAt"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "CU §12.2, Q17 (slice 2.24a): the customer's one report on the order; null without one."
+              },
+              "reportUntil": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "«الإبلاغ عن مشكلة» until then, on a delivered order without a report (CU §12.2: customer.report_problem_window_hours after the delivery); null otherwise, when the detail offers «تواصل مع الدعم»."
+              },
+              "redeliveries": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "orderId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "number": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "orderId",
+                    "number"
+                  ],
+                  "additionalProperties": false
+                },
+                "description": "CU §12.3: the free re-deliveries placed for this order, newest first."
               },
               "lateCode": {
                 "anyOf": [
@@ -22592,6 +22992,12 @@
                 "items": {
                   "type": "object",
                   "properties": {
+                    "position": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "description": "The line's place in the order, for a report's items (CU §12.2)."
+                    },
                     "itemId": {
                       "type": "string",
                       "format": "uuid",
@@ -22667,6 +23073,7 @@
                     }
                   },
                   "required": [
+                    "position",
                     "itemId",
                     "name",
                     "quantity",
@@ -22853,6 +23260,9 @@
               "status",
               "version",
               "placedAt",
+              "report",
+              "reportUntil",
+              "redeliveries",
               "lateCode",
               "promisedAt",
               "doorPing",
@@ -23151,6 +23561,69 @@
         "required": [
           "reason",
           "note"
+        ]
+      },
+      "CustomerReportOrderDto": {
+        "type": "object",
+        "properties": {
+          "typeCode": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "A code of Content's customer_problem list (AP Appendix B)."
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional, up to 300 characters; required for «أخرى» (CU §12.2)."
+          },
+          "items": {
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "position": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 99
+                }
+              },
+              "required": [
+                "position",
+                "quantity"
+              ]
+            },
+            "description": "The order's lines by position with how many: required for «صنف ناقص», «صنف خطأ» and «الطلب تالف», empty for the others."
+          },
+          "photoUploadIds": {
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "description": "Up to 3 photos, each from POST /v1/customer/uploads/report-photo once uploaded."
+          }
+        },
+        "required": [
+          "typeCode",
+          "note",
+          "items",
+          "photoUploadIds"
         ]
       },
       "MerchantOrdersDto_Output": {
@@ -32273,7 +32746,7 @@
                 },
                 "source": {
                   "type": "string",
-                  "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute so far."
+                  "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report so far."
                 },
                 "party": {
                   "type": "string",
@@ -32727,7 +33200,7 @@
           },
           "source": {
             "type": "string",
-            "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute so far."
+            "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report so far."
           },
           "party": {
             "type": "string",
@@ -40028,7 +40501,7 @@
                 },
                 "source": {
                   "type": "string",
-                  "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute so far."
+                  "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report so far."
                 },
                 "party": {
                   "type": "string",
@@ -40664,7 +41137,7 @@
           },
           "source": {
             "type": "string",
-            "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute so far."
+            "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report so far."
           },
           "party": {
             "type": "string",
@@ -41081,7 +41554,7 @@
           },
           "source": {
             "type": "string",
-            "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute so far."
+            "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report so far."
           },
           "party": {
             "type": "string",
@@ -41751,6 +42224,113 @@
               "additionalProperties": false
             },
             "description": "«إعادة توصيل مجانية» orders placed for it, newest first (AP §9.9.3)."
+          },
+          "report": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "lines": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "position": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "quantity": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "position",
+                        "name",
+                        "quantity"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "description": "The items the customer named (CU §12.2)."
+                  },
+                  "photoUrls": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Signed links to the photos, valid 10 minutes: read the page again for new ones."
+                  },
+                  "item": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "«أبلغ عن سعر مختلف»: the item named, as it was then (CU §9.5)."
+                  },
+                  "shopPrice": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "string",
+                            "pattern": "^-?\\d{1,18}$"
+                          },
+                          "currency": {
+                            "type": "string",
+                            "pattern": "^[A-Z]{3}$"
+                          }
+                        },
+                        "required": [
+                          "amount",
+                          "currency"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "«أبلغ عن سعر مختلف»: the shop's price, in the base."
+                  }
+                },
+                "required": [
+                  "lines",
+                  "photoUrls",
+                  "item",
+                  "shopPrice"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A report from the customer app (source customer_report or price_report)."
           }
         },
         "required": [
@@ -41781,7 +42361,8 @@
           "notes",
           "pickupDispute",
           "order",
-          "redeliveries"
+          "redeliveries",
+          "report"
         ],
         "additionalProperties": false
       },
@@ -42484,6 +43065,80 @@
           "cityId",
           "reason"
         ]
+      },
+      "CustomerPriceReportBodyDto": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional, picked from the menu."
+          },
+          "shopPrice": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{1,15}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional: the shop's price in minor units of the city's base currency."
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional, up to 300 characters."
+          },
+          "photoUploadId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional, 1, such as of the shop's menu board (POST /v1/customer/uploads/report-photo)."
+          }
+        },
+        "required": [
+          "itemId",
+          "shopPrice",
+          "note",
+          "photoUploadId"
+        ]
+      },
+      "CustomerPriceReportDto_Output": {
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "string",
+            "description": "The ticket «سعر مختلف عن المحل», shown as T-{number}."
+          }
+        },
+        "required": [
+          "number"
+        ],
+        "additionalProperties": false
       },
       "AdminPickerDto_Output": {
         "type": "object",

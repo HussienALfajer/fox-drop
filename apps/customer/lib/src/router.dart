@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import 'auth.dart';
 import 'blocked_screen.dart';
+import 'browsing/price_report_screen.dart';
 import 'browsing/restaurant_screen.dart';
 import 'cart/cart_screen.dart';
 import 'checkout/checkout_screen.dart';
@@ -15,6 +16,7 @@ import 'home_screen.dart';
 import 'not_found_screen.dart';
 import 'notifications/notifications_screen.dart';
 import 'orders/order_screen.dart';
+import 'orders/report_problem_screen.dart';
 import 'platform.dart';
 import 'profile/profile.dart';
 import 'profile/profile_screen.dart';
@@ -132,6 +134,22 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/orders/:id',
         builder: (context, state) =>
             OrderScreen(orderId: state.pathParameters['id']!),
+      ),
+      // CU §9.5 «أبلغ عن سعر مختلف»: signed-in customers only.
+      GoRoute(
+        path: '/restaurants/:id/price-report',
+        redirect: (context, state) =>
+            ref.read(customerAuth.session).value is SignedIn
+            ? null
+            : signInFrom(state.uri.path),
+        builder: (context, state) =>
+            PriceReportScreen(restaurantId: state.pathParameters['id']!),
+      ),
+      // CU §12.2 «الإبلاغ عن مشكلة»: reached from a signed-in order screen.
+      GoRoute(
+        path: '/orders/:id/report',
+        builder: (context, state) =>
+            ReportProblemScreen(orderId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: '/complete-profile',

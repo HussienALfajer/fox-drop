@@ -6,68 +6,70 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'merchant_orders_dto_output_orders_inner_redelivery_of.g.dart';
+part 'admin_ticket_page_dto_output_pickup_dispute_pickup_payment.g.dart';
 
-/// «إعادة توصيل مجانية لطلب #{رقم}» (AP §9.9.3): the order whose items it re-delivers (owner decision 2026-11-17: the badge); its items carry no price when the restaurant replaces them.
+/// «أبلغ عن سعر مختلف»: the shop's price, in the base.
 ///
 /// Properties:
-/// * [orderId]
-/// * [number]
+/// * [amount]
+/// * [currency]
 @BuiltValue()
-abstract class MerchantOrdersDtoOutputOrdersInnerRedeliveryOf
+abstract class AdminTicketPageDtoOutputPickupDisputePickupPayment
     implements
         Built<
-          MerchantOrdersDtoOutputOrdersInnerRedeliveryOf,
-          MerchantOrdersDtoOutputOrdersInnerRedeliveryOfBuilder
+          AdminTicketPageDtoOutputPickupDisputePickupPayment,
+          AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder
         > {
-  @BuiltValueField(wireName: r'orderId')
-  String get orderId;
+  @BuiltValueField(wireName: r'amount')
+  String get amount;
 
-  @BuiltValueField(wireName: r'number')
-  String get number;
+  @BuiltValueField(wireName: r'currency')
+  String get currency;
 
-  MerchantOrdersDtoOutputOrdersInnerRedeliveryOf._();
+  AdminTicketPageDtoOutputPickupDisputePickupPayment._();
 
-  factory MerchantOrdersDtoOutputOrdersInnerRedeliveryOf([
-    void updates(MerchantOrdersDtoOutputOrdersInnerRedeliveryOfBuilder b),
-  ]) = _$MerchantOrdersDtoOutputOrdersInnerRedeliveryOf;
+  factory AdminTicketPageDtoOutputPickupDisputePickupPayment([
+    void updates(AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder b),
+  ]) = _$AdminTicketPageDtoOutputPickupDisputePickupPayment;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(
-    MerchantOrdersDtoOutputOrdersInnerRedeliveryOfBuilder b,
+    AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder b,
   ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MerchantOrdersDtoOutputOrdersInnerRedeliveryOf>
+  static Serializer<AdminTicketPageDtoOutputPickupDisputePickupPayment>
   get serializer =>
-      _$MerchantOrdersDtoOutputOrdersInnerRedeliveryOfSerializer();
+      _$AdminTicketPageDtoOutputPickupDisputePickupPaymentSerializer();
 }
 
-class _$MerchantOrdersDtoOutputOrdersInnerRedeliveryOfSerializer
+class _$AdminTicketPageDtoOutputPickupDisputePickupPaymentSerializer
     implements
-        PrimitiveSerializer<MerchantOrdersDtoOutputOrdersInnerRedeliveryOf> {
+        PrimitiveSerializer<
+          AdminTicketPageDtoOutputPickupDisputePickupPayment
+        > {
   @override
   final Iterable<Type> types = const [
-    MerchantOrdersDtoOutputOrdersInnerRedeliveryOf,
-    _$MerchantOrdersDtoOutputOrdersInnerRedeliveryOf,
+    AdminTicketPageDtoOutputPickupDisputePickupPayment,
+    _$AdminTicketPageDtoOutputPickupDisputePickupPayment,
   ];
 
   @override
-  final String wireName = r'MerchantOrdersDtoOutputOrdersInnerRedeliveryOf';
+  final String wireName = r'AdminTicketPageDtoOutputPickupDisputePickupPayment';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    MerchantOrdersDtoOutputOrdersInnerRedeliveryOf object, {
+    AdminTicketPageDtoOutputPickupDisputePickupPayment object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'orderId';
+    yield r'amount';
     yield serializers.serialize(
-      object.orderId,
+      object.amount,
       specifiedType: const FullType(String),
     );
-    yield r'number';
+    yield r'currency';
     yield serializers.serialize(
-      object.number,
+      object.currency,
       specifiedType: const FullType(String),
     );
   }
@@ -75,7 +77,7 @@ class _$MerchantOrdersDtoOutputOrdersInnerRedeliveryOfSerializer
   @override
   Object serialize(
     Serializers serializers,
-    MerchantOrdersDtoOutputOrdersInnerRedeliveryOf object, {
+    AdminTicketPageDtoOutputPickupDisputePickupPayment object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -90,30 +92,30 @@ class _$MerchantOrdersDtoOutputOrdersInnerRedeliveryOfSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required MerchantOrdersDtoOutputOrdersInnerRedeliveryOfBuilder result,
+    required AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'orderId':
+        case r'amount':
           final valueDes =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(String),
                   )
                   as String;
-          result.orderId = valueDes;
+          result.amount = valueDes;
           break;
-        case r'number':
+        case r'currency':
           final valueDes =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(String),
                   )
                   as String;
-          result.number = valueDes;
+          result.currency = valueDes;
           break;
         default:
           unhandled.add(key);
@@ -124,12 +126,12 @@ class _$MerchantOrdersDtoOutputOrdersInnerRedeliveryOfSerializer
   }
 
   @override
-  MerchantOrdersDtoOutputOrdersInnerRedeliveryOf deserialize(
+  AdminTicketPageDtoOutputPickupDisputePickupPayment deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = MerchantOrdersDtoOutputOrdersInnerRedeliveryOfBuilder();
+    final result = AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

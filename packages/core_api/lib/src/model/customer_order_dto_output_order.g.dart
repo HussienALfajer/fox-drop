@@ -143,6 +143,12 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
   @override
   final DateTime placedAt;
   @override
+  final CustomerActiveOrdersDtoOutputOrdersInnerReport? report;
+  @override
+  final DateTime? reportUntil;
+  @override
+  final BuiltList<CustomerOrderDtoOutputOrderRedeliveriesInner> redeliveries;
+  @override
   final CustomerActiveOrdersDtoOutputOrdersInnerLateCode? lateCode;
   @override
   final DateTime? promisedAt;
@@ -197,6 +203,9 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
     required this.status,
     required this.version,
     required this.placedAt,
+    this.report,
+    this.reportUntil,
+    required this.redeliveries,
     this.lateCode,
     this.promisedAt,
     this.doorPing,
@@ -238,6 +247,9 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
         status == other.status &&
         version == other.version &&
         placedAt == other.placedAt &&
+        report == other.report &&
+        reportUntil == other.reportUntil &&
+        redeliveries == other.redeliveries &&
         lateCode == other.lateCode &&
         promisedAt == other.promisedAt &&
         doorPing == other.doorPing &&
@@ -270,6 +282,9 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, version.hashCode);
     _$hash = $jc(_$hash, placedAt.hashCode);
+    _$hash = $jc(_$hash, report.hashCode);
+    _$hash = $jc(_$hash, reportUntil.hashCode);
+    _$hash = $jc(_$hash, redeliveries.hashCode);
     _$hash = $jc(_$hash, lateCode.hashCode);
     _$hash = $jc(_$hash, promisedAt.hashCode);
     _$hash = $jc(_$hash, doorPing.hashCode);
@@ -304,6 +319,9 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
           ..add('status', status)
           ..add('version', version)
           ..add('placedAt', placedAt)
+          ..add('report', report)
+          ..add('reportUntil', reportUntil)
+          ..add('redeliveries', redeliveries)
           ..add('lateCode', lateCode)
           ..add('promisedAt', promisedAt)
           ..add('doorPing', doorPing)
@@ -365,6 +383,25 @@ class CustomerOrderDtoOutputOrderBuilder
   DateTime? _placedAt;
   DateTime? get placedAt => _$this._placedAt;
   set placedAt(DateTime? placedAt) => _$this._placedAt = placedAt;
+
+  CustomerActiveOrdersDtoOutputOrdersInnerReportBuilder? _report;
+  CustomerActiveOrdersDtoOutputOrdersInnerReportBuilder get report =>
+      _$this._report ??=
+          CustomerActiveOrdersDtoOutputOrdersInnerReportBuilder();
+  set report(CustomerActiveOrdersDtoOutputOrdersInnerReportBuilder? report) =>
+      _$this._report = report;
+
+  DateTime? _reportUntil;
+  DateTime? get reportUntil => _$this._reportUntil;
+  set reportUntil(DateTime? reportUntil) => _$this._reportUntil = reportUntil;
+
+  ListBuilder<CustomerOrderDtoOutputOrderRedeliveriesInner>? _redeliveries;
+  ListBuilder<CustomerOrderDtoOutputOrderRedeliveriesInner> get redeliveries =>
+      _$this._redeliveries ??=
+          ListBuilder<CustomerOrderDtoOutputOrderRedeliveriesInner>();
+  set redeliveries(
+    ListBuilder<CustomerOrderDtoOutputOrderRedeliveriesInner>? redeliveries,
+  ) => _$this._redeliveries = redeliveries;
 
   CustomerActiveOrdersDtoOutputOrdersInnerLateCodeBuilder? _lateCode;
   CustomerActiveOrdersDtoOutputOrdersInnerLateCodeBuilder get lateCode =>
@@ -521,6 +558,9 @@ class CustomerOrderDtoOutputOrderBuilder
       _status = $v.status;
       _version = $v.version;
       _placedAt = $v.placedAt;
+      _report = $v.report?.toBuilder();
+      _reportUntil = $v.reportUntil;
+      _redeliveries = $v.redeliveries.toBuilder();
       _lateCode = $v.lateCode?.toBuilder();
       _promisedAt = $v.promisedAt;
       _doorPing = $v.doorPing?.toBuilder();
@@ -592,6 +632,9 @@ class CustomerOrderDtoOutputOrderBuilder
               r'CustomerOrderDtoOutputOrder',
               'placedAt',
             ),
+            report: _report?.build(),
+            reportUntil: reportUntil,
+            redeliveries: redeliveries.build(),
             lateCode: _lateCode?.build(),
             promisedAt: promisedAt,
             doorPing: _doorPing?.build(),
@@ -628,6 +671,11 @@ class CustomerOrderDtoOutputOrderBuilder
         _$failedField = 'redeliveryOf';
         _redeliveryOf?.build();
 
+        _$failedField = 'report';
+        _report?.build();
+
+        _$failedField = 'redeliveries';
+        redeliveries.build();
         _$failedField = 'lateCode';
         _lateCode?.build();
 

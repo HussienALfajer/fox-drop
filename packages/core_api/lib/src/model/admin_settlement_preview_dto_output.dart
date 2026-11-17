@@ -3,7 +3,7 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_resolution_corrected_lines_inner.dart';
+import 'package:core_api/src/model/admin_ticket_page_dto_output_pickup_dispute_pickup_payment.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_captain_balances_dto_output_captains_inner_earnings.dart';
 import 'package:core_api/src/model/admin_settlement_preview_dto_output_custody_inner.dart';
@@ -71,8 +71,7 @@ abstract class AdminSettlementPreviewDtoOutput
 
   /// The cash per currency: + the captain gives, − the desk pays.
   @BuiltValueField(wireName: r'net')
-  BuiltList<AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner>
-  get net;
+  BuiltList<AdminTicketPageDtoOutputPickupDisputePickupPayment?> get net;
 
   AdminSettlementPreviewDtoOutput._();
 
@@ -170,9 +169,7 @@ class _$AdminSettlementPreviewDtoOutputSerializer
     yield serializers.serialize(
       object.net,
       specifiedType: const FullType(BuiltList, [
-        FullType(
-          AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
-        ),
+        FullType.nullable(AdminTicketPageDtoOutputPickupDisputePickupPayment),
       ]),
     );
   }
@@ -309,13 +306,13 @@ class _$AdminSettlementPreviewDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
+                      FullType.nullable(
+                        AdminTicketPageDtoOutputPickupDisputePickupPayment,
                       ),
                     ]),
                   )
                   as BuiltList<
-                    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+                    AdminTicketPageDtoOutputPickupDisputePickupPayment?
                   >;
           result.net.replace(valueDes);
           break;

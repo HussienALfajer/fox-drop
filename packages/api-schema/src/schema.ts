@@ -1172,6 +1172,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/customer/uploads/report-photo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["customerUploadsCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/captain/availability": {
         parameters: {
             query?: never;
@@ -2014,6 +2030,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["customerOrdersAnswerPing"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/orders/{orderId}/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["customerOrdersReport"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3486,6 +3518,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["adminTicketsClose"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/restaurants/{restaurantId}/price-report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["customerPriceReportsReport"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5226,6 +5274,22 @@ export interface components {
             /** Format: date-time */
             expiresAt: string;
         };
+        CustomerNewUploadDto: {
+            /** @enum {string} */
+            contentType: "image/jpeg" | "image/png" | "image/webp";
+            sizeBytes: number;
+        };
+        CustomerUploadDto_Output: {
+            /**
+             * Format: uuid
+             * @description Sent with the report once the file is uploaded.
+             */
+            uploadId: string;
+            /** @description A PUT of the exact bytes, with the same Content-Type. */
+            url: string;
+            /** Format: date-time */
+            expiresAt: string;
+        };
         CaptainAvailabilityDto_Output: {
             /** @description CA §7.1: «غير متصل», «متصل متاح», «مشغول» (an active order), «آخر طلب» (last-order mode), «لا تصلك عروض» with its reasons, «موقوف». */
             availability: {
@@ -6604,6 +6668,29 @@ export interface components {
                 version: number;
                 /** Format: date-time */
                 placedAt: string;
+                /** @description CU §12.2, Q17 (slice 2.24a): the customer's one report on the order; null without one. */
+                report: {
+                    /** Format: uuid */
+                    ticketId: string;
+                    /** @description «بلاغك T-{رقم}: {الحالة}» (CU §12.2). */
+                    number: string;
+                    /**
+                     * @description AP Appendix C: «جديدة», «قيد المعالجة», «بانتظار رد», «محلولة», «مغلقة».
+                     * @enum {string}
+                     */
+                    status: "new" | "in_progress" | "waiting" | "resolved" | "closed";
+                    /** @description The resolution message, once resolved. */
+                    message: string | null;
+                    resolvedAt: string | null;
+                } | null;
+                /** @description «الإبلاغ عن مشكلة» until then, on a delivered order without a report (CU §12.2: customer.report_problem_window_hours after the delivery); null otherwise, when the detail offers «تواصل مع الدعم». */
+                reportUntil: string | null;
+                /** @description CU §12.3: the free re-deliveries placed for this order, newest first. */
+                redeliveries: {
+                    /** Format: uuid */
+                    orderId: string;
+                    number: string;
+                }[];
                 /** @description CU §11.6, AP §8.3 (slice 2.22c): the late code the order earned, still not delivered at the promised time + order.delivery_late_compensation_min; it is also in «أكوادي». Null without one, and in the list of active orders. */
                 lateCode: {
                     code: string;
@@ -6764,6 +6851,8 @@ export interface components {
                     amount: string;
                 }[];
                 lines: {
+                    /** @description The line's place in the order, for a report's items (CU §12.2). */
+                    position: number;
                     /** Format: uuid */
                     itemId: string;
                     name: string;
@@ -6842,6 +6931,29 @@ export interface components {
                 version: number;
                 /** Format: date-time */
                 placedAt: string;
+                /** @description CU §12.2, Q17 (slice 2.24a): the customer's one report on the order; null without one. */
+                report: {
+                    /** Format: uuid */
+                    ticketId: string;
+                    /** @description «بلاغك T-{رقم}: {الحالة}» (CU §12.2). */
+                    number: string;
+                    /**
+                     * @description AP Appendix C: «جديدة», «قيد المعالجة», «بانتظار رد», «محلولة», «مغلقة».
+                     * @enum {string}
+                     */
+                    status: "new" | "in_progress" | "waiting" | "resolved" | "closed";
+                    /** @description The resolution message, once resolved. */
+                    message: string | null;
+                    resolvedAt: string | null;
+                } | null;
+                /** @description «الإبلاغ عن مشكلة» until then, on a delivered order without a report (CU §12.2: customer.report_problem_window_hours after the delivery); null otherwise, when the detail offers «تواصل مع الدعم». */
+                reportUntil: string | null;
+                /** @description CU §12.3: the free re-deliveries placed for this order, newest first. */
+                redeliveries: {
+                    /** Format: uuid */
+                    orderId: string;
+                    number: string;
+                }[];
                 /** @description CU §11.6, AP §8.3 (slice 2.22c): the late code the order earned, still not delivered at the promised time + order.delivery_late_compensation_min; it is also in «أكوادي». Null without one, and in the list of active orders. */
                 lateCode: {
                     code: string;
@@ -7002,6 +7114,8 @@ export interface components {
                     amount: string;
                 }[];
                 lines: {
+                    /** @description The line's place in the order, for a report's items (CU §12.2). */
+                    position: number;
                     /** Format: uuid */
                     itemId: string;
                     name: string;
@@ -7113,6 +7227,19 @@ export interface components {
             reason: string;
             /** @description The optional text of «سبب آخر»; null for the other reasons. */
             note: string | null;
+        };
+        CustomerReportOrderDto: {
+            /** @description A code of Content's customer_problem list (AP Appendix B). */
+            typeCode: string;
+            /** @description Optional, up to 300 characters; required for «أخرى» (CU §12.2). */
+            note: string | null;
+            /** @description The order's lines by position with how many: required for «صنف ناقص», «صنف خطأ» and «الطلب تالف», empty for the others. */
+            items: {
+                position: number;
+                quantity: number;
+            }[];
+            /** @description Up to 3 photos, each from POST /v1/customer/uploads/report-photo once uploaded. */
+            photoUploadIds: string[];
         };
         MerchantOrdersDto_Output: {
             /** @description Every order until it is delivered or ends, oldest first (RA §8.2). */
@@ -9255,7 +9382,7 @@ export interface components {
                 id: string;
                 /** @description Shown as `T-{number}` (AP §4.8). */
                 number: string;
-                /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute so far. */
+                /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report so far. */
                 source: string;
                 /** @enum {string} */
                 party: "customer" | "restaurant" | "captain";
@@ -9347,7 +9474,7 @@ export interface components {
             id: string;
             /** @description Shown as `T-{number}` (AP §4.8). */
             number: string;
-            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute so far. */
+            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report so far. */
             source: string;
             /** @enum {string} */
             party: "customer" | "restaurant" | "captain";
@@ -10986,7 +11113,7 @@ export interface components {
                 id: string;
                 /** @description Shown as `T-{number}` (AP §4.8). */
                 number: string;
-                /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute so far. */
+                /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report so far. */
                 source: string;
                 /** @enum {string} */
                 party: "customer" | "restaurant" | "captain";
@@ -11120,7 +11247,7 @@ export interface components {
             id: string;
             /** @description Shown as `T-{number}` (AP §4.8). */
             number: string;
-            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute so far. */
+            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report so far. */
             source: string;
             /** @enum {string} */
             party: "customer" | "restaurant" | "captain";
@@ -11204,7 +11331,7 @@ export interface components {
             id: string;
             /** @description Shown as `T-{number}` (AP §4.8). */
             number: string;
-            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute so far. */
+            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report so far. */
             source: string;
             /** @enum {string} */
             party: "customer" | "restaurant" | "captain";
@@ -11350,6 +11477,28 @@ export interface components {
                 number: string;
                 status: string;
             }[];
+            /** @description A report from the customer app (source customer_report or price_report). */
+            report: {
+                /** @description The items the customer named (CU §12.2). */
+                lines: {
+                    position: number;
+                    name: string;
+                    quantity: number;
+                }[];
+                /** @description Signed links to the photos, valid 10 minutes: read the page again for new ones. */
+                photoUrls: string[];
+                /** @description «أبلغ عن سعر مختلف»: the item named, as it was then (CU §9.5). */
+                item: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                } | null;
+                /** @description «أبلغ عن سعر مختلف»: the shop's price, in the base. */
+                shopPrice: {
+                    amount: string;
+                    currency: string;
+                } | null;
+            } | null;
         };
         AdminTicketNoteDto: {
             /** Format: uuid */
@@ -11519,6 +11668,20 @@ export interface components {
             cityId: string;
             /** @description Internal. */
             reason: string;
+        };
+        CustomerPriceReportBodyDto: {
+            /** @description Optional, picked from the menu. */
+            itemId: string | null;
+            /** @description Optional: the shop's price in minor units of the city's base currency. */
+            shopPrice: string | null;
+            /** @description Optional, up to 300 characters. */
+            note: string | null;
+            /** @description Optional, 1, such as of the shop's menu board (POST /v1/customer/uploads/report-photo). */
+            photoUploadId: string | null;
+        };
+        CustomerPriceReportDto_Output: {
+            /** @description The ticket «سعر مختلف عن المحل», shown as T-{number}. */
+            number: string;
         };
         AdminPickerDto_Output: {
             /** @description «تعيين» reaches the captain as an offer (dispatch.manual_assign_requires_accept), the only way to send one greyed out only for «المبلغ أكبر مما يحمله» (CA §8.4, K2). */
@@ -15479,6 +15642,30 @@ export interface operations {
             };
         };
     };
+    customerUploadsCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerNewUploadDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerUploadDto_Output"];
+                };
+            };
+        };
+    };
     captainAvailabilityState: {
         parameters: {
             query?: never;
@@ -16834,6 +17021,35 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerOrderDto_Output"];
+                };
+            };
+        };
+    };
+    customerOrdersReport: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerReportOrderDto"];
+            };
+        };
         responses: {
             200: {
                 headers: {
@@ -19007,7 +19223,7 @@ export interface operations {
                 status?: "new" | "in_progress" | "waiting" | "resolved" | "closed";
                 typeCode?: string;
                 assigneeId?: string;
-                source?: "manual" | "pickup_dispute";
+                source?: "manual" | "pickup_dispute" | "customer_report" | "price_report";
                 /** @description «تجاوز المهلة»: only the tickets whose SLA timer is breached. */
                 breached?: "true" | "false";
             };
@@ -19324,6 +19540,35 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminTicketPageDto_Output"];
+                };
+            };
+        };
+    };
+    customerPriceReportsReport: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerPriceReportBodyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerPriceReportDto_Output"];
                 };
             };
         };

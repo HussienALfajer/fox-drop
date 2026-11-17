@@ -6,6 +6,7 @@
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_closure.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output_notes_inner.dart';
+import 'package:core_api/src/model/admin_ticket_page_dto_output_report.dart';
 import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_resolution.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output_pickup_dispute.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output_redeliveries_inner.dart';
@@ -21,7 +22,7 @@ part 'admin_ticket_page_dto_output.g.dart';
 /// Properties:
 /// * [id]
 /// * [number] - Shown as `T-{number}` (AP §4.8).
-/// * [source_] - Where the ticket came from (AP §9.9.1): manual, pickup_dispute so far.
+/// * [source_] - Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report so far.
 /// * [party]
 /// * [partyId]
 /// * [partyName]
@@ -47,6 +48,7 @@ part 'admin_ticket_page_dto_output.g.dart';
 /// * [pickupDispute]
 /// * [order]
 /// * [redeliveries] - «إعادة توصيل مجانية» orders placed for it, newest first (AP §9.9.3).
+/// * [report]
 @BuiltValue()
 abstract class AdminTicketPageDtoOutput
     implements
@@ -58,7 +60,7 @@ abstract class AdminTicketPageDtoOutput
   @BuiltValueField(wireName: r'number')
   String get number;
 
-  /// Where the ticket came from (AP §9.9.1): manual, pickup_dispute so far.
+  /// Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report so far.
   @BuiltValueField(wireName: r'source')
   String get source_;
 
@@ -144,6 +146,9 @@ abstract class AdminTicketPageDtoOutput
   /// «إعادة توصيل مجانية» orders placed for it, newest first (AP §9.9.3).
   @BuiltValueField(wireName: r'redeliveries')
   BuiltList<AdminTicketPageDtoOutputRedeliveriesInner> get redeliveries;
+
+  @BuiltValueField(wireName: r'report')
+  AdminTicketPageDtoOutputReport? get report;
 
   AdminTicketPageDtoOutput._();
 
@@ -349,6 +354,15 @@ class _$AdminTicketPageDtoOutputSerializer
         FullType(AdminTicketPageDtoOutputRedeliveriesInner),
       ]),
     );
+    yield r'report';
+    yield object.report == null
+        ? null
+        : serializers.serialize(
+            object.report,
+            specifiedType: const FullType.nullable(
+              AdminTicketPageDtoOutputReport,
+            ),
+          );
   }
 
   @override
@@ -658,6 +672,18 @@ class _$AdminTicketPageDtoOutputSerializer
                   )
                   as BuiltList<AdminTicketPageDtoOutputRedeliveriesInner>;
           result.redeliveries.replace(valueDes);
+          break;
+        case r'report':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminTicketPageDtoOutputReport,
+                    ),
+                  )
+                  as AdminTicketPageDtoOutputReport?;
+          if (valueDes == null) continue;
+          result.report.replace(valueDes);
           break;
         default:
           unhandled.add(key);

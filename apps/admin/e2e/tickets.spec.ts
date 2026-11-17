@@ -268,3 +268,46 @@ test('resolves a missing item with the restaurant responsible and a code', async
     chargePay: false,
   });
 });
+
+// AP §9.9.1, §9.9.3, CU §12.2 (slice 2.24a): a report from the customer app
+// shows its source, the items the customer named and the photos.
+test('shows the items and the photos of a customer report', async ({ page }) => {
+  await fakeSession(page, ['support.read']);
+  const id = '01900000-0000-7000-8000-0000000000f3';
+  await page.route('**/v1/admin/cities', (route) => route.fulfill({ json: cities }));
+  await page.route('**/v1/admin/alerts**', (route) => route.fulfill({ json: { alerts: [] } }));
+  await page.route('**/private-docs/tickets/photos/**', (route) =>
+    route.fulfill({ status: 200, contentType: 'image/png', body: Buffer.from('') }),
+  );
+  await page.route(`**/v1/admin/tickets/${id}?**`, (route) =>
+    route.fulfill({
+      json: {
+        ...ticket({
+          id,
+          source: 'customer_report',
+          party: 'customer',
+          partyName: 'أحمد',
+          typeCode: 'missing_item',
+          typeLabel: 'صنف ناقص',
+          description: 'نقصت شاورما',
+        }),
+        notes: [],
+        pickupDispute: null,
+        order: null,
+        redeliveries: [],
+        report: {
+          lines: [{ position: 0, name: 'شاورما', quantity: 1 }],
+          photoUrls: ['/private-docs/tickets/photos/a.png?X-Amz-Signature=x'],
+          item: null,
+          shopPrice: null,
+        },
+      },
+    }),
+  );
+
+  await page.goto(`/tickets/${id}?city=AZ`);
+  await expect(page.getByText('الإبلاغ عن مشكلة')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'ما أرسله الزبون' })).toBeVisible();
+  await expect(page.getByText('شاورما × 1')).toBeVisible();
+  await expect(page.getByRole('img', { name: 'صورة 1' })).toBeVisible();
+});

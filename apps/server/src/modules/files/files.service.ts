@@ -11,7 +11,7 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Inject, Injectable } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { and, count, eq, gt } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { PRIVATE_DOCS_BUCKET, PUBLIC_MEDIA_BUCKET } from '../../storage/storage-setup.js';
@@ -24,6 +24,10 @@ export const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 // upload may still be linked.
 export const UPLOAD_URL_SECONDS = 10 * 60;
 export const LINK_WITHIN_MS = 60 * 60 * 1000;
+// A customer's report photos asked in an hour (slice 2.24a): a report takes
+// at most 3, so this leaves room for retries and stops an account from
+// filling the storage (architecture §15).
+export const REPORT_UPLOADS_PER_HOUR = 20;
 
 export type FilesRefusal =
   | 'upload_not_found'
@@ -31,7 +35,8 @@ export type FilesRefusal =
   | 'upload_used'
   | 'upload_expired'
   | 'upload_missing'
-  | 'upload_invalid';
+  | 'upload_invalid'
+  | 'too_many_uploads';
 
 export class FilesRefusedError extends Error {
   override readonly name = 'FilesRefusedError';
@@ -69,7 +74,17 @@ const folders: Record<UploadPurpose, string> = {
   restaurant_logo: 'restaurants/logos',
   restaurant_cover: 'restaurants/covers',
   item_photo: 'menu/items',
+  report_photo: 'tickets/photos',
 };
+
+// A report's photo is the customer's (owner decision 2026-11-17): it goes to
+// private-docs, uploaded from the app; the others to public-media from the
+// panel.
+const PRIVATE_PURPOSES: readonly UploadPurpose[] = ['report_photo'];
+
+function bucketOf(purpose: UploadPurpose): string {
+  return PRIVATE_PURPOSES.includes(purpose) ? PRIVATE_DOCS_BUCKET : PUBLIC_MEDIA_BUCKET;
+}
 const extensions: Record<ImageType, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
@@ -99,13 +114,17 @@ interface Storage {
   // Reads and checks objects on the environment's network.
   internal: S3Client;
   // Signs the panel's uploads and downloads for its own origin, whose
-  // /public-media/incoming/ (PUT) and /private-docs/exports/ (GET) paths
-  // nginx (and Vite in development) forward to the storage.
+  // /public-media/incoming/ (PUT), /private-docs/exports/ and
+  // /private-docs/tickets/ (GET) paths nginx (and Vite in development)
+  // forward to the storage.
   uploads: S3Client;
+  // Signs the apps' uploads for APP_UPLOAD_URL (the API's host, whose
+  // /private-docs/incoming/ nginx forwards for PUT); built on first use.
+  apps: () => S3Client;
 }
 
-// The storage from STORAGE_URL, STORAGE_KEY_ID, STORAGE_SECRET and
-// ADMIN_PANEL_URL. Built on first use, so a process or test that never
+// The storage from STORAGE_URL, STORAGE_KEY_ID, STORAGE_SECRET,
+// ADMIN_PANEL_URL and, for the apps' uploads, APP_UPLOAD_URL. Built on first use, so a process or test that never
 // uploads needs none of them.
 function storageFromEnvironment(env: NodeJS.ProcessEnv = process.env): Storage {
   const value = (name: string) => {
@@ -130,9 +149,11 @@ function storageFromEnvironment(env: NodeJS.ProcessEnv = process.env): Storage {
       // a pool connection.
       requestHandler: { connectionTimeout: 2_000, requestTimeout: 10_000 },
     });
+  let apps: S3Client | undefined;
   return {
     internal: client(value('STORAGE_URL')),
     uploads: client(new URL(value('ADMIN_PANEL_URL')).origin),
+    apps: () => (apps ??= client(new URL(value('APP_UPLOAD_URL')).origin)),
   };
 }
 
@@ -155,12 +176,30 @@ export class FilesService {
   // size are signed, so the storage refuses any other body. No
   // Idempotency-Key: the answer is a URL to upload with, never stored, and
   // asking again makes another upload, of which only the linked one is used.
-  async createUpload(upload: NewUpload, adminAccountId: string, now = new Date()) {
+  // A report's photo (an app's) is signed for the apps' origin into
+  // private-docs; every other upload for the panel's into public-media.
+  async createUpload(upload: NewUpload, accountId: string, now = new Date()) {
     const key = `${INCOMING}/${randomUUID()}.${extensions[upload.contentType]}`;
+    const fromApp = PRIVATE_PURPOSES.includes(upload.purpose);
+    if (fromApp) {
+      const [{ asked }] = (await this.database.db
+        .select({ asked: count() })
+        .from(uploads)
+        .where(
+          and(
+            eq(uploads.createdBy, accountId),
+            eq(uploads.purpose, upload.purpose),
+            gt(uploads.createdAt, new Date(now.getTime() - 3_600_000)),
+          ),
+        )) as [{ asked: number }];
+      if (asked >= REPORT_UPLOADS_PER_HOUR) {
+        throw new FilesRefusedError('too_many_uploads', 'too many photos this hour');
+      }
+    }
     const url = await getSignedUrl(
-      this.store.uploads,
+      fromApp ? this.store.apps() : this.store.uploads,
       new PutObjectCommand({
-        Bucket: PUBLIC_MEDIA_BUCKET,
+        Bucket: bucketOf(upload.purpose),
         Key: key,
         ContentType: upload.contentType,
         ContentLength: upload.sizeBytes,
@@ -173,7 +212,7 @@ export class FilesService {
     );
     const [{ id }] = (await this.database.db
       .insert(uploads)
-      .values({ ...upload, key, createdBy: adminAccountId, createdAt: now })
+      .values({ ...upload, key, createdBy: accountId, createdAt: now })
       .returning({ id: uploads.id })) as [{ id: string }];
     return {
       uploadId: id,
@@ -187,10 +226,19 @@ export class FilesService {
   // purpose and recent; its file is copied from `incoming/` to its published
   // key, which no pre-signed URL covers, and the copy must have the size and
   // type asked for and start with that type's signature. A file checked this
-  // way can no longer change. An upload linked before passes as it is.
-  async prepare(uploadId: string, purpose: UploadPurpose, now = new Date()): Promise<void> {
+  // way can no longer change. An upload linked before passes as it is. With
+  // `owner`, only that account's upload is found (a customer links only
+  // their own photos).
+  async prepare(
+    uploadId: string,
+    purpose: UploadPurpose,
+    now = new Date(),
+    owner: string | null = null,
+  ): Promise<void> {
     const [row] = await this.database.db.select().from(uploads).where(eq(uploads.id, uploadId));
-    if (!row) throw new FilesRefusedError('upload_not_found', `no upload ${uploadId}`);
+    if (!row || (owner !== null && row.createdBy !== owner)) {
+      throw new FilesRefusedError('upload_not_found', `no upload ${uploadId}`);
+    }
     if (row.purpose !== purpose) {
       throw new FilesRefusedError('upload_wrong_purpose', `the upload is for ${row.purpose}`);
     }
@@ -199,12 +247,13 @@ export class FilesService {
       throw new FilesRefusedError('upload_expired', 'the upload is older than an hour');
     }
     const key = publishedKey(row);
+    const bucket = bucketOf(row.purpose);
     try {
       await this.store.internal.send(
         new CopyObjectCommand({
-          Bucket: PUBLIC_MEDIA_BUCKET,
+          Bucket: bucket,
           Key: key,
-          CopySource: `${PUBLIC_MEDIA_BUCKET}/${row.key}`,
+          CopySource: `${bucket}/${row.key}`,
         }),
       );
     } catch (error) {
@@ -213,7 +262,7 @@ export class FilesService {
       }
       throw error;
     }
-    await this.check(key, row.contentType, row.sizeBytes);
+    await this.check(bucket, key, row.contentType, row.sizeBytes);
   }
 
   // The second half, in the record's transaction after `prepare`: takes the
@@ -270,6 +319,16 @@ export class FilesService {
     );
   }
 
+  // A short signed GET of a report's photo (a key under tickets/) on the
+  // panel's origin, shown in the page (slice 2.24a).
+  privateImageUrl(key: string, seconds: number, now = new Date()): Promise<string> {
+    return getSignedUrl(
+      this.store.uploads,
+      new GetObjectCommand({ Bucket: PRIVATE_DOCS_BUCKET, Key: key }),
+      { expiresIn: seconds, signingDate: now },
+    );
+  }
+
   // Removes a private file; one already gone is fine.
   async deletePrivate(key: string): Promise<void> {
     await this.store.internal.send(
@@ -277,8 +336,8 @@ export class FilesService {
     );
   }
 
-  private async check(key: string, type: ImageType, size: number): Promise<void> {
-    const object = { Bucket: PUBLIC_MEDIA_BUCKET, Key: key };
+  private async check(bucket: string, key: string, type: ImageType, size: number): Promise<void> {
+    const object = { Bucket: bucket, Key: key };
     let head;
     try {
       head = await this.store.internal.send(new HeadObjectCommand(object));

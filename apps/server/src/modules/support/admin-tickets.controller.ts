@@ -27,6 +27,7 @@ import {
   ticketNoteBody,
   ticketOrderBody,
   ticketRedeliveryBody,
+  ticketReportBody,
   ticketOrderOut,
   ticketOut,
 } from './ticket-body.js';
@@ -109,6 +110,9 @@ class AdminTicketPageDto extends createZodDto(
     redeliveries: z
       .array(ticketRedeliveryBody)
       .describe('«إعادة توصيل مجانية» orders placed for it, newest first (AP §9.9.3).'),
+    report: ticketReportBody
+      .nullable()
+      .describe('A report from the customer app (source customer_report or price_report).'),
   }),
 ) {}
 
@@ -489,6 +493,15 @@ function pageOut(page: Awaited<ReturnType<SupportService['ticket']>>): AdminTick
       number: each.number.toString(),
       status: each.status,
     })),
+    report: page.report && {
+      lines: page.report.lines,
+      photoUrls: page.report.photoUrls,
+      item: page.report.item,
+      shopPrice: page.report.shopPrice && {
+        amount: page.report.shopPrice.amount.toString(),
+        currency: page.report.shopPrice.currency,
+      },
+    },
   } as AdminTicketPageDto;
 }
 

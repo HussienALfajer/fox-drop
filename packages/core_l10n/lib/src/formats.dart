@@ -18,6 +18,29 @@ const cityUtcOffset = Duration(hours: 3);
 
 DateTime _onCityClock(DateTime moment) => moment.toUtc().add(cityUtcOffset);
 
+/// An amount the person typed in the currency's major units («120» or
+/// «10.5»), in minor units as the API takes it («12000», «1050»); null for
+/// anything else, more fraction digits than the currency has, or 0.
+String? minorOfTyped(String typed, String currency) {
+  final decimals = _currencies[currency]?.decimals ?? 2;
+  // An Arabic keyboard may type «١٢٠٫٥»: read it as «120.5».
+  final western = typed
+      .trim()
+      .replaceAll('٫', '.')
+      .replaceAllMapped(
+        RegExp('[٠-٩]'),
+        (m) => '${m[0]!.codeUnitAt(0) - 0x0660}',
+      );
+  final match = RegExp(r'^(\d{1,12})(?:\.(\d+))?$').firstMatch(western);
+  if (match == null) return null;
+  final fraction = match.group(2) ?? '';
+  if (fraction.length > decimals) return null;
+  final minor = BigInt.parse(
+    match.group(1)! + fraction.padRight(decimals, '0'),
+  );
+  return minor == BigInt.zero ? null : minor.toString();
+}
+
 /// The formatters of money, times, dates, durations and distances (AP §4.7,
 /// CU §4.6), always with Western digits.
 extension Formats on AppLocalizations {

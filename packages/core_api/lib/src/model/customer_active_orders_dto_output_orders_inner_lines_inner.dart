@@ -13,6 +13,7 @@ part 'customer_active_orders_dto_output_orders_inner_lines_inner.g.dart';
 /// CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
 ///
 /// Properties:
+/// * [position] - The line's place in the order, for a report's items (CU §12.2).
 /// * [itemId]
 /// * [name]
 /// * [quantity]
@@ -29,6 +30,10 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
           CustomerActiveOrdersDtoOutputOrdersInnerLinesInner,
           CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder
         > {
+  /// The line's place in the order, for a report's items (CU §12.2).
+  @BuiltValueField(wireName: r'position')
+  int get position;
+
   @BuiltValueField(wireName: r'itemId')
   String get itemId;
 
@@ -96,6 +101,11 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerSerializer
     CustomerActiveOrdersDtoOutputOrdersInnerLinesInner object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    yield r'position';
+    yield serializers.serialize(
+      object.position,
+      specifiedType: const FullType(int),
+    );
     yield r'itemId';
     yield serializers.serialize(
       object.itemId,
@@ -174,6 +184,12 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerSerializer
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'position':
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
+          result.position = valueDes;
+          break;
         case r'itemId':
           final valueDes =
               serializers.deserialize(

@@ -22,15 +22,9 @@ class _$AdminTicketPageDtoOutputOrder extends AdminTicketPageDtoOutputOrder {
   @override
   final BuiltList<AdminTicketPageDtoOutputOrderLinesInner> lines;
   @override
-  final BuiltList<
-    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-  >
-  received;
+  final BuiltList<AdminTicketPageDtoOutputPickupDisputePickupPayment?> received;
   @override
-  final BuiltList<
-    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-  >
-  change;
+  final BuiltList<AdminTicketPageDtoOutputPickupDisputePickupPayment?> change;
 
   factory _$AdminTicketPageDtoOutputOrder([
     void Function(AdminTicketPageDtoOutputOrderBuilder)? updates,
@@ -142,40 +136,20 @@ class AdminTicketPageDtoOutputOrderBuilder
   set lines(ListBuilder<AdminTicketPageDtoOutputOrderLinesInner>? lines) =>
       _$this._lines = lines;
 
-  ListBuilder<
-    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-  >?
-  _received;
-  ListBuilder<
-    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-  >
+  ListBuilder<AdminTicketPageDtoOutputPickupDisputePickupPayment?>? _received;
+  ListBuilder<AdminTicketPageDtoOutputPickupDisputePickupPayment?>
   get received => _$this._received ??=
-      ListBuilder<
-        AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-      >();
+      ListBuilder<AdminTicketPageDtoOutputPickupDisputePickupPayment?>();
   set received(
-    ListBuilder<
-      AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-    >?
-    received,
+    ListBuilder<AdminTicketPageDtoOutputPickupDisputePickupPayment?>? received,
   ) => _$this._received = received;
 
-  ListBuilder<
-    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-  >?
-  _change;
-  ListBuilder<
-    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-  >
-  get change => _$this._change ??=
-      ListBuilder<
-        AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-      >();
+  ListBuilder<AdminTicketPageDtoOutputPickupDisputePickupPayment?>? _change;
+  ListBuilder<AdminTicketPageDtoOutputPickupDisputePickupPayment?> get change =>
+      _$this._change ??=
+          ListBuilder<AdminTicketPageDtoOutputPickupDisputePickupPayment?>();
   set change(
-    ListBuilder<
-      AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-    >?
-    change,
+    ListBuilder<AdminTicketPageDtoOutputPickupDisputePickupPayment?>? change,
   ) => _$this._change = change;
 
   AdminTicketPageDtoOutputOrderBuilder() {

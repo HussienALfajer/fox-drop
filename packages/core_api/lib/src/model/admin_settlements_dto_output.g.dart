@@ -187,7 +187,7 @@ class _$AdminSettlementsDtoOutput extends AdminSettlementsDtoOutput {
   @override
   final AdminSettlementsDtoOutputPolicyEnum policy;
   @override
-  final BuiltList<AdminCaptainBalancesDtoOutputCaptainsInner> captains;
+  final BuiltList<AdminSettlementsDtoOutputCaptainsInner> captains;
 
   factory _$AdminSettlementsDtoOutput([
     void Function(AdminSettlementsDtoOutputBuilder)? updates,
@@ -261,13 +261,12 @@ class AdminSettlementsDtoOutputBuilder
   set policy(AdminSettlementsDtoOutputPolicyEnum? policy) =>
       _$this._policy = policy;
 
-  ListBuilder<AdminCaptainBalancesDtoOutputCaptainsInner>? _captains;
-  ListBuilder<AdminCaptainBalancesDtoOutputCaptainsInner> get captains =>
+  ListBuilder<AdminSettlementsDtoOutputCaptainsInner>? _captains;
+  ListBuilder<AdminSettlementsDtoOutputCaptainsInner> get captains =>
       _$this._captains ??=
-          ListBuilder<AdminCaptainBalancesDtoOutputCaptainsInner>();
-  set captains(
-    ListBuilder<AdminCaptainBalancesDtoOutputCaptainsInner>? captains,
-  ) => _$this._captains = captains;
+          ListBuilder<AdminSettlementsDtoOutputCaptainsInner>();
+  set captains(ListBuilder<AdminSettlementsDtoOutputCaptainsInner>? captains) =>
+      _$this._captains = captains;
 
   AdminSettlementsDtoOutputBuilder() {
     AdminSettlementsDtoOutput._defaults(this);

@@ -8,6 +8,7 @@ import 'package:core_api/src/model/captain_availability_dto_output_custody_limit
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_redelivery_of.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_restaurant.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation.dart';
+import 'package:core_api/src/model/customer_order_dto_output_order_redeliveries_inner.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_money.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_item_report.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_address.dart';
@@ -19,6 +20,7 @@ import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inne
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_removed_lines_inner.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_captain.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_report.dart';
 import 'package:core_api/src/model/customer_order_dto_output_order_delivery.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -34,6 +36,9 @@ part 'customer_order_dto_output_order.g.dart';
 /// * [status] - AP §8.1.
 /// * [version] - Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown (RA §4.3).
 /// * [placedAt]
+/// * [report]
+/// * [reportUntil] - «الإبلاغ عن مشكلة» until then, on a delivered order without a report (CU §12.2: customer.report_problem_window_hours after the delivery); null otherwise, when the detail offers «تواصل مع الدعم».
+/// * [redeliveries] - CU §12.3: the free re-deliveries placed for this order, newest first.
 /// * [lateCode]
 /// * [promisedAt] - «يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows.
 /// * [doorPing]
@@ -80,6 +85,17 @@ abstract class CustomerOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'placedAt')
   DateTime get placedAt;
+
+  @BuiltValueField(wireName: r'report')
+  CustomerActiveOrdersDtoOutputOrdersInnerReport? get report;
+
+  /// «الإبلاغ عن مشكلة» until then, on a delivered order without a report (CU §12.2: customer.report_problem_window_hours after the delivery); null otherwise, when the detail offers «تواصل مع الدعم».
+  @BuiltValueField(wireName: r'reportUntil')
+  DateTime? get reportUntil;
+
+  /// CU §12.3: the free re-deliveries placed for this order, newest first.
+  @BuiltValueField(wireName: r'redeliveries')
+  BuiltList<CustomerOrderDtoOutputOrderRedeliveriesInner> get redeliveries;
 
   @BuiltValueField(wireName: r'lateCode')
   CustomerActiveOrdersDtoOutputOrdersInnerLateCode? get lateCode;
@@ -214,6 +230,29 @@ class _$CustomerOrderDtoOutputOrderSerializer
     yield serializers.serialize(
       object.placedAt,
       specifiedType: const FullType(DateTime),
+    );
+    yield r'report';
+    yield object.report == null
+        ? null
+        : serializers.serialize(
+            object.report,
+            specifiedType: const FullType.nullable(
+              CustomerActiveOrdersDtoOutputOrdersInnerReport,
+            ),
+          );
+    yield r'reportUntil';
+    yield object.reportUntil == null
+        ? null
+        : serializers.serialize(
+            object.reportUntil,
+            specifiedType: const FullType.nullable(DateTime),
+          );
+    yield r'redeliveries';
+    yield serializers.serialize(
+      object.redeliveries,
+      specifiedType: const FullType(BuiltList, [
+        FullType(CustomerOrderDtoOutputOrderRedeliveriesInner),
+      ]),
     );
     yield r'lateCode';
     yield object.lateCode == null
@@ -456,6 +495,39 @@ class _$CustomerOrderDtoOutputOrderSerializer
                   )
                   as DateTime;
           result.placedAt = valueDes;
+          break;
+        case r'report':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CustomerActiveOrdersDtoOutputOrdersInnerReport,
+                    ),
+                  )
+                  as CustomerActiveOrdersDtoOutputOrdersInnerReport?;
+          if (valueDes == null) continue;
+          result.report.replace(valueDes);
+          break;
+        case r'reportUntil':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(DateTime),
+                  )
+                  as DateTime?;
+          if (valueDes == null) continue;
+          result.reportUntil = valueDes;
+          break;
+        case r'redeliveries':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(CustomerOrderDtoOutputOrderRedeliveriesInner),
+                    ]),
+                  )
+                  as BuiltList<CustomerOrderDtoOutputOrderRedeliveriesInner>;
+          result.redeliveries.replace(valueDes);
           break;
         case r'lateCode':
           final valueDes =

@@ -4,7 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/admin_desk_custody_dto_output_closed_due.dart';
-import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_resolution_corrected_lines_inner.dart';
+import 'package:core_api/src/model/admin_ticket_page_dto_output_pickup_dispute_pickup_payment.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_desk_custody_dto_output_currencies_inner.dart';
 import 'package:core_api/src/model/admin_desk_custody_dto_output_hand_in_grace.dart';
@@ -41,10 +41,10 @@ abstract class AdminDeskCustodyDtoOutput
   // enum statusEnum {  active,  suspended,  terminated,  };
 
   @BuiltValueField(wireName: r'usage')
-  AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner get usage;
+  AdminTicketPageDtoOutputPickupDisputePickupPayment? get usage;
 
   @BuiltValueField(wireName: r'limit')
-  AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner get limit;
+  AdminTicketPageDtoOutputPickupDisputePickupPayment? get limit;
 
   @BuiltValueField(wireName: r'closedDue')
   AdminDeskCustodyDtoOutputClosedDue get closedDue;
@@ -108,19 +108,23 @@ class _$AdminDeskCustodyDtoOutputSerializer
       specifiedType: const FullType(AdminDeskCustodyDtoOutputStatusEnum),
     );
     yield r'usage';
-    yield serializers.serialize(
-      object.usage,
-      specifiedType: const FullType(
-        AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
-      ),
-    );
+    yield object.usage == null
+        ? null
+        : serializers.serialize(
+            object.usage,
+            specifiedType: const FullType.nullable(
+              AdminTicketPageDtoOutputPickupDisputePickupPayment,
+            ),
+          );
     yield r'limit';
-    yield serializers.serialize(
-      object.limit,
-      specifiedType: const FullType(
-        AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
-      ),
-    );
+    yield object.limit == null
+        ? null
+        : serializers.serialize(
+            object.limit,
+            specifiedType: const FullType.nullable(
+              AdminTicketPageDtoOutputPickupDisputePickupPayment,
+            ),
+          );
     yield r'closedDue';
     yield serializers.serialize(
       object.closedDue,
@@ -212,22 +216,24 @@ class _$AdminDeskCustodyDtoOutputSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(
-                      AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
+                    specifiedType: const FullType.nullable(
+                      AdminTicketPageDtoOutputPickupDisputePickupPayment,
                     ),
                   )
-                  as AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner;
+                  as AdminTicketPageDtoOutputPickupDisputePickupPayment?;
+          if (valueDes == null) continue;
           result.usage.replace(valueDes);
           break;
         case r'limit':
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(
-                      AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
+                    specifiedType: const FullType.nullable(
+                      AdminTicketPageDtoOutputPickupDisputePickupPayment,
                     ),
                   )
-                  as AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner;
+                  as AdminTicketPageDtoOutputPickupDisputePickupPayment?;
+          if (valueDes == null) continue;
           result.limit.replace(valueDes);
           break;
         case r'closedDue':

@@ -3,7 +3,7 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_resolution_corrected_lines_inner.dart';
+import 'package:core_api/src/model/admin_ticket_page_dto_output_pickup_dispute_pickup_payment.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -28,18 +28,15 @@ abstract class AdminTicketPageDtoOutputPickupDispute
           AdminTicketPageDtoOutputPickupDisputeBuilder
         > {
   @BuiltValueField(wireName: r'pickupPayment')
-  AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
-  get pickupPayment;
+  AdminTicketPageDtoOutputPickupDisputePickupPayment? get pickupPayment;
 
   /// The captain's payment lines as booked.
   @BuiltValueField(wireName: r'recorded')
-  BuiltList<AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner>
-  get recorded;
+  BuiltList<AdminTicketPageDtoOutputPickupDisputePickupPayment?> get recorded;
 
   /// What the restaurant says it received.
   @BuiltValueField(wireName: r'received')
-  BuiltList<AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner>
-  get received;
+  BuiltList<AdminTicketPageDtoOutputPickupDisputePickupPayment?> get received;
 
   @BuiltValueField(wireName: r'confirmedBy')
   AdminTicketPageDtoOutputPickupDisputeConfirmedByEnum get confirmedBy;
@@ -86,28 +83,26 @@ class _$AdminTicketPageDtoOutputPickupDisputeSerializer
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'pickupPayment';
-    yield serializers.serialize(
-      object.pickupPayment,
-      specifiedType: const FullType(
-        AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
-      ),
-    );
+    yield object.pickupPayment == null
+        ? null
+        : serializers.serialize(
+            object.pickupPayment,
+            specifiedType: const FullType.nullable(
+              AdminTicketPageDtoOutputPickupDisputePickupPayment,
+            ),
+          );
     yield r'recorded';
     yield serializers.serialize(
       object.recorded,
       specifiedType: const FullType(BuiltList, [
-        FullType(
-          AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
-        ),
+        FullType.nullable(AdminTicketPageDtoOutputPickupDisputePickupPayment),
       ]),
     );
     yield r'received';
     yield serializers.serialize(
       object.received,
       specifiedType: const FullType(BuiltList, [
-        FullType(
-          AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
-        ),
+        FullType.nullable(AdminTicketPageDtoOutputPickupDisputePickupPayment),
       ]),
     );
     yield r'confirmedBy';
@@ -165,11 +160,12 @@ class _$AdminTicketPageDtoOutputPickupDisputeSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(
-                      AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
+                    specifiedType: const FullType.nullable(
+                      AdminTicketPageDtoOutputPickupDisputePickupPayment,
                     ),
                   )
-                  as AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner;
+                  as AdminTicketPageDtoOutputPickupDisputePickupPayment?;
+          if (valueDes == null) continue;
           result.pickupPayment.replace(valueDes);
           break;
         case r'recorded':
@@ -177,13 +173,13 @@ class _$AdminTicketPageDtoOutputPickupDisputeSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
+                      FullType.nullable(
+                        AdminTicketPageDtoOutputPickupDisputePickupPayment,
                       ),
                     ]),
                   )
                   as BuiltList<
-                    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+                    AdminTicketPageDtoOutputPickupDisputePickupPayment?
                   >;
           result.recorded.replace(valueDes);
           break;
@@ -192,13 +188,13 @@ class _$AdminTicketPageDtoOutputPickupDisputeSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
+                      FullType.nullable(
+                        AdminTicketPageDtoOutputPickupDisputePickupPayment,
                       ),
                     ]),
                   )
                   as BuiltList<
-                    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+                    AdminTicketPageDtoOutputPickupDisputePickupPayment?
                   >;
           result.received.replace(valueDes);
           break;

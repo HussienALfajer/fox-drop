@@ -9,6 +9,8 @@ part of 'customer_active_orders_dto_output_orders_inner_lines_inner.dart';
 class _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
     extends CustomerActiveOrdersDtoOutputOrdersInnerLinesInner {
   @override
+  final int position;
+  @override
   final String itemId;
   @override
   final String name;
@@ -36,6 +38,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
           ._build();
 
   _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner._({
+    required this.position,
     required this.itemId,
     required this.name,
     required this.quantity,
@@ -61,6 +64,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is CustomerActiveOrdersDtoOutputOrdersInnerLinesInner &&
+        position == other.position &&
         itemId == other.itemId &&
         name == other.name &&
         quantity == other.quantity &&
@@ -75,6 +79,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, position.hashCode);
     _$hash = $jc(_$hash, itemId.hashCode);
     _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jc(_$hash, quantity.hashCode);
@@ -93,6 +98,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner
     return (newBuiltValueToStringHelper(
             r'CustomerActiveOrdersDtoOutputOrdersInnerLinesInner',
           )
+          ..add('position', position)
           ..add('itemId', itemId)
           ..add('name', name)
           ..add('quantity', quantity)
@@ -113,6 +119,10 @@ class CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder
           CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder
         > {
   _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner? _$v;
+
+  int? _position;
+  int? get position => _$this._position;
+  set position(int? position) => _$this._position = position;
 
   String? _itemId;
   String? get itemId => _$this._itemId;
@@ -162,6 +172,7 @@ class CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder
   CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _position = $v.position;
       _itemId = $v.itemId;
       _name = $v.name;
       _quantity = $v.quantity;
@@ -198,6 +209,11 @@ class CustomerActiveOrdersDtoOutputOrdersInnerLinesInnerBuilder
       _$result =
           _$v ??
           _$CustomerActiveOrdersDtoOutputOrdersInnerLinesInner._(
+            position: BuiltValueNullFieldError.checkNotNull(
+              position,
+              r'CustomerActiveOrdersDtoOutputOrdersInnerLinesInner',
+              'position',
+            ),
             itemId: BuiltValueNullFieldError.checkNotNull(
               itemId,
               r'CustomerActiveOrdersDtoOutputOrdersInnerLinesInner',

@@ -3336,4 +3336,109 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get merchantRecordsFailed => 'تعذّر التحميل.';
+
+  @override
+  String get customerReportProblem => 'الإبلاغ عن مشكلة';
+
+  @override
+  String get customerReportType => 'نوع المشكلة';
+
+  @override
+  String get customerReportItems => 'الأصناف المتأثرة';
+
+  @override
+  String get customerReportNote => 'ملاحظة (اختياري)';
+
+  @override
+  String get customerReportNoteRequired => 'اكتب المشكلة';
+
+  @override
+  String get customerReportPhotos => 'الصور (حتى 3)';
+
+  @override
+  String get customerReportPhoto => 'صورة (اختياري)';
+
+  @override
+  String get customerPhotoCamera => 'التقاط صورة';
+
+  @override
+  String get customerPhotoGallery => 'من المعرض';
+
+  @override
+  String get customerPhotoRemove => 'حذف الصورة';
+
+  @override
+  String get customerPhotoTooLarge => 'الصورة كبيرة جداً، اختر صورة أصغر.';
+
+  @override
+  String get customerReportSend => 'إرسال البلاغ';
+
+  @override
+  String get customerReportClosed =>
+      'انتهت مهلة الإبلاغ عن هذا الطلب. تواصل مع الدعم.';
+
+  @override
+  String get customerReportAlready => 'أرسلت بلاغاً عن هذا الطلب من قبل.';
+
+  @override
+  String get customerReportPhotoFailed => 'تعذّر رفع الصورة. حاول مجدداً.';
+
+  @override
+  String get customerContactSupport => 'تواصل مع الدعم';
+
+  @override
+  String get customerReportPrice => 'أبلغ عن سعر مختلف';
+
+  @override
+  String get customerPriceItem => 'الصنف (اختياري)';
+
+  @override
+  String get customerPriceNoItem => 'بدون تحديد صنف';
+
+  @override
+  String get customerShopPrice => 'السعر في المحل (اختياري)';
+
+  @override
+  String get customerShopPriceInvalid => 'اكتب السعر بالأرقام';
+
+  @override
+  String get customerPriceThanks => 'شكراً، سنتحقق من السعر';
+
+  @override
+  String get customerPriceToday => 'أرسلت بلاغاً عن هذا المطعم اليوم';
+
+  @override
+  String get customerTicketNew => 'جديدة';
+
+  @override
+  String get customerTicketInProgress => 'قيد المعالجة';
+
+  @override
+  String get customerTicketWaiting => 'بانتظار رد';
+
+  @override
+  String get customerTicketResolved => 'محلولة';
+
+  @override
+  String get customerTicketClosed => 'مغلقة';
+
+  @override
+  String customerReportSent(String number) {
+    return 'استلمنا بلاغك T-$number. سنرد عليك خلال 24 ساعة.';
+  }
+
+  @override
+  String customerReportStatus(String number, String status) {
+    return 'بلاغك T-$number: $status';
+  }
+
+  @override
+  String customerReportLine(String name, String quantity) {
+    return '$name × $quantity';
+  }
+
+  @override
+  String customerRedeliveryOrder(String number) {
+    return 'إعادة التوصيل: الطلب #$number';
+  }
 }

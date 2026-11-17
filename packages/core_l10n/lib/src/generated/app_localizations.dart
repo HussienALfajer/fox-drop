@@ -5413,6 +5413,198 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'تعذّر التحميل.'**
   String get merchantRecordsFailed;
+
+  /// Opens the problem report on a delivered order (CU §12.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'الإبلاغ عن مشكلة'**
+  String get customerReportProblem;
+
+  /// The report's type, from Content's customer_problem list (CU §12.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'نوع المشكلة'**
+  String get customerReportType;
+
+  /// The order's lines the report names, required for «صنف ناقص», «صنف خطأ» and «الطلب تالف» (CU §12.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'الأصناف المتأثرة'**
+  String get customerReportItems;
+
+  /// The report's optional note, up to 300 characters (CU §12.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'ملاحظة (اختياري)'**
+  String get customerReportNote;
+
+  /// The report's note when the type («أخرى») requires it (CU §12.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب المشكلة'**
+  String get customerReportNoteRequired;
+
+  /// The report's optional photos, up to 3 (CU §12.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'الصور (حتى 3)'**
+  String get customerReportPhotos;
+
+  /// The price report's one optional photo (CU §9.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'صورة (اختياري)'**
+  String get customerReportPhoto;
+
+  /// Takes a photo with the camera for a report (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'التقاط صورة'**
+  String get customerPhotoCamera;
+
+  /// Picks a photo from the phone for a report (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'من المعرض'**
+  String get customerPhotoGallery;
+
+  /// Removes a photo from a report before sending (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'حذف الصورة'**
+  String get customerPhotoRemove;
+
+  /// A photo above 8 MB (architecture §5.8; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'الصورة كبيرة جداً، اختر صورة أصغر.'**
+  String get customerPhotoTooLarge;
+
+  /// Sends a report (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'إرسال البلاغ'**
+  String get customerReportSend;
+
+  /// The report's window ended meanwhile (CU §12.2; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهت مهلة الإبلاغ عن هذا الطلب. تواصل مع الدعم.'**
+  String get customerReportClosed;
+
+  /// One report per order (CU §12.2, Q17; no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'أرسلت بلاغاً عن هذا الطلب من قبل.'**
+  String get customerReportAlready;
+
+  /// A photo could not be uploaded or was refused (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر رفع الصورة. حاول مجدداً.'**
+  String get customerReportPhotoFailed;
+
+  /// Outside the report's window, or on a failed or cancelled order: call and WhatsApp (CU §12.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'تواصل مع الدعم'**
+  String get customerContactSupport;
+
+  /// Opens the price report on a restaurant page (CU §9.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'أبلغ عن سعر مختلف'**
+  String get customerReportPrice;
+
+  /// The price report's optional item, from the menu (CU §9.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'الصنف (اختياري)'**
+  String get customerPriceItem;
+
+  /// No item chosen in the price report (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'بدون تحديد صنف'**
+  String get customerPriceNoItem;
+
+  /// The price report's optional shop price, in the base currency (CU §9.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'السعر في المحل (اختياري)'**
+  String get customerShopPrice;
+
+  /// A shop price that is not a number above zero (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب السعر بالأرقام'**
+  String get customerShopPriceInvalid;
+
+  /// The price report's answer (CU §9.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'شكراً، سنتحقق من السعر'**
+  String get customerPriceThanks;
+
+  /// One price report per restaurant per business day (CU §9.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'أرسلت بلاغاً عن هذا المطعم اليوم'**
+  String get customerPriceToday;
+
+  /// A report's status (AP Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'جديدة'**
+  String get customerTicketNew;
+
+  /// A report's status (AP Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'قيد المعالجة'**
+  String get customerTicketInProgress;
+
+  /// A report's status (AP Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'بانتظار رد'**
+  String get customerTicketWaiting;
+
+  /// A report's status (AP Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'محلولة'**
+  String get customerTicketResolved;
+
+  /// A report's status (AP Appendix C).
+  ///
+  /// In ar, this message translates to:
+  /// **'مغلقة'**
+  String get customerTicketClosed;
+
+  /// The report's answer (CU §12.2): the ticket's number.
+  ///
+  /// In ar, this message translates to:
+  /// **'استلمنا بلاغك T-{number}. سنرد عليك خلال 24 ساعة.'**
+  String customerReportSent(String number);
+
+  /// The order's report and its status (CU §12.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'بلاغك T-{number}: {status}'**
+  String customerReportStatus(String number, String status);
+
+  /// A line of the order in the report's items: its name and how many are affected.
+  ///
+  /// In ar, this message translates to:
+  /// **'{name} × {quantity}'**
+  String customerReportLine(String name, String quantity);
+
+  /// The link to a free re-delivery placed for this order (CU §12.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة التوصيل: الطلب #{number}'**
+  String customerRedeliveryOrder(String number);
 }
 
 class _AppLocalizationsDelegate

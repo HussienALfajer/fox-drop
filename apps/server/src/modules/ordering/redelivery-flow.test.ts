@@ -237,6 +237,15 @@ describe('«إعادة توصيل مجانية» with the restaurant responsible
       redeliveryOf: { orderId: original.order.id },
       money: expect.objectContaining({ total: '0' }),
     });
+    // CU §12.3 (slice 2.24a): the original order links its re-delivery.
+    const originalShown = await app.inject({
+      method: 'GET',
+      url: `/v1/customer/orders/${original.order.id}`,
+      headers: original.order.customer,
+    });
+    expect(originalShown.json().order.redeliveries).toEqual([
+      { orderId, number: expect.any(String) },
+    ]);
     const cancelled = await app.inject({
       method: 'POST',
       url: `/v1/customer/orders/${orderId}/cancel`,
@@ -271,6 +280,19 @@ describe('«إعادة توصيل مجانية» with the restaurant responsible
       captainPay: 0n,
     });
     expect((await compensationCost()) - costBefore).toBe(ORDER_PAY);
+    // Owner decision 2026-11-17 (slice 2.24a): a delivered re-delivery is
+    // reported like any order, once, within its window.
+    const report = (key: string) =>
+      app.inject({
+        method: 'POST',
+        url: `/v1/customer/orders/${orderId}/report`,
+        headers: { ...original.order.customer, 'idempotency-key': key },
+        payload: { typeCode: 'cold_food', note: null, items: [], photoUploadIds: [] },
+      });
+    const reported = await report(randomUUID());
+    expect(reported.statusCode).toBe(200);
+    expect(reported.json().order.report).toMatchObject({ status: 'new' });
+    expect((await report(randomUUID())).json().error).toBe('already_reported');
     expect(await earningsEntries(captain.captainId, orderId)).toEqual([
       { type: 'earn.order_pay', reason: null, amount: ORDER_PAY },
     ]);

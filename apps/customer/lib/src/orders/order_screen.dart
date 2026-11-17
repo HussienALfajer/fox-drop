@@ -13,6 +13,7 @@ import 'door_ring.dart';
 import 'order_again_section.dart';
 import 'order_help_sheet.dart';
 import 'order_live.dart';
+import 'report_section.dart';
 
 /// The order screen (CU §11): the status title and subtitle of §11.2, the
 /// five-step progress, the time, the captain card from assignment and the
@@ -20,7 +21,8 @@ import 'order_live.dart';
 /// «إلغاء الطلب» while placed (CU §11.4–11.5), and the banners of the
 /// emergency stop and the item-unavailable report and the late code (CU
 /// §11.6), and the door
-/// ping's full-screen ring (CU §11.7). The map, the
+/// ping's full-screen ring (CU §11.7), and after it ends the problem report
+/// (CU §12.2). The map, the
 /// other banners
 /// and the rating sheet come with their slices. Unstyled until the design.
 class OrderScreen extends ConsumerWidget {
@@ -295,6 +297,9 @@ class OrderScreen extends ConsumerWidget {
                 title: Text(l10n.customerTotal),
                 trailing: Text(total()),
               ),
+              // CU §12.2, §12.3: the report, its window or «تواصل مع الدعم»,
+              // and the links to the order's re-deliveries.
+              ReportSection(order: order),
               // CU §11.1: «إلغاء الطلب», while placed only (§11.4).
               if (cancelHelpAt(
                     order.status.name,

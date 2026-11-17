@@ -4,18 +4,34 @@ import {
   ConflictException,
   Get,
   HttpCode,
+  Inject,
   HttpStatus,
   NotFoundException,
   Param,
   Post,
+  Req,
   UnprocessableEntityException,
 } from '@nestjs/common';
+import type { FastifyRequest } from 'fastify';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
 import { GENERIC_CUSTOMER_TEXT, NOTE_MAX } from '../content/index.js';
 import { AppSignedIn, CurrentAppSession } from '../../http/access.js';
 import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
+import { DATABASE } from '../../database/database.module.js';
+import type { Database } from '../../database/database.js';
+import { requestContext } from '../../http/request-context.js';
 import { CustomerController } from '../../http/route-groups.js';
+import { FilesRefusedError } from '../files/index.js';
+import {
+  type CustomerReport,
+  type CustomerReportView,
+  type ReportedOrder,
+  SupportService,
+  ticketAnswered,
+} from '../support/index.js';
+import { UNTIL_ENDED } from './active-orders.js';
+import { lockOrder } from './order-events.js';
 import { type Captain, CaptainsService } from '../captains/index.js';
 import { unsavedAddressFields, withRecipient } from '../customers/index.js';
 import { type AppSession, CaptainAccountsService } from '../identity/index.js';
@@ -107,6 +123,29 @@ const customerOrder = z.object({
       'Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown (RA §4.3).',
     ),
   placedAt: z.iso.datetime(),
+  report: z
+    .object({
+      ticketId: z.uuid(),
+      number: z.string().describe('«بلاغك T-{رقم}: {الحالة}» (CU §12.2).'),
+      status: z
+        .enum(['new', 'in_progress', 'waiting', 'resolved', 'closed'])
+        .describe('AP Appendix C: «جديدة», «قيد المعالجة», «بانتظار رد», «محلولة», «مغلقة».'),
+      message: z.string().nullable().describe('The resolution message, once resolved.'),
+      resolvedAt: z.iso.datetime().nullable(),
+    })
+    .nullable()
+    .describe(
+      "CU §12.2, Q17 (slice 2.24a): the customer's one report on the order; null without one.",
+    ),
+  reportUntil: z.iso
+    .datetime()
+    .nullable()
+    .describe(
+      '«الإبلاغ عن مشكلة» until then, on a delivered order without a report (CU §12.2: customer.report_problem_window_hours after the delivery); null otherwise, when the detail offers «تواصل مع الدعم».',
+    ),
+  redeliveries: z
+    .array(z.object({ orderId: z.uuid(), number: z.string() }))
+    .describe('CU §12.3: the free re-deliveries placed for this order, newest first.'),
   lateCode: personalCode
     .extend({ issuedAt: z.iso.datetime() })
     .nullable()
@@ -251,6 +290,7 @@ const customerOrder = z.object({
     .describe("The total in the city's other currencies, by the order's own rates (CU §11.1)."),
   lines: z.array(
     z.object({
+      position: z.int().describe("The line's place in the order, for a report's items (CU §12.2)."),
       itemId: z.uuid(),
       name: z.string(),
       quantity: z.int(),
@@ -309,6 +349,32 @@ class CustomerActiveOrdersDto extends createZodDto(
 
 class CustomerOrderParamsDto extends createZodDto(z.object({ orderId: z.uuid() })) {}
 
+class CustomerReportOrderDto extends createZodDto(
+  z.object({
+    typeCode: z
+      .string()
+      .min(1)
+      .max(64)
+      .describe("A code of Content's customer_problem list (AP Appendix B)."),
+    note: z
+      .string()
+      .max(NOTE_MAX)
+      .nullable()
+      .describe('Optional, up to 300 characters; required for «أخرى» (CU §12.2).'),
+    items: z
+      .array(z.object({ position: z.int().min(0), quantity: z.int().min(1).max(99) }))
+      .max(50)
+      .describe(
+        "The order's lines by position with how many: required for «صنف ناقص», «صنف خطأ» and «الطلب تالف», empty for the others.",
+      ),
+    photoUploadIds: z
+      .array(z.uuid())
+      .max(3)
+      .refine((ids) => new Set(ids).size === ids.length, 'each photo once')
+      .describe('Up to 3 photos, each from POST /v1/customer/uploads/report-photo once uploaded.'),
+  }),
+) {}
+
 class CustomerCancelOrderDto extends createZodDto(
   z.object({
     reason: z
@@ -338,6 +404,8 @@ export class CustomerOrdersController {
     private readonly captainAccounts: CaptainAccountsService,
     private readonly compensations: CompensationsService,
     private readonly lateCodes: LateCodesService,
+    private readonly support: SupportService,
+    @Inject(DATABASE) private readonly database: Database,
   ) {}
 
   @Get('orders/active')
@@ -522,14 +590,111 @@ export class CustomerOrdersController {
     }
   }
 
+  // CU §12.2, AP §9.9.1 (slice 2.24a): «الإبلاغ عن مشكلة» on a delivered
+  // order within customer.report_problem_window_hours, once (Q17). Answers
+  // the order with its `report`; the app says «استلمنا بلاغك T-{رقم}…».
+  // 404 unknown_order; 409 report_closed, already_reported, upload_used;
+  // 400 unknown_reason, reason_note_required, items_required,
+  // invalid_items, too_many_photos and the photo's upload_not_found,
+  // upload_expired, upload_missing, upload_invalid; 422
+  // idempotency_key_reused.
+  @Post('orders/:orderId/report')
+  @AppSignedIn()
+  @Idempotent()
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: CustomerOrderDto })
+  async report(
+    @CurrentAppSession() session: AppSession,
+    @IdempotencyKey() idempotencyKey: string,
+    @Param() params: CustomerOrderParamsDto,
+    @Body() body: CustomerReportOrderDto,
+    @Req() request: FastifyRequest,
+  ) {
+    const order = await this.orders.customerOrder(session.accountId, params.orderId);
+    if (!order) {
+      throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: 'unknown_order' });
+    }
+    const report: CustomerReport = {
+      typeCode: body.typeCode,
+      note: body.note,
+      items: body.items,
+      photoUploadIds: body.photoUploadIds,
+    };
+    const now = new Date();
+    const facts = async (status: string, deliveredAt: Date | null): Promise<ReportedOrder> => ({
+      id: order.id,
+      cityId: order.cityId,
+      number: order.number,
+      active: false,
+      customerId: session.accountId,
+      restaurantId: order.restaurantId,
+      captainId: order.captainId,
+      status,
+      deliveredAt,
+      lines: order.lines.map(({ position, name, quantity }) => ({ position, name, quantity })),
+    });
+    await reportAnswered(async () => {
+      // A repeat answers the order before any refusal.
+      const replayed = await this.support.replayed(
+        session.accountId,
+        idempotencyKey,
+        this.support.reportHash(order.id, report),
+      );
+      if (replayed !== null) return;
+      const ready = await this.support.prepareReport(
+        await facts(order.status, await this.orders.deliveredAt(order.id, order.placedAt)),
+        report,
+        now,
+      );
+      await this.database.db.transaction(async (tx) => {
+        const locked = await lockOrder(tx, order.id, order.placedAt);
+        if (!locked) {
+          throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: 'unknown_order' });
+        }
+        const deliveredAt = await this.orders.deliveredAt(order.id, order.placedAt, tx);
+        await this.support.openReportIn(
+          tx,
+          ready,
+          await facts(locked.status, deliveredAt),
+          { accountId: session.accountId, context: requestContext(request) },
+          idempotencyKey,
+          now,
+        );
+      });
+    });
+    const after = await this.orders.customerOrder(session.accountId, order.id);
+    return { order: await this.withNames(after!) };
+  }
+
   private async withNames(order: OrderView) {
-    const [names, captains, compensation, lateCode] = await Promise.all([
-      this.merchants.names([order.restaurantId]),
-      this.captainsOf([order]),
-      order.cancellation === null ? null : this.compensations.issuedCode(order.id),
-      order.acceptance === null ? null : this.lateCodes.forOrder(order.id),
-    ]);
-    return orderBody(order, names, captains, compensation, lateCode);
+    const delivered = order.status === 'delivered';
+    // A report stays on its order whatever the order became since (an
+    // outcome changed to failed included); only its window needs delivered.
+    const ended = !UNTIL_ENDED.includes(order.status);
+    const [names, captains, compensation, lateCode, report, deliveredAt, redeliveries] =
+      await Promise.all([
+        this.merchants.names([order.restaurantId]),
+        this.captainsOf([order]),
+        order.cancellation === null ? null : this.compensations.issuedCode(order.id),
+        order.acceptance === null ? null : this.lateCodes.forOrder(order.id),
+        ended ? this.support.reportOn(order.id) : null,
+        delivered ? this.orders.deliveredAt(order.id, order.placedAt) : null,
+        this.orders.redeliveriesOf(order.id),
+      ]);
+    const until =
+      report === null
+        ? await this.support.reportUntil({
+            cityId: order.cityId,
+            status: order.status,
+            deliveredAt,
+          })
+        : null;
+    return orderBody(order, names, captains, compensation, lateCode, {
+      report,
+      // Past its end the window is closed: the detail offers «تواصل مع الدعم».
+      reportUntil: until !== null && until.getTime() > Date.now() ? until : null,
+      redeliveries,
+    });
   }
 
   // The captains of these orders; with their number once one of their orders
@@ -570,6 +735,13 @@ function orderBody(
   compensation: Compensation | null = null,
   // CU §11.6: the order's late code (slice 2.22c).
   lateCode: LateCode | null = null,
+  // CU §12.2, §12.3 (slice 2.24a): its report, the report's window and its
+  // re-deliveries; the active orders' list reads none.
+  after: {
+    report: CustomerReportView | null;
+    reportUntil: Date | null;
+    redeliveries: { orderId: string; number: bigint }[];
+  } = { report: null, reportUntil: null, redeliveries: [] },
 ) {
   const captain = order.captainId === null ? undefined : captains.get(order.captainId);
   const restaurant = names.get(order.restaurantId);
@@ -584,6 +756,18 @@ function orderBody(
     status: order.status,
     version: order.version,
     placedAt: order.placedAt.toISOString(),
+    report: after.report && {
+      ticketId: after.report.ticketId,
+      number: text(after.report.number),
+      status: after.report.status,
+      message: after.report.message,
+      resolvedAt: after.report.resolvedAt?.toISOString() ?? null,
+    },
+    reportUntil: after.reportUntil?.toISOString() ?? null,
+    redeliveries: after.redeliveries.map((each) => ({
+      orderId: each.orderId,
+      number: text(each.number),
+    })),
     promisedAt: order.acceptance?.promisedAt.toISOString() ?? null,
     lateCode: lateCode && {
       ...personalCodeBody(lateCode),
@@ -698,4 +882,16 @@ function personalCodeBody(value: {
         : { amount: text(value.maxDiscount), currency: value.currency },
     validTo: value.validTo.toISOString(),
   };
+}
+
+// The report's refusals as HTTP answers: the tickets' and the photos'.
+async function reportAnswered(run: () => Promise<void>): Promise<void> {
+  try {
+    await ticketAnswered(run);
+  } catch (error) {
+    if (error instanceof FilesRefusedError) {
+      throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, error: error.refusal });
+    }
+    throw error;
+  }
 }
