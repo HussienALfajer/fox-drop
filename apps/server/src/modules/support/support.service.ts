@@ -202,6 +202,10 @@ export class SupportService {
     idempotencyKey: string,
     now: Date,
   ): Promise<Ticket> {
+    // A repeat answers its ticket before any refusal (a type deactivated
+    // since, a party gone).
+    const replayed = await this.replayed(admin.accountId, idempotencyKey, openingHash(input, null));
+    if (replayed !== null) return this.ticket(input.cityId, replayed);
     if (!(await this.partyInCity(input.cityId, input.party, input.partyId, now))) {
       throw new TicketRefusedError('unknown_party', 'no such party in the city');
     }
@@ -210,6 +214,24 @@ export class SupportService {
       this.openIn(tx, prepared, null, admin, idempotencyKey, now),
     );
     return this.ticket(input.cityId, id);
+  }
+
+  // The ticket an opening's key already opened, null for a new key; the key
+  // with another request is 422 idempotency_key_reused.
+  async replayed(
+    accountId: string,
+    idempotencyKey: string,
+    requestHash: string,
+  ): Promise<string | null> {
+    const [row] = await this.database.db
+      .select({ id: tickets.id, requestHash: tickets.requestHash })
+      .from(tickets)
+      .where(and(eq(tickets.openedBy, accountId), eq(tickets.idempotencyKey, idempotencyKey)));
+    if (!row) return null;
+    if (row.requestHash !== requestHash) {
+      throw new TicketRefusedError('idempotency_key_reused', 'the key was used for another ticket');
+    }
+    return row.id;
   }
 
   // What an opening reads through the pool before its transaction: the type
@@ -253,7 +275,7 @@ export class SupportService {
       throw new TicketRefusedError('no_captain', 'the order has no captain');
     }
     const description = input.description.trim();
-    const requestHash = hashOf([order?.id ?? null, input.party, partyId, chosen.code, description]);
+    const requestHash = openingHash(input, order?.id ?? null);
     await tx.execute(
       sql`SELECT pg_advisory_xact_lock(hashtext(${`support.ticket_key:${admin.accountId}:${idempotencyKey}`}))`,
     );
@@ -411,6 +433,10 @@ export class SupportService {
     const text = body.trim();
     const requestHash = hashOf([id, text]);
     await this.database.db.transaction(async (tx) => {
+      // The key is the account's across tickets: one use of it at a time.
+      await tx.execute(
+        sql`SELECT pg_advisory_xact_lock(hashtext(${`support.note_key:${admin.accountId}:${idempotencyKey}`}))`,
+      );
       const before = await lockTicket(tx, cityId, id);
       const [replayed] = await tx
         .select()
@@ -509,6 +535,9 @@ export class SupportService {
   ): Promise<Ticket & { notes: TicketNote[] }> {
     await this.database.db.transaction(async (tx) => {
       const before = await lockTicket(tx, cityId, id);
+      if (!isOpenStatus(before.status)) {
+        throw new TicketRefusedError('ticket_not_open', 'the ticket is no longer open');
+      }
       if (!canSetStatus(before.status, status)) {
         throw new TicketRefusedError(
           'invalid_status_change',
@@ -562,7 +591,8 @@ export class SupportService {
       case 'restaurant':
         return (await this.merchants.restaurantIds(cityId)).some((each) => each.id === partyId);
       case 'customer':
-        return (await this.customers.firstNames([partyId])).has(partyId);
+        // An account, profile or not: a customer may call before «أكمل بياناتك».
+        return this.customerAccounts.exists(partyId);
     }
   }
 
@@ -649,6 +679,18 @@ function auditOf(row: TicketRow) {
     status: row.status,
     slaKind: row.slaKind,
   };
+}
+
+// An opening's request: on an order its party is named by the order, so the
+// hash leaves the party's id out and can be worked out before the lock.
+export function openingHash(input: OpenTicket, orderId: string | null): string {
+  return hashOf([
+    orderId,
+    input.party,
+    orderId === null ? input.partyId : null,
+    input.typeCode,
+    input.description.trim(),
+  ]);
 }
 
 function hashOf(parts: unknown[]): string {

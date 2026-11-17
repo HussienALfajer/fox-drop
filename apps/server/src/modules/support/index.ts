@@ -35,7 +35,7 @@ export class SupportModule {}
 
 // The worker's side: ordering's alerts sync tells it when an order ends.
 @Module({
-  imports: [NotificationsWorkerModule],
+  imports: [DatabaseModule, NotificationsWorkerModule],
   providers: [TicketSync],
   exports: [TicketSync],
 })
@@ -46,6 +46,7 @@ export {
   type Ticket,
   type TicketAdmin,
   type TicketOrder,
+  openingHash,
   TicketRefusedError,
   SupportService,
 } from './support.service.js';

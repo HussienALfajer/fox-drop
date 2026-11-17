@@ -1,9 +1,10 @@
 import type { Page } from '@playwright/test';
 
 // A session answered by the fake server, with the permissions the test needs.
-// Its role receives no alerts by default, so the sound banner (AP §7.3) does
-// not cover the page; e2e/alerts.spec.ts passes a recipient role.
-export function sessionBody(permissions: string[] = [], roles: string[] = ['SUP']) {
+// Its role receives no alerts by default (DATA: SUP receives «تذكرة عاجلة»
+// since slice 2.23a), so the sound banner (AP §7.3) does not cover the page;
+// e2e/alerts.spec.ts passes a recipient role.
+export function sessionBody(permissions: string[] = [], roles: string[] = ['DATA']) {
   return {
     accountId: '01900000-0000-7000-8000-000000000001',
     roles,
@@ -17,7 +18,7 @@ export function sessionBody(permissions: string[] = [], roles: string[] = ['SUP'
 export async function fakeSession(
   page: Page,
   permissions: string[] | null,
-  roles: string[] = ['SUP'],
+  roles: string[] = ['DATA'],
 ) {
   await page.route('**/v1/admin/auth/session', (route) =>
     permissions === null

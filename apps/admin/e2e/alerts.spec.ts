@@ -64,9 +64,10 @@ test('enables the alert sound and acknowledges an alert', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'استلام' })).toBeHidden();
 });
 
-// A user whose roles receive no alert gets no banner (AP §7.3).
-test('shows no sound banner to a support user', async ({ page }) => {
-  await fakeSession(page, [], ['SUP']);
+// A user whose roles receive no alert gets no banner (AP §7.3); SUP receives
+// «تذكرة عاجلة» since slice 2.23a, DATA none.
+test('shows no sound banner to a data user', async ({ page }) => {
+  await fakeSession(page, [], ['DATA']);
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'لوحة الإدارة' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'اضغط لتفعيل صوت التنبيهات' })).toBeHidden();

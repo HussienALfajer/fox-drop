@@ -1,4 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { DATABASE } from '../../database/database.module.js';
+import type { Database } from '../../database/database.js';
 import { and, eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { AlertsService, PlatformBroadcasts } from '../notifications/index.js';
@@ -14,6 +16,7 @@ type TicketRow = typeof tickets.$inferSelect;
 @Injectable()
 export class TicketSync {
   constructor(
+    @Inject(DATABASE) private readonly database: Database,
     private readonly alerts: AlertsService,
     private readonly broadcasts: PlatformBroadcasts,
   ) {}
@@ -34,6 +37,15 @@ export class TicketSync {
       ticketId: row.id,
       at: now,
     });
+  }
+
+  // The orders whose tickets are still urgent, for the worker's start.
+  async urgentOrderIds(): Promise<string[]> {
+    const rows = await this.database.db
+      .selectDistinct({ orderId: tickets.orderId })
+      .from(tickets)
+      .where(eq(tickets.orderActive, true));
+    return rows.flatMap((row) => (row.orderId === null ? [] : [row.orderId]));
   }
 
   // Ordering, in the transaction of an order's change under its lock: once

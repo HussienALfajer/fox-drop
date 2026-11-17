@@ -181,7 +181,6 @@ function TicketActions({ ticket, cityId }: { ticket: TicketPageData; cityId: str
           {t(status === 'waiting' ? 'tickets.setWaiting' : 'tickets.setInProgress')}
         </button>
       ))}
-      <p>{t('tickets.resolveLater')}</p>
       {change.isError && <p role="alert">{t('common.failed')}</p>}
       {result?.status === 'refused' && <p role="alert">{t(changeRefusalKeys[result.refusal])}</p>}
     </section>

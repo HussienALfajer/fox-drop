@@ -68,4 +68,7 @@ CREATE INDEX "tickets_order" ON "support"."tickets" USING btree ("order_id");-->
 ALTER TABLE "notifications"."alerts" ADD CONSTRAINT "alerts_subject_type" CHECK ("notifications"."alerts"."subject_type" IN ('order', 'captain', 'otp_pool', 'otp_number', 'restaurant', 'currency', 'compensation', 'ticket')) NOT VALID;--> statement-breakpoint
 ALTER TABLE "notifications"."alerts" VALIDATE CONSTRAINT "alerts_subject_type";--> statement-breakpoint
 -- AP §4.5: an internal note is never changed.
-REVOKE UPDATE ON "support"."ticket_notes", "support"."note_keys" FROM fox_drop_app;
+REVOKE UPDATE ON "support"."ticket_notes", "support"."note_keys" FROM fox_drop_app;--> statement-breakpoint
+-- A ticket's number, party, order and opening never change; only its state does.
+REVOKE UPDATE ON "support"."tickets" FROM fox_drop_app;--> statement-breakpoint
+GRANT UPDATE ("status", "assignee_id", "sla_stopped_at", "order_active", "updated_at") ON "support"."tickets" TO fox_drop_app;

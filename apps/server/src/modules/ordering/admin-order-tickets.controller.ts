@@ -19,6 +19,7 @@ import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { AdminController } from '../../http/route-groups.js';
 import type { AdminSession } from '../identity/index.js';
 import {
+  openingHash,
   openTicketFields,
   SupportService,
   ticketAdminOf,
@@ -81,6 +82,13 @@ export class AdminOrderTicketsController {
     if (!placed) throw unknownOrder();
     const now = new Date();
     const ticket = await ticketAnswered(async () => {
+      // A repeat answers its ticket before any refusal.
+      const replayed = await this.support.replayed(
+        session.accountId,
+        idempotencyKey,
+        openingHash({ ...body, cityId: placed.cityId, partyId: null }, params.orderId),
+      );
+      if (replayed !== null) return this.support.ticket(placed.cityId, replayed);
       const prepared = await this.support.prepare({
         ...body,
         cityId: placed.cityId,
