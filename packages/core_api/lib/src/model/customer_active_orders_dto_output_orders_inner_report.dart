@@ -17,6 +17,7 @@ part 'customer_active_orders_dto_output_orders_inner_report.g.dart';
 /// * [status] - AP Appendix C: «جديدة», «قيد المعالجة», «بانتظار رد», «محلولة», «مغلقة».
 /// * [message] - The resolution message, once resolved.
 /// * [resolvedAt]
+/// * [replyWithinMinutes] - «سنرد عليك خلال {المدة}»: the ticket's timer from its opening (support.resolution_post_delivery_hours then).
 @BuiltValue()
 abstract class CustomerActiveOrdersDtoOutputOrdersInnerReport
     implements
@@ -42,6 +43,10 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInnerReport
 
   @BuiltValueField(wireName: r'resolvedAt')
   DateTime? get resolvedAt;
+
+  /// «سنرد عليك خلال {المدة}»: the ticket's timer from its opening (support.resolution_post_delivery_hours then).
+  @BuiltValueField(wireName: r'replyWithinMinutes')
+  int get replyWithinMinutes;
 
   CustomerActiveOrdersDtoOutputOrdersInnerReport._();
 
@@ -108,6 +113,11 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerReportSerializer
             object.resolvedAt,
             specifiedType: const FullType.nullable(DateTime),
           );
+    yield r'replyWithinMinutes';
+    yield serializers.serialize(
+      object.replyWithinMinutes,
+      specifiedType: const FullType(int),
+    );
   }
 
   @override
@@ -183,6 +193,12 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerReportSerializer
                   as DateTime?;
           if (valueDes == null) continue;
           result.resolvedAt = valueDes;
+          break;
+        case r'replyWithinMinutes':
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
+          result.replyWithinMinutes = valueDes;
           break;
         default:
           unhandled.add(key);

@@ -662,6 +662,7 @@ import 'package:core_api/src/model/merchant_order_dto_output.dart';
 import 'package:core_api/src/model/merchant_order_dto_output_order.dart';
 import 'package:core_api/src/model/merchant_order_dto_output_order_pickup.dart';
 import 'package:core_api/src/model/merchant_order_dto_output_order_pickup_request.dart';
+import 'package:core_api/src/model/merchant_order_problem_body_dto.dart';
 import 'package:core_api/src/model/merchant_order_settings_dto.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner.dart';
@@ -695,6 +696,10 @@ import 'package:core_api/src/model/merchant_receipt_list_dto_output_receipts_inn
 import 'package:core_api/src/model/merchant_refresh_dto.dart';
 import 'package:core_api/src/model/merchant_reject_dto.dart';
 import 'package:core_api/src/model/merchant_reject_dto_items_inner.dart';
+import 'package:core_api/src/model/merchant_report_body_dto.dart';
+import 'package:core_api/src/model/merchant_report_ticket_dto_output.dart';
+import 'package:core_api/src/model/merchant_report_ticket_dto_output_ticket.dart';
+import 'package:core_api/src/model/merchant_reports_dto_output.dart';
 import 'package:core_api/src/model/merchant_restaurant_dto_output.dart';
 import 'package:core_api/src/model/merchant_schedule_dto.dart';
 import 'package:core_api/src/model/merchant_schedule_dto_periods_inner.dart';
@@ -1397,6 +1402,7 @@ part 'serializers.g.dart';
   MerchantOrderDtoOutputOrder,
   MerchantOrderDtoOutputOrderPickup,
   MerchantOrderDtoOutputOrderPickupRequest,
+  MerchantOrderProblemBodyDto,
   MerchantOrderSettingsDto,
   MerchantOrdersDtoOutput,
   MerchantOrdersDtoOutputOrdersInner,
@@ -1430,6 +1436,10 @@ part 'serializers.g.dart';
   MerchantRefreshDto,
   MerchantRejectDto,
   MerchantRejectDtoItemsInner,
+  MerchantReportBodyDto,
+  MerchantReportTicketDtoOutput,
+  MerchantReportTicketDtoOutputTicket,
+  MerchantReportsDtoOutput,
   MerchantRestaurantDtoOutput,
   MerchantScheduleDto,
   MerchantScheduleDtoPeriodsInner,
@@ -1593,6 +1603,12 @@ Serializers serializers =
               FullType(CustomerCodesDtoOutputCodesInner),
             ]),
             () => ListBuilder<CustomerCodesDtoOutputCodesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(MerchantReportTicketDtoOutputTicket),
+            ]),
+            () => ListBuilder<MerchantReportTicketDtoOutputTicket>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

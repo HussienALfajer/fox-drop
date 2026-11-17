@@ -2849,6 +2849,42 @@
         ]
       }
     },
+    "/v1/merchant/uploads/report-photo": {
+      "post": {
+        "operationId": "merchantUploadsCreate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerNewUploadDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerUploadDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
     "/v1/captain/availability": {
       "get": {
         "operationId": "captainAvailabilityState",
@@ -5559,6 +5595,134 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MerchantOrderDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/reports": {
+      "post": {
+        "operationId": "merchantTicketsReport",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantReportBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantReportTicketDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      },
+      "get": {
+        "operationId": "merchantReportsList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantReportsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/orders/{orderId}/problem": {
+      "post": {
+        "operationId": "merchantTicketsProblem",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantOrderProblemBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantReportTicketDto_Output"
                 }
               }
             },
@@ -8982,7 +9146,9 @@
                 "manual",
                 "pickup_dispute",
                 "customer_report",
-                "price_report"
+                "price_report",
+                "merchant_report",
+                "order_problem"
               ]
             }
           },
@@ -21137,6 +21303,12 @@
                               "type": "null"
                             }
                           ]
+                        },
+                        "replyWithinMinutes": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991,
+                          "description": "«سنرد عليك خلال {المدة}»: the ticket's timer from its opening (support.resolution_post_delivery_hours then)."
                         }
                       },
                       "required": [
@@ -21144,7 +21316,8 @@
                         "number",
                         "status",
                         "message",
-                        "resolvedAt"
+                        "resolvedAt",
+                        "replyWithinMinutes"
                       ],
                       "additionalProperties": false
                     },
@@ -22271,6 +22444,12 @@
                             "type": "null"
                           }
                         ]
+                      },
+                      "replyWithinMinutes": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991,
+                        "description": "«سنرد عليك خلال {المدة}»: the ticket's timer from its opening (support.resolution_post_delivery_hours then)."
                       }
                     },
                     "required": [
@@ -22278,7 +22457,8 @@
                       "number",
                       "status",
                       "message",
-                      "resolvedAt"
+                      "resolvedAt",
+                      "replyWithinMinutes"
                     ],
                     "additionalProperties": false
                   },
@@ -25543,6 +25723,238 @@
         },
         "required": [
           "items",
+          "note"
+        ]
+      },
+      "MerchantReportBodyDto": {
+        "type": "object",
+        "properties": {
+          "typeCode": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "A code of Content's merchant_ticket_type list (RA Appendix C)."
+          },
+          "orderId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional: one of the restaurant's orders."
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional, up to 300 characters; the text of «أخرى»."
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "min_order",
+                  "coverage",
+                  "owners",
+                  "owner_phone"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«طلب تعديل بيانات» (data_change) only, and required with it."
+          },
+          "photoUploadId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "One photo at most, from POST /v1/merchant/uploads/report-photo once uploaded."
+          }
+        },
+        "required": [
+          "typeCode",
+          "orderId",
+          "note",
+          "subject",
+          "photoUploadId"
+        ]
+      },
+      "MerchantReportTicketDto_Output": {
+        "type": "object",
+        "properties": {
+          "ticket": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "number": {
+                "type": "string",
+                "pattern": "^\\d{1,18}$",
+                "description": "Shown as `T-{number}`."
+              },
+              "typeLabel": {
+                "type": "string"
+              },
+              "subject": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "min_order",
+                      "coverage",
+                      "owners",
+                      "owner_phone"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "«طلب تعديل بيانات»: what it asks."
+              },
+              "orderId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "orderNumber": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^\\d{1,18}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "description": "The note sent."
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "new",
+                  "in_progress",
+                  "waiting",
+                  "resolved",
+                  "closed"
+                ],
+                "description": "AP Appendix C: «جديدة», «قيد المعالجة», «بانتظار رد», «محلولة», «مغلقة»."
+              },
+              "openedAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              "openedByMe": {
+                "type": "boolean",
+                "description": "Opened by the session's user."
+              },
+              "replyWithinMinutes": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "description": "«سنرد عليك خلال {المدة}»: the ticket's timer from its opening."
+              },
+              "message": {
+                "description": "The resolution message, once resolved.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "resolvedAt": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "number",
+              "typeLabel",
+              "subject",
+              "orderId",
+              "orderNumber",
+              "description",
+              "status",
+              "openedAt",
+              "openedByMe",
+              "replyWithinMinutes",
+              "message",
+              "resolvedAt"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ticket"
+        ],
+        "additionalProperties": false
+      },
+      "MerchantOrderProblemBodyDto": {
+        "type": "object",
+        "properties": {
+          "reasonCode": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "A code of Content's merchant_problem list (RA Appendix C)."
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional, up to 300 characters; the text of «أخرى»."
+          }
+        },
+        "required": [
+          "reasonCode",
           "note"
         ]
       },
@@ -32746,7 +33158,7 @@
                 },
                 "source": {
                   "type": "string",
-                  "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report so far."
+                  "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem so far."
                 },
                 "party": {
                   "type": "string",
@@ -33200,7 +33612,7 @@
           },
           "source": {
             "type": "string",
-            "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report so far."
+            "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem so far."
           },
           "party": {
             "type": "string",
@@ -40501,7 +40913,7 @@
                 },
                 "source": {
                   "type": "string",
-                  "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report so far."
+                  "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem so far."
                 },
                 "party": {
                   "type": "string",
@@ -41137,7 +41549,7 @@
           },
           "source": {
             "type": "string",
-            "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report so far."
+            "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem so far."
           },
           "party": {
             "type": "string",
@@ -41554,7 +41966,7 @@
           },
           "source": {
             "type": "string",
-            "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report so far."
+            "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem so far."
           },
           "party": {
             "type": "string",
@@ -42316,13 +42728,31 @@
                       }
                     ],
                     "description": "«أبلغ عن سعر مختلف»: the shop's price, in the base."
+                  },
+                  "subject": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "min_order",
+                          "coverage",
+                          "owners",
+                          "owner_phone"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "«طلب تعديل بيانات» from the restaurant app (RA §15): min_order, coverage, owners, owner_phone."
                   }
                 },
                 "required": [
                   "lines",
                   "photoUrls",
                   "item",
-                  "shopPrice"
+                  "shopPrice",
+                  "subject"
                 ],
                 "additionalProperties": false
               },
@@ -43137,6 +43567,142 @@
         },
         "required": [
           "number"
+        ],
+        "additionalProperties": false
+      },
+      "MerchantReportsDto_Output": {
+        "type": "object",
+        "properties": {
+          "tickets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "number": {
+                  "type": "string",
+                  "pattern": "^\\d{1,18}$",
+                  "description": "Shown as `T-{number}`."
+                },
+                "typeLabel": {
+                  "type": "string"
+                },
+                "subject": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "min_order",
+                        "coverage",
+                        "owners",
+                        "owner_phone"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "«طلب تعديل بيانات»: what it asks."
+                },
+                "orderId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "orderNumber": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^\\d{1,18}$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "description": {
+                  "type": "string",
+                  "description": "The note sent."
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "new",
+                    "in_progress",
+                    "waiting",
+                    "resolved",
+                    "closed"
+                  ],
+                  "description": "AP Appendix C: «جديدة», «قيد المعالجة», «بانتظار رد», «محلولة», «مغلقة»."
+                },
+                "openedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "openedByMe": {
+                  "type": "boolean",
+                  "description": "Opened by the session's user."
+                },
+                "replyWithinMinutes": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "description": "«سنرد عليك خلال {المدة}»: the ticket's timer from its opening."
+                },
+                "message": {
+                  "description": "The resolution message, once resolved.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "resolvedAt": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "number",
+                "typeLabel",
+                "subject",
+                "orderId",
+                "orderNumber",
+                "description",
+                "status",
+                "openedAt",
+                "openedByMe",
+                "replyWithinMinutes",
+                "message",
+                "resolvedAt"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Newest first, the latest 100: an owner's every ticket of the restaurant, a cashier's own."
+          }
+        },
+        "required": [
+          "tickets"
         ],
         "additionalProperties": false
       },

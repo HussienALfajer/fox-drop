@@ -19,6 +19,7 @@ part 'admin_ticket_page_dto_output_report.g.dart';
 /// * [photoUrls] - Signed links to the photos, valid 10 minutes: read the page again for new ones.
 /// * [item]
 /// * [shopPrice]
+/// * [subject] - «طلب تعديل بيانات» from the restaurant app (RA §15): min_order, coverage, owners, owner_phone.
 @BuiltValue()
 abstract class AdminTicketPageDtoOutputReport
     implements
@@ -39,6 +40,11 @@ abstract class AdminTicketPageDtoOutputReport
 
   @BuiltValueField(wireName: r'shopPrice')
   AdminTicketPageDtoOutputPickupDisputePickupPayment? get shopPrice;
+
+  /// «طلب تعديل بيانات» from the restaurant app (RA §15): min_order, coverage, owners, owner_phone.
+  @BuiltValueField(wireName: r'subject')
+  AdminTicketPageDtoOutputReportSubjectEnum? get subject;
+  // enum subjectEnum {  min_order,  coverage,  owners,  owner_phone,  };
 
   AdminTicketPageDtoOutputReport._();
 
@@ -98,6 +104,15 @@ class _$AdminTicketPageDtoOutputReportSerializer
             object.shopPrice,
             specifiedType: const FullType.nullable(
               AdminTicketPageDtoOutputPickupDisputePickupPayment,
+            ),
+          );
+    yield r'subject';
+    yield object.subject == null
+        ? null
+        : serializers.serialize(
+            object.subject,
+            specifiedType: const FullType.nullable(
+              AdminTicketPageDtoOutputReportSubjectEnum,
             ),
           );
   }
@@ -173,6 +188,18 @@ class _$AdminTicketPageDtoOutputReportSerializer
           if (valueDes == null) continue;
           result.shopPrice.replace(valueDes);
           break;
+        case r'subject':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminTicketPageDtoOutputReportSubjectEnum,
+                    ),
+                  )
+                  as AdminTicketPageDtoOutputReportSubjectEnum?;
+          if (valueDes == null) continue;
+          result.subject = valueDes;
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -200,4 +227,30 @@ class _$AdminTicketPageDtoOutputReportSerializer
     );
     return result.build();
   }
+}
+
+/// «طلب تعديل بيانات» from the restaurant app (RA §15): min_order, coverage, owners, owner_phone.
+class AdminTicketPageDtoOutputReportSubjectEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'min_order')
+  static const AdminTicketPageDtoOutputReportSubjectEnum minOrder =
+      _$adminTicketPageDtoOutputReportSubjectEnum_minOrder;
+  @BuiltValueEnumConst(wireName: r'coverage')
+  static const AdminTicketPageDtoOutputReportSubjectEnum coverage =
+      _$adminTicketPageDtoOutputReportSubjectEnum_coverage;
+  @BuiltValueEnumConst(wireName: r'owners')
+  static const AdminTicketPageDtoOutputReportSubjectEnum owners =
+      _$adminTicketPageDtoOutputReportSubjectEnum_owners;
+  @BuiltValueEnumConst(wireName: r'owner_phone')
+  static const AdminTicketPageDtoOutputReportSubjectEnum ownerPhone =
+      _$adminTicketPageDtoOutputReportSubjectEnum_ownerPhone;
+
+  static Serializer<AdminTicketPageDtoOutputReportSubjectEnum> get serializer =>
+      _$adminTicketPageDtoOutputReportSubjectEnumSerializer;
+
+  const AdminTicketPageDtoOutputReportSubjectEnum._(String name) : super(name);
+
+  static BuiltSet<AdminTicketPageDtoOutputReportSubjectEnum> get values =>
+      _$adminTicketPageDtoOutputReportSubjectEnumValues;
+  static AdminTicketPageDtoOutputReportSubjectEnum valueOf(String name) =>
+      _$adminTicketPageDtoOutputReportSubjectEnumValueOf(name);
 }

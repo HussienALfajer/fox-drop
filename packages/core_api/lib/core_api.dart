@@ -663,6 +663,7 @@ export 'package:core_api/src/model/merchant_order_dto_output.dart';
 export 'package:core_api/src/model/merchant_order_dto_output_order.dart';
 export 'package:core_api/src/model/merchant_order_dto_output_order_pickup.dart';
 export 'package:core_api/src/model/merchant_order_dto_output_order_pickup_request.dart';
+export 'package:core_api/src/model/merchant_order_problem_body_dto.dart';
 export 'package:core_api/src/model/merchant_order_settings_dto.dart';
 export 'package:core_api/src/model/merchant_orders_dto_output.dart';
 export 'package:core_api/src/model/merchant_orders_dto_output_orders_inner.dart';
@@ -696,6 +697,10 @@ export 'package:core_api/src/model/merchant_receipt_list_dto_output_receipts_inn
 export 'package:core_api/src/model/merchant_refresh_dto.dart';
 export 'package:core_api/src/model/merchant_reject_dto.dart';
 export 'package:core_api/src/model/merchant_reject_dto_items_inner.dart';
+export 'package:core_api/src/model/merchant_report_body_dto.dart';
+export 'package:core_api/src/model/merchant_report_ticket_dto_output.dart';
+export 'package:core_api/src/model/merchant_report_ticket_dto_output_ticket.dart';
+export 'package:core_api/src/model/merchant_reports_dto_output.dart';
 export 'package:core_api/src/model/merchant_restaurant_dto_output.dart';
 export 'package:core_api/src/model/merchant_schedule_dto.dart';
 export 'package:core_api/src/model/merchant_schedule_dto_periods_inner.dart';

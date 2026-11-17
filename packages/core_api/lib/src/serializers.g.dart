@@ -651,6 +651,7 @@ Serializers _$serializers =
           ..add(AdminTicketPageDtoOutputRedeliveriesInner.serializer)
           ..add(AdminTicketPageDtoOutputReport.serializer)
           ..add(AdminTicketPageDtoOutputReportLinesInner.serializer)
+          ..add(AdminTicketPageDtoOutputReportSubjectEnum.serializer)
           ..add(AdminTicketPageDtoOutputStatusEnum.serializer)
           ..add(AdminTicketPartiesDtoOutput.serializer)
           ..add(AdminTicketPartySearchDto.serializer)
@@ -1104,6 +1105,7 @@ Serializers _$serializers =
           ..add(MerchantOrderDtoOutputOrderPickupRequestOutcomeEnum.serializer)
           ..add(MerchantOrderDtoOutputOrderPickupRequestStatusEnum.serializer)
           ..add(MerchantOrderDtoOutputOrderStatusEnum.serializer)
+          ..add(MerchantOrderProblemBodyDto.serializer)
           ..add(MerchantOrderSettingsDto.serializer)
           ..add(MerchantOrdersDtoOutput.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInner.serializer)
@@ -1165,6 +1167,13 @@ Serializers _$serializers =
           ..add(MerchantRejectDto.serializer)
           ..add(MerchantRejectDtoItemsInner.serializer)
           ..add(MerchantRejectDtoItemsInnerUntilEnum.serializer)
+          ..add(MerchantReportBodyDto.serializer)
+          ..add(MerchantReportBodyDtoSubjectEnum.serializer)
+          ..add(MerchantReportTicketDtoOutput.serializer)
+          ..add(MerchantReportTicketDtoOutputTicket.serializer)
+          ..add(MerchantReportTicketDtoOutputTicketStatusEnum.serializer)
+          ..add(MerchantReportTicketDtoOutputTicketSubjectEnum.serializer)
+          ..add(MerchantReportsDtoOutput.serializer)
           ..add(MerchantRestaurantDtoOutput.serializer)
           ..add(MerchantRestaurantDtoOutputAccountStatusEnum.serializer)
           ..add(MerchantRestaurantDtoOutputStateEnum.serializer)
@@ -3174,6 +3183,12 @@ Serializers _$serializers =
               const FullType(MerchantRejectDtoItemsInner),
             ]),
             () => ListBuilder<MerchantRejectDtoItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantReportTicketDtoOutputTicket),
+            ]),
+            () => ListBuilder<MerchantReportTicketDtoOutputTicket>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
