@@ -35,11 +35,13 @@ sealed class ReportOutcome {
   const ReportOutcome();
 }
 
-/// «استلمنا بلاغك T-{رقم}. سنرد عليك خلال 24 ساعة.»
+/// «استلمنا بلاغك T-{رقم}. سنرد عليك خلال {المدة}.», the ticket's timer
+/// (owner decision 2026-11-17: support.resolution_post_delivery_hours).
 class ReportSent extends ReportOutcome {
-  const ReportSent(this.number);
+  const ReportSent(this.number, this.replyWithinMinutes);
 
   final String number;
+  final int replyWithinMinutes;
 }
 
 /// The window closed meanwhile, or a report was already sent (Q17): the
@@ -140,7 +142,8 @@ class ReportProblem {
       );
       _forget();
       _refresh();
-      return ReportSent(answer.data!.order.report!.number);
+      final report = answer.data!.order.report!;
+      return ReportSent(report.number, report.replyWithinMinutes);
     } on DioException catch (error) {
       final status = error.response?.statusCode;
       if (status == null || status >= 500) return const ReportFailed();

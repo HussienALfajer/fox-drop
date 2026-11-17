@@ -101,6 +101,8 @@ String? pushTargetPath(Map<String, String> data) => switch (data) {
     '/account/receipts/${Uri.encodeComponent(id)}',
   // RA §16 #32: the overdue reminder over «الحساب».
   {'target': 'account'} => '/account',
+  // RA §16 #29: «تم حل بلاغك» over «الدعم», whose «بلاغاتي» shows it.
+  {'target': 'ticket'} => '/support',
   _ => null,
 };
 

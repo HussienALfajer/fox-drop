@@ -29,7 +29,7 @@ class PhotoFields extends ConsumerWidget {
       if (photo.bytes.length > maxPhotoBytes) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(l10n.customerPhotoTooLarge)));
+        ).showSnackBar(SnackBar(content: Text(l10n.photoTooLarge)));
         return;
       }
       photos.add(ReportPhoto(photo));
@@ -48,7 +48,7 @@ class PhotoFields extends ConsumerWidget {
                 photos.removeAt(index);
                 onChanged();
               },
-              child: Text(l10n.customerPhotoRemove),
+              child: Text(l10n.photoRemove),
             ),
           ),
         if (photos.length < max)
@@ -57,12 +57,12 @@ class PhotoFields extends ConsumerWidget {
               TextButton(
                 key: const Key('report-photo-camera'),
                 onPressed: () => pick(PhotoSource.camera),
-                child: Text(l10n.customerPhotoCamera),
+                child: Text(l10n.photoCamera),
               ),
               TextButton(
                 key: const Key('report-photo-gallery'),
                 onPressed: () => pick(PhotoSource.gallery),
-                child: Text(l10n.customerPhotoGallery),
+                child: Text(l10n.photoGallery),
               ),
             ],
           ),

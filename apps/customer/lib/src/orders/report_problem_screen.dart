@@ -68,8 +68,13 @@ class _ReportProblemScreenState extends ConsumerState<ReportProblemScreen> {
       void say(String text) =>
           messenger.showSnackBar(SnackBar(content: Text(text)));
       switch (outcome) {
-        case ReportSent(:final number):
-          say(l10n.customerReportSent(number));
+        case ReportSent(:final number, :final replyWithinMinutes):
+          say(
+            l10n.customerReportSent(
+              number,
+              l10n.formatReplyWithin(replyWithinMinutes),
+            ),
+          );
           this.context.pop();
         case ReportRefused(:final already):
           say(already ? l10n.customerReportAlready : l10n.customerReportClosed);

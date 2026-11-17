@@ -16,6 +16,8 @@ import 'platform.dart';
 import 'settings/settings_screen.dart';
 import 'starting_screen.dart';
 import 'status/hours_screen.dart';
+import 'support/report_screen.dart';
+import 'support/support_screen.dart';
 import 'terms.dart';
 
 /// Signed out, every route leads to sign-in; signed in on a device without a
@@ -59,6 +61,17 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/status-and-hours',
         builder: (context, state) => const HoursScreen(),
+      ),
+      // RA §15: «الدعم», for owners and cashiers; «إبلاغ عن مشكلة» over it.
+      GoRoute(
+        path: '/support',
+        builder: (context, state) => const SupportScreen(),
+        routes: [
+          GoRoute(
+            path: 'report',
+            builder: (context, state) => const ReportScreen(),
+          ),
+        ],
       ),
       // RA §14.3: the owners' settings (a cashier's read is 403 owner_only).
       GoRoute(
