@@ -11,9 +11,12 @@ import { LedgerModule } from '../ledger/index.js';
 import { MerchantsModule } from '../merchants/index.js';
 import { OrderingModule } from '../ordering/index.js';
 import { SettingsModule } from '../settings/index.js';
+import { MarketingModule } from '../marketing/index.js';
+import { AdminCostReportController } from './admin-cost-report.controller.js';
 import { AdminDailyReportController } from './admin-daily-report.controller.js';
 import { AdminExportsController } from './admin-exports.controller.js';
 import { AdminRestaurantStatementsController } from './admin-restaurant-statements.controller.js';
+import { CostReportService } from './cost-report.service.js';
 import { DailyReportService } from './daily-report.service.js';
 import { ExportsService } from './exports.service.js';
 import { ExportsWorker } from './exports.worker.js';
@@ -28,6 +31,7 @@ const imports = [
   GeoModule,
   MerchantsModule,
   LedgerModule,
+  MarketingModule,
   OrderingModule,
   CaptainsModule,
   SettingsModule,
@@ -35,18 +39,23 @@ const imports = [
 
 // The reporting module (architecture §4.2): statements and exports. Slice
 // 2.19g: «كشوف المطاعم» (AP §9.10.5) and the Excel exports (§5.9); slice
-// 2.20d: «التقرير اليومي» (AP §9.10.1).
+// 2.20d: «التقرير اليومي» (AP §9.10.1); slice 2.22d: «كلفة التعويضات
+// والخصومات» (AP §9.10.6).
 @Module({
   imports,
   controllers: [
     AdminRestaurantStatementsController,
     AdminDailyReportController,
+    AdminCostReportController,
     AdminExportsController,
   ],
-  providers: [ExportsService, DailyReportService],
+  providers: [ExportsService, DailyReportService, CostReportService],
 })
 export class ReportingModule {}
 
 // The worker's export jobs: writing each export, removing it after 24 hours.
-@Module({ imports, providers: [ExportsService, DailyReportService, ExportsWorker] })
+@Module({
+  imports,
+  providers: [ExportsService, DailyReportService, CostReportService, ExportsWorker],
+})
 export class ReportingWorkerModule {}

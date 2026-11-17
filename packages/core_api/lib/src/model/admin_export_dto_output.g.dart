@@ -11,6 +11,8 @@ _$adminExportDtoOutputKindEnum_restaurantStatement =
     const AdminExportDtoOutputKindEnum._('restaurantStatement');
 const AdminExportDtoOutputKindEnum _$adminExportDtoOutputKindEnum_dailyReport =
     const AdminExportDtoOutputKindEnum._('dailyReport');
+const AdminExportDtoOutputKindEnum _$adminExportDtoOutputKindEnum_costReport =
+    const AdminExportDtoOutputKindEnum._('costReport');
 
 AdminExportDtoOutputKindEnum _$adminExportDtoOutputKindEnumValueOf(
   String name,
@@ -20,6 +22,8 @@ AdminExportDtoOutputKindEnum _$adminExportDtoOutputKindEnumValueOf(
       return _$adminExportDtoOutputKindEnum_restaurantStatement;
     case 'dailyReport':
       return _$adminExportDtoOutputKindEnum_dailyReport;
+    case 'costReport':
+      return _$adminExportDtoOutputKindEnum_costReport;
     default:
       throw ArgumentError(name);
   }
@@ -30,6 +34,7 @@ _$adminExportDtoOutputKindEnumValues =
     BuiltSet<AdminExportDtoOutputKindEnum>(const <AdminExportDtoOutputKindEnum>[
       _$adminExportDtoOutputKindEnum_restaurantStatement,
       _$adminExportDtoOutputKindEnum_dailyReport,
+      _$adminExportDtoOutputKindEnum_costReport,
     ]);
 
 const AdminExportDtoOutputStatusEnum _$adminExportDtoOutputStatusEnum_pending =
@@ -76,10 +81,12 @@ class _$AdminExportDtoOutputKindEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'restaurantStatement': 'restaurant_statement',
     'dailyReport': 'daily_report',
+    'costReport': 'cost_report',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_statement': 'restaurantStatement',
     'daily_report': 'dailyReport',
+    'cost_report': 'costReport',
   };
 
   @override

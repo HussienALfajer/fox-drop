@@ -8,7 +8,6 @@ import {
   Post,
   Query,
   Req,
-  BadRequestException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import type { FastifyRequest } from 'fastify';
@@ -19,6 +18,7 @@ import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
 import type { AdminSession } from '../identity/index.js';
+import { costReportRefusal } from './admin-cost-report.controller.js';
 import { dailyReportRefusal } from './admin-daily-report.controller.js';
 import { day, restaurantPeriodQuery } from './admin-restaurant-statements.controller.js';
 import {
@@ -32,6 +32,10 @@ import { exportKinds, exportStatuses } from './schema.js';
 class AdminRestaurantStatementExportDto extends createZodDto(restaurantPeriodQuery) {}
 
 class AdminDailyReportExportDto extends createZodDto(z.object({ cityId: z.uuid(), day })) {}
+
+class AdminCostReportExportDto extends createZodDto(
+  z.object({ cityId: z.uuid(), from: day, to: day }),
+) {}
 
 class AdminExportParamsDto extends createZodDto(z.object({ exportId: z.uuid() })) {}
 
@@ -93,7 +97,7 @@ async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
       case 'unknown_export':
         throw new NotFoundException(body(HttpStatus.NOT_FOUND));
       case 'invalid_period':
-        throw new BadRequestException(body(HttpStatus.BAD_REQUEST));
+        throw costReportRefusal(error.refusal);
       case 'idempotency_key_reused':
         throw new UnprocessableEntityException(body(HttpStatus.UNPROCESSABLE_ENTITY));
       case 'invalid_day':
@@ -157,6 +161,32 @@ export class AdminExportsController {
         await this.exports.requestDailyReport(
           exportUser(session, request),
           { cityId: body.cityId, day: body.day },
+          idempotencyKey,
+          new Date(),
+        ),
+      ),
+    );
+  }
+
+  // «تصدير Excel» of the cost report (AP §9.10.6, slice 2.22d). 202, as the
+  // statement's. 400 invalid_period; 404 unknown_city; 409 no_base_currency;
+  // 422 idempotency_key_reused.
+  @Post('cost-report/exports')
+  @RequirePermission('finance.read')
+  @Idempotent()
+  @HttpCode(202)
+  @ZodResponse({ status: 202, type: AdminExportDto })
+  requestCostReport(
+    @Body() body: AdminCostReportExportDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(async () =>
+      exportBody(
+        await this.exports.requestCostReport(
+          exportUser(session, request),
+          { cityId: body.cityId, from: body.from, to: body.to },
           idempotencyKey,
           new Date(),
         ),

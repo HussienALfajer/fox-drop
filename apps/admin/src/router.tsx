@@ -26,6 +26,7 @@ import { OPERATIONS_READ } from './orders-board.js';
 import { OrdersBoardPage } from './orders-board-page.js';
 import { CASH_DESK, FINANCE_READ } from './cash-desk.js';
 import { CaptainBalancesPage } from './captain-balances-page.js';
+import { CostReportPage } from './cost-report-page.js';
 import { DailyReportPage } from './daily-report-page.js';
 import { ExchangeRatesPage } from './exchange-rates-page.js';
 import { MANUAL_ADJUSTMENT } from './manual-entries.js';
@@ -367,6 +368,26 @@ const dailyReportRoute = createRoute({
   component: DailyReportPage,
 });
 
+// AP §9.10.6 «كلفة التعويضات والخصومات» (slice 2.22d), finance's (OWN,
+// FIN): `from` and `to` are the business days shown, the last 7 when left
+// out.
+const costReportRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/cost-report',
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { city?: string; from?: string; to?: string } => ({
+    ...citySearch(search),
+    ...(typeof search.from === 'string' && typeof search.to === 'string'
+      ? { from: search.from, to: search.to }
+      : {}),
+  }),
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, FINANCE_READ)) throw redirect({ to: '/' });
+  },
+  component: CostReportPage,
+});
+
 // AP §9.10.7 «القيود التصحيحية» (slice 2.20c), OWN and FIN.
 const manualEntriesRoute = createRoute({
   getParentRoute: () => signedInRoute,
@@ -497,6 +518,7 @@ const routeTree = rootRoute.addChildren([
     captainBalancesRoute,
     exchangeRatesRoute,
     dailyReportRoute,
+    costReportRoute,
     manualEntriesRoute,
     receiptRoute,
     settlementsRoute,

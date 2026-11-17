@@ -10584,6 +10584,63 @@
         ]
       }
     },
+    "/v1/admin/cost-report": {
+      "get": {
+        "operationId": "adminCostReportReport",
+        "parameters": [
+          {
+            "name": "cityId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "The first business day; with `to`, or neither.",
+            "schema": {
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "The last business day; the last 7 days when both are left out.",
+            "schema": {
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCostReportDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/restaurant-statements/exports": {
       "post": {
         "operationId": "adminExportsRequestStatement",
@@ -10652,6 +10709,53 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/AdminDailyReportExportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminExportDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/cost-report/exports": {
+      "post": {
+        "operationId": "adminExportsRequestCostReport",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCostReportExportDto"
               }
             }
           }
@@ -46604,6 +46708,308 @@
         ],
         "additionalProperties": false
       },
+      "AdminCostReportDto_Output": {
+        "type": "object",
+        "properties": {
+          "cityId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "fromDay": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "A business day on the city’s clock, YYYY-MM-DD."
+          },
+          "toDay": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "A business day on the city’s clock, YYYY-MM-DD."
+          },
+          "from": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "The cutoff that starts the first day."
+          },
+          "to": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "The cutoff that ends the last day."
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "description": "The city’s base: every amount is in it, + a cost."
+          },
+          "totals": {
+            "type": "object",
+            "properties": {
+              "discounts": {
+                "type": "string",
+                "pattern": "^-?\\d{1,18}$",
+                "description": "Platform-funded discounts of the promo codes."
+              },
+              "compensation": {
+                "type": "string",
+                "pattern": "^-?\\d{1,18}$"
+              },
+              "operating": {
+                "type": "string",
+                "pattern": "^-?\\d{1,18}$"
+              },
+              "total": {
+                "type": "string",
+                "pattern": "^-?\\d{1,18}$"
+              }
+            },
+            "required": [
+              "discounts",
+              "compensation",
+              "operating",
+              "total"
+            ],
+            "additionalProperties": false
+          },
+          "compensationReasons": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "reason",
+                    "late_delivery",
+                    "other"
+                  ],
+                  "description": "`reason`: a reason of the compensation list; `late_delivery`: the automatic late codes; `other`: the rest."
+                },
+                "reason": {
+                  "description": "The reason’s code, for `reason` only.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "label": {
+                  "description": "The reason’s label as chosen; null for the two fixed lines.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "orders": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "description": "The orders the codes were used on."
+                },
+                "amount": {
+                  "type": "string",
+                  "pattern": "^-?\\d{1,18}$"
+                }
+              },
+              "required": [
+                "kind",
+                "reason",
+                "label",
+                "orders",
+                "amount"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "operatingReasons": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "reason": {
+                  "type": "string",
+                  "enum": [
+                    "cancelled_prepared",
+                    "captain_compensation",
+                    "free",
+                    "fake",
+                    "damaged",
+                    "wrong_refused",
+                    "failed_other",
+                    "edit_after_pickup",
+                    "shortfall",
+                    "other"
+                  ]
+                },
+                "orders": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "amount": {
+                  "type": "string",
+                  "pattern": "^-?\\d{1,18}$"
+                }
+              },
+              "required": [
+                "reason",
+                "orders",
+                "amount"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "codes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "codeId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "code": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "orders": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "amount": {
+                  "type": "string",
+                  "pattern": "^-?\\d{1,18}$"
+                }
+              },
+              "required": [
+                "codeId",
+                "code",
+                "orders",
+                "amount"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "parties": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "party": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "restaurant",
+                        "captain",
+                        "customer",
+                        "platform"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Who operations named responsible; null where nobody was named."
+                },
+                "orders": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "amount": {
+                  "type": "string",
+                  "pattern": "^-?\\d{1,18}$"
+                }
+              },
+              "required": [
+                "party",
+                "orders",
+                "amount"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "restaurants": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "restaurantId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "discounts": {
+                  "type": "string",
+                  "pattern": "^-?\\d{1,18}$",
+                  "description": "Platform-funded discounts of the promo codes."
+                },
+                "compensation": {
+                  "type": "string",
+                  "pattern": "^-?\\d{1,18}$"
+                },
+                "operating": {
+                  "type": "string",
+                  "pattern": "^-?\\d{1,18}$"
+                },
+                "total": {
+                  "type": "string",
+                  "pattern": "^-?\\d{1,18}$"
+                }
+              },
+              "required": [
+                "restaurantId",
+                "name",
+                "discounts",
+                "compensation",
+                "operating",
+                "total"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "cityId",
+          "fromDay",
+          "toDay",
+          "from",
+          "to",
+          "currency",
+          "totals",
+          "compensationReasons",
+          "operatingReasons",
+          "codes",
+          "parties",
+          "restaurants"
+        ],
+        "additionalProperties": false
+      },
       "AdminRestaurantStatementExportDto": {
         "type": "object",
         "properties": {
@@ -46641,7 +47047,8 @@
             "type": "string",
             "enum": [
               "restaurant_statement",
-              "daily_report"
+              "daily_report",
+              "cost_report"
             ]
           },
           "status": {
@@ -46709,6 +47116,31 @@
         "required": [
           "cityId",
           "day"
+        ]
+      },
+      "AdminCostReportExportDto": {
+        "type": "object",
+        "properties": {
+          "cityId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "from": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "A business day on the city’s clock, YYYY-MM-DD."
+          },
+          "to": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "A business day on the city’s clock, YYYY-MM-DD."
+          }
+        },
+        "required": [
+          "cityId",
+          "from",
+          "to"
         ]
       }
     },

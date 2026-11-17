@@ -27,7 +27,7 @@ abstract class AdminExportDtoOutput
 
   @BuiltValueField(wireName: r'kind')
   AdminExportDtoOutputKindEnum get kind;
-  // enum kindEnum {  restaurant_statement,  daily_report,  };
+  // enum kindEnum {  restaurant_statement,  daily_report,  cost_report,  };
 
   @BuiltValueField(wireName: r'status')
   AdminExportDtoOutputStatusEnum get status;
@@ -245,6 +245,9 @@ class AdminExportDtoOutputKindEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'daily_report')
   static const AdminExportDtoOutputKindEnum dailyReport =
       _$adminExportDtoOutputKindEnum_dailyReport;
+  @BuiltValueEnumConst(wireName: r'cost_report')
+  static const AdminExportDtoOutputKindEnum costReport =
+      _$adminExportDtoOutputKindEnum_costReport;
 
   static Serializer<AdminExportDtoOutputKindEnum> get serializer =>
       _$adminExportDtoOutputKindEnumSerializer;

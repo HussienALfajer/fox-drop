@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { type AccountPurpose, LedgerService } from '../ledger/index.js';
 import { MerchantsService } from '../merchants/index.js';
+import { OrdersService } from './orders.service.js';
 import {
   acceptedOrder,
   admin,
@@ -307,6 +308,25 @@ describe('an outcome of an order with a code', () => {
     });
     expect(answer.statusCode, answer.body).toBe(200);
     expect(await useOf(picked.order.id)).toBe('returned');
+    // The cost report's read of the order (AP §9.10.6, slice 2.22d).
+    expect(
+      (await app.get(OrdersService).costOrders([picked.order.id])).get(picked.order.id),
+    ).toEqual({
+      restaurantId: restaurant,
+      status: 'failed',
+      cancelResponsible: null,
+      outcome: 'wrong_refused',
+      outcomeResponsible: 'restaurant',
+      outcomes: [
+        {
+          outcome: 'wrong_refused',
+          responsible: 'restaurant',
+          journalIds: expect.arrayContaining([expect.any(String)]),
+        },
+      ],
+      promoCodeId: expect.any(String),
+      promoCode: expect.any(String),
+    });
     // The pickup's 240 returned: the order is settled.
     expect((await platform('platform.order_clearing')) - before).toBe(-24_000n);
   });
@@ -361,6 +381,17 @@ describe('the other ends of an order with a code', () => {
       [order.id],
     );
     expect(rows[0].cancel_merchant_credit).toBe('18360');
+    // The cost report's read of the order (AP §9.10.6, slice 2.22d).
+    const costs = await app.get(OrdersService).costOrders([order.id, randomUUID()]);
+    expect([...costs.keys()]).toEqual([order.id]);
+    expect(costs.get(order.id)).toMatchObject({
+      restaurantId: restaurant,
+      status: 'cancelled',
+      cancelResponsible: 'platform',
+      outcome: null,
+      outcomeResponsible: null,
+      outcomes: [],
+    });
   });
 
   it('settles the use again when the outcome changes, both ways', async () => {

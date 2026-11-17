@@ -287,6 +287,29 @@ describe('«تعويض الزبون»', () => {
     expect((await myCodes(other)).map((each) => each.code)).not.toContain(issued.code);
   });
 
+  it('says where a personal code came from, for the cost report (slice 2.22d)', async () => {
+    const target = order();
+    const sup = admin(['SUP']);
+    const given = await compensations.request(target, amount(2_000n), late, sup, randomUUID(), now);
+    // A late code is a personal code with its row in late_codes.
+    const other = order();
+    const second = await compensations.request(other, amount(1_000n), late, sup, randomUUID(), now);
+    const lateOrder = randomUUID();
+    await sql.query(
+      `INSERT INTO marketing.late_codes (order_id, city_id, order_number, customer_account_id, code_id, promised_at, issued_at)
+       VALUES ($1, $2, 30001, $3, $4, $5, $5)`,
+      [lateOrder, azaz, other.customerAccountId, second.codeId, now],
+    );
+    const origins = await compensations.codeOrigins([given.codeId!, second.codeId!, randomUUID()]);
+    expect([...origins]).toEqual([
+      [
+        given.codeId,
+        { kind: 'compensation', reasonCode: 'late', reasonLabel: 'تأخير', orderId: target.id },
+      ],
+      [second.codeId, { kind: 'late', orderId: lateOrder }],
+    ]);
+  });
+
   it('refuses an unknown reason', async () => {
     await expect(
       compensations.request(

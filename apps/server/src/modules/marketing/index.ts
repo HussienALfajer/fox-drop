@@ -53,6 +53,7 @@ export {
   CompensationRefusedError,
   CompensationsService,
   type CompensationValue,
+  type PersonalCodeOrigin,
   type PreparedCompensation,
 } from './compensations.service.js';
 export {

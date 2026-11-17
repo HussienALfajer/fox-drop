@@ -26,7 +26,15 @@ import { CANCELLED_AFTER_PLACING_MS, orderKey, readOrders, type OrderView } from
 import { commandHash, IdempotencyKeyReusedError, keepKey, replayKey } from './idempotency-keys.js';
 import { frozenAtPickup } from './order-edits.js';
 import { ownerMoney, type OwnerMoney } from './owner-money.js';
-import { collections, orderLines, orderNumbers, orders, pickupRequests } from './schema.js';
+import type { CostOrder } from './platform-costs.js';
+import {
+  collections,
+  orderLines,
+  orderNumbers,
+  orderOutcomeRows,
+  orders,
+  pickupRequests,
+} from './schema.js';
 
 type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
 type Executor = Pick<NodePgDatabase, 'select'>;
@@ -400,6 +408,59 @@ export class OrdersService implements OnModuleInit {
       .from(orders)
       .where(inArray(orders.id, [...new Set(orderIds)]));
     return new Map(rows.map((row) => [row.id, row.number]));
+  }
+
+  // AP §9.10.6 (slice 2.22d): what the cost report reads of some orders: the
+  // restaurant, how the order ended and who operations named responsible
+  // (the cancellation's party, the party of the outcome in force, and every
+  // outcome that posted journals with their ids), and its code; an unknown
+  // id is left out.
+  async costOrders(orderIds: readonly string[]): Promise<Map<string, CostOrder>> {
+    if (orderIds.length === 0) return new Map();
+    const ids = [...new Set(orderIds)];
+    // Every outcome that posted journals, the replaced ones included.
+    const posted = await this.database.db
+      .select({
+        orderId: orderOutcomeRows.orderId,
+        outcome: orderOutcomeRows.outcome,
+        responsible: orderOutcomeRows.responsible,
+        journalIds: orderOutcomeRows.journalIds,
+      })
+      .from(orderOutcomeRows)
+      .where(inArray(orderOutcomeRows.orderId, ids));
+    const rows = await this.database.db
+      .select({
+        id: orders.id,
+        restaurantId: orders.restaurantId,
+        status: orders.status,
+        cancelResponsible: orders.cancelResponsible,
+        outcome: orders.outcome,
+        outcomeResponsible: orderOutcomeRows.responsible,
+        promoCodeId: orders.promoCodeId,
+        promoCode: orders.promoCode,
+      })
+      .from(orders)
+      .leftJoin(
+        orderOutcomeRows,
+        and(
+          eq(orderOutcomeRows.orderId, orders.id),
+          eq(orderOutcomeRows.orderPlacedAt, orders.placedAt),
+          isNull(orderOutcomeRows.replacedAt),
+          // An outcome still waiting for its collection has posted nothing.
+          isNotNull(orders.outcome),
+        ),
+      )
+      .where(inArray(orders.id, ids));
+    const outcomes = new Map<string, CostOrder['outcomes'][number][]>();
+    for (const { orderId, journalIds, ...outcome } of posted) {
+      if (journalIds === null) continue;
+      const list = outcomes.get(orderId) ?? [];
+      list.push({ ...outcome, journalIds });
+      outcomes.set(orderId, list);
+    }
+    return new Map(
+      rows.map(({ id, ...order }) => [id, { ...order, outcomes: outcomes.get(id) ?? [] }]),
+    );
   }
 
   // AP §8.5.5 (slice 2.18a): the distance part of each delivered order's pay,
