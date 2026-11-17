@@ -48,14 +48,16 @@ export function isLate(card: OrderCard, now: number): boolean {
   return sla(card, now) === 'red';
 }
 
-// AP §9.2.1's filters that the data has today; tickets and test orders come
-// with their slices.
+// AP §9.2.1's filters that the data has today; test orders come with their
+// slice.
 export type BoardFilter = {
   restaurantId: string;
   captainId: string;
   neighbourhood: string;
   lateOnly: boolean;
   noCaptainOnly: boolean;
+  // «لها تذكرة» (AP §9.2, slice 2.23a): an open ticket on the order.
+  ticketOnly: boolean;
 };
 
 export const NO_FILTER: BoardFilter = {
@@ -64,6 +66,7 @@ export const NO_FILTER: BoardFilter = {
   neighbourhood: '',
   lateOnly: false,
   noCaptainOnly: false,
+  ticketOnly: false,
 };
 
 export function filterCards(cards: OrderCard[], filter: BoardFilter, now: number): OrderCard[] {
@@ -73,7 +76,8 @@ export function filterCards(cards: OrderCard[], filter: BoardFilter, now: number
       (filter.captainId === '' || card.captain?.id === filter.captainId) &&
       (filter.neighbourhood === '' || card.neighbourhood === filter.neighbourhood) &&
       (!filter.lateOnly || isLate(card, now)) &&
-      (!filter.noCaptainOnly || card.captain === null),
+      (!filter.noCaptainOnly || card.captain === null) &&
+      (!filter.ticketOnly || card.badges.ticket),
   );
 }
 

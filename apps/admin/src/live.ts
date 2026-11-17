@@ -11,11 +11,13 @@ export const opsChannel = (cityId: string): string => `ops:city.${cityId}`;
 // What an event of the channel carries that the panel uses: an order's
 // (order.placed, order.accepted…), an alert's (alert.raised,
 // alert.acknowledged, alert.resolved), the emergency stop's
-// (platform.emergency_stop) or a restaurant's state (restaurant.state_changed).
+// (platform.emergency_stop), a restaurant's state (restaurant.state_changed)
+// or a ticket's (ticket.changed, slice 2.23a).
 export interface OpsEvent {
   type: string;
   orderId?: string;
   restaurantId?: string;
+  ticketId?: string;
 }
 
 // The reads an event makes stale. An alert change also refreshes the board
@@ -33,6 +35,16 @@ export function staleQueries(event: OpsEvent, cityId: string): QueryKey[] {
   if (event.type === 'restaurant.state_changed' && event.restaurantId) {
     return [['restaurant-status', event.restaurantId]];
   }
+  // AP §9.9: a ticket opened or changed: the list, its page, the board's
+  // «لها تذكرة» and the order details' tickets.
+  if (event.type === 'ticket.changed') {
+    return [
+      ['tickets', cityId],
+      ...(event.ticketId ? [['ticket', event.ticketId]] : []),
+      ['orders-board', cityId],
+      ['order'],
+    ];
+  }
   return [];
 }
 
@@ -45,6 +57,8 @@ export function cityQueries(cityId: string): QueryKey[] {
     ['alerts', cityId],
     ['emergency-stop', cityId],
     ['restaurant-status'],
+    ['tickets', cityId],
+    ['ticket'],
   ];
 }
 

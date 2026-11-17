@@ -23,6 +23,7 @@ part 'admin_alert_dto_output.g.dart';
 /// * [captainName] - For an alert about a captain.
 /// * [restaurantName] - For an alert about a restaurant.
 /// * [currency] - «سعر صرف قديم» (AP §8.6, slice 2.20a): the currency; null for the others.
+/// * [ticketNumber] - «تذكرة عاجلة» (AP §9.1.3, slice 2.23a): the ticket number, T-{number}; the ticket is subjectId. Null for the others.
 /// * [statementId] - «مطعم متأخر في التسوية» (AP §9.1.3, slice 2.19f): the oldest statement still unpaid, for «فتح الكشف»; null for the others.
 /// * [location]
 /// * [raisedAt]
@@ -37,7 +38,7 @@ abstract class AdminAlertDtoOutput
   /// The rule of AP §9.1.3.
   @BuiltValueField(wireName: r'code')
   AdminAlertDtoOutputCodeEnum get code;
-  // enum codeEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  captain_cash_limit,  codes_cannot_send,  code_number_stopped,  away_from_address,  item_unavailable,  edit_unacknowledged,  captain_cannot_complete,  captain_emergency,  customer_not_answering,  restaurant_auto_paused,  restaurant_settlement_overdue,  rate_stale,  compensation_approval,  };
+  // enum codeEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  captain_cash_limit,  codes_cannot_send,  code_number_stopped,  away_from_address,  item_unavailable,  edit_unacknowledged,  captain_cannot_complete,  captain_emergency,  customer_not_answering,  restaurant_auto_paused,  restaurant_settlement_overdue,  rate_stale,  compensation_approval,  urgent_ticket,  };
 
   /// critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
   @BuiltValueField(wireName: r'severity')
@@ -46,7 +47,7 @@ abstract class AdminAlertDtoOutput
 
   @BuiltValueField(wireName: r'subjectType')
   AdminAlertDtoOutputSubjectTypeEnum get subjectType;
-  // enum subjectTypeEnum {  order,  captain,  otp_pool,  otp_number,  restaurant,  currency,  compensation,  };
+  // enum subjectTypeEnum {  order,  captain,  otp_pool,  otp_number,  restaurant,  currency,  compensation,  ticket,  };
 
   /// The order, captain or sending number it is about.
   @BuiltValueField(wireName: r'subjectId')
@@ -67,6 +68,10 @@ abstract class AdminAlertDtoOutput
   /// «سعر صرف قديم» (AP §8.6, slice 2.20a): the currency; null for the others.
   @BuiltValueField(wireName: r'currency')
   String? get currency;
+
+  /// «تذكرة عاجلة» (AP §9.1.3, slice 2.23a): the ticket number, T-{number}; the ticket is subjectId. Null for the others.
+  @BuiltValueField(wireName: r'ticketNumber')
+  String? get ticketNumber;
 
   /// «مطعم متأخر في التسوية» (AP §9.1.3, slice 2.19f): the oldest statement still unpaid, for «فتح الكشف»; null for the others.
   @BuiltValueField(wireName: r'statementId')
@@ -164,6 +169,13 @@ class _$AdminAlertDtoOutputSerializer
         ? null
         : serializers.serialize(
             object.currency,
+            specifiedType: const FullType.nullable(String),
+          );
+    yield r'ticketNumber';
+    yield object.ticketNumber == null
+        ? null
+        : serializers.serialize(
+            object.ticketNumber,
             specifiedType: const FullType.nullable(String),
           );
     yield r'statementId';
@@ -319,6 +331,16 @@ class _$AdminAlertDtoOutputSerializer
           if (valueDes == null) continue;
           result.currency = valueDes;
           break;
+        case r'ticketNumber':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.ticketNumber = valueDes;
+          break;
         case r'statementId':
           final valueDes =
               serializers.deserialize(
@@ -469,6 +491,9 @@ class AdminAlertDtoOutputCodeEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'compensation_approval')
   static const AdminAlertDtoOutputCodeEnum compensationApproval =
       _$adminAlertDtoOutputCodeEnum_compensationApproval;
+  @BuiltValueEnumConst(wireName: r'urgent_ticket')
+  static const AdminAlertDtoOutputCodeEnum urgentTicket =
+      _$adminAlertDtoOutputCodeEnum_urgentTicket;
 
   static Serializer<AdminAlertDtoOutputCodeEnum> get serializer =>
       _$adminAlertDtoOutputCodeEnumSerializer;
@@ -526,6 +551,9 @@ class AdminAlertDtoOutputSubjectTypeEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'compensation')
   static const AdminAlertDtoOutputSubjectTypeEnum compensation =
       _$adminAlertDtoOutputSubjectTypeEnum_compensation;
+  @BuiltValueEnumConst(wireName: r'ticket')
+  static const AdminAlertDtoOutputSubjectTypeEnum ticket =
+      _$adminAlertDtoOutputSubjectTypeEnum_ticket;
 
   static Serializer<AdminAlertDtoOutputSubjectTypeEnum> get serializer =>
       _$adminAlertDtoOutputSubjectTypeEnumSerializer;

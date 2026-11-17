@@ -8,6 +8,7 @@ import { EMERGENCY_CODE_PERMISSION } from './emergency-code.js';
 import { OPERATIONS_READ } from './orders-board.js';
 import { ZONES_READ } from './peak-bonus.js';
 import { canApproveCompensations } from './order-compensation.js';
+import { canReadTickets } from './tickets.js';
 import { canSeePromoCodes } from './promo-codes.js';
 import { RESTAURANT_STATEMENTS } from './restaurant-statements.js';
 import { canSeeImages } from './restaurant-images.js';
@@ -66,6 +67,11 @@ export function HomePage() {
           {can(session, ZONES_READ) && (
             <li>
               <Link to="/peak-bonus">{t('peakBonus.title')}</Link>
+            </li>
+          )}
+          {canReadTickets(session) && (
+            <li>
+              <Link to="/tickets">{t('tickets.title')}</Link>
             </li>
           )}
           {canApproveCompensations(session) && (

@@ -74,6 +74,9 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnum_rateStale =
 const AdminAlertsDtoOutputAlertsInnerCodeEnum
 _$adminAlertsDtoOutputAlertsInnerCodeEnum_compensationApproval =
     const AdminAlertsDtoOutputAlertsInnerCodeEnum._('compensationApproval');
+const AdminAlertsDtoOutputAlertsInnerCodeEnum
+_$adminAlertsDtoOutputAlertsInnerCodeEnum_urgentTicket =
+    const AdminAlertsDtoOutputAlertsInnerCodeEnum._('urgentTicket');
 
 AdminAlertsDtoOutputAlertsInnerCodeEnum
 _$adminAlertsDtoOutputAlertsInnerCodeEnumValueOf(String name) {
@@ -122,6 +125,8 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnumValueOf(String name) {
       return _$adminAlertsDtoOutputAlertsInnerCodeEnum_rateStale;
     case 'compensationApproval':
       return _$adminAlertsDtoOutputAlertsInnerCodeEnum_compensationApproval;
+    case 'urgentTicket':
+      return _$adminAlertsDtoOutputAlertsInnerCodeEnum_urgentTicket;
     default:
       throw ArgumentError(name);
   }
@@ -153,6 +158,7 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnumValues =
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_restaurantSettlementOverdue,
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_rateStale,
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_compensationApproval,
+        _$adminAlertsDtoOutputAlertsInnerCodeEnum_urgentTicket,
       ],
     );
 
@@ -211,6 +217,9 @@ _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnum_currency =
 const AdminAlertsDtoOutputAlertsInnerSubjectTypeEnum
 _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnum_compensation =
     const AdminAlertsDtoOutputAlertsInnerSubjectTypeEnum._('compensation');
+const AdminAlertsDtoOutputAlertsInnerSubjectTypeEnum
+_$adminAlertsDtoOutputAlertsInnerSubjectTypeEnum_ticket =
+    const AdminAlertsDtoOutputAlertsInnerSubjectTypeEnum._('ticket');
 
 AdminAlertsDtoOutputAlertsInnerSubjectTypeEnum
 _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnumValueOf(String name) {
@@ -229,6 +238,8 @@ _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnumValueOf(String name) {
       return _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnum_currency;
     case 'compensation':
       return _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnum_compensation;
+    case 'ticket':
+      return _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnum_ticket;
     default:
       throw ArgumentError(name);
   }
@@ -245,6 +256,7 @@ _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnumValues =
         _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnum_restaurant,
         _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnum_currency,
         _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnum_compensation,
+        _$adminAlertsDtoOutputAlertsInnerSubjectTypeEnum_ticket,
       ],
     );
 
@@ -283,6 +295,7 @@ class _$AdminAlertsDtoOutputAlertsInnerCodeEnumSerializer
     'restaurantSettlementOverdue': 'restaurant_settlement_overdue',
     'rateStale': 'rate_stale',
     'compensationApproval': 'compensation_approval',
+    'urgentTicket': 'urgent_ticket',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_not_accepted': 'restaurantNotAccepted',
@@ -307,6 +320,7 @@ class _$AdminAlertsDtoOutputAlertsInnerCodeEnumSerializer
     'restaurant_settlement_overdue': 'restaurantSettlementOverdue',
     'rate_stale': 'rateStale',
     'compensation_approval': 'compensationApproval',
+    'urgent_ticket': 'urgentTicket',
   };
 
   @override
@@ -382,6 +396,7 @@ class _$AdminAlertsDtoOutputAlertsInnerSubjectTypeEnumSerializer
     'restaurant': 'restaurant',
     'currency': 'currency',
     'compensation': 'compensation',
+    'ticket': 'ticket',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'order': 'order',
@@ -391,6 +406,7 @@ class _$AdminAlertsDtoOutputAlertsInnerSubjectTypeEnumSerializer
     'restaurant': 'restaurant',
     'currency': 'currency',
     'compensation': 'compensation',
+    'ticket': 'ticket',
   };
 
   @override
@@ -438,6 +454,8 @@ class _$AdminAlertsDtoOutputAlertsInner
   @override
   final String? currency;
   @override
+  final String? ticketNumber;
+  @override
   final String? statementId;
   @override
   final AdminAlertsDtoOutputAlertsInnerLocation? location;
@@ -462,6 +480,7 @@ class _$AdminAlertsDtoOutputAlertsInner
     this.captainName,
     this.restaurantName,
     this.currency,
+    this.ticketNumber,
     this.statementId,
     this.location,
     required this.raisedAt,
@@ -490,6 +509,7 @@ class _$AdminAlertsDtoOutputAlertsInner
         captainName == other.captainName &&
         restaurantName == other.restaurantName &&
         currency == other.currency &&
+        ticketNumber == other.ticketNumber &&
         statementId == other.statementId &&
         location == other.location &&
         raisedAt == other.raisedAt &&
@@ -509,6 +529,7 @@ class _$AdminAlertsDtoOutputAlertsInner
     _$hash = $jc(_$hash, captainName.hashCode);
     _$hash = $jc(_$hash, restaurantName.hashCode);
     _$hash = $jc(_$hash, currency.hashCode);
+    _$hash = $jc(_$hash, ticketNumber.hashCode);
     _$hash = $jc(_$hash, statementId.hashCode);
     _$hash = $jc(_$hash, location.hashCode);
     _$hash = $jc(_$hash, raisedAt.hashCode);
@@ -530,6 +551,7 @@ class _$AdminAlertsDtoOutputAlertsInner
           ..add('captainName', captainName)
           ..add('restaurantName', restaurantName)
           ..add('currency', currency)
+          ..add('ticketNumber', ticketNumber)
           ..add('statementId', statementId)
           ..add('location', location)
           ..add('raisedAt', raisedAt)
@@ -589,6 +611,10 @@ class AdminAlertsDtoOutputAlertsInnerBuilder
   String? get currency => _$this._currency;
   set currency(String? currency) => _$this._currency = currency;
 
+  String? _ticketNumber;
+  String? get ticketNumber => _$this._ticketNumber;
+  set ticketNumber(String? ticketNumber) => _$this._ticketNumber = ticketNumber;
+
   String? _statementId;
   String? get statementId => _$this._statementId;
   set statementId(String? statementId) => _$this._statementId = statementId;
@@ -631,6 +657,7 @@ class AdminAlertsDtoOutputAlertsInnerBuilder
       _captainName = $v.captainName;
       _restaurantName = $v.restaurantName;
       _currency = $v.currency;
+      _ticketNumber = $v.ticketNumber;
       _statementId = $v.statementId;
       _location = $v.location?.toBuilder();
       _raisedAt = $v.raisedAt;
@@ -689,6 +716,7 @@ class AdminAlertsDtoOutputAlertsInnerBuilder
             captainName: captainName,
             restaurantName: restaurantName,
             currency: currency,
+            ticketNumber: ticketNumber,
             statementId: statementId,
             location: _location?.build(),
             raisedAt: BuiltValueNullFieldError.checkNotNull(

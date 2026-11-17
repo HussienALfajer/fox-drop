@@ -107,7 +107,9 @@
     "failed": "تعذّر تحميل التنبيهات",
     "resumeRestaurant": "استئناف",
     "openRestaurant": "حالة المطعم",
-    "openApprovals": "فتح طلبات الموافقة"
+    "openApprovals": "فتح طلبات الموافقة",
+    "ticket": "التذكرة {{number}}",
+    "openTicket": "فتح التذكرة"
   },
   "board": {
     "title": "غرفة العمليات",
@@ -129,7 +131,8 @@
       "green": "ضمن الحد",
       "amber": "قارب الحد",
       "red": "تجاوز الحد"
-    }
+    },
+    "ticketOnly": "لها تذكرة"
   },
   "order": {
     "number": "#{{number}}",
@@ -177,7 +180,8 @@
       "editUnacknowledged": "المطعم لم يؤكد التعديل",
       "captainCannotComplete": "كابتن لا يستطيع إكمال الطلب",
       "captainEmergency": "طوارئ كابتن",
-      "customerNotAnswering": "زبون لا يرد"
+      "customerNotAnswering": "زبون لا يرد",
+      "urgentTicket": "تذكرة عاجلة"
     },
     "badge": {
       "needsAssignment": "بحاجة لتعيين",
@@ -187,7 +191,8 @@
       "itemReport": "صنف نفد",
       "awaitingCollection": "بانتظار تسجيل التحصيل",
       "cannotComplete": "بانتظار العمليات",
-      "emergency": "طوارئ"
+      "emergency": "طوارئ",
+      "ticket": "لها تذكرة"
     },
     "vehicle": {
       "walking": "مشياً",
@@ -1990,5 +1995,94 @@
       "decided": "قُرّر هذا الطلب من قبل.",
       "unknown": "الطلب غير موجود."
     }
+  },
+  "tickets": {
+    "title": "التذاكر",
+    "heading": "التذكرة {{number}}",
+    "filters": "التصفية",
+    "all": "الكل",
+    "breachedOnly": "تجاوزت المهلة فقط",
+    "none": "لا تذاكر هنا.",
+    "noneOnOrder": "لا تذاكر على هذا الطلب.",
+    "manual": "تذكرة يدوية",
+    "searchByPhone": "رقم الهاتف",
+    "searchByName": "الاسم أو الرقم",
+    "search": "بحث",
+    "noParty": "لم يُعثر على أحد.",
+    "chooseParty": "اختر",
+    "choose": "اختر…",
+    "unnamed": "بلا اسم",
+    "description": "ما قاله الطرف",
+    "open": "فتح التذكرة",
+    "opened": "فُتحت التذكرة",
+    "openedNumber": "فُتحت التذكرة {{number}}.",
+    "orderNumber": "الطلب #{{number}}",
+    "openOrder": "فتح الطلب #{{number}}",
+    "noOrder": "بلا طلب",
+    "unassigned": "غير مسندة",
+    "openedAt": "فُتحت",
+    "openedBy": "بواسطة {{name}} في {{time}}",
+    "notes": "ملاحظات داخلية",
+    "noNotes": "لا ملاحظات بعد.",
+    "noteBy": "{{name}}، {{time}}:",
+    "addNote": "ملاحظة داخلية",
+    "saveNote": "إضافة الملاحظة",
+    "setWaiting": "بانتظار رد",
+    "setInProgress": "إعادة إلى «قيد المعالجة»",
+    "resolveLater": "الحل والإغلاق يأتيان في شريحة لاحقة.",
+    "orderSection": "تذاكر الطلب",
+    "openOnOrder": "فتح تذكرة",
+    "column": {
+      "number": "الرقم والمصدر",
+      "order": "الطلب",
+      "type": "النوع",
+      "party": "الطرف",
+      "priority": "الأولوية",
+      "status": "الحالة",
+      "assignee": "المسؤول",
+      "sla": "المهلة",
+      "source": "المصدر"
+    },
+    "status": {
+      "new": "جديدة",
+      "inProgress": "قيد المعالجة",
+      "waiting": "بانتظار رد",
+      "resolved": "محلولة",
+      "closed": "مغلقة"
+    },
+    "party": {
+      "customer": "زبون",
+      "restaurant": "مطعم",
+      "captain": "كابتن"
+    },
+    "source": {
+      "manual": "تذكرة يدوية"
+    },
+    "priority": {
+      "urgent": "عاجلة",
+      "normal": "عادية"
+    },
+    "sla": {
+      "firstResponse": "الاستجابة الأولى",
+      "resolution": "الحل",
+      "running": "ضمن المهلة",
+      "amber": "تقترب من نهايتها",
+      "breached": "تجاوزت المهلة",
+      "met": "تمت في وقتها",
+      "left": "متبقٍ {{minutes}} د",
+      "late": "متأخرة {{minutes}} د",
+      "due": "حتى {{time}}"
+    },
+    "refusal": {
+      "unknownType": "هذا النوع لم يعد متاحاً. اختر نوعاً آخر.",
+      "unknownParty": "لم يُعثر على هذا الطرف في المدينة.",
+      "unknownOrder": "لم يُعثر على هذا الطلب.",
+      "noCaptain": "لا كابتن على هذا الطلب.",
+      "unknownTicket": "لم يُعثر على هذه التذكرة.",
+      "notOpen": "هذه التذكرة لم تعد مفتوحة.",
+      "unknownAssignee": "لا يمكن إسناد التذكرة إلى هذا الموظف.",
+      "statusChanged": "تغيّرت حالة التذكرة. أعد فتحها."
+    },
+    "partyLine": "{{party}}: {{name}}"
   }
 }

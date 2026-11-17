@@ -159,6 +159,8 @@ import 'package:core_api/src/model/admin_notification_texts_dto_output.dart';
 import 'package:core_api/src/model/admin_notification_texts_dto_output_templates_inner.dart';
 import 'package:core_api/src/model/admin_open_drawer_session_dto.dart';
 import 'package:core_api/src/model/admin_open_drawer_session_dto_floats_inner.dart';
+import 'package:core_api/src/model/admin_open_order_ticket_dto.dart';
+import 'package:core_api/src/model/admin_open_ticket_dto.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_badges.dart';
@@ -227,6 +229,10 @@ import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_i
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner_time_change.dart';
 import 'package:core_api/src/model/admin_order_offers_dto_output.dart';
 import 'package:core_api/src/model/admin_order_offers_dto_output_offers_inner.dart';
+import 'package:core_api/src/model/admin_order_ticket_dto_output.dart';
+import 'package:core_api/src/model/admin_order_tickets_dto_output.dart';
+import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner.dart';
+import 'package:core_api/src/model/admin_order_tickets_dto_output_tickets_inner_sla.dart';
 import 'package:core_api/src/model/admin_outcome_change_preview_answer_dto_output.dart';
 import 'package:core_api/src/model/admin_outcome_change_preview_answer_dto_output_dues.dart';
 import 'package:core_api/src/model/admin_outcome_change_preview_dto.dart';
@@ -341,6 +347,17 @@ import 'package:core_api/src/model/admin_terms_dto_output_customer.dart';
 import 'package:core_api/src/model/admin_terms_version_dto_output.dart';
 import 'package:core_api/src/model/admin_texts_dto_output.dart';
 import 'package:core_api/src/model/admin_texts_dto_output_contact.dart';
+import 'package:core_api/src/model/admin_ticket_assignee_dto.dart';
+import 'package:core_api/src/model/admin_ticket_assignees_dto_output.dart';
+import 'package:core_api/src/model/admin_ticket_dto_output.dart';
+import 'package:core_api/src/model/admin_ticket_note_dto.dart';
+import 'package:core_api/src/model/admin_ticket_page_dto_output.dart';
+import 'package:core_api/src/model/admin_ticket_page_dto_output_notes_inner.dart';
+import 'package:core_api/src/model/admin_ticket_parties_dto_output.dart';
+import 'package:core_api/src/model/admin_ticket_party_search_dto.dart';
+import 'package:core_api/src/model/admin_ticket_status_dto.dart';
+import 'package:core_api/src/model/admin_ticket_types_dto_output.dart';
+import 'package:core_api/src/model/admin_tickets_dto_output.dart';
 import 'package:core_api/src/model/admin_update_contact_dto.dart';
 import 'package:core_api/src/model/admin_update_notification_text_dto.dart';
 import 'package:core_api/src/model/admin_upload_dto_output.dart';
@@ -836,6 +853,8 @@ part 'serializers.g.dart';
   AdminNotificationTextsDtoOutputTemplatesInner,
   AdminOpenDrawerSessionDto,
   AdminOpenDrawerSessionDtoFloatsInner,
+  AdminOpenOrderTicketDto,
+  AdminOpenTicketDto,
   AdminOrderCardDtoOutput,
   AdminOrderCardDtoOutputOrder,
   AdminOrderCardDtoOutputOrderBadges,
@@ -904,6 +923,10 @@ part 'serializers.g.dart';
   AdminOrderDtoOutputOrderTimelineInnerTimeChange,
   AdminOrderOffersDtoOutput,
   AdminOrderOffersDtoOutputOffersInner,
+  AdminOrderTicketDtoOutput,
+  AdminOrderTicketsDtoOutput,
+  AdminOrderTicketsDtoOutputTicketsInner,
+  AdminOrderTicketsDtoOutputTicketsInnerSla,
   AdminOutcomeChangePreviewAnswerDtoOutput,
   AdminOutcomeChangePreviewAnswerDtoOutputDues,
   AdminOutcomeChangePreviewDto,
@@ -1018,6 +1041,17 @@ part 'serializers.g.dart';
   AdminTermsVersionDtoOutput,
   AdminTextsDtoOutput,
   AdminTextsDtoOutputContact,
+  AdminTicketAssigneeDto,
+  AdminTicketAssigneesDtoOutput,
+  AdminTicketDtoOutput,
+  AdminTicketNoteDto,
+  AdminTicketPageDtoOutput,
+  AdminTicketPageDtoOutputNotesInner,
+  AdminTicketPartiesDtoOutput,
+  AdminTicketPartySearchDto,
+  AdminTicketStatusDto,
+  AdminTicketTypesDtoOutput,
+  AdminTicketsDtoOutput,
   AdminUpdateContactDto,
   AdminUpdateNotificationTextDto,
   AdminUploadDtoOutput,
@@ -2092,6 +2126,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminTicketPageDtoOutputNotesInner),
+            ]),
+            () => ListBuilder<AdminTicketPageDtoOutputNotesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(MerchantHoursDtoOutputPeriodsInner),
             ]),
             () => ListBuilder<MerchantHoursDtoOutputPeriodsInner>(),
@@ -2324,6 +2364,12 @@ Serializers serializers =
                 ListBuilder<
                   MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminOrderTicketsDtoOutputTicketsInner),
+            ]),
+            () => ListBuilder<AdminOrderTicketsDtoOutputTicketsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

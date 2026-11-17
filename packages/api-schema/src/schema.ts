@@ -2596,6 +2596,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/orders/{orderId}/tickets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminOrderTicketsList"];
+        put?: never;
+        post: operations["adminOrderTicketsOpen"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/captain/orders/active": {
         parameters: {
             query?: never;
@@ -3261,6 +3277,134 @@ export interface paths {
         };
         get: operations["customerNotificationsList"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/tickets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminTicketsList"];
+        put?: never;
+        post: operations["adminTicketsOpen"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/tickets/types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminTicketsTypes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/tickets/assignees": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminTicketsAssignees"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/tickets/parties/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminTicketsFindParties"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/tickets/{ticketId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminTicketsTicket"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/tickets/{ticketId}/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminTicketsAddNote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/tickets/{ticketId}/assignee": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminTicketsAssign"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/tickets/{ticketId}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminTicketsSetStatus"];
         post?: never;
         delete?: never;
         options?: never;
@@ -7422,6 +7566,8 @@ export interface components {
                     cannotComplete: boolean;
                     /** @description «طوارئ»: the captain's open emergency (CA §9.11, slice 2.13c). */
                     emergency: boolean;
+                    /** @description «لها تذكرة» (AP §9.2, slice 2.23a): an open ticket on the order. */
+                    ticket: boolean;
                 };
                 /** @description The alerts' moments, so the panel raises each when it passes. */
                 moments: {
@@ -8114,6 +8260,8 @@ export interface components {
                     cannotComplete: boolean;
                     /** @description «طوارئ»: the captain's open emergency (CA §9.11, slice 2.13c). */
                     emergency: boolean;
+                    /** @description «لها تذكرة» (AP §9.2, slice 2.23a): an open ticket on the order. */
+                    ticket: boolean;
                 };
                 /** @description The alerts' moments, so the panel raises each when it passes. */
                 moments: {
@@ -8214,6 +8362,8 @@ export interface components {
                     cannotComplete: boolean;
                     /** @description «طوارئ»: the captain's open emergency (CA §9.11, slice 2.13c). */
                     emergency: boolean;
+                    /** @description «لها تذكرة» (AP §9.2, slice 2.23a): an open ticket on the order. */
+                    ticket: boolean;
                 };
                 /** @description The alerts' moments, so the panel raises each when it passes. */
                 moments: {
@@ -8969,6 +9119,94 @@ export interface components {
             /** @description The personal code once issued. */
             code: string | null;
             codeValidTo: string | null;
+        };
+        AdminOrderTicketsDto_Output: {
+            /** @description Newest first. */
+            tickets: {
+                /** Format: uuid */
+                id: string;
+                /** @description Shown as `T-{number}` (AP §4.8). */
+                number: string;
+                /** @enum {string} */
+                source: "manual";
+                /** @enum {string} */
+                party: "customer" | "restaurant" | "captain";
+                /** Format: uuid */
+                partyId: string;
+                partyName: string;
+                orderId: string | null;
+                orderNumber: string | null;
+                /** @description «عاجلة»: open, on an order still active. */
+                urgent: boolean;
+                typeCode: string;
+                typeLabel: string;
+                description: string;
+                /** @enum {string} */
+                status: "new" | "in_progress" | "waiting" | "resolved" | "closed";
+                assigneeId: string | null;
+                assigneeName: string | null;
+                sla: {
+                    /** @enum {string} */
+                    kind: "first_response" | "resolution";
+                    /** Format: date-time */
+                    startedAt: string;
+                    /** Format: date-time */
+                    dueAt: string;
+                    /** @description The first response once given. */
+                    stoppedAt: string | null;
+                };
+                openedByName: string | null;
+                /** Format: date-time */
+                openedAt: string;
+                /** Format: date-time */
+                updatedAt: string;
+            }[];
+        };
+        AdminOpenOrderTicketDto: {
+            /** @enum {string} */
+            party: "customer" | "restaurant" | "captain";
+            /** @description From the party's list (AP Appendix B). */
+            typeCode: string;
+            description: string;
+        };
+        AdminOrderTicketDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** @description Shown as `T-{number}` (AP §4.8). */
+            number: string;
+            /** @enum {string} */
+            source: "manual";
+            /** @enum {string} */
+            party: "customer" | "restaurant" | "captain";
+            /** Format: uuid */
+            partyId: string;
+            partyName: string;
+            orderId: string | null;
+            orderNumber: string | null;
+            /** @description «عاجلة»: open, on an order still active. */
+            urgent: boolean;
+            typeCode: string;
+            typeLabel: string;
+            description: string;
+            /** @enum {string} */
+            status: "new" | "in_progress" | "waiting" | "resolved" | "closed";
+            assigneeId: string | null;
+            assigneeName: string | null;
+            sla: {
+                /** @enum {string} */
+                kind: "first_response" | "resolution";
+                /** Format: date-time */
+                startedAt: string;
+                /** Format: date-time */
+                dueAt: string;
+                /** @description The first response once given. */
+                stoppedAt: string | null;
+            };
+            openedByName: string | null;
+            /** Format: date-time */
+            openedAt: string;
+            /** Format: date-time */
+            updatedAt: string;
         };
         CaptainActiveOrderDto_Output: {
             /** @description Null without an active order. */
@@ -10399,14 +10637,14 @@ export interface components {
                  * @description The rule of AP §9.1.3.
                  * @enum {string}
                  */
-                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval";
+                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket";
                 /**
                  * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
                  * @enum {string}
                  */
                 severity: "critical" | "warning" | "information";
                 /** @enum {string} */
-                subjectType: "order" | "captain" | "otp_pool" | "otp_number" | "restaurant" | "currency" | "compensation";
+                subjectType: "order" | "captain" | "otp_pool" | "otp_number" | "restaurant" | "currency" | "compensation" | "ticket";
                 /** @description The order, captain or sending number it is about. */
                 subjectId: string;
                 /** @description For an alert about an order. */
@@ -10417,6 +10655,8 @@ export interface components {
                 restaurantName: string | null;
                 /** @description «سعر صرف قديم» (AP §8.6, slice 2.20a): the currency; null for the others. */
                 currency: string | null;
+                /** @description «تذكرة عاجلة» (AP §9.1.3, slice 2.23a): the ticket number, T-{number}; the ticket is subjectId. Null for the others. */
+                ticketNumber: string | null;
                 /** @description «مطعم متأخر في التسوية» (AP §9.1.3, slice 2.19f): the oldest statement still unpaid, for «فتح الكشف»; null for the others. */
                 statementId: string | null;
                 /** @description «طوارئ كابتن» (AP §9.1.3, CA §9.11): the location the captain sent, for «فتح الخريطة»; null for the others and an emergency without a fix. */
@@ -10446,14 +10686,14 @@ export interface components {
              * @description The rule of AP §9.1.3.
              * @enum {string}
              */
-            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval";
+            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket";
             /**
              * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
              * @enum {string}
              */
             severity: "critical" | "warning" | "information";
             /** @enum {string} */
-            subjectType: "order" | "captain" | "otp_pool" | "otp_number" | "restaurant" | "currency" | "compensation";
+            subjectType: "order" | "captain" | "otp_pool" | "otp_number" | "restaurant" | "currency" | "compensation" | "ticket";
             /** @description The order, captain or sending number it is about. */
             subjectId: string;
             /** @description For an alert about an order. */
@@ -10464,6 +10704,8 @@ export interface components {
             restaurantName: string | null;
             /** @description «سعر صرف قديم» (AP §8.6, slice 2.20a): the currency; null for the others. */
             currency: string | null;
+            /** @description «تذكرة عاجلة» (AP §9.1.3, slice 2.23a): the ticket number, T-{number}; the ticket is subjectId. Null for the others. */
+            ticketNumber: string | null;
             /** @description «مطعم متأخر في التسوية» (AP §9.1.3, slice 2.19f): the oldest statement still unpaid, for «فتح الكشف»; null for the others. */
             statementId: string | null;
             /** @description «طوارئ كابتن» (AP §9.1.3, CA §9.11): the location the captain sent, for «فتح الخريطة»; null for the others and an emergency without a fix. */
@@ -10506,6 +10748,201 @@ export interface components {
                     [key: string]: string;
                 };
             }[];
+        };
+        AdminTicketsDto_Output: {
+            /** @description Newest first, the latest 200. */
+            tickets: {
+                /** Format: uuid */
+                id: string;
+                /** @description Shown as `T-{number}` (AP §4.8). */
+                number: string;
+                /** @enum {string} */
+                source: "manual";
+                /** @enum {string} */
+                party: "customer" | "restaurant" | "captain";
+                /** Format: uuid */
+                partyId: string;
+                partyName: string;
+                orderId: string | null;
+                orderNumber: string | null;
+                /** @description «عاجلة»: open, on an order still active. */
+                urgent: boolean;
+                typeCode: string;
+                typeLabel: string;
+                description: string;
+                /** @enum {string} */
+                status: "new" | "in_progress" | "waiting" | "resolved" | "closed";
+                assigneeId: string | null;
+                assigneeName: string | null;
+                sla: {
+                    /** @enum {string} */
+                    kind: "first_response" | "resolution";
+                    /** Format: date-time */
+                    startedAt: string;
+                    /** Format: date-time */
+                    dueAt: string;
+                    /** @description The first response once given. */
+                    stoppedAt: string | null;
+                };
+                openedByName: string | null;
+                /** Format: date-time */
+                openedAt: string;
+                /** Format: date-time */
+                updatedAt: string;
+            }[];
+        };
+        AdminTicketTypesDto_Output: {
+            customer: {
+                code: string;
+                label: string;
+            }[];
+            restaurant: {
+                code: string;
+                label: string;
+            }[];
+            captain: {
+                code: string;
+                label: string;
+            }[];
+        };
+        AdminTicketAssigneesDto_Output: {
+            assignees: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            }[];
+        };
+        AdminTicketPartySearchDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @enum {string} */
+            party: "customer" | "restaurant" | "captain";
+            /** @description A part of the name, or the number. */
+            q: string;
+        };
+        AdminTicketPartiesDto_Output: {
+            parties: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            }[];
+        };
+        AdminOpenTicketDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @enum {string} */
+            party: "customer" | "restaurant" | "captain";
+            /** @description From the party's list (AP Appendix B). */
+            typeCode: string;
+            description: string;
+            /** Format: uuid */
+            partyId: string;
+        };
+        AdminTicketDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** @description Shown as `T-{number}` (AP §4.8). */
+            number: string;
+            /** @enum {string} */
+            source: "manual";
+            /** @enum {string} */
+            party: "customer" | "restaurant" | "captain";
+            /** Format: uuid */
+            partyId: string;
+            partyName: string;
+            orderId: string | null;
+            orderNumber: string | null;
+            /** @description «عاجلة»: open, on an order still active. */
+            urgent: boolean;
+            typeCode: string;
+            typeLabel: string;
+            description: string;
+            /** @enum {string} */
+            status: "new" | "in_progress" | "waiting" | "resolved" | "closed";
+            assigneeId: string | null;
+            assigneeName: string | null;
+            sla: {
+                /** @enum {string} */
+                kind: "first_response" | "resolution";
+                /** Format: date-time */
+                startedAt: string;
+                /** Format: date-time */
+                dueAt: string;
+                /** @description The first response once given. */
+                stoppedAt: string | null;
+            };
+            openedByName: string | null;
+            /** Format: date-time */
+            openedAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        AdminTicketPageDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** @description Shown as `T-{number}` (AP §4.8). */
+            number: string;
+            /** @enum {string} */
+            source: "manual";
+            /** @enum {string} */
+            party: "customer" | "restaurant" | "captain";
+            /** Format: uuid */
+            partyId: string;
+            partyName: string;
+            orderId: string | null;
+            orderNumber: string | null;
+            /** @description «عاجلة»: open, on an order still active. */
+            urgent: boolean;
+            typeCode: string;
+            typeLabel: string;
+            description: string;
+            /** @enum {string} */
+            status: "new" | "in_progress" | "waiting" | "resolved" | "closed";
+            assigneeId: string | null;
+            assigneeName: string | null;
+            sla: {
+                /** @enum {string} */
+                kind: "first_response" | "resolution";
+                /** Format: date-time */
+                startedAt: string;
+                /** Format: date-time */
+                dueAt: string;
+                /** @description The first response once given. */
+                stoppedAt: string | null;
+            };
+            openedByName: string | null;
+            /** Format: date-time */
+            openedAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            /** @description Oldest first. */
+            notes: {
+                /** Format: uuid */
+                id: string;
+                authorName: string | null;
+                body: string;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+        };
+        AdminTicketNoteDto: {
+            /** Format: uuid */
+            cityId: string;
+            body: string;
+        };
+        AdminTicketAssigneeDto: {
+            /** Format: uuid */
+            cityId: string;
+            assigneeId: string | null;
+        };
+        AdminTicketStatusDto: {
+            /** Format: uuid */
+            cityId: string;
+            /**
+             * @description «بانتظار رد», or back to «قيد المعالجة»; «محلولة» only by resolving.
+             * @enum {string}
+             */
+            status: "in_progress" | "waiting";
         };
         AdminPickerDto_Output: {
             /** @description «تعيين» reaches the captain as an offer (dispatch.manual_assign_requires_accept), the only way to send one greyed out only for «المبلغ أكبر مما يحمله» (CA §8.4, K2). */
@@ -16813,6 +17250,57 @@ export interface operations {
             };
         };
     };
+    adminOrderTicketsList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderTicketsDto_Output"];
+                };
+            };
+        };
+    };
+    adminOrderTicketsOpen: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminOpenOrderTicketDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderTicketDto_Output"];
+                };
+            };
+        };
+    };
     captainOrdersActive: {
         parameters: {
             query?: never;
@@ -17888,6 +18376,230 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CustomerNotificationsDto_Output"];
+                };
+            };
+        };
+    };
+    adminTicketsList: {
+        parameters: {
+            query: {
+                cityId: string;
+                status?: "new" | "in_progress" | "waiting" | "resolved" | "closed";
+                typeCode?: string;
+                assigneeId?: string;
+                source?: "manual";
+                /** @description «تجاوز المهلة»: only the tickets whose SLA timer is breached. */
+                breached?: "true" | "false";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminTicketsDto_Output"];
+                };
+            };
+        };
+    };
+    adminTicketsOpen: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminOpenTicketDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminTicketDto_Output"];
+                };
+            };
+        };
+    };
+    adminTicketsTypes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminTicketTypesDto_Output"];
+                };
+            };
+        };
+    };
+    adminTicketsAssignees: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminTicketAssigneesDto_Output"];
+                };
+            };
+        };
+    };
+    adminTicketsFindParties: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminTicketPartySearchDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminTicketPartiesDto_Output"];
+                };
+            };
+        };
+    };
+    adminTicketsTicket: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path: {
+                ticketId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminTicketPageDto_Output"];
+                };
+            };
+        };
+    };
+    adminTicketsAddNote: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                ticketId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminTicketNoteDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminTicketPageDto_Output"];
+                };
+            };
+        };
+    };
+    adminTicketsAssign: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticketId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminTicketAssigneeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminTicketPageDto_Output"];
+                };
+            };
+        };
+    };
+    adminTicketsSetStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticketId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminTicketStatusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminTicketPageDto_Output"];
                 };
             };
         };
