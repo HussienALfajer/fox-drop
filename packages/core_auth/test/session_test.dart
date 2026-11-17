@@ -88,6 +88,35 @@ void main() {
     expect(h.server.requests, isEmpty);
   });
 
+  test('prefers the device id that survives a reinstall', () async {
+    const stable = '6d1f5a2e-3c4b-3a9d-8e7f-0123456789ab';
+    final h = _Harness({});
+    addTearDown(h.container.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        h.scope.store.overrideWithValue(h.store),
+        h.scope.stableDeviceId.overrideWithValue(() async => stable),
+      ],
+    );
+    addTearDown(container.dispose);
+    expect(await container.read(h.scope.session.notifier).deviceId(), stable);
+    expect(h.store.values, isNot(contains('device.id')));
+
+    // A platform that fails or gives none falls back to the stored id.
+    final failing = ProviderContainer(
+      overrides: [
+        h.scope.store.overrideWithValue(h.store),
+        h.scope.stableDeviceId.overrideWithValue(
+          () async => throw StateError('no'),
+        ),
+      ],
+    );
+    addTearDown(failing.dispose);
+    final id = await failing.read(h.scope.session.notifier).deviceId();
+    expect(id, isNot(stable));
+    expect(h.store.values['device.id'], id);
+  });
+
   test('renews a token about to expire once for concurrent calls', () async {
     final h = _Harness(_signedIn(_now.add(const Duration(seconds: 30))));
     addTearDown(h.container.dispose);

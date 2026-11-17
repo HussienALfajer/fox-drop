@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'src/api.dart';
 import 'src/app.dart';
 import 'src/auth.dart';
+import 'src/device_id.dart';
 import 'src/notifications/push.dart';
 
 Future<void> main() async {
@@ -20,6 +21,7 @@ Future<void> main() async {
     ProviderScope(
       overrides: [
         customerAuth.appCheck.overrideWithValue(appCheck),
+        customerAuth.stableDeviceId.overrideWithValue(customerDeviceId),
         pushProvider.overrideWithValue(push),
       ],
       child: const CustomerApp(),
