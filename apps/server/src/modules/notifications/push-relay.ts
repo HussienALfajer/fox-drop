@@ -35,7 +35,12 @@ type Row = typeof pushMessages.$inferSelect;
 function recipientOf(row: Row): PushRecipient {
   if (row.party === 'customer') return { party: 'customer', accountId: row.accountId! };
   if (row.party === 'captain') return { party: 'captain', captainId: row.captainId! };
-  return { party: 'merchant', restaurantId: row.restaurantId!, owners: row.ownersOnly };
+  return {
+    party: 'merchant',
+    restaurantId: row.restaurantId!,
+    owners: row.ownersOnly,
+    reporter: row.accountId,
+  };
 }
 
 // Architecture §8.1: sends the queued pushes to every live device of their

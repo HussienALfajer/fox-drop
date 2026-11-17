@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module.js';
 import { AdminUploadsController } from './admin-uploads.controller.js';
-import { CustomerUploadsController } from './customer-uploads.controller.js';
+import {
+  CustomerUploadsController,
+  MerchantUploadsController,
+} from './customer-uploads.controller.js';
 import { FilesService } from './files.service.js';
 
 // The files module (architecture §4.2, §5.8): uploads to the object storage
@@ -9,7 +12,7 @@ import { FilesService } from './files.service.js';
 // FilesModule and calls FilesService.claim in its own transaction.
 @Module({
   imports: [DatabaseModule],
-  controllers: [AdminUploadsController, CustomerUploadsController],
+  controllers: [AdminUploadsController, CustomerUploadsController, MerchantUploadsController],
   providers: [FilesService],
   exports: [FilesService],
 })

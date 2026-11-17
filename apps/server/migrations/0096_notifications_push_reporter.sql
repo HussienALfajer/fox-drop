@@ -1,0 +1,5 @@
+-- RA §16 #29 (slice 2.24b): a push to a restaurant's owners may name the
+-- restaurant user who reported, told too. Widens the CHECK only.
+ALTER TABLE "notifications"."push_messages" DROP CONSTRAINT "push_messages_recipient";--> statement-breakpoint
+ALTER TABLE "notifications"."push_messages" ADD CONSTRAINT "push_messages_recipient" CHECK (("notifications"."push_messages"."party" <> 'customer' OR "notifications"."push_messages"."account_id" IS NOT NULL) AND ("notifications"."push_messages"."account_id" IS NULL OR "notifications"."push_messages"."party" = 'customer' OR ("notifications"."push_messages"."party" = 'merchant' AND "notifications"."push_messages"."owners_only")) AND ("notifications"."push_messages"."party" = 'merchant') = ("notifications"."push_messages"."restaurant_id" IS NOT NULL) AND ("notifications"."push_messages"."party" = 'captain') = ("notifications"."push_messages"."captain_id" IS NOT NULL) AND (NOT "notifications"."push_messages"."owners_only" OR "notifications"."push_messages"."party" = 'merchant')) NOT VALID;--> statement-breakpoint
+ALTER TABLE "notifications"."push_messages" VALIDATE CONSTRAINT "push_messages_recipient";

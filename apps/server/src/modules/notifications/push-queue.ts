@@ -55,7 +55,12 @@ export class PushQueue {
           createdAt: push.at ?? now,
           source: push.source,
           party: push.recipient.party,
-          accountId: push.recipient.party === 'customer' ? push.recipient.accountId : null,
+          accountId:
+            push.recipient.party === 'customer'
+              ? push.recipient.accountId
+              : push.recipient.party === 'merchant'
+                ? (push.recipient.reporter ?? null)
+                : null,
           restaurantId: push.recipient.party === 'merchant' ? push.recipient.restaurantId : null,
           ownersOnly: push.recipient.party === 'merchant' && push.recipient.owners,
           captainId: push.recipient.party === 'captain' ? push.recipient.captainId : null,

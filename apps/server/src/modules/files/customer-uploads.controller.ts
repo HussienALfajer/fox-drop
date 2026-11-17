@@ -2,7 +2,7 @@ import { Body, HttpCode, HttpException, HttpStatus, Post } from '@nestjs/common'
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
 import { AppSignedIn, CurrentAppSession } from '../../http/access.js';
-import { CustomerController } from '../../http/route-groups.js';
+import { CustomerController, MerchantController } from '../../http/route-groups.js';
 import type { AppSession } from '../identity/index.js';
 import { FilesRefusedError, FilesService, MAX_IMAGE_BYTES } from './files.service.js';
 import { imageTypes } from './schema.js';
@@ -34,18 +34,43 @@ export class CustomerUploadsController {
   @AppSignedIn()
   @HttpCode(201)
   @ZodResponse({ status: 201, type: CustomerUploadDto })
-  async create(@Body() body: CustomerNewUploadDto, @CurrentAppSession() session: AppSession) {
-    const upload = await this.files
-      .createUpload({ ...body, purpose: 'report_photo' }, session.accountId)
-      .catch((error: unknown) => {
-        if (error instanceof FilesRefusedError && error.refusal === 'too_many_uploads') {
-          throw new HttpException(
-            { statusCode: HttpStatus.TOO_MANY_REQUESTS, error: error.refusal },
-            HttpStatus.TOO_MANY_REQUESTS,
-          );
-        }
-        throw error;
-      });
-    return { ...upload, expiresAt: upload.expiresAt.toISOString() };
+  create(@Body() body: CustomerNewUploadDto, @CurrentAppSession() session: AppSession) {
+    return reportPhoto(this.files, body, session.accountId);
   }
+}
+
+// RA §15 (slice 2.24b): the restaurant's report photo, as the customer's:
+// the same purpose, bucket and hourly limit per restaurant user. The DTOs
+// are the customer's, so the clients share their models.
+@MerchantController('uploads')
+export class MerchantUploadsController {
+  constructor(private readonly files: FilesService) {}
+
+  // 429 too_many_uploads past REPORT_UPLOADS_PER_HOUR.
+  @Post('report-photo')
+  @AppSignedIn()
+  @HttpCode(201)
+  @ZodResponse({ status: 201, type: CustomerUploadDto })
+  create(@Body() body: CustomerNewUploadDto, @CurrentAppSession() session: AppSession) {
+    return reportPhoto(this.files, body, session.accountId);
+  }
+}
+
+async function reportPhoto(
+  files: FilesService,
+  body: CustomerNewUploadDto,
+  accountId: string,
+): Promise<CustomerUploadDto> {
+  const upload = await files
+    .createUpload({ ...body, purpose: 'report_photo' }, accountId)
+    .catch((error: unknown) => {
+      if (error instanceof FilesRefusedError && error.refusal === 'too_many_uploads') {
+        throw new HttpException(
+          { statusCode: HttpStatus.TOO_MANY_REQUESTS, error: error.refusal },
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
+      }
+      throw error;
+    });
+  return { ...upload, expiresAt: upload.expiresAt.toISOString() };
 }

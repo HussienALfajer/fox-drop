@@ -14,6 +14,7 @@ import { NotificationsModule, NotificationsWorkerModule } from '../notifications
 import { SettingsModule } from '../settings/index.js';
 import { AdminTicketsController } from './admin-tickets.controller.js';
 import { CustomerPriceReportsController } from './customer-price-reports.controller.js';
+import { MerchantReportsController } from './merchant-reports.controller.js';
 import { SupportService } from './support.service.js';
 import { TicketSync } from './ticket-sync.js';
 
@@ -36,7 +37,7 @@ import { TicketSync } from './ticket-sync.js';
     FxModule,
     GeoModule,
   ],
-  controllers: [AdminTicketsController, CustomerPriceReportsController],
+  controllers: [AdminTicketsController, CustomerPriceReportsController, MerchantReportsController],
   providers: [SupportService, TicketSync],
   exports: [SupportService, TicketSync],
 })
@@ -53,6 +54,9 @@ export class SupportWorkerModule {}
 export {
   type CustomerReport,
   type CustomerReportView,
+  type MerchantReport,
+  type MerchantTicketView,
+  type ReportingMerchant,
   type OpenTicket,
   type ReportedOrder,
   type ReportingCustomer,
@@ -82,9 +86,12 @@ export {
 export { TicketSync } from './ticket-sync.js';
 export {
   answered as ticketAnswered,
+  merchantTicketBody,
+  merchantTicketOut,
   openTicketFields,
   ticketAdminOf,
   ticketBody,
   ticketOut,
 } from './ticket-body.js';
 export { type TicketParty } from './tickets.js';
+export { dataChangeSubjects, MERCHANT_REPORT_PHOTOS_MAX } from './merchant-reports.js';

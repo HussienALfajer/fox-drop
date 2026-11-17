@@ -501,6 +501,7 @@ function pageOut(page: Awaited<ReturnType<SupportService['ticket']>>): AdminTick
         amount: page.report.shopPrice.amount.toString(),
         currency: page.report.shopPrice.currency,
       },
+      subject: page.report.subject,
     },
   } as AdminTicketPageDto;
 }

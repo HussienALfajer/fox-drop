@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq, inArray, isNull, ne } from 'drizzle-orm';
+import { and, eq, inArray, isNull, ne, or } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AppSession, OpenAppSessions } from '../identity/index.js';
@@ -9,7 +9,10 @@ import { pushDevices, pushPlatforms } from './schema.js';
 // restaurant's devices («All») or its owners' devices («Owners»), a captain.
 export type PushRecipient =
   | { party: 'customer'; accountId: string }
-  | { party: 'merchant'; restaurantId: string; owners: boolean }
+  // A restaurant's devices, or its owners' alone (RA §16 «Owners»); with
+  // `reporter`, also that restaurant user's devices (RA §16 #29 «Owners and
+  // the reporter», slice 2.24b).
+  | { party: 'merchant'; restaurantId: string; owners: boolean; reporter?: string | null }
   | { party: 'captain'; captainId: string };
 
 export interface PushTarget {
@@ -80,7 +83,14 @@ export class PushDevices {
           : and(
               live,
               eq(pushDevices.restaurantId, recipient.restaurantId),
-              recipient.owners ? eq(pushDevices.merchantRole, 'owner') : undefined,
+              !recipient.owners
+                ? undefined
+                : recipient.reporter
+                  ? or(
+                      eq(pushDevices.merchantRole, 'owner'),
+                      eq(pushDevices.accountId, recipient.reporter),
+                    )
+                  : eq(pushDevices.merchantRole, 'owner'),
             );
     const rows = await this.database.db
       .select({ sessionId: pushDevices.sessionId, token: pushDevices.token })

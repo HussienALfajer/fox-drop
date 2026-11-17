@@ -673,6 +673,13 @@
       "when": 1794922819955,
       "tag": "0095_support_merchant_reports",
       "breakpoints": true
+    },
+    {
+      "idx": 96,
+      "version": "7",
+      "when": 1794922903087,
+      "tag": "0096_notifications_push_reporter",
+      "breakpoints": true
     }
   ]
 }

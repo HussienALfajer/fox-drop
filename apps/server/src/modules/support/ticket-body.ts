@@ -13,7 +13,8 @@ import { ContentRefusedError } from '../content/index.js';
 import type { AdminSession } from '../identity/index.js';
 import { ticketSources } from './schema.js';
 import type { MoneyLine, PickupCorrectionPreview, PickupDisputeFacts } from './pickup-disputes.js';
-import type { Ticket, TicketAdmin, TicketNote } from './support.service.js';
+import { dataChangeSubjects } from './merchant-reports.js';
+import type { MerchantTicketView, Ticket, TicketAdmin, TicketNote } from './support.service.js';
 import type { TicketMoneyPreview, TicketOrderFacts } from './ticket-orders.js';
 import { TicketRefusedError } from './support.service.js';
 import {
@@ -213,7 +214,52 @@ export const ticketReportBody = z.object({
     .nullable()
     .describe('«أبلغ عن سعر مختلف»: the item named, as it was then (CU §9.5).'),
   shopPrice: moneyLine.nullable().describe("«أبلغ عن سعر مختلف»: the shop's price, in the base."),
+  subject: z
+    .enum(dataChangeSubjects)
+    .nullable()
+    .describe(
+      '«طلب تعديل بيانات» from the restaurant app (RA §15): min_order, coverage, owners, owner_phone.',
+    ),
 });
+
+// RA §15 «بلاغاتي» (slice 2.24b): a ticket as the restaurant app shows it.
+export const merchantTicketBody = z.object({
+  id: z.uuid(),
+  number: number.describe('Shown as `T-{number}`.'),
+  typeLabel: z.string(),
+  subject: z.enum(dataChangeSubjects).nullable().describe('«طلب تعديل بيانات»: what it asks.'),
+  orderId: z.uuid().nullable(),
+  orderNumber: number.nullable(),
+  description: z.string().describe('The note sent.'),
+  status: z
+    .enum(ticketStatuses)
+    .describe('AP Appendix C: «جديدة», «قيد المعالجة», «بانتظار رد», «محلولة», «مغلقة».'),
+  openedAt: z.iso.datetime(),
+  openedByMe: z.boolean().describe("Opened by the session's user."),
+  replyWithinMinutes: z
+    .int()
+    .describe("«سنرد عليك خلال {المدة}»: the ticket's timer from its opening."),
+  message: z.string().nullable().describe('The resolution message, once resolved.'),
+  resolvedAt: z.iso.datetime().nullable(),
+});
+
+export function merchantTicketOut(ticket: MerchantTicketView): z.infer<typeof merchantTicketBody> {
+  return {
+    id: ticket.id,
+    number: ticket.number.toString(),
+    typeLabel: ticket.typeLabel,
+    subject: ticket.subject,
+    orderId: ticket.orderId,
+    orderNumber: ticket.orderNumber?.toString() ?? null,
+    description: ticket.description,
+    status: ticket.status,
+    openedAt: ticket.openedAt.toISOString(),
+    openedByMe: ticket.openedByMe,
+    replyWithinMinutes: ticket.replyWithinMinutes,
+    message: ticket.message,
+    resolvedAt: ticket.resolvedAt?.toISOString() ?? null,
+  };
+}
 
 export const ticketRedeliveryBody = z.object({
   orderId: z.uuid(),
@@ -412,6 +458,7 @@ export async function answered<T>(run: () => Promise<T>): Promise<T> {
       case 'unknown_ticket':
       case 'unknown_party':
       case 'unknown_restaurant':
+      case 'unknown_order':
         throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: error.refusal });
       case 'forbidden':
         throw new ForbiddenException({ statusCode: HttpStatus.FORBIDDEN, error: error.refusal });
@@ -434,6 +481,8 @@ export async function answered<T>(run: () => Promise<T>): Promise<T> {
       case 'too_many_photos':
       case 'invalid_price':
       case 'unknown_item':
+      case 'subject_required':
+      case 'invalid_subject':
         throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, error: error.refusal });
       case 'idempotency_key_reused':
         throw new UnprocessableEntityException({
