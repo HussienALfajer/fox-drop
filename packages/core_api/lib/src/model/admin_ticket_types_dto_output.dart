@@ -5,7 +5,6 @@
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_block_reasons_inner.dart';
-import 'package:core_api/src/model/admin_compensation_requests_dto_output_requests_inner_reason.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -22,8 +21,7 @@ abstract class AdminTicketTypesDtoOutput
     implements
         Built<AdminTicketTypesDtoOutput, AdminTicketTypesDtoOutputBuilder> {
   @BuiltValueField(wireName: r'customer')
-  BuiltList<AdminCompensationRequestsDtoOutputRequestsInnerReason?>
-  get customer;
+  BuiltList<AdminCustomerDtoOutputBlockReasonsInner> get customer;
 
   @BuiltValueField(wireName: r'restaurant')
   BuiltList<AdminCustomerDtoOutputBlockReasonsInner> get restaurant;
@@ -65,9 +63,7 @@ class _$AdminTicketTypesDtoOutputSerializer
     yield serializers.serialize(
       object.customer,
       specifiedType: const FullType(BuiltList, [
-        FullType.nullable(
-          AdminCompensationRequestsDtoOutputRequestsInnerReason,
-        ),
+        FullType(AdminCustomerDtoOutputBlockReasonsInner),
       ]),
     );
     yield r'restaurant';
@@ -116,14 +112,10 @@ class _$AdminTicketTypesDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType.nullable(
-                        AdminCompensationRequestsDtoOutputRequestsInnerReason,
-                      ),
+                      FullType(AdminCustomerDtoOutputBlockReasonsInner),
                     ]),
                   )
-                  as BuiltList<
-                    AdminCompensationRequestsDtoOutputRequestsInnerReason?
-                  >;
+                  as BuiltList<AdminCustomerDtoOutputBlockReasonsInner>;
           result.customer.replace(valueDes);
           break;
         case r'restaurant':

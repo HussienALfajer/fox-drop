@@ -8,6 +8,7 @@ import 'package:core_api/src/model/admin_customer_dto_output_linked_accounts_inn
 import 'package:core_api/src/model/admin_customer_dto_output_late_cancels.dart';
 import 'package:core_api/src/model/date.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_devices_inner.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_ratings_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_block_reasons_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_review_stop.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_addresses_inner.dart';
@@ -51,6 +52,7 @@ part 'admin_customer_dto_output.g.dart';
 /// * [testAccount] - «حساب تجريبي للإدارة»: sees the restaurants in test mode.
 /// * [orders]
 /// * [tickets]
+/// * [ratings] - AP §9.8 «التقييمات المكتوبة» (CU §12.1): the latest 20 in the city, newest first; admins see everything.
 /// * [codes] - The codes used in the city, newest first.
 /// * [addresses]
 /// * [notes]
@@ -135,6 +137,10 @@ abstract class AdminCustomerDtoOutput
 
   @BuiltValueField(wireName: r'tickets')
   BuiltList<AdminCustomerDtoOutputTicketsInner> get tickets;
+
+  /// AP §9.8 «التقييمات المكتوبة» (CU §12.1): the latest 20 in the city, newest first; admins see everything.
+  @BuiltValueField(wireName: r'ratings')
+  BuiltList<AdminCustomerDtoOutputRatingsInner> get ratings;
 
   /// The codes used in the city, newest first.
   @BuiltValueField(wireName: r'codes')
@@ -331,6 +337,13 @@ class _$AdminCustomerDtoOutputSerializer
       object.tickets,
       specifiedType: const FullType(BuiltList, [
         FullType(AdminCustomerDtoOutputTicketsInner),
+      ]),
+    );
+    yield r'ratings';
+    yield serializers.serialize(
+      object.ratings,
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminCustomerDtoOutputRatingsInner),
       ]),
     );
     yield r'codes';
@@ -623,6 +636,17 @@ class _$AdminCustomerDtoOutputSerializer
                   )
                   as BuiltList<AdminCustomerDtoOutputTicketsInner>;
           result.tickets.replace(valueDes);
+          break;
+        case r'ratings':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminCustomerDtoOutputRatingsInner),
+                    ]),
+                  )
+                  as BuiltList<AdminCustomerDtoOutputRatingsInner>;
+          result.ratings.replace(valueDes);
           break;
         case r'codes':
           final valueDes =

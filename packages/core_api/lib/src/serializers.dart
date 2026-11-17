@@ -65,7 +65,6 @@ import 'package:core_api/src/model/admin_compensate_dto.dart';
 import 'package:core_api/src/model/admin_compensation_dto_output.dart';
 import 'package:core_api/src/model/admin_compensation_requests_dto_output.dart';
 import 'package:core_api/src/model/admin_compensation_requests_dto_output_requests_inner.dart';
-import 'package:core_api/src/model/admin_compensation_requests_dto_output_requests_inner_reason.dart';
 import 'package:core_api/src/model/admin_confirm_pickup_dto.dart';
 import 'package:core_api/src/model/admin_contact_dto_output.dart';
 import 'package:core_api/src/model/admin_conversion_quote_dto_output.dart';
@@ -103,6 +102,8 @@ import 'package:core_api/src/model/admin_customer_dto_output_notes_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_orders.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_orders_last.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_orders_spent_inner.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_ratings_inner.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_ratings_inner_reasons_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_review_stop.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_tickets_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_trust_mark.dart';
@@ -594,6 +595,9 @@ import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inne
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_money.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_outcome.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_outcome_amount_to_collect.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_rating.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_rating_captain.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_rating_restaurant.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_redeliveries_inner.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_redelivery_of.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_rejection.dart';
@@ -651,6 +655,9 @@ import 'package:core_api/src/model/customer_quote_dto_output_suggested_code.dart
 import 'package:core_api/src/model/customer_quote_request_dto.dart';
 import 'package:core_api/src/model/customer_quote_request_dto_lines_inner.dart';
 import 'package:core_api/src/model/customer_quote_request_dto_location.dart';
+import 'package:core_api/src/model/customer_rate_order_dto.dart';
+import 'package:core_api/src/model/customer_rate_order_dto_captain.dart';
+import 'package:core_api/src/model/customer_rate_order_dto_restaurant.dart';
 import 'package:core_api/src/model/customer_refresh_dto.dart';
 import 'package:core_api/src/model/customer_report_order_dto.dart';
 import 'package:core_api/src/model/customer_report_order_dto_items_inner.dart';
@@ -858,7 +865,6 @@ part 'serializers.g.dart';
   AdminCompensationDtoOutput,
   AdminCompensationRequestsDtoOutput,
   AdminCompensationRequestsDtoOutputRequestsInner,
-  AdminCompensationRequestsDtoOutputRequestsInnerReason,
   AdminConfirmPickupDto,
   AdminContactDtoOutput,
   AdminConversionQuoteDtoOutput,
@@ -896,6 +902,8 @@ part 'serializers.g.dart';
   AdminCustomerDtoOutputOrders,
   AdminCustomerDtoOutputOrdersLast,
   AdminCustomerDtoOutputOrdersSpentInner,
+  AdminCustomerDtoOutputRatingsInner,
+  AdminCustomerDtoOutputRatingsInnerReasonsInner,
   AdminCustomerDtoOutputReviewStop,
   AdminCustomerDtoOutputTicketsInner,
   AdminCustomerDtoOutputTrustMark,
@@ -1387,6 +1395,9 @@ part 'serializers.g.dart';
   CustomerActiveOrdersDtoOutputOrdersInnerMoney,
   CustomerActiveOrdersDtoOutputOrdersInnerOutcome,
   CustomerActiveOrdersDtoOutputOrdersInnerOutcomeAmountToCollect,
+  CustomerActiveOrdersDtoOutputOrdersInnerRating,
+  CustomerActiveOrdersDtoOutputOrdersInnerRatingCaptain,
+  CustomerActiveOrdersDtoOutputOrdersInnerRatingRestaurant,
   CustomerActiveOrdersDtoOutputOrdersInnerRedeliveriesInner,
   CustomerActiveOrdersDtoOutputOrdersInnerRedeliveryOf,
   CustomerActiveOrdersDtoOutputOrdersInnerRejection,
@@ -1444,6 +1455,9 @@ part 'serializers.g.dart';
   CustomerQuoteRequestDto,
   CustomerQuoteRequestDtoLinesInner,
   CustomerQuoteRequestDtoLocation,
+  CustomerRateOrderDto,
+  CustomerRateOrderDtoCaptain,
+  CustomerRateOrderDtoRestaurant,
   CustomerRefreshDto,
   CustomerReportOrderDto,
   CustomerReportOrderDtoItemsInner,
@@ -2110,6 +2124,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType.nullable(AdminCustomerDtoOutputRatingsInnerReasonsInner),
+            ]),
+            () => ListBuilder<AdminCustomerDtoOutputRatingsInnerReasonsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminOrderDtoOutputOrderReassignmentsInner),
             ]),
             () => ListBuilder<AdminOrderDtoOutputOrderReassignmentsInner>(),
@@ -2692,14 +2712,9 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
-              FullType.nullable(
-                AdminCompensationRequestsDtoOutputRequestsInnerReason,
-              ),
+              FullType(AdminCustomerDtoOutputRatingsInner),
             ]),
-            () =>
-                ListBuilder<
-                  AdminCompensationRequestsDtoOutputRequestsInnerReason
-                >(),
+            () => ListBuilder<AdminCustomerDtoOutputRatingsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

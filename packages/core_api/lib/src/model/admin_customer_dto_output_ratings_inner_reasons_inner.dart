@@ -6,7 +6,7 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_compensation_requests_dto_output_requests_inner_reason.g.dart';
+part 'admin_customer_dto_output_ratings_inner_reasons_inner.g.dart';
 
 /// A reason of Content's item_unavailable_note list, its label as chosen.
 ///
@@ -14,11 +14,11 @@ part 'admin_compensation_requests_dto_output_requests_inner_reason.g.dart';
 /// * [code]
 /// * [label]
 @BuiltValue()
-abstract class AdminCompensationRequestsDtoOutputRequestsInnerReason
+abstract class AdminCustomerDtoOutputRatingsInnerReasonsInner
     implements
         Built<
-          AdminCompensationRequestsDtoOutputRequestsInnerReason,
-          AdminCompensationRequestsDtoOutputRequestsInnerReasonBuilder
+          AdminCustomerDtoOutputRatingsInnerReasonsInner,
+          AdminCustomerDtoOutputRatingsInnerReasonsInnerBuilder
         > {
   @BuiltValueField(wireName: r'code')
   String get code;
@@ -26,43 +26,38 @@ abstract class AdminCompensationRequestsDtoOutputRequestsInnerReason
   @BuiltValueField(wireName: r'label')
   String get label;
 
-  AdminCompensationRequestsDtoOutputRequestsInnerReason._();
+  AdminCustomerDtoOutputRatingsInnerReasonsInner._();
 
-  factory AdminCompensationRequestsDtoOutputRequestsInnerReason([
-    void updates(
-      AdminCompensationRequestsDtoOutputRequestsInnerReasonBuilder b,
-    ),
-  ]) = _$AdminCompensationRequestsDtoOutputRequestsInnerReason;
+  factory AdminCustomerDtoOutputRatingsInnerReasonsInner([
+    void updates(AdminCustomerDtoOutputRatingsInnerReasonsInnerBuilder b),
+  ]) = _$AdminCustomerDtoOutputRatingsInnerReasonsInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(
-    AdminCompensationRequestsDtoOutputRequestsInnerReasonBuilder b,
+    AdminCustomerDtoOutputRatingsInnerReasonsInnerBuilder b,
   ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminCompensationRequestsDtoOutputRequestsInnerReason>
+  static Serializer<AdminCustomerDtoOutputRatingsInnerReasonsInner>
   get serializer =>
-      _$AdminCompensationRequestsDtoOutputRequestsInnerReasonSerializer();
+      _$AdminCustomerDtoOutputRatingsInnerReasonsInnerSerializer();
 }
 
-class _$AdminCompensationRequestsDtoOutputRequestsInnerReasonSerializer
+class _$AdminCustomerDtoOutputRatingsInnerReasonsInnerSerializer
     implements
-        PrimitiveSerializer<
-          AdminCompensationRequestsDtoOutputRequestsInnerReason
-        > {
+        PrimitiveSerializer<AdminCustomerDtoOutputRatingsInnerReasonsInner> {
   @override
   final Iterable<Type> types = const [
-    AdminCompensationRequestsDtoOutputRequestsInnerReason,
-    _$AdminCompensationRequestsDtoOutputRequestsInnerReason,
+    AdminCustomerDtoOutputRatingsInnerReasonsInner,
+    _$AdminCustomerDtoOutputRatingsInnerReasonsInner,
   ];
 
   @override
-  final String wireName =
-      r'AdminCompensationRequestsDtoOutputRequestsInnerReason';
+  final String wireName = r'AdminCustomerDtoOutputRatingsInnerReasonsInner';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminCompensationRequestsDtoOutputRequestsInnerReason object, {
+    AdminCustomerDtoOutputRatingsInnerReasonsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'code';
@@ -80,7 +75,7 @@ class _$AdminCompensationRequestsDtoOutputRequestsInnerReasonSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminCompensationRequestsDtoOutputRequestsInnerReason object, {
+    AdminCustomerDtoOutputRatingsInnerReasonsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -95,8 +90,7 @@ class _$AdminCompensationRequestsDtoOutputRequestsInnerReasonSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminCompensationRequestsDtoOutputRequestsInnerReasonBuilder
-    result,
+    required AdminCustomerDtoOutputRatingsInnerReasonsInnerBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -130,13 +124,12 @@ class _$AdminCompensationRequestsDtoOutputRequestsInnerReasonSerializer
   }
 
   @override
-  AdminCompensationRequestsDtoOutputRequestsInnerReason deserialize(
+  AdminCustomerDtoOutputRatingsInnerReasonsInner deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result =
-        AdminCompensationRequestsDtoOutputRequestsInnerReasonBuilder();
+    final result = AdminCustomerDtoOutputRatingsInnerReasonsInnerBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

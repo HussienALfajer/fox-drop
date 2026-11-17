@@ -4,14 +4,17 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.26, ratings (`docs/roadmap.md`, Phase 2, Support and trust). Not started.
+Slice 2.26a, rating an order (`docs/roadmap.md`, Phase 2, Support and trust; owner decision 2026-11-17: 2.26 splits into 2.26a, 2.26b and 2.26c).
 
-- **Roadmap line:** 2.26 Ratings: the restaurant and the captain rated apart within 3 days, «جديد» below 5, shown without names (CU §12.1, RA §13, CA §11). A customer rates and the restaurant sees it without a name.
-- **Specs:** CU §12.1 (the rating sheet once after delivery, then from the order detail for `customer.rating_window_days`; what each party sees), RA §13 (the restaurant's ratings, no replies, R16), CA §11 (the captain's rating), AP §9.8 «ratings written» on the customer profile (left by 2.25b), AP §9.6 and §9.7 where the panel shows a restaurant's or a captain's ratings, Appendix A (`customer.rating_window_days`); what exists: the cards' `rating` and `ratingCount` always null («جديد», customers' browsing), a re-delivery is never rated by the customer (2.23d).
-- **Branch:** the cloud session's branch, or `feat/ratings`.
+- **Roadmap line:** 2.26a Rating an order, in the server, the customer app and the panel: the rating sheet once after delivery, then from the order detail for `customer.rating_window_days` (3) days, delivered orders only (never a free re-delivery), «قيّم المطعم» and «قيّم الكابتن» sent apart, stars 1 to 5 with the reason chips of «المحتوى» and a comment up to 300 characters, never edited; the restaurant's average and count on the customer's cards, «جديد» below 5; «التقييمات المكتوبة» on the panel's customer profile.
+- **Specs:** CU §12.1 (U15, Q16), CU §8.2, §9.1 (the cards), AP §9.8 (ratings written), AP Appendix A (`customer.rating_window_days`), AP Appendix B (the rating reasons), CU §19 item 22.
+- **Branch:** `claude/bold-hawking-5w6p9w` (the cloud session's branch).
 - **Plan:**
-  - [ ] Read the cited sections; if the slice is larger than one pull request (server, customer app, restaurant app, captain app, panel), split it with the `slice-plan` skill and ask the owner; write the plan here as a checklist, one step per commit.
-- **To ask the owner first:** any open item the sections name (`docs/open-questions.md`, AP §13); whether a failed or cancelled order can be rated (CU §12.1 says after delivery).
+  - [x] Split 2.26 with the owner (2.26a, 2.26b, 2.26c) and record it in the roadmap.
+  - [ ] The server: `ordering.ratings` (migration 0106, append-only), `POST /v1/customer/orders/{orderId}/rating`, the order's `rating`, the cards' `rating` and `ratingCount`, the profile's `ratings`; the regenerated clients.
+  - [ ] The customer app: the rating sheet once after the delivery, «قيّم طلبك» on the order detail within the window, each part's stars, reason chips and comment, the sent parts shown; the cards' average or «جديد».
+  - [ ] The panel: «التقييمات المكتوبة» on the customer profile.
+- **Decided by us:** the rating takes no `Idempotency-Key` (a sent part is never edited, so a repeat is `409 already_rated` and the order shows it); test orders' ratings never count in the average; the captain rated is the order's captain at the rating (after a handover the second, who delivered); the sheet opens once per order on each phone (kept on the phone); the profile lists the account's own ratings, not its line's.
 
 ### Left from 2.25d (`feat/customer-device-block`)
 

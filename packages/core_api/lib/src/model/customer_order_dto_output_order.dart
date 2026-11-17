@@ -12,6 +12,7 @@ import 'package:core_api/src/model/customer_order_dto_output_order_redeliveries_
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_money.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_item_report.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_address.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_rating.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_estimate.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_outcome.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_rejection.dart';
@@ -39,6 +40,7 @@ part 'customer_order_dto_output_order.g.dart';
 /// * [report]
 /// * [reportUntil] - «الإبلاغ عن مشكلة» until then, on a delivered order without a report (CU §12.2: customer.report_problem_window_hours after the delivery); null otherwise, when the detail offers «تواصل مع الدعم».
 /// * [redeliveries] - CU §12.3: the free re-deliveries placed for this order, newest first.
+/// * [rating]
 /// * [lateCode]
 /// * [promisedAt] - «يصل حوالي {الساعة}» from acceptance (CU §11.1–11.2, docs/domain/03); null while placed, when the estimate range shows.
 /// * [doorPing]
@@ -96,6 +98,9 @@ abstract class CustomerOrderDtoOutputOrder
   /// CU §12.3: the free re-deliveries placed for this order, newest first.
   @BuiltValueField(wireName: r'redeliveries')
   BuiltList<CustomerOrderDtoOutputOrderRedeliveriesInner> get redeliveries;
+
+  @BuiltValueField(wireName: r'rating')
+  CustomerActiveOrdersDtoOutputOrdersInnerRating? get rating;
 
   @BuiltValueField(wireName: r'lateCode')
   CustomerActiveOrdersDtoOutputOrdersInnerLateCode? get lateCode;
@@ -254,6 +259,15 @@ class _$CustomerOrderDtoOutputOrderSerializer
         FullType(CustomerOrderDtoOutputOrderRedeliveriesInner),
       ]),
     );
+    yield r'rating';
+    yield object.rating == null
+        ? null
+        : serializers.serialize(
+            object.rating,
+            specifiedType: const FullType.nullable(
+              CustomerActiveOrdersDtoOutputOrdersInnerRating,
+            ),
+          );
     yield r'lateCode';
     yield object.lateCode == null
         ? null
@@ -528,6 +542,18 @@ class _$CustomerOrderDtoOutputOrderSerializer
                   )
                   as BuiltList<CustomerOrderDtoOutputOrderRedeliveriesInner>;
           result.redeliveries.replace(valueDes);
+          break;
+        case r'rating':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CustomerActiveOrdersDtoOutputOrdersInnerRating,
+                    ),
+                  )
+                  as CustomerActiveOrdersDtoOutputOrdersInnerRating?;
+          if (valueDes == null) continue;
+          result.rating.replace(valueDes);
           break;
         case r'lateCode':
           final valueDes =

@@ -743,6 +743,13 @@
       "when": 1794952030921,
       "tag": "0105_customers_device_lifts",
       "breakpoints": true
+    },
+    {
+      "idx": 106,
+      "version": "7",
+      "when": 1794953357609,
+      "tag": "0106_ordering_ratings",
+      "breakpoints": true
     }
   ]
 }

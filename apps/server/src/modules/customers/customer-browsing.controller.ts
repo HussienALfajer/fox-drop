@@ -61,8 +61,13 @@ const card = z.object({
   rating: z
     .number()
     .nullable()
-    .describe('The average rating; null is «جديد» (Q16). Ratings arrive with their slice.'),
-  ratingCount: z.int().nullable().describe('The number of ratings on the page (CU §9.1).'),
+    .describe(
+      "The restaurant's average stars to one decimal; null is «جديد», below 5 ratings (CU §12.1, Q16).",
+    ),
+  ratingCount: z
+    .int()
+    .nullable()
+    .describe('The number of ratings beside the average (CU §8.2, §9.1); null with «جديد».'),
   testMode: z
     .boolean()
     .describe('«تجريبي»: in test mode, seen only by an admin test account (CU §8.2, AP §9.8).'),
@@ -201,7 +206,8 @@ export class CustomerBrowsingController {
       similarTo === undefined
         ? await this.browsing.restaurants(point, now, testAccount)
         : await this.browsing.similar(similarTo, point, now, testAccount);
-    return { restaurants: cards.map(cardBody) };
+    const ratings = await this.customers.ratings.restaurants(cards.map((card) => card.id));
+    return { restaurants: cards.map((card) => cardBody(card, ratings.get(card.id))) };
   }
 
   // 404 for a restaurant customers do not see.
@@ -220,7 +226,8 @@ export class CustomerBrowsingController {
       await this.testAccount(session),
     );
     if (page === null) throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND });
-    return pageBody(page);
+    const ratings = await this.customers.ratings.restaurants([page.id]);
+    return pageBody(page, ratings.get(page.id));
   }
 }
 
@@ -239,11 +246,17 @@ function stateBody({ state, message, opensAt }: StorefrontState) {
   };
 }
 
-function cardBody(card: RestaurantCard) {
+// Q16: the average and count from RATINGS_SHOWN_FROM ratings, else «جديد».
+const RATINGS_SHOWN_FROM = 5;
+
+type RatingSummary = { count: number; average: number } | undefined;
+
+function cardBody(card: RestaurantCard, summary: RatingSummary) {
+  const shown = summary !== undefined && summary.count >= RATINGS_SHOWN_FROM;
   return {
     ...card,
-    rating: null,
-    ratingCount: null,
+    rating: shown ? Math.round(summary.average * 10) / 10 : null,
+    ratingCount: shown ? summary.count : null,
     deliveryFee:
       card.deliveryFee === null
         ? null
@@ -252,9 +265,9 @@ function cardBody(card: RestaurantCard) {
   };
 }
 
-function pageBody(page: RestaurantPage) {
+function pageBody(page: RestaurantPage, summary: RatingSummary) {
   return {
-    ...cardBody(page),
+    ...cardBody(page, summary),
     description: page.description,
     minimumOrder: moneyBody(page.minimumOrder),
     freeDeliveryFrom: page.freeDeliveryFrom === null ? null : moneyBody(page.freeDeliveryFrom),

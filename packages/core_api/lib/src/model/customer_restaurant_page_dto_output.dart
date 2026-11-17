@@ -24,8 +24,8 @@ part 'customer_restaurant_page_dto_output.g.dart';
 /// * [category]
 /// * [logoKey] - Its key in public-media, shown through imgproxy (architecture §5.8); null without one.
 /// * [coverKey] - Its key in public-media, shown through imgproxy (architecture §5.8); null without one.
-/// * [rating] - The average rating; null is «جديد» (Q16). Ratings arrive with their slice.
-/// * [ratingCount] - The number of ratings on the page (CU §9.1).
+/// * [rating] - The restaurant's average stars to one decimal; null is «جديد», below 5 ratings (CU §12.1, Q16).
+/// * [ratingCount] - The number of ratings beside the average (CU §8.2, §9.1); null with «جديد».
 /// * [testMode] - «تجريبي»: in test mode, seen only by an admin test account (CU §8.2, AP §9.8).
 /// * [estimate]
 /// * [deliveryFee]
@@ -63,11 +63,11 @@ abstract class CustomerRestaurantPageDtoOutput
   @BuiltValueField(wireName: r'coverKey')
   String? get coverKey;
 
-  /// The average rating; null is «جديد» (Q16). Ratings arrive with their slice.
+  /// The restaurant's average stars to one decimal; null is «جديد», below 5 ratings (CU §12.1, Q16).
   @BuiltValueField(wireName: r'rating')
   num? get rating;
 
-  /// The number of ratings on the page (CU §9.1).
+  /// The number of ratings beside the average (CU §8.2, §9.1); null with «جديد».
   @BuiltValueField(wireName: r'ratingCount')
   int? get ratingCount;
 

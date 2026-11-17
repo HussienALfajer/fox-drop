@@ -3,8 +3,8 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/admin_customer_dto_output_ratings_inner_reasons_inner.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_compensation_requests_dto_output_requests_inner_reason.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_on_behalf_prep_time.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -29,7 +29,7 @@ abstract class AdminOrderDtoOutputOrderOnBehalf
 
   /// «رفض نيابة عن المطعم»: the restaurant's reasons (AP Appendix B), in order.
   @BuiltValueField(wireName: r'rejectionReasons')
-  BuiltList<AdminCompensationRequestsDtoOutputRequestsInnerReason?>
+  BuiltList<AdminCustomerDtoOutputRatingsInnerReasonsInner?>
   get rejectionReasons;
 
   /// «ضغط طلبات»: busy mode with one of merchant.busy_extra_options_min.
@@ -75,9 +75,7 @@ class _$AdminOrderDtoOutputOrderOnBehalfSerializer
     yield serializers.serialize(
       object.rejectionReasons,
       specifiedType: const FullType(BuiltList, [
-        FullType.nullable(
-          AdminCompensationRequestsDtoOutputRequestsInnerReason,
-        ),
+        FullType.nullable(AdminCustomerDtoOutputRatingsInnerReasonsInner),
       ]),
     );
     yield r'busyExtraOptionsMin';
@@ -129,13 +127,11 @@ class _$AdminOrderDtoOutputOrderOnBehalfSerializer
                     value,
                     specifiedType: const FullType(BuiltList, [
                       FullType.nullable(
-                        AdminCompensationRequestsDtoOutputRequestsInnerReason,
+                        AdminCustomerDtoOutputRatingsInnerReasonsInner,
                       ),
                     ]),
                   )
-                  as BuiltList<
-                    AdminCompensationRequestsDtoOutputRequestsInnerReason?
-                  >;
+                  as BuiltList<AdminCustomerDtoOutputRatingsInnerReasonsInner?>;
           result.rejectionReasons.replace(valueDes);
           break;
         case r'busyExtraOptionsMin':

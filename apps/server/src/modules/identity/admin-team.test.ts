@@ -512,6 +512,7 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/customer/orders/{orderId}/answer-ping': 'app_session',
   'POST /v1/customer/orders/{orderId}/cancel': 'app_session',
   'POST /v1/customer/orders/{orderId}/report': 'app_session',
+  'POST /v1/customer/orders/{orderId}/rating': 'app_session',
   'POST /v1/customer/restaurants/{restaurantId}/price-report': 'app_session',
   'POST /v1/customer/uploads/report-photo': 'app_session',
   'POST /v1/customer/realtime/token': 'app_session',

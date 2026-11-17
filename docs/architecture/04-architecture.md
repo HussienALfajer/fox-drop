@@ -17,7 +17,7 @@ Why not microservices in V1: they would put the money flows behind distributed t
 | `settings`      | The typed settings catalogue, scopes, effective dates and their history (AP §4.4) |
 | `content`       | Texts, terms versions, reason lists (AP §9.13)                                    |
 | `merchants`     | Restaurants, hours, states, devices, menu, menu change requests                   |
-| `ordering`      | The quote, the order, its state machine, edits, outcomes                          |
+| `ordering`      | The quote, the order, its state machine, edits, outcomes, the order's ratings     |
 | `dispatch`      | Eligibility, ranking, offers, assignments, handovers                              |
 | `captains`      | Applications, documents, contracts, availability, performance, violations         |
 | `customers`     | Profiles, addresses, trust, strikes, dues                                         |

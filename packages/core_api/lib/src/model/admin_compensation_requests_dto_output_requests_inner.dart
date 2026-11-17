@@ -3,8 +3,8 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/admin_customer_dto_output_ratings_inner_reasons_inner.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_compensation_requests_dto_output_requests_inner_reason.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -63,7 +63,7 @@ abstract class AdminCompensationRequestsDtoOutputRequestsInner
   String get currency;
 
   @BuiltValueField(wireName: r'reason')
-  AdminCompensationRequestsDtoOutputRequestsInnerReason? get reason;
+  AdminCustomerDtoOutputRatingsInnerReasonsInner? get reason;
 
   @BuiltValueField(wireName: r'note')
   String? get note;
@@ -181,7 +181,7 @@ class _$AdminCompensationRequestsDtoOutputRequestsInnerSerializer
         : serializers.serialize(
             object.reason,
             specifiedType: const FullType.nullable(
-              AdminCompensationRequestsDtoOutputRequestsInnerReason,
+              AdminCustomerDtoOutputRatingsInnerReasonsInner,
             ),
           );
     yield r'note';
@@ -347,10 +347,10 @@ class _$AdminCompensationRequestsDtoOutputRequestsInnerSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      AdminCompensationRequestsDtoOutputRequestsInnerReason,
+                      AdminCustomerDtoOutputRatingsInnerReasonsInner,
                     ),
                   )
-                  as AdminCompensationRequestsDtoOutputRequestsInnerReason?;
+                  as AdminCustomerDtoOutputRatingsInnerReasonsInner?;
           if (valueDes == null) continue;
           result.reason.replace(valueDes);
           break;

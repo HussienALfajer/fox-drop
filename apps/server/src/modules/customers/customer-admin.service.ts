@@ -29,6 +29,7 @@ import {
   type ActiveBlock,
   type Address,
   type CustomerOrders,
+  type CustomerRating,
   type CustomerTicket,
   CustomersService,
 } from './customers.service.js';
@@ -157,6 +158,8 @@ export interface CustomerProfileView {
   // saved addresses and the internal notes, newest first.
   orders: Pick<CustomerOrders, 'count' | 'spent' | 'last'>;
   tickets: CustomerTicket[];
+  // «التقييمات المكتوبة» (slice 2.26a): the latest 20 in the city.
+  ratings: CustomerRating[];
   codes: CustomerCodeUse[];
   addresses: Address[];
   notes: { id: string; body: string; authorName: string | null; createdAt: Date }[];
@@ -297,20 +300,22 @@ export class CustomerAdminService {
       new Date(now.getTime() - windowDays * 24 * 60 * 60 * 1000),
       cleared?.at ?? null,
     );
-    const [tickets, codes, addresses, noteRows, testAccount, devices, owed] = await Promise.all([
-      this.customers.ticketsOf(accountId, cityId),
-      this.promoCodes.usesOf(accountId, cityId, CODES_LISTED),
-      this.customers.addresses(accountId),
-      this.database.db
-        .select()
-        .from(notes)
-        .where(eq(notes.customerAccountId, accountId))
-        .orderBy(desc(notes.createdAt), desc(notes.id))
-        .limit(NOTES_LISTED),
-      this.customers.isTestAccount(accountId),
-      this.devices(cityId, line, now),
-      this.customers.dues(cityId, accountId),
-    ]);
+    const [tickets, ratings, codes, addresses, noteRows, testAccount, devices, owed] =
+      await Promise.all([
+        this.customers.ticketsOf(accountId, cityId),
+        this.customers.ratings.written(accountId, cityId),
+        this.promoCodes.usesOf(accountId, cityId, CODES_LISTED),
+        this.customers.addresses(accountId),
+        this.database.db
+          .select()
+          .from(notes)
+          .where(eq(notes.customerAccountId, accountId))
+          .orderBy(desc(notes.createdAt), desc(notes.id))
+          .limit(NOTES_LISTED),
+        this.customers.isTestAccount(accountId),
+        this.devices(cityId, line, now),
+        this.customers.dues(cityId, accountId),
+      ]);
     const [profile, phone, block, stop, orders, strikes, dues, records, reasons, names] =
       await Promise.all([
         this.customers.profile(accountId),
@@ -394,6 +399,7 @@ export class CustomerAdminService {
       testAccount,
       orders: { count: orders.count, spent: orders.spent, last: orders.last },
       tickets,
+      ratings,
       codes,
       addresses,
       notes: noteRows.map((row) => ({
