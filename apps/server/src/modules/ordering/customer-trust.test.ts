@@ -215,7 +215,7 @@ describe("the profile's orders, addresses and notes (AP §9.8)", () => {
 });
 
 describe('«تغيير الرقم» and «تسجيل الخروج من كل الأجهزة» (AP §9.8, CU §5.4)', () => {
-  const sub = (headers: Record<string, string>) =>
+  const sub = (headers: { authorization: string }) =>
     JSON.parse(Buffer.from(headers.authorization.split('.')[1]!, 'base64url').toString())
       .sub as string;
   const profileStatus = async (headers: Record<string, string>) =>

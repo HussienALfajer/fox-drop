@@ -108,7 +108,7 @@ export class CustomerAccountsService {
       throw new CustomerAccountRefusedError('invalid_phone', 'not a Syrian or Turkish mobile');
     }
     const toHash = this.secrets.phoneHash(change.phone);
-    let ended: string[] = [];
+    let ended: string[];
     try {
       ended = await this.database.db.transaction(async (tx) => {
         const [account] = await tx
