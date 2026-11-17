@@ -4,19 +4,19 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.24c, the captain's support (`docs/roadmap.md`, Phase 2, Support and trust; owner decision 2026-11-17: 2.24 splits into 2.24a customer, 2.24b restaurant, 2.24c captain). Not started.
+Slice 2.24c, the captain's support (`docs/roadmap.md`, Phase 2, Support and trust; owner decision 2026-11-17: 2.24 splits into 2.24a customer, 2.24b restaurant, 2.24c captain). Started.
 
 - **Roadmap line:** 2.24c The captain's support: «إبلاغ عن مشكلة», «بلاغاتي», the problem sheet's quick reasons and «مشكلة في مبلغ الاستلام» opening the pickup-dispute ticket (CA §13, §9.11, §9.4 item 6). A captain reports «مشكلة في مبلغ الاستلام» and the panel shows «خلاف على دفعة الاستلام».
 - **Specs:** CA §13 (`docs/product/v1/captain-app/13-support.md`), CA §9.11 (`09-the-active-order/11-problems-withdrawal-and-emergencies.md`, the quick reasons left from 2.13b), CA §9.4 item 6 (`04-the-pickup-request.md`), CA Appendix C (`captain_problem` and `captain_ticket_type`), CA §14 (the ticket's push); AP §9.9.1, §9.9.3 (the pickup dispute's resolutions); the support and files modules' `CLAUDE.md` (2.24b's `merchant_report` and `order_problem` are the pattern: ordering's `merchant-reports.controller.ts`, support's `prepareMerchantReport`/`openMerchantReportIn`, the app's `lib/src/support/`).
 - **Branch:** the cloud session's branch, or `feat/captain-reports`.
 - **Plan:**
-  - [ ] Read the cited sections; ask the owner the open questions below.
-  - [ ] The failing tests first: «بلاغاتي» shows a captain only their own tickets, the pickup dispute from the captain (once per order, its window, the lines the captain paid), the photo count.
-  - [ ] Migration: the captain app's sources; a pickup dispute opened by the captain (`pickup_disputes` and the ticket's `opened_by`).
-  - [ ] The server routes (the photo upload, the report, the problem on an order, «بلاغاتي») and the captain's push.
-  - [ ] `pnpm generate:api`, the panel's sources, then the captain app's support screen and the problem sheet's quick reasons.
+  - [x] Read the cited sections; ask the owner the open questions below.
+  - [ ] The failing tests first: the pure rules (`captain-reports.ts`: the photo count, the pickup amount's lines only with «مشكلة في مبلغ الاستلام», «بلاغاتي» shows a captain only their own tickets), then the server: the pickup dispute from the captain (once per order, while the order is active after the pickup, the payer only, lines that differ from those recorded).
+  - [ ] Migration: the captain app's sources (`captain_report`, `captain_problem`) and who opened a pickup dispute (`pickup_disputes.opened_by`).
+  - [ ] The server routes (the photo upload, the report, the problem on an order, «بلاغاتي») and the ticket page's opener.
+  - [ ] `pnpm generate:api`, then the captain app's «الدعم» screen, «إبلاغ عن مشكلة», «بلاغاتي» and the problem sheet's quick reasons with «مشكلة في مبلغ الاستلام».
   - [ ] The `checker` agent, the `reviewer` agent on the cited sections, then the pull request and the handover.
-- **To ask the owner first:** whether «الرسائل» (OPS's direct messages and announcements) and «الطلبات» (phone, vehicle, neighbourhood, ending the contract, a kit swap) belong to 2.24c or to their own slices (CA §13 lists them; «إنهاء التعاقد» and «تبديل العدة» are already ticket types); whether «بلاغاتي»'s appeals (CA §13 «tickets and appeals») wait for the appeals of 2.36; what the captain's «مشكلة في مبلغ الاستلام» records (the amount paid and what the restaurant returned, or a note only) and until when after the pickup it is offered.
+- **Owner decisions (2026-11-17):** «الطلبات» (data change, ending the contract, a kit swap) are the report's ticket types only (Appendix C); «الرسائل» waits for its own slice. «بلاغاتي»'s appeals wait for 2.36. «مشكلة في مبلغ الاستلام» records the lines the captain actually handed the restaurant (prefilled with those recorded at pickup) and a note; the ticket shows them beside the recorded ones and support corrects them before «تصحيح في الحسابات». It is offered while the order is active after the pickup, once per order (not when the restaurant already disputed).
 
 ### Left from 2.24b (`claude/slice-2-24b-cqvdw4`)
 
