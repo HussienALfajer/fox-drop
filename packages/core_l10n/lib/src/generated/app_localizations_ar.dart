@@ -3558,4 +3558,102 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get merchantReportByOperations => 'من العمليات';
+
+  @override
+  String get captainSupport => 'الدعم';
+
+  @override
+  String get captainReportProblem => 'إبلاغ عن مشكلة';
+
+  @override
+  String get captainMyReports => 'بلاغاتي';
+
+  @override
+  String get captainMyReportsEmpty => 'لا بلاغات بعد.';
+
+  @override
+  String get captainReportsFailed => 'تعذّر تحميل البلاغات.';
+
+  @override
+  String get captainReportsRetry => 'إعادة المحاولة';
+
+  @override
+  String get captainReportType => 'نوع المشكلة';
+
+  @override
+  String get captainReportTypesFailed => 'تعذّر تحميل أنواع البلاغات.';
+
+  @override
+  String captainReportAboutOrder(String number) {
+    return 'عن الطلب الجاري #$number';
+  }
+
+  @override
+  String get captainReportNote => 'ملاحظة';
+
+  @override
+  String get captainReportSend => 'إرسال البلاغ';
+
+  @override
+  String get captainReportFailed => 'لم يُرسل البلاغ، حاول مرة أخرى.';
+
+  @override
+  String get captainReportTypeChanged =>
+      'تغيّرت أنواع البلاغات، اختر مرة أخرى.';
+
+  @override
+  String get captainReportPhotoFailed => 'تعذّر رفع الصورة، حاول مرة أخرى.';
+
+  @override
+  String get captainReportOrderGone => 'لم يعد الطلب طلبك.';
+
+  @override
+  String captainReportSent(String number, String within) {
+    return 'استلمنا بلاغك T-$number. سنرد عليك خلال $within.';
+  }
+
+  @override
+  String captainReportTitle(String number, String type) {
+    return 'T-$number · $type';
+  }
+
+  @override
+  String captainReportOrderLine(String number) {
+    return 'الطلب #$number';
+  }
+
+  @override
+  String captainReportReply(String message) {
+    return 'الرد: $message';
+  }
+
+  @override
+  String get captainReportByOperations => 'من العمليات';
+
+  @override
+  String get captainProblemQuickReason => 'إبلاغ العمليات بسبب سريع';
+
+  @override
+  String get captainPickupAmountTitle => 'مشكلة في مبلغ الاستلام';
+
+  @override
+  String get captainPickupAmountHint => 'اكتب ما دفعته للمطعم فعلاً بكل عملة.';
+
+  @override
+  String captainPickupAmountRecorded(String lines) {
+    return 'المسجّل عند الاستلام: $lines';
+  }
+
+  @override
+  String get captainPickupAmountInvalid => 'اكتب ما دفعته بأرقام صحيحة.';
+
+  @override
+  String get captainPickupAmountSame => 'ما كتبته يطابق المسجّل عند الاستلام.';
+
+  @override
+  String get captainPickupAmountDisputed =>
+      'سبق الإبلاغ عن مبلغ استلام هذا الطلب.';
+
+  @override
+  String get captainProblemClosed => 'لم يعد هذا البلاغ متاحاً لهذا الطلب.';
 }

@@ -27,6 +27,8 @@ class CaptainContent {
     required this.cannotComplete,
     required this.away,
     required this.shortfall,
+    required this.ticketTypes,
+    required this.problems,
     required this.faq,
     required this.workRules,
   });
@@ -39,6 +41,12 @@ class CaptainContent {
 
   /// Collected less than due (K16).
   final List<ReasonChoice> shortfall;
+
+  /// «إبلاغ عن مشكلة»'s types (CA §13, Appendix C), the requests included.
+  final List<ReasonChoice> ticketTypes;
+
+  /// «مشكلة»'s quick reasons (CA §9.11, Appendix C).
+  final List<ReasonChoice> problems;
   final List<({String question, String answer})> faq;
 
   /// One rule per line.
@@ -64,6 +72,8 @@ final contentProvider = FutureProvider<CaptainContent>((ref) async {
     cannotComplete: _choices(body.reasons.captainCannotComplete),
     away: _choices(body.reasons.captainAway),
     shortfall: _choices(body.reasons.shortfall),
+    ticketTypes: _choices(body.reasons.captainTicketType),
+    problems: _choices(body.reasons.captainProblem),
     faq: [
       for (final item in body.faq)
         (question: item.question, answer: item.answer),

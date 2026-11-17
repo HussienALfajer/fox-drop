@@ -142,7 +142,9 @@ export const pickupDisputeBody = z.object({
     ),
   openedBy: z
     .enum(['restaurant', 'captain'])
-    .describe("Who disputed: the restaurant's «المبلغ غير صحيح» or the captain's «مشكلة في مبلغ الاستلام»."),
+    .describe(
+      "Who disputed: the restaurant's «المبلغ غير صحيح» or the captain's «مشكلة في مبلغ الاستلام».",
+    ),
   confirmedBy: z.enum(['restaurant', 'automatic', 'operations']),
   captainName: z.string().nullable(),
   disputedAt: z.iso.datetime(),

@@ -17,6 +17,8 @@ import 'settings/settings_screen.dart';
 import 'shell.dart';
 import 'starting_screen.dart';
 import 'statements_screen.dart';
+import 'support/report_screen.dart';
+import 'support/support_screen.dart';
 import 'terms.dart';
 import 'work/work.dart';
 
@@ -100,6 +102,17 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const WorkRulesScreen(),
       ),
       GoRoute(path: '/faq', builder: (context, state) => const FaqScreen()),
+      // CA §13 (slice 2.24c): «الدعم» and «إبلاغ عن مشكلة».
+      GoRoute(
+        path: '/support',
+        builder: (context, state) => const SupportScreen(),
+        routes: [
+          GoRoute(
+            path: 'report',
+            builder: (context, state) => const ReportScreen(),
+          ),
+        ],
+      ),
       // CA §12.5 (slice 2.16): the peak windows, until the profile (2.36).
       GoRoute(
         path: '/peak-bonus',

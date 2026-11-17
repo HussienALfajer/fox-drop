@@ -48,10 +48,7 @@ import {
   reporterOf,
   seesTicket,
 } from './merchant-reports.js';
-import {
-  captainReportProblem,
-  seesCaptainTicket,
-} from './captain-reports.js';
+import { captainReportProblem, seesCaptainTicket } from './captain-reports.js';
 import { priceReportProblem, type ReportedItem, reportProblem, reportUntil } from './reports.js';
 import { noteKeys, ticketNotes, ticketNumbers, tickets, type TicketSource } from './schema.js';
 import {

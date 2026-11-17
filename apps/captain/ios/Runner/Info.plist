@@ -15,6 +15,10 @@
 	<array>
 		<string>ar</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>نستخدم الكاميرا لتصوير المشكلة في بلاغك.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>نستخدم صورك لترفق صورة بالبلاغ.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>نتابع موقعك وأنت متصل فقط لتصلك العروض، ولا نجمع موقعك وأنت غير متصل.</string>
 	<key>CFBundleDisplayName</key>

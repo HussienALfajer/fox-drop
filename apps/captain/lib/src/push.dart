@@ -73,6 +73,8 @@ String? pushTargetPath(Map<String, String> data) => switch (data['target']) {
     final id? when id.isNotEmpty => '/earnings/statements/$id',
     _ => '/earnings/statements',
   },
+  // CA §14 #30 (slice 2.24c): «تم الرد على بلاغك T-{رقم}» opens «بلاغاتي».
+  'ticket' => '/support',
   _ => null,
 };
 

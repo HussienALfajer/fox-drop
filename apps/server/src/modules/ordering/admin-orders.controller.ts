@@ -1219,7 +1219,9 @@ class AdminOrderDto extends createZodDto(
             at: z.iso.datetime(),
             accountId: z
               .uuid()
-              .describe("The restaurant user, or the captain's account when the captain opened it."),
+              .describe(
+                "The restaurant user, or the captain's account when the captain opened it.",
+              ),
             device: z.string(),
             receivedLines: paymentLines.describe(
               'What the restaurant says it received, or what the captain says they handed over.',
