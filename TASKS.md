@@ -4,20 +4,20 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.23c, the money of a problem after delivery (`docs/roadmap.md`, Phase 2, Support and trust). Not started.
+Slice 2.23c, the money of a problem after delivery (`docs/roadmap.md`, Phase 2, Support and trust). In progress.
 
 - **Roadmap line:** 2.23c The money of a problem after delivery: the affected items and their value, «كود تعويض» from the ticket within the cap or through the approval, the entries per responsible party behind a preview, «مشكلة في المبلغ أو الباقي» with its amount and the uncapped code, the debit and charge pushes, and the tickets' line in the cost report (AP §8.10, §6.4, §9.9.3, §9.10.6, §10). Support resolves «صنف ناقص» with the restaurant responsible and the customer gets a code.
 - **Specs:** `docs/domain/10` (AP §8.10: the affected value `V`, the remedy, the entries per responsible party, the wrong change `M`), AP §9.9.3 («كود تعويض», the responsible party, the preview), §6.4 (the caps and the approval; the wrong change's code uncapped), §9.10.6 (the cost report's tickets line), §10 (the restaurant's debit and the captain's charge pushes), §9.3.1; RA §12.5, §16; CA §14 #14; CU Q23; ledger's counter-accounts (`platform.compensation_cost` after a normal delivery); `apps/server/src/modules/{support,marketing,ordering}/CLAUDE.md`.
 - **Branch:** `feat/ticket-money` (not created yet; a cloud session works on the branch it is given).
 - **Not in this slice:** «إعادة توصيل مجانية» (2.23d); the apps' sources and the captain's «مشكلة في مبلغ الاستلام» (2.24).
 - **Plan:**
-  - [ ] Read the cited sections, `support`'s resolve (2.23b) and marketing's compensations (2.22a); ask the owner the question below.
+  - [x] Read the cited sections, `support`'s resolve (2.23b) and marketing's compensations (2.22a); ask the owner the question below.
   - [ ] The failing tests first: the entries per responsible party for `V` (restaurant: `merchant.debit` of `V` and the reversing commission; captain: `earn.charge` of the merchant net; platform: the code's cost only; customer: nothing) and for the wrong change `M`, against `platform.compensation_cost`.
   - [ ] Migration: the affected items, `V`, `M` and the code on `support.tickets` (column grants), as needed.
   - [ ] The server: the resolution «كود تعويض» through marketing (within the cap, or the approval), the entries in the resolution's transaction with a preview, the pushes, the cost report's line.
   - [ ] `pnpm generate:api`, then the panel: the affected items with `V`, the code, `M`, the preview.
   - [ ] The `checker` agent, the `reviewer` agent on AP §9.9.3 and `docs/domain/10`, then the pull request and the handover to 2.23d.
-- **To ask the owner first:** whether a ticket stays open while its code waits for OWN's approval (owner decisions for 2.23, "To ask at their slices").
+- **Owner decisions (2026-11-17):** a ticket whose «كود تعويض» goes above the cap is resolved at once: it becomes «محلولة», the responsible party's entries are posted and the resolution message goes now; only the code waits for OWN and reaches the customer after approval, and a rejection leaves the ticket as it is. «لا شيء مع توضيح» with the restaurant or the captain responsible still posts their entries for `V` (docs/domain/10: everything but a free re-delivery); with the wrong change, the captain responsible and no code means they returned it in person, so no charge.
 
 ### Left from 2.23b (`claude/build-slide-2-23b-fu2yfs`)
 
