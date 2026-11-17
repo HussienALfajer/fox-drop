@@ -5803,6 +5803,12 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'بخصوص الطلب #{number}'**
   String merchantWhatsappOrderMessage(String number);
+
+  /// An owner's «بلاغاتي»: a ticket operations opened on the restaurant (no wording in the spec).
+  ///
+  /// In ar, this message translates to:
+  /// **'من العمليات'**
+  String get merchantReportByOperations;
 }
 
 class _AppLocalizationsDelegate

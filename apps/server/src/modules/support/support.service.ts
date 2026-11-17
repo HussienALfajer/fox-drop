@@ -43,6 +43,7 @@ import type {
 import { TicketSync } from './ticket-sync.js';
 import {
   type DataChangeSubject,
+  MERCHANT_OPENED_SOURCES,
   merchantReportProblem,
   reporterOf,
   seesTicket,
@@ -185,7 +186,8 @@ export interface MerchantTicketView {
   description: string;
   status: TicketStatus;
   openedAt: Date;
-  openedByMe: boolean;
+  // Who opened it: the viewer, another user of the restaurant, or the panel.
+  openedBy: 'me' | 'restaurant' | 'operations';
   replyWithinMinutes: number;
   message: string | null;
   resolvedAt: Date | null;
@@ -2097,7 +2099,12 @@ function merchantTicketOf(row: TicketRow, accountId: string): MerchantTicketView
     description: row.description,
     status: row.status,
     openedAt: row.openedAt,
-    openedByMe: row.openedBy === accountId,
+    openedBy:
+      row.openedBy === accountId
+        ? 'me'
+        : MERCHANT_OPENED_SOURCES.includes(row.source)
+          ? 'restaurant'
+          : 'operations',
     replyWithinMinutes: replyWithin(row),
     message: row.message,
     resolvedAt: row.resolvedAt,

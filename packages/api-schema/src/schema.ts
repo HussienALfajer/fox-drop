@@ -1188,22 +1188,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/merchant/uploads/report-photo": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["merchantUploadsCreate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/v1/captain/availability": {
         parameters: {
             query?: never;
@@ -2238,6 +2222,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["merchantOrdersWithdrawItemReport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant/uploads/report-photo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["merchantTicketsUploadPhoto"];
         delete?: never;
         options?: never;
         head?: never;
@@ -7788,8 +7788,11 @@ export interface components {
                 status: "new" | "in_progress" | "waiting" | "resolved" | "closed";
                 /** Format: date-time */
                 openedAt: string;
-                /** @description Opened by the session's user. */
-                openedByMe: boolean;
+                /**
+                 * @description Who opened it: the session's user, another user of the restaurant, or the panel.
+                 * @enum {string}
+                 */
+                openedBy: "me" | "restaurant" | "operations";
                 /** @description «سنرد عليك خلال {المدة}»: the ticket's timer from its opening. */
                 replyWithinMinutes: number;
                 /** @description The resolution message, once resolved. */
@@ -11805,8 +11808,11 @@ export interface components {
                 status: "new" | "in_progress" | "waiting" | "resolved" | "closed";
                 /** Format: date-time */
                 openedAt: string;
-                /** @description Opened by the session's user. */
-                openedByMe: boolean;
+                /**
+                 * @description Who opened it: the session's user, another user of the restaurant, or the panel.
+                 * @enum {string}
+                 */
+                openedBy: "me" | "restaurant" | "operations";
                 /** @description «سنرد عليك خلال {المدة}»: the ticket's timer from its opening. */
                 replyWithinMinutes: number;
                 /** @description The resolution message, once resolved. */
@@ -15797,30 +15803,6 @@ export interface operations {
             };
         };
     };
-    merchantUploadsCreate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CustomerNewUploadDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CustomerUploadDto_Output"];
-                };
-            };
-        };
-    };
     captainAvailabilityState: {
         parameters: {
             query?: never;
@@ -17503,6 +17485,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MerchantOrderDto_Output"];
+                };
+            };
+        };
+    };
+    merchantTicketsUploadPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerNewUploadDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerUploadDto_Output"];
                 };
             };
         };

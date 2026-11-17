@@ -235,7 +235,9 @@ export const merchantTicketBody = z.object({
     .enum(ticketStatuses)
     .describe('AP Appendix C: «جديدة», «قيد المعالجة», «بانتظار رد», «محلولة», «مغلقة».'),
   openedAt: z.iso.datetime(),
-  openedByMe: z.boolean().describe("Opened by the session's user."),
+  openedBy: z
+    .enum(['me', 'restaurant', 'operations'])
+    .describe("Who opened it: the session's user, another user of the restaurant, or the panel."),
   replyWithinMinutes: z
     .int()
     .describe("«سنرد عليك خلال {المدة}»: the ticket's timer from its opening."),
@@ -254,7 +256,7 @@ export function merchantTicketOut(ticket: MerchantTicketView): z.infer<typeof me
     description: ticket.description,
     status: ticket.status,
     openedAt: ticket.openedAt.toISOString(),
-    openedByMe: ticket.openedByMe,
+    openedBy: ticket.openedBy,
     replyWithinMinutes: ticket.replyWithinMinutes,
     message: ticket.message,
     resolvedAt: ticket.resolvedAt?.toISOString() ?? null,

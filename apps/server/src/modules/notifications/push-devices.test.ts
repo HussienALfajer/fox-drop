@@ -157,6 +157,22 @@ describe('push tokens (architecture §8.1)', () => {
     expect(await tokens({ party: 'merchant', restaurantId: restaurant, owners: true })).toEqual([
       'token-owner',
     ]);
+    // RA §16 #29 (slice 2.24b): the owners and the cashier who reported.
+    const cashierId = (
+      await sql.query(
+        "SELECT account_id FROM notifications.push_devices WHERE token = 'token-cashier'",
+      )
+    ).rows[0].account_id;
+    expect(
+      (
+        await tokens({
+          party: 'merchant',
+          restaurantId: restaurant,
+          owners: true,
+          reporter: cashierId,
+        })
+      ).sort(),
+    ).toEqual(['token-cashier', 'token-owner']);
   });
 
   it("reaches a captain's device, and forgets a token Firebase no longer knows", async () => {

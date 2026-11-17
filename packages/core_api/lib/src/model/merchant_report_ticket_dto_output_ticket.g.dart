@@ -92,12 +92,49 @@ _$merchantReportTicketDtoOutputTicketStatusEnumValues =
       ],
     );
 
+const MerchantReportTicketDtoOutputTicketOpenedByEnum
+_$merchantReportTicketDtoOutputTicketOpenedByEnum_me =
+    const MerchantReportTicketDtoOutputTicketOpenedByEnum._('me');
+const MerchantReportTicketDtoOutputTicketOpenedByEnum
+_$merchantReportTicketDtoOutputTicketOpenedByEnum_restaurant =
+    const MerchantReportTicketDtoOutputTicketOpenedByEnum._('restaurant');
+const MerchantReportTicketDtoOutputTicketOpenedByEnum
+_$merchantReportTicketDtoOutputTicketOpenedByEnum_operations =
+    const MerchantReportTicketDtoOutputTicketOpenedByEnum._('operations');
+
+MerchantReportTicketDtoOutputTicketOpenedByEnum
+_$merchantReportTicketDtoOutputTicketOpenedByEnumValueOf(String name) {
+  switch (name) {
+    case 'me':
+      return _$merchantReportTicketDtoOutputTicketOpenedByEnum_me;
+    case 'restaurant':
+      return _$merchantReportTicketDtoOutputTicketOpenedByEnum_restaurant;
+    case 'operations':
+      return _$merchantReportTicketDtoOutputTicketOpenedByEnum_operations;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<MerchantReportTicketDtoOutputTicketOpenedByEnum>
+_$merchantReportTicketDtoOutputTicketOpenedByEnumValues =
+    BuiltSet<MerchantReportTicketDtoOutputTicketOpenedByEnum>(
+      const <MerchantReportTicketDtoOutputTicketOpenedByEnum>[
+        _$merchantReportTicketDtoOutputTicketOpenedByEnum_me,
+        _$merchantReportTicketDtoOutputTicketOpenedByEnum_restaurant,
+        _$merchantReportTicketDtoOutputTicketOpenedByEnum_operations,
+      ],
+    );
+
 Serializer<MerchantReportTicketDtoOutputTicketSubjectEnum>
 _$merchantReportTicketDtoOutputTicketSubjectEnumSerializer =
     _$MerchantReportTicketDtoOutputTicketSubjectEnumSerializer();
 Serializer<MerchantReportTicketDtoOutputTicketStatusEnum>
 _$merchantReportTicketDtoOutputTicketStatusEnumSerializer =
     _$MerchantReportTicketDtoOutputTicketStatusEnumSerializer();
+Serializer<MerchantReportTicketDtoOutputTicketOpenedByEnum>
+_$merchantReportTicketDtoOutputTicketOpenedByEnumSerializer =
+    _$MerchantReportTicketDtoOutputTicketOpenedByEnumSerializer();
 
 class _$MerchantReportTicketDtoOutputTicketSubjectEnumSerializer
     implements
@@ -181,6 +218,44 @@ class _$MerchantReportTicketDtoOutputTicketStatusEnumSerializer
   );
 }
 
+class _$MerchantReportTicketDtoOutputTicketOpenedByEnumSerializer
+    implements
+        PrimitiveSerializer<MerchantReportTicketDtoOutputTicketOpenedByEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'me': 'me',
+    'restaurant': 'restaurant',
+    'operations': 'operations',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'me': 'me',
+    'restaurant': 'restaurant',
+    'operations': 'operations',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    MerchantReportTicketDtoOutputTicketOpenedByEnum,
+  ];
+  @override
+  final String wireName = 'MerchantReportTicketDtoOutputTicketOpenedByEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    MerchantReportTicketDtoOutputTicketOpenedByEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  MerchantReportTicketDtoOutputTicketOpenedByEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => MerchantReportTicketDtoOutputTicketOpenedByEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
 class _$MerchantReportTicketDtoOutputTicket
     extends MerchantReportTicketDtoOutputTicket {
   @override
@@ -202,7 +277,7 @@ class _$MerchantReportTicketDtoOutputTicket
   @override
   final DateTime openedAt;
   @override
-  final bool openedByMe;
+  final MerchantReportTicketDtoOutputTicketOpenedByEnum openedBy;
   @override
   final int replyWithinMinutes;
   @override
@@ -225,7 +300,7 @@ class _$MerchantReportTicketDtoOutputTicket
     required this.description,
     required this.status,
     required this.openedAt,
-    required this.openedByMe,
+    required this.openedBy,
     required this.replyWithinMinutes,
     this.message,
     this.resolvedAt,
@@ -252,7 +327,7 @@ class _$MerchantReportTicketDtoOutputTicket
         description == other.description &&
         status == other.status &&
         openedAt == other.openedAt &&
-        openedByMe == other.openedByMe &&
+        openedBy == other.openedBy &&
         replyWithinMinutes == other.replyWithinMinutes &&
         message == other.message &&
         resolvedAt == other.resolvedAt;
@@ -270,7 +345,7 @@ class _$MerchantReportTicketDtoOutputTicket
     _$hash = $jc(_$hash, description.hashCode);
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, openedAt.hashCode);
-    _$hash = $jc(_$hash, openedByMe.hashCode);
+    _$hash = $jc(_$hash, openedBy.hashCode);
     _$hash = $jc(_$hash, replyWithinMinutes.hashCode);
     _$hash = $jc(_$hash, message.hashCode);
     _$hash = $jc(_$hash, resolvedAt.hashCode);
@@ -290,7 +365,7 @@ class _$MerchantReportTicketDtoOutputTicket
           ..add('description', description)
           ..add('status', status)
           ..add('openedAt', openedAt)
-          ..add('openedByMe', openedByMe)
+          ..add('openedBy', openedBy)
           ..add('replyWithinMinutes', replyWithinMinutes)
           ..add('message', message)
           ..add('resolvedAt', resolvedAt))
@@ -345,9 +420,11 @@ class MerchantReportTicketDtoOutputTicketBuilder
   DateTime? get openedAt => _$this._openedAt;
   set openedAt(DateTime? openedAt) => _$this._openedAt = openedAt;
 
-  bool? _openedByMe;
-  bool? get openedByMe => _$this._openedByMe;
-  set openedByMe(bool? openedByMe) => _$this._openedByMe = openedByMe;
+  MerchantReportTicketDtoOutputTicketOpenedByEnum? _openedBy;
+  MerchantReportTicketDtoOutputTicketOpenedByEnum? get openedBy =>
+      _$this._openedBy;
+  set openedBy(MerchantReportTicketDtoOutputTicketOpenedByEnum? openedBy) =>
+      _$this._openedBy = openedBy;
 
   int? _replyWithinMinutes;
   int? get replyWithinMinutes => _$this._replyWithinMinutes;
@@ -378,7 +455,7 @@ class MerchantReportTicketDtoOutputTicketBuilder
       _description = $v.description;
       _status = $v.status;
       _openedAt = $v.openedAt;
-      _openedByMe = $v.openedByMe;
+      _openedBy = $v.openedBy;
       _replyWithinMinutes = $v.replyWithinMinutes;
       _message = $v.message;
       _resolvedAt = $v.resolvedAt;
@@ -439,10 +516,10 @@ class MerchantReportTicketDtoOutputTicketBuilder
             r'MerchantReportTicketDtoOutputTicket',
             'openedAt',
           ),
-          openedByMe: BuiltValueNullFieldError.checkNotNull(
-            openedByMe,
+          openedBy: BuiltValueNullFieldError.checkNotNull(
+            openedBy,
             r'MerchantReportTicketDtoOutputTicket',
-            'openedByMe',
+            'openedBy',
           ),
           replyWithinMinutes: BuiltValueNullFieldError.checkNotNull(
             replyWithinMinutes,

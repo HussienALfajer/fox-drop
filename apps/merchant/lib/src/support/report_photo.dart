@@ -101,7 +101,7 @@ Future<String> uploadPhoto(Ref ref, ReportPhoto photo) async {
   final answer = await ref
       .read(coreApiProvider)
       .getMerchantApi()
-      .merchantUploadsCreate(
+      .merchantTicketsUploadPhoto(
         customerNewUploadDto: CustomerNewUploadDto(
           (b) => b
             ..contentType = _types[photo.photo.contentType]

@@ -1899,5 +1899,7 @@
   "merchantReportReply": "الرد: {message}",
   "@merchantReportReply": {"description": "The resolution message in «بلاغاتي».", "placeholders": {"message": {"type": "String"}}},
   "merchantWhatsappOrderMessage": "بخصوص الطلب #{number}",
-  "@merchantWhatsappOrderMessage": {"description": "The WhatsApp text of «مشكلة في الطلب».", "placeholders": {"number": {"type": "String"}}}
+  "@merchantWhatsappOrderMessage": {"description": "The WhatsApp text of «مشكلة في الطلب».", "placeholders": {"number": {"type": "String"}}},
+  "merchantReportByOperations": "من العمليات",
+  "@merchantReportByOperations": {"description": "An owner's «بلاغاتي»: a ticket operations opened on the restaurant (no wording in the spec)."}
 }

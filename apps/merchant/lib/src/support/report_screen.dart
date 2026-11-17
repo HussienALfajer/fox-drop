@@ -32,8 +32,12 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
     super.dispose();
   }
 
-  bool get _complete =>
-      _type != null && (_type != dataChangeType || _subject != null);
+  // A type whose text Content requires (AP §9.13) needs the note.
+  bool _complete(List<Reason> types) =>
+      _type != null &&
+      (_type != dataChangeType || _subject != null) &&
+      (!types.any((t) => t.code == _type && t.noteRequired) ||
+          _note.text.trim().isNotEmpty);
 
   Future<void> _pick(PhotoSource source) async {
     final l10n = AppLocalizations.of(context);
@@ -171,6 +175,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
             maxLength: 300,
             maxLines: 3,
             decoration: InputDecoration(labelText: l10n.merchantReportNote),
+            onChanged: (_) => setState(() {}),
           ),
           if (_photo case final photo?)
             ListTile(
@@ -200,7 +205,9 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
             ),
           FilledButton(
             key: const Key('report-send'),
-            onPressed: _complete && !_sending ? _send : null,
+            onPressed: _complete(types.value ?? const []) && !_sending
+                ? _send
+                : null,
             child: Text(l10n.merchantReportSend),
           ),
         ],

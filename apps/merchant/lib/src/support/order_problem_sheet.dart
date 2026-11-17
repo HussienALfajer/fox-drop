@@ -37,12 +37,21 @@ class OrderProblemSheet extends ConsumerStatefulWidget {
 class _OrderProblemSheetState extends ConsumerState<OrderProblemSheet> {
   bool _sending = false;
 
-  Future<void> _report(String code) async {
+  Future<void> _report(Reason reason) async {
     final l10n = AppLocalizations.of(context);
+    String? note;
+    if (reason.noteRequired) {
+      note = await _askNote(reason.label);
+      if (note == null || !mounted) return;
+    }
     setState(() => _sending = true);
     final outcome = await ref
         .read(merchantReportsProvider)
-        .orderProblem(orderId: widget.orderId, reasonCode: code);
+        .orderProblem(
+          orderId: widget.orderId,
+          reasonCode: reason.code,
+          note: note,
+        );
     if (!mounted) return;
     setState(() => _sending = false);
     final messenger = ScaffoldMessenger.of(context);
@@ -67,6 +76,12 @@ class _OrderProblemSheetState extends ConsumerState<OrderProblemSheet> {
     }
   }
 
+  /// A reason whose text Content requires (AP §9.13) asks for it first.
+  Future<String?> _askNote(String label) => showDialog<String>(
+    context: context,
+    builder: (context) => _NoteDialog(label: label),
+  );
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -86,7 +101,7 @@ class _OrderProblemSheetState extends ConsumerState<OrderProblemSheet> {
                   key: Key('problem-${reason.code}'),
                   title: Text(reason.label),
                   enabled: !_sending,
-                  onTap: () => _report(reason.code),
+                  onTap: () => _report(reason),
                 ),
             ],
             AsyncError() => [
@@ -102,6 +117,50 @@ class _OrderProblemSheetState extends ConsumerState<OrderProblemSheet> {
           },
         ],
       ),
+    );
+  }
+}
+
+class _NoteDialog extends StatefulWidget {
+  const _NoteDialog({required this.label});
+
+  final String label;
+
+  @override
+  State<_NoteDialog> createState() => _NoteDialogState();
+}
+
+class _NoteDialogState extends State<_NoteDialog> {
+  final _text = TextEditingController();
+
+  @override
+  void dispose() {
+    _text.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final note = _text.text.trim();
+    return AlertDialog(
+      title: Text(widget.label),
+      content: TextField(
+        key: const Key('problem-note'),
+        controller: _text,
+        maxLength: 300,
+        decoration: InputDecoration(labelText: l10n.merchantReportNote),
+        onChanged: (_) => setState(() {}),
+      ),
+      actions: [
+        TextButton(
+          key: const Key('problem-note-send'),
+          onPressed: note.isEmpty
+              ? null
+              : () => Navigator.of(context).pop(note),
+          child: Text(l10n.merchantReportSend),
+        ),
+      ],
     );
   }
 }

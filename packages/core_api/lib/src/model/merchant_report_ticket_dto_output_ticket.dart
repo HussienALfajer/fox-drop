@@ -21,7 +21,7 @@ part 'merchant_report_ticket_dto_output_ticket.g.dart';
 /// * [description] - The note sent.
 /// * [status] - AP Appendix C: «جديدة», «قيد المعالجة», «بانتظار رد», «محلولة», «مغلقة».
 /// * [openedAt]
-/// * [openedByMe] - Opened by the session's user.
+/// * [openedBy] - Who opened it: the session's user, another user of the restaurant, or the panel.
 /// * [replyWithinMinutes] - «سنرد عليك خلال {المدة}»: the ticket's timer from its opening.
 /// * [message] - The resolution message, once resolved.
 /// * [resolvedAt]
@@ -65,9 +65,10 @@ abstract class MerchantReportTicketDtoOutputTicket
   @BuiltValueField(wireName: r'openedAt')
   DateTime get openedAt;
 
-  /// Opened by the session's user.
-  @BuiltValueField(wireName: r'openedByMe')
-  bool get openedByMe;
+  /// Who opened it: the session's user, another user of the restaurant, or the panel.
+  @BuiltValueField(wireName: r'openedBy')
+  MerchantReportTicketDtoOutputTicketOpenedByEnum get openedBy;
+  // enum openedByEnum {  me,  restaurant,  operations,  };
 
   /// «سنرد عليك خلال {المدة}»: the ticket's timer from its opening.
   @BuiltValueField(wireName: r'replyWithinMinutes')
@@ -165,10 +166,12 @@ class _$MerchantReportTicketDtoOutputTicketSerializer
       object.openedAt,
       specifiedType: const FullType(DateTime),
     );
-    yield r'openedByMe';
+    yield r'openedBy';
     yield serializers.serialize(
-      object.openedByMe,
-      specifiedType: const FullType(bool),
+      object.openedBy,
+      specifiedType: const FullType(
+        MerchantReportTicketDtoOutputTicketOpenedByEnum,
+      ),
     );
     yield r'replyWithinMinutes';
     yield serializers.serialize(
@@ -304,14 +307,16 @@ class _$MerchantReportTicketDtoOutputTicketSerializer
                   as DateTime;
           result.openedAt = valueDes;
           break;
-        case r'openedByMe':
+        case r'openedBy':
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(bool),
+                    specifiedType: const FullType(
+                      MerchantReportTicketDtoOutputTicketOpenedByEnum,
+                    ),
                   )
-                  as bool;
-          result.openedByMe = valueDes;
+                  as MerchantReportTicketDtoOutputTicketOpenedByEnum;
+          result.openedBy = valueDes;
           break;
         case r'replyWithinMinutes':
           final valueDes =
@@ -423,4 +428,28 @@ class MerchantReportTicketDtoOutputTicketStatusEnum extends EnumClass {
       _$merchantReportTicketDtoOutputTicketStatusEnumValues;
   static MerchantReportTicketDtoOutputTicketStatusEnum valueOf(String name) =>
       _$merchantReportTicketDtoOutputTicketStatusEnumValueOf(name);
+}
+
+/// Who opened it: the session's user, another user of the restaurant, or the panel.
+class MerchantReportTicketDtoOutputTicketOpenedByEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'me')
+  static const MerchantReportTicketDtoOutputTicketOpenedByEnum me =
+      _$merchantReportTicketDtoOutputTicketOpenedByEnum_me;
+  @BuiltValueEnumConst(wireName: r'restaurant')
+  static const MerchantReportTicketDtoOutputTicketOpenedByEnum restaurant =
+      _$merchantReportTicketDtoOutputTicketOpenedByEnum_restaurant;
+  @BuiltValueEnumConst(wireName: r'operations')
+  static const MerchantReportTicketDtoOutputTicketOpenedByEnum operations =
+      _$merchantReportTicketDtoOutputTicketOpenedByEnum_operations;
+
+  static Serializer<MerchantReportTicketDtoOutputTicketOpenedByEnum>
+  get serializer => _$merchantReportTicketDtoOutputTicketOpenedByEnumSerializer;
+
+  const MerchantReportTicketDtoOutputTicketOpenedByEnum._(String name)
+    : super(name);
+
+  static BuiltSet<MerchantReportTicketDtoOutputTicketOpenedByEnum> get values =>
+      _$merchantReportTicketDtoOutputTicketOpenedByEnumValues;
+  static MerchantReportTicketDtoOutputTicketOpenedByEnum valueOf(String name) =>
+      _$merchantReportTicketDtoOutputTicketOpenedByEnumValueOf(name);
 }

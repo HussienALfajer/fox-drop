@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { MerchantAccountsService } from '../identity/index.js';
+import { MerchantsService } from '../merchants/index.js';
 import {
   acceptedOrder,
   admin,
@@ -25,12 +26,30 @@ beforeAll(() => {
   process.env.APP_UPLOAD_URL ??= 'http://127.0.0.1:1';
 });
 
-async function restaurantUser(role: 'owner' | 'cashier') {
+async function restaurantUser(role: 'owner' | 'cashier', of: string = restaurant) {
   const phone = phoneNumber();
-  await app
-    .get(MerchantAccountsService)
-    .addAccount(restaurant, { role, name: role, phone }, change);
+  await app.get(MerchantAccountsService).addAccount(of, { role, name: role, phone }, change);
   return appSignIn('merchant', phone);
+}
+
+// Another restaurant of the city, active.
+async function otherRestaurant() {
+  const merchants = app.get(MerchantsService);
+  const id = await merchants.createRestaurant(
+    azaz,
+    {
+      nameAr: 'مطعم آخر',
+      address: 'شارع آخر',
+      location: { latitude: 36.587, longitude: 37.046 },
+      coverage: { kind: 'radius', radiusMetres: 1000 },
+      minimumOrder: { amount: 10_000n, currency: 'TRY' },
+      commissionBp: 1500,
+      defaultPrepMin: 20,
+    },
+    change,
+  );
+  await merchants.setAccountStatus(id, 'active', change);
+  return id;
 }
 
 const report = (user: { authorization: string }, body: object, key: string = randomUUID()) =>
@@ -63,7 +82,7 @@ const problem = (
 
 const mine = async (user: { authorization: string }) =>
   (await app.inject({ method: 'GET', url: '/v1/merchant/reports', headers: user })).json()
-    .tickets as { id: string; openedByMe: boolean }[];
+    .tickets as { id: string; openedBy: string }[];
 
 describe('«إبلاغ عن مشكلة»', () => {
   it('opens a ticket in the panel, repeats its key and asks a data change its subject', async () => {
@@ -77,7 +96,7 @@ describe('«إبلاغ عن مشكلة»', () => {
       status: 'new',
       description: 'متى يصل الكشف؟',
       orderId: null,
-      openedByMe: true,
+      openedBy: 'me',
       replyWithinMinutes: 24 * 60,
     });
     expect((await report(cashier, { note: 'متى يصل الكشف؟' }, key)).json().ticket.id).toBe(
@@ -136,7 +155,12 @@ describe('«مشكلة في الطلب»', () => {
     const sent = await problem(order.cashier, order.id, {});
     expect(sent.statusCode).toBe(200);
     const { ticket } = sent.json();
-    expect(ticket).toMatchObject({ typeLabel: 'الكابتن تأخر', orderId: order.id });
+    // The first-response timer of a ticket on an active order.
+    expect(ticket).toMatchObject({
+      typeLabel: 'الكابتن تأخر',
+      orderId: order.id,
+      replyWithinMinutes: 15,
+    });
     const sup = await admin(['SUP']);
     const page = (await sup.get(`/v1/admin/tickets/${ticket.id}?cityId=${azaz}`)).json();
     expect(page).toMatchObject({
@@ -172,7 +196,7 @@ describe('«بلاغاتي»', () => {
     expect(firstSees).not.toContain(b);
     const ownerSees = await mine(owner);
     expect(ownerSees.map((each) => each.id)).toEqual(expect.arrayContaining([a, b]));
-    expect(ownerSees.every((each) => !each.openedByMe)).toBe(true);
+    expect(ownerSees.find((each) => each.id === a)?.openedBy).toBe('restaurant');
   });
 
   it('shows the resolution, and tells the owners and the reporter', async () => {
@@ -200,5 +224,54 @@ describe('«بلاغاتي»', () => {
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({ restaurant_id: restaurant, owners_only: true });
     expect(rows[0].account_id).toBe(rows[0].opened_by);
+  });
+});
+
+// Architecture §18: out of scope and refused.
+describe("another restaurant's users", () => {
+  it("never reach this restaurant's orders, tickets or photos", async () => {
+    const order = await acceptedOrder();
+    const other = await otherRestaurant();
+    const stranger = await restaurantUser('owner', other);
+    const onOrder = await problem(stranger, order.id, {});
+    expect(onOrder.statusCode).toBe(404);
+    expect(onOrder.json().error).toBe('unknown_order');
+    const linked = await report(stranger, { orderId: order.id });
+    expect(linked.statusCode).toBe(404);
+    const theirs = (await report(order.cashier, {})).json().ticket.id;
+    expect((await mine(stranger)).map((each) => each.id)).not.toContain(theirs);
+
+    // A photo is its uploader's own.
+    const asked = await app.inject({
+      method: 'POST',
+      url: '/v1/merchant/uploads/report-photo',
+      headers: order.cashier,
+      payload: { contentType: 'image/png', sizeBytes: 100 },
+    });
+    expect(asked.statusCode).toBe(201);
+    const used = await report(stranger, { photoUploadId: asked.json().uploadId });
+    expect(used.statusCode).toBe(400);
+    expect(used.json().error).toBe('upload_not_found');
+  });
+
+  it('are refused once their restaurant is terminated (RA §5.5)', async () => {
+    const other = await otherRestaurant();
+    const owner = await restaurantUser('owner', other);
+    await app.get(MerchantsService).setAccountStatus(other, 'terminated', change);
+    const refused = [
+      await report(owner, {}),
+      await problem(owner, randomUUID(), {}),
+      await app.inject({ method: 'GET', url: '/v1/merchant/reports', headers: owner }),
+      await app.inject({
+        method: 'POST',
+        url: '/v1/merchant/uploads/report-photo',
+        headers: owner,
+        payload: { contentType: 'image/png', sizeBytes: 100 },
+      }),
+    ];
+    for (const answer of refused) {
+      expect(answer.statusCode).toBe(403);
+      expect(answer.json().error).toBe('restaurant_terminated');
+    }
   });
 });

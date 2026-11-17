@@ -60,25 +60,28 @@ const _subjects = {
   DataChangeSubject.ownerPhone: MerchantReportBodyDtoSubjectEnum.ownerPhone,
 };
 
-/// A reason of Content's lists: its code and label.
-typedef Reason = ({String code, String label});
+/// A reason of Content's lists: its code, label and whether its text is
+/// required (a «أخرى» operations may set so, AP §9.13).
+typedef Reason = ({String code, String label, bool noteRequired});
+
+Reason _reason(MerchantContentDtoOutputReasonsMerchantRejectionInner r) => (
+  code: r.code,
+  label: r.label,
+  noteRequired:
+      r.note ==
+      MerchantContentDtoOutputReasonsMerchantRejectionInnerNoteEnum.required_,
+);
 
 /// RA §15, Appendix C: the active report types, in Content's order.
 final ticketTypesProvider = FutureProvider<List<Reason>>((ref) async {
   final content = await ref.watch(merchantContentProvider.future);
-  return [
-    for (final r in content.reasons.merchantTicketType)
-      (code: r.code, label: r.label),
-  ];
+  return [for (final r in content.reasons.merchantTicketType) _reason(r)];
 });
 
 /// RA §8.19, Appendix C: «مشكلة في الطلب»'s quick reasons.
 final orderProblemsProvider = FutureProvider<List<Reason>>((ref) async {
   final content = await ref.watch(merchantContentProvider.future);
-  return [
-    for (final r in content.reasons.merchantProblem)
-      (code: r.code, label: r.label),
-  ];
+  return [for (final r in content.reasons.merchantProblem) _reason(r)];
 });
 
 /// RA §15 «الأسئلة الشائعة»: the restaurant's FAQ from Content.
@@ -187,14 +190,17 @@ class MerchantReports {
   Future<ReportOutcome> orderProblem({
     required String orderId,
     required String reasonCode,
-  }) => _send(['problem', orderId, reasonCode].join('\n'), null, (key) async {
+    String? note,
+  }) => _send(['problem', orderId, reasonCode, note ?? ''].join('\n'), null, (
+    key,
+  ) async {
     final answer = await _api.merchantTicketsProblem(
       orderId: orderId,
       idempotencyKey: key,
       merchantOrderProblemBodyDto: MerchantOrderProblemBodyDto(
         (b) => b
           ..reasonCode = reasonCode
-          ..note = null,
+          ..note = note,
       ),
     );
     return answer.data!.ticket;

@@ -1171,6 +1171,7 @@ Serializers _$serializers =
           ..add(MerchantReportBodyDtoSubjectEnum.serializer)
           ..add(MerchantReportTicketDtoOutput.serializer)
           ..add(MerchantReportTicketDtoOutputTicket.serializer)
+          ..add(MerchantReportTicketDtoOutputTicketOpenedByEnum.serializer)
           ..add(MerchantReportTicketDtoOutputTicketStatusEnum.serializer)
           ..add(MerchantReportTicketDtoOutputTicketSubjectEnum.serializer)
           ..add(MerchantReportsDtoOutput.serializer)

@@ -4146,7 +4146,7 @@ class MerchantApi {
     );
   }
 
-  /// merchantUploadsCreate
+  /// merchantTicketsUploadPhoto
   ///
   ///
   /// Parameters:
@@ -4160,7 +4160,7 @@ class MerchantApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CustomerUploadDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CustomerUploadDtoOutput>> merchantUploadsCreate({
+  Future<Response<CustomerUploadDtoOutput>> merchantTicketsUploadPhoto({
     required CustomerNewUploadDto customerNewUploadDto,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,

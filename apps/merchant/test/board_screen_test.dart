@@ -1471,7 +1471,7 @@ void main() {
       'description': '',
       'status': 'new',
       'openedAt': '2026-11-07T12:00:00.000Z',
-      'openedByMe': true,
+      'openedBy': 'me',
       'replyWithinMinutes': 1440,
       'message': null,
       'resolvedAt': null,
@@ -1482,6 +1482,7 @@ void main() {
         'merchant_rejection': <Object?>[],
         'merchant_problem': [
           {'code': 'captain_late', 'label': 'الكابتن تأخر', 'note': 'none'},
+          {'code': 'other', 'label': 'أخرى', 'note': 'required'},
         ],
         'item_unavailable_note': <Object?>[],
         'merchant_ticket_type': [
@@ -1507,7 +1508,7 @@ void main() {
             ticketJson({
               'status': 'resolved',
               'message': 'الكشف يصل السبت.',
-              'openedByMe': false,
+              'openedBy': 'restaurant',
             }),
           ],
         }),
@@ -1622,6 +1623,48 @@ void main() {
         find.text('استلمنا بلاغك T-17. سنرد عليك خلال 15 دقيقة.'),
         findsOneWidget,
       );
+      await app.done(tester);
+    });
+    testWidgets('a reason whose text is required asks for it first', (
+      tester,
+    ) async {
+      final app = _Board();
+      app.server.on('/v1/merchant/content', [content]);
+      final accepted = orderJson(
+        status: 'accepted',
+        version: 2,
+        acceptedAfter: Duration.zero,
+      );
+      await app.pump(tester, [
+        FakeAnswer(200, boardJson([accepted])),
+      ]);
+      await app.up(tester);
+      app.container.read(routerProvider).push('/orders/$_orderId');
+      await tester.pumpAndSettle();
+      final button = find.byKey(const Key('order-problem'));
+      await tester.ensureVisible(button);
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+      app.server.on('/v1/merchant/orders/$_orderId/problem', [
+        FakeAnswer(200, {
+          'ticket': ticketJson({'typeLabel': 'أخرى'}),
+        }),
+      ]);
+      await tester.tap(find.byKey(const Key('problem-other')));
+      await tester.pumpAndSettle();
+      final send = find.byKey(const Key('problem-note-send'));
+      expect(tester.widget<TextButton>(send).onPressed, isNull);
+      await tester.enterText(
+        find.byKey(const Key('problem-note')),
+        'الكيس ممزق',
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(send);
+      await tester.pumpAndSettle();
+      final sent = app.server
+          .to('/v1/merchant/orders/$_orderId/problem')
+          .single;
+      expect(sent.data, {'reasonCode': 'other', 'note': 'الكيس ممزق'});
       await app.done(tester);
     });
   });

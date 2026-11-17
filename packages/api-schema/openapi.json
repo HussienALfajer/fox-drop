@@ -2849,42 +2849,6 @@
         ]
       }
     },
-    "/v1/merchant/uploads/report-photo": {
-      "post": {
-        "operationId": "merchantUploadsCreate",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CustomerNewUploadDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomerUploadDto_Output"
-                }
-              }
-            },
-            "headers": {
-              "Server-Time": {
-                "$ref": "#/components/headers/Server-Time"
-              }
-            }
-          }
-        },
-        "tags": [
-          "merchant"
-        ]
-      }
-    },
     "/v1/captain/availability": {
       "get": {
         "operationId": "captainAvailabilityState",
@@ -5595,6 +5559,42 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MerchantOrderDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "merchant"
+        ]
+      }
+    },
+    "/v1/merchant/uploads/report-photo": {
+      "post": {
+        "operationId": "merchantTicketsUploadPhoto",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerNewUploadDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerUploadDto_Output"
                 }
               }
             },
@@ -25878,9 +25878,14 @@
                 "format": "date-time",
                 "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
               },
-              "openedByMe": {
-                "type": "boolean",
-                "description": "Opened by the session's user."
+              "openedBy": {
+                "type": "string",
+                "enum": [
+                  "me",
+                  "restaurant",
+                  "operations"
+                ],
+                "description": "Who opened it: the session's user, another user of the restaurant, or the panel."
               },
               "replyWithinMinutes": {
                 "type": "integer",
@@ -25918,7 +25923,7 @@
               "description",
               "status",
               "openedAt",
-              "openedByMe",
+              "openedBy",
               "replyWithinMinutes",
               "message",
               "resolvedAt"
@@ -43651,9 +43656,14 @@
                   "format": "date-time",
                   "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
                 },
-                "openedByMe": {
-                  "type": "boolean",
-                  "description": "Opened by the session's user."
+                "openedBy": {
+                  "type": "string",
+                  "enum": [
+                    "me",
+                    "restaurant",
+                    "operations"
+                  ],
+                  "description": "Who opened it: the session's user, another user of the restaurant, or the panel."
                 },
                 "replyWithinMinutes": {
                   "type": "integer",
@@ -43691,7 +43701,7 @@
                 "description",
                 "status",
                 "openedAt",
-                "openedByMe",
+                "openedBy",
                 "replyWithinMinutes",
                 "message",
                 "resolvedAt"

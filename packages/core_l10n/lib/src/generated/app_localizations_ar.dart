@@ -3555,4 +3555,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String merchantWhatsappOrderMessage(String number) {
     return 'بخصوص الطلب #$number';
   }
+
+  @override
+  String get merchantReportByOperations => 'من العمليات';
 }

@@ -1,3 +1,4 @@
+import 'package:core_api/core_api.dart';
 import 'package:core_l10n/core_l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -109,7 +110,15 @@ class _TicketTile extends StatelessWidget {
       if (ticket.orderNumber case final number?)
         l10n.merchantReportOrderLine(number),
       if (ticket.description.isNotEmpty) ticket.description,
-      if (!ticket.openedByMe) l10n.merchantReportBy,
+      ...switch (ticket.openedBy) {
+        MerchantReportTicketDtoOutputTicketOpenedByEnum.restaurant => [
+          l10n.merchantReportBy,
+        ],
+        MerchantReportTicketDtoOutputTicketOpenedByEnum.operations => [
+          l10n.merchantReportByOperations,
+        ],
+        _ => const <String>[],
+      },
       if (ticket.message case final message?) l10n.merchantReportReply(message),
     ];
     return ListTile(

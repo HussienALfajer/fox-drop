@@ -21,7 +21,13 @@ import { requestContext } from '../../http/request-context.js';
 import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { MerchantController } from '../../http/route-groups.js';
 import { NOTE_MAX } from '../content/index.js';
-import { FilesRefusedError } from '../files/index.js';
+import {
+  CustomerNewUploadDto,
+  CustomerUploadDto,
+  FilesRefusedError,
+  FilesService,
+  reportPhoto,
+} from '../files/index.js';
 import type { AppSession } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import {
@@ -89,7 +95,24 @@ export class MerchantTicketsController {
     @Inject(DATABASE) private readonly database: Database,
     private readonly support: SupportService,
     private readonly merchants: MerchantsService,
+    private readonly files: FilesService,
   ) {}
+
+  // RA §15: the report's photo, a pre-signed PUT into the private bucket,
+  // as the customer's (the DTOs are theirs, so the clients share the
+  // models). 403 restaurant_terminated; 429 too_many_uploads.
+  @Post('uploads/report-photo')
+  @AppSignedIn()
+  @HttpCode(201)
+  @ZodResponse({ status: 201, type: CustomerUploadDto })
+  async uploadPhoto(
+    @CurrentAppSession() session: AppSession,
+    @Body() body: CustomerNewUploadDto,
+    @Req() request: FastifyRequest,
+  ) {
+    const by = await this.reporter(session, request);
+    return reportPhoto(this.files, body, by.accountId);
+  }
 
   // 400 unknown_reason, too_many_photos, subject_required, invalid_subject
   // and the photo's upload_not_found, upload_expired, upload_missing,

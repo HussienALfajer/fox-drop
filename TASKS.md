@@ -13,10 +13,10 @@ Slice 2.24b, the restaurant's support (`docs/roadmap.md`, Phase 2, Support and t
 - **Owner decisions (2026-11-17):** «طلب تعديل بيانات» takes a subject (the minimum order, delivery coverage, adding or removing an owner, the owner's phone) and a note, the subject shown on the ticket; a cashier's «بلاغاتي» shows only the tickets they opened, an owner's every ticket of the restaurant; the confirmation «سنرد عليك خلال {س} ساعة» follows `support.resolution_post_delivery_hours` (the customer app's too); «تم حل بلاغك» goes to the owners and to the reporter.
 - **Plan:**
   - [x] Read the cited sections; ask the owner the open questions.
-  - [ ] The failing tests first: who sees which ticket in «بلاغاتي» (owner, cashier), the data change's subject, the photo count.
-  - [ ] Migration: the sources `merchant_report` and `order_problem`, the data change's `request_subject`, the index for «بلاغاتي».
-  - [ ] The server routes (the photo upload, the report, the report on an order, «بلاغاتي»), the reporter's push, the confirmation hours on the customer's report.
-  - [ ] `pnpm generate:api`, the panel's sources and subject, then the restaurant app's support screen and the order's «مشكلة في الطلب», and the customer app's hours.
+  - [x] The failing tests first: who sees which ticket in «بلاغاتي» (owner, cashier), the data change's subject, the photo count.
+  - [x] Migration: the sources `merchant_report` and `order_problem`, the data change's `request_subject`, the index for «بلاغاتي».
+  - [x] The server routes (the photo upload, the report, the report on an order, «بلاغاتي»), the reporter's push, the confirmation hours on the customer's report.
+  - [x] `pnpm generate:api`, the panel's sources and subject, then the restaurant app's support screen and the order's «مشكلة في الطلب», and the customer app's hours.
   - [ ] The `checker` agent, the `reviewer` agent on the cited sections, then the pull request and the handover.
 
 ### Left from 2.24a (`claude/slide-2-24-m1cjw5`)

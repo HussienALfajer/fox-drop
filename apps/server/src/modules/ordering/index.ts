@@ -7,6 +7,7 @@ import { CaptainsModule } from '../captains/index.js';
 import { CustomersModule } from '../customers/index.js';
 import { FxModule } from '../fx/index.js';
 import { GeoModule } from '../geo/index.js';
+import { FilesModule } from '../files/index.js';
 import { MerchantsModule } from '../merchants/index.js';
 import { NotificationsModule, NotificationsWorkerModule } from '../notifications/index.js';
 import { ContentModule } from '../content/index.js';
@@ -73,6 +74,7 @@ import {
     NotificationsModule,
     OrderAssignmentsModule,
     SupportModule,
+    FilesModule,
   ],
   controllers: [
     CustomerQuoteController,
