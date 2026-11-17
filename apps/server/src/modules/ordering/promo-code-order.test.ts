@@ -118,6 +118,7 @@ describe('a code in the quote', () => {
         message: null,
         amount: { amount: '6000', currency: 'TRY' },
         refusal: 'below_minimum',
+        until: null,
       },
     ]);
     expect(below.money.discount).toBe('0');
