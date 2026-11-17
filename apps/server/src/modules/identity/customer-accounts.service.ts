@@ -7,7 +7,7 @@ import { type AuditActor, type AuditRequestContext, AuditService } from '../audi
 import { APP_PHONE_PATTERN } from './app-phone.js';
 import { AppSessionsService } from './app-sessions.service.js';
 import { AppSignInService, type CustomerRelinked } from './app-sign-in.service.js';
-import { appSignInCodes, customerAccounts } from './schema.js';
+import { appSessions, appSignInCodes, customerAccounts } from './schema.js';
 import { IDENTITY_SECRETS, IdentitySecrets } from './secrets.js';
 
 export type CustomerAccountRefusal =
@@ -25,6 +25,19 @@ export interface CustomerAccountState {
   // The admin who closed it; null when the customer did from the app.
   closedBy: string | null;
   closeReason: string | null;
+}
+
+// One account's sign-ins on one device (slice 2.25d): the first and latest
+// sign-in, when the device was last seen (a refresh or an end), and the IP
+// address and user agent of the latest sign-in.
+export interface CustomerDeviceSighting {
+  deviceId: string;
+  accountId: string;
+  firstSignedInAt: Date;
+  lastSignedInAt: Date;
+  lastSeenAt: Date;
+  ipAddress: string | null;
+  userAgent: string | null;
 }
 
 export class CustomerAccountRefusedError extends Error {
@@ -130,6 +143,45 @@ export class CustomerAccountsService {
       .from(customerAccounts)
       .where(or(eq(customerAccounts.id, root), eq(customerAccounts.lineageId, root)));
     return rows.map((each) => each.id);
+  }
+
+  // The device block (docs/domain/08; slice 2.25d): every customer account
+  // signed in on a device any of the accounts used, per device and account,
+  // from the sessions (kept after they end). The device is the app's
+  // `deviceId`, which the customer app keeps across a reinstall.
+  async deviceSightings(
+    accountIds: readonly string[],
+    executor: Pick<NodePgDatabase, 'select' | 'selectDistinct'> = this.database.db,
+  ): Promise<CustomerDeviceSighting[]> {
+    if (accountIds.length === 0) return [];
+    const devices = executor
+      .selectDistinct({ deviceId: appSessions.deviceId })
+      .from(appSessions)
+      .where(
+        and(eq(appSessions.party, 'customer'), inArray(appSessions.accountId, [...accountIds])),
+      );
+    const rows = await executor
+      .select({
+        deviceId: appSessions.deviceId,
+        accountId: appSessions.accountId,
+        firstSignedInAt: sql<Date>`min(${appSessions.signedInAt})`.mapWith(appSessions.signedInAt),
+        lastSignedInAt: sql<Date>`max(${appSessions.signedInAt})`.mapWith(appSessions.signedInAt),
+        lastSeenAt:
+          sql<Date>`max(coalesce(${appSessions.endedAt}, ${appSessions.lastRefreshedAt}))`.mapWith(
+            appSessions.signedInAt,
+          ),
+        ipAddress: sql<
+          string | null
+        >`(array_agg(host(${appSessions.ipAddress}) ORDER BY ${appSessions.signedInAt} DESC))[1]`,
+        userAgent: sql<
+          string | null
+        >`(array_agg(${appSessions.userAgent} ORDER BY ${appSessions.signedInAt} DESC))[1]`,
+      })
+      .from(appSessions)
+      .where(and(eq(appSessions.party, 'customer'), inArray(appSessions.deviceId, devices)))
+      .groupBy(appSessions.deviceId, appSessions.accountId)
+      .orderBy(sql`min(${appSessions.signedInAt})`, appSessions.deviceId, appSessions.accountId);
+    return rows;
   }
 
   // D19: whether the account exists and is not closed.

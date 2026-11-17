@@ -331,6 +331,7 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/admin/customers/{customerId}/test-account': 'customers.test_account',
   'POST /v1/admin/customers/{customerId}/change-phone': 'customers.manage',
   'POST /v1/admin/customers/{customerId}/sign-out-everywhere': 'customers.sign_out_everywhere',
+  'POST /v1/admin/customers/{customerId}/lift-device-block': 'customers.lift_device_block',
   'POST /v1/admin/customers/{customerId}/close': 'customers.close_account',
   'POST /v1/admin/customers/{customerId}/clear-strikes': 'customers.clear_strikes',
   'POST /v1/admin/customers/{customerId}/end-review-stop': 'customers.clear_strikes',

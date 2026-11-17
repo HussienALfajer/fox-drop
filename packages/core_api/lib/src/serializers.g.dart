@@ -138,6 +138,13 @@ Serializers _$serializers =
           ..add(AdminCustomerDtoOutputBlocksInnerKindEnum.serializer)
           ..add(AdminCustomerDtoOutputClosed.serializer)
           ..add(AdminCustomerDtoOutputCodesInner.serializer)
+          ..add(AdminCustomerDtoOutputDevicesInner.serializer)
+          ..add(AdminCustomerDtoOutputDevicesInnerAccountsInner.serializer)
+          ..add(
+            AdminCustomerDtoOutputDevicesInnerAccountsInnerStatusEnum
+                .serializer,
+          )
+          ..add(AdminCustomerDtoOutputDevicesInnerLift.serializer)
           ..add(AdminCustomerDtoOutputDues.serializer)
           ..add(AdminCustomerDtoOutputGenderEnum.serializer)
           ..add(AdminCustomerDtoOutputLateCancels.serializer)
@@ -254,6 +261,7 @@ Serializers _$serializers =
           ..add(AdminHandInReceiptsDtoOutput.serializer)
           ..add(AdminHandoverDto.serializer)
           ..add(AdminImageSetDtoOutput.serializer)
+          ..add(AdminLiftCustomerDeviceBlockDto.serializer)
           ..add(AdminManualAccountDtoOutput.serializer)
           ..add(AdminManualAccountDtoOutputEntriesInner.serializer)
           ..add(AdminManualAdjustmentDto.serializer)
@@ -1460,6 +1468,13 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminCustomerDtoOutputDevicesInnerAccountsInner),
+            ]),
+            () =>
+                ListBuilder<AdminCustomerDtoOutputDevicesInnerAccountsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminCustomerDtoOutputLinkedAccountsInner),
             ]),
             () => ListBuilder<AdminCustomerDtoOutputLinkedAccountsInner>(),
@@ -1499,6 +1514,12 @@ Serializers _$serializers =
               const FullType(AdminCustomerDtoOutputNotesInner),
             ]),
             () => ListBuilder<AdminCustomerDtoOutputNotesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCustomerDtoOutputDevicesInner),
+            ]),
+            () => ListBuilder<AdminCustomerDtoOutputDevicesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

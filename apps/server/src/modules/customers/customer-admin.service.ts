@@ -11,6 +11,7 @@ import {
   AdminSessionsService,
   CustomerAccountRefusedError,
   CustomerAccountsService,
+  type CustomerDeviceSighting,
 } from '../identity/index.js';
 import { LedgerService } from '../ledger/index.js';
 import { type CustomerCodeUse, PromoCodeUsesService } from '../marketing/index.js';
@@ -34,6 +35,7 @@ import {
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import {
   blocks,
+  deviceLifts,
   type genders,
   lateCancelStrikes,
   notes,
@@ -57,6 +59,8 @@ export type CustomerAdminRefusal =
   | 'unknown_city'
   | 'active_order'
   | 'account_closed'
+  | 'unknown_device'
+  | 'device_not_blocked'
   | 'idempotency_key_reused';
 
 export class CustomerAdminRefusedError extends Error {
@@ -156,6 +160,32 @@ export interface CustomerProfileView {
   codes: CustomerCodeUse[];
   addresses: Address[];
   notes: { id: string; body: string; authorName: string | null; createdAt: Date }[];
+  // Slice 2.25d: the account signed in on the same phone whose dues stop
+  // this one (the desk takes them on its profile); null otherwise.
+  duesViaAccountId: string | null;
+  // Slice 2.25d: the devices, latest seen first, each lift with its admin.
+  devices: (Omit<DeviceView, 'lift'> & { lift: AdminMark | null })[];
+}
+
+// AP §9.8 «الأجهزة» (slice 2.25d): one device the line signed in on, when
+// it was seen, the latest sign-in's IP address and user agent (signals
+// only), the other accounts signed in on it since its latest lift, whether
+// it is blocked, and that lift.
+export interface DeviceView {
+  deviceId: string;
+  firstSeenAt: Date;
+  lastSeenAt: Date;
+  ipAddress: string | null;
+  userAgent: string | null;
+  blocked: boolean;
+  accounts: {
+    id: string;
+    name: string | null;
+    maskedPhone: string | null;
+    status: AccountStatus;
+    lastSignedInAt: Date;
+  }[];
+  lift: { at: Date; by: string; note: string } | null;
 }
 
 // An admin's mark with its reason, as the profile shows it.
@@ -267,7 +297,7 @@ export class CustomerAdminService {
       new Date(now.getTime() - windowDays * 24 * 60 * 60 * 1000),
       cleared?.at ?? null,
     );
-    const [tickets, codes, addresses, noteRows, testAccount] = await Promise.all([
+    const [tickets, codes, addresses, noteRows, testAccount, devices, owed] = await Promise.all([
       this.customers.ticketsOf(accountId, cityId),
       this.promoCodes.usesOf(accountId, cityId, CODES_LISTED),
       this.customers.addresses(accountId),
@@ -278,6 +308,8 @@ export class CustomerAdminService {
         .orderBy(desc(notes.createdAt), desc(notes.id))
         .limit(NOTES_LISTED),
       this.customers.isTestAccount(accountId),
+      this.devices(cityId, line, now),
+      this.customers.dues(cityId, accountId),
     ]);
     const [profile, phone, block, stop, orders, strikes, dues, records, reasons, names] =
       await Promise.all([
@@ -307,6 +339,7 @@ export class CustomerAdminService {
           ...(mark ? [mark.by] : []),
           ...(state.closedBy ? [state.closedBy] : []),
           ...noteRows.map((row) => row.authorId),
+          ...devices.adminIds,
         ]),
       ]);
     const asMark = (row: { at: Date; by: string; note: string }): AdminMark => ({
@@ -324,7 +357,7 @@ export class CustomerAdminService {
       status: accountStatus({
         closed: state.status === 'closed',
         blocked: block !== null,
-        duesOwed: dues.amount > 0n,
+        duesOwed: owed !== null,
         reviewStopped: stop.length > 0,
       }),
       block,
@@ -369,6 +402,8 @@ export class CustomerAdminService {
         authorName: names.get(row.authorId) ?? null,
         createdAt: row.createdAt,
       })),
+      devices: devices.views.map((view) => ({ ...view, lift: view.lift && asMark(view.lift) })),
+      duesViaAccountId: owed?.viaAccountId ?? null,
     };
   }
 
@@ -532,7 +567,9 @@ export class CustomerAdminService {
   // force, a duration or «حتى إشعار آخر», named by its id. The dues are
   // lifted by paying them at the desk or by «القيود التصحيحية», never here
   // (owner decision 2026-11-17); 409 not_blocked when that
-  // block is not in force, so a repeat needs no key.
+  // block is not in force, so a repeat needs no key. Only the line's own:
+  // a block through a device is lifted on its account, or the device's with
+  // «فك حظر الجهاز».
   async unblock(
     admin: CustomerAdmin,
     command: { cityId: string; accountId: string; blockId: string; note: string },
@@ -542,7 +579,7 @@ export class CustomerAdminService {
       await this.customers.lockLine(tx, command.accountId);
       // Names the block the panel showed, so a late retry never lifts a
       // newer one.
-      const block = await this.customers.activeBlock(command.accountId, now, tx);
+      const block = await this.customers.lineBlock(command.accountId, now, tx);
       if (block === null || block.id !== command.blockId) {
         throw new CustomerAdminRefusedError('not_blocked', 'that block is not in force');
       }
@@ -564,6 +601,176 @@ export class CustomerAdminService {
         tx,
       );
     });
+  }
+
+  // «فك حظر الجهاز» (AP §9.8, docs/domain/08; slice 2.25d, owner decision
+  // 2026-11-18; OWN, a reason required): records a lift of one of the
+  // line's devices, so only sign-ins on it after now link accounts. 404
+  // unknown_device for a device the line never signed in on; 409
+  // device_not_blocked while no account seen on it since its latest lift is
+  // blocked or owes dues, so a repeat needs no key.
+  async liftDeviceBlock(
+    admin: CustomerAdmin,
+    command: { cityId: string; accountId: string; deviceId: string; note: string },
+    now: Date,
+  ): Promise<void> {
+    await this.checkCity(command.cityId);
+    if (!(await this.accounts.exists(command.accountId))) {
+      throw new CustomerAdminRefusedError('unknown_customer', 'no such customer');
+    }
+    await this.database.db.transaction(async (tx) => {
+      const line = await this.customers.lockLine(tx, command.accountId);
+      // Two lifts of one device from two profiles take turns.
+      await tx.execute(
+        sql`SELECT pg_advisory_xact_lock(hashtextextended(${`customers.device_lift:${command.deviceId}`}, 0))`,
+      );
+      const sightings = await this.accounts.deviceSightings(line, tx);
+      if (!sightings.some((s) => s.deviceId === command.deviceId && line.includes(s.accountId))) {
+        throw new CustomerAdminRefusedError('unknown_device', 'the line never used that device');
+      }
+      const lifts = await this.customers.deviceLiftTimes(sightings, tx);
+      const blocked = await this.deviceBlocked(
+        command.cityId,
+        command.deviceId,
+        sightings,
+        lifts,
+        now,
+        tx,
+      );
+      if (blocked.length === 0) {
+        throw new CustomerAdminRefusedError('device_not_blocked', 'nothing blocks that device');
+      }
+      await tx.insert(deviceLifts).values({
+        deviceId: command.deviceId,
+        at: now,
+        by: admin.accountId,
+        note: command.note,
+      });
+      await this.audit.recordWrite(
+        {
+          actor: admin.actor,
+          context: admin.context,
+          cityId: command.cityId,
+          action: 'customer.lift_device_block',
+          target: { type: 'customer', id: command.accountId },
+          reason: command.note,
+          before: { deviceId: command.deviceId, blockedBy: blocked },
+          after: null,
+        },
+        tx,
+      );
+    });
+  }
+
+  // The accounts signed in on the device since its latest lift (the line's
+  // included) whose own line is blocked or owes dues in the city: what
+  // blocks the device.
+  private async deviceBlocked(
+    cityId: string,
+    deviceId: string,
+    sightings: readonly CustomerDeviceSighting[],
+    lifts: ReadonlyMap<string, Date>,
+    now: Date,
+    executor: Tx | Database['db'] = this.database.db,
+  ): Promise<string[]> {
+    const lift = lifts.get(deviceId);
+    const seen = sightings.filter(
+      (s) =>
+        s.deviceId === deviceId &&
+        (lift === undefined || s.lastSignedInAt.getTime() > lift.getTime()),
+    );
+    const blocked: string[] = [];
+    for (const { accountId } of seen) {
+      if (await this.ownStanding(cityId, accountId, now, executor)) blocked.push(accountId);
+    }
+    return blocked;
+  }
+
+  // Whether the account's own line is blocked or owes dues in the city,
+  // without the device links.
+  private async ownStanding(
+    cityId: string,
+    accountId: string,
+    now: Date,
+    executor: Tx | Database['db'] = this.database.db,
+  ): Promise<boolean> {
+    if ((await this.customers.lineBlock(accountId, now, executor)) !== null) return true;
+    return this.customers.owesAnywhere(accountId, executor);
+  }
+
+  // AP §9.8 «الأجهزة» (slice 2.25d): the line's devices, latest seen first,
+  // with the other accounts signed in on each since its latest lift and
+  // whether the device is blocked.
+  private async devices(
+    cityId: string,
+    line: string[],
+    now: Date,
+  ): Promise<{ views: DeviceView[]; adminIds: string[] }> {
+    const sightings = await this.accounts.deviceSightings(line);
+    const lifts = await this.customers.deviceLiftTimes(sightings);
+    const liftRows =
+      lifts.size === 0
+        ? []
+        : await this.database.db
+            .select()
+            .from(deviceLifts)
+            .where(inArray(deviceLifts.deviceId, [...lifts.keys()]))
+            .orderBy(desc(deviceLifts.at), desc(deviceLifts.id));
+    const own = sightings.filter((s) => line.includes(s.accountId));
+    const deviceIds = [...new Set(own.map((s) => s.deviceId))];
+    const views = await Promise.all(
+      deviceIds.map(async (deviceId): Promise<DeviceView> => {
+        const mine = own.filter((s) => s.deviceId === deviceId);
+        const latest = mine.reduce((a, b) => (b.lastSignedInAt > a.lastSignedInAt ? b : a));
+        const lift = lifts.get(deviceId);
+        const after = (s: CustomerDeviceSighting) =>
+          lift === undefined || s.lastSignedInAt.getTime() > lift.getTime();
+        // Linked as `deviceLinks` links: only while the line itself signed
+        // in on it since the lift.
+        const current = mine.some(after);
+        const others = current
+          ? sightings.filter(
+              (s) => s.deviceId === deviceId && !line.includes(s.accountId) && after(s),
+            )
+          : [];
+        const liftRow = liftRows.find((row) => row.deviceId === deviceId) ?? null;
+        const [blockedBy, accounts] = await Promise.all([
+          current ? this.deviceBlocked(cityId, deviceId, sightings, lifts, now) : [],
+          Promise.all(
+            others.map(async (s) => {
+              const [profile, phone, status] = await Promise.all([
+                this.customers.profile(s.accountId),
+                this.accounts.phone(s.accountId),
+                this.status(cityId, s.accountId, now),
+              ]);
+              return {
+                id: s.accountId,
+                name: profile
+                  ? [profile.firstName, profile.lastName].filter(Boolean).join(' ')
+                  : null,
+                maskedPhone: phone === null ? null : maskedPhone(phone),
+                status,
+                lastSignedInAt: s.lastSignedInAt,
+              };
+            }),
+          ),
+        ]);
+        return {
+          deviceId,
+          firstSeenAt: new Date(Math.min(...mine.map((s) => s.firstSignedInAt.getTime()))),
+          lastSeenAt: new Date(Math.max(...mine.map((s) => s.lastSeenAt.getTime()))),
+          ipAddress: latest.ipAddress,
+          userAgent: latest.userAgent,
+          blocked: blockedBy.length > 0,
+          accounts,
+          lift: liftRow && { at: liftRow.at, by: liftRow.by, note: liftRow.note },
+        };
+      }),
+    );
+    return {
+      views: views.toSorted((a, b) => b.lastSeenAt.getTime() - a.lastSeenAt.getTime()),
+      adminIds: views.flatMap((view) => (view.lift ? [view.lift.by] : [])),
+    };
   }
 
   // AP §9.8 «ملاحظة داخلية» (everyone with access to the customers): a note

@@ -5,7 +5,7 @@ import { AppSignedIn, CurrentAppSession } from '../../http/access.js';
 import { CustomerController } from '../../http/route-groups.js';
 import { GeoService } from '../geo/index.js';
 import type { AppSession } from '../identity/index.js';
-import { CustomersService } from './customers.service.js';
+import { CustomersService, DEVICE_BLOCK_TEXT } from './customers.service.js';
 import { pointQuery } from './point-query.js';
 
 class CustomerAccountStateQueryDto extends createZodDto(pointQuery) {}
@@ -85,11 +85,19 @@ export class CustomerAccountStateController {
   ) {
     const now = new Date();
     const city = await this.geo.locate(query);
-    const [reviewStop, block, dues] = await Promise.all([
+    const [reviewStop, ownBlock, owed] = await Promise.all([
       this.customers.reviewStopped(session.accountId),
       this.customers.activeBlock(session.accountId, now),
       city === null ? null : this.customers.dues(city.cityId, session.accountId),
     ]);
+    // Slice 2.25d: another account's dues on the same phone show as a device
+    // block, without its amount or the office.
+    const dues = owed?.viaAccountId === null ? owed : null;
+    const block =
+      ownBlock ??
+      (owed !== null && owed.viaAccountId !== null
+        ? { until: null, customerText: DEVICE_BLOCK_TEXT }
+        : null);
     const office = dues === null || city === null ? null : await this.geo.office(city.cityId, now);
     return {
       reviewStop,

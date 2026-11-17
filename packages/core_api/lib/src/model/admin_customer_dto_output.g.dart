@@ -213,6 +213,10 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
   final BuiltList<AdminCustomerDtoOutputAddressesInner> addresses;
   @override
   final BuiltList<AdminCustomerDtoOutputNotesInner> notes;
+  @override
+  final BuiltList<AdminCustomerDtoOutputDevicesInner> devices;
+  @override
+  final String? duesViaAccountId;
 
   factory _$AdminCustomerDtoOutput([
     void Function(AdminCustomerDtoOutputBuilder)? updates,
@@ -245,6 +249,8 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
     required this.codes,
     required this.addresses,
     required this.notes,
+    required this.devices,
+    this.duesViaAccountId,
   }) : super._();
   @override
   AdminCustomerDtoOutput rebuild(
@@ -284,7 +290,9 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
         tickets == other.tickets &&
         codes == other.codes &&
         addresses == other.addresses &&
-        notes == other.notes;
+        notes == other.notes &&
+        devices == other.devices &&
+        duesViaAccountId == other.duesViaAccountId;
   }
 
   @override
@@ -316,6 +324,8 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
     _$hash = $jc(_$hash, codes.hashCode);
     _$hash = $jc(_$hash, addresses.hashCode);
     _$hash = $jc(_$hash, notes.hashCode);
+    _$hash = $jc(_$hash, devices.hashCode);
+    _$hash = $jc(_$hash, duesViaAccountId.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -348,7 +358,9 @@ class _$AdminCustomerDtoOutput extends AdminCustomerDtoOutput {
           ..add('tickets', tickets)
           ..add('codes', codes)
           ..add('addresses', addresses)
-          ..add('notes', notes))
+          ..add('notes', notes)
+          ..add('devices', devices)
+          ..add('duesViaAccountId', duesViaAccountId))
         .toString();
   }
 }
@@ -493,6 +505,17 @@ class AdminCustomerDtoOutputBuilder
   set notes(ListBuilder<AdminCustomerDtoOutputNotesInner>? notes) =>
       _$this._notes = notes;
 
+  ListBuilder<AdminCustomerDtoOutputDevicesInner>? _devices;
+  ListBuilder<AdminCustomerDtoOutputDevicesInner> get devices =>
+      _$this._devices ??= ListBuilder<AdminCustomerDtoOutputDevicesInner>();
+  set devices(ListBuilder<AdminCustomerDtoOutputDevicesInner>? devices) =>
+      _$this._devices = devices;
+
+  String? _duesViaAccountId;
+  String? get duesViaAccountId => _$this._duesViaAccountId;
+  set duesViaAccountId(String? duesViaAccountId) =>
+      _$this._duesViaAccountId = duesViaAccountId;
+
   AdminCustomerDtoOutputBuilder() {
     AdminCustomerDtoOutput._defaults(this);
   }
@@ -526,6 +549,8 @@ class AdminCustomerDtoOutputBuilder
       _codes = $v.codes.toBuilder();
       _addresses = $v.addresses.toBuilder();
       _notes = $v.notes.toBuilder();
+      _devices = $v.devices.toBuilder();
+      _duesViaAccountId = $v.duesViaAccountId;
       _$v = null;
     }
     return this;
@@ -604,6 +629,8 @@ class AdminCustomerDtoOutputBuilder
             codes: codes.build(),
             addresses: addresses.build(),
             notes: notes.build(),
+            devices: devices.build(),
+            duesViaAccountId: duesViaAccountId,
           );
     } catch (_) {
       late String _$failedField;
@@ -639,6 +666,8 @@ class AdminCustomerDtoOutputBuilder
         addresses.build();
         _$failedField = 'notes';
         notes.build();
+        _$failedField = 'devices';
+        devices.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminCustomerDtoOutput',

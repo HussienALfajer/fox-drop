@@ -21,6 +21,8 @@ import {
   CUSTOMERS_READ,
   CUSTOMERS_SIGN_OUT,
   CUSTOMERS_CLOSE,
+  CUSTOMERS_LIFT_DEVICE,
+  shortDevice,
   CUSTOMERS_TEST_ACCOUNT,
   type CustomerAction,
   type CustomerProfile,
@@ -199,6 +201,25 @@ function ProfileWithActions({ profile, city }: { profile: CustomerProfile; city:
       {can(session, CUSTOMERS_SIGN_OUT) && (
         <SignOutEverywhere cityId={city.id} customerId={customerId} />
       )}
+      {/* The device block (docs/domain/08, slice 2.25d): OWN, per blocked device. */}
+      {can(session, CUSTOMERS_LIFT_DEVICE) &&
+        profile.devices
+          .filter((device) => device.blocked)
+          .map((device) => (
+            <ProfileAction
+              key={[device.deviceId, device.lift?.at].join()}
+              cityId={city.id}
+              customerId={customerId}
+              title={t('customers.devices.lift.title', {
+                device: shortDevice(device.deviceId),
+              })}
+              hint={t('customers.devices.lift.hint')}
+              action={(note) => ({
+                path: '/v1/admin/customers/{customerId}/lift-device-block',
+                body: { deviceId: device.deviceId, note },
+              })}
+            />
+          ))}
       {/* D19, AP §8.8 (slice 2.25c): on the customer's request. */}
       {can(session, CUSTOMERS_CLOSE) && profile.closed === null && (
         <ProfileAction
@@ -211,7 +232,7 @@ function ProfileWithActions({ profile, city }: { profile: CustomerProfile; city:
       )}
       {can(session, CUSTOMERS_BLOCK) && (
         <>
-          {profile.block && (
+          {profile.block && profile.block.viaAccountId === null && (
             <Unblock cityId={city.id} customerId={customerId} blockId={profile.block.id} />
           )}
           {/* A block in force still takes dues on top (AP §9.8). */}
@@ -334,6 +355,7 @@ function Profile({
         </p>
       )}
       <LinkedAccounts accounts={profile.linkedAccounts} timeZone={city.timeZone} />
+      <Devices profile={profile} city={city} />
       {profile.reviewStop && (
         <p>
           {t('customers.reviewStop', {
@@ -728,6 +750,81 @@ function LinkedAccounts({
           </li>
         ))}
       </ul>
+    </section>
+  );
+}
+
+// AP §9.8 «الأجهزة» (docs/domain/08, slice 2.25d): the phones the customer
+// signed in on, with the other accounts signed in on each since its latest
+// «فك حظر الجهاز».
+function Devices({ profile, city }: { profile: CustomerProfile; city: City }) {
+  const { t } = useTranslation();
+  const search = profileRoute.useSearch();
+  const via = profile.block?.viaAccountId ?? profile.duesViaAccountId;
+  return (
+    <section>
+      <h2>{t('customers.devices.title')}</h2>
+      {via !== null && (
+        <p>
+          <Link to="/customers/$customerId" params={{ customerId: via }} search={search}>
+            {t('customers.devices.blockedVia')}
+          </Link>
+        </p>
+      )}
+      {profile.devices.length === 0 ? (
+        <p>{t('customers.devices.none')}</p>
+      ) : (
+        <ul>
+          {profile.devices.map((device) => (
+            <li key={device.deviceId}>
+              <p>
+                {t('customers.devices.device', {
+                  device: shortDevice(device.deviceId),
+                  first: formatDateTime(device.firstSeenAt, city.timeZone),
+                  last: formatDateTime(device.lastSeenAt, city.timeZone),
+                })}{' '}
+                {device.blocked && <strong>{t('customers.devices.blocked')}</strong>}
+              </p>
+              {device.ipAddress && (
+                <p>
+                  {t('customers.devices.ip')} <bdi dir="ltr">{device.ipAddress}</bdi>
+                </p>
+              )}
+              {device.lift && (
+                <p>
+                  {t('customers.devices.lifted', {
+                    at: formatDateTime(device.lift.at, city.timeZone),
+                    name: device.lift.byName ?? '—',
+                    note: device.lift.note,
+                  })}
+                </p>
+              )}
+              {device.accounts.length === 0 ? (
+                <p>{t('customers.devices.noOthers')}</p>
+              ) : (
+                <ul>
+                  {device.accounts.map((account) => (
+                    <li key={account.id}>
+                      <Link
+                        to="/customers/$customerId"
+                        params={{ customerId: account.id }}
+                        search={search}
+                      >
+                        {account.name ?? t('customers.noName')}
+                      </Link>{' '}
+                      <bdi dir="ltr">{account.maskedPhone ?? '—'}</bdi>{' '}
+                      {t('customers.devices.account', {
+                        status: t(statusKeys[account.status]),
+                        at: formatDateTime(account.lastSignedInAt, city.timeZone),
+                      })}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }

@@ -100,6 +100,12 @@ class AdminCustomerDto extends createZodDto(
         customerText: z.string(),
         note: z.string(),
         startedAt: z.iso.datetime(),
+        viaAccountId: z
+          .uuid()
+          .nullable()
+          .describe(
+            "The device block (slice 2.25d): the account signed in on the same device whose block this is; null for the line's own, which «فك الحظر» ends.",
+          ),
       })
       .nullable()
       .describe('The block in force: a duration or until further notice.'),
@@ -227,6 +233,51 @@ class AdminCustomerDto extends createZodDto(
         createdAt: z.iso.datetime(),
       }),
     ),
+    devices: z
+      .array(
+        z.object({
+          deviceId: z.string(),
+          firstSeenAt: z.iso.datetime(),
+          lastSeenAt: z.iso.datetime(),
+          ipAddress: z.string().nullable().describe("The latest sign-in's; a signal only."),
+          userAgent: z.string().nullable(),
+          blocked: z
+            .boolean()
+            .describe(
+              'An account signed in on it since its latest lift is blocked or owes dues: «فك حظر الجهاز».',
+            ),
+          accounts: z
+            .array(
+              z.object({
+                id: z.uuid(),
+                name: z.string().nullable(),
+                maskedPhone: z.string().nullable(),
+                status,
+                lastSignedInAt: z.iso.datetime(),
+              }),
+            )
+            .describe('The other accounts signed in on it since its latest lift.'),
+          lift: z
+            .object({ at: z.iso.datetime(), byName: z.string().nullable(), note: z.string() })
+            .nullable()
+            .describe('The latest «فك حظر الجهاز».'),
+        }),
+      )
+      .describe('AP §9.8 «الأجهزة» (slice 2.25d): latest seen first.'),
+    duesViaAccountId: z
+      .uuid()
+      .nullable()
+      .describe(
+        'Slice 2.25d: the account on the same phone whose dues stop this one; the desk takes them on its profile.',
+      ),
+  }),
+) {}
+
+class AdminLiftCustomerDeviceBlockDto extends createZodDto(
+  z.object({
+    cityId: z.uuid(),
+    deviceId: z.string().min(1).max(100).describe('The device the profile listed.'),
+    note: reason.describe('The required reason, such as a phone sold on.'),
   }),
 ) {}
 
@@ -503,6 +554,36 @@ export class AdminCustomersController {
     });
   }
 
+  // «فك حظر الجهاز» (OWN; AP §9.8, docs/domain/08; slice 2.25d): only
+  // sign-ins on the device after now link accounts. A repeat finds nothing
+  // to lift, so it takes no key. Answers the profile. 404 unknown_customer,
+  // unknown_city, unknown_device; 409 device_not_blocked.
+  @Post(':customerId/lift-device-block')
+  @RequirePermission('customers.lift_device_block')
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: AdminCustomerDto })
+  liftDeviceBlock(
+    @Param() params: AdminCustomerParamsDto,
+    @Body() body: AdminLiftCustomerDeviceBlockDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(async () => {
+      const now = new Date();
+      await this.customers.liftDeviceBlock(
+        adminOf(session, request),
+        {
+          cityId: body.cityId,
+          accountId: params.customerId,
+          deviceId: body.deviceId,
+          note: body.note,
+        },
+        now,
+      );
+      return profileBody(await this.customers.profile(body.cityId, params.customerId, now));
+    });
+  }
+
   // «تسجيل الخروج من كل الأجهزة» (OWN, OPS, SUP; AP §9.8): after a lost or
   // sold phone. Active orders are untouched; a repeat ends nothing more.
   @Post(':customerId/sign-out-everywhere')
@@ -650,6 +731,7 @@ function profileBody(view: CustomerProfileView) {
       customerText: view.block.customerText,
       note: view.block.note,
       startedAt: view.block.startedAt.toISOString(),
+      viaAccountId: view.block.viaAccountId,
     },
     reviewStop: view.reviewStop && {
       id: view.reviewStop.id,
@@ -701,6 +783,16 @@ function profileBody(view: CustomerProfileView) {
       maskedContactPhone: address.contactPhone === null ? null : maskedPhone(address.contactPhone),
     })),
     notes: view.notes.map((note) => ({ ...note, createdAt: note.createdAt.toISOString() })),
+    devices: view.devices.map((device) => ({
+      ...device,
+      firstSeenAt: device.firstSeenAt.toISOString(),
+      lastSeenAt: device.lastSeenAt.toISOString(),
+      accounts: device.accounts.map((account) => ({
+        ...account,
+        lastSignedInAt: account.lastSignedInAt.toISOString(),
+      })),
+      lift: device.lift && markBody(device.lift),
+    })),
     blocks: view.blocks.map((block) => ({
       ...block,
       until: block.until?.toISOString() ?? null,
@@ -736,6 +828,7 @@ async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
     switch (error.refusal) {
       case 'unknown_customer':
       case 'unknown_city':
+      case 'unknown_device':
         throw new NotFoundException(body(HttpStatus.NOT_FOUND));
       case 'invalid_block':
       case 'unknown_reason':
@@ -749,6 +842,7 @@ async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
       case 'no_base_currency':
       case 'active_order':
       case 'account_closed':
+      case 'device_not_blocked':
         throw new ConflictException(body(HttpStatus.CONFLICT));
     }
   }

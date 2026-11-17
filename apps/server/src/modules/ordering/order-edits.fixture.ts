@@ -166,8 +166,11 @@ afterAll(async () => {
 
 export const phoneNumber = () => `+9639${randomInt(100_000_000).toString().padStart(8, '0')}`;
 
-export async function appSignIn(party: 'customer' | 'merchant' | 'captain', phone: string) {
-  const deviceId = randomUUID();
+export async function appSignIn(
+  party: 'customer' | 'merchant' | 'captain',
+  phone: string,
+  deviceId: string = randomUUID(),
+) {
   await app.inject({ method: 'POST', url: `/v1/${party}/auth/code`, payload: { phone, deviceId } });
   const code = app.get<DevelopmentCodeSender>(CODE_SENDER).lastCode(phone);
   const answer = await app.inject({

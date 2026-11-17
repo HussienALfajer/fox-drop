@@ -9,10 +9,12 @@ import { CustomerAccountsService, PhoneCipher } from '../identity/index.js';
 import { LedgerService } from '../ledger/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { type BlockKind, blockInForce } from './blocks.js';
+import { type DeviceSighting, deviceLinks } from './devices.js';
 import {
   type addressLabels,
   addresses,
   blocks,
+  deviceLifts,
   type genders,
   lateCancelStrikes,
   profiles,
@@ -58,6 +60,9 @@ export interface ActiveBlock {
   note: string;
   startedAt: Date;
   startedBy: string;
+  // The device block (slice 2.25d): the account of another line, signed in
+  // on the same device, whose block this is; null for the line's own.
+  viaAccountId: string | null;
 }
 
 // What ordering registers (useOrderFacts): the trust of D23 by the city's
@@ -153,6 +158,13 @@ export interface Location {
 export async function lockCustomerDues(tx: Tx, customerId: string): Promise<void> {
   await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${`customer-dues:${customerId}`}))`);
 }
+
+// The device block (slice 2.25d; the wording ours, to confirm with the
+// owner): what the customer sees for a block or dues of another account
+// signed in on the same phone, never that account's reason, end or amount
+// (a family member or a phone's buyer may see it). The app shows it as
+// «حسابك محظور: {السبب}. تواصل مع الدعم.».
+export const DEVICE_BLOCK_TEXT = 'هذا الهاتف مرتبط بحساب آخر محظور';
 
 // The reasons of the two `dues.transfer` journals (AP §8.8, slice 2.25c;
 // the wording ours).
@@ -296,11 +308,64 @@ export class CustomersService {
     return this.tickets(accountId, cityId);
   }
 
+  // The device block (docs/domain/08; slice 2.25d, owner decisions
+  // 2026-11-10 and 2026-11-18): the accounts outside the line signed in on a
+  // device the line used, after the device's latest «فك حظر الجهاز», with
+  // the devices; one step only (an account linked to a linked account is
+  // not), so a block never spreads beyond the phones it was seen on.
+  async deviceLinked(
+    accountId: string,
+    executor: Pick<NodePgDatabase, 'select' | 'selectDistinct'> = this.database.db,
+  ): Promise<Map<string, string[]>> {
+    const line = await this.lineage(accountId, executor);
+    const sightings = await this.accounts.deviceSightings(line, executor);
+    return deviceLinks(line, sightings, await this.deviceLiftTimes(sightings, executor));
+  }
+
+  // The latest lift of each device seen, by device.
+  async deviceLiftTimes(
+    sightings: readonly DeviceSighting[],
+    executor: Pick<NodePgDatabase, 'select'> = this.database.db,
+  ): Promise<Map<string, Date>> {
+    const devices = [...new Set(sightings.map((sighting) => sighting.deviceId))];
+    if (devices.length === 0) return new Map();
+    const rows = await executor
+      .select({
+        deviceId: deviceLifts.deviceId,
+        at: sql<Date>`max(${deviceLifts.at})`.mapWith(deviceLifts.at),
+      })
+      .from(deviceLifts)
+      .where(inArray(deviceLifts.deviceId, devices))
+      .groupBy(deviceLifts.deviceId);
+    return new Map(rows.map((row) => [row.deviceId, row.at]));
+  }
+
   // AP §9.8 «حظر» (slice 2.25a): the block that stops the account's ordering
   // now, a duration or «حتى إشعار آخر» (the dues block is the dues balance,
-  // `dues`), or null. The quote shows it as account_blocked; placing reads it
-  // again under the customer's lock, which a block takes too.
+  // `dues`), or null: the line's own (`lineBlock`), else one of an account
+  // signed in on the same device (slice 2.25d, `viaAccountId`). The quote
+  // shows it as account_blocked; placing reads it again under the
+  // customer's lock, which a block takes too (a block on a linked account
+  // takes that account's lock, so a placing racing it may pass).
   async activeBlock(
+    accountId: string,
+    now: Date,
+    executor: Pick<NodePgDatabase, 'select' | 'selectDistinct'> = this.database.db,
+  ): Promise<ActiveBlock | null> {
+    const own = await this.lineBlock(accountId, now, executor);
+    if (own !== null) return own;
+    for (const linked of (await this.deviceLinked(accountId, executor)).keys()) {
+      const block = await this.lineBlock(linked, now, executor);
+      if (block !== null) {
+        return { ...block, until: null, customerText: DEVICE_BLOCK_TEXT, viaAccountId: linked };
+      }
+    }
+    return null;
+  }
+
+  // The block in force on the line itself (`viaAccountId` null): what
+  // «فك الحظر» ends.
+  async lineBlock(
     accountId: string,
     now: Date,
     executor: Pick<NodePgDatabase, 'select'> = this.database.db,
@@ -328,6 +393,7 @@ export class CustomersService {
       note: row.note,
       startedAt: row.startedAt,
       startedBy: row.startedBy,
+      viaAccountId: null,
     };
   }
 
@@ -336,16 +402,47 @@ export class CustomersService {
   // currency should another appear), or null when nothing is owed. A dues
   // block lasts exactly while this is above zero, so it lifts by itself when
   // the desk's payment, «تغيير النتيجة» or an adjustment brings the balance
-  // to 0 or less. Since slice 2.25c the line's (`lineDues`).
+  // to 0 or less. Since slice 2.25c the line's (`lineDues`); since 2.25d,
+  // else the dues of an account signed in on the same device
+  // (`viaAccountId`), which the desk takes on that account's profile.
   async dues(
     cityId: string,
     accountId: string,
-    executor?: Parameters<LedgerService['balance']>[1],
-  ): Promise<{ amount: bigint; currency: string } | null> {
-    for (const balance of await this.lineDues(cityId, accountId, executor)) {
-      if (balance.amount > 0n) return balance;
+    executor?: Parameters<LedgerService['balance']>[1] &
+      Pick<NodePgDatabase, 'select' | 'selectDistinct'>,
+  ): Promise<{ amount: bigint; currency: string; viaAccountId: string | null } | null> {
+    const owed = async (id: string) => {
+      for (const balance of await this.lineDues(cityId, id, executor)) {
+        if (balance.amount > 0n) return balance;
+      }
+      return null;
+    };
+    const own = await owed(accountId);
+    if (own !== null) return { ...own, viaAccountId: null };
+    for (const linked of (await this.deviceLinked(accountId, executor)).keys()) {
+      const balance = await owed(linked);
+      // The quote and the account state show it as a device block.
+      if (balance !== null) return { ...balance, viaAccountId: linked };
     }
     return null;
+  }
+
+  // The device block (slice 2.25d): whether the line owes dues in any city,
+  // for «فك حظر الجهاز» (a phone blocked by dues in one city is blocked in
+  // all of them).
+  async owesAnywhere(
+    accountId: string,
+    executor?: Parameters<LedgerService['balance']>[1] & Pick<NodePgDatabase, 'select'>,
+  ): Promise<boolean> {
+    const sums = new Map<string, bigint>();
+    for (const id of await this.lineage(accountId, executor)) {
+      for (const account of await this.ledger.ownedAccounts(id, 'customer.dues', executor)) {
+        const balance = await this.ledger.balance(account.id, executor);
+        const key = `${account.cityId}:${balance.currency}`;
+        sums.set(key, (sums.get(key) ?? 0n) + balance.amount);
+      }
+    }
+    return [...sums.values()].some((amount) => amount > 0n);
   }
 
   // AP §8.8 (slice 2.25c): the dues of every account of the line in the

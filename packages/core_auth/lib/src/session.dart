@@ -87,9 +87,17 @@ class SessionController extends AsyncNotifier<SessionState> {
     }
   }
 
-  /// The app installation's id, generated once and kept until the app is
-  /// removed (the `deviceId` of the sign-in routes).
+  /// The `deviceId` of the sign-in routes: the device's id that survives a
+  /// reinstall when the app has one ([AuthScope.stableDeviceId], the
+  /// customer app), else the installation's, generated once and kept in the
+  /// secure store (which the iOS Keychain keeps across a reinstall too).
   Future<String> deviceId() async {
+    try {
+      final stable = await ref.read(_scope.stableDeviceId)();
+      if (stable != null) return stable;
+    } on Object {
+      // A platform that cannot answer falls back to the installation's id.
+    }
     final stored = await _store.read(_deviceKey);
     if (stored != null) return stored;
     final id = uuidV4();

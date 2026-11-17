@@ -420,6 +420,14 @@ export const appSessions = identity.table(
     index('app_sessions_open_device')
       .on(table.party, table.deviceId)
       .where(sql`${table.endedAt} IS NULL`),
+    // The device block (slice 2.25d): every customer session of an account
+    // or a device, open or ended.
+    index('app_sessions_customer_account')
+      .on(table.accountId)
+      .where(sql`${table.party} = 'customer'`),
+    index('app_sessions_customer_device')
+      .on(table.deviceId)
+      .where(sql`${table.party} = 'customer'`),
     check('app_sessions_party_values', sql`${table.party} IN ('customer', 'merchant', 'captain')`),
     check(
       'app_sessions_end_reason_values',

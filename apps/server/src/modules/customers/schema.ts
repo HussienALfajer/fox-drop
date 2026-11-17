@@ -294,3 +294,25 @@ export const testAccountFlags = customers.table(
   },
   (table) => [index('test_account_flags_account_at').on(table.customerAccountId, table.at)],
 );
+
+// The device block (docs/domain/08; slice 2.25d, owner decision
+// 2026-11-18): «فك حظر الجهاز», OWN's lift of a device's block with the
+// required reason, such as a phone sold on. Only sign-ins on the device after
+// its latest lift link accounts. Append-only.
+export const deviceLifts = customers.table(
+  'device_lifts',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    // Identity's session `device_id`.
+    deviceId: text('device_id').notNull(),
+    at: timestamp('at', { withTimezone: true }).notNull(),
+    by: uuid('by').notNull(),
+    note: text('note').notNull(),
+  },
+  (table) => [
+    index('device_lifts_device_at').on(table.deviceId, table.at),
+    check('device_lifts_note', sql`length(${table.note}) BETWEEN 1 AND 500`),
+  ],
+);

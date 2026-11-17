@@ -8,6 +8,13 @@ import 'auth_party.dart';
 import 'session.dart';
 import 'sign_in.dart';
 
+/// The device's id that survives a reinstall, a UUID, or null when the
+/// platform gives none.
+typedef StableDeviceId = Future<String?> Function();
+
+/// No stable id: the installation's id is used.
+Future<String?> noStableDeviceId() async => null;
+
 /// One app's sign-in and session providers. An app makes one, as a top-level
 /// `final`, with its [AuthParty]; tests override [store], [launch] and
 /// [appCheck].
@@ -53,6 +60,11 @@ class AuthScope {
   /// The App Check token source of the code requests: none by default; the
   /// app's `main` overrides it with [startAppCheck]'s, and tests with a fake.
   final appCheck = Provider<AppCheckToken>((ref) => noAppCheckToken);
+
+  /// The device id that survives a reinstall (slice 2.25d, docs/domain/08):
+  /// none by default, so the session keeps the installation's own id; the
+  /// customer app overrides it, so a block follows the phone.
+  final stableDeviceId = Provider<StableDeviceId>((ref) => noStableDeviceId);
 
   final store = Provider<SecureStore>((ref) => PlatformSecureStore());
 

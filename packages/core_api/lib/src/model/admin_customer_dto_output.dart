@@ -7,6 +7,7 @@ import 'package:core_api/src/model/admin_customer_dto_output_tickets_inner.dart'
 import 'package:core_api/src/model/admin_customer_dto_output_linked_accounts_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_late_cancels.dart';
 import 'package:core_api/src/model/date.dart';
+import 'package:core_api/src/model/admin_customer_dto_output_devices_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_block_reasons_inner.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_review_stop.dart';
 import 'package:core_api/src/model/admin_customer_dto_output_addresses_inner.dart';
@@ -53,6 +54,8 @@ part 'admin_customer_dto_output.g.dart';
 /// * [codes] - The codes used in the city, newest first.
 /// * [addresses]
 /// * [notes]
+/// * [devices] - AP §9.8 «الأجهزة» (slice 2.25d): latest seen first.
+/// * [duesViaAccountId] - Slice 2.25d: the account on the same phone whose dues stop this one; the desk takes them on its profile.
 @BuiltValue()
 abstract class AdminCustomerDtoOutput
     implements Built<AdminCustomerDtoOutput, AdminCustomerDtoOutputBuilder> {
@@ -142,6 +145,14 @@ abstract class AdminCustomerDtoOutput
 
   @BuiltValueField(wireName: r'notes')
   BuiltList<AdminCustomerDtoOutputNotesInner> get notes;
+
+  /// AP §9.8 «الأجهزة» (slice 2.25d): latest seen first.
+  @BuiltValueField(wireName: r'devices')
+  BuiltList<AdminCustomerDtoOutputDevicesInner> get devices;
+
+  /// Slice 2.25d: the account on the same phone whose dues stop this one; the desk takes them on its profile.
+  @BuiltValueField(wireName: r'duesViaAccountId')
+  String? get duesViaAccountId;
 
   AdminCustomerDtoOutput._();
 
@@ -343,6 +354,20 @@ class _$AdminCustomerDtoOutputSerializer
         FullType(AdminCustomerDtoOutputNotesInner),
       ]),
     );
+    yield r'devices';
+    yield serializers.serialize(
+      object.devices,
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminCustomerDtoOutputDevicesInner),
+      ]),
+    );
+    yield r'duesViaAccountId';
+    yield object.duesViaAccountId == null
+        ? null
+        : serializers.serialize(
+            object.duesViaAccountId,
+            specifiedType: const FullType.nullable(String),
+          );
   }
 
   @override
@@ -631,6 +656,27 @@ class _$AdminCustomerDtoOutputSerializer
                   )
                   as BuiltList<AdminCustomerDtoOutputNotesInner>;
           result.notes.replace(valueDes);
+          break;
+        case r'devices':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminCustomerDtoOutputDevicesInner),
+                    ]),
+                  )
+                  as BuiltList<AdminCustomerDtoOutputDevicesInner>;
+          result.devices.replace(valueDes);
+          break;
+        case r'duesViaAccountId':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.duesViaAccountId = valueDes;
           break;
         default:
           unhandled.add(key);

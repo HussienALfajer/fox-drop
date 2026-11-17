@@ -7,6 +7,7 @@ import {
   blockBodyOf,
   duesLinesOf,
   duesPayBodyOf,
+  shortDevice,
 } from './customers.js';
 
 vi.mock('./api.js', () => ({ api: {} }));
@@ -141,5 +142,11 @@ describe('addressLabelOf (CU §7.3, AP §9.8)', () => {
     expect(addressLabelOf(address('home', null), t)).toBe('المنزل');
     expect(addressLabelOf(address('work', null), t)).toBe('العمل');
     expect(addressLabelOf(address('other', 'بيت أهلي'), t)).toBe('بيت أهلي');
+  });
+});
+
+describe('shortDevice', () => {
+  it('names a device by the start of its id', () => {
+    expect(shortDevice('6d1f5a2e-3c4b-3a9d-8e7f-0123456789ab')).toBe('6d1f5a2e');
   });
 });
