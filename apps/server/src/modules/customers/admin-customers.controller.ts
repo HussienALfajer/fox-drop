@@ -147,7 +147,11 @@ class AdminBlockCustomerDto extends createZodDto(
 ) {}
 
 class AdminUnblockCustomerDto extends createZodDto(
-  z.object({ cityId: z.uuid(), note: reason.describe('The required reason.') }),
+  z.object({
+    cityId: z.uuid(),
+    blockId: z.uuid().describe('The block in force the panel showed.'),
+    note: reason.describe('The required reason.'),
+  }),
 ) {}
 
 // AP §9.8 «الزبائن» (slice 2.25a): the search, the profile, «حظر» and
@@ -170,7 +174,7 @@ export class AdminCustomersController {
     return { customers: found };
   }
 
-  // 404 unknown_customer.
+  // 404 unknown_customer, unknown_city.
   @Get(':customerId')
   @RequirePermission('customers.read')
   @ZodResponse({ status: 200, type: AdminCustomerDto })
@@ -182,7 +186,7 @@ export class AdminCustomersController {
 
   // Answers the profile. 400 invalid_block (a duration not ahead or past a
   // year, an amount at zero, a kind without its field), unknown_reason;
-  // 404 unknown_customer; 409 already_blocked, no_base_currency;
+  // 404 unknown_customer, unknown_city; 409 already_blocked, no_base_currency;
   // 422 idempotency_key_reused.
   @Post(':customerId/block')
   @RequirePermission('customers.block')
@@ -213,7 +217,8 @@ export class AdminCustomersController {
     });
   }
 
-  // Answers the profile. 409 not_blocked without a block in force.
+  // Answers the profile. 409 not_blocked when the block named is not the
+  // one in force (lifted, ran out or replaced since the panel read it).
   @Post(':customerId/unblock')
   @RequirePermission('customers.block')
   @HttpCode(200)
@@ -228,7 +233,12 @@ export class AdminCustomersController {
       const now = new Date();
       await this.customers.unblock(
         adminOf(session, request),
-        { cityId: body.cityId, accountId: params.customerId, note: body.note },
+        {
+          cityId: body.cityId,
+          accountId: params.customerId,
+          blockId: body.blockId,
+          note: body.note,
+        },
         now,
       );
       return profileBody(await this.customers.profile(body.cityId, params.customerId, now));
@@ -293,6 +303,7 @@ async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
     const body = (statusCode: number) => ({ statusCode, error: error.refusal });
     switch (error.refusal) {
       case 'unknown_customer':
+      case 'unknown_city':
         throw new NotFoundException(body(HttpStatus.NOT_FOUND));
       case 'invalid_block':
       case 'unknown_reason':

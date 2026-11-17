@@ -247,6 +247,11 @@ export class OrdersService implements OnModuleInit {
         if ((await this.customers.activeBlock(command.accountId, now, tx)) !== null) {
           throw new Requote('the account is blocked');
         }
+        // AP §8.8: dues charged since the quote (a block «حتى دفع مستحق»
+        // charges them under this lock) refuse the order.
+        if ((await this.customers.dues(cityId, command.accountId, tx)) !== null) {
+          throw new Requote('the customer owes dues');
+        }
         await lock(tx, `orders:restaurant:${restaurant.id}`);
         if (
           restaurant.maxActiveOrders !== null &&

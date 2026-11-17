@@ -8,6 +8,8 @@ import {
   aboveDues,
   BLOCK_KINDS,
   type BlockForm,
+  type BlockKind,
+  birthdayText,
   blockBodyOf,
   blockKindKeys,
   CASH_DESK_RECORD,
@@ -116,12 +118,20 @@ export function CustomerProfilePage() {
       ) : (
         <>
           <Profile profile={profile.data} city={city} />
-          {can(session, CUSTOMERS_BLOCK) &&
-            (profile.data.block ? (
-              <Unblock cityId={city.id} customerId={customerId} />
-            ) : (
-              <Block profile={profile.data} city={city} />
-            ))}
+          {can(session, CUSTOMERS_BLOCK) && (
+            <>
+              {profile.data.block && (
+                <Unblock cityId={city.id} customerId={customerId} blockId={profile.data.block.id} />
+              )}
+              {/* A block in force still takes dues on top (AP §9.8). */}
+              <Block
+                key={profile.data.block?.id ?? 'none'}
+                profile={profile.data}
+                city={city}
+                kinds={profile.data.block ? ['dues'] : BLOCK_KINDS}
+              />
+            </>
+          )}
           {can(session, CASH_DESK_RECORD) && (
             <>
               {BigInt(profile.data.dues.amount) > 0n && (
@@ -151,7 +161,7 @@ function Profile({ profile, city }: { profile: CustomerProfile; city: City }) {
         <dt>{t('customers.gender')}</dt>
         <dd>{profile.gender ? t(`customers.genderName.${profile.gender}`) : '—'}</dd>
         <dt>{t('customers.birthday')}</dt>
-        <dd>{profile.birthday ?? '—'}</dd>
+        <dd>{profile.birthday ? birthdayText(profile.birthday) : '—'}</dd>
         <dt>{t('customers.statusLabel')}</dt>
         <dd>{t(statusKeys[profile.status])}</dd>
         <dt>{t('customers.trust')}</dt>
@@ -270,11 +280,19 @@ function Profile({ profile, city }: { profile: CustomerProfile; city: City }) {
   );
 }
 
-function Block({ profile, city }: { profile: CustomerProfile; city: City }) {
+function Block({
+  profile,
+  city,
+  kinds,
+}: {
+  profile: CustomerProfile;
+  city: City;
+  kinds: readonly BlockKind[];
+}) {
   const { t } = useTranslation();
   const block = useBlockCustomer(city.id, profile.id);
   const [form, setForm] = useState<BlockForm>({
-    kind: 'indefinite',
+    kind: kinds.includes('indefinite') ? 'indefinite' : kinds[0]!,
     until: '',
     amount: '',
     reason: '',
@@ -304,7 +322,7 @@ function Block({ profile, city }: { profile: CustomerProfile; city: City }) {
       <h2>{t('customers.block.title')}</h2>
       <fieldset>
         <legend>{t('customers.block.kindLabel')}</legend>
-        {BLOCK_KINDS.map((kind) => (
+        {kinds.map((kind) => (
           <label key={kind}>
             <input
               type="radio"
@@ -382,7 +400,15 @@ function Block({ profile, city }: { profile: CustomerProfile; city: City }) {
   );
 }
 
-function Unblock({ cityId, customerId }: { cityId: string; customerId: string }) {
+function Unblock({
+  cityId,
+  customerId,
+  blockId,
+}: {
+  cityId: string;
+  customerId: string;
+  blockId: string;
+}) {
   const { t } = useTranslation();
   const unblock = useUnblockCustomer(cityId, customerId);
   const [note, setNote] = useState('');
@@ -391,7 +417,7 @@ function Unblock({ cityId, customerId }: { cityId: string; customerId: string })
     <form
       onSubmit={(event) => {
         event.preventDefault();
-        if (note.trim() !== '') unblock.mutate(note);
+        if (note.trim() !== '') unblock.mutate({ blockId, note });
       }}
     >
       <h2>{t('customers.unblock.title')}</h2>

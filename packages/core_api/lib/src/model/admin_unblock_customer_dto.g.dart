@@ -10,14 +10,19 @@ class _$AdminUnblockCustomerDto extends AdminUnblockCustomerDto {
   @override
   final String cityId;
   @override
+  final String blockId;
+  @override
   final String note;
 
   factory _$AdminUnblockCustomerDto([
     void Function(AdminUnblockCustomerDtoBuilder)? updates,
   ]) => (AdminUnblockCustomerDtoBuilder()..update(updates))._build();
 
-  _$AdminUnblockCustomerDto._({required this.cityId, required this.note})
-    : super._();
+  _$AdminUnblockCustomerDto._({
+    required this.cityId,
+    required this.blockId,
+    required this.note,
+  }) : super._();
   @override
   AdminUnblockCustomerDto rebuild(
     void Function(AdminUnblockCustomerDtoBuilder) updates,
@@ -32,6 +37,7 @@ class _$AdminUnblockCustomerDto extends AdminUnblockCustomerDto {
     if (identical(other, this)) return true;
     return other is AdminUnblockCustomerDto &&
         cityId == other.cityId &&
+        blockId == other.blockId &&
         note == other.note;
   }
 
@@ -39,6 +45,7 @@ class _$AdminUnblockCustomerDto extends AdminUnblockCustomerDto {
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, cityId.hashCode);
+    _$hash = $jc(_$hash, blockId.hashCode);
     _$hash = $jc(_$hash, note.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -48,6 +55,7 @@ class _$AdminUnblockCustomerDto extends AdminUnblockCustomerDto {
   String toString() {
     return (newBuiltValueToStringHelper(r'AdminUnblockCustomerDto')
           ..add('cityId', cityId)
+          ..add('blockId', blockId)
           ..add('note', note))
         .toString();
   }
@@ -62,6 +70,10 @@ class AdminUnblockCustomerDtoBuilder
   String? get cityId => _$this._cityId;
   set cityId(String? cityId) => _$this._cityId = cityId;
 
+  String? _blockId;
+  String? get blockId => _$this._blockId;
+  set blockId(String? blockId) => _$this._blockId = blockId;
+
   String? _note;
   String? get note => _$this._note;
   set note(String? note) => _$this._note = note;
@@ -74,6 +86,7 @@ class AdminUnblockCustomerDtoBuilder
     final $v = _$v;
     if ($v != null) {
       _cityId = $v.cityId;
+      _blockId = $v.blockId;
       _note = $v.note;
       _$v = null;
     }
@@ -101,6 +114,11 @@ class AdminUnblockCustomerDtoBuilder
             cityId,
             r'AdminUnblockCustomerDto',
             'cityId',
+          ),
+          blockId: BuiltValueNullFieldError.checkNotNull(
+            blockId,
+            r'AdminUnblockCustomerDto',
+            'blockId',
           ),
           note: BuiltValueNullFieldError.checkNotNull(
             note,

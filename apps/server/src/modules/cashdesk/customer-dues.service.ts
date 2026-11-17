@@ -4,11 +4,13 @@ import { and, asc, desc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { AuditService } from '../audit/index.js';
+import { formatMoney, NotificationTexts } from '../content/index.js';
 import { CustomersService } from '../customers/index.js';
 import { FxService, type RateSnapshot } from '../fx/index.js';
 import { GeoService } from '../geo/index.js';
 import { AdminSessionsService, CustomerAccountsService } from '../identity/index.js';
 import { LedgerService } from '../ledger/index.js';
+import { PushQueue } from '../notifications/index.js';
 import {
   type CashLine,
   CashDeskRefusedError,
@@ -91,6 +93,8 @@ export class CustomerDuesService {
     private readonly geo: GeoService,
     private readonly audit: AuditService,
     private readonly admins: AdminSessionsService,
+    private readonly texts: NotificationTexts,
+    private readonly pushes: PushQueue,
   ) {}
 
   async preview(
@@ -141,8 +145,14 @@ export class CustomerDuesService {
     if (replayed) return (await this.receipt(replayed.receiptIds[0]!))!;
 
     const name = await this.customerName(command.customerId);
-    const city = await this.geo.cityCode(command.cityId);
+    const [city, currencies] = await Promise.all([
+      this.geo.cityCode(command.cityId),
+      this.fx.currencies(),
+    ]);
     if (!city) throw new CashDeskRefusedError('unknown_city', 'no such city');
+    const known = new Map(
+      currencies.map((each) => [each.code, { symbol: each.symbol, decimals: each.decimals }]),
+    );
 
     const receiptId = await this.database.db.transaction(async (tx) => {
       const [session] = await tx
@@ -228,6 +238,37 @@ export class CustomerDuesService {
         },
         tx,
       );
+      // CU §14 #21 «تم استلام {المبلغ}. حسابك فعّال من جديد»: once the dues
+      // reach zero, the block lifted; a part paid says nothing (to confirm
+      // with the owner).
+      if (total >= account.due) {
+        const templateKey = 'customer.dues_paid';
+        const rendered = await this.texts.render(
+          templateKey,
+          {
+            المبلغ: quoted
+              .map((line) => formatMoney(line.amount, line.currency, known))
+              .join(' + '),
+          },
+          tx,
+        );
+        await this.pushes.enqueue(
+          tx,
+          [
+            {
+              source: `cashdesk:receipt:${id}`,
+              recipient: { party: 'customer', accountId: command.customerId },
+              templateKey,
+              body: rendered.body,
+              level: rendered.level,
+              priority: rendered.priority,
+              data: { target: 'home' },
+              at: now,
+            },
+          ],
+          now,
+        );
+      }
       await keepKey(tx, user.accountId, command.idempotencyKey, requestHash, [id], null, now);
       return id;
     });

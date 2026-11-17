@@ -221,6 +221,13 @@ describe('«تسجيل دفع المستحق» (AP §8.8, §9.8)', () => {
       lines: [{ currency: 'TRY', amount: '6000', base: '6000' }],
     });
     expect((await banner(buyer.headers)).dues).toEqual({ amount: '4000', currency: 'TRY' });
+    const pushes = (receiptId: string) =>
+      sql.query(
+        "SELECT template_key, body FROM notifications.push_messages WHERE source = 'cashdesk:receipt:' || $1",
+        [receiptId],
+      );
+    // A part paid tells the customer nothing yet.
+    expect((await pushes(part.json().id)).rows).toEqual([]);
 
     // The rest in dollars at 40 ₺: 1 $ is 40.00 ₺, 4000 minor units.
     const quoted = await cashier.post(
@@ -245,6 +252,10 @@ describe('«تسجيل دفع المستحق» (AP §8.8, §9.8)', () => {
     });
     expect(rest.statusCode).toBe(201);
     expect(rest.json().dueAfter).toBe('0');
+    // CU §14 #21: the block lifted.
+    expect((await pushes(rest.json().id)).rows).toEqual([
+      { template_key: 'customer.dues_paid', body: 'تم استلام 1 $. حسابك فعّال من جديد' },
+    ]);
     expect(await banner(buyer.headers)).toMatchObject({ dues: null, office: null, block: null });
 
     const again = await cashier.post('/v1/admin/cash-desk/customer-dues', {

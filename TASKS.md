@@ -13,7 +13,7 @@ Slice 2.25a, the block and the dues end to end (`docs/roadmap.md`, Phase 2, Supp
 - **Plan:**
   - [x] Record the split and the decisions (roadmap, `docs/domain/08`, this plan).
   - [x] Server: `customers.blocks` (duration, until further notice, dues with its `dues.charge`), «حظر» and «فك الحظر» (`customers.block`), the panel's search and profile (`customers.read`), the quote's and placing's `account_blocked`, and the app's `GET /v1/customer/account-state` (the review stop, the block, the dues and the office).
-  - [x] Server: «تسجيل دفع المستحق» at the desk (`dues.payment`, a `customer_dues_payment` receipt, `cash_desk.record` with `customers.dues`).
+  - [x] Server: «تسجيل دفع المستحق» at the desk (`dues.payment`, a `customer_dues_payment` receipt, `cash_desk.record`: OWN, FIN, the same roles as `customers.dues`).
   - [x] Panel: «الزبائن» (search, profile, «حظر», «فك الحظر», «تسجيل دفع المستحق» and its receipt).
   - [x] Customer app: the banners of CU §5.5 with call and WhatsApp, the office sheet, checkout's `account_blocked`.
   - [ ] Review, then hand over to 2.25b.

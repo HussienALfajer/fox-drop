@@ -748,11 +748,21 @@ void main() {
           ),
         ),
       ],
+      before: (app) => app.server.on('/v1/customer/contact', [
+        const FakeAnswer(200, {
+          'phone': '+963944000000',
+          'whatsapp': '+963944000001',
+        }),
+      ]),
     );
     expect(
       find.text('حسابك محظور حتى 20/11/2026 6:30 م: مخالفة شروط الاستخدام'),
       findsOneWidget,
     );
+    // CU Appendix C «Pre-order problems»: «تواصل مع الدعم».
+    await tester.tap(find.text('تواصل مع الدعم'));
+    await tester.pumpAndSettle();
+    expect(app.launched.last.host, 'wa.me');
     final confirm = tester.widget<FilledButton>(
       find.byKey(const Key('confirm-order')),
     );

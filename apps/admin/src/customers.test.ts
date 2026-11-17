@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { aboveDues, blockBodyOf, duesLinesOf, duesPayBodyOf } from './customers.js';
+import { aboveDues, birthdayText, blockBodyOf, duesLinesOf, duesPayBodyOf } from './customers.js';
 
 vi.mock('./api.js', () => ({ api: {} }));
 
@@ -116,5 +116,11 @@ describe('the dues payment', () => {
         },
       ],
     });
+  });
+});
+
+describe('birthdayText', () => {
+  it('writes the birthday as AP §4.7 writes dates', () => {
+    expect(birthdayText('1995-03-07')).toBe('07/03/1995');
   });
 });

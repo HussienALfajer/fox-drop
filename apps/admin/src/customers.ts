@@ -77,6 +77,13 @@ export function blockBodyOf(
   }
 }
 
+// The birthday as AP §4.7 writes dates, dd/mm/yyyy, from the API's
+// yyyy-mm-dd.
+export function birthdayText(birthday: string): string {
+  const [year, month, day] = birthday.split('-');
+  return `${day}/${month}/${year}`;
+}
+
 // The cash typed per currency of the drawer, in major units: empty fields
 // and zeros left out.
 export function duesLinesOf(
@@ -213,14 +220,15 @@ export function useBlockCustomer(cityId: string, customerId: string) {
   });
 }
 
-// «فك الحظر»: no key, a repeat is not_blocked.
+// «فك الحظر» of the block the profile showed: no key, a repeat (or a block
+// replaced since) is not_blocked.
 export function useUnblockCustomer(cityId: string, customerId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (note: string): Promise<BlockResult> => {
+    mutationFn: async (lift: { blockId: string; note: string }): Promise<BlockResult> => {
       const { data, error, response } = await api.POST('/v1/admin/customers/{customerId}/unblock', {
         params: { path: { customerId } },
-        body: { cityId, note: note.trim() },
+        body: { cityId, blockId: lift.blockId, note: lift.note.trim() },
       });
       if (data) return { status: 'done', profile: data };
       const refusal = refusalOf(response.status, error, blockRefusals);

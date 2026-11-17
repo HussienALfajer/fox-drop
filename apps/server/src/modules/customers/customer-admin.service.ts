@@ -4,8 +4,9 @@ import { and, count, desc, eq, gte, ilike, isNull, or, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
-import { ContentService } from '../content/index.js';
+import { ContentRefusedError, ContentService } from '../content/index.js';
 import { FxService } from '../fx/index.js';
+import { GeoService } from '../geo/index.js';
 import { AdminSessionsService, CustomerAccountsService } from '../identity/index.js';
 import { LedgerService } from '../ledger/index.js';
 import { SettingsService } from '../settings/index.js';
@@ -28,6 +29,7 @@ export type CustomerAdminRefusal =
   | 'not_blocked'
   | 'no_base_currency'
   | 'unknown_reason'
+  | 'unknown_city'
   | 'idempotency_key_reused';
 
 export class CustomerAdminRefusedError extends Error {
@@ -116,7 +118,15 @@ export class CustomerAdminService {
     private readonly fx: FxService,
     private readonly settings: SettingsService,
     private readonly audit: AuditService,
+    private readonly geo: GeoService,
   ) {}
+
+  // The panel's city: 404 unknown_city for another id.
+  private async checkCity(cityId: string): Promise<void> {
+    if ((await this.geo.cityTimeZone(cityId)) === null) {
+      throw new CustomerAdminRefusedError('unknown_city', 'no such city');
+    }
+  }
 
   // By the number (any of the forms the desk takes, `phone`), or else by a
   // part of the first or last name; the latest SEARCH_RESULTS. The dues are
@@ -166,6 +176,7 @@ export class CustomerAdminService {
   }
 
   async profile(cityId: string, accountId: string, now: Date): Promise<CustomerProfileView> {
+    await this.checkCity(cityId);
     if (!(await this.accounts.exists(accountId))) {
       throw new CustomerAdminRefusedError('unknown_customer', 'no such customer');
     }
@@ -266,6 +277,7 @@ export class CustomerAdminService {
     ) {
       return;
     }
+    await this.checkCity(command.cityId);
     if (!(await this.accounts.exists(command.accountId))) {
       throw new CustomerAdminRefusedError('unknown_customer', 'no such customer');
     }
@@ -275,7 +287,9 @@ export class CustomerAdminService {
     let chosen;
     try {
       chosen = await this.content.choose('customer_block', { code: command.reason, note: null });
-    } catch {
+    } catch (error) {
+      // The list is closed and its reasons take no text (AP Appendix B).
+      if (!(error instanceof ContentRefusedError)) throw error;
       throw new CustomerAdminRefusedError('unknown_reason', 'not a customer block reason');
     }
     const customerText = await this.content.customerText('customer_block', chosen.code);
@@ -386,20 +400,25 @@ export class CustomerAdminService {
   }
 
   // «فك الحظر» (AP §9.8, OWN and OPS, a reason required): ends the block in
-  // force, a duration or «حتى إشعار آخر». The dues are lifted by paying them
-  // at the desk or by «القيود التصحيحية», never here (decided by us); 409
-  // not_blocked without a block in force, so a repeat needs no key.
+  // force, a duration or «حتى إشعار آخر», named by its id. The dues are
+  // lifted by paying them at the desk or by «القيود التصحيحية», never here
+  // (decided by us, to confirm with the owner); 409 not_blocked when that
+  // block is not in force, so a repeat needs no key.
   async unblock(
     admin: CustomerAdmin,
-    command: { cityId: string; accountId: string; note: string },
+    command: { cityId: string; accountId: string; blockId: string; note: string },
     now: Date,
   ): Promise<void> {
     await this.database.db.transaction(async (tx) => {
       await tx.execute(
         sql`SELECT pg_advisory_xact_lock(hashtextextended(${customerOrderLock(command.accountId)}, 0))`,
       );
+      // Names the block the panel showed, so a late retry never lifts a
+      // newer one.
       const block = await this.customers.activeBlock(command.accountId, now, tx);
-      if (block === null) throw new CustomerAdminRefusedError('not_blocked', 'no block in force');
+      if (block === null || block.id !== command.blockId) {
+        throw new CustomerAdminRefusedError('not_blocked', 'that block is not in force');
+      }
       await tx
         .update(blocks)
         .set({ endedAt: now, endedBy: admin.accountId, endNote: command.note })

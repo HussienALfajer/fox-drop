@@ -73,12 +73,12 @@ async function panel(roles: string[]) {
           ...body,
         },
       }),
-    unblock: (customerId: string) =>
+    unblock: (customerId: string, blockId: string) =>
       app.inject({
         method: 'POST',
         url: `/v1/admin/customers/${customerId}/unblock`,
         cookies,
-        payload: { cityId: azaz, note: 'راجعنا الحساب' },
+        payload: { cityId: azaz, blockId, note: 'راجعنا الحساب' },
       }),
   };
 }
@@ -120,14 +120,16 @@ describe('«حظر» and «فك الحظر» (AP §9.8, CU §5.5)', () => {
     expect(again.statusCode).toBe(409);
     expect(again.json().error).toBe('already_blocked');
 
-    const lifted = await ops.unblock(buyer.id);
+    const blockId = blocked.json().block.id as string;
+    expect((await ops.unblock(buyer.id, randomUUID())).json().error).toBe('not_blocked');
+    const lifted = await ops.unblock(buyer.id, blockId);
     expect(lifted.statusCode).toBe(200);
     expect(lifted.json().status).toBe('active');
     expect(lifted.json().blocks[0]).toMatchObject({ inForce: false, endNote: 'راجعنا الحساب' });
     expect((await problems(buyer.headers)).map((problem) => problem.code)).not.toContain(
       'account_blocked',
     );
-    expect((await ops.unblock(buyer.id)).json().error).toBe('not_blocked');
+    expect((await ops.unblock(buyer.id, blockId)).json().error).toBe('not_blocked');
     expect((await place(buyer.headers)).statusCode).toBe(201);
   });
 
@@ -213,7 +215,7 @@ describe('«حظر» and «فك الحظر» (AP §9.8, CU §5.5)', () => {
       expect.objectContaining({ code: 'dues_unpaid' }),
     );
     // «فك الحظر» lifts no dues: they are paid at the desk.
-    expect((await own.unblock(buyer.id)).json().error).toBe('not_blocked');
+    expect((await own.unblock(buyer.id, randomUUID())).json().error).toBe('not_blocked');
   });
 });
 
@@ -250,6 +252,12 @@ describe('the customer search and profile (AP §9.8)', () => {
     });
     expect(JSON.stringify(profile.json())).not.toContain(buyer.phone);
     expect((await sup.profile(randomUUID())).statusCode).toBe(404);
+    const elsewhere = await app.inject({
+      method: 'GET',
+      url: `/v1/admin/customers/${buyer.id}?cityId=${randomUUID()}`,
+      cookies: sup.cookies,
+    });
+    expect(elsewhere.json().error).toBe('unknown_city');
   });
 
   it('lets OWN and OPS block, never SUP or FIN', async () => {

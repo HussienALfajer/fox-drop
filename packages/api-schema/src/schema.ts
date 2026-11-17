@@ -6855,6 +6855,11 @@ export interface components {
         AdminUnblockCustomerDto: {
             /** Format: uuid */
             cityId: string;
+            /**
+             * Format: uuid
+             * @description The block in force the panel showed.
+             */
+            blockId: string;
             /** @description The required reason. */
             note: string;
         };

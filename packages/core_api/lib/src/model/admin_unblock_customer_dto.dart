@@ -12,12 +12,17 @@ part 'admin_unblock_customer_dto.g.dart';
 ///
 /// Properties:
 /// * [cityId]
+/// * [blockId] - The block in force the panel showed.
 /// * [note] - The required reason.
 @BuiltValue()
 abstract class AdminUnblockCustomerDto
     implements Built<AdminUnblockCustomerDto, AdminUnblockCustomerDtoBuilder> {
   @BuiltValueField(wireName: r'cityId')
   String get cityId;
+
+  /// The block in force the panel showed.
+  @BuiltValueField(wireName: r'blockId')
+  String get blockId;
 
   /// The required reason.
   @BuiltValueField(wireName: r'note')
@@ -56,6 +61,11 @@ class _$AdminUnblockCustomerDtoSerializer
     yield r'cityId';
     yield serializers.serialize(
       object.cityId,
+      specifiedType: const FullType(String),
+    );
+    yield r'blockId';
+    yield serializers.serialize(
+      object.blockId,
       specifiedType: const FullType(String),
     );
     yield r'note';
@@ -98,6 +108,15 @@ class _$AdminUnblockCustomerDtoSerializer
                   )
                   as String;
           result.cityId = valueDes;
+          break;
+        case r'blockId':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.blockId = valueDes;
           break;
         case r'note':
           final valueDes =
