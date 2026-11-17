@@ -4,25 +4,33 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.24, reports from the apps (`docs/roadmap.md`, Phase 2, Support and trust). Not started.
+Slice 2.24a, the customer's reports (`docs/roadmap.md`, Phase 2, Support and trust; owner decision 2026-11-17: 2.24 splits into three pull requests).
 
 - **Roadmap line:** 2.24 Reports from the apps: the customer's problem report within 24 hours with items and up to 3 photos, «أبلغ عن سعر مختلف», the restaurant's and the captain's support with «بلاغاتي», the captain's «مشكلة في مبلغ الاستلام» (CU §9.5, §12.2, RA §15, CA §13). A customer sends a report with a photo and a ticket arrives.
-- **Specs:** CU §12.2 (`docs/product/v1/customer-app/12-after-the-order.md`: the report within 24 hours, once per order, items, up to 3 photos, the resolution reaching the order, «أكوادي» or a re-delivery order), CU §9.5 «أبلغ عن سعر مختلف», RA §15 (`restaurant-app/15-support.md`), CA §13 (`captain-app/13-support.md`) and CA §9.4 item 6, AP §9.9.1 (sources) and §9.9.2; the support module's `CLAUDE.md` (tickets, `source`, `openIn`), 2.23d's re-delivery (a report's ticket can end in one), the files module for the photos (`apps/server/src/modules/files`).
-- **Branch:** `feat/app-reports` (not created yet; a cloud session works on the branch it is given).
+- **This part (2.24a):** the customer's «الإبلاغ عن مشكلة» on a delivered order (CU §12.2: the window, once per order, the type, the items, the note, up to 3 photos, «استلمنا بلاغك T-{رقم}…», «بلاغك T-{رقم}: {الحالة}» with the resolution message, «تواصل مع الدعم» outside it), «أبلغ عن سعر مختلف» on the restaurant page (CU §9.5: the badge, its explanation, the form, once per restaurant per business day), the photos uploaded to the private bucket and shown on the panel's ticket page, the order's link to its re-delivery (CU §12.3). Then 2.24b (the restaurant's support: «إبلاغ عن مشكلة», «مشكلة في الطلب» with a quick reason, «بلاغاتي», RA §15, §8.19) and 2.24c (the captain's support: the report, «بلاغاتي», «مشكلة في مبلغ الاستلام», CA §13, §9.4 item 6, §9.11).
+- **Specs:** CU §12.2, §9.5, §12.3; AP §9.9.1, §9.9.3; the support and files modules' `CLAUDE.md`.
+- **Branch:** `claude/slide-2-24-m1cjw5` (the cloud session's branch).
 - **Plan:**
-  - [ ] Read the cited sections; ask the owner how 2.24 splits into pull requests (customer, restaurant, captain) and the open questions below.
-  - [ ] The failing tests first: the report's window (24 hours after delivery), once per order, the items and the photo count.
-  - [ ] Migration: the ticket's app sources and its photos.
-  - [ ] The server routes per app, through `SupportService.openIn`, and «بلاغاتي» with the resolution message.
-  - [ ] `pnpm generate:api`, then the three apps' screens and the panel's photos on the ticket page.
+  - [x] Read the cited sections; ask the owner the split and the open questions.
+  - [ ] The failing tests first: the report's window (24 hours after delivery), once per order, the items, the photo count; the price report's once per business day.
+  - [ ] Migration: the tickets' app sources, the reported items and photos, the price report's fields; the uploads' private purpose.
+  - [ ] Files: the app's upload to `private-docs` and the panel's signed photo reads (nginx).
+  - [ ] The server routes (the report on an order, the price report) and the order's `report`; the ticket page's photos.
+  - [ ] `pnpm generate:api`, then the customer app's screens and the panel's photos.
   - [ ] The `checker` agent, the `reviewer` agent on the cited sections, then the pull request and the handover.
-- **To ask the owner first:** the split into pull requests; whether a customer's report on a free re-delivery is allowed (CU §12 lists re-deliveries as not rated, not as not reported); the outcomes on a re-delivery left from 2.23d (below).
+
+### Owner decisions for 2.24 (2026-11-17)
+
+- 2.24 splits into three pull requests: the customer (2.24a), the restaurant (2.24b), the captain (2.24c).
+- A delivered free re-delivery can be reported like any order: once, within 24 hours of its delivery.
+- The reports' photos are kept in the private bucket (`private-docs`), seen only by the panel's team through short signed links.
+- The choices left from 2.23d (below) are confirmed as built.
 
 ### Left from 2.23d (`claude/slice-2-23d-e56vwj`)
 
 - **Before deploying to staging:** migration 0092 adds the re-delivery's link to `ordering.orders` (`redelivery_of_id`, `_placed_at`, `_number`, `redelivery_ticket_id`, `redelivery_responsible`, `redelivery_charge_pay`, `redelivery_captain_id`; `orders_redelivery`; `orders_money` replaced to allow a total of 0 for a re-delivery; two partial indexes) and `free_redelivery` to `tickets_resolution_values` (`NOT VALID` then `VALIDATE`). Expand only. The ledger lets `earn.*` pay go against `platform.compensation_cost` (catalogue only). New fields: `redeliveryOf` on the customer's, the board's and the captain's orders, `redelivery` on operations' detail, `redeliveries` on the ticket page, `redelivery` on the money preview; `resolve` takes `chargePay`, `money-preview` `redelivery`; pickup and door lines may be empty for an amount of 0. Deploy the server (API and worker) before the panel and the apps.
 - **To check on staging:** deliver an order of 2 shawarma at 120 ₺ (15%). As SUP open «صنف ناقص» for «الزبون» and «حل التذكرة» with «إعادة توصيل مجانية», «المطعم», 1 shawarma: the preview reads «يجهّز المطعم الأصناف مجاناً: دفعة الاستلام 0 ولا عمولة.»; resolve: the ticket lists «الطلب #…» «جديد», the customer's app shows the order «إعادة توصيل مجانية لطلب #…» with a total of 0 and no «إلغاء الطلب», and can still place another order. The restaurant's app rings with the badge and 0 prices; it accepts, a captain picks up with «لا تدفع شيئاً» and delivers collecting nothing; the restaurant's statement shows nothing for it and «كلفة التعويضات والخصومات» the captain's pay. As OPS do the same with «الكابتن» and «تحميل أجر كابتن إعادة التوصيل على الطرف المسؤول»: at the delivery the original captain is charged 102 ₺ «إعادة توصيل مجانية» and the pay «أجر كابتن إعادة التوصيل». Cancel a third re-delivery from the panel: the ticket returns to «قيد المعالجة» within seconds. With the restaurant paused, the resolution answers «المطعم لا يستقبل طلبات الآن…».
-- **To confirm with the owner:** the journals' reasons «إعادة توصيل مجانية» and «أجر كابتن إعادة التوصيل»; the badge's wording; a reopened ticket keeps its SLA stopped and the customer is not told; only OPS (and OWN) charge the pay; a re-delivery is refused while the restaurant takes no orders; its commission is the original order's; an outcome on a re-delivery follows docs/domain/09 alone (a delivered `free` or `damaged` one books none of the re-delivery's entries and keeps the ticket resolved; a fake one charges the dues rule and resets trust); an accepted re-delivery gets the late code's timer like any order.
+- **Confirmed by the owner (2026-11-17):** the journals' reasons «إعادة توصيل مجانية» and «أجر كابتن إعادة التوصيل»; the badge's wording; a reopened ticket keeps its SLA stopped and the customer is not told; only OPS (and OWN) charge the pay; a re-delivery is refused while the restaurant takes no orders; its commission is the original order's; an outcome on a re-delivery follows docs/domain/09 alone (a delivered `free` or `damaged` one books none of the re-delivery's entries and keeps the ticket resolved; a fake one charges the dues rule and resets trust); an accepted re-delivery gets the late code's timer like any order.
 - **Decided by us:** the restaurant-responsible lines carry no price (items value 0); the pay is always booked on `platform.compensation_cost` and its charge recovers it; the captain charged is the one who delivered the original order; a re-delivery takes no edit; only the ticket's newest re-delivery reopens it.
 - **Not yet:** a ticket whose reopening sync ran out of retries stays resolved (the worker's start does not sync ended re-deliveries); the customer's ticket screen's link to the re-delivery order (2.24); ratings leaving out re-deliveries (2.26: CU §12 «free re-deliveries cannot be rated»).
 - **The local `pnpm verify`** was run in parts (Turborepo and Docker Hub limits in the cloud container): the server's tests (2073 passed; the storage, exports and real-time files could not pull their containers, 429 from Docker Hub, files this slice does not touch), Prettier, ESLint and type checks of the server, the panel and the portal, the panel's unit tests (203) and the tickets Playwright tests (3), Dart analyze and the Flutter tests of the three apps (customer 118, merchant 109, captain 98) and core_l10n, and a fresh API contract.
