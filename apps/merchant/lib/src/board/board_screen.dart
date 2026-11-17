@@ -347,6 +347,9 @@ class OrderCard extends ConsumerWidget {
                     .take(2)
                     .map((l) => '${l.quantity} × ${l.name}')
                     .join('، '),
+                // AP §9.9.3 (owner decision 2026-11-17): the badge.
+                if (order.redeliveryOf case final of?)
+                  l10n.redeliveryOf(of.number),
                 // RA §8.15: «قبلته العمليات».
                 if (order.acceptance?.byOperations ?? false)
                   l10n.merchantBadgeByOperations,

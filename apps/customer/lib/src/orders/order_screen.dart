@@ -155,6 +155,12 @@ class OrderScreen extends ConsumerWidget {
                     child: Text(l10n.customerMyCodesTitle),
                   ),
                 ),
+              // CU §11.2, AP §9.9.3: a free re-delivery of an earlier order.
+              if (order.redeliveryOf case final of?)
+                ListTile(
+                  key: const Key('redelivery-of'),
+                  title: Text(l10n.redeliveryOf(of.number)),
+                ),
               // CU §11.6: the emergency stop's delay notice.
               if (!ended) EmergencyDelayNotice(orderId: orderId),
               // CU §11.6: the restaurant reported an item unavailable (RA
@@ -290,7 +296,11 @@ class OrderScreen extends ConsumerWidget {
                 trailing: Text(total()),
               ),
               // CU §11.1: «إلغاء الطلب», while placed only (§11.4).
-              if (cancelHelpAt(order.status.name) == CancelHelp.cancel)
+              if (cancelHelpAt(
+                    order.status.name,
+                    redelivery: order.redeliveryOf != null,
+                  ) ==
+                  CancelHelp.cancel)
                 TextButton(
                   key: const Key('order-cancel'),
                   onPressed: cancel,

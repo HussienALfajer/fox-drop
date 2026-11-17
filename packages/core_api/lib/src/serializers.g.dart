@@ -382,6 +382,8 @@ Serializers _$serializers =
           ..add(AdminOrderDtoOutputOrderReassignChoicesReasonsInner.serializer)
           ..add(AdminOrderDtoOutputOrderReassignmentsInner.serializer)
           ..add(AdminOrderDtoOutputOrderReassignmentsInnerCashEnum.serializer)
+          ..add(AdminOrderDtoOutputOrderRedelivery.serializer)
+          ..add(AdminOrderDtoOutputOrderRedeliveryResponsibleEnum.serializer)
           ..add(AdminOrderDtoOutputOrderRejection.serializer)
           ..add(AdminOrderDtoOutputOrderRemovedLinesInner.serializer)
           ..add(AdminOrderDtoOutputOrderStatusEnum.serializer)
@@ -632,6 +634,7 @@ Serializers _$serializers =
           ..add(AdminTicketMoneyPreviewBodyDtoAffectedInner.serializer)
           ..add(AdminTicketMoneyPreviewBodyDtoResponsibleEnum.serializer)
           ..add(AdminTicketMoneyPreviewDtoOutput.serializer)
+          ..add(AdminTicketMoneyPreviewDtoOutputRedelivery.serializer)
           ..add(AdminTicketNoteDto.serializer)
           ..add(AdminTicketPageDtoOutput.serializer)
           ..add(AdminTicketPageDtoOutputKindEnum.serializer)
@@ -641,6 +644,7 @@ Serializers _$serializers =
           ..add(AdminTicketPageDtoOutputPartyEnum.serializer)
           ..add(AdminTicketPageDtoOutputPickupDispute.serializer)
           ..add(AdminTicketPageDtoOutputPickupDisputeConfirmedByEnum.serializer)
+          ..add(AdminTicketPageDtoOutputRedeliveriesInner.serializer)
           ..add(AdminTicketPageDtoOutputStatusEnum.serializer)
           ..add(AdminTicketPartiesDtoOutput.serializer)
           ..add(AdminTicketPartySearchDto.serializer)
@@ -806,6 +810,7 @@ Serializers _$serializers =
           ..add(CaptainOrderDtoOutputOrderPickupRequest.serializer)
           ..add(CaptainOrderDtoOutputOrderPickupRequestOutcomeEnum.serializer)
           ..add(CaptainOrderDtoOutputOrderPickupRequestStatusEnum.serializer)
+          ..add(CaptainOrderDtoOutputOrderRedeliveryOf.serializer)
           ..add(CaptainOrderDtoOutputOrderStatusEnum.serializer)
           ..add(CaptainOutcomePaymentDto.serializer)
           ..add(CaptainPeakBonusDtoOutput.serializer)
@@ -893,6 +898,7 @@ Serializers _$serializers =
             CustomerActiveOrdersDtoOutputOrdersInnerOutcomeStatusEnum
                 .serializer,
           )
+          ..add(CustomerActiveOrdersDtoOutputOrdersInnerRedeliveryOf.serializer)
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerRejection.serializer)
           ..add(
             CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner
@@ -1115,6 +1121,7 @@ Serializers _$serializers =
             MerchantOrdersDtoOutputOrdersInnerPickupRequestStatusEnum
                 .serializer,
           )
+          ..add(MerchantOrdersDtoOutputOrdersInnerRedeliveryOf.serializer)
           ..add(MerchantOrdersDtoOutputOrdersInnerStatusEnum.serializer)
           ..add(MerchantOrdersDtoOutputPrepTime.serializer)
           ..add(MerchantOverdueDtoOutput.serializer)
@@ -2304,6 +2311,12 @@ Serializers _$serializers =
               const FullType(AdminTicketPageDtoOutputNotesInner),
             ]),
             () => ListBuilder<AdminTicketPageDtoOutputNotesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminTicketPageDtoOutputRedeliveriesInner),
+            ]),
+            () => ListBuilder<AdminTicketPageDtoOutputRedeliveriesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

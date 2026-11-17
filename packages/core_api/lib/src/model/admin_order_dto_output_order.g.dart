@@ -453,6 +453,8 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
   @override
   final AdminOrderDtoOutputOrderCancellation? cancellation;
   @override
+  final AdminOrderDtoOutputOrderRedelivery? redelivery;
+  @override
   final AdminOrderDtoOutputOrderCancelChoices? cancelChoices;
   @override
   final AdminOrderDtoOutputOrderReassignChoices? reassignChoices;
@@ -526,6 +528,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
     this.acceptance,
     this.readyAt,
     this.cancellation,
+    this.redelivery,
     this.cancelChoices,
     this.reassignChoices,
     required this.handover,
@@ -584,6 +587,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
         acceptance == other.acceptance &&
         readyAt == other.readyAt &&
         cancellation == other.cancellation &&
+        redelivery == other.redelivery &&
         cancelChoices == other.cancelChoices &&
         reassignChoices == other.reassignChoices &&
         handover == other.handover &&
@@ -633,6 +637,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
     _$hash = $jc(_$hash, acceptance.hashCode);
     _$hash = $jc(_$hash, readyAt.hashCode);
     _$hash = $jc(_$hash, cancellation.hashCode);
+    _$hash = $jc(_$hash, redelivery.hashCode);
     _$hash = $jc(_$hash, cancelChoices.hashCode);
     _$hash = $jc(_$hash, reassignChoices.hashCode);
     _$hash = $jc(_$hash, handover.hashCode);
@@ -684,6 +689,7 @@ class _$AdminOrderDtoOutputOrder extends AdminOrderDtoOutputOrder {
           ..add('acceptance', acceptance)
           ..add('readyAt', readyAt)
           ..add('cancellation', cancellation)
+          ..add('redelivery', redelivery)
           ..add('cancelChoices', cancelChoices)
           ..add('reassignChoices', reassignChoices)
           ..add('handover', handover)
@@ -820,6 +826,12 @@ class AdminOrderDtoOutputOrderBuilder
       _$this._cancellation ??= AdminOrderDtoOutputOrderCancellationBuilder();
   set cancellation(AdminOrderDtoOutputOrderCancellationBuilder? cancellation) =>
       _$this._cancellation = cancellation;
+
+  AdminOrderDtoOutputOrderRedeliveryBuilder? _redelivery;
+  AdminOrderDtoOutputOrderRedeliveryBuilder get redelivery =>
+      _$this._redelivery ??= AdminOrderDtoOutputOrderRedeliveryBuilder();
+  set redelivery(AdminOrderDtoOutputOrderRedeliveryBuilder? redelivery) =>
+      _$this._redelivery = redelivery;
 
   AdminOrderDtoOutputOrderCancelChoicesBuilder? _cancelChoices;
   AdminOrderDtoOutputOrderCancelChoicesBuilder get cancelChoices =>
@@ -1002,6 +1014,7 @@ class AdminOrderDtoOutputOrderBuilder
       _acceptance = $v.acceptance?.toBuilder();
       _readyAt = $v.readyAt;
       _cancellation = $v.cancellation?.toBuilder();
+      _redelivery = $v.redelivery?.toBuilder();
       _cancelChoices = $v.cancelChoices?.toBuilder();
       _reassignChoices = $v.reassignChoices?.toBuilder();
       _handover = $v.handover.toBuilder();
@@ -1098,6 +1111,7 @@ class AdminOrderDtoOutputOrderBuilder
             acceptance: _acceptance?.build(),
             readyAt: readyAt,
             cancellation: _cancellation?.build(),
+            redelivery: _redelivery?.build(),
             cancelChoices: _cancelChoices?.build(),
             reassignChoices: _reassignChoices?.build(),
             handover: handover.build(),
@@ -1147,6 +1161,8 @@ class AdminOrderDtoOutputOrderBuilder
 
         _$failedField = 'cancellation';
         _cancellation?.build();
+        _$failedField = 'redelivery';
+        _redelivery?.build();
         _$failedField = 'cancelChoices';
         _cancelChoices?.build();
         _$failedField = 'reassignChoices';

@@ -162,6 +162,8 @@ export function orderAlerts(
   return { open, next };
 }
 
+const ENDED_WITHOUT_DELIVERY: readonly string[] = ['rejected', 'cancelled', 'failed'];
+
 // The job that syncs an order's alerts: sent with each transition
 // (recordTransition) and for the next moment an alert may open.
 export interface OrderAlertsJob {
@@ -241,6 +243,15 @@ export class OrderAlerts {
       // «عاجلة» and closes their «تذكرة عاجلة».
       if (!UNTIL_ENDED.includes(order.status)) {
         await this.tickets.orderEnded(tx, order.id, now);
+        // Owner decision 2026-11-17 (slice 2.23d): a free re-delivery
+        // rejected, cancelled or failed returns its ticket to «قيد المعالجة».
+        if (ENDED_WITHOUT_DELIVERY.includes(order.status)) {
+          const [link] = await tx
+            .select({ ticketId: orders.redeliveryTicketId })
+            .from(orders)
+            .where(and(eq(orders.id, order.id), eq(orders.placedAt, placedAt)));
+          if (link?.ticketId) await this.tickets.redeliveryEnded(tx, link.ticketId, order.id, now);
+        }
       }
       if (timer && next) {
         await this.jobs.send(

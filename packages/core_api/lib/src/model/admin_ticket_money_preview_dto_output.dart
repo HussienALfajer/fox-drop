@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/admin_ticket_money_preview_dto_output_redelivery.dart';
 import 'package:core_api/src/model/admin_ticket_correction_dto_output_entries_inner.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
@@ -18,6 +19,7 @@ part 'admin_ticket_money_preview_dto_output.g.dart';
 /// * [merchantDebit] - What the restaurant ends up owing: V less the commission reversed.
 /// * [captainCharge]
 /// * [entries]
+/// * [redelivery]
 @BuiltValue()
 abstract class AdminTicketMoneyPreviewDtoOutput
     implements
@@ -41,6 +43,9 @@ abstract class AdminTicketMoneyPreviewDtoOutput
 
   @BuiltValueField(wireName: r'entries')
   BuiltList<AdminTicketCorrectionDtoOutputEntriesInner> get entries;
+
+  @BuiltValueField(wireName: r'redelivery')
+  AdminTicketMoneyPreviewDtoOutputRedelivery? get redelivery;
 
   AdminTicketMoneyPreviewDtoOutput._();
 
@@ -101,6 +106,15 @@ class _$AdminTicketMoneyPreviewDtoOutputSerializer
         FullType(AdminTicketCorrectionDtoOutputEntriesInner),
       ]),
     );
+    yield r'redelivery';
+    yield object.redelivery == null
+        ? null
+        : serializers.serialize(
+            object.redelivery,
+            specifiedType: const FullType.nullable(
+              AdminTicketMoneyPreviewDtoOutputRedelivery,
+            ),
+          );
   }
 
   @override
@@ -175,6 +189,18 @@ class _$AdminTicketMoneyPreviewDtoOutputSerializer
                   )
                   as BuiltList<AdminTicketCorrectionDtoOutputEntriesInner>;
           result.entries.replace(valueDes);
+          break;
+        case r'redelivery':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminTicketMoneyPreviewDtoOutputRedelivery,
+                    ),
+                  )
+                  as AdminTicketMoneyPreviewDtoOutputRedelivery?;
+          if (valueDes == null) continue;
+          result.redelivery.replace(valueDes);
           break;
         default:
           unhandled.add(key);

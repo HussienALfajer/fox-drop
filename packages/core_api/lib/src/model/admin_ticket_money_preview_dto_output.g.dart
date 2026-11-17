@@ -18,6 +18,8 @@ class _$AdminTicketMoneyPreviewDtoOutput
   final String captainCharge;
   @override
   final BuiltList<AdminTicketCorrectionDtoOutputEntriesInner> entries;
+  @override
+  final AdminTicketMoneyPreviewDtoOutputRedelivery? redelivery;
 
   factory _$AdminTicketMoneyPreviewDtoOutput([
     void Function(AdminTicketMoneyPreviewDtoOutputBuilder)? updates,
@@ -29,6 +31,7 @@ class _$AdminTicketMoneyPreviewDtoOutput
     required this.merchantDebit,
     required this.captainCharge,
     required this.entries,
+    this.redelivery,
   }) : super._();
   @override
   AdminTicketMoneyPreviewDtoOutput rebuild(
@@ -47,7 +50,8 @@ class _$AdminTicketMoneyPreviewDtoOutput
         affectedValue == other.affectedValue &&
         merchantDebit == other.merchantDebit &&
         captainCharge == other.captainCharge &&
-        entries == other.entries;
+        entries == other.entries &&
+        redelivery == other.redelivery;
   }
 
   @override
@@ -58,6 +62,7 @@ class _$AdminTicketMoneyPreviewDtoOutput
     _$hash = $jc(_$hash, merchantDebit.hashCode);
     _$hash = $jc(_$hash, captainCharge.hashCode);
     _$hash = $jc(_$hash, entries.hashCode);
+    _$hash = $jc(_$hash, redelivery.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -69,7 +74,8 @@ class _$AdminTicketMoneyPreviewDtoOutput
           ..add('affectedValue', affectedValue)
           ..add('merchantDebit', merchantDebit)
           ..add('captainCharge', captainCharge)
-          ..add('entries', entries))
+          ..add('entries', entries)
+          ..add('redelivery', redelivery))
         .toString();
   }
 }
@@ -109,6 +115,14 @@ class AdminTicketMoneyPreviewDtoOutputBuilder
     ListBuilder<AdminTicketCorrectionDtoOutputEntriesInner>? entries,
   ) => _$this._entries = entries;
 
+  AdminTicketMoneyPreviewDtoOutputRedeliveryBuilder? _redelivery;
+  AdminTicketMoneyPreviewDtoOutputRedeliveryBuilder get redelivery =>
+      _$this._redelivery ??=
+          AdminTicketMoneyPreviewDtoOutputRedeliveryBuilder();
+  set redelivery(
+    AdminTicketMoneyPreviewDtoOutputRedeliveryBuilder? redelivery,
+  ) => _$this._redelivery = redelivery;
+
   AdminTicketMoneyPreviewDtoOutputBuilder() {
     AdminTicketMoneyPreviewDtoOutput._defaults(this);
   }
@@ -121,6 +135,7 @@ class AdminTicketMoneyPreviewDtoOutputBuilder
       _merchantDebit = $v.merchantDebit;
       _captainCharge = $v.captainCharge;
       _entries = $v.entries.toBuilder();
+      _redelivery = $v.redelivery?.toBuilder();
       _$v = null;
     }
     return this;
@@ -162,12 +177,15 @@ class AdminTicketMoneyPreviewDtoOutputBuilder
               'captainCharge',
             ),
             entries: entries.build(),
+            redelivery: _redelivery?.build(),
           );
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'entries';
         entries.build();
+        _$failedField = 'redelivery';
+        _redelivery?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminTicketMoneyPreviewDtoOutput',

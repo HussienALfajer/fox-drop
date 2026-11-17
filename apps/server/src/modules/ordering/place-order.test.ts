@@ -767,6 +767,7 @@ describe("the order's reads, for the screens and the polling fallback (CU §4.3,
     expect(orders[0]).toEqual({
       id: first.id,
       number: first.number,
+      redeliveryOf: null,
       status: 'placed',
       version: 1,
       placedAt: first.placedAt,

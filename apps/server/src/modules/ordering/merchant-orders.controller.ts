@@ -36,6 +36,12 @@ import { captainTracks, orderStatuses } from './schema.js';
 const boardOrder = z.object({
   id: z.uuid(),
   number: z.string().describe('Shown as #10423 (AP §4.8).'),
+  redeliveryOf: z
+    .object({ orderId: z.uuid(), number: z.string() })
+    .nullable()
+    .describe(
+      '«إعادة توصيل مجانية لطلب #{رقم}» (AP §9.9.3): the order whose items it re-delivers (owner decision 2026-11-17: the badge); its items carry no price when the restaurant replaces them.',
+    ),
   status: z.enum(orderStatuses).describe('AP §8.1; the board column (RA §8.1–8.2).'),
   version: z
     .int()
@@ -753,6 +759,13 @@ export class MerchantOrdersController {
     return orders.map((order) => ({
       id: order.id,
       number: order.number.toString(),
+      redeliveryOf:
+        order.redelivery === null
+          ? null
+          : {
+              orderId: order.redelivery.ofOrderId,
+              number: order.redelivery.ofNumber.toString(),
+            },
       status: order.status,
       version: order.version,
       placedAt: order.placedAt.toISOString(),

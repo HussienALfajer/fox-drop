@@ -2398,6 +2398,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get captainWaitingForOrderEdit => 'بانتظار تعديل الطلب من العمليات';
 
   @override
+  String redeliveryOf(String number) {
+    return 'إعادة توصيل مجانية لطلب #$number';
+  }
+
+  @override
   String get customerItemReportBanner =>
       'المطعم أبلغ أن صنفاً في طلبك غير متوفر. سيتصل بك فريق FOX DROP الآن.';
 

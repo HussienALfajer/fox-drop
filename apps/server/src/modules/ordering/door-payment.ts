@@ -37,7 +37,11 @@ export function checkDoorPayment(
   const oneEach = (lines: PaymentLine[]) =>
     new Set(lines.map((line) => line.currency)).size === lines.length &&
     lines.every((line) => line.amount > 0n);
-  if (received.length === 0 || !oneEach(received) || !oneEach(change)) return 'invalid_lines';
+  // Nothing is received for an amount due of 0 (a free re-delivery, AP
+  // §9.9.3); any other needs a line at least.
+  if ((received.length === 0 && due !== 0n) || !oneEach(received) || !oneEach(change)) {
+    return 'invalid_lines';
+  }
   const accepted = new Set(snapshot.currencies.map((entry) => entry.code));
   const all = [...received, ...change];
   if (all.some((line) => !accepted.has(line.currency))) return 'currency_not_accepted';

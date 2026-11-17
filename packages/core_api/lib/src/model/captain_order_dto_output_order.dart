@@ -14,6 +14,7 @@ import 'package:core_api/src/model/captain_active_order_dto_output_order_cannot_
 import 'package:core_api/src/model/captain_active_order_dto_output_order_no_answer.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_emergency.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_pickup_payment.dart';
+import 'package:core_api/src/model/captain_order_dto_output_order_redelivery_of.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_lines_inner.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_arrival.dart';
@@ -28,6 +29,7 @@ part 'captain_order_dto_output_order.g.dart';
 /// Properties:
 /// * [id]
 /// * [number] - Shown as #10423 (AP §4.8).
+/// * [redeliveryOf]
 /// * [status]
 /// * [version] - Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown.
 /// * [captainTrack] - The step (CA §9.1): assigned «إلى المطعم», at_merchant and pickup_pending «عند المطعم», picked_up «إلى الزبون», at_customer «عند الزبون».
@@ -59,6 +61,9 @@ abstract class CaptainOrderDtoOutputOrder
   /// Shown as #10423 (AP §4.8).
   @BuiltValueField(wireName: r'number')
   String get number;
+
+  @BuiltValueField(wireName: r'redeliveryOf')
+  CaptainOrderDtoOutputOrderRedeliveryOf? get redeliveryOf;
 
   @BuiltValueField(wireName: r'status')
   CaptainOrderDtoOutputOrderStatusEnum get status;
@@ -171,6 +176,15 @@ class _$CaptainOrderDtoOutputOrderSerializer
       object.number,
       specifiedType: const FullType(String),
     );
+    yield r'redeliveryOf';
+    yield object.redeliveryOf == null
+        ? null
+        : serializers.serialize(
+            object.redeliveryOf,
+            specifiedType: const FullType.nullable(
+              CaptainOrderDtoOutputOrderRedeliveryOf,
+            ),
+          );
     yield r'status';
     yield serializers.serialize(
       object.status,
@@ -352,6 +366,18 @@ class _$CaptainOrderDtoOutputOrderSerializer
                   )
                   as String;
           result.number = valueDes;
+          break;
+        case r'redeliveryOf':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CaptainOrderDtoOutputOrderRedeliveryOf,
+                    ),
+                  )
+                  as CaptainOrderDtoOutputOrderRedeliveryOf?;
+          if (valueDes == null) continue;
+          result.redeliveryOf.replace(valueDes);
           break;
         case r'status':
           final valueDes =

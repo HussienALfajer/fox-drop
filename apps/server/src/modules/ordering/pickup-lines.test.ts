@@ -125,3 +125,14 @@ describe('checkLines (CA §9.4, RA §12.7)', () => {
     expect(checkLines(snapshot, [TRY(43_700n)], due, ['TRY', 'USD'])).toBe('amount_mismatch');
   });
 });
+
+// AP §9.9.3 (slice 2.23d): a free re-delivery the restaurant replaces has a
+// pickup payment of 0, paid with no line.
+describe('a pickup payment of 0', () => {
+  it('is proposed and taken with no line, and only then', () => {
+    expect(proposeLines(snapshot, ['TRY'], null, 0n)).toEqual([]);
+    expect(checkLines(snapshot, [], 0n, ['TRY'])).toBeNull();
+    expect(checkLines(snapshot, [], 44_000n, ['TRY'])).toBe('invalid_lines');
+    expect(checkLines(snapshot, [], null, ['TRY'])).toBe('invalid_lines');
+  });
+});

@@ -1286,6 +1286,8 @@
   "@merchantItemReportClosed": {"description": "Chime when operations closed the item-unavailable report without an edit (RA §8.12, §16 #37); {reason} is operations' text.", "placeholders": {"number": {"type": "String"}, "reason": {"type": "String"}}},
   "captainWaitingForOrderEdit": "بانتظار تعديل الطلب من العمليات",
   "@captainWaitingForOrderEdit": {"description": "At the restaurant while the restaurant's item-unavailable report is open, and for 409 item_report_open: the pickup waits (CA §9 step 2, RA §8.12)."},
+  "redeliveryOf": "إعادة توصيل مجانية لطلب #{number}",
+  "@redeliveryOf": {"description": "A free re-delivery's badge in the three apps: the order whose items support re-delivers at no charge to the customer (AP §9.9.3, CU §11.2; owner decision 2026-11-17).", "placeholders": {"number": {"type": "String"}}},
   "customerItemReportBanner": "المطعم أبلغ أن صنفاً في طلبك غير متوفر. سيتصل بك فريق FOX DROP الآن.",
   "@customerItemReportBanner": {"description": "The order screen's banner while the restaurant's item-unavailable report is open (CU §11.6, RA §8.12)."},
   "merchantOrderEditedItemsAdded": "تم تعديل الطلب #{number} — أُضيفت أصناف",

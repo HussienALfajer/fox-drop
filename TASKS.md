@@ -12,10 +12,10 @@ Slice 2.23d, «إعادة توصيل مجانية» (`docs/roadmap.md`, Phase 2,
 - **Not in this slice:** the apps' sources (2.24).
 - **Plan:**
   - [x] Read the cited sections and 2.23c's money; ask the owner the question below and how the re-delivery order shows in the three apps.
-  - [ ] The failing tests first: the re-delivery's entries per responsible party (restaurant: pickup 0, no commission, nothing else; captain or platform: a normal pickup, the commission, the merchant net on the party, the captain's pay on `platform.compensation_cost` or charged), and that V's entries of 2.23c are not posted with it.
-  - [ ] Migration: the linked order (its source ticket, total 0) and the resolution `free_redelivery`.
-  - [ ] The server: the resolution creates the order under the ticket's lock, through ordering and dispatch; the customer cannot cancel or rate it; it stays out of the active-order limit and trust.
-  - [ ] `pnpm generate:api`, then the panel and the apps' reads.
+  - [x] The failing tests first: the re-delivery's entries per responsible party (restaurant: pickup 0, no commission, nothing else; captain or platform: a normal pickup, the commission, the merchant net on the party, the captain's pay on `platform.compensation_cost` or charged), and that V's entries of 2.23c are not posted with it.
+  - [x] Migration: the linked order (its source ticket, total 0) and the resolution `free_redelivery`.
+  - [x] The server: the resolution creates the order under the ticket's lock, through ordering and dispatch; the customer cannot cancel or rate it; it stays out of the active-order limit and trust.
+  - [x] `pnpm generate:api`, then the panel and the apps' reads.
   - [ ] The `checker` agent, the `reviewer` agent on AP §9.9.3 and `docs/domain/10`, then the pull request and the handover to 2.24.
 - **To ask the owner first:** whether the restaurant accepts a re-delivery like any order, and what a rejected or failed one does (owner decisions for 2.23, "To ask at their slices").
 

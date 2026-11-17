@@ -16,7 +16,7 @@ part 'captain_outcome_payment_dto.g.dart';
 /// CaptainOutcomePaymentDto
 ///
 /// Properties:
-/// * [received] - What the customer paid, one line per currency.
+/// * [received] - What the customer paid, one line per currency; none only for an amount of 0.
 /// * [change] - The change given back, one line per currency; a tip is recorded as given (K14).
 /// * [amountDue]
 /// * [shortfall]
@@ -25,7 +25,7 @@ part 'captain_outcome_payment_dto.g.dart';
 abstract class CaptainOutcomePaymentDto
     implements
         Built<CaptainOutcomePaymentDto, CaptainOutcomePaymentDtoBuilder> {
-  /// What the customer paid, one line per currency.
+  /// What the customer paid, one line per currency; none only for an amount of 0.
   @BuiltValueField(wireName: r'received')
   BuiltList<AdminRecordDeliveryDtoReceivedInner> get received;
 

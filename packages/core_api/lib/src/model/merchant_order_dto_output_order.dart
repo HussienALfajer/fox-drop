@@ -14,6 +14,7 @@ import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_edits
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_lines_inner.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_customer.dart';
 import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_captain_arrival.dart';
+import 'package:core_api/src/model/merchant_orders_dto_output_orders_inner_redelivery_of.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -24,6 +25,7 @@ part 'merchant_order_dto_output_order.g.dart';
 /// Properties:
 /// * [id]
 /// * [number] - Shown as #10423 (AP §4.8).
+/// * [redeliveryOf]
 /// * [status] - AP §8.1; the board column (RA §8.1–8.2).
 /// * [version] - Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown (RA §4.3).
 /// * [placedAt]
@@ -54,6 +56,9 @@ abstract class MerchantOrderDtoOutputOrder
   /// Shown as #10423 (AP §4.8).
   @BuiltValueField(wireName: r'number')
   String get number;
+
+  @BuiltValueField(wireName: r'redeliveryOf')
+  MerchantOrdersDtoOutputOrdersInnerRedeliveryOf? get redeliveryOf;
 
   /// AP §8.1; the board column (RA §8.1–8.2).
   @BuiltValueField(wireName: r'status')
@@ -166,6 +171,15 @@ class _$MerchantOrderDtoOutputOrderSerializer
       object.number,
       specifiedType: const FullType(String),
     );
+    yield r'redeliveryOf';
+    yield object.redeliveryOf == null
+        ? null
+        : serializers.serialize(
+            object.redeliveryOf,
+            specifiedType: const FullType.nullable(
+              MerchantOrdersDtoOutputOrdersInnerRedeliveryOf,
+            ),
+          );
     yield r'status';
     yield serializers.serialize(
       object.status,
@@ -350,6 +364,18 @@ class _$MerchantOrderDtoOutputOrderSerializer
                   )
                   as String;
           result.number = valueDes;
+          break;
+        case r'redeliveryOf':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      MerchantOrdersDtoOutputOrdersInnerRedeliveryOf,
+                    ),
+                  )
+                  as MerchantOrdersDtoOutputOrdersInnerRedeliveryOf?;
+          if (valueDes == null) continue;
+          result.redeliveryOf.replace(valueDes);
           break;
         case r'status':
           final valueDes =

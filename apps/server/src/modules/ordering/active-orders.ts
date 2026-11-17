@@ -81,10 +81,13 @@ export class ActiveOrders {
         ),
       )
       .where(and(whose, eq(orderOutcomeRows.outcome, 'fake'), isNull(orderOutcomeRows.replacedAt)));
+    // AP §9.9.3, CU §11.2 (slice 2.23d): a free re-delivery counts toward
+    // neither the trust nor the limit.
     const delivered = await countOrders(
       executor,
       and(
         whose,
+        isNull(orders.redeliveryOfId),
         eq(orders.outcome, 'normal'),
         lastFake?.at ? gt(orders.deliveredAt, lastFake.at) : undefined,
       )!,
@@ -92,7 +95,11 @@ export class ActiveOrders {
     );
     const trusted = delivered >= rules.trustedAfter;
     const limit = trusted ? rules.trustedMax : rules.newMax;
-    const active = await countOrders(executor, whose, UNTIL_ENDED);
+    const active = await countOrders(
+      executor,
+      and(whose, isNull(orders.redeliveryOfId))!,
+      UNTIL_ENDED,
+    );
     return { reached: active >= limit, limit, trusted };
   }
 }

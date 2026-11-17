@@ -40,7 +40,7 @@ type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
 type Executor = Pick<NodePgDatabase, 'select'>;
 
 // AP §4.8: a city's first order number (owner decision 2026-11-06).
-const FIRST_ORDER_NUMBER = 10001n;
+export const FIRST_ORDER_NUMBER = 10001n;
 
 export type OrderRefusal =
   | 'unknown_restaurant'
@@ -760,7 +760,7 @@ async function lock(tx: Tx, name: string): Promise<void> {
 }
 
 // JSON with the bigints as strings, as the order keeps them.
-function plain(value: unknown): unknown {
+export function plain(value: unknown): unknown {
   return JSON.parse(
     JSON.stringify(value, (_key, entry: unknown) =>
       typeof entry === 'bigint' ? entry.toString() : entry,

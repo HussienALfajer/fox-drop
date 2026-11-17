@@ -59,7 +59,10 @@ class OrderHelpSheet extends ConsumerWidget {
             title: Text(l10n.faqTitle),
             onTap: () => Navigator.of(context).pop(HelpChoice.faq),
           ),
-          ...switch (cancelHelpAt(order.status.name)) {
+          ...switch (cancelHelpAt(
+            order.status.name,
+            redelivery: order.redeliveryOf != null,
+          )) {
             CancelHelp.cancel => [
               ListTile(
                 key: const Key('help-cancel'),

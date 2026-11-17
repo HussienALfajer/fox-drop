@@ -774,6 +774,16 @@ class AdminOrderDto extends createZodDto(
         })
         .nullable()
         .describe('AP §9.3.1 «cancellation (reason and party)».'),
+      redelivery: z
+        .object({
+          ofOrderId: z.uuid(),
+          ofNumber: z.string(),
+          ticketId: z.uuid(),
+          responsible: z.enum(['restaurant', 'captain', 'platform']),
+          chargePay: z.boolean().describe("Its captain's pay charged to the responsible party."),
+        })
+        .nullable()
+        .describe('«إعادة توصيل مجانية» (AP §9.9.3): the order and ticket it comes from.'),
       cancelChoices: z
         .object({
           reasons: z
@@ -2394,6 +2404,10 @@ export class AdminOrdersController {
           captainCompensation: base(cancellation.captainCompensation),
           acknowledgedAt: cancellation.acknowledgedAt?.toISOString() ?? null,
           captainSeenAt: cancellation.captainSeenAt?.toISOString() ?? null,
+        },
+        redelivery: order.redelivery && {
+          ...order.redelivery,
+          ofNumber: order.redelivery.ofNumber.toString(),
         },
         cancelChoices: cancelReasons && { reasons: cancelReasons },
         reassignChoices: reassignReasons && { reasons: reassignReasons },

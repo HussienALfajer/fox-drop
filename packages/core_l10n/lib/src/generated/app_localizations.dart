@@ -3952,6 +3952,12 @@ abstract class AppLocalizations {
   /// **'بانتظار تعديل الطلب من العمليات'**
   String get captainWaitingForOrderEdit;
 
+  /// A free re-delivery's badge in the three apps: the order whose items support re-delivers at no charge to the customer (AP §9.9.3, CU §11.2; owner decision 2026-11-17).
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة توصيل مجانية لطلب #{number}'**
+  String redeliveryOf(String number);
+
   /// The order screen's banner while the restaurant's item-unavailable report is open (CU §11.6, RA §8.12).
   ///
   /// In ar, this message translates to:

@@ -332,6 +332,9 @@ class _AtRestaurantState extends ConsumerState<_AtRestaurant> {
               ),
             ),
           if (order.note case final note?) Text(l10n.captainNote(note)),
+          // AP §9.9.3 (owner decision 2026-11-17): the badge.
+          if (order.redeliveryOf case final of?)
+            Text(l10n.redeliveryOf(of.number), key: const Key('redelivery-of')),
           // CA §9 step 2: an item-unavailable report holds the pickup until
           // operations edit, cancel or close it; an edit that added items,
           // until the restaurant acknowledges it.

@@ -25,6 +25,7 @@ import 'package:core_api/src/model/admin_order_dto_output_order_time_change.dart
 import 'package:core_api/src/model/admin_order_dto_output_order_acceptance.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_rejection.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_handover.dart';
+import 'package:core_api/src/model/admin_order_dto_output_order_redelivery.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_delivery.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_edit_choices.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_reassign_choices.dart';
@@ -63,6 +64,7 @@ part 'admin_order_dto_output_order.g.dart';
 /// * [acceptance]
 /// * [readyAt]
 /// * [cancellation]
+/// * [redelivery]
 /// * [cancelChoices]
 /// * [reassignChoices]
 /// * [handover]
@@ -160,6 +162,9 @@ abstract class AdminOrderDtoOutputOrder
 
   @BuiltValueField(wireName: r'cancellation')
   AdminOrderDtoOutputOrderCancellation? get cancellation;
+
+  @BuiltValueField(wireName: r'redelivery')
+  AdminOrderDtoOutputOrderRedelivery? get redelivery;
 
   @BuiltValueField(wireName: r'cancelChoices')
   AdminOrderDtoOutputOrderCancelChoices? get cancelChoices;
@@ -392,6 +397,15 @@ class _$AdminOrderDtoOutputOrderSerializer
             object.cancellation,
             specifiedType: const FullType.nullable(
               AdminOrderDtoOutputOrderCancellation,
+            ),
+          );
+    yield r'redelivery';
+    yield object.redelivery == null
+        ? null
+        : serializers.serialize(
+            object.redelivery,
+            specifiedType: const FullType.nullable(
+              AdminOrderDtoOutputOrderRedelivery,
             ),
           );
     yield r'cancelChoices';
@@ -811,6 +825,18 @@ class _$AdminOrderDtoOutputOrderSerializer
                   as AdminOrderDtoOutputOrderCancellation?;
           if (valueDes == null) continue;
           result.cancellation.replace(valueDes);
+          break;
+        case r'redelivery':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminOrderDtoOutputOrderRedelivery,
+                    ),
+                  )
+                  as AdminOrderDtoOutputOrderRedelivery?;
+          if (valueDes == null) continue;
+          result.redelivery.replace(valueDes);
           break;
         case r'cancelChoices':
           final valueDes =

@@ -3,6 +3,7 @@ import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { and, eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { AuditService } from '../audit/index.js';
 import { AlertsService, PlatformBroadcasts } from '../notifications/index.js';
 import { tickets } from './schema.js';
 import { isUrgent, ticketKind } from './tickets.js';
@@ -19,6 +20,7 @@ export class TicketSync {
     @Inject(DATABASE) private readonly database: Database,
     private readonly alerts: AlertsService,
     private readonly broadcasts: PlatformBroadcasts,
+    private readonly audit: AuditService,
   ) {}
 
   async changed(tx: Tx, row: TicketRow, now: Date): Promise<void> {
@@ -61,5 +63,49 @@ export class TicketSync {
       .where(and(eq(tickets.orderId, orderId), eq(tickets.orderActive, true)))
       .returning();
     for (const row of ended) await this.changed(tx, row, now);
+  }
+
+  // Owner decision 2026-11-17 (slice 2.23d): a free re-delivery rejected,
+  // cancelled or failed posts no ticket money and returns its ticket to
+  // «قيد المعالجة», its resolution and affected items cleared (so they can
+  // be resolved again), for support to pick another remedy. Ordering calls
+  // it under the order's lock once the re-delivery ended so; only the
+  // ticket's resolution by this re-delivery is undone, so a repeat or a
+  // ticket resolved since changes nothing. Audited `ticket.reopen` by the
+  // system, with the order.
+  async redeliveryEnded(tx: Tx, ticketId: string, orderId: string, now: Date): Promise<void> {
+    const [before] = await tx.select().from(tickets).where(eq(tickets.id, ticketId)).for('update');
+    if (!before || before.status !== 'resolved' || before.resolution !== 'free_redelivery') return;
+    const [after] = (await tx
+      .update(tickets)
+      .set({
+        status: 'in_progress',
+        resolution: null,
+        responsible: null,
+        message: null,
+        journalIds: null,
+        resolvedBy: null,
+        resolvedAt: null,
+        affectedLines: null,
+        affectedValue: null,
+        moneyCurrency: null,
+        updatedAt: now,
+      })
+      .where(eq(tickets.id, ticketId))
+      .returning()) as [TicketRow];
+    await this.changed(tx, after, now);
+    await this.audit.recordWrite(
+      {
+        actor: { type: 'system', id: null, role: null },
+        context: { ipAddress: null, device: null },
+        cityId: after.cityId,
+        action: 'ticket.reopen',
+        target: { type: 'ticket', id: ticketId },
+        before: { status: before.status, resolution: before.resolution },
+        after: { status: after.status, redeliveryOrderId: orderId },
+        reason: null,
+      },
+      tx,
+    );
   }
 }

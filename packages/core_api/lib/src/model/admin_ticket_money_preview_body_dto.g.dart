@@ -101,6 +101,8 @@ class _$AdminTicketMoneyPreviewBodyDto extends AdminTicketMoneyPreviewBodyDto {
   final String? shortAmount;
   @override
   final bool code;
+  @override
+  final bool? redelivery;
 
   factory _$AdminTicketMoneyPreviewBodyDto([
     void Function(AdminTicketMoneyPreviewBodyDtoBuilder)? updates,
@@ -112,6 +114,7 @@ class _$AdminTicketMoneyPreviewBodyDto extends AdminTicketMoneyPreviewBodyDto {
     required this.affected,
     this.shortAmount,
     required this.code,
+    this.redelivery,
   }) : super._();
   @override
   AdminTicketMoneyPreviewBodyDto rebuild(
@@ -130,7 +133,8 @@ class _$AdminTicketMoneyPreviewBodyDto extends AdminTicketMoneyPreviewBodyDto {
         responsible == other.responsible &&
         affected == other.affected &&
         shortAmount == other.shortAmount &&
-        code == other.code;
+        code == other.code &&
+        redelivery == other.redelivery;
   }
 
   @override
@@ -141,6 +145,7 @@ class _$AdminTicketMoneyPreviewBodyDto extends AdminTicketMoneyPreviewBodyDto {
     _$hash = $jc(_$hash, affected.hashCode);
     _$hash = $jc(_$hash, shortAmount.hashCode);
     _$hash = $jc(_$hash, code.hashCode);
+    _$hash = $jc(_$hash, redelivery.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -152,7 +157,8 @@ class _$AdminTicketMoneyPreviewBodyDto extends AdminTicketMoneyPreviewBodyDto {
           ..add('responsible', responsible)
           ..add('affected', affected)
           ..add('shortAmount', shortAmount)
-          ..add('code', code))
+          ..add('code', code)
+          ..add('redelivery', redelivery))
         .toString();
   }
 }
@@ -191,6 +197,10 @@ class AdminTicketMoneyPreviewBodyDtoBuilder
   bool? get code => _$this._code;
   set code(bool? code) => _$this._code = code;
 
+  bool? _redelivery;
+  bool? get redelivery => _$this._redelivery;
+  set redelivery(bool? redelivery) => _$this._redelivery = redelivery;
+
   AdminTicketMoneyPreviewBodyDtoBuilder() {
     AdminTicketMoneyPreviewBodyDto._defaults(this);
   }
@@ -203,6 +213,7 @@ class AdminTicketMoneyPreviewBodyDtoBuilder
       _affected = $v.affected.toBuilder();
       _shortAmount = $v.shortAmount;
       _code = $v.code;
+      _redelivery = $v.redelivery;
       _$v = null;
     }
     return this;
@@ -244,6 +255,7 @@ class AdminTicketMoneyPreviewBodyDtoBuilder
               r'AdminTicketMoneyPreviewBodyDto',
               'code',
             ),
+            redelivery: redelivery,
           );
     } catch (_) {
       late String _$failedField;

@@ -34,6 +34,7 @@ import type {
   TicketMoneyInput,
   TicketOrderFacts,
   TicketOrders,
+  TicketRedelivery,
 } from './ticket-orders.js';
 import { TicketSync } from './ticket-sync.js';
 import { noteKeys, ticketNotes, ticketNumbers, tickets, type TicketSource } from './schema.js';
@@ -161,6 +162,9 @@ export interface TicketResolutionInput {
   affected: AffectedLine[];
   shortAmount: bigint | null;
   code: { value: CompensationValue; reason: { code: string; note: string | null } } | null;
+  // «إعادة توصيل مجانية» (slice 2.23d): its captain's pay charged to the
+  // responsible restaurant or captain instead of the platform.
+  chargePay: boolean;
 }
 
 // The money a resolution's preview asks (slice 2.23c).
@@ -169,6 +173,7 @@ export interface TicketMoneyQuestion {
   affected: AffectedLine[];
   shortAmount: bigint | null;
   code: boolean;
+  redelivery: boolean;
 }
 
 export type TicketPage = Ticket & {
@@ -178,6 +183,8 @@ export type TicketPage = Ticket & {
   // lines, money and the captain's record at the door, for the affected
   // items, M and the code.
   order: TicketOrderFacts | null;
+  // The free re-deliveries placed for it (slice 2.23d), newest first.
+  redeliveries: TicketRedelivery[];
 };
 
 export interface TicketFilters {
@@ -212,6 +219,8 @@ export type TicketRefusal =
   | 'no_base_currency'
   | 'currency_changed'
   | 'money_already_resolved'
+  | 'affected_required'
+  | 'captain_pay_unset'
   | 'forbidden';
 
 export class TicketRefusedError extends Error {
@@ -656,18 +665,20 @@ export class SupportService {
       .from(ticketNotes)
       .where(eq(ticketNotes.ticketId, id))
       .orderBy(ticketNotes.createdAt, ticketNotes.id);
-    const [[view], names, pickupDispute, order] = await Promise.all([
+    const [[view], names, pickupDispute, order, redeliveries] = await Promise.all([
       this.views([row]),
       this.admins.names(notes.map((note) => note.authorId)),
       row.pickupDisputeId === null
         ? Promise.resolve(null)
         : this.pickupDisputes().facts(row.pickupDisputeId),
       this.readsOrder(row) ? this.ticketOrders().facts(row.orderId) : Promise.resolve(null),
+      row.orderId === null ? Promise.resolve([]) : this.ticketOrders().redeliveries(row.id),
     ]);
     return {
       ...view!,
       pickupDispute,
       order,
+      redeliveries,
       notes: notes.map((note) => ({
         id: note.id,
         authorId: note.authorId,
@@ -870,13 +881,18 @@ export class SupportService {
       throw new TicketRefusedError('ticket_not_open', 'the ticket is no longer open');
     }
     const { money } = await this.checkMoney(row, {
-      resolution: question.code ? 'compensation_code' : 'none_explained',
+      resolution: question.redelivery
+        ? 'free_redelivery'
+        : question.code
+          ? 'compensation_code'
+          : 'none_explained',
       responsible: question.responsible,
       affected: question.affected,
       shortAmount: question.shortAmount,
       // The value is the dialog's to fill; the preview's entries do not
       // depend on it.
       codeValue: question.code && row.typeCode !== WRONG_CHANGE_TYPE,
+      chargePay: false,
     });
     if (money === null) {
       return {
@@ -885,6 +901,7 @@ export class SupportService {
         merchantDebit: 0n,
         captainCharge: 0n,
         entries: [],
+        redelivery: null,
       };
     }
     return this.ticketOrders().preview(row.orderId!, money);
@@ -900,6 +917,7 @@ export class SupportService {
       affected: AffectedLine[];
       shortAmount: bigint | null;
       codeValue: boolean;
+      chargePay: boolean;
     },
   ): Promise<{ facts: TicketOrderFacts | null; money: TicketMoneyInput | null }> {
     const facts = this.readsOrder(row) ? await this.ticketOrders().facts(row.orderId) : null;
@@ -914,6 +932,7 @@ export class SupportService {
       affectedLines: input.affected.length,
       shortAmount: input.shortAmount,
       codeValue: input.codeValue,
+      chargePay: input.chargePay,
     });
     if (problem !== null) throw new TicketRefusedError(problem, `the money is ${problem}`);
     // M is above zero and at most what the captain recorded as received
@@ -935,6 +954,7 @@ export class SupportService {
               input.shortAmount === null
                 ? null
                 : { amount: input.shortAmount, code: input.resolution === 'compensation_code' },
+            redelivery: input.resolution === 'free_redelivery',
           }
         : null;
     return { facts, money };
@@ -989,9 +1009,16 @@ export class SupportService {
       affected: input.affected,
       shortAmount: input.shortAmount,
       codeValue: input.code !== null,
+      chargePay: input.chargePay,
     });
     // V's lines are checked before the transaction (invalid_affected).
     if (money !== null) await this.ticketOrders().preview(found.orderId!, money);
+    // AP §9.9.3 (slice 2.23d): the re-delivery's slow reads (409
+    // captain_pay_unset without a pay table in force).
+    const redelivery =
+      money?.redelivery === true
+        ? await this.ticketOrders().prepareRedelivery(found.orderId!, now)
+        : null;
     const compensation =
       input.resolution === 'compensation_code'
         ? await this.prepareCode(found, facts, input, admin)
@@ -1022,7 +1049,20 @@ export class SupportService {
               now,
             });
       let affected: { lines: StoredAffectedLine[]; value: bigint } | null = null;
-      if (money !== null) {
+      let placed: { orderId: string; number: bigint } | null = null;
+      if (money !== null && redelivery !== null) {
+        const made = await this.ticketOrders().redeliver(tx, {
+          orderId: before.orderId!,
+          ticketId: id,
+          money,
+          chargePay: input.chargePay,
+          prepared: redelivery,
+          adminId: admin.accountId,
+          now,
+        });
+        placed = made.redelivery;
+        affected = { lines: made.affected, value: made.affectedValue };
+      } else if (money !== null) {
         const posted = await this.ticketOrders().post(tx, {
           orderId: before.orderId!,
           ticketId: id,
@@ -1108,6 +1148,7 @@ export class SupportService {
             affectedValue: after.affectedValue?.toString() ?? null,
             shortAmount: after.shortAmount?.toString() ?? null,
             compensationId: after.compensationId,
+            redeliveryOrderId: placed?.orderId ?? null,
           },
           reason: message,
         },

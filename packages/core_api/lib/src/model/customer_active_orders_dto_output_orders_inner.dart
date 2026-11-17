@@ -4,6 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_lines_inner.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_redelivery_of.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_restaurant.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_delivery.dart';
@@ -29,6 +30,7 @@ part 'customer_active_orders_dto_output_orders_inner.g.dart';
 /// Properties:
 /// * [id]
 /// * [number] - Shown as #10423 (AP §4.8).
+/// * [redeliveryOf]
 /// * [status] - AP §8.1.
 /// * [version] - Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown (RA §4.3).
 /// * [placedAt]
@@ -66,6 +68,9 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInner
   /// Shown as #10423 (AP §4.8).
   @BuiltValueField(wireName: r'number')
   String get number;
+
+  @BuiltValueField(wireName: r'redeliveryOf')
+  CustomerActiveOrdersDtoOutputOrdersInnerRedeliveryOf? get redeliveryOf;
 
   /// AP §8.1.
   @BuiltValueField(wireName: r'status')
@@ -189,6 +194,15 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerSerializer
       object.number,
       specifiedType: const FullType(String),
     );
+    yield r'redeliveryOf';
+    yield object.redeliveryOf == null
+        ? null
+        : serializers.serialize(
+            object.redeliveryOf,
+            specifiedType: const FullType.nullable(
+              CustomerActiveOrdersDtoOutputOrdersInnerRedeliveryOf,
+            ),
+          );
     yield r'status';
     yield serializers.serialize(
       object.status,
@@ -409,6 +423,18 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerSerializer
                   )
                   as String;
           result.number = valueDes;
+          break;
+        case r'redeliveryOf':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      CustomerActiveOrdersDtoOutputOrdersInnerRedeliveryOf,
+                    ),
+                  )
+                  as CustomerActiveOrdersDtoOutputOrdersInnerRedeliveryOf?;
+          if (valueDes == null) continue;
+          result.redeliveryOf.replace(valueDes);
           break;
         case r'status':
           final valueDes =

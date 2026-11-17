@@ -37,7 +37,7 @@ export class SupportModule {}
 
 // The worker's side: ordering's alerts sync tells it when an order ends.
 @Module({
-  imports: [DatabaseModule, NotificationsWorkerModule],
+  imports: [DatabaseModule, NotificationsWorkerModule, AuditModule],
   providers: [TicketSync],
   exports: [TicketSync],
 })
@@ -66,6 +66,7 @@ export {
   type TicketMoneyPreview,
   type TicketOrderFacts,
   type TicketOrders,
+  type TicketRedelivery,
 } from './ticket-orders.js';
 export { TicketSync } from './ticket-sync.js';
 export {

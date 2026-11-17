@@ -34,7 +34,7 @@ abstract class AdminOrderTicketsDtoOutputTicketsInnerResolution
         > {
   @BuiltValueField(wireName: r'code')
   AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum get code;
-  // enum codeEnum {  none_explained,  compensation_code,  price_corrected,  price_correct,  captain_paid,  accounts_corrected,  payment_correct,  };
+  // enum codeEnum {  none_explained,  compensation_code,  free_redelivery,  price_corrected,  price_correct,  captain_paid,  accounts_corrected,  payment_correct,  };
 
   @BuiltValueField(wireName: r'responsible')
   AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum?
@@ -384,6 +384,10 @@ class AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
   static const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
   compensationCode =
       _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_compensationCode;
+  @BuiltValueEnumConst(wireName: r'free_redelivery')
+  static const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
+  freeRedelivery =
+      _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_freeRedelivery;
   @BuiltValueEnumConst(wireName: r'price_corrected')
   static const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
   priceCorrected =
