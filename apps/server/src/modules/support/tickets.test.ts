@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import {
   afterFirstHandling,
+  canClose,
   canSetStatus,
   isBreached,
   isUrgent,
+  resolutionProblem,
+  resolutionsOf,
   slaAtOpening,
   slaState,
   slaStop,
+  ticketKind,
   TICKET_TYPE_LISTS,
 } from './tickets.js';
 
@@ -17,15 +21,146 @@ const rules = { firstResponseMinutes: 15, resolutionHours: 24 };
 // priority, the SLA timer and the status moves of a ticket.
 describe('the priority', () => {
   it('is urgent for an open ticket while its order is active', () => {
-    expect(isUrgent({ status: 'new', orderActive: true })).toBe(true);
-    expect(isUrgent({ status: 'in_progress', orderActive: true })).toBe(true);
-    expect(isUrgent({ status: 'waiting', orderActive: true })).toBe(true);
+    expect(isUrgent({ status: 'new', orderActive: true, kind: 'general' })).toBe(true);
+    expect(isUrgent({ status: 'in_progress', orderActive: true, kind: 'general' })).toBe(true);
+    expect(isUrgent({ status: 'waiting', orderActive: true, kind: 'general' })).toBe(true);
   });
 
   it('is normal once the order ended, without an order, or once the ticket is resolved', () => {
-    expect(isUrgent({ status: 'new', orderActive: false })).toBe(false);
-    expect(isUrgent({ status: 'resolved', orderActive: true })).toBe(false);
-    expect(isUrgent({ status: 'closed', orderActive: true })).toBe(false);
+    expect(isUrgent({ status: 'new', orderActive: false, kind: 'general' })).toBe(false);
+    expect(isUrgent({ status: 'resolved', orderActive: true, kind: 'general' })).toBe(false);
+    expect(isUrgent({ status: 'closed', orderActive: true, kind: 'general' })).toBe(false);
+  });
+
+  it('is urgent for every open pickup-dispute ticket, its order active or not (AP §9.9.2)', () => {
+    expect(isUrgent({ status: 'new', orderActive: false, kind: 'pickup_dispute' })).toBe(true);
+    expect(isUrgent({ status: 'waiting', orderActive: false, kind: 'pickup_dispute' })).toBe(true);
+    expect(isUrgent({ status: 'resolved', orderActive: true, kind: 'pickup_dispute' })).toBe(false);
+    expect(isUrgent({ status: 'new', orderActive: false, kind: 'price_difference' })).toBe(false);
+  });
+});
+
+// AP §9.9.3 (slice 2.23b): the resolutions each kind of ticket allows and
+// the responsible party.
+describe('the resolution', () => {
+  it('reads the kind from the type', () => {
+    expect(ticketKind('pickup_dispute')).toBe('pickup_dispute');
+    expect(ticketKind('price_difference')).toBe('price_difference');
+    expect(ticketKind('missing_item')).toBe('general');
+  });
+
+  it('offers each kind its own resolutions', () => {
+    expect(resolutionsOf('general')).toEqual(['none_explained']);
+    expect(resolutionsOf('price_difference')).toEqual(['price_corrected', 'price_correct']);
+    expect(resolutionsOf('pickup_dispute')).toEqual([
+      'captain_paid',
+      'accounts_corrected',
+      'payment_correct',
+    ]);
+  });
+
+  it('requires the responsible party except for a price difference and a pickup dispute', () => {
+    const lines = null;
+    expect(
+      resolutionProblem({
+        kind: 'general',
+        resolution: 'none_explained',
+        responsible: null,
+        lines,
+      }),
+    ).toBe('responsible_required');
+    for (const responsible of ['restaurant', 'captain', 'customer', 'platform'] as const) {
+      expect(
+        resolutionProblem({ kind: 'general', resolution: 'none_explained', responsible, lines }),
+      ).toBeNull();
+    }
+    expect(
+      resolutionProblem({
+        kind: 'price_difference',
+        resolution: 'price_correct',
+        responsible: null,
+        lines,
+      }),
+    ).toBeNull();
+    expect(
+      resolutionProblem({
+        kind: 'price_difference',
+        resolution: 'price_correct',
+        responsible: 'restaurant',
+        lines,
+      }),
+    ).toBe('invalid_resolution');
+    expect(
+      resolutionProblem({
+        kind: 'pickup_dispute',
+        resolution: 'captain_paid',
+        responsible: 'captain',
+        lines,
+      }),
+    ).toBe('invalid_resolution');
+  });
+
+  it("refuses another kind's resolution", () => {
+    expect(
+      resolutionProblem({
+        kind: 'general',
+        resolution: 'price_correct',
+        responsible: 'platform',
+        lines: null,
+      }),
+    ).toBe('invalid_resolution');
+    expect(
+      resolutionProblem({
+        kind: 'price_difference',
+        resolution: 'none_explained',
+        responsible: null,
+        lines: null,
+      }),
+    ).toBe('invalid_resolution');
+    expect(
+      resolutionProblem({
+        kind: 'pickup_dispute',
+        resolution: 'price_corrected',
+        responsible: null,
+        lines: null,
+      }),
+    ).toBe('invalid_resolution');
+  });
+
+  it('takes the received lines with «تصحيح في الحسابات» only', () => {
+    const lines = [{ currency: 'TRY', amount: 19_500n }];
+    expect(
+      resolutionProblem({
+        kind: 'pickup_dispute',
+        resolution: 'accounts_corrected',
+        responsible: null,
+        lines,
+      }),
+    ).toBeNull();
+    expect(
+      resolutionProblem({
+        kind: 'pickup_dispute',
+        resolution: 'accounts_corrected',
+        responsible: null,
+        lines: null,
+      }),
+    ).toBe('lines_required');
+    expect(
+      resolutionProblem({
+        kind: 'pickup_dispute',
+        resolution: 'payment_correct',
+        responsible: null,
+        lines,
+      }),
+    ).toBe('invalid_resolution');
+  });
+
+  it('closes an open ticket only (owner decision 2026-11-17)', () => {
+    expect(canClose('new')).toBe(true);
+    expect(canClose('in_progress')).toBe(true);
+    expect(canClose('waiting')).toBe(true);
+    expect(canClose('resolved')).toBe(false);
+    expect(canClose('closed')).toBe(false);
   });
 });
 

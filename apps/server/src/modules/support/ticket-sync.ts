@@ -5,7 +5,7 @@ import { and, eq } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { AlertsService, PlatformBroadcasts } from '../notifications/index.js';
 import { tickets } from './schema.js';
-import { isUrgent } from './tickets.js';
+import { isUrgent, ticketKind } from './tickets.js';
 
 type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
 type TicketRow = typeof tickets.$inferSelect;
@@ -28,7 +28,9 @@ export class TicketSync {
       tx,
       { type: 'ticket', id: row.id, cityId: row.cityId, details },
       ['urgent_ticket'],
-      isUrgent({ status: row.status, orderActive: row.orderActive }) ? ['urgent_ticket'] : [],
+      isUrgent({ status: row.status, orderActive: row.orderActive, kind: ticketKind(row.typeCode) })
+        ? ['urgent_ticket']
+        : [],
       now,
     );
     await this.broadcasts.enqueue(tx, {
