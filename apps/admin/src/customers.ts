@@ -18,6 +18,7 @@ export const CUSTOMERS_MANAGE = 'customers.manage';
 export const CUSTOMERS_CLEAR_STRIKES = 'customers.clear_strikes';
 export const CUSTOMERS_TEST_ACCOUNT = 'customers.test_account';
 export const CUSTOMERS_SIGN_OUT = 'customers.sign_out_everywhere';
+export const CUSTOMERS_CLOSE = 'customers.close_account';
 
 export type FoundCustomer =
   components['schemas']['AdminCustomersFoundDto_Output']['customers'][number];
@@ -34,6 +35,7 @@ export const statusKeys = {
   blocked: 'customers.status.blocked',
   dues_unpaid: 'customers.status.dues_unpaid',
   review_stop: 'customers.status.review_stop',
+  closed: 'customers.status.closed',
 } as const satisfies Record<CustomerStatus, string>;
 
 export const BLOCK_KINDS = ['until', 'indefinite', 'dues'] as const satisfies readonly BlockKind[];
@@ -350,6 +352,8 @@ export const actionRefusals = [
   'phone_taken',
   'unknown_customer',
   'idempotency_key_reused',
+  'active_order',
+  'account_closed',
 ] as const;
 export type ActionRefusal = (typeof actionRefusals)[number];
 export type ActionResult =
@@ -366,7 +370,8 @@ export type CustomerAction =
   | {
       path: '/v1/admin/customers/{customerId}/change-phone';
       body: { phone: string; note: string };
-    };
+    }
+  | { path: '/v1/admin/customers/{customerId}/close'; body: { note: string } };
 
 function sendAction(
   action: CustomerAction,
@@ -383,6 +388,8 @@ function sendAction(
     case '/v1/admin/customers/{customerId}/test-account':
       return api.POST(action.path, { params, body: { cityId, ...action.body } });
     case '/v1/admin/customers/{customerId}/change-phone':
+      return api.POST(action.path, { params, body: { cityId, ...action.body } });
+    case '/v1/admin/customers/{customerId}/close':
       return api.POST(action.path, { params, body: { cityId, ...action.body } });
   }
 }

@@ -20,6 +20,7 @@ import {
   CUSTOMERS_MANAGE,
   CUSTOMERS_READ,
   CUSTOMERS_SIGN_OUT,
+  CUSTOMERS_CLOSE,
   CUSTOMERS_TEST_ACCOUNT,
   type CustomerAction,
   type CustomerProfile,
@@ -198,6 +199,16 @@ function ProfileWithActions({ profile, city }: { profile: CustomerProfile; city:
       {can(session, CUSTOMERS_SIGN_OUT) && (
         <SignOutEverywhere cityId={city.id} customerId={customerId} />
       )}
+      {/* D19, AP §8.8 (slice 2.25c): on the customer's request. */}
+      {can(session, CUSTOMERS_CLOSE) && profile.closed === null && (
+        <ProfileAction
+          cityId={city.id}
+          customerId={customerId}
+          title={t('customers.close.title')}
+          hint={t('customers.close.hint')}
+          action={(note) => ({ path: '/v1/admin/customers/{customerId}/close', body: { note } })}
+        />
+      )}
       {can(session, CUSTOMERS_BLOCK) && (
         <>
           {profile.block && (
@@ -311,6 +322,18 @@ function Profile({
                 : t('customers.duesNone')}
         </dd>
       </dl>
+      {profile.closed && (
+        <p>
+          {t('customers.closedAt', {
+            at: formatDateTime(profile.closed.at, city.timeZone),
+            by: profile.closed.byName ?? t('customers.closedByCustomer'),
+          })}
+          {profile.closed.reason && (
+            <> {t('customers.closedReason', { reason: profile.closed.reason })}</>
+          )}
+        </p>
+      )}
+      <LinkedAccounts accounts={profile.linkedAccounts} timeZone={city.timeZone} />
       {profile.reviewStop && (
         <p>
           {t('customers.reviewStop', {
@@ -674,6 +697,41 @@ function Unblock({
 
 // Slice 2.25b: a profile command that needs only its reason («توثيق»,
 // «إزالة الثقة», «مسح المخالفات», «إنهاء الإيقاف»).
+// AP §9.8 «linked closed accounts» (AP §8.8, slice 2.25c): the other
+// accounts of the line, each linked to its profile.
+function LinkedAccounts({
+  accounts,
+  timeZone,
+}: {
+  accounts: CustomerProfile['linkedAccounts'];
+  timeZone: string;
+}) {
+  const { t } = useTranslation();
+  const search = profileRoute.useSearch();
+  if (accounts.length === 0) return null;
+  return (
+    <section>
+      <h2>{t('customers.linked.title')}</h2>
+      <ul>
+        {accounts.map((account) => (
+          <li key={account.id}>
+            <Link to="/customers/$customerId" params={{ customerId: account.id }} search={search}>
+              {account.closedAt === null
+                ? t('customers.linked.active', {
+                    created: formatDateTime(account.createdAt, timeZone),
+                  })
+                : t('customers.linked.closed', {
+                    created: formatDateTime(account.createdAt, timeZone),
+                    closed: formatDateTime(account.closedAt, timeZone),
+                  })}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 function ProfileAction({
   cityId,
   customerId,
