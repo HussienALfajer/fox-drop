@@ -32,12 +32,17 @@ class RatingDraft {
 
   bool get ready => stars != null;
 
-  /// Other stars change the list of chips, so the chips chosen go.
+  /// Other stars change the list of chips, so the chips chosen go; the
+  /// chosen star tapped again clears the part, which is then skipped (CU
+  /// §12.1: one part can be sent and the other skipped).
   RatingDraft withStars(int value) => RatingDraft(
-    stars: value,
-    reasons: value == stars ? reasons : const {},
+    stars: value == stars ? null : value,
+    reasons: const {},
     comment: comment,
   );
+
+  /// The comment, counted in code points as the server counts it.
+  bool get commentFits => comment.trim().runes.length <= maxRatingComment;
 
   RatingDraft toggle(String code) => RatingDraft(
     stars: stars,
@@ -93,6 +98,17 @@ class RateOrder {
 
   Future<RateOutcome> send(Map<RatingParty, RatingDraft> parts) async {
     final alive = _ref.keepAlive();
+    try {
+      return await _send(parts, retried: false);
+    } finally {
+      alive.close();
+    }
+  }
+
+  Future<RateOutcome> _send(
+    Map<RatingParty, RatingDraft> parts, {
+    required bool retried,
+  }) async {
     final api = _ref.read(coreApiProvider).getCustomerApi();
     String? comment(RatingDraft draft) {
       final text = draft.comment.trim();
@@ -106,13 +122,13 @@ class RateOrder {
         orderId: orderId,
         customerRateOrderDto: CustomerRateOrderDto(
           (b) => b
-            ..restaurant = restaurant == null || !restaurant.ready
+            ..restaurant = restaurant == null
                 ? null
                 : (CustomerRateOrderDtoRestaurantBuilder()
                     ..stars = restaurant.stars
                     ..reasons.addAll(restaurant.reasons)
                     ..comment = comment(restaurant))
-            ..captain = captain == null || !captain.ready
+            ..captain = captain == null
                 ? null
                 : (CustomerRateOrderDtoCaptainBuilder()
                     ..stars = captain.stars
@@ -126,6 +142,26 @@ class RateOrder {
       final status = error.response?.statusCode;
       if (status == null || status >= 500) return RateOutcome.failed;
       switch (AuthRefusal.of(error).error) {
+        case 'already_rated' when !retried:
+          // A lost answer retried, or a part sent from another phone: what
+          // this request carried and is still left goes again, once.
+          _refresh();
+          final Set<RatingParty> left;
+          try {
+            final answer = await api.customerOrdersOrder(orderId: orderId);
+            left = ratingPartsLeft(
+              answer.data!.order,
+              _ref.read(serverClockProvider).now(),
+            );
+          } on DioException {
+            return RateOutcome.failed;
+          }
+          final rest = {
+            for (final entry in parts.entries)
+              if (left.contains(entry.key)) entry.key: entry.value,
+          };
+          if (rest.isEmpty) return RateOutcome.sent;
+          return _send(rest, retried: true);
         case 'already_rated' || 'rating_closed' || 'not_ratable':
           _refresh();
           return RateOutcome.refused;
@@ -135,8 +171,6 @@ class RateOrder {
         default:
           return RateOutcome.failed;
       }
-    } finally {
-      alive.close();
     }
   }
 

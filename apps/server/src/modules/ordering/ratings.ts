@@ -2,7 +2,7 @@ import { Inject, Injectable, type OnModuleInit } from '@nestjs/common';
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
-import { ContentRefusedError, ContentService, type ReasonList } from '../content/index.js';
+import { ContentService, type ReasonList } from '../content/index.js';
 import { CaptainsService } from '../captains/index.js';
 import { type CustomerRating, CustomersService } from '../customers/index.js';
 import { MerchantsService } from '../merchants/index.js';
@@ -145,16 +145,18 @@ export class RatingsService implements OnModuleInit {
       const part = parts[party];
       if (part === undefined) continue;
       if (part.stars < 1 || part.stars > 5) throw new RatingRefusedError('invalid_rating');
-      const list = reasonListFor(party, part.stars);
+      // An active reason of the list for the stars; a rating's chip takes
+      // no text, whatever note mode the panel gives it.
+      const active = new Map(
+        (await this.content.reasonsOf(reasonListFor(party, part.stars)))
+          .filter((reason) => reason.active)
+          .map((reason) => [reason.code, reason.label]),
+      );
       const reasons: { code: string; label: string }[] = [];
       for (const code of part.reasons) {
-        try {
-          const reason = await this.content.choose(list, { code, note: null });
-          reasons.push({ code: reason.code, label: reason.label });
-        } catch (error) {
-          if (error instanceof ContentRefusedError) throw new RatingRefusedError('unknown_reason');
-          throw error;
-        }
+        const label = active.get(code);
+        if (label === undefined) throw new RatingRefusedError('unknown_reason');
+        reasons.push({ code, label });
       }
       chosen.set(party, reasons);
     }

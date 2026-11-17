@@ -1,5 +1,6 @@
 import 'package:core_l10n/core_l10n.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../api.dart';
@@ -59,6 +60,8 @@ class _RateOrderSheetState extends ConsumerState<RateOrderSheet> {
       for (final entry in _drafts.entries)
         if (entry.value.ready) entry.key: entry.value,
     });
+    // A lost answer retried, or a part sent from another phone, is resent
+    // without the parts already in the order (`RateOrder.send`).
     if (!mounted) return;
     if (outcome == RateOutcome.failed) {
       setState(() => _sending = false);
@@ -92,7 +95,9 @@ class _RateOrderSheetState extends ConsumerState<RateOrderSheet> {
               FilledButton(
                 key: const Key('rating-send'),
                 onPressed:
-                    _sending || !_drafts.values.any((draft) => draft.ready)
+                    _sending ||
+                        !_drafts.values.any((draft) => draft.ready) ||
+                        !_drafts.values.every((draft) => draft.commentFits)
                     ? null
                     : _send,
                 child: Text(l10n.customerRatingSend),
@@ -158,7 +163,10 @@ class _RateOrderSheetState extends ConsumerState<RateOrderSheet> {
         ),
         TextField(
           key: Key('rating-${party.name}-comment'),
+          // The counter shows the limit; the send waits for a comment that
+          // fits in code points, as the server counts it.
           maxLength: maxRatingComment,
+          maxLengthEnforcement: MaxLengthEnforcement.none,
           enabled: !_sending,
           decoration: InputDecoration(labelText: l10n.customerRatingComment),
           onChanged: (value) => update(draft.withComment(value)),

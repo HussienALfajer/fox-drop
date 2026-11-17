@@ -100,10 +100,11 @@ const ratingPart = z.object({
   comment: z
     .string()
     .trim()
-    .max(RATING_COMMENT_MAX)
+    // Counted in code points, as the database's length() and the app count.
+    .refine((value) => [...value].length <= RATING_COMMENT_MAX, 'up to 300 characters')
     .nullable()
     .transform((value) => (value === '' ? null : value))
-    .describe('Up to 300 characters; null without one.'),
+    .describe('Up to 300 characters, counted in code points; null without one.'),
 });
 
 class CustomerRateOrderDto extends createZodDto(

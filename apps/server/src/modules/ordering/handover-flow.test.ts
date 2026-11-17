@@ -268,6 +268,20 @@ describe('POST /v1/captain/orders/{orderId}/receive-handover (CA §9.10.1, §15)
     expect(await balance('captain.earnings', second.captainId)).toBe(2_500n);
     expect(await balance('captain.custody', first.captainId)).toBe(-24_000n);
     expect(await balance('captain.earnings', first.captainId)).toBe(0n);
+
+    // CU §12.1 (slice 2.26a): «قيّم الكابتن» rates the captain who delivered.
+    const rated = await app.inject({
+      method: 'POST',
+      url: `/v1/customer/orders/${order.id}/rating`,
+      headers: order.customer,
+      payload: { restaurant: null, captain: { stars: 5, reasons: [], comment: null } },
+    });
+    expect(rated.statusCode).toBe(200);
+    const { rows: ratings } = await sql.query(
+      'SELECT captain_id FROM ordering.ratings WHERE order_id = $1',
+      [order.id],
+    );
+    expect(ratings).toEqual([{ captain_id: second.captainId }]);
   });
 
   it('refuses a captain who is not the handover’s second captain', async () => {

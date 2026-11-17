@@ -214,6 +214,13 @@ describe('«قيّم المطعم» and «قيّم الكابتن»', () => {
     }
     const shown = await page();
     expect(shown.ratingCount).toBeGreaterThanOrEqual(5);
+    // A test order's rating never counts (AP §9.6.3).
+    const test = await deliveredOrder();
+    await sql.query('UPDATE ordering.orders SET test_order = true WHERE id = $1', [test.id]);
+    expect(
+      (await rate(test.id, test.customer, { restaurant: { stars: 1, reasons: [] } })).statusCode,
+    ).toBe(200);
+    expect(await page()).toMatchObject({ rating: shown.rating, ratingCount: shown.ratingCount });
     const list = (
       await app.inject({
         method: 'GET',

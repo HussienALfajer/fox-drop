@@ -156,6 +156,14 @@ void main() {
       final send = find.byKey(const Key('rating-send'));
       expect(tester.widget<FilledButton>(send).onPressed, isNull);
 
+      // A star tapped again clears the part, which is then skipped.
+      await tester.tap(find.byKey(const Key('rating-captain-star-3')));
+      await tester.pumpAndSettle();
+      expect(tester.widget<FilledButton>(send).onPressed, isNotNull);
+      await tester.tap(find.byKey(const Key('rating-captain-star-3')));
+      await tester.pumpAndSettle();
+      expect(tester.widget<FilledButton>(send).onPressed, isNull);
+
       await tester.tap(find.byKey(const Key('rating-restaurant-star-5')));
       await tester.pumpAndSettle();
       expect(find.text('طعم رائع'), findsOneWidget);
@@ -217,30 +225,32 @@ void main() {
     await app.done(tester);
   });
 
-  testWidgets('says so when the part was sent from another phone', (
-    tester,
-  ) async {
-    final app = await open(tester, [
-      FakeAnswer(200, {
-        'order': _order(rating: _rating(until: later, captainRatable: false)),
-      }),
-      FakeAnswer(200, {
-        'order': _order(
-          rating: _rating(captainRatable: false, restaurant: _sentRestaurant),
-        ),
-      }),
-    ]);
-    app.server.on('/v1/customer/orders/$_orderId/rating', [
-      const FakeAnswer(409, {'statusCode': 409, 'error': 'already_rated'}),
-    ]);
-    expect(find.byKey(const Key('rating-captain')), findsNothing);
-    await tester.tap(find.byKey(const Key('rating-restaurant-star-4')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('rating-send')));
-    await tester.pumpAndSettle();
-    expect(find.text('لم يعد بالإمكان إرسال هذا التقييم'), findsOneWidget);
-    expect(find.text('تقييمك للمطعم: 2 من 5'), findsOneWidget);
-    expect(find.byKey(const Key('order-rate')), findsNothing);
-    await app.done(tester);
-  });
+  testWidgets(
+    'takes a part sent from another phone, or before a lost answer, as sent',
+    (tester) async {
+      final app = await open(tester, [
+        FakeAnswer(200, {
+          'order': _order(rating: _rating(until: later, captainRatable: false)),
+        }),
+        FakeAnswer(200, {
+          'order': _order(
+            rating: _rating(captainRatable: false, restaurant: _sentRestaurant),
+          ),
+        }),
+      ]);
+      app.server.on('/v1/customer/orders/$_orderId/rating', [
+        const FakeAnswer(409, {'statusCode': 409, 'error': 'already_rated'}),
+      ]);
+      expect(find.byKey(const Key('rating-captain')), findsNothing);
+      await tester.tap(find.byKey(const Key('rating-restaurant-star-4')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('rating-send')));
+      await tester.pumpAndSettle();
+      // The part is in the order now: nothing is left to resend.
+      expect(find.text('شكراً لتقييمك'), findsOneWidget);
+      expect(find.text('تقييمك للمطعم: 2 من 5'), findsOneWidget);
+      expect(find.byKey(const Key('order-rate')), findsNothing);
+      await app.done(tester);
+    },
+  );
 }
