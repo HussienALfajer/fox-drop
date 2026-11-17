@@ -4,16 +4,22 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.22d, the compensation and discount costs (`docs/roadmap.md`, Phase 2, Money; the last of 2.22a–d).
+Slice 2.23, tickets (`docs/roadmap.md`, Phase 2, Support and trust). Not started: it is larger than one pull request.
 
-- **Roadmap line:** 2.22d «كلفة التعويضات والخصومات» in finance: for a period, the cost of codes, compensations and operating costs split by reason, by code, by responsible party and by restaurant, exported to Excel (AP §9.10.6). The owner reads a week's compensation by reason.
-- **Specs:** AP §9.10.6, AP §6 (who reads finance: FIN, OWN), `docs/domain/11` (`platform.discount_cost`, `platform.compensation_cost`, `platform.operating_cost`, `platform.test_cost`), `docs/domain/07`, AP §9.10.1 (the daily report's business day, slice 2.20d), architecture §5.9 (Excel exports, `reporting`); `apps/server/src/modules/marketing/CLAUDE.md` (compensations with their reason, late codes in `marketing.late_codes`, uses), `apps/server/src/modules/ordering/CLAUDE.md` (what books each cost and its party), `apps/admin/CLAUDE.md`.
-- **Branch:** `feat/compensation-costs`.
-- **Before starting, ask the owner:** the period's boundaries (business days like the daily report, or calendar days); whether a compensation's cost counts when the code is issued or when it is used (`docs/domain/11` books `platform.compensation_cost` when used); the late codes' line (their own reason «تأخير التوصيل» beside the compensation reasons).
+- **Roadmap line:** 2.23 Tickets: sources, list and page, SLA timers, every resolution type and its money effect per responsible party, the free re-delivery order, the urgent-ticket alert, pickup disputes with per-currency entries, canned replies (AP §8.10, §9.9, `docs/domain/10`). The owner resolves a ticket with a free re-delivery.
+- **Specs:** AP §8.10, AP §9.9, `docs/domain/10`, AP §6 (who handles tickets), AP §9.1.3 (the urgent-ticket alert), AP §9.3.2; the ledger's rule for a ticket's `merchant.debit` and `earn.charge` against `platform.compensation_cost` (`apps/server/src/modules/ledger/CLAUDE.md`); ordering's `pickup_disputes` (its `CLAUDE.md`, «The dispute after the pickup»).
+- **Branch:** none yet: each slice of the split names its own.
+- **Before starting, ask the owner:** the split into pull requests (run the `slice-plan` skill and get the split approved); the open items of `docs/open-questions.md` the tickets touch.
 - **Plan:**
-  - [x] The server: the period's costs from the ledger and marketing, split by reason (compensations' reasons, the late code, the operating costs' reasons), by code, by responsible party and by restaurant; the route, its permissions and the Excel export; the OpenAPI document and the clients.
-  - [x] The panel: «كلفة التعويضات والخصومات» in finance with the period, the splits and «تصدير Excel».
-  - [ ] Review, then hand over to the next slice.
+  - [ ] Split 2.23 with `slice-plan`, approved by the owner, and write the first slice's plan here.
+
+### Left from 2.22d (`feat/compensation-costs`)
+
+- **Before deploying to staging:** migration 0087 adds `cost_report` to `reporting.exports_kind_values` (expand only, `NOT VALID` then `VALIDATE`). New routes `GET /v1/admin/cost-report` and `POST /v1/admin/cost-report/exports` (`finance.read`). Deploy the server (API and worker) before the panel.
+- **To check on staging:** as OWN or FIN, the home page's «كلفة التعويضات والخصومات» opens the last 7 business days. Deliver an order with FOX10: «كلفة الخصومات» grows by the discount and «الخصومات حسب الكود» lists FOX10 with 1 order. Give a customer 25.00 with «تأخير», order with the code and deliver it: «كلفة التعويضات» 25.00, «التعويضات حسب السبب» lists «تأخير», and «حسب المطعم» counts it under the restaurant of the order compensated. As OPS cancel an accepted order with «تم تحضير الطعام» and the customer responsible: «الكلفة التشغيلية حسب السبب» lists «طعام حُضّر لطلب أُلغي» and «حسب الطرف المسؤول» «الزبون». The totals equal the sum of «التقرير اليومي»'s «خصومات تموّلها المنصة», «كلفة التعويضات» and «كلفة تشغيلية» over the same days. «تصدير Excel», then «تنزيل …»: the file opens right to left with the same numbers. As OPS the page is not offered.
+- **To confirm with the owner (the three questions of this slice were not answered, so the recommended choices were built):** the period is business days (the 06:00 cutoff, as the daily report) and the screen opens on the last 7; a compensation costs when its code is used (the ledger, `docs/domain/11`), a code issued and not used costs nothing and is not shown; the late codes are their own line «تأخير التوصيل» beside the reasons. Also: a compensation counts under the restaurant of the order compensated, not of the order the code was used on; «حسب الطرف المسؤول» splits the operating cost only (a compensation and a discount name no party); «الخصومات حسب الكود» is the platform's part of the codes of «أكواد الخصم» (the restaurants' part is on their statements); test orders' costs stay out; the words (`costReport.*` in `apps/admin/src/locales/ar.json`, shared with the Excel file): «طعام حُضّر لطلب أُلغي», «تعويض الكابتن عن طلب أُلغي», «طلب مجاني», «طلب وهمي», «طلب تالف», «طلب خطأ ورفضه الزبون», «تعذّر التسليم», «تعديل بعد الاستلام», «غير محدد».
+- **Decided by us:** an outcome's cost counts under the outcome and the party that posted it, so «تغيير النتيجة» in a later period shows as a negative there and never rewrites an earlier period; a line that cancels out within the period is left out; the report has no print layout (AP §9.10.6 names none).
+- **Not yet:** an end-to-end test of the report over real orders (the split is tested pure, each module's read against its database, the route with entries no order stands behind); what a ticket's remedy posts on `platform.compensation_cost` (2.23 places its line); the value of codes issued and not used.
 
 ### Left from 2.22c (`feat/late-code`)
 
