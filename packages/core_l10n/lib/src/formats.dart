@@ -27,7 +27,9 @@ String? minorOfTyped(String typed, String currency) {
   if (match == null) return null;
   final fraction = match.group(2) ?? '';
   if (fraction.length > decimals) return null;
-  final minor = BigInt.parse(match.group(1)! + fraction.padRight(decimals, '0'));
+  final minor = BigInt.parse(
+    match.group(1)! + fraction.padRight(decimals, '0'),
+  );
   return minor == BigInt.zero ? null : minor.toString();
 }
 
