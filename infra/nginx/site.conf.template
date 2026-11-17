@@ -55,6 +55,17 @@ server {
         proxy_set_header Cookie "";
     }
 
+    # The customers' report photos (CU §12.2, §9.5; slice 2.24a): a GET signed
+    # by the API for this host, valid 10 minutes, for the ticket page. Only
+    # GET (and HEAD), only tickets/.
+    location /private-docs/tickets/ {
+        limit_except GET { deny all; }
+        access_log off;
+        proxy_pass http://127.0.0.1:${STORAGE_PORT};
+        include snippets/foxdrop-proxy.conf;
+        proxy_set_header Cookie "";
+    }
+
     location / {
         proxy_pass http://127.0.0.1:${ADMIN_PORT};
         include snippets/foxdrop-proxy.conf;
@@ -80,6 +91,18 @@ server {
     listen [::]:443 ssl http2;
     server_name ${API_HOST};
     include snippets/foxdrop-${FOXDROP_ENV}-server.conf;
+
+    # The apps' uploads (CU §12.2, §9.5; slice 2.24a): a PUT signed by the API
+    # for this host into the private bucket's incoming/, passed to the
+    # storage as the panel's are. Only PUT, only incoming/.
+    location /private-docs/incoming/ {
+        limit_except PUT { deny all; }
+        client_max_body_size 9m;
+        access_log off;
+        proxy_pass http://127.0.0.1:${STORAGE_PORT};
+        include snippets/foxdrop-proxy.conf;
+        proxy_set_header Cookie "";
+    }
 
     location / { return 404; }
 }

@@ -4,12 +4,16 @@ import { AuditModule } from '../audit/index.js';
 import { CaptainsModule } from '../captains/index.js';
 import { ContentModule } from '../content/index.js';
 import { CustomersModule } from '../customers/index.js';
+import { FilesModule } from '../files/index.js';
+import { FxModule } from '../fx/index.js';
+import { GeoModule } from '../geo/index.js';
 import { IdentityModule } from '../identity/index.js';
 import { MarketingModule } from '../marketing/index.js';
 import { MerchantsModule } from '../merchants/index.js';
 import { NotificationsModule, NotificationsWorkerModule } from '../notifications/index.js';
 import { SettingsModule } from '../settings/index.js';
 import { AdminTicketsController } from './admin-tickets.controller.js';
+import { CustomerPriceReportsController } from './customer-price-reports.controller.js';
 import { SupportService } from './support.service.js';
 import { TicketSync } from './ticket-sync.js';
 
@@ -28,8 +32,11 @@ import { TicketSync } from './ticket-sync.js';
     MerchantsModule,
     CustomersModule,
     MarketingModule,
+    FilesModule,
+    FxModule,
+    GeoModule,
   ],
-  controllers: [AdminTicketsController],
+  controllers: [AdminTicketsController, CustomerPriceReportsController],
   providers: [SupportService, TicketSync],
   exports: [SupportService, TicketSync],
 })
@@ -44,7 +51,11 @@ export class SupportModule {}
 export class SupportWorkerModule {}
 
 export {
+  type CustomerReport,
+  type CustomerReportView,
   type OpenTicket,
+  type ReportedOrder,
+  type ReportingCustomer,
   type Ticket,
   type TicketAdmin,
   type TicketOrder,

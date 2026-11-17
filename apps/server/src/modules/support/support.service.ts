@@ -13,6 +13,9 @@ import {
   NotificationTexts,
 } from '../content/index.js';
 import { CustomersService } from '../customers/index.js';
+import { FilesService } from '../files/index.js';
+import { FxService } from '../fx/index.js';
+import { GeoService, lastCutoff } from '../geo/index.js';
 import {
   AdminSessionsService,
   CaptainAccountsService,
@@ -37,6 +40,7 @@ import type {
   TicketRedelivery,
 } from './ticket-orders.js';
 import { TicketSync } from './ticket-sync.js';
+import { priceReportProblem, type ReportedItem, reportProblem, reportUntil } from './reports.js';
 import { noteKeys, ticketNotes, ticketNumbers, tickets, type TicketSource } from './schema.js';
 import {
   afterFirstHandling,
@@ -97,6 +101,55 @@ export interface OpenTicket {
   description: string;
   // «سعر مختلف عن المحل»: the restaurant it is about; null for every other.
   restaurantId: string | null;
+}
+
+// CU §12.2 (slice 2.24a): the customer's «الإبلاغ عن مشكلة» on an order.
+export interface CustomerReport {
+  typeCode: string;
+  note: string | null;
+  items: ReportedItem[];
+  photoUploadIds: string[];
+}
+
+// The order a customer reports on, as ordering reads it: under its lock for
+// the opening, so its status and delivery are exactly the order's then.
+export interface ReportedOrder extends TicketOrder {
+  status: string;
+  deliveredAt: Date | null;
+  lines: { position: number; name: string; quantity: number }[];
+}
+
+// CU §9.5 (slice 2.24a): «أبلغ عن سعر مختلف», every field optional.
+export interface PriceReport {
+  restaurantId: string;
+  itemId: string | null;
+  shopPrice: bigint | null;
+  note: string | null;
+  photoUploadId: string | null;
+}
+
+// Who sends a report from the customer app, for the ticket and its audit.
+export interface ReportingCustomer {
+  accountId: string;
+  context: AuditRequestContext;
+}
+
+// CU §12.2: «بلاغك T-{رقم}: {الحالة}» and the resolution message on the order.
+export interface CustomerReportView {
+  ticketId: string;
+  number: bigint;
+  status: TicketStatus;
+  message: string | null;
+  resolvedAt: Date | null;
+}
+
+// What the panel's ticket page shows of a report from the app (AP §9.9.3:
+// «photos and the customer's note»).
+export interface TicketReport {
+  lines: { position: number; name: string; quantity: number }[];
+  photoUrls: string[];
+  item: { id: string; name: string } | null;
+  shopPrice: { amount: bigint; currency: string } | null;
 }
 
 export interface TicketNote {
@@ -185,6 +238,9 @@ export type TicketPage = Ticket & {
   order: TicketOrderFacts | null;
   // The free re-deliveries placed for it (slice 2.23d), newest first.
   redeliveries: TicketRedelivery[];
+  // A report from the customer app (slice 2.24a): its items, photos (signed
+  // links for a few minutes) and a price report's item and shop price.
+  report: TicketReport | null;
 };
 
 export interface TicketFilters {
@@ -223,7 +279,17 @@ export type TicketRefusal =
   | 'captain_pay_unset'
   | 'restaurant_closed'
   | 'emergency_stop'
-  | 'forbidden';
+  | 'forbidden'
+  | 'report_closed'
+  | 'already_reported'
+  | 'items_required'
+  | 'invalid_items'
+  | 'too_many_photos'
+  | 'invalid_price'
+  | 'already_reported_today'
+  | 'unknown_restaurant'
+  | 'unknown_item'
+  | 'upload_used';
 
 export class TicketRefusedError extends Error {
   constructor(
@@ -236,6 +302,9 @@ export class TicketRefusedError extends Error {
 
 // The list's length: the newest first.
 const LISTED = 200;
+
+// How long the panel's signed link to a report's photo works.
+const PHOTO_URL_SECONDS = 10 * 60;
 
 // How long the resolution message's push may wait for a phone that is off.
 const MESSAGE_PUSH_MS = 24 * 3_600_000;
@@ -267,6 +336,9 @@ export class SupportService {
     private readonly pushes: PushQueue,
     private readonly texts: NotificationTexts,
     private readonly compensations: CompensationsService,
+    private readonly files: FilesService,
+    private readonly geo: GeoService,
+    private readonly fx: FxService,
   ) {}
 
   private disputes: PickupDisputes | null = null;
@@ -575,6 +647,11 @@ export class SupportService {
       openedBy: string;
       idempotencyKey: string;
       requestHash: string;
+      // An app's report (slice 2.24a): what it named, set once.
+      report?: Pick<
+        typeof tickets.$inferInsert,
+        'reportedLines' | 'photoKeys' | 'reportedItemId' | 'reportedItemName' | 'shopPrice' | 'shopPriceCurrency'
+      >;
     },
     timers: { firstResponseMinutes: number; resolutionHours: number },
     by: { actor: AuditActor; context: AuditRequestContext | null },
@@ -620,6 +697,7 @@ export class SupportService {
         requestHash: fields.requestHash,
         restaurantId: fields.restaurantId,
         pickupDisputeId: fields.pickupDisputeId,
+        ...fields.report,
       })
       .returning()) as [TicketRow];
     await this.audit.recordWrite(
@@ -637,6 +715,330 @@ export class SupportService {
     );
     await this.sync.changed(tx, row, now);
     return row.id;
+  }
+
+  // CU §12.2 (slice 2.24a): the customer's report on an order, if any.
+  async reportOn(orderId: string): Promise<CustomerReportView | null> {
+    const [row] = await this.database.db
+      .select()
+      .from(tickets)
+      .where(and(eq(tickets.orderId, orderId), eq(tickets.source, 'customer_report')));
+    if (!row) return null;
+    return {
+      ticketId: row.id,
+      number: row.number,
+      status: row.status,
+      message: row.message,
+      resolvedAt: row.resolvedAt,
+    };
+  }
+
+  // CU §12.2: when the report's window on a delivered order ends, null for
+  // an order that was not delivered.
+  async reportUntil(order: {
+    cityId: string;
+    status: string;
+    deliveredAt: Date | null;
+  }): Promise<Date | null> {
+    if (order.deliveredAt === null) return null;
+    return reportUntil(
+      order,
+      await this.settings.get('customer.report_problem_window_hours', { cityId: order.cityId }),
+    );
+  }
+
+  // A report's hash: a repeat of the key answers its ticket.
+  reportHash(orderId: string, report: CustomerReport): string {
+    return hashOf([
+      'customer_report',
+      orderId,
+      report.typeCode,
+      report.note?.trim() ?? '',
+      report.items,
+      report.photoUploadIds,
+    ]);
+  }
+
+  // What the report reads and checks through the pool before ordering's
+  // transaction (CU §12.2): the window, once per order, the items, the
+  // photos (each the customer's own upload, copied to its key and checked:
+  // the storage is never called under a lock) and the type (400
+  // unknown_reason; «أخرى» takes the note as its text).
+  async prepareReport(order: ReportedOrder, report: CustomerReport, now: Date) {
+    const windowHours = await this.settings.get('customer.report_problem_window_hours', {
+      cityId: order.cityId,
+    });
+    this.checkReport(order, report, windowHours, (await this.reportOn(order.id)) !== null, now);
+    const prepared = await this.prepare({
+      cityId: order.cityId,
+      party: 'customer',
+      partyId: order.customerId,
+      typeCode: report.typeCode,
+      description: report.note ?? '',
+      restaurantId: null,
+    });
+    await this.preparePhotos(report.photoUploadIds, order.customerId, now);
+    return { prepared, report, windowHours };
+  }
+
+  private checkReport(
+    order: ReportedOrder,
+    report: CustomerReport,
+    windowHours: number,
+    reported: boolean,
+    now: Date,
+  ): void {
+    const problem = reportProblem({
+      status: order.status,
+      deliveredAt: order.deliveredAt,
+      windowHours,
+      now,
+      reported,
+      typeCode: report.typeCode,
+      items: report.items,
+      lines: order.lines,
+      photos: report.photoUploadIds.length,
+    });
+    if (problem !== null) throw new TicketRefusedError(problem, `the report is refused: ${problem}`);
+  }
+
+  private async preparePhotos(uploadIds: string[], owner: string, now: Date): Promise<void> {
+    for (const uploadId of uploadIds) {
+      await this.files.prepare(uploadId, 'report_photo', now, owner);
+    }
+  }
+
+  // The photos linked in the ticket's transaction: an upload another report
+  // already took is 409 upload_used.
+  private async linkPhotos(tx: Tx, uploadIds: string[], now: Date): Promise<string[]> {
+    const keys: string[] = [];
+    for (const uploadId of uploadIds) {
+      const { key, alreadyLinked } = await this.files.link(tx, uploadId, now);
+      if (alreadyLinked) throw new TicketRefusedError('upload_used', 'the photo is used');
+      keys.push(key);
+    }
+    return keys;
+  }
+
+  // CU §12.2, AP §9.9.1: the report's ticket in ordering's transaction under
+  // the order's lock, so the window and the delivery are the order's then;
+  // once per order (409 already_reported, also by the partial unique index).
+  // A repeat of the key answers its ticket. The SLA is the resolution's, the
+  // order having ended.
+  async openReportIn(
+    tx: Tx,
+    ready: Awaited<ReturnType<SupportService['prepareReport']>>,
+    order: ReportedOrder,
+    by: ReportingCustomer,
+    idempotencyKey: string,
+    now: Date,
+  ): Promise<string> {
+    const { prepared, report } = ready;
+    const requestHash = this.reportHash(order.id, report);
+    const replayed = await this.replayedIn(tx, by.accountId, idempotencyKey, requestHash);
+    if (replayed !== null) return replayed;
+    await tx.execute(
+      sql`SELECT pg_advisory_xact_lock(hashtext(${`support.customer_report:${order.id}`}))`,
+    );
+    const [earlier] = await tx
+      .select({ id: tickets.id })
+      .from(tickets)
+      .where(and(eq(tickets.orderId, order.id), eq(tickets.source, 'customer_report')));
+    this.checkReport(order, report, ready.windowHours, earlier !== undefined, now);
+    const photoKeys = await this.linkPhotos(tx, report.photoUploadIds, now);
+    const named = new Map(order.lines.map((line) => [line.position, line.name]));
+    return this.insertTicket(
+      tx,
+      {
+        cityId: order.cityId,
+        source: 'customer_report',
+        party: 'customer',
+        partyId: order.customerId,
+        order,
+        typeCode: prepared.chosen.code,
+        typeLabel: prepared.chosen.label,
+        description: prepared.input.description.trim(),
+        restaurantId: null,
+        pickupDisputeId: null,
+        openedBy: by.accountId,
+        idempotencyKey,
+        requestHash,
+        report: {
+          reportedLines:
+            report.items.length === 0
+              ? null
+              : report.items.map((item) => ({
+                  position: item.position,
+                  name: named.get(item.position) ?? '',
+                  quantity: item.quantity,
+                })),
+          photoKeys: photoKeys.length === 0 ? null : photoKeys,
+        },
+      },
+      prepared,
+      { actor: { type: 'customer', id: by.accountId, role: null }, context: by.context },
+      now,
+    );
+  }
+
+  // CU §9.5 (slice 2.24a): «أبلغ عن سعر مختلف» on a restaurant customers see
+  // (404 unknown_restaurant), naming an item of its menu (400 unknown_item),
+  // the shop's price in the city's base currency (409 no_base_currency
+  // without one) and one photo; once per restaurant per customer per
+  // business day (409 already_reported_today), under the customer's and the
+  // restaurant's advisory lock. A repeat of the key answers its ticket.
+  async reportPrice(
+    report: PriceReport,
+    by: ReportingCustomer,
+    idempotencyKey: string,
+    now: Date,
+  ): Promise<{ id: string; number: bigint }> {
+    const requestHash = hashOf([
+      'price_report',
+      report.restaurantId,
+      report.itemId,
+      report.shopPrice,
+      report.note?.trim() ?? '',
+      report.photoUploadId,
+    ]);
+    const answer = async (id: string) => {
+      const [row] = await this.database.db
+        .select({ number: tickets.number })
+        .from(tickets)
+        .where(eq(tickets.id, id));
+      return { id, number: row!.number };
+    };
+    const replayed = await this.replayed(by.accountId, idempotencyKey, requestHash);
+    if (replayed !== null) return answer(replayed);
+    const photos = report.photoUploadId === null ? [] : [report.photoUploadId];
+    const problem = priceReportProblem({ photos: photos.length, shopPrice: report.shopPrice });
+    if (problem !== null) throw new TicketRefusedError(problem, `the report is refused: ${problem}`);
+    const restaurant = await this.merchants.restaurant(report.restaurantId, now);
+    if (restaurant === null || restaurant.accountStatus !== 'active' || !restaurant.visible) {
+      throw new TicketRefusedError('unknown_restaurant', 'customers do not see the restaurant');
+    }
+    let item: { id: string; name: string } | null = null;
+    if (report.itemId !== null) {
+      const menu = await this.merchants.menu(report.restaurantId, now);
+      const found = menu.categories
+        .filter((category) => !category.hidden)
+        .flatMap((category) => category.items)
+        .find((each) => each.id === report.itemId && !each.hidden);
+      if (!found) throw new TicketRefusedError('unknown_item', 'no such item on the menu');
+      item = { id: found.id, name: found.name };
+    }
+    const currency =
+      report.shopPrice === null ? null : await this.fx.baseCurrency(restaurant.cityId);
+    if (report.shopPrice !== null && currency === null) {
+      throw new TicketRefusedError('no_base_currency', 'the city has no base currency');
+    }
+    const prepared = await this.prepare({
+      cityId: restaurant.cityId,
+      party: 'customer',
+      partyId: by.accountId,
+      typeCode: PRICE_DIFFERENCE_TYPE,
+      description: report.note ?? '',
+      restaurantId: report.restaurantId,
+    });
+    await this.preparePhotos(photos, by.accountId, now);
+    const [cutoff, timeZone] = await Promise.all([
+      this.settings.get('finance.business_day_cutoff', { cityId: restaurant.cityId }),
+      this.geo.cityTimeZone(restaurant.cityId),
+    ]);
+    const [hours, minutes] = cutoff.split(':').map(Number) as [number, number];
+    const dayStart = lastCutoff(now, hours * 60 + minutes, timeZone ?? 'Asia/Damascus');
+    const id = await this.database.db.transaction(async (tx) => {
+      const again = await this.replayedIn(tx, by.accountId, idempotencyKey, requestHash);
+      if (again !== null) return again;
+      await tx.execute(
+        sql`SELECT pg_advisory_xact_lock(hashtext(${`support.price_report:${by.accountId}:${report.restaurantId}`}))`,
+      );
+      const [today] = await tx
+        .select({ id: tickets.id })
+        .from(tickets)
+        .where(
+          and(
+            eq(tickets.source, 'price_report'),
+            eq(tickets.partyId, by.accountId),
+            eq(tickets.restaurantId, report.restaurantId),
+            sql`${tickets.openedAt} >= ${dayStart}`,
+          ),
+        )
+        .limit(1);
+      if (today) {
+        throw new TicketRefusedError('already_reported_today', 'one report a day');
+      }
+      const photoKeys = await this.linkPhotos(tx, photos, now);
+      return this.insertTicket(
+        tx,
+        {
+          cityId: restaurant.cityId,
+          source: 'price_report',
+          party: 'customer',
+          partyId: by.accountId,
+          order: null,
+          typeCode: prepared.chosen.code,
+          typeLabel: prepared.chosen.label,
+          description: prepared.input.description.trim(),
+          restaurantId: report.restaurantId,
+          pickupDisputeId: null,
+          openedBy: by.accountId,
+          idempotencyKey,
+          requestHash,
+          report: {
+            reportedItemId: item?.id ?? null,
+            reportedItemName: item?.name ?? null,
+            shopPrice: report.shopPrice,
+            shopPriceCurrency: currency,
+            photoKeys: photoKeys.length === 0 ? null : photoKeys,
+          },
+        },
+        prepared,
+        { actor: { type: 'customer', id: by.accountId, role: null }, context: by.context },
+        now,
+      );
+    });
+    return answer(id);
+  }
+
+  // A key's ticket in the opening's transaction, under the key's advisory
+  // lock, so two repeats sent together open one ticket.
+  private async replayedIn(
+    tx: Tx,
+    accountId: string,
+    idempotencyKey: string,
+    requestHash: string,
+  ): Promise<string | null> {
+    await tx.execute(
+      sql`SELECT pg_advisory_xact_lock(hashtext(${`support.ticket_key:${accountId}:${idempotencyKey}`}))`,
+    );
+    const [row] = await tx
+      .select({ id: tickets.id, requestHash: tickets.requestHash })
+      .from(tickets)
+      .where(and(eq(tickets.openedBy, accountId), eq(tickets.idempotencyKey, idempotencyKey)));
+    if (!row) return null;
+    if (row.requestHash !== requestHash) {
+      throw new TicketRefusedError('idempotency_key_reused', 'the key was used for another ticket');
+    }
+    return row.id;
+  }
+
+  // The page's view of an app's report, its photos signed for a few minutes.
+  private async reportOf(row: TicketRow): Promise<TicketReport | null> {
+    if (row.source !== 'customer_report' && row.source !== 'price_report') return null;
+    const keys = (row.photoKeys as string[] | null) ?? [];
+    return {
+      lines: (row.reportedLines as TicketReport['lines'] | null) ?? [],
+      photoUrls: await Promise.all(
+        keys.map((key) => this.files.privateImageUrl(key, PHOTO_URL_SECONDS)),
+      ),
+      item:
+        row.reportedItemId === null
+          ? null
+          : { id: row.reportedItemId, name: row.reportedItemName! },
+      shopPrice:
+        row.shopPrice === null ? null : { amount: row.shopPrice, currency: row.shopPriceCurrency! },
+    };
   }
 
   // The city's tickets, newest first, with the filters of AP §9.9.2.
@@ -667,7 +1069,7 @@ export class SupportService {
       .from(ticketNotes)
       .where(eq(ticketNotes.ticketId, id))
       .orderBy(ticketNotes.createdAt, ticketNotes.id);
-    const [[view], names, pickupDispute, order, redeliveries] = await Promise.all([
+    const [[view], names, pickupDispute, order, redeliveries, report] = await Promise.all([
       this.views([row]),
       this.admins.names(notes.map((note) => note.authorId)),
       row.pickupDisputeId === null
@@ -675,12 +1077,14 @@ export class SupportService {
         : this.pickupDisputes().facts(row.pickupDisputeId),
       this.readsOrder(row) ? this.ticketOrders().facts(row.orderId) : Promise.resolve(null),
       row.orderId === null ? Promise.resolve([]) : this.ticketOrders().redeliveries(row.id),
+      this.reportOf(row),
     ]);
     return {
       ...view!,
       pickupDispute,
       order,
       redeliveries,
+      report,
       notes: notes.map((note) => ({
         id: note.id,
         authorId: note.authorId,
@@ -1398,11 +1802,10 @@ export class SupportService {
         stoppedAt: row.slaStoppedAt,
       },
       openedBy: row.openedBy,
-      // A pickup dispute's ticket is opened by the restaurant (its party).
+      // A pickup dispute's ticket is opened by the restaurant, an app's
+      // report by the customer: its party.
       openedByName:
-        row.source === 'pickup_dispute'
-          ? (partyName(row) ?? null)
-          : (admins.get(row.openedBy) ?? null),
+        row.source === 'manual' ? (admins.get(row.openedBy) ?? null) : (partyName(row) ?? null),
       openedAt: row.openedAt,
       updatedAt: row.updatedAt,
       resolution:

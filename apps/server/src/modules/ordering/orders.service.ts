@@ -669,6 +669,30 @@ export class OrdersService implements OnModuleInit {
     return order ?? null;
   }
 
+  // CU §12.3 (slice 2.24a): «إعادة توصيل مجانية» orders placed for this
+  // order, newest first, for the link on its detail.
+  redeliveriesOf(orderId: string): Promise<{ orderId: string; number: bigint }[]> {
+    return this.database.db
+      .select({ orderId: orders.id, number: orders.number })
+      .from(orders)
+      .where(eq(orders.redeliveryOfId, orderId))
+      .orderBy(desc(orders.placedAt));
+  }
+
+  // CU §12.2: when the order was delivered, null otherwise (an outcome
+  // delivered counts).
+  async deliveredAt(
+    orderId: string,
+    placedAt: Date,
+    executor: Pick<NodePgDatabase, 'select'> = this.database.db,
+  ): Promise<Date | null> {
+    const [row] = await executor
+      .select({ deliveredAt: orders.deliveredAt })
+      .from(orders)
+      .where(and(eq(orders.id, orderId), eq(orders.placedAt, placedAt)));
+    return row?.deliveredAt ?? null;
+  }
+
   // CU §6 (the active-order bar), CU §4.3: the customer's orders until they
   // end, newest first.
   customerActiveOrders(accountId: string): Promise<OrderView[]> {

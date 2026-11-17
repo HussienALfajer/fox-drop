@@ -199,6 +199,22 @@ export const moneyPreviewBody = z.object({
     .describe('«إعادة توصيل مجانية» (AP §9.9.3): posted at its delivery, not now.'),
 });
 
+// AP §9.9.3 «photos and the customer's note» (slice 2.24a): a report from
+// the customer app.
+export const ticketReportBody = z.object({
+  lines: z
+    .array(z.object({ position: z.int(), name: z.string(), quantity: z.int() }))
+    .describe('The items the customer named (CU §12.2).'),
+  photoUrls: z
+    .array(z.string())
+    .describe('Signed links to the photos, valid 10 minutes: read the page again for new ones.'),
+  item: z
+    .object({ id: z.uuid(), name: z.string() })
+    .nullable()
+    .describe('«أبلغ عن سعر مختلف»: the item named, as it was then (CU §9.5).'),
+  shopPrice: moneyLine.nullable().describe("«أبلغ عن سعر مختلف»: the shop's price, in the base."),
+});
+
 export const ticketRedeliveryBody = z.object({
   orderId: z.uuid(),
   number: z.string(),
@@ -395,6 +411,7 @@ export async function answered<T>(run: () => Promise<T>): Promise<T> {
     switch (error.refusal) {
       case 'unknown_ticket':
       case 'unknown_party':
+      case 'unknown_restaurant':
         throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: error.refusal });
       case 'forbidden':
         throw new ForbiddenException({ statusCode: HttpStatus.FORBIDDEN, error: error.refusal });
@@ -412,6 +429,11 @@ export async function answered<T>(run: () => Promise<T>): Promise<T> {
       case 'invalid_affected':
       case 'invalid_value':
       case 'affected_required':
+      case 'items_required':
+      case 'invalid_items':
+      case 'too_many_photos':
+      case 'invalid_price':
+      case 'unknown_item':
         throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, error: error.refusal });
       case 'idempotency_key_reused':
         throw new UnprocessableEntityException({
