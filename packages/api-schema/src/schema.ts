@@ -3700,6 +3700,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant/ratings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["merchantRatingsRead"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/tickets": {
         parameters: {
             query?: never;
@@ -12142,6 +12158,33 @@ export interface components {
                     at: string;
                 } | null;
             }[];
+        };
+        MerchantRatingsDto_Output: {
+            /** @description The ratings of the period, test orders left out. */
+            count: number;
+            /** @description Their average stars to one decimal; null with none. */
+            average: number | null;
+            /** @description The count of each star, from 5 down to 1. */
+            distribution: {
+                stars: number;
+                count: number;
+            }[];
+            /** @description The page, newest first. Never the customer or the order (RA §13, CU §12.1), so a comment cannot be traced. */
+            ratings: {
+                /** Format: uuid */
+                id: string;
+                stars: number;
+                /** @description The reasons the customer picked, their labels as chosen. */
+                reasons: {
+                    code: string;
+                    label: string;
+                }[];
+                comment: string | null;
+                /** Format: date-time */
+                at: string;
+            }[];
+            /** @description The cursor of the next page; null on the last. */
+            next: string | null;
         };
         AdminTicketsDto_Output: {
             /** @description Newest first, the latest 200. */
@@ -21070,6 +21113,33 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CustomerCodesDto_Output"];
+                };
+            };
+        };
+    };
+    merchantRatingsRead: {
+        parameters: {
+            query?: {
+                /** @description Business days on the city’s clock (RA §11): «الكل», «اليوم», «أمس», «آخر 7 أيام», «آخر 30 يوماً». */
+                period?: "all" | "today" | "yesterday" | "last_7_days" | "last_30_days";
+                /** @description Only the ratings with these stars; the summary counts every star. */
+                stars?: number;
+                /** @description The `next` cursor of the page before, for «عرض المزيد». */
+                before?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantRatingsDto_Output"];
                 };
             };
         };

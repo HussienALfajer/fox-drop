@@ -749,6 +749,9 @@ import 'package:core_api/src/model/merchant_pickup_currencies_dto_output_base_cu
 import 'package:core_api/src/model/merchant_pickup_currencies_dto_output_choices_inner.dart';
 import 'package:core_api/src/model/merchant_pickup_dispute_dto.dart';
 import 'package:core_api/src/model/merchant_pickup_dispute_dto_received_lines_inner.dart';
+import 'package:core_api/src/model/merchant_ratings_dto_output.dart';
+import 'package:core_api/src/model/merchant_ratings_dto_output_distribution_inner.dart';
+import 'package:core_api/src/model/merchant_ratings_dto_output_ratings_inner.dart';
 import 'package:core_api/src/model/merchant_receipt_dto_output.dart';
 import 'package:core_api/src/model/merchant_receipt_list_dto_output.dart';
 import 'package:core_api/src/model/merchant_receipt_list_dto_output_receipts_inner.dart';
@@ -1549,6 +1552,9 @@ part 'serializers.g.dart';
   MerchantPickupCurrenciesDtoOutputChoicesInner,
   MerchantPickupDisputeDto,
   MerchantPickupDisputeDtoReceivedLinesInner,
+  MerchantRatingsDtoOutput,
+  MerchantRatingsDtoOutputDistributionInner,
+  MerchantRatingsDtoOutputRatingsInner,
   MerchantReceiptDtoOutput,
   MerchantReceiptListDtoOutput,
   MerchantReceiptListDtoOutputReceiptsInner,
@@ -1825,6 +1831,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(MerchantRatingsDtoOutputRatingsInner),
+            ]),
+            () => ListBuilder<MerchantRatingsDtoOutputRatingsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(CaptainAvailabilityDtoOutputOfficeHoursInner),
             ]),
             () => ListBuilder<CaptainAvailabilityDtoOutputOfficeHoursInner>(),
@@ -1870,6 +1882,12 @@ Serializers serializers =
               FullType(CustomerRestaurantPageDtoOutputScheduleInner),
             ]),
             () => ListBuilder<CustomerRestaurantPageDtoOutputScheduleInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(MerchantRatingsDtoOutputDistributionInner),
+            ]),
+            () => ListBuilder<MerchantRatingsDtoOutputDistributionInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [FullType(AdminFaqDtoItemsInner)]),

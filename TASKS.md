@@ -4,14 +4,17 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.26b, the restaurant's «التقييمات» (`docs/roadmap.md`, Phase 2, Support and trust; owner decision 2026-11-17: 2.26 in three slices). Not started.
+Slice 2.26b, the restaurant's «التقييمات» (`docs/roadmap.md`, Phase 2, Support and trust; owner decision 2026-11-17: 2.26 in three slices). In progress.
 
 - **Roadmap line:** 2.26b The restaurant's «التقييمات», in the restaurant app (owner only) and the owner web portal: the average, the count and the distribution by stars, each rating's stars, reasons, comment and date without the customer's name or the order number, filters by stars and period, no replies (RA §13, R16, §6.1). A customer rates and the restaurant's owner sees it without a name.
-- **Specs:** RA §13 (summary, each rating, filters, no replies), RA §6.1 row 7 (owner yes, cashier no, portal yes), RA §5 (the owner's screens), RA §17 (the owner web portal), RA §22 item 24, CU §12.1 «Who sees what» (the restaurant: stars, reasons and comments without the customer's name); what exists: `ordering.ratings` (slice 2.26a, `ratings.ts`, the index `ratings_restaurant`), the cards' average from 5 ratings, the portal's one status page (`apps/merchant-portal/src`).
-- **Branch:** the cloud session's branch, or `feat/restaurant-ratings`.
+- **Specs:** RA §13, RA §6.1 row 7, RA §5.4 (owner yes, cashier no), RA §5.5 (terminated: money only), RA §11 (the periods), RA §22 item 24, CU §12.1 «Who sees what».
+- **Branch:** `claude/zealous-dirac-bhloyp` (the cloud session's).
+- **Owner decisions 2026-11-17:** the period filter is the reports' (RA §11): «الكل», «اليوم», «أمس», «آخر 7 أيام», «آخر 30 يوماً», business days (the portal's custom range comes with the portal); test orders' ratings never show to the restaurant; the portal's page moves to 2.45 with the portal's sign-in, on the same route.
 - **Plan:**
-  - [ ] Read the cited sections and the portal's and the restaurant app's `CLAUDE.md`; write the plan here as a checklist, one step per commit (likely: the server's owner route with the summary, the distribution and a page of ratings filtered by stars and period, test orders left out; the restaurant app's screen; the portal's page).
-- **To ask the owner first:** whether the period filter's choices are fixed (today, 7 days, 30 days, as AP §9.6.4's overview) or any dates; whether test orders' ratings show to the restaurant (in 2.26a they never count in the customers' average).
+  - [x] Read the cited sections and the restaurant app's `CLAUDE.md`; write the plan.
+  - [x] Server: `GET /v1/merchant/ratings?period=&stars=&before=` (owners only, `403 owner_only`; terminated `403 restaurant_terminated`): the period's count, average and distribution by stars, and a page of its ratings (stars, reasons, comment, date; never the customer or the order) filtered by stars, newest first, test orders left out; tests, the route table, the contract.
+  - [ ] Restaurant app: «التقييمات» (owners only, the board's button until the navigation): the summary, the distribution, the period and stars filters, the list with «عرض المزيد»; tests, strings.
+  - [ ] Docs and hand-over: RA §13 with the decisions, the roadmap (2.26b done, the portal's page in 2.45), the `CLAUDE.md` files, `TASKS.md` for 2.26c.
 
 ### Left from 2.26a (`claude/bold-hawking-5w6p9w`)
 

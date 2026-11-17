@@ -750,6 +750,9 @@ export 'package:core_api/src/model/merchant_pickup_currencies_dto_output_base_cu
 export 'package:core_api/src/model/merchant_pickup_currencies_dto_output_choices_inner.dart';
 export 'package:core_api/src/model/merchant_pickup_dispute_dto.dart';
 export 'package:core_api/src/model/merchant_pickup_dispute_dto_received_lines_inner.dart';
+export 'package:core_api/src/model/merchant_ratings_dto_output.dart';
+export 'package:core_api/src/model/merchant_ratings_dto_output_distribution_inner.dart';
+export 'package:core_api/src/model/merchant_ratings_dto_output_ratings_inner.dart';
 export 'package:core_api/src/model/merchant_receipt_dto_output.dart';
 export 'package:core_api/src/model/merchant_receipt_list_dto_output.dart';
 export 'package:core_api/src/model/merchant_receipt_list_dto_output_receipts_inner.dart';

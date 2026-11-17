@@ -1242,6 +1242,9 @@ Serializers _$serializers =
           ..add(MerchantPickupCurrenciesDtoOutputChoicesInner.serializer)
           ..add(MerchantPickupDisputeDto.serializer)
           ..add(MerchantPickupDisputeDtoReceivedLinesInner.serializer)
+          ..add(MerchantRatingsDtoOutput.serializer)
+          ..add(MerchantRatingsDtoOutputDistributionInner.serializer)
+          ..add(MerchantRatingsDtoOutputRatingsInner.serializer)
           ..add(MerchantReceiptDtoOutput.serializer)
           ..add(MerchantReceiptDtoOutputMethodEnum.serializer)
           ..add(MerchantReceiptDtoOutputTypeEnum.serializer)
@@ -3343,6 +3346,18 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(MerchantRatingsDtoOutputDistributionInner),
+            ]),
+            () => ListBuilder<MerchantRatingsDtoOutputDistributionInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantRatingsDtoOutputRatingsInner),
+            ]),
+            () => ListBuilder<MerchantRatingsDtoOutputRatingsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(MerchantReceiptListDtoOutputReceiptsInner),
             ]),
             () => ListBuilder<MerchantReceiptListDtoOutputReceiptsInner>(),
@@ -3715,6 +3730,15 @@ Serializers _$serializers =
               const FullType.nullable(AdminCurrentDrawerSessionDtoOutputField),
             ]),
             () => ListBuilder<AdminCurrentDrawerSessionDtoOutputField?>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType.nullable(
+                AdminCustomerDtoOutputRatingsInnerReasonsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<AdminCustomerDtoOutputRatingsInnerReasonsInner?>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
