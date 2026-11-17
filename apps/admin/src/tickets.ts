@@ -2,6 +2,7 @@ import type { components } from '@fox-drop/api-schema';
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRef } from 'react';
 import { api } from './api.js';
+import { decimalOf, minorOf } from './format.js';
 import { pollUnlessLive } from './live.js';
 import { type AdminSession, can } from './session.js';
 
@@ -9,6 +10,8 @@ import { type AdminSession, can } from './session.js';
 // assignee and status, and their SLA timer.
 export const SUPPORT_READ = 'support.read';
 export const SUPPORT_MANAGE = 'support.manage';
+// AP §6.3: a pickup dispute is resolved by OWN, OPS and FIN.
+export const RESOLVE_PICKUP_DISPUTE = 'support.resolve_pickup_dispute';
 
 export type Ticket = components['schemas']['AdminTicketDto_Output'];
 export type TicketPage = components['schemas']['AdminTicketPageDto_Output'];
@@ -16,6 +19,12 @@ export type TicketTypes = components['schemas']['AdminTicketTypesDto_Output'];
 export type TicketStatus = Ticket['status'];
 export type TicketParty = Ticket['party'];
 export type TicketSla = Ticket['sla'];
+export type TicketKind = Ticket['kind'];
+export type TicketResolution = NonNullable<Ticket['resolution']>['code'];
+export type ResponsibleParty = NonNullable<NonNullable<Ticket['resolution']>['responsible']>;
+export type PickupDispute = NonNullable<TicketPage['pickupDispute']>;
+export type CorrectionPreview = components['schemas']['AdminTicketCorrectionDto_Output'];
+export type CannedReply = components['schemas']['AdminCannedRepliesDto_Output']['replies'][number];
 
 export const canReadTickets = (session: AdminSession | null | undefined) =>
   can(session, SUPPORT_READ);
@@ -46,6 +55,7 @@ export const slaKindKeys = {
 // the panel does not know is hidden.
 export const ticketSourceKeys = {
   manual: 'tickets.source.manual',
+  pickup_dispute: 'tickets.source.pickupDispute',
 } as const;
 export type TicketSource = keyof typeof ticketSourceKeys;
 
@@ -84,6 +94,81 @@ export function statusChoices(status: TicketStatus): ('in_progress' | 'waiting')
 
 export const isOpenTicket = (status: TicketStatus): boolean =>
   status === 'new' || status === 'in_progress' || status === 'waiting';
+
+// AP §9.9.3 (slice 2.23b): the resolutions each kind takes, as the server's
+// support/tickets.ts.
+export const resolutionKeys = {
+  none_explained: 'tickets.resolution.noneExplained',
+  price_corrected: 'tickets.resolution.priceCorrected',
+  price_correct: 'tickets.resolution.priceCorrect',
+  captain_paid: 'tickets.resolution.captainPaid',
+  accounts_corrected: 'tickets.resolution.accountsCorrected',
+  payment_correct: 'tickets.resolution.paymentCorrect',
+} as const satisfies Record<TicketResolution, string>;
+
+export const responsibleKeys = {
+  restaurant: 'tickets.responsible.restaurant',
+  captain: 'tickets.responsible.captain',
+  customer: 'tickets.responsible.customer',
+  platform: 'tickets.responsible.platform',
+} as const satisfies Record<ResponsibleParty, string>;
+
+export const confirmedByKeys = {
+  restaurant: 'tickets.dispute.confirmedBy.restaurant',
+  automatic: 'tickets.dispute.confirmedBy.automatic',
+  operations: 'tickets.dispute.confirmedBy.operations',
+} as const satisfies Record<PickupDispute['confirmedBy'], string>;
+
+export function resolutionChoices(kind: TicketKind): TicketResolution[] {
+  switch (kind) {
+    case 'general':
+      return ['none_explained'];
+    case 'price_difference':
+      return ['price_corrected', 'price_correct'];
+    case 'pickup_dispute':
+      return ['captain_paid', 'accounts_corrected', 'payment_correct'];
+  }
+}
+
+// The responsible party is asked for a general ticket only (AP §9.9.3).
+export const needsResponsible = (kind: TicketKind): boolean => kind === 'general';
+
+// Who may resolve the ticket (AP §6.3): a pickup dispute with its own
+// permission, every other with support.manage.
+export function canResolve(
+  session: AdminSession | null | undefined,
+  ticket: Pick<Ticket, 'kind' | 'status'>,
+): boolean {
+  if (!isOpenTicket(ticket.status)) return false;
+  return can(session, ticket.kind === 'pickup_dispute' ? RESOLVE_PICKUP_DISPUTE : SUPPORT_MANAGE);
+}
+
+// «تصحيح في الحسابات»: the amounts typed per currency in major units, as
+// lines in minor units; an empty field or a zero is left out; null when one
+// is not an amount.
+export function receivedLinesOf(
+  typed: Record<string, string>,
+): { currency: string; amount: string }[] | null {
+  const lines: { currency: string; amount: string }[] = [];
+  for (const [currency, text] of Object.entries(typed)) {
+    if (text.trim() === '') continue;
+    const amount = minorOf(text, currency);
+    if (amount === null) return null;
+    if (amount !== '0') lines.push({ currency, amount });
+  }
+  return lines;
+}
+
+// The fields of the correction form, started from the lines the restaurant
+// said it received.
+export function typedLinesOf(dispute: PickupDispute): Record<string, string> {
+  return Object.fromEntries(
+    dispute.currencies.map((currency) => {
+      const line = dispute.received.find((each) => each.currency === currency);
+      return [currency, line ? decimalOf(line.amount, currency) : ''];
+    }),
+  );
+}
 
 export interface TicketFilters {
   status: TicketStatus | '';
@@ -180,7 +265,8 @@ export type OpenRefusal =
   | 'unknown_party'
   | 'unknown_order'
   | 'no_captain'
-  | 'idempotency_key_reused';
+  | 'idempotency_key_reused'
+  | 'invalid_restaurant';
 
 const openRefusals: readonly string[] = [
   'unknown_reason',
@@ -189,6 +275,7 @@ const openRefusals: readonly string[] = [
   'unknown_order',
   'no_captain',
   'idempotency_key_reused',
+  'invalid_restaurant',
 ] satisfies OpenRefusal[];
 
 export type OpenResult =
@@ -199,6 +286,10 @@ export interface OpenTicketBody {
   typeCode: string;
   description: string;
 }
+
+// «سعر مختلف عن المحل» (owner decision 2026-11-17): a customer's, naming the
+// restaurant.
+export const PRICE_DIFFERENCE = 'price_difference';
 
 function refusalOf<T extends string>(error: unknown, known: readonly string[]): T | null {
   const refusal = (error as { error?: unknown } | undefined)?.error;
@@ -227,7 +318,9 @@ export function useOpenTicket(cityId: string) {
   const queryClient = useQueryClient();
   const keys = useKeys();
   return useMutation({
-    mutationFn: async (body: OpenTicketBody & { partyId: string }): Promise<OpenResult> => {
+    mutationFn: async (
+      body: OpenTicketBody & { partyId: string; restaurantId: string | null },
+    ): Promise<OpenResult> => {
       const [key, done] = keys.keyFor(body);
       const { data, error, response } = await api.POST('/v1/admin/tickets', {
         params: { header: { 'Idempotency-Key': key } },
@@ -370,4 +463,105 @@ export function useChangeTicket(cityId: string, ticketId: string) {
 
 export function useTicketTypes(enabled = true) {
   return useQuery({ ...ticketTypesQuery, enabled });
+}
+
+// AP §9.13 «الردود الجاهزة»: read on the ticket page and in «المحتوى».
+export const cannedRepliesQuery = queryOptions({
+  queryKey: ['canned-replies'],
+  queryFn: async (): Promise<CannedReply[]> => {
+    const { data, error } = await api.GET('/v1/admin/content/canned-replies');
+    if (error || !data) throw new Error('The canned replies could not be read.');
+    return data.replies;
+  },
+});
+
+export type ResolveRefusal =
+  | 'unknown_ticket'
+  | 'ticket_not_open'
+  | 'invalid_resolution'
+  | 'responsible_required'
+  | 'lines_required'
+  | 'invalid_lines'
+  | 'no_difference'
+  | 'forbidden';
+
+const resolveRefusals: readonly string[] = [
+  'unknown_ticket',
+  'ticket_not_open',
+  'invalid_resolution',
+  'responsible_required',
+  'lines_required',
+  'invalid_lines',
+  'no_difference',
+  'forbidden',
+] satisfies ResolveRefusal[];
+
+export type ResolveResult =
+  { status: 'done'; page: TicketPage } | { status: 'refused'; refusal: ResolveRefusal };
+
+export interface ResolveBody {
+  resolution: TicketResolution;
+  responsible: ResponsibleParty | null;
+  message: string;
+  receivedLines: { currency: string; amount: string }[] | null;
+}
+
+// AP §9.9.3 «Preview» of «تصحيح في الحسابات», asked for each set of lines.
+export function correctionPreviewQuery(
+  cityId: string,
+  ticketId: string,
+  receivedLines: { currency: string; amount: string }[],
+) {
+  return queryOptions({
+    queryKey: ['ticket', ticketId, 'correction', receivedLines],
+    queryFn: async (): Promise<
+      | { status: 'done'; preview: CorrectionPreview }
+      | { status: 'refused'; refusal: ResolveRefusal }
+    > => {
+      const { data, error, response } = await api.POST(
+        '/v1/admin/tickets/{ticketId}/correction-preview',
+        { params: { path: { ticketId } }, body: { cityId, receivedLines } },
+      );
+      if (data) return { status: 'done', preview: data };
+      const refusal = refusalOf<ResolveRefusal>(error, resolveRefusals);
+      if (refusal) return { status: 'refused', refusal };
+      throw new Error(`The correction preview failed with ${response.status}.`);
+    },
+  });
+}
+
+// «حل التذكرة» and «إغلاق» (owner decision 2026-11-17): each answers the
+// page; a repeat is refused by what the first changed, so no key.
+export function useResolveTicket(cityId: string, ticketId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (
+      change: { kind: 'resolve'; body: ResolveBody } | { kind: 'close'; reason: string },
+    ): Promise<ResolveResult> => {
+      const path = { ticketId };
+      const { data, error, response } =
+        change.kind === 'resolve'
+          ? await api.POST('/v1/admin/tickets/{ticketId}/resolve', {
+              params: { path },
+              body: { cityId, ...change.body },
+            })
+          : await api.POST('/v1/admin/tickets/{ticketId}/close', {
+              params: { path },
+              body: { cityId, reason: change.reason },
+            });
+      if (data) return { status: 'done', page: data };
+      const refusal = refusalOf<ResolveRefusal>(error, resolveRefusals);
+      if (refusal) return { status: 'refused', refusal };
+      throw new Error(`The ticket change failed with ${response.status}.`);
+    },
+    onSuccess: (result) => {
+      if (result.status === 'done') queryClient.setQueryData(['ticket', ticketId], result.page);
+    },
+    onSettled: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['tickets', cityId] }),
+        queryClient.invalidateQueries({ queryKey: ['ticket', ticketId] }),
+        queryClient.invalidateQueries({ queryKey: ['alerts'] }),
+      ]),
+  });
 }

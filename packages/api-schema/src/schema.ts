@@ -1572,6 +1572,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/content/canned-replies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminContentCannedReplies"];
+        put: operations["adminContentUpdateCannedReplies"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/content/texts": {
         parameters: {
             query?: never;
@@ -3406,6 +3422,54 @@ export interface paths {
         get?: never;
         put: operations["adminTicketsSetStatus"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/tickets/{ticketId}/correction-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminTicketsCorrectionPreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/tickets/{ticketId}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminTicketsResolve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/tickets/{ticketId}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminTicketsClose"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5817,6 +5881,18 @@ export interface components {
             items: {
                 question: string;
                 answer: string;
+            }[];
+        };
+        AdminCannedRepliesDto_Output: {
+            replies: {
+                title: string;
+                body: string;
+            }[];
+        };
+        AdminCannedRepliesDto: {
+            replies: {
+                title: string;
+                body: string;
             }[];
         };
         AdminTextsDto_Output: {
@@ -9127,7 +9203,7 @@ export interface components {
                 id: string;
                 /** @description Shown as `T-{number}` (AP §4.8). */
                 number: string;
-                /** @description Where the ticket came from (AP §9.9.1): manual so far. */
+                /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute so far. */
                 source: string;
                 /** @enum {string} */
                 party: "customer" | "restaurant" | "captain";
@@ -9136,8 +9212,16 @@ export interface components {
                 partyName: string;
                 orderId: string | null;
                 orderNumber: string | null;
-                /** @description «عاجلة»: open, on an order still active. */
+                /** @description «عاجلة»: open, on an order still active, or a pickup dispute while open. */
                 urgent: boolean;
+                /**
+                 * @description Which resolutions it takes (AP §9.9.3): general, price_difference, pickup_dispute.
+                 * @enum {string}
+                 */
+                kind: "general" | "price_difference" | "pickup_dispute";
+                /** @description «سعر مختلف عن المحل»: the restaurant. */
+                restaurantId: string | null;
+                restaurantName: string | null;
                 typeCode: string;
                 typeLabel: string;
                 description: string;
@@ -9160,6 +9244,29 @@ export interface components {
                 openedAt: string;
                 /** Format: date-time */
                 updatedAt: string;
+                /** @description «محلولة» */
+                resolution: {
+                    /** @enum {string} */
+                    code: "none_explained" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
+                    responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
+                    /** @description Sent to the ticket's party. */
+                    message: string;
+                    /** @description «تصحيح في الحسابات»: what the restaurant received, as corrected. */
+                    correctedLines: {
+                        amount: string;
+                        currency: string;
+                    }[] | null;
+                    /** Format: date-time */
+                    resolvedAt: string;
+                    resolvedByName: string | null;
+                } | null;
+                /** @description «مغلقة» without a resolution. */
+                closure: {
+                    reason: string;
+                    /** Format: date-time */
+                    closedAt: string;
+                    closedByName: string | null;
+                } | null;
             }[];
         };
         AdminOpenOrderTicketDto: {
@@ -9174,7 +9281,7 @@ export interface components {
             id: string;
             /** @description Shown as `T-{number}` (AP §4.8). */
             number: string;
-            /** @description Where the ticket came from (AP §9.9.1): manual so far. */
+            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute so far. */
             source: string;
             /** @enum {string} */
             party: "customer" | "restaurant" | "captain";
@@ -9183,8 +9290,16 @@ export interface components {
             partyName: string;
             orderId: string | null;
             orderNumber: string | null;
-            /** @description «عاجلة»: open, on an order still active. */
+            /** @description «عاجلة»: open, on an order still active, or a pickup dispute while open. */
             urgent: boolean;
+            /**
+             * @description Which resolutions it takes (AP §9.9.3): general, price_difference, pickup_dispute.
+             * @enum {string}
+             */
+            kind: "general" | "price_difference" | "pickup_dispute";
+            /** @description «سعر مختلف عن المحل»: the restaurant. */
+            restaurantId: string | null;
+            restaurantName: string | null;
             typeCode: string;
             typeLabel: string;
             description: string;
@@ -9207,6 +9322,29 @@ export interface components {
             openedAt: string;
             /** Format: date-time */
             updatedAt: string;
+            /** @description «محلولة» */
+            resolution: {
+                /** @enum {string} */
+                code: "none_explained" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
+                responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
+                /** @description Sent to the ticket's party. */
+                message: string;
+                /** @description «تصحيح في الحسابات»: what the restaurant received, as corrected. */
+                correctedLines: {
+                    amount: string;
+                    currency: string;
+                }[] | null;
+                /** Format: date-time */
+                resolvedAt: string;
+                resolvedByName: string | null;
+            } | null;
+            /** @description «مغلقة» without a resolution. */
+            closure: {
+                reason: string;
+                /** Format: date-time */
+                closedAt: string;
+                closedByName: string | null;
+            } | null;
         };
         CaptainActiveOrderDto_Output: {
             /** @description Null without an active order. */
@@ -10637,7 +10775,7 @@ export interface components {
                  * @description The rule of AP §9.1.3.
                  * @enum {string}
                  */
-                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket";
+                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket" | "urgent_dispute_ticket";
                 /**
                  * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
                  * @enum {string}
@@ -10686,7 +10824,7 @@ export interface components {
              * @description The rule of AP §9.1.3.
              * @enum {string}
              */
-            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket";
+            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket" | "urgent_dispute_ticket";
             /**
              * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
              * @enum {string}
@@ -10756,7 +10894,7 @@ export interface components {
                 id: string;
                 /** @description Shown as `T-{number}` (AP §4.8). */
                 number: string;
-                /** @description Where the ticket came from (AP §9.9.1): manual so far. */
+                /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute so far. */
                 source: string;
                 /** @enum {string} */
                 party: "customer" | "restaurant" | "captain";
@@ -10765,8 +10903,16 @@ export interface components {
                 partyName: string;
                 orderId: string | null;
                 orderNumber: string | null;
-                /** @description «عاجلة»: open, on an order still active. */
+                /** @description «عاجلة»: open, on an order still active, or a pickup dispute while open. */
                 urgent: boolean;
+                /**
+                 * @description Which resolutions it takes (AP §9.9.3): general, price_difference, pickup_dispute.
+                 * @enum {string}
+                 */
+                kind: "general" | "price_difference" | "pickup_dispute";
+                /** @description «سعر مختلف عن المحل»: the restaurant. */
+                restaurantId: string | null;
+                restaurantName: string | null;
                 typeCode: string;
                 typeLabel: string;
                 description: string;
@@ -10789,6 +10935,29 @@ export interface components {
                 openedAt: string;
                 /** Format: date-time */
                 updatedAt: string;
+                /** @description «محلولة» */
+                resolution: {
+                    /** @enum {string} */
+                    code: "none_explained" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
+                    responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
+                    /** @description Sent to the ticket's party. */
+                    message: string;
+                    /** @description «تصحيح في الحسابات»: what the restaurant received, as corrected. */
+                    correctedLines: {
+                        amount: string;
+                        currency: string;
+                    }[] | null;
+                    /** Format: date-time */
+                    resolvedAt: string;
+                    resolvedByName: string | null;
+                } | null;
+                /** @description «مغلقة» without a resolution. */
+                closure: {
+                    reason: string;
+                    /** Format: date-time */
+                    closedAt: string;
+                    closedByName: string | null;
+                } | null;
             }[];
         };
         AdminTicketTypesDto_Output: {
@@ -10837,13 +11006,15 @@ export interface components {
             description: string;
             /** Format: uuid */
             partyId: string;
+            /** @description «سعر مختلف عن المحل» (typeCode price_difference): the restaurant it is about. */
+            restaurantId?: string | null;
         };
         AdminTicketDto_Output: {
             /** Format: uuid */
             id: string;
             /** @description Shown as `T-{number}` (AP §4.8). */
             number: string;
-            /** @description Where the ticket came from (AP §9.9.1): manual so far. */
+            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute so far. */
             source: string;
             /** @enum {string} */
             party: "customer" | "restaurant" | "captain";
@@ -10852,8 +11023,16 @@ export interface components {
             partyName: string;
             orderId: string | null;
             orderNumber: string | null;
-            /** @description «عاجلة»: open, on an order still active. */
+            /** @description «عاجلة»: open, on an order still active, or a pickup dispute while open. */
             urgent: boolean;
+            /**
+             * @description Which resolutions it takes (AP §9.9.3): general, price_difference, pickup_dispute.
+             * @enum {string}
+             */
+            kind: "general" | "price_difference" | "pickup_dispute";
+            /** @description «سعر مختلف عن المحل»: the restaurant. */
+            restaurantId: string | null;
+            restaurantName: string | null;
             typeCode: string;
             typeLabel: string;
             description: string;
@@ -10876,13 +11055,36 @@ export interface components {
             openedAt: string;
             /** Format: date-time */
             updatedAt: string;
+            /** @description «محلولة» */
+            resolution: {
+                /** @enum {string} */
+                code: "none_explained" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
+                responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
+                /** @description Sent to the ticket's party. */
+                message: string;
+                /** @description «تصحيح في الحسابات»: what the restaurant received, as corrected. */
+                correctedLines: {
+                    amount: string;
+                    currency: string;
+                }[] | null;
+                /** Format: date-time */
+                resolvedAt: string;
+                resolvedByName: string | null;
+            } | null;
+            /** @description «مغلقة» without a resolution. */
+            closure: {
+                reason: string;
+                /** Format: date-time */
+                closedAt: string;
+                closedByName: string | null;
+            } | null;
         };
         AdminTicketPageDto_Output: {
             /** Format: uuid */
             id: string;
             /** @description Shown as `T-{number}` (AP §4.8). */
             number: string;
-            /** @description Where the ticket came from (AP §9.9.1): manual so far. */
+            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute so far. */
             source: string;
             /** @enum {string} */
             party: "customer" | "restaurant" | "captain";
@@ -10891,8 +11093,16 @@ export interface components {
             partyName: string;
             orderId: string | null;
             orderNumber: string | null;
-            /** @description «عاجلة»: open, on an order still active. */
+            /** @description «عاجلة»: open, on an order still active, or a pickup dispute while open. */
             urgent: boolean;
+            /**
+             * @description Which resolutions it takes (AP §9.9.3): general, price_difference, pickup_dispute.
+             * @enum {string}
+             */
+            kind: "general" | "price_difference" | "pickup_dispute";
+            /** @description «سعر مختلف عن المحل»: the restaurant. */
+            restaurantId: string | null;
+            restaurantName: string | null;
             typeCode: string;
             typeLabel: string;
             description: string;
@@ -10915,6 +11125,29 @@ export interface components {
             openedAt: string;
             /** Format: date-time */
             updatedAt: string;
+            /** @description «محلولة» */
+            resolution: {
+                /** @enum {string} */
+                code: "none_explained" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
+                responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
+                /** @description Sent to the ticket's party. */
+                message: string;
+                /** @description «تصحيح في الحسابات»: what the restaurant received, as corrected. */
+                correctedLines: {
+                    amount: string;
+                    currency: string;
+                }[] | null;
+                /** Format: date-time */
+                resolvedAt: string;
+                resolvedByName: string | null;
+            } | null;
+            /** @description «مغلقة» without a resolution. */
+            closure: {
+                reason: string;
+                /** Format: date-time */
+                closedAt: string;
+                closedByName: string | null;
+            } | null;
             /** @description Oldest first. */
             notes: {
                 /** Format: uuid */
@@ -10924,6 +11157,30 @@ export interface components {
                 /** Format: date-time */
                 createdAt: string;
             }[];
+            /** @description «خلاف على دفعة الاستلام» only. */
+            pickupDispute: {
+                pickupPayment: {
+                    amount: string;
+                    currency: string;
+                };
+                /** @description The captain's payment lines as booked. */
+                recorded: {
+                    amount: string;
+                    currency: string;
+                }[];
+                /** @description What the restaurant says it received. */
+                received: {
+                    amount: string;
+                    currency: string;
+                }[];
+                /** @enum {string} */
+                confirmedBy: "restaurant" | "automatic" | "operations";
+                captainName: string | null;
+                /** Format: date-time */
+                disputedAt: string;
+                /** @description The currencies the corrected lines may use. */
+                currencies: string[];
+            } | null;
         };
         AdminTicketNoteDto: {
             /** Format: uuid */
@@ -10943,6 +11200,67 @@ export interface components {
              * @enum {string}
              */
             status: "in_progress" | "waiting";
+        };
+        AdminTicketCorrectionPreviewDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description The lines the restaurant received, one per currency. */
+            receivedLines: {
+                amount: string;
+                currency: string;
+            }[];
+        };
+        AdminTicketCorrectionDto_Output: {
+            /** @description Per currency: + the captain hands it in, − the desk reimburses them. */
+            captainChanges: {
+                amount: string;
+                currency: string;
+            }[];
+            /** @description + a credit to the restaurant, − a debit. */
+            merchant: {
+                amount: string;
+                currency: string;
+            };
+            entries: {
+                type: string;
+                reason: string | null;
+                account: string;
+                party: {
+                    /** @enum {string} */
+                    kind: "merchant" | "captain" | "platform";
+                    id: string | null;
+                    name: string | null;
+                };
+                /** @description From the platform's side: + a debit, − a credit. */
+                amount: {
+                    amount: string;
+                    currency: string;
+                };
+            }[];
+        };
+        AdminTicketResolveDto: {
+            /** Format: uuid */
+            cityId: string;
+            /**
+             * @description From the ticket kind's (AP §9.9.3).
+             * @enum {string}
+             */
+            resolution: "none_explained" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
+            /** @description Required for a general ticket; none for a price difference or a pickup dispute. */
+            responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
+            /** @description Sent to the ticket's party. */
+            message: string;
+            /** @description «تصحيح في الحسابات» only. */
+            receivedLines: {
+                amount: string;
+                currency: string;
+            }[] | null;
+        };
+        AdminTicketCloseDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description Internal. */
+            reason: string;
         };
         AdminPickerDto_Output: {
             /** @description «تعيين» reaches the captain as an offer (dispatch.manual_assign_requires_accept), the only way to send one greyed out only for «المبلغ أكبر مما يحمله» (CA §8.4, K2). */
@@ -15532,6 +15850,50 @@ export interface operations {
             };
         };
     };
+    adminContentCannedReplies: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCannedRepliesDto_Output"];
+                };
+            };
+        };
+    };
+    adminContentUpdateCannedReplies: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCannedRepliesDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCannedRepliesDto_Output"];
+                };
+            };
+        };
+    };
     adminContentTexts: {
         parameters: {
             query?: never;
@@ -18387,7 +18749,7 @@ export interface operations {
                 status?: "new" | "in_progress" | "waiting" | "resolved" | "closed";
                 typeCode?: string;
                 assigneeId?: string;
-                source?: "manual";
+                source?: "manual" | "pickup_dispute";
                 /** @description «تجاوز المهلة»: only the tickets whose SLA timer is breached. */
                 breached?: "true" | "false";
             };
@@ -18590,6 +18952,84 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["AdminTicketStatusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminTicketPageDto_Output"];
+                };
+            };
+        };
+    };
+    adminTicketsCorrectionPreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticketId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminTicketCorrectionPreviewDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminTicketCorrectionDto_Output"];
+                };
+            };
+        };
+    };
+    adminTicketsResolve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticketId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminTicketResolveDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminTicketPageDto_Output"];
+                };
+            };
+        };
+    };
+    adminTicketsClose: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticketId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminTicketCloseDto"];
             };
         };
         responses: {

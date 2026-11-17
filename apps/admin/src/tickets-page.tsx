@@ -28,6 +28,7 @@ import {
   ticketTypesQuery,
   useFindParties,
   useOpenTicket,
+  PRICE_DIFFERENCE,
 } from './tickets.js';
 
 const route = getRouteApi('/signed-in/tickets');
@@ -40,6 +41,7 @@ export const openRefusalKeys = {
   unknown_order: 'tickets.refusal.unknownOrder',
   no_captain: 'tickets.refusal.noCaptain',
   idempotency_key_reused: 'common.failed',
+  invalid_restaurant: 'tickets.refusal.invalidRestaurant',
 } as const satisfies Record<OpenRefusal, string>;
 
 const slaStateKeys = {
@@ -261,6 +263,11 @@ function OpenTicketForm({ city }: { city: City }) {
   const [partyId, setPartyId] = useState('');
   const [typeCode, setTypeCode] = useState('');
   const [description, setDescription] = useState('');
+  // «سعر مختلف عن المحل» names the restaurant (owner decision 2026-11-17).
+  const findRestaurant = useFindParties(city.id);
+  const [restaurantQ, setRestaurantQ] = useState('');
+  const [restaurantId, setRestaurantId] = useState('');
+  const priceDifference = typeCode === PRICE_DIFFERENCE;
   const choose = (next: TicketParty) => {
     setParty(next);
     setPartyId('');
@@ -271,10 +278,25 @@ function OpenTicketForm({ city }: { city: City }) {
     event.preventDefault();
     if (q.trim()) find.mutate({ party, q: q.trim() });
   };
-  const ready = partyId !== '' && typeCode !== '' && description.trim() !== '';
+  const ready =
+    partyId !== '' &&
+    typeCode !== '' &&
+    description.trim() !== '' &&
+    (!priceDifference || restaurantId !== '');
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    if (ready) open.mutate({ party, partyId, typeCode, description: description.trim() });
+    if (ready) {
+      open.mutate({
+        party,
+        partyId,
+        typeCode,
+        description: description.trim(),
+        restaurantId: priceDifference ? restaurantId : null,
+      });
+    }
+  };
+  const searchRestaurant = () => {
+    if (restaurantQ.trim()) findRestaurant.mutate({ party: 'restaurant', q: restaurantQ.trim() });
   };
   const result = open.data;
   return (
@@ -326,6 +348,36 @@ function OpenTicketForm({ city }: { city: City }) {
             ))}
           </select>
         </label>
+        {priceDifference && (
+          <p>
+            <label>
+              {t('tickets.restaurant')}
+              <input value={restaurantQ} onChange={(event) => setRestaurantQ(event.target.value)} />
+            </label>
+            <button type="button" disabled={findRestaurant.isPending} onClick={searchRestaurant}>
+              {t('tickets.search')}
+            </button>
+            {findRestaurant.data && findRestaurant.data.length === 0 && (
+              <span>{t('tickets.noParty')}</span>
+            )}
+            {findRestaurant.data && findRestaurant.data.length > 0 && (
+              <label>
+                {t('tickets.chooseRestaurant')}
+                <select
+                  value={restaurantId}
+                  onChange={(event) => setRestaurantId(event.target.value)}
+                >
+                  <option value="">{t('tickets.choose')}</option>
+                  {findRestaurant.data.map((each) => (
+                    <option key={each.id} value={each.id}>
+                      {each.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+          </p>
+        )}
         <label>
           {t('tickets.description')}
           <textarea

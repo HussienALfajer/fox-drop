@@ -166,9 +166,11 @@ class _$AdminCaptainBalancesDtoOutputCaptainsInner
   @override
   final String custodyInBase;
   @override
-  final AdminDeskCustodyDtoOutputUsage usage;
+  final AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+  usage;
   @override
-  final AdminDeskCustodyDtoOutputUsage limit;
+  final AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+  limit;
   @override
   final AdminDeskCustodyDtoOutputClosedDue closedDue;
   @override
@@ -307,17 +309,25 @@ class AdminCaptainBalancesDtoOutputCaptainsInnerBuilder
   set custodyInBase(String? custodyInBase) =>
       _$this._custodyInBase = custodyInBase;
 
-  AdminDeskCustodyDtoOutputUsageBuilder? _usage;
-  AdminDeskCustodyDtoOutputUsageBuilder get usage =>
-      _$this._usage ??= AdminDeskCustodyDtoOutputUsageBuilder();
-  set usage(AdminDeskCustodyDtoOutputUsageBuilder? usage) =>
-      _$this._usage = usage;
+  AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerBuilder?
+  _usage;
+  AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerBuilder
+  get usage => _$this._usage ??=
+      AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerBuilder();
+  set usage(
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerBuilder?
+    usage,
+  ) => _$this._usage = usage;
 
-  AdminDeskCustodyDtoOutputUsageBuilder? _limit;
-  AdminDeskCustodyDtoOutputUsageBuilder get limit =>
-      _$this._limit ??= AdminDeskCustodyDtoOutputUsageBuilder();
-  set limit(AdminDeskCustodyDtoOutputUsageBuilder? limit) =>
-      _$this._limit = limit;
+  AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerBuilder?
+  _limit;
+  AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerBuilder
+  get limit => _$this._limit ??=
+      AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerBuilder();
+  set limit(
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerBuilder?
+    limit,
+  ) => _$this._limit = limit;
 
   AdminDeskCustodyDtoOutputClosedDueBuilder? _closedDue;
   AdminDeskCustodyDtoOutputClosedDueBuilder get closedDue =>

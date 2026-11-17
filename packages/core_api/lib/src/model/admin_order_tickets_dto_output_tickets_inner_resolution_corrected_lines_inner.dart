@@ -6,19 +6,19 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_desk_custody_dto_output_usage.g.dart';
+part 'admin_order_tickets_dto_output_tickets_inner_resolution_corrected_lines_inner.g.dart';
 
-/// AdminDeskCustodyDtoOutputUsage
+/// AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
 ///
 /// Properties:
 /// * [amount]
 /// * [currency]
 @BuiltValue()
-abstract class AdminDeskCustodyDtoOutputUsage
+abstract class AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
     implements
         Built<
-          AdminDeskCustodyDtoOutputUsage,
-          AdminDeskCustodyDtoOutputUsageBuilder
+          AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
+          AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerBuilder
         > {
   @BuiltValueField(wireName: r'amount')
   String get amount;
@@ -26,34 +26,48 @@ abstract class AdminDeskCustodyDtoOutputUsage
   @BuiltValueField(wireName: r'currency')
   String get currency;
 
-  AdminDeskCustodyDtoOutputUsage._();
+  AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner._();
 
-  factory AdminDeskCustodyDtoOutputUsage([
-    void updates(AdminDeskCustodyDtoOutputUsageBuilder b),
-  ]) = _$AdminDeskCustodyDtoOutputUsage;
+  factory AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner([
+    void updates(
+      AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerBuilder
+      b,
+    ),
+  ]) = _$AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminDeskCustodyDtoOutputUsageBuilder b) => b;
+  static void _defaults(
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerBuilder
+    b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminDeskCustodyDtoOutputUsage> get serializer =>
-      _$AdminDeskCustodyDtoOutputUsageSerializer();
+  static Serializer<
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+  >
+  get serializer =>
+      _$AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerSerializer();
 }
 
-class _$AdminDeskCustodyDtoOutputUsageSerializer
-    implements PrimitiveSerializer<AdminDeskCustodyDtoOutputUsage> {
+class _$AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerSerializer
+    implements
+        PrimitiveSerializer<
+          AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+        > {
   @override
   final Iterable<Type> types = const [
-    AdminDeskCustodyDtoOutputUsage,
-    _$AdminDeskCustodyDtoOutputUsage,
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
+    _$AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner,
   ];
 
   @override
-  final String wireName = r'AdminDeskCustodyDtoOutputUsage';
+  final String wireName =
+      r'AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminDeskCustodyDtoOutputUsage object, {
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+    object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'amount';
@@ -71,7 +85,8 @@ class _$AdminDeskCustodyDtoOutputUsageSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminDeskCustodyDtoOutputUsage object, {
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+    object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -86,7 +101,8 @@ class _$AdminDeskCustodyDtoOutputUsageSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminDeskCustodyDtoOutputUsageBuilder result,
+    required AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerBuilder
+    result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -120,12 +136,14 @@ class _$AdminDeskCustodyDtoOutputUsageSerializer
   }
 
   @override
-  AdminDeskCustodyDtoOutputUsage deserialize(
+  AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+  deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminDeskCustodyDtoOutputUsageBuilder();
+    final result =
+        AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInnerBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

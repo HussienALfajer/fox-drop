@@ -84,6 +84,8 @@ class _$AdminOpenTicketDto extends AdminOpenTicketDto {
   final String description;
   @override
   final String partyId;
+  @override
+  final String? restaurantId;
 
   factory _$AdminOpenTicketDto([
     void Function(AdminOpenTicketDtoBuilder)? updates,
@@ -95,6 +97,7 @@ class _$AdminOpenTicketDto extends AdminOpenTicketDto {
     required this.typeCode,
     required this.description,
     required this.partyId,
+    this.restaurantId,
   }) : super._();
   @override
   AdminOpenTicketDto rebuild(
@@ -113,7 +116,8 @@ class _$AdminOpenTicketDto extends AdminOpenTicketDto {
         party == other.party &&
         typeCode == other.typeCode &&
         description == other.description &&
-        partyId == other.partyId;
+        partyId == other.partyId &&
+        restaurantId == other.restaurantId;
   }
 
   @override
@@ -124,6 +128,7 @@ class _$AdminOpenTicketDto extends AdminOpenTicketDto {
     _$hash = $jc(_$hash, typeCode.hashCode);
     _$hash = $jc(_$hash, description.hashCode);
     _$hash = $jc(_$hash, partyId.hashCode);
+    _$hash = $jc(_$hash, restaurantId.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -135,7 +140,8 @@ class _$AdminOpenTicketDto extends AdminOpenTicketDto {
           ..add('party', party)
           ..add('typeCode', typeCode)
           ..add('description', description)
-          ..add('partyId', partyId))
+          ..add('partyId', partyId)
+          ..add('restaurantId', restaurantId))
         .toString();
   }
 }
@@ -164,6 +170,10 @@ class AdminOpenTicketDtoBuilder
   String? get partyId => _$this._partyId;
   set partyId(String? partyId) => _$this._partyId = partyId;
 
+  String? _restaurantId;
+  String? get restaurantId => _$this._restaurantId;
+  set restaurantId(String? restaurantId) => _$this._restaurantId = restaurantId;
+
   AdminOpenTicketDtoBuilder() {
     AdminOpenTicketDto._defaults(this);
   }
@@ -176,6 +186,7 @@ class AdminOpenTicketDtoBuilder
       _typeCode = $v.typeCode;
       _description = $v.description;
       _partyId = $v.partyId;
+      _restaurantId = $v.restaurantId;
       _$v = null;
     }
     return this;
@@ -223,6 +234,7 @@ class AdminOpenTicketDtoBuilder
             r'AdminOpenTicketDto',
             'partyId',
           ),
+          restaurantId: restaurantId,
         );
     replace(_$result);
     return _$result;

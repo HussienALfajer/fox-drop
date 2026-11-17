@@ -155,7 +155,10 @@ function AlertLine({ alert, city }: { alert: AdminAlert; city: City }) {
   const approval = alert.code === 'compensation_approval' && canApproveCompensations(session);
   // AP §9.1.3 «تذكرة عاجلة» (slice 2.23a): «فتح التذكرة».
   const ticketId =
-    alert.code === 'urgent_ticket' && canReadTickets(session) ? alert.subjectId : null;
+    (alert.code === 'urgent_ticket' || alert.code === 'urgent_dispute_ticket') &&
+    canReadTickets(session)
+      ? alert.subjectId
+      : null;
   return (
     <>
       <strong>{t(`alerts.severity.${alert.severity}`)}</strong>{' '}

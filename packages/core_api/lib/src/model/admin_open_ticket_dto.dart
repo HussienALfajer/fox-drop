@@ -17,6 +17,7 @@ part 'admin_open_ticket_dto.g.dart';
 /// * [typeCode] - From the party's list (AP Appendix B).
 /// * [description]
 /// * [partyId]
+/// * [restaurantId] - «سعر مختلف عن المحل» (typeCode price_difference): the restaurant it is about.
 @BuiltValue()
 abstract class AdminOpenTicketDto
     implements Built<AdminOpenTicketDto, AdminOpenTicketDtoBuilder> {
@@ -36,6 +37,10 @@ abstract class AdminOpenTicketDto
 
   @BuiltValueField(wireName: r'partyId')
   String get partyId;
+
+  /// «سعر مختلف عن المحل» (typeCode price_difference): the restaurant it is about.
+  @BuiltValueField(wireName: r'restaurantId')
+  String? get restaurantId;
 
   AdminOpenTicketDto._();
 
@@ -88,6 +93,13 @@ class _$AdminOpenTicketDtoSerializer
       object.partyId,
       specifiedType: const FullType(String),
     );
+    if (object.restaurantId != null) {
+      yield r'restaurantId';
+      yield serializers.serialize(
+        object.restaurantId,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
   }
 
   @override
@@ -159,6 +171,16 @@ class _$AdminOpenTicketDtoSerializer
                   )
                   as String;
           result.partyId = valueDes;
+          break;
+        case r'restaurantId':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.restaurantId = valueDes;
           break;
         default:
           unhandled.add(key);

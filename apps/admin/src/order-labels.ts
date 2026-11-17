@@ -53,6 +53,7 @@ export const alertKeys = {
   customer_not_answering: 'order.alert.customerNotAnswering',
   compensation_approval: 'order.alert.compensationApproval',
   urgent_ticket: 'order.alert.urgentTicket',
+  urgent_dispute_ticket: 'order.alert.urgentTicket',
 } as const satisfies Record<AlertCode, string>;
 
 export const badgeKeys = {

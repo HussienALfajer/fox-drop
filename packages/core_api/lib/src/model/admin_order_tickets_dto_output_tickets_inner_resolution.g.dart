@@ -1,0 +1,436 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'admin_order_tickets_dto_output_tickets_inner_resolution.dart';
+
+// **************************************************************************
+// BuiltValueGenerator
+// **************************************************************************
+
+const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
+_$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_noneExplained =
+    const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum._(
+      'noneExplained',
+    );
+const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
+_$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_priceCorrected =
+    const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum._(
+      'priceCorrected',
+    );
+const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
+_$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_priceCorrect =
+    const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum._(
+      'priceCorrect',
+    );
+const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
+_$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_captainPaid =
+    const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum._(
+      'captainPaid',
+    );
+const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
+_$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_accountsCorrected =
+    const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum._(
+      'accountsCorrected',
+    );
+const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
+_$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_paymentCorrect =
+    const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum._(
+      'paymentCorrect',
+    );
+
+AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
+_$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnumValueOf(String name) {
+  switch (name) {
+    case 'noneExplained':
+      return _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_noneExplained;
+    case 'priceCorrected':
+      return _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_priceCorrected;
+    case 'priceCorrect':
+      return _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_priceCorrect;
+    case 'captainPaid':
+      return _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_captainPaid;
+    case 'accountsCorrected':
+      return _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_accountsCorrected;
+    case 'paymentCorrect':
+      return _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_paymentCorrect;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum>
+_$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnumValues =
+    BuiltSet<AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum>(const <
+      AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
+    >[
+      _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_noneExplained,
+      _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_priceCorrected,
+      _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_priceCorrect,
+      _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_captainPaid,
+      _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_accountsCorrected,
+      _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_paymentCorrect,
+    ]);
+
+const AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum
+_$adminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum_restaurant =
+    const AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum._(
+      'restaurant',
+    );
+const AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum
+_$adminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum_captain =
+    const AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum._(
+      'captain',
+    );
+const AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum
+_$adminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum_customer =
+    const AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum._(
+      'customer',
+    );
+const AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum
+_$adminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum_platform =
+    const AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum._(
+      'platform',
+    );
+
+AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum
+_$adminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnumValueOf(
+  String name,
+) {
+  switch (name) {
+    case 'restaurant':
+      return _$adminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum_restaurant;
+    case 'captain':
+      return _$adminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum_captain;
+    case 'customer':
+      return _$adminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum_customer;
+    case 'platform':
+      return _$adminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum_platform;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum>
+_$adminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnumValues =
+    BuiltSet<
+      AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum
+    >(const <AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum>[
+      _$adminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum_restaurant,
+      _$adminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum_captain,
+      _$adminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum_customer,
+      _$adminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum_platform,
+    ]);
+
+Serializer<AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum>
+_$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnumSerializer =
+    _$AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnumSerializer();
+Serializer<AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum>
+_$adminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnumSerializer =
+    _$AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnumSerializer();
+
+class _$AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnumSerializer
+    implements
+        PrimitiveSerializer<
+          AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
+        > {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'noneExplained': 'none_explained',
+    'priceCorrected': 'price_corrected',
+    'priceCorrect': 'price_correct',
+    'captainPaid': 'captain_paid',
+    'accountsCorrected': 'accounts_corrected',
+    'paymentCorrect': 'payment_correct',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'none_explained': 'noneExplained',
+    'price_corrected': 'priceCorrected',
+    'price_correct': 'priceCorrect',
+    'captain_paid': 'captainPaid',
+    'accounts_corrected': 'accountsCorrected',
+    'payment_correct': 'paymentCorrect',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum,
+  ];
+  @override
+  final String wireName =
+      'AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
+class _$AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnumSerializer
+    implements
+        PrimitiveSerializer<
+          AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum
+        > {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'restaurant': 'restaurant',
+    'captain': 'captain',
+    'customer': 'customer',
+    'platform': 'platform',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'restaurant': 'restaurant',
+    'captain': 'captain',
+    'customer': 'customer',
+    'platform': 'platform',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum,
+  ];
+  @override
+  final String wireName =
+      'AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
+class _$AdminOrderTicketsDtoOutputTicketsInnerResolution
+    extends AdminOrderTicketsDtoOutputTicketsInnerResolution {
+  @override
+  final AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum code;
+  @override
+  final AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum?
+  responsible;
+  @override
+  final String message;
+  @override
+  final BuiltList<
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+  >?
+  correctedLines;
+  @override
+  final DateTime resolvedAt;
+  @override
+  final String? resolvedByName;
+
+  factory _$AdminOrderTicketsDtoOutputTicketsInnerResolution([
+    void Function(AdminOrderTicketsDtoOutputTicketsInnerResolutionBuilder)?
+    updates,
+  ]) =>
+      (AdminOrderTicketsDtoOutputTicketsInnerResolutionBuilder()
+            ..update(updates))
+          ._build();
+
+  _$AdminOrderTicketsDtoOutputTicketsInnerResolution._({
+    required this.code,
+    this.responsible,
+    required this.message,
+    this.correctedLines,
+    required this.resolvedAt,
+    this.resolvedByName,
+  }) : super._();
+  @override
+  AdminOrderTicketsDtoOutputTicketsInnerResolution rebuild(
+    void Function(AdminOrderTicketsDtoOutputTicketsInnerResolutionBuilder)
+    updates,
+  ) => (toBuilder()..update(updates)).build();
+
+  @override
+  AdminOrderTicketsDtoOutputTicketsInnerResolutionBuilder toBuilder() =>
+      AdminOrderTicketsDtoOutputTicketsInnerResolutionBuilder()..replace(this);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(other, this)) return true;
+    return other is AdminOrderTicketsDtoOutputTicketsInnerResolution &&
+        code == other.code &&
+        responsible == other.responsible &&
+        message == other.message &&
+        correctedLines == other.correctedLines &&
+        resolvedAt == other.resolvedAt &&
+        resolvedByName == other.resolvedByName;
+  }
+
+  @override
+  int get hashCode {
+    var _$hash = 0;
+    _$hash = $jc(_$hash, code.hashCode);
+    _$hash = $jc(_$hash, responsible.hashCode);
+    _$hash = $jc(_$hash, message.hashCode);
+    _$hash = $jc(_$hash, correctedLines.hashCode);
+    _$hash = $jc(_$hash, resolvedAt.hashCode);
+    _$hash = $jc(_$hash, resolvedByName.hashCode);
+    _$hash = $jf(_$hash);
+    return _$hash;
+  }
+
+  @override
+  String toString() {
+    return (newBuiltValueToStringHelper(
+            r'AdminOrderTicketsDtoOutputTicketsInnerResolution',
+          )
+          ..add('code', code)
+          ..add('responsible', responsible)
+          ..add('message', message)
+          ..add('correctedLines', correctedLines)
+          ..add('resolvedAt', resolvedAt)
+          ..add('resolvedByName', resolvedByName))
+        .toString();
+  }
+}
+
+class AdminOrderTicketsDtoOutputTicketsInnerResolutionBuilder
+    implements
+        Builder<
+          AdminOrderTicketsDtoOutputTicketsInnerResolution,
+          AdminOrderTicketsDtoOutputTicketsInnerResolutionBuilder
+        > {
+  _$AdminOrderTicketsDtoOutputTicketsInnerResolution? _$v;
+
+  AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum? _code;
+  AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum? get code =>
+      _$this._code;
+  set code(AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum? code) =>
+      _$this._code = code;
+
+  AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum? _responsible;
+  AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum?
+  get responsible => _$this._responsible;
+  set responsible(
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum?
+    responsible,
+  ) => _$this._responsible = responsible;
+
+  String? _message;
+  String? get message => _$this._message;
+  set message(String? message) => _$this._message = message;
+
+  ListBuilder<
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+  >?
+  _correctedLines;
+  ListBuilder<
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+  >
+  get correctedLines => _$this._correctedLines ??=
+      ListBuilder<
+        AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+      >();
+  set correctedLines(
+    ListBuilder<
+      AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+    >?
+    correctedLines,
+  ) => _$this._correctedLines = correctedLines;
+
+  DateTime? _resolvedAt;
+  DateTime? get resolvedAt => _$this._resolvedAt;
+  set resolvedAt(DateTime? resolvedAt) => _$this._resolvedAt = resolvedAt;
+
+  String? _resolvedByName;
+  String? get resolvedByName => _$this._resolvedByName;
+  set resolvedByName(String? resolvedByName) =>
+      _$this._resolvedByName = resolvedByName;
+
+  AdminOrderTicketsDtoOutputTicketsInnerResolutionBuilder() {
+    AdminOrderTicketsDtoOutputTicketsInnerResolution._defaults(this);
+  }
+
+  AdminOrderTicketsDtoOutputTicketsInnerResolutionBuilder get _$this {
+    final $v = _$v;
+    if ($v != null) {
+      _code = $v.code;
+      _responsible = $v.responsible;
+      _message = $v.message;
+      _correctedLines = $v.correctedLines?.toBuilder();
+      _resolvedAt = $v.resolvedAt;
+      _resolvedByName = $v.resolvedByName;
+      _$v = null;
+    }
+    return this;
+  }
+
+  @override
+  void replace(AdminOrderTicketsDtoOutputTicketsInnerResolution other) {
+    _$v = other as _$AdminOrderTicketsDtoOutputTicketsInnerResolution;
+  }
+
+  @override
+  void update(
+    void Function(AdminOrderTicketsDtoOutputTicketsInnerResolutionBuilder)?
+    updates,
+  ) {
+    if (updates != null) updates(this);
+  }
+
+  @override
+  AdminOrderTicketsDtoOutputTicketsInnerResolution build() => _build();
+
+  _$AdminOrderTicketsDtoOutputTicketsInnerResolution _build() {
+    _$AdminOrderTicketsDtoOutputTicketsInnerResolution _$result;
+    try {
+      _$result =
+          _$v ??
+          _$AdminOrderTicketsDtoOutputTicketsInnerResolution._(
+            code: BuiltValueNullFieldError.checkNotNull(
+              code,
+              r'AdminOrderTicketsDtoOutputTicketsInnerResolution',
+              'code',
+            ),
+            responsible: responsible,
+            message: BuiltValueNullFieldError.checkNotNull(
+              message,
+              r'AdminOrderTicketsDtoOutputTicketsInnerResolution',
+              'message',
+            ),
+            correctedLines: _correctedLines?.build(),
+            resolvedAt: BuiltValueNullFieldError.checkNotNull(
+              resolvedAt,
+              r'AdminOrderTicketsDtoOutputTicketsInnerResolution',
+              'resolvedAt',
+            ),
+            resolvedByName: resolvedByName,
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'correctedLines';
+        _correctedLines?.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+          r'AdminOrderTicketsDtoOutputTicketsInnerResolution',
+          _$failedField,
+          e.toString(),
+        );
+      }
+      rethrow;
+    }
+    replace(_$result);
+    return _$result;
+  }
+}
+
+// ignore_for_file: deprecated_member_use_from_same_package,type=lint

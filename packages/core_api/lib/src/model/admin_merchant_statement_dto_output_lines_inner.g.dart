@@ -264,7 +264,10 @@ class _$AdminMerchantStatementDtoOutputLinesInner
   @override
   final String? itemsValue;
   @override
-  final BuiltList<AdminDeskCustodyDtoOutputUsage>? pickupLines;
+  final BuiltList<
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+  >?
+  pickupLines;
   @override
   final String? commission;
   @override
@@ -395,11 +398,23 @@ class AdminMerchantStatementDtoOutputLinesInnerBuilder
   String? get itemsValue => _$this._itemsValue;
   set itemsValue(String? itemsValue) => _$this._itemsValue = itemsValue;
 
-  ListBuilder<AdminDeskCustodyDtoOutputUsage>? _pickupLines;
-  ListBuilder<AdminDeskCustodyDtoOutputUsage> get pickupLines =>
-      _$this._pickupLines ??= ListBuilder<AdminDeskCustodyDtoOutputUsage>();
-  set pickupLines(ListBuilder<AdminDeskCustodyDtoOutputUsage>? pickupLines) =>
-      _$this._pickupLines = pickupLines;
+  ListBuilder<
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+  >?
+  _pickupLines;
+  ListBuilder<
+    AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+  >
+  get pickupLines => _$this._pickupLines ??=
+      ListBuilder<
+        AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+      >();
+  set pickupLines(
+    ListBuilder<
+      AdminOrderTicketsDtoOutputTicketsInnerResolutionCorrectedLinesInner
+    >?
+    pickupLines,
+  ) => _$this._pickupLines = pickupLines;
 
   String? _commission;
   String? get commission => _$this._commission;
