@@ -1012,6 +1012,8 @@ describe('the cash desk tables (AP §9.10.3, §4.8)', () => {
     ['delete a manual entry', 'DELETE FROM cashdesk.manual_entries'],
     ['delete a session', 'DELETE FROM cashdesk.drawer_sessions'],
     ['delete a receipt', 'DELETE FROM cashdesk.receipts'],
+    ['change a ticket note', "UPDATE support.ticket_notes SET body = 'x'"],
+    ['delete a ticket', 'DELETE FROM support.tickets'],
   ])('refuse the application role to %s', async (_, statement) => {
     await expect(appQuery(statement)).rejects.toThrow(/permission denied/);
   });

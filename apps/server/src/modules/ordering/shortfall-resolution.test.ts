@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { TicketSync } from '../support/index.js';
 import { randomUUID } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { DATABASE } from '../../database/database.module.js';
@@ -76,6 +77,7 @@ function orderAlerts(): OrderAlerts {
     app.get(AlertsService),
     app.get(CaptainsService),
     app.get(SettingsService),
+    app.get(TicketSync),
   );
 }
 

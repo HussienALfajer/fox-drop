@@ -1,3 +1,5 @@
+import { SupportModule, SupportWorkerModule } from '../support/index.js';
+import { AdminOrderTicketsController } from './admin-order-tickets.controller.js';
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module.js';
 import { JobsModule } from '../../jobs/jobs.module.js';
@@ -67,6 +69,7 @@ import {
     CaptainsModule,
     NotificationsModule,
     OrderAssignmentsModule,
+    SupportModule,
   ],
   controllers: [
     CustomerQuoteController,
@@ -74,6 +77,7 @@ import {
     MerchantOrdersController,
     AdminOrdersController,
     AdminOrderCompensationsController,
+    AdminOrderTicketsController,
     CaptainOrdersController,
     AdminEmergencyStopController,
     CustomerEmergencyStopController,
@@ -110,6 +114,7 @@ export class OrderingModule {}
     LedgerModule,
     MarketingModule,
     NotificationsWorkerModule,
+    SupportWorkerModule,
     ContentModule,
     CaptainsModule,
     SettingsModule,

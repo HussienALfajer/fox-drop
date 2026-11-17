@@ -14,6 +14,7 @@ import { MerchantsModule } from './modules/merchants/index.js';
 import { MarketingModule } from './modules/marketing/index.js';
 import { NotificationsModule } from './modules/notifications/index.js';
 import { OrderingModule } from './modules/ordering/index.js';
+import { SupportModule } from './modules/support/index.js';
 import { ReportingModule } from './modules/reporting/index.js';
 import { SettingsModule } from './modules/settings/index.js';
 import { PlaceholderSeedModule } from './seed/placeholder-seed.js';
@@ -42,6 +43,7 @@ import { PlaceholderSeedModule } from './seed/placeholder-seed.js';
     FilesModule,
     ReportingModule,
     MarketingModule,
+    SupportModule,
     PlaceholderSeedModule,
   ],
   controllers: STATUS_CONTROLLERS,

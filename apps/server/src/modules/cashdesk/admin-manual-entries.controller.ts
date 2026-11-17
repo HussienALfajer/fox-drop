@@ -6,7 +6,7 @@ import { CurrentAdminSession, RequirePermission } from '../../http/access.js';
 import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { AdminController } from '../../http/route-groups.js';
 import type { AdminSession } from '../identity/index.js';
-import { phoneOf } from './admin-cash-desk.controller.js';
+import { phoneOf } from '../../http/phone-search.js';
 import { deskUser, refusalsAsHttp } from './desk-http.js';
 import {
   type AccountEntryView,

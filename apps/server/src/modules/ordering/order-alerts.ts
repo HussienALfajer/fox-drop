@@ -16,6 +16,7 @@ import { reportError } from '../../observability/error-tracking.js';
 import { CaptainsService } from '../captains/index.js';
 import { type AlertCode, AlertsService } from '../notifications/index.js';
 import { SettingsService } from '../settings/index.js';
+import { TicketSync } from '../support/index.js';
 import { UNTIL_ENDED } from './active-orders.js';
 import { openCannotComplete } from './cannot-complete.js';
 import { type OpenEmergency, openEmergency } from './emergencies.js';
@@ -180,6 +181,7 @@ export class OrderAlerts {
     private readonly alerts: AlertsService,
     private readonly captains: CaptainsService,
     private readonly settings: SettingsService,
+    private readonly tickets: TicketSync,
   ) {}
 
   // With `timer`, it also sends the job of the next moment: a transition's
@@ -235,6 +237,11 @@ export class OrderAlerts {
         open,
         now,
       );
+      // AP §9.9.2 (slice 2.23a): an order that ended takes its tickets out of
+      // «عاجلة» and closes their «تذكرة عاجلة».
+      if (!UNTIL_ENDED.includes(order.status)) {
+        await this.tickets.orderEnded(tx, order.id, now);
+      }
       if (timer && next) {
         await this.jobs.send(
           QUEUES.orderAlerts,
