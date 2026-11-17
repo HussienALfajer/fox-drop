@@ -4,14 +4,31 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.23, tickets (`docs/roadmap.md`, Phase 2, Support and trust). Not started: it is larger than one pull request.
+Slice 2.23a, the tickets, their timers and the alert (`docs/roadmap.md`, Phase 2, Support and trust). Not started. 2.23 is split into 2.23a to 2.23d (owner, 2026-11-17).
 
-- **Roadmap line:** 2.23 Tickets: sources, list and page, SLA timers, every resolution type and its money effect per responsible party, the free re-delivery order, the urgent-ticket alert, pickup disputes with per-currency entries, canned replies (AP §8.10, §9.9, `docs/domain/10`). The owner resolves a ticket with a free re-delivery.
-- **Specs:** AP §8.10, AP §9.9, `docs/domain/10`, AP §6 (who handles tickets), AP §9.1.3 (the urgent-ticket alert), AP §9.3.2; the ledger's rule for a ticket's `merchant.debit` and `earn.charge` against `platform.compensation_cost` (`apps/server/src/modules/ledger/CLAUDE.md`); ordering's `pickup_disputes` (its `CLAUDE.md`, «The dispute after the pickup»).
-- **Branch:** none yet: each slice of the split names its own.
-- **Before starting, ask the owner:** the split into pull requests (run the `slice-plan` skill and get the split approved); the open items of `docs/open-questions.md` the tickets touch.
+- **Roadmap line:** 2.23a The tickets, their timers and the alert: the `support` module, the number `T-…` per city, «تذكرة يدوية» from the order detail and the list, the list with its columns and filters, the ticket page with the linked order, internal notes, the assignee, the five statuses, the priority, the SLA timers, the alert «تذكرة عاجلة», the tickets on the order detail and the filter «لها تذكرة». Support opens a ticket on an active order, the alert shows and its timer turns amber then red.
+- **Specs:** AP §9.9.1 (manual tickets), §9.9.2 (the list, the SLA timers, the filters), §9.9.3 (the page: the linked order, the type, the note, internal notes), §9.1.3 («تذكرة عاجلة»: critical, OWN, OPS, SUP), §9.2 (the filter «لها تذكرة»), §9.3.1 (tickets linked on the order detail) and §9.3.2 («open a ticket»: OWN, OPS, SUP), §4.5 (internal notes), §4.8 (`T-5521`, sequential per city), §6 (Support: OWN, OPS and SUP full, FIN read), Appendix A (`support.first_response_active_min`, `support.resolution_post_delivery_hours`), Appendix B (the ticket type lists), Appendix C (the status labels); architecture §4.2 and §4.3 (the `support` module and its schema), §6 (the `ops:city.{city_id}` channel).
+- **Branch:** `feat/tickets` (not created yet).
+- **Not in this slice:** resolving and closing, canned replies and the pickup dispute's ticket (2.23b); money (2.23c, 2.23d); tickets from the apps, their photos and «بلاغاتي» (2.24); the global search by ticket number (AP §7); the timer's amber and red colours (the design: build the state, not the styling).
 - **Plan:**
-  - [ ] Split 2.23 with `slice-plan`, approved by the owner, and write the first slice's plan here.
+  - [ ] Read the cited sections, `apps/server/CLAUDE.md`, `apps/admin/CLAUDE.md`, and how `notifications` syncs an alert and `ordering` runs a timer; ask the owner anything the decisions below leave open.
+  - [ ] The failing tests first for the pure rules: the priority, which SLA timer a ticket has and when it starts, stops, turns amber (80%) and is breached, and the status moves.
+  - [ ] The `support` module and its migration (the `db-migration` skill): tickets, their notes, the per-city number, the grants and the database test; the permissions `support.read` and `support.manage` on the routes.
+  - [ ] The server: create a manual ticket (`Idempotency-Key`), the list with its filters, the ticket, add a note, assign, change the status; each change with its audit line, in one transaction with its outbox event to the panel's channel.
+  - [ ] The alert «تذكرة عاجلة» (`notifications`' rule and sync) and its closing; the SLA states on the list and the filter for a breached timer.
+  - [ ] Ordering's reads through the support service: the tickets on the order detail and the board's filter «لها تذكرة».
+  - [ ] `pnpm generate:api`, then the panel: the tickets list, «تذكرة يدوية», the ticket page, the order detail's section and «فتح تذكرة», the board's filter, the alert's action, with their strings in `ar.json` and their tests.
+  - [ ] The `checker` agent, the `reviewer` agent on AP §9.9.1–§9.9.3 and §9.1.3, then the pull request and the handover to 2.23b.
+
+### Owner decisions for 2.23 (2026-11-17)
+
+- 2.23 splits into 2.23a (the tickets, their timers and the alert), 2.23b (resolving, closing, canned replies and the pickup dispute), 2.23c (the money of a problem after delivery and the wrong change) and 2.23d (the free re-delivery, every responsible party). The sources in the apps stay in 2.24.
+- A manual ticket names its party: the staff member picks a customer, a restaurant or a captain, the type comes from that party's list (AP Appendix B), and the resolution message goes to that party. The order is optional, and required only for a resolution with money.
+- «جديدة» turns «قيد المعالجة» by itself at the first assignment or note; «بانتظار رد» is set by hand; «محلولة» only by resolving.
+- A ticket with neither an active order nor a delivered one (such as «طلب تعديل بيانات») has the resolution timer, `support.resolution_post_delivery_hours` from its opening.
+- The first-response timer stops when the ticket leaves «جديدة».
+- «بانتظار رد» does not pause the resolution timer.
+- **To ask at their slices:** the difference between «محلولة» and «مغلقة» and when a ticket closes (2.23b); whether a ticket stays open while its code waits for OWN's approval (2.23c); whether the restaurant accepts a re-delivery like any order, and what a rejected or failed one does (2.23d).
 
 ### Left from 2.22d (`feat/compensation-costs`)
 
