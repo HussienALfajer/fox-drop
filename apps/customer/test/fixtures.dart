@@ -179,6 +179,11 @@ Future<TestApp> browsingApp(
           opensAt: DateTime.utc(2026, 11, 8, 6).toIso8601String(),
         ),
       ],
+      // CU §8.1: the categories' row; no restaurant section unless a test
+      // says otherwise.
+      'sections': [
+        {'kind': 'categories', 'title': null, 'restaurantIds': <Object?>[]},
+      ],
     }),
   ]);
   app.server.on('/v1/customer/restaurants/$shamId', [

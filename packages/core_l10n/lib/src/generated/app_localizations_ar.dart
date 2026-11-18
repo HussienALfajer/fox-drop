@@ -285,6 +285,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String get customerTryAgain => 'حاول مجدداً';
 
   @override
+  String get customerHomeNearest => 'الأقرب إليك';
+
+  @override
+  String get customerHomeMostOrdered => 'الأكثر طلباً';
+
+  @override
+  String get customerHomeNew => 'جديد على FOX DROP';
+
+  @override
+  String get customerHomeOffers => 'العروض';
+
+  @override
+  String get customerHomeAll => 'كل المطاعم';
+
+  @override
   String get customerCategory => 'التصنيف';
 
   @override

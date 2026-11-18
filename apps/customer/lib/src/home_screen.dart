@@ -6,8 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import 'account/account_banners.dart';
 import 'auth.dart';
-import 'browsing/category_screen.dart';
-import 'browsing/restaurant_list.dart';
+import 'browsing/home_sections.dart';
 import 'cart/cart.dart';
 import 'emergency_stop.dart';
 import 'location/delivery_point.dart';
@@ -111,14 +110,8 @@ class HomeScreen extends ConsumerWidget {
       action: l10n.customerTryAgain,
       onAction: locate,
     ),
-    // CU §8.1: the categories, then the restaurants (the home sections of
-    // 2.27b take their order from the panel).
-    PointChecked(coverage: PointCoverage.served) => const Column(
-      children: [
-        CategoryRow(),
-        Expanded(child: RestaurantList()),
-      ],
-    ),
+    // CU §8.1: the sections in the panel's order (slice 2.27b).
+    PointChecked(coverage: PointCoverage.served) => const HomeSections(),
     PointChecked(coverage: PointCoverage.noRestaurants) => _Message(
       text: l10n.customerNoRestaurantsHere,
       action: l10n.customerUseMyLocation,

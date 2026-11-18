@@ -15,7 +15,7 @@ Slice 2.27b, Home sections (`docs/roadmap.md`, Phase 2, Finding food). In progre
   - [x] The sections' table and the panel's routes: `marketing.home_sections` per city (the six built-in sections and the custom ones: title, hand-picked restaurants), read merged with the built-ins not stored yet; order, show or hide, add, edit and remove a custom section; OWN edits (`marketing.manage`), OPS reads.
   - [x] The computed sections: `merchants.restaurants.activated_at` (the first activation), ordering's delivered counts in 30 days without test orders, marketing's restaurants with an active visible code limited to restaurants, and `GET /v1/customer/restaurants?home=true` answering the sections in the panel's order with their restaurants.
   - [x] The panel's «أقسام الرئيسية» page.
-  - [ ] The customer home in the sections' order, pull to refresh.
+  - [x] The customer home in the sections' order, pull to refresh.
   - [ ] The review's fixes; the handover.
 - **Owner answers (2026-11-18):** OWN alone edits «أقسام الرئيسية», OPS reads (DATA has banners only); «الأقرب إليك», «الأكثر طلباً» and «جديد على FOX DROP» take their 10 by their own rule whatever the state, then show open first and closed last; «العروض» shows every such restaurant in the sort weight's order.
 

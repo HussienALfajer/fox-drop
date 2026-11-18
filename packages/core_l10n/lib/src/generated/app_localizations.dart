@@ -580,6 +580,36 @@ abstract class AppLocalizations {
   /// **'حاول مجدداً'**
   String get customerTryAgain;
 
+  /// The home section of the 10 nearest restaurants (CU §8.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'الأقرب إليك'**
+  String get customerHomeNearest;
+
+  /// The home section of the 10 most ordered restaurants in 30 days (CU §8.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'الأكثر طلباً'**
+  String get customerHomeMostOrdered;
+
+  /// The home section of the restaurants activated in the last 30 days (CU §8.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'جديد على FOX DROP'**
+  String get customerHomeNew;
+
+  /// The home section of the restaurants with an active visible code (CU §8.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'العروض'**
+  String get customerHomeOffers;
+
+  /// Home, after the sections: every restaurant that delivers to the point (slice 2.27b; decided by us).
+  ///
+  /// In ar, this message translates to:
+  /// **'كل المطاعم'**
+  String get customerHomeAll;
+
   /// A category page's title while its name is not read yet (CU §8.2).
   ///
   /// In ar, this message translates to:
