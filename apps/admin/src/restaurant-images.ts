@@ -160,6 +160,11 @@ export function useSetImage() {
       await queryClient.invalidateQueries({ queryKey: ['restaurant-images', target.restaurantId] });
       // «إضافة مطعم» shows the logo and cover of its draft (slice 2.30a).
       await queryClient.invalidateQueries({ queryKey: ['restaurant-draft', target.restaurantId] });
+      // Step 7's photos and step 8's image rule (slice 2.30b).
+      await queryClient.invalidateQueries({ queryKey: ['restaurant-menu', target.restaurantId] });
+      await queryClient.invalidateQueries({
+        queryKey: ['restaurant-checklist', target.restaurantId],
+      });
     },
   });
 }

@@ -620,6 +620,32 @@ void main() {
     await app.done(tester);
   });
 
+  // RA §8.16 (slice 2.30b): every user sees «طلب تجريبي» on the card and
+  // the detail; a cashier has no money lines.
+  testWidgets('a test order shows «طلب تجريبي» to a cashier', (tester) async {
+    final app = _Board();
+    await app.pump(tester, [
+      FakeAnswer(
+        200,
+        boardJson([
+          orderJson(
+            status: 'accepted',
+            acceptedAfter: const Duration(minutes: 1),
+            testOrder: true,
+          ),
+        ]),
+      ),
+    ]);
+    await tester.tap(find.byKey(const Key('tab-preparing')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('طلب تجريبي'), findsOneWidget);
+    app.container.read(routerProvider).push('/orders/$_orderId');
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('test-order')), findsOneWidget);
+    expect(find.text('طلب تجريبي — لا عمولة'), findsNothing);
+    await app.done(tester);
+  });
+
   // RA §6.3 item 7, §12.2, §12.6 (slice 2.19f): the owners' amber banner
   // and the red line on «الحساب».
   testWidgets(

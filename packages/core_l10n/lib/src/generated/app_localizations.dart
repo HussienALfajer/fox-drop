@@ -3712,6 +3712,12 @@ abstract class AppLocalizations {
   /// **'قبلته العمليات'**
   String get merchantBadgeByOperations;
 
+  /// The card's and the detail's badge of a test order (RA §8.16, AP §9.6.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'طلب تجريبي'**
+  String get merchantBadgeTestOrder;
+
   /// The ring prompt after operations cancelled an accepted order, until «حسناً» on any device (RA §8.14, §16 #18); {reason} is the reason's label.
   ///
   /// In ar, this message translates to:

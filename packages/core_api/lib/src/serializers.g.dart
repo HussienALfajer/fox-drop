@@ -80,6 +80,13 @@ Serializers _$serializers =
           ..add(AdminChangeOutcomeDtoOutcomeEnum.serializer)
           ..add(AdminChangeOutcomeDtoResponsibleEnum.serializer)
           ..add(AdminChangeTimeDto.serializer)
+          ..add(AdminChecklistDtoOutput.serializer)
+          ..add(AdminChecklistDtoOutputAccountStatusEnum.serializer)
+          ..add(AdminChecklistDtoOutputImages.serializer)
+          ..add(AdminChecklistDtoOutputImagesWaiver.serializer)
+          ..add(AdminChecklistDtoOutputItemsInner.serializer)
+          ..add(AdminChecklistDtoOutputItemsInnerCodeEnum.serializer)
+          ..add(AdminChecklistDtoOutputItemsInnerStateEnum.serializer)
           ..add(AdminCitiesDtoOutput.serializer)
           ..add(AdminCitiesDtoOutputCitiesInner.serializer)
           ..add(AdminCityOfficeDtoOutput.serializer)
@@ -297,6 +304,7 @@ Serializers _$serializers =
           ..add(AdminHomeSectionsDtoOutputSectionsInnerKindEnum.serializer)
           ..add(AdminHomeSectionsOrderDto.serializer)
           ..add(AdminImageSetDtoOutput.serializer)
+          ..add(AdminImagesWaiverDto.serializer)
           ..add(AdminLiftCustomerDeviceBlockDto.serializer)
           ..add(AdminLostDemandDtoOutput.serializer)
           ..add(AdminLostDemandDtoOutputSearchesInner.serializer)
@@ -331,6 +339,24 @@ Serializers _$serializers =
           ..add(AdminMassPushesDtoOutputPushesInnerAudienceEnum.serializer)
           ..add(AdminMassPushesDtoOutputPushesInnerStatusEnum.serializer)
           ..add(AdminMassPushesDtoOutputPushesInnerTargetEnum.serializer)
+          ..add(AdminMenuAvailabilityDto.serializer)
+          ..add(AdminMenuAvailabilityDtoTypeEnum.serializer)
+          ..add(AdminMenuAvailabilityDtoUntilEnum.serializer)
+          ..add(AdminMenuCategoryDto.serializer)
+          ..add(AdminMenuCategoryOrderDto.serializer)
+          ..add(AdminMenuDtoOutput.serializer)
+          ..add(AdminMenuDtoOutputAccountStatusEnum.serializer)
+          ..add(AdminMenuDtoOutputCategoriesInner.serializer)
+          ..add(AdminMenuDtoOutputCategoriesInnerItemsInner.serializer)
+          ..add(AdminMenuDtoOutputCategoriesInnerItemsInnerBadgeEnum.serializer)
+          ..add(AdminMenuItemDto.serializer)
+          ..add(AdminMenuItemDtoBadgeEnum.serializer)
+          ..add(AdminMenuItemOrderDto.serializer)
+          ..add(AdminMenuMoney.serializer)
+          ..add(AdminMenuMoneyOutput.serializer)
+          ..add(AdminMenuSwitchedOffOutput.serializer)
+          ..add(AdminMenuWindow.serializer)
+          ..add(AdminMenuWindowOutput.serializer)
           ..add(AdminMerchantStatementDtoOutput.serializer)
           ..add(AdminMerchantStatementDtoOutputLinesInner.serializer)
           ..add(AdminMerchantStatementDtoOutputLinesInnerCauseEnum.serializer)
@@ -653,6 +679,10 @@ Serializers _$serializers =
           ..add(AdminRestaurantDraftDtoOutputOperations.serializer)
           ..add(AdminRestaurantDraftsDtoOutput.serializer)
           ..add(AdminRestaurantDraftsDtoOutputDraftsInner.serializer)
+          ..add(
+            AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum
+                .serializer,
+          )
           ..add(AdminRestaurantDraftsDtoOutputDraftsInnerSteps.serializer)
           ..add(AdminRestaurantHolidayCloseDto.serializer)
           ..add(AdminRestaurantImagesDtoOutput.serializer)
@@ -1571,6 +1601,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminChecklistDtoOutputItemsInner),
+            ]),
+            () => ListBuilder<AdminChecklistDtoOutputItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminCitiesDtoOutputCitiesInner),
             ]),
             () => ListBuilder<AdminCitiesDtoOutputCitiesInner>(),
@@ -2071,6 +2107,18 @@ Serializers _$serializers =
                 ListBuilder<
                   AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminMenuDtoOutputCategoriesInner),
+            ]),
+            () => ListBuilder<AdminMenuDtoOutputCategoriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminMenuDtoOutputCategoriesInnerItemsInner),
+            ]),
+            () => ListBuilder<AdminMenuDtoOutputCategoriesInnerItemsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -3863,6 +3911,14 @@ Serializers _$serializers =
               const FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
             ]),
             () => ListBuilder<SettingListDtoOutputSettingsInnerEditRolesEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

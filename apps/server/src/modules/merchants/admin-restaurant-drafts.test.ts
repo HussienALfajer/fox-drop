@@ -272,7 +272,7 @@ describe('the wizard routes past the draft', () => {
     });
   });
 
-  it('refuses accounts once the restaurant left its draft, and hides it from DATA', async () => {
+  it('refuses accounts once the restaurant left its draft, and hides it from DATA once active', async () => {
     const data = await admin('DATA');
     const id = randomUUID();
     await data('PUT', `/${id}/basics`, { cityId: azaz, ...basics });
@@ -302,11 +302,17 @@ describe('the wizard routes past the draft', () => {
       statusCode: 404,
       error: 'unknown_restaurant',
     });
+    // Test mode is still the onboarding, whose menu DATA edits (slice 2.30b).
+    expect((await data('GET', `/${id}`)).json()).toMatchObject({ accountStatus: 'test' });
+    await app.get(MerchantsService).setAccountStatus(id, 'active', {
+      actor: system,
+      context: { ipAddress: null, device: null },
+    });
     expect((await data('GET', `/${id}`)).json()).toMatchObject({
       statusCode: 404,
       error: 'unknown_restaurant',
     });
     const owner = await admin('OWN');
-    expect((await owner('GET', `/${id}`)).json()).toMatchObject({ accountStatus: 'test' });
+    expect((await owner('GET', `/${id}`)).json()).toMatchObject({ accountStatus: 'active' });
   });
 });

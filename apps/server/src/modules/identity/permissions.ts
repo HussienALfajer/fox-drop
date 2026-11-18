@@ -88,6 +88,9 @@ export const adminPermissions = [
   'customers.sign_out_everywhere',
   // AP §9.8 (slice 2.25d, owner decision 2026-11-18): «فك حظر الجهاز», OWN alone.
   'customers.lift_device_block',
+  // AP §9.6.3 step 8 (slice 2.30b): the waiver of the checklist's image rule,
+  // OWN alone.
+  'restaurants.waive_menu_images',
 ] as const;
 
 export type AdminPermission = (typeof adminPermissions)[number];

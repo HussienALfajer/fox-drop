@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, type OnModuleInit } from '@nestjs/common';
 import { and, asc, eq, isNull, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -54,13 +54,34 @@ type Executor = Pick<Database['db'], 'select'>;
 
 // A restaurant's owners and cashiers (RA §5.1).
 @Injectable()
-export class MerchantAccountsService {
+export class MerchantAccountsService implements OnModuleInit {
   constructor(
     @Inject(DATABASE) private readonly database: Database,
     @Inject(IDENTITY_SECRETS) private readonly secrets: IdentitySecrets,
     private readonly merchants: MerchantsService,
     private readonly audit: AuditService,
   ) {}
+
+  // AP §9.6.3 step 8 (slice 2.30b): the activation checklist counts the
+  // restaurant's owner accounts, which merchants cannot read.
+  onModuleInit(): void {
+    this.merchants.countOwnerAccounts((restaurantId) => this.ownerCount(restaurantId));
+  }
+
+  // The restaurant's owner accounts not removed.
+  async ownerCount(restaurantId: string): Promise<number> {
+    const [row] = await this.database.db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(merchantAccounts)
+      .where(
+        and(
+          eq(merchantAccounts.restaurantId, restaurantId),
+          eq(merchantAccounts.role, 'owner'),
+          isNull(merchantAccounts.removedAt),
+        ),
+      );
+    return row?.count ?? 0;
+  }
 
   // An owner or a cashier of a restaurant. A number belongs to at most one
   // restaurant (S6): one taken by an account not removed is refused. With

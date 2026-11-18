@@ -8,9 +8,13 @@ import { FxModule } from '../fx/index.js';
 import { GeoModule } from '../geo/index.js';
 import { SettingsModule } from '../settings/index.js';
 import { AdminRestaurantDraftsController } from './admin-restaurant-drafts.controller.js';
+import { AdminRestaurantActivationController } from './admin-restaurant-activation.controller.js';
+import { ActivationService } from './activation.service.js';
+import { AdminRestaurantMenuController } from './admin-restaurant-menu.controller.js';
 import { AdminRestaurantImagesController } from './admin-restaurant-images.controller.js';
 import { AdminRestaurantStatusController } from './admin-restaurant-status.controller.js';
 import { MerchantMenuController } from './merchant-menu.controller.js';
+import { MenuEditorService } from './menu-editor.service.js';
 import { MerchantsService } from './merchants.service.js';
 import { RestaurantDraftsService } from './restaurant-drafts.service.js';
 import { RestaurantStatusService } from './restaurant-status.service.js';
@@ -37,8 +41,16 @@ import { MerchantStatusController } from './merchant-status.controller.js';
     AdminRestaurantImagesController,
     AdminRestaurantStatusController,
     AdminRestaurantDraftsController,
+    AdminRestaurantMenuController,
+    AdminRestaurantActivationController,
   ],
-  providers: [MerchantsService, RestaurantStatusService, RestaurantDraftsService],
+  providers: [
+    MerchantsService,
+    RestaurantStatusService,
+    RestaurantDraftsService,
+    MenuEditorService,
+    ActivationService,
+  ],
   exports: [MerchantsService, RestaurantStatusService, RestaurantDraftsService],
 })
 export class MerchantsModule {}

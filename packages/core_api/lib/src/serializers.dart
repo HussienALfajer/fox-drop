@@ -61,6 +61,10 @@ import 'package:core_api/src/model/admin_category_order_dto.dart';
 import 'package:core_api/src/model/admin_change_customer_phone_dto.dart';
 import 'package:core_api/src/model/admin_change_outcome_dto.dart';
 import 'package:core_api/src/model/admin_change_time_dto.dart';
+import 'package:core_api/src/model/admin_checklist_dto_output.dart';
+import 'package:core_api/src/model/admin_checklist_dto_output_images.dart';
+import 'package:core_api/src/model/admin_checklist_dto_output_images_waiver.dart';
+import 'package:core_api/src/model/admin_checklist_dto_output_items_inner.dart';
 import 'package:core_api/src/model/admin_cities_dto_output.dart';
 import 'package:core_api/src/model/admin_cities_dto_output_cities_inner.dart';
 import 'package:core_api/src/model/admin_city_office_dto_output.dart';
@@ -212,6 +216,7 @@ import 'package:core_api/src/model/admin_home_sections_dto_output.dart';
 import 'package:core_api/src/model/admin_home_sections_dto_output_sections_inner.dart';
 import 'package:core_api/src/model/admin_home_sections_order_dto.dart';
 import 'package:core_api/src/model/admin_image_set_dto_output.dart';
+import 'package:core_api/src/model/admin_images_waiver_dto.dart';
 import 'package:core_api/src/model/admin_lift_customer_device_block_dto.dart';
 import 'package:core_api/src/model/admin_lost_demand_dto_output.dart';
 import 'package:core_api/src/model/admin_lost_demand_dto_output_searches_inner.dart';
@@ -234,6 +239,19 @@ import 'package:core_api/src/model/admin_mass_push_audience_dto_output.dart';
 import 'package:core_api/src/model/admin_mass_push_city_dto.dart';
 import 'package:core_api/src/model/admin_mass_pushes_dto_output.dart';
 import 'package:core_api/src/model/admin_mass_pushes_dto_output_pushes_inner.dart';
+import 'package:core_api/src/model/admin_menu_availability_dto.dart';
+import 'package:core_api/src/model/admin_menu_category_dto.dart';
+import 'package:core_api/src/model/admin_menu_category_order_dto.dart';
+import 'package:core_api/src/model/admin_menu_dto_output.dart';
+import 'package:core_api/src/model/admin_menu_dto_output_categories_inner.dart';
+import 'package:core_api/src/model/admin_menu_dto_output_categories_inner_items_inner.dart';
+import 'package:core_api/src/model/admin_menu_item_dto.dart';
+import 'package:core_api/src/model/admin_menu_item_order_dto.dart';
+import 'package:core_api/src/model/admin_menu_money.dart';
+import 'package:core_api/src/model/admin_menu_money_output.dart';
+import 'package:core_api/src/model/admin_menu_switched_off_output.dart';
+import 'package:core_api/src/model/admin_menu_window.dart';
+import 'package:core_api/src/model/admin_menu_window_output.dart';
 import 'package:core_api/src/model/admin_merchant_statement_dto_output.dart';
 import 'package:core_api/src/model/admin_merchant_statement_dto_output_lines_inner.dart';
 import 'package:core_api/src/model/admin_new_banner_dto.dart';
@@ -954,6 +972,10 @@ part 'serializers.g.dart';
   AdminChangeCustomerPhoneDto,
   AdminChangeOutcomeDto,
   AdminChangeTimeDto,
+  AdminChecklistDtoOutput,
+  AdminChecklistDtoOutputImages,
+  AdminChecklistDtoOutputImagesWaiver,
+  AdminChecklistDtoOutputItemsInner,
   AdminCitiesDtoOutput,
   AdminCitiesDtoOutputCitiesInner,
   AdminCityOfficeDtoOutput,
@@ -1105,6 +1127,7 @@ part 'serializers.g.dart';
   AdminHomeSectionsDtoOutputSectionsInner,
   AdminHomeSectionsOrderDto,
   AdminImageSetDtoOutput,
+  AdminImagesWaiverDto,
   AdminLiftCustomerDeviceBlockDto,
   AdminLostDemandDtoOutput,
   AdminLostDemandDtoOutputSearchesInner,
@@ -1127,6 +1150,19 @@ part 'serializers.g.dart';
   AdminMassPushCityDto,
   AdminMassPushesDtoOutput,
   AdminMassPushesDtoOutputPushesInner,
+  AdminMenuAvailabilityDto,
+  AdminMenuCategoryDto,
+  AdminMenuCategoryOrderDto,
+  AdminMenuDtoOutput,
+  AdminMenuDtoOutputCategoriesInner,
+  AdminMenuDtoOutputCategoriesInnerItemsInner,
+  AdminMenuItemDto,
+  AdminMenuItemOrderDto,
+  AdminMenuMoney,
+  AdminMenuMoneyOutput,
+  AdminMenuSwitchedOffOutput,
+  AdminMenuWindow,
+  AdminMenuWindowOutput,
   AdminMerchantStatementDtoOutput,
   AdminMerchantStatementDtoOutputLinesInner,
   AdminNewBannerDto,
@@ -2545,6 +2581,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminMenuDtoOutputCategoriesInnerItemsInner),
+            ]),
+            () => ListBuilder<AdminMenuDtoOutputCategoriesInnerItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminCustomerDtoOutputOrdersSpentInner),
             ]),
             () => ListBuilder<AdminCustomerDtoOutputOrdersSpentInner>(),
@@ -2895,6 +2937,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminChecklistDtoOutputItemsInner),
+            ]),
+            () => ListBuilder<AdminChecklistDtoOutputItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(SettingListDtoOutputSettingsInner),
             ]),
             () => ListBuilder<SettingListDtoOutputSettingsInner>(),
@@ -2992,6 +3040,12 @@ Serializers serializers =
               FullType(AdminCategoriesDtoOutputCategoriesInner),
             ]),
             () => ListBuilder<AdminCategoriesDtoOutputCategoriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminMenuDtoOutputCategoriesInner),
+            ]),
+            () => ListBuilder<AdminMenuDtoOutputCategoriesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

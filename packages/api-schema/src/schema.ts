@@ -1316,6 +1316,166 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRestaurantMenuRead"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/categories/{categoryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantMenuCategory"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/items/{itemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantMenuItem"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/category-order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantMenuCategoryOrder"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/categories/{categoryId}/item-order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantMenuItemOrder"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantMenuAvailability"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/checklist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRestaurantActivationRead"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu-images-waiver": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantActivationWaiver"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/test-mode": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminRestaurantActivationTestMode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminRestaurantActivationActivate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/cities": {
         parameters: {
             query?: never;
@@ -6337,6 +6497,11 @@ export interface components {
                 /** Format: uuid */
                 id: string;
                 nameAr: string;
+                /**
+                 * @description A draft, or a restaurant in test mode waiting for its activation (step 8).
+                 * @enum {string}
+                 */
+                accountStatus: "draft" | "test";
                 /** @description Which steps of AP §9.6.3 hold what they need. */
                 steps: {
                     basics: boolean;
@@ -6528,6 +6693,139 @@ export interface components {
              * @constant
              */
             parityPledge: true;
+        };
+        AdminMenuSwitchedOff_Output: {
+            /** @description «حتى الغد» ends at the next business-day cutoff; null is «حتى أعيده». */
+            until: string | null;
+        } | null;
+        AdminMenuWindow_Output: {
+            /** @description Minutes after midnight on the city's clock. */
+            startsAt: number;
+            /** @description Not after the start: the window crosses midnight (1440 is midnight). */
+            endsAt: number;
+        };
+        AdminMenuMoney_Output: {
+            /** @description Integer minor units of the currency, as a string. */
+            amount: string;
+            currency: string;
+        };
+        AdminMenuDto_Output: {
+            /** @enum {string} */
+            accountStatus: "draft" | "test" | "active" | "suspended" | "terminated";
+            /** @description Whether step 7 edits it: a draft or a restaurant in test mode (until 2.31). */
+            editable: boolean;
+            nameMax: number;
+            descriptionMax: number;
+            codeMax: number;
+            categories: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                hidden: boolean;
+                /** @description Its own switch off (RA §9.3); null while on. */
+                switchedOff: components["schemas"]["AdminMenuSwitchedOff_Output"];
+                /** @description null: all day. */
+                window: components["schemas"]["AdminMenuWindow_Output"] | null;
+                items: {
+                    /** Format: uuid */
+                    id: string;
+                    code: string;
+                    name: string;
+                    description: string | null;
+                    /** @description Its key in public-media, shown through /media/; null without a photo. */
+                    photoKey: string | null;
+                    price: components["schemas"]["AdminMenuMoney_Output"];
+                    hidden: boolean;
+                    /** @description «جديد», «الأكثر طلباً» or «حار». */
+                    badge: ("new" | "most_ordered" | "spicy") | null;
+                    /** @description Its own switch off (RA §9.3); null while on. */
+                    switchedOff: components["schemas"]["AdminMenuSwitchedOff_Output"];
+                }[];
+            }[];
+        };
+        AdminMenuWindow: {
+            /** @description Minutes after midnight on the city's clock. */
+            startsAt: number;
+            /** @description Not after the start: the window crosses midnight (1440 is midnight). */
+            endsAt: number;
+        };
+        AdminMenuCategoryDto: {
+            name: string;
+            hidden: boolean;
+            /** @description «متوفر من … إلى …»; null all day. */
+            window: components["schemas"]["AdminMenuWindow"] | null;
+        };
+        AdminMenuMoney: {
+            /** @description Integer minor units of the currency, as a string. */
+            amount: string;
+            currency: string;
+        };
+        AdminMenuItemDto: {
+            /** Format: uuid */
+            categoryId: string;
+            /** @description Unique in the restaurant; empty or null: generated on creation, kept on edit. */
+            code: string | null;
+            name: string;
+            description: string | null;
+            /** @description Above 0, in the city's base currency. */
+            price: components["schemas"]["AdminMenuMoney"];
+            hidden: boolean;
+            /** @description «جديد», «الأكثر طلباً» or «حار». */
+            badge: ("new" | "most_ordered" | "spicy") | null;
+        };
+        AdminMenuCategoryOrderDto: {
+            /** @description Every category once, in the new order. */
+            categoryIds: string[];
+        };
+        AdminMenuItemOrderDto: {
+            /** @description Every item of the category once, in order. */
+            itemIds: string[];
+        };
+        AdminMenuAvailabilityDto: {
+            /** @enum {string} */
+            type: "category" | "item";
+            /** Format: uuid */
+            id: string;
+            available: boolean;
+            /**
+             * @description When switching off: «حتى الغد» or «حتى أعيده» (the default).
+             * @enum {string}
+             */
+            until?: "tomorrow" | "turned_back_on";
+        };
+        AdminChecklistDto_Output: {
+            /** @enum {string} */
+            accountStatus: "draft" | "test" | "active" | "suspended" | "terminated";
+            /** @description AP §9.6.3 step 8, in order. */
+            items: {
+                /** @enum {string} */
+                code: "record" | "commission" | "contract" | "hours" | "menu" | "menu_images" | "owner_account" | "device_check" | "test_order";
+                /**
+                 * @description `waived`: the image rule under OWN's waiver; `not_available`: the device check, «غير متاح بعد» until 2.42, never blocking.
+                 * @enum {string}
+                 */
+                state: "met" | "missing" | "waived" | "not_available";
+            }[];
+            /** @description «تشغيل الوضع التجريبي»: every item but the test order is met. */
+            canStartTest: boolean;
+            /** @description «تفعيل وإظهار للزبائن»: every item is met. */
+            canActivate: boolean;
+            images: {
+                withPhoto: number;
+                /** @description The visible items of the visible categories. */
+                total: number;
+                requiredPct: number;
+            };
+            /** @description OWN's waiver of the image rule; null without one. */
+            imagesWaiver: {
+                /** Format: date-time */
+                at: string;
+                /** Format: uuid */
+                by: string;
+            } | null;
+        };
+        AdminImagesWaiverDto: {
+            waived: boolean;
         };
         AdminCitiesDto_Output: {
             /** @description The active cities, by name. */
@@ -10374,6 +10672,8 @@ export interface components {
                     orderId: string;
                     number: string;
                 } | null;
+                /** @description RA §8.16: the badge «طلب تجريبي», for owners and cashiers (AP §9.6.3 test mode). */
+                testOrder: boolean;
                 /**
                  * @description AP §8.1; the board column (RA §8.1–8.2).
                  * @enum {string}
@@ -10589,6 +10889,8 @@ export interface components {
                     orderId: string;
                     number: string;
                 } | null;
+                /** @description RA §8.16: the badge «طلب تجريبي», for owners and cashiers (AP §9.6.3 test mode). */
+                testOrder: boolean;
                 /**
                  * @description AP §8.1; the board column (RA §8.1–8.2).
                  * @enum {string}
@@ -18796,6 +19098,253 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminRestaurantDraftDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+                categoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMenuCategoryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMenuItemDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuCategoryOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMenuCategoryOrderDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuItemOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+                categoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMenuItemOrderDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuAvailability: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMenuAvailabilityDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantActivationRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminChecklistDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantActivationWaiver: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminImagesWaiverDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminChecklistDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantActivationTestMode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminChecklistDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantActivationActivate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminChecklistDto_Output"];
                 };
             };
         };

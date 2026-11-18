@@ -265,7 +265,7 @@ describe('step 3: the operations', () => {
 });
 
 describe('the list and the status', () => {
-  it("lists the city's drafts, the latest saved first, and never a restaurant past its draft", async () => {
+  it("lists the city's drafts and those in test mode, the latest saved first, never an active one", async () => {
     const { cityId } = await city();
     const first = randomUUID();
     const second = randomUUID();
@@ -282,6 +282,14 @@ describe('the list and the status', () => {
     );
     await drafts.saveOperations(first, operations, change);
     await merchants.setAccountStatus(first, 'test', change);
+    // Test mode stays in the list until its activation (step 8, slice 2.30b).
+    expect((await drafts.drafts(cityId)).map((draft) => [draft.id, draft.accountStatus])).toEqual(
+      expect.arrayContaining([
+        [first, 'test'],
+        [second, 'draft'],
+      ]),
+    );
+    await merchants.setAccountStatus(first, 'active', change);
     expect((await drafts.drafts(cityId)).map((draft) => draft.id)).toEqual([second]);
     await expect(drafts.saveLocation(first, location, change)).rejects.toEqual(
       refusal('not_a_draft'),

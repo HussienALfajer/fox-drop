@@ -256,6 +256,8 @@ class _$MerchantOrdersDtoOutputOrdersInner
   @override
   final CustomerActiveOrdersDtoOutputOrdersInnerRedeliveriesInner? redeliveryOf;
   @override
+  final bool testOrder;
+  @override
   final MerchantOrdersDtoOutputOrdersInnerStatusEnum status;
   @override
   final int version;
@@ -304,6 +306,7 @@ class _$MerchantOrdersDtoOutputOrdersInner
     required this.id,
     required this.number,
     this.redeliveryOf,
+    required this.testOrder,
     required this.status,
     required this.version,
     required this.placedAt,
@@ -341,6 +344,7 @@ class _$MerchantOrdersDtoOutputOrdersInner
         id == other.id &&
         number == other.number &&
         redeliveryOf == other.redeliveryOf &&
+        testOrder == other.testOrder &&
         status == other.status &&
         version == other.version &&
         placedAt == other.placedAt &&
@@ -369,6 +373,7 @@ class _$MerchantOrdersDtoOutputOrdersInner
     _$hash = $jc(_$hash, id.hashCode);
     _$hash = $jc(_$hash, number.hashCode);
     _$hash = $jc(_$hash, redeliveryOf.hashCode);
+    _$hash = $jc(_$hash, testOrder.hashCode);
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, version.hashCode);
     _$hash = $jc(_$hash, placedAt.hashCode);
@@ -399,6 +404,7 @@ class _$MerchantOrdersDtoOutputOrdersInner
           ..add('id', id)
           ..add('number', number)
           ..add('redeliveryOf', redeliveryOf)
+          ..add('testOrder', testOrder)
           ..add('status', status)
           ..add('version', version)
           ..add('placedAt', placedAt)
@@ -448,6 +454,10 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
     CustomerActiveOrdersDtoOutputOrdersInnerRedeliveriesInnerBuilder?
     redeliveryOf,
   ) => _$this._redeliveryOf = redeliveryOf;
+
+  bool? _testOrder;
+  bool? get testOrder => _$this._testOrder;
+  set testOrder(bool? testOrder) => _$this._testOrder = testOrder;
 
   MerchantOrdersDtoOutputOrdersInnerStatusEnum? _status;
   MerchantOrdersDtoOutputOrdersInnerStatusEnum? get status => _$this._status;
@@ -575,6 +585,7 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
       _id = $v.id;
       _number = $v.number;
       _redeliveryOf = $v.redeliveryOf?.toBuilder();
+      _testOrder = $v.testOrder;
       _status = $v.status;
       _version = $v.version;
       _placedAt = $v.placedAt;
@@ -632,6 +643,11 @@ class MerchantOrdersDtoOutputOrdersInnerBuilder
               'number',
             ),
             redeliveryOf: _redeliveryOf?.build(),
+            testOrder: BuiltValueNullFieldError.checkNotNull(
+              testOrder,
+              r'MerchantOrdersDtoOutputOrdersInner',
+              'testOrder',
+            ),
             status: BuiltValueNullFieldError.checkNotNull(
               status,
               r'MerchantOrdersDtoOutputOrdersInner',

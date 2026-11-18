@@ -107,6 +107,10 @@ export const restaurants = merchants.table(
     busyStartedAt: timestamp('busy_started_at', { withTimezone: true }),
     // The moment of the latest reminder sent, so a repeated job sends none.
     busyRemindedAt: timestamp('busy_reminded_at', { withTimezone: true }),
+    // AP §9.6.3 step 8 (slice 2.30b): OWN's waiver of the checklist's rule of
+    // images on 80% of the items, with who gave it (an admin account id).
+    menuImagesWaivedAt: timestamp('menu_images_waived_at', { withTimezone: true }),
+    menuImagesWaivedBy: uuid('menu_images_waived_by'),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -133,6 +137,10 @@ export const restaurants = merchants.table(
     check('restaurants_minimum_order', sql`${table.minimumOrder} >= 0`),
     check('restaurants_default_prep_min', sql`${table.defaultPrepMin} > 0`),
     check('restaurants_max_active_orders', sql`${table.maxActiveOrders} BETWEEN 1 AND 50`),
+    check(
+      'restaurants_menu_images_waiver',
+      sql`(${table.menuImagesWaivedAt} IS NULL) = (${table.menuImagesWaivedBy} IS NULL)`,
+    ),
     check(
       'restaurants_busy_mode',
       sql`(${table.busyExtraMin} IS NULL) = (${table.busyUntil} IS NULL) AND ${table.busyExtraMin} > 0`,
