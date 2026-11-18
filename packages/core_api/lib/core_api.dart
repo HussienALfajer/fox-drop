@@ -427,6 +427,8 @@ export 'package:core_api/src/model/admin_restaurant_list_dto_output.dart';
 export 'package:core_api/src/model/admin_restaurant_list_dto_output_restaurants_inner.dart';
 export 'package:core_api/src/model/admin_restaurant_list_query_dto.dart';
 export 'package:core_api/src/model/admin_restaurant_max_active_orders_dto.dart';
+export 'package:core_api/src/model/admin_restaurant_overview_dto_output.dart';
+export 'package:core_api/src/model/admin_restaurant_overview_dto_output_rejection_reasons_inner.dart';
 export 'package:core_api/src/model/admin_restaurant_pause_dto.dart';
 export 'package:core_api/src/model/admin_restaurant_period_statement_dto_output.dart';
 export 'package:core_api/src/model/admin_restaurant_period_statement_dto_output_lines_inner.dart';

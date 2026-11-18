@@ -57,6 +57,7 @@ import { CaptainRatingsController } from './captain-ratings.controller.js';
 import { MerchantRatingsController } from './merchant-ratings.controller.js';
 import { RatingPagesService } from './rating-pages.js';
 import { RestaurantFiguresService } from './restaurant-figures.js';
+import { AdminRestaurantOverviewController } from './admin-restaurant-overview.controller.js';
 import {
   AdminEmergencyStopController,
   CaptainEmergencyStopController,
@@ -106,6 +107,7 @@ import {
     MerchantRatingsController,
     CaptainRatingsController,
     AdminRatingsController,
+    AdminRestaurantOverviewController,
     CaptainOrderRouteController,
     CustomerOrderRouteController,
   ],

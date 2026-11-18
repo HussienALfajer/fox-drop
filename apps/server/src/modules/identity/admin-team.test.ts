@@ -423,6 +423,7 @@ const routeAccess: Record<string, Access> = {
   'PUT /v1/admin/restaurants/{restaurantId}/sort-weight': 'restaurants.manage',
   'POST /v1/admin/restaurants/{restaurantId}/commission': 'restaurants.commission',
   'POST /v1/admin/restaurants/{restaurantId}/terminate': 'restaurants.terminate',
+  'GET /v1/admin/restaurants/{restaurantId}/overview': 'restaurants.read',
   'POST /v1/admin/restaurant-list': 'restaurants.read',
   'GET /v1/admin/emergency-stop': 'session',
   'POST /v1/admin/emergency-stop': 'emergency_stop.toggle',

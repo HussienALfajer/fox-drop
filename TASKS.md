@@ -10,8 +10,14 @@ Slice 2.30d, the profile (`docs/roadmap.md`, Phase 2; owner decision 2026-11-18:
 - **Specs:** AP §9.6.4; AP §6.3 (`restaurants.owner_accounts`); RA §5.5; RA §14 (devices); AP §9.10.5 (statement); AP §14 (audit of views).
 - **Branch:** the cloud session's branch.
 - **Already built (reuse, do not rebuild):** «المطاعم» and the account actions (2.30c: `POST /v1/admin/restaurant-list`, `GET /v1/admin/restaurants/{id}/account` and its commands, `RestaurantAccountSection`); the wizard's steps and their services (2.30a, 2.30b: draft-only saves); the status routes and «حالة المطاعم» (2.6b); «الصور» and «تصنيفات المطعم» (2.5, 2.27a); the panel's ratings (2.26c); «كشوف المطاعم» (2.19g); the accounts routes (2.30a, draft-only); `RestaurantFiguresService` (2.30c) for the overview's counts.
-- **Plan:** to write at the start of the session as a checklist, one step per commit (likely: the overview's figures for today, 7 and 30 days; the edits past the draft for data, location, hours and accounts with their audit; the devices list and force sign-out; notes; the change log over the audit log; the panel's profile with its tabs replacing the three temporary pages).
-- **To decide in the slice:** which fields stay editable once active (AP §9.6.4 names data, location, hours and accounts); whether steps 1–6 open for a restaurant in test mode through the profile; the notes' storage (a new table) and who writes them.
+- **Owner decisions 2026-11-18:** one slice (not split); past the draft the profile edits the data (names, categories, description, logo, cover), the location (pin, address, number, owner's name) and the operations (hours, prep time, minimum order, coverage), never for a terminated restaurant; the commission only through «تغيير العمولة», the contract read-only; every reader of restaurants (`restaurants.read`) adds a note, never edited or removed.
+- **Plan** (one step per commit):
+  - [x] 1. Server: the overview's figures for today, 7 and 30 days (`GET /v1/admin/restaurants/{id}/overview`).
+  - [ ] 2. Server: the edits past the draft for data, location and operations (`PUT /v1/admin/restaurants/{id}/profile/*`), audited, the devices told of new hours.
+  - [ ] 3. Server: accounts past the draft (add and remove, a removed user signed out), the devices list and their force sign-out.
+  - [ ] 4. Server: the notes (a new table) and the change log over the audit log; the restaurant's orders.
+  - [ ] 5. Panel: the profile `/restaurants/$restaurantId` with its tabs, replacing «حالة المطاعم», «الصور» and «تصنيفات المطعم», the restaurant ratings moved in.
+  - [ ] 6. Review, module notes and the handover.
 
 ### Left from 2.30c (the cloud session's branch)
 

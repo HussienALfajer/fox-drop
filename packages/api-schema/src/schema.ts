@@ -4596,6 +4596,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/restaurants/{restaurantId}/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRestaurantOverviewOverview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/captain/orders/{orderId}/route": {
         parameters: {
             query?: never;
@@ -14271,6 +14287,40 @@ export interface components {
                 count: number;
                 average: number | null;
             }[];
+        };
+        AdminRestaurantOverviewDto_Output: {
+            /**
+             * Format: date-time
+             * @description The period’s first business-day cutoff.
+             */
+            from: string;
+            /** @description Placed in the period, test orders left out. */
+            orders: number;
+            /** @description The items value of the orders delivered, in minor units per currency. */
+            sales: {
+                currency: string;
+                amount: string;
+            }[];
+            /** @description Accepted of those answered or timed out (as «المطاعم»), in basis points. */
+            acceptanceBp: number | null;
+            /** @description Rejected of the same, in basis points. */
+            rejectionBp: number | null;
+            /** @description The rejections by their reason’s label as chosen, most first. */
+            rejectionReasons: {
+                label: string;
+                count: number;
+            }[];
+            /** @description Cancelled because the restaurant never answered. */
+            unanswered: number;
+            /** @description Of the orders marked ready: the average minutes from acceptance to ready. */
+            prepActualMin: number | null;
+            /** @description Their average prep time chosen. */
+            prepChosenMin: number | null;
+            /** @description Of the same, the share ready after the prep time chosen. */
+            lateBp: number | null;
+            ratingCount: number;
+            /** @description The period’s ratings; null with none. */
+            ratingAverage: number | null;
         };
         CaptainOrderRouteDto_Output: {
             /** @enum {string} */
@@ -24875,6 +24925,31 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminRatingsDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantOverviewOverview: {
+        parameters: {
+            query?: {
+                /** @description Business days on the city’s clock: «اليوم», «آخر 7 أيام», «آخر 30 يوماً». */
+                period?: "today" | "last_7_days" | "last_30_days";
+            };
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantOverviewDto_Output"];
                 };
             };
         };

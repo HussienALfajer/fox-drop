@@ -426,6 +426,8 @@ import 'package:core_api/src/model/admin_restaurant_list_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_list_dto_output_restaurants_inner.dart';
 import 'package:core_api/src/model/admin_restaurant_list_query_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_max_active_orders_dto.dart';
+import 'package:core_api/src/model/admin_restaurant_overview_dto_output.dart';
+import 'package:core_api/src/model/admin_restaurant_overview_dto_output_rejection_reasons_inner.dart';
 import 'package:core_api/src/model/admin_restaurant_pause_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_period_statement_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_period_statement_dto_output_lines_inner.dart';
@@ -1349,6 +1351,8 @@ part 'serializers.g.dart';
   AdminRestaurantListDtoOutputRestaurantsInner,
   AdminRestaurantListQueryDto,
   AdminRestaurantMaxActiveOrdersDto,
+  AdminRestaurantOverviewDtoOutput,
+  AdminRestaurantOverviewDtoOutputRejectionReasonsInner,
   AdminRestaurantPauseDto,
   AdminRestaurantPeriodStatementDtoOutput,
   AdminRestaurantPeriodStatementDtoOutputLinesInner,
@@ -1876,6 +1880,15 @@ Serializers serializers =
               FullType(CaptainAvailabilityDtoOutputCustodyLimit),
             ]),
             () => ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminRestaurantOverviewDtoOutputRejectionReasonsInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminRestaurantOverviewDtoOutputRejectionReasonsInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -3085,6 +3098,17 @@ Serializers serializers =
               FullType(AdminMenuDtoOutputCategoriesInner),
             ]),
             () => ListBuilder<AdminMenuDtoOutputCategoriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType.nullable(
+                CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscount,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscount
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

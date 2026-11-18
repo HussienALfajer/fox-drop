@@ -709,6 +709,10 @@ Serializers _$serializers =
           ..add(AdminRestaurantListQueryDto.serializer)
           ..add(AdminRestaurantListQueryDtoStatusEnum.serializer)
           ..add(AdminRestaurantMaxActiveOrdersDto.serializer)
+          ..add(AdminRestaurantOverviewDtoOutput.serializer)
+          ..add(
+            AdminRestaurantOverviewDtoOutputRejectionReasonsInner.serializer,
+          )
           ..add(AdminRestaurantPauseDto.serializer)
           ..add(AdminRestaurantPeriodStatementDtoOutput.serializer)
           ..add(AdminRestaurantPeriodStatementDtoOutputLinesInner.serializer)
@@ -4504,6 +4508,28 @@ Serializers _$serializers =
               const FullType(CaptainAvailabilityDtoOutputCustodyLimit),
             ]),
             () => ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType.nullable(
+                CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscount,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CustomerActiveOrdersDtoOutputOrdersInnerLateCodeMaxDiscount?
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminRestaurantOverviewDtoOutputRejectionReasonsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminRestaurantOverviewDtoOutputRejectionReasonsInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
