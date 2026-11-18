@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:core_auth/testing.dart';
+import 'package:core_maps/core_maps.dart';
 import 'package:core_push/testing.dart';
 import 'package:core_storage/core_storage.dart';
 import 'package:customer/src/api.dart';
@@ -10,6 +11,7 @@ import 'package:customer/src/device.dart';
 import 'package:customer/src/location/pin.dart';
 import 'package:customer/src/media_image.dart';
 import 'package:customer/src/notifications/permission.dart';
+import 'package:customer/src/orders/captain_map.dart';
 import 'package:customer/src/orders/door_ring.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/misc.dart';
@@ -114,6 +116,9 @@ class TestApp {
 
   /// The map under the pin (CU §7.1).
   final pinMap = FakePinMap();
+
+  /// Each view the captain's map drew (CU §11.3), the latest last.
+  final mapViews = <RouteView>[];
   final List<Override> overrides;
   final transport = FakeTransport();
   late final ProviderContainer container;
@@ -218,6 +223,10 @@ class TestApp {
         }),
         doorRingerProvider.overrideWithValue(doorRinger),
         pinMapProvider.overrideWithValue(pinMap.build),
+        routeMapProvider.overrideWithValue(({required view}) {
+          mapViews.add(view);
+          return const SizedBox.shrink(key: Key('route-map'));
+        }),
         customerAuth.launch.overrideWithValue((uri) async {
           launched.add(uri);
           return true;

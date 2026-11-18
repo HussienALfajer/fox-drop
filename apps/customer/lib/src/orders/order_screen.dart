@@ -9,6 +9,7 @@ import '../emergency_stop.dart';
 import '../notifications/notifications_off_banner.dart';
 import 'cancel_order.dart';
 import 'cancel_order_sheet.dart';
+import 'captain_map.dart';
 import 'door_ring.dart';
 import 'my_orders.dart';
 import 'order_again_section.dart';
@@ -24,8 +25,9 @@ import 'report_section.dart';
 /// emergency stop and the item-unavailable report and the late code (CU
 /// §11.6), and the door
 /// ping's full-screen ring (CU §11.7), and after it ends the ratings (CU
-/// §12.1) and the problem report (CU §12.2). The map and the other banners
-/// come with their slices. Unstyled until the design.
+/// §12.1) and the problem report (CU §12.2), and the map from the pickup
+/// (CU §11.3). The other banners come with their slices. Unstyled until the
+/// design.
 class OrderScreen extends ConsumerWidget {
   const OrderScreen({super.key, required this.orderId});
 
@@ -225,6 +227,9 @@ class OrderScreen extends ConsumerWidget {
                   title: Text(captain.firstName),
                   subtitle: Text(l10n.vehicleName(captain.vehicle.name)),
                 ),
+              // CU §11.3 (slice 2.29b): from the pickup until the order ends.
+              if (followedStatuses.contains(order.status.name))
+                CaptainMap(orderId: order.id),
               // CU §11.7: at the door, the amount due large, with equivalents.
               if (order.status.name == 'arrived')
                 ListTile(
