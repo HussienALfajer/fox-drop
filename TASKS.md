@@ -4,14 +4,18 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.28, Search, favourites and «طلباتي» (`docs/roadmap.md`, Phase 2, Finding food). Not started.
+Slice 2.28a, Search and the lost-demand log (`docs/roadmap.md`, Phase 2, Finding food). In progress.
 
-- **Roadmap line:** 2.28 Search, favourites and «طلباتي»: search with 10 recent searches and «لم تجده؟ أخبرنا», the lost-demand log, favourites synced, the order history and reorder (CU §8.3, §12.3, AP §9.17). The owner searches for an item and reorders an earlier order.
-- **Specs:** CU §8.3 (search), CU §9.6 (favourites), CU §12.3 «طلباتي» and reorder (U18), AP §9.17 (the lost-demand log), and the customers module's «Not yet» (search, favourites).
-- **Branch:** the cloud session's branch.
+- **Roadmap line:** 2.28a, see `docs/roadmap.md` (owner decision 2026-11-18: 2.28 in two slices, 2.28a search and the lost-demand log, 2.28b favourites and «طلباتي»).
+- **Specs:** CU §8.3 (search), AP §9.17 (lost demand: searches with no results, suggested restaurants), CU §15 («Suggest a restaurant»), CU Appendix A (recent searches: 10), CU §19 item 8.
+- **Owner decisions 2026-11-18:** search matches restaurant names, category names, item names and descriptions, with «ة/ه», «ى/ي», «أ/إ/آ/ا» alike and diacritics ignored; the panel lists the suggestions and the empty searches now (the Excel export with 2.41). From the specs: the recent searches stay on the phone (CU §8.3); favourites are restaurants only (U18); reorder at current prices, skipping unavailable lines (CU §12.3).
+- **Branch:** `claude/slide-2-28-ekc0sd` (the cloud session's branch).
 - **Plan:**
-  - [ ] Split the slice into pull requests with the `slice-plan` skill (likely 2.28a search and the lost-demand log, 2.28b favourites, 2.28c «طلباتي» and reorder) and get the owner's approval, then write the plan of the first here, one step per commit.
-- **To ask the owner first:** the split above; what search matches (restaurant names, item names, categories; Arabic spelling variants such as «ة/ه» and «ى/ي»); whether the 10 recent searches live on the phone or the account; what «لم تجده؟ أخبرنا» records and where the panel shows it (AP §9.17); whether favourites are restaurants only or items too; what reorder does with an item no longer available or a changed price.
+  - [x] Split the slice with the owner and record it (roadmap and this plan).
+  - [ ] Server: the Arabic normalisation (pure, tested first), `GET /v1/customer/search` (guests too) with the restaurants and items of the covering restaurants, closed last, a search with no result recorded in `customers.search_misses`, and `POST /v1/customer/restaurant-suggestions` into `customers.restaurant_suggestions`; migration, contract and clients.
+  - [ ] Panel: `GET /v1/admin/lost-demand?cityId=` («reports.operations» or «reports.all») and the page «الطلب الضائع»: the empty searches grouped with their count and latest time, and the suggestions.
+  - [ ] Customer app: «البحث» from the home header, the box that waits until typing stops, the two tabs, the 10 recent searches on the device with «مسح», «لم تجده؟ أخبرنا» and «شكراً، سنحاول إضافته».
+  - [ ] Review, then the hand-over to 2.28b.
 
 ### Left from 2.27d (`ccr-80d769ec-2pyjdz`)
 
