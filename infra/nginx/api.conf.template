@@ -52,6 +52,21 @@ location /media/ {
     return 404;
 }
 
+# The map (architecture §7.2): public-maps through the storage's website
+# endpoint, whose Host names the bucket (no other bucket is a website), for
+# every product on our own domain. Reads only; the range requests PMTiles
+# reads by pass through. The objects' own Cache-Control (a year for a build's
+# files, 5 minutes for style.json) reaches the apps.
+location /maps/ {
+    limit_except GET { deny all; }
+    proxy_pass http://127.0.0.1:${MAPS_PORT}/;
+    proxy_http_version 1.1;
+    proxy_set_header Host public-maps;
+    proxy_set_header Connection "";
+    proxy_set_header Cookie "";
+    proxy_read_timeout 60s;
+}
+
 location /v1/ {
     proxy_pass http://127.0.0.1:${API_PORT};
     include snippets/foxdrop-proxy.conf;

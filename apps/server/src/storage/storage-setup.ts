@@ -7,6 +7,11 @@ export const PUBLIC_MEDIA_BUCKET = 'public-media';
 // 2.19g), later the captain documents (2.34). Only the server's key reaches
 // it; a file leaves it through a short signed URL.
 export const PRIVATE_DOCS_BUCKET = 'private-docs';
+// The map's bucket (architecture §7.2, slice 2.29a): the tiles of Azaz's
+// region, the style, the glyphs and the sprite, written by `maps:publish`
+// with the server's key and served to everyone by Garage's website endpoint
+// behind nginx's /maps/. Rebuilt from OpenStreetMap, so never backed up.
+export const PUBLIC_MAPS_BUCKET = 'public-maps';
 
 export interface StorageKey {
   id: string;
@@ -89,11 +94,23 @@ export async function setUpStorage(options: StorageSetupOptions): Promise<void> 
       alias: PRIVATE_DOCS_BUCKET,
       rights: (key: StorageKey) => ({ read: key.write, write: key.write }),
     },
+    {
+      alias: PUBLIC_MAPS_BUCKET,
+      rights: (key: StorageKey) => ({ read: key.write, write: key.write }),
+      website: true,
+    },
   ];
-  for (const { alias, rights } of buckets) {
+  for (const { alias, rights, website } of buckets) {
     let bucket = await admin.getOrNull(`GetBucketInfo?globalAlias=${alias}`);
     bucket ??= await admin.post('CreateBucket', { globalAlias: alias });
     const bucketId = bucketInfo.parse(bucket).id;
+    // Only the map's bucket is served without a key; any other loses
+    // website access an earlier setup may have given.
+    await admin.post(`UpdateBucket?id=${encodeURIComponent(bucketId)}`, {
+      websiteAccess: website
+        ? { enabled: true, indexDocument: 'index.html', errorDocument: null }
+        : { enabled: false },
+    });
     for (const key of options.keys) {
       const allowed = rights(key);
       const ids = { bucketId, accessKeyId: key.id };

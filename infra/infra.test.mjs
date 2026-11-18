@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { parse } from 'yaml';
+import { mapStyle } from './maps/style.mjs';
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), 'utf8');
 const compose = parse(read('compose.yaml'), { merge: true });
@@ -112,6 +113,8 @@ test('every environment names the settings compose.yaml and nginx need', () => {
     // The object storage and imgproxy, behind nginx (architecture §5.8).
     'STORAGE_PORT',
     'IMGPROXY_PORT',
+    // The storage's website endpoint behind /maps/ (architecture §7.2).
+    'MAPS_PORT',
     // The otp-sender's reply (architecture §8.3.3 item 9); may be empty.
     'SUPPORT_WHATSAPP_NUMBER',
     // The apps' support call button (AP §9.13 contact info); may be empty.
@@ -157,7 +160,8 @@ test("the storage's keys reach only the processes that use them (§15)", () => {
       .toSorted();
   // The server's key reads and writes: the API signs and checks uploads and
   // signs the exports' downloads; the worker writes and removes the exports.
-  assert.deepEqual(holders('STORAGE_SECRET'), ['api', 'storage-setup', 'worker']);
+  // maps-publish writes the map to public-maps (§7.2).
+  assert.deepEqual(holders('STORAGE_SECRET'), ['api', 'maps-publish', 'storage-setup', 'worker']);
   // The reader key: imgproxy (the nightly copy reads the file on the server).
   assert.deepEqual(holders('STORAGE_READER_SECRET'), ['imgproxy', 'storage-setup']);
   assert.deepEqual(holders('GARAGE_ADMIN_TOKEN'), ['storage', 'storage-setup']);
@@ -186,4 +190,35 @@ test("imgproxy's widths are the ones the panel and the customer app ask for", ()
   const list = (text) => JSON.parse(`[${/\[(\d+(?:, \d+)*)\]/.exec(text)[1]}]`);
   assert.deepEqual(list(read('../apps/admin/src/media.ts')), widths);
   assert.deepEqual(list(read('../apps/customer/lib/src/media.dart')), widths);
+});
+
+test('the map style is the one maps/style.mjs writes, on our own storage only', () => {
+  // Run `pnpm --filter @fox-drop/infra maps:style` after updating
+  // @protomaps/basemaps (architecture §7.2).
+  const style = JSON.parse(read('maps/style.json'));
+  assert.deepEqual(style, mapStyle());
+  // No outside host at run time: the source, the glyphs and the sprite are
+  // under the environment's /maps/ (maps-publish fills {{MAPS_URL}}).
+  const urls = [style.glyphs, style.sprite, ...Object.values(style.sources).map((s) => s.url)];
+  for (const url of urls) {
+    assert.match(url, /^(pmtiles:\/\/)?\{\{MAPS_URL\}\}\/\{\{BUILD\}\}\//, url);
+  }
+  // Arabic labels first (AP §4.7).
+  assert.match(JSON.stringify(style.layers), /"name:ar"/);
+});
+
+test('the map covers the region OSRM routes over', () => {
+  const region = (text) => /^region=(.*)$/m.exec(text)[1];
+  assert.equal(region(read('maps/build.sh')), region(read('osrm/cut.sh')));
+});
+
+test('nginx serves /maps/ from public-maps only, for reads', () => {
+  const maps = /^location \/maps\/ \{$([\s\S]*?)^\}$/m.exec(read('nginx/api.conf.template'))[1];
+  assert.match(maps, /limit_except GET \{ deny all; \}/);
+  assert.match(maps, /proxy_pass http:\/\/127\.0\.0\.1:\$\{MAPS_PORT\}\/;/);
+  assert.match(maps, /proxy_set_header Host public-maps;/);
+  assert.ok(compose.services.storage.ports.includes('127.0.0.1:${MAPS_PORT:?}:3902'));
+  const development = parse(read('../compose.yaml'));
+  assert.match(development.configs['maps-nginx'].content, /proxy_set_header Host public-maps;/);
+  assert.match(read('storage/garage.toml'), /^\[s3_web\]$/m);
 });

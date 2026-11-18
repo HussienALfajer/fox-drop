@@ -19,6 +19,9 @@ build/
 **/ios/Pods/
 **/ios/Flutter/Generated.xcconfig
 
+# The development map build (compose.yaml's maps-build)
+.maps/
+
 # Environment and secrets
 .env
 .env.*

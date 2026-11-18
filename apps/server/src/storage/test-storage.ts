@@ -8,6 +8,9 @@ export interface TestStorage {
   // The S3 API, such as http://127.0.0.1:49153.
   url: string;
   adminUrl: string;
+  // The website endpoint, which serves public-maps to a request whose Host
+  // is the bucket's name.
+  webUrl: string;
   adminToken: string;
   // The server's key (read and write) and the reader key (read only).
   key: StorageKey;
@@ -35,7 +38,7 @@ export async function startTestStorage(): Promise<TestStorage> {
         target: '/etc/garage.toml',
       },
     ])
-    .withExposedPorts(3900, 3903)
+    .withExposedPorts(3900, 3902, 3903)
     .withWaitStrategy(Wait.forLogMessage(/Admin API server listening/))
     .start();
   const address = (port: number) =>
@@ -45,6 +48,7 @@ export async function startTestStorage(): Promise<TestStorage> {
   const storage = {
     url: address(3900),
     adminUrl: address(3903),
+    webUrl: address(3902),
     adminToken,
     key,
     reader,

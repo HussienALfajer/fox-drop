@@ -109,7 +109,8 @@ services:
   # The object storage (architecture §5.8, T7): Garage, as in development
   # (storage/garage.toml). Its S3 API on STORAGE_PORT is reached only through
   # nginx's /public-media on the panel's host (PUT only) and by the nightly
-  # copy; its admin API stays on this network, for the setup.
+  # copy; its website endpoint on MAPS_PORT only through nginx's /maps/ (the
+  # map, §7.2); its admin API stays on this network, for the setup.
   storage:
     # The same image as the development compose.yaml (infra.test.mjs).
     image: dxflrs/garage:v2.5.0
@@ -124,6 +125,7 @@ services:
       - storage-data:/var/lib/garage
     ports:
       - 127.0.0.1:${STORAGE_PORT:?}:3900
+      - 127.0.0.1:${MAPS_PORT:?}:3902
     mem_limit: 256m
 
   # Sets up the storage's layout, keys and bucket, safe to run again; run by
@@ -144,6 +146,45 @@ services:
       STORAGE_SECRET: ${STORAGE_SECRET:?}
       STORAGE_READER_KEY_ID: ${STORAGE_READER_KEY_ID:?}
       STORAGE_READER_SECRET: ${STORAGE_READER_SECRET:?}
+
+  # The map (architecture §7.2): maps-build makes Azaz's tiles, the glyphs,
+  # the sprite and the style in the maps-data volume (maps/build.sh, from
+  # Protomaps' daily OpenStreetMap build and its assets), and maps-publish
+  # uploads them to public-maps with the server's key, naming this
+  # environment's /maps/ in the style. Run by foxdrop-maps-build
+  # (server/maps-build.sh), never by the deploy.
+  maps-build:
+    profiles: [maps]
+    build: ./maps
+    image: fox-drop-maps-build
+    pull_policy: build
+    restart: 'no'
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    networks: [default]
+    command: [sh, /maps/build.sh]
+    volumes:
+      - maps-data:/data
+    mem_limit: 512m
+
+  maps-publish:
+    <<: *server
+    profiles: [maps]
+    restart: 'no'
+    depends_on:
+      storage:
+        condition: service_started
+    networks: [default]
+    command: [node, dist/storage/maps-publish-command.js]
+    environment:
+      MAPS_DIR: /maps/out
+      MAPS_URL: https://${API_HOST:?}/maps
+      STORAGE_URL: http://storage:3900
+      STORAGE_KEY_ID: ${STORAGE_KEY_ID:?}
+      STORAGE_SECRET: ${STORAGE_SECRET:?}
+    volumes:
+      - maps-data:/maps:ro
 
   # The images (architecture §5.8, CU §4.5): public-media at four widths,
   # read with the reader key, behind nginx's cached /media/ on every host.
@@ -298,3 +339,4 @@ networks:
 volumes:
   postgres-data:
   storage-data:
+  maps-data:
