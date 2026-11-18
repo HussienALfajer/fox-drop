@@ -4,18 +4,27 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.29, Maps in the apps (`docs/roadmap.md`, Phase 2, Finding food). Not started.
+Slice 2.29a, Tiles, the pin and «عناويني» (`docs/roadmap.md`, Phase 2, Finding food). Planned, not started. Owner decisions 2026-11-18: the UI/UX and the design system are not ready, so the map screens are built unstyled with Flutter's defaults, logic apart from presentation (no `design-tokens`, `core_ui` or `ui-web`); the tiles are Protomaps PMTiles in our own storage on FOX DROP's domain (not OpenFreeMap); 2.29 splits into 2.29a and 2.29b, one session each.
 
-- **Roadmap line:** 2.29 Maps in the apps: MapLibre with the hosted tiles, the pin and every address rule of CU §7.3 (edit and delete included), the captain's map, route and ETA, the customer following the captain from pickup (architecture §7.2, CU §7.3, §11, CA §9.2–9.6). The owner moves a pin and follows a captain on the map.
-- **Specs:** architecture §7.2 (MapLibre, OSM vector tiles: Protomaps PMTiles in the object storage or OpenFreeMap), §11.2 (`core_maps`), CU §7.3 («عناويني»: add, edit, delete, default; the pin), CU §11.2–11.3 (the captain on the map from the pickup), CA §9.2–9.6 (the captain's map, route and ETA), CU §18 item 3 (the field check of Azaz's OSM map).
+- **Roadmap line:** 2.29a Tiles, the pin and «عناويني»: Azaz's OSM tiles, style, Arabic glyphs and sprites served from our storage, `core_maps`, the pin under a fixed centre at zoom 16 or closer for the first location and the current-location adjustment, and «عناويني» with add, edit (the pin included), delete and default (architecture §7.2, §11.2, CU §7.1, §7.3, §7.4). The owner moves a pin and saves, edits and deletes an address.
+- **Specs:** architecture §5.8 (the storage behind nginx), §7.2 (MapLibre, PMTiles on our domain, one style, Arabic labels, the field check), §11.2 (`core_maps`: the map interface on `maplibre_gl`, tile caching), §17 (provision and deploy); CU §7.1 (the fixed pin, zoom 16, «قرّب الخريطة لتحديد موقعك بدقة», the zone check), §7.3 (every field rule, 10 addresses, one default, the pin only inside active zones, snapshots, «خارج منطقة التوصيل حالياً», delete with a confirmation), §7.4 (accuracy worse than 100 m asks to adjust the pin), §13 («حسابي» links), CU §18 item 3 (the field check before launch).
 - **Branch:** the cloud session's branch.
-- **Plan (to split with the owner first, `slice-plan`):**
-  - [ ] Server: the captain's ETA to the restaurant and the customer (geo's durations, CA §9.2), and the customer's read of the captain's position from the pickup (CU §11.3; the map channel or a read).
-  - [ ] `core_maps`: the map interface over `maplibre_gl`, the tile source and the shared style with Arabic labels.
-  - [ ] Customer app: the pin screen, «عناويني» with edit, delete and default (CU §7.3; the server routes exist), the captain on the order screen from the pickup.
-  - [ ] Captain app: the map with the route and ETA, navigation handed to Google or Apple Maps (CA §4.6).
+- **Plan (one commit per step):**
+  - [ ] Tiles: a script that extracts Azaz's region (the OSRM region's bounding box) from a Protomaps daily build with the `pmtiles` CLI, the shared style (Protomaps basemap layers, labels from `name:ar` then `name`), Arabic-capable glyphs (PBF font ranges) and the sprite; served from a `public-maps` path of the storage through nginx with range requests and long caching, in development through docker compose; the provision step and a runbook (`docs/runbooks/`). No outside host at run time.
+  - [ ] `packages/core_maps`: the map widget over `maplibre_gl` (a camera, a fixed centre pin reading the centre and the zoom, markers, a route line), the style URL from the app's configuration, the tile cache; logic (the zoom rule, the centre's point) in plain Dart with tests, the widget thin; its `CLAUDE.md`.
+  - [ ] Customer app, the pin: «اختر على الخريطة» on the first open (CU §7.1) opens the pin screen; «تأكيد الموقع» only at zoom 16 or closer, else «قرّب الخريطة لتحديد موقعك بدقة»; the chosen point goes through the existing zone check; at checkout, «التوصيل إلى موقعي الحالي» with accuracy worse than 100 m opens the pin screen to adjust (CU §7.4).
+  - [ ] Customer app, «عناويني»: the link in «حسابي», the list (the default marked, «خارج منطقة التوصيل حالياً» for an address no active zone covers, not choosable), add and edit with the CU §7.3 form and the pin, «حذف» with a confirmation, «اجعله الافتراضي», the limit of 10; over the existing routes `GET`, `POST /v1/customer/addresses`, `PUT …/{addressId}`, `PUT …/{addressId}/default`, `DELETE …/{addressId}`. First check the server enforces every CU §7.3 rule (the pin inside an active zone on edit too, the limit, the default, an order's snapshot untouched) and add a failing test for any gap.
+  - [ ] Review (`reviewer` with the sections above), then the hand-over to 2.29b.
+- **To ask the owner when the step reaches it:** whether the field check of CU §18 item 3 (OSM against Google Maps in Azaz's neighbourhoods) was done; it does not block the slice (it is before launch), and the pin screen keeps the map behind `core_maps` so Google Maps can replace the display only. The words of new strings («تأكيد الموقع», «عناويني», «إضافة عنوان», «اجعله الافتراضي», «تأكيد حذف العنوان») as each step adds them.
+
+### Next: 2.29b, the captain's map and following the captain
+
+- **Roadmap line:** 2.29b The captain's map and following the captain: the route and ETA of each leg from the routing service, the captain's map in steps 1 and 3 with navigation handed off, the customer's map from pickup with the captain's live position, the pin and the route line (architecture §6.2, §7.1–7.3, CU §11.3, CA §4.6, §9.2, §9.5). The owner follows a captain on the map.
+- **Plan (to confirm when 2.29a is merged):**
+  - [ ] Server: the leg's route (OSRM `route` geometry and duration, or the straight line × 1.3 without a line when OSRM is down) for the captain's current leg (to the restaurant, then to the customer), read once per leg (CA §4.6); the captain's position published on `order:{order_id}` from `picked_up` until the order ends, and the customer's route read (CU §11.3, architecture §6.2).
+  - [ ] Captain app: the map with the route and the ETA in step 1 (CA §9.2) and step 3 (CA §9.5), tiles cached, «ابدأ الملاحة» kept (it exists).
+  - [ ] Customer app: the map on the order screen from `picked_up` until the order ends: the captain's live position, the delivery pin and the route line when available; none before pickup (CU §11.3).
   - [ ] Review, then the hand-over to 2.30.
-- **To ask the owner first:** the design stop (a map screen is styled: are the UI/UX and the design system ready?); the tile host (Protomaps PMTiles in our storage, or OpenFreeMap if it is reachable from Syria) and whether the field check of CU §18 item 3 was done; whether the slice splits (2.29a addresses and the pin, 2.29b the captain's map and the customer following it).
 
 ### Left from 2.28b (the cloud session's branch)
 
