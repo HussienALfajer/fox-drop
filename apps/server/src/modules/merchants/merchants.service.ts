@@ -527,6 +527,20 @@ export class MerchantsService implements OnModuleInit {
     };
   }
 
+  // The account status read in another module's transaction under a share
+  // lock on the restaurant's row, so the status cannot change before that
+  // transaction ends (setAccountStatus takes the row's update lock): the
+  // wizard's accounts are added and removed only while a draft (slice
+  // 2.30a). Null for no such restaurant.
+  async lockedAccountStatus(tx: Tx, restaurantId: string): Promise<AccountStatus | null> {
+    const [row] = await tx
+      .select({ accountStatus: restaurants.accountStatus })
+      .from(restaurants)
+      .where(eq(restaurants.id, restaurantId))
+      .for('share');
+    return row?.accountStatus ?? null;
+  }
+
   // A restaurant's city and account status, a draft without its record
   // included (the wizard's accounts, slice 2.30a), or null.
   async cityAndStatus(

@@ -201,3 +201,9 @@ describe('localStyle', () => {
     });
   });
 });
+
+describe('phoneOf with Turkish numbers', () => {
+  it('reads a Turkish mobile typed from 0', () => {
+    expect(phoneOf('0532 111 2233')).toBe('+905321112233');
+  });
+});

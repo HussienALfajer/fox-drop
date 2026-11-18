@@ -16,6 +16,7 @@ import { z } from 'zod';
 import { CurrentAdminSession, RequireAnyPermission, RequirePermission } from '../../http/access.js';
 import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
+import { AuditService } from '../audit/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import type { AdminSession } from './admin-sessions.service.js';
 import { APP_PHONE_PATTERN } from './app-phone.js';
@@ -38,7 +39,11 @@ class AdminRestaurantAccountsDto extends createZodDto(
           id: z.uuid(),
           role: z.enum(['owner', 'cashier']),
           name: z.string(),
-          phone: z.string().describe('E.164; the number the user signs in with (OTP).'),
+          phone: z
+            .string()
+            .describe(
+              'The number the user signs in with (OTP): E.164 for restaurants.owner_accounts (each such read is audited), else masked as «+963 ••• 456».',
+            ),
         }),
       )
       .describe('Owners first, then cashiers, oldest first.'),
@@ -55,6 +60,13 @@ class AdminNewRestaurantAccountDto extends createZodDto(
       .describe('A Syrian or Turkish mobile in E.164, as at sign-in.'),
   }),
 ) {}
+
+// architecture §15.3: a number is masked in the panel unless its holder must
+// act on it.
+function masked(phone: string): string {
+  const code = phone.startsWith('+90') ? '+90' : phone.startsWith('+963') ? '+963' : '+';
+  return `${code} ••• ${phone.slice(-3)}`;
+}
 
 function refusalAsHttp(error: unknown): never {
   if (error instanceof MerchantAccountRefusedError) {
@@ -84,16 +96,44 @@ export class AdminRestaurantAccountsController {
   constructor(
     private readonly accounts: MerchantAccountsService,
     private readonly merchants: MerchantsService,
+    private readonly audit: AuditService,
   ) {}
 
   @Get(':restaurantId/accounts')
   @RequireAnyPermission('restaurants.read', 'restaurants.owner_accounts')
   @ZodResponse({ status: 200, type: AdminRestaurantAccountsDto })
-  async list(@Param() params: AdminRestaurantAccountsParamsDto) {
-    if ((await this.merchants.accountStatus(params.restaurantId)) === null) {
+  async list(
+    @Param() params: AdminRestaurantAccountsParamsDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.answer(params.restaurantId, session, request);
+  }
+
+  // The accounts, their numbers in full only for restaurants.owner_accounts
+  // (OWN, OPS), who add and remove them, with the view audited
+  // (`merchant_accounts.view`, AP §14); masked for every other reader.
+  private async answer(restaurantId: string, session: AdminSession, request: FastifyRequest) {
+    const restaurant = await this.merchants.cityAndStatus(restaurantId);
+    if (restaurant === null) {
       refusalAsHttp(new MerchantAccountRefusedError('unknown_restaurant', 'no such restaurant'));
     }
-    return { accounts: await this.accounts.accountsWithPhones(params.restaurantId) };
+    const accounts = await this.accounts.accountsWithPhones(restaurantId);
+    if (!session.permissions.includes('restaurants.owner_accounts')) {
+      return {
+        accounts: accounts.map((account) => ({ ...account, phone: masked(account.phone) })),
+      };
+    }
+    if (accounts.length > 0) {
+      await this.audit.recordView({
+        actor: actorOf(session),
+        context: requestContext(request),
+        cityId: restaurant.cityId,
+        action: 'merchant_accounts.view',
+        target: { type: 'restaurant', id: restaurantId },
+      });
+    }
+    return { accounts };
   }
 
   @Post(':restaurantId/accounts')
@@ -107,21 +147,16 @@ export class AdminRestaurantAccountsController {
     @Req() request: FastifyRequest,
   ) {
     try {
-      const status = await this.merchants.accountStatus(params.restaurantId);
-      if (status === null) {
-        throw new MerchantAccountRefusedError('unknown_restaurant', 'no such restaurant');
-      }
-      if (status !== 'draft') {
-        throw new MerchantAccountRefusedError('not_a_draft', 'only a draft adds accounts here');
-      }
-      await this.accounts.addAccount(params.restaurantId, body, {
-        actor: { type: 'admin', id: session.accountId, role: session.roles.join(',') },
-        context: requestContext(request),
-      });
+      await this.accounts.addAccount(
+        params.restaurantId,
+        body,
+        { actor: actorOf(session), context: requestContext(request) },
+        { draftOnly: true },
+      );
     } catch (error) {
       refusalAsHttp(error);
     }
-    return { accounts: await this.accounts.accountsWithPhones(params.restaurantId) };
+    return this.answer(params.restaurantId, session, request);
   }
 
   @Post(':restaurantId/accounts/:accountId/remove')
@@ -135,12 +170,16 @@ export class AdminRestaurantAccountsController {
   ) {
     try {
       await this.accounts.removeDraftAccount(params.restaurantId, params.accountId, {
-        actor: { type: 'admin', id: session.accountId, role: session.roles.join(',') },
+        actor: actorOf(session),
         context: requestContext(request),
       });
     } catch (error) {
       refusalAsHttp(error);
     }
-    return { accounts: await this.accounts.accountsWithPhones(params.restaurantId) };
+    return this.answer(params.restaurantId, session, request);
   }
+}
+
+function actorOf(session: AdminSession) {
+  return { type: 'admin' as const, id: session.accountId, role: session.roles.join(',') };
 }

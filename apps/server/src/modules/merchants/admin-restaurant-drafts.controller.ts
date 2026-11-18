@@ -383,8 +383,21 @@ export class AdminRestaurantDraftsController {
   @Get(':restaurantId')
   @RequireAnyPermission('restaurants.read', 'restaurants.create')
   @ZodResponse({ status: 200, type: AdminRestaurantDraftDto })
-  async read(@Param() params: AdminRestaurantDraftParamsDto) {
-    return this.answer(params.restaurantId);
+  async read(
+    @Param() params: AdminRestaurantDraftParamsDto,
+    @CurrentAdminSession() session: AdminSession,
+  ) {
+    const draft = await this.found(params.restaurantId);
+    // DATA (restaurants.create without restaurants.read, owner decision
+    // 2026-11-05) reads drafts only: a restaurant past its draft is theirs
+    // to read no more.
+    if (draft.accountStatus !== 'draft' && !session.permissions.includes('restaurants.read')) {
+      throw new NotFoundException({
+        statusCode: HttpStatus.NOT_FOUND,
+        error: 'unknown_restaurant',
+      });
+    }
+    return draftAsJson(draft, this.files);
   }
 
   @Put(':restaurantId/basics')

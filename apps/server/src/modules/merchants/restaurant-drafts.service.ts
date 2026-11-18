@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, asc, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, inArray, isNull, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { AuditService } from '../audit/index.js';
@@ -174,23 +174,24 @@ export class RestaurantDraftsService {
     }
     await this.database.db.transaction(async (tx) => {
       const row = await this.lockDraft(tx, restaurantId);
-      const before = await this.commissionOf(tx, restaurantId);
+      // One clock for the read, the withdrawal and the new version.
+      const before = await this.commissionOf(tx, restaurantId, now);
       if (JSON.stringify(before) === JSON.stringify(commission)) return;
       await tx
         .update(commissionRates)
-        .set({ withdrawnAt: sql`now()` })
+        .set({ withdrawnAt: now })
         .where(
           and(
             eq(commissionRates.restaurantId, restaurantId),
             isNull(commissionRates.withdrawnAt),
-            sql`${commissionRates.effectiveFrom} > now()`,
+            gt(commissionRates.effectiveFrom, now),
           ),
         );
       const by = changedBy(change.actor);
       await tx.insert(commissionRates).values({
         restaurantId,
         rateBp: commission.launch?.rateBp ?? commission.rateBp,
-        effectiveFrom: sql`now()`,
+        effectiveFrom: now,
         ...by,
       });
       if (commission.launch !== null) {
@@ -220,6 +221,7 @@ export class RestaurantDraftsService {
         audited(before),
         audited(commission)!,
       );
+      await this.touch(tx, restaurantId);
     });
   }
 
@@ -283,6 +285,7 @@ export class RestaurantDraftsService {
         .insert(contracts)
         .values({ restaurantId, ...values })
         .onConflictDoUpdate({ target: contracts.restaurantId, set: values });
+      await this.touch(tx, restaurantId);
       await this.record(
         tx,
         change,
@@ -326,6 +329,7 @@ export class RestaurantDraftsService {
         .update(contracts)
         .set({ confirmedAt: sql`now()`, confirmedBy: change.actor.id! })
         .where(eq(contracts.restaurantId, restaurantId));
+      await this.touch(tx, restaurantId);
       await this.record(tx, change, row.cityId, restaurantId, 'restaurant.contract.confirm', null, {
         parityPledge: true,
       });
@@ -774,6 +778,14 @@ export class RestaurantDraftsService {
       throw new MerchantsRefusedError('not_a_draft', 'only a draft is saved by the wizard');
     }
     return row;
+  }
+
+  // The list's «آخر حفظ» follows every step's save.
+  private async touch(tx: Tx, restaurantId: string): Promise<void> {
+    await tx
+      .update(restaurants)
+      .set({ updatedAt: sql`now()` })
+      .where(eq(restaurants.id, restaurantId));
   }
 
   private async record(

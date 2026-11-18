@@ -10,6 +10,7 @@ import { createApiApp } from '../../http/create-api-app.js';
 import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
 import { FxService } from '../fx/index.js';
 import { ADMIN_SESSION_COOKIE, AdminSessionsService } from '../identity/index.js';
+import { MerchantsService } from './index.js';
 
 // The wizard's routes (AP §9.6.3; slice 2.30a): the drafts, the choices and
 // each step's save, by the roles of each step.
@@ -236,5 +237,76 @@ describe('the wizard routes, steps 4–6', () => {
       payload: owner,
     });
     expect(forbidden.statusCode).toBe(403);
+  });
+});
+
+describe('the wizard routes past the draft', () => {
+  const accountsOf = (token: string, id: string, path = '', payload?: object) =>
+    app.inject({
+      method: payload || path ? 'POST' : 'GET',
+      url: `/v1/admin/restaurants/${id}/accounts${path}`,
+      cookies: { [ADMIN_SESSION_COOKIE]: token },
+      ...(payload ? { payload } : {}),
+    });
+
+  it('masks the numbers for readers who do not manage accounts, and audits a full read', async () => {
+    const data = await admin('DATA');
+    const id = randomUUID();
+    await data('PUT', `/${id}/basics`, { cityId: azaz, ...basics });
+    const ops = await token('OPS');
+    await accountsOf(ops, id, '', { role: 'owner', name: 'مالك', phone: '+963944000411' });
+    const support = await token('SUP');
+    expect((await accountsOf(support, id)).json().accounts).toEqual([
+      { id: expect.any(String), role: 'owner', name: 'مالك', phone: '+963 ••• 411' },
+    ]);
+    expect((await accountsOf(ops, id)).json().accounts[0].phone).toBe('+963944000411');
+    const { rows } = await sql.query(
+      "SELECT count(*)::int AS views FROM audit.events WHERE target_id = $1 AND action = 'merchant_accounts.view'",
+      [id],
+    );
+    // The add's answer and the read.
+    expect(rows[0].views).toBe(2);
+    expect((await accountsOf(ops, randomUUID())).json()).toMatchObject({
+      statusCode: 404,
+      error: 'unknown_restaurant',
+    });
+  });
+
+  it('refuses accounts once the restaurant left its draft, and hides it from DATA', async () => {
+    const data = await admin('DATA');
+    const id = randomUUID();
+    await data('PUT', `/${id}/basics`, { cityId: azaz, ...basics });
+    await data('PUT', `/${id}/location`, location);
+    await data('PUT', `/${id}/operations`, operations);
+    const ops = await token('OPS');
+    const added = await accountsOf(ops, id, '', {
+      role: 'cashier',
+      name: 'كاشير',
+      phone: '+963944000412',
+    });
+    const cashierId = added.json().accounts[0].id;
+    const system = { type: 'system', id: null, role: null } as const;
+    await app
+      .get(MerchantsService)
+      .setAccountStatus(id, 'test', { actor: system, context: { ipAddress: null, device: null } });
+    expect(
+      (
+        await accountsOf(ops, id, '', { role: 'owner', name: 'مالك', phone: '+963944000413' })
+      ).json(),
+    ).toMatchObject({ statusCode: 409, error: 'not_a_draft' });
+    expect((await accountsOf(ops, id, `/${cashierId}/remove`)).json()).toMatchObject({
+      statusCode: 409,
+      error: 'not_a_draft',
+    });
+    expect((await accountsOf(ops, randomUUID(), `/${cashierId}/remove`)).json()).toMatchObject({
+      statusCode: 404,
+      error: 'unknown_restaurant',
+    });
+    expect((await data('GET', `/${id}`)).json()).toMatchObject({
+      statusCode: 404,
+      error: 'unknown_restaurant',
+    });
+    const owner = await admin('OWN');
+    expect((await owner('GET', `/${id}`)).json()).toMatchObject({ accountStatus: 'test' });
   });
 });

@@ -5885,7 +5885,7 @@ export interface components {
                 /** @enum {string} */
                 role: "owner" | "cashier";
                 name: string;
-                /** @description E.164; the number the user signs in with (OTP). */
+                /** @description The number the user signs in with (OTP): E.164 for restaurants.owner_accounts (each such read is audited), else masked as «+963 ••• 456». */
                 phone: string;
             }[];
         };

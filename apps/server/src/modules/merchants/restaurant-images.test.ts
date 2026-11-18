@@ -110,6 +110,8 @@ async function uploaded(call: Call, purpose: string, body = jpeg) {
     item_photo: 'menu/items',
     restaurant_logo: 'restaurants/logos',
     restaurant_cover: 'restaurants/covers',
+    restaurant_contract: 'restaurants/contracts',
+    restaurant_licence: 'restaurants/licences',
   }[purpose];
   const key = `${folder}/${new URL(url).pathname.split('/').at(-1)}`;
   const put = await fetch(url, {
@@ -249,5 +251,75 @@ describe('the panel’s images', () => {
 
     const nowhere = await own('GET', `/v1/admin/restaurants/${randomUUID()}/images`);
     expect([nowhere.statusCode, nowhere.json().error]).toEqual([404, 'unknown_restaurant']);
+  });
+});
+
+// The wizard's step 5 (AP §9.6.3; slice 2.30a): the contract and licence
+// scans go to private-docs, never public-media, and only their own purpose
+// links them.
+describe("the wizard's contract scans", () => {
+  it('uploads the scans to the private bucket and shows them by a signed URL', async () => {
+    const data = await admin(['DATA']);
+    const id = randomUUID();
+    await data('PUT', `/v1/admin/restaurant-drafts/${id}/basics`, {
+      cityId: azaz,
+      nameAr: 'مطعم العقد',
+      nameEn: null,
+      categoryIds: [],
+      description: null,
+    });
+    const asked = await data('POST', '/v1/admin/uploads', {
+      purpose: 'restaurant_contract',
+      contentType: 'image/jpeg',
+      sizeBytes: jpeg.length,
+    });
+    expect(new URL(asked.json().url).pathname).toMatch(/^\/private-docs\/incoming\//);
+    const contract = await uploaded(data, 'restaurant_contract');
+    const licence = await uploaded(data, 'restaurant_licence');
+    const fields = { signedOn: '2026-11-15', durationMonths: 12 };
+    // A licence upload is not the contract's scan.
+    const wrong = await data('PUT', `/v1/admin/restaurant-drafts/${id}/contract`, {
+      ...fields,
+      contractUploadId: licence.uploadId,
+      licenceUploadId: null,
+    });
+    expect(wrong.json()).toMatchObject({ statusCode: 400, error: 'upload_wrong_purpose' });
+    const saved = await data('PUT', `/v1/admin/restaurant-drafts/${id}/contract`, {
+      ...fields,
+      contractUploadId: contract.uploadId,
+      licenceUploadId: licence.uploadId,
+    });
+    expect(saved.statusCode).toBe(200);
+    const shown = saved.json().contract;
+    expect(new URL(shown.contractUrl).pathname).toBe(`/private-docs/${contract.key}`);
+    expect(new URL(shown.licenceUrl).pathname).toBe(`/private-docs/${licence.key}`);
+    expect((await fetch(shown.contractUrl)).status).toBe(200);
+    // Nothing of it in the public bucket.
+    expect((await fetch(`${storage.url}/public-media/${contract.key}`)).status).not.toBe(200);
+    // The same upload on another draft is someone else's file.
+    const other = randomUUID();
+    await data('PUT', `/v1/admin/restaurant-drafts/${other}/basics`, {
+      cityId: azaz,
+      nameAr: 'مطعم آخر',
+      nameEn: null,
+      categoryIds: [],
+      description: null,
+    });
+    const reused = await data('PUT', `/v1/admin/restaurant-drafts/${other}/contract`, {
+      ...fields,
+      contractUploadId: contract.uploadId,
+      licenceUploadId: null,
+    });
+    expect(reused.json()).toMatchObject({ statusCode: 409, error: 'upload_used' });
+    // SUP and FIN upload no scan.
+    for (const role of ['SUP', 'FIN']) {
+      const call = await admin([role]);
+      const refused = await call('POST', '/v1/admin/uploads', {
+        purpose: 'restaurant_contract',
+        contentType: 'image/jpeg',
+        sizeBytes: jpeg.length,
+      });
+      expect(refused.statusCode).toBe(403);
+    }
   });
 });

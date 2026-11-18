@@ -15,7 +15,7 @@ part 'admin_restaurant_accounts_dto_output_accounts_inner.g.dart';
 /// * [id]
 /// * [role]
 /// * [name]
-/// * [phone] - E.164; the number the user signs in with (OTP).
+/// * [phone] - The number the user signs in with (OTP): E.164 for restaurants.owner_accounts (each such read is audited), else masked as «+963 ••• 456».
 @BuiltValue()
 abstract class AdminRestaurantAccountsDtoOutputAccountsInner
     implements
@@ -33,7 +33,7 @@ abstract class AdminRestaurantAccountsDtoOutputAccountsInner
   @BuiltValueField(wireName: r'name')
   String get name;
 
-  /// E.164; the number the user signs in with (OTP).
+  /// The number the user signs in with (OTP): E.164 for restaurants.owner_accounts (each such read is audited), else masked as «+963 ••• 456».
   @BuiltValueField(wireName: r'phone')
   String get phone;
 

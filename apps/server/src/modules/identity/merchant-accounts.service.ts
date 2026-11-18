@@ -63,11 +63,14 @@ export class MerchantAccountsService {
   ) {}
 
   // An owner or a cashier of a restaurant. A number belongs to at most one
-  // restaurant (S6): one taken by an account not removed is refused.
+  // restaurant (S6): one taken by an account not removed is refused. With
+  // `draftOnly` (the wizard's step 6, slice 2.30a) the restaurant must still
+  // be a draft, read under its row's share lock in the add's transaction.
   async addAccount(
     restaurantId: string,
     account: { role: MerchantRole; name: string; phone: string },
     change: { actor: AuditActor; context: AuditRequestContext },
+    { draftOnly = false }: { draftOnly?: boolean } = {},
   ): Promise<string> {
     const name = account.name.trim();
     if (name.length === 0 || !APP_PHONE_PATTERN.test(account.phone)) {
@@ -82,6 +85,7 @@ export class MerchantAccountsService {
     }
     const phoneHash = this.secrets.phoneHash(account.phone);
     return this.database.db.transaction(async (tx) => {
+      if (draftOnly) await this.checkDraft(tx, restaurantId);
       // The partial unique index refuses a second account; the lock turns
       // that into a refusal instead of an error.
       await tx.execute(
@@ -170,18 +174,13 @@ export class MerchantAccountsService {
     restaurantId: string,
     accountId: string,
     change: { actor: AuditActor; context: AuditRequestContext },
+    now = new Date(),
   ): Promise<void> {
-    const status = await this.merchants.accountStatus(restaurantId);
-    if (status === null) {
-      throw new MerchantAccountRefusedError('unknown_restaurant', 'no such restaurant');
-    }
-    if (status !== 'draft') {
-      throw new MerchantAccountRefusedError('not_a_draft', 'only a draft removes accounts here');
-    }
     await this.database.db.transaction(async (tx) => {
+      await this.checkDraft(tx, restaurantId);
       const [removed] = await tx
         .update(merchantAccounts)
-        .set({ removedAt: sql`now()` })
+        .set({ removedAt: now })
         .where(
           and(
             eq(merchantAccounts.id, accountId),
@@ -210,6 +209,21 @@ export class MerchantAccountsService {
         tx,
       );
     });
+  }
+
+  // 404 unknown_restaurant, 409 not_a_draft, read under the restaurant
+  // row's share lock until the caller's transaction ends.
+  private async checkDraft(
+    tx: Parameters<MerchantsService['lockedAccountStatus']>[0],
+    restaurantId: string,
+  ) {
+    const status = await this.merchants.lockedAccountStatus(tx, restaurantId);
+    if (status === null) {
+      throw new MerchantAccountRefusedError('unknown_restaurant', 'no such restaurant');
+    }
+    if (status !== 'draft') {
+      throw new MerchantAccountRefusedError('not_a_draft', 'only a draft changes accounts here');
+    }
   }
 
   // The restaurant's accounts not removed, owners first.

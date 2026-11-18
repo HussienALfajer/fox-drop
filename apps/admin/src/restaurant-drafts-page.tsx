@@ -11,6 +11,7 @@ import {
   basicsBody,
   basicsFormOf,
   canConfirmContract,
+  canReadAccounts,
   canSaveStep,
   commissionBody,
   commissionFormOf,
@@ -119,7 +120,10 @@ export function RestaurantDraftPage() {
         chosenCity(cities.data, search.city))
       : undefined;
   const choices = useQuery({ ...draftChoicesQuery(city?.id ?? ''), enabled: city !== undefined });
-  const accounts = useQuery({ ...accountsQuery(restaurantId), enabled: draft.data != null });
+  const accounts = useQuery({
+    ...accountsQuery(restaurantId),
+    enabled: draft.data != null && canReadAccounts(session),
+  });
   if (draft.isError || cities.isError || choices.isError) {
     return <p role="alert">{t('common.failed')}</p>;
   }
@@ -217,15 +221,22 @@ function SaveStatus({
   failed,
   result,
   problem,
+  day,
 }: {
   pending: boolean;
   failed: boolean;
   result: SaveResult | undefined;
   problem: string | null;
+  // The weekday a problem of the hours is on.
+  day?: string | undefined;
 }) {
   const { t } = useTranslation();
   if (problem !== null)
-    return <p role="alert">{t(`drafts.problem.${problem}` as 'drafts.problem.invalid')}</p>;
+    return (
+      <p role="alert">
+        {t(`drafts.problem.${problem}` as 'drafts.problem.hours', { day: day ?? '' })}
+      </p>
+    );
   if (pending) return <p role="status">{t('drafts.saving')}</p>;
   if (failed) return <p role="alert">{t('common.failed')}</p>;
   if (result?.status === 'refused') {
@@ -472,6 +483,7 @@ function OperationsStep(props: {
     operationsFormOf(props.draft, props.choices),
   );
   const [problem, setProblem] = useState<string | null>(null);
+  const [problemDay, setProblemDay] = useState<string | undefined>();
   const save = useSaveStep(props.restaurantId);
   const editable = canSaveStep(props.session, 'operations');
   const setPeriod = (
@@ -491,6 +503,7 @@ function OperationsStep(props: {
     event.preventDefault();
     const request = operationsBody(form, props.choices.baseCurrency);
     setProblem('problem' in request ? request.problem : null);
+    setProblemDay('day' in request ? t(`office.day.${request.day}`) : undefined);
     if ('body' in request) save.mutate({ step: 'operations', body: request.body });
   };
   return (
@@ -633,6 +646,7 @@ function OperationsStep(props: {
         failed={save.isError}
         result={save.data}
         problem={problem}
+        day={problemDay}
       />
     </>
   );
@@ -836,6 +850,16 @@ function Scan(props: { label: string; url: string | null; onPick: (file: File | 
 }
 
 function AccountsStep(props: { restaurantId: string; session: AdminSession }) {
+  if (!canReadAccounts(props.session)) return <AccountsHidden />;
+  return <Accounts {...props} />;
+}
+
+function AccountsHidden() {
+  const { t } = useTranslation();
+  return <p>{t('drafts.accounts.opsOnly')}</p>;
+}
+
+function Accounts(props: { restaurantId: string; session: AdminSession }) {
   const { t } = useTranslation();
   const accounts = useQuery(accountsQuery(props.restaurantId));
   const command = useAccountCommand(props.restaurantId);

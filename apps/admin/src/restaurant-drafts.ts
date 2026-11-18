@@ -62,6 +62,11 @@ export function canSaveStep(session: AdminSession | null | undefined, step: Step
 }
 
 // OWN and OPS confirm the contract with the pledge.
+// Who reads step 6's accounts (DATA does not: AP §6.2).
+export function canReadAccounts(session: AdminSession | null | undefined): boolean {
+  return can(session, RESTAURANTS_READ) || can(session, RESTAURANTS_OWNER_ACCOUNTS);
+}
+
 export function canConfirmContract(session: AdminSession | null | undefined): boolean {
   return can(session, RESTAURANTS_MANAGE);
 }
@@ -120,6 +125,8 @@ export const draftQuery = (restaurantId: string) =>
       if (!data) throw new Error('The draft read failed.');
       return data;
     },
+    // The scans' signed links last 10 minutes: read them again before.
+    refetchInterval: 5 * 60_000,
   });
 
 const accountsKey = (restaurantId: string) => ['restaurant-accounts', restaurantId] as const;
@@ -194,11 +201,13 @@ export function degreesOf(typed: string, limit: number): number | null {
   return Math.abs(value) <= limit ? value : null;
 }
 
-// A number as the panel takes it: E.164, or a Syrian one typed from 0
-// (0944 123 456 or 021 123 4567). Spaces are dropped; null when unreadable.
+// A number as the panel takes it: E.164, a Turkish mobile typed from 0
+// (0532 111 2233, 11 digits), or a Syrian one typed from 0 (0944 123 456 or
+// 021 123 4567). Spaces are dropped; null when unreadable.
 export function phoneOf(typed: string): string | null {
   const digits = typed.replace(/[\s-]/g, '');
   if (/^\+[1-9]\d{7,14}$/.test(digits)) return digits;
+  if (/^05\d{9}$/.test(digits)) return `+90${digits.slice(1)}`;
   if (/^0[1-9]\d{7,9}$/.test(digits)) return `+963${digits.slice(1)}`;
   return null;
 }
