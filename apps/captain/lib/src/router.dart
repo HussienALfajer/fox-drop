@@ -13,6 +13,7 @@ import 'home_screen.dart';
 import 'not_found_screen.dart';
 import 'peak_bonus.dart';
 import 'platform.dart';
+import 'rating.dart';
 import 'settings/settings_screen.dart';
 import 'shell.dart';
 import 'starting_screen.dart';
@@ -117,6 +118,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/peak-bonus',
         builder: (context, state) => const PeakWindowsScreen(),
+      ),
+      // CA §11.2 «تقييمي» (slice 2.26c), until «أدائي» (2.36).
+      GoRoute(
+        path: '/rating',
+        builder: (context, state) => const RatingScreen(),
       ),
       // «الإعدادات» (owner decision 2026-11-11): «العملات التي أحملها».
       GoRoute(

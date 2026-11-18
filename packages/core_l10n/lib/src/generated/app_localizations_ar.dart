@@ -3895,4 +3895,31 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get merchantRatingsReasonSeparator => '، ';
+
+  @override
+  String get captainRating => 'تقييمي';
+
+  @override
+  String captainRatingAverage(String average) {
+    return '$average من 5';
+  }
+
+  @override
+  String captainRatingCount(int count) {
+    return 'عدد التقييمات: $count';
+  }
+
+  @override
+  String get captainRatingNone => 'لا تقييم بعد';
+
+  @override
+  String get captainRatingReasons => 'ما اختاره الزبائن';
+
+  @override
+  String captainRatingReason(String reason, int count) {
+    return '$reason: $count';
+  }
+
+  @override
+  String get captainRatingPrivate => 'لا تظهر هنا أسماء الزبائن ولا تعليقاتهم.';
 }

@@ -13,7 +13,7 @@ Slice 2.26c, the captain's rating and the panel's ratings (`docs/roadmap.md`, Ph
 - **Plan:**
   - [x] Server: `GET /v1/captain/ratings` (the average, the count and the reasons with counts, every rating, test orders left out, no comments); the ratings' read shared by the restaurant, the captain and the panel.
   - [x] Server: the panel's `GET /v1/admin/ratings/restaurants/{restaurantId}` (`restaurants.read`), `GET /v1/admin/ratings/captains/{captainId}` and `GET /v1/admin/ratings/captains?cityId=` (`captains.read`): the summary, the distribution and the pages with stars, reasons, comment, time and order, never the customer's name (AP §9.6.4).
-  - [ ] Captain app: «تقييمي» in «المزيد».
+  - [x] Captain app: «تقييمي» in «المزيد».
   - [ ] Panel: the «التقييمات» page.
   - [ ] Review, then the handover to the next slice.
 

@@ -90,7 +90,7 @@ class _RatingsView extends ConsumerWidget {
           key: const Key('ratings-average'),
           average == null
               ? l10n.merchantRatingsNone
-              : l10n.merchantRatingsAverage(averageText(average)),
+              : l10n.merchantRatingsAverage(formatAverage(average)),
           style: Theme.of(context).textTheme.headlineSmall,
         ),
         Text(

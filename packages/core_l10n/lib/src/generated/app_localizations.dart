@@ -6379,6 +6379,48 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'، '**
   String get merchantRatingsReasonSeparator;
+
+  /// CA §11.2 (C14): the captain's rating, from «المزيد» until «أدائي» (2.36). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تقييمي'**
+  String get captainRating;
+
+  /// The captain's average stars over every rating, to one decimal (CA §11.2; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'{average} من 5'**
+  String captainRatingAverage(String average);
+
+  /// The captain's number of ratings, test orders left out (CA §11.2; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'عدد التقييمات: {count}'**
+  String captainRatingCount(int count);
+
+  /// In place of the average before any rating (the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا تقييم بعد'**
+  String get captainRatingNone;
+
+  /// The heading of the reasons customers picked, with counts (CA §11.2; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'ما اختاره الزبائن'**
+  String get captainRatingReasons;
+
+  /// A reason customers picked and how many times, such as «لطيف: 12» (CA §11.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'{reason}: {count}'**
+  String captainRatingReason(String reason, int count);
+
+  /// Why the screen shows no names or comments (CA §11.2, CU Q16; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا تظهر هنا أسماء الزبائن ولا تعليقاتهم.'**
+  String get captainRatingPrivate;
 }
 
 class _AppLocalizationsDelegate
