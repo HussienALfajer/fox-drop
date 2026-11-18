@@ -15,14 +15,27 @@ function jpeg(width: number, height: number, sofMarker = 0xc0): Uint8Array {
   // SOI, an APP0 segment of 16 bytes, a DQT of 4, then the frame header.
   const app0 = [0xff, 0xe0, 0x00, 0x10, ...new Array<number>(14).fill(0)];
   const dqt = [0xff, 0xdb, 0x00, 0x04, 0, 0];
-  const sof = [0xff, sofMarker, 0x00, 0x11, 8, height >> 8, height & 0xff, width >> 8, width & 0xff];
+  const sof = [
+    0xff,
+    sofMarker,
+    0x00,
+    0x11,
+    8,
+    height >> 8,
+    height & 0xff,
+    width >> 8,
+    width & 0xff,
+  ];
   return Uint8Array.from([0xff, 0xd8, ...app0, ...dqt, ...sof]);
 }
 
 function riff(chunk: string, body: number[]): Uint8Array {
   const bytes = new Uint8Array(12 + 8 + body.length);
   bytes.set([0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50]);
-  bytes.set([...chunk].map((c) => c.charCodeAt(0)), 12);
+  bytes.set(
+    [...chunk].map((c) => c.charCodeAt(0)),
+    12,
+  );
   bytes.set(body, 20);
   return bytes;
 }

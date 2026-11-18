@@ -82,11 +82,7 @@ export {
   type PreparedCompensation,
   WRONG_CHANGE_COMPENSATION,
 } from './compensations.service.js';
-export {
-  type Banner,
-  BannersService,
-  HOME_BANNERS_MAX,
-} from './banners.service.js';
+export { type Banner, BannersService, HOME_BANNERS_MAX } from './banners.service.js';
 export {
   BUILT_IN_SECTIONS,
   type HomeSection,

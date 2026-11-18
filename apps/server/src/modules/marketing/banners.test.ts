@@ -132,9 +132,7 @@ type Banners = {
 
 describe('«البانرات»', () => {
   it('lets DATA publish a banner for a category, and OPS only read', async () => {
-    const category = await app
-      .get(CategoriesService)
-      .create('حلويات', 'system');
+    const category = await app.get(CategoriesService).create('حلويات', 'system');
     const data = await admin(['DATA']);
     const created = await data.call('POST', '/v1/admin/banners', {
       ...fields({ categoryId: category.id }),

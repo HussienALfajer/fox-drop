@@ -62,7 +62,8 @@ export function imageSize(type: ImageType, bytes: Uint8Array): ImageSize | null 
         const bits = (at(21) | (at(22) << 8) | (at(23) << 16) | (at(24) << 24)) >>> 0;
         return { width: (bits & 0x3fff) + 1, height: ((bits >>> 14) & 0x3fff) + 1 };
       }
-      if (is('VP8X', 12) && bytes.length >= 30) return { width: u24le(24) + 1, height: u24le(27) + 1 };
+      if (is('VP8X', 12) && bytes.length >= 30)
+        return { width: u24le(24) + 1, height: u24le(27) + 1 };
       return null;
   }
 }
