@@ -94,6 +94,26 @@ class CustomerRestaurantListDto extends createZodDto(
       .describe(
         'CU §8.2: open first, then busy and paused, then closed; with similarTo, the open ones only (CU §11.9).',
       ),
+    sections: z
+      .array(
+        z.object({
+          kind: z
+            .enum(['banners', 'categories', 'nearest', 'most_ordered', 'new', 'offers', 'custom'])
+            .describe(
+              '«البانرات», «التصنيفات», «الأقرب إليك», «الأكثر طلباً», «جديد على FOX DROP», «العروض», or a custom section under its title.',
+            ),
+          title: z.string().nullable().describe("A custom section's title; null otherwise."),
+          restaurantIds: z
+            .array(z.uuid())
+            .describe(
+              'The cards of `restaurants` it shows, in its order (open first, closed last); empty for banners and categories, which the app fills.',
+            ),
+        }),
+      )
+      .nullable()
+      .describe(
+        'With home: the home sections shown, in the panel’s order (CU §8.1, AP §9.11.3); a restaurant section with no restaurant is left out. Null otherwise.',
+      ),
   }),
 ) {}
 
@@ -182,6 +202,10 @@ class CustomerRestaurantListQueryDto extends createZodDto(
       .describe(
         "CU §8.2: the category page, only the restaurants of that category in the list's order; empty for a category that is not active. Ignored with similarTo.",
       ),
+    home: z
+      .enum(['true', 'false'])
+      .optional()
+      .describe('CU §8.1: the home, which adds `sections`. Ignored with similarTo or categoryId.'),
   }),
 ) {}
 
@@ -211,15 +235,23 @@ export class CustomerBrowsingController {
     @Query() query: CustomerRestaurantListQueryDto,
     @OptionalAppSession() session: AppSession | null,
   ) {
-    const { similarTo, categoryId, ...point } = query;
+    const { similarTo, categoryId, home, ...point } = query;
     const now = new Date();
     const testAccount = await this.testAccount(session);
-    const cards =
-      similarTo === undefined
-        ? await this.browsing.restaurants(point, now, testAccount, categoryId)
-        : await this.browsing.similar(similarTo, point, now, testAccount);
+    const { restaurants: cards, sections } =
+      similarTo !== undefined
+        ? {
+            restaurants: await this.browsing.similar(similarTo, point, now, testAccount),
+            sections: null,
+          }
+        : categoryId === undefined && home === 'true'
+          ? await this.browsing.home(point, now, testAccount)
+          : {
+              restaurants: await this.browsing.restaurants(point, now, testAccount, categoryId),
+              sections: null,
+            };
     const ratings = await this.customers.ratings.restaurants(cards.map((card) => card.id));
-    return { restaurants: cards.map((card) => cardBody(card, ratings.get(card.id))) };
+    return { restaurants: cards.map((card) => cardBody(card, ratings.get(card.id))), sections };
   }
 
   // 404 for a restaurant customers do not see.

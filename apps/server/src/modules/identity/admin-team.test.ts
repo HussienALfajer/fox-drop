@@ -442,6 +442,12 @@ const routeAccess: Record<string, Access> = {
   'GET /v1/admin/promo-codes/{codeId}/report': {
     anyOf: ['marketing.read', 'marketing.read_costs', 'marketing.manage'],
   },
+  'GET /v1/admin/home-sections': { anyOf: ['marketing.read', 'marketing.manage'] },
+  'POST /v1/admin/home-sections': 'marketing.manage',
+  'POST /v1/admin/home-sections/order': 'marketing.manage',
+  'POST /v1/admin/home-sections/visibility': 'marketing.manage',
+  'PUT /v1/admin/home-sections/{sectionId}': 'marketing.manage',
+  'POST /v1/admin/home-sections/{sectionId}/remove': 'marketing.manage',
   'GET /v1/admin/compensations': 'compensation.approve_above_cap',
   'POST /v1/admin/compensations/{compensationId}/approve': 'compensation.approve_above_cap',
   'POST /v1/admin/compensations/{compensationId}/reject': 'compensation.approve_above_cap',

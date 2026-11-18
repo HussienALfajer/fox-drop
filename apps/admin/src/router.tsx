@@ -38,6 +38,8 @@ import { ZONES_READ } from './peak-bonus.js';
 import { PeakBonusPage } from './peak-bonus-page.js';
 import { CompensationApprovalsPage } from './compensation-approvals-page.js';
 import { canApproveCompensations } from './order-compensation.js';
+import { canSeeHomeSections } from './home-sections.js';
+import { HomeSectionsPage } from './home-sections-page.js';
 import { canSeePromoCodes } from './promo-codes.js';
 import { canReadTickets } from './tickets.js';
 import { TicketsPage } from './tickets-page.js';
@@ -348,6 +350,18 @@ const promoCodesRoute = createRoute({
   component: PromoCodesPage,
 });
 
+// AP §9.11.3 «أقسام الرئيسية» (slice 2.27b): OPS reads, OWN changes them
+// (checked by the page and the server).
+const homeSectionsRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/home-sections',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!canSeeHomeSections(context.session)) throw redirect({ to: '/' });
+  },
+  component: HomeSectionsPage,
+});
+
 // AP §9.11.1 «Code report» (slice 2.21d): the list's readers; OWN pauses,
 // resumes and extends from it (checked by the page and the server).
 const promoCodeReportRoute = createRoute({
@@ -614,6 +628,7 @@ const routeTree = rootRoute.addChildren([
     ticketRoute,
     promoCodesRoute,
     promoCodeReportRoute,
+    homeSectionsRoute,
     officeRoute,
     cashDeskRoute,
     cashDeskSessionsRoute,

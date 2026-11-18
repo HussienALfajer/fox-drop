@@ -280,6 +280,20 @@ describe('MerchantsService.setAccountStatus (AP §9.6.1)', () => {
     await merchants.setAccountStatus(id, 'active', change);
     expect((await merchants.restaurant(id))?.accountStatus).toBe('active');
   });
+
+  // CU §8.1 «جديد على FOX DROP» (slice 2.27b): the first activation only.
+  it('keeps the first activation, through test mode and a reactivation', async () => {
+    const { cityId } = await city();
+    const id = await merchants.createRestaurant(cityId, restaurant, change);
+    await merchants.setAccountStatus(id, 'test', change);
+    expect((await merchants.restaurant(id))?.activatedAt).toBeNull();
+    await merchants.setAccountStatus(id, 'active', change);
+    const first = (await merchants.restaurant(id))!.activatedAt;
+    expect(first).toBeInstanceOf(Date);
+    await merchants.setAccountStatus(id, 'suspended', { ...change, reason: 'price parity' });
+    await merchants.setAccountStatus(id, 'active', { ...change, reason: 'back' });
+    expect((await merchants.restaurant(id))!.activatedAt).toEqual(first);
+  });
 });
 
 describe('MerchantsService hours and state (RA §7.1, §10)', () => {

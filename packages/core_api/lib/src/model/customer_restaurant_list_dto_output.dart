@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/customer_restaurant_list_dto_output_sections_inner.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/customer_restaurant_list_dto_output_restaurants_inner.dart';
 import 'package:built_value/built_value.dart';
@@ -14,6 +15,7 @@ part 'customer_restaurant_list_dto_output.g.dart';
 ///
 /// Properties:
 /// * [restaurants] - CU §8.2: open first, then busy and paused, then closed; with similarTo, the open ones only (CU §11.9).
+/// * [sections] - With home: the home sections shown, in the panel’s order (CU §8.1, AP §9.11.3); a restaurant section with no restaurant is left out. Null otherwise.
 @BuiltValue()
 abstract class CustomerRestaurantListDtoOutput
     implements
@@ -24,6 +26,10 @@ abstract class CustomerRestaurantListDtoOutput
   /// CU §8.2: open first, then busy and paused, then closed; with similarTo, the open ones only (CU §11.9).
   @BuiltValueField(wireName: r'restaurants')
   BuiltList<CustomerRestaurantListDtoOutputRestaurantsInner> get restaurants;
+
+  /// With home: the home sections shown, in the panel’s order (CU §8.1, AP §9.11.3); a restaurant section with no restaurant is left out. Null otherwise.
+  @BuiltValueField(wireName: r'sections')
+  BuiltList<CustomerRestaurantListDtoOutputSectionsInner>? get sections;
 
   CustomerRestaurantListDtoOutput._();
 
@@ -62,6 +68,15 @@ class _$CustomerRestaurantListDtoOutputSerializer
         FullType(CustomerRestaurantListDtoOutputRestaurantsInner),
       ]),
     );
+    yield r'sections';
+    yield object.sections == null
+        ? null
+        : serializers.serialize(
+            object.sections,
+            specifiedType: const FullType.nullable(BuiltList, [
+              FullType(CustomerRestaurantListDtoOutputSectionsInner),
+            ]),
+          );
   }
 
   @override
@@ -99,6 +114,18 @@ class _$CustomerRestaurantListDtoOutputSerializer
                   )
                   as BuiltList<CustomerRestaurantListDtoOutputRestaurantsInner>;
           result.restaurants.replace(valueDes);
+          break;
+        case r'sections':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(BuiltList, [
+                      FullType(CustomerRestaurantListDtoOutputSectionsInner),
+                    ]),
+                  )
+                  as BuiltList<CustomerRestaurantListDtoOutputSectionsInner>?;
+          if (valueDes == null) continue;
+          result.sections.replace(valueDes);
           break;
         default:
           unhandled.add(key);

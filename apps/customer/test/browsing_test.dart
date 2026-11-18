@@ -81,7 +81,11 @@ void main() {
     final app = await browsingApp(tester);
 
     final list = app.server.to('/v1/customer/restaurants').single;
-    expect(list.uri.queryParameters.keys, ['latitude', 'longitude']);
+    expect(list.uri.queryParameters, {
+      'latitude': '${azaz.latitude}',
+      'longitude': '${azaz.longitude}',
+      'home': 'true',
+    });
     expect(find.text('مطعم الشام'), findsOneWidget);
     expect(
       find.text('شاورما · جديد · 30–40 د · رسوم التوصيل 10 ₺'),
@@ -144,6 +148,90 @@ void main() {
       );
     },
   );
+
+  testWidgets('the home shows the sections in the panel\'s order (CU §8.1)', (
+    tester,
+  ) async {
+    const grills = '00000000-0000-4000-8000-0000000000c2';
+    final app = await browsingApp(
+      tester,
+      before: (app) {
+        app.server.on('/v1/customer/categories', [
+          const FakeAnswer(200, {
+            'categories': [
+              {'id': grills, 'name': 'مشاوي', 'imageKey': null},
+            ],
+          }),
+        ]);
+        app.server.on('/v1/customer/restaurants', [
+          FakeAnswer(200, {
+            'restaurants': [
+              card(shamId, 'مطعم الشام'),
+              card(nourId, 'مطعم النور', state: 'closed'),
+            ],
+            'sections': [
+              {
+                'kind': 'custom',
+                'title': 'أفضل شاورما في أعزاز',
+                'restaurantIds': [nourId],
+              },
+              {'kind': 'banners', 'title': null, 'restaurantIds': <Object?>[]},
+              {
+                'kind': 'categories',
+                'title': null,
+                'restaurantIds': <Object?>[],
+              },
+              {
+                'kind': 'nearest',
+                'title': null,
+                'restaurantIds': [shamId, nourId],
+              },
+              // A restaurant the answer has no card for is left out.
+              {
+                'kind': 'offers',
+                'title': null,
+                'restaurantIds': ['00000000-0000-4000-8000-0000000000ff'],
+              },
+            ],
+          }),
+        ]);
+      },
+    );
+    final custom = find.byKey(const Key('home-section-0'));
+    final nearest = find.byKey(const Key('home-section-3'));
+    expect(
+      find.descendant(of: custom, matching: find.text('أفضل شاورما في أعزاز')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: custom, matching: find.text('مطعم النور')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: nearest, matching: find.text('الأقرب إليك')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: nearest, matching: find.text('مطعم الشام')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('category-$grills')), findsOneWidget);
+    expect(find.text('العروض'), findsNothing);
+    // The custom section, then the categories, then «الأقرب إليك».
+    double top(Finder finder) => tester.getTopLeft(finder.first).dy;
+    expect(top(custom) < top(find.byKey(const Key('categories'))), isTrue);
+    expect(top(find.byKey(const Key('categories'))) < top(nearest), isTrue);
+
+    // Pull to refresh reads the home again.
+    final before = app.server.to('/v1/customer/restaurants').length;
+    final refreshed = tester
+        .widget<RefreshIndicator>(find.byType(RefreshIndicator))
+        .onRefresh();
+    await tester.pumpAndSettle();
+    await refreshed;
+    await tester.pumpAndSettle();
+    expect(app.server.to('/v1/customer/restaurants').length, before + 1);
+  });
 
   testWidgets('marks a restaurant in test mode «تجريبي» (CU §8.2)', (
     tester,

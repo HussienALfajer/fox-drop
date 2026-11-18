@@ -348,3 +348,58 @@ export const lateCodes = marketing.table(
   },
   (table) => [uniqueIndex('late_codes_code').on(table.codeId)],
 );
+
+// AP §9.11.3 «أقسام الرئيسية» (slice 2.27b): the customer home's sections,
+// per city. The six built-in ones, computed or filled elsewhere, and the
+// custom ones the admin writes, each a title and hand-picked restaurants.
+export const homeSectionKinds = [
+  'banners',
+  'categories',
+  'nearest',
+  'most_ordered',
+  'new',
+  'offers',
+  'custom',
+] as const;
+export type HomeSectionKind = (typeof homeSectionKinds)[number];
+
+// A built-in section has a row only once the panel orders or hides one of
+// the city's sections; until then it reads as the default order, shown.
+// A custom section removed keeps its row with removed_at.
+export const homeSections = marketing.table(
+  'home_sections',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    cityId: uuid('city_id').notNull(),
+    kind: text('kind', { enum: homeSectionKinds }).notNull(),
+    title: text('title'),
+    // A custom section's restaurants in the admin's order (plain ids).
+    restaurantIds: uuid('restaurant_ids')
+      .array()
+      .notNull()
+      .default(sql`'{}'::uuid[]`),
+    position: integer('position').notNull(),
+    visible: boolean('visible').notNull().default(true),
+    removedAt: timestamp('removed_at', { withTimezone: true }),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('home_sections_built_in')
+      .on(table.cityId, table.kind)
+      .where(sql`${table.kind} <> 'custom'`),
+    index('home_sections_city').on(table.cityId, table.position),
+    check(
+      'home_sections_kind_values',
+      sql`${table.kind} IN ('banners', 'categories', 'nearest', 'most_ordered', 'new', 'offers', 'custom')`,
+    ),
+    check(
+      'home_sections_custom',
+      sql`CASE WHEN ${table.kind} = 'custom'
+        THEN ${table.title} IS NOT NULL AND char_length(${table.title}) BETWEEN 1 AND 40
+        ELSE ${table.title} IS NULL AND cardinality(${table.restaurantIds}) = 0 AND ${table.removedAt} IS NULL
+      END`,
+    ),
+  ],
+);

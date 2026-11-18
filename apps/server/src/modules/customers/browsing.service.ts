@@ -17,7 +17,9 @@ import {
   seenByCustomer,
   type StorefrontState,
 } from '../merchants/index.js';
+import { HomeSectionsService } from '../marketing/index.js';
 import { SettingsService } from '../settings/index.js';
+import { CustomersService } from './customers.service.js';
 
 // The trip of the estimate is measured as the delivery fee is, by the
 // motorbike's distance (owner decision 2026-11-06 for the fee), before any
@@ -26,6 +28,28 @@ const ESTIMATE_VEHICLE = 'motorbike';
 
 // CU §11.9: «up to 5 similar restaurants» under a rejected or unanswered order.
 const SIMILAR_LIMIT = 5;
+
+// CU §8.1 (owner decisions 2026-11-18): «الأقرب إليك», «الأكثر طلباً» and
+// «جديد على FOX DROP» show 10 each; the last two look 30 days back.
+export const HOME_SECTION_SIZE = 10;
+export const HOME_LOOKBACK_DAYS = 30;
+const DAY_MS = 24 * 60 * 60_000;
+
+// CU §8.1: a home section as the app shows it, in the panel's order. A
+// restaurant section names its cards; «البانرات» and «التصنيفات» name none
+// (the app fills them).
+export interface HomeSectionView {
+  kind: 'banners' | 'categories' | 'nearest' | 'most_ordered' | 'new' | 'offers' | 'custom';
+  title: string | null;
+  restaurantIds: string[];
+}
+
+// A card with what the home sections sort by.
+interface Listed {
+  card: RestaurantCard;
+  restaurant: Restaurant;
+  metres: number;
+}
 
 // CU §8.2: a restaurant card for the selected point.
 export interface RestaurantCard {
@@ -94,6 +118,8 @@ export class BrowsingService {
     private readonly merchants: MerchantsService,
     private readonly settings: SettingsService,
     private readonly categories: CategoriesService,
+    private readonly sections: HomeSectionsService,
+    private readonly customers: CustomersService,
   ) {}
 
   // The active categories by id, for the cards (a removed one is left out).
@@ -116,21 +142,112 @@ export class BrowsingService {
     if (place === null || place.zone === null) return [];
     const names = await this.categoryNames();
     if (categoryId !== undefined && !names.has(categoryId)) return [];
-    const ids = await this.merchants.coveringRestaurants(place.cityId, point, testAccount);
-    const cards = await Promise.all(
+    const listed = await this.listed(place.cityId, point, now, testAccount, names);
+    return ranked(
+      categoryId === undefined
+        ? listed
+        : listed.filter(({ restaurant }) => restaurant.categoryIds.includes(categoryId)),
+    ).map(({ card }) => card);
+  }
+
+  // CU §8.1, AP §9.11.3 (slice 2.27b): the list's cards and the shown
+  // sections in the panel's order. «الأقرب إليك» the HOME_SECTION_SIZE
+  // nearest by the card's trip; «الأكثر طلباً» those with the most orders
+  // delivered in HOME_LOOKBACK_DAYS (ties in the list's order); «جديد على
+  // FOX DROP» those first activated within them, newest first; «العروض»
+  // every restaurant of a visible code limited to restaurants, in the
+  // list's order; a custom section its restaurants in the admin's order.
+  // Each takes its restaurants by its own rule whatever their state, then
+  // shows open first and closed last (owner decision 2026-11-18). A
+  // restaurant section with none is left out.
+  async home(
+    point: Point,
+    now: Date,
+    testAccount = false,
+  ): Promise<{ restaurants: RestaurantCard[]; sections: HomeSectionView[] }> {
+    const place = await this.geo.locate(point);
+    if (place === null || place.zone === null) return { restaurants: [], sections: [] };
+    const zoneId = place.zone.id;
+    const [names, stored] = await Promise.all([
+      this.categoryNames(),
+      this.sections.sections(place.cityId),
+    ]);
+    const shown = stored.filter((section) => section.visible);
+    const listed = await this.listed(place.cityId, point, now, testAccount, names);
+    const since = new Date(now.getTime() - HOME_LOOKBACK_DAYS * DAY_MS);
+    const kinds = new Set(shown.map((section) => section.kind));
+    const [counts, offers] = await Promise.all([
+      kinds.has('most_ordered')
+        ? this.customers.deliveredCounts(
+            listed.map(({ card }) => card.id),
+            since,
+          )
+        : new Map<string, number>(),
+      kinds.has('offers')
+        ? this.sections.offerRestaurants(place.cityId, zoneId, now)
+        : new Set<string>(),
+    ]);
+    const byId = new Map(listed.map((entry) => [entry.card.id, entry]));
+    const picked = (kind: HomeSectionView['kind'], ids: string[]): Listed[] => {
+      switch (kind) {
+        case 'nearest':
+          return byPosition(listed, (a, b) => a.metres - b.metres).slice(0, HOME_SECTION_SIZE);
+        case 'most_ordered':
+          return byPosition(
+            listed.filter(({ card }) => (counts.get(card.id) ?? 0) > 0),
+            (a, b) => counts.get(b.card.id)! - counts.get(a.card.id)!,
+          ).slice(0, HOME_SECTION_SIZE);
+        case 'new':
+          return byPosition(
+            listed.filter(
+              ({ restaurant }) =>
+                restaurant.activatedAt !== null &&
+                restaurant.activatedAt.getTime() >= since.getTime(),
+            ),
+            (a, b) => b.restaurant.activatedAt!.getTime() - a.restaurant.activatedAt!.getTime(),
+          ).slice(0, HOME_SECTION_SIZE);
+        case 'offers':
+          return listed.filter(({ card }) => offers.has(card.id));
+        case 'custom':
+          return ids.flatMap((id) => byId.get(id) ?? []);
+        default:
+          return [];
+      }
+    };
+    const sections = shown.flatMap((section): HomeSectionView[] => {
+      const view = { kind: section.kind, title: section.title };
+      if (section.kind === 'banners' || section.kind === 'categories') {
+        return [{ ...view, restaurantIds: [] }];
+      }
+      const restaurantIds = ranked(picked(section.kind, section.restaurantIds)).map(
+        ({ card }) => card.id,
+      );
+      return restaurantIds.length === 0 ? [] : [{ ...view, restaurantIds }];
+    });
+    return { restaurants: ranked(listed).map(({ card }) => card), sections };
+  }
+
+  // The cards of the restaurants that cover the point, in the restaurants'
+  // own order (the sort weight, AP §9.6.5), with the trip each card
+  // measured; a restaurant suspended since it was listed is left out.
+  private async listed(
+    cityId: string,
+    point: Point,
+    now: Date,
+    testAccount: boolean,
+    names: Map<string, string>,
+  ): Promise<Listed[]> {
+    const ids = await this.merchants.coveringRestaurants(cityId, point, testAccount);
+    const listed = await Promise.all(
       ids.map(async (id) => {
         const restaurant = await this.merchants.restaurant(id, now);
         if (restaurant === null) return null;
-        if (categoryId !== undefined && !restaurant.categoryIds.includes(categoryId)) return null;
-        return this.card(restaurant, point, now, names);
+        return { restaurant, ...(await this.measured(restaurant, point, now, names)) };
       }),
     );
-    // A restaurant suspended since it was listed is left out.
-    return cards
-      .filter((card): card is RestaurantCard => card !== null && rank(card.state) !== null)
-      .map((card, position) => ({ card, position }))
-      .sort((a, b) => rank(a.card.state)! - rank(b.card.state)! || a.position - b.position)
-      .map(({ card }) => card);
+    return listed.filter(
+      (entry): entry is Listed => entry !== null && rank(entry.card.state) !== null,
+    );
   }
 
   // CU §11.9: under a rejected or unanswered order, the open restaurants that
@@ -209,6 +326,16 @@ export class BrowsingService {
     now: Date,
     names: Map<string, string>,
   ): Promise<RestaurantCard> {
+    return (await this.measured(restaurant, point, now, names)).card;
+  }
+
+  // The card and the trip's metres it measured.
+  private async measured(
+    restaurant: Restaurant,
+    point: Point,
+    now: Date,
+    names: Map<string, string>,
+  ): Promise<{ card: RestaurantCard; metres: number }> {
     const { cityId } = restaurant;
     const [state, speedKmh, bufferMin, priced] = await Promise.all([
       this.merchants.storefrontState(restaurant.id, now),
@@ -220,7 +347,7 @@ export class BrowsingService {
     const distance =
       priced?.distance ??
       (await this.geo.distance(restaurant.location, point, { vehicle: ESTIMATE_VEHICLE }));
-    return {
+    const card: RestaurantCard = {
       id: restaurant.id,
       nameAr: restaurant.nameAr,
       nameEn: restaurant.nameEn,
@@ -240,6 +367,7 @@ export class BrowsingService {
       state,
       testMode: restaurant.accountStatus === 'test',
     };
+    return { card, metres: distance.metres };
   }
 
   // The card shows the fee before any item (CU §8.2), so a free-delivery
@@ -263,6 +391,25 @@ export class BrowsingService {
       throw error;
     }
   }
+}
+
+// CU §8.2: open first, then busy and paused, then closed, each group in the
+// order it came in.
+function ranked(listed: Listed[]): Listed[] {
+  return listed
+    .map((entry, position) => ({ entry, position }))
+    .sort(
+      (a, b) => rank(a.entry.card.state)! - rank(b.entry.card.state)! || a.position - b.position,
+    )
+    .map(({ entry }) => entry);
+}
+
+// Sorted by the comparison, ties in the order it came in.
+function byPosition(listed: Listed[], compare: (a: Listed, b: Listed) => number): Listed[] {
+  return listed
+    .map((entry, position) => ({ entry, position }))
+    .sort((a, b) => compare(a.entry, b.entry) || a.position - b.position)
+    .map(({ entry }) => entry);
 }
 
 // The list's groups; null for a state customers never see.
