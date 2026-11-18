@@ -313,6 +313,10 @@ import 'package:core_api/src/model/admin_promo_codes_created_dto_output.dart';
 import 'package:core_api/src/model/admin_promo_codes_dto_output.dart';
 import 'package:core_api/src/model/admin_promo_codes_dto_output_codes_inner.dart';
 import 'package:core_api/src/model/admin_publish_terms_dto.dart';
+import 'package:core_api/src/model/admin_rated_captains_dto_output.dart';
+import 'package:core_api/src/model/admin_rated_captains_dto_output_captains_inner.dart';
+import 'package:core_api/src/model/admin_ratings_dto_output.dart';
+import 'package:core_api/src/model/admin_ratings_dto_output_ratings_inner.dart';
 import 'package:core_api/src/model/admin_reason_dto_output.dart';
 import 'package:core_api/src/model/admin_reason_lists_dto_output.dart';
 import 'package:core_api/src/model/admin_reason_lists_dto_output_lists_inner.dart';
@@ -551,6 +555,8 @@ import 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_a
 import 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_zones_inner.dart';
 import 'package:core_api/src/model/captain_pickup_request_dto.dart';
 import 'package:core_api/src/model/captain_problem_body_dto.dart';
+import 'package:core_api/src/model/captain_ratings_dto_output.dart';
+import 'package:core_api/src/model/captain_ratings_dto_output_reasons_inner.dart';
 import 'package:core_api/src/model/captain_refresh_dto.dart';
 import 'package:core_api/src/model/captain_report_body_dto.dart';
 import 'package:core_api/src/model/captain_report_ticket_dto_output.dart';
@@ -1116,6 +1122,10 @@ part 'serializers.g.dart';
   AdminPromoCodesDtoOutput,
   AdminPromoCodesDtoOutputCodesInner,
   AdminPublishTermsDto,
+  AdminRatedCaptainsDtoOutput,
+  AdminRatedCaptainsDtoOutputCaptainsInner,
+  AdminRatingsDtoOutput,
+  AdminRatingsDtoOutputRatingsInner,
   AdminReasonDtoOutput,
   AdminReasonListsDtoOutput,
   AdminReasonListsDtoOutputListsInner,
@@ -1354,6 +1364,8 @@ part 'serializers.g.dart';
   CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
   CaptainPickupRequestDto,
   CaptainProblemBodyDto,
+  CaptainRatingsDtoOutput,
+  CaptainRatingsDtoOutputReasonsInner,
   CaptainRefreshDto,
   CaptainReportBodyDto,
   CaptainReportTicketDtoOutput,
@@ -2465,6 +2477,18 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(CaptainRatingsDtoOutputReasonsInner),
+            ]),
+            () => ListBuilder<CaptainRatingsDtoOutputReasonsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminRatedCaptainsDtoOutputCaptainsInner),
+            ]),
+            () => ListBuilder<AdminRatedCaptainsDtoOutputCaptainsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminSettlementDtoOutputReceiptsInner),
             ]),
             () => ListBuilder<AdminSettlementDtoOutputReceiptsInner>(),
@@ -2733,6 +2757,12 @@ Serializers serializers =
               FullType(AdminCustomerDtoOutputRatingsInner),
             ]),
             () => ListBuilder<AdminCustomerDtoOutputRatingsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminRatingsDtoOutputRatingsInner),
+            ]),
+            () => ListBuilder<AdminRatingsDtoOutputRatingsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

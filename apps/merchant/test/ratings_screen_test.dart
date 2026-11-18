@@ -17,7 +17,6 @@ import 'package:merchant/src/board/alerts.dart';
 import 'package:merchant/src/board/board_screen.dart';
 import 'package:merchant/src/device.dart';
 import 'package:merchant/src/push.dart';
-import 'package:merchant/src/ratings/ratings.dart';
 
 import 'board_fixtures.dart';
 import 'status_fixtures.dart' hide now;
@@ -175,13 +174,6 @@ Map<String, Object?> _status() =>
     statusJson(closesAt: _now.add(const Duration(hours: 10)));
 
 void main() {
-  test('the average drops a needless «.0»', () {
-    expect(averageText(3.7), '3.7');
-    expect(averageText(4), '4');
-    expect(averageText(4.0), '4');
-    expect(averageText(2.25), '2.3');
-  });
-
   testWidgets('an owner reads the ratings, filters them and reads more', (
     tester,
   ) async {

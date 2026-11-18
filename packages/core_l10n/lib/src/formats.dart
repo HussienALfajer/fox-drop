@@ -41,6 +41,15 @@ String? minorOfTyped(String typed, String currency) {
   return minor == BigInt.zero ? null : minor.toString();
 }
 
+/// An average of stars as the server rounds it, to one decimal, without a
+/// needless «.0» (RA §13, CA §11.2).
+String formatAverage(num average) {
+  final tenths = (average * 10).round();
+  return tenths % 10 == 0
+      ? '${tenths ~/ 10}'
+      : '${tenths ~/ 10}.${tenths % 10}';
+}
+
 /// The formatters of money, times, dates, durations and distances (AP §4.7,
 /// CU §4.6), always with Western digits.
 extension Formats on AppLocalizations {

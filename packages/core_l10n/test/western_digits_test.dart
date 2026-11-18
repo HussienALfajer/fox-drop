@@ -52,6 +52,13 @@ void main() {
   });
 
   // The formatters of AP §4.7 and CU §4.6.
+  test('an average of stars drops a needless «.0»', () {
+    expect(formatAverage(3.7), '3.7');
+    expect(formatAverage(4), '4');
+    expect(formatAverage(4.0), '4');
+    expect(formatAverage(2.25), '2.3');
+  });
+
   test('money, times, dates, durations and distances', () {
     final l10n = lookupAppLocalizations(const Locale('ar'));
     expect(l10n.formatMoney('41000', 'TRY'), '410 ₺');

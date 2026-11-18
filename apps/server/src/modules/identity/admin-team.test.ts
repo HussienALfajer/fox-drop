@@ -410,6 +410,9 @@ const routeAccess: Record<string, Access> = {
   'GET /v1/admin/captains/{captainId}/device': 'captains.manage',
   'POST /v1/admin/captains/{captainId}/release-device': 'captains.manage',
   'GET /v1/admin/captains/{captainId}/availability': 'captains.manage',
+  'GET /v1/admin/ratings/restaurants/{restaurantId}': 'restaurants.read',
+  'GET /v1/admin/ratings/captains': 'captains.read',
+  'GET /v1/admin/ratings/captains/{captainId}': 'captains.read',
   'POST /v1/admin/captains/{captainId}/force-offline': 'captains.manage',
   'POST /v1/admin/captains/{captainId}/hand-in-grace': 'captains.hand_in_grace',
   'POST /v1/admin/captains/hand-in-grace': 'captains.bulk_hand_in_grace',
@@ -625,6 +628,7 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/captain/uploads/report-photo': 'app_session',
   'POST /v1/captain/reports': 'app_session',
   'GET /v1/captain/reports': 'app_session',
+  'GET /v1/captain/ratings': 'app_session',
   'POST /v1/captain/orders/{orderId}/problem': 'app_session',
   'POST /v1/merchant/orders/{orderId}/item-report/withdraw': 'app_session',
   'POST /v1/admin/orders/{orderId}/resend-notification': {

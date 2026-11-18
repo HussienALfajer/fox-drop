@@ -2490,5 +2490,38 @@
       },
       "account": "· {{status}} · آخر دخول {{at}}"
     }
+  },
+  "ratings": {
+    "title": "التقييمات",
+    "explain": "اختر مطعماً أو كابتناً لترى تقييمات الزبائن بنجومها وأسبابها وتعليقاتها والطلب الذي قُيّم. لا تظهر أسماء الزبائن، ولا تُحسب الطلبات التجريبية.",
+    "restaurant": "المطعم",
+    "chooseRestaurant": "اختر مطعماً",
+    "captain": "الكابتن",
+    "chooseCaptain": "اختر كابتناً",
+    "captainRated": "{{name}} ({{average}} من 5، التقييمات: {{count}})",
+    "captainUnrated": "{{name}} (لا تقييم بعد)",
+    "period": "الفترة",
+    "periods": {
+      "all": "الكل",
+      "today": "اليوم",
+      "yesterday": "أمس",
+      "last_7_days": "آخر 7 أيام",
+      "last_30_days": "آخر 30 يوماً"
+    },
+    "stars": "النجوم",
+    "allStars": "كل النجوم",
+    "starsRow": "{{stars}} ★",
+    "none": "لا تقييم بعد",
+    "average": "{{average}} من 5",
+    "count": "عدد التقييمات: {{count}}",
+    "distribution": "توزيع النجوم",
+    "distributionRow": "{{stars}} ★: {{count}}",
+    "list": "التقييمات",
+    "empty": "لا تقييمات في هذه الفترة.",
+    "order": "الطلب #{{number}}",
+    "reasons": "الأسباب: {{reasons}}",
+    "reasonSeparator": "، ",
+    "comment": "«{{comment}}»",
+    "more": "عرض المزيد"
   }
 }

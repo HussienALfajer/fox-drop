@@ -2091,5 +2091,19 @@
   "merchantRatingComment": "«{comment}»",
   "@merchantRatingComment": {"description": "A rating's comment as the customer wrote it (RA §13).", "placeholders": {"comment": {"type": "String"}}},
   "merchantRatingsReasonSeparator": "، ",
-  "@merchantRatingsReasonSeparator": {"description": "Between a rating's reasons."}
+  "@merchantRatingsReasonSeparator": {"description": "Between a rating's reasons."},
+  "captainRating": "تقييمي",
+  "@captainRating": {"description": "CA §11.2 (C14): the captain's rating, from «المزيد» until «أدائي» (2.36). The spec gives no wording."},
+  "captainRatingAverage": "{average} من 5",
+  "@captainRatingAverage": {"description": "The captain's average stars over every rating, to one decimal (CA §11.2; the wording ours).", "placeholders": {"average": {"type": "String"}}},
+  "captainRatingCount": "عدد التقييمات: {count}",
+  "@captainRatingCount": {"description": "The captain's number of ratings, test orders left out (CA §11.2; the wording ours).", "placeholders": {"count": {"type": "int"}}},
+  "captainRatingNone": "لا تقييم بعد",
+  "@captainRatingNone": {"description": "In place of the average before any rating (the wording ours)."},
+  "captainRatingReasons": "ما اختاره الزبائن",
+  "@captainRatingReasons": {"description": "The heading of the reasons customers picked, with counts (CA §11.2; the wording ours)."},
+  "captainRatingReason": "{reason}: {count}",
+  "@captainRatingReason": {"description": "A reason customers picked and how many times, such as «لطيف: 12» (CA §11.2).", "placeholders": {"reason": {"type": "String"}, "count": {"type": "int"}}},
+  "captainRatingPrivate": "لا تظهر هنا أسماء الزبائن ولا تعليقاتهم.",
+  "@captainRatingPrivate": {"description": "Why the screen shows no names or comments (CA §11.2, CU Q16; the wording ours)."}
 }

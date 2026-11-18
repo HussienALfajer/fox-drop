@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { periodBounds } from './restaurant-ratings.js';
+import { periodBounds } from './rating-pages.js';
 
 // RA §13, §11 (slice 2.26b, owner decision 2026-11-17): the restaurant's
 // ratings filtered by the reports' periods, in business days from

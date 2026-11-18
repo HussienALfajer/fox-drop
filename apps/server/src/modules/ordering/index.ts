@@ -47,8 +47,10 @@ import { QuoteService } from './quote.service.js';
 import { ResendNotification } from './resend-notification.js';
 import { EmergencyStops, EmergencyStopWorker } from './emergency-stop.js';
 import { RatingsService } from './ratings.js';
+import { AdminRatingsController } from './admin-ratings.controller.js';
+import { CaptainRatingsController } from './captain-ratings.controller.js';
 import { MerchantRatingsController } from './merchant-ratings.controller.js';
-import { RestaurantRatingsService } from './restaurant-ratings.js';
+import { RatingPagesService } from './rating-pages.js';
 import {
   AdminEmergencyStopController,
   CaptainEmergencyStopController,
@@ -96,6 +98,8 @@ import {
     CaptainEmergencyStopController,
     CustomerCodesController,
     MerchantRatingsController,
+    CaptainRatingsController,
+    AdminRatingsController,
   ],
   providers: [
     ActiveOrders,
@@ -114,7 +118,7 @@ import {
     ResendNotification,
     EmergencyStops,
     RatingsService,
-    RestaurantRatingsService,
+    RatingPagesService,
   ],
   exports: [QuoteService, OrdersService],
 })

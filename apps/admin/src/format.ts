@@ -45,6 +45,11 @@ export function formatDateTime(at: string, timeZone: string): string {
   }).format(new Date(at));
 }
 
+// An average of stars as the server rounds it, to one decimal (AP §9.6.4).
+export function formatAverage(average: number): string {
+  return new Intl.NumberFormat('ar-u-nu-latn', { maximumFractionDigits: 1 }).format(average);
+}
+
 export function formatDistance(metres: number): string {
   return new Intl.NumberFormat('ar-u-nu-latn', {
     style: 'unit',

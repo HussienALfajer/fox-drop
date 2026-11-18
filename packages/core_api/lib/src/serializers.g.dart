@@ -544,6 +544,10 @@ Serializers _$serializers =
           ..add(AdminPromoCodesDtoOutputCodesInnerStatusEnum.serializer)
           ..add(AdminPromoCodesDtoOutputCodesInnerVisibilityEnum.serializer)
           ..add(AdminPublishTermsDto.serializer)
+          ..add(AdminRatedCaptainsDtoOutput.serializer)
+          ..add(AdminRatedCaptainsDtoOutputCaptainsInner.serializer)
+          ..add(AdminRatingsDtoOutput.serializer)
+          ..add(AdminRatingsDtoOutputRatingsInner.serializer)
           ..add(AdminReasonDtoOutput.serializer)
           ..add(AdminReasonDtoOutputNoteEnum.serializer)
           ..add(AdminReasonListsDtoOutput.serializer)
@@ -893,6 +897,8 @@ Serializers _$serializers =
           ..add(CaptainPeakBonusDtoOutputWindowsInnerZonesInner.serializer)
           ..add(CaptainPickupRequestDto.serializer)
           ..add(CaptainProblemBodyDto.serializer)
+          ..add(CaptainRatingsDtoOutput.serializer)
+          ..add(CaptainRatingsDtoOutputReasonsInner.serializer)
           ..add(CaptainRefreshDto.serializer)
           ..add(CaptainReportBodyDto.serializer)
           ..add(CaptainReportTicketDtoOutput.serializer)
@@ -1478,6 +1484,12 @@ Serializers _$serializers =
                 ListBuilder<
                   AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCustomerDtoOutputBlockReasonsInner),
+            ]),
+            () => ListBuilder<AdminCustomerDtoOutputBlockReasonsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -2156,6 +2168,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminRatedCaptainsDtoOutputCaptainsInner),
+            ]),
+            () => ListBuilder<AdminRatedCaptainsDtoOutputCaptainsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminReasonListsDtoOutputListsInner),
             ]),
             () => ListBuilder<AdminReasonListsDtoOutputListsInner>(),
@@ -2733,6 +2751,12 @@ Serializers _$serializers =
             ]),
             () =>
                 ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainRatingsDtoOutputReasonsInner),
+            ]),
+            () => ListBuilder<CaptainRatingsDtoOutputReasonsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -3343,6 +3367,18 @@ Serializers _$serializers =
               const FullType(MerchantPickupDisputeDtoReceivedLinesInner),
             ]),
             () => ListBuilder<MerchantPickupDisputeDtoReceivedLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantRatingsDtoOutputDistributionInner),
+            ]),
+            () => ListBuilder<MerchantRatingsDtoOutputDistributionInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminRatingsDtoOutputRatingsInner),
+            ]),
+            () => ListBuilder<AdminRatingsDtoOutputRatingsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

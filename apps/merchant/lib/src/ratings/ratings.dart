@@ -150,14 +150,6 @@ final ratingsProvider =
       RatingsNotifier.new,
     );
 
-/// The average as the server rounds it, without a needless «.0».
-String averageText(num average) {
-  final tenths = (average * 10).round();
-  return tenths % 10 == 0
-      ? '${tenths ~/ 10}'
-      : '${tenths ~/ 10}.${tenths % 10}';
-}
-
 extension RatingsTexts on AppLocalizations {
   String periodLabel(RatingPeriod period) => switch (period) {
     RatingPeriod.all => merchantRatingsPeriodAll,

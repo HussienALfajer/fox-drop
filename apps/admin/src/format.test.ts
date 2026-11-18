@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { decimalOf, formatMoney, minorOf } from './format.js';
+import { decimalOf, formatAverage, formatMoney, minorOf } from './format.js';
 
 // AP §4.7, §8.6: integer minor units shown with Western digits, never
 // through a float.
@@ -34,5 +34,12 @@ describe('minorOf', () => {
     expect(minorOf('1.234', 'TRY')).toBeNull();
     expect(minorOf('١٠', 'TRY')).toBeNull();
     expect(minorOf('1e3', 'TRY')).toBeNull();
+  });
+});
+
+describe('formatAverage', () => {
+  it('shows one decimal at most, with Western digits', () => {
+    expect(formatAverage(3.7)).toBe('3.7');
+    expect(formatAverage(4)).toBe('4');
   });
 });

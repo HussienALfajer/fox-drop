@@ -79,9 +79,9 @@ class CaptainShell extends ConsumerWidget {
   }
 }
 
-/// CA §6.2 «المزيد»: the other screens. For now the settings, the work
-/// rules and the FAQ; the performance, profile, history and support screens
-/// join with their slices.
+/// CA §6.2 «المزيد»: the other screens. For now the rating, the settings,
+/// the work rules, the FAQ and support; the performance, profile and history
+/// screens join with their slices.
 class MoreScreen extends StatelessWidget {
   const MoreScreen({super.key});
 
@@ -92,6 +92,12 @@ class MoreScreen extends StatelessWidget {
       appBar: AppBar(title: Text(l10n.captainMoreTab)),
       body: ListView(
         children: [
+          // CA §11.2 (slice 2.26c): «تقييمي», until «أدائي» (2.36).
+          ListTile(
+            key: const Key('more-rating'),
+            title: Text(l10n.captainRating),
+            onTap: () => context.push('/rating'),
+          ),
           ListTile(
             title: Text(l10n.captainSettings),
             onTap: () => context.push('/settings'),

@@ -10114,6 +10114,245 @@
         ]
       }
     },
+    "/v1/captain/ratings": {
+      "get": {
+        "operationId": "captainRatingsRead",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainRatingsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
+    "/v1/admin/ratings/restaurants/{restaurantId}": {
+      "get": {
+        "operationId": "adminRatingsRestaurant",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "period",
+            "required": false,
+            "in": "query",
+            "description": "Business days on the city’s clock: «الكل», «اليوم», «أمس», «آخر 7 أيام», «آخر 30 يوماً».",
+            "schema": {
+              "default": "all",
+              "type": "string",
+              "enum": [
+                "all",
+                "today",
+                "yesterday",
+                "last_7_days",
+                "last_30_days"
+              ]
+            }
+          },
+          {
+            "name": "stars",
+            "required": false,
+            "in": "query",
+            "description": "Only the ratings with these stars; the summary counts every star.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 5,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "The page, from 0.",
+            "schema": {
+              "minimum": 0,
+              "maximum": 10000,
+              "default": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "asOf",
+            "required": false,
+            "in": "query",
+            "description": "The first page’s `asOf`, sent with every next page so the pages agree.",
+            "schema": {
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRatingsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/ratings/captains": {
+      "get": {
+        "operationId": "adminRatingsCaptainsOfCity",
+        "parameters": [
+          {
+            "name": "cityId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRatedCaptainsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/ratings/captains/{captainId}": {
+      "get": {
+        "operationId": "adminRatingsCaptain",
+        "parameters": [
+          {
+            "name": "captainId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "period",
+            "required": false,
+            "in": "query",
+            "description": "Business days on the city’s clock: «الكل», «اليوم», «أمس», «آخر 7 أيام», «آخر 30 يوماً».",
+            "schema": {
+              "default": "all",
+              "type": "string",
+              "enum": [
+                "all",
+                "today",
+                "yesterday",
+                "last_7_days",
+                "last_30_days"
+              ]
+            }
+          },
+          {
+            "name": "stars",
+            "required": false,
+            "in": "query",
+            "description": "Only the ratings with these stars; the summary counts every star.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 5,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "The page, from 0.",
+            "schema": {
+              "minimum": 0,
+              "maximum": 10000,
+              "default": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "asOf",
+            "required": false,
+            "in": "query",
+            "description": "The first page’s `asOf`, sent with every next page so the pages agree.",
+            "schema": {
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRatingsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/tickets": {
       "get": {
         "operationId": "adminTicketsList",
@@ -44560,6 +44799,223 @@
           "distribution",
           "ratings",
           "more"
+        ],
+        "additionalProperties": false
+      },
+      "CaptainRatingsDto_Output": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "Every rating of the captain, test orders left out."
+          },
+          "average": {
+            "description": "Their average stars to one decimal; null with none.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "code",
+                "label",
+                "count"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Each reason customers picked with its count, most picked first."
+          }
+        },
+        "required": [
+          "count",
+          "average",
+          "reasons"
+        ],
+        "additionalProperties": false
+      },
+      "AdminRatingsDto_Output": {
+        "type": "object",
+        "properties": {
+          "asOf": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "The moment the pages are read up to."
+          },
+          "count": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "The ratings of the period, test orders left out."
+          },
+          "average": {
+            "description": "Their average stars to one decimal; null with none.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "distribution": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "stars": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "stars",
+                "count"
+              ],
+              "additionalProperties": false
+            },
+            "description": "The count of each star, from 5 down to 1."
+          },
+          "ratings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "orderId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "orderNumber": {
+                  "type": "string"
+                },
+                "stars": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "reasons": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "label": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "label"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "description": "The reasons the customer picked, their labels as chosen."
+                },
+                "comment": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "orderId",
+                "orderNumber",
+                "stars",
+                "reasons",
+                "comment",
+                "at"
+              ],
+              "additionalProperties": false
+            },
+            "description": "The page, newest first, with the order; never the customer’s name (AP §9.6.4)."
+          },
+          "more": {
+            "type": "boolean",
+            "description": "Whether a next page follows."
+          }
+        },
+        "required": [
+          "asOf",
+          "count",
+          "average",
+          "distribution",
+          "ratings",
+          "more"
+        ],
+        "additionalProperties": false
+      },
+      "AdminRatedCaptainsDto_Output": {
+        "type": "object",
+        "properties": {
+          "captains": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "average": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "count",
+                "average"
+              ],
+              "additionalProperties": false
+            },
+            "description": "The city’s captains, the best rated first and the unrated last."
+          }
+        },
+        "required": [
+          "captains"
         ],
         "additionalProperties": false
       },

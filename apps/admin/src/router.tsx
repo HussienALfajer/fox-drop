@@ -57,6 +57,8 @@ import { canSeeImages } from './restaurant-images.js';
 import { RestaurantImagesPage } from './restaurant-images-page.js';
 import { canSeeRestaurantStatus } from './restaurant-status.js';
 import { RestaurantStatusPage } from './restaurant-status-page.js';
+import { RatingsPage } from './ratings-page.js';
+import { canSeeRatings, ratingsSearch } from './ratings.js';
 import { can, sessionQuery } from './session.js';
 import { SetupPage } from './setup-page.js';
 import { SignInPage } from './sign-in-page.js';
@@ -245,6 +247,19 @@ const restaurantStatusRoute = createRoute({
     if (!canSeeRestaurantStatus(context.session)) throw redirect({ to: '/' });
   },
   component: RestaurantStatusPage,
+});
+
+// «التقييمات» (slice 2.26c; AP §9.6.4, §9.7.4): restaurants.read or
+// captains.read, each choice by its own (the server checks), until the
+// restaurant and captain profiles (2.30, 2.36).
+const ratingsRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/ratings',
+  validateSearch: ratingsSearch,
+  beforeLoad: ({ context }) => {
+    if (!canSeeRatings(context.session)) throw redirect({ to: '/' });
+  },
+  component: RatingsPage,
 });
 
 // AP §9.12.5 «مكافأة ساعة الذروة» (slice 2.16): read with the zones
@@ -594,6 +609,7 @@ const routeTree = rootRoute.addChildren([
     restaurantStatementsRoute,
     imagesRoute,
     restaurantStatusRoute,
+    ratingsRoute,
     alertsRoute,
     ordersRoute.addChildren([orderRoute.addChildren([assignRoute, handoverRoute])]),
   ]),

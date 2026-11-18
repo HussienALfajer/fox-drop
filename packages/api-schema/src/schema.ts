@@ -3716,6 +3716,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/captain/ratings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainRatingsRead"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/ratings/restaurants/{restaurantId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRatingsRestaurant"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/ratings/captains": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRatingsCaptainsOfCity"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/ratings/captains/{captainId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRatingsCaptain"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/tickets": {
         parameters: {
             query?: never;
@@ -12191,6 +12255,61 @@ export interface components {
             }[];
             /** @description Whether a next page follows. */
             more: boolean;
+        };
+        CaptainRatingsDto_Output: {
+            /** @description Every rating of the captain, test orders left out. */
+            count: number;
+            /** @description Their average stars to one decimal; null with none. */
+            average: number | null;
+            /** @description Each reason customers picked with its count, most picked first. */
+            reasons: {
+                code: string;
+                label: string;
+                count: number;
+            }[];
+        };
+        AdminRatingsDto_Output: {
+            /**
+             * Format: date-time
+             * @description The moment the pages are read up to.
+             */
+            asOf: string;
+            /** @description The ratings of the period, test orders left out. */
+            count: number;
+            /** @description Their average stars to one decimal; null with none. */
+            average: number | null;
+            /** @description The count of each star, from 5 down to 1. */
+            distribution: {
+                stars: number;
+                count: number;
+            }[];
+            /** @description The page, newest first, with the order; never the customer’s name (AP §9.6.4). */
+            ratings: {
+                /** Format: uuid */
+                orderId: string;
+                orderNumber: string;
+                stars: number;
+                /** @description The reasons the customer picked, their labels as chosen. */
+                reasons: {
+                    code: string;
+                    label: string;
+                }[];
+                comment: string | null;
+                /** Format: date-time */
+                at: string;
+            }[];
+            /** @description Whether a next page follows. */
+            more: boolean;
+        };
+        AdminRatedCaptainsDto_Output: {
+            /** @description The city’s captains, the best rated first and the unrated last. */
+            captains: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                count: number;
+                average: number | null;
+            }[];
         };
         AdminTicketsDto_Output: {
             /** @description Newest first, the latest 200. */
@@ -21148,6 +21267,110 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MerchantRatingsDto_Output"];
+                };
+            };
+        };
+    };
+    captainRatingsRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainRatingsDto_Output"];
+                };
+            };
+        };
+    };
+    adminRatingsRestaurant: {
+        parameters: {
+            query?: {
+                /** @description Business days on the city’s clock: «الكل», «اليوم», «أمس», «آخر 7 أيام», «آخر 30 يوماً». */
+                period?: "all" | "today" | "yesterday" | "last_7_days" | "last_30_days";
+                /** @description Only the ratings with these stars; the summary counts every star. */
+                stars?: number;
+                /** @description The page, from 0. */
+                page?: number;
+                /** @description The first page’s `asOf`, sent with every next page so the pages agree. */
+                asOf?: string;
+            };
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRatingsDto_Output"];
+                };
+            };
+        };
+    };
+    adminRatingsCaptainsOfCity: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRatedCaptainsDto_Output"];
+                };
+            };
+        };
+    };
+    adminRatingsCaptain: {
+        parameters: {
+            query?: {
+                /** @description Business days on the city’s clock: «الكل», «اليوم», «أمس», «آخر 7 أيام», «آخر 30 يوماً». */
+                period?: "all" | "today" | "yesterday" | "last_7_days" | "last_30_days";
+                /** @description Only the ratings with these stars; the summary counts every star. */
+                stars?: number;
+                /** @description The page, from 0. */
+                page?: number;
+                /** @description The first page’s `asOf`, sent with every next page so the pages agree. */
+                asOf?: string;
+            };
+            header?: never;
+            path: {
+                captainId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRatingsDto_Output"];
                 };
             };
         };

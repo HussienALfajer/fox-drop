@@ -4,14 +4,22 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.26c, the captain's rating and the panel's ratings (`docs/roadmap.md`, Phase 2, Support and trust; owner decision 2026-11-17: 2.26 in three slices). Not started.
+Slice 2.27, Home (`docs/roadmap.md`, Phase 2, Finding food). Not started.
 
-- **Roadmap line:** 2.26c The captain's rating and the panel's ratings: the captain's average, count and reasons with counts, no comments, in the captain app's «المزيد» (CA §11.2, moving into «أدائي» in 2.36), and a restaurant's and a captain's ratings in the panel with everything, comments included (AP §9.6.4, §9.7.4, moving into the profiles of 2.30 and 2.36). A captain sees the reasons they were rated with, and the owner reads every comment.
-- **Specs:** CA §11.2 «Rating (C14)», CA C14, CU §12.1 «Who sees what», CU Q16, AP §9.6.4 «التقييمات», AP §9.7.4 «التقييمات والشكاوى», AP §6.2 (who reads a restaurant's and a captain's profile); what exists: `ordering.ratings` (2.26a, the index `ratings_captain`), the restaurant's `GET /v1/merchant/ratings` (2.26b, `restaurant-ratings.ts`: `periodBounds`, the summary and the cursor pages, reusable for the panel).
-- **Branch:** the cloud session's branch, or `feat/captain-and-panel-ratings`.
+- **Roadmap line:** 2.27 Home: categories, home sections in the panel's order, banners, closed restaurants last, mass push to each audience now or scheduled (AP §9.11.2–9.11.4, §9.13, CU §8.1–8.2). The owner reorders a section and the home follows.
+- **Specs:** AP §9.11.2 «البانرات», §9.11.3 «أقسام الرئيسية», §9.11.4 «الإشعارات الجماعية» (D20), §9.13 (the categories), CU §8.1 «Home», §8.2 «Restaurant cards and lists»; what exists: the customer's browsing routes and cards (`customers/customer-browsing.controller.ts`, the ratings since 2.26a), Content's categories (`content.categories`), the panel's image uploads (2.5), the push queue (`notifications`).
+- **Branch:** the cloud session's branch, or `feat/customer-home`.
 - **Plan:**
-  - [ ] Read the cited sections and the captain app's and the panel's `CLAUDE.md`; write the plan here as a checklist, one step per commit (likely: the captain's route, average, count and reasons with counts, no comments; the captain app's «المزيد» entry; the panel's restaurant and captain ratings with comments, the order and the customer, on the screens that exist until 2.30 and 2.36).
-- **To ask the owner first:** the captain's period (every rating, or a window such as the on-time rate's last 50 orders); whether test orders' ratings stay out of the captain's figures as out of the restaurant's; where the panel shows them before the restaurant's and the captain's profiles exist (2.30, 2.36).
+  - [ ] Split the slice with the `slice-plan` skill and get the owner's approval (it spans the server, the panel and the customer app, and the mass push is a feature of its own); then write the first part's plan here, one step per commit.
+- **To ask the owner first:** the split (likely: sections and categories; banners; mass push); «الأكثر طلباً» and «جديد على FOX DROP»'s windows (how many days, how many restaurants); what «العروض» counts as a visible code; a banner's recommended size; the design stop for the home's screens (logic and presentation apart until then).
+
+### Left from 2.26c (`claude/wizardly-volta-pybnwm`)
+
+- **Before deploying to staging:** no migration. New routes: `GET /v1/captain/ratings`, `GET /v1/admin/ratings/restaurants/{restaurantId}` (`restaurants.read`), `GET /v1/admin/ratings/captains/{captainId}` and `GET /v1/admin/ratings/captains?cityId=` (`captains.read`). Deploy the server (API) before the panel and the captain app; an older captain app has no «تقييمي».
+- **To check on staging (after the merge and the deploy):** deliver an order and, in the customer app, rate its captain 2 stars with «تأخر» and a comment, and its restaurant 4 stars with a comment. In the captain app, «المزيد» → «تقييمي»: «2 من 5», «عدد التقييمات: 1», «تأخر: 1», and no comment. In the panel, «التقييمات»: choose the captain (shown with «(2 من 5، التقييمات: 1)»): the rating with «الطلب #…» (a link for OPS), the reasons and the comment; choose the restaurant: its rating and comment, never the customer's name. The 2-star filter and «آخر 7 أيام» narrow the list; FIN has no «التقييمات» link.
+- **Decided by us:** the captain's reasons with counts are grouped by code, most picked first, a reason's label as last chosen; the panel lists a city's captains best rated first, the unrated last; the panel's ratings link their order (the order detail, which names the customer, for `operations.read`) and show its time; the captain app's words «تقييمي», «ما اختاره الزبائن», «{السبب}: {العدد}», «لا تظهر هنا أسماء الزبائن ولا تعليقاتهم.» and the panel's «التقييمات» page's words.
+- **To confirm with the owner:** the words above; whether AP §9.6.4's «Customer names are hidden» also means the panel's rating should not link to the order detail (which shows the name).
+- **Not yet:** «أدائي» (2.36) and the restaurant and captain profiles (2.30, 2.36), which take these views; the complaints half of «التقييمات والشكاوى» (AP §9.7.4) with the profile.
 
 ### Left from 2.26b (`claude/zealous-dirac-bhloyp`)
 

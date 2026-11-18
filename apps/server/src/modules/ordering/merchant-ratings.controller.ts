@@ -5,7 +5,7 @@ import { AppSignedIn, CurrentAppSession } from '../../http/access.js';
 import { MerchantController } from '../../http/route-groups.js';
 import type { AppSession } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
-import { ratingPeriods, RestaurantRatingsService } from './restaurant-ratings.js';
+import { ratingPeriods, RatingPagesService } from './rating-pages.js';
 
 class MerchantRatingsQueryDto extends createZodDto(
   z.object({
@@ -68,7 +68,7 @@ class MerchantRatingsDto extends createZodDto(
 @MerchantController()
 export class MerchantRatingsController {
   constructor(
-    private readonly ratings: RestaurantRatingsService,
+    private readonly ratings: RatingPagesService,
     private readonly merchants: MerchantsService,
   ) {}
 
@@ -90,7 +90,7 @@ export class MerchantRatingsController {
       });
     }
     const found = await this.ratings.read(
-      restaurant,
+      { party: 'restaurant', id: restaurant.id, cityId: restaurant.cityId },
       {
         period: query.period,
         stars: query.stars ?? null,
@@ -99,6 +99,16 @@ export class MerchantRatingsController {
       },
       new Date(),
     );
-    return { ...found, asOf: found.asOf.toISOString() };
+    // Never the order nor the time (RA §13), so they are left out here.
+    return {
+      ...found,
+      asOf: found.asOf.toISOString(),
+      ratings: found.ratings.map(({ stars, reasons, comment, day }) => ({
+        stars,
+        reasons,
+        comment,
+        day,
+      })),
+    };
   }
 }

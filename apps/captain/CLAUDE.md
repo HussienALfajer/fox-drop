@@ -92,3 +92,7 @@ The captain app «تطبيق الكابتن» (Android, iOS; architecture §11, 
 - The device check and the yellow banner (CA §4.5), the vibration, the full-screen offer over the lock screen and the bundled sounds (`core_alerts`, architecture §14.2), and the iOS behaviour (Android only for now, owner decision 2026-11-07).
 - A batch the server refuses with a `400` (a point past its clock skew) is dropped whole; dropping only the bad points needs the refusal to name them.
 - A location permission revoked while online (the tracker then gets no points), and a points queue that survives a restart (`core_commands`).
+
+## «تقييمي» (slice 2.26c; CA §11.2, C14, CU Q16; owner decisions 2026-11-18)
+
+- `lib/src/rating.dart`, reached from «المزيد» (`/rating`) until «أدائي» (2.36): `GET /v1/captain/ratings`, read each time the screen opens, shows the average over every rating («{المتوسط} من 5», `formatAverage` of `core_l10n`, or «لا تقييم بعد»), «عدد التقييمات: {العدد}» and the reasons customers picked with their counts, most picked first; never a customer's name nor a comment, which the server never sends. `test/rating_test.dart`.
