@@ -580,6 +580,12 @@ abstract class AppLocalizations {
   /// **'حاول مجدداً'**
   String get customerTryAgain;
 
+  /// A category page's title while its name is not read yet (CU §8.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'التصنيف'**
+  String get customerCategory;
+
   /// A restaurant without ratings yet (Q16).
   ///
   /// In ar, this message translates to:

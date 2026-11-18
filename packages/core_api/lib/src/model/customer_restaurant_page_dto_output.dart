@@ -4,6 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/captain_went_offline_dto_output_hand_in.dart';
+import 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_zones_inner.dart';
 import 'package:core_api/src/model/customer_restaurant_list_dto_output_restaurants_inner_estimate.dart';
 import 'package:core_api/src/model/customer_restaurant_page_dto_output_delivery_fee.dart';
 import 'package:core_api/src/model/customer_restaurant_page_dto_output_schedule_inner.dart';
@@ -21,7 +22,8 @@ part 'customer_restaurant_page_dto_output.g.dart';
 /// * [id]
 /// * [nameAr]
 /// * [nameEn]
-/// * [category]
+/// * [category] - Deprecated (slice 2.27a): the first of `categories`, for older apps.
+/// * [categories] - Its active categories (AP §9.13), in the restaurant’s order.
 /// * [logoKey] - Its key in public-media, shown through imgproxy (architecture §5.8); null without one.
 /// * [coverKey] - Its key in public-media, shown through imgproxy (architecture §5.8); null without one.
 /// * [rating] - The restaurant's average stars to one decimal; null is «جديد», below 5 ratings (CU §12.1, Q16).
@@ -52,8 +54,13 @@ abstract class CustomerRestaurantPageDtoOutput
   @BuiltValueField(wireName: r'nameEn')
   String? get nameEn;
 
+  /// Deprecated (slice 2.27a): the first of `categories`, for older apps.
   @BuiltValueField(wireName: r'category')
   String? get category;
+
+  /// Its active categories (AP §9.13), in the restaurant’s order.
+  @BuiltValueField(wireName: r'categories')
+  BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner> get categories;
 
   /// Its key in public-media, shown through imgproxy (architecture §5.8); null without one.
   @BuiltValueField(wireName: r'logoKey')
@@ -158,6 +165,13 @@ class _$CustomerRestaurantPageDtoOutputSerializer
             object.category,
             specifiedType: const FullType.nullable(String),
           );
+    yield r'categories';
+    yield serializers.serialize(
+      object.categories,
+      specifiedType: const FullType(BuiltList, [
+        FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+      ]),
+    );
     yield r'logoKey';
     yield object.logoKey == null
         ? null
@@ -322,6 +336,17 @@ class _$CustomerRestaurantPageDtoOutputSerializer
                   as String?;
           if (valueDes == null) continue;
           result.category = valueDes;
+          break;
+        case r'categories':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+                    ]),
+                  )
+                  as BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>;
+          result.categories.replace(valueDes);
           break;
         case r'logoKey':
           final valueDes =

@@ -83,7 +83,11 @@ export type ContentRefusal =
   // «الشروط والخصوصية»: a newer version was published, or the text is the
   // one in force.
   | 'terms_outdated'
-  | 'terms_unchanged';
+  | 'terms_unchanged'
+  // «التصنيفات»: no such category (or, linking a restaurant, not an active
+  // one), and an image upload another record took.
+  | 'unknown_category'
+  | 'upload_used';
 
 export class ContentRefusedError extends Error {
   override readonly name = 'ContentRefusedError';

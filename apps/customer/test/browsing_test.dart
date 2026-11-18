@@ -95,6 +95,56 @@ void main() {
     );
   });
 
+  testWidgets(
+    'the home shows the categories, and one opens its page (CU §8.1–8.2)',
+    (tester) async {
+      const grills = '00000000-0000-4000-8000-0000000000c2';
+      final app = await browsingApp(
+        tester,
+        before: (app) => app.server.on('/v1/customer/categories', [
+          const FakeAnswer(200, {
+            'categories': [
+              {
+                'id': '00000000-0000-4000-8000-0000000000c1',
+                'name': 'شاورما',
+                'imageKey': null,
+              },
+              {'id': grills, 'name': 'مشاوي', 'imageKey': null},
+            ],
+          }),
+        ]),
+      );
+      expect(find.byKey(const Key('category-$grills')), findsOneWidget);
+
+      app.server.on('/v1/customer/restaurants', [
+        FakeAnswer(200, {
+          'restaurants': [
+            {
+              ...card('00000000-0000-4000-8000-0000000000b8', 'مشاوي الحارة'),
+              'categories': [
+                {'id': grills, 'name': 'مشاوي'},
+                {
+                  'id': '00000000-0000-4000-8000-0000000000c1',
+                  'name': 'شاورما',
+                },
+              ],
+            },
+          ],
+        }),
+      ]);
+      await tester.tap(find.byKey(const Key('category-$grills')));
+      await tester.pumpAndSettle();
+
+      final asked = app.server.to('/v1/customer/restaurants').last;
+      expect(asked.uri.queryParameters['categoryId'], grills);
+      expect(find.widgetWithText(AppBar, 'مشاوي'), findsOneWidget);
+      expect(
+        find.text('مشاوي، شاورما · جديد · 30–40 د · رسوم التوصيل 10 ₺'),
+        findsOneWidget,
+      );
+    },
+  );
+
   testWidgets('marks a restaurant in test mode «تجريبي» (CU §8.2)', (
     tester,
   ) async {

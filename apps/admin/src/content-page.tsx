@@ -80,6 +80,11 @@ export function ContentPage() {
       <p>
         <Link to="/">{t('common.home')}</Link>
       </p>
+      {read && (
+        <p>
+          <Link to="/categories">{t('categories.title')}</Link>
+        </p>
+      )}
       {read && <ReasonLists manage={manage} />}
       {(read || faqs) && <Faqs edit={faqs} />}
       {(read || faqs) && <CannedReplies edit={faqs} />}

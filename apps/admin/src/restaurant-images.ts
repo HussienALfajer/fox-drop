@@ -31,7 +31,9 @@ export const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 export type ImageTarget =
   | { kind: 'logo'; restaurantId: string }
   | { kind: 'cover'; restaurantId: string }
-  | { kind: 'item'; restaurantId: string; itemId: string };
+  | { kind: 'item'; restaurantId: string; itemId: string }
+  // AP §9.13 «التصنيفات» (slice 2.27a): a category's icon or image.
+  | { kind: 'category'; categoryId: string };
 
 // What the page explains: a file the panel refuses before sending, the
 // server's refusals of a stored file, and an upload the storage refused.
@@ -50,6 +52,7 @@ const purposes = {
   logo: 'restaurant_logo',
   cover: 'restaurant_cover',
   item: 'item_photo',
+  category: 'category_image',
 } as const satisfies Record<ImageTarget['kind'], string>;
 
 // The server's refusals of a link, as the page explains them. A file never
@@ -84,6 +87,17 @@ export const restaurantImagesQuery = (restaurantId: string) =>
 
 async function link(target: ImageTarget, uploadId: string) {
   const body = { uploadId };
+  if (target.kind === 'category') {
+    const linked = await api.PUT('/v1/admin/content/categories/{categoryId}/image', {
+      params: { path: { categoryId: target.categoryId } },
+      body,
+    });
+    return {
+      data: linked.data ? { key: linked.data.imageKey ?? '' } : undefined,
+      error: linked.error,
+      response: linked.response,
+    };
+  }
   if (target.kind === 'item') {
     return api.PUT('/v1/admin/restaurants/{restaurantId}/items/{itemId}/photo', {
       params: { path: { restaurantId: target.restaurantId, itemId: target.itemId } },
@@ -134,6 +148,11 @@ export function useSetImage() {
       throw new Error('The image was not linked.');
     },
     onSuccess: (_result, { target }) =>
-      queryClient.invalidateQueries({ queryKey: ['restaurant-images', target.restaurantId] }),
+      queryClient.invalidateQueries({
+        queryKey:
+          target.kind === 'category'
+            ? ['content', 'categories']
+            : ['restaurant-images', target.restaurantId],
+      }),
   });
 }

@@ -750,6 +750,13 @@
       "when": 1794953357609,
       "tag": "0106_ordering_ratings",
       "breakpoints": true
+    },
+    {
+      "idx": 107,
+      "version": "7",
+      "when": 1794970580371,
+      "tag": "0107_content_categories",
+      "breakpoints": true
     }
   ]
 }

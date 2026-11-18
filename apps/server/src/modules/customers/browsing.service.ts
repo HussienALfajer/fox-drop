@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { CategoriesService } from '../content/index.js';
 import {
   estimateRange,
   GeoRefusedError,
@@ -31,7 +32,8 @@ export interface RestaurantCard {
   id: string;
   nameAr: string;
   nameEn: string | null;
-  category: string | null;
+  // AP §9.13: its active categories, in the restaurant's order.
+  categories: { id: string; name: string }[];
   logoKey: string | null;
   coverKey: string | null;
   // CU §8.4: the 10-minute range before ordering.
@@ -91,18 +93,36 @@ export class BrowsingService {
     private readonly geo: GeoService,
     private readonly merchants: MerchantsService,
     private readonly settings: SettingsService,
+    private readonly categories: CategoriesService,
   ) {}
 
+  // The active categories by id, for the cards (a removed one is left out).
+  private async categoryNames(): Promise<Map<string, string>> {
+    const active = await this.categories.active();
+    return new Map(active.map((category) => [category.id, category.name]));
+  }
+
   // CU §8.2: open restaurants first, then busy and paused, then closed,
-  // each group in the restaurants' own order.
-  async restaurants(point: Point, now: Date, testAccount = false): Promise<RestaurantCard[]> {
+  // each group in the restaurants' own order. With a category (the category
+  // page, slice 2.27a), only the restaurants linked to it; none for a
+  // category that is not active.
+  async restaurants(
+    point: Point,
+    now: Date,
+    testAccount = false,
+    categoryId?: string,
+  ): Promise<RestaurantCard[]> {
     const place = await this.geo.locate(point);
     if (place === null || place.zone === null) return [];
+    const names = await this.categoryNames();
+    if (categoryId !== undefined && !names.has(categoryId)) return [];
     const ids = await this.merchants.coveringRestaurants(place.cityId, point, testAccount);
     const cards = await Promise.all(
       ids.map(async (id) => {
         const restaurant = await this.merchants.restaurant(id, now);
-        return restaurant === null ? null : this.card(restaurant, point, now);
+        if (restaurant === null) return null;
+        if (categoryId !== undefined && !restaurant.categoryIds.includes(categoryId)) return null;
+        return this.card(restaurant, point, now, names);
       }),
     );
     // A restaurant suspended since it was listed is left out.
@@ -113,10 +133,10 @@ export class BrowsingService {
       .map(({ card }) => card);
   }
 
-  // CU §11.9: under a rejected or unanswered order, the open restaurants of
-  // the same category that deliver to the order's pin, in the list's own
-  // order, without the restaurant itself. Open in busy mode is open. Empty
-  // when the restaurant has no category.
+  // CU §11.9: under a rejected or unanswered order, the open restaurants that
+  // share an active category with it and deliver to the order's pin, in the
+  // list's own order, without the restaurant itself. Open in busy mode is
+  // open. Empty when the restaurant has no active category.
   async similar(
     id: string,
     point: Point,
@@ -124,7 +144,10 @@ export class BrowsingService {
     testAccount = false,
   ): Promise<RestaurantCard[]> {
     const source = await this.merchants.restaurant(id, now);
-    if (source === null || source.category === null) return [];
+    if (source === null) return [];
+    const names = await this.categoryNames();
+    const shared = new Set(source.categoryIds.filter((category) => names.has(category)));
+    if (shared.size === 0) return [];
     const place = await this.geo.locate(point);
     if (place === null || place.zone === null) return [];
     const ids = await this.merchants.coveringRestaurants(place.cityId, point, testAccount);
@@ -132,7 +155,8 @@ export class BrowsingService {
       ids.filter((other) => other !== id).map((other) => this.merchants.restaurant(other, now)),
     );
     const sameCategory = restaurants.filter(
-      (restaurant): restaurant is Restaurant => restaurant?.category === source.category,
+      (restaurant): restaurant is Restaurant =>
+        restaurant?.categoryIds.some((category) => shared.has(category)) ?? false,
     );
     // The state first, so only the open ones are priced and measured.
     const states = await Promise.all(
@@ -141,7 +165,9 @@ export class BrowsingService {
     const open = sameCategory
       .filter((_, index) => states[index]!.state.state === 'open')
       .slice(0, SIMILAR_LIMIT);
-    const cards = await Promise.all(open.map((restaurant) => this.card(restaurant, point, now)));
+    const cards = await Promise.all(
+      open.map((restaurant) => this.card(restaurant, point, now, names)),
+    );
     // A restaurant paused since its state was read is left out.
     return cards.filter((card) => card.state.state.state === 'open');
   }
@@ -155,8 +181,9 @@ export class BrowsingService {
   ): Promise<RestaurantPage | null> {
     const restaurant = await this.merchants.restaurant(id, now);
     if (restaurant === null || !seenByCustomer(restaurant, testAccount)) return null;
+    const names = await this.categoryNames();
     const [card, deliversHere, rule, menu] = await Promise.all([
-      this.card(restaurant, point, now),
+      this.card(restaurant, point, now, names),
       this.merchants.covers(id, point),
       this.geo.deliveryFeeRule(restaurant.cityId),
       this.merchants.menu(id, now),
@@ -176,7 +203,12 @@ export class BrowsingService {
     };
   }
 
-  private async card(restaurant: Restaurant, point: Point, now: Date): Promise<RestaurantCard> {
+  private async card(
+    restaurant: Restaurant,
+    point: Point,
+    now: Date,
+    names: Map<string, string>,
+  ): Promise<RestaurantCard> {
     const { cityId } = restaurant;
     const [state, speedKmh, bufferMin, priced] = await Promise.all([
       this.merchants.storefrontState(restaurant.id, now),
@@ -192,7 +224,10 @@ export class BrowsingService {
       id: restaurant.id,
       nameAr: restaurant.nameAr,
       nameEn: restaurant.nameEn,
-      category: restaurant.category,
+      categories: restaurant.categoryIds.flatMap((category) => {
+        const name = names.get(category);
+        return name === undefined ? [] : [{ id: category, name }];
+      }),
       logoKey: restaurant.logoKey,
       coverKey: restaurant.coverKey,
       estimate: estimateRange({

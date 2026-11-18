@@ -48,6 +48,11 @@ import 'package:core_api/src/model/admin_captain_balances_dto_output_captains_in
 import 'package:core_api/src/model/admin_captain_balances_dto_output_captains_inner_earnings.dart';
 import 'package:core_api/src/model/admin_captain_device_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_device_dto_output_device.dart';
+import 'package:core_api/src/model/admin_categories_dto_output.dart';
+import 'package:core_api/src/model/admin_categories_dto_output_categories_inner.dart';
+import 'package:core_api/src/model/admin_category_dto_output.dart';
+import 'package:core_api/src/model/admin_category_image_dto.dart';
+import 'package:core_api/src/model/admin_category_order_dto.dart';
 import 'package:core_api/src/model/admin_change_customer_phone_dto.dart';
 import 'package:core_api/src/model/admin_change_outcome_dto.dart';
 import 'package:core_api/src/model/admin_change_time_dto.dart';
@@ -198,6 +203,7 @@ import 'package:core_api/src/model/admin_manual_reversal_dto.dart';
 import 'package:core_api/src/model/admin_mark_customer_trust_dto.dart';
 import 'package:core_api/src/model/admin_merchant_statement_dto_output.dart';
 import 'package:core_api/src/model/admin_merchant_statement_dto_output_lines_inner.dart';
+import 'package:core_api/src/model/admin_new_category_dto.dart';
 import 'package:core_api/src/model/admin_new_upload_dto.dart';
 import 'package:core_api/src/model/admin_no_answer_wait_dto.dart';
 import 'package:core_api/src/model/admin_notification_resent_dto_output.dart';
@@ -338,6 +344,8 @@ import 'package:core_api/src/model/admin_reject_dto_items_inner.dart';
 import 'package:core_api/src/model/admin_release_device_dto.dart';
 import 'package:core_api/src/model/admin_resend_notification_dto.dart';
 import 'package:core_api/src/model/admin_resolve_shortfall_dto.dart';
+import 'package:core_api/src/model/admin_restaurant_categories_dto.dart';
+import 'package:core_api/src/model/admin_restaurant_categories_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_holiday_close_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_images_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_images_dto_output_categories_inner.dart';
@@ -436,6 +444,7 @@ import 'package:core_api/src/model/admin_ticket_status_dto.dart';
 import 'package:core_api/src/model/admin_ticket_types_dto_output.dart';
 import 'package:core_api/src/model/admin_tickets_dto_output.dart';
 import 'package:core_api/src/model/admin_unblock_customer_dto.dart';
+import 'package:core_api/src/model/admin_update_category_dto.dart';
 import 'package:core_api/src/model/admin_update_contact_dto.dart';
 import 'package:core_api/src/model/admin_update_notification_text_dto.dart';
 import 'package:core_api/src/model/admin_upload_dto_output.dart';
@@ -618,6 +627,8 @@ import 'package:core_api/src/model/customer_address_list_dto_output.dart';
 import 'package:core_api/src/model/customer_address_list_dto_output_addresses_inner.dart';
 import 'package:core_api/src/model/customer_address_list_dto_output_addresses_inner_location.dart';
 import 'package:core_api/src/model/customer_cancel_order_dto.dart';
+import 'package:core_api/src/model/customer_categories_dto_output.dart';
+import 'package:core_api/src/model/customer_categories_dto_output_categories_inner.dart';
 import 'package:core_api/src/model/customer_close_account_dto.dart';
 import 'package:core_api/src/model/customer_close_code_sent_dto_output.dart';
 import 'package:core_api/src/model/customer_code_request_dto.dart';
@@ -857,6 +868,11 @@ part 'serializers.g.dart';
   AdminCaptainBalancesDtoOutputCaptainsInnerEarnings,
   AdminCaptainDeviceDtoOutput,
   AdminCaptainDeviceDtoOutputDevice,
+  AdminCategoriesDtoOutput,
+  AdminCategoriesDtoOutputCategoriesInner,
+  AdminCategoryDtoOutput,
+  AdminCategoryImageDto,
+  AdminCategoryOrderDto,
   AdminChangeCustomerPhoneDto,
   AdminChangeOutcomeDto,
   AdminChangeTimeDto,
@@ -1007,6 +1023,7 @@ part 'serializers.g.dart';
   AdminMarkCustomerTrustDto,
   AdminMerchantStatementDtoOutput,
   AdminMerchantStatementDtoOutputLinesInner,
+  AdminNewCategoryDto,
   AdminNewUploadDto,
   AdminNoAnswerWaitDto,
   AdminNotificationResentDtoOutput,
@@ -1147,6 +1164,8 @@ part 'serializers.g.dart';
   AdminReleaseDeviceDto,
   AdminResendNotificationDto,
   AdminResolveShortfallDto,
+  AdminRestaurantCategoriesDto,
+  AdminRestaurantCategoriesDtoOutput,
   AdminRestaurantHolidayCloseDto,
   AdminRestaurantImagesDtoOutput,
   AdminRestaurantImagesDtoOutputCategoriesInner,
@@ -1245,6 +1264,7 @@ part 'serializers.g.dart';
   AdminTicketTypesDtoOutput,
   AdminTicketsDtoOutput,
   AdminUnblockCustomerDto,
+  AdminUpdateCategoryDto,
   AdminUpdateContactDto,
   AdminUpdateNotificationTextDto,
   AdminUploadDtoOutput,
@@ -1427,6 +1447,8 @@ part 'serializers.g.dart';
   CustomerAddressListDtoOutputAddressesInner,
   CustomerAddressListDtoOutputAddressesInnerLocation,
   CustomerCancelOrderDto,
+  CustomerCategoriesDtoOutput,
+  CustomerCategoriesDtoOutputCategoriesInner,
   CustomerCloseAccountDto,
   CustomerCloseCodeSentDtoOutput,
   CustomerCodeRequestDto,
@@ -2326,6 +2348,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(CustomerCategoriesDtoOutputCategoriesInner),
+            ]),
+            () => ListBuilder<CustomerCategoriesDtoOutputCategoriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminReasonListsDtoOutputListsInnerReasonsInner),
             ]),
             () =>
@@ -2547,6 +2575,12 @@ Serializers serializers =
                 ListBuilder<
                   MerchantOrdersDtoOutputOrdersInnerItemReportItemsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCategoriesDtoOutputCategoriesInner),
+            ]),
+            () => ListBuilder<AdminCategoriesDtoOutputCategoriesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

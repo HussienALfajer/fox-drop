@@ -17,6 +17,9 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInner
   @override
   final String? category;
   @override
+  final BuiltList<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>
+  categories;
+  @override
   final String? logoKey;
   @override
   final String? coverKey;
@@ -46,6 +49,7 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInner
     required this.nameAr,
     this.nameEn,
     this.category,
+    required this.categories,
     this.logoKey,
     this.coverKey,
     this.rating,
@@ -73,6 +77,7 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInner
         nameAr == other.nameAr &&
         nameEn == other.nameEn &&
         category == other.category &&
+        categories == other.categories &&
         logoKey == other.logoKey &&
         coverKey == other.coverKey &&
         rating == other.rating &&
@@ -90,6 +95,7 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInner
     _$hash = $jc(_$hash, nameAr.hashCode);
     _$hash = $jc(_$hash, nameEn.hashCode);
     _$hash = $jc(_$hash, category.hashCode);
+    _$hash = $jc(_$hash, categories.hashCode);
     _$hash = $jc(_$hash, logoKey.hashCode);
     _$hash = $jc(_$hash, coverKey.hashCode);
     _$hash = $jc(_$hash, rating.hashCode);
@@ -111,6 +117,7 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInner
           ..add('nameAr', nameAr)
           ..add('nameEn', nameEn)
           ..add('category', category)
+          ..add('categories', categories)
           ..add('logoKey', logoKey)
           ..add('coverKey', coverKey)
           ..add('rating', rating)
@@ -146,6 +153,16 @@ class CustomerRestaurantListDtoOutputRestaurantsInnerBuilder
   String? _category;
   String? get category => _$this._category;
   set category(String? category) => _$this._category = category;
+
+  ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>?
+  _categories;
+  ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>
+  get categories => _$this._categories ??=
+      ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>();
+  set categories(
+    ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>?
+    categories,
+  ) => _$this._categories = categories;
 
   String? _logoKey;
   String? get logoKey => _$this._logoKey;
@@ -204,6 +221,7 @@ class CustomerRestaurantListDtoOutputRestaurantsInnerBuilder
       _nameAr = $v.nameAr;
       _nameEn = $v.nameEn;
       _category = $v.category;
+      _categories = $v.categories.toBuilder();
       _logoKey = $v.logoKey;
       _coverKey = $v.coverKey;
       _rating = $v.rating;
@@ -251,6 +269,7 @@ class CustomerRestaurantListDtoOutputRestaurantsInnerBuilder
             ),
             nameEn: nameEn,
             category: category,
+            categories: categories.build(),
             logoKey: logoKey,
             coverKey: coverKey,
             rating: rating,
@@ -267,6 +286,9 @@ class CustomerRestaurantListDtoOutputRestaurantsInnerBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'categories';
+        categories.build();
+
         _$failedField = 'estimate';
         estimate.build();
         _$failedField = 'deliveryFee';

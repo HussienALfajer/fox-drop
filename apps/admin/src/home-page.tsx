@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { SETTINGS_READ } from './app-settings.js';
 import { CASH_DESK, FINANCE_READ } from './cash-desk.js';
 import { ApprovalsLink } from './compensation-approvals-page.js';
+import { canSeeCategories, canSeeRestaurantCategories } from './categories.js';
 import { CONTENT_FAQS, CONTENT_READ } from './content.js';
 import { EMERGENCY_CODE_PERMISSION } from './emergency-code.js';
 import { OPERATIONS_READ } from './orders-board.js';
@@ -54,6 +55,16 @@ export function HomePage() {
           {(can(session, CONTENT_READ) || can(session, CONTENT_FAQS)) && (
             <li>
               <Link to="/content">{t('content.title')}</Link>
+            </li>
+          )}
+          {canSeeCategories(session) && (
+            <li>
+              <Link to="/categories">{t('categories.title')}</Link>
+            </li>
+          )}
+          {canSeeRestaurantCategories(session) && (
+            <li>
+              <Link to="/restaurant-categories">{t('restaurantCategories.title')}</Link>
             </li>
           )}
           {canSeeImages(session) && (

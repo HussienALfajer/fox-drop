@@ -7,6 +7,7 @@ import {
   CustomerController,
   MerchantController,
 } from '../../http/route-groups.js';
+import { CategoriesService } from './categories.service.js';
 import { ContentService } from './content.service.js';
 import { type ContentApp, noteModes, type ReasonList } from './lists.js';
 
@@ -124,5 +125,40 @@ export class CustomerContentController {
   @ZodResponse({ status: 200, type: CustomerContentDto })
   get() {
     return read(this.content, 'customer') as Promise<CustomerContentDto>;
+  }
+}
+
+class CustomerCategoriesDto extends createZodDto(
+  z.object({
+    categories: z
+      .array(
+        z.object({
+          id: z.uuid(),
+          name: z.string(),
+          imageKey: z
+            .string()
+            .nullable()
+            .describe('Its key in public-media, shown through /media/; null without one.'),
+        }),
+      )
+      .describe('The active categories, in the panel’s order.'),
+  }),
+) {}
+
+// CU §8.1 «التصنيفات», AP §9.13 (slice 2.27a): the categories a customer
+// browses by, open to guests; a category's page is
+// GET /v1/customer/restaurants?categoryId=.
+@CustomerController('categories')
+export class CustomerCategoriesController {
+  constructor(private readonly categories: CategoriesService) {}
+
+  @Get()
+  @Public()
+  @ZodResponse({ status: 200, type: CustomerCategoriesDto })
+  async list() {
+    const active = await this.categories.active();
+    return {
+      categories: active.map(({ id, name, imageKey }) => ({ id, name, imageKey })),
+    };
   }
 }

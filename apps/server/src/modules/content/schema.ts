@@ -10,6 +10,7 @@ import {
   text,
   timestamp,
   unique,
+  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
 
@@ -115,5 +116,31 @@ export const termsAcceptances = content.table(
       'terms_acceptances_audience',
       sql`${table.audience} IN ('customer', 'captain', 'merchant')`,
     ),
+  ],
+);
+
+// AP §9.13 «التصنيفات» (slice 2.27a): the platform's restaurant categories,
+// with a name, an icon or image and an order, which a restaurant links to
+// (merchants.restaurants.category_ids). A category is never deleted: removed,
+// it is inactive, off the cards and the category list, and kept on the
+// restaurants that link to it. Two active categories never share a name.
+export const categories = content.table(
+  'categories',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    name: text('name').notNull(),
+    // Its key in public-media (architecture §5.8); null without an image.
+    imageKey: text('image_key'),
+    active: boolean('active').notNull().default(true),
+    position: integer('position').notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('categories_active_name')
+      .on(table.name)
+      .where(sql`${table.active}`),
+    check('categories_name', sql`char_length(${table.name}) BETWEEN 1 AND 40`),
   ],
 );

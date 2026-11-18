@@ -162,6 +162,8 @@
   "@customerLocationFailed": {"description": "No position came in time; the spec gives no wording."},
   "customerTryAgain": "حاول مجدداً",
   "@customerTryAgain": {"description": "Repeats what failed."},
+  "customerCategory": "التصنيف",
+  "@customerCategory": {"description": "A category page's title while its name is not read yet (CU §8.2)."},
   "customerNew": "جديد",
   "@customerNew": {"description": "A restaurant without ratings yet (Q16)."},
   "customerRating": "{rating} ({count})",

@@ -6,12 +6,14 @@ export const files = pgSchema('files');
 
 // What an upload is for: the record it may be linked to (architecture §5.8).
 // A report's photo (CU §12.2, §9.5; slice 2.24a) is the customer's, kept in
-// private-docs (owner decision 2026-11-17).
+// private-docs (owner decision 2026-11-17). A category's icon or image (AP
+// §9.13, slice 2.27a) is content's.
 export const uploadPurposes = [
   'restaurant_logo',
   'restaurant_cover',
   'item_photo',
   'report_photo',
+  'category_image',
 ] as const;
 export type UploadPurpose = (typeof uploadPurposes)[number];
 
@@ -42,7 +44,7 @@ export const uploads = files.table(
   (table) => [
     check(
       'uploads_purpose_values',
-      sql`${table.purpose} IN ('restaurant_logo', 'restaurant_cover', 'item_photo', 'report_photo')`,
+      sql`${table.purpose} IN ('restaurant_logo', 'restaurant_cover', 'item_photo', 'report_photo', 'category_image')`,
     ),
     check(
       'uploads_content_type_values',

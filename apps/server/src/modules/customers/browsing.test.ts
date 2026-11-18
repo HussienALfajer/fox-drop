@@ -9,6 +9,7 @@ import { createApiApp } from '../../http/create-api-app.js';
 import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
 import { FxService } from '../fx/index.js';
 import { GeoService, type Point } from '../geo/index.js';
+import { CategoriesService } from '../content/index.js';
 import { MerchantsService, type NewRestaurant } from '../merchants/index.js';
 
 // The customer's browsing (CU §8.2, §8.4, §9.1–9.4), served by the API app as
@@ -286,6 +287,7 @@ describe('the restaurant list (CU §8.2)', () => {
       nameAr: 'مطعم مفتوح',
       nameEn: 'Open place',
       category: null,
+      categories: [],
       logoKey: null,
       coverKey: null,
       rating: null,
@@ -450,8 +452,20 @@ describe('similar restaurants (CU §11.9)', () => {
       method: 'GET',
       url: `/v1/customer/restaurants?${query(point)}&similarTo=${id}`,
     });
-  const category = (id: string, name: string | null) =>
-    sql.query('UPDATE merchants.restaurants SET category = $2 WHERE id = $1', [id, name]);
+  // Links a restaurant to the categories of these names (AP §9.13).
+  const categoryIds = new Map<string, string>();
+  const category = async (id: string, ...names: string[]) => {
+    for (const name of names) {
+      if (!categoryIds.has(name)) {
+        categoryIds.set(name, (await app.get(CategoriesService).create(name, 'system')).id);
+      }
+    }
+    await merchants.setRestaurantCategories(
+      id,
+      names.map((name) => categoryIds.get(name)!),
+      change,
+    );
+  };
   let rejecting: string;
   let others: string[];
 
@@ -468,12 +482,13 @@ describe('similar restaurants (CU §11.9)', () => {
     for (const name of ['مشاوي ١', 'مشاوي ٢', 'مشاوي ٣', 'مشاوي ٤']) {
       const id = await restaurant(name);
       await merchants.setWeeklySchedule(id, allWeek, change);
-      await category(id, 'مشاوي');
+      // The first shares «مشاوي» as its second category.
+      await category(id, ...(others.length === 0 ? ['حلويات', 'مشاوي'] : ['مشاوي']));
       others.push(id);
     }
   });
 
-  it('lists up to 5 open restaurants of the same category that deliver to the point', async () => {
+  it('lists up to 5 open restaurants sharing a category that deliver to the point', async () => {
     const answer = await similar(rejecting);
     expect(answer.statusCode).toBe(200);
     const { restaurants } = answer.json();
@@ -487,13 +502,14 @@ describe('similar restaurants (CU §11.9)', () => {
     expect(restaurants[0]).toMatchObject({
       nameAr: 'مطعم مفتوح',
       category: 'مشاوي',
+      categories: [{ id: categoryIds.get('مشاوي'), name: 'مشاوي' }],
       state: { state: 'open' },
       estimate: { fromMin: 30, toMin: 40 },
     });
   });
 
   it('is empty without a category, for an unknown restaurant and outside every zone', async () => {
-    await category(rejecting, null);
+    await category(rejecting);
     expect((await similar(rejecting)).json()).toEqual({ restaurants: [] });
     await category(rejecting, 'مشاوي');
     expect((await similar(randomUUID())).json()).toEqual({ restaurants: [] });

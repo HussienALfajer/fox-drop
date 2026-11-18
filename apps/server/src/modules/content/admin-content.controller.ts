@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Body,
+  ConflictException,
   ForbiddenException,
   Get,
   HttpCode,
@@ -23,6 +24,12 @@ import {
 import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
 import type { AdminSession } from '../identity/index.js';
+import { FilesRefusedError } from '../files/index.js';
+import {
+  CATEGORIES_ORDER_MAX,
+  CATEGORY_NAME_MAX,
+  CategoriesService,
+} from './categories.service.js';
 import { ContactSchema } from './contact.js';
 import { ContentRefusedError, ContentService, type ContentEdit } from './content.service.js';
 import {
@@ -197,13 +204,26 @@ class AdminUpdateNotificationTextDto extends createZodDto(
 ) {}
 
 function contentError(error: unknown): unknown {
+  if (error instanceof FilesRefusedError) {
+    if (error.refusal === 'upload_not_found') {
+      return new NotFoundException({ statusCode: 404, error: error.refusal });
+    }
+    if (error.refusal === 'upload_wrong_purpose' || error.refusal === 'upload_invalid') {
+      return new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, error: error.refusal });
+    }
+    return new ConflictException({ statusCode: HttpStatus.CONFLICT, error: error.refusal });
+  }
   if (!(error instanceof ContentRefusedError)) return error;
   if (
     error.refusal === 'unknown_list' ||
     error.refusal === 'unknown_reason' ||
-    error.refusal === 'unknown_template'
+    error.refusal === 'unknown_template' ||
+    error.refusal === 'unknown_category'
   ) {
     return new NotFoundException({ statusCode: 404, error: error.refusal, message: error.message });
+  }
+  if (error.refusal === 'upload_used') {
+    return new ConflictException({ statusCode: HttpStatus.CONFLICT, error: error.refusal });
   }
   return new BadRequestException({
     statusCode: HttpStatus.BAD_REQUEST,
@@ -211,6 +231,49 @@ function contentError(error: unknown): unknown {
     message: error.message,
   });
 }
+
+const category = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  imageKey: z
+    .string()
+    .nullable()
+    .describe(
+      'Its key in public-media, shown through /media/ (architecture §5.8); null without one.',
+    ),
+  active: z
+    .boolean()
+    .describe('False once removed: off the cards and the list, kept on its restaurants.'),
+});
+
+class AdminCategoryDto extends createZodDto(category) {}
+
+class AdminCategoriesDto extends createZodDto(
+  z.object({ categories: z.array(category).describe('In their order, removed ones included.') }),
+) {}
+
+class CategoryParamsDto extends createZodDto(z.object({ categoryId: z.uuid() })) {}
+
+const categoryName = z.string().trim().min(1).max(CATEGORY_NAME_MAX);
+
+class AdminNewCategoryDto extends createZodDto(z.object({ name: categoryName })) {}
+
+class AdminUpdateCategoryDto extends createZodDto(
+  z.object({ name: categoryName, active: z.boolean().describe('False removes it.') }),
+) {}
+
+class AdminCategoryImageDto extends createZodDto(
+  z.object({ uploadId: z.uuid().describe('From POST /v1/admin/uploads (category_image).') }),
+) {}
+
+class AdminCategoryOrderDto extends createZodDto(
+  z.object({
+    ids: z
+      .array(z.uuid())
+      .max(CATEGORIES_ORDER_MAX)
+      .describe('Every category once, removed ones too.'),
+  }),
+) {}
 
 async function refusalsAsHttp<T>(action: () => Promise<T>): Promise<T> {
   try {
@@ -231,8 +294,78 @@ function editBy(session: AdminSession, request: FastifyRequest): ContentEdit {
 export class AdminContentController {
   constructor(
     private readonly content: ContentService,
+    private readonly categories: CategoriesService,
     private readonly notifications: NotificationTexts,
   ) {}
+
+  // «التصنيفات» (AP §9.13, slice 2.27a): read by OWN and OPS (content.read)
+  // and DATA (content.categories), edited by OWN and DATA (AP §6.2). An edit
+  // sets a state to a value, so none takes an Idempotency-Key; adding twice
+  // is refused as duplicate_label.
+  @Get('categories')
+  @RequireAnyPermission('content.read', 'content.categories')
+  @ZodResponse({ status: 200, type: AdminCategoriesDto })
+  async categoryList() {
+    return { categories: await this.categories.all() };
+  }
+
+  // 400 duplicate_label, invalid_value (CATEGORIES_MAX active already).
+  @Post('categories')
+  @RequirePermission('content.categories')
+  @ZodResponse({ status: 201, type: AdminCategoryDto })
+  addCategory(
+    @Body() body: AdminNewCategoryDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(() => this.categories.create(body.name, editBy(session, request)));
+  }
+
+  // 400 invalid_order.
+  @Post('categories/order')
+  @HttpCode(200)
+  @RequirePermission('content.categories')
+  @ZodResponse({ status: 200, type: AdminCategoriesDto })
+  reorderCategories(
+    @Body() body: AdminCategoryOrderDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(async () => ({
+      categories: await this.categories.reorder(body.ids, editBy(session, request)),
+    }));
+  }
+
+  // 404 unknown_category; 400 duplicate_label.
+  @Put('categories/:categoryId')
+  @RequirePermission('content.categories')
+  @ZodResponse({ status: 200, type: AdminCategoryDto })
+  updateCategory(
+    @Param() params: CategoryParamsDto,
+    @Body() body: AdminUpdateCategoryDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(() =>
+      this.categories.update(params.categoryId, body, editBy(session, request)),
+    );
+  }
+
+  // 404 unknown_category, upload_not_found; 400 upload_wrong_purpose,
+  // upload_invalid; 409 upload_missing, upload_expired, upload_used.
+  @Put('categories/:categoryId/image')
+  @RequirePermission('content.categories')
+  @ZodResponse({ status: 200, type: AdminCategoryDto })
+  setCategoryImage(
+    @Param() params: CategoryParamsDto,
+    @Body() body: AdminCategoryImageDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(() =>
+      this.categories.setImage(params.categoryId, body.uploadId, editBy(session, request)),
+    );
+  }
 
   // «قوائم الأسباب», «الملاحظات الجاهزة» and «نصوص الأسباب للزبون».
   @Get('reasons')

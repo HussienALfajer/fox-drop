@@ -27,23 +27,38 @@ GeoPoint? _browsingPoint(Ref ref) {
       : null;
 }
 
+typedef RestaurantCard = CustomerRestaurantListDtoOutputRestaurantsInner;
+
+Future<List<RestaurantCard>> _cards(Ref ref, {String? categoryId}) async {
+  final point = _browsingPoint(ref);
+  if (point == null) return const [];
+  final response = await ref
+      .watch(coreApiProvider)
+      .getCustomerApi()
+      .customerBrowsingList(
+        latitude: '${point.latitude}',
+        longitude: '${point.longitude}',
+        categoryId: categoryId,
+      );
+  return response.data!.restaurants.toList();
+}
+
 /// The cards of the restaurants that deliver to the point (CU §8.2), in the
 /// server's order: open, then busy and paused, then closed.
-final restaurantsProvider =
-    FutureProvider.autoDispose<
-      List<CustomerRestaurantListDtoOutputRestaurantsInner>
-    >((ref) async {
-      final point = _browsingPoint(ref);
-      if (point == null) return const [];
-      final response = await ref
-          .watch(coreApiProvider)
-          .getCustomerApi()
-          .customerBrowsingList(
-            latitude: '${point.latitude}',
-            longitude: '${point.longitude}',
-          );
-      return response.data!.restaurants.toList();
-    });
+final restaurantsProvider = FutureProvider.autoDispose<List<RestaurantCard>>(
+  (ref) => _cards(ref),
+);
+
+/// A category's page (CU §8.2, slice 2.27a): that category's restaurants
+/// that deliver to the point, in the same order.
+final categoryRestaurantsProvider = FutureProvider.autoDispose
+    .family<List<RestaurantCard>, String>(
+      (ref, categoryId) => _cards(ref, categoryId: categoryId),
+    );
+
+/// A card's or a page's categories (AP §9.13), as one line.
+String? categoriesText(AppLocalizations l10n, Iterable<String> names) =>
+    names.isEmpty ? null : names.join(l10n.listSeparator);
 
 /// A restaurant's page and menu for the point (CU §9.1–9.3).
 final restaurantPageProvider = FutureProvider.autoDispose

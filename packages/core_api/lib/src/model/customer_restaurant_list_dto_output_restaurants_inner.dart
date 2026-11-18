@@ -4,8 +4,10 @@
 
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/customer_restaurant_list_dto_output_restaurants_inner_estimate.dart';
+import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/customer_restaurant_list_dto_output_restaurants_inner_state.dart';
 import 'package:core_api/src/model/customer_restaurant_list_dto_output_restaurants_inner_delivery_fee.dart';
+import 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force_windows_inner_zones_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -17,7 +19,8 @@ part 'customer_restaurant_list_dto_output_restaurants_inner.g.dart';
 /// * [id]
 /// * [nameAr]
 /// * [nameEn]
-/// * [category]
+/// * [category] - Deprecated (slice 2.27a): the first of `categories`, for older apps.
+/// * [categories] - Its active categories (AP §9.13), in the restaurant’s order.
 /// * [logoKey] - Its key in public-media, shown through imgproxy (architecture §5.8); null without one.
 /// * [coverKey] - Its key in public-media, shown through imgproxy (architecture §5.8); null without one.
 /// * [rating] - The restaurant's average stars to one decimal; null is «جديد», below 5 ratings (CU §12.1, Q16).
@@ -42,8 +45,14 @@ abstract class CustomerRestaurantListDtoOutputRestaurantsInner
   @BuiltValueField(wireName: r'nameEn')
   String? get nameEn;
 
+  /// Deprecated (slice 2.27a): the first of `categories`, for older apps.
   @BuiltValueField(wireName: r'category')
   String? get category;
+
+  /// Its active categories (AP §9.13), in the restaurant’s order.
+  @BuiltValueField(wireName: r'categories')
+  BuiltList<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>
+  get categories;
 
   /// Its key in public-media, shown through imgproxy (architecture §5.8); null without one.
   @BuiltValueField(wireName: r'logoKey')
@@ -132,6 +141,13 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInnerSerializer
             object.category,
             specifiedType: const FullType.nullable(String),
           );
+    yield r'categories';
+    yield serializers.serialize(
+      object.categories,
+      specifiedType: const FullType(BuiltList, [
+        FullType.nullable(AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner),
+      ]),
+    );
     yield r'logoKey';
     yield object.logoKey == null
         ? null
@@ -252,6 +268,21 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInnerSerializer
                   as String?;
           if (valueDes == null) continue;
           result.category = valueDes;
+          break;
+        case r'categories':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType.nullable(
+                        AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+                      ),
+                    ]),
+                  )
+                  as BuiltList<
+                    AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
+                  >;
+          result.categories.replace(valueDes);
           break;
         case r'logoKey':
           final valueDes =
