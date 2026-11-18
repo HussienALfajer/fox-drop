@@ -9,6 +9,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Query,
   Req,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -47,7 +48,7 @@ import {
 } from './customer-quote.controller.js';
 import { OrderCommandRefusedError, OrderCommands } from './order-commands.js';
 import type { OrderView } from './order-views.js';
-import { OrderRefusedError, OrdersService } from './orders.service.js';
+import { ORDER_HISTORY_PAGE, OrderRefusedError, OrdersService } from './orders.service.js';
 import {
   type Compensation,
   CompensationsService,
@@ -323,6 +324,27 @@ const customerOrder = z.object({
     })
     .nullable()
     .describe('Once delivered; the order screen opens the rating sheet (CU §12.1).'),
+  timeline: z
+    .array(
+      z.object({
+        step: z
+          .enum([
+            'placed',
+            'accepted',
+            'picked_up',
+            'arrived',
+            'delivered',
+            'failed',
+            'rejected',
+            'cancelled',
+          ])
+          .describe(
+            '«تم الطلب», «قبل المطعم», «استلم الكابتن», «الكابتن عند الباب», «تم التسليم», «تعذّر التسليم», «رفض المطعم», «أُلغي».',
+          ),
+        at: z.iso.datetime(),
+      }),
+    )
+    .describe("CU §12.3: the order's short timeline, oldest first; only the steps it reached."),
   restaurant: z.object({ id: z.uuid(), nameAr: z.string(), nameEn: z.string().nullable() }),
   captain: z
     .object({
@@ -420,6 +442,50 @@ class CustomerActiveOrdersDto extends createZodDto(
 
 class CustomerOrderParamsDto extends createZodDto(z.object({ orderId: z.uuid() })) {}
 
+// A page's cursor: the placing time and id of the last past order shown.
+const CURSOR = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)_([0-9a-f-]{36})$/;
+
+class CustomerOrderHistoryQueryDto extends createZodDto(
+  z.object({
+    cursor: z
+      .string()
+      .regex(CURSOR)
+      .optional()
+      .describe('The `next` of the page before; none for the first page.'),
+  }),
+) {}
+
+class CustomerOrderHistoryDto extends createZodDto(
+  z.object({
+    orders: z
+      .array(
+        z.object({
+          id: z.uuid(),
+          number: z.string(),
+          restaurant: z.object({
+            id: z.uuid(),
+            nameAr: z.string(),
+            nameEn: z.string().nullable(),
+          }),
+          placedAt: z.iso.datetime(),
+          status: z.enum(orderStatuses),
+          active: z.boolean().describe('Placed to arrived: listed first.'),
+          total: z.object({ amount: minor, currency: z.string().length(3) }),
+          redelivery: z.boolean().describe('A free re-delivery (AP §9.9.3): no «اطلب مرة أخرى».'),
+        }),
+      )
+      .describe(
+        'CU §12.3 «طلباتي»: the first page holds every active order, then the past ones; each group newest first.',
+      ),
+    next: z
+      .string()
+      .nullable()
+      .describe(
+        `The cursor of the next page of ${ORDER_HISTORY_PAGE} past orders; null at the end.`,
+      ),
+  }),
+) {}
+
 class CustomerReportOrderDto extends createZodDto(
   z.object({
     typeCode: z
@@ -490,6 +556,42 @@ export class CustomerOrdersController {
       this.captainsOf(orders),
     ]);
     return { orders: orders.map((order) => orderBody(order, names, captains)) };
+  }
+
+  // CU §12.3 «طلباتي» (slice 2.28b).
+  @Get('orders')
+  @AppSignedIn()
+  @ZodResponse({ status: 200, type: CustomerOrderHistoryDto })
+  async history(
+    @CurrentAppSession() session: AppSession,
+    @Query() query: CustomerOrderHistoryQueryDto,
+  ) {
+    const match = query.cursor === undefined ? null : CURSOR.exec(query.cursor);
+    const { orders, more } = await this.orders.customerOrderHistory(
+      session.accountId,
+      match ? { placedAt: new Date(match[1]!), id: match[2]! } : null,
+    );
+    const names = await this.merchants.names([
+      ...new Set(orders.map((order) => order.restaurantId)),
+    ]);
+    const last = orders.at(-1);
+    return {
+      orders: orders.map((order) => {
+        const restaurant = names.get(order.restaurantId);
+        if (!restaurant) throw new Error(`order ${order.id} has an unknown restaurant`);
+        return {
+          id: order.id,
+          number: text(order.number),
+          restaurant: { id: order.restaurantId, ...restaurant },
+          placedAt: order.placedAt.toISOString(),
+          status: order.status,
+          active: order.active,
+          total: { amount: text(order.total), currency: order.currency },
+          redelivery: order.redeliveryOfId !== null,
+        };
+      }),
+      next: more && last ? `${last.placedAt.toISOString()}_${last.id}` : null,
+    };
   }
 
   // 404 unknown_order for another customer's order.
@@ -959,6 +1061,7 @@ function orderBody(
         currency: line.currency,
       })),
     },
+    timeline: timeline(order),
     restaurant: { id: order.restaurantId, ...restaurant },
     captain: captain
       ? {
@@ -999,6 +1102,37 @@ function orderBody(
 }
 
 const text = (value: bigint) => value.toString();
+
+type TimelineStep =
+  | 'placed'
+  | 'accepted'
+  | 'picked_up'
+  | 'arrived'
+  | 'delivered'
+  | 'failed'
+  | 'rejected'
+  | 'cancelled';
+
+// CU §12.3: the steps the order reached, oldest first. A delivery set by
+// «تحديد النتيجة» is the outcome's moment (its collection's, once collected).
+function timeline(order: OrderView): { step: TimelineStep; at: string }[] {
+  const ended =
+    order.status === 'delivered'
+      ? (order.delivery?.at ?? order.outcome?.collectedAt ?? order.outcome?.at ?? null)
+      : order.status === 'failed'
+        ? (order.outcome?.at ?? null)
+        : null;
+  const steps: [TimelineStep, Date | null | undefined][] = [
+    ['placed', order.placedAt],
+    ['accepted', order.acceptance?.at],
+    ['picked_up', order.pickup?.at],
+    ['arrived', order.customerArrival?.at],
+    [order.status === 'failed' ? 'failed' : 'delivered', ended],
+    ['rejected', order.rejection?.at],
+    ['cancelled', order.cancellation?.at],
+  ];
+  return steps.flatMap(([step, at]) => (at ? [{ step, at: at.toISOString() }] : []));
+}
 
 function sentBody(rating: RatingView) {
   return {

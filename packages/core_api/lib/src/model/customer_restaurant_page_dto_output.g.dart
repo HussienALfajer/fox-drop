@@ -35,6 +35,8 @@ class _$CustomerRestaurantPageDtoOutput
   @override
   final CustomerRestaurantListDtoOutputRestaurantsInnerState state;
   @override
+  final bool favourite;
+  @override
   final String? description;
   @override
   final CaptainWentOfflineDtoOutputHandIn? minimumOrder;
@@ -65,6 +67,7 @@ class _$CustomerRestaurantPageDtoOutput
     required this.estimate,
     this.deliveryFee,
     required this.state,
+    required this.favourite,
     this.description,
     this.minimumOrder,
     this.freeDeliveryFrom,
@@ -98,6 +101,7 @@ class _$CustomerRestaurantPageDtoOutput
         estimate == other.estimate &&
         deliveryFee == other.deliveryFee &&
         state == other.state &&
+        favourite == other.favourite &&
         description == other.description &&
         minimumOrder == other.minimumOrder &&
         freeDeliveryFrom == other.freeDeliveryFrom &&
@@ -122,6 +126,7 @@ class _$CustomerRestaurantPageDtoOutput
     _$hash = $jc(_$hash, estimate.hashCode);
     _$hash = $jc(_$hash, deliveryFee.hashCode);
     _$hash = $jc(_$hash, state.hashCode);
+    _$hash = $jc(_$hash, favourite.hashCode);
     _$hash = $jc(_$hash, description.hashCode);
     _$hash = $jc(_$hash, minimumOrder.hashCode);
     _$hash = $jc(_$hash, freeDeliveryFrom.hashCode);
@@ -148,6 +153,7 @@ class _$CustomerRestaurantPageDtoOutput
           ..add('estimate', estimate)
           ..add('deliveryFee', deliveryFee)
           ..add('state', state)
+          ..add('favourite', favourite)
           ..add('description', description)
           ..add('minimumOrder', minimumOrder)
           ..add('freeDeliveryFrom', freeDeliveryFrom)
@@ -234,6 +240,10 @@ class CustomerRestaurantPageDtoOutputBuilder
     CustomerRestaurantListDtoOutputRestaurantsInnerStateBuilder? state,
   ) => _$this._state = state;
 
+  bool? _favourite;
+  bool? get favourite => _$this._favourite;
+  set favourite(bool? favourite) => _$this._favourite = favourite;
+
   String? _description;
   String? get description => _$this._description;
   set description(String? description) => _$this._description = description;
@@ -289,6 +299,7 @@ class CustomerRestaurantPageDtoOutputBuilder
       _estimate = $v.estimate.toBuilder();
       _deliveryFee = $v.deliveryFee?.toBuilder();
       _state = $v.state.toBuilder();
+      _favourite = $v.favourite;
       _description = $v.description;
       _minimumOrder = $v.minimumOrder?.toBuilder();
       _freeDeliveryFrom = $v.freeDeliveryFrom?.toBuilder();
@@ -344,6 +355,11 @@ class CustomerRestaurantPageDtoOutputBuilder
             estimate: estimate.build(),
             deliveryFee: _deliveryFee?.build(),
             state: state.build(),
+            favourite: BuiltValueNullFieldError.checkNotNull(
+              favourite,
+              r'CustomerRestaurantPageDtoOutput',
+              'favourite',
+            ),
             description: description,
             minimumOrder: _minimumOrder?.build(),
             freeDeliveryFrom: _freeDeliveryFrom?.build(),

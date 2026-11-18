@@ -642,6 +642,7 @@ import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inne
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_removed_lines_inner_options_inner.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_report.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_restaurant.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_timeline_inner.dart';
 import 'package:core_api/src/model/customer_address_deleted_dto_output.dart';
 import 'package:core_api/src/model/customer_address_dto_output.dart';
 import 'package:core_api/src/model/customer_address_fields_dto.dart';
@@ -661,6 +662,8 @@ import 'package:core_api/src/model/customer_codes_dto_output_codes_inner_ended.d
 import 'package:core_api/src/model/customer_content_dto_output.dart';
 import 'package:core_api/src/model/customer_content_dto_output_reasons.dart';
 import 'package:core_api/src/model/customer_emergency_stop_dto_output.dart';
+import 'package:core_api/src/model/customer_favourite_dto_output.dart';
+import 'package:core_api/src/model/customer_favourites_dto_output.dart';
 import 'package:core_api/src/model/customer_location_dto_output.dart';
 import 'package:core_api/src/model/customer_new_address_dto.dart';
 import 'package:core_api/src/model/customer_new_address_dto_location.dart';
@@ -671,6 +674,8 @@ import 'package:core_api/src/model/customer_order_dto_output.dart';
 import 'package:core_api/src/model/customer_order_dto_output_order.dart';
 import 'package:core_api/src/model/customer_order_dto_output_order_delivery.dart';
 import 'package:core_api/src/model/customer_order_dto_output_order_redeliveries_inner.dart';
+import 'package:core_api/src/model/customer_order_history_dto_output.dart';
+import 'package:core_api/src/model/customer_order_history_dto_output_orders_inner.dart';
 import 'package:core_api/src/model/customer_place_order_dto.dart';
 import 'package:core_api/src/model/customer_place_order_dto_unsaved_address.dart';
 import 'package:core_api/src/model/customer_price_report_body_dto.dart';
@@ -1496,6 +1501,7 @@ part 'serializers.g.dart';
   CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInnerOptionsInner,
   CustomerActiveOrdersDtoOutputOrdersInnerReport,
   CustomerActiveOrdersDtoOutputOrdersInnerRestaurant,
+  CustomerActiveOrdersDtoOutputOrdersInnerTimelineInner,
   CustomerAddressDeletedDtoOutput,
   CustomerAddressDtoOutput,
   CustomerAddressFieldsDto,
@@ -1515,6 +1521,8 @@ part 'serializers.g.dart';
   CustomerContentDtoOutput,
   CustomerContentDtoOutputReasons,
   CustomerEmergencyStopDtoOutput,
+  CustomerFavouriteDtoOutput,
+  CustomerFavouritesDtoOutput,
   CustomerLocationDtoOutput,
   CustomerNewAddressDto,
   CustomerNewAddressDtoLocation,
@@ -1525,6 +1533,8 @@ part 'serializers.g.dart';
   CustomerOrderDtoOutputOrder,
   CustomerOrderDtoOutputOrderDelivery,
   CustomerOrderDtoOutputOrderRedeliveriesInner,
+  CustomerOrderHistoryDtoOutput,
+  CustomerOrderHistoryDtoOutputOrdersInner,
   CustomerPlaceOrderDto,
   CustomerPlaceOrderDtoUnsavedAddress,
   CustomerPriceReportBodyDto,
@@ -2246,6 +2256,15 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(CustomerActiveOrdersDtoOutputOrdersInnerTimelineInner),
+            ]),
+            () =>
+                ListBuilder<
+                  CustomerActiveOrdersDtoOutputOrdersInnerTimelineInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(MerchantContentDtoOutputFaqInner),
             ]),
             () => ListBuilder<MerchantContentDtoOutputFaqInner>(),
@@ -2681,6 +2700,12 @@ Serializers serializers =
               FullType(AdminReasonListsDtoOutputListsInner),
             ]),
             () => ListBuilder<AdminReasonListsDtoOutputListsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CustomerOrderHistoryDtoOutputOrdersInner),
+            ]),
+            () => ListBuilder<CustomerOrderHistoryDtoOutputOrdersInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

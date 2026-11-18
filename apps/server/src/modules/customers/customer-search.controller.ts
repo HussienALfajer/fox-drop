@@ -18,12 +18,14 @@ import { BrowsingService, SEARCH_ITEMS_MAX } from './browsing.service.js';
 import {
   card,
   cardBody,
+  heartedBy,
   itemBody,
   state,
   stateBody,
   storefrontItem,
 } from './customer-browsing.controller.js';
 import { CustomersService } from './customers.service.js';
+import { FavouritesService } from './favourites.js';
 import { LostDemandRefusedError, LostDemandService } from './lost-demand.service.js';
 import { pointQuery } from './point-query.js';
 import { searchText } from './search-text.js';
@@ -87,6 +89,7 @@ export class CustomerSearchController {
     private readonly browsing: BrowsingService,
     private readonly customers: CustomersService,
     private readonly lostDemand: LostDemandService,
+    private readonly favourites: FavouritesService,
   ) {}
 
   // A search that finds nothing at a served point feeds the lost-demand
@@ -114,12 +117,13 @@ export class CustomerSearchController {
     ) {
       await this.lostDemand.recordMiss(found.place, q, session?.accountId ?? null, now);
     }
-    const ratings = await this.customers.ratings.restaurants(
-      found.restaurants.map((restaurant) => restaurant.id),
-    );
+    const [ratings, hearted] = await Promise.all([
+      this.customers.ratings.restaurants(found.restaurants.map((restaurant) => restaurant.id)),
+      heartedBy(this.favourites, session),
+    ]);
     return {
       restaurants: found.restaurants.map((restaurant) =>
-        cardBody(restaurant, ratings.get(restaurant.id)),
+        cardBody(restaurant, ratings.get(restaurant.id), hearted.has(restaurant.id)),
       ),
       items: found.items.map((item) => ({
         ...itemBody(item),

@@ -643,6 +643,7 @@ export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inne
 export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_removed_lines_inner_options_inner.dart';
 export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_report.dart';
 export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_restaurant.dart';
+export 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_timeline_inner.dart';
 export 'package:core_api/src/model/customer_address_deleted_dto_output.dart';
 export 'package:core_api/src/model/customer_address_dto_output.dart';
 export 'package:core_api/src/model/customer_address_fields_dto.dart';
@@ -662,6 +663,8 @@ export 'package:core_api/src/model/customer_codes_dto_output_codes_inner_ended.d
 export 'package:core_api/src/model/customer_content_dto_output.dart';
 export 'package:core_api/src/model/customer_content_dto_output_reasons.dart';
 export 'package:core_api/src/model/customer_emergency_stop_dto_output.dart';
+export 'package:core_api/src/model/customer_favourite_dto_output.dart';
+export 'package:core_api/src/model/customer_favourites_dto_output.dart';
 export 'package:core_api/src/model/customer_location_dto_output.dart';
 export 'package:core_api/src/model/customer_new_address_dto.dart';
 export 'package:core_api/src/model/customer_new_address_dto_location.dart';
@@ -672,6 +675,8 @@ export 'package:core_api/src/model/customer_order_dto_output.dart';
 export 'package:core_api/src/model/customer_order_dto_output_order.dart';
 export 'package:core_api/src/model/customer_order_dto_output_order_delivery.dart';
 export 'package:core_api/src/model/customer_order_dto_output_order_redeliveries_inner.dart';
+export 'package:core_api/src/model/customer_order_history_dto_output.dart';
+export 'package:core_api/src/model/customer_order_history_dto_output_orders_inner.dart';
 export 'package:core_api/src/model/customer_place_order_dto.dart';
 export 'package:core_api/src/model/customer_place_order_dto_unsaved_address.dart';
 export 'package:core_api/src/model/customer_price_report_body_dto.dart';

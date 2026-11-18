@@ -754,6 +754,22 @@ describe('the ordering tables (AP §8.1, §4.8; architecture §5.5)', () => {
         `UPDATE customers.restaurant_suggestions SET note = 'x' WHERE id = '${suggested[0].id}'`,
       ),
     ).rejects.toThrow(/permission denied/);
+    // Slice 2.28b: a favourite per account and restaurant, removed by its
+    // removed_at and never deleted.
+    const favourite = (account: string) =>
+      appQuery(
+        `INSERT INTO customers.favourites (account_id, restaurant_id, added_at) VALUES ('${account}', '${city}', now())`,
+      );
+    await favourite(city);
+    await expect(favourite(city)).rejects.toThrow(/favourites_account_id_restaurant_id_pk/);
+    await expect(
+      appQuery(
+        `UPDATE customers.favourites SET removed_at = added_at - interval '1 second' WHERE account_id = '${city}'`,
+      ),
+    ).rejects.toThrow(/favourites_removed_after_added/);
+    await expect(
+      appQuery(`DELETE FROM customers.favourites WHERE account_id = '${city}'`),
+    ).rejects.toThrow(/permission denied/);
   });
 
   it("keep a customer's blocks as they started, one open at a time, the dues kind never ending", async () => {

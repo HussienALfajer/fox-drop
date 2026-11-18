@@ -297,6 +297,8 @@ describe('the restaurant list (CU §8.2)', () => {
       estimate: { fromMin: 30, toMin: 40 },
       deliveryFee: { fee: { amount: '4000', currency: 'TRY' }, free: false },
       state: { state: 'open', busyMode: false, until: null, opensAt: null, message: null },
+      // A guest has no favourites (CU §9.6).
+      favourite: false,
     });
     expect(restaurants[1]).toMatchObject({
       // 20 prep + 15 busy + 0 trip + 10 buffer.

@@ -167,6 +167,9 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
   @override
   final CustomerOrderDtoOutputOrderDelivery? delivery;
   @override
+  final BuiltList<CustomerActiveOrdersDtoOutputOrdersInnerTimelineInner>
+  timeline;
+  @override
   final CustomerActiveOrdersDtoOutputOrdersInnerRestaurant restaurant;
   @override
   final CustomerActiveOrdersDtoOutputOrdersInnerCaptain? captain;
@@ -217,6 +220,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
     this.rejection,
     this.outcome,
     this.delivery,
+    required this.timeline,
     required this.restaurant,
     this.captain,
     required this.currency,
@@ -262,6 +266,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
         rejection == other.rejection &&
         outcome == other.outcome &&
         delivery == other.delivery &&
+        timeline == other.timeline &&
         restaurant == other.restaurant &&
         captain == other.captain &&
         currency == other.currency &&
@@ -298,6 +303,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
     _$hash = $jc(_$hash, rejection.hashCode);
     _$hash = $jc(_$hash, outcome.hashCode);
     _$hash = $jc(_$hash, delivery.hashCode);
+    _$hash = $jc(_$hash, timeline.hashCode);
     _$hash = $jc(_$hash, restaurant.hashCode);
     _$hash = $jc(_$hash, captain.hashCode);
     _$hash = $jc(_$hash, currency.hashCode);
@@ -336,6 +342,7 @@ class _$CustomerOrderDtoOutputOrder extends CustomerOrderDtoOutputOrder {
           ..add('rejection', rejection)
           ..add('outcome', outcome)
           ..add('delivery', delivery)
+          ..add('timeline', timeline)
           ..add('restaurant', restaurant)
           ..add('captain', captain)
           ..add('currency', currency)
@@ -474,6 +481,15 @@ class CustomerOrderDtoOutputOrderBuilder
   set delivery(CustomerOrderDtoOutputOrderDeliveryBuilder? delivery) =>
       _$this._delivery = delivery;
 
+  ListBuilder<CustomerActiveOrdersDtoOutputOrdersInnerTimelineInner>? _timeline;
+  ListBuilder<CustomerActiveOrdersDtoOutputOrdersInnerTimelineInner>
+  get timeline => _$this._timeline ??=
+      ListBuilder<CustomerActiveOrdersDtoOutputOrdersInnerTimelineInner>();
+  set timeline(
+    ListBuilder<CustomerActiveOrdersDtoOutputOrdersInnerTimelineInner>?
+    timeline,
+  ) => _$this._timeline = timeline;
+
   CustomerActiveOrdersDtoOutputOrdersInnerRestaurantBuilder? _restaurant;
   CustomerActiveOrdersDtoOutputOrdersInnerRestaurantBuilder get restaurant =>
       _$this._restaurant ??=
@@ -583,6 +599,7 @@ class CustomerOrderDtoOutputOrderBuilder
       _rejection = $v.rejection?.toBuilder();
       _outcome = $v.outcome?.toBuilder();
       _delivery = $v.delivery?.toBuilder();
+      _timeline = $v.timeline.toBuilder();
       _restaurant = $v.restaurant.toBuilder();
       _captain = $v.captain?.toBuilder();
       _currency = $v.currency;
@@ -658,6 +675,7 @@ class CustomerOrderDtoOutputOrderBuilder
             rejection: _rejection?.build(),
             outcome: _outcome?.build(),
             delivery: _delivery?.build(),
+            timeline: timeline.build(),
             restaurant: restaurant.build(),
             captain: _captain?.build(),
             currency: BuiltValueNullFieldError.checkNotNull(
@@ -708,6 +726,8 @@ class CustomerOrderDtoOutputOrderBuilder
         _outcome?.build();
         _$failedField = 'delivery';
         _delivery?.build();
+        _$failedField = 'timeline';
+        timeline.build();
         _$failedField = 'restaurant';
         restaurant.build();
         _$failedField = 'captain';

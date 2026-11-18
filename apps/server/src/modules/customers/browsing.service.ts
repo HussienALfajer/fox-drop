@@ -185,6 +185,29 @@ export class BrowsingService {
     ).map(({ card }) => card);
   }
 
+  // CU §9.6 (slice 2.28b): «المفضلة», the favourites among the restaurants
+  // that deliver to the point, in the list's order (open first, closed
+  // last); one that does not deliver here is left out (owner decision
+  // 2026-11-18).
+  async favourites(
+    point: Point,
+    now: Date,
+    testAccount: boolean,
+    favouriteIds: readonly string[],
+  ): Promise<RestaurantCard[]> {
+    if (favouriteIds.length === 0) return [];
+    const hearted = new Set(favouriteIds);
+    const cards = await this.restaurants(point, now, testAccount);
+    return cards.filter((card) => hearted.has(card.id));
+  }
+
+  // Whether customers (or this admin test account) see the restaurant, so
+  // it can be hearted.
+  async seen(id: string, now: Date, testAccount: boolean): Promise<boolean> {
+    const restaurant = await this.merchants.restaurant(id, now);
+    return restaurant !== null && seenByCustomer(restaurant, testAccount);
+  }
+
   // CU §8.1, AP §9.11.3 (slice 2.27b): the list's cards and the shown
   // sections in the panel's order. «الأقرب إليك» the HOME_SECTION_SIZE
   // nearest by the card's trip; «الأكثر طلباً» those with the most orders
