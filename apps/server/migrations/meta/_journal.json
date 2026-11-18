@@ -778,6 +778,13 @@
       "when": 1794988125913,
       "tag": "0110_marketing_banners",
       "breakpoints": true
+    },
+    {
+      "idx": 111,
+      "version": "7",
+      "when": 1795006002161,
+      "tag": "0111_notifications_campaigns",
+      "breakpoints": true
     }
   ]
 }

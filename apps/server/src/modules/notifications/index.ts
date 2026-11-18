@@ -13,7 +13,10 @@ import { CaptainAvailabilityNotices } from './captain-availability-notices.js';
 import { AlertsService } from './alerts.service.js';
 import { AlertsRelay, AlertsRelayWorker } from './alerts-relay.js';
 import { AlertsSweep, AlertsSweepWorker } from './alerts-sweep.js';
-import { CustomerNotificationsController } from './customer-notifications.controller.js';
+import {
+  CustomerNotificationsController,
+  CustomerPushReceiptsController,
+} from './customer-notifications.controller.js';
 import { PUSH_SENDER, pushSenderFromEnvironment } from './fcm-sender.js';
 import { AppChangeBroadcasts, PlatformBroadcasts } from './platform-broadcasts.js';
 import { PlatformRelay, PlatformRelayWorker } from './platform-relay.js';
@@ -63,6 +66,7 @@ import {
     MerchantPushTokenController,
     CaptainPushTokenController,
     CustomerNotificationsController,
+    CustomerPushReceiptsController,
   ],
   providers: [
     RealtimeTokens,
@@ -166,7 +170,7 @@ export { PlatformRelay } from './platform-relay.js';
 export { PublishFailedError, RealtimePublisher } from './realtime-publisher.js';
 export { type AlertCode, alertCodes } from './alert-rules.js';
 export { type PushRecipient } from './push-devices.js';
-export { PushQueue, type QueuedPush } from './push-queue.js';
+export { type CampaignCounts, PushQueue, type QueuedPush } from './push-queue.js';
 export { AlertsService, type AlertSubjectRef } from './alerts.service.js';
 export {
   type BroadcastApp,

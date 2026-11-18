@@ -4,15 +4,19 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.27d, Mass push (`docs/roadmap.md`, Phase 2, Finding food). Not started.
+Slice 2.27d, Mass push (`docs/roadmap.md`, Phase 2, Finding food). In progress.
 
 - **Roadmap line:** 2.27d Mass push: title and text, the audience (all, a zone, no order in N days, registered but never ordered), the target, now or scheduled, the audience size and a confirmation before sending, and the history with sender, audience, sent (accepted by FCM) and delivered (acknowledged by the app) (AP §9.11.4, D20). The owner schedules a push to customers who never ordered and sees it in the history.
 - **Specs:** AP §9.11.4 «الإشعارات الجماعية» (D20: no daily limit), AP §6 (Marketing: OWN full, OPS read), CU §14 row 22 (the mass push: the default sound, the campaign's text), AP §10 (what the panel pushes to the apps).
-- **Branch:** the cloud session's branch, or `feat/mass-push`.
+- **Branch:** `feat/mass-push`.
 - **What exists:** the notifications module's push queue (`PushQueue`, FCM sends, the customer's push tokens), the app's `pushTargetPath` (`order`, `home`, `codes`), marketing's routes and audit pattern (`marketing.banners`, `marketing.home_sections`), pg-boss timers for a scheduled send, the customers' and ordering's reads of who ordered when (`useDeliveredCounts`, `useOrderFacts`).
 - **Plan:**
-  - [ ] Write the plan here, one step per commit, after reading AP §9.11.4, CU §14 and the notifications module's `CLAUDE.md` (likely: the campaigns' table and the audience count; the send now or at its time through pg-boss in batches with the history's sent count from FCM; the app's acknowledgement for «delivered»; the panel's page with the size and the confirmation; the app's target of a mass push).
-- **To ask the owner first:** who sends (AP §6 gives OWN «Full» and DATA no marketing push: OWN alone?); whether «no order in N days» counts any order or delivered ones only, and whether it includes accounts that never ordered; the targets (AP §9.11.4 names a restaurant, a code or home: a code opens «أكوادي» on it, as the banner does?); whether a guest's installation (no account) is ever in an audience; what «delivered» counts (the app's acknowledgement when the push arrives, or when it is opened); whether a scheduled push can be cancelled or edited before it goes.
+  - [x] Notifications: `push_messages` gains `title`, `campaign_id` and `delivered_at` (migration, expand only); the relay sends a push's own title and a campaign's pushes after every other due push; «الإشعارات» shows a push only once its time came; `PushQueue.campaignCounts` and `cancelCampaign`; the app's receipt `POST /v1/customer/push-receipts` (public: the background handler has no session).
+  - [ ] Marketing: `marketing.mass_pushes`, the audience (customers registers it, with geo's points in a zone and ordering's last delivered order per account), `GET /v1/admin/mass-pushes`, `GET …/audience`, `POST /v1/admin/mass-pushes` (the size confirmed, `Idempotency-Key`; the pushes queued for their time in the same transaction) and `POST …/{id}/cancel`.
+  - [ ] Panel: «الإشعارات الجماعية» with the form, the audience size, the confirmation and the history.
+  - [ ] Customer app: a mass push's target (a restaurant, «أكوادي» on a code, home) and its receipt, in the foreground and in the background.
+  - [ ] Review, handover.
+- **Owner decisions (2026-11-18):** OWN alone sends (`marketing.manage`), OPS reads the history; «لم يطلب منذ N يوماً» counts delivered orders only and leaves out the accounts that never had one (they are «سجّل ولم يطلب»); «وصل» is the app's acknowledgement when the push arrives; a scheduled push can be cancelled before its time, never edited; a code target opens «أكوادي» on it, as a banner does; guests are in no audience; a zone's audience is the customers with a saved address in it.
 
 ### Left from 2.27c (`claude/tender-gauss-ghiu3h`)
 

@@ -7061,6 +7061,42 @@
         ]
       }
     },
+    "/v1/customer/push-receipts": {
+      "post": {
+        "operationId": "customerPushReceiptsReceive",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerPushReceiptDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerPushReceivedDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
+    },
     "/v1/customer/quote": {
       "post": {
         "operationId": "customerQuoteQuote",
@@ -28292,6 +28328,33 @@
         },
         "required": [
           "notifications"
+        ],
+        "additionalProperties": false
+      },
+      "CustomerPushReceiptDto": {
+        "type": "object",
+        "properties": {
+          "messageId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "The push's `messageId`, from its data."
+          }
+        },
+        "required": [
+          "messageId"
+        ]
+      },
+      "CustomerPushReceivedDto_Output": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "received"
+          }
+        },
+        "required": [
+          "status"
         ],
         "additionalProperties": false
       },

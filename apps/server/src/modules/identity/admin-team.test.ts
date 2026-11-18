@@ -549,6 +549,7 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/customer/uploads/report-photo': 'app_session',
   'POST /v1/customer/realtime/token': 'app_session',
   'GET /v1/customer/notifications': 'app_session',
+  'POST /v1/customer/push-receipts': 'public',
   'GET /v1/customer/promo-codes': 'app_session',
   'PUT /v1/customer/push-token': 'app_session',
   'GET /v1/customer/profile': 'app_session',

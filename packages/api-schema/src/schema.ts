@@ -2756,6 +2756,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/customer/push-receipts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["customerPushReceiptsReceive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/customer/quote": {
         parameters: {
             query?: never;
@@ -8537,6 +8553,17 @@ export interface components {
                     [key: string]: string;
                 };
             }[];
+        };
+        CustomerPushReceiptDto: {
+            /**
+             * Format: uuid
+             * @description The push's `messageId`, from its data.
+             */
+            messageId: string;
+        };
+        CustomerPushReceivedDto_Output: {
+            /** @constant */
+            status: "received";
         };
         CustomerQuoteRequestDto: {
             /** Format: uuid */
@@ -20159,6 +20186,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CustomerNotificationsDto_Output"];
+                };
+            };
+        };
+    };
+    customerPushReceiptsReceive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerPushReceiptDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerPushReceivedDto_Output"];
                 };
             };
         };

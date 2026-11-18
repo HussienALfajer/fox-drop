@@ -670,6 +670,8 @@ export 'package:core_api/src/model/customer_price_report_body_dto.dart';
 export 'package:core_api/src/model/customer_price_report_dto_output.dart';
 export 'package:core_api/src/model/customer_profile_dto_output.dart';
 export 'package:core_api/src/model/customer_profile_dto_output_profile.dart';
+export 'package:core_api/src/model/customer_push_receipt_dto.dart';
+export 'package:core_api/src/model/customer_push_received_dto_output.dart';
 export 'package:core_api/src/model/customer_quote_dto_output.dart';
 export 'package:core_api/src/model/customer_quote_dto_output_available_codes_inner.dart';
 export 'package:core_api/src/model/customer_quote_dto_output_available_codes_inner_hours.dart';

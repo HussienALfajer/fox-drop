@@ -5,7 +5,7 @@ import {
   type OnApplicationShutdown,
   type OnModuleInit,
 } from '@nestjs/common';
-import { and, asc, eq, inArray, isNull, lte } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNotNull, isNull, lte } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { reportError } from '../../observability/error-tracking.js';
@@ -27,7 +27,8 @@ export function retryDelayMs(attempts: number): number {
   return Math.min(2 ** attempts * 1000, 60_000);
 }
 
-// Every push's title: the brand, as the apps' name (the texts carry the news).
+// A push's title unless it has its own (a mass push's): the brand, as the
+// apps' name (the texts carry the news).
 export const PUSH_TITLE = 'FOX DROP';
 
 type Row = typeof pushMessages.$inferSelect;
@@ -66,31 +67,38 @@ export class PushRelay {
     let finished = 0;
     for (;;) {
       const rows = await this.database.db.transaction(async (tx) => {
-        const due = await tx
-          .select()
-          .from(pushMessages)
-          .where(
-            and(
-              isNull(pushMessages.sentAt),
-              isNull(pushMessages.gaveUpAt),
-              lte(pushMessages.nextAttemptAt, now),
-            ),
-          )
-          .orderBy(asc(pushMessages.nextAttemptAt), asc(pushMessages.id))
-          .limit(BATCH)
-          .for('update', { skipLocked: true });
-        if (due.length > 0) {
+        const due = (campaigns: boolean, limit: number) =>
+          tx
+            .select()
+            .from(pushMessages)
+            .where(
+              and(
+                isNull(pushMessages.sentAt),
+                isNull(pushMessages.gaveUpAt),
+                lte(pushMessages.nextAttemptAt, now),
+                campaigns ? isNotNull(pushMessages.campaignId) : isNull(pushMessages.campaignId),
+              ),
+            )
+            .orderBy(asc(pushMessages.nextAttemptAt), asc(pushMessages.id))
+            .limit(limit)
+            .for('update', { skipLocked: true });
+        // A mass push's thousands wait behind every other due push (AP
+        // §9.11.4): each batch takes them only after the others.
+        const others = await due(false, BATCH);
+        const taken =
+          others.length < BATCH ? [...others, ...(await due(true, BATCH - others.length))] : others;
+        if (taken.length > 0) {
           await tx
             .update(pushMessages)
             .set({ nextAttemptAt: new Date(now.getTime() + LEASE_MS) })
             .where(
               inArray(
                 pushMessages.id,
-                due.map((row) => row.id),
+                taken.map((row) => row.id),
               ),
             );
         }
-        return due;
+        return taken;
       });
       for (const row of rows) {
         if (await this.send(row, now)) finished += 1;
@@ -115,7 +123,7 @@ export class PushRelay {
     for (const target of targets) {
       const result = await this.sender.send({
         token: target.token,
-        title: PUSH_TITLE,
+        title: row.title ?? PUSH_TITLE,
         body: row.body,
         channel: row.level,
         priority: row.priority,
