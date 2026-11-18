@@ -18925,6 +18925,34 @@
               "null"
             ]
           },
+          "centre": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "latitude": {
+                    "type": "number",
+                    "minimum": -90,
+                    "maximum": 90
+                  },
+                  "longitude": {
+                    "type": "number",
+                    "minimum": -180,
+                    "maximum": 180
+                  }
+                },
+                "required": [
+                  "latitude",
+                  "longitude"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Where the map starts: the centre of the city's active zones; null without any."
+          },
           "prepFloorMin": {
             "type": "integer",
             "minimum": -9007199254740991,
@@ -18996,6 +19024,7 @@
           "categoriesMax",
           "zones",
           "baseCurrency",
+          "centre",
           "prepFloorMin",
           "prepCeilingMin",
           "defaultPrepMin",

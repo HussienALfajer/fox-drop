@@ -126,6 +126,8 @@ describe('the wizard routes, steps 1–3', () => {
       defaultPrepMin: 20,
       categoriesMax: 5,
     });
+    // The seeded city has no zones in the tests: the map starts nowhere.
+    expect(response.json()).toHaveProperty('centre', null);
   });
 
   it('maps the refusals and keeps the steps from roles without restaurants.create', async () => {

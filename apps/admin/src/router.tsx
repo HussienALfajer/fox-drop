@@ -63,6 +63,8 @@ import { canSeeCategories, canSeeRestaurantCategories } from './categories.js';
 import { CategoriesPage, RestaurantCategoriesPage } from './categories-page.js';
 import { CONTENT_FAQS, CONTENT_READ } from './content.js';
 import { ContentPage } from './content-page.js';
+import { canSeeDrafts, isStep, type Step } from './restaurant-drafts.js';
+import { RestaurantDraftPage, RestaurantDraftsPage } from './restaurant-drafts-page.js';
 import { canSeeImages } from './restaurant-images.js';
 import { RestaurantImagesPage } from './restaurant-images-page.js';
 import { canSeeRestaurantStatus } from './restaurant-status.js';
@@ -267,6 +269,32 @@ const imagesRoute = createRoute({
     if (!canSeeImages(context.session)) throw redirect({ to: '/' });
   },
   component: RestaurantImagesPage,
+});
+
+// «إضافة مطعم» (AP §9.6.3, slice 2.30a): the city's drafts, and one draft's
+// steps; restaurants.read or restaurants.create read them, and each step's
+// own permission saves it (the server checks).
+const restaurantDraftsRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/restaurant-drafts',
+  validateSearch: (search: Record<string, unknown>): { city?: string } => citySearch(search),
+  beforeLoad: ({ context }) => {
+    if (!canSeeDrafts(context.session)) throw redirect({ to: '/' });
+  },
+  component: RestaurantDraftsPage,
+});
+
+const restaurantDraftRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/restaurant-drafts/$restaurantId',
+  validateSearch: (search: Record<string, unknown>): { city?: string; step: Step } => ({
+    ...citySearch(search),
+    step: isStep(search.step) ? search.step : 'basics',
+  }),
+  beforeLoad: ({ context }) => {
+    if (!canSeeDrafts(context.session)) throw redirect({ to: '/' });
+  },
+  component: RestaurantDraftPage,
 });
 
 // «حالة المطاعم» (slice 2.6b, AP §9.6.5): every restaurants.read session
@@ -695,6 +723,8 @@ const routeTree = rootRoute.addChildren([
     restaurantReceiptRoute,
     restaurantStatementsRoute,
     imagesRoute,
+    restaurantDraftsRoute,
+    restaurantDraftRoute,
     categoriesRoute,
     restaurantCategoriesRoute,
     restaurantStatusRoute,

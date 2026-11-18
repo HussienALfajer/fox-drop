@@ -152,12 +152,14 @@ export function useSetImage() {
       }
       throw new Error('The image was not linked.');
     },
-    onSuccess: (_result, { target }) =>
-      queryClient.invalidateQueries({
-        queryKey:
-          target.kind === 'category'
-            ? ['content', 'categories']
-            : ['restaurant-images', target.restaurantId],
-      }),
+    onSuccess: async (_result, { target }) => {
+      if (target.kind === 'category') {
+        await queryClient.invalidateQueries({ queryKey: ['content', 'categories'] });
+        return;
+      }
+      await queryClient.invalidateQueries({ queryKey: ['restaurant-images', target.restaurantId] });
+      // «إضافة مطعم» shows the logo and cover of its draft (slice 2.30a).
+      await queryClient.invalidateQueries({ queryKey: ['restaurant-draft', target.restaurantId] });
+    },
   });
 }

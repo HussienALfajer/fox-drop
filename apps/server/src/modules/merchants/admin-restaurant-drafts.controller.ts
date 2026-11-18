@@ -98,6 +98,9 @@ class AdminRestaurantDraftChoicesDto extends createZodDto(
     categoriesMax: z.int(),
     zones: z.array(z.object({ id: z.uuid(), name: z.string() })),
     baseCurrency: z.string().nullable(),
+    centre: point
+      .nullable()
+      .describe("Where the map starts: the centre of the city's active zones; null without any."),
     prepFloorMin: z.int(),
     prepCeilingMin: z.int(),
     defaultPrepMin: z.int().describe('merchant.default_prep_min, the step-3 start.'),
@@ -345,10 +348,11 @@ export class AdminRestaurantDraftsController {
   @ZodResponse({ status: 200, type: AdminRestaurantDraftChoicesDto })
   async choices(@Query() query: AdminRestaurantDraftsQueryDto) {
     const scope = { cityId: query.cityId };
-    const [categories, zones, baseCurrency, floor, ceiling, prep, minimum, commission] =
+    const [categories, zones, centre, baseCurrency, floor, ceiling, prep, minimum, commission] =
       await Promise.all([
         this.categories.active(),
         this.geo.zones(query.cityId),
+        this.geo.zonesCentre(query.cityId),
         this.fx.baseCurrency(query.cityId),
         this.settings.get('merchant.prep_time_floor_min', scope),
         this.settings.get('merchant.prep_time_ceiling_min', scope),
@@ -361,6 +365,7 @@ export class AdminRestaurantDraftsController {
       categoriesMax: RESTAURANT_CATEGORIES_MAX,
       zones: zones.filter((zone) => zone.active).map(({ id, name }) => ({ id, name })),
       baseCurrency,
+      centre,
       prepFloorMin: floor,
       prepCeilingMin: ceiling,
       defaultPrepMin: prep,

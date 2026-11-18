@@ -641,6 +641,7 @@ Serializers _$serializers =
           ..add(AdminRestaurantCategoriesDtoOutput.serializer)
           ..add(AdminRestaurantDraftChoicesDtoOutput.serializer)
           ..add(AdminRestaurantDraftChoicesDtoOutputCategoriesInner.serializer)
+          ..add(AdminRestaurantDraftChoicesDtoOutputCentre.serializer)
           ..add(
             AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder.serializer,
           )

@@ -348,6 +348,21 @@ export class GeoService implements OnModuleInit {
       .orderBy(asc(zones.name));
   }
 
+  // The centre of the city's active zones, where a map of the city starts
+  // (the wizard's pin, slice 2.30a); null without any.
+  async zonesCentre(cityId: string): Promise<Point | null> {
+    const [row] = await this.database.db
+      .select({
+        latitude: sql<number | null>`ST_Y(ST_Centroid(ST_Collect(${zones.area})))`,
+        longitude: sql<number | null>`ST_X(ST_Centroid(ST_Collect(${zones.area})))`,
+      })
+      .from(zones)
+      .where(and(eq(zones.cityId, cityId), eq(zones.active, true)));
+    return row?.latitude == null || row.longitude == null
+      ? null
+      : { latitude: row.latitude, longitude: row.longitude };
+  }
+
   // A new zone: a neighbourhood's polygon, its corners in order (AP §9.12.2).
   // The ring closes by itself; one that crosses itself is refused, and so is
   // an active zone that overlaps another active one (owner decision

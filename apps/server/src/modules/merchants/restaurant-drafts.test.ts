@@ -394,3 +394,12 @@ describe('step 5: the contract', () => {
     ).rejects.toEqual(refusal('invalid_contract'));
   });
 });
+
+describe("the map's start", () => {
+  it("is the centre of the city's active zones", async () => {
+    const { cityId } = await city();
+    const centre = await geo.zonesCentre(cityId);
+    expect(centre?.latitude).toBeCloseTo(pin.latitude, 6);
+    expect(centre?.longitude).toBeCloseTo(pin.longitude, 6);
+  });
+});

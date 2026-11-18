@@ -15,6 +15,7 @@ import { canSeeMassPushes } from './mass-pushes.js';
 import { canSeeHomeSections } from './home-sections.js';
 import { canSeePromoCodes } from './promo-codes.js';
 import { RESTAURANT_STATEMENTS } from './restaurant-statements.js';
+import { canSeeDrafts } from './restaurant-drafts.js';
 import { canSeeImages } from './restaurant-images.js';
 import { canSeeRestaurantStatus } from './restaurant-status.js';
 import { canSeeLostDemand } from './lost-demand.js';
@@ -69,6 +70,11 @@ export function HomePage() {
           {canSeeRestaurantCategories(session) && (
             <li>
               <Link to="/restaurant-categories">{t('restaurantCategories.title')}</Link>
+            </li>
+          )}
+          {canSeeDrafts(session) && (
+            <li>
+              <Link to="/restaurant-drafts">{t('drafts.title')}</Link>
             </li>
           )}
           {canSeeImages(session) && (

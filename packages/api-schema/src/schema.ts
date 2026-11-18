@@ -6365,6 +6365,11 @@ export interface components {
                 name: string;
             }[];
             baseCurrency: string | null;
+            /** @description Where the map starts: the centre of the city's active zones; null without any. */
+            centre: {
+                latitude: number;
+                longitude: number;
+            } | null;
             prepFloorMin: number;
             prepCeilingMin: number;
             /** @description merchant.default_prep_min, the step-3 start. */

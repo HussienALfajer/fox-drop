@@ -1,0 +1,6 @@
+/* The wizard's map (slice 2.30a) needs a height to draw; the rest of its
+   look waits for the design. */
+.pin-map {
+  block-size: 360px;
+  inline-size: 100%;
+}

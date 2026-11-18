@@ -17,7 +17,7 @@ Slice 2.30a, the wizard's steps 1 to 6 with its draft (`docs/roadmap.md`, Phase 
 - [x] Record the split: the three slices in `docs/roadmap.md` and this plan.
 - [x] Server, steps 1–3: the draft record (migration: the record columns empty for a draft only, the owner's name and phone), start a draft, save basics, location and contacts, operations (hours, prep time, minimum order, coverage) in one transaction each, the wizard's read with each step's state and the list of drafts; routes under `/v1/admin/restaurant-drafts`; tests first.
 - [x] Server, steps 4–6: the commission with an optional launch rate (OWN), withdrawing versions not yet in force; the contract (dates, duration, scans in `private-docs`, the pledge) saved by DATA and confirmed by OWN or OPS, with nginx forwarding the panel's private uploads and the scans' signed reads; the owner and cashier accounts (list, add, remove while a draft); `pnpm generate:api`.
-- [ ] Panel: «إضافة مطعم» and the drafts list, the six steps with each step's save, the map (MapLibre, the style from the panel's own `/maps/`) with typed coordinates as a fallback, the translations, unit tests and the smoke test; the folder `CLAUDE.md` files.
+- [x] Panel: «إضافة مطعم» and the drafts list, the six steps with each step's save, the map (MapLibre, the style from the panel's own `/maps/`) with typed coordinates as a fallback, the translations, unit tests and the smoke test; the folder `CLAUDE.md` files.
 - [ ] Review (`reviewer`), fixes, hand over to 2.30b.
 
 ### Left from 2.29b (the cloud session's branch)

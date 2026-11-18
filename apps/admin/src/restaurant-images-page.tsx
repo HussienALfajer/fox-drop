@@ -132,7 +132,7 @@ function RestaurantImages({
   );
 }
 
-function ImageField(props: {
+export function ImageField(props: {
   label: string;
   imageKey: string | null;
   width: MediaWidth;

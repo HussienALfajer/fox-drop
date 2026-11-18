@@ -384,6 +384,7 @@ export 'package:core_api/src/model/admin_restaurant_categories_dto.dart';
 export 'package:core_api/src/model/admin_restaurant_categories_dto_output.dart';
 export 'package:core_api/src/model/admin_restaurant_draft_choices_dto_output.dart';
 export 'package:core_api/src/model/admin_restaurant_draft_choices_dto_output_categories_inner.dart';
+export 'package:core_api/src/model/admin_restaurant_draft_choices_dto_output_centre.dart';
 export 'package:core_api/src/model/admin_restaurant_draft_choices_dto_output_default_minimum_order.dart';
 export 'package:core_api/src/model/admin_restaurant_draft_dto_output.dart';
 export 'package:core_api/src/model/admin_restaurant_draft_dto_output_basics.dart';

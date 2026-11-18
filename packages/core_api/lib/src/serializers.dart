@@ -383,6 +383,7 @@ import 'package:core_api/src/model/admin_restaurant_categories_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_categories_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_draft_choices_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_draft_choices_dto_output_categories_inner.dart';
+import 'package:core_api/src/model/admin_restaurant_draft_choices_dto_output_centre.dart';
 import 'package:core_api/src/model/admin_restaurant_draft_choices_dto_output_default_minimum_order.dart';
 import 'package:core_api/src/model/admin_restaurant_draft_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_draft_dto_output_basics.dart';
@@ -1279,6 +1280,7 @@ part 'serializers.g.dart';
   AdminRestaurantCategoriesDtoOutput,
   AdminRestaurantDraftChoicesDtoOutput,
   AdminRestaurantDraftChoicesDtoOutputCategoriesInner,
+  AdminRestaurantDraftChoicesDtoOutputCentre,
   AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder,
   AdminRestaurantDraftDtoOutput,
   AdminRestaurantDraftDtoOutputBasics,

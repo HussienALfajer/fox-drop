@@ -18,6 +18,8 @@ class _$AdminRestaurantDraftChoicesDtoOutput
   @override
   final String? baseCurrency;
   @override
+  final AdminRestaurantDraftChoicesDtoOutputCentre? centre;
+  @override
   final int prepFloorMin;
   @override
   final int prepCeilingMin;
@@ -45,6 +47,7 @@ class _$AdminRestaurantDraftChoicesDtoOutput
     required this.categoriesMax,
     required this.zones,
     this.baseCurrency,
+    this.centre,
     required this.prepFloorMin,
     required this.prepCeilingMin,
     required this.defaultPrepMin,
@@ -71,6 +74,7 @@ class _$AdminRestaurantDraftChoicesDtoOutput
         categoriesMax == other.categoriesMax &&
         zones == other.zones &&
         baseCurrency == other.baseCurrency &&
+        centre == other.centre &&
         prepFloorMin == other.prepFloorMin &&
         prepCeilingMin == other.prepCeilingMin &&
         defaultPrepMin == other.defaultPrepMin &&
@@ -88,6 +92,7 @@ class _$AdminRestaurantDraftChoicesDtoOutput
     _$hash = $jc(_$hash, categoriesMax.hashCode);
     _$hash = $jc(_$hash, zones.hashCode);
     _$hash = $jc(_$hash, baseCurrency.hashCode);
+    _$hash = $jc(_$hash, centre.hashCode);
     _$hash = $jc(_$hash, prepFloorMin.hashCode);
     _$hash = $jc(_$hash, prepCeilingMin.hashCode);
     _$hash = $jc(_$hash, defaultPrepMin.hashCode);
@@ -107,6 +112,7 @@ class _$AdminRestaurantDraftChoicesDtoOutput
           ..add('categoriesMax', categoriesMax)
           ..add('zones', zones)
           ..add('baseCurrency', baseCurrency)
+          ..add('centre', centre)
           ..add('prepFloorMin', prepFloorMin)
           ..add('prepCeilingMin', prepCeilingMin)
           ..add('defaultPrepMin', defaultPrepMin)
@@ -152,6 +158,12 @@ class AdminRestaurantDraftChoicesDtoOutputBuilder
   String? _baseCurrency;
   String? get baseCurrency => _$this._baseCurrency;
   set baseCurrency(String? baseCurrency) => _$this._baseCurrency = baseCurrency;
+
+  AdminRestaurantDraftChoicesDtoOutputCentreBuilder? _centre;
+  AdminRestaurantDraftChoicesDtoOutputCentreBuilder get centre =>
+      _$this._centre ??= AdminRestaurantDraftChoicesDtoOutputCentreBuilder();
+  set centre(AdminRestaurantDraftChoicesDtoOutputCentreBuilder? centre) =>
+      _$this._centre = centre;
 
   int? _prepFloorMin;
   int? get prepFloorMin => _$this._prepFloorMin;
@@ -206,6 +218,7 @@ class AdminRestaurantDraftChoicesDtoOutputBuilder
       _categoriesMax = $v.categoriesMax;
       _zones = $v.zones.toBuilder();
       _baseCurrency = $v.baseCurrency;
+      _centre = $v.centre?.toBuilder();
       _prepFloorMin = $v.prepFloorMin;
       _prepCeilingMin = $v.prepCeilingMin;
       _defaultPrepMin = $v.defaultPrepMin;
@@ -248,6 +261,7 @@ class AdminRestaurantDraftChoicesDtoOutputBuilder
             ),
             zones: zones.build(),
             baseCurrency: baseCurrency,
+            centre: _centre?.build(),
             prepFloorMin: BuiltValueNullFieldError.checkNotNull(
               prepFloorMin,
               r'AdminRestaurantDraftChoicesDtoOutput',
@@ -293,6 +307,9 @@ class AdminRestaurantDraftChoicesDtoOutputBuilder
 
         _$failedField = 'zones';
         zones.build();
+
+        _$failedField = 'centre';
+        _centre?.build();
 
         _$failedField = 'defaultMinimumOrder';
         _defaultMinimumOrder?.build();

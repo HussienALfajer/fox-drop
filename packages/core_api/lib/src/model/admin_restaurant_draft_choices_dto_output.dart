@@ -5,6 +5,7 @@
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/admin_restaurant_draft_choices_dto_output_categories_inner.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/admin_restaurant_draft_choices_dto_output_centre.dart';
 import 'package:core_api/src/model/admin_restaurant_draft_choices_dto_output_default_minimum_order.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -18,6 +19,7 @@ part 'admin_restaurant_draft_choices_dto_output.g.dart';
 /// * [categoriesMax]
 /// * [zones]
 /// * [baseCurrency]
+/// * [centre]
 /// * [prepFloorMin]
 /// * [prepCeilingMin]
 /// * [defaultPrepMin] - merchant.default_prep_min, the step-3 start.
@@ -44,6 +46,9 @@ abstract class AdminRestaurantDraftChoicesDtoOutput
 
   @BuiltValueField(wireName: r'baseCurrency')
   String? get baseCurrency;
+
+  @BuiltValueField(wireName: r'centre')
+  AdminRestaurantDraftChoicesDtoOutputCentre? get centre;
 
   @BuiltValueField(wireName: r'prepFloorMin')
   int get prepFloorMin;
@@ -127,6 +132,15 @@ class _$AdminRestaurantDraftChoicesDtoOutputSerializer
         : serializers.serialize(
             object.baseCurrency,
             specifiedType: const FullType.nullable(String),
+          );
+    yield r'centre';
+    yield object.centre == null
+        ? null
+        : serializers.serialize(
+            object.centre,
+            specifiedType: const FullType.nullable(
+              AdminRestaurantDraftChoicesDtoOutputCentre,
+            ),
           );
     yield r'prepFloorMin';
     yield serializers.serialize(
@@ -244,6 +258,18 @@ class _$AdminRestaurantDraftChoicesDtoOutputSerializer
                   as String?;
           if (valueDes == null) continue;
           result.baseCurrency = valueDes;
+          break;
+        case r'centre':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminRestaurantDraftChoicesDtoOutputCentre,
+                    ),
+                  )
+                  as AdminRestaurantDraftChoicesDtoOutputCentre?;
+          if (valueDes == null) continue;
+          result.centre.replace(valueDes);
           break;
         case r'prepFloorMin':
           final valueDes =
