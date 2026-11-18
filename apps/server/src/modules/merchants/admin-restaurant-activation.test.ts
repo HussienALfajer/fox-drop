@@ -281,4 +281,55 @@ describe('step 8, the checklist and the activation', () => {
     await ops('PUT', `/${id}/menu/availability`, { type: 'category', id: meals, available: false });
     expect(states((await ops('GET', `/${id}/checklist`)).json()).menu).toBe('missing');
   });
+
+  it('counts an item out whose required group has every option switched off', async () => {
+    const merchants = app.get(MerchantsService);
+    const ops = await admin('OPS');
+    const id = await draft();
+    const category = await merchants.addCategory(id, { name: 'وجبات' }, change);
+    const group = await merchants.addOptionGroup(
+      id,
+      {
+        name: 'الحجم',
+        minChoices: 1,
+        maxChoices: 1,
+        options: [{ name: 'كبير', priceDelta: { amount: 0n, currency: 'TRY' } }],
+      },
+      change,
+    );
+    await merchants.addItem(
+      id,
+      {
+        categoryId: category,
+        name: 'شاورما',
+        price: { amount: 5000n, currency: 'TRY' },
+        optionGroupIds: [group],
+      },
+      change,
+    );
+    expect(states((await ops('GET', `/${id}/checklist`)).json()).menu).toBe('met');
+    const [option] = (await merchants.menu(id)).categories[0]!.items[0]!.optionGroups[0]!.options;
+    await merchants.setAvailability(
+      id,
+      { type: 'option', id: option!.id },
+      { available: false, until: 'turned_back_on' },
+      change,
+    );
+    expect(states((await ops('GET', `/${id}/checklist`)).json()).menu).toBe('missing');
+  });
+
+  it('lets DATA read the onboarding only: a draft or test mode, never an active restaurant', async () => {
+    const merchants = app.get(MerchantsService);
+    const data = await admin('DATA');
+    const id = await draft();
+    await merchants.setAccountStatus(id, 'test', change);
+    expect((await data('GET', `/${id}`)).statusCode).toBe(200);
+    expect((await data('GET', `/${id}/checklist`)).statusCode).toBe(200);
+    await merchants.setAccountStatus(id, 'active', change);
+    expect((await data('GET', `/${id}`)).statusCode).toBe(404);
+    expect((await data('GET', `/${id}/checklist`)).json()).toMatchObject({
+      statusCode: 404,
+      error: 'unknown_restaurant',
+    });
+  });
 });

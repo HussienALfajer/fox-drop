@@ -427,9 +427,14 @@ export class AdminRestaurantDraftsController {
   ) {
     const draft = await this.found(params.restaurantId);
     // DATA (restaurants.create without restaurants.read, owner decision
-    // 2026-11-05) reads drafts only: a restaurant past its draft is theirs
-    // to read no more.
-    if (draft.accountStatus !== 'draft' && !session.permissions.includes('restaurants.read')) {
+    // 2026-11-05) reads drafts only, and test mode, whose menu is still
+    // theirs (step 7, slice 2.30b): an active restaurant is theirs to read no
+    // more.
+    if (
+      draft.accountStatus !== 'draft' &&
+      draft.accountStatus !== 'test' &&
+      !session.permissions.includes('restaurants.read')
+    ) {
       throw new NotFoundException({
         statusCode: HttpStatus.NOT_FOUND,
         error: 'unknown_restaurant',

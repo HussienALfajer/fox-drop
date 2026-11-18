@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq, isNull, sql } from 'drizzle-orm';
+import { and, eq, gt, inArray, isNull, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { AuditService } from '../audit/index.js';
@@ -13,7 +13,16 @@ import {
   type Tx,
 } from './merchants.service.js';
 import type { AccountStatus } from './operating-state.js';
-import { categories, commissionRates, contracts, items, restaurants } from './schema.js';
+import {
+  categories,
+  commissionRates,
+  contracts,
+  itemOptionGroups,
+  items,
+  optionGroups,
+  options,
+  restaurants,
+} from './schema.js';
 
 // The checklist as the panel shows it (AP §9.6.3 step 8).
 export interface RestaurantChecklist extends Checklist {
@@ -28,8 +37,9 @@ export interface RestaurantChecklist extends Checklist {
 // checklist inside its transaction, under the restaurant's lock, so a menu
 // edit cannot slip between the check and the change; the owner accounts and
 // the delivered test orders come from identity and ordering, read through
-// the pool (an owner removed at that moment is the one gap, harmless: the
-// draft's accounts are added and removed only before test mode).
+// the pool before the transaction (an owner removed at that moment is the one
+// gap, harmless: the draft's accounts are added and removed only before test
+// mode).
 @Injectable()
 export class ActivationService {
   constructor(
@@ -48,7 +58,14 @@ export class ActivationService {
       })
       .from(restaurants)
       .where(eq(restaurants.id, restaurantId));
-    return this.read(this.database.db, restaurantId, found.accountStatus, row!.complete, now);
+    return this.read(
+      this.database.db,
+      restaurantId,
+      found.accountStatus,
+      row!.complete,
+      now,
+      await this.counts(restaurantId),
+    );
   }
 
   // OWN waives the rule of images on 80% of the items, or takes the waiver
@@ -113,6 +130,9 @@ export class ActivationService {
     change: MerchantChange,
     now: Date,
   ): Promise<void> {
+    // Read through the pool before the transaction, never while it holds a
+    // connection (identity's CLAUDE.md, «Tokens»).
+    const counts = await this.counts(restaurantId);
     await this.database.db.transaction(async (tx) => {
       const row = await this.merchants.lockRestaurant(tx, restaurantId);
       if (row.accountStatus === status) return;
@@ -123,7 +143,14 @@ export class ActivationService {
           `only a ${from} restaurant becomes ${status} here`,
         );
       }
-      const checklist = await this.read(tx, restaurantId, row.accountStatus, row.complete, now);
+      const checklist = await this.read(
+        tx,
+        restaurantId,
+        row.accountStatus,
+        row.complete,
+        now,
+        counts,
+      );
       if (status === 'test' ? !checklist.canStartTest : !checklist.canActivate) {
         throw new MerchantsRefusedError(
           'checklist_incomplete',
@@ -137,12 +164,24 @@ export class ActivationService {
     });
   }
 
+  // The owner accounts (identity) and delivered test orders (ordering).
+  private async counts(
+    restaurantId: string,
+  ): Promise<{ ownerAccounts: number; deliveredTestOrders: number }> {
+    const [ownerAccounts, deliveredTestOrders] = await Promise.all([
+      this.merchants.ownerAccountCount(restaurantId),
+      this.merchants.deliveredTestOrderCount(restaurantId),
+    ]);
+    return { ownerAccounts, deliveredTestOrders };
+  }
+
   private async read(
     executor: Executor | Tx,
     restaurantId: string,
     accountStatus: AccountStatus,
     record: boolean,
     now: Date,
+    { ownerAccounts, deliveredTestOrders }: { ownerAccounts: number; deliveredTestOrders: number },
   ): Promise<RestaurantChecklist> {
     const [waiver] = await executor
       .select({ at: restaurants.menuImagesWaivedAt, by: restaurants.menuImagesWaivedBy })
@@ -177,6 +216,7 @@ export class ActivationService {
       );
     const visibleItems = await executor
       .select({
+        id: items.id,
         categoryId: items.categoryId,
         photoKey: items.photoKey,
         available: items.available,
@@ -193,18 +233,64 @@ export class ActivationService {
       );
     const shown = new Map(visibleCategories.map((category) => [category.id, category]));
     const menuItems = visibleItems.filter((item) => shown.has(item.categoryId));
+    // RA §9.3, as menu() reads it: an item is out when a required group of it
+    // has every option switched off.
+    const required =
+      menuItems.length === 0
+        ? []
+        : await executor
+            .select({
+              itemId: itemOptionGroups.itemId,
+              groupId: optionGroups.id,
+              optionId: options.id,
+              available: options.available,
+              unavailableUntil: options.unavailableUntil,
+            })
+            .from(itemOptionGroups)
+            .innerJoin(optionGroups, eq(optionGroups.id, itemOptionGroups.groupId))
+            .leftJoin(
+              options,
+              and(
+                eq(options.groupId, optionGroups.id),
+                eq(options.published, true),
+                isNull(options.deletedAt),
+              ),
+            )
+            .where(
+              and(
+                inArray(
+                  itemOptionGroups.itemId,
+                  menuItems.map((item) => item.id),
+                ),
+                isNull(itemOptionGroups.removedAt),
+                gt(optionGroups.minChoices, 0),
+                eq(optionGroups.published, true),
+                isNull(optionGroups.deletedAt),
+              ),
+            );
+    const groupOut = new Map<string, boolean>();
+    for (const row of required) {
+      const key = `${row.itemId}:${row.groupId}`;
+      const on =
+        row.optionId !== null &&
+        switchedOff({ available: row.available!, unavailableUntil: row.unavailableUntil }, now) ===
+          null;
+      groupOut.set(key, (groupOut.get(key) ?? true) && !on);
+    }
+    const itemOut = new Set(
+      [...groupOut].filter(([, out]) => out).map(([key]) => key.split(':')[0]!),
+    );
     const categoriesWithAvailableItems = visibleCategories.filter(
       (category) =>
         switchedOff(category, now) === null &&
         menuItems.some(
-          (item) => item.categoryId === category.id && switchedOff(item, now) === null,
+          (item) =>
+            item.categoryId === category.id &&
+            switchedOff(item, now) === null &&
+            !itemOut.has(item.id),
         ),
     ).length;
     const withPhoto = menuItems.filter((item) => item.photoKey !== null).length;
-    const [ownerAccounts, deliveredTestOrders] = await Promise.all([
-      this.merchants.ownerAccountCount(restaurantId),
-      this.merchants.deliveredTestOrderCount(restaurantId),
-    ]);
     const checklist = activationChecklist({
       record,
       commission: (commission?.count ?? 0) > 0,

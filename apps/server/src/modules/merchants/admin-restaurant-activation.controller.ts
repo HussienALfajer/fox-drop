@@ -89,8 +89,24 @@ export class AdminRestaurantActivationController {
   @Get(':restaurantId/checklist')
   @RequireAnyPermission('restaurants.read', 'restaurants.create')
   @ZodResponse({ status: 200, type: AdminChecklistDto })
-  async read(@Param() params: AdminChecklistParamsDto) {
-    return this.answer(params.restaurantId);
+  async read(
+    @Param() params: AdminChecklistParamsDto,
+    @CurrentAdminSession() session: AdminSession,
+  ) {
+    const answer = await this.answer(params.restaurantId);
+    // DATA reads the onboarding only, as the draft's read (owner decision
+    // 2026-11-05).
+    if (
+      answer.accountStatus !== 'draft' &&
+      answer.accountStatus !== 'test' &&
+      !session.permissions.includes('restaurants.read')
+    ) {
+      throw new NotFoundException({
+        statusCode: HttpStatus.NOT_FOUND,
+        error: 'unknown_restaurant',
+      });
+    }
+    return answer;
   }
 
   @Put(':restaurantId/menu-images-waiver')

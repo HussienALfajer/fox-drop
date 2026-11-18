@@ -347,12 +347,14 @@ export class MenuEditorService {
     availability: { available: true } | { available: false; until: 'tomorrow' | 'turned_back_on' },
     change: MerchantChange,
   ): Promise<void> {
-    const found = await this.merchants.cityAndStatus(restaurantId);
-    if (found === null) throw new MerchantsRefusedError('unknown_restaurant', 'no such restaurant');
-    if (!MenuEditorService.editable(found.accountStatus)) {
-      throw new MerchantsRefusedError('menu_locked', 'the wizard edits a draft or test menu only');
-    }
-    await this.merchants.setAvailability(restaurantId, target, availability, change);
+    await this.merchants.setAvailability(
+      restaurantId,
+      target,
+      availability,
+      change,
+      new Date(),
+      EDITABLE,
+    );
   }
 
   // The restaurant under its lock, while step 7 may edit its menu.

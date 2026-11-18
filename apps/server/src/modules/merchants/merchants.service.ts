@@ -1339,6 +1339,9 @@ export class MerchantsService implements OnModuleInit {
     availability: { available: true } | { available: false; until: 'tomorrow' | 'turned_back_on' },
     change: MerchantChange,
     now = new Date(),
+    // The statuses this caller edits (the wizard's step 7: a draft or test
+    // mode), checked under the lock; `menu_locked` otherwise.
+    onlyIn: readonly AccountStatus[] | null = null,
   ): Promise<SwitchedOff> {
     const until = availability.available
       ? null
@@ -1348,6 +1351,9 @@ export class MerchantsService implements OnModuleInit {
       // RA §5.5: a terminated restaurant keeps only its money section.
       if (row.accountStatus === 'terminated') {
         throw new MerchantsRefusedError('restaurant_terminated', 'the restaurant is terminated');
+      }
+      if (onlyIn !== null && !onlyIn.includes(row.accountStatus)) {
+        throw new MerchantsRefusedError('menu_locked', 'this menu is not edited here now');
       }
       const switched = await this.writeAvailability(
         tx,
