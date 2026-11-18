@@ -285,6 +285,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get customerTryAgain => 'حاول مجدداً';
 
   @override
+  String get customerCategory => 'التصنيف';
+
+  @override
   String get customerNew => 'جديد';
 
   @override

@@ -74,6 +74,10 @@ class TestApp {
     terms();
     emergencyStop();
     accountState();
+    // AP §9.13: no category unless a test says otherwise.
+    server.on('/v1/customer/categories', [
+      const FakeAnswer(200, {'categories': <Object?>[]}),
+    ]);
     server.on('/v1/customer/status', [
       const FakeAnswer(200, {'status': 'ok', 'serverTime': 1}),
     ]);

@@ -8,6 +8,7 @@ import 'account/delete_account_screen.dart';
 import 'account/my_account_screen.dart';
 import 'auth.dart';
 import 'blocked_screen.dart';
+import 'browsing/category_screen.dart';
 import 'browsing/price_report_screen.dart';
 import 'browsing/restaurant_screen.dart';
 import 'cart/cart_screen.dart';
@@ -95,6 +96,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/restaurants/:id',
         builder: (context, state) =>
             RestaurantScreen(restaurantId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/categories/:id',
+        builder: (context, state) =>
+            CategoryScreen(categoryId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: '/blocked',

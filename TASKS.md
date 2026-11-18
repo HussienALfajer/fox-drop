@@ -15,7 +15,7 @@ Slice 2.27a, Categories (`docs/roadmap.md`, Phase 2, Finding food; 2.27 split in
   - [x] Server, the categories: `content.categories` (name, image key, position, active; removing sets active false), seeded from the restaurants' distinct free-text categories, and `merchants.restaurants.category_ids` filled from them (one migration, expand only); the `category_image` upload purpose; `GET /v1/admin/content/categories` (`content.read` or `content.categories`), `POST`, `PUT /{id}`, `POST order` (`content.categories`), audited.
   - [x] Server, the restaurant's categories and the customer: `PUT /v1/admin/restaurants/{id}/categories` (`restaurants.manage` or `restaurants.create`, active categories only), the cards' `categories` (`category` kept as the first one's name for older apps), `GET /v1/customer/categories`, `GET /v1/customer/restaurants?categoryId=` (CU §8.2's order), «مطاعم مشابهة» by a shared category; the regenerated clients.
   - [x] Panel: «التصنيفات» under «المحتوى» (add with an image, rename, change the image, reorder, remove) and a restaurant's categories.
-  - [ ] Customer app: the categories on the cards, the categories on the home, and the category page.
+  - [x] Customer app: the categories on the cards, the categories on the home, and the category page.
   - [ ] Review, then hand over to 2.27b.
 
 ### Left from 2.26c (`claude/wizardly-volta-pybnwm`)
