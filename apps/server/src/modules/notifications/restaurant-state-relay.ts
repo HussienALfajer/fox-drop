@@ -88,7 +88,12 @@ export function percentOf(rateBp: number): string {
 // A day on the city's clock as the panel writes it, «19/11/2026» (AP §4.7).
 export function dateOn(moment: Date, timeZone: string): string {
   const parts = Object.fromEntries(
-    new Intl.DateTimeFormat('en-GB', { timeZone, day: '2-digit', month: '2-digit', year: 'numeric' })
+    new Intl.DateTimeFormat('en-GB', {
+      timeZone,
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    })
       .formatToParts(moment)
       .map((part) => [part.type, part.value]),
   );

@@ -40,11 +40,7 @@ export const restaurantAccountQuery = (restaurantId: string) =>
 
 // The refusals the page explains, by the server's answer.
 export type AccountRefusal =
-  | 'invalid'
-  | 'not_allowed'
-  | 'terminated'
-  | 'balance_not_zero'
-  | 'orders_unfinished';
+  'invalid' | 'not_allowed' | 'terminated' | 'balance_not_zero' | 'orders_unfinished';
 
 export type AccountResult = { status: 'done' } | { status: 'refused'; refusal: AccountRefusal };
 
