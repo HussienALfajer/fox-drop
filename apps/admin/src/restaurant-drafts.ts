@@ -33,8 +33,8 @@ type CommissionBody = components['schemas']['AdminDraftCommissionDto'];
 type ContractBody = components['schemas']['AdminDraftContractDto'];
 type AccountBody = components['schemas']['AdminNewRestaurantAccountDto'];
 
-// The wizard's steps in order. Step 7 (the menu) and 8 (activation) come
-// with slice 2.30b.
+// The wizard's steps in order; 7 (the menu) and 8 (activation) since slice
+// 2.30b.
 export const STEPS = [
   'basics',
   'location',
@@ -42,6 +42,8 @@ export const STEPS = [
   'commission',
   'contract',
   'accounts',
+  'menu',
+  'activation',
 ] as const;
 export type Step = (typeof STEPS)[number];
 
@@ -56,6 +58,10 @@ export function canSaveStep(session: AdminSession | null | undefined, step: Step
       return can(session, RESTAURANTS_COMMISSION);
     case 'accounts':
       return can(session, RESTAURANTS_OWNER_ACCOUNTS);
+    case 'menu':
+      return can(session, 'restaurants.menus');
+    case 'activation':
+      return can(session, 'restaurants.activate');
     default:
       return can(session, RESTAURANTS_CREATE);
   }
@@ -71,10 +77,12 @@ export function canConfirmContract(session: AdminSession | null | undefined): bo
   return can(session, RESTAURANTS_MANAGE);
 }
 
-// Which steps are done: the server's, and step 6 with an owner account.
+// Which steps are done: the server's, step 6 with an owner account, and
+// steps 7 and 8 by the checklist (`menuDone`, `activationDone`).
 export function stepsDone(
   draft: Draft | null,
   accounts: RestaurantAccount[],
+  later: { menu: boolean; activation: boolean } = { menu: false, activation: false },
 ): Record<Step, boolean> {
   return {
     basics: draft?.steps.basics ?? false,
@@ -83,6 +91,8 @@ export function stepsDone(
     commission: draft?.steps.commission ?? false,
     contract: draft?.steps.contract ?? false,
     accounts: accounts.some((account) => account.role === 'owner'),
+    menu: later.menu,
+    activation: later.activation,
   };
 }
 

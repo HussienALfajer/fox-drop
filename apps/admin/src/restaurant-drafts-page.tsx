@@ -38,6 +38,9 @@ import {
 } from './restaurant-drafts.js';
 import { IMAGE_TYPES } from './restaurant-images.js';
 import { ImageField } from './restaurant-images-page.js';
+import { activationDone, checklistQuery, menuDone } from './restaurant-activation.js';
+import { ActivationStep } from './restaurant-activation-page.js';
+import { MenuStep } from './restaurant-menu-page.js';
 import type { AdminSession } from './session.js';
 
 // MapLibre is most of the bundle: it loads with the location step only.
@@ -93,6 +96,7 @@ export function RestaurantDraftsPage() {
               >
                 {draft.nameAr}
               </Link>{' '}
+              {draft.accountStatus === 'test' && <>{t('drafts.inTest')} </>}
               {t('drafts.savedAt', { time: formatDateTime(draft.updatedAt, city.timeZone) })}{' '}
               {t('drafts.progress', {
                 done: Object.values(draft.steps).filter(Boolean).length,
@@ -124,13 +128,20 @@ export function RestaurantDraftPage() {
     ...accountsQuery(restaurantId),
     enabled: draft.data != null && canReadAccounts(session),
   });
+  const checklist = useQuery({
+    ...checklistQuery(restaurantId),
+    enabled: draft.data != null,
+  });
   if (draft.isError || cities.isError || choices.isError) {
     return <p role="alert">{t('common.failed')}</p>;
   }
   if (draft.data === undefined || !city || !choices.data) {
     return <p role="status">{t('status.loading')}</p>;
   }
-  const done = stepsDone(draft.data, accounts.data ?? []);
+  const done = stepsDone(draft.data, accounts.data ?? [], {
+    menu: menuDone(checklist.data),
+    activation: activationDone(checklist.data),
+  });
   // Before step 1 is saved, only step 1 opens.
   const step: Step = draft.data === null ? 'basics' : search.step;
   const stepSearch = (each: Step) => ({
@@ -208,8 +219,16 @@ export function RestaurantDraftPage() {
           draft={draft.data}
           session={session}
         />
-      ) : (
+      ) : step === 'accounts' ? (
         <AccountsStep restaurantId={restaurantId} session={session} />
+      ) : step === 'menu' ? (
+        <MenuStep
+          restaurantId={restaurantId}
+          currency={choices.data.baseCurrency}
+          session={session}
+        />
+      ) : (
+        <ActivationStep restaurantId={restaurantId} timeZone={city.timeZone} session={session} />
       )}
     </main>
   );

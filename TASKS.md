@@ -14,7 +14,7 @@ Slice 2.30b, the menu and activation (`docs/roadmap.md`, Phase 2; owner decision
   - [x] 1. Step 7 in the server: the admin menu routes (`GET …/menu`, add, edit, reorder and hide categories with their daily window; add and edit items with code, name, description, price, category, hiding and badge; reorder items; availability through `setAvailability`; the photo through the existing route), allowed while the restaurant is a `draft` or in `test` (`409 menu_locked` otherwise, until 2.31's editor brings the price log and the owners' notice). `menu()` gains the badge.
   - [x] 2. Step 8 in the server: the checklist computed with the reason of each missing item (commission, contract, hours, menu with the 80% image rule and OWN's waiver, an owner account counted by identity, the device check shown «غير متاح بعد», a delivered test order counted by ordering); the waiver (migration: `restaurants.menu_images_waived_*`, the permission `restaurants.waive_menu_images` for OWN); «تشغيل الوضع التجريبي» (every item but the test order) and «تفعيل وإظهار للزبائن» (every item) with `restaurants.activate`; the drafts list keeps `test` restaurants.
   - [x] 3. «طلب تجريبي» on the restaurant app's cards and detail for owners and cashiers (`testOrder` on the merchant order).
-  - [ ] 4. The panel: step 7 (the menu) and step 8 (the checklist, the waiver, test mode and activation).
+  - [x] 4. The panel: step 7 (the menu) and step 8 (the checklist, the waiver, test mode and activation).
   - [ ] 5. Review, docs and handover.
 - **Decided in the slice:** the waiver lives on the restaurant row (who and when), cleared by nothing (it only lowers the image rule); steps 1–6 stay draft-only (2.30c edits past the draft); the menu routes work in `draft` and `test` only until 2.31.
 
