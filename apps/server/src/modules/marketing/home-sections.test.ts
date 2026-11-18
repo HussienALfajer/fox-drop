@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -71,8 +71,17 @@ async function admin(roles: string[]) {
     .get(AdminSessionsService)
     .start(db.db, rows[0].id, { ipAddress: '203.0.113.9', device: 'test' }, new Date());
   const cookies = { [ADMIN_SESSION_COOKIE]: token };
-  return (method: 'GET' | 'POST' | 'PUT', url: string, payload?: object) =>
-    app.inject({ method, url, cookies, ...(payload ? { payload } : {}) });
+  // A create gets a fresh Idempotency-Key unless the test gives one.
+  return (method: 'GET' | 'POST' | 'PUT', url: string, payload?: object, key?: string) =>
+    app.inject({
+      method,
+      url,
+      cookies,
+      ...(method === 'POST' && url === '/v1/admin/home-sections'
+        ? { headers: { 'idempotency-key': key ?? randomUUID() } }
+        : {}),
+      ...(payload ? { payload } : {}),
+    });
 }
 
 function restaurant(name: string, cityId = azaz) {
@@ -186,6 +195,20 @@ describe('«أقسام الرئيسية»', () => {
       'home_section.update',
       'home_section.remove',
     ]);
+  });
+
+  it('adds a custom section once per Idempotency-Key', async () => {
+    const owner = await admin(['OWN']);
+    const mine = await restaurant('بيتزا');
+    const body = { cityId: azaz, title: 'بيتزا', restaurantIds: [mine] };
+    const key = randomUUID();
+    const first = await owner('POST', '/v1/admin/home-sections', body, key);
+    const repeat = await owner('POST', '/v1/admin/home-sections', body, key);
+    expect(repeat.statusCode).toBe(201);
+    expect(keys(repeat)).toEqual(keys(first));
+    const other = await owner('POST', '/v1/admin/home-sections', { ...body, title: 'أخرى' }, key);
+    expect(other.statusCode).toBe(422);
+    expect(other.json().error).toBe('idempotency_key_reused');
   });
 
   it('refuses a custom section without a title, restaurants or with another city’s', async () => {

@@ -39,6 +39,9 @@ test('adds a custom section, moves it up and hides a section', async ({ page }) 
     if (request.method() === 'GET') return route.fulfill({ json: answer(sections) });
     const body = request.postDataJSON();
     sent.push({ url: new URL(request.url()).pathname, body });
+    if (request.url().endsWith('/home-sections')) {
+      expect(request.headers()['idempotency-key']).toMatch(/^[0-9a-f-]{36}$/);
+    }
     if (request.url().endsWith('/order')) {
       sections = [custom, ...defaults.map((kind) => built(kind))];
     } else if (request.url().endsWith('/visibility')) {

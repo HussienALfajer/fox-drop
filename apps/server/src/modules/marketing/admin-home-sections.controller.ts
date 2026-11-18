@@ -11,11 +11,13 @@ import {
   Put,
   Query,
   Req,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import type { FastifyRequest } from 'fastify';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
 import { CurrentAdminSession, RequireAnyPermission, RequirePermission } from '../../http/access.js';
+import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
 import type { AdminSession } from '../identity/index.js';
@@ -95,8 +97,8 @@ class AdminHomeSectionParamsDto extends createZodDto(z.object({ sectionId: z.uui
 // AP §9.11.3 «أقسام الرئيسية» (slice 2.27b, owner decision 2026-11-18): OWN
 // orders, shows or hides the sections and writes the custom ones
 // (marketing.manage); OPS reads them (marketing.read). Each command sets a
-// value or names its target, so none takes an Idempotency-Key. Each answers
-// the city's sections.
+// value or names its target, so takes no Idempotency-Key, but the create.
+// Each answers the city's sections.
 @AdminController('home-sections')
 export class AdminHomeSectionsController {
   constructor(
@@ -159,14 +161,16 @@ export class AdminHomeSectionsController {
     );
   }
 
-  // A custom section at the end. Adding the same twice adds two, which the
-  // panel shows at once (no key, as a category). 400 invalid_section; 404
-  // unknown_city.
+  // A custom section at the end, with an Idempotency-Key: a repeat answers
+  // the sections without adding one. 400 invalid_section; 404 unknown_city;
+  // 422 idempotency_key_reused.
   @Post()
   @RequirePermission('marketing.manage')
+  @Idempotent()
   @ZodResponse({ status: 201, type: AdminHomeSectionsDto })
   create(
     @Body() body: AdminNewHomeSectionDto,
+    @IdempotencyKey() idempotencyKey: string,
     @CurrentAdminSession() session: AdminSession,
     @Req() request: FastifyRequest,
   ) {
@@ -177,6 +181,7 @@ export class AdminHomeSectionsController {
         await this.sections.create(
           body.cityId,
           { title: body.title, restaurantIds: body.restaurantIds },
+          idempotencyKey,
           changeOf(session, request),
         ),
       ),
@@ -263,6 +268,8 @@ async function refusalsAsHttp<T>(run: () => Promise<T>): Promise<T> {
         throw new NotFoundException(body(HttpStatus.NOT_FOUND));
       case 'sections_changed':
         throw new ConflictException(body(HttpStatus.CONFLICT));
+      case 'idempotency_key_reused':
+        throw new UnprocessableEntityException(body(HttpStatus.UNPROCESSABLE_ENTITY));
     }
   }
 }

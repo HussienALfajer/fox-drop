@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import { and, asc, eq, gt, isNull, lte, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
@@ -6,8 +7,9 @@ import { AuditService } from '../audit/index.js';
 import { FxService } from '../fx/index.js';
 import { GeoService } from '../geo/index.js';
 import { MerchantsService } from '../merchants/index.js';
+import { PromoCodeUsesService } from './promo-code-uses.service.js';
 import type { PromoChange } from './promo-codes.service.js';
-import { type HomeSectionKind, homeSections, promoCodes } from './schema.js';
+import { type HomeSectionKind, homeSections, idempotencyKeys, promoCodes } from './schema.js';
 
 // AP §9.11.3, CU §8.1: the built-in sections in the home's default order.
 export const BUILT_IN_SECTIONS = [
@@ -27,6 +29,8 @@ export const SECTION_TITLE_MAX = 40;
 // restaurants one section names.
 export const CUSTOM_SECTIONS_MAX = 20;
 export const SECTION_RESTAURANTS_MAX = 30;
+// Architecture §5.3: a create's key answers its repeat for 24 hours.
+const KEY_LIFETIME_MS = 24 * 60 * 60 * 1000;
 
 export interface HomeSection {
   // A built-in section's kind, or a custom section's id.
@@ -40,7 +44,11 @@ export interface HomeSection {
 }
 
 export type HomeSectionRefusal =
-  'unknown_city' | 'unknown_section' | 'invalid_section' | 'sections_changed';
+  | 'unknown_city'
+  | 'unknown_section'
+  | 'invalid_section'
+  | 'sections_changed'
+  | 'idempotency_key_reused';
 
 export class HomeSectionRefusedError extends Error {
   constructor(
@@ -66,18 +74,24 @@ export class HomeSectionsService {
     private readonly geo: GeoService,
     private readonly merchants: MerchantsService,
     private readonly fx: FxService,
+    private readonly uses: PromoCodeUsesService,
   ) {}
 
   // CU §8.1 «العروض» (owner decision 2026-11-18): the restaurants named by a
   // visible code running now (active, started, not ended, saved in the
-  // city's base: «أكوادي»'s `runsNow`) that is limited to restaurants and
-  // works in the zone. Neither its hours, its limits nor its day's budget
-  // are read (decided by us: a code still on offer today).
+  // city's base: «أكوادي»'s `runsNow`) that is limited to restaurants,
+  // works in the zone and has uses left of its total limit. Neither its
+  // hours nor its day's budget are read (decided by us, to confirm with the
+  // owner: a code still on offer today).
   async offerRestaurants(cityId: string, zoneId: string, now: Date): Promise<Set<string>> {
     const base = await this.fx.baseCurrency(cityId);
     if (base === null) return new Set();
     const rows = await this.database.db
-      .select({ restaurantIds: promoCodes.restaurantIds })
+      .select({
+        id: promoCodes.id,
+        restaurantIds: promoCodes.restaurantIds,
+        totalLimit: promoCodes.totalLimit,
+      })
       .from(promoCodes)
       .where(
         and(
@@ -91,7 +105,15 @@ export class HomeSectionsService {
           sql`(cardinality(${promoCodes.zoneIds}) = 0 OR ${zoneId}::uuid = ANY(${promoCodes.zoneIds}))`,
         ),
       );
-    return new Set(rows.flatMap((row) => row.restaurantIds));
+    const limited = rows.filter((row) => row.totalLimit !== null);
+    const totals = await this.uses.totals(limited.map((row) => row.id));
+    return new Set(
+      rows
+        .filter(
+          (row) => row.totalLimit === null || (totals.get(row.id)?.uses ?? 0) < row.totalLimit,
+        )
+        .flatMap((row) => row.restaurantIds),
+    );
   }
 
   // Every section of the city in its order, hidden ones included: the
@@ -185,14 +207,43 @@ export class HomeSectionsService {
     });
   }
 
-  // The panel: a custom section at the end of the home, shown.
+  // The panel: a custom section at the end of the home, shown. Its
+  // Idempotency-Key is kept with the section in marketing.idempotency_keys
+  // (`code_ids` holds the section's id): a repeat within 24 hours answers
+  // the sections without adding one, another body under the key is 422
+  // idempotency_key_reused.
   async create(
     cityId: string,
     fields: { title: string; restaurantIds: string[] },
+    idempotencyKey: string,
     change: PromoChange,
   ): Promise<HomeSection[]> {
     const checked = await this.checkFields(cityId, fields);
+    const requestHash = createHash('sha256')
+      .update(JSON.stringify(['home_section.create', cityId, checked]))
+      .digest('hex');
     return this.database.db.transaction(async (tx) => {
+      await tx.execute(
+        sql`SELECT pg_advisory_xact_lock(hashtextextended(${`marketing.key:${change.accountId}:${idempotencyKey}`}, 0))`,
+      );
+      const [kept] = await tx
+        .select()
+        .from(idempotencyKeys)
+        .where(
+          and(
+            eq(idempotencyKeys.accountId, change.accountId),
+            eq(idempotencyKeys.key, idempotencyKey),
+          ),
+        );
+      if (kept && kept.createdAt.getTime() >= Date.now() - KEY_LIFETIME_MS) {
+        if (kept.requestHash !== requestHash) {
+          throw new HomeSectionRefusedError(
+            'idempotency_key_reused',
+            'the key came with another command',
+          );
+        }
+        return this.sections(cityId, tx);
+      }
       await lockSections(tx, cityId);
       const before = await this.sections(cityId, tx);
       if (before.filter((each) => each.kind === 'custom').length >= CUSTOM_SECTIONS_MAX) {
@@ -212,6 +263,19 @@ export class HomeSectionsService {
           position: before.length + 1,
         })
         .returning();
+      await tx
+        .insert(idempotencyKeys)
+        .values({
+          accountId: change.accountId,
+          key: idempotencyKey,
+          requestHash,
+          codeIds: [row!.id],
+          createdAt: new Date(),
+        })
+        .onConflictDoUpdate({
+          target: [idempotencyKeys.accountId, idempotencyKeys.key],
+          set: { requestHash, codeIds: [row!.id], createdAt: new Date() },
+        });
       await this.record(tx, change, cityId, 'home_section.create', row!.id, null, checked);
       return this.sections(cityId, tx);
     });

@@ -6313,7 +6313,18 @@
       },
       "post": {
         "operationId": "adminHomeSectionsCreate",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {

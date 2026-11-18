@@ -1,5 +1,6 @@
 import type { components } from '@fox-drop/api-schema';
 import { queryOptions, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRef } from 'react';
 import { api } from './api.js';
 import { type AdminSession, can } from './session.js';
 
@@ -106,11 +107,23 @@ export function customSectionProblem(form: CustomSectionForm): 'title' | 'restau
   return null;
 }
 
+// One Idempotency-Key per body until an answer arrives (architecture
+// §5.3), so a retry after a lost answer never adds the section twice.
 export function useAddCustomSection(cityId: string) {
+  const keys = useRef(new Map<string, string>());
   return useSectionEdit(cityId, async (form: CustomSectionForm) => {
+    const body = { cityId, title: form.title.trim(), restaurantIds: form.restaurantIds };
+    const id = JSON.stringify(body);
+    let key = keys.current.get(id);
+    if (key === undefined) {
+      key = crypto.randomUUID();
+      keys.current.set(id, key);
+    }
     const { data, error, response } = await api.POST('/v1/admin/home-sections', {
-      body: { cityId, title: form.title.trim(), restaurantIds: form.restaurantIds },
+      body,
+      params: { header: { 'Idempotency-Key': key } },
     });
+    if (data || response.status < 500) keys.current.delete(id);
     return { data, error, status: response.status };
   });
 }

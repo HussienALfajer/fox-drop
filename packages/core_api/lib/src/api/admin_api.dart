@@ -7802,6 +7802,7 @@ class AdminApi {
   ///
   ///
   /// Parameters:
+  /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
   /// * [adminNewHomeSectionDto]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -7813,6 +7814,7 @@ class AdminApi {
   /// Returns a [Future] containing a [Response] with a [AdminHomeSectionsDtoOutput] as data
   /// Throws [DioException] if API call or serialization fails
   Future<Response<AdminHomeSectionsDtoOutput>> adminHomeSectionsCreate({
+    required String idempotencyKey,
     required AdminNewHomeSectionDto adminNewHomeSectionDto,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -7824,7 +7826,10 @@ class AdminApi {
     final _path = r'/v1/admin/home-sections';
     final _options = Options(
       method: r'POST',
-      headers: <String, dynamic>{...?headers},
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
       extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
       contentType: 'application/json',
       validateStatus: validateStatus,

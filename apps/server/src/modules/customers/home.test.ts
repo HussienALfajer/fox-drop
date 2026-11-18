@@ -85,7 +85,14 @@ async function owner() {
     url: string,
     payload?: object,
     headers?: Record<string, string>,
-  ) => app.inject({ method, url, cookies, headers, ...(payload ? { payload } : {}) });
+  ) =>
+    app.inject({
+      method,
+      url,
+      cookies,
+      ...(headers ? { headers } : {}),
+      ...(payload ? { payload } : {}),
+    });
 }
 
 // A restaurant `steps` hundred metres north of the point, open all week
@@ -173,7 +180,12 @@ describe('the customer home', () => {
       ]);
       return new Map([...counts].filter(([id]) => ids.includes(id)));
     });
-    const code = async (text: string, restaurantIds: string[], visibility: string) => {
+    const code = async (
+      text: string,
+      restaurantIds: string[],
+      visibility: string,
+      zoneIds: string[] = [],
+    ) => {
       const created = await admin(
         'POST',
         '/v1/admin/promo-codes',
@@ -193,7 +205,7 @@ describe('the customer home', () => {
           perCustomerLimit: null,
           audience: 'everyone',
           restaurantIds,
-          zoneIds: [],
+          zoneIds,
           funding: 'platform',
           sharedMerchantBp: null,
           dailyBudget: null,
@@ -206,19 +218,46 @@ describe('the customer home', () => {
     await code('OFFER1', [r[8]!, r[0]!], 'visible');
     await code('SECRET1', [r[3]!], 'secret');
     await code('EVERYWHERE', [], 'visible');
+    // A code for another zone only leaves its restaurant out here.
+    const { rows } = await sql.query('SELECT id FROM geo.zones WHERE city_id = $1', [azaz]);
+    const elsewhere = await app.get(GeoService).createZone(
+      azaz,
+      {
+        name: 'بعيد',
+        area: [
+          { latitude: 36.7, longitude: 37.2 },
+          { latitude: 36.7, longitude: 37.21 },
+          { latitude: 36.71, longitude: 37.21 },
+          { latitude: 36.71, longitude: 37.2 },
+        ],
+        active: true,
+      },
+      change,
+    );
+    expect(rows).toHaveLength(1);
+    await code('FARAWAY', [r[6]!], 'visible', [elsewhere]);
+    await code('HERE', [r[9]!], 'visible', [rows[0].id]);
+    // «العروض» keeps the restaurants' own order: the sort weight first.
+    await sql.query('UPDATE merchants.restaurants SET sort_weight = 5 WHERE id = $1', [r[9]]);
     const body = await home();
     // The most delivered first, ties in the list's order; the closed one last.
     expect(section(body, 'most_ordered')).toEqual([r[2], r[5], r[7], r[0]]);
     // A visible code limited to restaurants; never a secret one or one for all.
-    expect(section(body, 'offers')).toEqual([r[8], r[0]]);
+    expect(section(body, 'offers')).toEqual([r[9], r[8], r[0]]);
+    await sql.query('UPDATE merchants.restaurants SET sort_weight = 0 WHERE id = $1', [r[9]]);
   });
 
   it('follows the panel: a custom section first, a section hidden', async () => {
-    const added = await admin('POST', '/v1/admin/home-sections', {
-      cityId: azaz,
-      title: 'أفضل شاورما في أعزاز',
-      restaurantIds: [r[0], r[11], r[4]],
-    });
+    const added = await admin(
+      'POST',
+      '/v1/admin/home-sections',
+      {
+        cityId: azaz,
+        title: 'أفضل شاورما في أعزاز',
+        restaurantIds: [r[0], r[11], r[4], r[3]],
+      },
+      { 'idempotency-key': randomUUID() },
+    );
     expect(added.statusCode).toBe(201);
     const keys: string[] = added.json().sections.map((each: { key: string }) => each.key);
     const custom = keys.at(-1)!;
@@ -232,6 +271,8 @@ describe('the customer home', () => {
       key: 'nearest',
       visible: false,
     });
+    // A suspended restaurant leaves every section (CU §8.2).
+    await merchants.setAccountStatus(r[3]!, 'suspended', change);
     const body = await home();
     expect(body.sections.map((each) => each.kind)).toEqual([
       'custom',
