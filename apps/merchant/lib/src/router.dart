@@ -13,6 +13,7 @@ import 'device.dart';
 import 'device_name_screen.dart';
 import 'not_found_screen.dart';
 import 'platform.dart';
+import 'ratings/ratings_screen.dart';
 import 'settings/settings_screen.dart';
 import 'starting_screen.dart';
 import 'status/hours_screen.dart';
@@ -77,6 +78,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/settings',
         builder: (context, state) => const SettingsScreen(),
+      ),
+      // RA §13, §6.1 row 7: «التقييمات», the owners' (a cashier's read is
+      // 403 owner_only).
+      GoRoute(
+        path: '/ratings',
+        builder: (context, state) => const RatingsScreen(),
       ),
       // RA §12.2, R10: «الحساب», the owners' (a cashier's read is 403
       // owner_only).

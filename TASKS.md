@@ -4,14 +4,22 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.26b, the restaurant's «التقييمات» (`docs/roadmap.md`, Phase 2, Support and trust; owner decision 2026-11-17: 2.26 in three slices). Not started.
+Slice 2.26c, the captain's rating and the panel's ratings (`docs/roadmap.md`, Phase 2, Support and trust; owner decision 2026-11-17: 2.26 in three slices). Not started.
 
-- **Roadmap line:** 2.26b The restaurant's «التقييمات», in the restaurant app (owner only) and the owner web portal: the average, the count and the distribution by stars, each rating's stars, reasons, comment and date without the customer's name or the order number, filters by stars and period, no replies (RA §13, R16, §6.1). A customer rates and the restaurant's owner sees it without a name.
-- **Specs:** RA §13 (summary, each rating, filters, no replies), RA §6.1 row 7 (owner yes, cashier no, portal yes), RA §5 (the owner's screens), RA §17 (the owner web portal), RA §22 item 24, CU §12.1 «Who sees what» (the restaurant: stars, reasons and comments without the customer's name); what exists: `ordering.ratings` (slice 2.26a, `ratings.ts`, the index `ratings_restaurant`), the cards' average from 5 ratings, the portal's one status page (`apps/merchant-portal/src`).
-- **Branch:** the cloud session's branch, or `feat/restaurant-ratings`.
+- **Roadmap line:** 2.26c The captain's rating and the panel's ratings: the captain's average, count and reasons with counts, no comments, in the captain app's «المزيد» (CA §11.2, moving into «أدائي» in 2.36), and a restaurant's and a captain's ratings in the panel with everything, comments included (AP §9.6.4, §9.7.4, moving into the profiles of 2.30 and 2.36). A captain sees the reasons they were rated with, and the owner reads every comment.
+- **Specs:** CA §11.2 «Rating (C14)», CA C14, CU §12.1 «Who sees what», CU Q16, AP §9.6.4 «التقييمات», AP §9.7.4 «التقييمات والشكاوى», AP §6.2 (who reads a restaurant's and a captain's profile); what exists: `ordering.ratings` (2.26a, the index `ratings_captain`), the restaurant's `GET /v1/merchant/ratings` (2.26b, `restaurant-ratings.ts`: `periodBounds`, the summary and the cursor pages, reusable for the panel).
+- **Branch:** the cloud session's branch, or `feat/captain-and-panel-ratings`.
 - **Plan:**
-  - [ ] Read the cited sections and the portal's and the restaurant app's `CLAUDE.md`; write the plan here as a checklist, one step per commit (likely: the server's owner route with the summary, the distribution and a page of ratings filtered by stars and period, test orders left out; the restaurant app's screen; the portal's page).
-- **To ask the owner first:** whether the period filter's choices are fixed (today, 7 days, 30 days, as AP §9.6.4's overview) or any dates; whether test orders' ratings show to the restaurant (in 2.26a they never count in the customers' average).
+  - [ ] Read the cited sections and the captain app's and the panel's `CLAUDE.md`; write the plan here as a checklist, one step per commit (likely: the captain's route, average, count and reasons with counts, no comments; the captain app's «المزيد» entry; the panel's restaurant and captain ratings with comments, the order and the customer, on the screens that exist until 2.30 and 2.36).
+- **To ask the owner first:** the captain's period (every rating, or a window such as the on-time rate's last 50 orders); whether test orders' ratings stay out of the captain's figures as out of the restaurant's; where the panel shows them before the restaurant's and the captain's profiles exist (2.30, 2.36).
+
+### Left from 2.26b (`claude/zealous-dirac-bhloyp`)
+
+- **Before deploying to staging:** no migration. New route: `GET /v1/merchant/ratings?period=&stars=&before=` (owners only). Deploy the server (API) before the restaurant app; an older app has no «التقييمات» button.
+- **To check on staging (after the merge and the deploy):** rate a delivered order's restaurant from the customer app (2 stars, «الطعام بارد», a comment). On the restaurant app signed in as an owner, the board's star button opens «التقييمات»: the average, «عدد التقييمات», the distribution, and the rating with its reasons, comment and date, without the customer's name or the order number. «أمس» shows «لا تقييمات في هذه الفترة.»; «اليوم» and the 2-star chip show it again. Signed in as a cashier there is no star button.
+- **Decided by us:** the summary counts every star of the period and the stars filter only the list; the average shows whatever the count (the customers' «جديد» below 5 is theirs); 20 ratings a page with «عرض المزيد», every page read as of the first; each rating shows its business day only, never its time (the board's times could trace it to an order); a terminated restaurant's owners are refused (RA §5.5 keeps only the money section); the app's words «{المتوسط} من 5», «عدد التقييمات: {العدد}», «لا تقييم بعد», «كل النجوم», «لا تقييمات في هذه الفترة.», «عرض المزيد», «التقييمات للمالكين فقط.».
+- **To confirm with the owner:** the app's words above and «انتهى حساب مطعمك، والتقييمات لم تعد متاحة.»; a suspended restaurant's owners keep «التقييمات» (RA §5.5's list does not name it); a restaurant in test mode sees an empty «التقييمات», since all its orders are test orders.
+- **Not yet:** the portal's page and its custom range (2.45); the bottom navigation's «التقييمات» (the design).
 
 ### Left from 2.26a (`claude/bold-hawking-5w6p9w`)
 

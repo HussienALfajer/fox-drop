@@ -212,6 +212,13 @@ class _BoardScreenState extends ConsumerState<BoardScreen>
                   onPressed: () => context.push('/account'),
                   icon: const Icon(Icons.account_balance_wallet),
                 ),
+                // RA §13, §6.1 row 7: «التقييمات», owners only.
+                IconButton(
+                  key: const Key('open-ratings'),
+                  tooltip: l10n.merchantRatings,
+                  onPressed: () => context.push('/ratings'),
+                  icon: const Icon(Icons.star_outline),
+                ),
                 IconButton(
                   key: const Key('open-settings'),
                   tooltip: l10n.merchantSettings,
