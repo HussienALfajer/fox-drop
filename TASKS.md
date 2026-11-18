@@ -4,14 +4,19 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.30c, the list, the profile and the actions (`docs/roadmap.md`, Phase 2; owner decision 2026-11-18: 2.30 in three slices).
+Slice 2.30c, the list and the actions (`docs/roadmap.md`, Phase 2; owner decisions 2026-11-18: 2.30 in three slices, then 2.30c in two, the profile moving to 2.30d).
 
-- **Roadmap line:** 2.30c The list, the profile and the actions: the restaurant list with its columns, filters and search, the profile's tabs (overview for today, 7 and 30 days, data, location, hours and accounts editable, orders, statement, ratings moved from 2.26c, contract and documents, notes, change log), suspend and reactivate with a reason, terminate at a zero balance, hide and show, pin and sort weight, and the commission change by OWN for new orders only, now or at a set time, with the restaurant's push (deferred from 2.19), replacing «الصور», «حالة المطاعم» and «تصنيفات المطعم» (AP §9.6.1–9.6.2, §9.6.4–9.6.5, D16). The owner changes a commission to start tomorrow and today's order keeps the old rate.
-- **Specs:** AP §9.6.1, §9.6.2, §9.6.4, §9.6.5; D16; AP §6.3 (`restaurants.commission`, `restaurants.owner_accounts`); RA §5.5 (a suspension's reason, a terminated restaurant's owners); AP §14.
+- **Roadmap line:** 2.30c The list and the actions: the restaurant list with its columns, filters and search; suspend and reactivate with a reason and the restaurant's chime, terminate by OWN at a zero balance, hide and show, the sort weight, and the commission change by OWN for new orders only, now or at a set time, with the owners' push, on «حالة المطاعم» until the profile (AP §9.6.1–9.6.2, §9.6.5, D16, RA §12.2, §16 #23, #33). The owner changes a commission to start tomorrow and today's order keeps the old rate.
+- **Specs:** AP §9.6.1, §9.6.2, §9.6.5; D16; AP §6.3 (`restaurants.commission`); RA §5.5, §12.2, §16 #23, #33; AP §14.
 - **Branch:** the cloud session's branch.
-- **Already built (reuse, do not rebuild):** the wizard and its draft (2.30a: `RestaurantDraftsService`, the step routes, draft-only); step 7's menu and step 8's checklist, test mode and activation (2.30b: `MenuEditorService`, `ActivationService`, `writeAccountStatus`); `setAccountStatus` with its reasons; `setCommission` (D16, a reason, now or later); the status routes and «حالة المطاعم» (2.6b); «الصور» and «تصنيفات المطعم» (2.5, 2.27a); the panel's ratings (2.26c); the restaurant statements (2.19g).
-- **Plan:** to write at the start of the session as a checklist, one step per commit (likely: the list's read with its columns and filters; the profile's reads; the edits past the draft; the status actions with the zero-balance rule; the commission change with its push; the panel's list and profile replacing the three temporary pages).
-- **To decide in the slice:** which profile fields stay editable once active (AP §9.6.4 says data, location, hours and accounts); whether steps 1–6 open for a restaurant in test mode through the profile; the restaurant's push text for a commission change.
+- **Already built (reuse, do not rebuild):** `setAccountStatus` / `writeAccountStatus` with their reasons; `setCommission` (D16, a reason, now or later) and `commissionSchedule`; the template `merchant.commission_change` (#33); the state outbox and its relay (#23); `restaurants.visible` and `restaurants.sort_weight`; the status routes and «حالة المطاعم» (2.6b); `RatingsService.restaurantSummaries`; `MerchantStatementsService.restaurants` and `lockRestaurantAccount` (cashdesk).
+- **Plan (one step per commit):**
+  - [ ] 1. The account actions in the server: `POST /v1/admin/restaurants/{id}/suspend` and `/reactivate` (`restaurants.manage`, a reason; the state outbox's `suspended_by_operations` and `reactivated_by_operations` with their chime), `PUT …/visibility` and `PUT …/sort-weight` (`restaurants.manage`, audited), and `POST …/terminate` (`restaurants.terminate`, OWN, migration: a reason, no active order, the restaurant's account at zero under its account lock).
+  - [ ] 2. The commission change: `POST /v1/admin/restaurants/{id}/commission` (`restaurants.commission`, a reason, now or a later time) with the owners' push #33 in its transaction, and `GET …/commission` (in force, scheduled, history); the test that an order placed before the start keeps the old rate.
+  - [ ] 3. The list: `GET /v1/admin/restaurant-list?cityId=&status=&categoryId=&zoneId=&q=` in reporting, with its columns.
+  - [ ] 4. The panel: «المطاعم» (the list with its filters and search) and the actions on «حالة المطاعم».
+  - [ ] 5. Review, the module docs and the handover to 2.30d.
+- **To decide in the slice:** the push's date for a change «now» (today's date); the words of the suspension and reactivation chimes (RA §16 #23 gives none); the zone of the filter (the zone of the pin); the sort weight's bounds.
 
 ### Left from 2.30b (the cloud session's branch)
 
