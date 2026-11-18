@@ -51,6 +51,8 @@ import { RestaurantStatementsPage } from './restaurant-statements-page.js';
 import { SettleCaptainPage, SettlementsPage, StatementPage } from './settlement-page.js';
 import { RestaurantReceiptPage, RestaurantSettlePage } from './restaurant-settle-page.js';
 import { MerchantStatementPage, RestaurantSettlementsPage } from './restaurant-settlement-page.js';
+import { canSeeCategories, canSeeRestaurantCategories } from './categories.js';
+import { CategoriesPage, RestaurantCategoriesPage } from './categories-page.js';
 import { CONTENT_FAQS, CONTENT_READ } from './content.js';
 import { ContentPage } from './content-page.js';
 import { canSeeImages } from './restaurant-images.js';
@@ -217,6 +219,31 @@ const appSettingsRoute = createRoute({
     if (!can(context.session, SETTINGS_READ)) throw redirect({ to: '/' });
   },
   component: AppSettingsPage,
+});
+
+// AP §9.13 «التصنيفات» (slice 2.27a): OWN, OPS (reads) and DATA.
+const categoriesRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/categories',
+  beforeLoad: ({ context }) => {
+    if (!canSeeCategories(context.session)) throw redirect({ to: '/' });
+  },
+  component: CategoriesPage,
+});
+
+// A restaurant's categories (slice 2.27a, AP §9.6.3 step 1), picked as on
+// «الصور»; restaurants.manage or restaurants.create sets them.
+const restaurantCategoriesRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/restaurant-categories',
+  validateSearch: (search: Record<string, unknown>): { city?: string; restaurant?: string } => ({
+    ...citySearch(search),
+    ...(typeof search.restaurant === 'string' ? { restaurant: search.restaurant } : {}),
+  }),
+  beforeLoad: ({ context }) => {
+    if (!canSeeRestaurantCategories(context.session)) throw redirect({ to: '/' });
+  },
+  component: RestaurantCategoriesPage,
 });
 
 // «الصور» (slice 2.5): logos and covers (restaurants.manage) and item photos
@@ -608,6 +635,8 @@ const routeTree = rootRoute.addChildren([
     restaurantReceiptRoute,
     restaurantStatementsRoute,
     imagesRoute,
+    categoriesRoute,
+    restaurantCategoriesRoute,
     restaurantStatusRoute,
     ratingsRoute,
     alertsRoute,
