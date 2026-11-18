@@ -4,14 +4,18 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.26c, the captain's rating and the panel's ratings (`docs/roadmap.md`, Phase 2, Support and trust; owner decision 2026-11-17: 2.26 in three slices). Not started.
+Slice 2.26c, the captain's rating and the panel's ratings (`docs/roadmap.md`, Phase 2, Support and trust; owner decision 2026-11-17: 2.26 in three slices). In progress.
 
 - **Roadmap line:** 2.26c The captain's rating and the panel's ratings: the captain's average, count and reasons with counts, no comments, in the captain app's «المزيد» (CA §11.2, moving into «أدائي» in 2.36), and a restaurant's and a captain's ratings in the panel with everything, comments included (AP §9.6.4, §9.7.4, moving into the profiles of 2.30 and 2.36). A captain sees the reasons they were rated with, and the owner reads every comment.
-- **Specs:** CA §11.2 «Rating (C14)», CA C14, CU §12.1 «Who sees what», CU Q16, AP §9.6.4 «التقييمات», AP §9.7.4 «التقييمات والشكاوى», AP §6.2 (who reads a restaurant's and a captain's profile); what exists: `ordering.ratings` (2.26a, the index `ratings_captain`), the restaurant's `GET /v1/merchant/ratings` (2.26b, `restaurant-ratings.ts`: `periodBounds`, the summary and the cursor pages, reusable for the panel).
-- **Branch:** the cloud session's branch, or `feat/captain-and-panel-ratings`.
+- **Specs:** CA §11.2 «Rating (C14)», CA C14, CU §12.1 «Who sees what», CU Q16, AP §9.6.4 «التقييمات» (customer names hidden), AP §9.7.4 «التقييمات والشكاوى», AP §6.2.
+- **Branch:** `claude/wizardly-volta-pybnwm` (the cloud session's branch).
+- **Owner decisions (2026-11-18):** the captain's figures count every rating (no window); test orders' ratings stay out of the captain's figures as out of the restaurant's; the panel shows them on a new «التقييمات» page (choose a restaurant or a captain) until the profiles of 2.30 and 2.36.
 - **Plan:**
-  - [ ] Read the cited sections and the captain app's and the panel's `CLAUDE.md`; write the plan here as a checklist, one step per commit (likely: the captain's route, average, count and reasons with counts, no comments; the captain app's «المزيد» entry; the panel's restaurant and captain ratings with comments, the order and the customer, on the screens that exist until 2.30 and 2.36).
-- **To ask the owner first:** the captain's period (every rating, or a window such as the on-time rate's last 50 orders); whether test orders' ratings stay out of the captain's figures as out of the restaurant's; where the panel shows them before the restaurant's and the captain's profiles exist (2.30, 2.36).
+  - [x] Server: `GET /v1/captain/ratings` (the average, the count and the reasons with counts, every rating, test orders left out, no comments); the ratings' read shared by the restaurant, the captain and the panel.
+  - [x] Server: the panel's `GET /v1/admin/ratings/restaurants/{restaurantId}` (`restaurants.read`), `GET /v1/admin/ratings/captains/{captainId}` and `GET /v1/admin/ratings/captains?cityId=` (`captains.read`): the summary, the distribution and the pages with stars, reasons, comment, time and order, never the customer's name (AP §9.6.4).
+  - [ ] Captain app: «تقييمي» in «المزيد».
+  - [ ] Panel: the «التقييمات» page.
+  - [ ] Review, then the handover to the next slice.
 
 ### Left from 2.26b (`claude/zealous-dirac-bhloyp`)
 

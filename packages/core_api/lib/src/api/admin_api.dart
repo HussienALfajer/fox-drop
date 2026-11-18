@@ -128,6 +128,8 @@ import 'package:core_api/src/model/admin_promo_code_report_dto_output.dart';
 import 'package:core_api/src/model/admin_promo_codes_created_dto_output.dart';
 import 'package:core_api/src/model/admin_promo_codes_dto_output.dart';
 import 'package:core_api/src/model/admin_publish_terms_dto.dart';
+import 'package:core_api/src/model/admin_rated_captains_dto_output.dart';
+import 'package:core_api/src/model/admin_ratings_dto_output.dart';
 import 'package:core_api/src/model/admin_reason_dto_output.dart';
 import 'package:core_api/src/model/admin_reason_lists_dto_output.dart';
 import 'package:core_api/src/model/admin_reason_order_dto_output.dart';
@@ -11682,6 +11684,313 @@ class AdminApi {
     }
 
     return Response<AdminPromoCodeDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminRatingsCaptain
+  ///
+  ///
+  /// Parameters:
+  /// * [captainId]
+  /// * [period] - Business days on the city’s clock: «الكل», «اليوم», «أمس», «آخر 7 أيام», «آخر 30 يوماً».
+  /// * [stars] - Only the ratings with these stars; the summary counts every star.
+  /// * [page] - The page, from 0.
+  /// * [asOf] - The first page’s `asOf`, sent with every next page so the pages agree.
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminRatingsDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminRatingsDtoOutput>> adminRatingsCaptain({
+    required String captainId,
+    String? period = 'all',
+    int? stars,
+    int? page = 0,
+    DateTime? asOf,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/ratings/captains/{captainId}'.replaceAll(
+      '{'
+      r'captainId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        captainId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      if (period != null)
+        r'period': encodeQueryParameter(
+          _serializers,
+          period,
+          const FullType(String),
+        ),
+      if (stars != null)
+        r'stars': encodeQueryParameter(
+          _serializers,
+          stars,
+          const FullType(int),
+        ),
+      if (page != null)
+        r'page': encodeQueryParameter(_serializers, page, const FullType(int)),
+      if (asOf != null)
+        r'asOf': encodeQueryParameter(
+          _serializers,
+          asOf,
+          const FullType(DateTime),
+        ),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminRatingsDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminRatingsDtoOutput),
+                )
+                as AdminRatingsDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminRatingsDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminRatingsCaptainsOfCity
+  ///
+  ///
+  /// Parameters:
+  /// * [cityId]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminRatedCaptainsDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminRatedCaptainsDtoOutput>> adminRatingsCaptainsOfCity({
+    required String cityId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/ratings/captains';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      r'cityId': encodeQueryParameter(
+        _serializers,
+        cityId,
+        const FullType(String),
+      ),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminRatedCaptainsDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminRatedCaptainsDtoOutput),
+                )
+                as AdminRatedCaptainsDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminRatedCaptainsDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminRatingsRestaurant
+  ///
+  ///
+  /// Parameters:
+  /// * [restaurantId]
+  /// * [period] - Business days on the city’s clock: «الكل», «اليوم», «أمس», «آخر 7 أيام», «آخر 30 يوماً».
+  /// * [stars] - Only the ratings with these stars; the summary counts every star.
+  /// * [page] - The page, from 0.
+  /// * [asOf] - The first page’s `asOf`, sent with every next page so the pages agree.
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminRatingsDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminRatingsDtoOutput>> adminRatingsRestaurant({
+    required String restaurantId,
+    String? period = 'all',
+    int? stars,
+    int? page = 0,
+    DateTime? asOf,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/ratings/restaurants/{restaurantId}'.replaceAll(
+      '{'
+      r'restaurantId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        restaurantId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      if (period != null)
+        r'period': encodeQueryParameter(
+          _serializers,
+          period,
+          const FullType(String),
+        ),
+      if (stars != null)
+        r'stars': encodeQueryParameter(
+          _serializers,
+          stars,
+          const FullType(int),
+        ),
+      if (page != null)
+        r'page': encodeQueryParameter(_serializers, page, const FullType(int)),
+      if (asOf != null)
+        r'asOf': encodeQueryParameter(
+          _serializers,
+          asOf,
+          const FullType(DateTime),
+        ),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminRatingsDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminRatingsDtoOutput),
+                )
+                as AdminRatingsDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminRatingsDtoOutput>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

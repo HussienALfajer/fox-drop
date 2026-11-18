@@ -712,7 +712,7 @@ export class CaptainsService implements OnModuleInit {
     return rows.map((row) => row.id);
   }
 
-  // The captains of a city by name, for the seed.
+  // The captains of a city by name, for the seed and the panel's ratings.
   async captainIds(cityId: string): Promise<{ id: string; name: string }[]> {
     return this.database.db
       .select({ id: captainRecords.id, name: captainRecords.name })

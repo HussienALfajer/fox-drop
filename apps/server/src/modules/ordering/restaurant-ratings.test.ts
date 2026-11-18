@@ -12,7 +12,7 @@ import {
   restaurant,
   sql,
 } from './delivery.fixture.js';
-import { RATINGS_PAGE } from './restaurant-ratings.js';
+import { RATINGS_PAGE } from './rating-pages.js';
 
 // RA §13, §6.1 row 7, R16, CU §12.1 (slice 2.26b): the restaurant's owners
 // read its ratings without the customer or the order; test orders never show
