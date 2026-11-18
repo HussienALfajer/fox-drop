@@ -479,6 +479,26 @@ export class GeoService implements OnModuleInit {
     return row ?? null;
   }
 
+  // AP §9.11.4 (slice 2.27d): the ids of the points the zone covers, its
+  // edge included, whether it is active or not; in one query, the polygon
+  // never leaving SQL.
+  async covered(
+    zoneId: string,
+    points: { id: string; latitude: number; longitude: number }[],
+  ): Promise<Set<string>> {
+    if (points.length === 0) return new Set();
+    const rows = await this.database.db.execute<{ id: string }>(sql`
+      SELECT p.id
+      FROM unnest(
+        ${sql.param(points.map((point) => point.id))}::text[],
+        ${sql.param(points.map((point) => point.latitude))}::float8[],
+        ${sql.param(points.map((point) => point.longitude))}::float8[]
+      ) AS p(id, latitude, longitude)
+      JOIN ${zones} ON ${zones.id} = ${zoneId}::uuid
+      WHERE ST_Covers(${zones.area}, ST_SetSRID(ST_MakePoint(p.longitude, p.latitude), 4326))`);
+    return new Set(rows.rows.map((row) => row.id));
+  }
+
   // Where a point is (CU §7.1): the active zone of an active city that covers
   // it, as zoneAt picks it, or, outside every one, the city whose active zones
   // are nearest with no zone; null while no city has an active zone. The

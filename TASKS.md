@@ -8,11 +8,11 @@ Slice 2.27d, Mass push (`docs/roadmap.md`, Phase 2, Finding food). In progress.
 
 - **Roadmap line:** 2.27d Mass push: title and text, the audience (all, a zone, no order in N days, registered but never ordered), the target, now or scheduled, the audience size and a confirmation before sending, and the history with sender, audience, sent (accepted by FCM) and delivered (acknowledged by the app) (AP §9.11.4, D20). The owner schedules a push to customers who never ordered and sees it in the history.
 - **Specs:** AP §9.11.4 «الإشعارات الجماعية» (D20: no daily limit), AP §6 (Marketing: OWN full, OPS read), CU §14 row 22 (the mass push: the default sound, the campaign's text), AP §10 (what the panel pushes to the apps).
-- **Branch:** `feat/mass-push`.
+- **Branch:** `ccr-80d769ec-2pyjdz` (the cloud session's).
 - **What exists:** the notifications module's push queue (`PushQueue`, FCM sends, the customer's push tokens), the app's `pushTargetPath` (`order`, `home`, `codes`), marketing's routes and audit pattern (`marketing.banners`, `marketing.home_sections`), pg-boss timers for a scheduled send, the customers' and ordering's reads of who ordered when (`useDeliveredCounts`, `useOrderFacts`).
 - **Plan:**
   - [x] Notifications: `push_messages` gains `title`, `campaign_id` and `delivered_at` (migration, expand only); the relay sends a push's own title and a campaign's pushes after every other due push; «الإشعارات» shows a push only once its time came; `PushQueue.campaignCounts` and `cancelCampaign`; the app's receipt `POST /v1/customer/push-receipts` (public: the background handler has no session).
-  - [ ] Marketing: `marketing.mass_pushes`, the audience (customers registers it, with geo's points in a zone and ordering's last delivered order per account), `GET /v1/admin/mass-pushes`, `GET …/audience`, `POST /v1/admin/mass-pushes` (the size confirmed, `Idempotency-Key`; the pushes queued for their time in the same transaction) and `POST …/{id}/cancel`.
+  - [x] Marketing: `marketing.mass_pushes`, the audience (customers registers it, with geo's points in a zone and ordering's last delivered order per account), `GET /v1/admin/mass-pushes`, `GET …/audience`, `POST /v1/admin/mass-pushes` (the size confirmed, `Idempotency-Key`; the pushes queued for their time in the same transaction) and `POST …/{id}/cancel`.
   - [ ] Panel: «الإشعارات الجماعية» with the form, the audience size, the confirmation and the history.
   - [ ] Customer app: a mass push's target (a restaurant, «أكوادي» on a code, home) and its receipt, in the foreground and in the background.
   - [ ] Review, handover.

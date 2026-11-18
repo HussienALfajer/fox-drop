@@ -464,3 +464,69 @@ export const banners = marketing.table(
     ),
   ],
 );
+
+// AP §9.11.4 «الإشعارات الجماعية» (slice 2.27d, owner decisions 2026-11-18):
+// who receives a mass push. `inactive`: a delivered order in the city, none
+// in the last `inactive_days`; `never_ordered`: registered with no delivered
+// order in the city; `zone`: a saved address in the zone.
+export const massPushAudiences = ['all', 'zone', 'inactive', 'never_ordered'] as const;
+export type MassPushAudienceKind = (typeof massPushAudiences)[number];
+// What a tap opens: home, a restaurant's page, or «أكوادي» on a code.
+export const massPushTargets = ['home', 'restaurant', 'code'] as const;
+export type MassPushTarget = (typeof massPushTargets)[number];
+
+// A mass push of a city: its title and text, audience, target and time
+// (`send_at`: the confirmation's moment for «الآن»). The audience is counted
+// and its pushes queued at the confirmation (notifications.push_messages,
+// with this id as their campaign), so `recipients` is the size confirmed.
+// A scheduled one can be cancelled before its time, never edited.
+export const massPushes = marketing.table(
+  'mass_pushes',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    cityId: uuid('city_id').notNull(),
+    title: text('title').notNull(),
+    body: text('body').notNull(),
+    audience: text('audience', { enum: massPushAudiences }).notNull(),
+    zoneId: uuid('zone_id'),
+    inactiveDays: integer('inactive_days'),
+    target: text('target', { enum: massPushTargets }).notNull(),
+    restaurantId: uuid('restaurant_id'),
+    codeId: uuid('code_id'),
+    // The code as the customer types it, copied when the push is made.
+    code: text('code'),
+    scheduled: boolean('scheduled').notNull(),
+    sendAt: timestamp('send_at', { withTimezone: true }).notNull(),
+    recipients: integer('recipients').notNull(),
+    // The admin accounts (identity's ids, plain values).
+    createdBy: uuid('created_by').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    cancelledBy: uuid('cancelled_by'),
+    cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
+  },
+  (table) => [
+    index('mass_pushes_city').on(table.cityId, table.sendAt.desc()),
+    check(
+      'mass_pushes_audience_values',
+      sql`${table.audience} IN ('all', 'zone', 'inactive', 'never_ordered')`,
+    ),
+    check('mass_pushes_target_values', sql`${table.target} IN ('home', 'restaurant', 'code')`),
+    check('mass_pushes_title', sql`char_length(${table.title}) BETWEEN 1 AND 50`),
+    check('mass_pushes_body', sql`char_length(${table.body}) BETWEEN 1 AND 200`),
+    check('mass_pushes_recipients', sql`${table.recipients} >= 0`),
+    check(
+      'mass_pushes_audience',
+      sql`(${table.zoneId} IS NOT NULL) = (${table.audience} = 'zone') AND (${table.inactiveDays} IS NOT NULL) = (${table.audience} = 'inactive') AND (${table.inactiveDays} IS NULL OR ${table.inactiveDays} BETWEEN 1 AND 365)`,
+    ),
+    check(
+      'mass_pushes_target',
+      sql`(${table.restaurantId} IS NOT NULL) = (${table.target} = 'restaurant') AND (${table.codeId} IS NOT NULL) = (${table.target} = 'code') AND (${table.code} IS NOT NULL) = (${table.target} = 'code')`,
+    ),
+    check(
+      'mass_pushes_cancelled',
+      sql`(${table.cancelledAt} IS NULL) = (${table.cancelledBy} IS NULL) AND (${table.cancelledAt} IS NULL OR (${table.scheduled} AND ${table.cancelledAt} < ${table.sendAt}))`,
+    ),
+  ],
+);

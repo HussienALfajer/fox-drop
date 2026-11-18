@@ -12,11 +12,13 @@ import { SettingsModule } from '../settings/index.js';
 import { AdminBannersController } from './admin-banners.controller.js';
 import { AdminCompensationsController } from './admin-compensations.controller.js';
 import { AdminHomeSectionsController } from './admin-home-sections.controller.js';
+import { AdminMassPushesController } from './admin-mass-pushes.controller.js';
 import { AdminPromoCodesController } from './admin-promo-codes.controller.js';
 import { BannersService } from './banners.service.js';
 import { CompensationsService } from './compensations.service.js';
 import { HomeSectionsService } from './home-sections.service.js';
 import { LateCodesService } from './late-codes.service.js';
+import { MassPushesService } from './mass-pushes.service.js';
 import { PromoCodeUsesService } from './promo-code-uses.service.js';
 import { PromoCodesService } from './promo-codes.service.js';
 
@@ -24,8 +26,8 @@ import { PromoCodesService } from './promo-codes.service.js';
 // (AP §9.11.1, slice 2.21a), their use in orders (slice 2.21b), and picking
 // them, «أكوادي» and the code report (slice 2.21d), and «تعويض الزبون»
 // with its caps and approvals (slice 2.22a), the late code (slice 2.22c),
-// the home sections (slice 2.27b) and the banners (slice 2.27c). Mass
-// pushes come with 2.27d.
+// the home sections (slice 2.27b), the banners (slice 2.27c) and the mass
+// pushes (slice 2.27d).
 @Module({
   imports: [
     DatabaseModule,
@@ -44,6 +46,7 @@ import { PromoCodesService } from './promo-codes.service.js';
     AdminCompensationsController,
     AdminHomeSectionsController,
     AdminBannersController,
+    AdminMassPushesController,
   ],
   providers: [
     PromoCodesService,
@@ -52,6 +55,7 @@ import { PromoCodesService } from './promo-codes.service.js';
     LateCodesService,
     HomeSectionsService,
     BannersService,
+    MassPushesService,
   ],
   exports: [
     PromoCodeUsesService,
@@ -59,6 +63,7 @@ import { PromoCodesService } from './promo-codes.service.js';
     LateCodesService,
     HomeSectionsService,
     BannersService,
+    MassPushesService,
   ],
 })
 export class MarketingModule {}
@@ -83,6 +88,11 @@ export {
   WRONG_CHANGE_COMPENSATION,
 } from './compensations.service.js';
 export { type Banner, BannersService, HOME_BANNERS_MAX } from './banners.service.js';
+export {
+  type MassPushAudience,
+  type MassPushAudienceSource,
+  MassPushesService,
+} from './mass-pushes.service.js';
 export {
   BUILT_IN_SECTIONS,
   type HomeSection,

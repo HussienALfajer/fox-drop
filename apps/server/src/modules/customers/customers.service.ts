@@ -109,6 +109,11 @@ export type DeliveredCounts = (
   since: Date,
 ) => Promise<Map<string, number>>;
 
+// AP §9.11.4 (slice 2.27d): what ordering registers (useLastDeliveries),
+// each account's latest delivered order in the city, test orders and free
+// re-deliveries left out; an account with none is missing from the map.
+export type LastDeliveries = (cityId: string) => Promise<Map<string, Date>>;
+
 // CU §12.1, AP §9.8 (slice 2.26a): what ordering registers (useRatings), the
 // ratings it keeps: each restaurant's count and average for the cards, and
 // the ratings a customer wrote for the profile.
@@ -314,6 +319,40 @@ export class CustomersService {
   // CU §8.1 (slice 2.27b): the delivered counts of «الأكثر طلباً»,
   // registered by ordering at start.
   private deliveredPort: DeliveredCounts | null = null;
+  private lastDeliveriesPort: LastDeliveries | null = null;
+
+  useLastDeliveries(port: LastDeliveries): void {
+    this.lastDeliveriesPort = port;
+  }
+
+  lastDeliveries(cityId: string): Promise<Map<string, Date>> {
+    if (this.lastDeliveriesPort === null) {
+      throw new Error('ordering has not registered its last deliveries');
+    }
+    return this.lastDeliveriesPort(cityId);
+  }
+
+  // AP §9.11.4 (slice 2.27d): every registered customer (a profile).
+  async registered(): Promise<string[]> {
+    const rows = await this.database.db.select({ id: profiles.accountId }).from(profiles);
+    return rows.map((row) => row.id);
+  }
+
+  // AP §9.11.4: the customers with a saved address (not deleted) in the
+  // zone.
+  async withAddressIn(cityId: string, zoneId: string): Promise<Set<string>> {
+    const rows = await this.database.db
+      .select({
+        id: addresses.id,
+        accountId: addresses.accountId,
+        latitude: addressColumns.latitude,
+        longitude: addressColumns.longitude,
+      })
+      .from(addresses)
+      .where(and(eq(addresses.cityId, cityId), isNull(addresses.deletedAt)));
+    const inside = await this.geo.covered(zoneId, rows);
+    return new Set(rows.filter((row) => inside.has(row.id)).map((row) => row.accountId));
+  }
 
   useDeliveredCounts(port: DeliveredCounts): void {
     this.deliveredPort = port;

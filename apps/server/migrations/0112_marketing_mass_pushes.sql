@@ -1,0 +1,30 @@
+CREATE TABLE "marketing"."mass_pushes" (
+	"id" uuid PRIMARY KEY DEFAULT uuidv7() NOT NULL,
+	"city_id" uuid NOT NULL,
+	"title" text NOT NULL,
+	"body" text NOT NULL,
+	"audience" text NOT NULL,
+	"zone_id" uuid,
+	"inactive_days" integer,
+	"target" text NOT NULL,
+	"restaurant_id" uuid,
+	"code_id" uuid,
+	"code" text,
+	"scheduled" boolean NOT NULL,
+	"send_at" timestamp with time zone NOT NULL,
+	"recipients" integer NOT NULL,
+	"created_by" uuid NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"cancelled_by" uuid,
+	"cancelled_at" timestamp with time zone,
+	CONSTRAINT "mass_pushes_audience_values" CHECK ("marketing"."mass_pushes"."audience" IN ('all', 'zone', 'inactive', 'never_ordered')),
+	CONSTRAINT "mass_pushes_target_values" CHECK ("marketing"."mass_pushes"."target" IN ('home', 'restaurant', 'code')),
+	CONSTRAINT "mass_pushes_title" CHECK (char_length("marketing"."mass_pushes"."title") BETWEEN 1 AND 50),
+	CONSTRAINT "mass_pushes_body" CHECK (char_length("marketing"."mass_pushes"."body") BETWEEN 1 AND 200),
+	CONSTRAINT "mass_pushes_recipients" CHECK ("marketing"."mass_pushes"."recipients" >= 0),
+	CONSTRAINT "mass_pushes_audience" CHECK (("marketing"."mass_pushes"."zone_id" IS NOT NULL) = ("marketing"."mass_pushes"."audience" = 'zone') AND ("marketing"."mass_pushes"."inactive_days" IS NOT NULL) = ("marketing"."mass_pushes"."audience" = 'inactive') AND ("marketing"."mass_pushes"."inactive_days" IS NULL OR "marketing"."mass_pushes"."inactive_days" BETWEEN 1 AND 365)),
+	CONSTRAINT "mass_pushes_target" CHECK (("marketing"."mass_pushes"."restaurant_id" IS NOT NULL) = ("marketing"."mass_pushes"."target" = 'restaurant') AND ("marketing"."mass_pushes"."code_id" IS NOT NULL) = ("marketing"."mass_pushes"."target" = 'code') AND ("marketing"."mass_pushes"."code" IS NOT NULL) = ("marketing"."mass_pushes"."target" = 'code')),
+	CONSTRAINT "mass_pushes_cancelled" CHECK (("marketing"."mass_pushes"."cancelled_at" IS NULL) = ("marketing"."mass_pushes"."cancelled_by" IS NULL) AND ("marketing"."mass_pushes"."cancelled_at" IS NULL OR ("marketing"."mass_pushes"."scheduled" AND "marketing"."mass_pushes"."cancelled_at" < "marketing"."mass_pushes"."send_at")))
+);
+--> statement-breakpoint
+CREATE INDEX "mass_pushes_city" ON "marketing"."mass_pushes" USING btree ("city_id","send_at" DESC NULLS LAST);

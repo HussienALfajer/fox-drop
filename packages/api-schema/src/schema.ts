@@ -2596,6 +2596,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/mass-pushes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminMassPushesList"];
+        put?: never;
+        post: operations["adminMassPushesCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/mass-pushes/audience": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminMassPushesAudience"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/mass-pushes/{massPushId}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminMassPushesCancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/realtime/token": {
         parameters: {
             query?: never;
@@ -8425,6 +8473,106 @@ export interface components {
             ids: string[];
         };
         AdminBannerCityDto: {
+            /** Format: uuid */
+            cityId: string;
+        };
+        AdminMassPushesDto_Output: {
+            /** @description The latest 100, newest first. */
+            pushes: {
+                /** Format: uuid */
+                id: string;
+                title: string;
+                body: string;
+                /**
+                 * @description `all` every registered customer; `zone` those with a saved address in zoneId; `inactive` those whose latest delivered order in the city is older than inactiveDays; `never_ordered` registered with no delivered order in the city.
+                 * @enum {string}
+                 */
+                audience: "all" | "zone" | "inactive" | "never_ordered";
+                zoneId: string | null;
+                /** @description 1 to 365. */
+                inactiveDays: number | null;
+                zoneName: string | null;
+                /**
+                 * @description `home` the home screen; `restaurant` its page (restaurantId); `code` «أكوادي» on that code (codeId).
+                 * @enum {string}
+                 */
+                target: "home" | "restaurant" | "code";
+                restaurantId: string | null;
+                restaurantName: string | null;
+                codeId: string | null;
+                code: string | null;
+                /** @description False for «الآن»: sendAt is the confirmation. */
+                scheduled: boolean;
+                /** Format: date-time */
+                sendAt: string;
+                /** @enum {string} */
+                status: "scheduled" | "sent" | "cancelled";
+                /** @description The audience confirmed. */
+                recipients: number;
+                /** @description Accepted by FCM for a device. */
+                sent: number;
+                /** @description Acknowledged by the app on arrival. */
+                delivered: number;
+                /** @description The admin's name. */
+                sentBy: string;
+                /** Format: date-time */
+                createdAt: string;
+                cancelledBy: string | null;
+                cancelledAt: string | null;
+            }[];
+            /** @description The city's restaurants a target picks from. */
+            restaurants: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            }[];
+            /** @description The city's visible codes running now in its base currency, newest first. */
+            codes: {
+                /** Format: uuid */
+                id: string;
+                code: string;
+            }[];
+            /** @description The active zones. */
+            zones: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            }[];
+            /** @description Whether this admin may send (marketing.manage). */
+            canManage: boolean;
+        };
+        AdminMassPushAudienceDto_Output: {
+            /** @description The customers in the audience now. */
+            size: number;
+        };
+        AdminNewMassPushDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description Trimmed, 1 to 50 characters. */
+            title: string;
+            /** @description Trimmed, 1 to 200 characters. */
+            body: string;
+            /**
+             * @description `all` every registered customer; `zone` those with a saved address in zoneId; `inactive` those whose latest delivered order in the city is older than inactiveDays; `never_ordered` registered with no delivered order in the city.
+             * @enum {string}
+             */
+            audience: "all" | "zone" | "inactive" | "never_ordered";
+            zoneId: string | null;
+            /** @description 1 to 365. */
+            inactiveDays: number | null;
+            /**
+             * @description `home` the home screen; `restaurant` its page (restaurantId); `code` «أكوادي» on that code (codeId).
+             * @enum {string}
+             */
+            target: "home" | "restaurant" | "code";
+            restaurantId: string | null;
+            codeId: string | null;
+            /** @description Null: now; else ahead, at most 30 days. */
+            sendAt: string | null;
+            /** @description The size the panel showed and the admin confirmed (GET …/audience). */
+            audienceSize: number;
+        };
+        AdminMassPushCityDto: {
             /** Format: uuid */
             cityId: string;
         };
@@ -19968,6 +20116,106 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminBannersDto_Output"];
+                };
+            };
+        };
+    };
+    adminMassPushesList: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMassPushesDto_Output"];
+                };
+            };
+        };
+    };
+    adminMassPushesCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminNewMassPushDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMassPushesDto_Output"];
+                };
+            };
+        };
+    };
+    adminMassPushesAudience: {
+        parameters: {
+            query: {
+                cityId: string;
+                audience: "all" | "zone" | "inactive" | "never_ordered";
+                zoneId?: string;
+                inactiveDays?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMassPushAudienceDto_Output"];
+                };
+            };
+        };
+    };
+    adminMassPushesCancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                massPushId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMassPushCityDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMassPushesDto_Output"];
                 };
             };
         };

@@ -211,11 +211,16 @@ import 'package:core_api/src/model/admin_manual_parties_dto_output.dart';
 import 'package:core_api/src/model/admin_manual_party_search_dto.dart';
 import 'package:core_api/src/model/admin_manual_reversal_dto.dart';
 import 'package:core_api/src/model/admin_mark_customer_trust_dto.dart';
+import 'package:core_api/src/model/admin_mass_push_audience_dto_output.dart';
+import 'package:core_api/src/model/admin_mass_push_city_dto.dart';
+import 'package:core_api/src/model/admin_mass_pushes_dto_output.dart';
+import 'package:core_api/src/model/admin_mass_pushes_dto_output_pushes_inner.dart';
 import 'package:core_api/src/model/admin_merchant_statement_dto_output.dart';
 import 'package:core_api/src/model/admin_merchant_statement_dto_output_lines_inner.dart';
 import 'package:core_api/src/model/admin_new_banner_dto.dart';
 import 'package:core_api/src/model/admin_new_category_dto.dart';
 import 'package:core_api/src/model/admin_new_home_section_dto.dart';
+import 'package:core_api/src/model/admin_new_mass_push_dto.dart';
 import 'package:core_api/src/model/admin_new_upload_dto.dart';
 import 'package:core_api/src/model/admin_no_answer_wait_dto.dart';
 import 'package:core_api/src/model/admin_notification_resent_dto_output.dart';
@@ -1049,11 +1054,16 @@ part 'serializers.g.dart';
   AdminManualPartySearchDto,
   AdminManualReversalDto,
   AdminMarkCustomerTrustDto,
+  AdminMassPushAudienceDtoOutput,
+  AdminMassPushCityDto,
+  AdminMassPushesDtoOutput,
+  AdminMassPushesDtoOutputPushesInner,
   AdminMerchantStatementDtoOutput,
   AdminMerchantStatementDtoOutputLinesInner,
   AdminNewBannerDto,
   AdminNewCategoryDto,
   AdminNewHomeSectionDto,
+  AdminNewMassPushDto,
   AdminNewUploadDto,
   AdminNoAnswerWaitDto,
   AdminNotificationResentDtoOutput,
@@ -2533,6 +2543,12 @@ Serializers serializers =
               FullType(AdminExchangeRatesDtoOutputCurrenciesInner),
             ]),
             () => ListBuilder<AdminExchangeRatesDtoOutputCurrenciesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminMassPushesDtoOutputPushesInner),
+            ]),
+            () => ListBuilder<AdminMassPushesDtoOutputPushesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
