@@ -8332,7 +8332,7 @@ export interface components {
                 id: string;
                 name: string;
             }[];
-            /** @description The city's visible codes that have not ended, newest first. */
+            /** @description The city's visible codes running now in its base currency, newest first. */
             codes: {
                 /** Format: uuid */
                 id: string;

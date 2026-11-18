@@ -32,7 +32,9 @@ export const MAX_ZOOM = 3;
 
 // The crop the admin picks: the zoom (1 shows as much of the image as the
 // 1200×500 frame can hold) and where the frame sits, 0 to 1 across the room
-// left on each axis (0.5 is the middle).
+// left on each axis (0.5 is the middle). Across, 0 is the image's start: its
+// right edge, as the slider's 0 sits on the right in the panel's right to
+// left (AP §4.7); down, 0 is the top.
 export interface Crop {
   zoom: number;
   x: number;
@@ -53,7 +55,7 @@ export function cropBox(
   const sh = sw / ratio;
   const along = (value: number) => Math.min(Math.max(value, 0), 1);
   return {
-    sx: (image.width - sw) * along(crop.x),
+    sx: (image.width - sw) * (1 - along(crop.x)),
     sy: (image.height - sh) * along(crop.y),
     sw,
     sh,
@@ -242,24 +244,29 @@ function useBannerEdit<Input>(
 // nor publishes the banner twice.
 export function usePublishBanner(cityId: string) {
   const kept = useRef(new Map<string, { uploadId: string; key: string }>());
-  return useBannerEdit(cityId, async (input: { fields: BannerFields; image: Blob }) => {
-    const id = JSON.stringify(input.fields) + `|${input.image.size}`;
-    let entry = kept.current.get(id);
-    if (entry === undefined) {
-      const uploadId = await uploadImage('banner_image', input.image);
-      if (uploadId === null) {
-        return { data: undefined, error: { error: 'upload_missing' }, status: 409 };
+  return useBannerEdit(
+    cityId,
+    async (input: { fields: BannerFields; image: Blob; imageId: string }) => {
+      // The fields with the picked image and its crop (the page's `imageId`),
+      // so a retry of the same cut reuses its upload and a new cut uploads.
+      const id = JSON.stringify([input.fields, input.imageId]);
+      let entry = kept.current.get(id);
+      if (entry === undefined) {
+        const uploadId = await uploadImage('banner_image', input.image);
+        if (uploadId === null) {
+          return { data: undefined, error: { error: 'upload_missing' }, status: 409 };
+        }
+        entry = { uploadId, key: crypto.randomUUID() };
+        kept.current.set(id, entry);
       }
-      entry = { uploadId, key: crypto.randomUUID() };
-      kept.current.set(id, entry);
-    }
-    const { data, error, response } = await api.POST('/v1/admin/banners', {
-      body: { cityId, ...input.fields, uploadId: entry.uploadId },
-      params: { header: { 'Idempotency-Key': entry.key } },
-    });
-    if (data || response.status < 500) kept.current.delete(id);
-    return { data, error, status: response.status };
-  });
+      const { data, error, response } = await api.POST('/v1/admin/banners', {
+        body: { cityId, ...input.fields, uploadId: entry.uploadId },
+        params: { header: { 'Idempotency-Key': entry.key } },
+      });
+      if (data || response.status < 500) kept.current.delete(id);
+      return { data, error, status: response.status };
+    },
+  );
 }
 
 // Every field, and a new image when one was cut (null keeps it).

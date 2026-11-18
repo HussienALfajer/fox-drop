@@ -14,9 +14,10 @@ describe('cropBox', () => {
       sw: 4000,
       sh: 4000 / 2.4,
     });
-    // A very wide image: the frame takes its whole height.
+    // A very wide image: the frame takes its whole height; across 0 is the
+    // image's start, its right edge (right to left).
     expect(cropBox({ width: 3000, height: 500 }, { zoom: 1, x: 0, y: 0 })).toEqual({
-      sx: 0,
+      sx: 1800,
       sy: 0,
       sw: 1200,
       sh: 500,
@@ -25,10 +26,10 @@ describe('cropBox', () => {
 
   it('zooms in and moves the frame within the image, never past it', () => {
     const box = cropBox({ width: 2400, height: 1000 }, { zoom: 2, x: 1, y: 1 });
-    expect(box).toEqual({ sx: 1200, sy: 500, sw: 1200, sh: 500 });
+    expect(box).toEqual({ sx: 0, sy: 500, sw: 1200, sh: 500 });
     // Out of range values stay inside.
     expect(cropBox({ width: 2400, height: 1000 }, { zoom: 9, x: 2, y: -1 })).toEqual({
-      sx: 2400 - 800,
+      sx: 0,
       sy: 0,
       sw: 800,
       sh: 800 / 2.4,

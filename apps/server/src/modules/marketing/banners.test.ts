@@ -299,6 +299,111 @@ describe('«البانرات»', () => {
     expect([twice.statusCode, twice.json().error]).toEqual([404, 'unknown_banner']);
   });
 
+  it('keeps a banner to its city, and its upload to one banner', async () => {
+    const own = await admin(['OWN']);
+    const id = await restaurant('مطعم المدينة');
+    const created = await own.call('POST', '/v1/admin/banners', {
+      ...fields({ target: 'restaurant', restaurantIds: [id], title: 'في أعزاز' }),
+      uploadId: await own.upload(),
+    });
+    const banner = (created.json() as Banners).banners.at(-1)!;
+    const [{ id: manbij }] = (
+      await sql.query("INSERT INTO geo.cities (code, name) VALUES ('MB', 'منبج') RETURNING id")
+    ).rows;
+    const elsewhere = { cityId: manbij };
+    const edit = await own.call('PUT', `/v1/admin/banners/${banner.id}`, {
+      ...fields({ ...elsewhere, target: 'restaurant', restaurantIds: [id] }),
+      uploadId: null,
+    });
+    // Azaz's restaurant is not one of Manbij's, whatever the banner.
+    expect([edit.statusCode, edit.json().error]).toEqual([400, 'invalid_banner']);
+    const otherCode = (
+      await sql.query(
+        `INSERT INTO marketing.promo_codes (city_id, code, kind, percent_bp, currency, valid_from,
+           valid_to, audience, restaurant_ids, zone_ids, funding, merchant_share_bp, visibility,
+           created_by, updated_by)
+         VALUES ($1, 'MANBIJ', 'percentage', 1000, 'TRY', now() - interval '1 hour',
+           now() + interval '3 days', 'everyone', '{}', '{}', 'platform', 0, 'visible',
+           (SELECT id FROM identity.admin_accounts LIMIT 1), (SELECT id FROM identity.admin_accounts LIMIT 1))
+         RETURNING id`,
+        [manbij],
+      )
+    ).rows[0].id;
+    const foreignCode = await own.call('POST', '/v1/admin/banners', {
+      ...fields({ target: 'code', codeId: otherCode }),
+      uploadId: await own.upload(),
+    });
+    expect([foreignCode.statusCode, foreignCode.json().error]).toEqual([400, 'invalid_banner']);
+    const remove = await own.call('POST', `/v1/admin/banners/${banner.id}/remove`, elsewhere);
+    expect([remove.statusCode, remove.json().error]).toEqual([404, 'unknown_banner']);
+    const order = await own.call('POST', '/v1/admin/banners/order', {
+      ...elsewhere,
+      ids: [banner.id],
+    });
+    expect([order.statusCode, order.json().error]).toEqual([409, 'banners_changed']);
+    const unknown = await own.call('POST', `/v1/admin/banners/${banner.id}/remove`, {
+      cityId: randomUUID(),
+    });
+    expect([unknown.statusCode, unknown.json().error]).toEqual([404, 'unknown_city']);
+
+    // Another banner's upload is refused on an edit.
+    const taken = await own.upload();
+    await own.call('POST', '/v1/admin/banners', {
+      ...fields({ target: 'restaurant', restaurantIds: [id], title: 'الثاني' }),
+      uploadId: taken,
+    });
+    const reused = await own.call('PUT', `/v1/admin/banners/${banner.id}`, {
+      ...fields({ target: 'restaurant', restaurantIds: [id], title: 'في أعزاز' }),
+      uploadId: taken,
+    });
+    expect([reused.statusCode, reused.json().error]).toEqual([409, 'upload_used']);
+  });
+
+  it('answers a repeat from its key even after the banner ended', async () => {
+    const own = await admin(['OWN']);
+    const id = await restaurant('مطعم الإعادة');
+    const key = randomUUID();
+    const body = {
+      ...fields({
+        target: 'restaurant',
+        restaurantIds: [id],
+        endsAt: new Date(Date.now() + 60_000).toISOString(),
+      }),
+      uploadId: await own.upload(),
+    };
+    expect((await own.call('POST', '/v1/admin/banners', body, key)).statusCode).toBe(201);
+    vi.useFakeTimers({ now: Date.now() + 120_000, toFake: ['Date'] });
+    try {
+      const repeat = await own.call('POST', '/v1/admin/banners', body, key);
+      expect(repeat.statusCode).toBe(201);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('offers and takes only a code running now', async () => {
+    const own = await admin(['OWN']);
+    const [{ id: paused }] = (
+      await sql.query(
+        `INSERT INTO marketing.promo_codes (city_id, code, kind, percent_bp, currency, valid_from,
+           valid_to, audience, restaurant_ids, zone_ids, funding, merchant_share_bp, visibility,
+           status, created_by, updated_by)
+         VALUES ($1, 'PAUSED1', 'percentage', 1000, 'TRY', now() - interval '1 hour',
+           now() + interval '3 days', 'everyone', '{}', '{}', 'platform', 0, 'visible', 'paused',
+           (SELECT id FROM identity.admin_accounts LIMIT 1), (SELECT id FROM identity.admin_accounts LIMIT 1))
+         RETURNING id`,
+        [azaz],
+      )
+    ).rows;
+    const listed = await own.call('GET', `/v1/admin/banners?cityId=${azaz}`);
+    expect(listed.json().codes.map((code: { id: string }) => code.id)).not.toContain(paused);
+    const refused = await own.call('POST', '/v1/admin/banners', {
+      ...fields({ target: 'code', codeId: paused }),
+      uploadId: await own.upload(),
+    });
+    expect([refused.statusCode, refused.json().error]).toEqual([400, 'invalid_banner']);
+  });
+
   it('never lets the application role delete a banner', async () => {
     await expect(sql.query('DELETE FROM marketing.banners')).rejects.toThrow(/permission denied/);
   });

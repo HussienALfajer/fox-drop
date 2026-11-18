@@ -19,7 +19,7 @@ part 'admin_banners_dto_output.g.dart';
 /// * [banners] - The city’s banners in the strip’s order, ended ones included.
 /// * [restaurants] - The city's restaurants a target picks from.
 /// * [categories] - The active categories, in their order.
-/// * [codes] - The city's visible codes that have not ended, newest first.
+/// * [codes] - The city's visible codes running now in its base currency, newest first.
 /// * [zones]
 /// * [canManage] - Whether this admin may publish (marketing.banners).
 @BuiltValue()
@@ -39,7 +39,7 @@ abstract class AdminBannersDtoOutput
   BuiltList<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>
   get categories;
 
-  /// The city's visible codes that have not ended, newest first.
+  /// The city's visible codes running now in its base currency, newest first.
   @BuiltValueField(wireName: r'codes')
   BuiltList<AdminBannersDtoOutputCodesInner> get codes;
 

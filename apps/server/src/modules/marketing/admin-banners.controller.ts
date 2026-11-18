@@ -66,7 +66,7 @@ class AdminBannersDto extends createZodDto(
       .describe('The active categories, in their order.'),
     codes: z
       .array(z.object({ id: z.uuid(), code: z.string() }))
-      .describe("The city's visible codes that have not ended, newest first."),
+      .describe("The city's visible codes running now in its base currency, newest first."),
     zones: z.array(z.object({ id: z.uuid(), name: z.string(), active: z.boolean() })),
     canManage: z.boolean().describe('Whether this admin may publish (marketing.banners).'),
   }),
@@ -110,7 +110,7 @@ class AdminBannersOrderDto extends createZodDto(
     cityId: z.uuid(),
     ids: z
       .array(z.uuid())
-      .max(500)
+      .max(5000)
       .describe('Every banner of the city once (ended ones included), in the new order.'),
   }),
 ) {}

@@ -101,20 +101,30 @@ export class BannersService {
     return rows.map(({ banner, code }) => bannerOf(banner, code));
   }
 
-  // The city's visible codes not ended, for the panel's code target:
+  // The city's codes a banner may open now, for the panel's code target:
   // newest first.
   async codeChoices(cityId: string, now = new Date()): Promise<{ id: string; code: string }[]> {
     return this.database.db
       .select({ id: promoCodes.id, code: promoCodes.code })
       .from(promoCodes)
-      .where(
-        and(
-          eq(promoCodes.cityId, cityId),
-          eq(promoCodes.visibility, 'visible'),
-          gt(promoCodes.validTo, now),
-        ),
-      )
+      .where(await this.runningCode(cityId, now))
       .orderBy(sql`${promoCodes.createdAt} DESC`, asc(promoCodes.code));
+  }
+
+  // A code a banner may open: visible, active, started, not ended and saved
+  // in the city's base, as «أكوادي» lists it (`runsNow`), so the panel never
+  // publishes a code banner the home leaves out. One paused later leaves the
+  // home until it runs again.
+  private async runningCode(cityId: string, now: Date) {
+    const base = await this.fx.baseCurrency(cityId);
+    return and(
+      eq(promoCodes.cityId, cityId),
+      eq(promoCodes.visibility, 'visible'),
+      eq(promoCodes.status, 'active'),
+      lte(promoCodes.validFrom, now),
+      gt(promoCodes.validTo, now),
+      base === null ? sql`false` : eq(promoCodes.currency, base),
+    );
   }
 
   // CU §8.1 (owner decision 2026-11-18): the banners running now in the
@@ -166,34 +176,28 @@ export class BannersService {
     change: PromoChange,
     now = new Date(),
   ): Promise<Banner[]> {
-    const checked = await this.checkFields(cityId, fields, now);
+    // The body as sent (the title trimmed), so a repeat is answered before
+    // any check that depends on the clock or on other records.
     const requestHash = createHash('sha256')
-      .update(JSON.stringify(['banner.create', cityId, checked, uploadId]))
+      .update(
+        JSON.stringify([
+          'banner.create',
+          cityId,
+          auditOf({ ...fields, title: fields.title.trim() }),
+          uploadId,
+        ]),
+      )
       .digest('hex');
+    const keyOf = { accountId: change.accountId, key: idempotencyKey, requestHash, now };
+    if (await this.replayed(this.database.db, keyOf)) return this.list(cityId);
+    const checked = await this.checkFields(cityId, fields, now);
     // Before the transaction: it calls the storage (the files module's rule).
     await this.files.prepare(uploadId, 'banner_image', now);
     return this.database.db.transaction(async (tx) => {
       await tx.execute(
         sql`SELECT pg_advisory_xact_lock(hashtextextended(${`marketing.key:${change.accountId}:${idempotencyKey}`}, 0))`,
       );
-      const [kept] = await tx
-        .select()
-        .from(idempotencyKeys)
-        .where(
-          and(
-            eq(idempotencyKeys.accountId, change.accountId),
-            eq(idempotencyKeys.key, idempotencyKey),
-          ),
-        );
-      if (kept && kept.createdAt.getTime() >= now.getTime() - KEY_LIFETIME_MS) {
-        if (kept.requestHash !== requestHash) {
-          throw new BannerRefusedError(
-            'idempotency_key_reused',
-            'the key came with another command',
-          );
-        }
-        return this.list(cityId, tx);
-      }
+      if (await this.replayed(tx, keyOf)) return this.list(cityId, tx);
       await lockBanners(tx, cityId);
       const before = await this.list(cityId, tx);
       if (before.filter((each) => each.endsAt > now).length >= BANNERS_MAX) {
@@ -251,6 +255,13 @@ export class BannersService {
     return this.database.db.transaction(async (tx) => {
       await lockBanners(tx, cityId);
       const before = await this.find(tx, cityId, id);
+      // An ended banner brought back counts toward the bound, as a new one.
+      if (before.endsAt <= now) {
+        const running = (await this.list(cityId, tx)).filter((each) => each.endsAt > now);
+        if (running.length >= BANNERS_MAX) {
+          throw new BannerRefusedError('invalid_banner', `at most ${BANNERS_MAX} banners running`);
+        }
+      }
       let imageKey = before.imageKey;
       if (uploadId !== null) {
         const linked = await this.files.link(tx, uploadId, now);
@@ -307,6 +318,7 @@ export class BannersService {
     change: PromoChange,
     now = new Date(),
   ): Promise<Banner[]> {
+    await this.checkCity(cityId);
     return this.database.db.transaction(async (tx) => {
       await lockBanners(tx, cityId);
       const before = await this.find(tx, cityId, id);
@@ -327,6 +339,23 @@ export class BannersService {
     });
   }
 
+  // Whether the key answered this body within 24 hours (422
+  // idempotency_key_reused for another body).
+  private async replayed(
+    executor: Executor,
+    kept: { accountId: string; key: string; requestHash: string; now: Date },
+  ): Promise<boolean> {
+    const [row] = await executor
+      .select()
+      .from(idempotencyKeys)
+      .where(and(eq(idempotencyKeys.accountId, kept.accountId), eq(idempotencyKeys.key, kept.key)));
+    if (!row || row.createdAt.getTime() < kept.now.getTime() - KEY_LIFETIME_MS) return false;
+    if (row.requestHash !== kept.requestHash) {
+      throw new BannerRefusedError('idempotency_key_reused', 'the key came with another command');
+    }
+    return true;
+  }
+
   // 404 unknown_city.
   async checkCity(cityId: string): Promise<void> {
     if ((await this.geo.cityTimeZone(cityId)) === null) {
@@ -342,7 +371,7 @@ export class BannersService {
 
   // The title trimmed, 1 to 60 characters; a target of the city (a
   // restaurant, 1 to 30 restaurants each once, an active category, or a
-  // visible code that has not ended); zones of the city, each once; the
+  // code running now); zones of the city, each once; the
   // start before the end and the end after now.
   private async checkFields(
     cityId: string,
@@ -393,15 +422,8 @@ export class BannersService {
         const [code] = await this.database.db
           .select({ id: promoCodes.id })
           .from(promoCodes)
-          .where(
-            and(
-              eq(promoCodes.id, id),
-              eq(promoCodes.cityId, cityId),
-              eq(promoCodes.visibility, 'visible'),
-              gt(promoCodes.validTo, now),
-            ),
-          );
-        if (code === undefined) throw invalid('the code is not a visible code of the city');
+          .where(and(eq(promoCodes.id, id), await this.runningCode(cityId, now)));
+        if (code === undefined) throw invalid('the code is not one running now in the city');
         return { ...fields, title, zoneIds, ...target, codeId: id };
       }
     }

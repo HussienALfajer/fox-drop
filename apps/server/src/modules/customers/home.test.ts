@@ -121,6 +121,7 @@ async function restaurant(name: string, steps: number, daysAgo: number, open = t
 
 type Home = {
   restaurants: { id: string }[];
+  banners: unknown[];
   sections: { kind: string; title: string | null; restaurantIds: string[] }[];
 };
 const home = async (): Promise<Home> => {
