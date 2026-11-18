@@ -163,6 +163,18 @@ test("the storage's keys reach only the processes that use them (§15)", () => {
   assert.deepEqual(holders('GARAGE_ADMIN_TOKEN'), ['storage', 'storage-setup']);
 });
 
+test("nginx serves /media/ for exactly the files module's public folders", () => {
+  const service = read('../apps/server/src/modules/files/files.service.ts');
+  const folders = /const folders[^{]*\{([^}]*)\}/.exec(service)[1];
+  const privatePurposes = /PRIVATE_PURPOSES[^=]*=\s*\[([^\]]*)\]/.exec(service)[1];
+  const published = [...folders.matchAll(/(\w+): '([^']+)'/g)]
+    .filter(([, purpose]) => !privatePurposes.includes(`'${purpose}'`))
+    .map(([, , folder]) => folder)
+    .sort();
+  const served = /\/plain\/\(([^)]*)\)\//.exec(read('nginx/api.conf.template'))[1];
+  assert.deepEqual(served.split('|').sort(), published);
+});
+
 test("imgproxy's widths are the ones the panel and the customer app ask for", () => {
   const presets = /^IMGPROXY_PRESETS=(.*)$/m.exec(read('imgproxy/imgproxy.env'))[1];
   const widths = presets.split(',').map((preset) => {

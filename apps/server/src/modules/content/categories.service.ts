@@ -9,8 +9,11 @@ import { categories } from './schema.js';
 
 // AP §9.13 «التصنيفات»: a name of 1 to 40 characters (the table's CHECK).
 export const CATEGORY_NAME_MAX = 40;
-// Every category, active or not, at most: the panel's list and its order.
+// Active categories at most (a bound on the panel's list and the customer's
+// row, not a business rule); removed ones never count.
 export const CATEGORIES_MAX = 200;
+// Every category ever added, removed ones included, that one reorder names.
+export const CATEGORIES_ORDER_MAX = 2000;
 
 export interface Category {
   id: string;
@@ -59,14 +62,12 @@ export class CategoriesService {
     return this.database.db.transaction(async (tx) => {
       await lockCategories(tx);
       await checkUniqueName(tx, checked, null);
+      await checkRoom(tx);
       const [{ next }] = (
         await tx.execute<{ next: number }>(
           sql`SELECT coalesce(max(position), 0) + 1 AS next FROM content.categories`,
         )
       ).rows as [{ next: number }];
-      if (Number(next) > CATEGORIES_MAX) {
-        throw new ContentRefusedError('invalid_value', `at most ${CATEGORIES_MAX} categories`);
-      }
       const [row] = await tx
         .insert(categories)
         .values({ name: checked, position: Number(next) })
@@ -89,6 +90,7 @@ export class CategoriesService {
       await lockCategories(tx);
       const before = await this.find(tx, id);
       if (fields.active) await checkUniqueName(tx, name, id);
+      if (fields.active && !before.active) await checkRoom(tx);
       const [row] = await tx
         .update(categories)
         .set({ name, active: fields.active, updatedAt: sql`now()` })
@@ -135,6 +137,11 @@ export class CategoriesService {
       const known = rows.map((row) => row.id);
       if (ids.length !== known.length || [...ids].sort().join() !== [...known].sort().join()) {
         throw new ContentRefusedError('invalid_order', 'the order names every category once');
+      }
+      if (ids.join() === known.join()) {
+        return (
+          await tx.select().from(categories).orderBy(asc(categories.position), asc(categories.id))
+        ).map(categoryOf);
       }
       for (const [index, id] of ids.entries()) {
         await tx
@@ -230,6 +237,18 @@ async function checkUniqueName(tx: Executor, name: string, except: string | null
       ),
     );
   if (row) throw new ContentRefusedError('duplicate_label', `${name} is already a category`);
+}
+
+// At most CATEGORIES_MAX active categories (invalid_value).
+async function checkRoom(tx: Executor): Promise<void> {
+  const [{ active }] = (
+    await tx.execute<{ active: number }>(
+      sql`SELECT count(*)::int AS active FROM content.categories WHERE active`,
+    )
+  ).rows as [{ active: number }];
+  if (Number(active) >= CATEGORIES_MAX) {
+    throw new ContentRefusedError('invalid_value', `at most ${CATEGORIES_MAX} active categories`);
+  }
 }
 
 // Edits of the categories take turns, so positions and names stay consistent.

@@ -18,12 +18,15 @@ export function canEditCategories(session: AdminSession | null | undefined): boo
 }
 
 // A restaurant's categories (AP §9.6.3 step 1): read with the restaurants,
-// set by those who manage restaurants or add them (OWN, OPS, DATA).
+// set by those who manage restaurants or add them (OWN, OPS, DATA). The
+// page names them from «التصنيفات», so it also needs that read (SUP has
+// neither content.read nor content.categories).
 export function canSeeRestaurantCategories(session: AdminSession | null | undefined): boolean {
   return (
-    can(session, RESTAURANTS_READ) ||
-    can(session, RESTAURANTS_MANAGE) ||
-    can(session, RESTAURANTS_CREATE)
+    canSeeCategories(session) &&
+    (can(session, RESTAURANTS_READ) ||
+      can(session, RESTAURANTS_MANAGE) ||
+      can(session, RESTAURANTS_CREATE))
   );
 }
 

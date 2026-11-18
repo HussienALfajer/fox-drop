@@ -25,7 +25,11 @@ import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
 import type { AdminSession } from '../identity/index.js';
 import { FilesRefusedError } from '../files/index.js';
-import { CATEGORIES_MAX, CATEGORY_NAME_MAX, CategoriesService } from './categories.service.js';
+import {
+  CATEGORIES_ORDER_MAX,
+  CATEGORY_NAME_MAX,
+  CategoriesService,
+} from './categories.service.js';
 import { ContactSchema } from './contact.js';
 import { ContentRefusedError, ContentService, type ContentEdit } from './content.service.js';
 import {
@@ -264,7 +268,10 @@ class AdminCategoryImageDto extends createZodDto(
 
 class AdminCategoryOrderDto extends createZodDto(
   z.object({
-    ids: z.array(z.uuid()).max(CATEGORIES_MAX).describe('Every category once, removed ones too.'),
+    ids: z
+      .array(z.uuid())
+      .max(CATEGORIES_ORDER_MAX)
+      .describe('Every category once, removed ones too.'),
   }),
 ) {}
 
@@ -302,7 +309,7 @@ export class AdminContentController {
     return { categories: await this.categories.all() };
   }
 
-  // 400 duplicate_label, invalid_value (more than CATEGORIES_MAX).
+  // 400 duplicate_label, invalid_value (CATEGORIES_MAX active already).
   @Post('categories')
   @RequirePermission('content.categories')
   @ZodResponse({ status: 201, type: AdminCategoryDto })

@@ -268,7 +268,7 @@ describe('migration 0107 (owner decision 2026-11-18)', () => {
     const migrator = new pg.Pool({ connectionString: database.migratorUrl });
     try {
       await migrator.query(
-        "UPDATE merchants.restaurants SET category = CASE id WHEN $1 THEN ' كباب ' WHEN $2 THEN 'كباب' ELSE '  ' END WHERE id IN ($1, $2, $3)",
+        "UPDATE merchants.restaurants SET category = CASE id WHEN $1 THEN E'\\tكباب\\u00a0' WHEN $2 THEN 'كباب' ELSE '  ' END WHERE id IN ($1, $2, $3)",
         [first, second, blank],
       );
       await migrator.query(

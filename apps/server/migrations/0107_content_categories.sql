@@ -17,11 +17,11 @@ ALTER TABLE "files"."uploads" ADD CONSTRAINT "uploads_purpose_values" CHECK ("fi
 INSERT INTO "content"."categories" ("name", "position")
 SELECT "name", row_number() OVER (ORDER BY "name")
 FROM (
-	SELECT DISTINCT left(btrim("category"), 40) AS "name"
+	SELECT DISTINCT left(btrim("category", E' \t\r\n\u00a0'), 40) AS "name"
 	FROM "merchants"."restaurants"
-	WHERE btrim(coalesce("category", '')) <> ''
+	WHERE btrim(coalesce("category", ''), E' \t\r\n\u00a0') <> ''
 ) AS "names";--> statement-breakpoint
 UPDATE "merchants"."restaurants" AS "r"
 SET "category_ids" = ARRAY["c"."id"]
 FROM "content"."categories" AS "c"
-WHERE "c"."name" = left(btrim("r"."category"), 40);
+WHERE "c"."name" = left(btrim("r"."category", E' \t\r\n\u00a0'), 40);

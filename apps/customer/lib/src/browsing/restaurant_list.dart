@@ -49,6 +49,7 @@ class RestaurantList extends ConsumerWidget {
                     // CU §8.2: only an admin test account sees one.
                     if (card.testMode) l10n.customerTestMode,
                     ?categoriesText(
+                      l10n,
                       card.categories.nonNulls.map((c) => c.name),
                     ),
                     card.rating == null

@@ -57,8 +57,8 @@ final categoryRestaurantsProvider = FutureProvider.autoDispose
     );
 
 /// A card's or a page's categories (AP §9.13), as one line.
-String? categoriesText(Iterable<String> names) =>
-    names.isEmpty ? null : names.join('، ');
+String? categoriesText(AppLocalizations l10n, Iterable<String> names) =>
+    names.isEmpty ? null : names.join(l10n.listSeparator);
 
 /// A restaurant's page and menu for the point (CU §9.1–9.3).
 final restaurantPageProvider = FutureProvider.autoDispose

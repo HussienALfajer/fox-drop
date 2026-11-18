@@ -18302,7 +18302,7 @@
         "type": "object",
         "properties": {
           "ids": {
-            "maxItems": 200,
+            "maxItems": 2000,
             "type": "array",
             "items": {
               "type": "string",

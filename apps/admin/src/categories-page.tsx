@@ -78,21 +78,21 @@ export function CategoriesPage() {
         <>
           {categories.data.length === 0 && <p>{t('categories.empty')}</p>}
           <ul>
-            {categories.data.map((category) => (
+            {categories.data.map((category, index) => (
               <li key={category.id}>
                 <CategoryRow category={category} edit={edit} />
                 {edit && (
                   <>
                     <button
                       type="button"
-                      disabled={reorder.isPending}
+                      disabled={reorder.isPending || index === 0}
                       onClick={() => reorder.mutate(moved(ids, category.id, -1))}
                     >
                       {t('content.up')}
                     </button>
                     <button
                       type="button"
-                      disabled={reorder.isPending}
+                      disabled={reorder.isPending || index === ids.length - 1}
                       onClick={() => reorder.mutate(moved(ids, category.id, 1))}
                     >
                       {t('content.down')}
