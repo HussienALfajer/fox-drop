@@ -4,14 +4,26 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.28, Search, favourites and «طلباتي» (`docs/roadmap.md`, Phase 2, Finding food). Not started.
+Slice 2.28b, Favourites and «طلباتي» (`docs/roadmap.md`, Phase 2, Finding food). Not started.
 
-- **Roadmap line:** 2.28 Search, favourites and «طلباتي»: search with 10 recent searches and «لم تجده؟ أخبرنا», the lost-demand log, favourites synced, the order history and reorder (CU §8.3, §12.3, AP §9.17). The owner searches for an item and reorders an earlier order.
-- **Specs:** CU §8.3 (search), CU §9.6 (favourites), CU §12.3 «طلباتي» and reorder (U18), AP §9.17 (the lost-demand log), and the customers module's «Not yet» (search, favourites).
+- **Roadmap line:** 2.28b Favourites and «طلباتي»: the heart on cards and pages (a guest signs in), «المفضلة» in «حسابي» synced with the account, the order list (active first, then past, in pages), the order detail's money lines, address, timeline and links, and «اطلب مرة أخرى» at current prices skipping unavailable lines (CU §9.6, §12.3, U18). The owner hearts a restaurant on one phone, sees it on another, and reorders an earlier order.
+- **Specs:** CU §9.6 (favourites), CU §12.3 («طلباتي», the order detail, «اطلب مرة أخرى»), U18, CU §15 («Add or remove a favourite»), CU §6.1 (the screens), the customers module's «Not yet» (favourites) and ordering's («طلباتي»).
 - **Branch:** the cloud session's branch.
 - **Plan:**
-  - [ ] Split the slice into pull requests with the `slice-plan` skill (likely 2.28a search and the lost-demand log, 2.28b favourites, 2.28c «طلباتي» and reorder) and get the owner's approval, then write the plan of the first here, one step per commit.
-- **To ask the owner first:** the split above; what search matches (restaurant names, item names, categories; Arabic spelling variants such as «ة/ه» and «ى/ي»); whether the 10 recent searches live on the phone or the account; what «لم تجده؟ أخبرنا» records and where the panel shows it (AP §9.17); whether favourites are restaurants only or items too; what reorder does with an item no longer available or a changed price.
+  - [ ] Server: `customers.favourites` (account, restaurant, added and removed; migration), `PUT` and `DELETE /v1/customer/favourites/{restaurantId}` (signed in, idempotent by their nature) and `GET /v1/customer/favourites?latitude=&longitude=` (the cards of the favourites that deliver to the point, with their state and estimate); each card's `favourite` for a signed-in customer.
+  - [ ] Server: `GET /v1/customer/orders?cursor=` («طلباتي»: active first, then past, newest first, in pages of 20; restaurant, date, status, total), and the order read's missing parts of CU §12.3 (the money lines with the rounding, the timeline, the captain's first name).
+  - [ ] Customer app: the heart on `RestaurantTile` and the restaurant page (a guest goes to sign-in), «المفضلة» in «حسابي».
+  - [ ] Customer app: «طلباتي» from home and «حسابي», the order detail's lines, and «اطلب مرة أخرى» (delivered, rejected and cancelled orders, not free re-deliveries, while the restaurant is visible), reusing `rebuildLines` after the confirmation that the cart is replaced, the notes copied, the code not.
+  - [ ] Review, then the hand-over to 2.29.
+- **To ask the owner first:** the page size of «طلباتي» (20 proposed); whether «المفضلة» lists a favourite that does not deliver to the point greyed out or hides it (CU §9.6 says only those that deliver: hide); whether removing a favourite asks for confirmation (none proposed).
+
+### Left from 2.28a (`claude/slide-2-28-ekc0sd`)
+
+- **Before deploying to staging:** migration 0114, expand only: the new append-only tables `customers.search_misses` and `customers.restaurant_suggestions` (the application role `SELECT` and `INSERT` only). New routes: `GET /v1/customer/search`, `POST /v1/customer/restaurant-suggestions` (`Idempotency-Key`), both open to guests, and `GET /v1/admin/lost-demand` (`reports.operations` or `reports.all`). Deploy the server before the panel and the app. No provision step.
+- **To check on staging (after the merge and the deploy):** in the app, as a guest at a served point, tap «ابحث عن مطعم أو صنف», type part of a restaurant's or an item's name (with «ة» typed as «ه», or with diacritics): «المطاعم» and «الأصناف» list them, a closed restaurant last; tap an item: its restaurant opens. Search «سوشي» (nothing): «لا توجد نتائج لـ «سوشي»» and «لم تجده؟ أخبرنا»; send a name: «شكراً، سنحاول إضافته». Back in «البحث» with the box empty, the recent searches show; «مسح» clears them. In the panel as OWN or OPS, «الطلب الضائع»: «سوشي» under «بحث بلا نتائج» with its count, and the name under «مطاعم مقترحة». FIN, SUP and DATA have no link.
+- **Decided by us:** a search is 2 to 50 characters; the items tab shows at most 50; a suggestion's name 1 to 60 and note up to 200; a suggestion needs a point a zone covers (`409 outside_zones`); the panel shows the last 30 days, the 100 searches missed most and the 100 latest suggestions; an admin test account's misses and searches of diacritics only are not recorded; the search waits 400 ms after typing stops; the strings «ابحث عن مطعم أو صنف», «عمليات البحث الأخيرة», «لا توجد نتائج لـ «{البحث}»», «لا توجد نتائج في هذا القسم», «ملاحظة (اختياري)», «إرسال», and the panel's «الطلب الضائع», «بحث بلا نتائج», «مطاعم مقترحة».
+- **To confirm with the owner:** whether «شاورمة» should find «شاورما» (the final «ة» and «ا» alike; the decided rule treats only «ة/ه», «ى/ي» and the alefs alike); whether a menu category's name (such as «مشروبات») should find its items (now only the platform's categories find restaurants); the words above.
+- **Not yet:** the bottom bar of CU §6.1 (waits for the design); each search reads every covering restaurant's card and menu (fine for Azaz); the same search read again (a retry, a sign-in with the search open) and the parts typed before a pause are recorded as misses; the other lost demand of AP §9.17 and its Excel export (2.41); the new guest routes need the deploy's per-IP limits (architecture §15.5).
 
 ### Left from 2.27d (`ccr-80d769ec-2pyjdz`)
 

@@ -80,6 +80,15 @@ class HomeScreen extends ConsumerWidget {
                 child: Text(l10n.customerTermsShow),
               ),
             ),
+          // CU §8.3: the search box on the home header, while the point is
+          // served.
+          if (point case PointChecked(coverage: PointCoverage.served))
+            ListTile(
+              key: const Key('open-search'),
+              leading: const Icon(Icons.search),
+              title: Text(l10n.customerSearchHint),
+              onTap: () => context.push('/search'),
+            ),
           Expanded(child: _body(point, l10n, locate, ref)),
           // CU §13 «الشروط والخصوصية», until «حسابي» exists.
           TextButton(

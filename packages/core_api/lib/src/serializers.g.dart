@@ -279,6 +279,9 @@ Serializers _$serializers =
           ..add(AdminHomeSectionsOrderDto.serializer)
           ..add(AdminImageSetDtoOutput.serializer)
           ..add(AdminLiftCustomerDeviceBlockDto.serializer)
+          ..add(AdminLostDemandDtoOutput.serializer)
+          ..add(AdminLostDemandDtoOutputSearchesInner.serializer)
+          ..add(AdminLostDemandDtoOutputSuggestionsInner.serializer)
           ..add(AdminManualAccountDtoOutput.serializer)
           ..add(AdminManualAccountDtoOutputEntriesInner.serializer)
           ..add(AdminManualAdjustmentDto.serializer)
@@ -1169,11 +1172,26 @@ Serializers _$serializers =
           ..add(CustomerRestaurantPageDtoOutputScheduleInner.serializer)
           ..add(CustomerSaveProfileDto.serializer)
           ..add(CustomerSaveProfileDtoGenderEnum.serializer)
+          ..add(CustomerSearchDtoOutput.serializer)
+          ..add(CustomerSearchDtoOutputItemsInner.serializer)
+          ..add(CustomerSearchDtoOutputItemsInnerFromPrice.serializer)
+          ..add(CustomerSearchDtoOutputItemsInnerOptionGroupsInner.serializer)
+          ..add(
+            CustomerSearchDtoOutputItemsInnerOptionGroupsInnerOptionsInner
+                .serializer,
+          )
+          ..add(
+            CustomerSearchDtoOutputItemsInnerUnavailableReasonEnum.serializer,
+          )
+          ..add(CustomerSearchDtoOutputRestaurantsInner.serializer)
           ..add(CustomerSessionDtoOutput.serializer)
           ..add(CustomerSignInDto.serializer)
           ..add(CustomerSignedInDtoOutput.serializer)
           ..add(CustomerSignedOutDtoOutput.serializer)
           ..add(CustomerSignedOutDtoOutputStatusEnum.serializer)
+          ..add(CustomerSuggestedDtoOutput.serializer)
+          ..add(CustomerSuggestedDtoOutputStatusEnum.serializer)
+          ..add(CustomerSuggestionDto.serializer)
           ..add(CustomerTokensDtoOutput.serializer)
           ..add(CustomerUploadDtoOutput.serializer)
           ..add(CustomerZoneVoteDto.serializer)
@@ -1889,6 +1907,18 @@ Serializers _$serializers =
                 ListBuilder<
                   AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminLostDemandDtoOutputSearchesInner),
+            ]),
+            () => ListBuilder<AdminLostDemandDtoOutputSearchesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminLostDemandDtoOutputSuggestionsInner),
+            ]),
+            () => ListBuilder<AdminLostDemandDtoOutputSuggestionsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -2902,6 +2932,13 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+            ]),
+            () =>
+                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(CustomerRestaurantPageDtoOutputScheduleInner),
             ]),
             () => ListBuilder<CustomerRestaurantPageDtoOutputScheduleInner>(),
@@ -3161,6 +3198,40 @@ Serializers _$serializers =
                 ListBuilder<
                   CustomerRestaurantPageDtoOutputMenuInnerItemsInnerOptionGroupsInnerOptionsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                CustomerSearchDtoOutputItemsInnerOptionGroupsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CustomerSearchDtoOutputItemsInnerOptionGroupsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                CustomerSearchDtoOutputItemsInnerOptionGroupsInnerOptionsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CustomerSearchDtoOutputItemsInnerOptionGroupsInnerOptionsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CustomerSearchDtoOutputRestaurantsInner),
+            ]),
+            () => ListBuilder<CustomerSearchDtoOutputRestaurantsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CustomerSearchDtoOutputItemsInner),
+            ]),
+            () => ListBuilder<CustomerSearchDtoOutputItemsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

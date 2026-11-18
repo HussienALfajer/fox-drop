@@ -2084,6 +2084,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/customer/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["customerSearchSearch"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/restaurant-suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["customerSearchSuggest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/customers/search": {
         parameters: {
             query?: never;
@@ -2286,6 +2318,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["adminCustomersEndReviewStop"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/lost-demand": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminLostDemandReport"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -7442,6 +7490,140 @@ export interface components {
              */
             status: "closed";
         };
+        CustomerSearchDto_Output: {
+            /** @description Restaurants delivering to the point whose name or category matches: open first, then busy and paused, then closed. */
+            restaurants: {
+                /** Format: uuid */
+                id: string;
+                nameAr: string;
+                nameEn: string | null;
+                /** @description Deprecated (slice 2.27a): the first of `categories`, for older apps. */
+                category: string | null;
+                /** @description Its active categories (AP §9.13), in the restaurant’s order. */
+                categories: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                }[];
+                /** @description Its key in public-media, shown through imgproxy (architecture §5.8); null without one. */
+                logoKey: string | null;
+                /** @description Its key in public-media, shown through imgproxy (architecture §5.8); null without one. */
+                coverKey: string | null;
+                /** @description The restaurant's average stars to one decimal; null is «جديد», below 5 ratings (CU §12.1, Q16). */
+                rating: number | null;
+                /** @description The number of ratings beside the average (CU §8.2, §9.1); null with «جديد». */
+                ratingCount: number | null;
+                /** @description «تجريبي»: in test mode, seen only by an admin test account (CU §8.2, AP §9.8). */
+                testMode: boolean;
+                /** @description CU §8.4: «{fromMin}–{toMin} د». */
+                estimate: {
+                    fromMin: number;
+                    toMin: number;
+                };
+                /** @description To the point; null while the city has no fee rule in its base currency. */
+                deliveryFee: {
+                    fee: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    };
+                    /** @description «توصيل مجاني». */
+                    free: boolean;
+                } | null;
+                /** @description Only open takes orders. */
+                state: {
+                    /**
+                     * @description CU §9.2: open; «المطعم مشغول حالياً، جرّب بعد قليل»; «المطعم متوقف مؤقتاً…»; «مغلق — يفتح…»; «مغلق حتى {التاريخ}».
+                     * @enum {string}
+                     */
+                    state: "open" | "busy" | "paused" | "closed" | "holiday";
+                    /** @description Open with busy mode on: «قد يستغرق الطلب وقتاً أطول قليلاً». */
+                    busyMode: boolean;
+                    /** @description The end of a pause or a holiday close; null for a pause until resumed. */
+                    until: string | null;
+                    /** @description While closed by the schedule: its next opening. */
+                    opensAt: string | null;
+                    /** @description A holiday close's message, or an operations pause's. */
+                    message: string | null;
+                };
+            }[];
+            /** @description Their items whose name or description matches, in the restaurants' order (closed last), at most 50. */
+            items: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                description: string | null;
+                /** @description Its key in public-media, shown through imgproxy (architecture §5.8); null without one. */
+                photoKey: string | null;
+                price: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                };
+                /** @description «من {أقل سعر}» when a required group changes it. */
+                fromPrice: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                } | null;
+                available: boolean;
+                /** @description «يتوفر غداً», «متوفر من {الساعة}» (its category window) or «غير متوفر حالياً». */
+                unavailableReason: ("tomorrow" | "window" | "unavailable") | null;
+                optionGroups: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                    /** @description 0 is an add-on group; 1 or more is «إجباري». */
+                    minChoices: number;
+                    maxChoices: number;
+                    options: {
+                        /** Format: uuid */
+                        id: string;
+                        name: string;
+                        priceDelta: {
+                            /** @description Integer minor units (AP §8.6). */
+                            amount: string;
+                            currency: string;
+                        };
+                        /** @description Faded and not pickable when false. */
+                        available: boolean;
+                    }[];
+                }[];
+                /** Format: uuid */
+                restaurantId: string;
+                restaurantName: string;
+                /** @description Only open takes orders. */
+                restaurantState: {
+                    /**
+                     * @description CU §9.2: open; «المطعم مشغول حالياً، جرّب بعد قليل»; «المطعم متوقف مؤقتاً…»; «مغلق — يفتح…»; «مغلق حتى {التاريخ}».
+                     * @enum {string}
+                     */
+                    state: "open" | "busy" | "paused" | "closed" | "holiday";
+                    /** @description Open with busy mode on: «قد يستغرق الطلب وقتاً أطول قليلاً». */
+                    busyMode: boolean;
+                    /** @description The end of a pause or a holiday close; null for a pause until resumed. */
+                    until: string | null;
+                    /** @description While closed by the schedule: its next opening. */
+                    opensAt: string | null;
+                    /** @description A holiday close's message, or an operations pause's. */
+                    message: string | null;
+                };
+            }[];
+        };
+        CustomerSuggestionDto: {
+            latitude: number;
+            longitude: number;
+            /** @description «اسم المطعم», required. */
+            restaurantName: string;
+            /** @description «ملاحظة», optional; an empty one is none. */
+            note: string | null;
+            /** @description The search that found nothing, if the form followed one. */
+            query: string | null;
+        };
+        CustomerSuggestedDto_Output: {
+            /** @constant */
+            status: "received";
+        };
         AdminCustomerSearchDto: {
             /**
              * Format: uuid
@@ -7795,6 +7977,33 @@ export interface components {
             stopId: string;
             /** @description The required reason. */
             note: string;
+        };
+        AdminLostDemandDto_Output: {
+            /**
+             * Format: date-time
+             * @description 30 days back.
+             */
+            since: string;
+            /** @description «بحث بلا نتائج»: the 100 missed most, most first. */
+            searches: {
+                /** @description As it was typed last. */
+                query: string;
+                /** @description Searches typed alike that found nothing. */
+                count: number;
+                /** Format: date-time */
+                lastAt: string;
+            }[];
+            /** @description «مطاعم مقترحة»: the 100 latest. */
+            suggestions: {
+                /** Format: uuid */
+                id: string;
+                restaurantName: string;
+                note: string | null;
+                /** @description The search the form followed. */
+                query: string | null;
+                /** Format: date-time */
+                at: string;
+            }[];
         };
         AdminPromoCodesDto_Output: {
             codes: {
@@ -19228,6 +19437,58 @@ export interface operations {
             };
         };
     };
+    customerSearchSearch: {
+        parameters: {
+            query: {
+                latitude: string;
+                longitude: string;
+                /** @description What the customer typed; the app sends it once typing stops. */
+                q: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerSearchDto_Output"];
+                };
+            };
+        };
+    };
+    customerSearchSuggest: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerSuggestionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerSuggestedDto_Output"];
+                };
+            };
+        };
+    };
     adminCustomersSearch: {
         parameters: {
             query?: never;
@@ -19564,6 +19825,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminCustomerDto_Output"];
+                };
+            };
+        };
+    };
+    adminLostDemandReport: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminLostDemandDto_Output"];
                 };
             };
         };

@@ -799,6 +799,13 @@
       "when": 1795008082290,
       "tag": "0113_notifications_pending_campaigns",
       "breakpoints": true
+    },
+    {
+      "idx": 114,
+      "version": "7",
+      "when": 1795013055872,
+      "tag": "0114_customers_lost_demand",
+      "breakpoints": true
     }
   ]
 }

@@ -316,3 +316,56 @@ export const deviceLifts = customers.table(
     check('device_lifts_note', sql`length(${table.note}) BETWEEN 1 AND 500`),
   ],
 );
+
+// AP §9.17 «الطلب الضائع», CU §8.3 (slice 2.28a): a search that found no
+// restaurant and no item at a point a zone serves. The text as typed and
+// its search form (`searchText`), which the panel groups by. Never changed.
+export const searchMisses = customers.table(
+  'search_misses',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    cityId: uuid('city_id').notNull(),
+    zoneId: uuid('zone_id').notNull(),
+    query: text('query').notNull(),
+    normalized: text('normalized').notNull(),
+    // Null for a guest.
+    customerAccountId: uuid('customer_account_id'),
+    at: timestamp('at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index('search_misses_city_at').on(table.cityId, table.at),
+    check('search_misses_query', sql`length(${table.query}) BETWEEN 1 AND 50`),
+  ],
+);
+
+// CU §8.3 «لم تجده؟ أخبرنا» (slice 2.28a): the restaurant a customer asked
+// for, with an optional note and the search it followed. The command's
+// Idempotency-Key is kept with it, so a retry adds no second one. Never
+// changed.
+export const restaurantSuggestions = customers.table(
+  'restaurant_suggestions',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    cityId: uuid('city_id').notNull(),
+    zoneId: uuid('zone_id').notNull(),
+    restaurantName: text('restaurant_name').notNull(),
+    note: text('note'),
+    query: text('query'),
+    // Null for a guest.
+    customerAccountId: uuid('customer_account_id'),
+    at: timestamp('at', { withTimezone: true }).notNull(),
+    idempotencyKey: text('idempotency_key').notNull(),
+    requestHash: text('request_hash').notNull(),
+  },
+  (table) => [
+    uniqueIndex('restaurant_suggestions_key').on(table.idempotencyKey),
+    index('restaurant_suggestions_city_at').on(table.cityId, table.at),
+    check('restaurant_suggestions_name', sql`length(${table.restaurantName}) BETWEEN 1 AND 60`),
+    check('restaurant_suggestions_note', sql`length(${table.note}) BETWEEN 1 AND 200`),
+    check('restaurant_suggestions_query', sql`length(${table.query}) BETWEEN 1 AND 50`),
+  ],
+);

@@ -10,13 +10,16 @@ import { MarketingModule } from '../marketing/index.js';
 import { MerchantsModule } from '../merchants/index.js';
 import { SettingsModule } from '../settings/index.js';
 import { AdminCustomersController } from './admin-customers.controller.js';
+import { AdminLostDemandController } from './admin-lost-demand.controller.js';
 import { BrowsingService } from './browsing.service.js';
 import { CustomerClosureController } from './customer-closure.controller.js';
 import { CustomerAccountStateController } from './customer-account-state.controller.js';
 import { CustomerAdminService } from './customer-admin.service.js';
 import { CustomerBrowsingController } from './customer-browsing.controller.js';
 import { CustomerProfileController } from './customer-profile.controller.js';
+import { CustomerSearchController } from './customer-search.controller.js';
 import { CustomersService } from './customers.service.js';
+import { LostDemandService } from './lost-demand.service.js';
 import { MassPushAudienceSource } from './mass-push-audience.js';
 
 // The customers module (architecture §4.2): the customers' profiles and
@@ -40,9 +43,17 @@ import { MassPushAudienceSource } from './mass-push-audience.js';
     CustomerBrowsingController,
     CustomerAccountStateController,
     CustomerClosureController,
+    CustomerSearchController,
     AdminCustomersController,
+    AdminLostDemandController,
   ],
-  providers: [CustomersService, BrowsingService, CustomerAdminService, MassPushAudienceSource],
+  providers: [
+    CustomersService,
+    BrowsingService,
+    CustomerAdminService,
+    LostDemandService,
+    MassPushAudienceSource,
+  ],
   exports: [CustomersService],
 })
 export class CustomersModule {}

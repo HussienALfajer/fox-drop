@@ -24,6 +24,8 @@ import 'orders/report_problem_screen.dart';
 import 'platform.dart';
 import 'profile/profile.dart';
 import 'profile/profile_screen.dart';
+import 'search/search_screen.dart';
+import 'search/suggest_screen.dart';
 import 'starting_screen.dart';
 import 'terms.dart';
 
@@ -103,6 +105,18 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/banners/:id',
         builder: (context, state) =>
             BannerListScreen(bannerId: state.pathParameters['id']!),
+      ),
+      // CU §8.3 «البحث», open to guests, and «لم تجده؟ أخبرنا» (slice 2.28a).
+      GoRoute(
+        path: '/search',
+        builder: (context, state) => const SearchScreen(),
+        routes: [
+          GoRoute(
+            path: 'suggest',
+            builder: (context, state) =>
+                SuggestScreen(query: state.uri.queryParameters['q']),
+          ),
+        ],
       ),
       GoRoute(
         path: '/categories/:id',
