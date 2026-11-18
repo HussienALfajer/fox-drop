@@ -17,6 +17,7 @@ import { canSeePromoCodes } from './promo-codes.js';
 import { RESTAURANT_STATEMENTS } from './restaurant-statements.js';
 import { canSeeDrafts } from './restaurant-drafts.js';
 import { canSeeImages } from './restaurant-images.js';
+import { canSeeRestaurantList } from './restaurant-list.js';
 import { canSeeRestaurantStatus } from './restaurant-status.js';
 import { canSeeLostDemand } from './lost-demand.js';
 import { canSeeRatings } from './ratings.js';
@@ -70,6 +71,11 @@ export function HomePage() {
           {canSeeRestaurantCategories(session) && (
             <li>
               <Link to="/restaurant-categories">{t('restaurantCategories.title')}</Link>
+            </li>
+          )}
+          {canSeeRestaurantList(session) && (
+            <li>
+              <Link to="/restaurants">{t('restaurantList.title')}</Link>
             </li>
           )}
           {canSeeDrafts(session) && (
