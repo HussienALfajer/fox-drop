@@ -18869,28 +18869,71 @@
         ],
         "additionalProperties": false
       },
+      "AdminDraftChoice_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "AdminDraftPoint_Output": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "longitude": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ],
+        "additionalProperties": false
+      },
+      "AdminDraftMoney_Output": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string",
+            "pattern": "^\\d{1,15}$",
+            "description": "Integer minor units of the currency, as a string."
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          }
+        },
+        "required": [
+          "amount",
+          "currency"
+        ],
+        "additionalProperties": false
+      },
       "AdminRestaurantDraftChoicesDto_Output": {
         "type": "object",
         "properties": {
           "categories": {
             "type": "array",
             "items": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string",
-                  "format": "uuid",
-                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                },
-                "name": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "id",
-                "name"
-              ],
-              "additionalProperties": false
+              "$ref": "#/components/schemas/AdminDraftChoice_Output"
             }
           },
           "categoriesMax": {
@@ -18901,22 +18944,7 @@
           "zones": {
             "type": "array",
             "items": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string",
-                  "format": "uuid",
-                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                },
-                "name": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "id",
-                "name"
-              ],
-              "additionalProperties": false
+              "$ref": "#/components/schemas/AdminDraftChoice_Output"
             }
           },
           "baseCurrency": {
@@ -18928,24 +18956,7 @@
           "centre": {
             "anyOf": [
               {
-                "type": "object",
-                "properties": {
-                  "latitude": {
-                    "type": "number",
-                    "minimum": -90,
-                    "maximum": 90
-                  },
-                  "longitude": {
-                    "type": "number",
-                    "minimum": -180,
-                    "maximum": 180
-                  }
-                },
-                "required": [
-                  "latitude",
-                  "longitude"
-                ],
-                "additionalProperties": false
+                "$ref": "#/components/schemas/AdminDraftPoint_Output"
               },
               {
                 "type": "null"
@@ -18972,24 +18983,7 @@
           "defaultMinimumOrder": {
             "anyOf": [
               {
-                "type": "object",
-                "properties": {
-                  "amount": {
-                    "type": "string",
-                    "pattern": "^\\d{1,15}$",
-                    "description": "Integer minor units of the currency, as a string."
-                  },
-                  "currency": {
-                    "type": "string",
-                    "minLength": 3,
-                    "maxLength": 3
-                  }
-                },
-                "required": [
-                  "amount",
-                  "currency"
-                ],
-                "additionalProperties": false
+                "$ref": "#/components/schemas/AdminDraftMoney_Output"
               },
               {
                 "type": "null"
@@ -19033,6 +19027,75 @@
           "nameMax",
           "descriptionMax",
           "addressMax"
+        ],
+        "additionalProperties": false
+      },
+      "AdminDraftPeriod_Output": {
+        "type": "object",
+        "properties": {
+          "weekday": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 6,
+            "description": "0 is Sunday, 6 Saturday."
+          },
+          "opensAt": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1439,
+            "description": "Minutes after midnight on the city's clock."
+          },
+          "closesAt": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1440,
+            "description": "Not after the opening: the period crosses midnight (00:00 to 00:00 is all day)."
+          }
+        },
+        "required": [
+          "weekday",
+          "opensAt",
+          "closesAt"
+        ],
+        "additionalProperties": false
+      },
+      "AdminDraftCoverage_Output": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "radius",
+              "zones"
+            ]
+          },
+          "radiusMetres": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "With kind radius only."
+          },
+          "zoneIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "description": "With kind zones only, one or more."
+          }
+        },
+        "required": [
+          "kind",
+          "radiusMetres",
+          "zoneIds"
         ],
         "additionalProperties": false
       },
@@ -19107,24 +19170,7 @@
               "location": {
                 "anyOf": [
                   {
-                    "type": "object",
-                    "properties": {
-                      "latitude": {
-                        "type": "number",
-                        "minimum": -90,
-                        "maximum": 90
-                      },
-                      "longitude": {
-                        "type": "number",
-                        "minimum": -180,
-                        "maximum": 180
-                      }
-                    },
-                    "required": [
-                      "latitude",
-                      "longitude"
-                    ],
-                    "additionalProperties": false
+                    "$ref": "#/components/schemas/AdminDraftPoint_Output"
                   },
                   {
                     "type": "null"
@@ -19164,33 +19210,7 @@
               "periods": {
                 "type": "array",
                 "items": {
-                  "type": "object",
-                  "properties": {
-                    "weekday": {
-                      "type": "integer",
-                      "minimum": 0,
-                      "maximum": 6,
-                      "description": "0 is Sunday, 6 Saturday."
-                    },
-                    "opensAt": {
-                      "type": "integer",
-                      "minimum": 0,
-                      "maximum": 1439,
-                      "description": "Minutes after midnight on the city's clock."
-                    },
-                    "closesAt": {
-                      "type": "integer",
-                      "minimum": 0,
-                      "maximum": 1440,
-                      "description": "Not after the opening: the period crosses midnight (00:00 to 00:00 is all day)."
-                    }
-                  },
-                  "required": [
-                    "weekday",
-                    "opensAt",
-                    "closesAt"
-                  ],
-                  "additionalProperties": false
+                  "$ref": "#/components/schemas/AdminDraftPeriod_Output"
                 }
               },
               "defaultPrepMin": {
@@ -19208,24 +19228,7 @@
               "minimumOrder": {
                 "anyOf": [
                   {
-                    "type": "object",
-                    "properties": {
-                      "amount": {
-                        "type": "string",
-                        "pattern": "^\\d{1,15}$",
-                        "description": "Integer minor units of the currency, as a string."
-                      },
-                      "currency": {
-                        "type": "string",
-                        "minLength": 3,
-                        "maxLength": 3
-                      }
-                    },
-                    "required": [
-                      "amount",
-                      "currency"
-                    ],
-                    "additionalProperties": false
+                    "$ref": "#/components/schemas/AdminDraftMoney_Output"
                   },
                   {
                     "type": "null"
@@ -19235,50 +19238,7 @@
               "coverage": {
                 "anyOf": [
                   {
-                    "oneOf": [
-                      {
-                        "type": "object",
-                        "properties": {
-                          "kind": {
-                            "type": "string",
-                            "const": "radius"
-                          },
-                          "radiusMetres": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 100000
-                          }
-                        },
-                        "required": [
-                          "kind",
-                          "radiusMetres"
-                        ],
-                        "additionalProperties": false
-                      },
-                      {
-                        "type": "object",
-                        "properties": {
-                          "kind": {
-                            "type": "string",
-                            "const": "zones"
-                          },
-                          "zoneIds": {
-                            "minItems": 1,
-                            "type": "array",
-                            "items": {
-                              "type": "string",
-                              "format": "uuid",
-                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                            }
-                          }
-                        },
-                        "required": [
-                          "kind",
-                          "zoneIds"
-                        ],
-                        "additionalProperties": false
-                      }
-                    ]
+                    "$ref": "#/components/schemas/AdminDraftCoverage_Output"
                   },
                   {
                     "type": "null"
@@ -19506,27 +19466,30 @@
           "description"
         ]
       },
+      "AdminDraftPoint": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "longitude": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ]
+      },
       "AdminDraftLocationDto": {
         "type": "object",
         "properties": {
           "location": {
-            "type": "object",
-            "properties": {
-              "latitude": {
-                "type": "number",
-                "minimum": -90,
-                "maximum": 90
-              },
-              "longitude": {
-                "type": "number",
-                "minimum": -180,
-                "maximum": 180
-              }
-            },
-            "required": [
-              "latitude",
-              "longitude"
-            ]
+            "$ref": "#/components/schemas/AdminDraftPoint"
           },
           "address": {
             "anyOf": [
@@ -19565,6 +19528,92 @@
           "ownerName"
         ]
       },
+      "AdminDraftPeriod": {
+        "type": "object",
+        "properties": {
+          "weekday": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 6,
+            "description": "0 is Sunday, 6 Saturday."
+          },
+          "opensAt": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1439,
+            "description": "Minutes after midnight on the city's clock."
+          },
+          "closesAt": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1440,
+            "description": "Not after the opening: the period crosses midnight (00:00 to 00:00 is all day)."
+          }
+        },
+        "required": [
+          "weekday",
+          "opensAt",
+          "closesAt"
+        ]
+      },
+      "AdminDraftMoney": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string",
+            "pattern": "^\\d{1,15}$",
+            "description": "Integer minor units of the currency, as a string."
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          }
+        },
+        "required": [
+          "amount",
+          "currency"
+        ]
+      },
+      "AdminDraftCoverage": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "radius",
+              "zones"
+            ]
+          },
+          "radiusMetres": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "With kind radius only."
+          },
+          "zoneIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "description": "With kind zones only, one or more."
+          }
+        },
+        "required": [
+          "kind",
+          "radiusMetres",
+          "zoneIds"
+        ]
+      },
       "AdminDraftOperationsDto": {
         "type": "object",
         "properties": {
@@ -19573,32 +19622,7 @@
             "maxItems": 70,
             "type": "array",
             "items": {
-              "type": "object",
-              "properties": {
-                "weekday": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 6,
-                  "description": "0 is Sunday, 6 Saturday."
-                },
-                "opensAt": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 1439,
-                  "description": "Minutes after midnight on the city's clock."
-                },
-                "closesAt": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 1440,
-                  "description": "Not after the opening: the period crosses midnight (00:00 to 00:00 is all day)."
-                }
-              },
-              "required": [
-                "weekday",
-                "opensAt",
-                "closesAt"
-              ]
+              "$ref": "#/components/schemas/AdminDraftPeriod"
             }
           },
           "defaultPrepMin": {
@@ -19607,67 +19631,10 @@
             "maximum": 9007199254740991
           },
           "minimumOrder": {
-            "type": "object",
-            "properties": {
-              "amount": {
-                "type": "string",
-                "pattern": "^\\d{1,15}$",
-                "description": "Integer minor units of the currency, as a string."
-              },
-              "currency": {
-                "type": "string",
-                "minLength": 3,
-                "maxLength": 3
-              }
-            },
-            "required": [
-              "amount",
-              "currency"
-            ]
+            "$ref": "#/components/schemas/AdminDraftMoney"
           },
           "coverage": {
-            "oneOf": [
-              {
-                "type": "object",
-                "properties": {
-                  "kind": {
-                    "type": "string",
-                    "const": "radius"
-                  },
-                  "radiusMetres": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 100000
-                  }
-                },
-                "required": [
-                  "kind",
-                  "radiusMetres"
-                ]
-              },
-              {
-                "type": "object",
-                "properties": {
-                  "kind": {
-                    "type": "string",
-                    "const": "zones"
-                  },
-                  "zoneIds": {
-                    "minItems": 1,
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "format": "uuid",
-                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                    }
-                  }
-                },
-                "required": [
-                  "kind",
-                  "zoneIds"
-                ]
-              }
-            ]
+            "$ref": "#/components/schemas/AdminDraftCoverage"
           }
         },
         "required": [

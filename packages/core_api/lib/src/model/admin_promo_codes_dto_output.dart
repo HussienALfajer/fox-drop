@@ -4,8 +4,8 @@
 
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/admin_promo_codes_dto_output_codes_inner.dart';
-import 'package:core_api/src/model/admin_restaurant_draft_choices_dto_output_categories_inner.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force_windows_inner_zones_inner.dart';
 import 'package:core_api/src/model/admin_peak_bonus_dto_output_zones_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -28,7 +28,7 @@ abstract class AdminPromoCodesDtoOutput
   BuiltList<AdminPromoCodesDtoOutputCodesInner> get codes;
 
   @BuiltValueField(wireName: r'restaurants')
-  BuiltList<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>
+  BuiltList<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>
   get restaurants;
 
   @BuiltValueField(wireName: r'zones')
@@ -83,7 +83,7 @@ class _$AdminPromoCodesDtoOutputSerializer
     yield serializers.serialize(
       object.restaurants,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminRestaurantDraftChoicesDtoOutputCategoriesInner),
+        FullType.nullable(AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner),
       ]),
     );
     yield r'zones';
@@ -148,13 +148,13 @@ class _$AdminPromoCodesDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        AdminRestaurantDraftChoicesDtoOutputCategoriesInner,
+                      FullType.nullable(
+                        AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
                       ),
                     ]),
                   )
                   as BuiltList<
-                    AdminRestaurantDraftChoicesDtoOutputCategoriesInner
+                    AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
                   >;
           result.restaurants.replace(valueDes);
           break;

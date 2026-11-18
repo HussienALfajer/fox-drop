@@ -3,8 +3,8 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_zones_inner.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force_windows_inner_zones_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -43,7 +43,7 @@ abstract class AdminPeakBonusDtoOutputInForceWindowsInner
 
   /// None: every zone.
   @BuiltValueField(wireName: r'zones')
-  BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?> get zones;
+  BuiltList<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?> get zones;
 
   AdminPeakBonusDtoOutputInForceWindowsInner._();
 
@@ -100,7 +100,7 @@ class _$AdminPeakBonusDtoOutputInForceWindowsInnerSerializer
     yield serializers.serialize(
       object.zones,
       specifiedType: const FullType(BuiltList, [
-        FullType.nullable(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+        FullType.nullable(AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner),
       ]),
     );
   }
@@ -166,12 +166,12 @@ class _$AdminPeakBonusDtoOutputInForceWindowsInnerSerializer
                     value,
                     specifiedType: const FullType(BuiltList, [
                       FullType.nullable(
-                        CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
+                        AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
                       ),
                     ]),
                   )
                   as BuiltList<
-                    CaptainPeakBonusDtoOutputWindowsInnerZonesInner?
+                    AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
                   >;
           result.zones.replace(valueDes);
           break;

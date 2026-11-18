@@ -6,21 +6,17 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_restaurant_draft_dto_output_operations_periods_inner.g.dart';
+part 'admin_draft_period_output.g.dart';
 
-/// AdminRestaurantDraftDtoOutputOperationsPeriodsInner
+/// AdminDraftPeriodOutput
 ///
 /// Properties:
 /// * [weekday] - 0 is Sunday, 6 Saturday.
 /// * [opensAt] - Minutes after midnight on the city's clock.
 /// * [closesAt] - Not after the opening: the period crosses midnight (00:00 to 00:00 is all day).
 @BuiltValue()
-abstract class AdminRestaurantDraftDtoOutputOperationsPeriodsInner
-    implements
-        Built<
-          AdminRestaurantDraftDtoOutputOperationsPeriodsInner,
-          AdminRestaurantDraftDtoOutputOperationsPeriodsInnerBuilder
-        > {
+abstract class AdminDraftPeriodOutput
+    implements Built<AdminDraftPeriodOutput, AdminDraftPeriodOutputBuilder> {
   /// 0 is Sunday, 6 Saturday.
   @BuiltValueField(wireName: r'weekday')
   int get weekday;
@@ -33,41 +29,34 @@ abstract class AdminRestaurantDraftDtoOutputOperationsPeriodsInner
   @BuiltValueField(wireName: r'closesAt')
   int get closesAt;
 
-  AdminRestaurantDraftDtoOutputOperationsPeriodsInner._();
+  AdminDraftPeriodOutput._();
 
-  factory AdminRestaurantDraftDtoOutputOperationsPeriodsInner([
-    void updates(AdminRestaurantDraftDtoOutputOperationsPeriodsInnerBuilder b),
-  ]) = _$AdminRestaurantDraftDtoOutputOperationsPeriodsInner;
+  factory AdminDraftPeriodOutput([
+    void updates(AdminDraftPeriodOutputBuilder b),
+  ]) = _$AdminDraftPeriodOutput;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    AdminRestaurantDraftDtoOutputOperationsPeriodsInnerBuilder b,
-  ) => b;
+  static void _defaults(AdminDraftPeriodOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminRestaurantDraftDtoOutputOperationsPeriodsInner>
-  get serializer =>
-      _$AdminRestaurantDraftDtoOutputOperationsPeriodsInnerSerializer();
+  static Serializer<AdminDraftPeriodOutput> get serializer =>
+      _$AdminDraftPeriodOutputSerializer();
 }
 
-class _$AdminRestaurantDraftDtoOutputOperationsPeriodsInnerSerializer
-    implements
-        PrimitiveSerializer<
-          AdminRestaurantDraftDtoOutputOperationsPeriodsInner
-        > {
+class _$AdminDraftPeriodOutputSerializer
+    implements PrimitiveSerializer<AdminDraftPeriodOutput> {
   @override
   final Iterable<Type> types = const [
-    AdminRestaurantDraftDtoOutputOperationsPeriodsInner,
-    _$AdminRestaurantDraftDtoOutputOperationsPeriodsInner,
+    AdminDraftPeriodOutput,
+    _$AdminDraftPeriodOutput,
   ];
 
   @override
-  final String wireName =
-      r'AdminRestaurantDraftDtoOutputOperationsPeriodsInner';
+  final String wireName = r'AdminDraftPeriodOutput';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminRestaurantDraftDtoOutputOperationsPeriodsInner object, {
+    AdminDraftPeriodOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'weekday';
@@ -90,7 +79,7 @@ class _$AdminRestaurantDraftDtoOutputOperationsPeriodsInnerSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminRestaurantDraftDtoOutputOperationsPeriodsInner object, {
+    AdminDraftPeriodOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -105,7 +94,7 @@ class _$AdminRestaurantDraftDtoOutputOperationsPeriodsInnerSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminRestaurantDraftDtoOutputOperationsPeriodsInnerBuilder result,
+    required AdminDraftPeriodOutputBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -139,12 +128,12 @@ class _$AdminRestaurantDraftDtoOutputOperationsPeriodsInnerSerializer
   }
 
   @override
-  AdminRestaurantDraftDtoOutputOperationsPeriodsInner deserialize(
+  AdminDraftPeriodOutput deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminRestaurantDraftDtoOutputOperationsPeriodsInnerBuilder();
+    final result = AdminDraftPeriodOutputBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

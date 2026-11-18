@@ -88,7 +88,7 @@ const operations = {
   periods: [{ weekday: 5, opensAt: 660, closesAt: 120 }],
   defaultPrepMin: 25,
   minimumOrder: { amount: '7500', currency: 'TRY' },
-  coverage: { kind: 'radius', radiusMetres: 2500 },
+  coverage: { kind: 'radius', radiusMetres: 2500, zoneIds: [] },
 };
 
 describe('the wizard routes, steps 1–3', () => {

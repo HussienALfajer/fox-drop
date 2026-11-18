@@ -8,7 +8,7 @@ part of 'admin_draft_location_dto.dart';
 
 class _$AdminDraftLocationDto extends AdminDraftLocationDto {
   @override
-  final AdminDraftLocationDtoLocation location;
+  final AdminDraftPoint location;
   @override
   final String? address;
   @override
@@ -71,11 +71,10 @@ class AdminDraftLocationDtoBuilder
     implements Builder<AdminDraftLocationDto, AdminDraftLocationDtoBuilder> {
   _$AdminDraftLocationDto? _$v;
 
-  AdminDraftLocationDtoLocationBuilder? _location;
-  AdminDraftLocationDtoLocationBuilder get location =>
-      _$this._location ??= AdminDraftLocationDtoLocationBuilder();
-  set location(AdminDraftLocationDtoLocationBuilder? location) =>
-      _$this._location = location;
+  AdminDraftPointBuilder? _location;
+  AdminDraftPointBuilder get location =>
+      _$this._location ??= AdminDraftPointBuilder();
+  set location(AdminDraftPointBuilder? location) => _$this._location = location;
 
   String? _address;
   String? get address => _$this._address;

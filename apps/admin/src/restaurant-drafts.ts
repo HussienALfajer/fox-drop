@@ -268,7 +268,10 @@ export function operationsFormOf(draft: Draft | null, choices: DraftChoices): Op
     defaultPrepMin: String(draft?.operations.defaultPrepMin ?? choices.defaultPrepMin),
     minimumOrder: minimum ? decimalOf(minimum.amount, minimum.currency) : '',
     coverage: coverage?.kind ?? 'radius',
-    radiusKm: coverage?.kind === 'radius' ? String(coverage.radiusMetres / 1000) : '',
+    radiusKm:
+      coverage?.kind === 'radius' && coverage.radiusMetres !== null
+        ? String(coverage.radiusMetres / 1000)
+        : '',
     zoneIds: coverage?.kind === 'zones' ? coverage.zoneIds : [],
   };
 }
@@ -307,10 +310,10 @@ export function operationsBody(
     if (!/^\d{1,3}(\.\d{1,3})?$/.test(form.radiusKm.trim())) return { problem: 'radius' };
     const radiusMetres = Math.round(Number(form.radiusKm.trim()) * 1000);
     if (radiusMetres < 1 || radiusMetres > 100_000) return { problem: 'radius' };
-    coverage = { kind: 'radius', radiusMetres };
+    coverage = { kind: 'radius', radiusMetres, zoneIds: [] };
   } else {
     if (form.zoneIds.length === 0) return { problem: 'zones' };
-    coverage = { kind: 'zones', zoneIds: form.zoneIds };
+    coverage = { kind: 'zones', radiusMetres: null, zoneIds: form.zoneIds };
   }
   return {
     body: {

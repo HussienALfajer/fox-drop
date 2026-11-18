@@ -8,13 +8,13 @@ part of 'admin_draft_operations_dto.dart';
 
 class _$AdminDraftOperationsDto extends AdminDraftOperationsDto {
   @override
-  final BuiltList<AdminDraftOperationsDtoPeriodsInner> periods;
+  final BuiltList<AdminDraftPeriod> periods;
   @override
   final int defaultPrepMin;
   @override
-  final AdminDraftOperationsDtoMinimumOrder minimumOrder;
+  final AdminDraftMoney minimumOrder;
   @override
-  final AdminDraftOperationsDtoCoverage coverage;
+  final AdminDraftCoverage coverage;
 
   factory _$AdminDraftOperationsDto([
     void Function(AdminDraftOperationsDtoBuilder)? updates,
@@ -72,10 +72,10 @@ class AdminDraftOperationsDtoBuilder
         Builder<AdminDraftOperationsDto, AdminDraftOperationsDtoBuilder> {
   _$AdminDraftOperationsDto? _$v;
 
-  ListBuilder<AdminDraftOperationsDtoPeriodsInner>? _periods;
-  ListBuilder<AdminDraftOperationsDtoPeriodsInner> get periods =>
-      _$this._periods ??= ListBuilder<AdminDraftOperationsDtoPeriodsInner>();
-  set periods(ListBuilder<AdminDraftOperationsDtoPeriodsInner>? periods) =>
+  ListBuilder<AdminDraftPeriod>? _periods;
+  ListBuilder<AdminDraftPeriod> get periods =>
+      _$this._periods ??= ListBuilder<AdminDraftPeriod>();
+  set periods(ListBuilder<AdminDraftPeriod>? periods) =>
       _$this._periods = periods;
 
   int? _defaultPrepMin;
@@ -83,16 +83,16 @@ class AdminDraftOperationsDtoBuilder
   set defaultPrepMin(int? defaultPrepMin) =>
       _$this._defaultPrepMin = defaultPrepMin;
 
-  AdminDraftOperationsDtoMinimumOrderBuilder? _minimumOrder;
-  AdminDraftOperationsDtoMinimumOrderBuilder get minimumOrder =>
-      _$this._minimumOrder ??= AdminDraftOperationsDtoMinimumOrderBuilder();
-  set minimumOrder(AdminDraftOperationsDtoMinimumOrderBuilder? minimumOrder) =>
+  AdminDraftMoneyBuilder? _minimumOrder;
+  AdminDraftMoneyBuilder get minimumOrder =>
+      _$this._minimumOrder ??= AdminDraftMoneyBuilder();
+  set minimumOrder(AdminDraftMoneyBuilder? minimumOrder) =>
       _$this._minimumOrder = minimumOrder;
 
-  AdminDraftOperationsDtoCoverageBuilder? _coverage;
-  AdminDraftOperationsDtoCoverageBuilder get coverage =>
-      _$this._coverage ??= AdminDraftOperationsDtoCoverageBuilder();
-  set coverage(AdminDraftOperationsDtoCoverageBuilder? coverage) =>
+  AdminDraftCoverageBuilder? _coverage;
+  AdminDraftCoverageBuilder get coverage =>
+      _$this._coverage ??= AdminDraftCoverageBuilder();
+  set coverage(AdminDraftCoverageBuilder? coverage) =>
       _$this._coverage = coverage;
 
   AdminDraftOperationsDtoBuilder() {

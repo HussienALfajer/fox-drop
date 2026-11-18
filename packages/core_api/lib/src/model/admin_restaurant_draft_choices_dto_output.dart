@@ -3,10 +3,10 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/admin_restaurant_draft_choices_dto_output_categories_inner.dart';
+import 'package:core_api/src/model/admin_draft_point_output.dart';
+import 'package:core_api/src/model/admin_draft_choice_output.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_restaurant_draft_choices_dto_output_centre.dart';
-import 'package:core_api/src/model/admin_restaurant_draft_choices_dto_output_default_minimum_order.dart';
+import 'package:core_api/src/model/admin_draft_money_output.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -19,11 +19,11 @@ part 'admin_restaurant_draft_choices_dto_output.g.dart';
 /// * [categoriesMax]
 /// * [zones]
 /// * [baseCurrency]
-/// * [centre]
+/// * [centre] - Where the map starts: the centre of the city's active zones; null without any.
 /// * [prepFloorMin]
 /// * [prepCeilingMin]
 /// * [defaultPrepMin] - merchant.default_prep_min, the step-3 start.
-/// * [defaultMinimumOrder]
+/// * [defaultMinimumOrder] - merchant.default_min_order; null when unset.
 /// * [defaultCommissionBp] - merchant.default_commission_pct, in basis points.
 /// * [nameMax]
 /// * [descriptionMax]
@@ -36,19 +36,20 @@ abstract class AdminRestaurantDraftChoicesDtoOutput
           AdminRestaurantDraftChoicesDtoOutputBuilder
         > {
   @BuiltValueField(wireName: r'categories')
-  BuiltList<AdminRestaurantDraftChoicesDtoOutputCategoriesInner> get categories;
+  BuiltList<AdminDraftChoiceOutput> get categories;
 
   @BuiltValueField(wireName: r'categoriesMax')
   int get categoriesMax;
 
   @BuiltValueField(wireName: r'zones')
-  BuiltList<AdminRestaurantDraftChoicesDtoOutputCategoriesInner> get zones;
+  BuiltList<AdminDraftChoiceOutput> get zones;
 
   @BuiltValueField(wireName: r'baseCurrency')
   String? get baseCurrency;
 
+  /// Where the map starts: the centre of the city's active zones; null without any.
   @BuiltValueField(wireName: r'centre')
-  AdminRestaurantDraftChoicesDtoOutputCentre? get centre;
+  AdminDraftPointOutput? get centre;
 
   @BuiltValueField(wireName: r'prepFloorMin')
   int get prepFloorMin;
@@ -60,9 +61,9 @@ abstract class AdminRestaurantDraftChoicesDtoOutput
   @BuiltValueField(wireName: r'defaultPrepMin')
   int get defaultPrepMin;
 
+  /// merchant.default_min_order; null when unset.
   @BuiltValueField(wireName: r'defaultMinimumOrder')
-  AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder?
-  get defaultMinimumOrder;
+  AdminDraftMoneyOutput? get defaultMinimumOrder;
 
   /// merchant.default_commission_pct, in basis points.
   @BuiltValueField(wireName: r'defaultCommissionBp')
@@ -111,7 +112,7 @@ class _$AdminRestaurantDraftChoicesDtoOutputSerializer
     yield serializers.serialize(
       object.categories,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminRestaurantDraftChoicesDtoOutputCategoriesInner),
+        FullType(AdminDraftChoiceOutput),
       ]),
     );
     yield r'categoriesMax';
@@ -123,7 +124,7 @@ class _$AdminRestaurantDraftChoicesDtoOutputSerializer
     yield serializers.serialize(
       object.zones,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminRestaurantDraftChoicesDtoOutputCategoriesInner),
+        FullType(AdminDraftChoiceOutput),
       ]),
     );
     yield r'baseCurrency';
@@ -138,9 +139,7 @@ class _$AdminRestaurantDraftChoicesDtoOutputSerializer
         ? null
         : serializers.serialize(
             object.centre,
-            specifiedType: const FullType.nullable(
-              AdminRestaurantDraftChoicesDtoOutputCentre,
-            ),
+            specifiedType: const FullType.nullable(AdminDraftPointOutput),
           );
     yield r'prepFloorMin';
     yield serializers.serialize(
@@ -162,9 +161,7 @@ class _$AdminRestaurantDraftChoicesDtoOutputSerializer
         ? null
         : serializers.serialize(
             object.defaultMinimumOrder,
-            specifiedType: const FullType.nullable(
-              AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder,
-            ),
+            specifiedType: const FullType.nullable(AdminDraftMoneyOutput),
           );
     yield r'defaultCommissionBp';
     yield serializers.serialize(
@@ -218,14 +215,10 @@ class _$AdminRestaurantDraftChoicesDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        AdminRestaurantDraftChoicesDtoOutputCategoriesInner,
-                      ),
+                      FullType(AdminDraftChoiceOutput),
                     ]),
                   )
-                  as BuiltList<
-                    AdminRestaurantDraftChoicesDtoOutputCategoriesInner
-                  >;
+                  as BuiltList<AdminDraftChoiceOutput>;
           result.categories.replace(valueDes);
           break;
         case r'categoriesMax':
@@ -239,14 +232,10 @@ class _$AdminRestaurantDraftChoicesDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        AdminRestaurantDraftChoicesDtoOutputCategoriesInner,
-                      ),
+                      FullType(AdminDraftChoiceOutput),
                     ]),
                   )
-                  as BuiltList<
-                    AdminRestaurantDraftChoicesDtoOutputCategoriesInner
-                  >;
+                  as BuiltList<AdminDraftChoiceOutput>;
           result.zones.replace(valueDes);
           break;
         case r'baseCurrency':
@@ -264,10 +253,10 @@ class _$AdminRestaurantDraftChoicesDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      AdminRestaurantDraftChoicesDtoOutputCentre,
+                      AdminDraftPointOutput,
                     ),
                   )
-                  as AdminRestaurantDraftChoicesDtoOutputCentre?;
+                  as AdminDraftPointOutput?;
           if (valueDes == null) continue;
           result.centre.replace(valueDes);
           break;
@@ -294,10 +283,10 @@ class _$AdminRestaurantDraftChoicesDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder,
+                      AdminDraftMoneyOutput,
                     ),
                   )
-                  as AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder?;
+                  as AdminDraftMoneyOutput?;
           if (valueDes == null) continue;
           result.defaultMinimumOrder.replace(valueDes);
           break;

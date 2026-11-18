@@ -6,57 +6,51 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_restaurant_draft_dto_output_location_location.g.dart';
+part 'customer_zone_vote_dto_location.g.dart';
 
-/// AdminRestaurantDraftDtoOutputLocationLocation
+/// CustomerZoneVoteDtoLocation
 ///
 /// Properties:
 /// * [latitude]
 /// * [longitude]
 @BuiltValue()
-abstract class AdminRestaurantDraftDtoOutputLocationLocation
+abstract class CustomerZoneVoteDtoLocation
     implements
-        Built<
-          AdminRestaurantDraftDtoOutputLocationLocation,
-          AdminRestaurantDraftDtoOutputLocationLocationBuilder
-        > {
+        Built<CustomerZoneVoteDtoLocation, CustomerZoneVoteDtoLocationBuilder> {
   @BuiltValueField(wireName: r'latitude')
   num get latitude;
 
   @BuiltValueField(wireName: r'longitude')
   num get longitude;
 
-  AdminRestaurantDraftDtoOutputLocationLocation._();
+  CustomerZoneVoteDtoLocation._();
 
-  factory AdminRestaurantDraftDtoOutputLocationLocation([
-    void updates(AdminRestaurantDraftDtoOutputLocationLocationBuilder b),
-  ]) = _$AdminRestaurantDraftDtoOutputLocationLocation;
+  factory CustomerZoneVoteDtoLocation([
+    void updates(CustomerZoneVoteDtoLocationBuilder b),
+  ]) = _$CustomerZoneVoteDtoLocation;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    AdminRestaurantDraftDtoOutputLocationLocationBuilder b,
-  ) => b;
+  static void _defaults(CustomerZoneVoteDtoLocationBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminRestaurantDraftDtoOutputLocationLocation>
-  get serializer => _$AdminRestaurantDraftDtoOutputLocationLocationSerializer();
+  static Serializer<CustomerZoneVoteDtoLocation> get serializer =>
+      _$CustomerZoneVoteDtoLocationSerializer();
 }
 
-class _$AdminRestaurantDraftDtoOutputLocationLocationSerializer
-    implements
-        PrimitiveSerializer<AdminRestaurantDraftDtoOutputLocationLocation> {
+class _$CustomerZoneVoteDtoLocationSerializer
+    implements PrimitiveSerializer<CustomerZoneVoteDtoLocation> {
   @override
   final Iterable<Type> types = const [
-    AdminRestaurantDraftDtoOutputLocationLocation,
-    _$AdminRestaurantDraftDtoOutputLocationLocation,
+    CustomerZoneVoteDtoLocation,
+    _$CustomerZoneVoteDtoLocation,
   ];
 
   @override
-  final String wireName = r'AdminRestaurantDraftDtoOutputLocationLocation';
+  final String wireName = r'CustomerZoneVoteDtoLocation';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminRestaurantDraftDtoOutputLocationLocation object, {
+    CustomerZoneVoteDtoLocation object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'latitude';
@@ -74,7 +68,7 @@ class _$AdminRestaurantDraftDtoOutputLocationLocationSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminRestaurantDraftDtoOutputLocationLocation object, {
+    CustomerZoneVoteDtoLocation object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -89,7 +83,7 @@ class _$AdminRestaurantDraftDtoOutputLocationLocationSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminRestaurantDraftDtoOutputLocationLocationBuilder result,
+    required CustomerZoneVoteDtoLocationBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -117,12 +111,12 @@ class _$AdminRestaurantDraftDtoOutputLocationLocationSerializer
   }
 
   @override
-  AdminRestaurantDraftDtoOutputLocationLocation deserialize(
+  CustomerZoneVoteDtoLocation deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminRestaurantDraftDtoOutputLocationLocationBuilder();
+    final result = CustomerZoneVoteDtoLocationBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

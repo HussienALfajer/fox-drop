@@ -10,7 +10,7 @@ class _$CustomerZoneVoteDto extends CustomerZoneVoteDto {
   @override
   final String deviceId;
   @override
-  final AdminDraftLocationDtoLocation location;
+  final CustomerZoneVoteDtoLocation location;
 
   factory _$CustomerZoneVoteDto([
     void Function(CustomerZoneVoteDtoBuilder)? updates,
@@ -61,10 +61,10 @@ class CustomerZoneVoteDtoBuilder
   String? get deviceId => _$this._deviceId;
   set deviceId(String? deviceId) => _$this._deviceId = deviceId;
 
-  AdminDraftLocationDtoLocationBuilder? _location;
-  AdminDraftLocationDtoLocationBuilder get location =>
-      _$this._location ??= AdminDraftLocationDtoLocationBuilder();
-  set location(AdminDraftLocationDtoLocationBuilder? location) =>
+  CustomerZoneVoteDtoLocationBuilder? _location;
+  CustomerZoneVoteDtoLocationBuilder get location =>
+      _$this._location ??= CustomerZoneVoteDtoLocationBuilder();
+  set location(CustomerZoneVoteDtoLocationBuilder? location) =>
       _$this._location = location;
 
   CustomerZoneVoteDtoBuilder() {

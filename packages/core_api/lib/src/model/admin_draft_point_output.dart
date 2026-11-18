@@ -6,54 +6,50 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_draft_location_dto_location.g.dart';
+part 'admin_draft_point_output.g.dart';
 
-/// AdminDraftLocationDtoLocation
+/// AdminDraftPointOutput
 ///
 /// Properties:
 /// * [latitude]
 /// * [longitude]
 @BuiltValue()
-abstract class AdminDraftLocationDtoLocation
-    implements
-        Built<
-          AdminDraftLocationDtoLocation,
-          AdminDraftLocationDtoLocationBuilder
-        > {
+abstract class AdminDraftPointOutput
+    implements Built<AdminDraftPointOutput, AdminDraftPointOutputBuilder> {
   @BuiltValueField(wireName: r'latitude')
   num get latitude;
 
   @BuiltValueField(wireName: r'longitude')
   num get longitude;
 
-  AdminDraftLocationDtoLocation._();
+  AdminDraftPointOutput._();
 
-  factory AdminDraftLocationDtoLocation([
-    void updates(AdminDraftLocationDtoLocationBuilder b),
-  ]) = _$AdminDraftLocationDtoLocation;
+  factory AdminDraftPointOutput([
+    void updates(AdminDraftPointOutputBuilder b),
+  ]) = _$AdminDraftPointOutput;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminDraftLocationDtoLocationBuilder b) => b;
+  static void _defaults(AdminDraftPointOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminDraftLocationDtoLocation> get serializer =>
-      _$AdminDraftLocationDtoLocationSerializer();
+  static Serializer<AdminDraftPointOutput> get serializer =>
+      _$AdminDraftPointOutputSerializer();
 }
 
-class _$AdminDraftLocationDtoLocationSerializer
-    implements PrimitiveSerializer<AdminDraftLocationDtoLocation> {
+class _$AdminDraftPointOutputSerializer
+    implements PrimitiveSerializer<AdminDraftPointOutput> {
   @override
   final Iterable<Type> types = const [
-    AdminDraftLocationDtoLocation,
-    _$AdminDraftLocationDtoLocation,
+    AdminDraftPointOutput,
+    _$AdminDraftPointOutput,
   ];
 
   @override
-  final String wireName = r'AdminDraftLocationDtoLocation';
+  final String wireName = r'AdminDraftPointOutput';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminDraftLocationDtoLocation object, {
+    AdminDraftPointOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'latitude';
@@ -71,7 +67,7 @@ class _$AdminDraftLocationDtoLocationSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminDraftLocationDtoLocation object, {
+    AdminDraftPointOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -86,7 +82,7 @@ class _$AdminDraftLocationDtoLocationSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminDraftLocationDtoLocationBuilder result,
+    required AdminDraftPointOutputBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -114,12 +110,12 @@ class _$AdminDraftLocationDtoLocationSerializer
   }
 
   @override
-  AdminDraftLocationDtoLocation deserialize(
+  AdminDraftPointOutput deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminDraftLocationDtoLocationBuilder();
+    final result = AdminDraftPointOutputBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

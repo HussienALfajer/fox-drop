@@ -6,55 +6,46 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_restaurant_draft_choices_dto_output_centre.g.dart';
+part 'admin_draft_point.g.dart';
 
-/// Where the map starts: the centre of the city's active zones; null without any.
+/// AdminDraftPoint
 ///
 /// Properties:
 /// * [latitude]
 /// * [longitude]
 @BuiltValue()
-abstract class AdminRestaurantDraftChoicesDtoOutputCentre
-    implements
-        Built<
-          AdminRestaurantDraftChoicesDtoOutputCentre,
-          AdminRestaurantDraftChoicesDtoOutputCentreBuilder
-        > {
+abstract class AdminDraftPoint
+    implements Built<AdminDraftPoint, AdminDraftPointBuilder> {
   @BuiltValueField(wireName: r'latitude')
   num get latitude;
 
   @BuiltValueField(wireName: r'longitude')
   num get longitude;
 
-  AdminRestaurantDraftChoicesDtoOutputCentre._();
+  AdminDraftPoint._();
 
-  factory AdminRestaurantDraftChoicesDtoOutputCentre([
-    void updates(AdminRestaurantDraftChoicesDtoOutputCentreBuilder b),
-  ]) = _$AdminRestaurantDraftChoicesDtoOutputCentre;
+  factory AdminDraftPoint([void updates(AdminDraftPointBuilder b)]) =
+      _$AdminDraftPoint;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminRestaurantDraftChoicesDtoOutputCentreBuilder b) =>
-      b;
+  static void _defaults(AdminDraftPointBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminRestaurantDraftChoicesDtoOutputCentre>
-  get serializer => _$AdminRestaurantDraftChoicesDtoOutputCentreSerializer();
+  static Serializer<AdminDraftPoint> get serializer =>
+      _$AdminDraftPointSerializer();
 }
 
-class _$AdminRestaurantDraftChoicesDtoOutputCentreSerializer
-    implements PrimitiveSerializer<AdminRestaurantDraftChoicesDtoOutputCentre> {
+class _$AdminDraftPointSerializer
+    implements PrimitiveSerializer<AdminDraftPoint> {
   @override
-  final Iterable<Type> types = const [
-    AdminRestaurantDraftChoicesDtoOutputCentre,
-    _$AdminRestaurantDraftChoicesDtoOutputCentre,
-  ];
+  final Iterable<Type> types = const [AdminDraftPoint, _$AdminDraftPoint];
 
   @override
-  final String wireName = r'AdminRestaurantDraftChoicesDtoOutputCentre';
+  final String wireName = r'AdminDraftPoint';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminRestaurantDraftChoicesDtoOutputCentre object, {
+    AdminDraftPoint object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'latitude';
@@ -72,7 +63,7 @@ class _$AdminRestaurantDraftChoicesDtoOutputCentreSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminRestaurantDraftChoicesDtoOutputCentre object, {
+    AdminDraftPoint object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -87,7 +78,7 @@ class _$AdminRestaurantDraftChoicesDtoOutputCentreSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminRestaurantDraftChoicesDtoOutputCentreBuilder result,
+    required AdminDraftPointBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -115,12 +106,12 @@ class _$AdminRestaurantDraftChoicesDtoOutputCentreSerializer
   }
 
   @override
-  AdminRestaurantDraftChoicesDtoOutputCentre deserialize(
+  AdminDraftPoint deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminRestaurantDraftChoicesDtoOutputCentreBuilder();
+    final result = AdminDraftPointBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

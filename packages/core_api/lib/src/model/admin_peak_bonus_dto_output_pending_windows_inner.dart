@@ -3,7 +3,7 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/admin_restaurant_draft_choices_dto_output_categories_inner.dart';
+import 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_zones_inner.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -43,7 +43,7 @@ abstract class AdminPeakBonusDtoOutputPendingWindowsInner
 
   /// None: every zone.
   @BuiltValueField(wireName: r'zones')
-  BuiltList<AdminRestaurantDraftChoicesDtoOutputCategoriesInner> get zones;
+  BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner> get zones;
 
   AdminPeakBonusDtoOutputPendingWindowsInner._();
 
@@ -100,7 +100,7 @@ class _$AdminPeakBonusDtoOutputPendingWindowsInnerSerializer
     yield serializers.serialize(
       object.zones,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminRestaurantDraftChoicesDtoOutputCategoriesInner),
+        FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
       ]),
     );
   }
@@ -165,14 +165,10 @@ class _$AdminPeakBonusDtoOutputPendingWindowsInnerSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        AdminRestaurantDraftChoicesDtoOutputCategoriesInner,
-                      ),
+                      FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
                     ]),
                   )
-                  as BuiltList<
-                    AdminRestaurantDraftChoicesDtoOutputCategoriesInner
-                  >;
+                  as BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>;
           result.zones.replace(valueDes);
           break;
         default:

@@ -9,16 +9,15 @@ part of 'admin_restaurant_draft_choices_dto_output.dart';
 class _$AdminRestaurantDraftChoicesDtoOutput
     extends AdminRestaurantDraftChoicesDtoOutput {
   @override
-  final BuiltList<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>
-  categories;
+  final BuiltList<AdminDraftChoiceOutput> categories;
   @override
   final int categoriesMax;
   @override
-  final BuiltList<AdminRestaurantDraftChoicesDtoOutputCategoriesInner> zones;
+  final BuiltList<AdminDraftChoiceOutput> zones;
   @override
   final String? baseCurrency;
   @override
-  final AdminRestaurantDraftChoicesDtoOutputCentre? centre;
+  final AdminDraftPointOutput? centre;
   @override
   final int prepFloorMin;
   @override
@@ -26,8 +25,7 @@ class _$AdminRestaurantDraftChoicesDtoOutput
   @override
   final int defaultPrepMin;
   @override
-  final AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder?
-  defaultMinimumOrder;
+  final AdminDraftMoneyOutput? defaultMinimumOrder;
   @override
   final int defaultCommissionBp;
   @override
@@ -133,37 +131,31 @@ class AdminRestaurantDraftChoicesDtoOutputBuilder
         > {
   _$AdminRestaurantDraftChoicesDtoOutput? _$v;
 
-  ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>? _categories;
-  ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>
-  get categories => _$this._categories ??=
-      ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>();
-  set categories(
-    ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>?
-    categories,
-  ) => _$this._categories = categories;
+  ListBuilder<AdminDraftChoiceOutput>? _categories;
+  ListBuilder<AdminDraftChoiceOutput> get categories =>
+      _$this._categories ??= ListBuilder<AdminDraftChoiceOutput>();
+  set categories(ListBuilder<AdminDraftChoiceOutput>? categories) =>
+      _$this._categories = categories;
 
   int? _categoriesMax;
   int? get categoriesMax => _$this._categoriesMax;
   set categoriesMax(int? categoriesMax) =>
       _$this._categoriesMax = categoriesMax;
 
-  ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>? _zones;
-  ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner> get zones =>
-      _$this._zones ??=
-          ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>();
-  set zones(
-    ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>? zones,
-  ) => _$this._zones = zones;
+  ListBuilder<AdminDraftChoiceOutput>? _zones;
+  ListBuilder<AdminDraftChoiceOutput> get zones =>
+      _$this._zones ??= ListBuilder<AdminDraftChoiceOutput>();
+  set zones(ListBuilder<AdminDraftChoiceOutput>? zones) =>
+      _$this._zones = zones;
 
   String? _baseCurrency;
   String? get baseCurrency => _$this._baseCurrency;
   set baseCurrency(String? baseCurrency) => _$this._baseCurrency = baseCurrency;
 
-  AdminRestaurantDraftChoicesDtoOutputCentreBuilder? _centre;
-  AdminRestaurantDraftChoicesDtoOutputCentreBuilder get centre =>
-      _$this._centre ??= AdminRestaurantDraftChoicesDtoOutputCentreBuilder();
-  set centre(AdminRestaurantDraftChoicesDtoOutputCentreBuilder? centre) =>
-      _$this._centre = centre;
+  AdminDraftPointOutputBuilder? _centre;
+  AdminDraftPointOutputBuilder get centre =>
+      _$this._centre ??= AdminDraftPointOutputBuilder();
+  set centre(AdminDraftPointOutputBuilder? centre) => _$this._centre = centre;
 
   int? _prepFloorMin;
   int? get prepFloorMin => _$this._prepFloorMin;
@@ -179,15 +171,11 @@ class AdminRestaurantDraftChoicesDtoOutputBuilder
   set defaultPrepMin(int? defaultPrepMin) =>
       _$this._defaultPrepMin = defaultPrepMin;
 
-  AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrderBuilder?
-  _defaultMinimumOrder;
-  AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrderBuilder
-  get defaultMinimumOrder => _$this._defaultMinimumOrder ??=
-      AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrderBuilder();
-  set defaultMinimumOrder(
-    AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrderBuilder?
-    defaultMinimumOrder,
-  ) => _$this._defaultMinimumOrder = defaultMinimumOrder;
+  AdminDraftMoneyOutputBuilder? _defaultMinimumOrder;
+  AdminDraftMoneyOutputBuilder get defaultMinimumOrder =>
+      _$this._defaultMinimumOrder ??= AdminDraftMoneyOutputBuilder();
+  set defaultMinimumOrder(AdminDraftMoneyOutputBuilder? defaultMinimumOrder) =>
+      _$this._defaultMinimumOrder = defaultMinimumOrder;
 
   int? _defaultCommissionBp;
   int? get defaultCommissionBp => _$this._defaultCommissionBp;

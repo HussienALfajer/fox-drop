@@ -6352,39 +6352,54 @@ export interface components {
                 updatedAt: string;
             }[];
         };
+        AdminDraftChoice_Output: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+        };
+        AdminDraftPoint_Output: {
+            latitude: number;
+            longitude: number;
+        };
+        AdminDraftMoney_Output: {
+            /** @description Integer minor units of the currency, as a string. */
+            amount: string;
+            currency: string;
+        };
         AdminRestaurantDraftChoicesDto_Output: {
-            categories: {
-                /** Format: uuid */
-                id: string;
-                name: string;
-            }[];
+            categories: components["schemas"]["AdminDraftChoice_Output"][];
             categoriesMax: number;
-            zones: {
-                /** Format: uuid */
-                id: string;
-                name: string;
-            }[];
+            zones: components["schemas"]["AdminDraftChoice_Output"][];
             baseCurrency: string | null;
             /** @description Where the map starts: the centre of the city's active zones; null without any. */
-            centre: {
-                latitude: number;
-                longitude: number;
-            } | null;
+            centre: components["schemas"]["AdminDraftPoint_Output"] | null;
             prepFloorMin: number;
             prepCeilingMin: number;
             /** @description merchant.default_prep_min, the step-3 start. */
             defaultPrepMin: number;
             /** @description merchant.default_min_order; null when unset. */
-            defaultMinimumOrder: {
-                /** @description Integer minor units of the currency, as a string. */
-                amount: string;
-                currency: string;
-            } | null;
+            defaultMinimumOrder: components["schemas"]["AdminDraftMoney_Output"] | null;
             /** @description merchant.default_commission_pct, in basis points. */
             defaultCommissionBp: number;
             nameMax: number;
             descriptionMax: number;
             addressMax: number;
+        };
+        AdminDraftPeriod_Output: {
+            /** @description 0 is Sunday, 6 Saturday. */
+            weekday: number;
+            /** @description Minutes after midnight on the city's clock. */
+            opensAt: number;
+            /** @description Not after the opening: the period crosses midnight (00:00 to 00:00 is all day). */
+            closesAt: number;
+        };
+        AdminDraftCoverage_Output: {
+            /** @enum {string} */
+            kind: "radius" | "zones";
+            /** @description With kind radius only. */
+            radiusMetres: number | null;
+            /** @description With kind zones only, one or more. */
+            zoneIds: string[];
         };
         AdminRestaurantDraftDto_Output: {
             /** Format: uuid */
@@ -6401,38 +6416,16 @@ export interface components {
                 coverKey: string | null;
             };
             location: {
-                location: {
-                    latitude: number;
-                    longitude: number;
-                } | null;
+                location: components["schemas"]["AdminDraftPoint_Output"] | null;
                 address: string | null;
                 phone: string | null;
                 ownerName: string | null;
             };
             operations: {
-                periods: {
-                    /** @description 0 is Sunday, 6 Saturday. */
-                    weekday: number;
-                    /** @description Minutes after midnight on the city's clock. */
-                    opensAt: number;
-                    /** @description Not after the opening: the period crosses midnight (00:00 to 00:00 is all day). */
-                    closesAt: number;
-                }[];
+                periods: components["schemas"]["AdminDraftPeriod_Output"][];
                 defaultPrepMin: number | null;
-                minimumOrder: {
-                    /** @description Integer minor units of the currency, as a string. */
-                    amount: string;
-                    currency: string;
-                } | null;
-                coverage: ({
-                    /** @constant */
-                    kind: "radius";
-                    radiusMetres: number;
-                } | {
-                    /** @constant */
-                    kind: "zones";
-                    zoneIds: string[];
-                }) | null;
+                minimumOrder: components["schemas"]["AdminDraftMoney_Output"] | null;
+                coverage: components["schemas"]["AdminDraftCoverage_Output"] | null;
             };
             commission: {
                 /** @description The standard commission, in basis points of the items value. */
@@ -6474,40 +6467,43 @@ export interface components {
             categoryIds: string[];
             description: string | null;
         };
+        AdminDraftPoint: {
+            latitude: number;
+            longitude: number;
+        };
         AdminDraftLocationDto: {
-            location: {
-                latitude: number;
-                longitude: number;
-            };
+            location: components["schemas"]["AdminDraftPoint"];
             address: string | null;
             /** @description The restaurant's number in E.164. */
             phone: string | null;
             ownerName: string | null;
         };
+        AdminDraftPeriod: {
+            /** @description 0 is Sunday, 6 Saturday. */
+            weekday: number;
+            /** @description Minutes after midnight on the city's clock. */
+            opensAt: number;
+            /** @description Not after the opening: the period crosses midnight (00:00 to 00:00 is all day). */
+            closesAt: number;
+        };
+        AdminDraftMoney: {
+            /** @description Integer minor units of the currency, as a string. */
+            amount: string;
+            currency: string;
+        };
+        AdminDraftCoverage: {
+            /** @enum {string} */
+            kind: "radius" | "zones";
+            /** @description With kind radius only. */
+            radiusMetres: number | null;
+            /** @description With kind zones only, one or more. */
+            zoneIds: string[];
+        };
         AdminDraftOperationsDto: {
-            periods: {
-                /** @description 0 is Sunday, 6 Saturday. */
-                weekday: number;
-                /** @description Minutes after midnight on the city's clock. */
-                opensAt: number;
-                /** @description Not after the opening: the period crosses midnight (00:00 to 00:00 is all day). */
-                closesAt: number;
-            }[];
+            periods: components["schemas"]["AdminDraftPeriod"][];
             defaultPrepMin: number;
-            minimumOrder: {
-                /** @description Integer minor units of the currency, as a string. */
-                amount: string;
-                currency: string;
-            };
-            coverage: {
-                /** @constant */
-                kind: "radius";
-                radiusMetres: number;
-            } | {
-                /** @constant */
-                kind: "zones";
-                zoneIds: string[];
-            };
+            minimumOrder: components["schemas"]["AdminDraftMoney"];
+            coverage: components["schemas"]["AdminDraftCoverage"];
         };
         AdminDraftCommissionDto: {
             rateBp: number;

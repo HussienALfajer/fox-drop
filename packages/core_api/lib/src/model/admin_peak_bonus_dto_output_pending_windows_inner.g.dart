@@ -17,7 +17,7 @@ class _$AdminPeakBonusDtoOutputPendingWindowsInner
   @override
   final String amount;
   @override
-  final BuiltList<AdminRestaurantDraftChoicesDtoOutputCategoriesInner> zones;
+  final BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner> zones;
 
   factory _$AdminPeakBonusDtoOutputPendingWindowsInner([
     void Function(AdminPeakBonusDtoOutputPendingWindowsInnerBuilder)? updates,
@@ -101,12 +101,12 @@ class AdminPeakBonusDtoOutputPendingWindowsInnerBuilder
   String? get amount => _$this._amount;
   set amount(String? amount) => _$this._amount = amount;
 
-  ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>? _zones;
-  ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner> get zones =>
+  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>? _zones;
+  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner> get zones =>
       _$this._zones ??=
-          ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>();
+          ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>();
   set zones(
-    ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>? zones,
+    ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>? zones,
   ) => _$this._zones = zones;
 
   AdminPeakBonusDtoOutputPendingWindowsInnerBuilder() {

@@ -17,8 +17,7 @@ class _$CustomerSearchDtoOutputRestaurantsInner
   @override
   final String? category;
   @override
-  final BuiltList<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>
-  categories;
+  final BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner> categories;
   @override
   final String? logoKey;
   @override
@@ -156,13 +155,12 @@ class CustomerSearchDtoOutputRestaurantsInnerBuilder
   String? get category => _$this._category;
   set category(String? category) => _$this._category = category;
 
-  ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>? _categories;
-  ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>
-  get categories => _$this._categories ??=
-      ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>();
+  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>? _categories;
+  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner> get categories =>
+      _$this._categories ??=
+          ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>();
   set categories(
-    ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>?
-    categories,
+    ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>? categories,
   ) => _$this._categories = categories;
 
   String? _logoKey;

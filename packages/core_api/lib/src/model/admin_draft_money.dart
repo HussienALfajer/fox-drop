@@ -6,20 +6,16 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_restaurant_draft_choices_dto_output_default_minimum_order.g.dart';
+part 'admin_draft_money.g.dart';
 
-/// merchant.default_min_order; null when unset.
+/// AdminDraftMoney
 ///
 /// Properties:
 /// * [amount] - Integer minor units of the currency, as a string.
 /// * [currency]
 @BuiltValue()
-abstract class AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder
-    implements
-        Built<
-          AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder,
-          AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrderBuilder
-        > {
+abstract class AdminDraftMoney
+    implements Built<AdminDraftMoney, AdminDraftMoneyBuilder> {
   /// Integer minor units of the currency, as a string.
   @BuiltValueField(wireName: r'amount')
   String get amount;
@@ -27,43 +23,30 @@ abstract class AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder
   @BuiltValueField(wireName: r'currency')
   String get currency;
 
-  AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder._();
+  AdminDraftMoney._();
 
-  factory AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder([
-    void updates(
-      AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrderBuilder b,
-    ),
-  ]) = _$AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder;
+  factory AdminDraftMoney([void updates(AdminDraftMoneyBuilder b)]) =
+      _$AdminDraftMoney;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrderBuilder b,
-  ) => b;
+  static void _defaults(AdminDraftMoneyBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder>
-  get serializer =>
-      _$AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrderSerializer();
+  static Serializer<AdminDraftMoney> get serializer =>
+      _$AdminDraftMoneySerializer();
 }
 
-class _$AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrderSerializer
-    implements
-        PrimitiveSerializer<
-          AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder
-        > {
+class _$AdminDraftMoneySerializer
+    implements PrimitiveSerializer<AdminDraftMoney> {
   @override
-  final Iterable<Type> types = const [
-    AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder,
-    _$AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder,
-  ];
+  final Iterable<Type> types = const [AdminDraftMoney, _$AdminDraftMoney];
 
   @override
-  final String wireName =
-      r'AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder';
+  final String wireName = r'AdminDraftMoney';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder object, {
+    AdminDraftMoney object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'amount';
@@ -81,7 +64,7 @@ class _$AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrderSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder object, {
+    AdminDraftMoney object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -96,8 +79,7 @@ class _$AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrderSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrderBuilder
-    result,
+    required AdminDraftMoneyBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -131,13 +113,12 @@ class _$AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrderSerializer
   }
 
   @override
-  AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder deserialize(
+  AdminDraftMoney deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result =
-        AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrderBuilder();
+    final result = AdminDraftMoneyBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

@@ -6,21 +6,17 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_draft_operations_dto_periods_inner.g.dart';
+part 'admin_draft_period.g.dart';
 
-/// AdminDraftOperationsDtoPeriodsInner
+/// AdminDraftPeriod
 ///
 /// Properties:
 /// * [weekday] - 0 is Sunday, 6 Saturday.
 /// * [opensAt] - Minutes after midnight on the city's clock.
 /// * [closesAt] - Not after the opening: the period crosses midnight (00:00 to 00:00 is all day).
 @BuiltValue()
-abstract class AdminDraftOperationsDtoPeriodsInner
-    implements
-        Built<
-          AdminDraftOperationsDtoPeriodsInner,
-          AdminDraftOperationsDtoPeriodsInnerBuilder
-        > {
+abstract class AdminDraftPeriod
+    implements Built<AdminDraftPeriod, AdminDraftPeriodBuilder> {
   /// 0 is Sunday, 6 Saturday.
   @BuiltValueField(wireName: r'weekday')
   int get weekday;
@@ -33,34 +29,30 @@ abstract class AdminDraftOperationsDtoPeriodsInner
   @BuiltValueField(wireName: r'closesAt')
   int get closesAt;
 
-  AdminDraftOperationsDtoPeriodsInner._();
+  AdminDraftPeriod._();
 
-  factory AdminDraftOperationsDtoPeriodsInner([
-    void updates(AdminDraftOperationsDtoPeriodsInnerBuilder b),
-  ]) = _$AdminDraftOperationsDtoPeriodsInner;
+  factory AdminDraftPeriod([void updates(AdminDraftPeriodBuilder b)]) =
+      _$AdminDraftPeriod;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminDraftOperationsDtoPeriodsInnerBuilder b) => b;
+  static void _defaults(AdminDraftPeriodBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminDraftOperationsDtoPeriodsInner> get serializer =>
-      _$AdminDraftOperationsDtoPeriodsInnerSerializer();
+  static Serializer<AdminDraftPeriod> get serializer =>
+      _$AdminDraftPeriodSerializer();
 }
 
-class _$AdminDraftOperationsDtoPeriodsInnerSerializer
-    implements PrimitiveSerializer<AdminDraftOperationsDtoPeriodsInner> {
+class _$AdminDraftPeriodSerializer
+    implements PrimitiveSerializer<AdminDraftPeriod> {
   @override
-  final Iterable<Type> types = const [
-    AdminDraftOperationsDtoPeriodsInner,
-    _$AdminDraftOperationsDtoPeriodsInner,
-  ];
+  final Iterable<Type> types = const [AdminDraftPeriod, _$AdminDraftPeriod];
 
   @override
-  final String wireName = r'AdminDraftOperationsDtoPeriodsInner';
+  final String wireName = r'AdminDraftPeriod';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminDraftOperationsDtoPeriodsInner object, {
+    AdminDraftPeriod object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'weekday';
@@ -83,7 +75,7 @@ class _$AdminDraftOperationsDtoPeriodsInnerSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminDraftOperationsDtoPeriodsInner object, {
+    AdminDraftPeriod object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -98,7 +90,7 @@ class _$AdminDraftOperationsDtoPeriodsInnerSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminDraftOperationsDtoPeriodsInnerBuilder result,
+    required AdminDraftPeriodBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -132,12 +124,12 @@ class _$AdminDraftOperationsDtoPeriodsInnerSerializer
   }
 
   @override
-  AdminDraftOperationsDtoPeriodsInner deserialize(
+  AdminDraftPeriod deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminDraftOperationsDtoPeriodsInnerBuilder();
+    final result = AdminDraftPeriodBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

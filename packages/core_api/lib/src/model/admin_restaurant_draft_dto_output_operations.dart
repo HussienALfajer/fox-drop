@@ -3,10 +3,10 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/admin_restaurant_draft_dto_output_operations_periods_inner.dart';
+import 'package:core_api/src/model/admin_draft_period_output.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_restaurant_draft_dto_output_operations_coverage.dart';
-import 'package:core_api/src/model/admin_restaurant_draft_dto_output_operations_minimum_order.dart';
+import 'package:core_api/src/model/admin_draft_money_output.dart';
+import 'package:core_api/src/model/admin_draft_coverage_output.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -27,16 +27,16 @@ abstract class AdminRestaurantDraftDtoOutputOperations
           AdminRestaurantDraftDtoOutputOperationsBuilder
         > {
   @BuiltValueField(wireName: r'periods')
-  BuiltList<AdminRestaurantDraftDtoOutputOperationsPeriodsInner> get periods;
+  BuiltList<AdminDraftPeriodOutput> get periods;
 
   @BuiltValueField(wireName: r'defaultPrepMin')
   int? get defaultPrepMin;
 
   @BuiltValueField(wireName: r'minimumOrder')
-  AdminRestaurantDraftDtoOutputOperationsMinimumOrder? get minimumOrder;
+  AdminDraftMoneyOutput? get minimumOrder;
 
   @BuiltValueField(wireName: r'coverage')
-  AdminRestaurantDraftDtoOutputOperationsCoverage? get coverage;
+  AdminDraftCoverageOutput? get coverage;
 
   AdminRestaurantDraftDtoOutputOperations._();
 
@@ -72,7 +72,7 @@ class _$AdminRestaurantDraftDtoOutputOperationsSerializer
     yield serializers.serialize(
       object.periods,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminRestaurantDraftDtoOutputOperationsPeriodsInner),
+        FullType(AdminDraftPeriodOutput),
       ]),
     );
     yield r'defaultPrepMin';
@@ -87,18 +87,14 @@ class _$AdminRestaurantDraftDtoOutputOperationsSerializer
         ? null
         : serializers.serialize(
             object.minimumOrder,
-            specifiedType: const FullType.nullable(
-              AdminRestaurantDraftDtoOutputOperationsMinimumOrder,
-            ),
+            specifiedType: const FullType.nullable(AdminDraftMoneyOutput),
           );
     yield r'coverage';
     yield object.coverage == null
         ? null
         : serializers.serialize(
             object.coverage,
-            specifiedType: const FullType.nullable(
-              AdminRestaurantDraftDtoOutputOperationsCoverage,
-            ),
+            specifiedType: const FullType.nullable(AdminDraftCoverageOutput),
           );
   }
 
@@ -132,14 +128,10 @@ class _$AdminRestaurantDraftDtoOutputOperationsSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        AdminRestaurantDraftDtoOutputOperationsPeriodsInner,
-                      ),
+                      FullType(AdminDraftPeriodOutput),
                     ]),
                   )
-                  as BuiltList<
-                    AdminRestaurantDraftDtoOutputOperationsPeriodsInner
-                  >;
+                  as BuiltList<AdminDraftPeriodOutput>;
           result.periods.replace(valueDes);
           break;
         case r'defaultPrepMin':
@@ -157,10 +149,10 @@ class _$AdminRestaurantDraftDtoOutputOperationsSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      AdminRestaurantDraftDtoOutputOperationsMinimumOrder,
+                      AdminDraftMoneyOutput,
                     ),
                   )
-                  as AdminRestaurantDraftDtoOutputOperationsMinimumOrder?;
+                  as AdminDraftMoneyOutput?;
           if (valueDes == null) continue;
           result.minimumOrder.replace(valueDes);
           break;
@@ -169,10 +161,10 @@ class _$AdminRestaurantDraftDtoOutputOperationsSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      AdminRestaurantDraftDtoOutputOperationsCoverage,
+                      AdminDraftCoverageOutput,
                     ),
                   )
-                  as AdminRestaurantDraftDtoOutputOperationsCoverage?;
+                  as AdminDraftCoverageOutput?;
           if (valueDes == null) continue;
           result.coverage.replace(valueDes);
           break;

@@ -43,7 +43,7 @@ abstract class CaptainPeakBonusDtoOutputWindowsInner
 
   /// The zones of the restaurants it pays for; none: every zone.
   @BuiltValueField(wireName: r'zones')
-  BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?> get zones;
+  BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner> get zones;
 
   CaptainPeakBonusDtoOutputWindowsInner._();
 
@@ -101,7 +101,7 @@ class _$CaptainPeakBonusDtoOutputWindowsInnerSerializer
     yield serializers.serialize(
       object.zones,
       specifiedType: const FullType(BuiltList, [
-        FullType.nullable(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+        FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
       ]),
     );
   }
@@ -168,14 +168,10 @@ class _$CaptainPeakBonusDtoOutputWindowsInnerSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType.nullable(
-                        CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
-                      ),
+                      FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
                     ]),
                   )
-                  as BuiltList<
-                    CaptainPeakBonusDtoOutputWindowsInnerZonesInner?
-                  >;
+                  as BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>;
           result.zones.replace(valueDes);
           break;
         default:

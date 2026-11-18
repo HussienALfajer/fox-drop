@@ -3,7 +3,7 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/admin_draft_location_dto_location.dart';
+import 'package:core_api/src/model/admin_draft_point.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -20,7 +20,7 @@ part 'admin_draft_location_dto.g.dart';
 abstract class AdminDraftLocationDto
     implements Built<AdminDraftLocationDto, AdminDraftLocationDtoBuilder> {
   @BuiltValueField(wireName: r'location')
-  AdminDraftLocationDtoLocation get location;
+  AdminDraftPoint get location;
 
   @BuiltValueField(wireName: r'address')
   String? get address;
@@ -65,7 +65,7 @@ class _$AdminDraftLocationDtoSerializer
     yield r'location';
     yield serializers.serialize(
       object.location,
-      specifiedType: const FullType(AdminDraftLocationDtoLocation),
+      specifiedType: const FullType(AdminDraftPoint),
     );
     yield r'address';
     yield object.address == null
@@ -119,11 +119,9 @@ class _$AdminDraftLocationDtoSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(
-                      AdminDraftLocationDtoLocation,
-                    ),
+                    specifiedType: const FullType(AdminDraftPoint),
                   )
-                  as AdminDraftLocationDtoLocation;
+                  as AdminDraftPoint;
           result.location.replace(valueDes);
           break;
         case r'address':

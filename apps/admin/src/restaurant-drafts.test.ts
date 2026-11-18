@@ -126,7 +126,7 @@ describe('the steps’ bodies', () => {
         ],
         defaultPrepMin: 20,
         minimumOrder: { amount: '10000', currency: 'TRY' },
-        coverage: { kind: 'radius', radiusMetres: 2500 },
+        coverage: { kind: 'radius', radiusMetres: 2500, zoneIds: [] },
       },
     });
     expect(operationsBody({ ...form, days: emptyDays }, 'TRY')).toEqual({ problem: 'no_hours' });

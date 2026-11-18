@@ -6,65 +6,71 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_draft_operations_dto_minimum_order.g.dart';
+part 'admin_peak_bonus_dto_output_in_force_windows_inner_zones_inner.g.dart';
 
-/// AdminDraftOperationsDtoMinimumOrder
+/// The zone the point is in, the neighbourhood of an unsaved point.
 ///
 /// Properties:
-/// * [amount] - Integer minor units of the currency, as a string.
-/// * [currency]
+/// * [id]
+/// * [name]
 @BuiltValue()
-abstract class AdminDraftOperationsDtoMinimumOrder
+abstract class AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner
     implements
         Built<
-          AdminDraftOperationsDtoMinimumOrder,
-          AdminDraftOperationsDtoMinimumOrderBuilder
+          AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+          AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder
         > {
-  /// Integer minor units of the currency, as a string.
-  @BuiltValueField(wireName: r'amount')
-  String get amount;
+  @BuiltValueField(wireName: r'id')
+  String get id;
 
-  @BuiltValueField(wireName: r'currency')
-  String get currency;
+  @BuiltValueField(wireName: r'name')
+  String get name;
 
-  AdminDraftOperationsDtoMinimumOrder._();
+  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner._();
 
-  factory AdminDraftOperationsDtoMinimumOrder([
-    void updates(AdminDraftOperationsDtoMinimumOrderBuilder b),
-  ]) = _$AdminDraftOperationsDtoMinimumOrder;
+  factory AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner([
+    void updates(AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder b),
+  ]) = _$AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminDraftOperationsDtoMinimumOrderBuilder b) => b;
+  static void _defaults(
+    AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminDraftOperationsDtoMinimumOrder> get serializer =>
-      _$AdminDraftOperationsDtoMinimumOrderSerializer();
+  static Serializer<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner>
+  get serializer =>
+      _$AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerSerializer();
 }
 
-class _$AdminDraftOperationsDtoMinimumOrderSerializer
-    implements PrimitiveSerializer<AdminDraftOperationsDtoMinimumOrder> {
+class _$AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerSerializer
+    implements
+        PrimitiveSerializer<
+          AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner
+        > {
   @override
   final Iterable<Type> types = const [
-    AdminDraftOperationsDtoMinimumOrder,
-    _$AdminDraftOperationsDtoMinimumOrder,
+    AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+    _$AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
   ];
 
   @override
-  final String wireName = r'AdminDraftOperationsDtoMinimumOrder';
+  final String wireName =
+      r'AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminDraftOperationsDtoMinimumOrder object, {
+    AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'amount';
+    yield r'id';
     yield serializers.serialize(
-      object.amount,
+      object.id,
       specifiedType: const FullType(String),
     );
-    yield r'currency';
+    yield r'name';
     yield serializers.serialize(
-      object.currency,
+      object.name,
       specifiedType: const FullType(String),
     );
   }
@@ -72,7 +78,7 @@ class _$AdminDraftOperationsDtoMinimumOrderSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminDraftOperationsDtoMinimumOrder object, {
+    AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -87,30 +93,30 @@ class _$AdminDraftOperationsDtoMinimumOrderSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminDraftOperationsDtoMinimumOrderBuilder result,
+    required AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'amount':
+        case r'id':
           final valueDes =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(String),
                   )
                   as String;
-          result.amount = valueDes;
+          result.id = valueDes;
           break;
-        case r'currency':
+        case r'name':
           final valueDes =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(String),
                   )
                   as String;
-          result.currency = valueDes;
+          result.name = valueDes;
           break;
         default:
           unhandled.add(key);
@@ -121,12 +127,13 @@ class _$AdminDraftOperationsDtoMinimumOrderSerializer
   }
 
   @override
-  AdminDraftOperationsDtoMinimumOrder deserialize(
+  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminDraftOperationsDtoMinimumOrderBuilder();
+    final result =
+        AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

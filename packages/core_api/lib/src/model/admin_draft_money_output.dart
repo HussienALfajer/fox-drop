@@ -6,71 +6,61 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_restaurant_draft_choices_dto_output_categories_inner.g.dart';
+part 'admin_draft_money_output.g.dart';
 
-/// AdminRestaurantDraftChoicesDtoOutputCategoriesInner
+/// AdminDraftMoneyOutput
 ///
 /// Properties:
-/// * [id]
-/// * [name]
+/// * [amount] - Integer minor units of the currency, as a string.
+/// * [currency]
 @BuiltValue()
-abstract class AdminRestaurantDraftChoicesDtoOutputCategoriesInner
-    implements
-        Built<
-          AdminRestaurantDraftChoicesDtoOutputCategoriesInner,
-          AdminRestaurantDraftChoicesDtoOutputCategoriesInnerBuilder
-        > {
-  @BuiltValueField(wireName: r'id')
-  String get id;
+abstract class AdminDraftMoneyOutput
+    implements Built<AdminDraftMoneyOutput, AdminDraftMoneyOutputBuilder> {
+  /// Integer minor units of the currency, as a string.
+  @BuiltValueField(wireName: r'amount')
+  String get amount;
 
-  @BuiltValueField(wireName: r'name')
-  String get name;
+  @BuiltValueField(wireName: r'currency')
+  String get currency;
 
-  AdminRestaurantDraftChoicesDtoOutputCategoriesInner._();
+  AdminDraftMoneyOutput._();
 
-  factory AdminRestaurantDraftChoicesDtoOutputCategoriesInner([
-    void updates(AdminRestaurantDraftChoicesDtoOutputCategoriesInnerBuilder b),
-  ]) = _$AdminRestaurantDraftChoicesDtoOutputCategoriesInner;
+  factory AdminDraftMoneyOutput([
+    void updates(AdminDraftMoneyOutputBuilder b),
+  ]) = _$AdminDraftMoneyOutput;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    AdminRestaurantDraftChoicesDtoOutputCategoriesInnerBuilder b,
-  ) => b;
+  static void _defaults(AdminDraftMoneyOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>
-  get serializer =>
-      _$AdminRestaurantDraftChoicesDtoOutputCategoriesInnerSerializer();
+  static Serializer<AdminDraftMoneyOutput> get serializer =>
+      _$AdminDraftMoneyOutputSerializer();
 }
 
-class _$AdminRestaurantDraftChoicesDtoOutputCategoriesInnerSerializer
-    implements
-        PrimitiveSerializer<
-          AdminRestaurantDraftChoicesDtoOutputCategoriesInner
-        > {
+class _$AdminDraftMoneyOutputSerializer
+    implements PrimitiveSerializer<AdminDraftMoneyOutput> {
   @override
   final Iterable<Type> types = const [
-    AdminRestaurantDraftChoicesDtoOutputCategoriesInner,
-    _$AdminRestaurantDraftChoicesDtoOutputCategoriesInner,
+    AdminDraftMoneyOutput,
+    _$AdminDraftMoneyOutput,
   ];
 
   @override
-  final String wireName =
-      r'AdminRestaurantDraftChoicesDtoOutputCategoriesInner';
+  final String wireName = r'AdminDraftMoneyOutput';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminRestaurantDraftChoicesDtoOutputCategoriesInner object, {
+    AdminDraftMoneyOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'id';
+    yield r'amount';
     yield serializers.serialize(
-      object.id,
+      object.amount,
       specifiedType: const FullType(String),
     );
-    yield r'name';
+    yield r'currency';
     yield serializers.serialize(
-      object.name,
+      object.currency,
       specifiedType: const FullType(String),
     );
   }
@@ -78,7 +68,7 @@ class _$AdminRestaurantDraftChoicesDtoOutputCategoriesInnerSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminRestaurantDraftChoicesDtoOutputCategoriesInner object, {
+    AdminDraftMoneyOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -93,30 +83,30 @@ class _$AdminRestaurantDraftChoicesDtoOutputCategoriesInnerSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminRestaurantDraftChoicesDtoOutputCategoriesInnerBuilder result,
+    required AdminDraftMoneyOutputBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'id':
+        case r'amount':
           final valueDes =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(String),
                   )
                   as String;
-          result.id = valueDes;
+          result.amount = valueDes;
           break;
-        case r'name':
+        case r'currency':
           final valueDes =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(String),
                   )
                   as String;
-          result.name = valueDes;
+          result.currency = valueDes;
           break;
         default:
           unhandled.add(key);
@@ -127,12 +117,12 @@ class _$AdminRestaurantDraftChoicesDtoOutputCategoriesInnerSerializer
   }
 
   @override
-  AdminRestaurantDraftChoicesDtoOutputCategoriesInner deserialize(
+  AdminDraftMoneyOutput deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminRestaurantDraftChoicesDtoOutputCategoriesInnerBuilder();
+    final result = AdminDraftMoneyOutputBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

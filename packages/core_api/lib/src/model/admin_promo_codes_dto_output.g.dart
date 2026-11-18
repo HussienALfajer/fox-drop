@@ -10,7 +10,7 @@ class _$AdminPromoCodesDtoOutput extends AdminPromoCodesDtoOutput {
   @override
   final BuiltList<AdminPromoCodesDtoOutputCodesInner> codes;
   @override
-  final BuiltList<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>
+  final BuiltList<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>
   restaurants;
   @override
   final BuiltList<AdminPeakBonusDtoOutputZonesInner> zones;
@@ -85,13 +85,13 @@ class AdminPromoCodesDtoOutputBuilder
   set codes(ListBuilder<AdminPromoCodesDtoOutputCodesInner>? codes) =>
       _$this._codes = codes;
 
-  ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>?
+  ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>?
   _restaurants;
-  ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>
+  ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>
   get restaurants => _$this._restaurants ??=
-      ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>();
+      ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>();
   set restaurants(
-    ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>?
+    ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>?
     restaurants,
   ) => _$this._restaurants = restaurants;
 

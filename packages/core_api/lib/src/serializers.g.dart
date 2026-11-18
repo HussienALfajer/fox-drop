@@ -209,21 +209,24 @@ Serializers _$serializers =
           ..add(AdminDispatchStateDtoOutputOrderOffer.serializer)
           ..add(AdminDispatchStateDtoOutputOrderStatusEnum.serializer)
           ..add(AdminDraftBasicsDto.serializer)
+          ..add(AdminDraftChoiceOutput.serializer)
           ..add(AdminDraftCommissionDto.serializer)
           ..add(AdminDraftCommissionDtoLaunch.serializer)
           ..add(AdminDraftConfirmContractDto.serializer)
           ..add(AdminDraftConfirmContractDtoParityPledgeEnum.serializer)
           ..add(AdminDraftContractDto.serializer)
+          ..add(AdminDraftCoverage.serializer)
+          ..add(AdminDraftCoverageKindEnum.serializer)
+          ..add(AdminDraftCoverageOutput.serializer)
+          ..add(AdminDraftCoverageOutputKindEnum.serializer)
           ..add(AdminDraftLocationDto.serializer)
-          ..add(AdminDraftLocationDtoLocation.serializer)
+          ..add(AdminDraftMoney.serializer)
+          ..add(AdminDraftMoneyOutput.serializer)
           ..add(AdminDraftOperationsDto.serializer)
-          ..add(AdminDraftOperationsDtoCoverage.serializer)
-          ..add(AdminDraftOperationsDtoCoverageOneOf.serializer)
-          ..add(AdminDraftOperationsDtoCoverageOneOf1.serializer)
-          ..add(AdminDraftOperationsDtoCoverageOneOf1KindEnum.serializer)
-          ..add(AdminDraftOperationsDtoCoverageOneOfKindEnum.serializer)
-          ..add(AdminDraftOperationsDtoMinimumOrder.serializer)
-          ..add(AdminDraftOperationsDtoPeriodsInner.serializer)
+          ..add(AdminDraftPeriod.serializer)
+          ..add(AdminDraftPeriodOutput.serializer)
+          ..add(AdminDraftPoint.serializer)
+          ..add(AdminDraftPointOutput.serializer)
           ..add(AdminDrawerSessionDtoOutput.serializer)
           ..add(AdminDrawerSessionDtoOutputKindEnum.serializer)
           ..add(AdminDrawerSessionsDtoOutput.serializer)
@@ -565,6 +568,7 @@ Serializers _$serializers =
           ..add(AdminPeakBonusDtoOutput.serializer)
           ..add(AdminPeakBonusDtoOutputInForce.serializer)
           ..add(AdminPeakBonusDtoOutputInForceWindowsInner.serializer)
+          ..add(AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner.serializer)
           ..add(AdminPeakBonusDtoOutputPending.serializer)
           ..add(AdminPeakBonusDtoOutputPendingWindowsInner.serializer)
           ..add(AdminPeakBonusDtoOutputZonesInner.serializer)
@@ -640,34 +644,13 @@ Serializers _$serializers =
           ..add(AdminRestaurantCategoriesDto.serializer)
           ..add(AdminRestaurantCategoriesDtoOutput.serializer)
           ..add(AdminRestaurantDraftChoicesDtoOutput.serializer)
-          ..add(AdminRestaurantDraftChoicesDtoOutputCategoriesInner.serializer)
-          ..add(AdminRestaurantDraftChoicesDtoOutputCentre.serializer)
-          ..add(
-            AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder.serializer,
-          )
           ..add(AdminRestaurantDraftDtoOutput.serializer)
           ..add(AdminRestaurantDraftDtoOutputBasics.serializer)
           ..add(AdminRestaurantDraftDtoOutputCommission.serializer)
           ..add(AdminRestaurantDraftDtoOutputCommissionLaunch.serializer)
           ..add(AdminRestaurantDraftDtoOutputContract.serializer)
           ..add(AdminRestaurantDraftDtoOutputLocation.serializer)
-          ..add(AdminRestaurantDraftDtoOutputLocationLocation.serializer)
           ..add(AdminRestaurantDraftDtoOutputOperations.serializer)
-          ..add(AdminRestaurantDraftDtoOutputOperationsCoverage.serializer)
-          ..add(AdminRestaurantDraftDtoOutputOperationsCoverageOneOf.serializer)
-          ..add(
-            AdminRestaurantDraftDtoOutputOperationsCoverageOneOf1.serializer,
-          )
-          ..add(
-            AdminRestaurantDraftDtoOutputOperationsCoverageOneOf1KindEnum
-                .serializer,
-          )
-          ..add(
-            AdminRestaurantDraftDtoOutputOperationsCoverageOneOfKindEnum
-                .serializer,
-          )
-          ..add(AdminRestaurantDraftDtoOutputOperationsMinimumOrder.serializer)
-          ..add(AdminRestaurantDraftDtoOutputOperationsPeriodsInner.serializer)
           ..add(AdminRestaurantDraftsDtoOutput.serializer)
           ..add(AdminRestaurantDraftsDtoOutputDraftsInner.serializer)
           ..add(AdminRestaurantDraftsDtoOutputDraftsInnerSteps.serializer)
@@ -1267,6 +1250,7 @@ Serializers _$serializers =
           ..add(CustomerTokensDtoOutput.serializer)
           ..add(CustomerUploadDtoOutput.serializer)
           ..add(CustomerZoneVoteDto.serializer)
+          ..add(CustomerZoneVoteDtoLocation.serializer)
           ..add(CustomerZoneVotedDtoOutput.serializer)
           ..add(CustomerZoneVotedDtoOutputStatusEnum.serializer)
           ..add(DoneDtoOutput.serializer)
@@ -1506,20 +1490,24 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType.nullable(
-                CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
+                AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
               ),
             ]),
             () =>
-                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>(),
+                ListBuilder<
+                  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType.nullable(
-                CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
+                AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
               ),
             ]),
             () =>
-                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>(),
+                ListBuilder<
+                  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -1870,9 +1858,25 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
-              const FullType(AdminDraftOperationsDtoPeriodsInner),
+              const FullType(AdminDraftChoiceOutput),
             ]),
-            () => ListBuilder<AdminDraftOperationsDtoPeriodsInner>(),
+            () => ListBuilder<AdminDraftChoiceOutput>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminDraftChoiceOutput),
+            ]),
+            () => ListBuilder<AdminDraftChoiceOutput>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(AdminDraftPeriod)]),
+            () => ListBuilder<AdminDraftPeriod>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminDraftPeriodOutput),
+            ]),
+            () => ListBuilder<AdminDraftPeriodOutput>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -1979,11 +1983,13 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType.nullable(
-                CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
+                AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
               ),
             ]),
             () =>
-                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>(),
+                ListBuilder<
+                  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -2044,14 +2050,10 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
-              const FullType(
-                AdminRestaurantDraftChoicesDtoOutputCategoriesInner,
-              ),
+              const FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
             ]),
             () =>
-                ListBuilder<
-                  AdminRestaurantDraftChoicesDtoOutputCategoriesInner
-                >(),
+                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -2062,11 +2064,13 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType.nullable(
-                CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
+                AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
               ),
             ]),
             () =>
-                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>(),
+                ListBuilder<
+                  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -2401,13 +2405,13 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
-              const FullType(
-                AdminRestaurantDraftChoicesDtoOutputCategoriesInner,
+              const FullType.nullable(
+                AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
               ),
             ]),
             () =>
                 ListBuilder<
-                  AdminRestaurantDraftChoicesDtoOutputCategoriesInner
+                  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
                 >(),
           )
           ..addBuilderFactory(
@@ -2508,139 +2512,6 @@ Serializers _$serializers =
               const FullType(AdminRestaurantAccountsDtoOutputAccountsInner),
             ]),
             () => ListBuilder<AdminRestaurantAccountsDtoOutputAccountsInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(
-                AdminRestaurantDraftChoicesDtoOutputCategoriesInner,
-              ),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminRestaurantDraftChoicesDtoOutputCategoriesInner
-                >(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(
-                AdminRestaurantDraftChoicesDtoOutputCategoriesInner,
-              ),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminRestaurantDraftChoicesDtoOutputCategoriesInner
-                >(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(
-                AdminRestaurantDraftChoicesDtoOutputCategoriesInner,
-              ),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminRestaurantDraftChoicesDtoOutputCategoriesInner
-                >(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(
-                AdminRestaurantDraftChoicesDtoOutputCategoriesInner,
-              ),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminRestaurantDraftChoicesDtoOutputCategoriesInner
-                >(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(
-                AdminRestaurantDraftChoicesDtoOutputCategoriesInner,
-              ),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminRestaurantDraftChoicesDtoOutputCategoriesInner
-                >(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(
-                AdminRestaurantDraftChoicesDtoOutputCategoriesInner,
-              ),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminRestaurantDraftChoicesDtoOutputCategoriesInner
-                >(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(
-                AdminRestaurantDraftChoicesDtoOutputCategoriesInner,
-              ),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminRestaurantDraftChoicesDtoOutputCategoriesInner
-                >(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(
-                AdminRestaurantDraftChoicesDtoOutputCategoriesInner,
-              ),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminRestaurantDraftChoicesDtoOutputCategoriesInner
-                >(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(
-                AdminRestaurantDraftChoicesDtoOutputCategoriesInner,
-              ),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminRestaurantDraftChoicesDtoOutputCategoriesInner
-                >(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(
-                AdminRestaurantDraftChoicesDtoOutputCategoriesInner,
-              ),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminRestaurantDraftChoicesDtoOutputCategoriesInner
-                >(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(CustomerRestaurantPageDtoOutputScheduleInner),
-            ]),
-            () => ListBuilder<CustomerRestaurantPageDtoOutputScheduleInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(CustomerRestaurantPageDtoOutputMenuInner),
-            ]),
-            () => ListBuilder<CustomerRestaurantPageDtoOutputMenuInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(
-                AdminRestaurantDraftDtoOutputOperationsPeriodsInner,
-              ),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminRestaurantDraftDtoOutputOperationsPeriodsInner
-                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -3104,6 +2975,74 @@ Serializers _$serializers =
               const FullType(CaptainPeakBonusDtoOutputActiveInner),
             ]),
             () => ListBuilder<CaptainPeakBonusDtoOutputActiveInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+            ]),
+            () =>
+                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+            ]),
+            () =>
+                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+            ]),
+            () =>
+                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+            ]),
+            () =>
+                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+            ]),
+            () =>
+                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+            ]),
+            () =>
+                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+            ]),
+            () =>
+                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+            ]),
+            () =>
+                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CustomerRestaurantPageDtoOutputScheduleInner),
+            ]),
+            () => ListBuilder<CustomerRestaurantPageDtoOutputScheduleInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CustomerRestaurantPageDtoOutputMenuInner),
+            ]),
+            () => ListBuilder<CustomerRestaurantPageDtoOutputMenuInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -4191,14 +4130,21 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
-              const FullType(
-                AdminRestaurantDraftChoicesDtoOutputCategoriesInner,
-              ),
+              const FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
             ]),
             () =>
-                ListBuilder<
-                  AdminRestaurantDraftChoicesDtoOutputCategoriesInner
-                >(),
+                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(int)]),
+            () => ListBuilder<int>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+            ]),
+            () =>
+                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(int)]),
@@ -4242,24 +4188,13 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType.nullable(
-                CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
+                AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
               ),
             ]),
             () =>
-                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [const FullType(int)]),
-            () => ListBuilder<int>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType.nullable(
-                CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
-              ),
-            ]),
-            () =>
-                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>(),
+                ListBuilder<
+                  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -4310,6 +4245,32 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType.nullable(
+                AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType.nullable(
+                AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType.nullable(
                 AdminTicketPageDtoOutputPickupDisputePickupPayment,
               ),
             ]),
@@ -4345,28 +4306,6 @@ Serializers _$serializers =
                 ListBuilder<
                   AdminTicketPageDtoOutputPickupDisputePickupPayment?
                 >(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [const FullType(String)]),
-            () => ListBuilder<String>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType.nullable(
-                CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
-              ),
-            ]),
-            () =>
-                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType.nullable(
-                CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
-              ),
-            ]),
-            () =>
-                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

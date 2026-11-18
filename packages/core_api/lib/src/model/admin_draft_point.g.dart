@@ -1,38 +1,33 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'admin_draft_location_dto_location.dart';
+part of 'admin_draft_point.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$AdminDraftLocationDtoLocation extends AdminDraftLocationDtoLocation {
+class _$AdminDraftPoint extends AdminDraftPoint {
   @override
   final num latitude;
   @override
   final num longitude;
 
-  factory _$AdminDraftLocationDtoLocation([
-    void Function(AdminDraftLocationDtoLocationBuilder)? updates,
-  ]) => (AdminDraftLocationDtoLocationBuilder()..update(updates))._build();
+  factory _$AdminDraftPoint([void Function(AdminDraftPointBuilder)? updates]) =>
+      (AdminDraftPointBuilder()..update(updates))._build();
 
-  _$AdminDraftLocationDtoLocation._({
-    required this.latitude,
-    required this.longitude,
-  }) : super._();
+  _$AdminDraftPoint._({required this.latitude, required this.longitude})
+    : super._();
   @override
-  AdminDraftLocationDtoLocation rebuild(
-    void Function(AdminDraftLocationDtoLocationBuilder) updates,
-  ) => (toBuilder()..update(updates)).build();
+  AdminDraftPoint rebuild(void Function(AdminDraftPointBuilder) updates) =>
+      (toBuilder()..update(updates)).build();
 
   @override
-  AdminDraftLocationDtoLocationBuilder toBuilder() =>
-      AdminDraftLocationDtoLocationBuilder()..replace(this);
+  AdminDraftPointBuilder toBuilder() => AdminDraftPointBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is AdminDraftLocationDtoLocation &&
+    return other is AdminDraftPoint &&
         latitude == other.latitude &&
         longitude == other.longitude;
   }
@@ -48,20 +43,16 @@ class _$AdminDraftLocationDtoLocation extends AdminDraftLocationDtoLocation {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'AdminDraftLocationDtoLocation')
+    return (newBuiltValueToStringHelper(r'AdminDraftPoint')
           ..add('latitude', latitude)
           ..add('longitude', longitude))
         .toString();
   }
 }
 
-class AdminDraftLocationDtoLocationBuilder
-    implements
-        Builder<
-          AdminDraftLocationDtoLocation,
-          AdminDraftLocationDtoLocationBuilder
-        > {
-  _$AdminDraftLocationDtoLocation? _$v;
+class AdminDraftPointBuilder
+    implements Builder<AdminDraftPoint, AdminDraftPointBuilder> {
+  _$AdminDraftPoint? _$v;
 
   num? _latitude;
   num? get latitude => _$this._latitude;
@@ -71,11 +62,11 @@ class AdminDraftLocationDtoLocationBuilder
   num? get longitude => _$this._longitude;
   set longitude(num? longitude) => _$this._longitude = longitude;
 
-  AdminDraftLocationDtoLocationBuilder() {
-    AdminDraftLocationDtoLocation._defaults(this);
+  AdminDraftPointBuilder() {
+    AdminDraftPoint._defaults(this);
   }
 
-  AdminDraftLocationDtoLocationBuilder get _$this {
+  AdminDraftPointBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _latitude = $v.latitude;
@@ -86,30 +77,30 @@ class AdminDraftLocationDtoLocationBuilder
   }
 
   @override
-  void replace(AdminDraftLocationDtoLocation other) {
-    _$v = other as _$AdminDraftLocationDtoLocation;
+  void replace(AdminDraftPoint other) {
+    _$v = other as _$AdminDraftPoint;
   }
 
   @override
-  void update(void Function(AdminDraftLocationDtoLocationBuilder)? updates) {
+  void update(void Function(AdminDraftPointBuilder)? updates) {
     if (updates != null) updates(this);
   }
 
   @override
-  AdminDraftLocationDtoLocation build() => _build();
+  AdminDraftPoint build() => _build();
 
-  _$AdminDraftLocationDtoLocation _build() {
+  _$AdminDraftPoint _build() {
     final _$result =
         _$v ??
-        _$AdminDraftLocationDtoLocation._(
+        _$AdminDraftPoint._(
           latitude: BuiltValueNullFieldError.checkNotNull(
             latitude,
-            r'AdminDraftLocationDtoLocation',
+            r'AdminDraftPoint',
             'latitude',
           ),
           longitude: BuiltValueNullFieldError.checkNotNull(
             longitude,
-            r'AdminDraftLocationDtoLocation',
+            r'AdminDraftPoint',
             'longitude',
           ),
         );

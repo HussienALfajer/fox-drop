@@ -3,9 +3,9 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_zones_inner.dart';
 import 'package:core_api/src/model/customer_restaurant_list_dto_output_restaurants_inner_estimate.dart';
 import 'package:core_api/src/model/customer_restaurant_page_dto_output_delivery_fee.dart';
-import 'package:core_api/src/model/admin_restaurant_draft_choices_dto_output_categories_inner.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/customer_restaurant_list_dto_output_restaurants_inner_state.dart';
 import 'package:built_value/built_value.dart';
@@ -52,7 +52,7 @@ abstract class CustomerSearchDtoOutputRestaurantsInner
 
   /// Its active categories (AP §9.13), in the restaurant’s order.
   @BuiltValueField(wireName: r'categories')
-  BuiltList<AdminRestaurantDraftChoicesDtoOutputCategoriesInner> get categories;
+  BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner> get categories;
 
   /// Its key in public-media, shown through imgproxy (architecture §5.8); null without one.
   @BuiltValueField(wireName: r'logoKey')
@@ -145,7 +145,7 @@ class _$CustomerSearchDtoOutputRestaurantsInnerSerializer
     yield serializers.serialize(
       object.categories,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminRestaurantDraftChoicesDtoOutputCategoriesInner),
+        FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
       ]),
     );
     yield r'logoKey';
@@ -279,14 +279,10 @@ class _$CustomerSearchDtoOutputRestaurantsInnerSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        AdminRestaurantDraftChoicesDtoOutputCategoriesInner,
-                      ),
+                      FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
                     ]),
                   )
-                  as BuiltList<
-                    AdminRestaurantDraftChoicesDtoOutputCategoriesInner
-                  >;
+                  as BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>;
           result.categories.replace(valueDes);
           break;
         case r'logoKey':

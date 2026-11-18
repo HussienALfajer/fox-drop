@@ -1,40 +1,38 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'admin_restaurant_draft_choices_dto_output_centre.dart';
+part of 'customer_zone_vote_dto_location.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$AdminRestaurantDraftChoicesDtoOutputCentre
-    extends AdminRestaurantDraftChoicesDtoOutputCentre {
+class _$CustomerZoneVoteDtoLocation extends CustomerZoneVoteDtoLocation {
   @override
   final num latitude;
   @override
   final num longitude;
 
-  factory _$AdminRestaurantDraftChoicesDtoOutputCentre([
-    void Function(AdminRestaurantDraftChoicesDtoOutputCentreBuilder)? updates,
-  ]) => (AdminRestaurantDraftChoicesDtoOutputCentreBuilder()..update(updates))
-      ._build();
+  factory _$CustomerZoneVoteDtoLocation([
+    void Function(CustomerZoneVoteDtoLocationBuilder)? updates,
+  ]) => (CustomerZoneVoteDtoLocationBuilder()..update(updates))._build();
 
-  _$AdminRestaurantDraftChoicesDtoOutputCentre._({
+  _$CustomerZoneVoteDtoLocation._({
     required this.latitude,
     required this.longitude,
   }) : super._();
   @override
-  AdminRestaurantDraftChoicesDtoOutputCentre rebuild(
-    void Function(AdminRestaurantDraftChoicesDtoOutputCentreBuilder) updates,
+  CustomerZoneVoteDtoLocation rebuild(
+    void Function(CustomerZoneVoteDtoLocationBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  AdminRestaurantDraftChoicesDtoOutputCentreBuilder toBuilder() =>
-      AdminRestaurantDraftChoicesDtoOutputCentreBuilder()..replace(this);
+  CustomerZoneVoteDtoLocationBuilder toBuilder() =>
+      CustomerZoneVoteDtoLocationBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is AdminRestaurantDraftChoicesDtoOutputCentre &&
+    return other is CustomerZoneVoteDtoLocation &&
         latitude == other.latitude &&
         longitude == other.longitude;
   }
@@ -50,22 +48,20 @@ class _$AdminRestaurantDraftChoicesDtoOutputCentre
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(
-            r'AdminRestaurantDraftChoicesDtoOutputCentre',
-          )
+    return (newBuiltValueToStringHelper(r'CustomerZoneVoteDtoLocation')
           ..add('latitude', latitude)
           ..add('longitude', longitude))
         .toString();
   }
 }
 
-class AdminRestaurantDraftChoicesDtoOutputCentreBuilder
+class CustomerZoneVoteDtoLocationBuilder
     implements
         Builder<
-          AdminRestaurantDraftChoicesDtoOutputCentre,
-          AdminRestaurantDraftChoicesDtoOutputCentreBuilder
+          CustomerZoneVoteDtoLocation,
+          CustomerZoneVoteDtoLocationBuilder
         > {
-  _$AdminRestaurantDraftChoicesDtoOutputCentre? _$v;
+  _$CustomerZoneVoteDtoLocation? _$v;
 
   num? _latitude;
   num? get latitude => _$this._latitude;
@@ -75,11 +71,11 @@ class AdminRestaurantDraftChoicesDtoOutputCentreBuilder
   num? get longitude => _$this._longitude;
   set longitude(num? longitude) => _$this._longitude = longitude;
 
-  AdminRestaurantDraftChoicesDtoOutputCentreBuilder() {
-    AdminRestaurantDraftChoicesDtoOutputCentre._defaults(this);
+  CustomerZoneVoteDtoLocationBuilder() {
+    CustomerZoneVoteDtoLocation._defaults(this);
   }
 
-  AdminRestaurantDraftChoicesDtoOutputCentreBuilder get _$this {
+  CustomerZoneVoteDtoLocationBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _latitude = $v.latitude;
@@ -90,32 +86,30 @@ class AdminRestaurantDraftChoicesDtoOutputCentreBuilder
   }
 
   @override
-  void replace(AdminRestaurantDraftChoicesDtoOutputCentre other) {
-    _$v = other as _$AdminRestaurantDraftChoicesDtoOutputCentre;
+  void replace(CustomerZoneVoteDtoLocation other) {
+    _$v = other as _$CustomerZoneVoteDtoLocation;
   }
 
   @override
-  void update(
-    void Function(AdminRestaurantDraftChoicesDtoOutputCentreBuilder)? updates,
-  ) {
+  void update(void Function(CustomerZoneVoteDtoLocationBuilder)? updates) {
     if (updates != null) updates(this);
   }
 
   @override
-  AdminRestaurantDraftChoicesDtoOutputCentre build() => _build();
+  CustomerZoneVoteDtoLocation build() => _build();
 
-  _$AdminRestaurantDraftChoicesDtoOutputCentre _build() {
+  _$CustomerZoneVoteDtoLocation _build() {
     final _$result =
         _$v ??
-        _$AdminRestaurantDraftChoicesDtoOutputCentre._(
+        _$CustomerZoneVoteDtoLocation._(
           latitude: BuiltValueNullFieldError.checkNotNull(
             latitude,
-            r'AdminRestaurantDraftChoicesDtoOutputCentre',
+            r'CustomerZoneVoteDtoLocation',
             'latitude',
           ),
           longitude: BuiltValueNullFieldError.checkNotNull(
             longitude,
-            r'AdminRestaurantDraftChoicesDtoOutputCentre',
+            r'CustomerZoneVoteDtoLocation',
             'longitude',
           ),
         );

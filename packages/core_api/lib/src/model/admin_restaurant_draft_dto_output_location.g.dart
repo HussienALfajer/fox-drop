@@ -9,7 +9,7 @@ part of 'admin_restaurant_draft_dto_output_location.dart';
 class _$AdminRestaurantDraftDtoOutputLocation
     extends AdminRestaurantDraftDtoOutputLocation {
   @override
-  final AdminRestaurantDraftDtoOutputLocationLocation? location;
+  final AdminDraftPointOutput? location;
   @override
   final String? address;
   @override
@@ -79,13 +79,11 @@ class AdminRestaurantDraftDtoOutputLocationBuilder
         > {
   _$AdminRestaurantDraftDtoOutputLocation? _$v;
 
-  AdminRestaurantDraftDtoOutputLocationLocationBuilder? _location;
-  AdminRestaurantDraftDtoOutputLocationLocationBuilder get location =>
-      _$this._location ??=
-          AdminRestaurantDraftDtoOutputLocationLocationBuilder();
-  set location(
-    AdminRestaurantDraftDtoOutputLocationLocationBuilder? location,
-  ) => _$this._location = location;
+  AdminDraftPointOutputBuilder? _location;
+  AdminDraftPointOutputBuilder get location =>
+      _$this._location ??= AdminDraftPointOutputBuilder();
+  set location(AdminDraftPointOutputBuilder? location) =>
+      _$this._location = location;
 
   String? _address;
   String? get address => _$this._address;

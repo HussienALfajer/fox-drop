@@ -9,13 +9,13 @@ part of 'admin_restaurant_draft_dto_output_operations.dart';
 class _$AdminRestaurantDraftDtoOutputOperations
     extends AdminRestaurantDraftDtoOutputOperations {
   @override
-  final BuiltList<AdminRestaurantDraftDtoOutputOperationsPeriodsInner> periods;
+  final BuiltList<AdminDraftPeriodOutput> periods;
   @override
   final int? defaultPrepMin;
   @override
-  final AdminRestaurantDraftDtoOutputOperationsMinimumOrder? minimumOrder;
+  final AdminDraftMoneyOutput? minimumOrder;
   @override
-  final AdminRestaurantDraftDtoOutputOperationsCoverage? coverage;
+  final AdminDraftCoverageOutput? coverage;
 
   factory _$AdminRestaurantDraftDtoOutputOperations([
     void Function(AdminRestaurantDraftDtoOutputOperationsBuilder)? updates,
@@ -79,34 +79,28 @@ class AdminRestaurantDraftDtoOutputOperationsBuilder
         > {
   _$AdminRestaurantDraftDtoOutputOperations? _$v;
 
-  ListBuilder<AdminRestaurantDraftDtoOutputOperationsPeriodsInner>? _periods;
-  ListBuilder<AdminRestaurantDraftDtoOutputOperationsPeriodsInner>
-  get periods => _$this._periods ??=
-      ListBuilder<AdminRestaurantDraftDtoOutputOperationsPeriodsInner>();
-  set periods(
-    ListBuilder<AdminRestaurantDraftDtoOutputOperationsPeriodsInner>? periods,
-  ) => _$this._periods = periods;
+  ListBuilder<AdminDraftPeriodOutput>? _periods;
+  ListBuilder<AdminDraftPeriodOutput> get periods =>
+      _$this._periods ??= ListBuilder<AdminDraftPeriodOutput>();
+  set periods(ListBuilder<AdminDraftPeriodOutput>? periods) =>
+      _$this._periods = periods;
 
   int? _defaultPrepMin;
   int? get defaultPrepMin => _$this._defaultPrepMin;
   set defaultPrepMin(int? defaultPrepMin) =>
       _$this._defaultPrepMin = defaultPrepMin;
 
-  AdminRestaurantDraftDtoOutputOperationsMinimumOrderBuilder? _minimumOrder;
-  AdminRestaurantDraftDtoOutputOperationsMinimumOrderBuilder get minimumOrder =>
-      _$this._minimumOrder ??=
-          AdminRestaurantDraftDtoOutputOperationsMinimumOrderBuilder();
-  set minimumOrder(
-    AdminRestaurantDraftDtoOutputOperationsMinimumOrderBuilder? minimumOrder,
-  ) => _$this._minimumOrder = minimumOrder;
+  AdminDraftMoneyOutputBuilder? _minimumOrder;
+  AdminDraftMoneyOutputBuilder get minimumOrder =>
+      _$this._minimumOrder ??= AdminDraftMoneyOutputBuilder();
+  set minimumOrder(AdminDraftMoneyOutputBuilder? minimumOrder) =>
+      _$this._minimumOrder = minimumOrder;
 
-  AdminRestaurantDraftDtoOutputOperationsCoverageBuilder? _coverage;
-  AdminRestaurantDraftDtoOutputOperationsCoverageBuilder get coverage =>
-      _$this._coverage ??=
-          AdminRestaurantDraftDtoOutputOperationsCoverageBuilder();
-  set coverage(
-    AdminRestaurantDraftDtoOutputOperationsCoverageBuilder? coverage,
-  ) => _$this._coverage = coverage;
+  AdminDraftCoverageOutputBuilder? _coverage;
+  AdminDraftCoverageOutputBuilder get coverage =>
+      _$this._coverage ??= AdminDraftCoverageOutputBuilder();
+  set coverage(AdminDraftCoverageOutputBuilder? coverage) =>
+      _$this._coverage = coverage;
 
   AdminRestaurantDraftDtoOutputOperationsBuilder() {
     AdminRestaurantDraftDtoOutputOperations._defaults(this);

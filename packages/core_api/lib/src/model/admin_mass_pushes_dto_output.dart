@@ -5,8 +5,8 @@
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/admin_banners_dto_output_codes_inner.dart';
 import 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_zones_inner.dart';
-import 'package:core_api/src/model/admin_restaurant_draft_choices_dto_output_categories_inner.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force_windows_inner_zones_inner.dart';
 import 'package:core_api/src/model/admin_mass_pushes_dto_output_pushes_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -31,8 +31,7 @@ abstract class AdminMassPushesDtoOutput
 
   /// The city's restaurants a target picks from.
   @BuiltValueField(wireName: r'restaurants')
-  BuiltList<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>
-  get restaurants;
+  BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner> get restaurants;
 
   /// The city's visible codes running now in its base currency, newest first.
   @BuiltValueField(wireName: r'codes')
@@ -40,7 +39,7 @@ abstract class AdminMassPushesDtoOutput
 
   /// The active zones.
   @BuiltValueField(wireName: r'zones')
-  BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?> get zones;
+  BuiltList<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?> get zones;
 
   /// Whether this admin may send (marketing.manage).
   @BuiltValueField(wireName: r'canManage')
@@ -87,7 +86,7 @@ class _$AdminMassPushesDtoOutputSerializer
     yield serializers.serialize(
       object.restaurants,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminRestaurantDraftChoicesDtoOutputCategoriesInner),
+        FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
       ]),
     );
     yield r'codes';
@@ -101,7 +100,7 @@ class _$AdminMassPushesDtoOutputSerializer
     yield serializers.serialize(
       object.zones,
       specifiedType: const FullType(BuiltList, [
-        FullType.nullable(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+        FullType.nullable(AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner),
       ]),
     );
     yield r'canManage';
@@ -152,14 +151,10 @@ class _$AdminMassPushesDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        AdminRestaurantDraftChoicesDtoOutputCategoriesInner,
-                      ),
+                      FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
                     ]),
                   )
-                  as BuiltList<
-                    AdminRestaurantDraftChoicesDtoOutputCategoriesInner
-                  >;
+                  as BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>;
           result.restaurants.replace(valueDes);
           break;
         case r'codes':
@@ -179,12 +174,12 @@ class _$AdminMassPushesDtoOutputSerializer
                     value,
                     specifiedType: const FullType(BuiltList, [
                       FullType.nullable(
-                        CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
+                        AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
                       ),
                     ]),
                   )
                   as BuiltList<
-                    CaptainPeakBonusDtoOutputWindowsInnerZonesInner?
+                    AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
                   >;
           result.zones.replace(valueDes);
           break;

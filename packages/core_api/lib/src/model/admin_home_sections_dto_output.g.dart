@@ -10,7 +10,8 @@ class _$AdminHomeSectionsDtoOutput extends AdminHomeSectionsDtoOutput {
   @override
   final BuiltList<AdminHomeSectionsDtoOutputSectionsInner> sections;
   @override
-  final BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?> restaurants;
+  final BuiltList<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>
+  restaurants;
   @override
   final bool canManage;
 
@@ -74,12 +75,14 @@ class AdminHomeSectionsDtoOutputBuilder
     ListBuilder<AdminHomeSectionsDtoOutputSectionsInner>? sections,
   ) => _$this._sections = sections;
 
-  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>? _restaurants;
-  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>
+  ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>?
+  _restaurants;
+  ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>
   get restaurants => _$this._restaurants ??=
-      ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>();
+      ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>();
   set restaurants(
-    ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>? restaurants,
+    ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>?
+    restaurants,
   ) => _$this._restaurants = restaurants;
 
   bool? _canManage;

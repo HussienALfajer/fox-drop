@@ -10,6 +10,7 @@ import 'package:core_api/src/model/admin_order_dto_output_order_outcome_choices.
 import 'package:core_api/src/model/admin_order_dto_output_order_lines_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_cancel_choices.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_cannot_complete.dart';
+import 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force_windows_inner_zones_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_no_answer.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_timeline_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_outcome_change.dart';
@@ -21,7 +22,6 @@ import 'package:core_api/src/model/admin_order_dto_output_order_emergency.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_dispatch.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_item_report.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_time_change.dart';
-import 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_zones_inner.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_acceptance.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_rejection.dart';
 import 'package:core_api/src/model/admin_order_dto_output_order_handover.dart';
@@ -113,7 +113,7 @@ abstract class AdminOrderDtoOutputOrder
   DateTime get placedAt;
 
   @BuiltValueField(wireName: r'restaurant')
-  CaptainPeakBonusDtoOutputWindowsInnerZonesInner? get restaurant;
+  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner? get restaurant;
 
   @BuiltValueField(wireName: r'neighbourhood')
   String get neighbourhood;
@@ -302,7 +302,7 @@ class _$AdminOrderDtoOutputOrderSerializer
         : serializers.serialize(
             object.restaurant,
             specifiedType: const FullType.nullable(
-              CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
+              AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
             ),
           );
     yield r'neighbourhood';
@@ -668,10 +668,10 @@ class _$AdminOrderDtoOutputOrderSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
+                      AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
                     ),
                   )
-                  as CaptainPeakBonusDtoOutputWindowsInnerZonesInner?;
+                  as AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?;
           if (valueDes == null) continue;
           result.restaurant.replace(valueDes);
           break;

@@ -7,64 +7,72 @@ import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_draft_operations_dto_coverage_one_of1.g.dart';
+part 'admin_draft_coverage_output.g.dart';
 
-/// AdminDraftOperationsDtoCoverageOneOf1
+/// AdminDraftCoverageOutput
 ///
 /// Properties:
 /// * [kind]
-/// * [zoneIds]
+/// * [radiusMetres] - With kind radius only.
+/// * [zoneIds] - With kind zones only, one or more.
 @BuiltValue()
-abstract class AdminDraftOperationsDtoCoverageOneOf1
+abstract class AdminDraftCoverageOutput
     implements
-        Built<
-          AdminDraftOperationsDtoCoverageOneOf1,
-          AdminDraftOperationsDtoCoverageOneOf1Builder
-        > {
+        Built<AdminDraftCoverageOutput, AdminDraftCoverageOutputBuilder> {
   @BuiltValueField(wireName: r'kind')
-  AdminDraftOperationsDtoCoverageOneOf1KindEnum get kind;
-  // enum kindEnum {  zones,  };
+  AdminDraftCoverageOutputKindEnum get kind;
+  // enum kindEnum {  radius,  zones,  };
 
+  /// With kind radius only.
+  @BuiltValueField(wireName: r'radiusMetres')
+  int? get radiusMetres;
+
+  /// With kind zones only, one or more.
   @BuiltValueField(wireName: r'zoneIds')
   BuiltList<String> get zoneIds;
 
-  AdminDraftOperationsDtoCoverageOneOf1._();
+  AdminDraftCoverageOutput._();
 
-  factory AdminDraftOperationsDtoCoverageOneOf1([
-    void updates(AdminDraftOperationsDtoCoverageOneOf1Builder b),
-  ]) = _$AdminDraftOperationsDtoCoverageOneOf1;
+  factory AdminDraftCoverageOutput([
+    void updates(AdminDraftCoverageOutputBuilder b),
+  ]) = _$AdminDraftCoverageOutput;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminDraftOperationsDtoCoverageOneOf1Builder b) => b;
+  static void _defaults(AdminDraftCoverageOutputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminDraftOperationsDtoCoverageOneOf1> get serializer =>
-      _$AdminDraftOperationsDtoCoverageOneOf1Serializer();
+  static Serializer<AdminDraftCoverageOutput> get serializer =>
+      _$AdminDraftCoverageOutputSerializer();
 }
 
-class _$AdminDraftOperationsDtoCoverageOneOf1Serializer
-    implements PrimitiveSerializer<AdminDraftOperationsDtoCoverageOneOf1> {
+class _$AdminDraftCoverageOutputSerializer
+    implements PrimitiveSerializer<AdminDraftCoverageOutput> {
   @override
   final Iterable<Type> types = const [
-    AdminDraftOperationsDtoCoverageOneOf1,
-    _$AdminDraftOperationsDtoCoverageOneOf1,
+    AdminDraftCoverageOutput,
+    _$AdminDraftCoverageOutput,
   ];
 
   @override
-  final String wireName = r'AdminDraftOperationsDtoCoverageOneOf1';
+  final String wireName = r'AdminDraftCoverageOutput';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminDraftOperationsDtoCoverageOneOf1 object, {
+    AdminDraftCoverageOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'kind';
     yield serializers.serialize(
       object.kind,
-      specifiedType: const FullType(
-        AdminDraftOperationsDtoCoverageOneOf1KindEnum,
-      ),
+      specifiedType: const FullType(AdminDraftCoverageOutputKindEnum),
     );
+    yield r'radiusMetres';
+    yield object.radiusMetres == null
+        ? null
+        : serializers.serialize(
+            object.radiusMetres,
+            specifiedType: const FullType.nullable(int),
+          );
     yield r'zoneIds';
     yield serializers.serialize(
       object.zoneIds,
@@ -75,7 +83,7 @@ class _$AdminDraftOperationsDtoCoverageOneOf1Serializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminDraftOperationsDtoCoverageOneOf1 object, {
+    AdminDraftCoverageOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -90,7 +98,7 @@ class _$AdminDraftOperationsDtoCoverageOneOf1Serializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminDraftOperationsDtoCoverageOneOf1Builder result,
+    required AdminDraftCoverageOutputBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -102,11 +110,21 @@ class _$AdminDraftOperationsDtoCoverageOneOf1Serializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(
-                      AdminDraftOperationsDtoCoverageOneOf1KindEnum,
+                      AdminDraftCoverageOutputKindEnum,
                     ),
                   )
-                  as AdminDraftOperationsDtoCoverageOneOf1KindEnum;
+                  as AdminDraftCoverageOutputKindEnum;
           result.kind = valueDes;
+          break;
+        case r'radiusMetres':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(int),
+                  )
+                  as int?;
+          if (valueDes == null) continue;
+          result.radiusMetres = valueDes;
           break;
         case r'zoneIds':
           final valueDes =
@@ -128,12 +146,12 @@ class _$AdminDraftOperationsDtoCoverageOneOf1Serializer
   }
 
   @override
-  AdminDraftOperationsDtoCoverageOneOf1 deserialize(
+  AdminDraftCoverageOutput deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminDraftOperationsDtoCoverageOneOf1Builder();
+    final result = AdminDraftCoverageOutputBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(
@@ -148,19 +166,21 @@ class _$AdminDraftOperationsDtoCoverageOneOf1Serializer
   }
 }
 
-class AdminDraftOperationsDtoCoverageOneOf1KindEnum extends EnumClass {
+class AdminDraftCoverageOutputKindEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'radius')
+  static const AdminDraftCoverageOutputKindEnum radius =
+      _$adminDraftCoverageOutputKindEnum_radius;
   @BuiltValueEnumConst(wireName: r'zones')
-  static const AdminDraftOperationsDtoCoverageOneOf1KindEnum zones =
-      _$adminDraftOperationsDtoCoverageOneOf1KindEnum_zones;
+  static const AdminDraftCoverageOutputKindEnum zones =
+      _$adminDraftCoverageOutputKindEnum_zones;
 
-  static Serializer<AdminDraftOperationsDtoCoverageOneOf1KindEnum>
-  get serializer => _$adminDraftOperationsDtoCoverageOneOf1KindEnumSerializer;
+  static Serializer<AdminDraftCoverageOutputKindEnum> get serializer =>
+      _$adminDraftCoverageOutputKindEnumSerializer;
 
-  const AdminDraftOperationsDtoCoverageOneOf1KindEnum._(String name)
-    : super(name);
+  const AdminDraftCoverageOutputKindEnum._(String name) : super(name);
 
-  static BuiltSet<AdminDraftOperationsDtoCoverageOneOf1KindEnum> get values =>
-      _$adminDraftOperationsDtoCoverageOneOf1KindEnumValues;
-  static AdminDraftOperationsDtoCoverageOneOf1KindEnum valueOf(String name) =>
-      _$adminDraftOperationsDtoCoverageOneOf1KindEnumValueOf(name);
+  static BuiltSet<AdminDraftCoverageOutputKindEnum> get values =>
+      _$adminDraftCoverageOutputKindEnumValues;
+  static AdminDraftCoverageOutputKindEnum valueOf(String name) =>
+      _$adminDraftCoverageOutputKindEnumValueOf(name);
 }

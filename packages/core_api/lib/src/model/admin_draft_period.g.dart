@@ -1,13 +1,12 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'admin_draft_operations_dto_periods_inner.dart';
+part of 'admin_draft_period.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$AdminDraftOperationsDtoPeriodsInner
-    extends AdminDraftOperationsDtoPeriodsInner {
+class _$AdminDraftPeriod extends AdminDraftPeriod {
   @override
   final int weekday;
   @override
@@ -15,29 +14,27 @@ class _$AdminDraftOperationsDtoPeriodsInner
   @override
   final int closesAt;
 
-  factory _$AdminDraftOperationsDtoPeriodsInner([
-    void Function(AdminDraftOperationsDtoPeriodsInnerBuilder)? updates,
-  ]) =>
-      (AdminDraftOperationsDtoPeriodsInnerBuilder()..update(updates))._build();
+  factory _$AdminDraftPeriod([
+    void Function(AdminDraftPeriodBuilder)? updates,
+  ]) => (AdminDraftPeriodBuilder()..update(updates))._build();
 
-  _$AdminDraftOperationsDtoPeriodsInner._({
+  _$AdminDraftPeriod._({
     required this.weekday,
     required this.opensAt,
     required this.closesAt,
   }) : super._();
   @override
-  AdminDraftOperationsDtoPeriodsInner rebuild(
-    void Function(AdminDraftOperationsDtoPeriodsInnerBuilder) updates,
-  ) => (toBuilder()..update(updates)).build();
+  AdminDraftPeriod rebuild(void Function(AdminDraftPeriodBuilder) updates) =>
+      (toBuilder()..update(updates)).build();
 
   @override
-  AdminDraftOperationsDtoPeriodsInnerBuilder toBuilder() =>
-      AdminDraftOperationsDtoPeriodsInnerBuilder()..replace(this);
+  AdminDraftPeriodBuilder toBuilder() =>
+      AdminDraftPeriodBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is AdminDraftOperationsDtoPeriodsInner &&
+    return other is AdminDraftPeriod &&
         weekday == other.weekday &&
         opensAt == other.opensAt &&
         closesAt == other.closesAt;
@@ -55,7 +52,7 @@ class _$AdminDraftOperationsDtoPeriodsInner
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'AdminDraftOperationsDtoPeriodsInner')
+    return (newBuiltValueToStringHelper(r'AdminDraftPeriod')
           ..add('weekday', weekday)
           ..add('opensAt', opensAt)
           ..add('closesAt', closesAt))
@@ -63,13 +60,9 @@ class _$AdminDraftOperationsDtoPeriodsInner
   }
 }
 
-class AdminDraftOperationsDtoPeriodsInnerBuilder
-    implements
-        Builder<
-          AdminDraftOperationsDtoPeriodsInner,
-          AdminDraftOperationsDtoPeriodsInnerBuilder
-        > {
-  _$AdminDraftOperationsDtoPeriodsInner? _$v;
+class AdminDraftPeriodBuilder
+    implements Builder<AdminDraftPeriod, AdminDraftPeriodBuilder> {
+  _$AdminDraftPeriod? _$v;
 
   int? _weekday;
   int? get weekday => _$this._weekday;
@@ -83,11 +76,11 @@ class AdminDraftOperationsDtoPeriodsInnerBuilder
   int? get closesAt => _$this._closesAt;
   set closesAt(int? closesAt) => _$this._closesAt = closesAt;
 
-  AdminDraftOperationsDtoPeriodsInnerBuilder() {
-    AdminDraftOperationsDtoPeriodsInner._defaults(this);
+  AdminDraftPeriodBuilder() {
+    AdminDraftPeriod._defaults(this);
   }
 
-  AdminDraftOperationsDtoPeriodsInnerBuilder get _$this {
+  AdminDraftPeriodBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _weekday = $v.weekday;
@@ -99,37 +92,35 @@ class AdminDraftOperationsDtoPeriodsInnerBuilder
   }
 
   @override
-  void replace(AdminDraftOperationsDtoPeriodsInner other) {
-    _$v = other as _$AdminDraftOperationsDtoPeriodsInner;
+  void replace(AdminDraftPeriod other) {
+    _$v = other as _$AdminDraftPeriod;
   }
 
   @override
-  void update(
-    void Function(AdminDraftOperationsDtoPeriodsInnerBuilder)? updates,
-  ) {
+  void update(void Function(AdminDraftPeriodBuilder)? updates) {
     if (updates != null) updates(this);
   }
 
   @override
-  AdminDraftOperationsDtoPeriodsInner build() => _build();
+  AdminDraftPeriod build() => _build();
 
-  _$AdminDraftOperationsDtoPeriodsInner _build() {
+  _$AdminDraftPeriod _build() {
     final _$result =
         _$v ??
-        _$AdminDraftOperationsDtoPeriodsInner._(
+        _$AdminDraftPeriod._(
           weekday: BuiltValueNullFieldError.checkNotNull(
             weekday,
-            r'AdminDraftOperationsDtoPeriodsInner',
+            r'AdminDraftPeriod',
             'weekday',
           ),
           opensAt: BuiltValueNullFieldError.checkNotNull(
             opensAt,
-            r'AdminDraftOperationsDtoPeriodsInner',
+            r'AdminDraftPeriod',
             'opensAt',
           ),
           closesAt: BuiltValueNullFieldError.checkNotNull(
             closesAt,
-            r'AdminDraftOperationsDtoPeriodsInner',
+            r'AdminDraftPeriod',
             'closesAt',
           ),
         );

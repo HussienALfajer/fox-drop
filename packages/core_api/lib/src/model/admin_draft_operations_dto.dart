@@ -3,10 +3,10 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/admin_draft_operations_dto_periods_inner.dart';
-import 'package:core_api/src/model/admin_draft_operations_dto_coverage.dart';
+import 'package:core_api/src/model/admin_draft_period.dart';
+import 'package:core_api/src/model/admin_draft_coverage.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_draft_operations_dto_minimum_order.dart';
+import 'package:core_api/src/model/admin_draft_money.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -23,16 +23,16 @@ part 'admin_draft_operations_dto.g.dart';
 abstract class AdminDraftOperationsDto
     implements Built<AdminDraftOperationsDto, AdminDraftOperationsDtoBuilder> {
   @BuiltValueField(wireName: r'periods')
-  BuiltList<AdminDraftOperationsDtoPeriodsInner> get periods;
+  BuiltList<AdminDraftPeriod> get periods;
 
   @BuiltValueField(wireName: r'defaultPrepMin')
   int get defaultPrepMin;
 
   @BuiltValueField(wireName: r'minimumOrder')
-  AdminDraftOperationsDtoMinimumOrder get minimumOrder;
+  AdminDraftMoney get minimumOrder;
 
   @BuiltValueField(wireName: r'coverage')
-  AdminDraftOperationsDtoCoverage get coverage;
+  AdminDraftCoverage get coverage;
 
   AdminDraftOperationsDto._();
 
@@ -67,9 +67,7 @@ class _$AdminDraftOperationsDtoSerializer
     yield r'periods';
     yield serializers.serialize(
       object.periods,
-      specifiedType: const FullType(BuiltList, [
-        FullType(AdminDraftOperationsDtoPeriodsInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(AdminDraftPeriod)]),
     );
     yield r'defaultPrepMin';
     yield serializers.serialize(
@@ -79,12 +77,12 @@ class _$AdminDraftOperationsDtoSerializer
     yield r'minimumOrder';
     yield serializers.serialize(
       object.minimumOrder,
-      specifiedType: const FullType(AdminDraftOperationsDtoMinimumOrder),
+      specifiedType: const FullType(AdminDraftMoney),
     );
     yield r'coverage';
     yield serializers.serialize(
       object.coverage,
-      specifiedType: const FullType(AdminDraftOperationsDtoCoverage),
+      specifiedType: const FullType(AdminDraftCoverage),
     );
   }
 
@@ -118,10 +116,10 @@ class _$AdminDraftOperationsDtoSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(AdminDraftOperationsDtoPeriodsInner),
+                      FullType(AdminDraftPeriod),
                     ]),
                   )
-                  as BuiltList<AdminDraftOperationsDtoPeriodsInner>;
+                  as BuiltList<AdminDraftPeriod>;
           result.periods.replace(valueDes);
           break;
         case r'defaultPrepMin':
@@ -134,22 +132,18 @@ class _$AdminDraftOperationsDtoSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(
-                      AdminDraftOperationsDtoMinimumOrder,
-                    ),
+                    specifiedType: const FullType(AdminDraftMoney),
                   )
-                  as AdminDraftOperationsDtoMinimumOrder;
+                  as AdminDraftMoney;
           result.minimumOrder.replace(valueDes);
           break;
         case r'coverage':
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(
-                      AdminDraftOperationsDtoCoverage,
-                    ),
+                    specifiedType: const FullType(AdminDraftCoverage),
                   )
-                  as AdminDraftOperationsDtoCoverage;
+                  as AdminDraftCoverage;
           result.coverage.replace(valueDes);
           break;
         default:

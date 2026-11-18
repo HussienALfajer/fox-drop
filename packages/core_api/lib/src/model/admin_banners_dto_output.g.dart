@@ -10,9 +10,11 @@ class _$AdminBannersDtoOutput extends AdminBannersDtoOutput {
   @override
   final BuiltList<AdminBannersDtoOutputBannersInner> banners;
   @override
-  final BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?> restaurants;
+  final BuiltList<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>
+  restaurants;
   @override
-  final BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?> categories;
+  final BuiltList<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>
+  categories;
   @override
   final BuiltList<AdminBannersDtoOutputCodesInner> codes;
   @override
@@ -89,20 +91,24 @@ class AdminBannersDtoOutputBuilder
   set banners(ListBuilder<AdminBannersDtoOutputBannersInner>? banners) =>
       _$this._banners = banners;
 
-  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>? _restaurants;
-  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>
+  ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>?
+  _restaurants;
+  ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>
   get restaurants => _$this._restaurants ??=
-      ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>();
+      ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>();
   set restaurants(
-    ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>? restaurants,
+    ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>?
+    restaurants,
   ) => _$this._restaurants = restaurants;
 
-  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>? _categories;
-  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>
+  ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>?
+  _categories;
+  ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>
   get categories => _$this._categories ??=
-      ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>();
+      ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>();
   set categories(
-    ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>? categories,
+    ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>?
+    categories,
   ) => _$this._categories = categories;
 
   ListBuilder<AdminBannersDtoOutputCodesInner>? _codes;

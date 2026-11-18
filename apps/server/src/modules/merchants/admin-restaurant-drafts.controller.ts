@@ -25,6 +25,7 @@ import { GeoService } from '../geo/index.js';
 import type { AdminSession } from '../identity/index.js';
 import { SettingsService } from '../settings/index.js';
 import {
+  type Coverage,
   type MerchantChange,
   MerchantsRefusedError,
   RESTAURANT_CATEGORIES_MAX,
@@ -42,27 +43,61 @@ const minorUnits = z
   .regex(/^\d{1,15}$/)
   .describe('Integer minor units of the currency, as a string.');
 
-const money = z.object({ amount: minorUnits, currency: z.string().length(3) });
+// The shapes are named in the OpenAPI document (`.meta({ id })`), so the
+// clients' generator never merges them with another route's alike shape.
+const money = z
+  .object({ amount: minorUnits, currency: z.string().length(3) })
+  .meta({ id: 'AdminDraftMoney' });
 
-const period = z.object({
-  weekday: z.int().min(0).max(6).describe('0 is Sunday, 6 Saturday.'),
-  opensAt: z.int().min(0).max(1439).describe("Minutes after midnight on the city's clock."),
-  closesAt: z
-    .int()
-    .min(0)
-    .max(1440)
-    .describe('Not after the opening: the period crosses midnight (00:00 to 00:00 is all day).'),
-});
+const period = z
+  .object({
+    weekday: z.int().min(0).max(6).describe('0 is Sunday, 6 Saturday.'),
+    opensAt: z.int().min(0).max(1439).describe("Minutes after midnight on the city's clock."),
+    closesAt: z
+      .int()
+      .min(0)
+      .max(1440)
+      .describe('Not after the opening: the period crosses midnight (00:00 to 00:00 is all day).'),
+  })
+  .meta({ id: 'AdminDraftPeriod' });
 
-const coverage = z.discriminatedUnion('kind', [
-  z.object({ kind: z.literal('radius'), radiusMetres: z.int().min(1).max(100_000) }),
-  z.object({ kind: z.literal('zones'), zoneIds: z.array(z.uuid()).min(1) }),
-]);
+// Owner decision 2026-11-06: a radius in metres, or one or more zones. One
+// flat object (no oneOf, which the Dart client cannot build).
+const coverage = z
+  .object({
+    kind: z.enum(['radius', 'zones']),
+    radiusMetres: z.int().min(1).max(100_000).nullable().describe('With kind radius only.'),
+    zoneIds: z.array(z.uuid()).describe('With kind zones only, one or more.'),
+  })
+  .refine(
+    (value) =>
+      value.kind === 'radius'
+        ? value.radiusMetres !== null && value.zoneIds.length === 0
+        : value.radiusMetres === null && value.zoneIds.length > 0,
+    { message: 'a radius alone, or zones alone' },
+  )
+  .meta({ id: 'AdminDraftCoverage' });
 
-const point = z.object({
-  latitude: z.number().min(-90).max(90),
-  longitude: z.number().min(-180).max(180),
-});
+type FlatCoverage = z.infer<typeof coverage>;
+
+const coverageOf = (flat: FlatCoverage): Coverage =>
+  flat.kind === 'radius'
+    ? { kind: 'radius', radiusMetres: flat.radiusMetres! }
+    : { kind: 'zones', zoneIds: flat.zoneIds };
+
+const flatOf = (value: Coverage): FlatCoverage =>
+  value.kind === 'radius'
+    ? { kind: 'radius', radiusMetres: value.radiusMetres, zoneIds: [] }
+    : { kind: 'zones', radiusMetres: null, zoneIds: value.zoneIds };
+
+const point = z
+  .object({
+    latitude: z.number().min(-90).max(90),
+    longitude: z.number().min(-180).max(180),
+  })
+  .meta({ id: 'AdminDraftPoint' });
+
+const choice = z.object({ id: z.uuid(), name: z.string() }).meta({ id: 'AdminDraftChoice' });
 
 const steps = z
   .object({
@@ -94,9 +129,9 @@ class AdminRestaurantDraftsDto extends createZodDto(
 
 class AdminRestaurantDraftChoicesDto extends createZodDto(
   z.object({
-    categories: z.array(z.object({ id: z.uuid(), name: z.string() })),
+    categories: z.array(choice),
     categoriesMax: z.int(),
-    zones: z.array(z.object({ id: z.uuid(), name: z.string() })),
+    zones: z.array(choice),
     baseCurrency: z.string().nullable(),
     centre: point
       .nullable()
@@ -281,7 +316,7 @@ async function draftAsJson(draft: RestaurantDraft, files: FilesService) {
               amount: draft.operations.minimumOrder.amount.toString(),
               currency: draft.operations.minimumOrder.currency,
             },
-      coverage: draft.operations.coverage,
+      coverage: draft.operations.coverage && flatOf(draft.operations.coverage),
     },
     commission:
       draft.commission === null
@@ -454,6 +489,7 @@ export class AdminRestaurantDraftsController {
         params.restaurantId,
         {
           ...body,
+          coverage: coverageOf(body.coverage),
           minimumOrder: {
             amount: BigInt(body.minimumOrder.amount),
             currency: body.minimumOrder.currency,

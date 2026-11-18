@@ -8,7 +8,7 @@ part of 'admin_field_visitors_dto_output.dart';
 
 class _$AdminFieldVisitorsDtoOutput extends AdminFieldVisitorsDtoOutput {
   @override
-  final BuiltList<AdminRestaurantDraftChoicesDtoOutputCategoriesInner> visitors;
+  final BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner> visitors;
 
   factory _$AdminFieldVisitorsDtoOutput([
     void Function(AdminFieldVisitorsDtoOutputBuilder)? updates,
@@ -54,12 +54,12 @@ class AdminFieldVisitorsDtoOutputBuilder
         > {
   _$AdminFieldVisitorsDtoOutput? _$v;
 
-  ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>? _visitors;
-  ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>
-  get visitors => _$this._visitors ??=
-      ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>();
+  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>? _visitors;
+  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner> get visitors =>
+      _$this._visitors ??=
+          ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>();
   set visitors(
-    ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>? visitors,
+    ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>? visitors,
   ) => _$this._visitors = visitors;
 
   AdminFieldVisitorsDtoOutputBuilder() {

@@ -3,7 +3,7 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/admin_restaurant_draft_dto_output_location_location.dart';
+import 'package:core_api/src/model/admin_draft_point_output.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -24,7 +24,7 @@ abstract class AdminRestaurantDraftDtoOutputLocation
           AdminRestaurantDraftDtoOutputLocationBuilder
         > {
   @BuiltValueField(wireName: r'location')
-  AdminRestaurantDraftDtoOutputLocationLocation? get location;
+  AdminDraftPointOutput? get location;
 
   @BuiltValueField(wireName: r'address')
   String? get address;
@@ -70,9 +70,7 @@ class _$AdminRestaurantDraftDtoOutputLocationSerializer
         ? null
         : serializers.serialize(
             object.location,
-            specifiedType: const FullType.nullable(
-              AdminRestaurantDraftDtoOutputLocationLocation,
-            ),
+            specifiedType: const FullType.nullable(AdminDraftPointOutput),
           );
     yield r'address';
     yield object.address == null
@@ -127,10 +125,10 @@ class _$AdminRestaurantDraftDtoOutputLocationSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      AdminRestaurantDraftDtoOutputLocationLocation,
+                      AdminDraftPointOutput,
                     ),
                   )
-                  as AdminRestaurantDraftDtoOutputLocationLocation?;
+                  as AdminDraftPointOutput?;
           if (valueDes == null) continue;
           result.location.replace(valueDes);
           break;

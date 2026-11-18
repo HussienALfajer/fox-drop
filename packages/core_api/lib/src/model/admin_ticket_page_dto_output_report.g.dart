@@ -95,7 +95,7 @@ class _$AdminTicketPageDtoOutputReport extends AdminTicketPageDtoOutputReport {
   @override
   final BuiltList<String> photoUrls;
   @override
-  final CaptainPeakBonusDtoOutputWindowsInnerZonesInner? item;
+  final AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner? item;
   @override
   final AdminTicketPageDtoOutputPickupDisputePickupPayment? shopPrice;
   @override
@@ -176,10 +176,11 @@ class AdminTicketPageDtoOutputReportBuilder
   set photoUrls(ListBuilder<String>? photoUrls) =>
       _$this._photoUrls = photoUrls;
 
-  CaptainPeakBonusDtoOutputWindowsInnerZonesInnerBuilder? _item;
-  CaptainPeakBonusDtoOutputWindowsInnerZonesInnerBuilder get item =>
-      _$this._item ??= CaptainPeakBonusDtoOutputWindowsInnerZonesInnerBuilder();
-  set item(CaptainPeakBonusDtoOutputWindowsInnerZonesInnerBuilder? item) =>
+  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder? _item;
+  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder get item =>
+      _$this._item ??=
+          AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder();
+  set item(AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder? item) =>
       _$this._item = item;
 
   AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder? _shopPrice;
