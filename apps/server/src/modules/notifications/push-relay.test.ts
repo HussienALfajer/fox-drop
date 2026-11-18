@@ -193,4 +193,86 @@ describe('the push relay (architecture §8.1)', () => {
     expect(inbox.map((entry) => entry.body)).toEqual(['ثانٍ', 'أول']);
     expect(inbox[0]!.data).toEqual({ target: 'order', orderId: 'order-1' });
   });
+
+  it('sends a mass push with its own title, after every other due push, from its time (AP §9.11.4)', async () => {
+    const campaignId = randomUUID();
+    const now = new Date();
+    const customers = Array.from({ length: 25 }, () => randomUUID());
+    for (const id of customers) devicesOf.set(id, [`phone-${id}`]);
+    const later = new Date(now.getTime() + 60_000);
+    const mass = customers.map((id) =>
+      push(id, { title: 'عرض الشتاء', campaignId, at: later, data: { target: 'home' } }),
+    );
+    await queue.enqueue(db, mass, now);
+    expect(await relay.drain(now)).toBe(0);
+    expect(await queue.inbox(customers[0]!, later)).toEqual([]);
+
+    const orderCustomer = randomUUID();
+    devicesOf.set(orderCustomer, ['order-phone']);
+    const order = push(orderCustomer, { at: later });
+    await queue.enqueue(db, [order], later);
+    expect(await relay.drain(later)).toBe(26);
+    expect(sent[0]!.token).toBe('order-phone');
+    expect(sent[0]!.title).toBe('FOX DROP');
+    expect(sent[1]!.title).toBe('عرض الشتاء');
+    expect((await queue.inbox(customers[0]!, later)).map((entry) => entry.body)).toEqual([
+      mass[0]!.body,
+    ]);
+
+    // The first receipt counts; another id or a repeat changes nothing.
+    const { id } = await row(mass[0]!.source);
+    await queue.acknowledge(id, later);
+    await queue.acknowledge(id, new Date(later.getTime() + 1000));
+    await queue.acknowledge(randomUUID(), later);
+    devicesOf.delete(customers[1]!);
+    expect(await queue.campaignCounts([campaignId, randomUUID()])).toEqual(
+      new Map([[campaignId, { recipients: 25, sent: 25, delivered: 1 }]]),
+    );
+  });
+
+  it('never sends or shows a cancelled mass push (AP §9.11.4)', async () => {
+    const campaignId = randomUUID();
+    const accountId = randomUUID();
+    devicesOf.set(accountId, ['phone']);
+    const now = new Date();
+    const at = new Date(now.getTime() + 3_600_000);
+    const mass = push(accountId, { campaignId, at });
+    await queue.enqueue(db, [mass], now);
+    await queue.cancelCampaign(db, campaignId, now);
+
+    expect(await relay.drain(at)).toBe(0);
+    expect(sent).toEqual([]);
+    expect(await queue.inbox(accountId, at)).toEqual([]);
+    await queue.acknowledge((await row(mass.source)).id, at);
+    expect(await queue.campaignCounts([campaignId])).toEqual(
+      new Map([[campaignId, { recipients: 1, sent: 0, delivered: 0 }]]),
+    );
+  });
+
+  it('takes a push queued during a campaign at the next batch, not after the campaign', async () => {
+    const campaignId = randomUUID();
+    const now = new Date();
+    const customers = Array.from({ length: 45 }, () => randomUUID());
+    for (const id of customers) devicesOf.set(id, [`phone-${id}`]);
+    await queue.enqueue(
+      db,
+      customers.map((id) => push(id, { campaignId, data: { target: 'home' } })),
+      now,
+    );
+    const orderCustomer = randomUUID();
+    devicesOf.set(orderCustomer, ['order-phone']);
+    let queued = false;
+    answer = () => {
+      // While the first batch is sent, an order's push is queued.
+      if (!queued) {
+        queued = true;
+        void queue.enqueue(db, [push(orderCustomer)], new Date());
+      }
+      return 'sent';
+    };
+    await relay.drain(now);
+    const at = sent.findIndex((one) => one.token === 'order-phone');
+    expect(at).toBeGreaterThanOrEqual(20);
+    expect(at).toBeLessThanOrEqual(21);
+  });
 });

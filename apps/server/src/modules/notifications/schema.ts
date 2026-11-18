@@ -184,6 +184,9 @@ export const pushMessages = notifications.table(
     ownersOnly: boolean('owners_only').notNull().default(false),
     captainId: uuid('captain_id'),
     templateKey: text('template_key').notNull(),
+    // The phone's title: the brand (PUSH_TITLE) when null; a mass push's own
+    // (AP §9.11.4, slice 2.27d).
+    title: text('title'),
     body: text('body').notNull(),
     level: text('level').notNull(),
     priority: text('priority', { enum: ['high', 'normal'] }).notNull(),
@@ -197,8 +200,28 @@ export const pushMessages = notifications.table(
     // How many devices it reached.
     devices: integer('devices'),
     gaveUpAt: timestamp('gave_up_at', { withTimezone: true }),
+    // AP §9.11.4 (slice 2.27d): the mass push it belongs to (marketing's id,
+    // a plain value), sent after every other due push, and when the app
+    // acknowledged it arrived («وصل»).
+    campaignId: uuid('campaign_id'),
+    deliveredAt: timestamp('delivered_at', { withTimezone: true }),
   },
   (table) => [
+    index('push_messages_campaign')
+      .on(table.campaignId)
+      .where(sql`${table.campaignId} IS NOT NULL`),
+    // The relay's two claims (slice 2.27d): the due pushes of no campaign,
+    // then a campaign's, each in its own index so neither scans the other.
+    index('push_messages_pending_plain')
+      .on(table.nextAttemptAt)
+      .where(
+        sql`${table.sentAt} IS NULL AND ${table.gaveUpAt} IS NULL AND ${table.campaignId} IS NULL`,
+      ),
+    index('push_messages_pending_campaign')
+      .on(table.nextAttemptAt)
+      .where(
+        sql`${table.sentAt} IS NULL AND ${table.gaveUpAt} IS NULL AND ${table.campaignId} IS NOT NULL`,
+      ),
     index('push_messages_pending')
       .on(table.nextAttemptAt)
       .where(sql`${table.sentAt} IS NULL AND ${table.gaveUpAt} IS NULL`),

@@ -264,13 +264,28 @@ export class OutboxRelay {
     if (failure) throw failure;
     return published;
   }
+
+  // Whether a committed row is still unpublished, locked or not: another
+  // worker (the pushes', outbox-pushes.ts) takes the same rows FOR UPDATE
+  // SKIP LOCKED, so a run can skip a row it held and end without it.
+  async unpublishedLeft(): Promise<boolean> {
+    const [row] = await this.database.db
+      .select({ id: outbox.id })
+      .from(outbox)
+      .where(isNull(outbox.publishedAt))
+      .limit(1);
+    return row !== undefined;
+  }
 }
 
 // The worker's relay: every transition sends a job in its transaction
 // (recordTransition), so a run starts as soon as the row commits; a failed
 // run is tried again with the queue's backoff, and any later run takes the
 // rows it left. One run at start takes the rows written while no worker ran,
-// and one a minute those left by runs that gave up.
+// and one a minute those left by runs that gave up. A run that leaves a row
+// another worker held is followed by another FOLLOW_UP_SECONDS later.
+export const FOLLOW_UP_SECONDS = 1;
+
 @Injectable()
 export class OutboxRelayWorker implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger('OutboxRelay');
@@ -294,6 +309,11 @@ export class OutboxRelayWorker implements OnModuleInit, OnModuleDestroy {
       async () => {
         try {
           await this.relay.drain(new Date());
+          // A row another worker held during the run would otherwise wait
+          // for the backstop, a minute: another run follows a second later.
+          if (await this.relay.unpublishedLeft()) {
+            await this.jobs.send(QUEUES.outboxRelay, {}, { startAfter: FOLLOW_UP_SECONDS });
+          }
         } catch (error) {
           this.logger.error({ err: error }, 'outbox relay failed');
           reportError(error);

@@ -16,7 +16,7 @@ Future<void> main() async {
   // Firebase App Check for the code requests (packages/core_auth/CLAUDE.md).
   final appCheck = await startAppCheck();
   // Push on the Firebase app App Check started (packages/core_push/CLAUDE.md).
-  final push = startPush();
+  final push = startPush(background: acknowledgeInBackground);
   runApp(
     ProviderScope(
       overrides: [
@@ -28,3 +28,10 @@ Future<void> main() async {
     ),
   );
 }
+
+/// AP §9.11.4 «وصل»: a mass push that arrives while the app is in the
+/// background or closed is acknowledged from FCM's isolate, which has no
+/// providers: the public receipt route on a client of its own.
+@pragma('vm:entry-point')
+Future<void> acknowledgeInBackground(RemoteMessage message) =>
+    acknowledgePush(apiClient(apiBaseUrl()), pushDataOf(message));

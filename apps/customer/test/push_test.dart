@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'support.dart';
 
 const _orderId = '00000000-0000-4000-8000-0000000000e1';
+const _messageId = '00000000-0000-4000-8000-0000000000f1';
 
 TestApp _app(FakePush push, {bool signedIn = true}) {
   final app = TestApp(
@@ -143,7 +144,29 @@ void main() {
     await app.done(tester);
   });
 
-  test('only an order target has a route yet', () {
+  testWidgets('a mass push arriving while the app is open is acknowledged '
+      '(AP §9.11.4)', (tester) async {
+    final push = FakePush();
+    final app = _app(push);
+    app.server.on('/v1/customer/push-receipts', [
+      const FakeAnswer(200, {'status': 'received'}),
+    ]);
+    await app.pump(tester);
+    // Another push is not.
+    push.receive({'target': 'order', 'orderId': _orderId, 'messageId': 'm-0'});
+    await tester.pumpAndSettle();
+    expect(app.server.to('/v1/customer/push-receipts'), isEmpty);
+    push.receive({
+      'kind': 'mass_push',
+      'target': 'home',
+      'messageId': _messageId,
+    });
+    await tester.pumpAndSettle();
+    expect(app.bodyOf('/v1/customer/push-receipts'), {'messageId': _messageId});
+    await app.done(tester);
+  });
+
+  test('each target has its route', () {
     expect(
       pushTargetPath({'target': 'order', 'orderId': 'a b'}),
       '/orders/a%20b',
@@ -153,6 +176,15 @@ void main() {
     expect(pushTargetPath({'target': 'codes'}), '/codes');
     // CU §14 #19: «الخدمة عادت» opens home.
     expect(pushTargetPath({'target': 'home'}), '/');
+    // CU §14 #22: a mass push opens its restaurant, or «أكوادي» on its code.
+    expect(
+      pushTargetPath({'target': 'restaurant', 'restaurantId': 'r1'}),
+      '/restaurants/r1',
+    );
+    expect(
+      pushTargetPath({'target': 'codes', 'code': 'WINTER'}),
+      '/codes?code=WINTER',
+    );
     expect(pushTargetPath({}), isNull);
   });
 }

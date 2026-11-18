@@ -211,11 +211,16 @@ import 'package:core_api/src/model/admin_manual_parties_dto_output.dart';
 import 'package:core_api/src/model/admin_manual_party_search_dto.dart';
 import 'package:core_api/src/model/admin_manual_reversal_dto.dart';
 import 'package:core_api/src/model/admin_mark_customer_trust_dto.dart';
+import 'package:core_api/src/model/admin_mass_push_audience_dto_output.dart';
+import 'package:core_api/src/model/admin_mass_push_city_dto.dart';
+import 'package:core_api/src/model/admin_mass_pushes_dto_output.dart';
+import 'package:core_api/src/model/admin_mass_pushes_dto_output_pushes_inner.dart';
 import 'package:core_api/src/model/admin_merchant_statement_dto_output.dart';
 import 'package:core_api/src/model/admin_merchant_statement_dto_output_lines_inner.dart';
 import 'package:core_api/src/model/admin_new_banner_dto.dart';
 import 'package:core_api/src/model/admin_new_category_dto.dart';
 import 'package:core_api/src/model/admin_new_home_section_dto.dart';
+import 'package:core_api/src/model/admin_new_mass_push_dto.dart';
 import 'package:core_api/src/model/admin_new_upload_dto.dart';
 import 'package:core_api/src/model/admin_no_answer_wait_dto.dart';
 import 'package:core_api/src/model/admin_notification_resent_dto_output.dart';
@@ -669,6 +674,8 @@ import 'package:core_api/src/model/customer_price_report_body_dto.dart';
 import 'package:core_api/src/model/customer_price_report_dto_output.dart';
 import 'package:core_api/src/model/customer_profile_dto_output.dart';
 import 'package:core_api/src/model/customer_profile_dto_output_profile.dart';
+import 'package:core_api/src/model/customer_push_receipt_dto.dart';
+import 'package:core_api/src/model/customer_push_received_dto_output.dart';
 import 'package:core_api/src/model/customer_quote_dto_output.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_available_codes_inner.dart';
 import 'package:core_api/src/model/customer_quote_dto_output_available_codes_inner_hours.dart';
@@ -1047,11 +1054,16 @@ part 'serializers.g.dart';
   AdminManualPartySearchDto,
   AdminManualReversalDto,
   AdminMarkCustomerTrustDto,
+  AdminMassPushAudienceDtoOutput,
+  AdminMassPushCityDto,
+  AdminMassPushesDtoOutput,
+  AdminMassPushesDtoOutputPushesInner,
   AdminMerchantStatementDtoOutput,
   AdminMerchantStatementDtoOutputLinesInner,
   AdminNewBannerDto,
   AdminNewCategoryDto,
   AdminNewHomeSectionDto,
+  AdminNewMassPushDto,
   AdminNewUploadDto,
   AdminNoAnswerWaitDto,
   AdminNotificationResentDtoOutput,
@@ -1505,6 +1517,8 @@ part 'serializers.g.dart';
   CustomerPriceReportDtoOutput,
   CustomerProfileDtoOutput,
   CustomerProfileDtoOutputProfile,
+  CustomerPushReceiptDto,
+  CustomerPushReceivedDtoOutput,
   CustomerQuoteDtoOutput,
   CustomerQuoteDtoOutputAvailableCodesInner,
   CustomerQuoteDtoOutputAvailableCodesInnerHours,
@@ -2529,6 +2543,12 @@ Serializers serializers =
               FullType(AdminExchangeRatesDtoOutputCurrenciesInner),
             ]),
             () => ListBuilder<AdminExchangeRatesDtoOutputCurrenciesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminMassPushesDtoOutputPushesInner),
+            ]),
+            () => ListBuilder<AdminMassPushesDtoOutputPushesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

@@ -8,8 +8,14 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { startTestCentrifugo, type TestCentrifugo } from '../../centrifugo/test-centrifugo.js';
 import { DatabaseModule } from '../../database/database.module.js';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
-import { NotificationsWorkerModule, PublishFailedError } from '../notifications/index.js';
-import { OutboxRelay } from './outbox-relay.js';
+import { QUEUES } from '../../jobs/job-queue.js';
+import type { Jobs } from '../../jobs/jobs.module.js';
+import {
+  NotificationsWorkerModule,
+  PublishFailedError,
+  RealtimePublisher,
+} from '../notifications/index.js';
+import { FOLLOW_UP_SECONDS, OutboxRelay, OutboxRelayWorker } from './outbox-relay.js';
 
 // Architecture §5.5, E4: the relay publishes every committed outbox row to
 // Centrifugo at least once, to the restaurant's and the order's channels
@@ -276,5 +282,47 @@ describe('the outbox relay (architecture §5.5, E4)', () => {
     const kept = await versionsOn(`merchant:${order.restaurantId}`);
     expect(kept).toHaveLength(100);
     expect(new Set(kept).size).toBe(100);
+  });
+
+  it('follows a run that skipped a row another worker held, a second later', async () => {
+    const order = { orderId: randomUUID(), restaurantId: randomUUID() };
+    const row = await insert({ ...order, type: 'order.placed', version: 1 });
+    // The pushes' worker (outbox-pushes.ts) takes the same rows FOR UPDATE.
+    const pushes = await sql.connect();
+    const sent: { name: string; options: object }[] = [];
+    let handler: (() => Promise<void>) | undefined;
+    const jobs = {
+      work: async (_name: string, run: () => Promise<void>) => {
+        handler = run;
+      },
+      send: async (name: string, _data: object, options: object) => {
+        sent.push({ name, options });
+        return null;
+      },
+    } as unknown as Jobs;
+    const worker = new OutboxRelayWorker(jobs, relay, context.get(RealtimePublisher));
+    try {
+      await pushes.query('BEGIN');
+      await pushes.query('SELECT id FROM ordering.outbox WHERE id = $1 FOR UPDATE', [row]);
+      await worker.onModuleInit();
+      sent.length = 0;
+
+      await handler!();
+      expect(await unpublished([row])).toBe(1);
+      expect(sent).toEqual([
+        { name: QUEUES.outboxRelay, options: { startAfter: FOLLOW_UP_SECONDS } },
+      ]);
+
+      await pushes.query('COMMIT');
+      sent.length = 0;
+      await handler!();
+      expect(await unpublished([row])).toBe(0);
+      expect(await relay.unpublishedLeft()).toBe(false);
+      // Nothing left: no follow-up.
+      expect(sent).toEqual([]);
+    } finally {
+      worker.onModuleDestroy();
+      pushes.release();
+    }
   });
 });

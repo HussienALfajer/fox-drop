@@ -17,6 +17,7 @@ import { CustomerAdminService } from './customer-admin.service.js';
 import { CustomerBrowsingController } from './customer-browsing.controller.js';
 import { CustomerProfileController } from './customer-profile.controller.js';
 import { CustomersService } from './customers.service.js';
+import { MassPushAudienceSource } from './mass-push-audience.js';
 
 // The customers module (architecture §4.2): the customers' profiles and
 // saved addresses, and their browsing of the restaurants that deliver to
@@ -41,7 +42,7 @@ import { CustomersService } from './customers.service.js';
     CustomerClosureController,
     AdminCustomersController,
   ],
-  providers: [CustomersService, BrowsingService, CustomerAdminService],
+  providers: [CustomersService, BrowsingService, CustomerAdminService, MassPushAudienceSource],
   exports: [CustomersService],
 })
 export class CustomersModule {}

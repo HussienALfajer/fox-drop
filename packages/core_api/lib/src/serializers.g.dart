@@ -302,6 +302,13 @@ Serializers _$serializers =
           ..add(AdminManualPartySearchDtoPartyEnum.serializer)
           ..add(AdminManualReversalDto.serializer)
           ..add(AdminMarkCustomerTrustDto.serializer)
+          ..add(AdminMassPushAudienceDtoOutput.serializer)
+          ..add(AdminMassPushCityDto.serializer)
+          ..add(AdminMassPushesDtoOutput.serializer)
+          ..add(AdminMassPushesDtoOutputPushesInner.serializer)
+          ..add(AdminMassPushesDtoOutputPushesInnerAudienceEnum.serializer)
+          ..add(AdminMassPushesDtoOutputPushesInnerStatusEnum.serializer)
+          ..add(AdminMassPushesDtoOutputPushesInnerTargetEnum.serializer)
           ..add(AdminMerchantStatementDtoOutput.serializer)
           ..add(AdminMerchantStatementDtoOutputLinesInner.serializer)
           ..add(AdminMerchantStatementDtoOutputLinesInnerCauseEnum.serializer)
@@ -311,6 +318,9 @@ Serializers _$serializers =
           ..add(AdminNewBannerDtoTargetEnum.serializer)
           ..add(AdminNewCategoryDto.serializer)
           ..add(AdminNewHomeSectionDto.serializer)
+          ..add(AdminNewMassPushDto.serializer)
+          ..add(AdminNewMassPushDtoAudienceEnum.serializer)
+          ..add(AdminNewMassPushDtoTargetEnum.serializer)
           ..add(AdminNewUploadDto.serializer)
           ..add(AdminNewUploadDtoContentTypeEnum.serializer)
           ..add(AdminNewUploadDtoPurposeEnum.serializer)
@@ -1088,6 +1098,9 @@ Serializers _$serializers =
           ..add(CustomerProfileDtoOutput.serializer)
           ..add(CustomerProfileDtoOutputProfile.serializer)
           ..add(CustomerProfileDtoOutputProfileGenderEnum.serializer)
+          ..add(CustomerPushReceiptDto.serializer)
+          ..add(CustomerPushReceivedDtoOutput.serializer)
+          ..add(CustomerPushReceivedDtoOutputStatusEnum.serializer)
           ..add(CustomerQuoteDtoOutput.serializer)
           ..add(CustomerQuoteDtoOutputAvailableCodesInner.serializer)
           ..add(CustomerQuoteDtoOutputAvailableCodesInnerHours.serializer)
@@ -1914,6 +1927,36 @@ Serializers _$serializers =
             () =>
                 ListBuilder<
                   AdminManualEntriesDtoOutputEntriesInnerJournalLinesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminMassPushesDtoOutputPushesInner),
+            ]),
+            () => ListBuilder<AdminMassPushesDtoOutputPushesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+            ]),
+            () =>
+                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminBannersDtoOutputCodesInner),
+            ]),
+            () => ListBuilder<AdminBannersDtoOutputCodesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType.nullable(
+                AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
                 >(),
           )
           ..addBuilderFactory(

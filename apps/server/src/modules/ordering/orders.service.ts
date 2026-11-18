@@ -162,6 +162,8 @@ export class OrdersService implements OnModuleInit {
     this.customers.useDeliveredCounts((restaurantIds, since) =>
       this.deliveredCounts(restaurantIds, since),
     );
+    // AP §9.11.4 (slice 2.27d): the mass push's audiences.
+    this.customers.useLastDeliveries((cityId) => this.lastDeliveries(cityId));
     // AP §9.8 (slice 2.25a): the panel's customer profile.
     this.customers.useOrderFacts(async (accountId, cityId) => {
       const rules = await this.activeOrders.rules(cityId);
@@ -204,6 +206,29 @@ export class OrdersService implements OnModuleInit {
       )
       .groupBy(orders.restaurantId);
     return new Map(rows.map((row) => [row.restaurantId, Number(row.n)]));
+  }
+
+  // AP §9.11.4 (slice 2.27d, owner decision 2026-11-18): each customer's
+  // latest delivered order in the city (any outcome that ends delivered),
+  // test orders and free re-deliveries left out. Reads every month's
+  // partition.
+  private async lastDeliveries(cityId: string): Promise<Map<string, Date>> {
+    const rows = await this.database.db
+      .select({
+        accountId: orders.customerAccountId,
+        at: sql<Date>`max(${orders.deliveredAt})`.mapWith((value) => new Date(value)),
+      })
+      .from(orders)
+      .where(
+        and(
+          eq(orders.cityId, cityId),
+          eq(orders.status, 'delivered'),
+          eq(orders.testOrder, false),
+          isNull(orders.redeliveryOfId),
+        ),
+      )
+      .groupBy(orders.customerAccountId);
+    return new Map(rows.map((row) => [row.accountId, row.at]));
   }
 
   // AP §9.8 «الطلبات» (slice 2.25b): the customer's orders in the city

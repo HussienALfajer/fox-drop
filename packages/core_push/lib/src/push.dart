@@ -7,6 +7,16 @@ import 'package:flutter/foundation.dart';
 /// and its ids, such as `{target: order, orderId: …}`), as strings.
 typedef PushData = Map<String, String>;
 
+/// What a push carries for the app's background handler, which runs in an
+/// isolate of its own while the app is in the background or closed.
+typedef BackgroundPush = Future<void> Function(RemoteMessage message);
+
+/// A push's data, as [Push] gives it.
+PushData pushDataOf(RemoteMessage message) => {
+  for (final entry in message.data.entries)
+    if (entry.value != null) entry.key: '${entry.value}',
+};
+
 /// The app installation's push messaging (architecture §8.1): its token, the
 /// Firebase Installation ID (FID) FCM sends to, and the pushes the person
 /// taps. The system shows the notification itself
@@ -54,13 +64,18 @@ class NoPush implements Push {
 
 /// Push through FCM on the Firebase app `startAppCheck` started from the
 /// build's values (`packages/core_auth/CLAUDE.md`); Android only for now
-/// (owner decision 2026-11-07). Call after `startAppCheck`.
-Push startPush() {
+/// (owner decision 2026-11-07). Call after `startAppCheck`. [background]
+/// hears each push that arrives while the app is in the background or
+/// closed (the customer's receipt of a mass push, AP §9.11.4): a top-level
+/// function marked `@pragma('vm:entry-point')`, since it runs in an isolate
+/// of its own, with no session.
+Push startPush({BackgroundPush? background}) {
   if (kIsWeb ||
       defaultTargetPlatform != TargetPlatform.android ||
       Firebase.apps.isEmpty) {
     return const NoPush();
   }
+  if (background != null) FirebaseMessaging.onBackgroundMessage(background);
   return FirebasePush();
 }
 
@@ -91,8 +106,5 @@ class FirebasePush implements Push {
   @override
   Stream<PushData> get received => FirebaseMessaging.onMessage.map(_data);
 
-  static PushData _data(RemoteMessage message) => {
-    for (final entry in message.data.entries)
-      if (entry.value != null) entry.key: '${entry.value}',
-  };
+  static PushData _data(RemoteMessage message) => pushDataOf(message);
 }

@@ -2662,5 +2662,78 @@
       "unknown": "هذا البانر لم يعد موجوداً. أعد تحميل الصفحة.",
       "wrongSize": "الصورة المرفوعة ليست {{width}}×{{height}}."
     }
+  },
+  "massPushes": {
+    "title": "الإشعارات الجماعية",
+    "new": "إشعار جديد",
+    "history": "السجل",
+    "none": "لا توجد إشعارات جماعية بعد.",
+    "titleField": "العنوان (حتى {{max}} حرفاً)",
+    "bodyField": "النص (حتى {{max}} حرف)",
+    "audienceField": "الجمهور",
+    "audience": {
+      "all": "كل الزبائن",
+      "zone": "منطقة",
+      "inactive": "لم يطلب منذ عدد من الأيام",
+      "neverOrdered": "سجّل ولم يطلب"
+    },
+    "audienceIs": {
+      "zone": "الزبائن الذين لديهم عنوان في {{name}}",
+      "inactive": "الزبائن الذين لم يطلبوا منذ {{days}} يوماً"
+    },
+    "zone": "المنطقة",
+    "days": "عدد الأيام (1 إلى {{max}})",
+    "targetField": "يفتح",
+    "target": {
+      "home": "الرئيسية",
+      "restaurant": "مطعم",
+      "code": "كود"
+    },
+    "opens": {
+      "home": "يفتح الرئيسية",
+      "restaurant": "يفتح صفحة {{name}}",
+      "code": "يفتح «أكوادي» على الكود {{code}}"
+    },
+    "restaurant": "المطعم",
+    "code": "الكود",
+    "choose": "اختر",
+    "timing": "وقت الإرسال",
+    "now": "الآن",
+    "later": "في وقت محدد",
+    "sendAt": "الوقت (خلال {{days}} يوماً)",
+    "countAudience": "عدد المستلمين",
+    "confirmation": "تأكيد الإرسال",
+    "audienceSize": "سيصل الإشعار إلى {{size}} زبون",
+    "sendsNow": "يُرسل الآن",
+    "confirmSend": "تأكيد الإرسال إلى {{size}} زبون",
+    "confirmSchedule": "تأكيد الجدولة إلى {{size}} زبون",
+    "saved": "تم الحفظ",
+    "status": {
+      "scheduled": "مجدول",
+      "sent": "أُرسل",
+      "cancelled": "أُلغي"
+    },
+    "scheduledFor": "مجدول في {{at}}",
+    "sentAt": "أُرسل في {{at}}",
+    "sender": "المرسل: {{name}}",
+    "counts": "المستلمون {{recipients}} · أُرسل {{sent}} · وصل {{delivered}}",
+    "cancelledBy": "ألغاه {{name}} في {{at}}",
+    "cancel": "إلغاء الإرسال",
+    "confirmCancel": "تأكيد إلغاء الإرسال",
+    "problem": {
+      "title": "اكتب عنواناً حتى {{title}} حرفاً",
+      "body": "اكتب نصاً حتى {{body}} حرف",
+      "zone": "اختر المنطقة",
+      "days": "اكتب عدد أيام من 1 إلى {{days}}",
+      "target": "اختر ما يفتحه الإشعار",
+      "time": "اختر وقتاً قادماً خلال {{schedule}} يوماً"
+    },
+    "refused": {
+      "invalid": "لم يُقبل الإشعار: راجع الحقول",
+      "audienceChanged": "تغيّر عدد المستلمين. احسبه من جديد ثم أكّد",
+      "audienceEmpty": "لا يوجد زبائن في هذا الجمهور",
+      "notCancellable": "لا يمكن إلغاء هذا الإشعار: حان وقته أو أُلغي",
+      "unknown": "الإشعار غير موجود"
+    }
   }
 }
