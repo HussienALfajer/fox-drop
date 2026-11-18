@@ -426,8 +426,8 @@ export class CaptainsService implements OnModuleInit {
   // Architecture §6.2, CU §11.3: ordering publishes the captain's live
   // position to the order's channel after the pickup. Told after the point is
   // written (or when Valkey failed, since the point is the newest of its
-  // batch), never for a point older than the live one; a listener that fails
-  // is logged and never fails the request.
+  // batch), never for a point older than the live one; the request does not
+  // wait for them, and a listener that fails is logged.
   onLivePosition(listener: (captainId: string, position: LivePosition) => Promise<void>): void {
     this.positionListeners.push(listener);
   }
@@ -2020,13 +2020,13 @@ export class CaptainsService implements OnModuleInit {
         point.recordedAt > latest.recordedAt ? point : latest,
       );
       const written = await this.positions.set(row.cityId, captainId, open.id, newest);
+      // Nothing waits for the listeners: a slow publication never slows the
+      // captain's request.
       if (written !== false) {
         for (const listener of this.positionListeners) {
-          try {
-            await listener(captainId, newest);
-          } catch (error) {
+          listener(captainId, newest).catch((error: unknown) => {
             this.logger.warn({ err: error }, 'a live position listener failed');
-          }
+          });
         }
       }
     }

@@ -31,12 +31,6 @@ Map<String, Object?> routeJson(
 };
 
 void main() {
-  test('etaMinutes rounds up to whole minutes, at least one', () {
-    expect(etaMinutes(250), 5);
-    expect(etaMinutes(240), 4);
-    expect(etaMinutes(0), 1);
-  });
-
   test('legView marks the destination and the captain at the latest fix', () {
     const destination = GeoPoint(36.586, 37.044);
     const line = [GeoPoint(36.59, 37.05), destination];
@@ -50,7 +44,7 @@ void main() {
         recordedAt: DateTime.utc(2026, 11, 7, 12),
         simulated: false,
       ),
-      route: const LegRoute(seconds: 60, line: line),
+      route: LegRoute(arriveAt: DateTime.utc(2026, 11, 7, 12, 5), line: line),
     );
     expect(view.markers, const [
       MapMarker(MapMarkerKind.restaurant, destination),
@@ -85,7 +79,7 @@ void main() {
     await app.pump(tester);
     await app.live(tester);
     expect(find.byKey(const Key('route-map')), findsOneWidget);
-    expect(find.text('الوصول خلال 5 د تقريباً'), findsOneWidget);
+    expect(find.text('الوصول حوالي 3:04 م'), findsOneWidget);
     expect(app.mapViews.last.markers.first.kind, MapMarkerKind.restaurant);
     expect(app.mapViews.last.line, hasLength(2));
     expect(find.text('ابدأ الملاحة'), findsOneWidget);
@@ -113,16 +107,15 @@ void main() {
     app.transport.event('order.picked_up', 9);
     await app.settle(tester);
     expect(find.text('الخطوة 3 من 4: إلى الزبون'), findsOneWidget);
-    expect(find.text('الوصول خلال 10 د تقريباً'), findsOneWidget);
+    expect(find.text('الوصول حوالي 3:10 م'), findsOneWidget);
     expect(app.mapViews.last.markers.first.kind, MapMarkerKind.destination);
     expect(app.mapViews.last.line, isNull);
     expect(app.server.to(path), hasLength(2));
     await app.done(tester);
   });
 
-  testWidgets('a failed read leaves the map without a line or an ETA', (
-    tester,
-  ) async {
+  testWidgets('a failed read leaves the map without a line or a time, and '
+      'reads again 30 seconds later', (tester) async {
     final app = TestApp();
     app.work(
       availability: [availabilityJson(state: 'busy')],
@@ -134,8 +127,16 @@ void main() {
     await app.pump(tester);
     await app.live(tester);
     expect(find.byKey(const Key('route-map')), findsOneWidget);
-    expect(find.textContaining('الوصول خلال'), findsNothing);
+    expect(find.textContaining('الوصول حوالي'), findsNothing);
     expect(app.mapViews.last.line, isNull);
+
+    app.server.on('/v1/captain/orders/$orderId/route', [
+      FakeAnswer(200, routeJson('to_restaurant', restaurant)),
+    ]);
+    await tester.pump(legRetry);
+    await app.settle(tester);
+    expect(app.server.to('/v1/captain/orders/$orderId/route'), hasLength(2));
+    expect(app.mapViews.last.line, hasLength(2));
     await app.done(tester);
   });
 }

@@ -11,7 +11,9 @@ import {
   centre,
   home,
   onlineCaptain,
+  orderAtDoor,
   pickedUpOrder,
+  sql,
 } from './delivery.fixture.js';
 
 // CA §4.6, §9.2, §9.5, CU §11.3, architecture §6.2, §7.1: the leg's route
@@ -50,6 +52,20 @@ describe('GET /v1/captain/orders/{orderId}/route (CA §4.6, §9.2, §9.5)', () =
       error: 'unknown_order',
     });
     expect((await captainRoute(randomUUID(), other.headers)).statusCode).toBe(404);
+  });
+});
+
+describe('once the order ended', () => {
+  it('answers 409 order_state_changed on both routes', async () => {
+    const door = await orderAtDoor();
+    expect((await door.deliver()).statusCode).toBe(200);
+    for (const answer of [
+      await captainRoute(door.order.id, door.captain.headers),
+      await customerRoute(door.order.id, door.order.customer),
+    ]) {
+      expect(answer.statusCode).toBe(409);
+      expect(answer.json()).toMatchObject({ error: 'order_state_changed' });
+    }
   });
 });
 
@@ -99,16 +115,18 @@ describe("the captain's live position on order:{id} (architecture §6.2, CU §11
         point(at),
         new Date(at.getTime() + 1),
       );
-      expect(broadcast).toHaveBeenCalledWith(
-        [`order:${picked.order.id}`],
-        {
-          type: 'captain.position',
-          schema: 1,
-          orderId: picked.order.id,
-          ...atCustomer,
-          recordedAt: at.toISOString(),
-        },
-        `captain-position:${picked.order.id}:${at.getTime()}`,
+      await vi.waitFor(() =>
+        expect(broadcast).toHaveBeenCalledWith(
+          [`order:${picked.order.id}`],
+          {
+            type: 'captain.position',
+            schema: 1,
+            orderId: picked.order.id,
+            ...atCustomer,
+            recordedAt: at.toISOString(),
+          },
+          `captain-position:${picked.order.id}:${at.getTime()}`,
+        ),
       );
 
       // A late point older than the live one is not published.
@@ -118,6 +136,7 @@ describe("the captain's live position on order:{id} (architecture §6.2, CU §11
         point(new Date(at.getTime() - 500)),
         new Date(at.getTime() + 2),
       );
+      await new Promise((resolve) => setTimeout(resolve, 200));
       expect(broadcast).not.toHaveBeenCalled();
 
       // A failed publication never fails the point.
@@ -130,6 +149,48 @@ describe("the captain's live position on order:{id} (architecture §6.2, CU §11
           new Date(later.getTime() + 1),
         ),
       ).resolves.toEqual({ accepted: 1 });
+    } finally {
+      enabled.mockRestore();
+      broadcast.mockRestore();
+    }
+  });
+
+  it('never publishes a point of the way to the restaurant, sent after the pickup', async () => {
+    const publisher = app.get(RealtimePublisher);
+    const enabled = vi.spyOn(publisher, 'enabled', 'get').mockReturnValue(true);
+    const broadcast = vi.spyOn(publisher, 'broadcast').mockResolvedValue();
+    try {
+      const captains = app.get(CaptainsService);
+      const picked = await pickedUpOrder();
+      const [{ arrived_at_merchant_at: arrivedAt }] = (
+        await sql.query('SELECT arrived_at_merchant_at FROM ordering.orders WHERE id = $1', [
+          picked.order.id,
+        ])
+      ).rows;
+      // A point newer than the live one but recorded before the arrival at
+      // the restaurant (the arrival moved a minute past it).
+      const before = new Date(Date.now() + 30_000);
+      await sql.query('UPDATE ordering.orders SET arrived_at_merchant_at = $2 WHERE id = $1', [
+        picked.order.id,
+        new Date(before.getTime() + 60_000),
+      ]);
+      broadcast.mockClear();
+      await captains.recordLocations(
+        picked.captain.captainId,
+        [{ ...atCustomer, accuracyMetres: 8, recordedAt: before, simulated: false }],
+        new Date(before.getTime() + 1),
+      );
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      expect(broadcast).not.toHaveBeenCalled();
+      // Nor does the customer's read show it.
+      expect((await customerRoute(picked.order.id, picked.order.customer)).json()).toMatchObject({
+        captain: null,
+        route: null,
+      });
+      await sql.query('UPDATE ordering.orders SET arrived_at_merchant_at = $2 WHERE id = $1', [
+        picked.order.id,
+        arrivedAt,
+      ]);
     } finally {
       enabled.mockRestore();
       broadcast.mockRestore();

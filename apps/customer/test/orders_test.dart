@@ -735,7 +735,11 @@ void main() {
       expect(app.server.to('/v1/customer/orders/$_orderId'), hasLength(reads));
       expect(app.server.to(route), hasLength(1));
 
-      // A reconnect without recovery reads the route again.
+      // The first subscription reads nothing more; a later reconnect
+      // without recovery reads the route again.
+      app.transport.send(channel, const RealtimeUp(recovered: false));
+      await tester.pumpAndSettle();
+      expect(app.server.to(route), hasLength(1));
       app.server.on(route, [FakeAnswer(200, routeJson(line: false))]);
       app.transport.send(channel, const RealtimeUp(recovered: false));
       await tester.pumpAndSettle();
@@ -746,6 +750,36 @@ void main() {
         app.mapViews.last.markers.last,
         const MapMarker(MapMarkerKind.captain, GeoPoint(36.588, 37.046)),
       );
+
+      // A handover reads the new captain's way.
+      app.server.on(route, [FakeAnswer(200, routeJson())]);
+      app.transport.send(
+        channel,
+        const RealtimePublication({
+          'type': 'order.handed_over',
+          'orderId': _orderId,
+          'version': 7,
+        }),
+      );
+      await tester.pumpAndSettle();
+      expect(app.server.to(route), hasLength(3));
+      expect(app.mapViews.last.line, const [start, pin]);
+      await app.done(tester);
+    });
+
+    testWidgets('a failed read shows no map, and reads again 30 seconds '
+        'later', (tester) async {
+      final app = await open(tester, [
+        FakeAnswer(200, {
+          'order': _order(status: 'arrived', version: 7, captain: _captain),
+        }),
+      ], before: (app) => app.server.on(route, [const FakeAnswer(500, {})]));
+      expect(find.byKey(const Key('captain-map')), findsNothing);
+      app.server.on(route, [FakeAnswer(200, routeJson())]);
+      await tester.pump(followRetry);
+      await tester.pumpAndSettle();
+      expect(app.server.to(route), hasLength(2));
+      expect(find.byKey(const Key('captain-map')), findsOneWidget);
       await app.done(tester);
     });
   });

@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
-import { and, eq, inArray, sql } from 'drizzle-orm';
+import { eq, type SQL, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { CaptainsService, type LivePosition } from '../captains/index.js';
@@ -7,7 +7,7 @@ import { GeoService, type Point, type Route } from '../geo/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { orderChannel, RealtimePublisher } from '../notifications/index.js';
 import { CAPTAIN_ACTIVE } from './order-assignments.js';
-import { orders, type orderStatuses } from './schema.js';
+import { handovers, orders, type orderStatuses } from './schema.js';
 
 type OrderStatus = (typeof orderStatuses)[number];
 
@@ -90,7 +90,11 @@ export class OrderRoutes implements OnModuleInit {
     if (!FOLLOWED.includes(order.status) || order.captainId === null) {
       throw new OrderRouteRefusedError('order_state_changed');
     }
-    const from = await this.captains.latestPoint(order.captainId);
+    // CU §11.3: never a point of the way to the restaurant (or, after a
+    // handover, to the first captain): a queued point sent late is older.
+    const latest = await this.captains.latestPoint(order.captainId);
+    const since = await this.followedSince(orderId, order.captainId);
+    const from = latest && since && latest.recordedAt >= since ? latest : null;
     return {
       captain: from,
       destination: order.location,
@@ -136,17 +140,31 @@ export class OrderRoutes implements OnModuleInit {
     return { ...rest, location: { latitude, longitude } };
   }
 
+  // From when the captain's points belong to the way to the customer
+  // (followedSinceQuery; CA §9.10.1 for a handover).
+  private async followedSince(orderId: string, captainId: string): Promise<Date | null> {
+    const { rows } = await this.database.db.execute<{ id: string; since: Date | string | null }>(
+      sql`${followedSinceQuery(sql`o.id = ${orderId} AND o.captain_id = ${captainId}`)}`,
+    );
+    const since = rows[0]?.since;
+    return since ? new Date(since) : null;
+  }
+
   // Architecture §6.2: the captain's new live position on order:{id} of the
-  // order they carry after the pickup. Nothing waits for it: a missed one is
+  // order they carry after the pickup. Nothing waits for it (the captain's
+  // request does not either, CaptainsService.onLivePosition): a missed one is
   // followed by the next point 10 seconds later, and the app reads the
   // position again on reconnecting.
   private async publish(captainId: string, position: LivePosition): Promise<void> {
     if (!this.publisher.enabled) return;
-    const carried = await this.database.db
-      .select({ id: orders.id })
-      .from(orders)
-      .where(and(eq(orders.captainId, captainId), inArray(orders.status, FOLLOWED)));
-    for (const { id } of carried) {
+    const { rows: carried } = await this.database.db.execute<{
+      id: string;
+      since: Date | string | null;
+    }>(sql`${followedSinceQuery(sql`o.captain_id = ${captainId}`)}`);
+    for (const { id, since } of carried) {
+      // CU §11.3: a point of the way to the restaurant (or, after a
+      // handover, to the first captain) is not shown, though sent after.
+      if (since === null || position.recordedAt < new Date(since)) continue;
       try {
         await this.publisher.broadcast(
           [orderChannel(id)],
@@ -165,4 +183,20 @@ export class OrderRoutes implements OnModuleInit {
       }
     }
   }
+}
+
+// The orders followed now (picked up or arrived) matching the condition on
+// `o`, each with the moment from which its captain's points belong to the
+// way to the customer: the arrival at the restaurant, where the pickup's own
+// fix is taken, or, after a handover to that captain, the receipt less the
+// age its fix may have (FIX_MAX_AGE_MS, one minute). A point queued earlier
+// and sent late is older.
+function followedSinceQuery(condition: SQL) {
+  return sql`
+    SELECT o.id, greatest(coalesce(o.arrived_at_merchant_at, o.picked_up_at), (
+      SELECT max(h.received_at) - interval '1 minute' FROM ${handovers} h
+        WHERE h.order_id = o.id AND h.order_placed_at = o.placed_at
+          AND h.to_captain_id = o.captain_id)) AS since
+      FROM ${orders} o
+      WHERE ${condition} AND o.status IN ('picked_up', 'arrived')`;
 }

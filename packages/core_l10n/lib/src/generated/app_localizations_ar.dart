@@ -1577,8 +1577,8 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String captainEta(int minutes) {
-    return 'الوصول خلال $minutes د تقريباً';
+  String captainEta(String time) {
+    return 'الوصول حوالي $time';
   }
 
   @override

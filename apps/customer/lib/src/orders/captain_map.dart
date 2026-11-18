@@ -73,11 +73,16 @@ class Following {
   return (point: GeoPoint(latitude.toDouble(), longitude.toDouble()), at: at);
 }
 
+/// How long the map waits to read the route again after a failed read.
+const followRetry = Duration(seconds: 30);
+
 /// CU §11.3, architecture §6.2: the captain's way, read from
-/// `GET /v1/customer/orders/{orderId}/route` when the map opens and after a
-/// reconnect that did not recover, then moved by each `captain.position` on
+/// `GET /v1/customer/orders/{orderId}/route` when the map opens, after a
+/// later reconnect that did not recover and after a handover
+/// (`order.handed_over`), then moved by each `captain.position` on
 /// `order:{order_id}` (the order's feed ignores them: they carry no
-/// version). A failed read leaves the map out until the next one.
+/// version). A failed read leaves the map out and reads again after
+/// [followRetry].
 final followingProvider = StreamProvider.autoDispose.family<Following, String>((
   ref,
   orderId,
@@ -86,8 +91,12 @@ final followingProvider = StreamProvider.autoDispose.family<Following, String>((
   final transport = ref.watch(realtimeTransportProvider);
   final controller = StreamController<Following>();
   Following? shown;
+  Timer? retry;
+  // The read at opening stands for the first subscription's.
+  var sawUp = false;
 
   Future<void> read() async {
+    retry?.cancel();
     try {
       final body = (await api.customerOrderRouteRoute(orderId: orderId)).data!;
       final captain = body.captain;
@@ -117,15 +126,22 @@ final followingProvider = StreamProvider.autoDispose.family<Following, String>((
       shown = next;
       if (!controller.isClosed) controller.add(next);
     } catch (_) {
-      // Read again at the next reconnect.
+      // Read again later, or at the next reconnect.
+      if (!controller.isClosed) retry = Timer(followRetry, read);
     }
   }
 
   final signals = transport.channel('order:$orderId').listen((signal) {
     switch (signal) {
       case RealtimeUp(:final recovered):
-        if (!recovered) unawaited(read());
+        if (sawUp && !recovered) unawaited(read());
+        sawUp = true;
       case RealtimePublication(:final data):
+        // CA §9.10.1: the new captain's way from the receipt.
+        if (data['type'] == 'order.handed_over') {
+          unawaited(read());
+          return;
+        }
         final position = positionOf(data, orderId);
         final current = shown;
         if (position == null || current == null) return;
@@ -139,6 +155,7 @@ final followingProvider = StreamProvider.autoDispose.family<Following, String>((
   });
   unawaited(read());
   ref.onDispose(() {
+    retry?.cancel();
     unawaited(signals.cancel());
     unawaited(controller.close());
   });

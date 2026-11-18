@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:async';
 
 import 'package:core_l10n/core_l10n.dart';
 import 'package:core_maps/core_maps.dart';
@@ -19,38 +19,56 @@ final routeMapProvider = Provider<RouteMapBuilder>(
 /// step 3, to the customer).
 typedef LegKey = ({String orderId, String leg});
 
-/// What the server answered for a leg: the ETA in seconds and the route
-/// line, null when the routing service did not answer (the straight line ×
-/// 1.3 then gives the ETA alone). Null without the captain's point.
+/// What the server answered for a leg: the arrival time (the read's moment
+/// on the server clock plus the leg's duration, so it stays true while the
+/// leg lasts) and the route line, null when the routing service did not
+/// answer (the straight line × 1.3 then gives the time alone).
 class LegRoute {
-  const LegRoute({required this.seconds, required this.line});
+  const LegRoute({required this.arriveAt, required this.line});
 
-  final int seconds;
+  final DateTime arriveAt;
   final List<GeoPoint>? line;
 }
 
-/// The leg's route, read once per leg (CA §4.6: light data) and kept; a
-/// failed read leaves the map without a line or an ETA.
+/// How long a leg waits to read its route again after a failed read, or one
+/// without the captain's point yet.
+const legRetry = Duration(seconds: 30);
+
+/// The leg's route, read once per leg (CA §4.6: light data) and kept while
+/// the leg lasts; a failed read, or one before the captain's first point,
+/// leaves the map without a line or a time and reads again after
+/// [legRetry].
 final legRouteProvider = FutureProvider.family<LegRoute?, LegKey>((
   ref,
   key,
 ) async {
-  final answer = await ref
-      .watch(coreApiProvider)
-      .getCaptainApi()
-      .captainOrderRouteRoute(orderId: key.orderId);
-  final route = answer.data!.route;
-  if (route == null) return null;
-  return LegRoute(
-    seconds: route.seconds,
-    line: route.line
-        ?.map((p) => GeoPoint(p.latitude.toDouble(), p.longitude.toDouble()))
-        .toList(),
-  );
-});
+  final clock = ref.read(serverClockProvider);
+  void retryLater() {
+    final timer = Timer(legRetry, ref.invalidateSelf);
+    ref.onDispose(timer.cancel);
+  }
 
-/// The ETA's whole minutes, rounded up, at least one.
-int etaMinutes(int seconds) => max(1, (seconds / 60).ceil());
+  try {
+    final answer = await ref
+        .watch(coreApiProvider)
+        .getCaptainApi()
+        .captainOrderRouteRoute(orderId: key.orderId);
+    final route = answer.data!.route;
+    if (route == null) {
+      retryLater();
+      return null;
+    }
+    return LegRoute(
+      arriveAt: clock.now().add(Duration(seconds: route.seconds)),
+      line: route.line
+          ?.map((p) => GeoPoint(p.latitude.toDouble(), p.longitude.toDouble()))
+          .toList(),
+    );
+  } catch (_) {
+    retryLater();
+    rethrow;
+  }
+});
 
 /// The map's markers and line: the destination (the restaurant or the
 /// customer's pin), the captain at the latest fix when there is one, and the
@@ -113,7 +131,7 @@ class LegMap extends ConsumerWidget {
         ),
         if (route != null)
           Text(
-            l10n.captainEta(etaMinutes(route.seconds)),
+            l10n.captainEta(l10n.formatTime(route.arriveAt)),
             key: const Key('eta'),
           ),
       ],
