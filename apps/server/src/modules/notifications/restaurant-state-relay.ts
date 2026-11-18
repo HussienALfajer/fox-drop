@@ -171,8 +171,10 @@ export class RestaurantStateRelay {
           schema: 1,
           restaurantId: change.restaurantId,
           kind: change.kind,
-          // What its notice says, as its push: the count, the minutes.
-          values: change.values,
+          // What its notice says, as its push: the count, the minutes. The
+          // commission is the owners' alone (RA §16 #33, R10), so its values
+          // stay off the channel every device of the restaurant hears.
+          values: change.kind === 'commission_change' ? {} : change.values,
           at: change.at.toISOString(),
         },
         `merchants-state:${change.id}`,

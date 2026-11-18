@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
+import { AppSessionsService } from '../identity/index.js';
 import { LedgerService } from '../ledger/index.js';
 import { type MerchantChange, MerchantsService } from '../merchants/index.js';
 import { OrdersService } from '../ordering/index.js';
@@ -19,6 +20,7 @@ export class RestaurantTerminationService {
     private readonly merchants: MerchantsService,
     private readonly ledger: LedgerService,
     private readonly orders: OrdersService,
+    private readonly sessions: AppSessionsService,
   ) {}
 
   async terminate(restaurantId: string, change: MerchantChange): Promise<void> {
@@ -52,5 +54,7 @@ export class RestaurantTerminationService {
       }
       await this.merchants.terminateIn(tx, restaurantId, change);
     });
+    // RA §5.5: the devices' real-time connections close once it committed.
+    await this.sessions.disconnectRestaurant(restaurantId);
   }
 }

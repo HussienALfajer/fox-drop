@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq, isNull, sql } from 'drizzle-orm';
+import { and, eq, gte, inArray, isNull, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { GeoService } from '../geo/index.js';
@@ -26,8 +26,9 @@ export interface RestaurantFigures {
 // restaurant or on its behalf) against those accepted, rejected or
 // cancelled because the restaurant never answered (merchant_auto_cancel);
 // a cancellation before any answer by the customer or operations is no
-// answer of the restaurant's (decided by us). Reads every month's partition
-// for the last order.
+// answer of the restaurant's (decided by us). The counts read the last 7
+// business days; the last order reads every month's partition, by the
+// restaurants asked.
 @Injectable()
 export class RestaurantFiguresService {
   constructor(
@@ -49,29 +50,36 @@ export class RestaurantFiguresService {
     const cutoffMinutes = hours * 60 + minutes;
     const today = periodBounds('today', now, cutoffMinutes, timeZone).from!;
     const week = periodBounds('last_7_days', now, cutoffMinutes, timeZone).from!;
-    const inWeek = sql`${orders.placedAt} >= ${week}`;
-    const [rows, ratings] = await Promise.all([
+    const counted = and(
+      eq(orders.cityId, cityId),
+      inArray(orders.restaurantId, restaurantIds),
+      eq(orders.testOrder, false),
+      isNull(orders.redeliveryOfId),
+    );
+    const [rows, lasts, ratings] = await Promise.all([
+      // The last 7 business days only, so the month partitions prune.
       this.database.db
         .select({
           restaurantId: orders.restaurantId,
           today: sql<number>`count(*) FILTER (WHERE ${orders.placedAt} >= ${today})::int`,
-          accepted: sql<number>`count(*) FILTER (WHERE ${inWeek} AND ${orders.acceptedAt} IS NOT NULL)::int`,
-          answered: sql<number>`count(*) FILTER (WHERE ${inWeek} AND (${orders.acceptedAt} IS NOT NULL OR ${orders.status} = 'rejected' OR ${orders.cancelReason} = 'merchant_auto_cancel'))::int`,
-          last: sql<Date | null>`max(${orders.placedAt})`.mapWith((value) =>
-            value === null ? null : new Date(value),
-          ),
+          accepted: sql<number>`count(*) FILTER (WHERE ${orders.acceptedAt} IS NOT NULL)::int`,
+          answered: sql<number>`count(*) FILTER (WHERE ${orders.acceptedAt} IS NOT NULL OR ${orders.status} = 'rejected' OR ${orders.cancelReason} = 'merchant_auto_cancel')::int`,
         })
         .from(orders)
-        .where(
-          and(
-            eq(orders.cityId, cityId),
-            eq(orders.testOrder, false),
-            isNull(orders.redeliveryOfId),
-          ),
-        )
+        .where(and(counted, gte(orders.placedAt, week)))
+        .groupBy(orders.restaurantId),
+      // The last order, whenever it was: every partition, by the restaurant.
+      this.database.db
+        .select({
+          restaurantId: orders.restaurantId,
+          last: sql<Date>`max(${orders.placedAt})`.mapWith((value) => new Date(value)),
+        })
+        .from(orders)
+        .where(counted)
         .groupBy(orders.restaurantId),
       this.ratings.restaurantSummaries(restaurantIds),
     ]);
+    const lastOf = new Map(lasts.map((row) => [row.restaurantId, row.last]));
     const byRestaurant = new Map(rows.map((row) => [row.restaurantId, row]));
     for (const id of restaurantIds) {
       const row = byRestaurant.get(id);
@@ -80,7 +88,7 @@ export class RestaurantFiguresService {
         ordersToday: Number(row?.today ?? 0),
         acceptanceBp7d:
           answered === 0 ? null : Math.round((Number(row!.accepted) * 10_000) / answered),
-        lastOrderAt: row?.last ?? null,
+        lastOrderAt: lastOf.get(id) ?? null,
         rating: ratings.get(id) ?? null,
       });
     }

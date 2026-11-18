@@ -1005,7 +1005,8 @@ export class MerchantsService implements OnModuleInit {
         latest.rateBp === rateBp &&
         (effectiveFrom !== undefined
           ? latest.effectiveFrom.getTime() === effectiveFrom.getTime()
-          : new Date(now).getTime() - latest.createdAt.getTime() < COMMISSION_REPEAT_WINDOW_MS)
+          : latest.effectiveFrom.getTime() <= new Date(now).getTime() &&
+            new Date(now).getTime() - latest.createdAt.getTime() < COMMISSION_REPEAT_WINDOW_MS)
       ) {
         return;
       }

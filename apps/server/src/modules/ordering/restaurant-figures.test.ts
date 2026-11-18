@@ -90,3 +90,17 @@ describe('POST /v1/admin/restaurant-list (AP §9.6.2)', () => {
     expect(answer.statusCode).toBe(404);
   });
 });
+
+// AP §9.6.5 «إنهاء» (slice 2.30c): an order not finished still moves the
+// restaurant's account, so the termination waits for it.
+describe('POST /v1/admin/restaurants/{id}/terminate with an order not finished', () => {
+  it('answers 409 orders_unfinished', async () => {
+    await acceptedOrder();
+    const own = await admin(['OWN']);
+    const refused = await own.post(`/v1/admin/restaurants/${restaurant}/terminate`, {
+      reason: 'انتهى العقد',
+    });
+    expect(refused.statusCode).toBe(409);
+    expect(refused.json().error).toBe('orders_unfinished');
+  });
+});

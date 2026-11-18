@@ -195,9 +195,20 @@ function Row({
   return (
     <tr>
       <td>
-        <Link to="/restaurant-status" search={{ city: city.code, restaurant: restaurant.id }}>
-          {restaurant.nameAr}
-        </Link>
+        {/* A draft opens its wizard; the others their state and actions. */}
+        {restaurant.accountStatus === 'draft' ? (
+          <Link
+            to="/restaurant-drafts/$restaurantId"
+            params={{ restaurantId: restaurant.id }}
+            search={{ city: city.code, step: 'basics' }}
+          >
+            {restaurant.nameAr}
+          </Link>
+        ) : (
+          <Link to="/restaurant-status" search={{ city: city.code, restaurant: restaurant.id }}>
+            {restaurant.nameAr}
+          </Link>
+        )}
         {restaurant.categories.length > 0 && (
           <p>{restaurant.categories.map((category) => category.name).join('، ')}</p>
         )}

@@ -71,14 +71,18 @@ describe('restaurantStatePush', () => {
 
   it('names templates that exist', () => {
     for (const kind of stateKinds) {
-      const push = restaurantStatePush(kind, {
-        push: true,
-        count: 3,
-        extraMin: 10,
-        reason: 'x',
-        rateBp: 1500,
-        from: '2026-11-18T00:00:00Z',
-      }, 'UTC');
+      const push = restaurantStatePush(
+        kind,
+        {
+          push: true,
+          count: 3,
+          extraMin: 10,
+          reason: 'x',
+          rateBp: 1500,
+          from: '2026-11-18T00:00:00Z',
+        },
+        'UTC',
+      );
       if (push) expect(notificationTemplate(push.templateKey)).toBeDefined();
     }
   });

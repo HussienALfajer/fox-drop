@@ -80,12 +80,10 @@ export class RestaurantListService {
     const phone = filter.q === null ? null : phoneOf(filter.q);
     const byPhone = phone === null ? null : await this.accounts.restaurantByPhone(phone);
     const typed = filter.q === null || phone !== null ? null : folded(filter.q.trim());
-    const zoned = await Promise.all(
-      rows.map(async (row) => ({
-        row,
-        zone: row.location === null ? null : await this.geo.zoneAt(cityId, row.location),
-      })),
-    );
+    const zoned = await inTurns(rows, async (row) => ({
+      row,
+      zone: row.location === null ? null : await this.geo.zoneAt(cityId, row.location),
+    }));
     const kept = zoned.filter(
       ({ row, zone }) =>
         (filter.status === null || row.accountStatus === filter.status) &&
@@ -101,32 +99,30 @@ export class RestaurantListService {
       kept.map(({ row }) => row.id),
       now,
     );
-    const restaurants = await Promise.all(
-      kept.map(async ({ row, zone }): Promise<ListedRestaurant> => {
-        const running = row.accountStatus === 'test' || row.accountStatus === 'active';
-        const [state, schedule, balance] = await Promise.all([
-          running ? this.merchants.operatingState(row.id, now) : null,
-          row.accountStatus === 'draft' ? null : this.merchants.commissionSchedule(row.id, now),
-          this.balance(cityId, row.id, currency),
-        ]);
-        return {
-          id: row.id,
-          nameAr: row.nameAr,
-          nameEn: row.nameEn,
-          categories: row.categoryIds
-            .filter((id) => names.has(id))
-            .map((id) => ({ id, name: names.get(id)! })),
-          accountStatus: row.accountStatus,
-          state: state === null ? null : listedState(state.state),
-          visible: row.visible,
-          sortWeight: row.sortWeight,
-          zone,
-          commissionBp: schedule?.rateBp ?? null,
-          balance,
-          ...figures.get(row.id)!,
-        };
-      }),
-    );
+    const restaurants = await inTurns(kept, async ({ row, zone }): Promise<ListedRestaurant> => {
+      const running = row.accountStatus === 'test' || row.accountStatus === 'active';
+      const [state, schedule, balance] = await Promise.all([
+        running ? this.merchants.operatingState(row.id, now) : null,
+        row.accountStatus === 'draft' ? null : this.merchants.commissionSchedule(row.id, now),
+        this.balance(cityId, row.id, currency),
+      ]);
+      return {
+        id: row.id,
+        nameAr: row.nameAr,
+        nameEn: row.nameEn,
+        categories: row.categoryIds
+          .filter((id) => names.has(id))
+          .map((id) => ({ id, name: names.get(id)! })),
+        accountStatus: row.accountStatus,
+        state: state === null ? null : listedState(state.state),
+        visible: row.visible,
+        sortWeight: row.sortWeight,
+        zone,
+        commissionBp: schedule?.rateBp ?? null,
+        balance,
+        ...figures.get(row.id)!,
+      };
+    });
     return { currency, restaurants };
   }
 
@@ -137,6 +133,18 @@ export class RestaurantListService {
     // The party's view is − the restaurant owes.
     return account ? -(await this.ledger.balance(account.id)).amount : 0n;
   }
+}
+
+// The reads of each row, LIST_CONCURRENCY rows at a time, so a long list
+// never takes the whole pool from the customers' and captains' requests.
+const LIST_CONCURRENCY = 4;
+
+async function inTurns<T, R>(items: readonly T[], read: (item: T) => Promise<R>): Promise<R[]> {
+  const answers: R[] = [];
+  for (let start = 0; start < items.length; start += LIST_CONCURRENCY) {
+    answers.push(...(await Promise.all(items.slice(start, start + LIST_CONCURRENCY).map(read))));
+  }
+  return answers;
 }
 
 // AP §9.6.1: a holiday close is «مغلق»; open in busy mode is open.

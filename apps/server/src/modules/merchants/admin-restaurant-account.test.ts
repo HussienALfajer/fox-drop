@@ -113,10 +113,15 @@ const kinds = async (id: string) =>
     )
   ).rows;
 
+const published: { channels: string[]; payload: Record<string, unknown> }[] = [];
+
 function relay(): RestaurantStateRelay {
   const publisher = {
     enabled: true,
-    broadcast: () => Promise.resolve(),
+    broadcast: (channels: string[], payload: Record<string, unknown>) => {
+      published.push({ channels, payload });
+      return Promise.resolve();
+    },
   } as unknown as RealtimePublisher;
   return new RestaurantStateRelay(
     app.get(DATABASE),
@@ -189,9 +194,7 @@ describe('suspend and reactivate (AP §9.6.5, RA §16 #23)', () => {
       'reactivated_by_operations',
     ]);
     await relay().drain(new Date());
-    expect(
-      (await pushes(id)).map((row) => [row.template_key, row.body, row.owners_only]),
-    ).toEqual([
+    expect((await pushes(id)).map((row) => [row.template_key, row.body, row.owners_only])).toEqual([
       ['merchant.suspended_by_operations', 'علّقت العمليات حساب مطعمك: مخالفة الأسعار', false],
       ['merchant.reactivated_by_operations', 'أعادت العمليات تفعيل حساب مطعمك', false],
     ]);
@@ -279,6 +282,17 @@ describe('the commission change (AP §9.6.5, D16, RA §16 #33)', () => {
         owners_only: true,
       },
     ]);
+    // RA §16 #33, R10: the rate is the owners'; the channel every device
+    // hears carries none.
+    const told = published.filter((each) => each.payload.restaurantId === id);
+    expect(told.map((each) => each.payload.values)).toEqual([{}]);
+    // The same rate «now» after a version scheduled for later is a change.
+    const sameNow = await own('POST', `${id}/commission`, {
+      rateBp: 1250,
+      effectiveFrom: null,
+      reason: 'الآن بالنسبة نفسها',
+    });
+    expect(sameNow.json()).toMatchObject({ commissionBp: 1250 });
     const now = await own('POST', `${id}/commission`, {
       rateBp: 1400,
       effectiveFrom: null,
@@ -329,5 +343,24 @@ describe('the termination (AP §9.6.5)', () => {
     const id = await restaurant();
     const ops = await admin('OPS');
     expect((await ops('POST', `${id}/terminate`, { reason: 'x' })).statusCode).toBe(403);
+  });
+
+  it('never terminates a draft', async () => {
+    const id = await merchants.createRestaurant(
+      azaz,
+      {
+        nameAr: `مسودة ${randomUUID()}`,
+        location: { latitude: 36.5866, longitude: 37.0463 },
+        coverage: { kind: 'radius', radiusMetres: 3000 },
+        minimumOrder: { amount: 10_000n, currency: 'TRY' },
+        commissionBp: 1500,
+        defaultPrepMin: 20,
+      },
+      change,
+    );
+    const own = await admin('OWN');
+    const refused = await own('POST', `${id}/terminate`, { reason: 'x' });
+    expect(refused.statusCode).toBe(409);
+    expect(refused.json().error).toBe('status_change_not_allowed');
   });
 });
