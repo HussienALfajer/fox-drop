@@ -16,9 +16,11 @@ import { CustomerClosureController } from './customer-closure.controller.js';
 import { CustomerAccountStateController } from './customer-account-state.controller.js';
 import { CustomerAdminService } from './customer-admin.service.js';
 import { CustomerBrowsingController } from './customer-browsing.controller.js';
+import { CustomerFavouritesController } from './customer-favourites.controller.js';
 import { CustomerProfileController } from './customer-profile.controller.js';
 import { CustomerSearchController } from './customer-search.controller.js';
 import { CustomersService } from './customers.service.js';
+import { FavouritesService } from './favourites.js';
 import { LostDemandService } from './lost-demand.service.js';
 import { MassPushAudienceSource } from './mass-push-audience.js';
 
@@ -44,6 +46,7 @@ import { MassPushAudienceSource } from './mass-push-audience.js';
     CustomerAccountStateController,
     CustomerClosureController,
     CustomerSearchController,
+    CustomerFavouritesController,
     AdminCustomersController,
     AdminLostDemandController,
   ],
@@ -52,6 +55,7 @@ import { MassPushAudienceSource } from './mass-push-audience.js';
     BrowsingService,
     CustomerAdminService,
     LostDemandService,
+    FavouritesService,
     MassPushAudienceSource,
   ],
   exports: [CustomersService],

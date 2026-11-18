@@ -34,6 +34,7 @@ Map<String, Object?> card(
   String state = 'open',
   String? opensAt,
   bool testMode = false,
+  bool favourite = false,
 }) => {
   'id': id,
   'nameAr': name,
@@ -50,6 +51,7 @@ Map<String, Object?> card(
   'estimate': {'fromMin': 30, 'toMin': 40},
   'deliveryFee': {'fee': try_(1000), 'free': false},
   'state': _state(state, opensAt: opensAt),
+  'favourite': favourite,
 };
 
 Map<String, Object?> _option(

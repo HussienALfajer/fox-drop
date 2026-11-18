@@ -1053,6 +1053,13 @@ Serializers _$serializers =
           )
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerRestaurant.serializer)
           ..add(CustomerActiveOrdersDtoOutputOrdersInnerStatusEnum.serializer)
+          ..add(
+            CustomerActiveOrdersDtoOutputOrdersInnerTimelineInner.serializer,
+          )
+          ..add(
+            CustomerActiveOrdersDtoOutputOrdersInnerTimelineInnerStepEnum
+                .serializer,
+          )
           ..add(CustomerAddressDeletedDtoOutput.serializer)
           ..add(CustomerAddressDeletedDtoOutputStatusEnum.serializer)
           ..add(CustomerAddressDtoOutput.serializer)
@@ -1080,6 +1087,8 @@ Serializers _$serializers =
           ..add(CustomerContentDtoOutput.serializer)
           ..add(CustomerContentDtoOutputReasons.serializer)
           ..add(CustomerEmergencyStopDtoOutput.serializer)
+          ..add(CustomerFavouriteDtoOutput.serializer)
+          ..add(CustomerFavouritesDtoOutput.serializer)
           ..add(CustomerLocationDtoOutput.serializer)
           ..add(CustomerLocationDtoOutputStateEnum.serializer)
           ..add(CustomerNewAddressDto.serializer)
@@ -1094,6 +1103,9 @@ Serializers _$serializers =
           ..add(CustomerOrderDtoOutputOrderDelivery.serializer)
           ..add(CustomerOrderDtoOutputOrderRedeliveriesInner.serializer)
           ..add(CustomerOrderDtoOutputOrderStatusEnum.serializer)
+          ..add(CustomerOrderHistoryDtoOutput.serializer)
+          ..add(CustomerOrderHistoryDtoOutputOrdersInner.serializer)
+          ..add(CustomerOrderHistoryDtoOutputOrdersInnerStatusEnum.serializer)
           ..add(CustomerPlaceOrderDto.serializer)
           ..add(CustomerPlaceOrderDtoUnsavedAddress.serializer)
           ..add(CustomerPriceReportBodyDto.serializer)
@@ -3051,6 +3063,17 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(
+                CustomerActiveOrdersDtoOutputOrdersInnerTimelineInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CustomerActiveOrdersDtoOutputOrdersInnerTimelineInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(CaptainAvailabilityDtoOutputCustodyLimit),
             ]),
             () => ListBuilder<CaptainAvailabilityDtoOutputCustodyLimit>(),
@@ -3076,6 +3099,12 @@ Serializers _$serializers =
                 ListBuilder<
                   CustomerActiveOrdersDtoOutputOrdersInnerRemovedLinesInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CustomerOrderHistoryDtoOutputOrdersInner),
+            ]),
+            () => ListBuilder<CustomerOrderHistoryDtoOutputOrdersInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -3220,6 +3249,12 @@ Serializers _$serializers =
                 ListBuilder<
                   CustomerSearchDtoOutputItemsInnerOptionGroupsInnerOptionsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CustomerSearchDtoOutputRestaurantsInner),
+            ]),
+            () => ListBuilder<CustomerSearchDtoOutputRestaurantsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -4276,6 +4311,17 @@ Serializers _$serializers =
             () =>
                 ListBuilder<
                   CustomerActiveOrdersDtoOutputOrdersInnerRedeliveriesInner?
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                CustomerActiveOrdersDtoOutputOrdersInnerTimelineInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CustomerActiveOrdersDtoOutputOrdersInnerTimelineInner
                 >(),
           )
           ..addBuilderFactory(

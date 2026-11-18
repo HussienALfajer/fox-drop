@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../device.dart';
 import '../media_image.dart';
 import 'browsing.dart';
+import 'heart_button.dart';
 
 /// A category's restaurants that deliver to the point (CU §8.2, slice
 /// 2.27a). Pull to refresh (CU §8.1).
@@ -44,7 +45,7 @@ class RestaurantList extends ConsumerWidget {
 }
 
 /// A restaurant card (CU §8.2): logo, name, categories, rating, estimate,
-/// fee and the state's badge when it is not open.
+/// fee, the state's badge when it is not open, and the heart (CU §9.6).
 class RestaurantTile extends ConsumerWidget {
   const RestaurantTile({super.key, required this.card});
 
@@ -84,6 +85,7 @@ class RestaurantTile extends ConsumerWidget {
           ?restaurantBadge(l10n, RestaurantState.ofCard(card.state), now),
         ].join(' · '),
       ),
+      trailing: HeartButton(restaurantId: card.id, favourite: card.favourite),
       onTap: () => context.push('/restaurants/${card.id}'),
     );
   }

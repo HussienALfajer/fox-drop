@@ -7,6 +7,7 @@ import '../api.dart';
 import '../auth.dart';
 import '../location/delivery_point.dart';
 import '../location/position.dart';
+import 'favourites.dart';
 
 /// The browsing point, or null before the zone check found one. The list
 /// and the page also follow the account, since an admin test account sees
@@ -87,6 +88,7 @@ String bannerPath(HomeBanner banner) => switch (banner.target) {
 final homeProvider = FutureProvider.autoDispose<HomeView>((ref) async {
   final point = browsingPoint(ref);
   if (point == null) return HomeView.empty;
+  final since = DateTime.now();
   final response = await ref
       .watch(coreApiProvider)
       .getCustomerApi()
@@ -96,6 +98,7 @@ final homeProvider = FutureProvider.autoDispose<HomeView>((ref) async {
         home: 'true',
       );
   final data = response.data!;
+  heartsRead(ref, data.restaurants.map((card) => card.id), since);
   return HomeView(
     restaurants: data.restaurants.toList(),
     sections: data.sections?.toList() ?? const [],
@@ -110,6 +113,7 @@ final categoryRestaurantsProvider = FutureProvider.autoDispose
     .family<List<RestaurantCard>, String>((ref, categoryId) async {
       final point = browsingPoint(ref);
       if (point == null) return const [];
+      final since = DateTime.now();
       final response = await ref
           .watch(coreApiProvider)
           .getCustomerApi()
@@ -118,7 +122,9 @@ final categoryRestaurantsProvider = FutureProvider.autoDispose
             longitude: '${point.longitude}',
             categoryId: categoryId,
           );
-      return response.data!.restaurants.toList();
+      final cards = response.data!.restaurants.toList();
+      heartsRead(ref, cards.map((card) => card.id), since);
+      return cards;
     });
 
 /// A card's or a page's categories (AP §9.13), as one line.
@@ -130,6 +136,7 @@ final restaurantPageProvider = FutureProvider.autoDispose
     .family<CustomerRestaurantPageDtoOutput?, String>((ref, id) async {
       final point = browsingPoint(ref);
       if (point == null) return null;
+      final since = DateTime.now();
       final response = await ref
           .watch(coreApiProvider)
           .getCustomerApi()
@@ -138,6 +145,7 @@ final restaurantPageProvider = FutureProvider.autoDispose
             latitude: '${point.latitude}',
             longitude: '${point.longitude}',
           );
+      if (response.data case final page?) heartsRead(ref, [page.id], since);
       return response.data;
     });
 

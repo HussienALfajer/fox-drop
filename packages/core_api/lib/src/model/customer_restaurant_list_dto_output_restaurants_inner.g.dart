@@ -35,6 +35,8 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInner
   final CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee? deliveryFee;
   @override
   final CustomerRestaurantListDtoOutputRestaurantsInnerState state;
+  @override
+  final bool favourite;
 
   factory _$CustomerRestaurantListDtoOutputRestaurantsInner([
     void Function(CustomerRestaurantListDtoOutputRestaurantsInnerBuilder)?
@@ -58,6 +60,7 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInner
     required this.estimate,
     this.deliveryFee,
     required this.state,
+    required this.favourite,
   }) : super._();
   @override
   CustomerRestaurantListDtoOutputRestaurantsInner rebuild(
@@ -85,7 +88,8 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInner
         testMode == other.testMode &&
         estimate == other.estimate &&
         deliveryFee == other.deliveryFee &&
-        state == other.state;
+        state == other.state &&
+        favourite == other.favourite;
   }
 
   @override
@@ -104,6 +108,7 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInner
     _$hash = $jc(_$hash, estimate.hashCode);
     _$hash = $jc(_$hash, deliveryFee.hashCode);
     _$hash = $jc(_$hash, state.hashCode);
+    _$hash = $jc(_$hash, favourite.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -125,7 +130,8 @@ class _$CustomerRestaurantListDtoOutputRestaurantsInner
           ..add('testMode', testMode)
           ..add('estimate', estimate)
           ..add('deliveryFee', deliveryFee)
-          ..add('state', state))
+          ..add('state', state)
+          ..add('favourite', favourite))
         .toString();
   }
 }
@@ -210,6 +216,10 @@ class CustomerRestaurantListDtoOutputRestaurantsInnerBuilder
     CustomerRestaurantListDtoOutputRestaurantsInnerStateBuilder? state,
   ) => _$this._state = state;
 
+  bool? _favourite;
+  bool? get favourite => _$this._favourite;
+  set favourite(bool? favourite) => _$this._favourite = favourite;
+
   CustomerRestaurantListDtoOutputRestaurantsInnerBuilder() {
     CustomerRestaurantListDtoOutputRestaurantsInner._defaults(this);
   }
@@ -230,6 +240,7 @@ class CustomerRestaurantListDtoOutputRestaurantsInnerBuilder
       _estimate = $v.estimate.toBuilder();
       _deliveryFee = $v.deliveryFee?.toBuilder();
       _state = $v.state.toBuilder();
+      _favourite = $v.favourite;
       _$v = null;
     }
     return this;
@@ -282,6 +293,11 @@ class CustomerRestaurantListDtoOutputRestaurantsInnerBuilder
             estimate: estimate.build(),
             deliveryFee: _deliveryFee?.build(),
             state: state.build(),
+            favourite: BuiltValueNullFieldError.checkNotNull(
+              favourite,
+              r'CustomerRestaurantListDtoOutputRestaurantsInner',
+              'favourite',
+            ),
           );
     } catch (_) {
       late String _$failedField;

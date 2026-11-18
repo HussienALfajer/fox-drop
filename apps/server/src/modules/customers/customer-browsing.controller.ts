@@ -13,6 +13,7 @@ import {
   type StorefrontItem,
 } from './browsing.service.js';
 import { CustomersService } from './customers.service.js';
+import { FavouritesService } from './favourites.js';
 import { pointQuery } from './point-query.js';
 
 const money = z.object({
@@ -86,6 +87,9 @@ export const card = z.object({
     .nullable()
     .describe('To the point; null while the city has no fee rule in its base currency.'),
   state,
+  favourite: z
+    .boolean()
+    .describe('The heart (CU §9.6): a favourite of the signed-in customer; false for a guest.'),
 });
 
 class CustomerRestaurantListDto extends createZodDto(
@@ -238,6 +242,7 @@ export class CustomerBrowsingController {
   constructor(
     private readonly browsing: BrowsingService,
     private readonly customers: CustomersService,
+    private readonly favourites: FavouritesService,
   ) {}
 
   // A signed-in admin test account also sees the restaurants in test mode
@@ -275,9 +280,12 @@ export class CustomerBrowsingController {
             sections: null,
             banners: null,
           };
-    const ratings = await this.customers.ratings.restaurants(cards.map((card) => card.id));
+    const [ratings, hearted] = await Promise.all([
+      this.customers.ratings.restaurants(cards.map((card) => card.id)),
+      heartedBy(this.favourites, session),
+    ]);
     return {
-      restaurants: cards.map((card) => cardBody(card, ratings.get(card.id))),
+      restaurants: cards.map((card) => cardBody(card, ratings.get(card.id), hearted.has(card.id))),
       sections,
       banners,
     };
@@ -299,8 +307,11 @@ export class CustomerBrowsingController {
       await this.testAccount(session),
     );
     if (page === null) throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND });
-    const ratings = await this.customers.ratings.restaurants([page.id]);
-    return pageBody(page, ratings.get(page.id));
+    const [ratings, hearted] = await Promise.all([
+      this.customers.ratings.restaurants([page.id]),
+      heartedBy(this.favourites, session),
+    ]);
+    return pageBody(page, ratings.get(page.id), hearted.has(page.id));
   }
 }
 
@@ -324,7 +335,15 @@ const RATINGS_SHOWN_FROM = 5;
 
 export type RatingSummary = { count: number; average: number } | undefined;
 
-export function cardBody(card: RestaurantCard, summary: RatingSummary) {
+// CU §9.6: the signed-in customer's favourites; none for a guest.
+export async function heartedBy(
+  favourites: FavouritesService,
+  session: AppSession | null,
+): Promise<Set<string>> {
+  return new Set(session === null ? [] : await favourites.ids(session.accountId));
+}
+
+export function cardBody(card: RestaurantCard, summary: RatingSummary, favourite: boolean) {
   const shown = summary !== undefined && summary.count >= RATINGS_SHOWN_FROM;
   return {
     ...card,
@@ -336,12 +355,13 @@ export function cardBody(card: RestaurantCard, summary: RatingSummary) {
         ? null
         : { fee: moneyBody(card.deliveryFee.fee), free: card.deliveryFee.free },
     state: stateBody(card.state),
+    favourite,
   };
 }
 
-function pageBody(page: RestaurantPage, summary: RatingSummary) {
+function pageBody(page: RestaurantPage, summary: RatingSummary, favourite: boolean) {
   return {
-    ...cardBody(page, summary),
+    ...cardBody(page, summary, favourite),
     description: page.description,
     minimumOrder: moneyBody(page.minimumOrder),
     freeDeliveryFrom: page.freeDeliveryFrom === null ? null : moneyBody(page.freeDeliveryFrom),

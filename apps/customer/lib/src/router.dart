@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'account/delete_account_screen.dart';
+import 'account/favourites_screen.dart';
 import 'account/my_account_screen.dart';
 import 'auth.dart';
 import 'blocked_screen.dart';
@@ -19,6 +20,7 @@ import 'content.dart';
 import 'home_screen.dart';
 import 'not_found_screen.dart';
 import 'notifications/notifications_screen.dart';
+import 'orders/my_orders_screen.dart';
 import 'orders/order_screen.dart';
 import 'orders/report_problem_screen.dart';
 import 'platform.dart';
@@ -160,6 +162,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) =>
                 const ProfileScreen(from: '/account', editing: true),
           ),
+          // CU §9.6 «المفضلة» (slice 2.28b).
+          GoRoute(
+            path: 'favourites',
+            builder: (context, state) => const FavouritesScreen(),
+          ),
           // CU §5.6 «حذف الحساب» (slice 2.25c).
           GoRoute(
             path: 'delete',
@@ -181,6 +188,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/checkout',
         builder: (context, state) => const CheckoutScreen(),
+      ),
+      // CU §12.3 «طلباتي»: the account's, so a guest signs in first.
+      GoRoute(
+        path: '/orders',
+        redirect: (context, state) =>
+            ref.read(customerAuth.session).value is SignedIn
+            ? null
+            : signInFrom('/orders'),
+        builder: (context, state) => const MyOrdersScreen(),
       ),
       GoRoute(
         path: '/orders/:id',

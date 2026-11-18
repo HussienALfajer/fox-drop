@@ -47,6 +47,13 @@ class HomeScreen extends ConsumerWidget {
               onPressed: () => context.push('/cart'),
               child: Text(l10n.customerCartCount(cart.lines.length)),
             ),
+          // CU §6.1, §12.3 «طلباتي».
+          if (signedIn)
+            TextButton(
+              key: const Key('open-my-orders'),
+              onPressed: () => context.push('/orders'),
+              child: Text(l10n.customerMyOrdersTitle),
+            ),
           // CU §13 «حسابي»: the codes, the notifications, the help and
           // signing out.
           if (signedIn)

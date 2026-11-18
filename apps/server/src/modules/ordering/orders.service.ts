@@ -1,5 +1,18 @@
 import { Inject, Injectable, type OnModuleInit } from '@nestjs/common';
-import { and, desc, eq, gt, gte, inArray, isNotNull, isNull, lt, or, sql } from 'drizzle-orm';
+import {
+  and,
+  desc,
+  eq,
+  gt,
+  gte,
+  inArray,
+  isNotNull,
+  isNull,
+  lt,
+  notInArray,
+  or,
+  sql,
+} from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -33,11 +46,30 @@ import {
   orderNumbers,
   orderOutcomeRows,
   orders,
+  type orderStatuses,
   pickupRequests,
 } from './schema.js';
 
 type Tx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
 type Executor = Pick<NodePgDatabase, 'select'>;
+
+type OrderStatus = (typeof orderStatuses)[number];
+
+// CU §12.3 «طلباتي» (owner decision 2026-11-18): past orders in pages of 20.
+export const ORDER_HISTORY_PAGE = 20;
+
+// An order in «طلباتي»: the restaurant, the date, the status and the total.
+export interface OrderSummary {
+  id: string;
+  number: bigint;
+  restaurantId: string;
+  placedAt: Date;
+  status: OrderStatus;
+  currency: string;
+  total: bigint;
+  redeliveryOfId: string | null;
+  active: boolean;
+}
 
 // AP §4.8: a city's first order number (owner decision 2026-11-06).
 export const FIRST_ORDER_NUMBER = 10001n;
@@ -831,6 +863,61 @@ export class OrdersService implements OnModuleInit {
       .from(orders)
       .where(and(eq(orders.id, orderId), eq(orders.placedAt, placedAt)));
     return row?.deliveredAt ?? null;
+  }
+
+  // CU §12.3 «طلباتي» (slice 2.28b): the customer's orders, the active ones
+  // first, then the past ones, each newest first, in pages of
+  // ORDER_HISTORY_PAGE. The first page (no cursor) holds every active order
+  // (D23 keeps them few) and the first page of past ones; a cursor is the
+  // last past order of the page before.
+  async customerOrderHistory(
+    accountId: string,
+    after: { placedAt: Date; id: string } | null,
+  ): Promise<{ orders: OrderSummary[]; more: boolean }> {
+    const summary = {
+      id: orders.id,
+      number: orders.number,
+      restaurantId: orders.restaurantId,
+      placedAt: orders.placedAt,
+      status: orders.status,
+      currency: orders.currency,
+      total: orders.total,
+      redeliveryOfId: orders.redeliveryOfId,
+    };
+    const mine = eq(orders.customerAccountId, accountId);
+    const active =
+      after === null
+        ? await this.database.db
+            .select(summary)
+            .from(orders)
+            .where(and(mine, inArray(orders.status, UNTIL_ENDED)))
+            .orderBy(desc(orders.placedAt), desc(orders.id))
+        : [];
+    const past = await this.database.db
+      .select(summary)
+      .from(orders)
+      .where(
+        and(
+          mine,
+          notInArray(orders.status, UNTIL_ENDED),
+          after === null
+            ? undefined
+            : or(
+                lt(orders.placedAt, after.placedAt),
+                and(eq(orders.placedAt, after.placedAt), lt(orders.id, after.id)),
+              ),
+        ),
+      )
+      .orderBy(desc(orders.placedAt), desc(orders.id))
+      .limit(ORDER_HISTORY_PAGE + 1);
+    const more = past.length > ORDER_HISTORY_PAGE;
+    return {
+      orders: [...active, ...past.slice(0, ORDER_HISTORY_PAGE)].map((row) => ({
+        ...row,
+        active: UNTIL_ENDED.includes(row.status),
+      })),
+      more,
+    };
   }
 
   // CU §6 (the active-order bar), CU §4.3: the customer's orders until they

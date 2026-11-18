@@ -32,6 +32,7 @@ part 'customer_restaurant_page_dto_output.g.dart';
 /// * [estimate]
 /// * [deliveryFee]
 /// * [state]
+/// * [favourite] - The heart (CU §9.6): a favourite of the signed-in customer; false for a guest.
 /// * [description]
 /// * [minimumOrder]
 /// * [freeDeliveryFrom]
@@ -90,6 +91,10 @@ abstract class CustomerRestaurantPageDtoOutput
 
   @BuiltValueField(wireName: r'state')
   CustomerRestaurantListDtoOutputRestaurantsInnerState get state;
+
+  /// The heart (CU §9.6): a favourite of the signed-in customer; false for a guest.
+  @BuiltValueField(wireName: r'favourite')
+  bool get favourite;
 
   @BuiltValueField(wireName: r'description')
   String? get description;
@@ -227,6 +232,11 @@ class _$CustomerRestaurantPageDtoOutputSerializer
       specifiedType: const FullType(
         CustomerRestaurantListDtoOutputRestaurantsInnerState,
       ),
+    );
+    yield r'favourite';
+    yield serializers.serialize(
+      object.favourite,
+      specifiedType: const FullType(bool),
     );
     yield r'description';
     yield object.description == null
@@ -430,6 +440,15 @@ class _$CustomerRestaurantPageDtoOutputSerializer
                   )
                   as CustomerRestaurantListDtoOutputRestaurantsInnerState;
           result.state.replace(valueDes);
+          break;
+        case r'favourite':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.favourite = valueDes;
           break;
         case r'description':
           final valueDes =

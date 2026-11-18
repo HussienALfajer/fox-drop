@@ -34,6 +34,8 @@ class _$CustomerSearchDtoOutputRestaurantsInner
   final CustomerRestaurantPageDtoOutputDeliveryFee? deliveryFee;
   @override
   final CustomerRestaurantListDtoOutputRestaurantsInnerState state;
+  @override
+  final bool favourite;
 
   factory _$CustomerSearchDtoOutputRestaurantsInner([
     void Function(CustomerSearchDtoOutputRestaurantsInnerBuilder)? updates,
@@ -54,6 +56,7 @@ class _$CustomerSearchDtoOutputRestaurantsInner
     required this.estimate,
     this.deliveryFee,
     required this.state,
+    required this.favourite,
   }) : super._();
   @override
   CustomerSearchDtoOutputRestaurantsInner rebuild(
@@ -80,7 +83,8 @@ class _$CustomerSearchDtoOutputRestaurantsInner
         testMode == other.testMode &&
         estimate == other.estimate &&
         deliveryFee == other.deliveryFee &&
-        state == other.state;
+        state == other.state &&
+        favourite == other.favourite;
   }
 
   @override
@@ -99,6 +103,7 @@ class _$CustomerSearchDtoOutputRestaurantsInner
     _$hash = $jc(_$hash, estimate.hashCode);
     _$hash = $jc(_$hash, deliveryFee.hashCode);
     _$hash = $jc(_$hash, state.hashCode);
+    _$hash = $jc(_$hash, favourite.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -120,7 +125,8 @@ class _$CustomerSearchDtoOutputRestaurantsInner
           ..add('testMode', testMode)
           ..add('estimate', estimate)
           ..add('deliveryFee', deliveryFee)
-          ..add('state', state))
+          ..add('state', state)
+          ..add('favourite', favourite))
         .toString();
   }
 }
@@ -201,6 +207,10 @@ class CustomerSearchDtoOutputRestaurantsInnerBuilder
     CustomerRestaurantListDtoOutputRestaurantsInnerStateBuilder? state,
   ) => _$this._state = state;
 
+  bool? _favourite;
+  bool? get favourite => _$this._favourite;
+  set favourite(bool? favourite) => _$this._favourite = favourite;
+
   CustomerSearchDtoOutputRestaurantsInnerBuilder() {
     CustomerSearchDtoOutputRestaurantsInner._defaults(this);
   }
@@ -221,6 +231,7 @@ class CustomerSearchDtoOutputRestaurantsInnerBuilder
       _estimate = $v.estimate.toBuilder();
       _deliveryFee = $v.deliveryFee?.toBuilder();
       _state = $v.state.toBuilder();
+      _favourite = $v.favourite;
       _$v = null;
     }
     return this;
@@ -272,6 +283,11 @@ class CustomerSearchDtoOutputRestaurantsInnerBuilder
             estimate: estimate.build(),
             deliveryFee: _deliveryFee?.build(),
             state: state.build(),
+            favourite: BuiltValueNullFieldError.checkNotNull(
+              favourite,
+              r'CustomerSearchDtoOutputRestaurantsInner',
+              'favourite',
+            ),
           );
     } catch (_) {
       late String _$failedField;

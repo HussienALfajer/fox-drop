@@ -2116,6 +2116,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/customer/favourites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["customerFavouritesList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/favourites/{restaurantId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["customerFavouritesAdd"];
+        post?: never;
+        delete: operations["customerFavouritesRemove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/customers/search": {
         parameters: {
             query?: never;
@@ -2900,6 +2932,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/customer/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["customerOrdersHistory"];
+        put?: never;
+        post: operations["customerOrdersPlace"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/customer/orders/{orderId}": {
         parameters: {
             query?: never;
@@ -2910,22 +2958,6 @@ export interface paths {
         get: operations["customerOrdersOrder"];
         put?: never;
         post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/customer/orders": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["customerOrdersPlace"];
         delete?: never;
         options?: never;
         head?: never;
@@ -7274,6 +7306,8 @@ export interface components {
                     /** @description A holiday close's message, or an operations pause's. */
                     message: string | null;
                 };
+                /** @description The heart (CU §9.6): a favourite of the signed-in customer; false for a guest. */
+                favourite: boolean;
             }[];
             /** @description With home: the home sections shown, in the panel’s order (CU §8.1, AP §9.11.3); a restaurant section with no restaurant is left out, and «البانرات» without a banner. Null otherwise. */
             sections: {
@@ -7359,6 +7393,8 @@ export interface components {
                 /** @description A holiday close's message, or an operations pause's. */
                 message: string | null;
             };
+            /** @description The heart (CU §9.6): a favourite of the signed-in customer; false for a guest. */
+            favourite: boolean;
             description: string | null;
             minimumOrder: {
                 /** @description Integer minor units (AP §8.6). */
@@ -7546,6 +7582,8 @@ export interface components {
                     /** @description A holiday close's message, or an operations pause's. */
                     message: string | null;
                 };
+                /** @description The heart (CU §9.6): a favourite of the signed-in customer; false for a guest. */
+                favourite: boolean;
             }[];
             /** @description Their items whose name or description matches, in the restaurants' order (closed last), at most 50. */
             items: {
@@ -7623,6 +7661,71 @@ export interface components {
         CustomerSuggestedDto_Output: {
             /** @constant */
             status: "received";
+        };
+        CustomerFavouritesDto_Output: {
+            /** @description CU §9.6 «المفضلة»: the favourites that deliver to the point, with their state and estimate, open first and closed last; the others are left out. */
+            restaurants: {
+                /** Format: uuid */
+                id: string;
+                nameAr: string;
+                nameEn: string | null;
+                /** @description Deprecated (slice 2.27a): the first of `categories`, for older apps. */
+                category: string | null;
+                /** @description Its active categories (AP §9.13), in the restaurant’s order. */
+                categories: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                }[];
+                /** @description Its key in public-media, shown through imgproxy (architecture §5.8); null without one. */
+                logoKey: string | null;
+                /** @description Its key in public-media, shown through imgproxy (architecture §5.8); null without one. */
+                coverKey: string | null;
+                /** @description The restaurant's average stars to one decimal; null is «جديد», below 5 ratings (CU §12.1, Q16). */
+                rating: number | null;
+                /** @description The number of ratings beside the average (CU §8.2, §9.1); null with «جديد». */
+                ratingCount: number | null;
+                /** @description «تجريبي»: in test mode, seen only by an admin test account (CU §8.2, AP §9.8). */
+                testMode: boolean;
+                /** @description CU §8.4: «{fromMin}–{toMin} د». */
+                estimate: {
+                    fromMin: number;
+                    toMin: number;
+                };
+                /** @description To the point; null while the city has no fee rule in its base currency. */
+                deliveryFee: {
+                    fee: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    };
+                    /** @description «توصيل مجاني». */
+                    free: boolean;
+                } | null;
+                /** @description Only open takes orders. */
+                state: {
+                    /**
+                     * @description CU §9.2: open; «المطعم مشغول حالياً، جرّب بعد قليل»; «المطعم متوقف مؤقتاً…»; «مغلق — يفتح…»; «مغلق حتى {التاريخ}».
+                     * @enum {string}
+                     */
+                    state: "open" | "busy" | "paused" | "closed" | "holiday";
+                    /** @description Open with busy mode on: «قد يستغرق الطلب وقتاً أطول قليلاً». */
+                    busyMode: boolean;
+                    /** @description The end of a pause or a holiday close; null for a pause until resumed. */
+                    until: string | null;
+                    /** @description While closed by the schedule: its next opening. */
+                    opensAt: string | null;
+                    /** @description A holiday close's message, or an operations pause's. */
+                    message: string | null;
+                };
+                /** @description The heart (CU §9.6): a favourite of the signed-in customer; false for a guest. */
+                favourite: boolean;
+            }[];
+        };
+        CustomerFavouriteDto_Output: {
+            /** Format: uuid */
+            restaurantId: string;
+            favourite: boolean;
         };
         AdminCustomerSearchDto: {
             /**
@@ -9300,6 +9403,18 @@ export interface components {
                         currency: string;
                     }[];
                 } | null;
+                /** @description CU §12.3 «اطلب مرة أخرى»: delivered, rejected or cancelled, not a free re-delivery, while customers see the restaurant; false in the list of active orders. */
+                orderAgain: boolean;
+                /** @description CU §12.3: the order's short timeline, oldest first; only the steps it reached. */
+                timeline: {
+                    /**
+                     * @description «تم الطلب», «قبل المطعم», «استلم الكابتن», «الكابتن عند الباب», «تم التسليم», «تعذّر التسليم», «رفض المطعم», «أُلغي».
+                     * @enum {string}
+                     */
+                    step: "placed" | "accepted" | "picked_up" | "arrived" | "delivered" | "failed" | "rejected" | "cancelled";
+                    /** Format: date-time */
+                    at: string;
+                }[];
                 restaurant: {
                     /** Format: uuid */
                     id: string;
@@ -9400,6 +9515,35 @@ export interface components {
                     directions: string | null;
                 };
             }[];
+        };
+        CustomerOrderHistoryDto_Output: {
+            /** @description CU §12.3 «طلباتي»: the first page holds every active order, then the past ones; each group newest first. */
+            orders: {
+                /** Format: uuid */
+                id: string;
+                number: string;
+                restaurant: {
+                    /** Format: uuid */
+                    id: string;
+                    nameAr: string;
+                    nameEn: string | null;
+                };
+                /** Format: date-time */
+                placedAt: string;
+                /** @enum {string} */
+                status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                /** @description Placed to arrived: listed first. */
+                active: boolean;
+                total: {
+                    /** @description Integer minor units (AP §8.6). */
+                    amount: string;
+                    currency: string;
+                };
+                /** @description A free re-delivery (AP §9.9.3): no «اطلب مرة أخرى». */
+                redelivery: boolean;
+            }[];
+            /** @description The cursor of the next page of 20 past orders; null at the end. */
+            next: string | null;
         };
         CustomerOrderDto_Output: {
             order: {
@@ -9594,6 +9738,18 @@ export interface components {
                         currency: string;
                     }[];
                 } | null;
+                /** @description CU §12.3 «اطلب مرة أخرى»: delivered, rejected or cancelled, not a free re-delivery, while customers see the restaurant; false in the list of active orders. */
+                orderAgain: boolean;
+                /** @description CU §12.3: the order's short timeline, oldest first; only the steps it reached. */
+                timeline: {
+                    /**
+                     * @description «تم الطلب», «قبل المطعم», «استلم الكابتن», «الكابتن عند الباب», «تم التسليم», «تعذّر التسليم», «رفض المطعم», «أُلغي».
+                     * @enum {string}
+                     */
+                    step: "placed" | "accepted" | "picked_up" | "arrived" | "delivered" | "failed" | "rejected" | "cancelled";
+                    /** Format: date-time */
+                    at: string;
+                }[];
                 restaurant: {
                     /** Format: uuid */
                     id: string;
@@ -19489,6 +19645,73 @@ export interface operations {
             };
         };
     };
+    customerFavouritesList: {
+        parameters: {
+            query: {
+                latitude: string;
+                longitude: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerFavouritesDto_Output"];
+                };
+            };
+        };
+    };
+    customerFavouritesAdd: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerFavouriteDto_Output"];
+                };
+            };
+        };
+    };
+    customerFavouritesRemove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerFavouriteDto_Output"];
+                };
+            };
+        };
+    };
     adminCustomersSearch: {
         parameters: {
             query?: never;
@@ -20789,13 +21012,14 @@ export interface operations {
             };
         };
     };
-    customerOrdersOrder: {
+    customerOrdersHistory: {
         parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                orderId: string;
+            query?: {
+                /** @description The `next` of the page before; none for the first page. */
+                cursor?: string;
             };
+            header?: never;
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;
@@ -20806,7 +21030,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CustomerOrderDto_Output"];
+                    "application/json": components["schemas"]["CustomerOrderHistoryDto_Output"];
                 };
             };
         };
@@ -20828,6 +21052,28 @@ export interface operations {
         };
         responses: {
             201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerOrderDto_Output"];
+                };
+            };
+        };
+    };
+    customerOrdersOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
                 headers: {
                     "Server-Time": components["headers"]["Server-Time"];
                     [name: string]: unknown;

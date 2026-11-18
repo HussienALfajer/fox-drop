@@ -8,6 +8,7 @@ import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inne
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_restaurant.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_cancellation.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_delivery.dart';
+import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_timeline_inner.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_money.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_redeliveries_inner.dart';
 import 'package:core_api/src/model/customer_active_orders_dto_output_orders_inner_item_report.dart';
@@ -49,6 +50,8 @@ part 'customer_active_orders_dto_output_orders_inner.g.dart';
 /// * [rejection]
 /// * [outcome]
 /// * [delivery]
+/// * [orderAgain] - CU §12.3 «اطلب مرة أخرى»: delivered, rejected or cancelled, not a free re-delivery, while customers see the restaurant; false in the list of active orders.
+/// * [timeline] - CU §12.3: the order's short timeline, oldest first; only the steps it reached.
 /// * [restaurant]
 /// * [captain]
 /// * [currency]
@@ -130,6 +133,14 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInner
 
   @BuiltValueField(wireName: r'delivery')
   CustomerActiveOrdersDtoOutputOrdersInnerDelivery? get delivery;
+
+  /// CU §12.3 «اطلب مرة أخرى»: delivered, rejected or cancelled, not a free re-delivery, while customers see the restaurant; false in the list of active orders.
+  @BuiltValueField(wireName: r'orderAgain')
+  bool get orderAgain;
+
+  /// CU §12.3: the order's short timeline, oldest first; only the steps it reached.
+  @BuiltValueField(wireName: r'timeline')
+  BuiltList<CustomerActiveOrdersDtoOutputOrdersInnerTimelineInner> get timeline;
 
   @BuiltValueField(wireName: r'restaurant')
   CustomerActiveOrdersDtoOutputOrdersInnerRestaurant get restaurant;
@@ -346,6 +357,18 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerSerializer
               CustomerActiveOrdersDtoOutputOrdersInnerDelivery,
             ),
           );
+    yield r'orderAgain';
+    yield serializers.serialize(
+      object.orderAgain,
+      specifiedType: const FullType(bool),
+    );
+    yield r'timeline';
+    yield serializers.serialize(
+      object.timeline,
+      specifiedType: const FullType(BuiltList, [
+        FullType(CustomerActiveOrdersDtoOutputOrdersInnerTimelineInner),
+      ]),
+    );
     yield r'restaurant';
     yield serializers.serialize(
       object.restaurant,
@@ -660,6 +683,30 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerSerializer
                   as CustomerActiveOrdersDtoOutputOrdersInnerDelivery?;
           if (valueDes == null) continue;
           result.delivery.replace(valueDes);
+          break;
+        case r'orderAgain':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.orderAgain = valueDes;
+          break;
+        case r'timeline':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(
+                        CustomerActiveOrdersDtoOutputOrdersInnerTimelineInner,
+                      ),
+                    ]),
+                  )
+                  as BuiltList<
+                    CustomerActiveOrdersDtoOutputOrdersInnerTimelineInner
+                  >;
+          result.timeline.replace(valueDes);
           break;
         case r'restaurant':
           final valueDes =

@@ -7,6 +7,7 @@ import {
   date,
   index,
   pgSchema,
+  primaryKey,
   text,
   timestamp,
   uniqueIndex,
@@ -367,5 +368,27 @@ export const restaurantSuggestions = customers.table(
     check('restaurant_suggestions_name', sql`length(${table.restaurantName}) BETWEEN 1 AND 60`),
     check('restaurant_suggestions_note', sql`length(${table.note}) BETWEEN 1 AND 200`),
     check('restaurant_suggestions_query', sql`length(${table.query}) BETWEEN 1 AND 50`),
+  ],
+);
+
+// CU §9.6 «المفضلة» (U18; slice 2.28b): a restaurant the customer hearted,
+// one row per account and restaurant. The heart sets `added_at` and clears
+// `removed_at`; removing it sets `removed_at`, so the row is never deleted.
+export const favourites = customers.table(
+  'favourites',
+  {
+    // The identity module's customer_accounts row.
+    accountId: uuid('account_id').notNull(),
+    // The merchants module's restaurant.
+    restaurantId: uuid('restaurant_id').notNull(),
+    addedAt: timestamp('added_at', { withTimezone: true }).notNull(),
+    removedAt: timestamp('removed_at', { withTimezone: true }),
+  },
+  (table) => [
+    primaryKey({ columns: [table.accountId, table.restaurantId] }),
+    check(
+      'favourites_removed_after_added',
+      sql`${table.removedAt} IS NULL OR ${table.removedAt} >= ${table.addedAt}`,
+    ),
   ],
 );

@@ -9,6 +9,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Query,
   Req,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -33,9 +34,9 @@ import {
 import { UNTIL_ENDED } from './active-orders.js';
 import { lockOrder } from './order-events.js';
 import { type Captain, CaptainsService } from '../captains/index.js';
-import { unsavedAddressFields, withRecipient } from '../customers/index.js';
+import { CustomersService, unsavedAddressFields, withRecipient } from '../customers/index.js';
 import { type AppSession, CaptainAccountsService } from '../identity/index.js';
-import { MerchantsService } from '../merchants/index.js';
+import { MerchantsService, seenByCustomer } from '../merchants/index.js';
 import {
   appVersion,
   cartLines,
@@ -47,7 +48,7 @@ import {
 } from './customer-quote.controller.js';
 import { OrderCommandRefusedError, OrderCommands } from './order-commands.js';
 import type { OrderView } from './order-views.js';
-import { OrderRefusedError, OrdersService } from './orders.service.js';
+import { ORDER_HISTORY_PAGE, OrderRefusedError, OrdersService } from './orders.service.js';
 import {
   type Compensation,
   CompensationsService,
@@ -61,6 +62,7 @@ import {
   type RatingView,
 } from './ratings.js';
 import { orderStatuses } from './schema.js';
+import { timeline } from './customer-timeline.js';
 
 // A personal code with its value (CU §11.6, §11.9): a compensation's or the
 // late code.
@@ -323,6 +325,32 @@ const customerOrder = z.object({
     })
     .nullable()
     .describe('Once delivered; the order screen opens the rating sheet (CU §12.1).'),
+  orderAgain: z
+    .boolean()
+    .describe(
+      'CU §12.3 «اطلب مرة أخرى»: delivered, rejected or cancelled, not a free re-delivery, while customers see the restaurant; false in the list of active orders.',
+    ),
+  timeline: z
+    .array(
+      z.object({
+        step: z
+          .enum([
+            'placed',
+            'accepted',
+            'picked_up',
+            'arrived',
+            'delivered',
+            'failed',
+            'rejected',
+            'cancelled',
+          ])
+          .describe(
+            '«تم الطلب», «قبل المطعم», «استلم الكابتن», «الكابتن عند الباب», «تم التسليم», «تعذّر التسليم», «رفض المطعم», «أُلغي».',
+          ),
+        at: z.iso.datetime(),
+      }),
+    )
+    .describe("CU §12.3: the order's short timeline, oldest first; only the steps it reached."),
   restaurant: z.object({ id: z.uuid(), nameAr: z.string(), nameEn: z.string().nullable() }),
   captain: z
     .object({
@@ -420,6 +448,51 @@ class CustomerActiveOrdersDto extends createZodDto(
 
 class CustomerOrderParamsDto extends createZodDto(z.object({ orderId: z.uuid() })) {}
 
+// A page's cursor: the placing time and id of the last past order shown.
+const CURSOR = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)_([0-9a-f-]{36})$/;
+
+class CustomerOrderHistoryQueryDto extends createZodDto(
+  z.object({
+    cursor: z
+      .string()
+      .regex(CURSOR)
+      .refine((cursor) => !Number.isNaN(Date.parse(cursor.split('_')[0]!)), 'a real moment')
+      .optional()
+      .describe('The `next` of the page before; none for the first page.'),
+  }),
+) {}
+
+class CustomerOrderHistoryDto extends createZodDto(
+  z.object({
+    orders: z
+      .array(
+        z.object({
+          id: z.uuid(),
+          number: z.string(),
+          restaurant: z.object({
+            id: z.uuid(),
+            nameAr: z.string(),
+            nameEn: z.string().nullable(),
+          }),
+          placedAt: z.iso.datetime(),
+          status: z.enum(orderStatuses),
+          active: z.boolean().describe('Placed to arrived: listed first.'),
+          total: z.object({ amount: minor, currency: z.string().length(3) }),
+          redelivery: z.boolean().describe('A free re-delivery (AP §9.9.3): no «اطلب مرة أخرى».'),
+        }),
+      )
+      .describe(
+        'CU §12.3 «طلباتي»: the first page holds every active order, then the past ones; each group newest first.',
+      ),
+    next: z
+      .string()
+      .nullable()
+      .describe(
+        `The cursor of the next page of ${ORDER_HISTORY_PAGE} past orders; null at the end.`,
+      ),
+  }),
+) {}
+
 class CustomerReportOrderDto extends createZodDto(
   z.object({
     typeCode: z
@@ -477,6 +550,7 @@ export class CustomerOrdersController {
     private readonly lateCodes: LateCodesService,
     private readonly support: SupportService,
     private readonly ratings: RatingsService,
+    private readonly customers: CustomersService,
     @Inject(DATABASE) private readonly database: Database,
   ) {}
 
@@ -490,6 +564,42 @@ export class CustomerOrdersController {
       this.captainsOf(orders),
     ]);
     return { orders: orders.map((order) => orderBody(order, names, captains)) };
+  }
+
+  // CU §12.3 «طلباتي» (slice 2.28b).
+  @Get('orders')
+  @AppSignedIn()
+  @ZodResponse({ status: 200, type: CustomerOrderHistoryDto })
+  async history(
+    @CurrentAppSession() session: AppSession,
+    @Query() query: CustomerOrderHistoryQueryDto,
+  ) {
+    const match = query.cursor === undefined ? null : CURSOR.exec(query.cursor);
+    const { orders, more } = await this.orders.customerOrderHistory(
+      session.accountId,
+      match ? { placedAt: new Date(match[1]!), id: match[2]! } : null,
+    );
+    const names = await this.merchants.names([
+      ...new Set(orders.map((order) => order.restaurantId)),
+    ]);
+    const last = orders.at(-1);
+    return {
+      orders: orders.map((order) => {
+        const restaurant = names.get(order.restaurantId);
+        if (!restaurant) throw new Error(`order ${order.id} has an unknown restaurant`);
+        return {
+          id: order.id,
+          number: text(order.number),
+          restaurant: { id: order.restaurantId, ...restaurant },
+          placedAt: order.placedAt.toISOString(),
+          status: order.status,
+          active: order.active,
+          total: { amount: text(order.total), currency: order.currency },
+          redelivery: order.redeliveryOfId !== null,
+        };
+      }),
+      next: more && last ? `${last.placedAt.toISOString()}_${last.id}` : null,
+    };
   }
 
   // 404 unknown_order for another customer's order.
@@ -795,6 +905,7 @@ export class CustomerOrdersController {
         this.orders.redeliveriesOf(order.id),
         this.ratings.ofOrder(order.id),
       ]);
+    const orderAgain = await this.orderAgain(order);
     const ratingUntil = await this.ratings.until(order, deliveredAt);
     const captainRatable = order.captainId !== null && ratingUntil !== null;
     const left = ratings.length < (captainRatable ? 2 : 1);
@@ -818,7 +929,20 @@ export class CustomerOrdersController {
         restaurant: ratings.find((each) => each.party === 'restaurant') ?? null,
         captain: ratings.find((each) => each.party === 'captain') ?? null,
       },
+      orderAgain,
     });
+  }
+
+  // CU §12.3: «اطلب مرة أخرى» on a delivered, rejected or cancelled order,
+  // never a free re-delivery, while customers (or this admin test account)
+  // see its restaurant.
+  private async orderAgain(order: OrderView): Promise<boolean> {
+    if (order.redelivery !== null || !ORDER_AGAIN.includes(order.status)) return false;
+    const [restaurant, testAccount] = await Promise.all([
+      this.merchants.restaurant(order.restaurantId, new Date()),
+      this.customers.isTestAccount(order.customerAccountId),
+    ]);
+    return restaurant !== null && seenByCustomer(restaurant, testAccount);
   }
 
   // The captains of these orders; with their number once one of their orders
@@ -843,6 +967,9 @@ export class CustomerOrdersController {
     return new Map(found.flatMap((captain) => (captain ? [[captain.id, captain] as const] : [])));
   }
 }
+
+// CU §12.3: the orders «اطلب مرة أخرى» follows.
+const ORDER_AGAIN: readonly OrderView['status'][] = ['delivered', 'rejected', 'cancelled'];
 
 // CU §11.3, U12: «اتصال بالكابتن» from the pickup until the order ends.
 const CALL_CAPTAIN: readonly OrderView['status'][] = ['picked_up', 'arrived'];
@@ -872,7 +999,9 @@ function orderBody(
       restaurant: RatingView | null;
       captain: RatingView | null;
     } | null;
-  } = { report: null, reportUntil: null, redeliveries: [], rating: null },
+    // CU §12.3 (slice 2.28b): «اطلب مرة أخرى» is offered.
+    orderAgain: boolean;
+  } = { report: null, reportUntil: null, redeliveries: [], rating: null, orderAgain: false },
 ) {
   const captain = order.captainId === null ? undefined : captains.get(order.captainId);
   const restaurant = names.get(order.restaurantId);
@@ -959,6 +1088,8 @@ function orderBody(
         currency: line.currency,
       })),
     },
+    orderAgain: after.orderAgain,
+    timeline: timeline(order),
     restaurant: { id: order.restaurantId, ...restaurant },
     captain: captain
       ? {

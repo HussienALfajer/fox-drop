@@ -1,4 +1,5 @@
 import 'package:core_api/core_api.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../api.dart';
@@ -160,15 +161,23 @@ class OrderAgain {
   /// The order's lines without [without], from the restaurant's menu at the
   /// order's pin now, replacing the cart.
   Future<OrderAgainResult> run(CustomerOrder order, Set<String> without) async {
-    final response = await _ref
-        .read(coreApiProvider)
-        .getCustomerApi()
-        .customerBrowsingPage(
-          restaurantId: order.restaurant.id,
-          latitude: '${order.address.location.latitude}',
-          longitude: '${order.address.location.longitude}',
-        );
-    final page = response.data;
+    final CustomerRestaurantPageDtoOutput? page;
+    try {
+      page =
+          (await _ref
+                  .read(coreApiProvider)
+                  .getCustomerApi()
+                  .customerBrowsingPage(
+                    restaurantId: order.restaurant.id,
+                    latitude: '${order.address.location.latitude}',
+                    longitude: '${order.address.location.longitude}',
+                  ))
+              .data;
+    } on DioException catch (error) {
+      // A restaurant customers no longer see answers 404.
+      if (error.response?.statusCode == 404) return const RestaurantGone();
+      rethrow;
+    }
     if (page == null) return const RestaurantGone();
     final rebuilt = rebuildLines(orderedLines(order), page.menu, without);
     if (rebuilt.lines.isEmpty) return NothingToAdd(rebuilt.skipped);
