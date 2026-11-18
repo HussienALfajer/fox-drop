@@ -282,6 +282,21 @@ export class MerchantAccountsService implements OnModuleInit {
     return (await this.refusal(account)) ?? account;
   }
 
+  // AP §9.6.2 (slice 2.30c): the restaurant whose user signs in with this
+  // number (E.164), the search of «المطاعم» by phone; null without one.
+  async restaurantByPhone(phone: string): Promise<string | null> {
+    const [row] = await this.database.db
+      .select({ restaurantId: merchantAccounts.restaurantId })
+      .from(merchantAccounts)
+      .where(
+        and(
+          eq(merchantAccounts.phoneHash, this.secrets.phoneHash(phone)),
+          isNull(merchantAccounts.removedAt),
+        ),
+      );
+    return row?.restaurantId ?? null;
+  }
+
   // An account not removed, or null.
   async account(executor: Executor, accountId: string): Promise<MerchantAccount | null> {
     const [account] = await executor

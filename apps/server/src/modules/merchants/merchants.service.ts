@@ -89,6 +89,19 @@ const COMMISSION_REPEAT_WINDOW_MS = 60_000;
 // AP §9.6.5 «تثبيت» (slice 2.30c, decided by us): the highest sort weight.
 export const SORT_WEIGHT_MAX = 1000;
 
+// AP §9.6.2: a restaurant as the panel's list reads it.
+export interface RestaurantListRow {
+  id: string;
+  nameAr: string;
+  nameEn: string | null;
+  categoryIds: string[];
+  accountStatus: AccountStatus;
+  visible: boolean;
+  sortWeight: number;
+  phone: string | null;
+  location: Point | null;
+}
+
 // AP §9.6.5, D16: a commission version as the panel lists it.
 export interface CommissionHistoryEntry {
   id: string;
@@ -379,6 +392,34 @@ export class MerchantsService implements OnModuleInit {
       .from(restaurants)
       .where(eq(restaurants.cityId, cityId))
       .orderBy(asc(restaurants.nameAr));
+  }
+
+  // AP §9.6.2 «المطاعم» (slice 2.30c): every restaurant of the city as the
+  // list reads it, drafts included (their pin may be missing), by name.
+  async listRows(cityId: string): Promise<RestaurantListRow[]> {
+    const rows = await this.database.db
+      .select({
+        id: restaurants.id,
+        nameAr: restaurants.nameAr,
+        nameEn: restaurants.nameEn,
+        categoryIds: restaurants.categoryIds,
+        accountStatus: restaurants.accountStatus,
+        visible: restaurants.visible,
+        sortWeight: restaurants.sortWeight,
+        phone: restaurants.phone,
+        latitude: sql<number | null>`ST_Y(${restaurants.location})`,
+        longitude: sql<number | null>`ST_X(${restaurants.location})`,
+      })
+      .from(restaurants)
+      .where(eq(restaurants.cityId, cityId))
+      .orderBy(asc(restaurants.nameAr), asc(restaurants.id));
+    return rows.map(({ latitude, longitude, ...row }) => ({
+      ...row,
+      location:
+        latitude === null || longitude === null
+          ? null
+          : { latitude: Number(latitude), longitude: Number(longitude) },
+    }));
   }
 
   // The restaurants' names by id, in one read: what an order shows of its

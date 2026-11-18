@@ -697,6 +697,17 @@ Serializers _$serializers =
           ..add(
             AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner.serializer,
           )
+          ..add(AdminRestaurantListDtoOutput.serializer)
+          ..add(AdminRestaurantListDtoOutputRestaurantsInner.serializer)
+          ..add(
+            AdminRestaurantListDtoOutputRestaurantsInnerAccountStatusEnum
+                .serializer,
+          )
+          ..add(
+            AdminRestaurantListDtoOutputRestaurantsInnerStateEnum.serializer,
+          )
+          ..add(AdminRestaurantListQueryDto.serializer)
+          ..add(AdminRestaurantListQueryDtoStatusEnum.serializer)
           ..add(AdminRestaurantMaxActiveOrdersDto.serializer)
           ..add(AdminRestaurantPauseDto.serializer)
           ..add(AdminRestaurantPeriodStatementDtoOutput.serializer)
@@ -2610,6 +2621,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminRestaurantListDtoOutputRestaurantsInner),
+            ]),
+            () => ListBuilder<AdminRestaurantListDtoOutputRestaurantsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminRestaurantPeriodStatementDtoOutputLinesInner),
             ]),
             () =>
@@ -3047,6 +3064,13 @@ Serializers _$serializers =
               const FullType(CaptainPeakBonusDtoOutputActiveInner),
             ]),
             () => ListBuilder<CaptainPeakBonusDtoOutputActiveInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+            ]),
+            () =>
+                ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

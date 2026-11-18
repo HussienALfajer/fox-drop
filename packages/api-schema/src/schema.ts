@@ -5588,6 +5588,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/restaurant-list": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminRestaurantListRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/restaurant-statements/restaurants": {
         parameters: {
             query?: never;
@@ -16906,6 +16922,53 @@ export interface components {
             /** @description Integer minor units: + the restaurant owes, − the platform owes it (AP §8.7). */
             dueAfter: string;
         };
+        AdminRestaurantListQueryDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description Only this account status; null for every one. */
+            status: ("draft" | "test" | "active" | "suspended" | "terminated") | null;
+            /** @description Only the restaurants of this category. */
+            categoryId: string | null;
+            /** @description Only the restaurants whose pin is in this zone. */
+            zoneId: string | null;
+            /** @description A part of the name, or a number (E.164, 00…, 09…, 05…): the restaurant’s own or a user’s. */
+            q: string | null;
+        };
+        AdminRestaurantListDto_Output: {
+            /** @description The city’s base, of every balance. */
+            currency: string | null;
+            /** @description By name; drafts included. */
+            restaurants: {
+                /** Format: uuid */
+                id: string;
+                nameAr: string;
+                nameEn: string | null;
+                categories: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                }[];
+                /** @enum {string} */
+                accountStatus: "draft" | "test" | "active" | "suspended" | "terminated";
+                /** @description The operating state in test mode or active; null otherwise. */
+                state: ("open" | "busy" | "paused" | "closed") | null;
+                visible: boolean;
+                sortWeight: number;
+                /** @description The zone the pin is in. */
+                zoneName: string | null;
+                ratingAverage: number | null;
+                ratingCount: number;
+                /** @description Placed since today’s cutoff, test orders left out. */
+                ordersToday: number;
+                /** @description Accepted of those accepted, rejected or never answered over 7 business days, in basis points. */
+                acceptanceBp7d: number | null;
+                /** @description In force now. */
+                commissionBp: number | null;
+                /** @description Minor units in the base: + the restaurant owes, − the platform owes it. */
+                balance: string;
+                lastOrderAt: string | null;
+            }[];
+        };
         AdminStatementRestaurantsDto_Output: {
             restaurants: {
                 /** Format: uuid */
@@ -26398,6 +26461,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MerchantReceiptDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantListRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRestaurantListQueryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantListDto_Output"];
                 };
             };
         };

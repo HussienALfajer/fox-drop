@@ -422,6 +422,9 @@ import 'package:core_api/src/model/admin_restaurant_holiday_close_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_images_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_images_dto_output_categories_inner.dart';
 import 'package:core_api/src/model/admin_restaurant_images_dto_output_categories_inner_items_inner.dart';
+import 'package:core_api/src/model/admin_restaurant_list_dto_output.dart';
+import 'package:core_api/src/model/admin_restaurant_list_dto_output_restaurants_inner.dart';
+import 'package:core_api/src/model/admin_restaurant_list_query_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_max_active_orders_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_pause_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_period_statement_dto_output.dart';
@@ -1342,6 +1345,9 @@ part 'serializers.g.dart';
   AdminRestaurantImagesDtoOutput,
   AdminRestaurantImagesDtoOutputCategoriesInner,
   AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner,
+  AdminRestaurantListDtoOutput,
+  AdminRestaurantListDtoOutputRestaurantsInner,
+  AdminRestaurantListQueryDto,
   AdminRestaurantMaxActiveOrdersDto,
   AdminRestaurantPauseDto,
   AdminRestaurantPeriodStatementDtoOutput,
@@ -2089,6 +2095,12 @@ Serializers serializers =
               FullType(AdminOrderDtoOutputOrderLinesInnerOptionsInner),
             ]),
             () => ListBuilder<AdminOrderDtoOutputOrderLinesInnerOptionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminRestaurantListDtoOutputRestaurantsInner),
+            ]),
+            () => ListBuilder<AdminRestaurantListDtoOutputRestaurantsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

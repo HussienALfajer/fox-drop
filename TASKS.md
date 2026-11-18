@@ -13,7 +13,7 @@ Slice 2.30c, the list and the actions (`docs/roadmap.md`, Phase 2; owner decisio
 - **Plan (one step per commit):**
   - [x] 1. The account actions in the server: `POST /v1/admin/restaurants/{id}/suspend` and `/reactivate` (`restaurants.manage`, a reason; the state outbox's `suspended_by_operations` and `reactivated_by_operations` with their chime), `PUT …/visibility` and `PUT …/sort-weight` (`restaurants.manage`, audited), and `POST …/terminate` (`restaurants.terminate`, OWN, migration: a reason, no active order, the restaurant's account at zero under its account lock).
   - [x] 2. The commission change: `POST /v1/admin/restaurants/{id}/commission` (`restaurants.commission`, a reason, now or a later time) with the owners' push #33 in its transaction, and `GET …/commission` (in force, scheduled, history); the test that an order placed before the start keeps the old rate.
-  - [ ] 3. The list: `GET /v1/admin/restaurant-list?cityId=&status=&categoryId=&zoneId=&q=` in reporting, with its columns.
+  - [x] 3. The list: `POST /v1/admin/restaurant-list` (a read sent as a POST, so a number searched never sits in a URL) in reporting, with its columns.
   - [ ] 4. The panel: «المطاعم» (the list with its filters and search) and the actions on «حالة المطاعم».
   - [ ] 5. Review, the module docs and the handover to 2.30d.
 - **To decide in the slice:** the push's date for a change «now» (today's date); the words of the suspension and reactivation chimes (RA §16 #23 gives none); the zone of the filter (the zone of the pin); the sort weight's bounds.

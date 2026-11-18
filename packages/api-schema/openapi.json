@@ -15637,6 +15637,42 @@
         ]
       }
     },
+    "/v1/admin/restaurant-list": {
+      "post": {
+        "operationId": "adminRestaurantListRead",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminRestaurantListQueryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRestaurantListDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/restaurant-statements/restaurants": {
       "get": {
         "operationId": "adminRestaurantStatementsRestaurants",
@@ -63581,6 +63617,268 @@
           "lines",
           "dueBefore",
           "dueAfter"
+        ],
+        "additionalProperties": false
+      },
+      "AdminRestaurantListQueryDto": {
+        "type": "object",
+        "properties": {
+          "cityId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "test",
+                  "active",
+                  "suspended",
+                  "terminated"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Only this account status; null for every one."
+          },
+          "categoryId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Only the restaurants of this category."
+          },
+          "zoneId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Only the restaurants whose pin is in this zone."
+          },
+          "q": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 60
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A part of the name, or a number (E.164, 00…, 09…, 05…): the restaurant’s own or a user’s."
+          }
+        },
+        "required": [
+          "cityId",
+          "status",
+          "categoryId",
+          "zoneId",
+          "q"
+        ]
+      },
+      "AdminRestaurantListDto_Output": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The city’s base, of every balance."
+          },
+          "restaurants": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "nameAr": {
+                  "type": "string"
+                },
+                "nameEn": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "categories": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "name": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "accountStatus": {
+                  "type": "string",
+                  "enum": [
+                    "draft",
+                    "test",
+                    "active",
+                    "suspended",
+                    "terminated"
+                  ]
+                },
+                "state": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "open",
+                        "busy",
+                        "paused",
+                        "closed"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The operating state in test mode or active; null otherwise."
+                },
+                "visible": {
+                  "type": "boolean"
+                },
+                "sortWeight": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "zoneName": {
+                  "description": "The zone the pin is in.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "ratingAverage": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "ratingCount": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "ordersToday": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "description": "Placed since today’s cutoff, test orders left out."
+                },
+                "acceptanceBp7d": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Accepted of those accepted, rejected or never answered over 7 business days, in basis points."
+                },
+                "commissionBp": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "In force now."
+                },
+                "balance": {
+                  "type": "string",
+                  "pattern": "^-?\\d{1,18}$",
+                  "description": "Minor units in the base: + the restaurant owes, − the platform owes it."
+                },
+                "lastOrderAt": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "nameAr",
+                "nameEn",
+                "categories",
+                "accountStatus",
+                "state",
+                "visible",
+                "sortWeight",
+                "zoneName",
+                "ratingAverage",
+                "ratingCount",
+                "ordersToday",
+                "acceptanceBp7d",
+                "commissionBp",
+                "balance",
+                "lastOrderAt"
+              ],
+              "additionalProperties": false
+            },
+            "description": "By name; drafts included."
+          }
+        },
+        "required": [
+          "currency",
+          "restaurants"
         ],
         "additionalProperties": false
       },

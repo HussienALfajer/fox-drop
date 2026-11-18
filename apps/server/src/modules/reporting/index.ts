@@ -15,7 +15,11 @@ import { MarketingModule } from '../marketing/index.js';
 import { AdminCostReportController } from './admin-cost-report.controller.js';
 import { AdminDailyReportController } from './admin-daily-report.controller.js';
 import { AdminExportsController } from './admin-exports.controller.js';
+import { AdminRestaurantListController } from './admin-restaurant-list.controller.js';
 import { AdminRestaurantStatementsController } from './admin-restaurant-statements.controller.js';
+import { RestaurantListService } from './restaurant-list.service.js';
+import { ContentModule } from '../content/index.js';
+import { IdentityModule } from '../identity/index.js';
 import { CostReportService } from './cost-report.service.js';
 import { DailyReportService } from './daily-report.service.js';
 import { ExportsService } from './exports.service.js';
@@ -42,14 +46,15 @@ const imports = [
 // 2.20d: «التقرير اليومي» (AP §9.10.1); slice 2.22d: «كلفة التعويضات
 // والخصومات» (AP §9.10.6).
 @Module({
-  imports,
+  imports: [...imports, ContentModule, IdentityModule],
   controllers: [
+    AdminRestaurantListController,
     AdminRestaurantStatementsController,
     AdminDailyReportController,
     AdminCostReportController,
     AdminExportsController,
   ],
-  providers: [ExportsService, DailyReportService, CostReportService],
+  providers: [ExportsService, DailyReportService, CostReportService, RestaurantListService],
 })
 export class ReportingModule {}
 
