@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api.dart';
 import '../browsing/browsing.dart';
 import '../device.dart';
+import '../location/delivery_point.dart';
 
 typedef SearchItem = CustomerSearchDtoOutputItemsInner;
 
@@ -33,10 +34,25 @@ class SearchView {
   bool get isEmpty => restaurants.isEmpty && items.isEmpty;
 }
 
-/// The text the box sends: trimmed, null while too short.
+/// The text the box sends: trimmed, null while too short or, counted in
+/// UTF-16 units as the server counts it (diacritics included), too long.
 String? searchQuery(String typed) {
   final query = typed.trim();
-  return query.length < searchMinLength ? null : query;
+  return query.length < searchMinLength || query.length > searchMaxLength
+      ? null
+      : query;
+}
+
+/// «لم تجده؟ أخبرنا»: the server takes a name of 1 to 60 and a note up to
+/// 200, counted in UTF-16 units after trimming.
+const suggestionNameMax = 60;
+const suggestionNoteMax = 200;
+
+bool suggestionFits(String name, String note) {
+  final trimmed = name.trim();
+  return trimmed.isNotEmpty &&
+      trimmed.length <= suggestionNameMax &&
+      note.trim().length <= suggestionNoteMax;
 }
 
 /// The recent searches with [query] first, once, at most
@@ -128,7 +144,10 @@ class RestaurantSuggestion {
     required String? note,
     required String? query,
   }) async {
-    final point = browsingPoint(_ref);
+    final point = switch (_ref.read(deliveryPointProvider)) {
+      PointChecked(coverage: PointCoverage.served, :final point) => point,
+      _ => null,
+    };
     if (point == null) return false;
     final alive = _ref.keepAlive();
     final fingerprint = [
@@ -161,8 +180,10 @@ class RestaurantSuggestion {
       _keyFor = null;
       return true;
     } on DioException catch (error) {
-      // A refusal takes a new key next time; a lost answer keeps it.
-      if (error.response != null) {
+      // A refusal takes a new key next time; a lost answer or a server
+      // error keeps it, since the server may have recorded it.
+      final status = error.response?.statusCode;
+      if (status != null && status < 500) {
         _key = null;
         _keyFor = null;
       }

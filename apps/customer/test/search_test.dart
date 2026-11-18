@@ -177,4 +177,45 @@ void main() {
     expect(sent.data, containsPair('note', null));
     await app.done(tester);
   });
+
+  testWidgets('a retry after a server error sends the same key', (
+    tester,
+  ) async {
+    final app = await _search(tester, {
+      'restaurants': <Object?>[],
+      'items': <Object?>[],
+    });
+    app.server.on('/v1/customer/restaurant-suggestions', [
+      const FakeAnswer(503, {'error': 'unavailable'}),
+      const FakeAnswer(200, {'status': 'received'}),
+    ]);
+    await _type(tester, 'سوشي');
+    await tester.tap(find.byKey(const Key('suggest-restaurant')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('suggest-name')), 'مطعم');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('suggest-send')));
+    await tester.pumpAndSettle();
+    expect(find.text('شكراً، سنحاول إضافته'), findsNothing);
+    await tester.tap(find.byKey(const Key('suggest-send')));
+    await tester.pumpAndSettle();
+    expect(find.text('شكراً، سنحاول إضافته'), findsOneWidget);
+    final keys = [
+      for (final sent in app.server.to('/v1/customer/restaurant-suggestions'))
+        sent.headers['Idempotency-Key'],
+    ];
+    expect(keys, hasLength(2));
+    expect(keys.toSet(), hasLength(1));
+    await app.done(tester);
+  });
+
+  test('the suggestion fits what the server takes', () {
+    expect(suggestionFits('  ', ''), isFalse);
+    expect(suggestionFits('مطعم', ''), isTrue);
+    expect(suggestionFits('م' * 61, ''), isFalse);
+    // Diacritics count, as the server counts them.
+    expect(suggestionFits('مَ' * 31, ''), isFalse);
+    expect(suggestionFits('مطعم', 'ن' * 201), isFalse);
+    expect(searchQuery('شَ' * 26), isNull);
+  });
 }

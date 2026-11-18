@@ -142,6 +142,21 @@ beforeAll(async () => {
   openPlace = await restaurant('بيت الشاورمة', { nameEn: 'Shawarma House' });
   await merchants.setWeeklySchedule(openPlace, allWeek, change);
   await merchants.setRestaurantCategories(openPlace, [grills.id], change);
+  // In test mode: only an admin test account sees it (AP §9.8).
+  const testPlace = await merchants.createRestaurant(
+    azaz,
+    {
+      nameAr: 'شاورما تجريبية',
+      location: centre,
+      coverage: { kind: 'radius', radiusMetres: 3000 },
+      minimumOrder: tryAmount(10_000n),
+      commissionBp: 1500,
+      defaultPrepMin: 20,
+    },
+    change,
+  );
+  await merchants.setAccountStatus(testPlace, 'test', change);
+  await merchants.setWeeklySchedule(testPlace, allWeek, change);
   // Far east, outside its 1 km radius of the point.
   await restaurant('شاورما بعيدة', {
     location: { latitude: centre.latitude, longitude: centre.longitude + 0.015 },
@@ -187,7 +202,8 @@ describe('GET /v1/customer/search (CU §8.3)', () => {
     expect(variant.restaurants.map((card) => card.nameAr)).toEqual(['بيت الشاورمة']);
     expect(variant.items).toEqual([]);
 
-    // The closed one comes last, though created first.
+    // The closed one comes last, though created first; a guest never sees
+    // the one in test mode.
     const part = await search('شاورم');
     expect(part.restaurants.map((card) => card.nameAr)).toEqual(['بيت الشاورمة', 'شاورما الليل']);
     expect(part.restaurants.map((card) => card.state.state)).toEqual(['open', 'closed']);
@@ -216,6 +232,8 @@ describe('GET /v1/customer/search (CU §8.3)', () => {
     expect(await search('سوشي')).toEqual({ restaurants: [], items: [] });
     expect(await search('  سُوشي ')).toEqual({ restaurants: [], items: [] });
     expect(await search('سوشي', outside)).toEqual({ restaurants: [], items: [] });
+    // Diacritics only: no demand.
+    expect(await search('ًٌٍ')).toEqual({ restaurants: [], items: [] });
     expect((await misses()).slice(before)).toEqual([
       { query: 'سوشي', normalized: 'سوشي' },
       { query: 'سُوشي', normalized: 'سوشي' },

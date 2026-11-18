@@ -26,6 +26,7 @@ import {
 import { CustomersService } from './customers.service.js';
 import { LostDemandRefusedError, LostDemandService } from './lost-demand.service.js';
 import { pointQuery } from './point-query.js';
+import { searchText } from './search-text.js';
 
 // CU §8.3 (decided by us): a search of 2 to 50 characters.
 const query = z.string().trim().min(2).max(50);
@@ -102,7 +103,15 @@ export class CustomerSearchController {
     const testAccount =
       session === null ? false : await this.customers.isTestAccount(session.accountId);
     const found = await this.browsing.search(point, now, q, testAccount);
-    if (found.place !== null && found.restaurants.length === 0 && found.items.length === 0) {
+    // An admin test account's searches and one of diacritics only are no
+    // demand (decided by us).
+    if (
+      found.place !== null &&
+      found.restaurants.length === 0 &&
+      found.items.length === 0 &&
+      !testAccount &&
+      searchText(q) !== ''
+    ) {
       await this.lostDemand.recordMiss(found.place, q, session?.accountId ?? null, now);
     }
     const ratings = await this.customers.ratings.restaurants(

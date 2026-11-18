@@ -55,6 +55,8 @@ class _SuggestScreenState extends ConsumerState<SuggestScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    // Kept while the screen is open, so a retry sends the same key.
+    ref.watch(restaurantSuggestionProvider);
     return Scaffold(
       appBar: AppBar(title: Text(l10n.customerSuggestOpen)),
       body: _sent
@@ -70,7 +72,7 @@ class _SuggestScreenState extends ConsumerState<SuggestScreen> {
                 TextField(
                   key: const Key('suggest-name'),
                   controller: _name,
-                  maxLength: 60,
+                  maxLength: suggestionNameMax,
                   decoration: InputDecoration(
                     labelText: l10n.customerSuggestName,
                   ),
@@ -78,8 +80,9 @@ class _SuggestScreenState extends ConsumerState<SuggestScreen> {
                 ),
                 TextField(
                   key: const Key('suggest-note'),
+                  onChanged: (_) => setState(() {}),
                   controller: _note,
-                  maxLength: 200,
+                  maxLength: suggestionNoteMax,
                   maxLines: 3,
                   decoration: InputDecoration(
                     labelText: l10n.customerSuggestNote,
@@ -88,7 +91,7 @@ class _SuggestScreenState extends ConsumerState<SuggestScreen> {
                 if (_failed) Text(l10n.statusError),
                 FilledButton(
                   key: const Key('suggest-send'),
-                  onPressed: _sending || _name.text.trim().isEmpty
+                  onPressed: _sending || !suggestionFits(_name.text, _note.text)
                       ? null
                       : _send,
                   child: Text(l10n.customerSuggestSend),
