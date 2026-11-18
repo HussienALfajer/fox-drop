@@ -12,8 +12,8 @@ Slice 2.28a, Search and the lost-demand log (`docs/roadmap.md`, Phase 2, Finding
 - **Branch:** `claude/slide-2-28-ekc0sd` (the cloud session's branch).
 - **Plan:**
   - [x] Split the slice with the owner and record it (roadmap and this plan).
-  - [ ] Server: the Arabic normalisation (pure, tested first), `GET /v1/customer/search` (guests too) with the restaurants and items of the covering restaurants, closed last, a search with no result recorded in `customers.search_misses`, and `POST /v1/customer/restaurant-suggestions` into `customers.restaurant_suggestions`; migration, contract and clients.
-  - [ ] Panel: `GET /v1/admin/lost-demand?cityId=` («reports.operations» or «reports.all») and the page «الطلب الضائع»: the empty searches grouped with their count and latest time, and the suggestions.
+  - [x] Server: the Arabic normalisation (pure, tested first), `GET /v1/customer/search` (guests too) with the restaurants and items of the covering restaurants, closed last, a search with no result recorded in `customers.search_misses`, and `POST /v1/customer/restaurant-suggestions` into `customers.restaurant_suggestions`; migration, contract and clients.
+  - [x] Panel: `GET /v1/admin/lost-demand?cityId=` («reports.operations» or «reports.all») and the page «الطلب الضائع»: the empty searches grouped with their count and latest time, and the suggestions.
   - [ ] Customer app: «البحث» from the home header, the box that waits until typing stops, the two tabs, the 10 recent searches on the device with «مسح», «لم تجده؟ أخبرنا» and «شكراً، سنحاول إضافته».
   - [ ] Review, then the hand-over to 2.28b.
 

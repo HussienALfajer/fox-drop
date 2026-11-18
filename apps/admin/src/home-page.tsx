@@ -17,6 +17,7 @@ import { canSeePromoCodes } from './promo-codes.js';
 import { RESTAURANT_STATEMENTS } from './restaurant-statements.js';
 import { canSeeImages } from './restaurant-images.js';
 import { canSeeRestaurantStatus } from './restaurant-status.js';
+import { canSeeLostDemand } from './lost-demand.js';
 import { canSeeRatings } from './ratings.js';
 import { CUSTOMERS_READ } from './customers.js';
 import { MANUAL_ADJUSTMENT } from './manual-entries.js';
@@ -83,6 +84,11 @@ export function HomePage() {
           {canSeeRatings(session) && (
             <li>
               <Link to="/ratings">{t('ratings.title')}</Link>
+            </li>
+          )}
+          {canSeeLostDemand(session) && (
+            <li>
+              <Link to="/lost-demand">{t('lostDemand.title')}</Link>
             </li>
           )}
           {can(session, ZONES_READ) && (

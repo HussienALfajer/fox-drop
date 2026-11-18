@@ -42,6 +42,8 @@ import { canSeeBanners } from './banners.js';
 import { BannersPage } from './banners-page.js';
 import { canSeeMassPushes } from './mass-pushes.js';
 import { MassPushesPage } from './mass-pushes-page.js';
+import { canSeeLostDemand } from './lost-demand.js';
+import { LostDemandPage } from './lost-demand-page.js';
 import { canSeeHomeSections } from './home-sections.js';
 import { HomeSectionsPage } from './home-sections-page.js';
 import { canSeePromoCodes } from './promo-codes.js';
@@ -390,6 +392,18 @@ const massPushesRoute = createRoute({
   component: MassPushesPage,
 });
 
+// AP §9.17 «الطلب الضائع» (slice 2.28a): an operations report, OWN and OPS
+// (reports.all or reports.operations, checked by the server too).
+const lostDemandRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/lost-demand',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!canSeeLostDemand(context.session)) throw redirect({ to: '/' });
+  },
+  component: LostDemandPage,
+});
+
 // AP §9.11.1 «Code report» (slice 2.21d): the list's readers; OWN pauses,
 // resumes and extends from it (checked by the page and the server).
 const promoCodeReportRoute = createRoute({
@@ -659,6 +673,7 @@ const routeTree = rootRoute.addChildren([
     homeSectionsRoute,
     bannersRoute,
     massPushesRoute,
+    lostDemandRoute,
     officeRoute,
     cashDeskRoute,
     cashDeskSessionsRoute,
