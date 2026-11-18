@@ -285,7 +285,7 @@ describe('POST /v1/customer/orders (CU §10.7)', () => {
     await end(next.json().order.id);
   });
 
-  it('keeps a copy of a saved address, so editing it changes no order (Q6)', async () => {
+  it('keeps a copy of a saved address, so editing or deleting it changes no order (Q6)', async () => {
     const headers = await signedIn();
     const saved = await app.inject({
       method: 'POST',
@@ -307,6 +307,13 @@ describe('POST /v1/customer/orders (CU §10.7)', () => {
       [answer.json().order.id],
     );
     expect(rows[0]).toEqual({ address_id: addressId, label: 'home', street: unsaved.street });
+    await app.inject({ method: 'DELETE', url: `/v1/customer/addresses/${addressId}`, headers });
+    const read = await app.inject({
+      method: 'GET',
+      url: `/v1/customer/orders/${answer.json().order.id}`,
+      headers,
+    });
+    expect(read.json().order.address).toMatchObject({ label: 'home', street: unsaved.street });
     await end(answer.json().order.id);
   });
 

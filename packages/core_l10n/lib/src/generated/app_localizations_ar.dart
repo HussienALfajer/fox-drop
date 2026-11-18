@@ -4005,6 +4005,38 @@ class AppLocalizationsAr extends AppLocalizations {
   String get customerSuggestThanks => 'شكراً، سنحاول إضافته';
 
   @override
+  String get customerMyAddressesTitle => 'عناويني';
+
+  @override
+  String get customerAddAddress => 'إضافة عنوان';
+
+  @override
+  String get customerEditAddress => 'تعديل العنوان';
+
+  @override
+  String get customerDefaultAddress => 'العنوان الافتراضي';
+
+  @override
+  String get customerMakeDefault => 'اجعله الافتراضي';
+
+  @override
+  String get customerDeleteAddressConfirm => 'تأكيد حذف العنوان';
+
+  @override
+  String get customerNoAddresses => 'لا توجد عناوين محفوظة';
+
+  @override
+  String customerAddressLimit(int count) {
+    return 'يمكنك حفظ $count عناوين كحد أقصى';
+  }
+
+  @override
+  String get customerPinOnMap => 'الموقع على الخريطة';
+
+  @override
+  String get customerPinRequired => 'حدّد الموقع على الخريطة';
+
+  @override
   String get customerFavouritesTitle => 'المفضلة';
 
   @override

@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'account/address_form_screen.dart';
+import 'account/addresses_screen.dart';
 import 'account/delete_account_screen.dart';
 import 'account/favourites_screen.dart';
 import 'account/my_account_screen.dart';
@@ -169,6 +171,23 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: 'profile',
             builder: (context, state) =>
                 const ProfileScreen(from: '/account', editing: true),
+          ),
+          // CU §7.3 «عناويني» (slice 2.29a).
+          GoRoute(
+            path: 'addresses',
+            builder: (context, state) => const AddressesScreen(),
+            routes: [
+              GoRoute(
+                path: 'new',
+                builder: (context, state) => const AddressFormScreen(),
+              ),
+              GoRoute(
+                path: ':addressId',
+                builder: (context, state) => AddressFormScreen(
+                  addressId: state.pathParameters['addressId'],
+                ),
+              ),
+            ],
           ),
           // CU §9.6 «المفضلة» (slice 2.28b).
           GoRoute(

@@ -6572,6 +6572,66 @@ abstract class AppLocalizations {
   /// **'شكراً، سنحاول إضافته'**
   String get customerSuggestThanks;
 
+  /// «حسابي» → the saved addresses (CU §13, §7.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'عناويني'**
+  String get customerMyAddressesTitle;
+
+  /// Adds a saved address (CU §7.3); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة عنوان'**
+  String get customerAddAddress;
+
+  /// The title of a saved address's form when editing it (CU §7.3, U5); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل العنوان'**
+  String get customerEditAddress;
+
+  /// Marks the default saved address (CU §7.3); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'العنوان الافتراضي'**
+  String get customerDefaultAddress;
+
+  /// Makes a saved address the default (CU §7.3); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'اجعله الافتراضي'**
+  String get customerMakeDefault;
+
+  /// The confirmation before deleting a saved address (CU §7.3); orders keep their copy.
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد حذف العنوان'**
+  String get customerDeleteAddressConfirm;
+
+  /// «عناويني» without a saved address; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد عناوين محفوظة'**
+  String get customerNoAddresses;
+
+  /// The limit of saved addresses is reached (CU §7.3, fixed at 10); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'يمكنك حفظ {count} عناوين كحد أقصى'**
+  String customerAddressLimit(int count);
+
+  /// The saved address's pin in its form (CU §7.3); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الموقع على الخريطة'**
+  String get customerPinOnMap;
+
+  /// A saved address needs its pin (CU §7.3); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'حدّد الموقع على الخريطة'**
+  String get customerPinRequired;
+
   /// «حسابي» → «المفضلة», the favourite restaurants (CU §9.6, Appendix B).
   ///
   /// In ar, this message translates to:

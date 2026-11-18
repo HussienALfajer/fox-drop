@@ -37,7 +37,7 @@ void main() {
     expect(date, contains('2026'));
   });
 
-  // The int placeholders of the sign-in strings.
+  // The int placeholders of the sign-in strings and the address limit.
   test('the sign-in counts use Western digits', () {
     final l10n = lookupAppLocalizations(const Locale('ar'));
     for (final text in [
@@ -45,6 +45,7 @@ void main() {
       l10n.signInTryLater(12),
       l10n.signInResendWait(30),
       l10n.signInWrongCode(3),
+      l10n.customerAddressLimit(10),
     ]) {
       expect(text, isNot(matches(_easternDigits)));
       expect(text, matches(RegExp(r'\d')));

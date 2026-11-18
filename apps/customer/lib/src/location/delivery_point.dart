@@ -129,6 +129,20 @@ class DeliveryPointController extends Notifier<DeliveryPointState> {
     );
   }
 
+  /// The saved address the point came from was deleted (CU §7.3): the point
+  /// stays, as an unsaved address.
+  void forgetAddress() {
+    final checked = state;
+    if (checked is! PointChecked || checked.addressId == null) return;
+    state = PointChecked(
+      point: checked.point,
+      accuracyMetres: checked.accuracyMetres,
+      coverage: checked.coverage,
+      zoneName: checked.zoneName,
+      voted: checked.voted,
+    );
+  }
+
   Future<void> _check(
     int request,
     GeoPoint point, {
