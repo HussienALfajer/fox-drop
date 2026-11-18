@@ -5160,6 +5160,109 @@
         ]
       }
     },
+    "/v1/customer/search": {
+      "get": {
+        "operationId": "customerSearchSearch",
+        "parameters": [
+          {
+            "name": "latitude",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "name": "longitude",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "description": "What the customer typed; the app sends it once typing stops.",
+            "schema": {
+              "minLength": 2,
+              "maxLength": 50,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerSearchDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
+    },
+    "/v1/customer/restaurant-suggestions": {
+      "post": {
+        "operationId": "customerSearchSuggest",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerSuggestionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerSuggestedDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer"
+        ]
+      }
+    },
     "/v1/admin/customers/search": {
       "post": {
         "operationId": "adminCustomersSearch",
@@ -5765,6 +5868,43 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminCustomerDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/lost-demand": {
+      "get": {
+        "operationId": "adminLostDemandReport",
+        "parameters": [
+          {
+            "name": "cityId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminLostDemandDto_Output"
                 }
               }
             },
@@ -23396,6 +23536,576 @@
         ],
         "additionalProperties": false
       },
+      "CustomerSearchDto_Output": {
+        "type": "object",
+        "properties": {
+          "restaurants": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "nameAr": {
+                  "type": "string"
+                },
+                "nameEn": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "category": {
+                  "description": "Deprecated (slice 2.27a): the first of `categories`, for older apps.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "categories": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "name": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "description": "Its active categories (AP §9.13), in the restaurant’s order."
+                },
+                "logoKey": {
+                  "description": "Its key in public-media, shown through imgproxy (architecture §5.8); null without one.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "coverKey": {
+                  "description": "Its key in public-media, shown through imgproxy (architecture §5.8); null without one.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "rating": {
+                  "description": "The restaurant's average stars to one decimal; null is «جديد», below 5 ratings (CU §12.1, Q16).",
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "ratingCount": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The number of ratings beside the average (CU §8.2, §9.1); null with «جديد»."
+                },
+                "testMode": {
+                  "type": "boolean",
+                  "description": "«تجريبي»: in test mode, seen only by an admin test account (CU §8.2, AP §9.8)."
+                },
+                "estimate": {
+                  "type": "object",
+                  "properties": {
+                    "fromMin": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "toMin": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "fromMin",
+                    "toMin"
+                  ],
+                  "additionalProperties": false,
+                  "description": "CU §8.4: «{fromMin}–{toMin} د»."
+                },
+                "deliveryFee": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "fee": {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "string",
+                              "pattern": "^-?\\d+$",
+                              "description": "Integer minor units (AP §8.6)."
+                            },
+                            "currency": {
+                              "type": "string",
+                              "minLength": 3,
+                              "maxLength": 3
+                            }
+                          },
+                          "required": [
+                            "amount",
+                            "currency"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "free": {
+                          "type": "boolean",
+                          "description": "«توصيل مجاني»."
+                        }
+                      },
+                      "required": [
+                        "fee",
+                        "free"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "To the point; null while the city has no fee rule in its base currency."
+                },
+                "state": {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "open",
+                        "busy",
+                        "paused",
+                        "closed",
+                        "holiday"
+                      ],
+                      "description": "CU §9.2: open; «المطعم مشغول حالياً، جرّب بعد قليل»; «المطعم متوقف مؤقتاً…»; «مغلق — يفتح…»; «مغلق حتى {التاريخ}»."
+                    },
+                    "busyMode": {
+                      "type": "boolean",
+                      "description": "Open with busy mode on: «قد يستغرق الطلب وقتاً أطول قليلاً»."
+                    },
+                    "until": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The end of a pause or a holiday close; null for a pause until resumed."
+                    },
+                    "opensAt": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "While closed by the schedule: its next opening."
+                    },
+                    "message": {
+                      "description": "A holiday close's message, or an operations pause's.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "state",
+                    "busyMode",
+                    "until",
+                    "opensAt",
+                    "message"
+                  ],
+                  "additionalProperties": false,
+                  "description": "Only open takes orders."
+                }
+              },
+              "required": [
+                "id",
+                "nameAr",
+                "nameEn",
+                "category",
+                "categories",
+                "logoKey",
+                "coverKey",
+                "rating",
+                "ratingCount",
+                "testMode",
+                "estimate",
+                "deliveryFee",
+                "state"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Restaurants delivering to the point whose name or category matches: open first, then busy and paused, then closed."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "photoKey": {
+                  "description": "Its key in public-media, shown through imgproxy (architecture §5.8); null without one.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "price": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "string",
+                      "pattern": "^-?\\d+$",
+                      "description": "Integer minor units (AP §8.6)."
+                    },
+                    "currency": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "currency"
+                  ],
+                  "additionalProperties": false
+                },
+                "fromPrice": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "amount": {
+                          "type": "string",
+                          "pattern": "^-?\\d+$",
+                          "description": "Integer minor units (AP §8.6)."
+                        },
+                        "currency": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 3
+                        }
+                      },
+                      "required": [
+                        "amount",
+                        "currency"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "«من {أقل سعر}» when a required group changes it."
+                },
+                "available": {
+                  "type": "boolean"
+                },
+                "unavailableReason": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "tomorrow",
+                        "window",
+                        "unavailable"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "«يتوفر غداً», «متوفر من {الساعة}» (its category window) or «غير متوفر حالياً»."
+                },
+                "optionGroups": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "minChoices": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991,
+                        "description": "0 is an add-on group; 1 or more is «إجباري»."
+                      },
+                      "maxChoices": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "options": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "priceDelta": {
+                              "type": "object",
+                              "properties": {
+                                "amount": {
+                                  "type": "string",
+                                  "pattern": "^-?\\d+$",
+                                  "description": "Integer minor units (AP §8.6)."
+                                },
+                                "currency": {
+                                  "type": "string",
+                                  "minLength": 3,
+                                  "maxLength": 3
+                                }
+                              },
+                              "required": [
+                                "amount",
+                                "currency"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "available": {
+                              "type": "boolean",
+                              "description": "Faded and not pickable when false."
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "priceDelta",
+                            "available"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name",
+                      "minChoices",
+                      "maxChoices",
+                      "options"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "restaurantId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "restaurantName": {
+                  "type": "string"
+                },
+                "restaurantState": {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "open",
+                        "busy",
+                        "paused",
+                        "closed",
+                        "holiday"
+                      ],
+                      "description": "CU §9.2: open; «المطعم مشغول حالياً، جرّب بعد قليل»; «المطعم متوقف مؤقتاً…»; «مغلق — يفتح…»; «مغلق حتى {التاريخ}»."
+                    },
+                    "busyMode": {
+                      "type": "boolean",
+                      "description": "Open with busy mode on: «قد يستغرق الطلب وقتاً أطول قليلاً»."
+                    },
+                    "until": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The end of a pause or a holiday close; null for a pause until resumed."
+                    },
+                    "opensAt": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "While closed by the schedule: its next opening."
+                    },
+                    "message": {
+                      "description": "A holiday close's message, or an operations pause's.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "state",
+                    "busyMode",
+                    "until",
+                    "opensAt",
+                    "message"
+                  ],
+                  "additionalProperties": false,
+                  "description": "Only open takes orders."
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "description",
+                "photoKey",
+                "price",
+                "fromPrice",
+                "available",
+                "unavailableReason",
+                "optionGroups",
+                "restaurantId",
+                "restaurantName",
+                "restaurantState"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Their items whose name or description matches, in the restaurants' order (closed last), at most 50."
+          }
+        },
+        "required": [
+          "restaurants",
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "CustomerSuggestionDto": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "longitude": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "restaurantName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60,
+            "description": "«اسم المطعم», required."
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«ملاحظة», optional; an empty one is none."
+          },
+          "query": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 50
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The search that found nothing, if the form followed one."
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude",
+          "restaurantName",
+          "note",
+          "query"
+        ]
+      },
+      "CustomerSuggestedDto_Output": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "received"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "additionalProperties": false
+      },
       "AdminCustomerSearchDto": {
         "type": "object",
         "properties": {
@@ -24857,6 +25567,96 @@
           "stopId",
           "note"
         ]
+      },
+      "AdminLostDemandDto_Output": {
+        "type": "object",
+        "properties": {
+          "since": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "30 days back."
+          },
+          "searches": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "description": "As it was typed last."
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "description": "Searches typed alike that found nothing."
+                },
+                "lastAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "query",
+                "count",
+                "lastAt"
+              ],
+              "additionalProperties": false
+            },
+            "description": "«بحث بلا نتائج»: the 100 missed most, most first."
+          },
+          "suggestions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "restaurantName": {
+                  "type": "string"
+                },
+                "note": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "query": {
+                  "description": "The search the form followed.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "id",
+                "restaurantName",
+                "note",
+                "query",
+                "at"
+              ],
+              "additionalProperties": false
+            },
+            "description": "«مطاعم مقترحة»: the 100 latest."
+          }
+        },
+        "required": [
+          "since",
+          "searches",
+          "suggestions"
+        ],
+        "additionalProperties": false
       },
       "AdminPromoCodesDto_Output": {
         "type": "object",

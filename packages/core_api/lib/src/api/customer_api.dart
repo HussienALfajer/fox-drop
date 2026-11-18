@@ -45,10 +45,13 @@ import 'package:core_api/src/model/customer_report_order_dto.dart';
 import 'package:core_api/src/model/customer_restaurant_list_dto_output.dart';
 import 'package:core_api/src/model/customer_restaurant_page_dto_output.dart';
 import 'package:core_api/src/model/customer_save_profile_dto.dart';
+import 'package:core_api/src/model/customer_search_dto_output.dart';
 import 'package:core_api/src/model/customer_session_dto_output.dart';
 import 'package:core_api/src/model/customer_sign_in_dto.dart';
 import 'package:core_api/src/model/customer_signed_in_dto_output.dart';
 import 'package:core_api/src/model/customer_signed_out_dto_output.dart';
+import 'package:core_api/src/model/customer_suggested_dto_output.dart';
+import 'package:core_api/src/model/customer_suggestion_dto.dart';
 import 'package:core_api/src/model/customer_tokens_dto_output.dart';
 import 'package:core_api/src/model/customer_upload_dto_output.dart';
 import 'package:core_api/src/model/customer_zone_vote_dto.dart';
@@ -3419,6 +3422,193 @@ class CustomerApi {
     }
 
     return Response<RealtimeTokenDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// customerSearchSearch
+  ///
+  ///
+  /// Parameters:
+  /// * [latitude]
+  /// * [longitude]
+  /// * [q] - What the customer typed; the app sends it once typing stops.
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [CustomerSearchDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<CustomerSearchDtoOutput>> customerSearchSearch({
+    required String latitude,
+    required String longitude,
+    required String q,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/customer/search';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      r'latitude': encodeQueryParameter(
+        _serializers,
+        latitude,
+        const FullType(String),
+      ),
+      r'longitude': encodeQueryParameter(
+        _serializers,
+        longitude,
+        const FullType(String),
+      ),
+      r'q': encodeQueryParameter(_serializers, q, const FullType(String)),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    CustomerSearchDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CustomerSearchDtoOutput),
+                )
+                as CustomerSearchDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<CustomerSearchDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// customerSearchSuggest
+  ///
+  ///
+  /// Parameters:
+  /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
+  /// * [customerSuggestionDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [CustomerSuggestedDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<CustomerSuggestedDtoOutput>> customerSearchSuggest({
+    required String idempotencyKey,
+    required CustomerSuggestionDto customerSuggestionDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/customer/restaurant-suggestions';
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(CustomerSuggestionDto);
+      _bodyData = _serializers.serialize(
+        customerSuggestionDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    CustomerSuggestedDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CustomerSuggestedDtoOutput),
+                )
+                as CustomerSuggestedDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<CustomerSuggestedDtoOutput>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

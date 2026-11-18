@@ -197,6 +197,9 @@ import 'package:core_api/src/model/admin_home_sections_dto_output_sections_inner
 import 'package:core_api/src/model/admin_home_sections_order_dto.dart';
 import 'package:core_api/src/model/admin_image_set_dto_output.dart';
 import 'package:core_api/src/model/admin_lift_customer_device_block_dto.dart';
+import 'package:core_api/src/model/admin_lost_demand_dto_output.dart';
+import 'package:core_api/src/model/admin_lost_demand_dto_output_searches_inner.dart';
+import 'package:core_api/src/model/admin_lost_demand_dto_output_suggestions_inner.dart';
 import 'package:core_api/src/model/admin_manual_account_dto_output.dart';
 import 'package:core_api/src/model/admin_manual_account_dto_output_entries_inner.dart';
 import 'package:core_api/src/model/admin_manual_adjustment_dto.dart';
@@ -715,10 +718,18 @@ import 'package:core_api/src/model/customer_restaurant_page_dto_output_menu_inne
 import 'package:core_api/src/model/customer_restaurant_page_dto_output_menu_inner_window.dart';
 import 'package:core_api/src/model/customer_restaurant_page_dto_output_schedule_inner.dart';
 import 'package:core_api/src/model/customer_save_profile_dto.dart';
+import 'package:core_api/src/model/customer_search_dto_output.dart';
+import 'package:core_api/src/model/customer_search_dto_output_items_inner.dart';
+import 'package:core_api/src/model/customer_search_dto_output_items_inner_from_price.dart';
+import 'package:core_api/src/model/customer_search_dto_output_items_inner_option_groups_inner.dart';
+import 'package:core_api/src/model/customer_search_dto_output_items_inner_option_groups_inner_options_inner.dart';
+import 'package:core_api/src/model/customer_search_dto_output_restaurants_inner.dart';
 import 'package:core_api/src/model/customer_session_dto_output.dart';
 import 'package:core_api/src/model/customer_sign_in_dto.dart';
 import 'package:core_api/src/model/customer_signed_in_dto_output.dart';
 import 'package:core_api/src/model/customer_signed_out_dto_output.dart';
+import 'package:core_api/src/model/customer_suggested_dto_output.dart';
+import 'package:core_api/src/model/customer_suggestion_dto.dart';
 import 'package:core_api/src/model/customer_tokens_dto_output.dart';
 import 'package:core_api/src/model/customer_upload_dto_output.dart';
 import 'package:core_api/src/model/customer_zone_vote_dto.dart';
@@ -1040,6 +1051,9 @@ part 'serializers.g.dart';
   AdminHomeSectionsOrderDto,
   AdminImageSetDtoOutput,
   AdminLiftCustomerDeviceBlockDto,
+  AdminLostDemandDtoOutput,
+  AdminLostDemandDtoOutputSearchesInner,
+  AdminLostDemandDtoOutputSuggestionsInner,
   AdminManualAccountDtoOutput,
   AdminManualAccountDtoOutputEntriesInner,
   AdminManualAdjustmentDto,
@@ -1558,10 +1572,18 @@ part 'serializers.g.dart';
   CustomerRestaurantPageDtoOutputMenuInnerWindow,
   CustomerRestaurantPageDtoOutputScheduleInner,
   CustomerSaveProfileDto,
+  CustomerSearchDtoOutput,
+  CustomerSearchDtoOutputItemsInner,
+  CustomerSearchDtoOutputItemsInnerFromPrice,
+  CustomerSearchDtoOutputItemsInnerOptionGroupsInner,
+  CustomerSearchDtoOutputItemsInnerOptionGroupsInnerOptionsInner,
+  CustomerSearchDtoOutputRestaurantsInner,
   CustomerSessionDtoOutput,
   CustomerSignInDto,
   CustomerSignedInDtoOutput,
   CustomerSignedOutDtoOutput,
+  CustomerSuggestedDtoOutput,
+  CustomerSuggestionDto,
   CustomerTokensDtoOutput,
   CustomerUploadDtoOutput,
   CustomerZoneVoteDto,
@@ -1810,6 +1832,12 @@ Serializers serializers =
             ]),
             () =>
                 ListBuilder<AdminCustomerDtoOutputDevicesInnerAccountsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CustomerSearchDtoOutputRestaurantsInner),
+            ]),
+            () => ListBuilder<CustomerSearchDtoOutputRestaurantsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -2117,6 +2145,15 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(CustomerSearchDtoOutputItemsInnerOptionGroupsInner),
+            ]),
+            () =>
+                ListBuilder<
+                  CustomerSearchDtoOutputItemsInnerOptionGroupsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(MerchantHoursDtoOutputPeriodsInner),
             ]),
             () => ListBuilder<MerchantHoursDtoOutputPeriodsInner>(),
@@ -2138,6 +2175,17 @@ Serializers serializers =
               FullType(CustomerQuoteDtoOutputLinesInner),
             ]),
             () => ListBuilder<CustomerQuoteDtoOutputLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(
+                CustomerSearchDtoOutputItemsInnerOptionGroupsInnerOptionsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CustomerSearchDtoOutputItemsInnerOptionGroupsInnerOptionsInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -2436,6 +2484,12 @@ Serializers serializers =
               FullType(AdminCustomerDtoOutputAddressesInner),
             ]),
             () => ListBuilder<AdminCustomerDtoOutputAddressesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminLostDemandDtoOutputSuggestionsInner),
+            ]),
+            () => ListBuilder<AdminLostDemandDtoOutputSuggestionsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltMap, [FullType(String), FullType(String)]),
@@ -2745,6 +2799,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminLostDemandDtoOutputSearchesInner),
+            ]),
+            () => ListBuilder<AdminLostDemandDtoOutputSearchesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminTicketMoneyPreviewBodyDtoAffectedInner),
             ]),
             () => ListBuilder<AdminTicketMoneyPreviewBodyDtoAffectedInner>(),
@@ -2788,6 +2848,12 @@ Serializers serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, [FullType(AdminEditDtoKeepInner)]),
             () => ListBuilder<AdminEditDtoKeepInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CustomerSearchDtoOutputItemsInner),
+            ]),
+            () => ListBuilder<CustomerSearchDtoOutputItemsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

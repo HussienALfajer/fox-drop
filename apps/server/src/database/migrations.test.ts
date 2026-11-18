@@ -728,6 +728,32 @@ describe('the ordering tables (AP §8.1, §4.8; architecture §5.5)', () => {
     await expect(
       appQuery(`UPDATE customers.notes SET body = 'x' WHERE id = '${noted[0].id}'`),
     ).rejects.toThrow(/permission denied/);
+    // Slice 2.28a: the lost demand, append-only.
+    const city = randomUUID();
+    await expect(
+      appQuery(
+        `INSERT INTO customers.search_misses (city_id, zone_id, query, normalized, at) VALUES ('${city}', '${city}', '', '', now())`,
+      ),
+    ).rejects.toThrow(/search_misses_query/);
+    const { rows: misses } = await appQuery(
+      `INSERT INTO customers.search_misses (city_id, zone_id, query, normalized, at) VALUES ('${city}', '${city}', 'سوشي', 'سوشي', now()) RETURNING id`,
+    );
+    await expect(
+      appQuery(`UPDATE customers.search_misses SET query = 'x' WHERE id = '${misses[0].id}'`),
+    ).rejects.toThrow(/permission denied/);
+    const suggest = (name: string, note: string) =>
+      appQuery(
+        `INSERT INTO customers.restaurant_suggestions (city_id, zone_id, restaurant_name, note, at, idempotency_key, request_hash) VALUES ('${city}', '${city}', '${name}', ${note}, now(), 'suggestion-key', 'h') RETURNING id`,
+      );
+    await expect(suggest('', 'null')).rejects.toThrow(/restaurant_suggestions_name/);
+    await expect(suggest('مطعم', `''`)).rejects.toThrow(/restaurant_suggestions_note/);
+    const { rows: suggested } = await suggest('مطعم السوشي', 'null');
+    await expect(suggest('مطعم السوشي', 'null')).rejects.toThrow(/restaurant_suggestions_key/);
+    await expect(
+      appQuery(
+        `UPDATE customers.restaurant_suggestions SET note = 'x' WHERE id = '${suggested[0].id}'`,
+      ),
+    ).rejects.toThrow(/permission denied/);
   });
 
   it("keep a customer's blocks as they started, one open at a time, the dues kind never ending", async () => {

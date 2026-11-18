@@ -10,6 +10,7 @@ import {
   type RestaurantCard,
   type RestaurantPage,
   type StorefrontCategory,
+  type StorefrontItem,
 } from './browsing.service.js';
 import { CustomersService } from './customers.service.js';
 import { pointQuery } from './point-query.js';
@@ -22,7 +23,7 @@ const money = z.object({
   currency: z.string().length(3),
 });
 
-const state = z
+export const state = z
   .object({
     state: z
       .enum(['open', 'busy', 'paused', 'closed', 'holiday'])
@@ -51,7 +52,7 @@ const imageKey = z
     'Its key in public-media, shown through imgproxy (architecture §5.8); null without one.',
   );
 
-const card = z.object({
+export const card = z.object({
   id: z.uuid(),
   nameAr: z.string(),
   nameEn: z.string().nullable(),
@@ -154,6 +155,22 @@ const optionGroup = z.object({
   ),
 });
 
+// CU §9.3: an item of the menu as the customer sees it.
+export const storefrontItem = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  description: z.string().nullable(),
+  photoKey: imageKey,
+  price: money,
+  fromPrice: money.nullable().describe('«من {أقل سعر}» when a required group changes it.'),
+  available: z.boolean(),
+  unavailableReason: z
+    .enum(['tomorrow', 'window', 'unavailable'])
+    .nullable()
+    .describe('«يتوفر غداً», «متوفر من {الساعة}» (its category window) or «غير متوفر حالياً».'),
+  optionGroups: z.array(optionGroup),
+});
+
 class CustomerRestaurantPageDto extends createZodDto(
   card.extend({
     description: z.string().nullable(),
@@ -183,26 +200,7 @@ class CustomerRestaurantPageDto extends createZodDto(
           .object({ startsAt: z.int(), endsAt: z.int() })
           .nullable()
           .describe('Minutes after midnight on the city clock; «متوفر من {الساعة}» outside it.'),
-        items: z.array(
-          z.object({
-            id: z.uuid(),
-            name: z.string(),
-            description: z.string().nullable(),
-            photoKey: imageKey,
-            price: money,
-            fromPrice: money
-              .nullable()
-              .describe('«من {أقل سعر}» when a required group changes it.'),
-            available: z.boolean(),
-            unavailableReason: z
-              .enum(['tomorrow', 'window', 'unavailable'])
-              .nullable()
-              .describe(
-                '«يتوفر غداً», «متوفر من {الساعة}» (its category window) or «غير متوفر حالياً».',
-              ),
-            optionGroups: z.array(optionGroup),
-          }),
-        ),
+        items: z.array(storefrontItem),
       }),
     ),
   }),
@@ -310,7 +308,7 @@ function moneyBody({ amount, currency }: Money) {
   return { amount: amount.toString(), currency };
 }
 
-function stateBody({ state, message, opensAt }: StorefrontState) {
+export function stateBody({ state, message, opensAt }: StorefrontState) {
   const until = state.state === 'paused' || state.state === 'holiday' ? state.until : null;
   return {
     state: state.state as 'open' | 'busy' | 'paused' | 'closed' | 'holiday',
@@ -324,9 +322,9 @@ function stateBody({ state, message, opensAt }: StorefrontState) {
 // Q16: the average and count from RATINGS_SHOWN_FROM ratings, else «جديد».
 const RATINGS_SHOWN_FROM = 5;
 
-type RatingSummary = { count: number; average: number } | undefined;
+export type RatingSummary = { count: number; average: number } | undefined;
 
-function cardBody(card: RestaurantCard, summary: RatingSummary) {
+export function cardBody(card: RestaurantCard, summary: RatingSummary) {
   const shown = summary !== undefined && summary.count >= RATINGS_SHOWN_FROM;
   return {
     ...card,
@@ -358,21 +356,30 @@ function categoryBody(category: StorefrontCategory) {
     id: category.id,
     name: category.name,
     window: category.window,
-    items: category.items.map((item) => ({
-      ...item,
-      price: moneyBody(item.price),
-      fromPrice: item.fromPrice === null ? null : moneyBody(item.fromPrice),
-      optionGroups: item.optionGroups.map((group) => ({
-        id: group.id,
-        name: group.name,
-        minChoices: group.minChoices,
-        maxChoices: group.maxChoices,
-        options: group.options.map((option) => ({
-          id: option.id,
-          name: option.name,
-          priceDelta: moneyBody(option.priceDelta),
-          available: option.available,
-        })),
+    items: category.items.map(itemBody),
+  };
+}
+
+export function itemBody(item: StorefrontItem) {
+  return {
+    id: item.id,
+    name: item.name,
+    description: item.description,
+    photoKey: item.photoKey,
+    price: moneyBody(item.price),
+    fromPrice: item.fromPrice === null ? null : moneyBody(item.fromPrice),
+    available: item.available,
+    unavailableReason: item.unavailableReason,
+    optionGroups: item.optionGroups.map((group) => ({
+      id: group.id,
+      name: group.name,
+      minChoices: group.minChoices,
+      maxChoices: group.maxChoices,
+      options: group.options.map((option) => ({
+        id: option.id,
+        name: option.name,
+        priceDelta: moneyBody(option.priceDelta),
+        available: option.available,
       })),
     })),
   };

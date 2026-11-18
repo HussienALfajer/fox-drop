@@ -20,6 +20,7 @@ import {
 import { BannersService, HOME_BANNERS_MAX, HomeSectionsService } from '../marketing/index.js';
 import { SettingsService } from '../settings/index.js';
 import { CustomersService } from './customers.service.js';
+import { matchesSearch } from './search-text.js';
 
 // The trip of the estimate is measured as the delivery fee is, by the
 // motorbike's distance (owner decision 2026-11-06 for the fee), before any
@@ -109,6 +110,25 @@ export interface StorefrontCategory {
   window: { startsAt: number; endsAt: number } | null;
   items: StorefrontItem[];
 }
+
+// CU §8.3: an item found by the search, with its restaurant and price.
+export interface SearchItem extends StorefrontItem {
+  restaurantId: string;
+  restaurantName: string;
+  restaurantState: StorefrontState;
+}
+
+// CU §8.3: what a search found at a point. `place` is null outside every
+// zone, where nothing is searched.
+export interface SearchResult {
+  place: { cityId: string; zoneId: string } | null;
+  restaurants: RestaurantCard[];
+  items: SearchItem[];
+}
+
+// CU §8.3 (decided by us): the items tab shows the first 50 found, in the
+// restaurants' order (closed last), each restaurant's in its menu's order.
+export const SEARCH_ITEMS_MAX = 50;
 
 // CU §9.1: the restaurant page for the selected point.
 export interface RestaurantPage extends RestaurantCard {
@@ -282,6 +302,43 @@ export class BrowsingService {
       return restaurantIds.length === 0 ? [] : [{ ...view, restaurantIds }];
     });
     return { restaurants: ranked(listed).map(({ card }) => card), sections, banners };
+  }
+
+  // CU §8.3 (owner decision 2026-11-18): the restaurants that deliver to the
+  // point whose name or active category matches, and their items whose name
+  // or description does (hidden ones never), both open first and closed
+  // last as the list sorts them (`searchText` decides the match).
+  async search(point: Point, now: Date, query: string, testAccount = false): Promise<SearchResult> {
+    const place = await this.geo.locate(point);
+    if (place === null || place.zone === null) return { place: null, restaurants: [], items: [] };
+    const names = await this.categoryNames();
+    const listed = ranked(await this.listed(place.cityId, point, now, testAccount, names));
+    const menus = await Promise.all(
+      listed.map(({ restaurant }) => this.merchants.menu(restaurant.id, now)),
+    );
+    const restaurants = listed
+      .filter(({ card }) =>
+        matchesSearch(query, [
+          card.nameAr,
+          card.nameEn,
+          ...card.categories.map((category) => category.name),
+        ]),
+      )
+      .map(({ card }) => card);
+    const items = listed
+      .flatMap(({ card }, index) =>
+        storefrontMenu(menus[index]!.categories)
+          .flatMap((category) => category.items)
+          .filter((item) => matchesSearch(query, [item.name, item.description]))
+          .map((item): SearchItem => ({
+            ...item,
+            restaurantId: card.id,
+            restaurantName: card.nameAr,
+            restaurantState: card.state,
+          })),
+      )
+      .slice(0, SEARCH_ITEMS_MAX);
+    return { place: { cityId: place.cityId, zoneId: place.zone.id }, restaurants, items };
   }
 
   // The cards of the restaurants that cover the point, in the restaurants'
