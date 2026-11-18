@@ -331,17 +331,16 @@ function BannerEditor({
     setCrop(CENTRED);
   };
 
-  const cut = () =>
-    new Promise<Blob | null>((resolve) => {
-      const canvas = frame.current;
-      if (canvas === null || image === null) return resolve(null);
-      canvas.toBlob(resolve, 'image/jpeg', 0.9);
-    });
+  const cut = (): Blob | null => {
+    const canvas = frame.current;
+    if (canvas === null || image === null) return null;
+    return jpegOf(canvas.toDataURL('image/jpeg', JPEG_QUALITY));
+  };
 
-  const submit = async (event: FormEvent) => {
+  const submit = (event: FormEvent) => {
     event.preventDefault();
     if (!('fields' in checked) || needsImage || previewed !== current) return;
-    const blob = await cut();
+    const blob = cut();
     const done = (result: BannerResult) => {
       if (result.status === 'saved') onSaved();
     };
@@ -579,6 +578,20 @@ function BannerEditor({
       <Outcome result={publish.data ?? update.data} failed={publish.isError || update.isError} />
     </form>
   );
+}
+
+// The cut's JPEG quality (decided by us).
+const JPEG_QUALITY = 0.9;
+
+// The canvas's JPEG as a Blob, from toDataURL, which encodes at once:
+// toBlob encodes in the browser's idle time, which a busy page may not give
+// for seconds. The data URL is only decoded here, never shown (the
+// Content-Security-Policy refuses data: images).
+function jpegOf(dataUrl: string): Blob {
+  const bytes = atob(dataUrl.slice(dataUrl.indexOf(',') + 1));
+  const buffer = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i += 1) buffer[i] = bytes.charCodeAt(i);
+  return new Blob([buffer], { type: 'image/jpeg' });
 }
 
 // The banner at a phone's width (360 points), as the home shows it.
