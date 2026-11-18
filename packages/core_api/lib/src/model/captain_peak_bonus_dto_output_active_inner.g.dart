@@ -13,7 +13,7 @@ class _$CaptainPeakBonusDtoOutputActiveInner
   @override
   final DateTime until;
   @override
-  final BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner> zones;
+  final BuiltList<AdminRestaurantDraftChoicesDtoOutputCategoriesInner> zones;
 
   factory _$CaptainPeakBonusDtoOutputActiveInner([
     void Function(CaptainPeakBonusDtoOutputActiveInnerBuilder)? updates,
@@ -81,12 +81,12 @@ class CaptainPeakBonusDtoOutputActiveInnerBuilder
   DateTime? get until => _$this._until;
   set until(DateTime? until) => _$this._until = until;
 
-  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>? _zones;
-  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner> get zones =>
+  ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>? _zones;
+  ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner> get zones =>
       _$this._zones ??=
-          ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>();
+          ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>();
   set zones(
-    ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>? zones,
+    ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>? zones,
   ) => _$this._zones = zones;
 
   CaptainPeakBonusDtoOutputActiveInnerBuilder() {

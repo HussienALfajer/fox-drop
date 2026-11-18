@@ -3,10 +3,10 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_zones_inner.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output_pickup_dispute_pickup_payment.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output_report_lines_inner.dart';
-import 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force_windows_inner_zones_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -36,7 +36,7 @@ abstract class AdminTicketPageDtoOutputReport
   BuiltList<String> get photoUrls;
 
   @BuiltValueField(wireName: r'item')
-  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner? get item;
+  CaptainPeakBonusDtoOutputWindowsInnerZonesInner? get item;
 
   @BuiltValueField(wireName: r'shopPrice')
   AdminTicketPageDtoOutputPickupDisputePickupPayment? get shopPrice;
@@ -94,7 +94,7 @@ class _$AdminTicketPageDtoOutputReportSerializer
         : serializers.serialize(
             object.item,
             specifiedType: const FullType.nullable(
-              AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+              CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
             ),
           );
     yield r'shopPrice';
@@ -169,10 +169,10 @@ class _$AdminTicketPageDtoOutputReportSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+                      CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
                     ),
                   )
-                  as AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?;
+                  as CaptainPeakBonusDtoOutputWindowsInnerZonesInner?;
           if (valueDes == null) continue;
           result.item.replace(valueDes);
           break;

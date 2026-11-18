@@ -8,7 +8,8 @@ part of 'admin_ticket_assignees_dto_output.dart';
 
 class _$AdminTicketAssigneesDtoOutput extends AdminTicketAssigneesDtoOutput {
   @override
-  final BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner> assignees;
+  final BuiltList<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>
+  assignees;
 
   factory _$AdminTicketAssigneesDtoOutput([
     void Function(AdminTicketAssigneesDtoOutputBuilder)? updates,
@@ -55,12 +56,12 @@ class AdminTicketAssigneesDtoOutputBuilder
         > {
   _$AdminTicketAssigneesDtoOutput? _$v;
 
-  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>? _assignees;
-  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner> get assignees =>
-      _$this._assignees ??=
-          ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>();
+  ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>? _assignees;
+  ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>
+  get assignees => _$this._assignees ??=
+      ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>();
   set assignees(
-    ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>? assignees,
+    ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>? assignees,
   ) => _$this._assignees = assignees;
 
   AdminTicketAssigneesDtoOutputBuilder() {

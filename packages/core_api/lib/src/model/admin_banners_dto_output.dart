@@ -4,9 +4,9 @@
 
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/admin_banners_dto_output_codes_inner.dart';
+import 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_zones_inner.dart';
 import 'package:core_api/src/model/admin_banners_dto_output_banners_inner.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force_windows_inner_zones_inner.dart';
 import 'package:core_api/src/model/admin_peak_bonus_dto_output_zones_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -31,13 +31,11 @@ abstract class AdminBannersDtoOutput
 
   /// The city's restaurants a target picks from.
   @BuiltValueField(wireName: r'restaurants')
-  BuiltList<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>
-  get restaurants;
+  BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?> get restaurants;
 
   /// The active categories, in their order.
   @BuiltValueField(wireName: r'categories')
-  BuiltList<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>
-  get categories;
+  BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?> get categories;
 
   /// The city's visible codes running now in its base currency, newest first.
   @BuiltValueField(wireName: r'codes')
@@ -91,14 +89,14 @@ class _$AdminBannersDtoOutputSerializer
     yield serializers.serialize(
       object.restaurants,
       specifiedType: const FullType(BuiltList, [
-        FullType.nullable(AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner),
+        FullType.nullable(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
       ]),
     );
     yield r'categories';
     yield serializers.serialize(
       object.categories,
       specifiedType: const FullType(BuiltList, [
-        FullType.nullable(AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner),
+        FullType.nullable(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
       ]),
     );
     yield r'codes';
@@ -164,12 +162,12 @@ class _$AdminBannersDtoOutputSerializer
                     value,
                     specifiedType: const FullType(BuiltList, [
                       FullType.nullable(
-                        AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+                        CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
                       ),
                     ]),
                   )
                   as BuiltList<
-                    AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
+                    CaptainPeakBonusDtoOutputWindowsInnerZonesInner?
                   >;
           result.restaurants.replace(valueDes);
           break;
@@ -179,12 +177,12 @@ class _$AdminBannersDtoOutputSerializer
                     value,
                     specifiedType: const FullType(BuiltList, [
                       FullType.nullable(
-                        AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+                        CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
                       ),
                     ]),
                   )
                   as BuiltList<
-                    AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
+                    CaptainPeakBonusDtoOutputWindowsInnerZonesInner?
                   >;
           result.categories.replace(valueDes);
           break;

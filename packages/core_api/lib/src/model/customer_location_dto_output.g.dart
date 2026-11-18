@@ -84,7 +84,7 @@ class _$CustomerLocationDtoOutput extends CustomerLocationDtoOutput {
   @override
   final CustomerLocationDtoOutputStateEnum state;
   @override
-  final AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner? zone;
+  final CaptainPeakBonusDtoOutputWindowsInnerZonesInner? zone;
 
   factory _$CustomerLocationDtoOutput([
     void Function(CustomerLocationDtoOutputBuilder)? updates,
@@ -135,11 +135,10 @@ class CustomerLocationDtoOutputBuilder
   CustomerLocationDtoOutputStateEnum? get state => _$this._state;
   set state(CustomerLocationDtoOutputStateEnum? state) => _$this._state = state;
 
-  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder? _zone;
-  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder get zone =>
-      _$this._zone ??=
-          AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder();
-  set zone(AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder? zone) =>
+  CaptainPeakBonusDtoOutputWindowsInnerZonesInnerBuilder? _zone;
+  CaptainPeakBonusDtoOutputWindowsInnerZonesInnerBuilder get zone =>
+      _$this._zone ??= CaptainPeakBonusDtoOutputWindowsInnerZonesInnerBuilder();
+  set zone(CaptainPeakBonusDtoOutputWindowsInnerZonesInnerBuilder? zone) =>
       _$this._zone = zone;
 
   CustomerLocationDtoOutputBuilder() {

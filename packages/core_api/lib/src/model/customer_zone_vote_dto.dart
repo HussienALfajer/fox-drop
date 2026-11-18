@@ -3,7 +3,7 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/customer_zone_vote_dto_location.dart';
+import 'package:core_api/src/model/admin_draft_location_dto_location.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -22,7 +22,7 @@ abstract class CustomerZoneVoteDto
   String get deviceId;
 
   @BuiltValueField(wireName: r'location')
-  CustomerZoneVoteDtoLocation get location;
+  AdminDraftLocationDtoLocation get location;
 
   CustomerZoneVoteDto._();
 
@@ -61,7 +61,7 @@ class _$CustomerZoneVoteDtoSerializer
     yield r'location';
     yield serializers.serialize(
       object.location,
-      specifiedType: const FullType(CustomerZoneVoteDtoLocation),
+      specifiedType: const FullType(AdminDraftLocationDtoLocation),
     );
   }
 
@@ -103,9 +103,11 @@ class _$CustomerZoneVoteDtoSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(CustomerZoneVoteDtoLocation),
+                    specifiedType: const FullType(
+                      AdminDraftLocationDtoLocation,
+                    ),
                   )
-                  as CustomerZoneVoteDtoLocation;
+                  as AdminDraftLocationDtoLocation;
           result.location.replace(valueDes);
           break;
         default:

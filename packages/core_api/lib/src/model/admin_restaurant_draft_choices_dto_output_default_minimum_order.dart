@@ -6,71 +6,74 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_peak_bonus_dto_output_in_force_windows_inner_zones_inner.g.dart';
+part 'admin_restaurant_draft_choices_dto_output_default_minimum_order.g.dart';
 
-/// The zone the point is in, the neighbourhood of an unsaved point.
+/// merchant.default_min_order; null when unset.
 ///
 /// Properties:
-/// * [id]
-/// * [name]
+/// * [amount] - Integer minor units of the currency, as a string.
+/// * [currency]
 @BuiltValue()
-abstract class AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner
+abstract class AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder
     implements
         Built<
-          AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
-          AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder
+          AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder,
+          AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrderBuilder
         > {
-  @BuiltValueField(wireName: r'id')
-  String get id;
+  /// Integer minor units of the currency, as a string.
+  @BuiltValueField(wireName: r'amount')
+  String get amount;
 
-  @BuiltValueField(wireName: r'name')
-  String get name;
+  @BuiltValueField(wireName: r'currency')
+  String get currency;
 
-  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner._();
+  AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder._();
 
-  factory AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner([
-    void updates(AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder b),
-  ]) = _$AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner;
+  factory AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder([
+    void updates(
+      AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrderBuilder b,
+    ),
+  ]) = _$AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(
-    AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder b,
+    AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrderBuilder b,
   ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner>
+  static Serializer<AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder>
   get serializer =>
-      _$AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerSerializer();
+      _$AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrderSerializer();
 }
 
-class _$AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerSerializer
+class _$AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrderSerializer
     implements
         PrimitiveSerializer<
-          AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner
+          AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder
         > {
   @override
   final Iterable<Type> types = const [
-    AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
-    _$AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+    AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder,
+    _$AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder,
   ];
 
   @override
   final String wireName =
-      r'AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner';
+      r'AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner object, {
+    AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'id';
+    yield r'amount';
     yield serializers.serialize(
-      object.id,
+      object.amount,
       specifiedType: const FullType(String),
     );
-    yield r'name';
+    yield r'currency';
     yield serializers.serialize(
-      object.name,
+      object.currency,
       specifiedType: const FullType(String),
     );
   }
@@ -78,7 +81,7 @@ class _$AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner object, {
+    AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -93,30 +96,31 @@ class _$AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder result,
+    required AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrderBuilder
+    result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'id':
+        case r'amount':
           final valueDes =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(String),
                   )
                   as String;
-          result.id = valueDes;
+          result.amount = valueDes;
           break;
-        case r'name':
+        case r'currency':
           final valueDes =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(String),
                   )
                   as String;
-          result.name = valueDes;
+          result.currency = valueDes;
           break;
         default:
           unhandled.add(key);
@@ -127,13 +131,13 @@ class _$AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerSerializer
   }
 
   @override
-  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner deserialize(
+  AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
     final result =
-        AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder();
+        AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrderBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

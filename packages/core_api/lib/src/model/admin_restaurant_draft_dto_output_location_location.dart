@@ -6,51 +6,57 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'customer_zone_vote_dto_location.g.dart';
+part 'admin_restaurant_draft_dto_output_location_location.g.dart';
 
-/// CustomerZoneVoteDtoLocation
+/// AdminRestaurantDraftDtoOutputLocationLocation
 ///
 /// Properties:
 /// * [latitude]
 /// * [longitude]
 @BuiltValue()
-abstract class CustomerZoneVoteDtoLocation
+abstract class AdminRestaurantDraftDtoOutputLocationLocation
     implements
-        Built<CustomerZoneVoteDtoLocation, CustomerZoneVoteDtoLocationBuilder> {
+        Built<
+          AdminRestaurantDraftDtoOutputLocationLocation,
+          AdminRestaurantDraftDtoOutputLocationLocationBuilder
+        > {
   @BuiltValueField(wireName: r'latitude')
   num get latitude;
 
   @BuiltValueField(wireName: r'longitude')
   num get longitude;
 
-  CustomerZoneVoteDtoLocation._();
+  AdminRestaurantDraftDtoOutputLocationLocation._();
 
-  factory CustomerZoneVoteDtoLocation([
-    void updates(CustomerZoneVoteDtoLocationBuilder b),
-  ]) = _$CustomerZoneVoteDtoLocation;
+  factory AdminRestaurantDraftDtoOutputLocationLocation([
+    void updates(AdminRestaurantDraftDtoOutputLocationLocationBuilder b),
+  ]) = _$AdminRestaurantDraftDtoOutputLocationLocation;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CustomerZoneVoteDtoLocationBuilder b) => b;
+  static void _defaults(
+    AdminRestaurantDraftDtoOutputLocationLocationBuilder b,
+  ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CustomerZoneVoteDtoLocation> get serializer =>
-      _$CustomerZoneVoteDtoLocationSerializer();
+  static Serializer<AdminRestaurantDraftDtoOutputLocationLocation>
+  get serializer => _$AdminRestaurantDraftDtoOutputLocationLocationSerializer();
 }
 
-class _$CustomerZoneVoteDtoLocationSerializer
-    implements PrimitiveSerializer<CustomerZoneVoteDtoLocation> {
+class _$AdminRestaurantDraftDtoOutputLocationLocationSerializer
+    implements
+        PrimitiveSerializer<AdminRestaurantDraftDtoOutputLocationLocation> {
   @override
   final Iterable<Type> types = const [
-    CustomerZoneVoteDtoLocation,
-    _$CustomerZoneVoteDtoLocation,
+    AdminRestaurantDraftDtoOutputLocationLocation,
+    _$AdminRestaurantDraftDtoOutputLocationLocation,
   ];
 
   @override
-  final String wireName = r'CustomerZoneVoteDtoLocation';
+  final String wireName = r'AdminRestaurantDraftDtoOutputLocationLocation';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    CustomerZoneVoteDtoLocation object, {
+    AdminRestaurantDraftDtoOutputLocationLocation object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'latitude';
@@ -68,7 +74,7 @@ class _$CustomerZoneVoteDtoLocationSerializer
   @override
   Object serialize(
     Serializers serializers,
-    CustomerZoneVoteDtoLocation object, {
+    AdminRestaurantDraftDtoOutputLocationLocation object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -83,7 +89,7 @@ class _$CustomerZoneVoteDtoLocationSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required CustomerZoneVoteDtoLocationBuilder result,
+    required AdminRestaurantDraftDtoOutputLocationLocationBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -111,12 +117,12 @@ class _$CustomerZoneVoteDtoLocationSerializer
   }
 
   @override
-  CustomerZoneVoteDtoLocation deserialize(
+  AdminRestaurantDraftDtoOutputLocationLocation deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = CustomerZoneVoteDtoLocationBuilder();
+    final result = AdminRestaurantDraftDtoOutputLocationLocationBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

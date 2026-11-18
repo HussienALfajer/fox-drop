@@ -60,10 +60,17 @@ export const restaurants = merchants.table(
     // Keys in public-media (architecture §5.8), set from the panel's uploads.
     logoKey: text('logo_key'),
     coverKey: text('cover_key'),
-    location: point('location').notNull(),
+    // The record of AP §9.6.3 steps 2 and 3 (the pin, the coverage, the
+    // minimum order and the prep time) stays empty while a draft's wizard has
+    // not reached it (slice 2.30a); every other status has it (a CHECK).
+    location: point('location'),
     address: text('address'),
     // E.164.
     phone: text('phone'),
+    // AP §9.6.3 step 2: the owner's name and number as contacts (E.164); the
+    // owners' sign-in accounts are identity's (step 6).
+    ownerName: text('owner_name'),
+    ownerPhone: text('owner_phone'),
     accountStatus: text('account_status', { enum: accountStatuses }).notNull().default('draft'),
     // The reason of the latest suspension, shown in the restaurant app (RA §5.5).
     suspensionReason: text('suspension_reason'),
@@ -75,13 +82,13 @@ export const restaurants = merchants.table(
     sortWeight: integer('sort_weight').notNull().default(0),
     // Owner decision 2026-11-06: a radius around the pin, or chosen zones
     // (coverage_zones).
-    coverageKind: text('coverage_kind', { enum: ['radius', 'zones'] }).notNull(),
+    coverageKind: text('coverage_kind', { enum: ['radius', 'zones'] }),
     coverageRadiusMetres: integer('coverage_radius_metres'),
     // RA R13: in the city's base currency, compared with the items value
     // before discounts (CU §10.2).
-    minimumOrder: bigint('minimum_order', { mode: 'bigint' }).notNull(),
-    minimumOrderCurrency: text('minimum_order_currency').notNull(),
-    defaultPrepMin: smallint('default_prep_min').notNull(),
+    minimumOrder: bigint('minimum_order', { mode: 'bigint' }),
+    minimumOrderCurrency: text('minimum_order_currency'),
+    defaultPrepMin: smallint('default_prep_min'),
     // RA §7.4: off, or 1 to 50.
     maxActiveOrders: smallint('max_active_orders'),
     // RA §12.7, AP §9.6.4: the city's other currencies the restaurant accepts
@@ -109,6 +116,14 @@ export const restaurants = merchants.table(
     check(
       'restaurants_account_status_values',
       sql`${table.accountStatus} IN ('draft', 'test', 'active', 'suspended', 'terminated')`,
+    ),
+    check(
+      'restaurants_record_complete',
+      sql`${table.accountStatus} = 'draft' OR (${table.location} IS NOT NULL AND ${table.coverageKind} IS NOT NULL AND ${table.minimumOrder} IS NOT NULL AND ${table.minimumOrderCurrency} IS NOT NULL AND ${table.defaultPrepMin} IS NOT NULL)`,
+    ),
+    check(
+      'restaurants_operations_together',
+      sql`(${table.coverageKind} IS NULL) = (${table.minimumOrder} IS NULL) AND (${table.minimumOrder} IS NULL) = (${table.minimumOrderCurrency} IS NULL) AND (${table.minimumOrder} IS NULL) = (${table.defaultPrepMin} IS NULL)`,
     ),
     check('restaurants_coverage_kind_values', sql`${table.coverageKind} IN ('radius', 'zones')`),
     check(

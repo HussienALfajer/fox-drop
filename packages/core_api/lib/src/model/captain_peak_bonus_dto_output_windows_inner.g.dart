@@ -17,7 +17,7 @@ class _$CaptainPeakBonusDtoOutputWindowsInner
   @override
   final CaptainPeakBonusDtoOutputWindowsInnerAmount amount;
   @override
-  final BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner> zones;
+  final BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?> zones;
 
   factory _$CaptainPeakBonusDtoOutputWindowsInner([
     void Function(CaptainPeakBonusDtoOutputWindowsInnerBuilder)? updates,
@@ -103,12 +103,12 @@ class CaptainPeakBonusDtoOutputWindowsInnerBuilder
   set amount(CaptainPeakBonusDtoOutputWindowsInnerAmountBuilder? amount) =>
       _$this._amount = amount;
 
-  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>? _zones;
-  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner> get zones =>
+  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>? _zones;
+  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?> get zones =>
       _$this._zones ??=
-          ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>();
+          ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>();
   set zones(
-    ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>? zones,
+    ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>? zones,
   ) => _$this._zones = zones;
 
   CaptainPeakBonusDtoOutputWindowsInnerBuilder() {

@@ -3,8 +3,8 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_zones_inner.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force_windows_inner_zones_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -25,7 +25,7 @@ abstract class CustomerLocationDtoOutput
   // enum stateEnum {  served,  no_restaurants,  outside_zones,  };
 
   @BuiltValueField(wireName: r'zone')
-  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner? get zone;
+  CaptainPeakBonusDtoOutputWindowsInnerZonesInner? get zone;
 
   CustomerLocationDtoOutput._();
 
@@ -68,7 +68,7 @@ class _$CustomerLocationDtoOutputSerializer
         : serializers.serialize(
             object.zone,
             specifiedType: const FullType.nullable(
-              AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+              CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
             ),
           );
   }
@@ -114,10 +114,10 @@ class _$CustomerLocationDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+                      CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
                     ),
                   )
-                  as AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?;
+                  as CaptainPeakBonusDtoOutputWindowsInnerZonesInner?;
           if (valueDes == null) continue;
           result.zone.replace(valueDes);
           break;

@@ -8,7 +8,7 @@ part of 'admin_ticket_parties_dto_output.dart';
 
 class _$AdminTicketPartiesDtoOutput extends AdminTicketPartiesDtoOutput {
   @override
-  final BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner> parties;
+  final BuiltList<AdminRestaurantDraftChoicesDtoOutputCategoriesInner> parties;
 
   factory _$AdminTicketPartiesDtoOutput([
     void Function(AdminTicketPartiesDtoOutputBuilder)? updates,
@@ -54,12 +54,12 @@ class AdminTicketPartiesDtoOutputBuilder
         > {
   _$AdminTicketPartiesDtoOutput? _$v;
 
-  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>? _parties;
-  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner> get parties =>
-      _$this._parties ??=
-          ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>();
+  ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>? _parties;
+  ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>
+  get parties => _$this._parties ??=
+      ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>();
   set parties(
-    ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>? parties,
+    ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>? parties,
   ) => _$this._parties = parties;
 
   AdminTicketPartiesDtoOutputBuilder() {

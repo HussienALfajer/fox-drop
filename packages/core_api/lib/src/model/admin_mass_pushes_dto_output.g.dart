@@ -10,11 +10,12 @@ class _$AdminMassPushesDtoOutput extends AdminMassPushesDtoOutput {
   @override
   final BuiltList<AdminMassPushesDtoOutputPushesInner> pushes;
   @override
-  final BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner> restaurants;
+  final BuiltList<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>
+  restaurants;
   @override
   final BuiltList<AdminBannersDtoOutputCodesInner> codes;
   @override
-  final BuiltList<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?> zones;
+  final BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?> zones;
   @override
   final bool canManage;
 
@@ -84,12 +85,14 @@ class AdminMassPushesDtoOutputBuilder
   set pushes(ListBuilder<AdminMassPushesDtoOutputPushesInner>? pushes) =>
       _$this._pushes = pushes;
 
-  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>? _restaurants;
-  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>
+  ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>?
+  _restaurants;
+  ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>
   get restaurants => _$this._restaurants ??=
-      ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>();
+      ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>();
   set restaurants(
-    ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>? restaurants,
+    ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>?
+    restaurants,
   ) => _$this._restaurants = restaurants;
 
   ListBuilder<AdminBannersDtoOutputCodesInner>? _codes;
@@ -98,12 +101,12 @@ class AdminMassPushesDtoOutputBuilder
   set codes(ListBuilder<AdminBannersDtoOutputCodesInner>? codes) =>
       _$this._codes = codes;
 
-  ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>? _zones;
-  ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>
-  get zones => _$this._zones ??=
-      ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>();
+  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>? _zones;
+  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?> get zones =>
+      _$this._zones ??=
+          ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>();
   set zones(
-    ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>? zones,
+    ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>? zones,
   ) => _$this._zones = zones;
 
   bool? _canManage;

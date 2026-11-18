@@ -96,8 +96,7 @@ class _$CustomerCodesDtoOutputCodesInner
   @override
   final String? minOrder;
   @override
-  final BuiltList<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>
-  restaurants;
+  final BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?> restaurants;
   @override
   final BuiltList<String> zones;
   @override
@@ -225,14 +224,12 @@ class CustomerCodesDtoOutputCodesInnerBuilder
   String? get minOrder => _$this._minOrder;
   set minOrder(String? minOrder) => _$this._minOrder = minOrder;
 
-  ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>?
-  _restaurants;
-  ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>
+  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>? _restaurants;
+  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>
   get restaurants => _$this._restaurants ??=
-      ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>();
+      ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>();
   set restaurants(
-    ListBuilder<AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?>?
-    restaurants,
+    ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner?>? restaurants,
   ) => _$this._restaurants = restaurants;
 
   ListBuilder<String>? _zones;

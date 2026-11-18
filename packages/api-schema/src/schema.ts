@@ -1140,6 +1140,102 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/restaurant-drafts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRestaurantDraftsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/choices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRestaurantDraftsChoices"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRestaurantDraftsRead"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/basics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantDraftsBasics"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/location": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantDraftsLocation"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/operations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantDraftsOperations"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/cities": {
         parameters: {
             query?: never;
@@ -6136,6 +6232,157 @@ export interface components {
         AdminRestaurantPickupCurrenciesDto: {
             /** @description The other currencies to accept at pickup; the base is always accepted. */
             currencies: string[];
+        };
+        AdminRestaurantDraftsDto_Output: {
+            drafts: {
+                /** Format: uuid */
+                id: string;
+                nameAr: string;
+                /** @description Which steps of AP §9.6.3 hold what they need. */
+                steps: {
+                    basics: boolean;
+                    location: boolean;
+                    operations: boolean;
+                };
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                updatedAt: string;
+            }[];
+        };
+        AdminRestaurantDraftChoicesDto_Output: {
+            categories: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            }[];
+            categoriesMax: number;
+            zones: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            }[];
+            baseCurrency: string | null;
+            prepFloorMin: number;
+            prepCeilingMin: number;
+            /** @description merchant.default_prep_min, the step-3 start. */
+            defaultPrepMin: number;
+            /** @description merchant.default_min_order; null when unset. */
+            defaultMinimumOrder: {
+                /** @description Integer minor units of the currency, as a string. */
+                amount: string;
+                currency: string;
+            } | null;
+            /** @description merchant.default_commission_pct, in basis points. */
+            defaultCommissionBp: number;
+            nameMax: number;
+            descriptionMax: number;
+            addressMax: number;
+        };
+        AdminRestaurantDraftDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            cityId: string;
+            accountStatus: string;
+            basics: {
+                nameAr: string;
+                nameEn: string | null;
+                categoryIds: string[];
+                description: string | null;
+                logoKey: string | null;
+                coverKey: string | null;
+            };
+            location: {
+                location: {
+                    latitude: number;
+                    longitude: number;
+                } | null;
+                address: string | null;
+                phone: string | null;
+                ownerName: string | null;
+                ownerPhone: string | null;
+            };
+            operations: {
+                periods: {
+                    /** @description 0 is Sunday, 6 Saturday. */
+                    weekday: number;
+                    /** @description Minutes after midnight on the city's clock. */
+                    opensAt: number;
+                    /** @description Not after the opening: the period crosses midnight (00:00 to 00:00 is all day). */
+                    closesAt: number;
+                }[];
+                defaultPrepMin: number | null;
+                minimumOrder: {
+                    /** @description Integer minor units of the currency, as a string. */
+                    amount: string;
+                    currency: string;
+                } | null;
+                coverage: ({
+                    /** @constant */
+                    kind: "radius";
+                    radiusMetres: number;
+                } | {
+                    /** @constant */
+                    kind: "zones";
+                    zoneIds: string[];
+                }) | null;
+            };
+            /** @description Which steps of AP §9.6.3 hold what they need. */
+            steps: {
+                basics: boolean;
+                location: boolean;
+                operations: boolean;
+            };
+        };
+        AdminDraftBasicsDto: {
+            /**
+             * Format: uuid
+             * @description The city of a new draft; the same city for a saved one.
+             */
+            cityId: string;
+            nameAr: string;
+            nameEn: string | null;
+            /** @description Active categories of «التصنيفات», once each, in the chosen order. */
+            categoryIds: string[];
+            description: string | null;
+        };
+        AdminDraftLocationDto: {
+            location: {
+                latitude: number;
+                longitude: number;
+            };
+            address: string | null;
+            /** @description The restaurant's number in E.164. */
+            phone: string | null;
+            ownerName: string | null;
+            /** @description The owner's number in E.164 (a contact). */
+            ownerPhone: string | null;
+        };
+        AdminDraftOperationsDto: {
+            periods: {
+                /** @description 0 is Sunday, 6 Saturday. */
+                weekday: number;
+                /** @description Minutes after midnight on the city's clock. */
+                opensAt: number;
+                /** @description Not after the opening: the period crosses midnight (00:00 to 00:00 is all day). */
+                closesAt: number;
+            }[];
+            defaultPrepMin: number;
+            minimumOrder: {
+                /** @description Integer minor units of the currency, as a string. */
+                amount: string;
+                currency: string;
+            };
+            coverage: {
+                /** @constant */
+                kind: "radius";
+                radiusMetres: number;
+            } | {
+                /** @constant */
+                kind: "zones";
+                zoneIds: string[];
+            };
         };
         AdminCitiesDto_Output: {
             /** @description The active cities, by name. */
@@ -18111,6 +18358,150 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminRestaurantStatusDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantDraftsList: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantDraftsDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantDraftsChoices: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantDraftChoicesDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantDraftsRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantDraftDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantDraftsBasics: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminDraftBasicsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantDraftDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantDraftsLocation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminDraftLocationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantDraftDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantDraftsOperations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminDraftOperationsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantDraftDto_Output"];
                 };
             };
         };

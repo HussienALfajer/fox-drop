@@ -813,6 +813,13 @@
       "when": 1795020277912,
       "tag": "0115_customers_favourites",
       "breakpoints": true
+    },
+    {
+      "idx": 116,
+      "version": "7",
+      "when": 1795032581744,
+      "tag": "0116_merchants_restaurant_drafts",
+      "breakpoints": true
     }
   ]
 }

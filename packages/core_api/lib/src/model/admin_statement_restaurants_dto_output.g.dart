@@ -9,7 +9,8 @@ part of 'admin_statement_restaurants_dto_output.dart';
 class _$AdminStatementRestaurantsDtoOutput
     extends AdminStatementRestaurantsDtoOutput {
   @override
-  final BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner> restaurants;
+  final BuiltList<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>
+  restaurants;
 
   factory _$AdminStatementRestaurantsDtoOutput([
     void Function(AdminStatementRestaurantsDtoOutputBuilder)? updates,
@@ -57,12 +58,14 @@ class AdminStatementRestaurantsDtoOutputBuilder
         > {
   _$AdminStatementRestaurantsDtoOutput? _$v;
 
-  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>? _restaurants;
-  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>
+  ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>?
+  _restaurants;
+  ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>
   get restaurants => _$this._restaurants ??=
-      ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>();
+      ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>();
   set restaurants(
-    ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>? restaurants,
+    ListBuilder<AdminRestaurantDraftChoicesDtoOutputCategoriesInner>?
+    restaurants,
   ) => _$this._restaurants = restaurants;
 
   AdminStatementRestaurantsDtoOutputBuilder() {

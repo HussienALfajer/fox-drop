@@ -3,7 +3,7 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_zones_inner.dart';
+import 'package:core_api/src/model/admin_restaurant_draft_choices_dto_output_categories_inner.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_total.dart';
 import 'package:core_api/src/model/admin_order_card_dto_output_order_badges.dart';
@@ -61,7 +61,7 @@ abstract class AdminBoardDtoOutputOrdersInner
   DateTime get placedAt;
 
   @BuiltValueField(wireName: r'restaurant')
-  CaptainPeakBonusDtoOutputWindowsInnerZonesInner get restaurant;
+  AdminRestaurantDraftChoicesDtoOutputCategoriesInner get restaurant;
 
   @BuiltValueField(wireName: r'neighbourhood')
   String get neighbourhood;
@@ -158,7 +158,7 @@ class _$AdminBoardDtoOutputOrdersInnerSerializer
     yield serializers.serialize(
       object.restaurant,
       specifiedType: const FullType(
-        CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
+        AdminRestaurantDraftChoicesDtoOutputCategoriesInner,
       ),
     );
     yield r'neighbourhood';
@@ -299,10 +299,10 @@ class _$AdminBoardDtoOutputOrdersInnerSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(
-                      CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
+                      AdminRestaurantDraftChoicesDtoOutputCategoriesInner,
                     ),
                   )
-                  as CaptainPeakBonusDtoOutputWindowsInnerZonesInner;
+                  as AdminRestaurantDraftChoicesDtoOutputCategoriesInner;
           result.restaurant.replace(valueDes);
           break;
         case r'neighbourhood':

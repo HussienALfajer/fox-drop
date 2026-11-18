@@ -1,38 +1,38 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'customer_zone_vote_dto_location.dart';
+part of 'admin_draft_location_dto_location.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$CustomerZoneVoteDtoLocation extends CustomerZoneVoteDtoLocation {
+class _$AdminDraftLocationDtoLocation extends AdminDraftLocationDtoLocation {
   @override
   final num latitude;
   @override
   final num longitude;
 
-  factory _$CustomerZoneVoteDtoLocation([
-    void Function(CustomerZoneVoteDtoLocationBuilder)? updates,
-  ]) => (CustomerZoneVoteDtoLocationBuilder()..update(updates))._build();
+  factory _$AdminDraftLocationDtoLocation([
+    void Function(AdminDraftLocationDtoLocationBuilder)? updates,
+  ]) => (AdminDraftLocationDtoLocationBuilder()..update(updates))._build();
 
-  _$CustomerZoneVoteDtoLocation._({
+  _$AdminDraftLocationDtoLocation._({
     required this.latitude,
     required this.longitude,
   }) : super._();
   @override
-  CustomerZoneVoteDtoLocation rebuild(
-    void Function(CustomerZoneVoteDtoLocationBuilder) updates,
+  AdminDraftLocationDtoLocation rebuild(
+    void Function(AdminDraftLocationDtoLocationBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  CustomerZoneVoteDtoLocationBuilder toBuilder() =>
-      CustomerZoneVoteDtoLocationBuilder()..replace(this);
+  AdminDraftLocationDtoLocationBuilder toBuilder() =>
+      AdminDraftLocationDtoLocationBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is CustomerZoneVoteDtoLocation &&
+    return other is AdminDraftLocationDtoLocation &&
         latitude == other.latitude &&
         longitude == other.longitude;
   }
@@ -48,20 +48,20 @@ class _$CustomerZoneVoteDtoLocation extends CustomerZoneVoteDtoLocation {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'CustomerZoneVoteDtoLocation')
+    return (newBuiltValueToStringHelper(r'AdminDraftLocationDtoLocation')
           ..add('latitude', latitude)
           ..add('longitude', longitude))
         .toString();
   }
 }
 
-class CustomerZoneVoteDtoLocationBuilder
+class AdminDraftLocationDtoLocationBuilder
     implements
         Builder<
-          CustomerZoneVoteDtoLocation,
-          CustomerZoneVoteDtoLocationBuilder
+          AdminDraftLocationDtoLocation,
+          AdminDraftLocationDtoLocationBuilder
         > {
-  _$CustomerZoneVoteDtoLocation? _$v;
+  _$AdminDraftLocationDtoLocation? _$v;
 
   num? _latitude;
   num? get latitude => _$this._latitude;
@@ -71,11 +71,11 @@ class CustomerZoneVoteDtoLocationBuilder
   num? get longitude => _$this._longitude;
   set longitude(num? longitude) => _$this._longitude = longitude;
 
-  CustomerZoneVoteDtoLocationBuilder() {
-    CustomerZoneVoteDtoLocation._defaults(this);
+  AdminDraftLocationDtoLocationBuilder() {
+    AdminDraftLocationDtoLocation._defaults(this);
   }
 
-  CustomerZoneVoteDtoLocationBuilder get _$this {
+  AdminDraftLocationDtoLocationBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _latitude = $v.latitude;
@@ -86,30 +86,30 @@ class CustomerZoneVoteDtoLocationBuilder
   }
 
   @override
-  void replace(CustomerZoneVoteDtoLocation other) {
-    _$v = other as _$CustomerZoneVoteDtoLocation;
+  void replace(AdminDraftLocationDtoLocation other) {
+    _$v = other as _$AdminDraftLocationDtoLocation;
   }
 
   @override
-  void update(void Function(CustomerZoneVoteDtoLocationBuilder)? updates) {
+  void update(void Function(AdminDraftLocationDtoLocationBuilder)? updates) {
     if (updates != null) updates(this);
   }
 
   @override
-  CustomerZoneVoteDtoLocation build() => _build();
+  AdminDraftLocationDtoLocation build() => _build();
 
-  _$CustomerZoneVoteDtoLocation _build() {
+  _$AdminDraftLocationDtoLocation _build() {
     final _$result =
         _$v ??
-        _$CustomerZoneVoteDtoLocation._(
+        _$AdminDraftLocationDtoLocation._(
           latitude: BuiltValueNullFieldError.checkNotNull(
             latitude,
-            r'CustomerZoneVoteDtoLocation',
+            r'AdminDraftLocationDtoLocation',
             'latitude',
           ),
           longitude: BuiltValueNullFieldError.checkNotNull(
             longitude,
-            r'CustomerZoneVoteDtoLocation',
+            r'AdminDraftLocationDtoLocation',
             'longitude',
           ),
         );

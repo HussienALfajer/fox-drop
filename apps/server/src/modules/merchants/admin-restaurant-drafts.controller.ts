@@ -1,0 +1,360 @@
+import {
+  BadRequestException,
+  Body,
+  ConflictException,
+  Get,
+  HttpStatus,
+  NotFoundException,
+  Param,
+  Put,
+  Query,
+  Req,
+} from '@nestjs/common';
+import type { FastifyRequest } from 'fastify';
+import { createZodDto, ZodResponse } from 'nestjs-zod';
+import { z } from 'zod';
+import { CurrentAdminSession, RequireAnyPermission, RequirePermission } from '../../http/access.js';
+import { requestContext } from '../../http/request-context.js';
+import { AdminController } from '../../http/route-groups.js';
+import { CategoriesService } from '../content/index.js';
+import { FxService } from '../fx/index.js';
+import { GeoService } from '../geo/index.js';
+import type { AdminSession } from '../identity/index.js';
+import { SettingsService } from '../settings/index.js';
+import {
+  type MerchantChange,
+  MerchantsRefusedError,
+  RESTAURANT_CATEGORIES_MAX,
+} from './merchants.service.js';
+import {
+  DRAFT_ADDRESS_MAX,
+  DRAFT_DESCRIPTION_MAX,
+  DRAFT_NAME_MAX,
+  type RestaurantDraft,
+  RestaurantDraftsService,
+} from './restaurant-drafts.service.js';
+
+const minorUnits = z
+  .string()
+  .regex(/^\d{1,15}$/)
+  .describe('Integer minor units of the currency, as a string.');
+
+const money = z.object({ amount: minorUnits, currency: z.string().length(3) });
+
+const period = z.object({
+  weekday: z.int().min(0).max(6).describe('0 is Sunday, 6 Saturday.'),
+  opensAt: z.int().min(0).max(1439).describe("Minutes after midnight on the city's clock."),
+  closesAt: z
+    .int()
+    .min(0)
+    .max(1440)
+    .describe('Not after the opening: the period crosses midnight (00:00 to 00:00 is all day).'),
+});
+
+const coverage = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('radius'), radiusMetres: z.int().min(1).max(100_000) }),
+  z.object({ kind: z.literal('zones'), zoneIds: z.array(z.uuid()).min(1) }),
+]);
+
+const point = z.object({
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+});
+
+const steps = z
+  .object({ basics: z.boolean(), location: z.boolean(), operations: z.boolean() })
+  .describe('Which steps of AP §9.6.3 hold what they need.');
+
+class AdminRestaurantDraftsQueryDto extends createZodDto(z.object({ cityId: z.uuid() })) {}
+
+class AdminRestaurantDraftParamsDto extends createZodDto(z.object({ restaurantId: z.uuid() })) {}
+
+class AdminRestaurantDraftsDto extends createZodDto(
+  z.object({
+    drafts: z.array(
+      z.object({
+        id: z.uuid(),
+        nameAr: z.string(),
+        steps,
+        createdAt: z.iso.datetime(),
+        updatedAt: z.iso.datetime(),
+      }),
+    ),
+  }),
+) {}
+
+class AdminRestaurantDraftChoicesDto extends createZodDto(
+  z.object({
+    categories: z.array(z.object({ id: z.uuid(), name: z.string() })),
+    categoriesMax: z.int(),
+    zones: z.array(z.object({ id: z.uuid(), name: z.string() })),
+    baseCurrency: z.string().nullable(),
+    prepFloorMin: z.int(),
+    prepCeilingMin: z.int(),
+    defaultPrepMin: z.int().describe('merchant.default_prep_min, the step-3 start.'),
+    defaultMinimumOrder: money.nullable().describe('merchant.default_min_order; null when unset.'),
+    defaultCommissionBp: z.int().describe('merchant.default_commission_pct, in basis points.'),
+    nameMax: z.int(),
+    descriptionMax: z.int(),
+    addressMax: z.int(),
+  }),
+) {}
+
+class AdminRestaurantDraftDto extends createZodDto(
+  z.object({
+    id: z.uuid(),
+    cityId: z.uuid(),
+    accountStatus: z.string(),
+    basics: z.object({
+      nameAr: z.string(),
+      nameEn: z.string().nullable(),
+      categoryIds: z.array(z.uuid()),
+      description: z.string().nullable(),
+      logoKey: z.string().nullable(),
+      coverKey: z.string().nullable(),
+    }),
+    location: z.object({
+      location: point.nullable(),
+      address: z.string().nullable(),
+      phone: z.string().nullable(),
+      ownerName: z.string().nullable(),
+      ownerPhone: z.string().nullable(),
+    }),
+    operations: z.object({
+      periods: z.array(period),
+      defaultPrepMin: z.int().nullable(),
+      minimumOrder: money.nullable(),
+      coverage: coverage.nullable(),
+    }),
+    steps,
+  }),
+) {}
+
+class AdminDraftBasicsDto extends createZodDto(
+  z.object({
+    cityId: z.uuid().describe('The city of a new draft; the same city for a saved one.'),
+    nameAr: z.string().max(DRAFT_NAME_MAX),
+    nameEn: z.string().max(DRAFT_NAME_MAX).nullable(),
+    categoryIds: z
+      .array(z.uuid())
+      .max(RESTAURANT_CATEGORIES_MAX)
+      .describe('Active categories of «التصنيفات», once each, in the chosen order.'),
+    description: z.string().max(DRAFT_DESCRIPTION_MAX).nullable(),
+  }),
+) {}
+
+class AdminDraftLocationDto extends createZodDto(
+  z.object({
+    location: point,
+    address: z.string().max(DRAFT_ADDRESS_MAX).nullable(),
+    phone: z.string().nullable().describe("The restaurant's number in E.164."),
+    ownerName: z.string().max(DRAFT_NAME_MAX).nullable(),
+    ownerPhone: z.string().nullable().describe("The owner's number in E.164 (a contact)."),
+  }),
+) {}
+
+class AdminDraftOperationsDto extends createZodDto(
+  z.object({
+    periods: z.array(period).min(1).max(70),
+    defaultPrepMin: z.int(),
+    minimumOrder: money,
+    coverage,
+  }),
+) {}
+
+function refusalAsHttp(error: unknown): never {
+  if (error instanceof MerchantsRefusedError) {
+    const body = { error: error.refusal };
+    if (error.refusal === 'unknown_restaurant' || error.refusal === 'unknown_city') {
+      throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, ...body });
+    }
+    if (error.refusal === 'not_a_draft' || error.refusal === 'not_in_base_currency') {
+      throw new ConflictException({ statusCode: HttpStatus.CONFLICT, ...body });
+    }
+    throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, ...body });
+  }
+  throw error;
+}
+
+function adminChange(session: AdminSession, request: FastifyRequest): MerchantChange {
+  return {
+    actor: { type: 'admin', id: session.accountId, role: session.roles.join(',') },
+    context: requestContext(request),
+  };
+}
+
+function draftAsJson(draft: RestaurantDraft) {
+  return {
+    id: draft.id,
+    cityId: draft.cityId,
+    accountStatus: draft.accountStatus,
+    basics: draft.basics,
+    location: draft.location,
+    operations: {
+      periods: draft.operations.periods,
+      defaultPrepMin: draft.operations.defaultPrepMin,
+      minimumOrder:
+        draft.operations.minimumOrder === null
+          ? null
+          : {
+              amount: draft.operations.minimumOrder.amount.toString(),
+              currency: draft.operations.minimumOrder.currency,
+            },
+      coverage: draft.operations.coverage,
+    },
+    steps: draft.steps,
+  };
+}
+
+// The onboarding wizard «إضافة مطعم» (AP §9.6.3 steps 1–3; slice 2.30a):
+// the city's drafts, the wizard's choices, a draft's read and each step's
+// save. The panel names a new draft's id, so a step's save sets values and
+// takes no Idempotency-Key: a retry writes nothing more. Steps 1–3 are
+// DATA's, OPS's and OWN's (restaurants.create); the logo and cover use the
+// restaurant's own routes. 400 invalid_restaurant, invalid_schedule,
+// invalid_prep_time, invalid_coverage, unknown_category; 404
+// unknown_restaurant, unknown_city; 409 not_a_draft, not_in_base_currency.
+@AdminController('restaurant-drafts')
+export class AdminRestaurantDraftsController {
+  constructor(
+    private readonly drafts: RestaurantDraftsService,
+    private readonly categories: CategoriesService,
+    private readonly geo: GeoService,
+    private readonly fx: FxService,
+    private readonly settings: SettingsService,
+  ) {}
+
+  @Get()
+  @RequireAnyPermission('restaurants.read', 'restaurants.create')
+  @ZodResponse({ status: 200, type: AdminRestaurantDraftsDto })
+  async list(@Query() query: AdminRestaurantDraftsQueryDto) {
+    const drafts = await this.drafts.drafts(query.cityId);
+    return {
+      drafts: drafts.map((draft) => ({
+        ...draft,
+        createdAt: draft.createdAt.toISOString(),
+        updatedAt: draft.updatedAt.toISOString(),
+      })),
+    };
+  }
+
+  @Get('choices')
+  @RequireAnyPermission('restaurants.read', 'restaurants.create')
+  @ZodResponse({ status: 200, type: AdminRestaurantDraftChoicesDto })
+  async choices(@Query() query: AdminRestaurantDraftsQueryDto) {
+    const scope = { cityId: query.cityId };
+    const [categories, zones, baseCurrency, floor, ceiling, prep, minimum, commission] =
+      await Promise.all([
+        this.categories.active(),
+        this.geo.zones(query.cityId),
+        this.fx.baseCurrency(query.cityId),
+        this.settings.get('merchant.prep_time_floor_min', scope),
+        this.settings.get('merchant.prep_time_ceiling_min', scope),
+        this.settings.get('merchant.default_prep_min', scope),
+        this.settings.get('merchant.default_min_order', scope),
+        this.settings.get('merchant.default_commission_pct', scope),
+      ]);
+    return {
+      categories: categories.map((category) => ({ id: category.id, name: category.name })),
+      categoriesMax: RESTAURANT_CATEGORIES_MAX,
+      zones: zones.filter((zone) => zone.active).map(({ id, name }) => ({ id, name })),
+      baseCurrency,
+      prepFloorMin: floor,
+      prepCeilingMin: ceiling,
+      defaultPrepMin: prep,
+      defaultMinimumOrder:
+        minimum === null || minimum.currency === null
+          ? null
+          : { amount: String(minimum.amountMinor), currency: minimum.currency },
+      defaultCommissionBp: Math.round(commission * 100),
+      nameMax: DRAFT_NAME_MAX,
+      descriptionMax: DRAFT_DESCRIPTION_MAX,
+      addressMax: DRAFT_ADDRESS_MAX,
+    };
+  }
+
+  @Get(':restaurantId')
+  @RequireAnyPermission('restaurants.read', 'restaurants.create')
+  @ZodResponse({ status: 200, type: AdminRestaurantDraftDto })
+  async read(@Param() params: AdminRestaurantDraftParamsDto) {
+    return draftAsJson(await this.found(params.restaurantId));
+  }
+
+  @Put(':restaurantId/basics')
+  @RequirePermission('restaurants.create')
+  @ZodResponse({ status: 200, type: AdminRestaurantDraftDto })
+  async basics(
+    @Param() params: AdminRestaurantDraftParamsDto,
+    @Body() body: AdminDraftBasicsDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    try {
+      const { cityId, ...basics } = body;
+      await this.drafts.saveBasics(
+        params.restaurantId,
+        cityId,
+        basics,
+        adminChange(session, request),
+      );
+    } catch (error) {
+      refusalAsHttp(error);
+    }
+    return draftAsJson(await this.found(params.restaurantId));
+  }
+
+  @Put(':restaurantId/location')
+  @RequirePermission('restaurants.create')
+  @ZodResponse({ status: 200, type: AdminRestaurantDraftDto })
+  async location(
+    @Param() params: AdminRestaurantDraftParamsDto,
+    @Body() body: AdminDraftLocationDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    try {
+      await this.drafts.saveLocation(params.restaurantId, body, adminChange(session, request));
+    } catch (error) {
+      refusalAsHttp(error);
+    }
+    return draftAsJson(await this.found(params.restaurantId));
+  }
+
+  @Put(':restaurantId/operations')
+  @RequirePermission('restaurants.create')
+  @ZodResponse({ status: 200, type: AdminRestaurantDraftDto })
+  async operations(
+    @Param() params: AdminRestaurantDraftParamsDto,
+    @Body() body: AdminDraftOperationsDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    try {
+      await this.drafts.saveOperations(
+        params.restaurantId,
+        {
+          ...body,
+          minimumOrder: {
+            amount: BigInt(body.minimumOrder.amount),
+            currency: body.minimumOrder.currency,
+          },
+        },
+        adminChange(session, request),
+      );
+    } catch (error) {
+      refusalAsHttp(error);
+    }
+    return draftAsJson(await this.found(params.restaurantId));
+  }
+
+  private async found(restaurantId: string): Promise<RestaurantDraft> {
+    const draft = await this.drafts.draft(restaurantId);
+    if (draft === null) {
+      throw new NotFoundException({
+        statusCode: HttpStatus.NOT_FOUND,
+        error: 'unknown_restaurant',
+      });
+    }
+    return draft;
+  }
+}

@@ -170,7 +170,7 @@ class _$AdminOrderOffersDtoOutputOffersInner
   @override
   final String id;
   @override
-  final AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner? captain;
+  final CaptainPeakBonusDtoOutputWindowsInnerZonesInner? captain;
   @override
   final AdminOrderOffersDtoOutputOffersInnerKindEnum kind;
   @override
@@ -270,12 +270,12 @@ class AdminOrderOffersDtoOutputOffersInnerBuilder
   String? get id => _$this._id;
   set id(String? id) => _$this._id = id;
 
-  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder? _captain;
-  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder get captain =>
+  CaptainPeakBonusDtoOutputWindowsInnerZonesInnerBuilder? _captain;
+  CaptainPeakBonusDtoOutputWindowsInnerZonesInnerBuilder get captain =>
       _$this._captain ??=
-          AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder();
+          CaptainPeakBonusDtoOutputWindowsInnerZonesInnerBuilder();
   set captain(
-    AdminPeakBonusDtoOutputInForceWindowsInnerZonesInnerBuilder? captain,
+    CaptainPeakBonusDtoOutputWindowsInnerZonesInnerBuilder? captain,
   ) => _$this._captain = captain;
 
   AdminOrderOffersDtoOutputOffersInnerKindEnum? _kind;

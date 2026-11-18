@@ -1,0 +1,9 @@
+ALTER TABLE "merchants"."restaurants" ALTER COLUMN "location" DROP NOT NULL;--> statement-breakpoint
+ALTER TABLE "merchants"."restaurants" ALTER COLUMN "coverage_kind" DROP NOT NULL;--> statement-breakpoint
+ALTER TABLE "merchants"."restaurants" ALTER COLUMN "minimum_order" DROP NOT NULL;--> statement-breakpoint
+ALTER TABLE "merchants"."restaurants" ALTER COLUMN "minimum_order_currency" DROP NOT NULL;--> statement-breakpoint
+ALTER TABLE "merchants"."restaurants" ALTER COLUMN "default_prep_min" DROP NOT NULL;--> statement-breakpoint
+ALTER TABLE "merchants"."restaurants" ADD COLUMN "owner_name" text;--> statement-breakpoint
+ALTER TABLE "merchants"."restaurants" ADD COLUMN "owner_phone" text;--> statement-breakpoint
+ALTER TABLE "merchants"."restaurants" ADD CONSTRAINT "restaurants_record_complete" CHECK ("merchants"."restaurants"."account_status" = 'draft' OR ("merchants"."restaurants"."location" IS NOT NULL AND "merchants"."restaurants"."coverage_kind" IS NOT NULL AND "merchants"."restaurants"."minimum_order" IS NOT NULL AND "merchants"."restaurants"."minimum_order_currency" IS NOT NULL AND "merchants"."restaurants"."default_prep_min" IS NOT NULL));--> statement-breakpoint
+ALTER TABLE "merchants"."restaurants" ADD CONSTRAINT "restaurants_operations_together" CHECK (("merchants"."restaurants"."coverage_kind" IS NULL) = ("merchants"."restaurants"."minimum_order" IS NULL) AND ("merchants"."restaurants"."minimum_order" IS NULL) = ("merchants"."restaurants"."minimum_order_currency" IS NULL) AND ("merchants"."restaurants"."minimum_order" IS NULL) = ("merchants"."restaurants"."default_prep_min" IS NULL));

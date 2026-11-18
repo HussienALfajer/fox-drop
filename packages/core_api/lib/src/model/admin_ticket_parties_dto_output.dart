@@ -3,7 +3,7 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_zones_inner.dart';
+import 'package:core_api/src/model/admin_restaurant_draft_choices_dto_output_categories_inner.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -19,7 +19,7 @@ abstract class AdminTicketPartiesDtoOutput
     implements
         Built<AdminTicketPartiesDtoOutput, AdminTicketPartiesDtoOutputBuilder> {
   @BuiltValueField(wireName: r'parties')
-  BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner> get parties;
+  BuiltList<AdminRestaurantDraftChoicesDtoOutputCategoriesInner> get parties;
 
   AdminTicketPartiesDtoOutput._();
 
@@ -55,7 +55,7 @@ class _$AdminTicketPartiesDtoOutputSerializer
     yield serializers.serialize(
       object.parties,
       specifiedType: const FullType(BuiltList, [
-        FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+        FullType(AdminRestaurantDraftChoicesDtoOutputCategoriesInner),
       ]),
     );
   }
@@ -90,10 +90,14 @@ class _$AdminTicketPartiesDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(CaptainPeakBonusDtoOutputWindowsInnerZonesInner),
+                      FullType(
+                        AdminRestaurantDraftChoicesDtoOutputCategoriesInner,
+                      ),
                     ]),
                   )
-                  as BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>;
+                  as BuiltList<
+                    AdminRestaurantDraftChoicesDtoOutputCategoriesInner
+                  >;
           result.parties.replace(valueDes);
           break;
         default:
