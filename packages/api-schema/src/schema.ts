@@ -1412,6 +1412,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/restaurant-drafts/{restaurantId}/checklist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRestaurantActivationRead"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu-images-waiver": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantActivationWaiver"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/test-mode": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminRestaurantActivationTestMode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminRestaurantActivationActivate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/cities": {
         parameters: {
             query?: never;
@@ -6433,6 +6497,11 @@ export interface components {
                 /** Format: uuid */
                 id: string;
                 nameAr: string;
+                /**
+                 * @description A draft, or a restaurant in test mode waiting for its activation (step 8).
+                 * @enum {string}
+                 */
+                accountStatus: "draft" | "test";
                 /** @description Which steps of AP §9.6.3 hold what they need. */
                 steps: {
                     basics: boolean;
@@ -6723,6 +6792,40 @@ export interface components {
              * @enum {string}
              */
             until?: "tomorrow" | "turned_back_on";
+        };
+        AdminChecklistDto_Output: {
+            /** @enum {string} */
+            accountStatus: "draft" | "test" | "active" | "suspended" | "terminated";
+            /** @description AP §9.6.3 step 8, in order. */
+            items: {
+                /** @enum {string} */
+                code: "record" | "commission" | "contract" | "hours" | "menu" | "menu_images" | "owner_account" | "device_check" | "test_order";
+                /**
+                 * @description `waived`: the image rule under OWN's waiver; `not_available`: the device check, «غير متاح بعد» until 2.42, never blocking.
+                 * @enum {string}
+                 */
+                state: "met" | "missing" | "waived" | "not_available";
+            }[];
+            /** @description «تشغيل الوضع التجريبي»: every item but the test order is met. */
+            canStartTest: boolean;
+            /** @description «تفعيل وإظهار للزبائن»: every item is met. */
+            canActivate: boolean;
+            images: {
+                withPhoto: number;
+                /** @description The visible items of the visible categories. */
+                total: number;
+                requiredPct: number;
+            };
+            /** @description OWN's waiver of the image rule; null without one. */
+            imagesWaiver: {
+                /** Format: date-time */
+                at: string;
+                /** Format: uuid */
+                by: string;
+            } | null;
+        };
+        AdminImagesWaiverDto: {
+            waived: boolean;
         };
         AdminCitiesDto_Output: {
             /** @description The active cities, by name. */
@@ -19146,6 +19249,98 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminMenuDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantActivationRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminChecklistDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantActivationWaiver: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminImagesWaiverDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminChecklistDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantActivationTestMode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminChecklistDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantActivationActivate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminChecklistDto_Output"];
                 };
             };
         };

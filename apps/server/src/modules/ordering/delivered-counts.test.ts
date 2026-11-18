@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CustomersService } from '../customers/index.js';
+import { MerchantsService } from '../merchants/index.js';
 import { app, orderAtDoor, restaurant, sql } from './delivery.fixture.js';
 
 // CU §8.1 «الأكثر طلباً» (slice 2.27b, owner decision 2026-11-18): the
@@ -32,5 +33,15 @@ describe('the delivered counts of «الأكثر طلباً»', () => {
     expect(
       await app.get(CustomersService).deliveredCounts([], new Date(Date.now() - 30 * DAY)),
     ).toEqual(new Map());
+  });
+
+  // AP §9.6.3 step 8 (slice 2.30b): «A test order completed end to end».
+  it("counts the restaurant's delivered test orders for the activation checklist", async () => {
+    const merchants = app.get(MerchantsService);
+    const before = await merchants.deliveredTestOrderCount(restaurant);
+    const test = await delivered();
+    await sql.query('UPDATE ordering.orders SET test_order = true WHERE id = $1', [test]);
+    await delivered();
+    expect(await merchants.deliveredTestOrderCount(restaurant)).toBe(before + 1);
   });
 });

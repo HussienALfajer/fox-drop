@@ -76,7 +76,10 @@ export type MerchantsRefusal =
   | 'invalid_contract'
   // AP §9.6.3 step 7 (slice 2.30b): the wizard edits the menu of a draft or
   // a restaurant in test mode only.
-  | 'menu_locked';
+  | 'menu_locked'
+  // AP §9.6.3 step 8: test mode or activation with an item of the checklist
+  // missing.
+  | 'checklist_incomplete';
 
 // AP §9.13: how many categories one restaurant links to, at most.
 export const RESTAURANT_CATEGORIES_MAX = 5;
@@ -256,6 +259,10 @@ export class MerchantsService implements OnModuleInit {
   // RA §7.4: a restaurant's active orders, counted by the ordering module
   // (countActiveOrders); none until it registers.
   private activeOrders: ActiveOrderCount = () => Promise.resolve(0);
+  // AP §9.6.3 step 8 (slice 2.30b): the checklist's owner accounts (identity)
+  // and delivered test orders (ordering); none until they register.
+  private ownerAccounts: ActiveOrderCount = () => Promise.resolve(0);
+  private deliveredTestOrders: ActiveOrderCount = () => Promise.resolve(0);
 
   constructor(
     @Inject(DATABASE) private readonly database: Database,
@@ -578,47 +585,59 @@ export class MerchantsService implements OnModuleInit {
   ): Promise<void> {
     await this.database.db.transaction(async (tx) => {
       const row = await this.lockRestaurant(tx, restaurantId);
-      if (row.accountStatus === status) return;
-      if (!statusChanges[row.accountStatus].includes(status) || !row.complete) {
-        throw new MerchantsRefusedError(
-          'status_change_not_allowed',
-          `a ${row.accountStatus} restaurant cannot become ${status}`,
-        );
-      }
-      if (
-        (status === 'suspended' ||
-          status === 'terminated' ||
-          (row.accountStatus === 'suspended' && status === 'active')) &&
-        !hasReason(change)
-      ) {
-        throw new MerchantsRefusedError('reason_required', `becoming ${status} needs a reason`);
-      }
-      await tx
-        .update(restaurants)
-        .set({
-          accountStatus: status,
-          suspensionReason: status === 'suspended' ? change.reason!.trim() : null,
-          // CU §8.1: the first activation, from a draft or test mode.
-          ...(status === 'active'
-            ? { activatedAt: sql`coalesce(${restaurants.activatedAt}, now())` }
-            : {}),
-          updatedAt: sql`now()`,
-        })
-        .where(eq(restaurants.id, restaurantId));
-      await this.audit.recordWrite(
-        {
-          actor: change.actor,
-          context: change.context,
-          cityId: row.cityId,
-          action: 'restaurant.status',
-          target: { type: 'restaurant', id: restaurantId },
-          before: { accountStatus: row.accountStatus },
-          after: { accountStatus: status },
-          reason: change.reason ?? null,
-        },
-        tx,
-      );
+      await this.writeAccountStatus(tx, restaurantId, row, status, change);
     });
+  }
+
+  // Module-internal: the status change under the restaurant's lock, which the
+  // activation service shares (slice 2.30b) after its checklist.
+  async writeAccountStatus(
+    tx: Tx,
+    restaurantId: string,
+    row: { cityId: string; accountStatus: AccountStatus; complete: boolean },
+    status: AccountStatus,
+    change: MerchantChange,
+  ): Promise<void> {
+    if (row.accountStatus === status) return;
+    if (!statusChanges[row.accountStatus].includes(status) || !row.complete) {
+      throw new MerchantsRefusedError(
+        'status_change_not_allowed',
+        `a ${row.accountStatus} restaurant cannot become ${status}`,
+      );
+    }
+    if (
+      (status === 'suspended' ||
+        status === 'terminated' ||
+        (row.accountStatus === 'suspended' && status === 'active')) &&
+      !hasReason(change)
+    ) {
+      throw new MerchantsRefusedError('reason_required', `becoming ${status} needs a reason`);
+    }
+    await tx
+      .update(restaurants)
+      .set({
+        accountStatus: status,
+        suspensionReason: status === 'suspended' ? change.reason!.trim() : null,
+        // CU §8.1: the first activation, from a draft or test mode.
+        ...(status === 'active'
+          ? { activatedAt: sql`coalesce(${restaurants.activatedAt}, now())` }
+          : {}),
+        updatedAt: sql`now()`,
+      })
+      .where(eq(restaurants.id, restaurantId));
+    await this.audit.recordWrite(
+      {
+        actor: change.actor,
+        context: change.context,
+        cityId: row.cityId,
+        action: 'restaurant.status',
+        target: { type: 'restaurant', id: restaurantId },
+        before: { accountStatus: row.accountStatus },
+        after: { accountStatus: status },
+        reason: change.reason ?? null,
+      },
+      tx,
+    );
   }
 
   // RA §10: a new version of the weekly schedule, in force at once.
@@ -751,6 +770,24 @@ export class MerchantsService implements OnModuleInit {
   // cannot read (architecture §4.3).
   countActiveOrders(count: ActiveOrderCount): void {
     this.activeOrders = count;
+  }
+
+  // AP §9.6.3 step 8: identity counts a restaurant's owner accounts.
+  countOwnerAccounts(count: ActiveOrderCount): void {
+    this.ownerAccounts = count;
+  }
+
+  // AP §9.6.3 step 8: ordering counts a restaurant's delivered test orders.
+  countDeliveredTestOrders(count: ActiveOrderCount): void {
+    this.deliveredTestOrders = count;
+  }
+
+  ownerAccountCount(restaurantId: string): Promise<number> {
+    return this.ownerAccounts(restaurantId);
+  }
+
+  deliveredTestOrderCount(restaurantId: string): Promise<number> {
+    return this.deliveredTestOrders(restaurantId);
   }
 
   // RA §7.4: the restaurant's orders in placed, accepted or ready now.
@@ -1653,7 +1690,7 @@ export class MerchantsService implements OnModuleInit {
 }
 
 // A row's switch at a moment: off «حتى الغد» is on again from its time.
-function switchedOff(
+export function switchedOff(
   row: { available: boolean; unavailableUntil: Date | null },
   now: Date,
 ): SwitchedOff {

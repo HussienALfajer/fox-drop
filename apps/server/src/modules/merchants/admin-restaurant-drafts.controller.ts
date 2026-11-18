@@ -119,6 +119,9 @@ class AdminRestaurantDraftsDto extends createZodDto(
       z.object({
         id: z.uuid(),
         nameAr: z.string(),
+        accountStatus: z
+          .enum(['draft', 'test'])
+          .describe('A draft, or a restaurant in test mode waiting for its activation (step 8).'),
         steps,
         createdAt: z.iso.datetime(),
         updatedAt: z.iso.datetime(),

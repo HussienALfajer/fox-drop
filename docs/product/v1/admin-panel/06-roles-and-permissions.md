@@ -75,6 +75,7 @@ V1 has five fixed roles. Permissions are stored as data, so V2 can add custom ro
 | Flag a customer as an admin test account (§9.8)                                                    | OWN                                                                   |
 | Sign every device of a customer out (§9.8)                                                         | OWN, OPS, SUP                                                         |
 | Lift a device's block «فك حظر الجهاز» (§9.8, docs/domain/08)                                       | OWN                                                                   |
+| Waive the activation checklist's image rule (§9.6.3)                                               | OWN                                                                   |
 | Suspend or terminate a captain                                                                     | OWN, OPS (the final earnings payout at termination needs OWN, §9.7.5) |
 | Export data that contains phone numbers                                                            | OWN, OPS, SUP                                                         |
 | Issue an emergency sign-in code to a captain or a restaurant user (architecture §8.3.5)            | OWN, OPS                                                              |

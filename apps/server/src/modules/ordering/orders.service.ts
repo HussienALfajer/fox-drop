@@ -190,6 +190,10 @@ export class OrdersService implements OnModuleInit {
     this.customers.useActiveOrders((accountId, executor) =>
       this.activeOrders.customerHasActive(accountId, executor),
     );
+    // AP §9.6.3 step 8 (slice 2.30b): «A test order completed end to end».
+    this.merchants.countDeliveredTestOrders((restaurantId) =>
+      this.deliveredTestOrders(restaurantId),
+    );
     // CU §8.1 «الأكثر طلباً» (slice 2.27b).
     this.customers.useDeliveredCounts((restaurantIds, since) =>
       this.deliveredCounts(restaurantIds, since),
@@ -212,6 +216,23 @@ export class OrdersService implements OnModuleInit {
         ...summary,
       };
     });
+  }
+
+  // The restaurant's test orders delivered (any outcome that ends delivered),
+  // read across every month's partition: a restaurant stays in test mode for
+  // days, not years.
+  private async deliveredTestOrders(restaurantId: string): Promise<number> {
+    const [row] = await this.database.db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(orders)
+      .where(
+        and(
+          eq(orders.restaurantId, restaurantId),
+          eq(orders.status, 'delivered'),
+          eq(orders.testOrder, true),
+        ),
+      );
+    return Number(row?.n ?? 0);
   }
 
   // CU §8.1 «الأكثر طلباً» (slice 2.27b, owner decision 2026-11-18): each

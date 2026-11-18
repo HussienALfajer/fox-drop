@@ -130,6 +130,8 @@ export interface RestaurantDraft {
 export interface DraftSummary {
   id: string;
   nameAr: string;
+  // `draft`, or `test` once test mode started (step 8).
+  accountStatus: 'draft' | 'test';
   steps: DraftSteps;
   createdAt: Date;
   updatedAt: Date;
@@ -635,11 +637,12 @@ export class RestaurantDraftsService {
     };
   }
 
-  // The city's drafts, the latest saved first: the wizard resumes from them.
+  // The city's drafts and restaurants in test mode, the latest saved first:
+  // the wizard resumes from them, test mode included until its activation.
   async drafts(cityId: string): Promise<DraftSummary[]> {
     const rows = await this.rows(
       this.database.db,
-      and(eq(restaurants.cityId, cityId), eq(restaurants.accountStatus, 'draft'))!,
+      and(eq(restaurants.cityId, cityId), inArray(restaurants.accountStatus, ['draft', 'test']))!,
     );
     const ids = rows.map((row) => row.id);
     const periods = await this.periodCounts(ids);
@@ -677,6 +680,7 @@ export class RestaurantDraftsService {
       .map((row) => ({
         id: row.id,
         nameAr: row.nameAr,
+        accountStatus: row.accountStatus as 'draft' | 'test',
         steps: {
           basics: true,
           location: row.latitude !== null,

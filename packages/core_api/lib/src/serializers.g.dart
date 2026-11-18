@@ -80,6 +80,13 @@ Serializers _$serializers =
           ..add(AdminChangeOutcomeDtoOutcomeEnum.serializer)
           ..add(AdminChangeOutcomeDtoResponsibleEnum.serializer)
           ..add(AdminChangeTimeDto.serializer)
+          ..add(AdminChecklistDtoOutput.serializer)
+          ..add(AdminChecklistDtoOutputAccountStatusEnum.serializer)
+          ..add(AdminChecklistDtoOutputImages.serializer)
+          ..add(AdminChecklistDtoOutputImagesWaiver.serializer)
+          ..add(AdminChecklistDtoOutputItemsInner.serializer)
+          ..add(AdminChecklistDtoOutputItemsInnerCodeEnum.serializer)
+          ..add(AdminChecklistDtoOutputItemsInnerStateEnum.serializer)
           ..add(AdminCitiesDtoOutput.serializer)
           ..add(AdminCitiesDtoOutputCitiesInner.serializer)
           ..add(AdminCityOfficeDtoOutput.serializer)
@@ -297,6 +304,7 @@ Serializers _$serializers =
           ..add(AdminHomeSectionsDtoOutputSectionsInnerKindEnum.serializer)
           ..add(AdminHomeSectionsOrderDto.serializer)
           ..add(AdminImageSetDtoOutput.serializer)
+          ..add(AdminImagesWaiverDto.serializer)
           ..add(AdminLiftCustomerDeviceBlockDto.serializer)
           ..add(AdminLostDemandDtoOutput.serializer)
           ..add(AdminLostDemandDtoOutputSearchesInner.serializer)
@@ -671,6 +679,10 @@ Serializers _$serializers =
           ..add(AdminRestaurantDraftDtoOutputOperations.serializer)
           ..add(AdminRestaurantDraftsDtoOutput.serializer)
           ..add(AdminRestaurantDraftsDtoOutputDraftsInner.serializer)
+          ..add(
+            AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum
+                .serializer,
+          )
           ..add(AdminRestaurantDraftsDtoOutputDraftsInnerSteps.serializer)
           ..add(AdminRestaurantHolidayCloseDto.serializer)
           ..add(AdminRestaurantImagesDtoOutput.serializer)
@@ -1586,6 +1598,12 @@ Serializers _$serializers =
               const FullType(AdminCategoriesDtoOutputCategoriesInner),
             ]),
             () => ListBuilder<AdminCategoriesDtoOutputCategoriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminChecklistDtoOutputItemsInner),
+            ]),
+            () => ListBuilder<AdminChecklistDtoOutputItemsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

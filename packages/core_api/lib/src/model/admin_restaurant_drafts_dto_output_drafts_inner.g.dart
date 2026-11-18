@@ -6,12 +6,88 @@ part of 'admin_restaurant_drafts_dto_output_drafts_inner.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum
+_$adminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum_draft =
+    const AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum._('draft');
+const AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum
+_$adminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum_test =
+    const AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum._('test');
+
+AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum
+_$adminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnumValueOf(
+  String name,
+) {
+  switch (name) {
+    case 'draft':
+      return _$adminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum_draft;
+    case 'test':
+      return _$adminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum_test;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum>
+_$adminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnumValues =
+    BuiltSet<AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum>(
+      const <AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum>[
+        _$adminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum_draft,
+        _$adminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum_test,
+      ],
+    );
+
+Serializer<AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum>
+_$adminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnumSerializer =
+    _$AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnumSerializer();
+
+class _$AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnumSerializer
+    implements
+        PrimitiveSerializer<
+          AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum
+        > {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'draft': 'draft',
+    'test': 'test',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'draft': 'draft',
+    'test': 'test',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum,
+  ];
+  @override
+  final String wireName =
+      'AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum object, {
+    FullType specifiedType = FullType.unspecified,
+  }) => _toWire[object.name] ?? object.name;
+
+  @override
+  AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) => AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum.valueOf(
+    _fromWire[serialized] ?? (serialized is String ? serialized : ''),
+  );
+}
+
 class _$AdminRestaurantDraftsDtoOutputDraftsInner
     extends AdminRestaurantDraftsDtoOutputDraftsInner {
   @override
   final String id;
   @override
   final String nameAr;
+  @override
+  final AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum
+  accountStatus;
   @override
   final AdminRestaurantDraftsDtoOutputDraftsInnerSteps steps;
   @override
@@ -27,6 +103,7 @@ class _$AdminRestaurantDraftsDtoOutputDraftsInner
   _$AdminRestaurantDraftsDtoOutputDraftsInner._({
     required this.id,
     required this.nameAr,
+    required this.accountStatus,
     required this.steps,
     required this.createdAt,
     required this.updatedAt,
@@ -46,6 +123,7 @@ class _$AdminRestaurantDraftsDtoOutputDraftsInner
     return other is AdminRestaurantDraftsDtoOutputDraftsInner &&
         id == other.id &&
         nameAr == other.nameAr &&
+        accountStatus == other.accountStatus &&
         steps == other.steps &&
         createdAt == other.createdAt &&
         updatedAt == other.updatedAt;
@@ -56,6 +134,7 @@ class _$AdminRestaurantDraftsDtoOutputDraftsInner
     var _$hash = 0;
     _$hash = $jc(_$hash, id.hashCode);
     _$hash = $jc(_$hash, nameAr.hashCode);
+    _$hash = $jc(_$hash, accountStatus.hashCode);
     _$hash = $jc(_$hash, steps.hashCode);
     _$hash = $jc(_$hash, createdAt.hashCode);
     _$hash = $jc(_$hash, updatedAt.hashCode);
@@ -70,6 +149,7 @@ class _$AdminRestaurantDraftsDtoOutputDraftsInner
           )
           ..add('id', id)
           ..add('nameAr', nameAr)
+          ..add('accountStatus', accountStatus)
           ..add('steps', steps)
           ..add('createdAt', createdAt)
           ..add('updatedAt', updatedAt))
@@ -92,6 +172,13 @@ class AdminRestaurantDraftsDtoOutputDraftsInnerBuilder
   String? _nameAr;
   String? get nameAr => _$this._nameAr;
   set nameAr(String? nameAr) => _$this._nameAr = nameAr;
+
+  AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum? _accountStatus;
+  AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum?
+  get accountStatus => _$this._accountStatus;
+  set accountStatus(
+    AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum? accountStatus,
+  ) => _$this._accountStatus = accountStatus;
 
   AdminRestaurantDraftsDtoOutputDraftsInnerStepsBuilder? _steps;
   AdminRestaurantDraftsDtoOutputDraftsInnerStepsBuilder get steps =>
@@ -116,6 +203,7 @@ class AdminRestaurantDraftsDtoOutputDraftsInnerBuilder
     if ($v != null) {
       _id = $v.id;
       _nameAr = $v.nameAr;
+      _accountStatus = $v.accountStatus;
       _steps = $v.steps.toBuilder();
       _createdAt = $v.createdAt;
       _updatedAt = $v.updatedAt;
@@ -154,6 +242,11 @@ class AdminRestaurantDraftsDtoOutputDraftsInnerBuilder
               nameAr,
               r'AdminRestaurantDraftsDtoOutputDraftsInner',
               'nameAr',
+            ),
+            accountStatus: BuiltValueNullFieldError.checkNotNull(
+              accountStatus,
+              r'AdminRestaurantDraftsDtoOutputDraftsInner',
+              'accountStatus',
             ),
             steps: steps.build(),
             createdAt: BuiltValueNullFieldError.checkNotNull(

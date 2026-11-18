@@ -3575,6 +3575,164 @@
         ]
       }
     },
+    "/v1/admin/restaurant-drafts/{restaurantId}/checklist": {
+      "get": {
+        "operationId": "adminRestaurantActivationRead",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminChecklistDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu-images-waiver": {
+      "put": {
+        "operationId": "adminRestaurantActivationWaiver",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminImagesWaiverDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminChecklistDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/restaurant-drafts/{restaurantId}/test-mode": {
+      "post": {
+        "operationId": "adminRestaurantActivationTestMode",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminChecklistDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/restaurant-drafts/{restaurantId}/activate": {
+      "post": {
+        "operationId": "adminRestaurantActivationActivate",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminChecklistDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/cities": {
       "get": {
         "operationId": "adminCitiesList",
@@ -19114,6 +19272,14 @@
                 "nameAr": {
                   "type": "string"
                 },
+                "accountStatus": {
+                  "type": "string",
+                  "enum": [
+                    "draft",
+                    "test"
+                  ],
+                  "description": "A draft, or a restaurant in test mode waiting for its activation (step 8)."
+                },
                 "steps": {
                   "type": "object",
                   "properties": {
@@ -19158,6 +19324,7 @@
               "required": [
                 "id",
                 "nameAr",
+                "accountStatus",
                 "steps",
                 "createdAt",
                 "updatedAt"
@@ -20463,6 +20630,142 @@
           "type",
           "id",
           "available"
+        ]
+      },
+      "AdminChecklistDto_Output": {
+        "type": "object",
+        "properties": {
+          "accountStatus": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "test",
+              "active",
+              "suspended",
+              "terminated"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "enum": [
+                    "record",
+                    "commission",
+                    "contract",
+                    "hours",
+                    "menu",
+                    "menu_images",
+                    "owner_account",
+                    "device_check",
+                    "test_order"
+                  ]
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "met",
+                    "missing",
+                    "waived",
+                    "not_available"
+                  ],
+                  "description": "`waived`: the image rule under OWN's waiver; `not_available`: the device check, «غير متاح بعد» until 2.42, never blocking."
+                }
+              },
+              "required": [
+                "code",
+                "state"
+              ],
+              "additionalProperties": false
+            },
+            "description": "AP §9.6.3 step 8, in order."
+          },
+          "canStartTest": {
+            "type": "boolean",
+            "description": "«تشغيل الوضع التجريبي»: every item but the test order is met."
+          },
+          "canActivate": {
+            "type": "boolean",
+            "description": "«تفعيل وإظهار للزبائن»: every item is met."
+          },
+          "images": {
+            "type": "object",
+            "properties": {
+              "withPhoto": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "total": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "description": "The visible items of the visible categories."
+              },
+              "requiredPct": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "withPhoto",
+              "total",
+              "requiredPct"
+            ],
+            "additionalProperties": false
+          },
+          "imagesWaiver": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "by": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "required": [
+                  "at",
+                  "by"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "OWN's waiver of the image rule; null without one."
+          }
+        },
+        "required": [
+          "accountStatus",
+          "items",
+          "canStartTest",
+          "canActivate",
+          "images",
+          "imagesWaiver"
+        ],
+        "additionalProperties": false
+      },
+      "AdminImagesWaiverDto": {
+        "type": "object",
+        "properties": {
+          "waived": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "waived"
         ]
       },
       "AdminCitiesDto_Output": {

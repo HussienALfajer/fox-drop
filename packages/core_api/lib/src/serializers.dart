@@ -61,6 +61,10 @@ import 'package:core_api/src/model/admin_category_order_dto.dart';
 import 'package:core_api/src/model/admin_change_customer_phone_dto.dart';
 import 'package:core_api/src/model/admin_change_outcome_dto.dart';
 import 'package:core_api/src/model/admin_change_time_dto.dart';
+import 'package:core_api/src/model/admin_checklist_dto_output.dart';
+import 'package:core_api/src/model/admin_checklist_dto_output_images.dart';
+import 'package:core_api/src/model/admin_checklist_dto_output_images_waiver.dart';
+import 'package:core_api/src/model/admin_checklist_dto_output_items_inner.dart';
 import 'package:core_api/src/model/admin_cities_dto_output.dart';
 import 'package:core_api/src/model/admin_cities_dto_output_cities_inner.dart';
 import 'package:core_api/src/model/admin_city_office_dto_output.dart';
@@ -212,6 +216,7 @@ import 'package:core_api/src/model/admin_home_sections_dto_output.dart';
 import 'package:core_api/src/model/admin_home_sections_dto_output_sections_inner.dart';
 import 'package:core_api/src/model/admin_home_sections_order_dto.dart';
 import 'package:core_api/src/model/admin_image_set_dto_output.dart';
+import 'package:core_api/src/model/admin_images_waiver_dto.dart';
 import 'package:core_api/src/model/admin_lift_customer_device_block_dto.dart';
 import 'package:core_api/src/model/admin_lost_demand_dto_output.dart';
 import 'package:core_api/src/model/admin_lost_demand_dto_output_searches_inner.dart';
@@ -967,6 +972,10 @@ part 'serializers.g.dart';
   AdminChangeCustomerPhoneDto,
   AdminChangeOutcomeDto,
   AdminChangeTimeDto,
+  AdminChecklistDtoOutput,
+  AdminChecklistDtoOutputImages,
+  AdminChecklistDtoOutputImagesWaiver,
+  AdminChecklistDtoOutputItemsInner,
   AdminCitiesDtoOutput,
   AdminCitiesDtoOutputCitiesInner,
   AdminCityOfficeDtoOutput,
@@ -1118,6 +1127,7 @@ part 'serializers.g.dart';
   AdminHomeSectionsDtoOutputSectionsInner,
   AdminHomeSectionsOrderDto,
   AdminImageSetDtoOutput,
+  AdminImagesWaiverDto,
   AdminLiftCustomerDeviceBlockDto,
   AdminLostDemandDtoOutput,
   AdminLostDemandDtoOutputSearchesInner,
@@ -2924,6 +2934,12 @@ Serializers serializers =
               FullType(CustomerQuoteDtoOutputAvailableCodesInner),
             ]),
             () => ListBuilder<CustomerQuoteDtoOutputAvailableCodesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminChecklistDtoOutputItemsInner),
+            ]),
+            () => ListBuilder<AdminChecklistDtoOutputItemsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

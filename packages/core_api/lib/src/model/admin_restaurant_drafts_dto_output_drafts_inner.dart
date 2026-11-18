@@ -4,6 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/admin_restaurant_drafts_dto_output_drafts_inner_steps.dart';
+import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -14,6 +15,7 @@ part 'admin_restaurant_drafts_dto_output_drafts_inner.g.dart';
 /// Properties:
 /// * [id]
 /// * [nameAr]
+/// * [accountStatus] - A draft, or a restaurant in test mode waiting for its activation (step 8).
 /// * [steps]
 /// * [createdAt]
 /// * [updatedAt]
@@ -29,6 +31,11 @@ abstract class AdminRestaurantDraftsDtoOutputDraftsInner
 
   @BuiltValueField(wireName: r'nameAr')
   String get nameAr;
+
+  /// A draft, or a restaurant in test mode waiting for its activation (step 8).
+  @BuiltValueField(wireName: r'accountStatus')
+  AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum get accountStatus;
+  // enum accountStatusEnum {  draft,  test,  };
 
   @BuiltValueField(wireName: r'steps')
   AdminRestaurantDraftsDtoOutputDraftsInnerSteps get steps;
@@ -79,6 +86,13 @@ class _$AdminRestaurantDraftsDtoOutputDraftsInnerSerializer
     yield serializers.serialize(
       object.nameAr,
       specifiedType: const FullType(String),
+    );
+    yield r'accountStatus';
+    yield serializers.serialize(
+      object.accountStatus,
+      specifiedType: const FullType(
+        AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum,
+      ),
     );
     yield r'steps';
     yield serializers.serialize(
@@ -142,6 +156,17 @@ class _$AdminRestaurantDraftsDtoOutputDraftsInnerSerializer
                   as String;
           result.nameAr = valueDes;
           break;
+        case r'accountStatus':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum,
+                    ),
+                  )
+                  as AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum;
+          result.accountStatus = valueDes;
+          break;
         case r'steps':
           final valueDes =
               serializers.deserialize(
@@ -198,4 +223,31 @@ class _$AdminRestaurantDraftsDtoOutputDraftsInnerSerializer
     );
     return result.build();
   }
+}
+
+/// A draft, or a restaurant in test mode waiting for its activation (step 8).
+class AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum
+    extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'draft')
+  static const AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum
+  draft = _$adminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum_draft;
+  @BuiltValueEnumConst(wireName: r'test')
+  static const AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum test =
+      _$adminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum_test;
+
+  static Serializer<AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum>
+  get serializer =>
+      _$adminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnumSerializer;
+
+  const AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum._(
+    String name,
+  ) : super(name);
+
+  static BuiltSet<AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum>
+  get values =>
+      _$adminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnumValues;
+  static AdminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnum valueOf(
+    String name,
+  ) =>
+      _$adminRestaurantDraftsDtoOutputDraftsInnerAccountStatusEnumValueOf(name);
 }
