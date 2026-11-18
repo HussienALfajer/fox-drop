@@ -4,14 +4,19 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.27, Home (`docs/roadmap.md`, Phase 2, Finding food). Not started.
+Slice 2.27a, Categories (`docs/roadmap.md`, Phase 2, Finding food; 2.27 split into four, owner decision 2026-11-18).
 
-- **Roadmap line:** 2.27 Home: categories, home sections in the panel's order, banners, closed restaurants last, mass push to each audience now or scheduled (AP §9.11.2–9.11.4, §9.13, CU §8.1–8.2). The owner reorders a section and the home follows.
-- **Specs:** AP §9.11.2 «البانرات», §9.11.3 «أقسام الرئيسية», §9.11.4 «الإشعارات الجماعية» (D20), §9.13 (the categories), CU §8.1 «Home», §8.2 «Restaurant cards and lists»; what exists: the customer's browsing routes and cards (`customers/customer-browsing.controller.ts`, the ratings since 2.26a), Content's categories (`content.categories`), the panel's image uploads (2.5), the push queue (`notifications`).
-- **Branch:** the cloud session's branch, or `feat/customer-home`.
+- **Roadmap line:** 2.27a Categories: «التصنيفات» in the panel's «المحتوى» (name, icon or image, order), a restaurant linked to one or more of them instead of the free-text category (its values carried over by name), the categories on the customer's cards, and the category page with open restaurants first and closed ones last (AP §9.13, CU §8.2). The owner adds «شاورما», links a restaurant, and finds it on the category page.
+- **Specs:** AP §9.13 «التصنيفات», AP §6 (Content: OWN full, OPS read, DATA categories; `content.categories`), AP §9.6.3 step 1 (the restaurant's category, `restaurants.manage` or `restaurants.create`), CU §8.2 (the card's categories, the category page).
+- **Branch:** `claude/awesome-wright-l6hsmr` (the cloud session's branch).
+- **Owner decisions (2026-11-18):** the split into 2.27a–d; a restaurant links to one or more of the panel's categories, the free-text values carried over by name and the old column dropped later in its own migration; «الأكثر طلباً» the 10 with the most delivered orders in 30 days, test orders left out; «جديد على FOX DROP» activated in the last 30 days, newest first, 10; «الأقرب إليك» the 10 nearest; «العروض» counts only an active visible code limited to restaurants; a banner at 1200×500; a banner's «قائمة مطاعم» is its own hand-picked list, opened under its title; a mass push's «أُرسل» is FCM's acceptance and «وصل» the app's acknowledgement. The screens stay unstyled (logic and presentation apart) until the design stop is lifted.
 - **Plan:**
-  - [ ] Split the slice with the `slice-plan` skill and get the owner's approval (it spans the server, the panel and the customer app, and the mass push is a feature of its own); then write the first part's plan here, one step per commit.
-- **To ask the owner first:** the split (likely: sections and categories; banners; mass push); «الأكثر طلباً» and «جديد على FOX DROP»'s windows (how many days, how many restaurants); what «العروض» counts as a visible code; a banner's recommended size; the design stop for the home's screens (logic and presentation apart until then).
+  - [x] Record the split in `docs/roadmap.md` and this plan.
+  - [ ] Server, the categories: `content.categories` (name, image key, position, active; removing sets active false), seeded from the restaurants' distinct free-text categories, and `merchants.restaurants.category_ids` filled from them (one migration, expand only); the `category_image` upload purpose; `GET /v1/admin/content/categories` (`content.read` or `content.categories`), `POST`, `PUT /{id}`, `POST order` (`content.categories`), audited.
+  - [ ] Server, the restaurant's categories and the customer: `PUT /v1/admin/restaurants/{id}/categories` (`restaurants.manage` or `restaurants.create`, active categories only), the cards' `categories` (`category` kept as the first one's name for older apps), `GET /v1/customer/categories`, `GET /v1/customer/restaurants?categoryId=` (CU §8.2's order), «مطاعم مشابهة» by a shared category; the regenerated clients.
+  - [ ] Panel: «التصنيفات» under «المحتوى» (add with an image, rename, change the image, reorder, remove) and a restaurant's categories.
+  - [ ] Customer app: the categories on the cards, the categories on the home, and the category page.
+  - [ ] Review, then hand over to 2.27b.
 
 ### Left from 2.26c (`claude/wizardly-volta-pybnwm`)
 
