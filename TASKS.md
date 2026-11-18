@@ -4,16 +4,18 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.27c, Banners (`docs/roadmap.md`, Phase 2, Finding food). Not started.
+Slice 2.27c, Banners (`docs/roadmap.md`, Phase 2, Finding food). In progress.
 
 - **Roadmap line:** 2.27c Banners: an image at 1200×500 with a crop preview, a title, a target (a restaurant, a category, a hand-picked list of restaurants opened under the banner's title, or a code opening «أكوادي» on it), order, start and end, zones and a preview before publishing; the banners on the customer home (AP §9.11.2, CU §8.1). The owner publishes a banner for one zone and taps it in the app.
 - **Specs:** AP §9.11.2 «البانرات», AP §6 (Marketing: OWN full, OPS read, DATA banners), CU §8.1 (the banner's tap opens its target; a code opens «أكوادي» with that code shown), CU §12.4 «أكوادي».
-- **Branch:** the cloud session's branch, or `feat/banners`.
-- **Owner decisions (2026-11-18):** a banner at 1200×500; a banner's «قائمة مطاعم» is its own hand-picked list, opened under its title; the screens stay unstyled (logic and presentation apart) until the design stop is lifted.
-- **What exists:** the home's `banners` section (2.27b: `marketing.home_sections`, the customer home's `sections` with `kind: banners` naming no restaurant, the app's `HomeSections` showing nothing for it yet); the uploads and imgproxy (`FilesService`, the purposes and nginx's `/media/` folders, 2.27a's `category_image` as the latest example); «أكوادي» (`/codes`).
+- **Branch:** `claude/tender-gauss-ghiu3h` (the cloud session's).
+- **Owner decisions (2026-11-18):** a banner at 1200×500; a banner's «قائمة مطاعم» is its own hand-picked list, opened under its title; the screens stay unstyled until the design stop is lifted; DATA publishes banners on its own (`marketing.banners`: OWN and DATA; OPS reads); the image is cut to exactly 1200×500 before it is stored, so every phone shows the same frame; the home shows at most 10 banners at once, swipeable.
 - **Plan:**
-  - [ ] Write the plan here, one step per commit, after reading AP §9.11.2 and CU §8.1 (likely: the banners' table, the upload purpose and the panel's routes with `marketing.banners`; the customer's read of the banners at the point and the home's `banners` section; the panel's page with the crop preview and the preview before publishing; the app's banners and their targets).
-- **To ask the owner first:** whether DATA publishes banners alone or OWN approves them (AP §6 gives DATA «Banners»); the crop preview's exact behaviour (the image is cut to 1200×500 on the server or only previewed); how many banners show at once; the design stop for the banner strip.
+  - [ ] Server: `marketing.banners` (migration 0110), the upload purpose `banner_image` (published in `marketing/banners/`, checked to be exactly 1200×500; nginx's `/media/` folder), the panel's routes (`GET`, `POST` with `Idempotency-Key`, `PUT`, `POST …/order`, `POST …/{bannerId}/remove`; `marketing.banners` to change, `marketing.read` to read), audited `banner.*`.
+  - [ ] Server: the home's banners for the customer (`GET /v1/customer/restaurants?home=true` adds `banners`: running now, in the point's zone, in the panel's order, at most 10, each target still open to the customer; the `banners` section left out without one).
+  - [ ] Panel: «البانرات» (`/banners`): the list in order, the form (the image cut to 1200×500 in the browser with a crop preview, the title, the target, start and end, zones), «معاينة» before «نشر», up and down, «حذف».
+  - [ ] App: the banner strip on the home (swipeable, the panel's order) and its targets: a restaurant's page, a category's page, the list under the banner's title, «أكوادي» with the code shown.
+  - [ ] Review, then hand over to 2.27d.
 
 ### Left from 2.27b (`claude/tender-goodall-6nrkvy`)
 
