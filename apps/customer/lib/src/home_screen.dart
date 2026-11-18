@@ -1,5 +1,6 @@
 import 'package:core_auth/core_auth.dart';
 import 'package:core_l10n/core_l10n.dart';
+import 'package:core_maps/core_maps.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +11,7 @@ import 'browsing/home_sections.dart';
 import 'cart/cart.dart';
 import 'emergency_stop.dart';
 import 'location/delivery_point.dart';
+import 'location/pin.dart';
 import 'location/position.dart';
 import 'orders/order_live.dart';
 import 'orders/order_screen.dart';
@@ -27,6 +29,18 @@ class HomeScreen extends ConsumerWidget {
     final point = ref.watch(deliveryPointProvider);
     final signedIn = ref.watch(customerAuth.session).value is SignedIn;
     final locate = ref.read(deliveryPointProvider.notifier).useCurrentLocation;
+    // «اختر على الخريطة» (CU §7.1): from the point the customer has, else
+    // the city; the customer can choose another point at any time (§7.2).
+    Future<void> chooseOnMap() async {
+      final camera = point is PointChecked
+          ? MapCamera(point.point, streetZoom)
+          : const MapCamera(cityCentre, cityZoom);
+      final chosen = await context.push<GeoPoint>(pinPath(camera));
+      if (chosen != null) {
+        await ref.read(deliveryPointProvider.notifier).usePin(chosen);
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: point is PointChecked
@@ -96,7 +110,7 @@ class HomeScreen extends ConsumerWidget {
               title: Text(l10n.customerSearchHint),
               onTap: () => context.push('/search'),
             ),
-          Expanded(child: _body(point, l10n, locate, ref)),
+          Expanded(child: _body(point, l10n, locate, chooseOnMap, ref)),
           // CU §13 «الشروط والخصوصية», until «حسابي» exists.
           TextButton(
             key: const Key('open-terms'),
@@ -112,9 +126,15 @@ class HomeScreen extends ConsumerWidget {
     DeliveryPointState point,
     AppLocalizations l10n,
     VoidCallback locate,
+    VoidCallback chooseOnMap,
     WidgetRef ref,
   ) => switch (point) {
-    PointUnset() => _Ask(onLocate: locate),
+    PointUnset() => _Message(
+      text: l10n.customerWhereToDeliver,
+      action: l10n.customerUseMyLocation,
+      onAction: locate,
+      onMap: chooseOnMap,
+    ),
     PointLocating() => const Center(child: CircularProgressIndicator()),
     PointUnavailable(:final failure) => _Message(
       text: switch (failure) {
@@ -125,6 +145,7 @@ class HomeScreen extends ConsumerWidget {
       },
       action: l10n.customerTryAgain,
       onAction: locate,
+      onMap: chooseOnMap,
     ),
     // CU §8.1: the sections in the panel's order (slice 2.27b).
     PointChecked(coverage: PointCoverage.served) => const HomeSections(),
@@ -132,6 +153,7 @@ class HomeScreen extends ConsumerWidget {
       text: l10n.customerNoRestaurantsHere,
       action: l10n.customerUseMyLocation,
       onAction: locate,
+      onMap: chooseOnMap,
     ),
     PointChecked(coverage: PointCoverage.outsideZones, :final voted) =>
       _Message(
@@ -140,6 +162,7 @@ class HomeScreen extends ConsumerWidget {
         onAction: voted
             ? locate
             : ref.read(deliveryPointProvider.notifier).vote,
+        onMap: chooseOnMap,
       ),
   };
 }
@@ -187,33 +210,20 @@ class ActiveOrdersBar extends ConsumerWidget {
   }
 }
 
-/// «أين نوصل طلبك؟» (CU §7.1); the map choice waits for Phase 2.
-class _Ask extends StatelessWidget {
-  const _Ask({required this.onLocate});
-
-  final VoidCallback onLocate;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return _Message(
-      text: l10n.customerWhereToDeliver,
-      action: l10n.customerUseMyLocation,
-      onAction: onLocate,
-    );
-  }
-}
-
 class _Message extends StatelessWidget {
   const _Message({
     required this.text,
     required this.action,
     required this.onAction,
+    required this.onMap,
   });
 
   final String text;
   final String action;
   final VoidCallback onAction;
+
+  /// «اختر على الخريطة» (CU §7.1, §7.2).
+  final VoidCallback onMap;
 
   @override
   Widget build(BuildContext context) {
@@ -226,6 +236,11 @@ class _Message extends StatelessWidget {
             Text(text, textAlign: TextAlign.center),
             const SizedBox(height: 16),
             FilledButton(onPressed: onAction, child: Text(action)),
+            const SizedBox(height: 8),
+            OutlinedButton(
+              onPressed: onMap,
+              child: Text(AppLocalizations.of(context).customerChooseOnMap),
+            ),
           ],
         ),
       ),

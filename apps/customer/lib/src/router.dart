@@ -18,6 +18,8 @@ import 'checkout/checkout_screen.dart';
 import 'codes/my_codes_screen.dart';
 import 'content.dart';
 import 'home_screen.dart';
+import 'location/pin.dart';
+import 'location/pin_screen.dart';
 import 'not_found_screen.dart';
 import 'notifications/notifications_screen.dart';
 import 'orders/my_orders_screen.dart';
@@ -130,6 +132,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const BlockedScreen(),
       ),
       GoRoute(path: '/cart', builder: (context, state) => const CartScreen()),
+      // CU §7.1, §7.4 «اختر على الخريطة»: answers the confirmed point.
+      GoRoute(
+        path: '/pin',
+        builder: (context, state) =>
+            PinScreen(initial: pinCameraOf(state.uri.queryParameters)),
+      ),
       GoRoute(path: '/faq', builder: (context, state) => const FaqScreen()),
       // CU §13 «الشروط والخصوصية», and the pending version (CU §4.7).
       GoRoute(

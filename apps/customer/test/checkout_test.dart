@@ -1,7 +1,9 @@
 import 'package:core_api/core_api.dart';
 import 'package:core_auth/testing.dart';
 import 'package:core_l10n/core_l10n.dart';
+import 'package:core_maps/core_maps.dart';
 import 'package:customer/src/checkout/problems.dart';
+import 'package:customer/src/location/pin.dart';
 import 'package:customer/src/location/position.dart';
 import 'package:customer/src/checkout/quote.dart';
 import 'package:customer/src/profile/profile.dart';
@@ -452,6 +454,47 @@ void main() {
     expect(keys[2], isNot(keys[1]));
     expect(app.bodyOf('/v1/customer/orders', index: 2)['quoteVersion'], 'v2');
     expect(find.text('أرسلنا طلبك إلى مطعم الشام'), findsOneWidget);
+    await app.done(tester);
+  });
+
+  testWidgets('a position worse than 100 m is adjusted on the map (CU §7.4)', (
+    tester,
+  ) async {
+    const adjusted = GeoPoint(36.5871, 37.0471);
+    final app = await _checkout(
+      tester,
+      position: FakePositionSource((
+        fix: const PositionFix(azaz, 250),
+        failure: null,
+      )),
+    );
+    expect(
+      find.text(
+        'دقة موقعك 250 م. عدّل الدبوس على الخريطة ليكون العنوان دقيقاً.',
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(find.byKey(const Key('adjust-pin')));
+    await tester.pumpAndSettle();
+
+    // The map opens on the phone's position, at street level.
+    expect(app.pinMap.initial, const MapCamera(azaz, streetZoom));
+    app.pinMap.move(const MapCamera(adjusted, 18));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('confirm-pin')));
+    await tester.pumpAndSettle();
+
+    expect(app.server.to('/v1/customer/location').last.uri.queryParameters, {
+      'latitude': '${adjusted.latitude}',
+      'longitude': '${adjusted.longitude}',
+    });
+    final quotes = app.server.to('/v1/customer/quote').length;
+    expect(app.bodyOf('/v1/customer/quote', index: quotes - 1)['location'], {
+      'latitude': adjusted.latitude,
+      'longitude': adjusted.longitude,
+    });
+    expect(find.byKey(const Key('adjust-pin')), findsNothing);
+    expect(find.byKey(const Key('address-street')), findsOneWidget);
     await app.done(tester);
   });
 

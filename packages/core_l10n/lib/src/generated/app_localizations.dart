@@ -532,6 +532,24 @@ abstract class AppLocalizations {
   /// **'استخدم موقعي الحالي'**
   String get customerUseMyLocation;
 
+  /// Opens the map to set the delivery point under the fixed pin (CU §7.1); also the pin screen's title.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر على الخريطة'**
+  String get customerChooseOnMap;
+
+  /// Confirms the point under the pin, at zoom 16 or closer (CU §7.1); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد الموقع'**
+  String get customerConfirmLocation;
+
+  /// The map is farther than zoom 16, so the pin cannot be confirmed (CU §7.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'قرّب الخريطة لتحديد موقعك بدقة'**
+  String get customerZoomInToConfirm;
+
   /// Inside a zone, but no restaurant covers the point (CU §7.1).
   ///
   /// In ar, this message translates to:
@@ -1036,17 +1054,17 @@ abstract class AppLocalizations {
   /// **'التوصيل إلى موقعي الحالي'**
   String get customerDeliverToCurrentLocation;
 
-  /// The position is worse than 100 m (CU §7.4); the map to adjust the pin waits for Phase 2.
+  /// The position is worse than 100 m: the app asks to adjust the pin on the map (CU §7.4).
   ///
   /// In ar, this message translates to:
-  /// **'دقة موقعك {distance}. حدّث موقعك إن لم يكن العنوان دقيقاً.'**
+  /// **'دقة موقعك {distance}. عدّل الدبوس على الخريطة ليكون العنوان دقيقاً.'**
   String customerLowAccuracy(String distance);
 
-  /// Asks for the phone's position again.
+  /// Opens the map at the phone's position to adjust the pin (CU §7.4); the spec gives no wording.
   ///
   /// In ar, this message translates to:
-  /// **'تحديث الموقع'**
-  String get customerUpdateLocation;
+  /// **'عدّل الدبوس'**
+  String get customerAdjustPin;
 
   /// The zone's name, read-only (CU §7.3).
   ///

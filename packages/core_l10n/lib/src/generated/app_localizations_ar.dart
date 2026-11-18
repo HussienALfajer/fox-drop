@@ -259,6 +259,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get customerUseMyLocation => 'استخدم موقعي الحالي';
 
   @override
+  String get customerChooseOnMap => 'اختر على الخريطة';
+
+  @override
+  String get customerConfirmLocation => 'تأكيد الموقع';
+
+  @override
+  String get customerZoomInToConfirm => 'قرّب الخريطة لتحديد موقعك بدقة';
+
+  @override
   String get customerNoRestaurantsHere => 'لا توجد مطاعم توصل إلى موقعك حالياً';
 
   @override
@@ -567,11 +576,11 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String customerLowAccuracy(String distance) {
-    return 'دقة موقعك $distance. حدّث موقعك إن لم يكن العنوان دقيقاً.';
+    return 'دقة موقعك $distance. عدّل الدبوس على الخريطة ليكون العنوان دقيقاً.';
   }
 
   @override
-  String get customerUpdateLocation => 'تحديث الموقع';
+  String get customerAdjustPin => 'عدّل الدبوس';
 
   @override
   String get customerNeighbourhood => 'الحي';

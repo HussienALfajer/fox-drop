@@ -49,7 +49,7 @@ class PointChecked extends DeliveryPointState {
 
   final GeoPoint point;
 
-  /// Null for a saved address's pin.
+  /// Null for a pin set on the map or a saved address's pin.
   final double? accuracyMetres;
   final PointCoverage coverage;
   final String? zoneName;
@@ -70,9 +70,9 @@ class PointChecked extends DeliveryPointState {
   );
 }
 
-/// The delivery point for browsing and checkout (CU §7.1, §7.2; owner
-/// decision 2026-11-07: from the phone's location, the map waits for Phase
-/// 2). It lives while the app runs; each start asks again.
+/// The delivery point for browsing and checkout (CU §7.1, §7.2): the
+/// phone's location, a pin set on the map or a saved address's pin. It
+/// lives while the app runs; each start asks again.
 class DeliveryPointController extends Notifier<DeliveryPointState> {
   /// Each request's number: a result that finishes after a newer request
   /// started is dropped, so the point is always the last one asked for.
@@ -97,6 +97,14 @@ class DeliveryPointController extends Notifier<DeliveryPointState> {
       return;
     }
     await _check(request, fix.point, accuracyMetres: fix.accuracyMetres);
+  }
+
+  /// A point the customer set on the map (CU §7.1, §7.4): exact, so no
+  /// accuracy to ask about.
+  Future<void> usePin(GeoPoint point) async {
+    final request = ++_request;
+    state = const PointLocating();
+    await _check(request, point);
   }
 
   /// A saved address's pin (CU §10.3 item 1: changing the address at
