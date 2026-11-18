@@ -379,6 +379,16 @@ const routeAccess: Record<string, Access> = {
   'PUT /v1/admin/restaurant-drafts/{restaurantId}/commission': 'restaurants.commission',
   'PUT /v1/admin/restaurant-drafts/{restaurantId}/contract': 'restaurants.create',
   'POST /v1/admin/restaurant-drafts/{restaurantId}/contract/confirm': 'restaurants.manage',
+  'GET /v1/admin/restaurant-drafts/{restaurantId}/menu': {
+    anyOf: ['restaurants.read', 'restaurants.menus'],
+  },
+  'PUT /v1/admin/restaurant-drafts/{restaurantId}/menu/categories/{categoryId}':
+    'restaurants.menus',
+  'PUT /v1/admin/restaurant-drafts/{restaurantId}/menu/items/{itemId}': 'restaurants.menus',
+  'PUT /v1/admin/restaurant-drafts/{restaurantId}/menu/category-order': 'restaurants.menus',
+  'PUT /v1/admin/restaurant-drafts/{restaurantId}/menu/categories/{categoryId}/item-order':
+    'restaurants.menus',
+  'PUT /v1/admin/restaurant-drafts/{restaurantId}/menu/availability': 'restaurants.menus',
   'GET /v1/admin/restaurants/{restaurantId}/accounts': {
     anyOf: ['restaurants.read', 'restaurants.owner_accounts'],
   },

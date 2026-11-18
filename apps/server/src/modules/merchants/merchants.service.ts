@@ -73,7 +73,10 @@ export type MerchantsRefusal =
   | 'unknown_city'
   | 'not_a_draft'
   // AP §9.6.3 step 5: a contract without its date, duration or scan.
-  | 'invalid_contract';
+  | 'invalid_contract'
+  // AP §9.6.3 step 7 (slice 2.30b): the wizard edits the menu of a draft or
+  // a restaurant in test mode only.
+  | 'menu_locked';
 
 // AP §9.13: how many categories one restaurant links to, at most.
 export const RESTAURANT_CATEGORIES_MAX = 5;
@@ -207,6 +210,8 @@ export interface MenuItem {
   available: boolean;
   switchedOff: SwitchedOff;
   hidden: boolean;
+  // AP §9.6.6: «جديد», «الأكثر طلباً» or «حار»; null without one.
+  badge: 'new' | 'most_ordered' | 'spicy' | null;
   optionGroups: MenuOptionGroup[];
 }
 
@@ -1216,6 +1221,7 @@ export class MerchantsService implements OnModuleInit {
                 available: switchedOff(item, now) === null && categoryOn && !requiredGroupOut,
                 switchedOff: switchedOff(item, now),
                 hidden: item.hidden,
+                badge: item.badge,
                 optionGroups: groups,
               };
             }),

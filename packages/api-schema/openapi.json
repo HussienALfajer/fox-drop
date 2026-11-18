@@ -3273,6 +3273,308 @@
         ]
       }
     },
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu": {
+      "get": {
+        "operationId": "adminRestaurantMenuRead",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminMenuDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/categories/{categoryId}": {
+      "put": {
+        "operationId": "adminRestaurantMenuCategory",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "categoryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminMenuCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminMenuDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/items/{itemId}": {
+      "put": {
+        "operationId": "adminRestaurantMenuItem",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminMenuItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminMenuDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/category-order": {
+      "put": {
+        "operationId": "adminRestaurantMenuCategoryOrder",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminMenuCategoryOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminMenuDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/categories/{categoryId}/item-order": {
+      "put": {
+        "operationId": "adminRestaurantMenuItemOrder",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "categoryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminMenuItemOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminMenuDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/availability": {
+      "put": {
+        "operationId": "adminRestaurantMenuAvailability",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminMenuAvailabilityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminMenuDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/cities": {
       "get": {
         "operationId": "adminCitiesList",
@@ -19742,6 +20044,425 @@
         },
         "required": [
           "parityPledge"
+        ]
+      },
+      "AdminMenuSwitchedOff_Output": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "until": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "«حتى الغد» ends at the next business-day cutoff; null is «حتى أعيده»."
+              }
+            },
+            "required": [
+              "until"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "AdminMenuWindow_Output": {
+        "type": "object",
+        "properties": {
+          "startsAt": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1439,
+            "description": "Minutes after midnight on the city's clock."
+          },
+          "endsAt": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1440,
+            "description": "Not after the start: the window crosses midnight (1440 is midnight)."
+          }
+        },
+        "required": [
+          "startsAt",
+          "endsAt"
+        ],
+        "additionalProperties": false
+      },
+      "AdminMenuMoney_Output": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string",
+            "pattern": "^\\d{1,15}$",
+            "description": "Integer minor units of the currency, as a string."
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          }
+        },
+        "required": [
+          "amount",
+          "currency"
+        ],
+        "additionalProperties": false
+      },
+      "AdminMenuDto_Output": {
+        "type": "object",
+        "properties": {
+          "accountStatus": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "test",
+              "active",
+              "suspended",
+              "terminated"
+            ]
+          },
+          "editable": {
+            "type": "boolean",
+            "description": "Whether step 7 edits it: a draft or a restaurant in test mode (until 2.31)."
+          },
+          "nameMax": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "descriptionMax": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "codeMax": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "hidden": {
+                  "type": "boolean"
+                },
+                "switchedOff": {
+                  "description": "Its own switch off (RA §9.3); null while on.",
+                  "$ref": "#/components/schemas/AdminMenuSwitchedOff_Output"
+                },
+                "window": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/AdminMenuWindow_Output"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "null: all day."
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "code": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "description": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "photoKey": {
+                        "description": "Its key in public-media, shown through /media/; null without a photo.",
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "price": {
+                        "$ref": "#/components/schemas/AdminMenuMoney_Output"
+                      },
+                      "hidden": {
+                        "type": "boolean"
+                      },
+                      "badge": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "new",
+                              "most_ordered",
+                              "spicy"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "«جديد», «الأكثر طلباً» or «حار»."
+                      },
+                      "switchedOff": {
+                        "description": "Its own switch off (RA §9.3); null while on.",
+                        "$ref": "#/components/schemas/AdminMenuSwitchedOff_Output"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "code",
+                      "name",
+                      "description",
+                      "photoKey",
+                      "price",
+                      "hidden",
+                      "badge",
+                      "switchedOff"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "hidden",
+                "switchedOff",
+                "window",
+                "items"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "accountStatus",
+          "editable",
+          "nameMax",
+          "descriptionMax",
+          "codeMax",
+          "categories"
+        ],
+        "additionalProperties": false
+      },
+      "AdminMenuWindow": {
+        "type": "object",
+        "properties": {
+          "startsAt": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1439,
+            "description": "Minutes after midnight on the city's clock."
+          },
+          "endsAt": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1440,
+            "description": "Not after the start: the window crosses midnight (1440 is midnight)."
+          }
+        },
+        "required": [
+          "startsAt",
+          "endsAt"
+        ]
+      },
+      "AdminMenuCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "hidden": {
+            "type": "boolean"
+          },
+          "window": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AdminMenuWindow"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«متوفر من … إلى …»; null all day."
+          }
+        },
+        "required": [
+          "name",
+          "hidden",
+          "window"
+        ]
+      },
+      "AdminMenuMoney": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string",
+            "pattern": "^\\d{1,15}$",
+            "description": "Integer minor units of the currency, as a string."
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          }
+        },
+        "required": [
+          "amount",
+          "currency"
+        ]
+      },
+      "AdminMenuItemDto": {
+        "type": "object",
+        "properties": {
+          "categoryId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "code": {
+            "description": "Unique in the restaurant; empty or null: generated on creation, kept on edit.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "price": {
+            "description": "Above 0, in the city's base currency.",
+            "$ref": "#/components/schemas/AdminMenuMoney"
+          },
+          "hidden": {
+            "type": "boolean"
+          },
+          "badge": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "new",
+                  "most_ordered",
+                  "spicy"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "«جديد», «الأكثر طلباً» or «حار»."
+          }
+        },
+        "required": [
+          "categoryId",
+          "code",
+          "name",
+          "description",
+          "price",
+          "hidden",
+          "badge"
+        ]
+      },
+      "AdminMenuCategoryOrderDto": {
+        "type": "object",
+        "properties": {
+          "categoryIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "description": "Every category once, in the new order."
+          }
+        },
+        "required": [
+          "categoryIds"
+        ]
+      },
+      "AdminMenuItemOrderDto": {
+        "type": "object",
+        "properties": {
+          "itemIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "description": "Every item of the category once, in order."
+          }
+        },
+        "required": [
+          "itemIds"
+        ]
+      },
+      "AdminMenuAvailabilityDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "category",
+              "item"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "until": {
+            "description": "When switching off: «حتى الغد» or «حتى أعيده» (the default).",
+            "type": "string",
+            "enum": [
+              "tomorrow",
+              "turned_back_on"
+            ]
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "available"
         ]
       },
       "AdminCitiesDto_Output": {

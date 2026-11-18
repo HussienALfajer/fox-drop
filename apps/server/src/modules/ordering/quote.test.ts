@@ -38,6 +38,7 @@ const item = (id: string, price: bigint, extra: Partial<MenuItem> = {}): MenuIte
   price: tryAmount(price),
   available: true,
   switchedOff: null,
+  badge: null,
   hidden: false,
   optionGroups: [],
   ...extra,
