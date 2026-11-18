@@ -52,7 +52,10 @@ export const restaurants = merchants.table(
     category: text('category'),
     // AP §9.13 «التصنيفات», AP §9.6.3 step 1: the content module's categories
     // (plain ids), in the panel's choice order.
-    categoryIds: uuid('category_ids').array().notNull().default(sql`'{}'::uuid[]`),
+    categoryIds: uuid('category_ids')
+      .array()
+      .notNull()
+      .default(sql`'{}'::uuid[]`),
     description: text('description'),
     // Keys in public-media (architecture §5.8), set from the panel's uploads.
     logoKey: text('logo_key'),

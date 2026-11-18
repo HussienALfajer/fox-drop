@@ -234,7 +234,9 @@ const category = z.object({
   imageKey: z
     .string()
     .nullable()
-    .describe('Its key in public-media, shown through /media/ (architecture §5.8); null without one.'),
+    .describe(
+      'Its key in public-media, shown through /media/ (architecture §5.8); null without one.',
+    ),
   active: z
     .boolean()
     .describe('False once removed: off the cards and the list, kept on its restaurants.'),
