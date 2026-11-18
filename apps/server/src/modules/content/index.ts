@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module.js';
 import { AuditModule } from '../audit/index.js';
+import { FilesModule } from '../files/index.js';
 import { AdminContentController } from './admin-content.controller.js';
 import {
   CaptainContentController,
+  CustomerCategoriesController,
   CustomerContentController,
   MerchantContentController,
 } from './app-content.controller.js';
@@ -12,6 +14,7 @@ import {
   CustomerContactController,
   MerchantContactController,
 } from './contact.js';
+import { CategoriesService } from './categories.service.js';
 import { ContentService } from './content.service.js';
 import { NotificationTexts } from './notification-texts.service.js';
 import {
@@ -26,7 +29,7 @@ import { TermsService } from './terms.service.js';
 // §9.13, edited in the panel and read by the apps. Other modules check a
 // chosen reason and read a customer text through ContentService.
 @Module({
-  imports: [DatabaseModule, AuditModule],
+  imports: [DatabaseModule, AuditModule, FilesModule],
   controllers: [
     MerchantContactController,
     CaptainContactController,
@@ -34,17 +37,19 @@ import { TermsService } from './terms.service.js';
     MerchantContentController,
     CaptainContentController,
     CustomerContentController,
+    CustomerCategoriesController,
     AdminContentController,
     MerchantTermsController,
     CaptainTermsController,
     CustomerTermsController,
     AdminTermsController,
   ],
-  providers: [ContentService, NotificationTexts, TermsService],
-  exports: [ContentService, NotificationTexts, TermsService],
+  providers: [CategoriesService, ContentService, NotificationTexts, TermsService],
+  exports: [CategoriesService, ContentService, NotificationTexts, TermsService],
 })
 export class ContentModule {}
 
+export { CategoriesService, type Category } from './categories.service.js';
 export {
   ContentRefusedError,
   ContentService,

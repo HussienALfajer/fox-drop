@@ -75,6 +75,7 @@ const folders: Record<UploadPurpose, string> = {
   restaurant_cover: 'restaurants/covers',
   item_photo: 'menu/items',
   report_photo: 'tickets/photos',
+  category_image: 'content/categories',
 };
 
 // A report's photo is the customer's (owner decision 2026-11-17): it goes to

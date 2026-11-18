@@ -55,7 +55,13 @@ const card = z.object({
   id: z.uuid(),
   nameAr: z.string(),
   nameEn: z.string().nullable(),
-  category: z.string().nullable(),
+  category: z
+    .string()
+    .nullable()
+    .describe('Deprecated (slice 2.27a): the first of `categories`, for older apps.'),
+  categories: z
+    .array(z.object({ id: z.uuid(), name: z.string() }))
+    .describe('Its active categories (AP §9.13), in the restaurant’s order.'),
   logoKey: imageKey,
   coverKey: imageKey,
   rating: z
@@ -168,7 +174,13 @@ class CustomerRestaurantListQueryDto extends createZodDto(
       .uuid()
       .optional()
       .describe(
-        "CU §11.9: under a rejected or unanswered order, at its pin: up to 5 open restaurants of this restaurant's category, without it; empty when it has no category.",
+        'CU §11.9: under a rejected or unanswered order, at its pin: up to 5 open restaurants sharing an active category with this one, without it; empty when it has none.',
+      ),
+    categoryId: z
+      .uuid()
+      .optional()
+      .describe(
+        "CU §8.2: the category page, only the restaurants of that category in the list's order; empty for a category that is not active. Ignored with similarTo.",
       ),
   }),
 ) {}
@@ -199,12 +211,12 @@ export class CustomerBrowsingController {
     @Query() query: CustomerRestaurantListQueryDto,
     @OptionalAppSession() session: AppSession | null,
   ) {
-    const { similarTo, ...point } = query;
+    const { similarTo, categoryId, ...point } = query;
     const now = new Date();
     const testAccount = await this.testAccount(session);
     const cards =
       similarTo === undefined
-        ? await this.browsing.restaurants(point, now, testAccount)
+        ? await this.browsing.restaurants(point, now, testAccount, categoryId)
         : await this.browsing.similar(similarTo, point, now, testAccount);
     const ratings = await this.customers.ratings.restaurants(cards.map((card) => card.id));
     return { restaurants: cards.map((card) => cardBody(card, ratings.get(card.id))) };
@@ -255,6 +267,7 @@ function cardBody(card: RestaurantCard, summary: RatingSummary) {
   const shown = summary !== undefined && summary.count >= RATINGS_SHOWN_FROM;
   return {
     ...card,
+    category: card.categories[0]?.name ?? null,
     rating: shown ? Math.round(summary.average * 10) / 10 : null,
     ratingCount: shown ? summary.count : null,
     deliveryFee:

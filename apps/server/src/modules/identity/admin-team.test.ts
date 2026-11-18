@@ -341,7 +341,7 @@ const routeAccess: Record<string, Access> = {
   'GET /v1/merchant/platform': 'public',
   'GET /v1/captain/platform': 'public',
   'POST /v1/admin/uploads': {
-    anyOf: ['restaurants.manage', 'restaurants.create', 'restaurants.menus'],
+    anyOf: ['restaurants.manage', 'restaurants.create', 'restaurants.menus', 'content.categories'],
   },
   'GET /v1/admin/restaurants': { anyOf: ['restaurants.read', 'restaurants.menus'] },
   'GET /v1/admin/restaurants/{restaurantId}/images': {
@@ -354,6 +354,18 @@ const routeAccess: Record<string, Access> = {
     anyOf: ['restaurants.manage', 'restaurants.create'],
   },
   'PUT /v1/admin/restaurants/{restaurantId}/items/{itemId}/photo': 'restaurants.menus',
+  'GET /v1/admin/restaurants/{restaurantId}/categories': {
+    anyOf: ['restaurants.read', 'restaurants.manage', 'restaurants.create'],
+  },
+  'PUT /v1/admin/restaurants/{restaurantId}/categories': {
+    anyOf: ['restaurants.manage', 'restaurants.create'],
+  },
+  'GET /v1/customer/categories': 'public',
+  'GET /v1/admin/content/categories': { anyOf: ['content.read', 'content.categories'] },
+  'POST /v1/admin/content/categories': 'content.categories',
+  'POST /v1/admin/content/categories/order': 'content.categories',
+  'PUT /v1/admin/content/categories/{categoryId}': 'content.categories',
+  'PUT /v1/admin/content/categories/{categoryId}/image': 'content.categories',
   'GET /v1/admin/restaurants/{restaurantId}/status': 'restaurants.read',
   'POST /v1/admin/restaurants/{restaurantId}/status/pause': 'restaurants.manage',
   'POST /v1/admin/restaurants/{restaurantId}/status/resume': 'restaurants.manage',

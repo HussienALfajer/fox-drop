@@ -22,6 +22,7 @@ import {
   type MerchantChange,
   MerchantsRefusedError,
   MerchantsService,
+  RESTAURANT_CATEGORIES_MAX,
 } from './merchants.service.js';
 
 const imageKey = z
@@ -61,6 +62,15 @@ class AdminSetImageDto extends createZodDto(
   z.object({ uploadId: z.uuid().describe('From POST /v1/admin/uploads, once the PUT is done.') }),
 ) {}
 
+class AdminRestaurantCategoriesDto extends createZodDto(
+  z.object({
+    categoryIds: z
+      .array(z.uuid())
+      .max(RESTAURANT_CATEGORIES_MAX)
+      .describe('Active categories of «التصنيفات» (AP §9.13), once each, in the chosen order.'),
+  }),
+) {}
+
 class AdminImageSetDto extends createZodDto(z.object({ key: z.string() })) {}
 
 function refusalAsHttp(error: unknown): never {
@@ -68,6 +78,9 @@ function refusalAsHttp(error: unknown): never {
     const body = { error: error.refusal };
     if (error.refusal === 'unknown_restaurant' || error.refusal === 'unknown_menu_row') {
       throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, ...body });
+    }
+    if (error.refusal === 'unknown_category') {
+      throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, ...body });
     }
     throw new ConflictException({ statusCode: HttpStatus.CONFLICT, ...body });
   }
@@ -135,6 +148,46 @@ export class AdminRestaurantImagesController {
         })),
       })),
     };
+  }
+
+  // AP §9.6.3 step 1, AP §9.13 (slice 2.27a): the restaurant's categories,
+  // until the restaurant profile (2.30) takes them. Setting them sets a state
+  // to a value, so no Idempotency-Key. 404 unknown_restaurant; 400
+  // unknown_category (not an active category, or named twice).
+  @Get(':restaurantId/categories')
+  @RequireAnyPermission('restaurants.read', ...RESTAURANT_PROFILE)
+  @ZodResponse({ status: 200, type: AdminRestaurantCategoriesDto })
+  async categories(@Param() params: AdminRestaurantParamsDto) {
+    const restaurant = await this.merchants.restaurant(params.restaurantId);
+    if (restaurant === null) {
+      throw new NotFoundException({
+        statusCode: HttpStatus.NOT_FOUND,
+        error: 'unknown_restaurant',
+      });
+    }
+    return { categoryIds: restaurant.categoryIds };
+  }
+
+  @Put(':restaurantId/categories')
+  @RequireAnyPermission(...RESTAURANT_PROFILE)
+  @ZodResponse({ status: 200, type: AdminRestaurantCategoriesDto })
+  async setCategories(
+    @Param() params: AdminRestaurantParamsDto,
+    @Body() body: AdminRestaurantCategoriesDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    try {
+      return {
+        categoryIds: await this.merchants.setRestaurantCategories(
+          params.restaurantId,
+          body.categoryIds,
+          adminChange(session, request),
+        ),
+      };
+    } catch (error) {
+      refusalAsHttp(error);
+    }
   }
 
   @Put(':restaurantId/logo')

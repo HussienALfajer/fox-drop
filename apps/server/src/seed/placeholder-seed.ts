@@ -7,6 +7,7 @@ import {
   type NewCaptain,
   type PayRate,
 } from '../modules/captains/index.js';
+import { CategoriesService, ContentModule } from '../modules/content/index.js';
 import { FxModule, FxService } from '../modules/fx/index.js';
 import { GeoModule, GeoRefusedError, GeoService } from '../modules/geo/index.js';
 import {
@@ -79,13 +80,14 @@ const azazFee = {
 const demoRestaurant: NewRestaurant = {
   nameAr: 'مطعم فوكس التجريبي',
   nameEn: 'FOX DROP demo restaurant',
-  category: 'وجبات سريعة',
   location: { latitude: 36.5866, longitude: 37.0463 },
   coverage: { kind: 'radius', radiusMetres: 3000 },
   minimumOrder: { amount: 10_000n, currency: 'TRY' },
   commissionBp: 1500,
   defaultPrepMin: 20,
 };
+// Its category (AP §9.13), added while no active category has that name.
+const demoCategory = 'وجبات سريعة';
 const demoHours: OpeningPeriod[] = [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({
   weekday,
   opensAt: 10 * 60,
@@ -135,6 +137,7 @@ export class PlaceholderSeed {
     private readonly fx: FxService,
     private readonly settings: SettingsService,
     private readonly merchants: MerchantsService,
+    private readonly categories: CategoriesService,
     private readonly merchantAccounts: MerchantAccountsService,
     private readonly captains: CaptainsService,
     private readonly captainAccounts: CaptainAccountsService,
@@ -220,6 +223,13 @@ export class PlaceholderSeed {
       const id =
         demo?.id ?? (await this.merchants.createRestaurant(cityId, demoRestaurant, change));
       const restaurant = await this.merchants.restaurant(id);
+      if (restaurant?.categoryIds.length === 0) {
+        const categories = await this.categories.active();
+        const category =
+          categories.find((entry) => entry.name === demoCategory) ??
+          (await this.categories.create(demoCategory, 'system'));
+        await this.merchants.setRestaurantCategories(id, [category.id], change);
+      }
       if (restaurant?.schedule.length === 0) {
         await this.merchants.setWeeklySchedule(id, demoHours, change);
       }
@@ -330,6 +340,7 @@ export class PlaceholderSeed {
     FxModule,
     SettingsModule,
     MerchantsModule,
+    ContentModule,
     IdentityModule,
     CaptainsModule,
   ],

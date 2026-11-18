@@ -39,6 +39,9 @@ Map<String, Object?> card(
   'nameAr': name,
   'nameEn': null,
   'category': 'شاورما',
+  'categories': [
+    {'id': '00000000-0000-4000-8000-0000000000c1', 'name': 'شاورما'},
+  ],
   'logoKey': null,
   'coverKey': null,
   'rating': null,

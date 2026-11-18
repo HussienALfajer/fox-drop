@@ -17,6 +17,8 @@ class _$CustomerRestaurantPageDtoOutput
   @override
   final String? category;
   @override
+  final BuiltList<CaptainPeakBonusDtoOutputWindowsInnerZonesInner> categories;
+  @override
   final String? logoKey;
   @override
   final String? coverKey;
@@ -54,6 +56,7 @@ class _$CustomerRestaurantPageDtoOutput
     required this.nameAr,
     this.nameEn,
     this.category,
+    required this.categories,
     this.logoKey,
     this.coverKey,
     this.rating,
@@ -86,6 +89,7 @@ class _$CustomerRestaurantPageDtoOutput
         nameAr == other.nameAr &&
         nameEn == other.nameEn &&
         category == other.category &&
+        categories == other.categories &&
         logoKey == other.logoKey &&
         coverKey == other.coverKey &&
         rating == other.rating &&
@@ -109,6 +113,7 @@ class _$CustomerRestaurantPageDtoOutput
     _$hash = $jc(_$hash, nameAr.hashCode);
     _$hash = $jc(_$hash, nameEn.hashCode);
     _$hash = $jc(_$hash, category.hashCode);
+    _$hash = $jc(_$hash, categories.hashCode);
     _$hash = $jc(_$hash, logoKey.hashCode);
     _$hash = $jc(_$hash, coverKey.hashCode);
     _$hash = $jc(_$hash, rating.hashCode);
@@ -134,6 +139,7 @@ class _$CustomerRestaurantPageDtoOutput
           ..add('nameAr', nameAr)
           ..add('nameEn', nameEn)
           ..add('category', category)
+          ..add('categories', categories)
           ..add('logoKey', logoKey)
           ..add('coverKey', coverKey)
           ..add('rating', rating)
@@ -175,6 +181,14 @@ class CustomerRestaurantPageDtoOutputBuilder
   String? _category;
   String? get category => _$this._category;
   set category(String? category) => _$this._category = category;
+
+  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>? _categories;
+  ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner> get categories =>
+      _$this._categories ??=
+          ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>();
+  set categories(
+    ListBuilder<CaptainPeakBonusDtoOutputWindowsInnerZonesInner>? categories,
+  ) => _$this._categories = categories;
 
   String? _logoKey;
   String? get logoKey => _$this._logoKey;
@@ -266,6 +280,7 @@ class CustomerRestaurantPageDtoOutputBuilder
       _nameAr = $v.nameAr;
       _nameEn = $v.nameEn;
       _category = $v.category;
+      _categories = $v.categories.toBuilder();
       _logoKey = $v.logoKey;
       _coverKey = $v.coverKey;
       _rating = $v.rating;
@@ -316,6 +331,7 @@ class CustomerRestaurantPageDtoOutputBuilder
             ),
             nameEn: nameEn,
             category: category,
+            categories: categories.build(),
             logoKey: logoKey,
             coverKey: coverKey,
             rating: rating,
@@ -342,6 +358,9 @@ class CustomerRestaurantPageDtoOutputBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'categories';
+        categories.build();
+
         _$failedField = 'estimate';
         estimate.build();
         _$failedField = 'deliveryFee';

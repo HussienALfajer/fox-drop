@@ -6,6 +6,7 @@ import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { Jobs } from '../../jobs/jobs.module.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
+import { CategoriesService, ContentRefusedError } from '../content/index.js';
 import { FilesService } from '../files/index.js';
 import { FxService } from '../fx/index.js';
 import {
@@ -64,7 +65,12 @@ export type MerchantsRefusal =
   | 'invalid_max_active_orders'
   | 'invalid_pickup_currencies'
   | 'restaurant_suspended'
-  | 'owner_only';
+  | 'owner_only'
+  // AP §9.13: not an active category, named twice, or too many.
+  | 'unknown_category';
+
+// AP §9.13: how many categories one restaurant links to, at most.
+export const RESTAURANT_CATEGORIES_MAX = 5;
 
 // A change the merchants module refuses, with the reason the routes map to
 // their own answers.
@@ -98,7 +104,8 @@ export interface Money {
 export interface NewRestaurant {
   nameAr: string;
   nameEn?: string | null;
-  category?: string | null;
+  // AP §9.13: active categories of the content module, once each.
+  categoryIds?: string[];
   description?: string | null;
   address?: string | null;
   phone?: string | null;
@@ -115,7 +122,9 @@ export interface Restaurant {
   cityId: string;
   nameAr: string;
   nameEn: string | null;
-  category: string | null;
+  // AP §9.13 «التصنيفات»: the content module's categories, in the panel's
+  // choice order; removed ones stay until the restaurant's are set again.
+  categoryIds: string[];
   description: string | null;
   // Keys in public-media, served by imgproxy (architecture §5.8); null
   // without an image.
@@ -243,7 +252,63 @@ export class MerchantsService implements OnModuleInit {
     private readonly settings: SettingsService,
     private readonly files: FilesService,
     private readonly jobs: Jobs,
+    private readonly categories: CategoriesService,
   ) {}
+
+  // AP §9.13, AP §9.6.3 step 1 (slice 2.27a): the restaurant's categories,
+  // active ones of the content module, once each, at most
+  // RESTAURANT_CATEGORIES_MAX; an empty list leaves it without one. Audited as
+  // restaurant.categories.
+  async setRestaurantCategories(
+    restaurantId: string,
+    categoryIds: string[],
+    change: MerchantChange,
+  ): Promise<string[]> {
+    await this.checkCategories(categoryIds);
+    return this.database.db.transaction(async (tx) => {
+      const row = await this.lockRestaurant(tx, restaurantId);
+      const [{ before }] = (await tx
+        .select({ before: restaurants.categoryIds })
+        .from(restaurants)
+        .where(eq(restaurants.id, restaurantId))) as [{ before: string[] }];
+      if (before.join() === categoryIds.join()) return before;
+      await tx
+        .update(restaurants)
+        .set({ categoryIds, updatedAt: sql`now()` })
+        .where(eq(restaurants.id, restaurantId));
+      await this.audit.recordWrite(
+        {
+          actor: change.actor,
+          context: change.context,
+          cityId: row.cityId,
+          action: 'restaurant.categories',
+          target: { type: 'restaurant', id: restaurantId },
+          before: { categoryIds: before },
+          after: { categoryIds },
+          reason: null,
+        },
+        tx,
+      );
+      return categoryIds;
+    });
+  }
+
+  private async checkCategories(ids: string[]): Promise<void> {
+    if (ids.length > RESTAURANT_CATEGORIES_MAX) {
+      throw new MerchantsRefusedError(
+        'unknown_category',
+        `at most ${RESTAURANT_CATEGORIES_MAX} categories`,
+      );
+    }
+    try {
+      await this.categories.checkActive(ids);
+    } catch (error) {
+      if (error instanceof ContentRefusedError) {
+        throw new MerchantsRefusedError('unknown_category', error.message);
+      }
+      throw error;
+    }
+  }
 
   // The minimum orders and menu prices are in the city's base currency
   // (AP §8.6), so fx refuses a base change while one is in another. A
@@ -313,6 +378,7 @@ export class MerchantsService implements OnModuleInit {
       );
     }
     checkCommission(restaurant.commissionBp);
+    await this.checkCategories(restaurant.categoryIds ?? []);
     if (restaurant.minimumOrder.amount < 0n) {
       throw new MerchantsRefusedError('invalid_restaurant', 'the minimum order is 0 or more');
     }
@@ -327,7 +393,7 @@ export class MerchantsService implements OnModuleInit {
           cityId,
           nameAr,
           nameEn: restaurant.nameEn ?? null,
-          category: restaurant.category ?? null,
+          categoryIds: restaurant.categoryIds ?? [],
           description: restaurant.description ?? null,
           address: restaurant.address ?? null,
           phone: restaurant.phone ?? null,
@@ -376,7 +442,7 @@ export class MerchantsService implements OnModuleInit {
         cityId: restaurants.cityId,
         nameAr: restaurants.nameAr,
         nameEn: restaurants.nameEn,
-        category: restaurants.category,
+        categoryIds: restaurants.categoryIds,
         description: restaurants.description,
         logoKey: restaurants.logoKey,
         coverKey: restaurants.coverKey,
@@ -415,7 +481,7 @@ export class MerchantsService implements OnModuleInit {
       cityId: row.cityId,
       nameAr: row.nameAr,
       nameEn: row.nameEn,
-      category: row.category,
+      categoryIds: row.categoryIds,
       description: row.description,
       logoKey: row.logoKey,
       coverKey: row.coverKey,

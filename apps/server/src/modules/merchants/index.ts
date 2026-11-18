@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module.js';
 import { AuditModule } from '../audit/index.js';
+import { ContentModule } from '../content/index.js';
 import { FilesModule } from '../files/index.js';
 import { JobsModule } from '../../jobs/jobs.module.js';
 import { FxModule } from '../fx/index.js';
@@ -26,6 +27,7 @@ import { MerchantStatusController } from './merchant-status.controller.js';
     GeoModule,
     AuditModule,
     FilesModule,
+    ContentModule,
   ],
   controllers: [
     MerchantMenuController,
