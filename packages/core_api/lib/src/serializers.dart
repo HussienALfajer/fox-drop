@@ -401,8 +401,12 @@ import 'package:core_api/src/model/admin_resend_notification_dto.dart';
 import 'package:core_api/src/model/admin_resolve_shortfall_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_accounts_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_accounts_dto_output_accounts_inner.dart';
+import 'package:core_api/src/model/admin_restaurant_actions_dto_output.dart';
+import 'package:core_api/src/model/admin_restaurant_actions_dto_output_commission_history_inner.dart';
+import 'package:core_api/src/model/admin_restaurant_actions_dto_output_next_commission.dart';
 import 'package:core_api/src/model/admin_restaurant_categories_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_categories_dto_output.dart';
+import 'package:core_api/src/model/admin_restaurant_commission_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_draft_choices_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_draft_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_draft_dto_output_basics.dart';
@@ -418,11 +422,15 @@ import 'package:core_api/src/model/admin_restaurant_holiday_close_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_images_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_images_dto_output_categories_inner.dart';
 import 'package:core_api/src/model/admin_restaurant_images_dto_output_categories_inner_items_inner.dart';
+import 'package:core_api/src/model/admin_restaurant_list_dto_output.dart';
+import 'package:core_api/src/model/admin_restaurant_list_dto_output_restaurants_inner.dart';
+import 'package:core_api/src/model/admin_restaurant_list_query_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_max_active_orders_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_pause_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_period_statement_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_period_statement_dto_output_lines_inner.dart';
 import 'package:core_api/src/model/admin_restaurant_pickup_currencies_dto.dart';
+import 'package:core_api/src/model/admin_restaurant_reason_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_receipt_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_receipt_dto_output_lines_inner.dart';
 import 'package:core_api/src/model/admin_restaurant_settle_dto.dart';
@@ -433,9 +441,13 @@ import 'package:core_api/src/model/admin_restaurant_settlement_preview_request_d
 import 'package:core_api/src/model/admin_restaurant_settlements_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_settlements_dto_output_restaurants_inner.dart';
 import 'package:core_api/src/model/admin_restaurant_settlements_dto_output_restaurants_inner_latest.dart';
+import 'package:core_api/src/model/admin_restaurant_sort_weight_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_statement_export_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_status_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_status_dto_output_pickup_base_currency.dart';
+import 'package:core_api/src/model/admin_restaurant_terminated_dto_output.dart';
+import 'package:core_api/src/model/admin_restaurant_termination_dto.dart';
+import 'package:core_api/src/model/admin_restaurant_visibility_dto.dart';
 import 'package:core_api/src/model/admin_restaurants_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurants_dto_output_restaurants_inner.dart';
 import 'package:core_api/src/model/admin_resume_emergency_stop_dto.dart';
@@ -1312,8 +1324,12 @@ part 'serializers.g.dart';
   AdminResolveShortfallDto,
   AdminRestaurantAccountsDtoOutput,
   AdminRestaurantAccountsDtoOutputAccountsInner,
+  AdminRestaurantActionsDtoOutput,
+  AdminRestaurantActionsDtoOutputCommissionHistoryInner,
+  AdminRestaurantActionsDtoOutputNextCommission,
   AdminRestaurantCategoriesDto,
   AdminRestaurantCategoriesDtoOutput,
+  AdminRestaurantCommissionDto,
   AdminRestaurantDraftChoicesDtoOutput,
   AdminRestaurantDraftDtoOutput,
   AdminRestaurantDraftDtoOutputBasics,
@@ -1329,11 +1345,15 @@ part 'serializers.g.dart';
   AdminRestaurantImagesDtoOutput,
   AdminRestaurantImagesDtoOutputCategoriesInner,
   AdminRestaurantImagesDtoOutputCategoriesInnerItemsInner,
+  AdminRestaurantListDtoOutput,
+  AdminRestaurantListDtoOutputRestaurantsInner,
+  AdminRestaurantListQueryDto,
   AdminRestaurantMaxActiveOrdersDto,
   AdminRestaurantPauseDto,
   AdminRestaurantPeriodStatementDtoOutput,
   AdminRestaurantPeriodStatementDtoOutputLinesInner,
   AdminRestaurantPickupCurrenciesDto,
+  AdminRestaurantReasonDto,
   AdminRestaurantReceiptDtoOutput,
   AdminRestaurantReceiptDtoOutputLinesInner,
   AdminRestaurantSettleDto,
@@ -1344,9 +1364,13 @@ part 'serializers.g.dart';
   AdminRestaurantSettlementsDtoOutput,
   AdminRestaurantSettlementsDtoOutputRestaurantsInner,
   AdminRestaurantSettlementsDtoOutputRestaurantsInnerLatest,
+  AdminRestaurantSortWeightDto,
   AdminRestaurantStatementExportDto,
   AdminRestaurantStatusDtoOutput,
   AdminRestaurantStatusDtoOutputPickupBaseCurrency,
+  AdminRestaurantTerminatedDtoOutput,
+  AdminRestaurantTerminationDto,
+  AdminRestaurantVisibilityDto,
   AdminRestaurantsDtoOutput,
   AdminRestaurantsDtoOutputRestaurantsInner,
   AdminResumeEmergencyStopDto,
@@ -2071,6 +2095,12 @@ Serializers serializers =
               FullType(AdminOrderDtoOutputOrderLinesInnerOptionsInner),
             ]),
             () => ListBuilder<AdminOrderDtoOutputOrderLinesInnerOptionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminRestaurantListDtoOutputRestaurantsInner),
+            ]),
+            () => ListBuilder<AdminRestaurantListDtoOutputRestaurantsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -2940,6 +2970,15 @@ Serializers serializers =
               FullType(AdminChecklistDtoOutputItemsInner),
             ]),
             () => ListBuilder<AdminChecklistDtoOutputItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminRestaurantActionsDtoOutputCommissionHistoryInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminRestaurantActionsDtoOutputCommissionHistoryInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

@@ -8,6 +8,7 @@ import { FxModule } from '../fx/index.js';
 import { GeoModule } from '../geo/index.js';
 import { SettingsModule } from '../settings/index.js';
 import { AdminRestaurantDraftsController } from './admin-restaurant-drafts.controller.js';
+import { AdminRestaurantAccountController } from './admin-restaurant-account.controller.js';
 import { AdminRestaurantActivationController } from './admin-restaurant-activation.controller.js';
 import { ActivationService } from './activation.service.js';
 import { AdminRestaurantMenuController } from './admin-restaurant-menu.controller.js';
@@ -43,6 +44,7 @@ import { MerchantStatusController } from './merchant-status.controller.js';
     AdminRestaurantDraftsController,
     AdminRestaurantMenuController,
     AdminRestaurantActivationController,
+    AdminRestaurantAccountController,
   ],
   providers: [
     MerchantsService,
@@ -84,6 +86,7 @@ export {
   type Money,
   type NewRestaurant,
   type Restaurant,
+  type RestaurantListRow,
   type StorefrontState,
   type SwitchedOff,
 } from './merchants.service.js';

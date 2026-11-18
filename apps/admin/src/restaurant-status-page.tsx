@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { type City, chosenCity, citiesQuery } from './cities.js';
 import { formatDateTime } from './format.js';
 import { useOpsChannel } from './live.js';
+import { RestaurantAccountSection } from './restaurant-account-page.js';
 import { restaurantsQuery } from './restaurant-images.js';
 import {
   canChangeRestaurantStatus,
@@ -97,6 +98,7 @@ function Restaurant({ restaurantId, city }: { restaurantId: string; city: City }
     <>
       <Now status={status.data} city={city} />
       {editable && <Actions status={status.data} restaurantId={restaurantId} city={city} />}
+      <RestaurantAccountSection restaurantId={restaurantId} city={city} session={session} />
     </>
   );
 }

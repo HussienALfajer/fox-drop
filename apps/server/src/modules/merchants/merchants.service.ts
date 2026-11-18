@@ -22,7 +22,7 @@ import {
 import { lockCityCurrencies, SettingsService } from '../settings/index.js';
 import { commissionAt } from './commission.js';
 import { type AccountStatus, type OperatingState, operatingState } from './operating-state.js';
-import { recordStateChange } from './state-events.js';
+import { recordStateChange, type StateKind } from './state-events.js';
 import {
   categories,
   commissionRates,
@@ -79,7 +79,39 @@ export type MerchantsRefusal =
   | 'menu_locked'
   // AP §9.6.3 step 8: test mode or activation with an item of the checklist
   // missing.
-  | 'checklist_incomplete';
+  | 'checklist_incomplete'
+  // AP §9.6.5 «تثبيت» (slice 2.30c): outside 0 to SORT_WEIGHT_MAX.
+  | 'invalid_sort_weight';
+
+// Slice 2.30c: the same commission «now» again within this is a repeat.
+const COMMISSION_REPEAT_WINDOW_MS = 60_000;
+
+// AP §9.6.5 «تثبيت» (slice 2.30c, decided by us): the highest sort weight.
+export const SORT_WEIGHT_MAX = 1000;
+
+// AP §9.6.2: a restaurant as the panel's list reads it.
+export interface RestaurantListRow {
+  id: string;
+  nameAr: string;
+  nameEn: string | null;
+  categoryIds: string[];
+  accountStatus: AccountStatus;
+  visible: boolean;
+  sortWeight: number;
+  phone: string | null;
+  location: Point | null;
+}
+
+// AP §9.6.5, D16: a commission version as the panel lists it.
+export interface CommissionHistoryEntry {
+  id: string;
+  rateBp: number;
+  effectiveFrom: Date;
+  changedByType: 'admin' | 'merchant' | 'system';
+  changedById: string | null;
+  reason: string | null;
+  createdAt: Date;
+}
 
 // AP §9.13: how many categories one restaurant links to, at most.
 export const RESTAURANT_CATEGORIES_MAX = 5;
@@ -362,6 +394,34 @@ export class MerchantsService implements OnModuleInit {
       .orderBy(asc(restaurants.nameAr));
   }
 
+  // AP §9.6.2 «المطاعم» (slice 2.30c): every restaurant of the city as the
+  // list reads it, drafts included (their pin may be missing), by name.
+  async listRows(cityId: string): Promise<RestaurantListRow[]> {
+    const rows = await this.database.db
+      .select({
+        id: restaurants.id,
+        nameAr: restaurants.nameAr,
+        nameEn: restaurants.nameEn,
+        categoryIds: restaurants.categoryIds,
+        accountStatus: restaurants.accountStatus,
+        visible: restaurants.visible,
+        sortWeight: restaurants.sortWeight,
+        phone: restaurants.phone,
+        latitude: sql<number | null>`ST_Y(${restaurants.location})`,
+        longitude: sql<number | null>`ST_X(${restaurants.location})`,
+      })
+      .from(restaurants)
+      .where(eq(restaurants.cityId, cityId))
+      .orderBy(asc(restaurants.nameAr), asc(restaurants.id));
+    return rows.map(({ latitude, longitude, ...row }) => ({
+      ...row,
+      location:
+        latitude === null || longitude === null
+          ? null
+          : { latitude: Number(latitude), longitude: Number(longitude) },
+    }));
+  }
+
   // The restaurants' names by id, in one read: what an order shows of its
   // restaurant (CU §11.1).
   async names(ids: string[]): Promise<Map<string, { nameAr: string; nameEn: string | null }>> {
@@ -589,6 +649,42 @@ export class MerchantsService implements OnModuleInit {
     });
   }
 
+  // AP §9.6.5 (slice 2.30c): the panel's suspension (from active) and
+  // reactivation (from suspended), never another change, so a reactivation
+  // cannot skip test mode's checklist. The status already reached changes
+  // nothing.
+  async changeAccountStatusFrom(
+    restaurantId: string,
+    from: AccountStatus,
+    status: AccountStatus,
+    change: MerchantChange,
+  ): Promise<void> {
+    await this.database.db.transaction(async (tx) => {
+      const row = await this.lockRestaurant(tx, restaurantId);
+      if (row.accountStatus === status) return;
+      if (row.accountStatus !== from) {
+        throw new MerchantsRefusedError(
+          'status_change_not_allowed',
+          `only a ${from} restaurant becomes ${status} here`,
+        );
+      }
+      await this.writeAccountStatus(tx, restaurantId, row, status, change);
+    });
+  }
+
+  // AP §9.6.5 «إنهاء» (slice 2.30c): the termination in the caller's
+  // transaction, which cashdesk runs under the restaurant's account lock
+  // after checking its balance. Answers the city; terminated already changes
+  // nothing.
+  async terminateIn(tx: Tx, restaurantId: string, change: MerchantChange): Promise<void> {
+    const row = await this.lockRestaurant(tx, restaurantId);
+    if (row.accountStatus === 'terminated') return;
+    if (row.accountStatus === 'draft') {
+      throw new MerchantsRefusedError('status_change_not_allowed', 'a draft is not terminated');
+    }
+    await this.writeAccountStatus(tx, restaurantId, row, 'terminated', change);
+  }
+
   // Module-internal: the status change under the restaurant's lock, which the
   // activation service shares (slice 2.30b) after its checklist.
   async writeAccountStatus(
@@ -638,6 +734,144 @@ export class MerchantsService implements OnModuleInit {
       },
       tx,
     );
+    // RA §16 #23, §5.5 (slice 2.30c): the restaurant's devices read their
+    // status again; a suspension and a reactivation chime.
+    const kind: StateKind | null =
+      status === 'suspended'
+        ? 'suspended_by_operations'
+        : status === 'terminated'
+          ? 'terminated'
+          : row.accountStatus === 'suspended' && status === 'active'
+            ? 'reactivated_by_operations'
+            : null;
+    if (kind !== null) {
+      await recordStateChange(tx, this.jobs, {
+        restaurantId,
+        cityId: row.cityId,
+        kind,
+        at: new Date(),
+        values: kind === 'suspended_by_operations' ? { reason: change.reason!.trim() } : {},
+      });
+    }
+  }
+
+  // AP §9.6.5 «إخفاء أو إظهار» (slice 2.30c): visibility only; customers see
+  // an active restaurant only while visible (AP §9.6.1). Not once terminated.
+  // The same value again writes nothing.
+  async setVisibility(restaurantId: string, visible: boolean, change: MerchantChange) {
+    await this.database.db.transaction(async (tx) => {
+      const row = await this.lockRestaurant(tx, restaurantId);
+      if (row.accountStatus === 'terminated') {
+        throw new MerchantsRefusedError('restaurant_terminated', 'the restaurant is terminated');
+      }
+      const [{ before }] = (await tx
+        .select({ before: restaurants.visible })
+        .from(restaurants)
+        .where(eq(restaurants.id, restaurantId))) as [{ before: boolean }];
+      if (before === visible) return;
+      await tx
+        .update(restaurants)
+        .set({ visible, updatedAt: sql`now()` })
+        .where(eq(restaurants.id, restaurantId));
+      await this.audit.recordWrite(
+        {
+          actor: change.actor,
+          context: change.context,
+          cityId: row.cityId,
+          action: 'restaurant.visibility',
+          target: { type: 'restaurant', id: restaurantId },
+          before: { visible: before },
+          after: { visible },
+          reason: change.reason ?? null,
+        },
+        tx,
+      );
+    });
+  }
+
+  // AP §9.6.5 «تثبيت» (slice 2.30c): the position in the lists, the higher
+  // first (customers' lists sort by it), 0 to SORT_WEIGHT_MAX. Not once
+  // terminated. The same value again writes nothing.
+  async setSortWeight(restaurantId: string, sortWeight: number, change: MerchantChange) {
+    if (!Number.isInteger(sortWeight) || sortWeight < 0 || sortWeight > SORT_WEIGHT_MAX) {
+      throw new MerchantsRefusedError(
+        'invalid_sort_weight',
+        `the sort weight is a whole number from 0 to ${SORT_WEIGHT_MAX}`,
+      );
+    }
+    await this.database.db.transaction(async (tx) => {
+      const row = await this.lockRestaurant(tx, restaurantId);
+      if (row.accountStatus === 'terminated') {
+        throw new MerchantsRefusedError('restaurant_terminated', 'the restaurant is terminated');
+      }
+      const [{ before }] = (await tx
+        .select({ before: restaurants.sortWeight })
+        .from(restaurants)
+        .where(eq(restaurants.id, restaurantId))) as [{ before: number }];
+      if (before === sortWeight) return;
+      await tx
+        .update(restaurants)
+        .set({ sortWeight, updatedAt: sql`now()` })
+        .where(eq(restaurants.id, restaurantId));
+      await this.audit.recordWrite(
+        {
+          actor: change.actor,
+          context: change.context,
+          cityId: row.cityId,
+          action: 'restaurant.sort_weight',
+          target: { type: 'restaurant', id: restaurantId },
+          before: { sortWeight: before },
+          after: { sortWeight },
+          reason: change.reason ?? null,
+        },
+        tx,
+      );
+    });
+  }
+
+  // AP §9.6.5 (slice 2.30c): what the panel's actions read: the account
+  // status with a suspension's reason, the visibility and the sort weight;
+  // null for no such restaurant, a draft without its record included.
+  async accountSettings(restaurantId: string): Promise<{
+    cityId: string;
+    nameAr: string;
+    accountStatus: AccountStatus;
+    suspensionReason: string | null;
+    visible: boolean;
+    sortWeight: number;
+  } | null> {
+    const [row] = await this.database.db
+      .select({
+        cityId: restaurants.cityId,
+        nameAr: restaurants.nameAr,
+        accountStatus: restaurants.accountStatus,
+        suspensionReason: restaurants.suspensionReason,
+        visible: restaurants.visible,
+        sortWeight: restaurants.sortWeight,
+      })
+      .from(restaurants)
+      .where(eq(restaurants.id, restaurantId));
+    return row ?? null;
+  }
+
+  // AP §9.6.5, D16 (slice 2.30c): every commission version not withdrawn,
+  // the latest start first, with who set it and why («سجل العمولة»).
+  async commissionVersions(restaurantId: string): Promise<CommissionHistoryEntry[]> {
+    return this.database.db
+      .select({
+        id: commissionRates.id,
+        rateBp: commissionRates.rateBp,
+        effectiveFrom: commissionRates.effectiveFrom,
+        changedByType: commissionRates.changedByType,
+        changedById: commissionRates.changedById,
+        reason: commissionRates.reason,
+        createdAt: commissionRates.createdAt,
+      })
+      .from(commissionRates)
+      .where(
+        and(eq(commissionRates.restaurantId, restaurantId), isNull(commissionRates.withdrawnAt)),
+      )
+      .orderBy(desc(commissionRates.effectiveFrom), desc(commissionRates.id));
   }
 
   // RA §10: a new version of the weekly schedule, in force at once.
@@ -722,6 +956,14 @@ export class MerchantsService implements OnModuleInit {
     }
     await this.database.db.transaction(async (tx) => {
       const row = await this.lockRestaurant(tx, restaurantId);
+      // Slice 2.30c: a draft's commission is the wizard's step 4, without a
+      // reason or a push; a terminated restaurant takes no new order.
+      if (row.accountStatus === 'draft') {
+        throw new MerchantsRefusedError('not_a_draft', 'a draft’s commission is the wizard’s');
+      }
+      if (row.accountStatus === 'terminated') {
+        throw new MerchantsRefusedError('restaurant_terminated', 'the restaurant is terminated');
+      }
       // New orders only (D16): never from a moment already past.
       const [{ now }] = (await tx
         .execute<{ now: Date }>(sql`SELECT now() AS now`)
@@ -743,6 +985,31 @@ export class MerchantsService implements OnModuleInit {
           and(eq(commissionRates.restaurantId, restaurantId), isNull(commissionRates.withdrawnAt)),
         );
       const before = commissionAt(rates, new Date(now));
+      // A request sent again (the same rate and start, or the same rate «now»
+      // within REPEAT_WINDOW_MS of the latest version) changes nothing, so a
+      // retry neither adds a version nor pushes twice.
+      const [latest] = await tx
+        .select({
+          rateBp: commissionRates.rateBp,
+          effectiveFrom: commissionRates.effectiveFrom,
+          createdAt: commissionRates.createdAt,
+        })
+        .from(commissionRates)
+        .where(
+          and(eq(commissionRates.restaurantId, restaurantId), isNull(commissionRates.withdrawnAt)),
+        )
+        .orderBy(desc(commissionRates.id))
+        .limit(1);
+      if (
+        latest !== undefined &&
+        latest.rateBp === rateBp &&
+        (effectiveFrom !== undefined
+          ? latest.effectiveFrom.getTime() === effectiveFrom.getTime()
+          : latest.effectiveFrom.getTime() <= new Date(now).getTime() &&
+            new Date(now).getTime() - latest.createdAt.getTime() < COMMISSION_REPEAT_WINDOW_MS)
+      ) {
+        return;
+      }
       await tx.insert(commissionRates).values({
         restaurantId,
         rateBp,
@@ -763,6 +1030,14 @@ export class MerchantsService implements OnModuleInit {
         },
         tx,
       );
+      // RA §16 #33, §12.2 (S15): the owners hear the new rate and its start.
+      await recordStateChange(tx, this.jobs, {
+        restaurantId,
+        cityId: row.cityId,
+        kind: 'commission_change',
+        at: new Date(now),
+        values: { rateBp, from: (effectiveFrom ?? new Date(now)).toISOString() },
+      });
     });
   }
 

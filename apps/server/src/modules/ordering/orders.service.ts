@@ -218,6 +218,22 @@ export class OrdersService implements OnModuleInit {
     });
   }
 
+  // AP §9.6.5 «إنهاء» (slice 2.30c): the restaurant's orders not finished
+  // yet (placed to arrived), whose journals would still move its account.
+  // Reads every month's partition by the restaurant's status index.
+  async unfinishedOrderCount(restaurantId: string): Promise<number> {
+    const [row] = await this.database.db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(orders)
+      .where(
+        and(
+          eq(orders.restaurantId, restaurantId),
+          inArray(orders.status, ['placed', 'accepted', 'ready', 'picked_up', 'arrived']),
+        ),
+      );
+    return Number(row?.n ?? 0);
+  }
+
   // The restaurant's test orders delivered (any outcome that ends delivered),
   // read across every month's partition: a restaurant stays in test mode for
   // days, not years.

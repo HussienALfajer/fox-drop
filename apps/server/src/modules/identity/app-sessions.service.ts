@@ -12,6 +12,7 @@ import {
   appSessionEndReasons,
   appSessions,
   customerAccounts,
+  merchantAccounts,
 } from './schema.js';
 import { newToken, tokenHash } from './secrets.js';
 
@@ -321,6 +322,26 @@ export class AppSessionsService {
       )
       .returning({ id: appSessions.id });
     return ended.map((row) => row.id);
+  }
+
+  // AP §9.6.5, RA §5.5 (slice 2.30c): once a restaurant's termination
+  // committed, its users' open real-time connections close (the listeners
+  // disconnect them; the subscription proxy refuses a terminated
+  // restaurant's channel, so they do not rejoin). The sessions stay: the
+  // owners keep the money section, and every request reads the status.
+  async disconnectRestaurant(restaurantId: string): Promise<void> {
+    const open = await this.database.db
+      .select({ id: appSessions.id })
+      .from(appSessions)
+      .innerJoin(merchantAccounts, eq(merchantAccounts.id, appSessions.accountId))
+      .where(
+        and(
+          eq(appSessions.party, 'merchant'),
+          isNull(appSessions.endedAt),
+          eq(merchantAccounts.restaurantId, restaurantId),
+        ),
+      );
+    this.notifyEnded(open.map((row) => row.id));
   }
 
   onEnded(listener: (sessionIds: string[]) => void): void {

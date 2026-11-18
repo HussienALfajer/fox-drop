@@ -26,6 +26,15 @@ export const stateKinds = [
   'paused_by_operations',
   'resumed_by_operations',
   'busy_ended_by_operations',
+  // RA §16 #23, AP §9.6.5 (slice 2.30c): operations suspended the restaurant
+  // (with the reason) or reactivated it; terminated pushes nothing (RA §5.5:
+  // its owners keep the money section only).
+  'suspended_by_operations',
+  'reactivated_by_operations',
+  'terminated',
+  // RA §16 #33, §12.2, D16 (slice 2.30c): a new commission, its basis points
+  // and start (`rateBp`, `from`), told to the owners only.
+  'commission_change',
 ] as const;
 export type StateKind = (typeof stateKinds)[number];
 

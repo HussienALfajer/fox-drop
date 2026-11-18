@@ -11,6 +11,7 @@ import { createApiApp } from '../../http/create-api-app.js';
 import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
 import { NotificationTexts } from '../content/index.js';
 import { FxService } from '../fx/index.js';
+import { GeoService } from '../geo/index.js';
 import {
   ADMIN_SESSION_COOKIE,
   AdminSessionsService,
@@ -154,6 +155,7 @@ function relay(): RestaurantStateRelay {
     app.get(PushQueue),
     app.get(NotificationTexts),
     app.get(AlertsService),
+    app.get(GeoService),
   );
 }
 

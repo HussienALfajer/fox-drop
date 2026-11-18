@@ -56,6 +56,7 @@ import { AdminRatingsController } from './admin-ratings.controller.js';
 import { CaptainRatingsController } from './captain-ratings.controller.js';
 import { MerchantRatingsController } from './merchant-ratings.controller.js';
 import { RatingPagesService } from './rating-pages.js';
+import { RestaurantFiguresService } from './restaurant-figures.js';
 import {
   AdminEmergencyStopController,
   CaptainEmergencyStopController,
@@ -127,8 +128,9 @@ import {
     RatingsService,
     RatingPagesService,
     OrderRoutes,
+    RestaurantFiguresService,
   ],
-  exports: [QuoteService, OrdersService],
+  exports: [QuoteService, OrdersService, RestaurantFiguresService],
 })
 export class OrderingModule {}
 
@@ -202,6 +204,7 @@ export {
 } from './quote.service.js';
 export type { CartLine, PricedLine, QuoteMoney } from './quote.js';
 export { HANDOVER_FROM } from './handover.js';
+export { type RestaurantFigures, RestaurantFiguresService } from './restaurant-figures.js';
 export {
   type CostOrder,
   type OperatingCostCause,

@@ -68,6 +68,8 @@ import { RestaurantDraftPage, RestaurantDraftsPage } from './restaurant-drafts-p
 import { canSeeImages } from './restaurant-images.js';
 import { RestaurantImagesPage } from './restaurant-images-page.js';
 import { canSeeRestaurantStatus } from './restaurant-status.js';
+import { canSeeRestaurantList, type ListFilter, listFilterOf } from './restaurant-list.js';
+import { RestaurantListPage } from './restaurant-list-page.js';
 import { RestaurantStatusPage } from './restaurant-status-page.js';
 import { RatingsPage } from './ratings-page.js';
 import { canSeeRatings, ratingsSearch } from './ratings.js';
@@ -295,6 +297,21 @@ const restaurantDraftRoute = createRoute({
     if (!canSeeDrafts(context.session)) throw redirect({ to: '/' });
   },
   component: RestaurantDraftPage,
+});
+
+// «المطاعم» (slice 2.30c, AP §9.6.2): every restaurants.read session; the
+// filters and a name searched in the search (a number stays in the page).
+const restaurantListRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/restaurants',
+  validateSearch: (search: Record<string, unknown>): { city?: string } & ListFilter => ({
+    ...citySearch(search),
+    ...listFilterOf(search),
+  }),
+  beforeLoad: ({ context }) => {
+    if (!canSeeRestaurantList(context.session)) throw redirect({ to: '/' });
+  },
+  component: RestaurantListPage,
 });
 
 // «حالة المطاعم» (slice 2.6b, AP §9.6.5): every restaurants.read session
@@ -727,6 +744,7 @@ const routeTree = rootRoute.addChildren([
     restaurantDraftRoute,
     categoriesRoute,
     restaurantCategoriesRoute,
+    restaurantListRoute,
     restaurantStatusRoute,
     ratingsRoute,
     alertsRoute,

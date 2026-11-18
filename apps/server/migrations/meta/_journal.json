@@ -827,6 +827,13 @@
       "when": 1795037193140,
       "tag": "0117_merchants_activation",
       "breakpoints": true
+    },
+    {
+      "idx": 118,
+      "version": "7",
+      "when": 1795042174491,
+      "tag": "0118_identity_restaurants_terminate",
+      "breakpoints": true
     }
   ]
 }
