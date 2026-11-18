@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'account/address_form_screen.dart';
+import 'account/addresses_screen.dart';
 import 'account/delete_account_screen.dart';
 import 'account/favourites_screen.dart';
 import 'account/my_account_screen.dart';
@@ -18,6 +20,8 @@ import 'checkout/checkout_screen.dart';
 import 'codes/my_codes_screen.dart';
 import 'content.dart';
 import 'home_screen.dart';
+import 'location/pin.dart';
+import 'location/pin_screen.dart';
 import 'not_found_screen.dart';
 import 'notifications/notifications_screen.dart';
 import 'orders/my_orders_screen.dart';
@@ -130,6 +134,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const BlockedScreen(),
       ),
       GoRoute(path: '/cart', builder: (context, state) => const CartScreen()),
+      // CU §7.1, §7.4 «اختر على الخريطة»: answers the confirmed point.
+      GoRoute(
+        path: '/pin',
+        builder: (context, state) =>
+            PinScreen(initial: pinCameraOf(state.uri.queryParameters)),
+      ),
       GoRoute(path: '/faq', builder: (context, state) => const FaqScreen()),
       // CU §13 «الشروط والخصوصية», and the pending version (CU §4.7).
       GoRoute(
@@ -161,6 +171,23 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: 'profile',
             builder: (context, state) =>
                 const ProfileScreen(from: '/account', editing: true),
+          ),
+          // CU §7.3 «عناويني» (slice 2.29a).
+          GoRoute(
+            path: 'addresses',
+            builder: (context, state) => const AddressesScreen(),
+            routes: [
+              GoRoute(
+                path: 'new',
+                builder: (context, state) => const AddressFormScreen(),
+              ),
+              GoRoute(
+                path: ':addressId',
+                builder: (context, state) => AddressFormScreen(
+                  addressId: state.pathParameters['addressId'],
+                ),
+              ),
+            ],
           ),
           // CU §9.6 «المفضلة» (slice 2.28b).
           GoRoute(

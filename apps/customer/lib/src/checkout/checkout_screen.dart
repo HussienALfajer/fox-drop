@@ -1,5 +1,6 @@
 import 'package:core_auth/core_auth.dart';
 import 'package:core_l10n/core_l10n.dart';
+import 'package:core_maps/core_maps.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +10,7 @@ import '../content.dart';
 import '../cart/cart.dart';
 import '../device.dart';
 import '../location/delivery_point.dart';
+import '../location/pin.dart';
 import '../location/position.dart';
 import '../notifications/permission.dart';
 import '../profile/profile.dart';
@@ -89,6 +91,17 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   void _useCurrentLocation() =>
       ref.read(deliveryPointProvider.notifier).useCurrentLocation();
+
+  /// CU §7.4: a position worse than 100 m is adjusted on the map, which
+  /// opens at it.
+  Future<void> _adjustPin(GeoPoint point) async {
+    final chosen = await context.push<GeoPoint>(
+      pinPath(MapCamera(point, streetZoom)),
+    );
+    if (chosen != null && mounted) {
+      await ref.read(deliveryPointProvider.notifier).usePin(chosen);
+    }
+  }
 
   Future<void> _confirm(Quote quote, Cart cart, PointChecked point) async {
     final session = ref.read(customerAuth.session).value;
@@ -339,8 +352,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               ),
             ),
             trailing: TextButton(
-              onPressed: _useCurrentLocation,
-              child: Text(l10n.customerUpdateLocation),
+              key: const Key('adjust-pin'),
+              onPressed: () => _adjustPin(point.point),
+              child: Text(l10n.customerAdjustPin),
             ),
           ),
         ListTile(

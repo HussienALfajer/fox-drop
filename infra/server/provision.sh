@@ -122,6 +122,7 @@ install -m 755 "$infra/server/deploy.sh" /usr/local/bin/foxdrop-deploy
 install -m 755 "$infra/server/deploy-ssh.sh" /usr/local/bin/foxdrop-deploy-ssh
 install -m 755 "$infra/server/backup.sh" /usr/local/bin/foxdrop-backup
 install -m 755 "$infra/server/osrm-build.sh" /usr/local/bin/foxdrop-osrm-build
+install -m 755 "$infra/server/maps-build.sh" /usr/local/bin/foxdrop-maps-build
 sudoers=$(mktemp)
 echo "foxdrop-deploy ALL=(root) NOPASSWD: /usr/local/bin/foxdrop-deploy staging *" >"$sudoers"
 visudo --check --quiet --file "$sudoers" || die "the sudoers rule does not parse"
@@ -139,7 +140,7 @@ for zone in 'zone=general:' 'zone=perip:'; do
 done
 # Only these variables are replaced; nginx's own $variables stay as they are.
 # shellcheck disable=SC2016
-render() { envsubst '${FOXDROP_ENV} ${ADMIN_HOST} ${PORTAL_HOST} ${API_HOST} ${API_PORT} ${ADMIN_PORT} ${PORTAL_PORT} ${CENTRIFUGO_PORT} ${STORAGE_PORT} ${IMGPROXY_PORT}' <"$1"; }
+render() { envsubst '${FOXDROP_ENV} ${ADMIN_HOST} ${PORTAL_HOST} ${API_HOST} ${API_PORT} ${ADMIN_PORT} ${PORTAL_PORT} ${CENTRIFUGO_PORT} ${STORAGE_PORT} ${IMGPROXY_PORT} ${MAPS_PORT}' <"$1"; }
 available=/etc/nginx/sites-available/foxdrop-$environment
 enabled=/etc/nginx/sites-enabled/foxdrop-$environment
 nginx_files=(
@@ -212,6 +213,21 @@ install -m 644 "$infra/server/foxdrop-backup@.service" "$infra/server/foxdrop-ba
 systemctl daemon-reload
 systemctl enable --now "foxdrop-backup@$environment.timer"
 systemctl list-timers "foxdrop-backup@$environment.timer" --no-pager
+
+step "Map"
+# The map's tiles, style, glyphs and sprite in public-maps (architecture
+# §7.2), built once; foxdrop-maps-build <env> builds them again from fresh
+# OpenStreetMap data (docs/runbooks/maps.md). It needs a release with
+# MAPS_PORT, so a new environment's first run skips it.
+if [ -L "$home/current" ] &&
+  grep -q '^MAPS_PORT=' "$home/current/infra/environments/$environment.env"; then
+  # A failed build (a download refused, glyphs without Arabic) is reported
+  # and leaves the rest of the provisioning to run.
+  foxdrop-maps-build "$environment" --if-missing ||
+    echo "the map build failed: run foxdrop-maps-build $environment again (docs/runbooks/maps.md)"
+else
+  echo "skipped: deploy $environment, then run this again to build the map"
+fi
 
 step "OSRM"
 # One OSRM serves every environment (architecture §7.1, §17), on each

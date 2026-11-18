@@ -3,6 +3,7 @@ import 'package:core_auth/core_auth.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../account/addresses.dart';
 import '../api.dart';
 import '../cart/cart.dart';
 import '../device.dart';
@@ -179,30 +180,8 @@ class PlaceOrderController extends Notifier<PlaceState> {
   }
 
   Future<String> _saveAddress(PlaceCommand command) async {
-    final form = command.form;
     final response = await _api.customerProfileAddAddress(
-      customerNewAddressDto: CustomerNewAddressDto(
-        (b) => b
-          ..location.latitude = command.point.latitude
-          ..location.longitude = command.point.longitude
-          ..label = switch (form.label) {
-            AddressLabel.home => CustomerNewAddressDtoLabelEnum.home,
-            AddressLabel.work => CustomerNewAddressDtoLabelEnum.work,
-            AddressLabel.other => CustomerNewAddressDtoLabelEnum.other,
-          }
-          ..customLabel = form.label == AddressLabel.other
-              ? _t(form.customLabel)
-              : null
-          ..street = _t(form.street)
-          ..floor = _optional(form.floor)
-          ..landmark = _t(form.landmark)
-          ..contactPhone = form.contactE164
-          ..recipientName = form.contactE164 == null
-              ? null
-              : _t(form.recipientName)
-          ..directions = _optional(form.directions)
-          ..isDefault = false,
-      ),
+      customerNewAddressDto: newAddressDto(command.point, command.form),
     );
     return response.data!.id;
   }

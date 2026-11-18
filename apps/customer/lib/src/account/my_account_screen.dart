@@ -43,8 +43,7 @@ final signOutEverywhereProvider =
 /// «حسابي» (CU §13): the details, «طلباتي» and «المفضلة» (CU §12.3, §9.6,
 /// slice 2.28b), «أكوادي», «الإشعارات», the help, joining us, the terms,
 /// the version, signing out and «حذف الحساب» (CU §5.6, slice 2.25c).
-/// «عناويني» joins with 2.29 (owner decision 2026-11-17). Unstyled until the
-/// design.
+/// «عناويني» (CU §7.3, slice 2.29a). Unstyled until the design.
 class MyAccountScreen extends ConsumerWidget {
   const MyAccountScreen({super.key});
 
@@ -62,6 +61,12 @@ class MyAccountScreen extends ConsumerWidget {
             key: const Key('open-profile'),
             title: Text(l10n.customerAccountProfile),
             onTap: () => context.push('/account/profile'),
+          ),
+          // CU §7.3 «عناويني» (slice 2.29a).
+          ListTile(
+            key: const Key('open-addresses'),
+            title: Text(l10n.customerMyAddressesTitle),
+            onTap: () => context.push('/account/addresses'),
           ),
           ListTile(
             key: const Key('open-my-orders'),

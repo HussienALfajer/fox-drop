@@ -532,6 +532,24 @@ abstract class AppLocalizations {
   /// **'استخدم موقعي الحالي'**
   String get customerUseMyLocation;
 
+  /// Opens the map to set the delivery point under the fixed pin (CU §7.1); also the pin screen's title.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر على الخريطة'**
+  String get customerChooseOnMap;
+
+  /// Confirms the point under the pin, at zoom 16 or closer (CU §7.1); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد الموقع'**
+  String get customerConfirmLocation;
+
+  /// The map is farther than zoom 16, so the pin cannot be confirmed (CU §7.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'قرّب الخريطة لتحديد موقعك بدقة'**
+  String get customerZoomInToConfirm;
+
   /// Inside a zone, but no restaurant covers the point (CU §7.1).
   ///
   /// In ar, this message translates to:
@@ -1036,17 +1054,17 @@ abstract class AppLocalizations {
   /// **'التوصيل إلى موقعي الحالي'**
   String get customerDeliverToCurrentLocation;
 
-  /// The position is worse than 100 m (CU §7.4); the map to adjust the pin waits for Phase 2.
+  /// The position is worse than 100 m: the app asks to adjust the pin on the map (CU §7.4).
   ///
   /// In ar, this message translates to:
-  /// **'دقة موقعك {distance}. حدّث موقعك إن لم يكن العنوان دقيقاً.'**
+  /// **'دقة موقعك {distance}. عدّل الدبوس على الخريطة ليكون العنوان دقيقاً.'**
   String customerLowAccuracy(String distance);
 
-  /// Asks for the phone's position again.
+  /// Opens the map at the phone's position to adjust the pin (CU §7.4); the spec gives no wording.
   ///
   /// In ar, this message translates to:
-  /// **'تحديث الموقع'**
-  String get customerUpdateLocation;
+  /// **'عدّل الدبوس'**
+  String get customerAdjustPin;
 
   /// The zone's name, read-only (CU §7.3).
   ///
@@ -6553,6 +6571,66 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'شكراً، سنحاول إضافته'**
   String get customerSuggestThanks;
+
+  /// «حسابي» → the saved addresses (CU §13, §7.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'عناويني'**
+  String get customerMyAddressesTitle;
+
+  /// Adds a saved address (CU §7.3); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة عنوان'**
+  String get customerAddAddress;
+
+  /// The title of a saved address's form when editing it (CU §7.3, U5); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل العنوان'**
+  String get customerEditAddress;
+
+  /// Marks the default saved address (CU §7.3); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'العنوان الافتراضي'**
+  String get customerDefaultAddress;
+
+  /// Makes a saved address the default (CU §7.3); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'اجعله الافتراضي'**
+  String get customerMakeDefault;
+
+  /// The confirmation before deleting a saved address (CU §7.3); orders keep their copy.
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد حذف العنوان'**
+  String get customerDeleteAddressConfirm;
+
+  /// «عناويني» without a saved address; the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد عناوين محفوظة'**
+  String get customerNoAddresses;
+
+  /// The limit of saved addresses is reached (CU §7.3, fixed at 10); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'يمكنك حفظ {count} عناوين كحد أقصى'**
+  String customerAddressLimit(int count);
+
+  /// The saved address's pin in its form (CU §7.3); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الموقع على الخريطة'**
+  String get customerPinOnMap;
+
+  /// A saved address needs its pin (CU §7.3); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'حدّد الموقع على الخريطة'**
+  String get customerPinRequired;
 
   /// «حسابي» → «المفضلة», the favourite restaurants (CU §9.6, Appendix B).
   ///

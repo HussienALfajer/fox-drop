@@ -360,6 +360,21 @@ describe('the saved addresses (CU §7.3)', () => {
     expect(list).toEqual([expect.objectContaining({ id: a.id, isDefault: true })]);
   });
 
+  it('refuse moving a pin outside the zones on edit, and leave the address as it was', async () => {
+    const headers = await signedIn();
+    const saved = (
+      await call(headers, 'POST', '/v1/customer/addresses', { ...home, isDefault: false })
+    ).json();
+    const moved = await call(headers, 'PUT', `/v1/customer/addresses/${saved.id}`, {
+      ...home,
+      location: { latitude: 36.9, longitude: 37.4 },
+    });
+    expect(moved.statusCode).toBe(409);
+    expect(moved.json()).toMatchObject({ error: 'outside_zones' });
+    const list = (await call(headers, 'GET', '/v1/customer/addresses')).json().addresses;
+    expect(list).toEqual([expect.objectContaining({ location: centre, neighbourhood: 'المركز' })]);
+  });
+
   it('show an address whose zone was turned off as outside the delivery area, and never make it the default', async () => {
     const headers = await signedIn();
     const geo = app.get(GeoService);

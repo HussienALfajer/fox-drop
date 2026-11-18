@@ -56,6 +56,7 @@ const FLUTTER_TEST_SECONDS = {
   core_auth: 16,
   core_push: 13,
   core_storage: 13,
+  core_maps: 5,
 };
 const UNLISTED_SECONDS = 30;
 

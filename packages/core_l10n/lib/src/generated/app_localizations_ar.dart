@@ -259,6 +259,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get customerUseMyLocation => 'استخدم موقعي الحالي';
 
   @override
+  String get customerChooseOnMap => 'اختر على الخريطة';
+
+  @override
+  String get customerConfirmLocation => 'تأكيد الموقع';
+
+  @override
+  String get customerZoomInToConfirm => 'قرّب الخريطة لتحديد موقعك بدقة';
+
+  @override
   String get customerNoRestaurantsHere => 'لا توجد مطاعم توصل إلى موقعك حالياً';
 
   @override
@@ -567,11 +576,11 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String customerLowAccuracy(String distance) {
-    return 'دقة موقعك $distance. حدّث موقعك إن لم يكن العنوان دقيقاً.';
+    return 'دقة موقعك $distance. عدّل الدبوس على الخريطة ليكون العنوان دقيقاً.';
   }
 
   @override
-  String get customerUpdateLocation => 'تحديث الموقع';
+  String get customerAdjustPin => 'عدّل الدبوس';
 
   @override
   String get customerNeighbourhood => 'الحي';
@@ -3994,6 +4003,38 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get customerSuggestThanks => 'شكراً، سنحاول إضافته';
+
+  @override
+  String get customerMyAddressesTitle => 'عناويني';
+
+  @override
+  String get customerAddAddress => 'إضافة عنوان';
+
+  @override
+  String get customerEditAddress => 'تعديل العنوان';
+
+  @override
+  String get customerDefaultAddress => 'العنوان الافتراضي';
+
+  @override
+  String get customerMakeDefault => 'اجعله الافتراضي';
+
+  @override
+  String get customerDeleteAddressConfirm => 'تأكيد حذف العنوان';
+
+  @override
+  String get customerNoAddresses => 'لا توجد عناوين محفوظة';
+
+  @override
+  String customerAddressLimit(int count) {
+    return 'يمكنك حفظ $count عناوين كحد أقصى';
+  }
+
+  @override
+  String get customerPinOnMap => 'الموقع على الخريطة';
+
+  @override
+  String get customerPinRequired => 'حدّد الموقع على الخريطة';
 
   @override
   String get customerFavouritesTitle => 'المفضلة';

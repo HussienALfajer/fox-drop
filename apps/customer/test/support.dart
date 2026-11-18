@@ -7,6 +7,7 @@ import 'package:customer/src/api.dart';
 import 'package:customer/src/app.dart';
 import 'package:customer/src/auth.dart';
 import 'package:customer/src/device.dart';
+import 'package:customer/src/location/pin.dart';
 import 'package:customer/src/media_image.dart';
 import 'package:customer/src/notifications/permission.dart';
 import 'package:customer/src/orders/door_ring.dart';
@@ -110,6 +111,9 @@ class TestApp {
 
   /// The door ping's sound (CU §11.7).
   final doorRinger = FakeDoorRinger();
+
+  /// The map under the pin (CU §7.1).
+  final pinMap = FakePinMap();
   final List<Override> overrides;
   final transport = FakeTransport();
   late final ProviderContainer container;
@@ -213,6 +217,7 @@ class TestApp {
           return MemoryImage(transparentPng);
         }),
         doorRingerProvider.overrideWithValue(doorRinger),
+        pinMapProvider.overrideWithValue(pinMap.build),
         customerAuth.launch.overrideWithValue((uri) async {
           launched.add(uri);
           return true;

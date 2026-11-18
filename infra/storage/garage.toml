@@ -2,7 +2,7 @@
 # in development (compose.yaml) and on the server (infra/compose.yaml): one
 # node, one copy of each object. The RPC secret and the admin token come from
 # GARAGE_RPC_SECRET and GARAGE_ADMIN_TOKEN. The layout, the keys and the
-# bucket are set by the server's storage setup command (apps/server/src/
+# buckets are set by the server's storage setup command (apps/server/src/
 # storage/storage-setup.ts), never by hand.
 metadata_dir = "/var/lib/garage/meta"
 data_dir = "/var/lib/garage/data"
@@ -19,3 +19,11 @@ s3_region = "garage"
 
 [admin]
 api_bind_addr = "[::]:3903"
+
+# The website endpoint serves public-maps (architecture §7.2): the tiles, the
+# style, the glyphs and the sprite, with range requests. nginx's /maps/ sends
+# here with Host: public-maps, which names the bucket; no other bucket has
+# website access, so nothing else is served.
+[s3_web]
+bind_addr = "[::]:3902"
+root_domain = ".web.garage"

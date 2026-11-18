@@ -3,9 +3,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "maps:style": "node maps/style.mjs"
   },
   "devDependencies": {
+    "@protomaps/basemaps": "5.7.2",
     "yaml": "2.9.1"
   }
 }

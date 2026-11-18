@@ -2,8 +2,11 @@
 # .env first; every value there is fake and only for this machine.
 #   docker compose up --detach
 # OSRM starts only with its profile (below). After the first start, set up the
-# object storage (its layout, keys and bucket; safe to run again):
+# object storage (its layout, keys and buckets; safe to run again):
 #   pnpm --filter @fox-drop/server storage:setup
+# The map starts empty; build and publish it (it downloads Azaz's region):
+#   docker compose run --rm maps-build
+#   pnpm --filter @fox-drop/server maps:publish
 name: fox-drop
 
 # The OSRM image, the same as infra/osrm/compose.yaml's (infra.test.mjs).
@@ -90,6 +93,28 @@ services:
       - 127.0.0.1:${STORAGE_PORT:-3900}:3900
       - 127.0.0.1:${STORAGE_ADMIN_PORT:-3903}:3903
 
+  # The map (architecture §7.2), as nginx's /maps/ serves it on staging:
+  # public-maps through the storage's website endpoint, on 8089, which the
+  # Android emulator reaches at 10.0.2.2:8089/maps/.
+  maps:
+    image: nginxinc/nginx-unprivileged:1.31.7-alpine
+    depends_on: [storage]
+    configs:
+      - source: maps-nginx
+        target: /etc/nginx/conf.d/default.conf
+    ports:
+      - 127.0.0.1:${MAPS_PORT:-8089}:8080
+
+  # Builds the map into .maps/out (ignored by git) for maps:publish, with the
+  # same image and script as staging (infra/maps).
+  maps-build:
+    profiles: [maps-build]
+    build: infra/maps
+    image: fox-drop-maps-build
+    command: [sh, /maps/build.sh]
+    volumes:
+      - ./.maps:/data
+
   # The images (architecture §5.8, CU §4.5): imgproxy reads public-media with
   # the reader key and serves /media/... on 8088, which the panel reaches
   # through Vite's /media proxy and the Android emulator at 10.0.2.2:8088.
@@ -155,6 +180,18 @@ services:
     command: [osrm-routed, --algorithm, mld, /data/current/walking/region.osrm]
     ports:
       - 127.0.0.1:5004:5000
+
+configs:
+  maps-nginx:
+    content: |
+      server {
+        listen 8080;
+        location /maps/ {
+          limit_except GET { deny all; }
+          proxy_pass http://storage:3902/;
+          proxy_set_header Host public-maps;
+        }
+      }
 
 volumes:
   postgres-data:

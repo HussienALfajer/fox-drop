@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:core_maps/core_maps.dart';
 import 'package:core_realtime/core_realtime.dart';
+import 'package:flutter/widgets.dart';
 import 'package:customer/src/location/position.dart';
 
 /// Azaz's centre, inside the test zone.
@@ -43,4 +45,22 @@ class FakeTransport implements RealtimeTransport {
       controller.add(signal);
     }
   }
+}
+
+/// The map under the pin without MapLibre's platform view: it records where
+/// it opened, and [move] reports a camera as a customer's gesture would.
+class FakePinMap {
+  MapCamera? initial;
+  ValueChanged<MapCamera>? _onCamera;
+
+  Widget build({
+    required MapCamera initial,
+    required ValueChanged<MapCamera> onCamera,
+  }) {
+    this.initial = initial;
+    _onCamera = onCamera;
+    return const SizedBox.expand(key: Key('fake-pin-map'));
+  }
+
+  void move(MapCamera camera) => _onCamera!(camera);
 }

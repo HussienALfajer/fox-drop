@@ -7,6 +7,11 @@
 # phones behind one address; the server's own limits in Valkey come on top.
 limit_req_zone $binary_remote_addr zone=foxdrop_${FOXDROP_ENV}_signin:10m rate=30r/m;
 
+# The map (architecture §7.2): every tile, glyph range and sprite is its own
+# request, and many phones share one address, so /maps/ has its own zone in
+# place of the server's general one, and map traffic never uses up the API's.
+limit_req_zone $binary_remote_addr zone=foxdrop_${FOXDROP_ENV}_maps:10m rate=50r/s;
+
 # The images imgproxy makes (architecture §5.8: nginx's cache in place of a
 # CDN in V1). A key is never reused, so an entry never goes stale; the least
 # used go first past 2 GB or after 30 days unread.

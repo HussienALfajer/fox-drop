@@ -12,3 +12,5 @@ apps/server/migrations/meta/
 apps/*/android/
 apps/*/ios/
 apps/*/windows/
+# Written by pnpm --filter @fox-drop/infra maps:style; infra.test.mjs fails when it is stale.
+infra/maps/style.json
