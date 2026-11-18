@@ -341,7 +341,13 @@ const routeAccess: Record<string, Access> = {
   'GET /v1/merchant/platform': 'public',
   'GET /v1/captain/platform': 'public',
   'POST /v1/admin/uploads': {
-    anyOf: ['restaurants.manage', 'restaurants.create', 'restaurants.menus', 'content.categories'],
+    anyOf: [
+      'restaurants.manage',
+      'restaurants.create',
+      'restaurants.menus',
+      'content.categories',
+      'marketing.banners',
+    ],
   },
   'GET /v1/admin/restaurants': { anyOf: ['restaurants.read', 'restaurants.menus'] },
   'GET /v1/admin/restaurants/{restaurantId}/images': {
@@ -448,6 +454,11 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/admin/home-sections/visibility': 'marketing.manage',
   'PUT /v1/admin/home-sections/{sectionId}': 'marketing.manage',
   'POST /v1/admin/home-sections/{sectionId}/remove': 'marketing.manage',
+  'GET /v1/admin/banners': { anyOf: ['marketing.read', 'marketing.manage', 'marketing.banners'] },
+  'POST /v1/admin/banners': 'marketing.banners',
+  'PUT /v1/admin/banners/{bannerId}': 'marketing.banners',
+  'POST /v1/admin/banners/order': 'marketing.banners',
+  'POST /v1/admin/banners/{bannerId}/remove': 'marketing.banners',
   'GET /v1/admin/compensations': 'compensation.approve_above_cap',
   'POST /v1/admin/compensations/{compensationId}/approve': 'compensation.approve_above_cap',
   'POST /v1/admin/compensations/{compensationId}/reject': 'compensation.approve_above_cap',

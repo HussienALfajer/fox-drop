@@ -13,6 +13,7 @@ const adminPurposes = [
   'restaurant_cover',
   'item_photo',
   'category_image',
+  'banner_image',
 ] as const;
 type AdminPurpose = (typeof adminPurposes)[number];
 
@@ -46,6 +47,8 @@ const purposePermissions: Record<AdminPurpose, AdminPermission[]> = {
   restaurant_cover: [...RESTAURANT_PROFILE],
   item_photo: ['restaurants.menus'],
   category_image: ['content.categories'],
+  // A banner's image (AP §9.11.2, slice 2.27c): marketing.banners (OWN, DATA).
+  banner_image: ['marketing.banners'],
 };
 
 // Architecture §5.8: a pre-signed upload to public-media. No Idempotency-Key:
@@ -56,7 +59,12 @@ export class AdminUploadsController {
 
   // 403 when the session may not set what the file is for.
   @Post()
-  @RequireAnyPermission(...RESTAURANT_PROFILE, 'restaurants.menus', 'content.categories')
+  @RequireAnyPermission(
+    ...RESTAURANT_PROFILE,
+    'restaurants.menus',
+    'content.categories',
+    'marketing.banners',
+  )
   @HttpCode(201)
   @ZodResponse({ status: 201, type: AdminUploadDto })
   async create(@Body() body: AdminNewUploadDto, @CurrentAdminSession() session: AdminSession) {

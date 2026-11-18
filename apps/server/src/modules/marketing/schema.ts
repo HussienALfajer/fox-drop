@@ -403,3 +403,64 @@ export const homeSections = marketing.table(
     ),
   ],
 );
+
+// AP §9.11.2 «البانرات», CU §8.1 (slice 2.27c): what a banner's tap opens.
+// `restaurants` is the banner's own hand-picked list, opened under its title
+// (owner decision 2026-11-18); `code` opens «أكوادي» on that code.
+export const bannerTargets = ['restaurant', 'category', 'restaurants', 'code'] as const;
+export type BannerTarget = (typeof bannerTargets)[number];
+
+// A banner of the customer home, per city: its image (a key in public-media,
+// 1200×500), title, target, place in the strip, the period it runs and the
+// zones it shows in (none: all). Restaurants, categories, codes and zones are
+// plain ids. Removed for good with removed_at, never deleted.
+export const banners = marketing.table(
+  'banners',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    cityId: uuid('city_id').notNull(),
+    title: text('title').notNull(),
+    imageKey: text('image_key').notNull(),
+    target: text('target', { enum: bannerTargets }).notNull(),
+    // `restaurant`: one; `restaurants`: the list in the admin's order.
+    restaurantIds: uuid('restaurant_ids')
+      .array()
+      .notNull()
+      .default(sql`'{}'::uuid[]`),
+    categoryId: uuid('category_id'),
+    codeId: uuid('code_id'),
+    zoneIds: uuid('zone_ids')
+      .array()
+      .notNull()
+      .default(sql`'{}'::uuid[]`),
+    position: integer('position').notNull(),
+    startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
+    endsAt: timestamp('ends_at', { withTimezone: true }).notNull(),
+    // The admin accounts (identity's ids, plain values).
+    createdBy: uuid('created_by').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedBy: uuid('updated_by').notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+    removedAt: timestamp('removed_at', { withTimezone: true }),
+  },
+  (table) => [
+    index('banners_city').on(table.cityId, table.position),
+    check(
+      'banners_target_values',
+      sql`${table.target} IN ('restaurant', 'category', 'restaurants', 'code')`,
+    ),
+    check('banners_title', sql`char_length(${table.title}) BETWEEN 1 AND 60`),
+    check('banners_period', sql`${table.startsAt} < ${table.endsAt}`),
+    check(
+      'banners_target',
+      sql`CASE ${table.target}
+        WHEN 'restaurant' THEN cardinality(${table.restaurantIds}) = 1 AND ${table.categoryId} IS NULL AND ${table.codeId} IS NULL
+        WHEN 'restaurants' THEN cardinality(${table.restaurantIds}) BETWEEN 1 AND 30 AND ${table.categoryId} IS NULL AND ${table.codeId} IS NULL
+        WHEN 'category' THEN cardinality(${table.restaurantIds}) = 0 AND ${table.categoryId} IS NOT NULL AND ${table.codeId} IS NULL
+        ELSE cardinality(${table.restaurantIds}) = 0 AND ${table.categoryId} IS NULL AND ${table.codeId} IS NOT NULL
+      END`,
+    ),
+  ],
+);

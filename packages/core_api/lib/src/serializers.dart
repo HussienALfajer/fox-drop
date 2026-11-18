@@ -25,6 +25,11 @@ import 'package:core_api/src/model/admin_alerts_dto_output_alerts_inner_location
 import 'package:core_api/src/model/admin_approve_compensation_dto.dart';
 import 'package:core_api/src/model/admin_approve_compensation_dto_value.dart';
 import 'package:core_api/src/model/admin_assign_dto.dart';
+import 'package:core_api/src/model/admin_banner_city_dto.dart';
+import 'package:core_api/src/model/admin_banners_dto_output.dart';
+import 'package:core_api/src/model/admin_banners_dto_output_banners_inner.dart';
+import 'package:core_api/src/model/admin_banners_dto_output_codes_inner.dart';
+import 'package:core_api/src/model/admin_banners_order_dto.dart';
 import 'package:core_api/src/model/admin_block_customer_dto.dart';
 import 'package:core_api/src/model/admin_board_dto_output.dart';
 import 'package:core_api/src/model/admin_board_dto_output_orders_inner.dart';
@@ -208,6 +213,7 @@ import 'package:core_api/src/model/admin_manual_reversal_dto.dart';
 import 'package:core_api/src/model/admin_mark_customer_trust_dto.dart';
 import 'package:core_api/src/model/admin_merchant_statement_dto_output.dart';
 import 'package:core_api/src/model/admin_merchant_statement_dto_output_lines_inner.dart';
+import 'package:core_api/src/model/admin_new_banner_dto.dart';
 import 'package:core_api/src/model/admin_new_category_dto.dart';
 import 'package:core_api/src/model/admin_new_home_section_dto.dart';
 import 'package:core_api/src/model/admin_new_upload_dto.dart';
@@ -450,6 +456,7 @@ import 'package:core_api/src/model/admin_ticket_status_dto.dart';
 import 'package:core_api/src/model/admin_ticket_types_dto_output.dart';
 import 'package:core_api/src/model/admin_tickets_dto_output.dart';
 import 'package:core_api/src/model/admin_unblock_customer_dto.dart';
+import 'package:core_api/src/model/admin_update_banner_dto.dart';
 import 'package:core_api/src/model/admin_update_category_dto.dart';
 import 'package:core_api/src/model/admin_update_contact_dto.dart';
 import 'package:core_api/src/model/admin_update_home_section_dto.dart';
@@ -853,6 +860,11 @@ part 'serializers.g.dart';
   AdminApproveCompensationDto,
   AdminApproveCompensationDtoValue,
   AdminAssignDto,
+  AdminBannerCityDto,
+  AdminBannersDtoOutput,
+  AdminBannersDtoOutputBannersInner,
+  AdminBannersDtoOutputCodesInner,
+  AdminBannersOrderDto,
   AdminBlockCustomerDto,
   AdminBoardDtoOutput,
   AdminBoardDtoOutputOrdersInner,
@@ -1036,6 +1048,7 @@ part 'serializers.g.dart';
   AdminMarkCustomerTrustDto,
   AdminMerchantStatementDtoOutput,
   AdminMerchantStatementDtoOutputLinesInner,
+  AdminNewBannerDto,
   AdminNewCategoryDto,
   AdminNewHomeSectionDto,
   AdminNewUploadDto,
@@ -1278,6 +1291,7 @@ part 'serializers.g.dart';
   AdminTicketTypesDtoOutput,
   AdminTicketsDtoOutput,
   AdminUnblockCustomerDto,
+  AdminUpdateBannerDto,
   AdminUpdateCategoryDto,
   AdminUpdateContactDto,
   AdminUpdateHomeSectionDto,
@@ -1976,6 +1990,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminBannersDtoOutputCodesInner),
+            ]),
+            () => ListBuilder<AdminBannersDtoOutputCodesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminReasonListsDtoOutputListsInnerReasonsInner),
             ]),
             () =>
@@ -2159,6 +2179,12 @@ Serializers serializers =
               FullType(MerchantContentDtoOutputFaqInner),
             ]),
             () => ListBuilder<MerchantContentDtoOutputFaqInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminBannersDtoOutputBannersInner),
+            ]),
+            () => ListBuilder<AdminBannersDtoOutputBannersInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

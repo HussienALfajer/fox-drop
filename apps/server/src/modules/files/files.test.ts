@@ -204,6 +204,38 @@ describe('FilesService.prepare and link', () => {
     expect(rows[0].linked_at).toBeNull();
   });
 
+  // AP §9.11.2 (slice 2.27c, owner decision 2026-11-18): a banner is exactly
+  // 1200×500, read from the stored file's header.
+  it('links a banner only at exactly 1200×500', async () => {
+    const sized = (width: number, height: number) => {
+      const bytes = Buffer.concat([Buffer.from(png.subarray(0, 8)), Buffer.alloc(40)]);
+      bytes.writeUInt32BE(13, 8);
+      bytes.write('IHDR', 12, 'latin1');
+      bytes.writeUInt32BE(width, 16);
+      bytes.writeUInt32BE(height, 20);
+      return bytes;
+    };
+    const { accountId } = await admin(['DATA']);
+    const banner = async (body: Buffer) => {
+      const asked = await files.createUpload(
+        { purpose: 'banner_image', contentType: 'image/png', sizeBytes: body.length },
+        accountId,
+      );
+      expect((await put(asked.url, body)).status).toBe(200);
+      return asked.uploadId;
+    };
+    const wide = await banner(sized(1280, 500));
+    expect(await refusal(files.prepare(wide, 'banner_image'))).toBe('upload_wrong_size');
+    const right = await banner(sized(1200, 500));
+    await files.prepare(right, 'banner_image');
+    const linked = await db.db.transaction((tx) => files.link(tx, right));
+    expect(linked.key).toMatch(/^marketing\/banners\/[0-9a-f-]{36}\.png$/);
+    // DATA asks for it; OPS reads marketing only.
+    const body = { purpose: 'banner_image', contentType: 'image/png', sizeBytes: 100 };
+    expect((await ask(['DATA'], body)).statusCode).toBe(201);
+    expect((await ask(['OPS'], body)).statusCode).toBe(403);
+  });
+
   it('never lets the application role delete an upload', async () => {
     await expect(sql.query('DELETE FROM files.uploads')).rejects.toThrow(/permission denied/);
   });

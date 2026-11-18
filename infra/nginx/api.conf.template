@@ -36,7 +36,7 @@ location ~ ^/v1/[a-z]+/realtime/subscribe$ {
 # imgproxy work and the cache cannot be bypassed (its key is the path, the
 # query string ignored). Reads only. imgproxy's own Cache-Control (a year)
 # reaches the apps; no add_header here, so the server's security headers stay.
-location ~ "^/media/_/w(160|320|640|1280)/plain/(restaurants/logos|restaurants/covers|menu/items|content/categories)/[0-9a-f-]{36}\.(jpg|png|webp)$" {
+location ~ "^/media/_/w(160|320|640|1280)/plain/(restaurants/logos|restaurants/covers|menu/items|content/categories|marketing/banners)/[0-9a-f-]{36}\.(jpg|png|webp)$" {
     limit_except GET { deny all; }
     proxy_pass http://127.0.0.1:${IMGPROXY_PORT}$uri;
     include snippets/foxdrop-proxy.conf;

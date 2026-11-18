@@ -21,7 +21,7 @@ abstract class AdminNewUploadDto
   /// The record the file is for (architecture §5.8).
   @BuiltValueField(wireName: r'purpose')
   AdminNewUploadDtoPurposeEnum get purpose;
-  // enum purposeEnum {  restaurant_logo,  restaurant_cover,  item_photo,  category_image,  };
+  // enum purposeEnum {  restaurant_logo,  restaurant_cover,  item_photo,  category_image,  banner_image,  };
 
   @BuiltValueField(wireName: r'contentType')
   AdminNewUploadDtoContentTypeEnum get contentType;
@@ -167,6 +167,9 @@ class AdminNewUploadDtoPurposeEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'category_image')
   static const AdminNewUploadDtoPurposeEnum categoryImage =
       _$adminNewUploadDtoPurposeEnum_categoryImage;
+  @BuiltValueEnumConst(wireName: r'banner_image')
+  static const AdminNewUploadDtoPurposeEnum bannerImage =
+      _$adminNewUploadDtoPurposeEnum_bannerImage;
 
   static Serializer<AdminNewUploadDtoPurposeEnum> get serializer =>
       _$adminNewUploadDtoPurposeEnumSerializer;
