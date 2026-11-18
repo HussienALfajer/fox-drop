@@ -1,3 +1,4 @@
+import { AdminRestaurantAccountsController } from './admin-restaurant-accounts.controller.js';
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module.js';
 import { VALKEY, ValkeyModule } from '../../valkey/valkey.module.js';
@@ -55,6 +56,7 @@ import { IDENTITY_SECRETS, identitySecretsFromEnvironment } from './secrets.js';
     OtpSenderNumbersController,
     EmergencySignInController,
     CaptainDevicesController,
+    AdminRestaurantAccountsController,
   ],
   providers: [
     { provide: IDENTITY_SECRETS, useFactory: identitySecretsFromEnvironment },

@@ -90,7 +90,6 @@ const location = {
   address: 'شارع السوق',
   phone: '+963211234567',
   ownerName: 'أبو أحمد',
-  ownerPhone: '+963944000111',
 };
 const operations: DraftOperations = {
   periods: [
@@ -183,7 +182,7 @@ describe('step 2: the pin and the contacts', () => {
       drafts.saveLocation(id, { ...location, location: { latitude: 91, longitude: 0 } }, change),
     ).rejects.toEqual(refusal('invalid_restaurant'));
     await expect(
-      drafts.saveLocation(id, { ...location, ownerPhone: '0944000111' }, change),
+      drafts.saveLocation(id, { ...location, phone: '0211234567' }, change),
     ).rejects.toEqual(refusal('invalid_restaurant'));
   });
 });
@@ -287,5 +286,111 @@ describe('the list and the status', () => {
     await expect(drafts.saveLocation(first, location, change)).rejects.toEqual(
       refusal('not_a_draft'),
     );
+  });
+});
+
+describe('step 4: the commission (D16)', () => {
+  it('sets a launch rate until a date then the standard one, and a new save replaces the plan', async () => {
+    const { cityId } = await city();
+    const id = randomUUID();
+    await drafts.saveBasics(id, cityId, basics, change);
+    const until = new Date(Date.now() + 90 * 86_400_000);
+    await drafts.saveCommission(id, { rateBp: 1500, launch: { rateBp: 1000, until } }, change);
+    await drafts.saveCommission(id, { rateBp: 1500, launch: { rateBp: 1000, until } }, change);
+    expect(await drafts.draft(id)).toMatchObject({
+      commission: { rateBp: 1500, launch: { rateBp: 1000, until } },
+      steps: { commission: true },
+    });
+    await drafts.saveOperations(id, operations, change);
+    await drafts.saveLocation(id, location, change);
+    expect(await merchants.commissionSchedule(id, new Date())).toEqual({
+      rateBp: 1000,
+      next: { rateBp: 1500, from: until },
+    });
+    // Without a launch rate: the planned 15% is withdrawn, 12% holds.
+    await drafts.saveCommission(id, { rateBp: 1200, launch: null }, change);
+    expect((await drafts.draft(id))?.commission).toEqual({ rateBp: 1200, launch: null });
+    expect(await merchants.commissionSchedule(id, new Date(until.getTime() + 1000))).toEqual({
+      rateBp: 1200,
+      next: null,
+    });
+    expect((await audits(id)).filter((action) => action === 'restaurant.commission')).toHaveLength(
+      2,
+    );
+  });
+
+  it('refuses a rate above 100% and a launch that has already ended', async () => {
+    const { cityId } = await city();
+    const id = randomUUID();
+    await drafts.saveBasics(id, cityId, basics, change);
+    await expect(
+      drafts.saveCommission(id, { rateBp: 10_001, launch: null }, change),
+    ).rejects.toEqual(refusal('invalid_commission'));
+    await expect(
+      drafts.saveCommission(
+        id,
+        { rateBp: 1500, launch: { rateBp: 1000, until: new Date(Date.now() - 1000) } },
+        change,
+      ),
+    ).rejects.toEqual(refusal('invalid_commission'));
+  });
+});
+
+describe('step 5: the contract', () => {
+  it('saves the dates, is confirmed with its scan, and another value clears the confirmation', async () => {
+    const { cityId } = await city();
+    const id = randomUUID();
+    await drafts.saveBasics(id, cityId, basics, change);
+    const fields = {
+      signedOn: '2026-11-15',
+      durationMonths: 12,
+      contractUploadId: null,
+      licenceUploadId: null,
+    };
+    await drafts.saveContract(id, fields, change);
+    expect((await drafts.draft(id))?.contract).toMatchObject({
+      signedOn: '2026-11-15',
+      durationMonths: 12,
+      contractKey: null,
+      confirmedAt: null,
+    });
+    // No scan yet: nothing to confirm.
+    await expect(drafts.confirmContract(id, change)).rejects.toEqual(refusal('invalid_contract'));
+    // The scan's link needs the storage (files.test.ts); its key is set here.
+    await sql.query(
+      "UPDATE merchants.contracts SET contract_key = 'restaurants/contracts/a.jpg' WHERE restaurant_id = $1",
+      [id],
+    );
+    await drafts.confirmContract(id, change);
+    await drafts.confirmContract(id, change);
+    expect(await drafts.draft(id)).toMatchObject({
+      contract: { confirmedBy: change.actor.id, contractKey: 'restaurants/contracts/a.jpg' },
+      steps: { contract: true },
+    });
+    await drafts.saveContract(id, { ...fields, durationMonths: 24 }, change);
+    expect(await drafts.draft(id)).toMatchObject({
+      contract: {
+        durationMonths: 24,
+        confirmedAt: null,
+        contractKey: 'restaurants/contracts/a.jpg',
+      },
+      steps: { contract: false },
+    });
+    expect((await audits(id)).filter((action) => action.startsWith('restaurant.contract'))).toEqual(
+      ['restaurant.contract', 'restaurant.contract.confirm', 'restaurant.contract'],
+    );
+  });
+
+  it('refuses a bad date and a duration out of bounds', async () => {
+    const { cityId } = await city();
+    const id = randomUUID();
+    await drafts.saveBasics(id, cityId, basics, change);
+    const fields = { contractUploadId: null, licenceUploadId: null };
+    await expect(
+      drafts.saveContract(id, { ...fields, signedOn: '15/11/2026', durationMonths: 12 }, change),
+    ).rejects.toEqual(refusal('invalid_contract'));
+    await expect(
+      drafts.saveContract(id, { ...fields, signedOn: '2026-11-15', durationMonths: 0 }, change),
+    ).rejects.toEqual(refusal('invalid_contract'));
   });
 });

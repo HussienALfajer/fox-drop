@@ -48,7 +48,7 @@ afterAll(async () => {
   await Promise.all([database?.stop(), cache?.stop()]);
 });
 
-async function admin(role: string) {
+async function token(role: string): Promise<string> {
   accounts += 1;
   const { rows } = await sql.query(
     `INSERT INTO identity.admin_accounts (name, email, status, password_hash, totp_secret_encrypted)
@@ -62,8 +62,12 @@ async function admin(role: string) {
   const { token } = await app
     .get(AdminSessionsService)
     .start(db.db, rows[0].id, { ipAddress: '203.0.113.9', device: 'test' }, new Date());
-  const cookies = { [ADMIN_SESSION_COOKIE]: token };
-  return (method: 'GET' | 'PUT', url: string, payload?: object) =>
+  return token;
+}
+
+async function admin(role: string) {
+  const cookies = { [ADMIN_SESSION_COOKIE]: await token(role) };
+  return (method: 'GET' | 'PUT' | 'POST', url: string, payload?: object) =>
     app.inject({
       method,
       url: `/v1/admin/restaurant-drafts${url}`,
@@ -78,7 +82,6 @@ const location = {
   address: null,
   phone: null,
   ownerName: 'أبو محمد',
-  ownerPhone: '+963944000222',
 };
 const operations = {
   periods: [{ weekday: 5, opensAt: 660, closesAt: 120 }],
@@ -148,5 +151,88 @@ describe('the wizard routes, steps 1–3', () => {
     expect((await finance('PUT', `/${id}/basics`, { cityId: azaz, ...basics })).statusCode).toBe(
       403,
     );
+  });
+});
+
+describe('the wizard routes, steps 4–6', () => {
+  it('keeps the commission to OWN and the contract confirmation to OWN and OPS', async () => {
+    const data = await admin('DATA');
+    const id = randomUUID();
+    await data('PUT', `/${id}/basics`, { cityId: azaz, ...basics });
+    const commission = { rateBp: 1500, launch: null };
+    expect((await data('PUT', `/${id}/commission`, commission)).statusCode).toBe(403);
+    const owner = await admin('OWN');
+    const saved = await owner('PUT', `/${id}/commission`, commission);
+    expect(saved.json()).toMatchObject({ commission, steps: { commission: true } });
+    const contract = {
+      signedOn: '2026-11-15',
+      durationMonths: 6,
+      contractUploadId: null,
+      licenceUploadId: null,
+    };
+    expect((await data('PUT', `/${id}/contract`, contract)).json()).toMatchObject({
+      contract: { signedOn: '2026-11-15', durationMonths: 6, contractUrl: null },
+    });
+    expect((await data('POST', `/${id}/contract/confirm`, { parityPledge: true })).statusCode).toBe(
+      403,
+    );
+    expect(
+      (await owner('POST', `/${id}/contract/confirm`, { parityPledge: true })).json(),
+    ).toMatchObject({ statusCode: 400, error: 'invalid_contract' });
+  });
+
+  it("adds a draft's owner and cashier once, refuses a number in use and removes one", async () => {
+    const data = await admin('DATA');
+    const id = randomUUID();
+    await data('PUT', `/${id}/basics`, { cityId: azaz, ...basics });
+    const opsToken = await token('OPS');
+    const dataToken = await token('DATA');
+    const accounts = (method: 'GET' | 'POST', path = '', payload?: object) =>
+      app.inject({
+        method,
+        url: `/v1/admin/restaurants/${id}/accounts${path}`,
+        cookies: { [ADMIN_SESSION_COOKIE]: opsToken },
+        ...(payload ? { payload } : {}),
+      });
+    const owner = { role: 'owner', name: 'أبو محمد', phone: '+963944000301' };
+    const added = await accounts('POST', '', owner);
+    expect(added.json()).toMatchObject({ accounts: [{ role: 'owner' }] });
+    const repeated = await accounts('POST', '', owner);
+    expect(repeated.json().accounts).toEqual([
+      { id: expect.any(String), role: 'owner', name: 'أبو محمد', phone: '+963944000301' },
+    ]);
+    const cashier = await accounts('POST', '', {
+      role: 'cashier',
+      name: 'كاشير',
+      phone: '+905321112233',
+    });
+    expect(cashier.json().accounts.map((account: { role: string }) => account.role)).toEqual([
+      'owner',
+      'cashier',
+    ]);
+    const other = randomUUID();
+    await data('PUT', `/${other}/basics`, { cityId: azaz, ...basics });
+    const taken = await app.inject({
+      method: 'POST',
+      url: `/v1/admin/restaurants/${other}/accounts`,
+      cookies: { [ADMIN_SESSION_COOKIE]: opsToken },
+      payload: owner,
+    });
+    expect(taken.json()).toMatchObject({ statusCode: 409, error: 'phone_taken' });
+    const cashierId = cashier.json().accounts[1].id;
+    const removed = await accounts('POST', `/${cashierId}/remove`);
+    expect(removed.json().accounts).toHaveLength(1);
+    expect((await accounts('POST', `/${cashierId}/remove`)).json()).toMatchObject({
+      statusCode: 404,
+      error: 'unknown_account',
+    });
+    expect((await data('GET', `/${id}`)).statusCode).toBe(200);
+    const forbidden = await app.inject({
+      method: 'POST',
+      url: `/v1/admin/restaurants/${id}/accounts`,
+      cookies: { [ADMIN_SESSION_COOKIE]: dataToken },
+      payload: owner,
+    });
+    expect(forbidden.statusCode).toBe(403);
   });
 });

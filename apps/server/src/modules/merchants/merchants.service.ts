@@ -71,7 +71,9 @@ export type MerchantsRefusal =
   // AP §9.6.3 (slice 2.30a): the wizard's city is unknown, or its target is
   // no longer a draft (or a draft of another city).
   | 'unknown_city'
-  | 'not_a_draft';
+  | 'not_a_draft'
+  // AP §9.6.3 step 5: a contract without its date, duration or scan.
+  | 'invalid_contract';
 
 // AP §9.13: how many categories one restaurant links to, at most.
 export const RESTAURANT_CATEGORIES_MAX = 5;
@@ -496,7 +498,9 @@ export class MerchantsService implements OnModuleInit {
         effectiveFrom: commissionRates.effectiveFrom,
       })
       .from(commissionRates)
-      .where(eq(commissionRates.restaurantId, restaurantId));
+      .where(
+        and(eq(commissionRates.restaurantId, restaurantId), isNull(commissionRates.withdrawnAt)),
+      );
     return {
       id: row.id,
       cityId: row.cityId,
@@ -521,6 +525,18 @@ export class MerchantsService implements OnModuleInit {
       commissionBp: commissionAt(rates, at)?.rateBp ?? null,
       schedule: await this.schedule(this.database.db, restaurantId),
     };
+  }
+
+  // A restaurant's city and account status, a draft without its record
+  // included (the wizard's accounts, slice 2.30a), or null.
+  async cityAndStatus(
+    restaurantId: string,
+  ): Promise<{ cityId: string; accountStatus: AccountStatus } | null> {
+    const [row] = await this.database.db
+      .select({ cityId: restaurants.cityId, accountStatus: restaurants.accountStatus })
+      .from(restaurants)
+      .where(eq(restaurants.id, restaurantId));
+    return row ?? null;
   }
 
   // AP §9.6.1: the restaurant's account status now, or null for no such
@@ -641,7 +657,9 @@ export class MerchantsService implements OnModuleInit {
         effectiveFrom: commissionRates.effectiveFrom,
       })
       .from(commissionRates)
-      .where(eq(commissionRates.restaurantId, restaurantId));
+      .where(
+        and(eq(commissionRates.restaurantId, restaurantId), isNull(commissionRates.withdrawnAt)),
+      );
     const ahead = rates.filter((rate) => rate.effectiveFrom.getTime() > now.getTime());
     const firstStart = Math.min(...ahead.map((rate) => rate.effectiveFrom.getTime()));
     const next = commissionAt(
@@ -683,7 +701,9 @@ export class MerchantsService implements OnModuleInit {
           effectiveFrom: commissionRates.effectiveFrom,
         })
         .from(commissionRates)
-        .where(eq(commissionRates.restaurantId, restaurantId));
+        .where(
+          and(eq(commissionRates.restaurantId, restaurantId), isNull(commissionRates.withdrawnAt)),
+        );
       const before = commissionAt(rates, new Date(now));
       await tx.insert(commissionRates).values({
         restaurantId,

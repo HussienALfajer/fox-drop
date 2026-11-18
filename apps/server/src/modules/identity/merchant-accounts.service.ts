@@ -23,7 +23,8 @@ export class MerchantSignInRefusedError extends Error {
 
 export class MerchantAccountRefusedError extends Error {
   constructor(
-    readonly refusal: 'unknown_restaurant' | 'phone_taken' | 'invalid_account',
+    readonly refusal:
+      'unknown_restaurant' | 'phone_taken' | 'invalid_account' | 'unknown_account' | 'not_a_draft',
     message: string,
   ) {
     super(message);
@@ -75,7 +76,7 @@ export class MerchantAccountsService {
         'an account needs a name and a Syrian or Turkish mobile in E.164',
       );
     }
-    const restaurant = await this.merchants.restaurant(restaurantId);
+    const restaurant = await this.merchants.cityAndStatus(restaurantId);
     if (!restaurant) {
       throw new MerchantAccountRefusedError('unknown_restaurant', 'no such restaurant');
     }
@@ -87,9 +88,24 @@ export class MerchantAccountsService {
         sql`SELECT pg_advisory_xact_lock(hashtextextended(${`identity.merchant_phone:${phoneHash}`}, 0))`,
       );
       const [taken] = await tx
-        .select({ id: merchantAccounts.id })
+        .select({
+          id: merchantAccounts.id,
+          restaurantId: merchantAccounts.restaurantId,
+          role: merchantAccounts.role,
+          name: merchantAccounts.name,
+        })
         .from(merchantAccounts)
         .where(and(eq(merchantAccounts.phoneHash, phoneHash), isNull(merchantAccounts.removedAt)));
+      // The same account again (a retry of the wizard's add) is answered as
+      // it was made.
+      if (
+        taken &&
+        taken.restaurantId === restaurantId &&
+        taken.role === account.role &&
+        taken.name === name
+      ) {
+        return taken.id;
+      }
       if (taken) {
         throw new MerchantAccountRefusedError(
           'phone_taken',
@@ -121,6 +137,78 @@ export class MerchantAccountsService {
         tx,
       );
       return created.id;
+    });
+  }
+
+  // The wizard's step 6 (AP §9.6.3; slice 2.30a): the accounts with their
+  // numbers, owners first, for the panel.
+  async accountsWithPhones(restaurantId: string): Promise<(MerchantAccount & { phone: string })[]> {
+    const rows = await this.database.db
+      .select({
+        id: merchantAccounts.id,
+        restaurantId: merchantAccounts.restaurantId,
+        role: merchantAccounts.role,
+        name: merchantAccounts.name,
+        phoneEncrypted: merchantAccounts.phoneEncrypted,
+      })
+      .from(merchantAccounts)
+      .where(
+        and(eq(merchantAccounts.restaurantId, restaurantId), isNull(merchantAccounts.removedAt)),
+      )
+      .orderBy(sql`${merchantAccounts.role} = 'cashier'`, asc(merchantAccounts.createdAt));
+    return rows.map(({ phoneEncrypted, ...account }) => ({
+      ...account,
+      phone: this.secrets.decrypt(phoneEncrypted),
+    }));
+  }
+
+  // Removes an account of a draft restaurant (the wizard's step 6). A
+  // draft's users never signed in (RA §5.2 item 3), so no session ends; the
+  // other restaurants' accounts are removed with staff and devices (2.33).
+  // Removing one already removed is unknown_account.
+  async removeDraftAccount(
+    restaurantId: string,
+    accountId: string,
+    change: { actor: AuditActor; context: AuditRequestContext },
+  ): Promise<void> {
+    const status = await this.merchants.accountStatus(restaurantId);
+    if (status === null) {
+      throw new MerchantAccountRefusedError('unknown_restaurant', 'no such restaurant');
+    }
+    if (status !== 'draft') {
+      throw new MerchantAccountRefusedError('not_a_draft', 'only a draft removes accounts here');
+    }
+    await this.database.db.transaction(async (tx) => {
+      const [removed] = await tx
+        .update(merchantAccounts)
+        .set({ removedAt: sql`now()` })
+        .where(
+          and(
+            eq(merchantAccounts.id, accountId),
+            eq(merchantAccounts.restaurantId, restaurantId),
+            isNull(merchantAccounts.removedAt),
+          ),
+        )
+        .returning({
+          cityId: merchantAccounts.cityId,
+          role: merchantAccounts.role,
+          name: merchantAccounts.name,
+        });
+      if (!removed) {
+        throw new MerchantAccountRefusedError('unknown_account', 'no such account');
+      }
+      await this.audit.recordWrite(
+        {
+          actor: change.actor,
+          context: change.context,
+          cityId: removed.cityId,
+          action: 'merchant_account.remove',
+          target: { type: 'merchant_account', id: accountId },
+          before: { restaurantId, role: removed.role, name: removed.name },
+          after: null,
+        },
+        tx,
+      );
     });
   }
 

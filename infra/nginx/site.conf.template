@@ -4,8 +4,9 @@
 #
 # nginx is the only public gateway (architecture §15.5). Every host sends /v1
 # to the API and /media to imgproxy (snippets/foxdrop-${FOXDROP_ENV}-api.conf);
-# the panel's host sends /public-media/incoming/ (PUT) and
-# /private-docs/exports/ (GET) to the storage; the panel and the
+# the panel's host sends /public-media/incoming/ and /private-docs/incoming/
+# (PUT) and /private-docs/exports/, /tickets/ and /restaurants/ (GET) to the
+# storage; the panel and the
 # portal send everything else to the web container, which answers unknown
 # paths with index.html. The limit zones `general` and `perip` are the
 # server's own (conf.d/rate-limits.conf).
@@ -59,6 +60,25 @@ server {
     # by the API for this host, valid 10 minutes, for the ticket page. Only
     # GET (and HEAD), only tickets/.
     location /private-docs/tickets/ {
+        limit_except GET { deny all; }
+        access_log off;
+        proxy_pass http://127.0.0.1:${STORAGE_PORT};
+        include snippets/foxdrop-proxy.conf;
+        proxy_set_header Cookie "";
+    }
+    # A restaurant's contract and licence scans (AP §9.6.3 step 5; slice
+    # 2.30a): the panel's PUT signed by the API into the private bucket's
+    # incoming/, as /public-media/incoming/ is, and the scans' GET signed for
+    # this host, valid 10 minutes, under restaurants/ only.
+    location /private-docs/incoming/ {
+        limit_except PUT { deny all; }
+        client_max_body_size 9m;
+        access_log off;
+        proxy_pass http://127.0.0.1:${STORAGE_PORT};
+        include snippets/foxdrop-proxy.conf;
+        proxy_set_header Cookie "";
+    }
+    location /private-docs/restaurants/ {
         limit_except GET { deny all; }
         access_log off;
         proxy_pass http://127.0.0.1:${STORAGE_PORT};

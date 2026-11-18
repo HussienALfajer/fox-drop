@@ -4,6 +4,8 @@
 
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/admin_restaurant_drafts_dto_output_drafts_inner_steps.dart';
+import 'package:core_api/src/model/admin_restaurant_draft_dto_output_commission.dart';
+import 'package:core_api/src/model/admin_restaurant_draft_dto_output_contract.dart';
 import 'package:core_api/src/model/admin_restaurant_draft_dto_output_basics.dart';
 import 'package:core_api/src/model/admin_restaurant_draft_dto_output_location.dart';
 import 'package:core_api/src/model/admin_restaurant_draft_dto_output_operations.dart';
@@ -21,6 +23,8 @@ part 'admin_restaurant_draft_dto_output.g.dart';
 /// * [basics]
 /// * [location]
 /// * [operations]
+/// * [commission]
+/// * [contract]
 /// * [steps]
 @BuiltValue()
 abstract class AdminRestaurantDraftDtoOutput
@@ -46,6 +50,12 @@ abstract class AdminRestaurantDraftDtoOutput
 
   @BuiltValueField(wireName: r'operations')
   AdminRestaurantDraftDtoOutputOperations get operations;
+
+  @BuiltValueField(wireName: r'commission')
+  AdminRestaurantDraftDtoOutputCommission? get commission;
+
+  @BuiltValueField(wireName: r'contract')
+  AdminRestaurantDraftDtoOutputContract? get contract;
 
   @BuiltValueField(wireName: r'steps')
   AdminRestaurantDraftsDtoOutputDraftsInnerSteps get steps;
@@ -110,6 +120,24 @@ class _$AdminRestaurantDraftDtoOutputSerializer
       object.operations,
       specifiedType: const FullType(AdminRestaurantDraftDtoOutputOperations),
     );
+    yield r'commission';
+    yield object.commission == null
+        ? null
+        : serializers.serialize(
+            object.commission,
+            specifiedType: const FullType.nullable(
+              AdminRestaurantDraftDtoOutputCommission,
+            ),
+          );
+    yield r'contract';
+    yield object.contract == null
+        ? null
+        : serializers.serialize(
+            object.contract,
+            specifiedType: const FullType.nullable(
+              AdminRestaurantDraftDtoOutputContract,
+            ),
+          );
     yield r'steps';
     yield serializers.serialize(
       object.steps,
@@ -203,6 +231,30 @@ class _$AdminRestaurantDraftDtoOutputSerializer
                   )
                   as AdminRestaurantDraftDtoOutputOperations;
           result.operations.replace(valueDes);
+          break;
+        case r'commission':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminRestaurantDraftDtoOutputCommission,
+                    ),
+                  )
+                  as AdminRestaurantDraftDtoOutputCommission?;
+          if (valueDes == null) continue;
+          result.commission.replace(valueDes);
+          break;
+        case r'contract':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminRestaurantDraftDtoOutputContract,
+                    ),
+                  )
+                  as AdminRestaurantDraftDtoOutputContract?;
+          if (valueDes == null) continue;
+          result.contract.replace(valueDes);
           break;
         case r'steps':
           final valueDes =

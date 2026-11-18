@@ -4,6 +4,7 @@ import {
   boolean,
   check,
   customType,
+  date,
   index,
   integer,
   jsonb,
@@ -67,10 +68,9 @@ export const restaurants = merchants.table(
     address: text('address'),
     // E.164.
     phone: text('phone'),
-    // AP §9.6.3 step 2: the owner's name and number as contacts (E.164); the
-    // owners' sign-in accounts are identity's (step 6).
+    // AP §9.6.3 step 2: the owner's name as a contact. Their number is kept
+    // once, encrypted, as the owner's sign-in account (identity, step 6).
     ownerName: text('owner_name'),
-    ownerPhone: text('owner_phone'),
     accountStatus: text('account_status', { enum: accountStatuses }).notNull().default('draft'),
     // The reason of the latest suspension, shown in the restaurant app (RA §5.5).
     suspensionReason: text('suspension_reason'),
@@ -297,7 +297,9 @@ export const stateOutbox = merchants.table(
 );
 
 // AP §9.6.5, D16: a commission version in basis points of the items value
-// (1500 is 15%), in effect from its start for new orders. Never changed.
+// (1500 is 15%), in effect from its start for new orders. Never changed,
+// except that a version not yet in force is withdrawn when a newer setting
+// replaces the plan (the wizard's step 4, slice 2.30a): no order ever used it.
 export const commissionRates = merchants.table(
   'commission_rates',
   {
@@ -313,9 +315,14 @@ export const commissionRates = merchants.table(
     changedById: uuid('changed_by_id'),
     reason: text('reason'),
     createdAt: createdAt(),
+    withdrawnAt: timestamp('withdrawn_at', { withTimezone: true }),
   },
   (table) => [
     index('commission_rates_restaurant').on(table.restaurantId, table.effectiveFrom),
+    check(
+      'commission_rates_withdrawn_before_start',
+      sql`${table.withdrawnAt} IS NULL OR ${table.withdrawnAt} <= ${table.effectiveFrom}`,
+    ),
     check('commission_rates_rate', sql`${table.rateBp} BETWEEN 0 AND 10000`),
     changedByValues('commission_rates_changed_by_type_values', table.changedByType),
   ],
@@ -574,6 +581,37 @@ export const changeRequests = merchants.table(
     check(
       'change_requests_rejection_reason',
       sql`(${table.status} = 'rejected') = (${table.rejectionReason} IS NOT NULL)`,
+    ),
+  ],
+);
+
+// AP §9.6.3 step 5 (slice 2.30a): the restaurant's contract. DATA enters the
+// signing date and duration and uploads the scans (keys in private-docs);
+// OWN or OPS confirm it with the price-parity pledge (in-app prices at most
+// the in-store ones). Saving another value clears the confirmation.
+export const contracts = merchants.table(
+  'contracts',
+  {
+    restaurantId: uuid('restaurant_id')
+      .primaryKey()
+      .references(() => restaurants.id),
+    signedOn: date('signed_on', { mode: 'string' }),
+    durationMonths: smallint('duration_months'),
+    contractKey: text('contract_key'),
+    licenceKey: text('licence_key'),
+    // The admin (identity's id, a plain column) who confirmed the contract
+    // and the pledge, and when.
+    confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
+    confirmedBy: uuid('confirmed_by'),
+    updatedBy: uuid('updated_by').notNull(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (table) => [
+    check('contracts_duration', sql`${table.durationMonths} BETWEEN 1 AND 120`),
+    check(
+      'contracts_confirmed',
+      sql`(${table.confirmedAt} IS NULL) = (${table.confirmedBy} IS NULL) AND (${table.confirmedAt} IS NULL OR (${table.signedOn} IS NOT NULL AND ${table.durationMonths} IS NOT NULL AND ${table.contractKey} IS NOT NULL))`,
     ),
   ],
 );

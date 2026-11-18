@@ -1,5 +1,5 @@
 {
-  "id": "171402ab-d34d-484f-a815-aca1e6f5ff38",
+  "id": "f87a57fa-2e67-4e79-b86b-960a74b8f889",
   "prevId": "0977eb3e-4d05-44ca-9d80-cd7ae18385e2",
   "version": "7",
   "dialect": "postgresql",
@@ -4575,7 +4575,7 @@
       "checkConstraints": {
         "uploads_purpose_values": {
           "name": "uploads_purpose_values",
-          "value": "\"files\".\"uploads\".\"purpose\" IN ('restaurant_logo', 'restaurant_cover', 'item_photo', 'report_photo', 'category_image', 'banner_image')"
+          "value": "\"files\".\"uploads\".\"purpose\" IN ('restaurant_logo', 'restaurant_cover', 'item_photo', 'report_photo', 'category_image', 'banner_image', 'restaurant_contract', 'restaurant_licence')"
         },
         "uploads_content_type_values": {
           "name": "uploads_content_type_values",
@@ -9562,6 +9562,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "withdrawn_at": {
+          "name": "withdrawn_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -9607,6 +9613,10 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {
+        "commission_rates_withdrawn_before_start": {
+          "name": "commission_rates_withdrawn_before_start",
+          "value": "\"merchants\".\"commission_rates\".\"withdrawn_at\" IS NULL OR \"merchants\".\"commission_rates\".\"withdrawn_at\" <= \"merchants\".\"commission_rates\".\"effective_from\""
+        },
         "commission_rates_rate": {
           "name": "commission_rates_rate",
           "value": "\"merchants\".\"commission_rates\".\"rate_bp\" BETWEEN 0 AND 10000"
@@ -9614,6 +9624,105 @@
         "commission_rates_changed_by_type_values": {
           "name": "commission_rates_changed_by_type_values",
           "value": "\"merchants\".\"commission_rates\".\"changed_by_type\" IN ('admin', 'merchant', 'system')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "merchants.contracts": {
+      "name": "contracts",
+      "schema": "merchants",
+      "columns": {
+        "restaurant_id": {
+          "name": "restaurant_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "signed_on": {
+          "name": "signed_on",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "duration_months": {
+          "name": "duration_months",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contract_key": {
+          "name": "contract_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "licence_key": {
+          "name": "licence_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "confirmed_at": {
+          "name": "confirmed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "confirmed_by": {
+          "name": "confirmed_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "contracts_restaurant_id_restaurants_id_fk": {
+          "name": "contracts_restaurant_id_restaurants_id_fk",
+          "tableFrom": "contracts",
+          "tableTo": "restaurants",
+          "schemaTo": "merchants",
+          "columnsFrom": [
+            "restaurant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "contracts_duration": {
+          "name": "contracts_duration",
+          "value": "\"merchants\".\"contracts\".\"duration_months\" BETWEEN 1 AND 120"
+        },
+        "contracts_confirmed": {
+          "name": "contracts_confirmed",
+          "value": "(\"merchants\".\"contracts\".\"confirmed_at\" IS NULL) = (\"merchants\".\"contracts\".\"confirmed_by\" IS NULL) AND (\"merchants\".\"contracts\".\"confirmed_at\" IS NULL OR (\"merchants\".\"contracts\".\"signed_on\" IS NOT NULL AND \"merchants\".\"contracts\".\"duration_months\" IS NOT NULL AND \"merchants\".\"contracts\".\"contract_key\" IS NOT NULL))"
         }
       },
       "isRLSEnabled": false
@@ -10959,12 +11068,6 @@
         },
         "owner_name": {
           "name": "owner_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "owner_phone": {
-          "name": "owner_phone",
           "type": "text",
           "primaryKey": false,
           "notNull": false

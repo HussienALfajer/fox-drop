@@ -644,6 +644,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/restaurants/{restaurantId}/accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRestaurantAccountsList"];
+        put?: never;
+        post: operations["adminRestaurantAccountsAdd"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurants/{restaurantId}/accounts/{accountId}/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminRestaurantAccountsRemove"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/settings": {
         parameters: {
             query?: never;
@@ -1230,6 +1262,54 @@ export interface paths {
         get?: never;
         put: operations["adminRestaurantDraftsOperations"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/commission": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantDraftsCommission"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/contract": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantDraftsContract"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/contract/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminRestaurantDraftsConfirmContract"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5797,6 +5877,25 @@ export interface components {
             /** @constant */
             status: "released";
         };
+        AdminRestaurantAccountsDto_Output: {
+            /** @description Owners first, then cashiers, oldest first. */
+            accounts: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                role: "owner" | "cashier";
+                name: string;
+                /** @description E.164; the number the user signs in with (OTP). */
+                phone: string;
+            }[];
+        };
+        AdminNewRestaurantAccountDto: {
+            /** @enum {string} */
+            role: "owner" | "cashier";
+            name: string;
+            /** @description A Syrian or Turkish mobile in E.164, as at sign-in. */
+            phone: string;
+        };
         SettingListDto_Output: {
             settings: {
                 key: string;
@@ -6243,6 +6342,9 @@ export interface components {
                     basics: boolean;
                     location: boolean;
                     operations: boolean;
+                    commission: boolean;
+                    /** @description Confirmed with the price-parity pledge. */
+                    contract: boolean;
                 };
                 /** Format: date-time */
                 createdAt: string;
@@ -6301,7 +6403,6 @@ export interface components {
                 address: string | null;
                 phone: string | null;
                 ownerName: string | null;
-                ownerPhone: string | null;
             };
             operations: {
                 periods: {
@@ -6328,11 +6429,32 @@ export interface components {
                     zoneIds: string[];
                 }) | null;
             };
+            commission: {
+                /** @description The standard commission, in basis points of the items value. */
+                rateBp: number;
+                /** @description A launch commission in force until a moment, then the standard one. */
+                launch: {
+                    rateBp: number;
+                    /** Format: date-time */
+                    until: string;
+                } | null;
+            } | null;
+            contract: {
+                signedOn: string | null;
+                durationMonths: number | null;
+                /** @description The scan's signed GET on the panel's origin, valid 10 minutes. */
+                contractUrl: string | null;
+                licenceUrl: string | null;
+                confirmedAt: string | null;
+            } | null;
             /** @description Which steps of AP §9.6.3 hold what they need. */
             steps: {
                 basics: boolean;
                 location: boolean;
                 operations: boolean;
+                commission: boolean;
+                /** @description Confirmed with the price-parity pledge. */
+                contract: boolean;
             };
         };
         AdminDraftBasicsDto: {
@@ -6356,8 +6478,6 @@ export interface components {
             /** @description The restaurant's number in E.164. */
             phone: string | null;
             ownerName: string | null;
-            /** @description The owner's number in E.164 (a contact). */
-            ownerPhone: string | null;
         };
         AdminDraftOperationsDto: {
             periods: {
@@ -6383,6 +6503,30 @@ export interface components {
                 kind: "zones";
                 zoneIds: string[];
             };
+        };
+        AdminDraftCommissionDto: {
+            rateBp: number;
+            launch: {
+                rateBp: number;
+                /** Format: date-time */
+                until: string;
+            } | null;
+        };
+        AdminDraftContractDto: {
+            /** Format: date */
+            signedOn: string;
+            durationMonths: number;
+            /** @description An upload of restaurant_contract to replace the scan; null keeps it. */
+            contractUploadId: string | null;
+            /** @description An upload of restaurant_licence to replace the scan; null keeps it. */
+            licenceUploadId: string | null;
+        };
+        AdminDraftConfirmContractDto: {
+            /**
+             * @description The price-parity pledge: in-app prices at most the in-store ones.
+             * @constant
+             */
+            parityPledge: true;
         };
         AdminCitiesDto_Output: {
             /** @description The active cities, by name. */
@@ -6441,7 +6585,7 @@ export interface components {
              * @description The record the file is for (architecture §5.8).
              * @enum {string}
              */
-            purpose: "restaurant_logo" | "restaurant_cover" | "item_photo" | "category_image" | "banner_image";
+            purpose: "restaurant_logo" | "restaurant_cover" | "item_photo" | "category_image" | "banner_image" | "restaurant_contract" | "restaurant_licence";
             /** @enum {string} */
             contentType: "image/jpeg" | "image/png" | "image/webp";
             sizeBytes: number;
@@ -17519,6 +17663,77 @@ export interface operations {
             };
         };
     };
+    adminRestaurantAccountsList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantAccountsDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantAccountsAdd: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminNewRestaurantAccountDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantAccountsDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantAccountsRemove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantAccountsDto_Output"];
+                };
+            };
+        };
+    };
     settingsList: {
         parameters: {
             query: {
@@ -18492,6 +18707,84 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["AdminDraftOperationsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantDraftDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantDraftsCommission: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminDraftCommissionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantDraftDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantDraftsContract: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminDraftContractDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantDraftDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantDraftsConfirmContract: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminDraftConfirmContractDto"];
             };
         };
         responses: {

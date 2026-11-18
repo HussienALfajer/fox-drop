@@ -16,8 +16,6 @@ class _$AdminRestaurantDraftDtoOutputLocation
   final String? phone;
   @override
   final String? ownerName;
-  @override
-  final String? ownerPhone;
 
   factory _$AdminRestaurantDraftDtoOutputLocation([
     void Function(AdminRestaurantDraftDtoOutputLocationBuilder)? updates,
@@ -29,7 +27,6 @@ class _$AdminRestaurantDraftDtoOutputLocation
     this.address,
     this.phone,
     this.ownerName,
-    this.ownerPhone,
   }) : super._();
   @override
   AdminRestaurantDraftDtoOutputLocation rebuild(
@@ -47,8 +44,7 @@ class _$AdminRestaurantDraftDtoOutputLocation
         location == other.location &&
         address == other.address &&
         phone == other.phone &&
-        ownerName == other.ownerName &&
-        ownerPhone == other.ownerPhone;
+        ownerName == other.ownerName;
   }
 
   @override
@@ -58,7 +54,6 @@ class _$AdminRestaurantDraftDtoOutputLocation
     _$hash = $jc(_$hash, address.hashCode);
     _$hash = $jc(_$hash, phone.hashCode);
     _$hash = $jc(_$hash, ownerName.hashCode);
-    _$hash = $jc(_$hash, ownerPhone.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -71,8 +66,7 @@ class _$AdminRestaurantDraftDtoOutputLocation
           ..add('location', location)
           ..add('address', address)
           ..add('phone', phone)
-          ..add('ownerName', ownerName)
-          ..add('ownerPhone', ownerPhone))
+          ..add('ownerName', ownerName))
         .toString();
   }
 }
@@ -105,10 +99,6 @@ class AdminRestaurantDraftDtoOutputLocationBuilder
   String? get ownerName => _$this._ownerName;
   set ownerName(String? ownerName) => _$this._ownerName = ownerName;
 
-  String? _ownerPhone;
-  String? get ownerPhone => _$this._ownerPhone;
-  set ownerPhone(String? ownerPhone) => _$this._ownerPhone = ownerPhone;
-
   AdminRestaurantDraftDtoOutputLocationBuilder() {
     AdminRestaurantDraftDtoOutputLocation._defaults(this);
   }
@@ -120,7 +110,6 @@ class AdminRestaurantDraftDtoOutputLocationBuilder
       _address = $v.address;
       _phone = $v.phone;
       _ownerName = $v.ownerName;
-      _ownerPhone = $v.ownerPhone;
       _$v = null;
     }
     return this;
@@ -151,7 +140,6 @@ class AdminRestaurantDraftDtoOutputLocationBuilder
             address: address,
             phone: phone,
             ownerName: ownerName,
-            ownerPhone: ownerPhone,
           );
     } catch (_) {
       late String _$failedField;

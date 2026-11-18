@@ -16,7 +16,6 @@ part 'admin_restaurant_draft_dto_output_location.g.dart';
 /// * [address]
 /// * [phone]
 /// * [ownerName]
-/// * [ownerPhone]
 @BuiltValue()
 abstract class AdminRestaurantDraftDtoOutputLocation
     implements
@@ -35,9 +34,6 @@ abstract class AdminRestaurantDraftDtoOutputLocation
 
   @BuiltValueField(wireName: r'ownerName')
   String? get ownerName;
-
-  @BuiltValueField(wireName: r'ownerPhone')
-  String? get ownerPhone;
 
   AdminRestaurantDraftDtoOutputLocation._();
 
@@ -97,13 +93,6 @@ class _$AdminRestaurantDraftDtoOutputLocationSerializer
         ? null
         : serializers.serialize(
             object.ownerName,
-            specifiedType: const FullType.nullable(String),
-          );
-    yield r'ownerPhone';
-    yield object.ownerPhone == null
-        ? null
-        : serializers.serialize(
-            object.ownerPhone,
             specifiedType: const FullType.nullable(String),
           );
   }
@@ -174,16 +163,6 @@ class _$AdminRestaurantDraftDtoOutputLocationSerializer
                   as String?;
           if (valueDes == null) continue;
           result.ownerName = valueDes;
-          break;
-        case r'ownerPhone':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
-          if (valueDes == null) continue;
-          result.ownerPhone = valueDes;
           break;
         default:
           unhandled.add(key);

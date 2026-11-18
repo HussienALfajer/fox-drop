@@ -209,6 +209,11 @@ Serializers _$serializers =
           ..add(AdminDispatchStateDtoOutputOrderOffer.serializer)
           ..add(AdminDispatchStateDtoOutputOrderStatusEnum.serializer)
           ..add(AdminDraftBasicsDto.serializer)
+          ..add(AdminDraftCommissionDto.serializer)
+          ..add(AdminDraftCommissionDtoLaunch.serializer)
+          ..add(AdminDraftConfirmContractDto.serializer)
+          ..add(AdminDraftConfirmContractDtoParityPledgeEnum.serializer)
+          ..add(AdminDraftContractDto.serializer)
           ..add(AdminDraftLocationDto.serializer)
           ..add(AdminDraftLocationDtoLocation.serializer)
           ..add(AdminDraftOperationsDto.serializer)
@@ -335,6 +340,8 @@ Serializers _$serializers =
           ..add(AdminNewMassPushDto.serializer)
           ..add(AdminNewMassPushDtoAudienceEnum.serializer)
           ..add(AdminNewMassPushDtoTargetEnum.serializer)
+          ..add(AdminNewRestaurantAccountDto.serializer)
+          ..add(AdminNewRestaurantAccountDtoRoleEnum.serializer)
           ..add(AdminNewUploadDto.serializer)
           ..add(AdminNewUploadDtoContentTypeEnum.serializer)
           ..add(AdminNewUploadDtoPurposeEnum.serializer)
@@ -625,6 +632,11 @@ Serializers _$serializers =
           ..add(AdminResendNotificationDtoToEnum.serializer)
           ..add(AdminResolveShortfallDto.serializer)
           ..add(AdminResolveShortfallDtoResponsibleEnum.serializer)
+          ..add(AdminRestaurantAccountsDtoOutput.serializer)
+          ..add(AdminRestaurantAccountsDtoOutputAccountsInner.serializer)
+          ..add(
+            AdminRestaurantAccountsDtoOutputAccountsInnerRoleEnum.serializer,
+          )
           ..add(AdminRestaurantCategoriesDto.serializer)
           ..add(AdminRestaurantCategoriesDtoOutput.serializer)
           ..add(AdminRestaurantDraftChoicesDtoOutput.serializer)
@@ -634,6 +646,9 @@ Serializers _$serializers =
           )
           ..add(AdminRestaurantDraftDtoOutput.serializer)
           ..add(AdminRestaurantDraftDtoOutputBasics.serializer)
+          ..add(AdminRestaurantDraftDtoOutputCommission.serializer)
+          ..add(AdminRestaurantDraftDtoOutputCommissionLaunch.serializer)
+          ..add(AdminRestaurantDraftDtoOutputContract.serializer)
           ..add(AdminRestaurantDraftDtoOutputLocation.serializer)
           ..add(AdminRestaurantDraftDtoOutputLocationLocation.serializer)
           ..add(AdminRestaurantDraftDtoOutputOperations.serializer)
@@ -2486,6 +2501,12 @@ Serializers _$serializers =
               const FullType(AdminRejectDtoItemsInner),
             ]),
             () => ListBuilder<AdminRejectDtoItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminRestaurantAccountsDtoOutputAccountsInner),
+            ]),
+            () => ListBuilder<AdminRestaurantAccountsDtoOutputAccountsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

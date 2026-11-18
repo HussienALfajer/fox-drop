@@ -5,7 +5,9 @@ import {
   Get,
   HttpStatus,
   NotFoundException,
+  HttpCode,
   Param,
+  Post,
   Put,
   Query,
   Req,
@@ -17,6 +19,7 @@ import { CurrentAdminSession, RequireAnyPermission, RequirePermission } from '..
 import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
 import { CategoriesService } from '../content/index.js';
+import { FilesRefusedError, FilesService } from '../files/index.js';
 import { FxService } from '../fx/index.js';
 import { GeoService } from '../geo/index.js';
 import type { AdminSession } from '../identity/index.js';
@@ -62,7 +65,13 @@ const point = z.object({
 });
 
 const steps = z
-  .object({ basics: z.boolean(), location: z.boolean(), operations: z.boolean() })
+  .object({
+    basics: z.boolean(),
+    location: z.boolean(),
+    operations: z.boolean(),
+    commission: z.boolean(),
+    contract: z.boolean().describe('Confirmed with the price-parity pledge.'),
+  })
   .describe('Which steps of AP §9.6.3 hold what they need.');
 
 class AdminRestaurantDraftsQueryDto extends createZodDto(z.object({ cityId: z.uuid() })) {}
@@ -118,7 +127,6 @@ class AdminRestaurantDraftDto extends createZodDto(
       address: z.string().nullable(),
       phone: z.string().nullable(),
       ownerName: z.string().nullable(),
-      ownerPhone: z.string().nullable(),
     }),
     operations: z.object({
       periods: z.array(period),
@@ -126,7 +134,58 @@ class AdminRestaurantDraftDto extends createZodDto(
       minimumOrder: money.nullable(),
       coverage: coverage.nullable(),
     }),
+    commission: z
+      .object({
+        rateBp: z.int().describe('The standard commission, in basis points of the items value.'),
+        launch: z
+          .object({ rateBp: z.int(), until: z.iso.datetime() })
+          .nullable()
+          .describe('A launch commission in force until a moment, then the standard one.'),
+      })
+      .nullable(),
+    contract: z
+      .object({
+        signedOn: z.string().nullable(),
+        durationMonths: z.int().nullable(),
+        contractUrl: z
+          .string()
+          .nullable()
+          .describe("The scan's signed GET on the panel's origin, valid 10 minutes."),
+        licenceUrl: z.string().nullable(),
+        confirmedAt: z.iso.datetime().nullable(),
+      })
+      .nullable(),
     steps,
+  }),
+) {}
+
+class AdminDraftCommissionDto extends createZodDto(
+  z.object({
+    rateBp: z.int().min(0).max(10_000),
+    launch: z.object({ rateBp: z.int().min(0).max(10_000), until: z.iso.datetime() }).nullable(),
+  }),
+) {}
+
+class AdminDraftContractDto extends createZodDto(
+  z.object({
+    signedOn: z.iso.date(),
+    durationMonths: z.int().min(1).max(120),
+    contractUploadId: z
+      .uuid()
+      .nullable()
+      .describe('An upload of restaurant_contract to replace the scan; null keeps it.'),
+    licenceUploadId: z
+      .uuid()
+      .nullable()
+      .describe('An upload of restaurant_licence to replace the scan; null keeps it.'),
+  }),
+) {}
+
+class AdminDraftConfirmContractDto extends createZodDto(
+  z.object({
+    parityPledge: z
+      .literal(true)
+      .describe('The price-parity pledge: in-app prices at most the in-store ones.'),
   }),
 ) {}
 
@@ -149,7 +208,6 @@ class AdminDraftLocationDto extends createZodDto(
     address: z.string().max(DRAFT_ADDRESS_MAX).nullable(),
     phone: z.string().nullable().describe("The restaurant's number in E.164."),
     ownerName: z.string().max(DRAFT_NAME_MAX).nullable(),
-    ownerPhone: z.string().nullable().describe("The owner's number in E.164 (a contact)."),
   }),
 ) {}
 
@@ -168,10 +226,24 @@ function refusalAsHttp(error: unknown): never {
     if (error.refusal === 'unknown_restaurant' || error.refusal === 'unknown_city') {
       throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, ...body });
     }
-    if (error.refusal === 'not_a_draft' || error.refusal === 'not_in_base_currency') {
+    if (
+      error.refusal === 'not_a_draft' ||
+      error.refusal === 'not_in_base_currency' ||
+      error.refusal === 'upload_used'
+    ) {
       throw new ConflictException({ statusCode: HttpStatus.CONFLICT, ...body });
     }
     throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, ...body });
+  }
+  if (error instanceof FilesRefusedError) {
+    const body = { error: error.refusal };
+    if (error.refusal === 'upload_not_found') {
+      throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, ...body });
+    }
+    if (error.refusal === 'upload_wrong_purpose' || error.refusal === 'upload_invalid') {
+      throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, ...body });
+    }
+    throw new ConflictException({ statusCode: HttpStatus.CONFLICT, ...body });
   }
   throw error;
 }
@@ -183,7 +255,13 @@ function adminChange(session: AdminSession, request: FastifyRequest): MerchantCh
   };
 }
 
-function draftAsJson(draft: RestaurantDraft) {
+// How long a scan's signed GET lasts.
+const SCAN_URL_SECONDS = 600;
+
+async function draftAsJson(draft: RestaurantDraft, files: FilesService) {
+  const scan = (key: string | null) =>
+    key === null ? Promise.resolve(null) : files.privateImageUrl(key, SCAN_URL_SECONDS);
+  const contract = draft.contract;
   return {
     id: draft.id,
     cityId: draft.cityId,
@@ -202,6 +280,29 @@ function draftAsJson(draft: RestaurantDraft) {
             },
       coverage: draft.operations.coverage,
     },
+    commission:
+      draft.commission === null
+        ? null
+        : {
+            rateBp: draft.commission.rateBp,
+            launch:
+              draft.commission.launch === null
+                ? null
+                : {
+                    rateBp: draft.commission.launch.rateBp,
+                    until: draft.commission.launch.until.toISOString(),
+                  },
+          },
+    contract:
+      contract === null
+        ? null
+        : {
+            signedOn: contract.signedOn,
+            durationMonths: contract.durationMonths,
+            contractUrl: await scan(contract.contractKey),
+            licenceUrl: await scan(contract.licenceKey),
+            confirmedAt: contract.confirmedAt?.toISOString() ?? null,
+          },
     steps: draft.steps,
   };
 }
@@ -222,6 +323,7 @@ export class AdminRestaurantDraftsController {
     private readonly geo: GeoService,
     private readonly fx: FxService,
     private readonly settings: SettingsService,
+    private readonly files: FilesService,
   ) {}
 
   @Get()
@@ -277,7 +379,7 @@ export class AdminRestaurantDraftsController {
   @RequireAnyPermission('restaurants.read', 'restaurants.create')
   @ZodResponse({ status: 200, type: AdminRestaurantDraftDto })
   async read(@Param() params: AdminRestaurantDraftParamsDto) {
-    return draftAsJson(await this.found(params.restaurantId));
+    return this.answer(params.restaurantId);
   }
 
   @Put(':restaurantId/basics')
@@ -300,7 +402,7 @@ export class AdminRestaurantDraftsController {
     } catch (error) {
       refusalAsHttp(error);
     }
-    return draftAsJson(await this.found(params.restaurantId));
+    return this.answer(params.restaurantId);
   }
 
   @Put(':restaurantId/location')
@@ -317,7 +419,7 @@ export class AdminRestaurantDraftsController {
     } catch (error) {
       refusalAsHttp(error);
     }
-    return draftAsJson(await this.found(params.restaurantId));
+    return this.answer(params.restaurantId);
   }
 
   @Put(':restaurantId/operations')
@@ -344,7 +446,79 @@ export class AdminRestaurantDraftsController {
     } catch (error) {
       refusalAsHttp(error);
     }
-    return draftAsJson(await this.found(params.restaurantId));
+    return this.answer(params.restaurantId);
+  }
+
+  // Step 4, OWN alone (restaurants.commission): the commission and an
+  // optional launch rate until a moment (D16, D26).
+  @Put(':restaurantId/commission')
+  @RequirePermission('restaurants.commission')
+  @ZodResponse({ status: 200, type: AdminRestaurantDraftDto })
+  async commission(
+    @Param() params: AdminRestaurantDraftParamsDto,
+    @Body() body: AdminDraftCommissionDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    try {
+      await this.drafts.saveCommission(
+        params.restaurantId,
+        {
+          rateBp: body.rateBp,
+          launch:
+            body.launch === null
+              ? null
+              : { rateBp: body.launch.rateBp, until: new Date(body.launch.until) },
+        },
+        adminChange(session, request),
+      );
+    } catch (error) {
+      refusalAsHttp(error);
+    }
+    return this.answer(params.restaurantId);
+  }
+
+  // Step 5: DATA enters the contract and uploads its scans
+  // (restaurants.create)...
+  @Put(':restaurantId/contract')
+  @RequirePermission('restaurants.create')
+  @ZodResponse({ status: 200, type: AdminRestaurantDraftDto })
+  async contract(
+    @Param() params: AdminRestaurantDraftParamsDto,
+    @Body() body: AdminDraftContractDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    try {
+      await this.drafts.saveContract(params.restaurantId, body, adminChange(session, request));
+    } catch (error) {
+      refusalAsHttp(error);
+    }
+    return this.answer(params.restaurantId);
+  }
+
+  // ...and OWN or OPS confirm it with the pledge (restaurants.manage). A
+  // repeat changes nothing, so no Idempotency-Key.
+  @Post(':restaurantId/contract/confirm')
+  @HttpCode(200)
+  @RequirePermission('restaurants.manage')
+  @ZodResponse({ status: 200, type: AdminRestaurantDraftDto })
+  async confirmContract(
+    @Param() params: AdminRestaurantDraftParamsDto,
+    @Body() _body: AdminDraftConfirmContractDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    try {
+      await this.drafts.confirmContract(params.restaurantId, adminChange(session, request));
+    } catch (error) {
+      refusalAsHttp(error);
+    }
+    return this.answer(params.restaurantId);
+  }
+
+  private async answer(restaurantId: string) {
+    return draftAsJson(await this.found(restaurantId), this.files);
   }
 
   private async found(restaurantId: string): Promise<RestaurantDraft> {

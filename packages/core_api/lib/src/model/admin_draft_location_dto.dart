@@ -16,7 +16,6 @@ part 'admin_draft_location_dto.g.dart';
 /// * [address]
 /// * [phone] - The restaurant's number in E.164.
 /// * [ownerName]
-/// * [ownerPhone] - The owner's number in E.164 (a contact).
 @BuiltValue()
 abstract class AdminDraftLocationDto
     implements Built<AdminDraftLocationDto, AdminDraftLocationDtoBuilder> {
@@ -32,10 +31,6 @@ abstract class AdminDraftLocationDto
 
   @BuiltValueField(wireName: r'ownerName')
   String? get ownerName;
-
-  /// The owner's number in E.164 (a contact).
-  @BuiltValueField(wireName: r'ownerPhone')
-  String? get ownerPhone;
 
   AdminDraftLocationDto._();
 
@@ -91,13 +86,6 @@ class _$AdminDraftLocationDtoSerializer
         ? null
         : serializers.serialize(
             object.ownerName,
-            specifiedType: const FullType.nullable(String),
-          );
-    yield r'ownerPhone';
-    yield object.ownerPhone == null
-        ? null
-        : serializers.serialize(
-            object.ownerPhone,
             specifiedType: const FullType.nullable(String),
           );
   }
@@ -167,16 +155,6 @@ class _$AdminDraftLocationDtoSerializer
                   as String?;
           if (valueDes == null) continue;
           result.ownerName = valueDes;
-          break;
-        case r'ownerPhone':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType.nullable(String),
-                  )
-                  as String?;
-          if (valueDes == null) continue;
-          result.ownerPhone = valueDes;
           break;
         default:
           unhandled.add(key);

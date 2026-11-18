@@ -14,6 +14,8 @@ part 'admin_restaurant_drafts_dto_output_drafts_inner_steps.g.dart';
 /// * [basics]
 /// * [location]
 /// * [operations]
+/// * [commission]
+/// * [contract] - Confirmed with the price-parity pledge.
 @BuiltValue()
 abstract class AdminRestaurantDraftsDtoOutputDraftsInnerSteps
     implements
@@ -29,6 +31,13 @@ abstract class AdminRestaurantDraftsDtoOutputDraftsInnerSteps
 
   @BuiltValueField(wireName: r'operations')
   bool get operations;
+
+  @BuiltValueField(wireName: r'commission')
+  bool get commission;
+
+  /// Confirmed with the price-parity pledge.
+  @BuiltValueField(wireName: r'contract')
+  bool get contract;
 
   AdminRestaurantDraftsDtoOutputDraftsInnerSteps._();
 
@@ -77,6 +86,16 @@ class _$AdminRestaurantDraftsDtoOutputDraftsInnerStepsSerializer
     yield r'operations';
     yield serializers.serialize(
       object.operations,
+      specifiedType: const FullType(bool),
+    );
+    yield r'commission';
+    yield serializers.serialize(
+      object.commission,
+      specifiedType: const FullType(bool),
+    );
+    yield r'contract';
+    yield serializers.serialize(
+      object.contract,
       specifiedType: const FullType(bool),
     );
   }
@@ -132,6 +151,24 @@ class _$AdminRestaurantDraftsDtoOutputDraftsInnerStepsSerializer
                   )
                   as bool;
           result.operations = valueDes;
+          break;
+        case r'commission':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.commission = valueDes;
+          break;
+        case r'contract':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.contract = valueDes;
           break;
         default:
           unhandled.add(key);

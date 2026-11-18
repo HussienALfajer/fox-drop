@@ -14,6 +14,10 @@ class _$AdminRestaurantDraftsDtoOutputDraftsInnerSteps
   final bool location;
   @override
   final bool operations;
+  @override
+  final bool commission;
+  @override
+  final bool contract;
 
   factory _$AdminRestaurantDraftsDtoOutputDraftsInnerSteps([
     void Function(AdminRestaurantDraftsDtoOutputDraftsInnerStepsBuilder)?
@@ -26,6 +30,8 @@ class _$AdminRestaurantDraftsDtoOutputDraftsInnerSteps
     required this.basics,
     required this.location,
     required this.operations,
+    required this.commission,
+    required this.contract,
   }) : super._();
   @override
   AdminRestaurantDraftsDtoOutputDraftsInnerSteps rebuild(
@@ -43,7 +49,9 @@ class _$AdminRestaurantDraftsDtoOutputDraftsInnerSteps
     return other is AdminRestaurantDraftsDtoOutputDraftsInnerSteps &&
         basics == other.basics &&
         location == other.location &&
-        operations == other.operations;
+        operations == other.operations &&
+        commission == other.commission &&
+        contract == other.contract;
   }
 
   @override
@@ -52,6 +60,8 @@ class _$AdminRestaurantDraftsDtoOutputDraftsInnerSteps
     _$hash = $jc(_$hash, basics.hashCode);
     _$hash = $jc(_$hash, location.hashCode);
     _$hash = $jc(_$hash, operations.hashCode);
+    _$hash = $jc(_$hash, commission.hashCode);
+    _$hash = $jc(_$hash, contract.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -63,7 +73,9 @@ class _$AdminRestaurantDraftsDtoOutputDraftsInnerSteps
           )
           ..add('basics', basics)
           ..add('location', location)
-          ..add('operations', operations))
+          ..add('operations', operations)
+          ..add('commission', commission)
+          ..add('contract', contract))
         .toString();
   }
 }
@@ -88,6 +100,14 @@ class AdminRestaurantDraftsDtoOutputDraftsInnerStepsBuilder
   bool? get operations => _$this._operations;
   set operations(bool? operations) => _$this._operations = operations;
 
+  bool? _commission;
+  bool? get commission => _$this._commission;
+  set commission(bool? commission) => _$this._commission = commission;
+
+  bool? _contract;
+  bool? get contract => _$this._contract;
+  set contract(bool? contract) => _$this._contract = contract;
+
   AdminRestaurantDraftsDtoOutputDraftsInnerStepsBuilder() {
     AdminRestaurantDraftsDtoOutputDraftsInnerSteps._defaults(this);
   }
@@ -98,6 +118,8 @@ class AdminRestaurantDraftsDtoOutputDraftsInnerStepsBuilder
       _basics = $v.basics;
       _location = $v.location;
       _operations = $v.operations;
+      _commission = $v.commission;
+      _contract = $v.contract;
       _$v = null;
     }
     return this;
@@ -137,6 +159,16 @@ class AdminRestaurantDraftsDtoOutputDraftsInnerStepsBuilder
             operations,
             r'AdminRestaurantDraftsDtoOutputDraftsInnerSteps',
             'operations',
+          ),
+          commission: BuiltValueNullFieldError.checkNotNull(
+            commission,
+            r'AdminRestaurantDraftsDtoOutputDraftsInnerSteps',
+            'commission',
+          ),
+          contract: BuiltValueNullFieldError.checkNotNull(
+            contract,
+            r'AdminRestaurantDraftsDtoOutputDraftsInnerSteps',
+            'contract',
           ),
         );
     replace(_$result);

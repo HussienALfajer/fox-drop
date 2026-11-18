@@ -1385,6 +1385,135 @@
         ]
       }
     },
+    "/v1/admin/restaurants/{restaurantId}/accounts": {
+      "get": {
+        "operationId": "adminRestaurantAccountsList",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRestaurantAccountsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "adminRestaurantAccountsAdd",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminNewRestaurantAccountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRestaurantAccountsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/restaurants/{restaurantId}/accounts/{accountId}/remove": {
+      "post": {
+        "operationId": "adminRestaurantAccountsRemove",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "accountId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRestaurantAccountsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/settings": {
       "get": {
         "operationId": "settingsList",
@@ -2977,6 +3106,147 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/AdminDraftOperationsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRestaurantDraftDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/restaurant-drafts/{restaurantId}/commission": {
+      "put": {
+        "operationId": "adminRestaurantDraftsCommission",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminDraftCommissionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRestaurantDraftDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/restaurant-drafts/{restaurantId}/contract": {
+      "put": {
+        "operationId": "adminRestaurantDraftsContract",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminDraftContractDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRestaurantDraftDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/restaurant-drafts/{restaurantId}/contract/confirm": {
+      "post": {
+        "operationId": "adminRestaurantDraftsConfirmContract",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminDraftConfirmContractDto"
               }
             }
           }
@@ -16409,6 +16679,77 @@
         ],
         "additionalProperties": false
       },
+      "AdminRestaurantAccountsDto_Output": {
+        "type": "object",
+        "properties": {
+          "accounts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "owner",
+                    "cashier"
+                  ]
+                },
+                "name": {
+                  "type": "string"
+                },
+                "phone": {
+                  "type": "string",
+                  "description": "E.164; the number the user signs in with (OTP)."
+                }
+              },
+              "required": [
+                "id",
+                "role",
+                "name",
+                "phone"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Owners first, then cashiers, oldest first."
+          }
+        },
+        "required": [
+          "accounts"
+        ],
+        "additionalProperties": false
+      },
+      "AdminNewRestaurantAccountDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "cashier"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "phone": {
+            "type": "string",
+            "pattern": "^(\\+9639\\d{8}|\\+905\\d{9})$",
+            "description": "A Syrian or Turkish mobile in E.164, as at sign-in."
+          }
+        },
+        "required": [
+          "role",
+          "name",
+          "phone"
+        ]
+      },
       "SettingListDto_Output": {
         "type": "object",
         "properties": {
@@ -18482,12 +18823,21 @@
                     },
                     "operations": {
                       "type": "boolean"
+                    },
+                    "commission": {
+                      "type": "boolean"
+                    },
+                    "contract": {
+                      "type": "boolean",
+                      "description": "Confirmed with the price-parity pledge."
                     }
                   },
                   "required": [
                     "basics",
                     "location",
-                    "operations"
+                    "operations",
+                    "commission",
+                    "contract"
                   ],
                   "additionalProperties": false,
                   "description": "Which steps of AP §9.6.3 hold what they need."
@@ -18769,20 +19119,13 @@
                   "string",
                   "null"
                 ]
-              },
-              "ownerPhone": {
-                "type": [
-                  "string",
-                  "null"
-                ]
               }
             },
             "required": [
               "location",
               "address",
               "phone",
-              "ownerName",
-              "ownerPhone"
+              "ownerName"
             ],
             "additionalProperties": false
           },
@@ -18922,6 +19265,120 @@
             ],
             "additionalProperties": false
           },
+          "commission": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "rateBp": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991,
+                    "description": "The standard commission, in basis points of the items value."
+                  },
+                  "launch": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "rateBp": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "until": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          }
+                        },
+                        "required": [
+                          "rateBp",
+                          "until"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "A launch commission in force until a moment, then the standard one."
+                  }
+                },
+                "required": [
+                  "rateBp",
+                  "launch"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "contract": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "signedOn": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "durationMonths": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "contractUrl": {
+                    "description": "The scan's signed GET on the panel's origin, valid 10 minutes.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "licenceUrl": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "confirmedAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "signedOn",
+                  "durationMonths",
+                  "contractUrl",
+                  "licenceUrl",
+                  "confirmedAt"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "steps": {
             "type": "object",
             "properties": {
@@ -18933,12 +19390,21 @@
               },
               "operations": {
                 "type": "boolean"
+              },
+              "commission": {
+                "type": "boolean"
+              },
+              "contract": {
+                "type": "boolean",
+                "description": "Confirmed with the price-parity pledge."
               }
             },
             "required": [
               "basics",
               "location",
-              "operations"
+              "operations",
+              "commission",
+              "contract"
             ],
             "additionalProperties": false,
             "description": "Which steps of AP §9.6.3 hold what they need."
@@ -18951,6 +19417,8 @@
           "basics",
           "location",
           "operations",
+          "commission",
+          "contract",
           "steps"
         ],
         "additionalProperties": false
@@ -19059,21 +19527,13 @@
                 "type": "null"
               }
             ]
-          },
-          "ownerPhone": {
-            "description": "The owner's number in E.164 (a contact).",
-            "type": [
-              "string",
-              "null"
-            ]
           }
         },
         "required": [
           "location",
           "address",
           "phone",
-          "ownerName",
-          "ownerPhone"
+          "ownerName"
         ]
       },
       "AdminDraftOperationsDto": {
@@ -19186,6 +19646,106 @@
           "defaultPrepMin",
           "minimumOrder",
           "coverage"
+        ]
+      },
+      "AdminDraftCommissionDto": {
+        "type": "object",
+        "properties": {
+          "rateBp": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "launch": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "rateBp": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10000
+                  },
+                  "until": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  }
+                },
+                "required": [
+                  "rateBp",
+                  "until"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "rateBp",
+          "launch"
+        ]
+      },
+      "AdminDraftContractDto": {
+        "type": "object",
+        "properties": {
+          "signedOn": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "durationMonths": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 120
+          },
+          "contractUploadId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "An upload of restaurant_contract to replace the scan; null keeps it."
+          },
+          "licenceUploadId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "An upload of restaurant_licence to replace the scan; null keeps it."
+          }
+        },
+        "required": [
+          "signedOn",
+          "durationMonths",
+          "contractUploadId",
+          "licenceUploadId"
+        ]
+      },
+      "AdminDraftConfirmContractDto": {
+        "type": "object",
+        "properties": {
+          "parityPledge": {
+            "type": "boolean",
+            "const": true,
+            "description": "The price-parity pledge: in-app prices at most the in-store ones."
+          }
+        },
+        "required": [
+          "parityPledge"
         ]
       },
       "AdminCitiesDto_Output": {
@@ -19415,7 +19975,9 @@
               "restaurant_cover",
               "item_photo",
               "category_image",
-              "banner_image"
+              "banner_image",
+              "restaurant_contract",
+              "restaurant_licence"
             ],
             "description": "The record the file is for (architecture §5.8)."
           },

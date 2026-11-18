@@ -150,6 +150,10 @@ import 'package:core_api/src/model/admin_dispatch_state_dto_output.dart';
 import 'package:core_api/src/model/admin_dispatch_state_dto_output_order.dart';
 import 'package:core_api/src/model/admin_dispatch_state_dto_output_order_offer.dart';
 import 'package:core_api/src/model/admin_draft_basics_dto.dart';
+import 'package:core_api/src/model/admin_draft_commission_dto.dart';
+import 'package:core_api/src/model/admin_draft_commission_dto_launch.dart';
+import 'package:core_api/src/model/admin_draft_confirm_contract_dto.dart';
+import 'package:core_api/src/model/admin_draft_contract_dto.dart';
 import 'package:core_api/src/model/admin_draft_location_dto.dart';
 import 'package:core_api/src/model/admin_draft_location_dto_location.dart';
 import 'package:core_api/src/model/admin_draft_operations_dto.dart';
@@ -233,6 +237,7 @@ import 'package:core_api/src/model/admin_new_banner_dto.dart';
 import 'package:core_api/src/model/admin_new_category_dto.dart';
 import 'package:core_api/src/model/admin_new_home_section_dto.dart';
 import 'package:core_api/src/model/admin_new_mass_push_dto.dart';
+import 'package:core_api/src/model/admin_new_restaurant_account_dto.dart';
 import 'package:core_api/src/model/admin_new_upload_dto.dart';
 import 'package:core_api/src/model/admin_no_answer_wait_dto.dart';
 import 'package:core_api/src/model/admin_notification_resent_dto_output.dart';
@@ -372,6 +377,8 @@ import 'package:core_api/src/model/admin_reject_dto_items_inner.dart';
 import 'package:core_api/src/model/admin_release_device_dto.dart';
 import 'package:core_api/src/model/admin_resend_notification_dto.dart';
 import 'package:core_api/src/model/admin_resolve_shortfall_dto.dart';
+import 'package:core_api/src/model/admin_restaurant_accounts_dto_output.dart';
+import 'package:core_api/src/model/admin_restaurant_accounts_dto_output_accounts_inner.dart';
 import 'package:core_api/src/model/admin_restaurant_categories_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_categories_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_draft_choices_dto_output.dart';
@@ -379,6 +386,9 @@ import 'package:core_api/src/model/admin_restaurant_draft_choices_dto_output_cat
 import 'package:core_api/src/model/admin_restaurant_draft_choices_dto_output_default_minimum_order.dart';
 import 'package:core_api/src/model/admin_restaurant_draft_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_draft_dto_output_basics.dart';
+import 'package:core_api/src/model/admin_restaurant_draft_dto_output_commission.dart';
+import 'package:core_api/src/model/admin_restaurant_draft_dto_output_commission_launch.dart';
+import 'package:core_api/src/model/admin_restaurant_draft_dto_output_contract.dart';
 import 'package:core_api/src/model/admin_restaurant_draft_dto_output_location.dart';
 import 'package:core_api/src/model/admin_restaurant_draft_dto_output_location_location.dart';
 import 'package:core_api/src/model/admin_restaurant_draft_dto_output_operations.dart';
@@ -1036,6 +1046,10 @@ part 'serializers.g.dart';
   AdminDispatchStateDtoOutputOrder,
   AdminDispatchStateDtoOutputOrderOffer,
   AdminDraftBasicsDto,
+  AdminDraftCommissionDto,
+  AdminDraftCommissionDtoLaunch,
+  AdminDraftConfirmContractDto,
+  AdminDraftContractDto,
   AdminDraftLocationDto,
   AdminDraftLocationDtoLocation,
   AdminDraftOperationsDto,
@@ -1119,6 +1133,7 @@ part 'serializers.g.dart';
   AdminNewCategoryDto,
   AdminNewHomeSectionDto,
   AdminNewMassPushDto,
+  AdminNewRestaurantAccountDto,
   AdminNewUploadDto,
   AdminNoAnswerWaitDto,
   AdminNotificationResentDtoOutput,
@@ -1258,6 +1273,8 @@ part 'serializers.g.dart';
   AdminReleaseDeviceDto,
   AdminResendNotificationDto,
   AdminResolveShortfallDto,
+  AdminRestaurantAccountsDtoOutput,
+  AdminRestaurantAccountsDtoOutputAccountsInner,
   AdminRestaurantCategoriesDto,
   AdminRestaurantCategoriesDtoOutput,
   AdminRestaurantDraftChoicesDtoOutput,
@@ -1265,6 +1282,9 @@ part 'serializers.g.dart';
   AdminRestaurantDraftChoicesDtoOutputDefaultMinimumOrder,
   AdminRestaurantDraftDtoOutput,
   AdminRestaurantDraftDtoOutputBasics,
+  AdminRestaurantDraftDtoOutputCommission,
+  AdminRestaurantDraftDtoOutputCommissionLaunch,
+  AdminRestaurantDraftDtoOutputContract,
   AdminRestaurantDraftDtoOutputLocation,
   AdminRestaurantDraftDtoOutputLocationLocation,
   AdminRestaurantDraftDtoOutputOperations,
@@ -2396,6 +2416,12 @@ Serializers serializers =
               FullType(MerchantAccountDtoOutputPickupsInner),
             ]),
             () => ListBuilder<MerchantAccountDtoOutputPickupsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminRestaurantAccountsDtoOutputAccountsInner),
+            ]),
+            () => ListBuilder<AdminRestaurantAccountsDtoOutputAccountsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

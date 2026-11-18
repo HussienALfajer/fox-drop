@@ -15,8 +15,6 @@ class _$AdminDraftLocationDto extends AdminDraftLocationDto {
   final String? phone;
   @override
   final String? ownerName;
-  @override
-  final String? ownerPhone;
 
   factory _$AdminDraftLocationDto([
     void Function(AdminDraftLocationDtoBuilder)? updates,
@@ -27,7 +25,6 @@ class _$AdminDraftLocationDto extends AdminDraftLocationDto {
     this.address,
     this.phone,
     this.ownerName,
-    this.ownerPhone,
   }) : super._();
   @override
   AdminDraftLocationDto rebuild(
@@ -45,8 +42,7 @@ class _$AdminDraftLocationDto extends AdminDraftLocationDto {
         location == other.location &&
         address == other.address &&
         phone == other.phone &&
-        ownerName == other.ownerName &&
-        ownerPhone == other.ownerPhone;
+        ownerName == other.ownerName;
   }
 
   @override
@@ -56,7 +52,6 @@ class _$AdminDraftLocationDto extends AdminDraftLocationDto {
     _$hash = $jc(_$hash, address.hashCode);
     _$hash = $jc(_$hash, phone.hashCode);
     _$hash = $jc(_$hash, ownerName.hashCode);
-    _$hash = $jc(_$hash, ownerPhone.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -67,8 +62,7 @@ class _$AdminDraftLocationDto extends AdminDraftLocationDto {
           ..add('location', location)
           ..add('address', address)
           ..add('phone', phone)
-          ..add('ownerName', ownerName)
-          ..add('ownerPhone', ownerPhone))
+          ..add('ownerName', ownerName))
         .toString();
   }
 }
@@ -95,10 +89,6 @@ class AdminDraftLocationDtoBuilder
   String? get ownerName => _$this._ownerName;
   set ownerName(String? ownerName) => _$this._ownerName = ownerName;
 
-  String? _ownerPhone;
-  String? get ownerPhone => _$this._ownerPhone;
-  set ownerPhone(String? ownerPhone) => _$this._ownerPhone = ownerPhone;
-
   AdminDraftLocationDtoBuilder() {
     AdminDraftLocationDto._defaults(this);
   }
@@ -110,7 +100,6 @@ class AdminDraftLocationDtoBuilder
       _address = $v.address;
       _phone = $v.phone;
       _ownerName = $v.ownerName;
-      _ownerPhone = $v.ownerPhone;
       _$v = null;
     }
     return this;
@@ -139,7 +128,6 @@ class AdminDraftLocationDtoBuilder
             address: address,
             phone: phone,
             ownerName: ownerName,
-            ownerPhone: ownerPhone,
           );
     } catch (_) {
       late String _$failedField;

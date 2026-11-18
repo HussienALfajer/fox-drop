@@ -20,6 +20,10 @@ class _$AdminRestaurantDraftDtoOutput extends AdminRestaurantDraftDtoOutput {
   @override
   final AdminRestaurantDraftDtoOutputOperations operations;
   @override
+  final AdminRestaurantDraftDtoOutputCommission? commission;
+  @override
+  final AdminRestaurantDraftDtoOutputContract? contract;
+  @override
   final AdminRestaurantDraftsDtoOutputDraftsInnerSteps steps;
 
   factory _$AdminRestaurantDraftDtoOutput([
@@ -33,6 +37,8 @@ class _$AdminRestaurantDraftDtoOutput extends AdminRestaurantDraftDtoOutput {
     required this.basics,
     required this.location,
     required this.operations,
+    this.commission,
+    this.contract,
     required this.steps,
   }) : super._();
   @override
@@ -54,6 +60,8 @@ class _$AdminRestaurantDraftDtoOutput extends AdminRestaurantDraftDtoOutput {
         basics == other.basics &&
         location == other.location &&
         operations == other.operations &&
+        commission == other.commission &&
+        contract == other.contract &&
         steps == other.steps;
   }
 
@@ -66,6 +74,8 @@ class _$AdminRestaurantDraftDtoOutput extends AdminRestaurantDraftDtoOutput {
     _$hash = $jc(_$hash, basics.hashCode);
     _$hash = $jc(_$hash, location.hashCode);
     _$hash = $jc(_$hash, operations.hashCode);
+    _$hash = $jc(_$hash, commission.hashCode);
+    _$hash = $jc(_$hash, contract.hashCode);
     _$hash = $jc(_$hash, steps.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -80,6 +90,8 @@ class _$AdminRestaurantDraftDtoOutput extends AdminRestaurantDraftDtoOutput {
           ..add('basics', basics)
           ..add('location', location)
           ..add('operations', operations)
+          ..add('commission', commission)
+          ..add('contract', contract)
           ..add('steps', steps))
         .toString();
   }
@@ -124,6 +136,18 @@ class AdminRestaurantDraftDtoOutputBuilder
   set operations(AdminRestaurantDraftDtoOutputOperationsBuilder? operations) =>
       _$this._operations = operations;
 
+  AdminRestaurantDraftDtoOutputCommissionBuilder? _commission;
+  AdminRestaurantDraftDtoOutputCommissionBuilder get commission =>
+      _$this._commission ??= AdminRestaurantDraftDtoOutputCommissionBuilder();
+  set commission(AdminRestaurantDraftDtoOutputCommissionBuilder? commission) =>
+      _$this._commission = commission;
+
+  AdminRestaurantDraftDtoOutputContractBuilder? _contract;
+  AdminRestaurantDraftDtoOutputContractBuilder get contract =>
+      _$this._contract ??= AdminRestaurantDraftDtoOutputContractBuilder();
+  set contract(AdminRestaurantDraftDtoOutputContractBuilder? contract) =>
+      _$this._contract = contract;
+
   AdminRestaurantDraftsDtoOutputDraftsInnerStepsBuilder? _steps;
   AdminRestaurantDraftsDtoOutputDraftsInnerStepsBuilder get steps =>
       _$this._steps ??= AdminRestaurantDraftsDtoOutputDraftsInnerStepsBuilder();
@@ -143,6 +167,8 @@ class AdminRestaurantDraftDtoOutputBuilder
       _basics = $v.basics.toBuilder();
       _location = $v.location.toBuilder();
       _operations = $v.operations.toBuilder();
+      _commission = $v.commission?.toBuilder();
+      _contract = $v.contract?.toBuilder();
       _steps = $v.steps.toBuilder();
       _$v = null;
     }
@@ -186,6 +212,8 @@ class AdminRestaurantDraftDtoOutputBuilder
             basics: basics.build(),
             location: location.build(),
             operations: operations.build(),
+            commission: _commission?.build(),
+            contract: _contract?.build(),
             steps: steps.build(),
           );
     } catch (_) {
@@ -197,6 +225,10 @@ class AdminRestaurantDraftDtoOutputBuilder
         location.build();
         _$failedField = 'operations';
         operations.build();
+        _$failedField = 'commission';
+        _commission?.build();
+        _$failedField = 'contract';
+        _contract?.build();
         _$failedField = 'steps';
         steps.build();
       } catch (e) {
