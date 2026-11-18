@@ -7163,7 +7163,7 @@ export interface components {
                     message: string | null;
                 };
             }[];
-            /** @description With home: the home sections shown, in the panel’s order (CU §8.1, AP §9.11.3); a restaurant section with no restaurant is left out. Null otherwise. */
+            /** @description With home: the home sections shown, in the panel’s order (CU §8.1, AP §9.11.3); a restaurant section with no restaurant is left out, and «البانرات» without a banner. Null otherwise. */
             sections: {
                 /**
                  * @description «البانرات», «التصنيفات», «الأقرب إليك», «الأكثر طلباً», «جديد على FOX DROP», «العروض», or a custom section under its title.
@@ -7174,6 +7174,23 @@ export interface components {
                 title: string | null;
                 /** @description The cards of `restaurants` it shows, in its order (open first, closed last); empty for banners and categories, which the app fills. */
                 restaurantIds: string[];
+            }[] | null;
+            /** @description With home: the banners running in the point’s zone, in the panel’s order, at most 10 (CU §8.1, AP §9.11.2); one the customer cannot open here is left out. Null otherwise. */
+            banners: {
+                /** Format: uuid */
+                id: string;
+                title: string;
+                /** @description In public-media, 1200×500 (architecture §5.8). */
+                imageKey: string;
+                /**
+                 * @description The tap opens the restaurant’s page (restaurantIds holds it), the category’s page, the banner’s list under its title (restaurantIds), or «أكوادي» on its code.
+                 * @enum {string}
+                 */
+                target: "restaurant" | "category" | "restaurants" | "code";
+                /** @description Cards of `restaurants`, open first and closed last; empty otherwise. */
+                restaurantIds: string[];
+                categoryId: string | null;
+                code: string | null;
             }[] | null;
         };
         CustomerRestaurantPageDto_Output: {

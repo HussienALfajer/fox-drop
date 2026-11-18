@@ -17,7 +17,7 @@ import {
   seenByCustomer,
   type StorefrontState,
 } from '../merchants/index.js';
-import { HomeSectionsService } from '../marketing/index.js';
+import { BannersService, HOME_BANNERS_MAX, HomeSectionsService } from '../marketing/index.js';
 import { SettingsService } from '../settings/index.js';
 import { CustomersService } from './customers.service.js';
 
@@ -42,6 +42,20 @@ export interface HomeSectionView {
   kind: 'banners' | 'categories' | 'nearest' | 'most_ordered' | 'new' | 'offers' | 'custom';
   title: string | null;
   restaurantIds: string[];
+}
+
+// CU §8.1 (slice 2.27c): a banner as the app shows it. Its tap opens a
+// restaurant's page (`restaurant`, restaurantIds holds it), a category's page,
+// the banner's own list under its title (`restaurants`, cards of the same
+// answer, open first and closed last) or «أكوادي» on its code.
+export interface HomeBannerView {
+  id: string;
+  title: string;
+  imageKey: string;
+  target: 'restaurant' | 'category' | 'restaurants' | 'code';
+  restaurantIds: string[];
+  categoryId: string | null;
+  code: string | null;
 }
 
 // A card with what the home sections sort by.
@@ -119,6 +133,7 @@ export class BrowsingService {
     private readonly settings: SettingsService,
     private readonly categories: CategoriesService,
     private readonly sections: HomeSectionsService,
+    private readonly banners: BannersService,
     private readonly customers: CustomersService,
   ) {}
 
@@ -164,9 +179,15 @@ export class BrowsingService {
     point: Point,
     now: Date,
     testAccount = false,
-  ): Promise<{ restaurants: RestaurantCard[]; sections: HomeSectionView[] }> {
+  ): Promise<{
+    restaurants: RestaurantCard[];
+    sections: HomeSectionView[];
+    banners: HomeBannerView[];
+  }> {
     const place = await this.geo.locate(point);
-    if (place === null || place.zone === null) return { restaurants: [], sections: [] };
+    if (place === null || place.zone === null) {
+      return { restaurants: [], sections: [], banners: [] };
+    }
     const zoneId = place.zone.id;
     const [names, stored] = await Promise.all([
       this.categoryNames(),
@@ -176,7 +197,7 @@ export class BrowsingService {
     const listed = await this.listed(place.cityId, point, now, testAccount, names);
     const since = new Date(now.getTime() - HOME_LOOKBACK_DAYS * DAY_MS);
     const kinds = new Set(shown.map((section) => section.kind));
-    const [counts, offers] = await Promise.all([
+    const [counts, offers, running] = await Promise.all([
       kinds.has('most_ordered')
         ? this.customers.deliveredCounts(
             listed.map(({ card }) => card.id),
@@ -186,6 +207,7 @@ export class BrowsingService {
       kinds.has('offers')
         ? this.sections.offerRestaurants(place.cityId, zoneId, now)
         : new Set<string>(),
+      kinds.has('banners') ? this.banners.running(place.cityId, zoneId, now) : [],
     ]);
     const byId = new Map(listed.map((entry) => [entry.card.id, entry]));
     const picked = (kind: HomeSectionView['kind'], ids: string[]): Listed[] => {
@@ -214,9 +236,44 @@ export class BrowsingService {
           return [];
       }
     };
+    // A banner whose target the customer cannot open here is left out: a
+    // restaurant that does not deliver to the point, a list with none that
+    // does, a category no longer active (decided by us); then the first
+    // HOME_BANNERS_MAX (owner decision 2026-11-18).
+    const banners = running
+      .flatMap((banner): HomeBannerView[] => {
+        const view = {
+          id: banner.id,
+          title: banner.title,
+          imageKey: banner.imageKey,
+          target: banner.target,
+          restaurantIds: [] as string[],
+          categoryId: null,
+          code: null,
+        };
+        switch (banner.target) {
+          case 'restaurant':
+          case 'restaurants': {
+            const ids = ranked(banner.restaurantIds.flatMap((id) => byId.get(id) ?? [])).map(
+              ({ card }) => card.id,
+            );
+            return ids.length === 0 ? [] : [{ ...view, restaurantIds: ids }];
+          }
+          case 'category':
+            return banner.categoryId !== null && names.has(banner.categoryId)
+              ? [{ ...view, categoryId: banner.categoryId }]
+              : [];
+          case 'code':
+            return [{ ...view, code: banner.code }];
+        }
+      })
+      .slice(0, HOME_BANNERS_MAX);
     const sections = shown.flatMap((section): HomeSectionView[] => {
       const view = { kind: section.kind, title: section.title };
-      if (section.kind === 'banners' || section.kind === 'categories') {
+      if (section.kind === 'banners') {
+        return banners.length === 0 ? [] : [{ ...view, restaurantIds: [] }];
+      }
+      if (section.kind === 'categories') {
         return [{ ...view, restaurantIds: [] }];
       }
       const restaurantIds = ranked(picked(section.kind, section.restaurantIds)).map(
@@ -224,7 +281,7 @@ export class BrowsingService {
       );
       return restaurantIds.length === 0 ? [] : [{ ...view, restaurantIds }];
     });
-    return { restaurants: ranked(listed).map(({ card }) => card), sections };
+    return { restaurants: ranked(listed).map(({ card }) => card), sections, banners };
   }
 
   // The cards of the restaurants that cover the point, in the restaurants'

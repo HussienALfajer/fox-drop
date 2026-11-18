@@ -112,7 +112,29 @@ class CustomerRestaurantListDto extends createZodDto(
       )
       .nullable()
       .describe(
-        'With home: the home sections shown, in the panel’s order (CU §8.1, AP §9.11.3); a restaurant section with no restaurant is left out. Null otherwise.',
+        'With home: the home sections shown, in the panel’s order (CU §8.1, AP §9.11.3); a restaurant section with no restaurant is left out, and «البانرات» without a banner. Null otherwise.',
+      ),
+    banners: z
+      .array(
+        z.object({
+          id: z.uuid(),
+          title: z.string(),
+          imageKey: z.string().describe('In public-media, 1200×500 (architecture §5.8).'),
+          target: z
+            .enum(['restaurant', 'category', 'restaurants', 'code'])
+            .describe(
+              'The tap opens the restaurant’s page (restaurantIds holds it), the category’s page, the banner’s list under its title (restaurantIds), or «أكوادي» on its code.',
+            ),
+          restaurantIds: z
+            .array(z.uuid())
+            .describe('Cards of `restaurants`, open first and closed last; empty otherwise.'),
+          categoryId: z.uuid().nullable(),
+          code: z.string().nullable(),
+        }),
+      )
+      .nullable()
+      .describe(
+        'With home: the banners running in the point’s zone, in the panel’s order, at most 10 (CU §8.1, AP §9.11.2); one the customer cannot open here is left out. Null otherwise.',
       ),
   }),
 ) {}
@@ -238,20 +260,29 @@ export class CustomerBrowsingController {
     const { similarTo, categoryId, home, ...point } = query;
     const now = new Date();
     const testAccount = await this.testAccount(session);
-    const { restaurants: cards, sections } =
-      similarTo !== undefined
-        ? {
-            restaurants: await this.browsing.similar(similarTo, point, now, testAccount),
+    const {
+      restaurants: cards,
+      sections,
+      banners,
+    } = similarTo !== undefined
+      ? {
+          restaurants: await this.browsing.similar(similarTo, point, now, testAccount),
+          sections: null,
+          banners: null,
+        }
+      : categoryId === undefined && home === 'true'
+        ? await this.browsing.home(point, now, testAccount)
+        : {
+            restaurants: await this.browsing.restaurants(point, now, testAccount, categoryId),
             sections: null,
-          }
-        : categoryId === undefined && home === 'true'
-          ? await this.browsing.home(point, now, testAccount)
-          : {
-              restaurants: await this.browsing.restaurants(point, now, testAccount, categoryId),
-              sections: null,
-            };
+            banners: null,
+          };
     const ratings = await this.customers.ratings.restaurants(cards.map((card) => card.id));
-    return { restaurants: cards.map((card) => cardBody(card, ratings.get(card.id))), sections };
+    return {
+      restaurants: cards.map((card) => cardBody(card, ratings.get(card.id))),
+      sections,
+      banners,
+    };
   }
 
   // 404 for a restaurant customers do not see.

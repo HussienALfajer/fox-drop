@@ -1117,6 +1117,10 @@ Serializers _$serializers =
           ..add(CustomerReportOrderDto.serializer)
           ..add(CustomerReportOrderDtoItemsInner.serializer)
           ..add(CustomerRestaurantListDtoOutput.serializer)
+          ..add(CustomerRestaurantListDtoOutputBannersInner.serializer)
+          ..add(
+            CustomerRestaurantListDtoOutputBannersInnerTargetEnum.serializer,
+          )
           ..add(CustomerRestaurantListDtoOutputRestaurantsInner.serializer)
           ..add(
             CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee
@@ -3078,6 +3082,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(CustomerRestaurantListDtoOutputBannersInner),
+            ]),
+            () => ListBuilder<CustomerRestaurantListDtoOutputBannersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(
                 CustomerRestaurantPageDtoOutputMenuInnerItemsInner,
               ),
@@ -3621,6 +3631,10 @@ Serializers _$serializers =
               const FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
             ]),
             () => ListBuilder<SettingListDtoOutputSettingsInnerEditRolesEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

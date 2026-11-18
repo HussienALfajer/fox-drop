@@ -693,6 +693,7 @@ import 'package:core_api/src/model/customer_refresh_dto.dart';
 import 'package:core_api/src/model/customer_report_order_dto.dart';
 import 'package:core_api/src/model/customer_report_order_dto_items_inner.dart';
 import 'package:core_api/src/model/customer_restaurant_list_dto_output.dart';
+import 'package:core_api/src/model/customer_restaurant_list_dto_output_banners_inner.dart';
 import 'package:core_api/src/model/customer_restaurant_list_dto_output_restaurants_inner.dart';
 import 'package:core_api/src/model/customer_restaurant_list_dto_output_restaurants_inner_delivery_fee.dart';
 import 'package:core_api/src/model/customer_restaurant_list_dto_output_restaurants_inner_estimate.dart';
@@ -1528,6 +1529,7 @@ part 'serializers.g.dart';
   CustomerReportOrderDto,
   CustomerReportOrderDtoItemsInner,
   CustomerRestaurantListDtoOutput,
+  CustomerRestaurantListDtoOutputBannersInner,
   CustomerRestaurantListDtoOutputRestaurantsInner,
   CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee,
   CustomerRestaurantListDtoOutputRestaurantsInnerEstimate,
@@ -2041,6 +2043,12 @@ Serializers serializers =
               FullType(CustomerRestaurantListDtoOutputSectionsInner),
             ]),
             () => ListBuilder<CustomerRestaurantListDtoOutputSectionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CustomerRestaurantListDtoOutputBannersInner),
+            ]),
+            () => ListBuilder<CustomerRestaurantListDtoOutputBannersInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

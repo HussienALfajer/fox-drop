@@ -335,7 +335,7 @@ describe('the restaurant list (CU §8.2)', () => {
       method: 'GET',
       url: `/v1/customer/restaurants?${query(far)}`,
     });
-    expect(answer.json()).toEqual({ restaurants: [], sections: null });
+    expect(answer.json()).toEqual({ restaurants: [], sections: null, banners: null });
   });
 });
 
@@ -510,12 +510,21 @@ describe('similar restaurants (CU §11.9)', () => {
 
   it('is empty without a category, for an unknown restaurant and outside every zone', async () => {
     await category(rejecting);
-    expect((await similar(rejecting)).json()).toEqual({ restaurants: [], sections: null });
+    expect((await similar(rejecting)).json()).toEqual({
+      restaurants: [],
+      sections: null,
+      banners: null,
+    });
     await category(rejecting, 'مشاوي');
-    expect((await similar(randomUUID())).json()).toEqual({ restaurants: [], sections: null });
+    expect((await similar(randomUUID())).json()).toEqual({
+      restaurants: [],
+      sections: null,
+      banners: null,
+    });
     expect((await similar(rejecting, { latitude: 36.7, longitude: 37.3 })).json()).toEqual({
       restaurants: [],
       sections: null,
+      banners: null,
     });
   });
 });

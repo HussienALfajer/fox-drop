@@ -694,6 +694,7 @@ export 'package:core_api/src/model/customer_refresh_dto.dart';
 export 'package:core_api/src/model/customer_report_order_dto.dart';
 export 'package:core_api/src/model/customer_report_order_dto_items_inner.dart';
 export 'package:core_api/src/model/customer_restaurant_list_dto_output.dart';
+export 'package:core_api/src/model/customer_restaurant_list_dto_output_banners_inner.dart';
 export 'package:core_api/src/model/customer_restaurant_list_dto_output_restaurants_inner.dart';
 export 'package:core_api/src/model/customer_restaurant_list_dto_output_restaurants_inner_delivery_fee.dart';
 export 'package:core_api/src/model/customer_restaurant_list_dto_output_restaurants_inner_estimate.dart';
