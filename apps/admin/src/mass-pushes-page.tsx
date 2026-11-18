@@ -414,7 +414,12 @@ function MassPushEditor({
       </fieldset>
       {'problem' in checked && (
         <p>
-          {t(problemKeys[checked.problem], { title: TITLE_MAX, body: BODY_MAX, days: DAYS_MAX })}
+          {t(problemKeys[checked.problem], {
+            title: TITLE_MAX,
+            body: BODY_MAX,
+            days: DAYS_MAX,
+            schedule: SCHEDULE_DAYS,
+          })}
         </p>
       )}
       <button type="button" disabled={!('fields' in checked) || count.isPending} onClick={ask}>

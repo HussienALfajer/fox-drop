@@ -210,6 +210,18 @@ export const pushMessages = notifications.table(
     index('push_messages_campaign')
       .on(table.campaignId)
       .where(sql`${table.campaignId} IS NOT NULL`),
+    // The relay's two claims (slice 2.27d): the due pushes of no campaign,
+    // then a campaign's, each in its own index so neither scans the other.
+    index('push_messages_pending_plain')
+      .on(table.nextAttemptAt)
+      .where(
+        sql`${table.sentAt} IS NULL AND ${table.gaveUpAt} IS NULL AND ${table.campaignId} IS NULL`,
+      ),
+    index('push_messages_pending_campaign')
+      .on(table.nextAttemptAt)
+      .where(
+        sql`${table.sentAt} IS NULL AND ${table.gaveUpAt} IS NULL AND ${table.campaignId} IS NOT NULL`,
+      ),
     index('push_messages_pending')
       .on(table.nextAttemptAt)
       .where(sql`${table.sentAt} IS NULL AND ${table.gaveUpAt} IS NULL`),

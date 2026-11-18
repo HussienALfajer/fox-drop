@@ -65,7 +65,12 @@ export class PushRelay {
   // called outside any transaction, and each outcome is written in its own.
   async drain(now: Date): Promise<number> {
     let finished = 0;
+    // Each batch reads the clock again (from `now`, so tests keep their own
+    // time): a push queued while a campaign's thousands are sent is due at
+    // the next batch, and each lease counts from its own claim.
+    const started = Date.now();
     for (;;) {
+      const at = new Date(now.getTime() + (Date.now() - started));
       const rows = await this.database.db.transaction(async (tx) => {
         const due = (campaigns: boolean, limit: number) =>
           tx
@@ -75,7 +80,7 @@ export class PushRelay {
               and(
                 isNull(pushMessages.sentAt),
                 isNull(pushMessages.gaveUpAt),
-                lte(pushMessages.nextAttemptAt, now),
+                lte(pushMessages.nextAttemptAt, at),
                 campaigns ? isNotNull(pushMessages.campaignId) : isNull(pushMessages.campaignId),
               ),
             )
@@ -90,7 +95,7 @@ export class PushRelay {
         if (taken.length > 0) {
           await tx
             .update(pushMessages)
-            .set({ nextAttemptAt: new Date(now.getTime() + LEASE_MS) })
+            .set({ nextAttemptAt: new Date(at.getTime() + LEASE_MS) })
             .where(
               inArray(
                 pushMessages.id,
@@ -101,7 +106,7 @@ export class PushRelay {
         return taken;
       });
       for (const row of rows) {
-        if (await this.send(row, now)) finished += 1;
+        if (await this.send(row, at)) finished += 1;
       }
       if (rows.length < BATCH) break;
     }

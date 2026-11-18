@@ -322,6 +322,30 @@ describe('«الإشعارات الجماعية»', () => {
     expect(twice.json().error).toBe('not_cancellable');
   });
 
+  it("counts a line's deliveries for the account that continues it (AP §8.8)", async () => {
+    const own = await admin(['OWN']);
+    const before = await size(own, 'audience=never_ordered');
+    const closed = await customer({ closed: true });
+    const next = await customer();
+    await sql.query('UPDATE identity.customer_accounts SET lineage_id = $1 WHERE id = $2', [
+      closed,
+      next,
+    ]);
+    lastDelivered.set(closed, new Date(Date.now() - 40 * DAY));
+    // The new account has ordered through its line, 40 days ago.
+    expect(await size(own, 'audience=never_ordered')).toBe(before);
+    const inactive = await size(own, 'audience=inactive&inactiveDays=30');
+    lastDelivered.delete(closed);
+    expect(await size(own, 'audience=inactive&inactiveDays=30')).toBe(inactive - 1);
+  });
+
+  it('lets the application change only the cancellation of a push', async () => {
+    await expect(sql.query("UPDATE marketing.mass_pushes SET title = 'x'")).rejects.toThrow(
+      /permission denied/,
+    );
+    await sql.query('UPDATE marketing.mass_pushes SET cancelled_at = cancelled_at');
+  });
+
   it('refuses a push it could not send as written', async () => {
     const own = await admin(['OWN']);
     const confirmed = await size(own, 'audience=all');

@@ -248,4 +248,31 @@ describe('the push relay (architecture §8.1)', () => {
       new Map([[campaignId, { recipients: 1, sent: 0, delivered: 0 }]]),
     );
   });
+
+  it('takes a push queued during a campaign at the next batch, not after the campaign', async () => {
+    const campaignId = randomUUID();
+    const now = new Date();
+    const customers = Array.from({ length: 45 }, () => randomUUID());
+    for (const id of customers) devicesOf.set(id, [`phone-${id}`]);
+    await queue.enqueue(
+      db,
+      customers.map((id) => push(id, { campaignId, data: { target: 'home' } })),
+      now,
+    );
+    const orderCustomer = randomUUID();
+    devicesOf.set(orderCustomer, ['order-phone']);
+    let queued = false;
+    answer = () => {
+      // While the first batch is sent, an order's push is queued.
+      if (!queued) {
+        queued = true;
+        void queue.enqueue(db, [push(orderCustomer)], new Date());
+      }
+      return 'sent';
+    };
+    await relay.drain(now);
+    const at = sent.findIndex((one) => one.token === 'order-phone');
+    expect(at).toBeGreaterThanOrEqual(20);
+    expect(at).toBeLessThanOrEqual(21);
+  });
 });

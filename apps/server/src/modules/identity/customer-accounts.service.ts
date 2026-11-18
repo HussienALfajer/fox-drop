@@ -193,6 +193,21 @@ export class CustomerAccountsService {
     return row?.status === 'active';
   }
 
+  // AP §9.11.4 (slice 2.27d): every customer account with its line (the
+  // first account it continues, or itself) and whether it is open, for the
+  // mass push's audiences, which read a line's deliveries as the
+  // account's (AP §8.8).
+  async lines(): Promise<{ id: string; line: string; open: boolean }[]> {
+    const rows = await this.database.db
+      .select({
+        id: customerAccounts.id,
+        line: sql<string>`coalesce(${customerAccounts.lineageId}, ${customerAccounts.id})`,
+        status: customerAccounts.status,
+      })
+      .from(customerAccounts);
+    return rows.map((row) => ({ id: row.id, line: row.line, open: row.status === 'active' }));
+  }
+
   // D19, CU §5.5: the accounts' states, for the panel; an unknown id is left
   // out.
   async states(accountIds: readonly string[]): Promise<Map<string, CustomerAccountState>> {

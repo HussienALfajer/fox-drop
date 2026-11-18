@@ -6,7 +6,8 @@ import { CustomersService } from './customers.service.js';
 // AP §9.11.4 «الإشعارات الجماعية» (slice 2.27d, owner decisions
 // 2026-11-18): who is in a mass push's audience, registered with marketing,
 // which cannot import this module. Registered customers only (a profile,
-// the account not closed): a guest is in none. `all` is every one of them,
+// the account not closed): a guest is in none. Deliveries count by the
+// account's line (AP §8.8, CustomerAccountsService.lines). `all` is every one of them,
 // whatever their city (decided by us: accounts have no city; V1 has one);
 // `zone` those with a saved address in the zone; `inactive` those whose
 // latest delivered order in the city is older than the days; `never_ordered`
@@ -24,9 +25,12 @@ export class MassPushAudienceSource implements OnModuleInit {
   }
 
   async members(cityId: string, audience: MassPushAudience, now: Date): Promise<string[]> {
-    const registered = await this.customers.registered();
-    const states = await this.accounts.states(registered);
-    const open = registered.filter((id) => states.get(id)?.status === 'active');
+    const [registered, lines] = await Promise.all([
+      this.customers.registered(),
+      this.accounts.lines(),
+    ]);
+    const lineOf = new Map(lines.map((account) => [account.id, account]));
+    const open = registered.filter((id) => lineOf.get(id)?.open === true);
     switch (audience.kind) {
       case 'all':
         return open;
@@ -34,17 +38,23 @@ export class MassPushAudienceSource implements OnModuleInit {
         const inZone = await this.customers.withAddressIn(cityId, audience.zoneId!);
         return open.filter((id) => inZone.has(id));
       }
-      case 'inactive': {
-        const last = await this.customers.lastDeliveries(cityId);
+      case 'inactive':
+      case 'never_ordered': {
+        // A line's deliveries are its accounts' (AP §8.8): a new account
+        // that continues a closed one with orders has ordered.
+        const byAccount = await this.customers.lastDeliveries(cityId);
+        const byLine = new Map<string, number>();
+        for (const [accountId, at] of byAccount) {
+          const line = lineOf.get(accountId)?.line ?? accountId;
+          byLine.set(line, Math.max(byLine.get(line) ?? 0, at.getTime()));
+        }
+        const last = (id: string) => byLine.get(lineOf.get(id)?.line ?? id);
+        if (audience.kind === 'never_ordered') return open.filter((id) => last(id) === undefined);
         const since = now.getTime() - audience.inactiveDays! * 86_400_000;
         return open.filter((id) => {
-          const at = last.get(id);
-          return at !== undefined && at.getTime() < since;
+          const at = last(id);
+          return at !== undefined && at < since;
         });
-      }
-      case 'never_ordered': {
-        const last = await this.customers.lastDeliveries(cityId);
-        return open.filter((id) => !last.has(id));
       }
     }
   }

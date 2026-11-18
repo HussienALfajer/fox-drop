@@ -198,10 +198,11 @@ export class PushQueue {
           eq(pushMessages.party, 'customer'),
           eq(pushMessages.accountId, accountId),
           gte(pushMessages.createdAt, new Date(now.getTime() - INBOX_DAYS * 86_400_000)),
-          // A push shows once its time came, and a mass push once the relay
-          // sent it, so a cancelled or scheduled one never shows.
+          // A push shows once its time came; a mass push once the relay sent
+          // it or gave it up at its expiry (CU §14: every push is stored),
+          // never when cancelled (given up before its time).
           lte(pushMessages.createdAt, now),
-          sql`(${pushMessages.campaignId} IS NULL OR ${pushMessages.sentAt} IS NOT NULL)`,
+          sql`(${pushMessages.campaignId} IS NULL OR ${pushMessages.sentAt} IS NOT NULL OR ${pushMessages.gaveUpAt} >= ${pushMessages.expiresAt})`,
         ),
       )
       .orderBy(desc(pushMessages.createdAt), desc(pushMessages.id))

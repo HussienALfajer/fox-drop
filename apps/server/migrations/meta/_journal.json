@@ -792,6 +792,13 @@
       "when": 1795006361897,
       "tag": "0112_marketing_mass_pushes",
       "breakpoints": true
+    },
+    {
+      "idx": 113,
+      "version": "7",
+      "when": 1795008082290,
+      "tag": "0113_notifications_pending_campaigns",
+      "breakpoints": true
     }
   ]
 }
