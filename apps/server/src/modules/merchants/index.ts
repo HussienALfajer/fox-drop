@@ -7,10 +7,12 @@ import { JobsModule } from '../../jobs/jobs.module.js';
 import { FxModule } from '../fx/index.js';
 import { GeoModule } from '../geo/index.js';
 import { SettingsModule } from '../settings/index.js';
+import { AdminRestaurantDraftsController } from './admin-restaurant-drafts.controller.js';
 import { AdminRestaurantImagesController } from './admin-restaurant-images.controller.js';
 import { AdminRestaurantStatusController } from './admin-restaurant-status.controller.js';
 import { MerchantMenuController } from './merchant-menu.controller.js';
 import { MerchantsService } from './merchants.service.js';
+import { RestaurantDraftsService } from './restaurant-drafts.service.js';
 import { RestaurantStatusService } from './restaurant-status.service.js';
 import { RestaurantStatusTimersWorker } from './status-timers.js';
 import { MerchantStatusController } from './merchant-status.controller.js';
@@ -34,9 +36,10 @@ import { MerchantStatusController } from './merchant-status.controller.js';
     MerchantStatusController,
     AdminRestaurantImagesController,
     AdminRestaurantStatusController,
+    AdminRestaurantDraftsController,
   ],
-  providers: [MerchantsService, RestaurantStatusService],
-  exports: [MerchantsService, RestaurantStatusService],
+  providers: [MerchantsService, RestaurantStatusService, RestaurantDraftsService],
+  exports: [MerchantsService, RestaurantStatusService, RestaurantDraftsService],
 })
 export class MerchantsModule {}
 
@@ -80,3 +83,12 @@ export {
   RestaurantStatusService,
 } from './restaurant-status.service.js';
 export { type StateKind, stateKinds } from './state-events.js';
+export {
+  type DraftBasics,
+  type DraftLocation,
+  type DraftOperations,
+  type DraftSteps,
+  type DraftSummary,
+  type RestaurantDraft,
+  RestaurantDraftsService,
+} from './restaurant-drafts.service.js';

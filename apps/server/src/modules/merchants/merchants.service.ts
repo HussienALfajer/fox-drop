@@ -67,7 +67,13 @@ export type MerchantsRefusal =
   | 'restaurant_suspended'
   | 'owner_only'
   // AP §9.13: not an active category, named twice, or too many.
-  | 'unknown_category';
+  | 'unknown_category'
+  // AP §9.6.3 (slice 2.30a): the wizard's city is unknown, or its target is
+  // no longer a draft (or a draft of another city).
+  | 'unknown_city'
+  | 'not_a_draft'
+  // AP §9.6.3 step 5: a contract without its date, duration or scan.
+  | 'invalid_contract';
 
 // AP §9.13: how many categories one restaurant links to, at most.
 export const RESTAURANT_CATEGORIES_MAX = 5;
@@ -232,8 +238,8 @@ const statusChanges: Record<AccountStatus, readonly AccountStatus[]> = {
   terminated: [],
 };
 
-type Tx = Parameters<Parameters<Database['db']['transaction']>[0]>[0];
-type Executor = Pick<NodePgDatabase, 'select' | 'execute'>;
+export type Tx = Parameters<Parameters<Database['db']['transaction']>[0]>[0];
+export type Executor = Pick<NodePgDatabase, 'select' | 'execute'>;
 
 // A restaurant's orders in placed, accepted or ready (RA §7.4).
 export type ActiveOrderCount = (restaurantId: string) => Promise<number>;
@@ -295,7 +301,8 @@ export class MerchantsService implements OnModuleInit {
     });
   }
 
-  private async checkCategories(ids: string[]): Promise<void> {
+  // Module-internal: the drafts service shares it (slice 2.30a).
+  async checkCategories(ids: string[]): Promise<void> {
     if (ids.length > RESTAURANT_CATEGORIES_MAX) {
       throw new MerchantsRefusedError(
         'unknown_category',
@@ -320,6 +327,7 @@ export class MerchantsService implements OnModuleInit {
       const { rows } = await executor.execute<{ currency: string }>(sql`
         SELECT minimum_order_currency AS currency FROM merchants.restaurants
           WHERE city_id = ${cityId} AND account_status <> 'terminated'
+            AND minimum_order_currency IS NOT NULL
         UNION
         SELECT i.currency FROM merchants.items i
           JOIN merchants.restaurants r ON r.id = i.restaurant_id
@@ -437,6 +445,8 @@ export class MerchantsService implements OnModuleInit {
     });
   }
 
+  // A restaurant with its whole record, or null: none, or a draft still
+  // without its pin or operations.
   async restaurant(restaurantId: string, at = new Date()): Promise<Restaurant | null> {
     const [row] = await this.database.db
       .select({
@@ -466,7 +476,17 @@ export class MerchantsService implements OnModuleInit {
       })
       .from(restaurants)
       .where(eq(restaurants.id, restaurantId));
-    if (!row) return null;
+    // A draft whose wizard has not reached its pin and operations is no
+    // restaurant yet for any reader (slice 2.30a); the wizard reads it apart.
+    if (
+      !row ||
+      row.minimumOrder === null ||
+      row.minimumOrderCurrency === null ||
+      row.defaultPrepMin === null ||
+      row.latitude === null
+    ) {
+      return null;
+    }
     const coverage: Coverage =
       row.coverageKind === 'radius'
         ? { kind: 'radius', radiusMetres: row.coverageRadiusMetres! }
@@ -478,7 +498,9 @@ export class MerchantsService implements OnModuleInit {
         effectiveFrom: commissionRates.effectiveFrom,
       })
       .from(commissionRates)
-      .where(eq(commissionRates.restaurantId, restaurantId));
+      .where(
+        and(eq(commissionRates.restaurantId, restaurantId), isNull(commissionRates.withdrawnAt)),
+      );
     return {
       id: row.id,
       cityId: row.cityId,
@@ -505,6 +527,32 @@ export class MerchantsService implements OnModuleInit {
     };
   }
 
+  // The account status read in another module's transaction under a share
+  // lock on the restaurant's row, so the status cannot change before that
+  // transaction ends (setAccountStatus takes the row's update lock): the
+  // wizard's accounts are added and removed only while a draft (slice
+  // 2.30a). Null for no such restaurant.
+  async lockedAccountStatus(tx: Tx, restaurantId: string): Promise<AccountStatus | null> {
+    const [row] = await tx
+      .select({ accountStatus: restaurants.accountStatus })
+      .from(restaurants)
+      .where(eq(restaurants.id, restaurantId))
+      .for('share');
+    return row?.accountStatus ?? null;
+  }
+
+  // A restaurant's city and account status, a draft without its record
+  // included (the wizard's accounts, slice 2.30a), or null.
+  async cityAndStatus(
+    restaurantId: string,
+  ): Promise<{ cityId: string; accountStatus: AccountStatus } | null> {
+    const [row] = await this.database.db
+      .select({ cityId: restaurants.cityId, accountStatus: restaurants.accountStatus })
+      .from(restaurants)
+      .where(eq(restaurants.id, restaurantId));
+    return row ?? null;
+  }
+
   // AP §9.6.1: the restaurant's account status now, or null for no such
   // restaurant (RA §5.5, for the restaurant users' sign-in).
   async accountStatus(restaurantId: string): Promise<AccountStatus | null> {
@@ -526,7 +574,7 @@ export class MerchantsService implements OnModuleInit {
     await this.database.db.transaction(async (tx) => {
       const row = await this.lockRestaurant(tx, restaurantId);
       if (row.accountStatus === status) return;
-      if (!statusChanges[row.accountStatus].includes(status)) {
+      if (!statusChanges[row.accountStatus].includes(status) || !row.complete) {
         throw new MerchantsRefusedError(
           'status_change_not_allowed',
           `a ${row.accountStatus} restaurant cannot become ${status}`,
@@ -623,7 +671,9 @@ export class MerchantsService implements OnModuleInit {
         effectiveFrom: commissionRates.effectiveFrom,
       })
       .from(commissionRates)
-      .where(eq(commissionRates.restaurantId, restaurantId));
+      .where(
+        and(eq(commissionRates.restaurantId, restaurantId), isNull(commissionRates.withdrawnAt)),
+      );
     const ahead = rates.filter((rate) => rate.effectiveFrom.getTime() > now.getTime());
     const firstStart = Math.min(...ahead.map((rate) => rate.effectiveFrom.getTime()));
     const next = commissionAt(
@@ -665,7 +715,9 @@ export class MerchantsService implements OnModuleInit {
           effectiveFrom: commissionRates.effectiveFrom,
         })
         .from(commissionRates)
-        .where(eq(commissionRates.restaurantId, restaurantId));
+        .where(
+          and(eq(commissionRates.restaurantId, restaurantId), isNull(commissionRates.withdrawnAt)),
+        );
       const before = commissionAt(rates, new Date(now));
       await tx.insert(commissionRates).values({
         restaurantId,
@@ -1507,9 +1559,15 @@ export class MerchantsService implements OnModuleInit {
       .where(and(eq(table.id, id), eq(table.restaurantId, restaurantId), isNull(table.deletedAt)));
   }
 
-  private async lockRestaurant(tx: Tx, restaurantId: string) {
+  // Module-internal: the drafts service shares it (slice 2.30a).
+  async lockRestaurant(tx: Tx, restaurantId: string) {
     const [row] = await tx
-      .select({ cityId: restaurants.cityId, accountStatus: restaurants.accountStatus })
+      .select({
+        cityId: restaurants.cityId,
+        accountStatus: restaurants.accountStatus,
+        // The pin and the operations: a draft may still lack them.
+        complete: sql<boolean>`${restaurants.location} IS NOT NULL AND ${restaurants.minimumOrder} IS NOT NULL`,
+      })
       .from(restaurants)
       .where(eq(restaurants.id, restaurantId))
       .for('update');
@@ -1517,7 +1575,8 @@ export class MerchantsService implements OnModuleInit {
     return row;
   }
 
-  private async schedule(executor: Executor, restaurantId: string): Promise<OpeningPeriod[]> {
+  // Module-internal: the drafts service shares it (slice 2.30a).
+  async schedule(executor: Executor, restaurantId: string): Promise<OpeningPeriod[]> {
     const [current] = await executor
       .select({ id: weeklySchedules.id })
       .from(weeklySchedules)
@@ -1536,7 +1595,8 @@ export class MerchantsService implements OnModuleInit {
       .orderBy(asc(openingPeriods.weekday), asc(openingPeriods.opensAt));
   }
 
-  private async coveredZoneIds(executor: Executor, restaurantId: string): Promise<string[]> {
+  // Module-internal: the drafts service shares it (slice 2.30a).
+  async coveredZoneIds(executor: Executor, restaurantId: string): Promise<string[]> {
     const rows = await executor
       .select({ zoneId: coverageZones.zoneId })
       .from(coverageZones)
@@ -1545,7 +1605,8 @@ export class MerchantsService implements OnModuleInit {
     return rows.map((row) => row.zoneId);
   }
 
-  private async checkCoverage(cityId: string, coverage: Coverage): Promise<void> {
+  // Module-internal: the drafts service shares it (slice 2.30a).
+  async checkCoverage(cityId: string, coverage: Coverage): Promise<void> {
     if (coverage.kind === 'radius') {
       if (!Number.isInteger(coverage.radiusMetres) || coverage.radiusMetres <= 0) {
         throw new MerchantsRefusedError('invalid_coverage', 'the radius is whole metres above 0');
@@ -1568,7 +1629,8 @@ export class MerchantsService implements OnModuleInit {
   // Amounts are in the city's base currency. Until the first order locks the
   // base, one of the city's other currencies is allowed, so the base can then
   // change to it (AP §8.6, D25), as the delivery fee does.
-  private async checkBaseCurrency(tx: Tx, cityId: string, currency: string): Promise<void> {
+  // Module-internal: the drafts service shares it (slice 2.30a).
+  async checkBaseCurrency(tx: Tx, cityId: string, currency: string): Promise<void> {
     await lockCityCurrencies(tx, cityId);
     const base = await this.fx.baseCurrency(cityId, tx);
     const allowed =
@@ -1594,7 +1656,7 @@ function switchedOff(
   return now.getTime() < row.unavailableUntil.getTime() ? { until: row.unavailableUntil } : null;
 }
 
-function validPoint({ latitude, longitude }: Point): boolean {
+export function validPoint({ latitude, longitude }: Point): boolean {
   return (
     Number.isFinite(latitude) &&
     Number.isFinite(longitude) &&
@@ -1603,11 +1665,11 @@ function validPoint({ latitude, longitude }: Point): boolean {
   );
 }
 
-function hasReason(change: MerchantChange): boolean {
+export function hasReason(change: MerchantChange): boolean {
   return (change.reason ?? '').trim().length > 0;
 }
 
-function checkCommission(rateBp: number): void {
+export function checkCommission(rateBp: number): void {
   if (!Number.isInteger(rateBp) || rateBp < 0 || rateBp > 10_000) {
     throw new MerchantsRefusedError(
       'invalid_commission',
@@ -1616,7 +1678,7 @@ function checkCommission(rateBp: number): void {
   }
 }
 
-function changedBy(actor: AuditActor): {
+export function changedBy(actor: AuditActor): {
   changedByType: 'admin' | 'merchant' | 'system';
   changedById: string | null;
 } {
@@ -1627,7 +1689,7 @@ function changedBy(actor: AuditActor): {
 }
 
 // The audit log keeps JSON, which has no bigint: amounts become strings.
-function forAudit(value: object): Record<string, unknown> {
+export function forAudit(value: object): Record<string, unknown> {
   return JSON.parse(
     JSON.stringify(value, (_key, inner: unknown) =>
       typeof inner === 'bigint' ? inner.toString() : inner,

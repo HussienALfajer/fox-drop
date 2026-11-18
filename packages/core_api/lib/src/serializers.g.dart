@@ -208,6 +208,25 @@ Serializers _$serializers =
           ..add(AdminDispatchStateDtoOutputOrderCaptainTrackEnum.serializer)
           ..add(AdminDispatchStateDtoOutputOrderOffer.serializer)
           ..add(AdminDispatchStateDtoOutputOrderStatusEnum.serializer)
+          ..add(AdminDraftBasicsDto.serializer)
+          ..add(AdminDraftChoiceOutput.serializer)
+          ..add(AdminDraftCommissionDto.serializer)
+          ..add(AdminDraftCommissionDtoLaunch.serializer)
+          ..add(AdminDraftConfirmContractDto.serializer)
+          ..add(AdminDraftConfirmContractDtoParityPledgeEnum.serializer)
+          ..add(AdminDraftContractDto.serializer)
+          ..add(AdminDraftCoverage.serializer)
+          ..add(AdminDraftCoverageKindEnum.serializer)
+          ..add(AdminDraftCoverageOutput.serializer)
+          ..add(AdminDraftCoverageOutputKindEnum.serializer)
+          ..add(AdminDraftLocationDto.serializer)
+          ..add(AdminDraftMoney.serializer)
+          ..add(AdminDraftMoneyOutput.serializer)
+          ..add(AdminDraftOperationsDto.serializer)
+          ..add(AdminDraftPeriod.serializer)
+          ..add(AdminDraftPeriodOutput.serializer)
+          ..add(AdminDraftPoint.serializer)
+          ..add(AdminDraftPointOutput.serializer)
           ..add(AdminDrawerSessionDtoOutput.serializer)
           ..add(AdminDrawerSessionDtoOutputKindEnum.serializer)
           ..add(AdminDrawerSessionsDtoOutput.serializer)
@@ -324,6 +343,8 @@ Serializers _$serializers =
           ..add(AdminNewMassPushDto.serializer)
           ..add(AdminNewMassPushDtoAudienceEnum.serializer)
           ..add(AdminNewMassPushDtoTargetEnum.serializer)
+          ..add(AdminNewRestaurantAccountDto.serializer)
+          ..add(AdminNewRestaurantAccountDtoRoleEnum.serializer)
           ..add(AdminNewUploadDto.serializer)
           ..add(AdminNewUploadDtoContentTypeEnum.serializer)
           ..add(AdminNewUploadDtoPurposeEnum.serializer)
@@ -615,8 +636,24 @@ Serializers _$serializers =
           ..add(AdminResendNotificationDtoToEnum.serializer)
           ..add(AdminResolveShortfallDto.serializer)
           ..add(AdminResolveShortfallDtoResponsibleEnum.serializer)
+          ..add(AdminRestaurantAccountsDtoOutput.serializer)
+          ..add(AdminRestaurantAccountsDtoOutputAccountsInner.serializer)
+          ..add(
+            AdminRestaurantAccountsDtoOutputAccountsInnerRoleEnum.serializer,
+          )
           ..add(AdminRestaurantCategoriesDto.serializer)
           ..add(AdminRestaurantCategoriesDtoOutput.serializer)
+          ..add(AdminRestaurantDraftChoicesDtoOutput.serializer)
+          ..add(AdminRestaurantDraftDtoOutput.serializer)
+          ..add(AdminRestaurantDraftDtoOutputBasics.serializer)
+          ..add(AdminRestaurantDraftDtoOutputCommission.serializer)
+          ..add(AdminRestaurantDraftDtoOutputCommissionLaunch.serializer)
+          ..add(AdminRestaurantDraftDtoOutputContract.serializer)
+          ..add(AdminRestaurantDraftDtoOutputLocation.serializer)
+          ..add(AdminRestaurantDraftDtoOutputOperations.serializer)
+          ..add(AdminRestaurantDraftsDtoOutput.serializer)
+          ..add(AdminRestaurantDraftsDtoOutputDraftsInner.serializer)
+          ..add(AdminRestaurantDraftsDtoOutputDraftsInnerSteps.serializer)
           ..add(AdminRestaurantHolidayCloseDto.serializer)
           ..add(AdminRestaurantImagesDtoOutput.serializer)
           ..add(AdminRestaurantImagesDtoOutputCategoriesInner.serializer)
@@ -1821,6 +1858,28 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminDraftChoiceOutput),
+            ]),
+            () => ListBuilder<AdminDraftChoiceOutput>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminDraftChoiceOutput),
+            ]),
+            () => ListBuilder<AdminDraftChoiceOutput>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(AdminDraftPeriod)]),
+            () => ListBuilder<AdminDraftPeriod>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminDraftPeriodOutput),
+            ]),
+            () => ListBuilder<AdminDraftPeriodOutput>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminEditDtoKeepInner),
             ]),
             () => ListBuilder<AdminEditDtoKeepInner>(),
@@ -2447,6 +2506,18 @@ Serializers _$serializers =
               const FullType(AdminRejectDtoItemsInner),
             ]),
             () => ListBuilder<AdminRejectDtoItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminRestaurantAccountsDtoOutputAccountsInner),
+            ]),
+            () => ListBuilder<AdminRestaurantAccountsDtoOutputAccountsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminRestaurantDraftsDtoOutputDraftsInner),
+            ]),
+            () => ListBuilder<AdminRestaurantDraftsDtoOutputDraftsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -3792,6 +3863,22 @@ Serializers _$serializers =
               const FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
             ]),
             () => ListBuilder<SettingListDtoOutputSettingsInnerEditRolesEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

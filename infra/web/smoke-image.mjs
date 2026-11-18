@@ -1,7 +1,8 @@
 // Starts the web image as compose.yaml runs it (read-only, no capabilities)
 // and checks both apps: a deep link answers index.html (browser history
 // routing, architecture §17.2), the hashed build files are cached for a year,
-// and a missing build file is a 404. Usage: node infra/web/smoke-image.mjs <image>
+// the panel's map worker is served as JavaScript, and a missing build file is
+// a 404. Usage: node infra/web/smoke-image.mjs <image>
 import { execFileSync } from 'node:child_process';
 
 const image = process.argv[2];
@@ -61,6 +62,23 @@ try {
       assetResponse.headers.get('cache-control')?.includes('immutable'),
       `${app}: ${asset} is not cached for a year`,
     );
+
+    // The panel's map worker (slice 2.30a): a module needs a JavaScript type.
+    if (app === 'admin') {
+      const worker = docker(
+        'exec',
+        container,
+        'sh',
+        '-c',
+        'ls /usr/share/nginx/admin/assets | grep "\\.mjs$" | head -1',
+      );
+      expect(worker, 'admin: the build has no map worker');
+      const workerResponse = await get(`${origin}/assets/${worker}`);
+      expect(
+        workerResponse.headers.get('content-type')?.startsWith('text/javascript'),
+        `admin: ${worker} is served as ${workerResponse.headers.get('content-type')}`,
+      );
+    }
 
     const missing = await get(`${origin}/assets/missing.js`);
     expect(missing.status === 404, `${app}: a missing build file answered ${missing.status}`);

@@ -14,6 +14,8 @@ const adminPurposes = [
   'item_photo',
   'category_image',
   'banner_image',
+  'restaurant_contract',
+  'restaurant_licence',
 ] as const;
 type AdminPurpose = (typeof adminPurposes)[number];
 
@@ -49,6 +51,9 @@ const purposePermissions: Record<AdminPurpose, AdminPermission[]> = {
   category_image: ['content.categories'],
   // A banner's image (AP §9.11.2, slice 2.27c): marketing.banners (OWN, DATA).
   banner_image: ['marketing.banners'],
+  // A restaurant's scans (AP §9.6.3 step 5, slice 2.30a): DATA uploads them.
+  restaurant_contract: ['restaurants.create'],
+  restaurant_licence: ['restaurants.create'],
 };
 
 // Architecture §5.8: a pre-signed upload to public-media. No Idempotency-Key:

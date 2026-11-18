@@ -19,6 +19,12 @@ _$adminNewUploadDtoPurposeEnum_categoryImage =
     const AdminNewUploadDtoPurposeEnum._('categoryImage');
 const AdminNewUploadDtoPurposeEnum _$adminNewUploadDtoPurposeEnum_bannerImage =
     const AdminNewUploadDtoPurposeEnum._('bannerImage');
+const AdminNewUploadDtoPurposeEnum
+_$adminNewUploadDtoPurposeEnum_restaurantContract =
+    const AdminNewUploadDtoPurposeEnum._('restaurantContract');
+const AdminNewUploadDtoPurposeEnum
+_$adminNewUploadDtoPurposeEnum_restaurantLicence =
+    const AdminNewUploadDtoPurposeEnum._('restaurantLicence');
 
 AdminNewUploadDtoPurposeEnum _$adminNewUploadDtoPurposeEnumValueOf(
   String name,
@@ -34,6 +40,10 @@ AdminNewUploadDtoPurposeEnum _$adminNewUploadDtoPurposeEnumValueOf(
       return _$adminNewUploadDtoPurposeEnum_categoryImage;
     case 'bannerImage':
       return _$adminNewUploadDtoPurposeEnum_bannerImage;
+    case 'restaurantContract':
+      return _$adminNewUploadDtoPurposeEnum_restaurantContract;
+    case 'restaurantLicence':
+      return _$adminNewUploadDtoPurposeEnum_restaurantLicence;
     default:
       throw ArgumentError(name);
   }
@@ -47,6 +57,8 @@ _$adminNewUploadDtoPurposeEnumValues =
       _$adminNewUploadDtoPurposeEnum_itemPhoto,
       _$adminNewUploadDtoPurposeEnum_categoryImage,
       _$adminNewUploadDtoPurposeEnum_bannerImage,
+      _$adminNewUploadDtoPurposeEnum_restaurantContract,
+      _$adminNewUploadDtoPurposeEnum_restaurantLicence,
     ]);
 
 const AdminNewUploadDtoContentTypeEnum
@@ -99,6 +111,8 @@ class _$AdminNewUploadDtoPurposeEnumSerializer
     'itemPhoto': 'item_photo',
     'categoryImage': 'category_image',
     'bannerImage': 'banner_image',
+    'restaurantContract': 'restaurant_contract',
+    'restaurantLicence': 'restaurant_licence',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_logo': 'restaurantLogo',
@@ -106,6 +120,8 @@ class _$AdminNewUploadDtoPurposeEnumSerializer
     'item_photo': 'itemPhoto',
     'category_image': 'categoryImage',
     'banner_image': 'bannerImage',
+    'restaurant_contract': 'restaurantContract',
+    'restaurant_licence': 'restaurantLicence',
   };
 
   @override

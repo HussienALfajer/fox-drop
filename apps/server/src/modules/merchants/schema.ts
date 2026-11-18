@@ -4,6 +4,7 @@ import {
   boolean,
   check,
   customType,
+  date,
   index,
   integer,
   jsonb,
@@ -60,10 +61,16 @@ export const restaurants = merchants.table(
     // Keys in public-media (architecture §5.8), set from the panel's uploads.
     logoKey: text('logo_key'),
     coverKey: text('cover_key'),
-    location: point('location').notNull(),
+    // The record of AP §9.6.3 steps 2 and 3 (the pin, the coverage, the
+    // minimum order and the prep time) stays empty while a draft's wizard has
+    // not reached it (slice 2.30a); every other status has it (a CHECK).
+    location: point('location'),
     address: text('address'),
     // E.164.
     phone: text('phone'),
+    // AP §9.6.3 step 2: the owner's name as a contact. Their number is kept
+    // once, encrypted, as the owner's sign-in account (identity, step 6).
+    ownerName: text('owner_name'),
     accountStatus: text('account_status', { enum: accountStatuses }).notNull().default('draft'),
     // The reason of the latest suspension, shown in the restaurant app (RA §5.5).
     suspensionReason: text('suspension_reason'),
@@ -75,13 +82,13 @@ export const restaurants = merchants.table(
     sortWeight: integer('sort_weight').notNull().default(0),
     // Owner decision 2026-11-06: a radius around the pin, or chosen zones
     // (coverage_zones).
-    coverageKind: text('coverage_kind', { enum: ['radius', 'zones'] }).notNull(),
+    coverageKind: text('coverage_kind', { enum: ['radius', 'zones'] }),
     coverageRadiusMetres: integer('coverage_radius_metres'),
     // RA R13: in the city's base currency, compared with the items value
     // before discounts (CU §10.2).
-    minimumOrder: bigint('minimum_order', { mode: 'bigint' }).notNull(),
-    minimumOrderCurrency: text('minimum_order_currency').notNull(),
-    defaultPrepMin: smallint('default_prep_min').notNull(),
+    minimumOrder: bigint('minimum_order', { mode: 'bigint' }),
+    minimumOrderCurrency: text('minimum_order_currency'),
+    defaultPrepMin: smallint('default_prep_min'),
     // RA §7.4: off, or 1 to 50.
     maxActiveOrders: smallint('max_active_orders'),
     // RA §12.7, AP §9.6.4: the city's other currencies the restaurant accepts
@@ -109,6 +116,14 @@ export const restaurants = merchants.table(
     check(
       'restaurants_account_status_values',
       sql`${table.accountStatus} IN ('draft', 'test', 'active', 'suspended', 'terminated')`,
+    ),
+    check(
+      'restaurants_record_complete',
+      sql`${table.accountStatus} = 'draft' OR (${table.location} IS NOT NULL AND ${table.coverageKind} IS NOT NULL AND ${table.minimumOrder} IS NOT NULL AND ${table.minimumOrderCurrency} IS NOT NULL AND ${table.defaultPrepMin} IS NOT NULL)`,
+    ),
+    check(
+      'restaurants_operations_together',
+      sql`(${table.coverageKind} IS NULL) = (${table.minimumOrder} IS NULL) AND (${table.minimumOrder} IS NULL) = (${table.minimumOrderCurrency} IS NULL) AND (${table.minimumOrder} IS NULL) = (${table.defaultPrepMin} IS NULL)`,
     ),
     check('restaurants_coverage_kind_values', sql`${table.coverageKind} IN ('radius', 'zones')`),
     check(
@@ -282,7 +297,9 @@ export const stateOutbox = merchants.table(
 );
 
 // AP §9.6.5, D16: a commission version in basis points of the items value
-// (1500 is 15%), in effect from its start for new orders. Never changed.
+// (1500 is 15%), in effect from its start for new orders. Never changed,
+// except that a version not yet in force is withdrawn when a newer setting
+// replaces the plan (the wizard's step 4, slice 2.30a): no order ever used it.
 export const commissionRates = merchants.table(
   'commission_rates',
   {
@@ -298,9 +315,14 @@ export const commissionRates = merchants.table(
     changedById: uuid('changed_by_id'),
     reason: text('reason'),
     createdAt: createdAt(),
+    withdrawnAt: timestamp('withdrawn_at', { withTimezone: true }),
   },
   (table) => [
     index('commission_rates_restaurant').on(table.restaurantId, table.effectiveFrom),
+    check(
+      'commission_rates_withdrawn_before_start',
+      sql`${table.withdrawnAt} IS NULL OR ${table.withdrawnAt} <= ${table.effectiveFrom}`,
+    ),
     check('commission_rates_rate', sql`${table.rateBp} BETWEEN 0 AND 10000`),
     changedByValues('commission_rates_changed_by_type_values', table.changedByType),
   ],
@@ -559,6 +581,37 @@ export const changeRequests = merchants.table(
     check(
       'change_requests_rejection_reason',
       sql`(${table.status} = 'rejected') = (${table.rejectionReason} IS NOT NULL)`,
+    ),
+  ],
+);
+
+// AP §9.6.3 step 5 (slice 2.30a): the restaurant's contract. DATA enters the
+// signing date and duration and uploads the scans (keys in private-docs);
+// OWN or OPS confirm it with the price-parity pledge (in-app prices at most
+// the in-store ones). Saving another value clears the confirmation.
+export const contracts = merchants.table(
+  'contracts',
+  {
+    restaurantId: uuid('restaurant_id')
+      .primaryKey()
+      .references(() => restaurants.id),
+    signedOn: date('signed_on', { mode: 'string' }),
+    durationMonths: smallint('duration_months'),
+    contractKey: text('contract_key'),
+    licenceKey: text('licence_key'),
+    // The admin (identity's id, a plain column) who confirmed the contract
+    // and the pledge, and when.
+    confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
+    confirmedBy: uuid('confirmed_by'),
+    updatedBy: uuid('updated_by').notNull(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (table) => [
+    check('contracts_duration', sql`${table.durationMonths} BETWEEN 1 AND 120`),
+    check(
+      'contracts_confirmed',
+      sql`(${table.confirmedAt} IS NULL) = (${table.confirmedBy} IS NULL) AND (${table.confirmedAt} IS NULL OR (${table.signedOn} IS NOT NULL AND ${table.durationMonths} IS NOT NULL AND ${table.contractKey} IS NOT NULL))`,
     ),
   ],
 );

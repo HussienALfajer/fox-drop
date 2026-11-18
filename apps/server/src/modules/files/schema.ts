@@ -16,6 +16,10 @@ export const uploadPurposes = [
   'report_photo',
   'category_image',
   'banner_image',
+  // AP §9.6.3 step 5 (slice 2.30a): a restaurant's contract and its
+  // commercial registration or licence, scanned, in private-docs.
+  'restaurant_contract',
+  'restaurant_licence',
 ] as const;
 export type UploadPurpose = (typeof uploadPurposes)[number];
 
@@ -46,7 +50,7 @@ export const uploads = files.table(
   (table) => [
     check(
       'uploads_purpose_values',
-      sql`${table.purpose} IN ('restaurant_logo', 'restaurant_cover', 'item_photo', 'report_photo', 'category_image', 'banner_image')`,
+      sql`${table.purpose} IN ('restaurant_logo', 'restaurant_cover', 'item_photo', 'report_photo', 'category_image', 'banner_image', 'restaurant_contract', 'restaurant_licence')`,
     ),
     check(
       'uploads_content_type_values',

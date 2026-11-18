@@ -23,7 +23,8 @@ export class MerchantSignInRefusedError extends Error {
 
 export class MerchantAccountRefusedError extends Error {
   constructor(
-    readonly refusal: 'unknown_restaurant' | 'phone_taken' | 'invalid_account',
+    readonly refusal:
+      'unknown_restaurant' | 'phone_taken' | 'invalid_account' | 'unknown_account' | 'not_a_draft',
     message: string,
   ) {
     super(message);
@@ -62,11 +63,14 @@ export class MerchantAccountsService {
   ) {}
 
   // An owner or a cashier of a restaurant. A number belongs to at most one
-  // restaurant (S6): one taken by an account not removed is refused.
+  // restaurant (S6): one taken by an account not removed is refused. With
+  // `draftOnly` (the wizard's step 6, slice 2.30a) the restaurant must still
+  // be a draft, read under its row's share lock in the add's transaction.
   async addAccount(
     restaurantId: string,
     account: { role: MerchantRole; name: string; phone: string },
     change: { actor: AuditActor; context: AuditRequestContext },
+    { draftOnly = false }: { draftOnly?: boolean } = {},
   ): Promise<string> {
     const name = account.name.trim();
     if (name.length === 0 || !APP_PHONE_PATTERN.test(account.phone)) {
@@ -75,21 +79,37 @@ export class MerchantAccountsService {
         'an account needs a name and a Syrian or Turkish mobile in E.164',
       );
     }
-    const restaurant = await this.merchants.restaurant(restaurantId);
+    const restaurant = await this.merchants.cityAndStatus(restaurantId);
     if (!restaurant) {
       throw new MerchantAccountRefusedError('unknown_restaurant', 'no such restaurant');
     }
     const phoneHash = this.secrets.phoneHash(account.phone);
     return this.database.db.transaction(async (tx) => {
+      if (draftOnly) await this.checkDraft(tx, restaurantId);
       // The partial unique index refuses a second account; the lock turns
       // that into a refusal instead of an error.
       await tx.execute(
         sql`SELECT pg_advisory_xact_lock(hashtextextended(${`identity.merchant_phone:${phoneHash}`}, 0))`,
       );
       const [taken] = await tx
-        .select({ id: merchantAccounts.id })
+        .select({
+          id: merchantAccounts.id,
+          restaurantId: merchantAccounts.restaurantId,
+          role: merchantAccounts.role,
+          name: merchantAccounts.name,
+        })
         .from(merchantAccounts)
         .where(and(eq(merchantAccounts.phoneHash, phoneHash), isNull(merchantAccounts.removedAt)));
+      // The same account again (a retry of the wizard's add) is answered as
+      // it was made.
+      if (
+        taken &&
+        taken.restaurantId === restaurantId &&
+        taken.role === account.role &&
+        taken.name === name
+      ) {
+        return taken.id;
+      }
       if (taken) {
         throw new MerchantAccountRefusedError(
           'phone_taken',
@@ -122,6 +142,88 @@ export class MerchantAccountsService {
       );
       return created.id;
     });
+  }
+
+  // The wizard's step 6 (AP §9.6.3; slice 2.30a): the accounts with their
+  // numbers, owners first, for the panel.
+  async accountsWithPhones(restaurantId: string): Promise<(MerchantAccount & { phone: string })[]> {
+    const rows = await this.database.db
+      .select({
+        id: merchantAccounts.id,
+        restaurantId: merchantAccounts.restaurantId,
+        role: merchantAccounts.role,
+        name: merchantAccounts.name,
+        phoneEncrypted: merchantAccounts.phoneEncrypted,
+      })
+      .from(merchantAccounts)
+      .where(
+        and(eq(merchantAccounts.restaurantId, restaurantId), isNull(merchantAccounts.removedAt)),
+      )
+      .orderBy(sql`${merchantAccounts.role} = 'cashier'`, asc(merchantAccounts.createdAt));
+    return rows.map(({ phoneEncrypted, ...account }) => ({
+      ...account,
+      phone: this.secrets.decrypt(phoneEncrypted),
+    }));
+  }
+
+  // Removes an account of a draft restaurant (the wizard's step 6). A
+  // draft's users never signed in (RA §5.2 item 3), so no session ends; the
+  // other restaurants' accounts are removed with staff and devices (2.33).
+  // Removing one already removed is unknown_account.
+  async removeDraftAccount(
+    restaurantId: string,
+    accountId: string,
+    change: { actor: AuditActor; context: AuditRequestContext },
+    now = new Date(),
+  ): Promise<void> {
+    await this.database.db.transaction(async (tx) => {
+      await this.checkDraft(tx, restaurantId);
+      const [removed] = await tx
+        .update(merchantAccounts)
+        .set({ removedAt: now })
+        .where(
+          and(
+            eq(merchantAccounts.id, accountId),
+            eq(merchantAccounts.restaurantId, restaurantId),
+            isNull(merchantAccounts.removedAt),
+          ),
+        )
+        .returning({
+          cityId: merchantAccounts.cityId,
+          role: merchantAccounts.role,
+          name: merchantAccounts.name,
+        });
+      if (!removed) {
+        throw new MerchantAccountRefusedError('unknown_account', 'no such account');
+      }
+      await this.audit.recordWrite(
+        {
+          actor: change.actor,
+          context: change.context,
+          cityId: removed.cityId,
+          action: 'merchant_account.remove',
+          target: { type: 'merchant_account', id: accountId },
+          before: { restaurantId, role: removed.role, name: removed.name },
+          after: null,
+        },
+        tx,
+      );
+    });
+  }
+
+  // 404 unknown_restaurant, 409 not_a_draft, read under the restaurant
+  // row's share lock until the caller's transaction ends.
+  private async checkDraft(
+    tx: Parameters<MerchantsService['lockedAccountStatus']>[0],
+    restaurantId: string,
+  ) {
+    const status = await this.merchants.lockedAccountStatus(tx, restaurantId);
+    if (status === null) {
+      throw new MerchantAccountRefusedError('unknown_restaurant', 'no such restaurant');
+    }
+    if (status !== 'draft') {
+      throw new MerchantAccountRefusedError('not_a_draft', 'only a draft changes accounts here');
+    }
   }
 
   // The restaurant's accounts not removed, owners first.

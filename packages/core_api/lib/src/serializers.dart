@@ -149,6 +149,22 @@ import 'package:core_api/src/model/admin_device_released_dto_output.dart';
 import 'package:core_api/src/model/admin_dispatch_state_dto_output.dart';
 import 'package:core_api/src/model/admin_dispatch_state_dto_output_order.dart';
 import 'package:core_api/src/model/admin_dispatch_state_dto_output_order_offer.dart';
+import 'package:core_api/src/model/admin_draft_basics_dto.dart';
+import 'package:core_api/src/model/admin_draft_choice_output.dart';
+import 'package:core_api/src/model/admin_draft_commission_dto.dart';
+import 'package:core_api/src/model/admin_draft_commission_dto_launch.dart';
+import 'package:core_api/src/model/admin_draft_confirm_contract_dto.dart';
+import 'package:core_api/src/model/admin_draft_contract_dto.dart';
+import 'package:core_api/src/model/admin_draft_coverage.dart';
+import 'package:core_api/src/model/admin_draft_coverage_output.dart';
+import 'package:core_api/src/model/admin_draft_location_dto.dart';
+import 'package:core_api/src/model/admin_draft_money.dart';
+import 'package:core_api/src/model/admin_draft_money_output.dart';
+import 'package:core_api/src/model/admin_draft_operations_dto.dart';
+import 'package:core_api/src/model/admin_draft_period.dart';
+import 'package:core_api/src/model/admin_draft_period_output.dart';
+import 'package:core_api/src/model/admin_draft_point.dart';
+import 'package:core_api/src/model/admin_draft_point_output.dart';
 import 'package:core_api/src/model/admin_drawer_session_dto_output.dart';
 import 'package:core_api/src/model/admin_drawer_sessions_dto_output.dart';
 import 'package:core_api/src/model/admin_edit_dto.dart';
@@ -224,6 +240,7 @@ import 'package:core_api/src/model/admin_new_banner_dto.dart';
 import 'package:core_api/src/model/admin_new_category_dto.dart';
 import 'package:core_api/src/model/admin_new_home_section_dto.dart';
 import 'package:core_api/src/model/admin_new_mass_push_dto.dart';
+import 'package:core_api/src/model/admin_new_restaurant_account_dto.dart';
 import 'package:core_api/src/model/admin_new_upload_dto.dart';
 import 'package:core_api/src/model/admin_no_answer_wait_dto.dart';
 import 'package:core_api/src/model/admin_notification_resent_dto_output.dart';
@@ -364,8 +381,21 @@ import 'package:core_api/src/model/admin_reject_dto_items_inner.dart';
 import 'package:core_api/src/model/admin_release_device_dto.dart';
 import 'package:core_api/src/model/admin_resend_notification_dto.dart';
 import 'package:core_api/src/model/admin_resolve_shortfall_dto.dart';
+import 'package:core_api/src/model/admin_restaurant_accounts_dto_output.dart';
+import 'package:core_api/src/model/admin_restaurant_accounts_dto_output_accounts_inner.dart';
 import 'package:core_api/src/model/admin_restaurant_categories_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_categories_dto_output.dart';
+import 'package:core_api/src/model/admin_restaurant_draft_choices_dto_output.dart';
+import 'package:core_api/src/model/admin_restaurant_draft_dto_output.dart';
+import 'package:core_api/src/model/admin_restaurant_draft_dto_output_basics.dart';
+import 'package:core_api/src/model/admin_restaurant_draft_dto_output_commission.dart';
+import 'package:core_api/src/model/admin_restaurant_draft_dto_output_commission_launch.dart';
+import 'package:core_api/src/model/admin_restaurant_draft_dto_output_contract.dart';
+import 'package:core_api/src/model/admin_restaurant_draft_dto_output_location.dart';
+import 'package:core_api/src/model/admin_restaurant_draft_dto_output_operations.dart';
+import 'package:core_api/src/model/admin_restaurant_drafts_dto_output.dart';
+import 'package:core_api/src/model/admin_restaurant_drafts_dto_output_drafts_inner.dart';
+import 'package:core_api/src/model/admin_restaurant_drafts_dto_output_drafts_inner_steps.dart';
 import 'package:core_api/src/model/admin_restaurant_holiday_close_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_images_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_images_dto_output_categories_inner.dart';
@@ -1012,6 +1042,22 @@ part 'serializers.g.dart';
   AdminDispatchStateDtoOutput,
   AdminDispatchStateDtoOutputOrder,
   AdminDispatchStateDtoOutputOrderOffer,
+  AdminDraftBasicsDto,
+  AdminDraftChoiceOutput,
+  AdminDraftCommissionDto,
+  AdminDraftCommissionDtoLaunch,
+  AdminDraftConfirmContractDto,
+  AdminDraftContractDto,
+  AdminDraftCoverage,
+  AdminDraftCoverageOutput,
+  AdminDraftLocationDto,
+  AdminDraftMoney,
+  AdminDraftMoneyOutput,
+  AdminDraftOperationsDto,
+  AdminDraftPeriod,
+  AdminDraftPeriodOutput,
+  AdminDraftPoint,
+  AdminDraftPointOutput,
   AdminDrawerSessionDtoOutput,
   AdminDrawerSessionsDtoOutput,
   AdminEditDto,
@@ -1087,6 +1133,7 @@ part 'serializers.g.dart';
   AdminNewCategoryDto,
   AdminNewHomeSectionDto,
   AdminNewMassPushDto,
+  AdminNewRestaurantAccountDto,
   AdminNewUploadDto,
   AdminNoAnswerWaitDto,
   AdminNotificationResentDtoOutput,
@@ -1227,8 +1274,21 @@ part 'serializers.g.dart';
   AdminReleaseDeviceDto,
   AdminResendNotificationDto,
   AdminResolveShortfallDto,
+  AdminRestaurantAccountsDtoOutput,
+  AdminRestaurantAccountsDtoOutputAccountsInner,
   AdminRestaurantCategoriesDto,
   AdminRestaurantCategoriesDtoOutput,
+  AdminRestaurantDraftChoicesDtoOutput,
+  AdminRestaurantDraftDtoOutput,
+  AdminRestaurantDraftDtoOutputBasics,
+  AdminRestaurantDraftDtoOutputCommission,
+  AdminRestaurantDraftDtoOutputCommissionLaunch,
+  AdminRestaurantDraftDtoOutputContract,
+  AdminRestaurantDraftDtoOutputLocation,
+  AdminRestaurantDraftDtoOutputOperations,
+  AdminRestaurantDraftsDtoOutput,
+  AdminRestaurantDraftsDtoOutputDraftsInner,
+  AdminRestaurantDraftsDtoOutputDraftsInnerSteps,
   AdminRestaurantHolidayCloseDto,
   AdminRestaurantImagesDtoOutput,
   AdminRestaurantImagesDtoOutputCategoriesInner,
@@ -1839,6 +1899,16 @@ Serializers serializers =
                 ListBuilder<AdminOrderDtoOutputOrderOutcomeChangeFoodsInner>(),
           )
           ..addBuilderFactory(
+            const FullType(BuiltList, [FullType(AdminDraftPeriodOutput)]),
+            () => ListBuilder<AdminDraftPeriodOutput>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminRestaurantDraftsDtoOutputDraftsInner),
+            ]),
+            () => ListBuilder<AdminRestaurantDraftsDtoOutputDraftsInner>(),
+          )
+          ..addBuilderFactory(
             const FullType(BuiltList, [
               FullType(MerchantRatingsDtoOutputRatingsInner),
             ]),
@@ -2126,6 +2196,10 @@ Serializers serializers =
                 >(),
           )
           ..addBuilderFactory(
+            const FullType(BuiltList, [FullType(AdminDraftChoiceOutput)]),
+            () => ListBuilder<AdminDraftChoiceOutput>(),
+          )
+          ..addBuilderFactory(
             const FullType(BuiltList, [
               FullType(AdminRecordDeliveryDtoReceivedInner),
             ]),
@@ -2263,6 +2337,10 @@ Serializers serializers =
                 >(),
           )
           ..addBuilderFactory(
+            const FullType(BuiltList, [FullType(AdminDraftPeriod)]),
+            () => ListBuilder<AdminDraftPeriod>(),
+          )
+          ..addBuilderFactory(
             const FullType(BuiltList, [
               FullType(CustomerActiveOrdersDtoOutputOrdersInnerTimelineInner),
             ]),
@@ -2353,6 +2431,12 @@ Serializers serializers =
               FullType(MerchantAccountDtoOutputPickupsInner),
             ]),
             () => ListBuilder<MerchantAccountDtoOutputPickupsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminRestaurantAccountsDtoOutputAccountsInner),
+            ]),
+            () => ListBuilder<AdminRestaurantAccountsDtoOutputAccountsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

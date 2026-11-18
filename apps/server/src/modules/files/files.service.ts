@@ -79,6 +79,8 @@ const folders: Record<UploadPurpose, string> = {
   report_photo: 'tickets/photos',
   category_image: 'content/categories',
   banner_image: 'marketing/banners',
+  restaurant_contract: 'restaurants/contracts',
+  restaurant_licence: 'restaurants/licences',
 };
 
 // The purposes whose image must have an exact size in pixels: a banner is
@@ -91,9 +93,15 @@ export const EXACT_IMAGE_SIZES: Partial<Record<UploadPurpose, { width: number; h
 const SIZE_HEAD_BYTES = 128 * 1024;
 
 // A report's photo is the customer's (owner decision 2026-11-17): it goes to
-// private-docs, uploaded from the app; the others to public-media from the
-// panel.
-const PRIVATE_PURPOSES: readonly UploadPurpose[] = ['report_photo'];
+// private-docs, uploaded from the app. A restaurant's contract and licence
+// scans (AP §9.6.3 step 5, slice 2.30a) go to private-docs from the panel.
+// The others go to public-media from the panel.
+const APP_PURPOSES: readonly UploadPurpose[] = ['report_photo'];
+const PRIVATE_PURPOSES: readonly UploadPurpose[] = [
+  'report_photo',
+  'restaurant_contract',
+  'restaurant_licence',
+];
 
 function bucketOf(purpose: UploadPurpose): string {
   return PRIVATE_PURPOSES.includes(purpose) ? PRIVATE_DOCS_BUCKET : PUBLIC_MEDIA_BUCKET;
@@ -193,7 +201,7 @@ export class FilesService {
   // private-docs; every other upload for the panel's into public-media.
   async createUpload(upload: NewUpload, accountId: string, now = new Date()) {
     const key = `${INCOMING}/${randomUUID()}.${extensions[upload.contentType]}`;
-    const fromApp = PRIVATE_PURPOSES.includes(upload.purpose);
+    const fromApp = APP_PURPOSES.includes(upload.purpose);
     if (fromApp) {
       const [{ asked }] = (await this.database.db
         .select({ asked: count() })
@@ -332,8 +340,10 @@ export class FilesService {
     );
   }
 
-  // A short signed GET of a report's photo (a key under tickets/) on the
-  // panel's origin, shown in the page (slice 2.24a).
+  // A short signed GET of a private image on the panel's origin, shown in
+  // the page: a report's photo under tickets/ (slice 2.24a) or a
+  // restaurant's scan under restaurants/ (slice 2.30a), the two paths nginx
+  // forwards.
   privateImageUrl(key: string, seconds: number, now = new Date()): Promise<string> {
     return getSignedUrl(
       this.store.uploads,

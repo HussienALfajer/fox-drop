@@ -623,7 +623,14 @@ export class RestaurantStatusService {
         .from(restaurants)
         .where(eq(restaurants.id, restaurantId));
       if (!current) return;
+      // A draft before its operations step has no operations to change.
+      if (current.defaultPrepMin === null) {
+        throw new MerchantsRefusedError('unknown_restaurant', 'the draft has no operations yet');
+      }
       const defaultPrepMin = settings.defaultPrepMin ?? current.defaultPrepMin;
+      if (defaultPrepMin === null) {
+        throw new MerchantsRefusedError('unknown_restaurant', 'the draft has no operations yet');
+      }
       if (settings.defaultPrepMin !== undefined) {
         const scope = { cityId: row.cityId };
         const [floor, ceiling] = await Promise.all([
