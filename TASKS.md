@@ -4,18 +4,27 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.28b, Favourites and «طلباتي» (`docs/roadmap.md`, Phase 2, Finding food). Not started.
+Slice 2.29, Maps in the apps (`docs/roadmap.md`, Phase 2, Finding food). Not started.
 
-- **Roadmap line:** 2.28b Favourites and «طلباتي»: the heart on cards and pages (a guest signs in), «المفضلة» in «حسابي» synced with the account, the order list (active first, then past, in pages), the order detail's money lines, address, timeline and links, and «اطلب مرة أخرى» at current prices skipping unavailable lines (CU §9.6, §12.3, U18). The owner hearts a restaurant on one phone, sees it on another, and reorders an earlier order.
-- **Specs:** CU §9.6 (favourites), CU §12.3 («طلباتي», the order detail, «اطلب مرة أخرى»), U18, CU §15 («Add or remove a favourite»), CU §6.1 (the screens), the customers module's «Not yet» (favourites) and ordering's («طلباتي»).
+- **Roadmap line:** 2.29 Maps in the apps: MapLibre with the hosted tiles, the pin and every address rule of CU §7.3 (edit and delete included), the captain's map, route and ETA, the customer following the captain from pickup (architecture §7.2, CU §7.3, §11, CA §9.2–9.6). The owner moves a pin and follows a captain on the map.
+- **Specs:** architecture §7.2 (MapLibre, OSM vector tiles: Protomaps PMTiles in the object storage or OpenFreeMap), §11.2 (`core_maps`), CU §7.3 («عناويني»: add, edit, delete, default; the pin), CU §11.2–11.3 (the captain on the map from the pickup), CA §9.2–9.6 (the captain's map, route and ETA), CU §18 item 3 (the field check of Azaz's OSM map).
 - **Branch:** the cloud session's branch.
-- **Plan:**
-  - [ ] Server: `customers.favourites` (account, restaurant, added and removed; migration), `PUT` and `DELETE /v1/customer/favourites/{restaurantId}` (signed in, idempotent by their nature) and `GET /v1/customer/favourites?latitude=&longitude=` (the cards of the favourites that deliver to the point, with their state and estimate); each card's `favourite` for a signed-in customer.
-  - [ ] Server: `GET /v1/customer/orders?cursor=` («طلباتي»: active first, then past, newest first, in pages of 20; restaurant, date, status, total), and the order read's missing parts of CU §12.3 (the money lines with the rounding, the timeline, the captain's first name).
-  - [ ] Customer app: the heart on `RestaurantTile` and the restaurant page (a guest goes to sign-in), «المفضلة» in «حسابي».
-  - [ ] Customer app: «طلباتي» from home and «حسابي», the order detail's lines, and «اطلب مرة أخرى» (delivered, rejected and cancelled orders, not free re-deliveries, while the restaurant is visible), reusing `rebuildLines` after the confirmation that the cart is replaced, the notes copied, the code not.
-  - [ ] Review, then the hand-over to 2.29.
-- **To ask the owner first:** the page size of «طلباتي» (20 proposed); whether «المفضلة» lists a favourite that does not deliver to the point greyed out or hides it (CU §9.6 says only those that deliver: hide); whether removing a favourite asks for confirmation (none proposed).
+- **Plan (to split with the owner first, `slice-plan`):**
+  - [ ] Server: the captain's ETA to the restaurant and the customer (geo's durations, CA §9.2), and the customer's read of the captain's position from the pickup (CU §11.3; the map channel or a read).
+  - [ ] `core_maps`: the map interface over `maplibre_gl`, the tile source and the shared style with Arabic labels.
+  - [ ] Customer app: the pin screen, «عناويني» with edit, delete and default (CU §7.3; the server routes exist), the captain on the order screen from the pickup.
+  - [ ] Captain app: the map with the route and ETA, navigation handed to Google or Apple Maps (CA §4.6).
+  - [ ] Review, then the hand-over to 2.30.
+- **To ask the owner first:** the design stop (a map screen is styled: are the UI/UX and the design system ready?); the tile host (Protomaps PMTiles in our storage, or OpenFreeMap if it is reachable from Syria) and whether the field check of CU §18 item 3 was done; whether the slice splits (2.29a addresses and the pin, 2.29b the captain's map and the customer following it).
+
+### Left from 2.28b (the cloud session's branch)
+
+- **Before deploying to staging:** migration 0115, expand only: the new table `customers.favourites` (the application role `SELECT`, `INSERT` and `UPDATE`; rows are never deleted). New routes: `GET /v1/customer/favourites`, `PUT` and `DELETE /v1/customer/favourites/{restaurantId}` and `GET /v1/customer/orders?cursor=`, all `@AppSignedIn()`. Every restaurant card and page gains `favourite`, every customer order read `timeline`: deploy the server before the app. No provision step.
+- **To check on staging (after the merge and the deploy):** sign in on one phone at a served point and tap the heart on a restaurant card: it fills. On a second phone, sign in with the same number: the card shows the heart, and «حسابي» → «المفضلة» lists the restaurant with its state and estimate; remove it there (no confirmation): it leaves the list on both phones. As a guest, tap a heart: the app asks you to sign in. Open «طلباتي» from home or «حسابي»: the active orders first, then the past ones, newest first, with «عرض المزيد» after 20. Open a delivered order: «قيمة الأصناف», «رسوم التوصيل», «الخصم», «تقريب» when not 0, the total, «سأدفع بـ», «استلم الكابتن» and «أعاد لك», «الكابتن: {الاسم}», «مراحل الطلب»; tap «اطلب مرة أخرى»: the cart opens at today's prices, the notes kept and the code not, «لم نضف: …» for what is no longer available.
+- **Decided by us:** «المفضلة» lists the favourites in the list's order (open first, closed last), not by when they were hearted; a restaurant customers do not see cannot be hearted (`404 unknown_restaurant`); a heart's failure puts it back with «حدث خطأ»; the timeline's steps are placed, accepted, picked up, at the door, then delivered, failed, rejected or cancelled (not «جاهز»); «اطلب مرة أخرى» is shown on a delivered, rejected or cancelled order and, when the restaurant is hidden since, answers «المطعم غير متاح حالياً»; the strings «لا توجد مطاعم مفضلة توصل إلى هذا العنوان», «أضف إلى المفضلة», «إزالة من المفضلة», «لا توجد طلبات بعد», «الطلبات الجارية», «الطلبات السابقة», «عرض المزيد», «المطعم غير متاح حالياً», «الكابتن: {الاسم}», «مراحل الطلب» and the step names «أُرسل الطلب», «قبل المطعم الطلب», «استلم الكابتن الطلب», «وصل الكابتن إلى الباب», «لم يقبل المطعم الطلب», «أُلغي الطلب».
+- **Owner decisions 2026-11-18:** «طلباتي» in pages of 20; a favourite that does not deliver to the point is hidden; removing a favourite asks for no confirmation.
+- **To confirm with the owner:** whether «اطلب مرة أخرى» should also follow a failed order (CU §12.3 names delivered, rejected and cancelled only); the words above.
+- **Not yet:** the bottom bar of CU §6.1 with «طلباتي» (waits for the design); «اطلب مرة أخرى» is offered before the app knows the restaurant is still visible (it learns at the tap); the favourites list measures every covering restaurant's card, as the list does; the order list's restaurant names come from `MerchantsService.names` per page.
 
 ### Left from 2.28a (`claude/slide-2-28-ekc0sd`)
 
