@@ -217,7 +217,7 @@ void main() {
     await app.settle(tester);
     expect(find.text('هل وصلت إلى المطعم؟'), findsOneWidget);
 
-    await tester.tap(find.text('ابدأ الملاحة'));
+    await app.tapVisible(tester, find.text('ابدأ الملاحة'));
     expect(
       app.launched.last.toString(),
       'https://www.google.com/maps/dir/?api=1&destination=36.586%2C37.044',

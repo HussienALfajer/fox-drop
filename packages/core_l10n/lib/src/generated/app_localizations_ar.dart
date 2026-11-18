@@ -1577,6 +1577,11 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String captainEta(int minutes) {
+    return 'الوصول خلال $minutes د تقريباً';
+  }
+
+  @override
   String captainWaitingSince(String duration) {
     return 'تنتظر منذ $duration';
   }

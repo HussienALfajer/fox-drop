@@ -12,7 +12,7 @@ Slice 2.29b, the captain's map and following the captain (`docs/roadmap.md`, Pha
 - **Plan (one commit per step):**
   - [x] Server: the leg's route (OSRM `route` geometry and duration, or the straight line × 1.3 without a line when OSRM is down) for the captain's current leg (to the restaurant, then to the customer), read once per leg (CA §4.6); the captain's position published on `order:{order_id}` from `picked_up` until the order ends, and the customer's route read (CU §11.3, architecture §6.2).
   - [x] `core_maps`: markers and the route line on the MapLibre map (their first use), logic in plain Dart with tests; a map without the fixed pin.
-  - [ ] Captain app: the map with the route and the ETA in step 1 (CA §9.2) and step 3 (CA §9.5), «ابدأ الملاحة» kept (it exists).
+  - [x] Captain app: the map with the route and the ETA in step 1 (CA §9.2) and step 3 (CA §9.5), «ابدأ الملاحة» kept (it exists).
   - [ ] Customer app: the map on the order screen from `picked_up` until the order ends: the captain's live position, the delivery pin and the route line when available; none before pickup (CU §11.3).
   - [ ] Review, then the hand-over to 2.30.
 - **To decide in the slice:** whether the panel shows a map in 2.29b; if so, its style must be read from the panel's own host (the style names `https://<API host>/maps/`, and the panel's CSP allows `connect-src 'self'` only): a style per host, or CSP and CORS for the API host (the 2.29a review).
