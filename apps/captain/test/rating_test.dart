@@ -51,7 +51,11 @@ void main() {
     app.work(availability: [availabilityJson()]);
     app.server.on('/v1/captain/ratings', [
       const FakeAnswer(500, {}),
-      const FakeAnswer(200, {'count': 0, 'average': null, 'reasons': <Object?>[]}),
+      const FakeAnswer(200, {
+        'count': 0,
+        'average': null,
+        'reasons': <Object?>[],
+      }),
     ]);
     await openRating(tester, app);
     await tester.tap(find.text('إعادة المحاولة'));
