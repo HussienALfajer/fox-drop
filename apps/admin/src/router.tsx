@@ -40,6 +40,8 @@ import { CompensationApprovalsPage } from './compensation-approvals-page.js';
 import { canApproveCompensations } from './order-compensation.js';
 import { canSeeBanners } from './banners.js';
 import { BannersPage } from './banners-page.js';
+import { canSeeMassPushes } from './mass-pushes.js';
+import { MassPushesPage } from './mass-pushes-page.js';
 import { canSeeHomeSections } from './home-sections.js';
 import { HomeSectionsPage } from './home-sections-page.js';
 import { canSeePromoCodes } from './promo-codes.js';
@@ -376,6 +378,18 @@ const bannersRoute = createRoute({
   component: BannersPage,
 });
 
+// AP §9.11.4 «الإشعارات الجماعية» (slice 2.27d): OWN sends, OPS reads
+// (checked by the page and the server).
+const massPushesRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/mass-pushes',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!canSeeMassPushes(context.session)) throw redirect({ to: '/' });
+  },
+  component: MassPushesPage,
+});
+
 // AP §9.11.1 «Code report» (slice 2.21d): the list's readers; OWN pauses,
 // resumes and extends from it (checked by the page and the server).
 const promoCodeReportRoute = createRoute({
@@ -644,6 +658,7 @@ const routeTree = rootRoute.addChildren([
     promoCodeReportRoute,
     homeSectionsRoute,
     bannersRoute,
+    massPushesRoute,
     officeRoute,
     cashDeskRoute,
     cashDeskSessionsRoute,

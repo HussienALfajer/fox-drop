@@ -11,6 +11,7 @@ import { ZONES_READ } from './peak-bonus.js';
 import { canApproveCompensations } from './order-compensation.js';
 import { canReadTickets } from './tickets.js';
 import { canSeeBanners } from './banners.js';
+import { canSeeMassPushes } from './mass-pushes.js';
 import { canSeeHomeSections } from './home-sections.js';
 import { canSeePromoCodes } from './promo-codes.js';
 import { RESTAURANT_STATEMENTS } from './restaurant-statements.js';
@@ -112,6 +113,11 @@ export function HomePage() {
           {canSeeBanners(session) && (
             <li>
               <Link to="/banners">{t('banners.title')}</Link>
+            </li>
+          )}
+          {canSeeMassPushes(session) && (
+            <li>
+              <Link to="/mass-pushes">{t('massPushes.title')}</Link>
             </li>
           )}
           {can(session, ZONES_READ) && (
