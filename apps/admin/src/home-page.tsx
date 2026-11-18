@@ -13,6 +13,7 @@ import { canSeePromoCodes } from './promo-codes.js';
 import { RESTAURANT_STATEMENTS } from './restaurant-statements.js';
 import { canSeeImages } from './restaurant-images.js';
 import { canSeeRestaurantStatus } from './restaurant-status.js';
+import { canSeeRatings } from './ratings.js';
 import { CUSTOMERS_READ } from './customers.js';
 import { MANUAL_ADJUSTMENT } from './manual-entries.js';
 import { can, useSignOut } from './session.js';
@@ -63,6 +64,11 @@ export function HomePage() {
           {canSeeRestaurantStatus(session) && (
             <li>
               <Link to="/restaurant-status">{t('restaurantStatus.title')}</Link>
+            </li>
+          )}
+          {canSeeRatings(session) && (
+            <li>
+              <Link to="/ratings">{t('ratings.title')}</Link>
             </li>
           )}
           {can(session, ZONES_READ) && (
