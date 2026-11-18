@@ -13,7 +13,7 @@
 
 ## 7.2 Map display: MapLibre with OpenStreetMap tiles
 
-- **MapLibre GL JS** on the web and **`maplibre_gl`** in Flutter, with vector tiles built from OpenStreetMap (Protomaps PMTiles in the object storage on FOX DROP's domain (§5.8), or OpenFreeMap if it is reachable from Syria).
+- **MapLibre GL JS** on the web and **`maplibre_gl`** in Flutter, with vector tiles built from OpenStreetMap: Protomaps PMTiles of the city's region in the object storage's `public-maps`, served under `/maps/` on FOX DROP's domain (§5.8; owner decision 2026-11-18, not OpenFreeMap). The style is Protomaps' light basemap, with its glyphs and sprite beside it; nothing is fetched from another host at run time (`docs/runbooks/maps.md`).
 - No per-view billing, one style shared by all products, Arabic labels.
 - **Field check before launch (CU §18 item 3):** compare the OSM map of Azaz's neighbourhoods with Google Maps. If OSM is clearly weaker, the customer pin screen MAY use Google Maps for display only, behind the same map interface in `core_maps` (§11.2).
 - Navigation is handed to Google Maps or Apple Maps (CA §4.6).

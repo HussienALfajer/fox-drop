@@ -30,6 +30,13 @@ void main() {
       );
     });
 
+    test('is the API host in a debug build against staging', () {
+      expect(
+        mapStyleUrl('https://api.example.test', debug: true),
+        'https://api.example.test/maps/style.json',
+      );
+    });
+
     test("is compose's maps service in a debug build", () {
       expect(
         mapStyleUrl('http://10.0.2.2:3000', debug: true),

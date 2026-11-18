@@ -217,6 +217,11 @@ test('nginx serves /maps/ from public-maps only, for reads', () => {
   assert.match(maps, /limit_except GET \{ deny all; \}/);
   assert.match(maps, /proxy_pass http:\/\/127\.0\.0\.1:\$\{MAPS_PORT\}\/;/);
   assert.match(maps, /proxy_set_header Host public-maps;/);
+  // Its own rate limit, so the map never uses up the API's (limits.conf).
+  assert.match(maps, /limit_req zone=foxdrop_\$\{FOXDROP_ENV\}_maps /);
+  assert.match(read('nginx/limits.conf.template'), /zone=foxdrop_\$\{FOXDROP_ENV\}_maps:/);
+  // The build downloads from outside: never on the environment's network.
+  assert.deepEqual(compose.services['maps-build'].networks, ['maps-build']);
   assert.ok(compose.services.storage.ports.includes('127.0.0.1:${MAPS_PORT:?}:3902'));
   const development = parse(read('../compose.yaml'));
   assert.match(development.configs['maps-nginx'].content, /proxy_set_header Host public-maps;/);

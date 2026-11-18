@@ -18,9 +18,13 @@ As root on the server, with the environment's current release:
 foxdrop-maps-build staging
 ```
 
-It builds the `maps-build` image (`infra/maps/Dockerfile`: the pmtiles CLI and curl), runs `infra/maps/build.sh` into the `maps-data` volume, then `maps-publish` (the server image) uploads it to `public-maps` and writes the environment's address into the style, last. The build downloads the region from the newest Protomaps daily build (`build.protomaps.com`, by range requests, a few megabytes) and the glyphs and sprite from `github.com/protomaps/basemaps-assets`; it fails, leaving the published map as it was, when the glyphs have no Arabic block. `provision.sh` runs it once with `--if-missing`; run it again by hand to refresh the map from newer OpenStreetMap data (no timer: the map of a town changes slowly).
+It builds the `maps-build` image (`infra/maps/Dockerfile`: the pmtiles CLI and curl), runs `infra/maps/build.sh` into the `maps-data` volume on a network of its own (internet only, never the environment's database or storage), then `maps-publish` (the server image) uploads it to `public-maps` and writes the environment's address into the style, last. The build downloads the region from the newest Protomaps daily build (`build.protomaps.com`, by range requests, a few megabytes) and the glyphs and sprite from `github.com/protomaps/basemaps-assets`; it fails, leaving the published map as it was, when the glyphs have no Arabic block. `provision.sh` runs it once with `--if-missing`, and a failed build there is reported without stopping the provisioning; run it again by hand to refresh the map from newer OpenStreetMap data (no timer: the map of a town changes slowly).
 
 In development: `docker compose run --rm maps-build` (into `.maps/`), then `pnpm --filter @fox-drop/server maps:publish`; the compose `maps` service serves it at `http://127.0.0.1:8089/maps/` (the Android emulator: `10.0.2.2:8089`).
+
+## Pinning the assets
+
+The glyphs and sprite come from `protomaps/basemaps-assets` at `assets_commit` in `infra/maps/build.sh`, checked against the commit the archive names. It is empty until the first build on the server: that build takes `main` and prints `basemaps-assets is not pinned: pin assets_commit=<commit>`; put that commit in `build.sh` in the next pull request, and move it with `@protomaps/basemaps` from then on.
 
 ## Checking
 
@@ -33,4 +37,4 @@ answers `206`. On a phone, the customer app's pin screen («اختر على ال
 ## Before launch
 
 - **The field check (CU §18 item 3):** compare the OSM map of Azaz's neighbourhoods with Google Maps. If OSM is clearly weaker, the customer pin screen may use Google Maps for display only, behind `core_maps` (architecture §7.2).
-- The map's requests count against the site's general rate limit (`limit_req zone=general burst=50`); watch for `503` on `/maps/` while panning, and give `/maps/` its own zone if they appear.
+- `/maps/` has its own rate limit (`foxdrop_<env>_maps`: 50 requests a second per address, bursts of 200, `429` past them; `infra/nginx/limits.conf.template`), so panning never uses up the API's general limit. Watch for `429` on `/maps/` in the access log once real phones use the map.

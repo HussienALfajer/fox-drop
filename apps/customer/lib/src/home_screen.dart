@@ -36,7 +36,7 @@ class HomeScreen extends ConsumerWidget {
           ? MapCamera(point.point, streetZoom)
           : const MapCamera(cityCentre, cityZoom);
       final chosen = await context.push<GeoPoint>(pinPath(camera));
-      if (chosen != null) {
+      if (chosen != null && context.mounted) {
         await ref.read(deliveryPointProvider.notifier).usePin(chosen);
       }
     }

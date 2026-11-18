@@ -38,7 +38,7 @@
 
 No Cloudflare (blocked in Syria) and no CDN in V1 (T9):
 
-- **nginx** on the server is the only public gateway for the API, the panel, the portal and the media. Every container listens on `127.0.0.1` or a Docker network only, never on a public address (Docker bypasses the host firewall).
+- **nginx** on the server is the only public gateway for the API, the panel, the portal, the media and the map (`/maps/`, reads of `public-maps` only, §5.8). Every container listens on `127.0.0.1` or a Docker network only, never on a public address (Docker bypasses the host firewall).
 - TLS from Let's Encrypt, with a `CAA` record that allows only it; HSTS on the web (§15.3).
 - **Rate limits** in two layers: per-IP limits in nginx (`limit_req`) on the sign-in and code routes, and the server's limits in Valkey (§5.7).
 - nginx sets `X-Forwarded-For` to the client address it sees (replacing, never appending), and the API trusts exactly that one hop, so sessions, limits and the audit log record the real client address.

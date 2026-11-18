@@ -4,6 +4,7 @@ import 'package:core_auth/testing.dart';
 import 'package:core_maps/core_maps.dart';
 import 'package:customer/src/account/addresses.dart';
 import 'package:customer/src/location/delivery_point.dart';
+import 'package:customer/src/router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -329,5 +330,34 @@ void main() {
     final after = app.container.read(deliveryPointProvider) as PointChecked;
     expect(after.addressId, isNull);
     expect(after.point, _street);
+  });
+
+  testWidgets('an address deleted on another phone leaves the point unsaved', (
+    tester,
+  ) async {
+    final app = await _addresses(
+      tester,
+      lists: [_list],
+      before: (app) => app.server.on('/v1/customer/addresses/$_workId', [
+        const FakeAnswer(404, {'error': 'unknown_address'}),
+      ]),
+    );
+    final point = app.container.read(deliveryPointProvider.notifier);
+    unawaited(point.useAddress(_workId, _street));
+    await tester.pumpAndSettle();
+    unawaited(app.container.read(addressBookProvider).delete(_workId));
+    await tester.pumpAndSettle();
+    final after = app.container.read(deliveryPointProvider) as PointChecked;
+    expect(after.addressId, isNull);
+  });
+
+  testWidgets('the form of an address no longer listed closes', (tester) async {
+    final app = await _addresses(tester, lists: [_list]);
+    app.container
+        .read(routerProvider)
+        .push('/account/addresses/00000000-0000-4000-8000-000000000299');
+    await tester.pumpAndSettle();
+    expect(find.text('تعديل العنوان'), findsNothing);
+    expect(find.text('عناويني'), findsOneWidget);
   });
 }

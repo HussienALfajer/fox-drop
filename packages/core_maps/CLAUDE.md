@@ -6,7 +6,7 @@ The map of the three Flutter apps (architecture §7.2, §11.2) on `maplibre_gl`,
 
 - `geo_point.dart`: `GeoPoint`, a point in degrees, and `metresTo` (great-circle metres). The apps' one point type.
 - `map_camera.dart`: `MapCamera` (the centre and the zoom), `pinZoom` (16, fixed) and `pinConfirmable` (CU §7.1).
-- `map_style.dart`: `mapStyleUrl(apiBaseUrl, debug:)`: `--dart-define=MAP_STYLE_URL`, else `/maps/style.json` on the API's host, or on port 8089 (compose's `maps` service) in a debug build.
+- `map_style.dart`: `mapStyleUrl(apiBaseUrl, debug:)`: `--dart-define=MAP_STYLE_URL`, else `/maps/style.json` on the API's host, or on port 8089 (compose's `maps` service) in a debug build against a plain-HTTP (development) API. The iOS Simulator reaches the development machine at `localhost`, while `.env.example`'s `MAPS_URL` names the Android emulator's `10.0.2.2`: publish with `MAPS_URL=http://localhost:8089/maps` for it.
 - `pin_map.dart`: `PinMapBuilder`, a map under a fixed centre pin reporting each camera, and `maplibrePinMap(styleUrl)`, the real one.
 
 ## Rules

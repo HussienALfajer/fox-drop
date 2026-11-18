@@ -11,7 +11,11 @@ set -eu
 # The region of OSRM (infra/osrm/cut.sh): Azaz and about 20 km around it.
 # left,bottom,right,top in degrees.
 region=36.82,36.40,37.27,36.77
-assets=https://github.com/protomaps/basemaps-assets/archive/refs/heads/main.tar.gz
+# The glyphs and sprite: protomaps/basemaps-assets at this commit, moved
+# together with @protomaps/basemaps (infra/package.json). Empty until the
+# first build on the server prints the commit of main it took
+# (docs/runbooks/maps.md, «Pinning the assets»); pin it here then.
+assets_commit=
 
 work=/data/work
 rm -rf "$work"
@@ -32,8 +36,19 @@ out=$work/$build
 mkdir -p "$out/fonts" "$out/sprites"
 pmtiles extract "https://build.protomaps.com/$build.pmtiles" "$out/region.pmtiles" --bbox="$region"
 
-curl --fail --silent --show-error --location --retry 3 "$assets" | tar -xz --no-same-owner -C "$work"
-source=$work/basemaps-assets-main
+archive=https://github.com/protomaps/basemaps-assets/archive/${assets_commit:-refs/heads/main}.tar.gz
+curl --fail --silent --show-error --location --retry 3 --output "$work/assets.tar.gz" "$archive"
+# GitHub writes the archive's commit in its first header.
+fetched=$(gzip -dc "$work/assets.tar.gz" | head -c 2048 | grep -ao '[0-9a-f]\{40\}' | head -1)
+[ -n "$fetched" ] || { echo "the assets archive names no commit" >&2; exit 1; }
+if [ -n "$assets_commit" ] && [ "$fetched" != "$assets_commit" ]; then
+  echo "the assets archive is $fetched, not the pinned $assets_commit" >&2
+  exit 1
+fi
+[ -n "$assets_commit" ] || echo "basemaps-assets is not pinned: pin assets_commit=$fetched in infra/maps/build.sh"
+tar -xzf "$work/assets.tar.gz" --no-same-owner -C "$work"
+rm "$work/assets.tar.gz"
+source=$(find "$work" -mindepth 1 -maxdepth 1 -type d -name 'basemaps-assets-*')
 # Only the font stacks the style names.
 grep -o '"Noto Sans[^"]*"' /maps/style.json | sort -u | tr -d '"' | while read -r font; do
   cp -r "$source/fonts/$font" "$out/fonts/"
@@ -49,4 +64,4 @@ rm -rf "$source"
 sed "s/{{BUILD}}/$build/g" /maps/style.json >"$work/style.json"
 rm -rf /data/out
 mv "$work" /data/out
-echo "built the map $build of the region $region: $(du -sh /data/out | cut -f1)"
+echo "built the map $build of the region $region with basemaps-assets $fetched: $(du -sh /data/out | cut -f1)"

@@ -98,7 +98,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final chosen = await context.push<GeoPoint>(
       pinPath(MapCamera(point, streetZoom)),
     );
-    if (chosen != null) {
+    if (chosen != null && mounted) {
       await ref.read(deliveryPointProvider.notifier).usePin(chosen);
     }
   }

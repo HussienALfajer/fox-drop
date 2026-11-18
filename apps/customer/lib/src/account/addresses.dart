@@ -109,7 +109,8 @@ enum AddressOutcome {
 
 /// «عناويني»'s commands (CU §7.3) over the existing routes. Each success
 /// reads the list again and keeps the delivery point in step: a deleted
-/// address stops naming the point, an edited one moves it to its new pin.
+/// address (here or, `404`, on another phone) stops naming the point, an
+/// edited one moves it to its new pin.
 class AddressBook {
   AddressBook(this._ref);
 
@@ -134,8 +135,11 @@ class AddressBook {
         customerAddressFieldsDto: _fieldsDto(pin, form),
       ),
     );
-    if (outcome == AddressOutcome.done && _pointAddress == id) {
-      await _ref.read(deliveryPointProvider.notifier).useAddress(id, pin);
+    if (_pointAddress == id) {
+      final point = _ref.read(deliveryPointProvider.notifier);
+      if (outcome == AddressOutcome.done) await point.useAddress(id, pin);
+      // Deleted on another phone: the point stays, unsaved.
+      if (outcome == AddressOutcome.gone) point.forgetAddress();
     }
     return outcome;
   }
@@ -147,7 +151,9 @@ class AddressBook {
     final outcome = await _run(
       () => _api.customerProfileDeleteAddress(addressId: id),
     );
-    if (outcome == AddressOutcome.done && _pointAddress == id) {
+    // Gone already (deleted on another phone) ends the same way.
+    if ((outcome == AddressOutcome.done || outcome == AddressOutcome.gone) &&
+        _pointAddress == id) {
       _ref.read(deliveryPointProvider.notifier).forgetAddress();
     }
     return outcome;

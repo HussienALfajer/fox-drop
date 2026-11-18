@@ -31,7 +31,8 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen> {
   ({bool pin, Set<FormProblem> fields})? _problems;
   String? _failure;
 
-  /// An edit starts from the saved address, once the list is read.
+  /// An edit starts from the saved address, once the list is read; one no
+  /// longer there (deleted on another phone) closes the form.
   void _fill(List<SavedAddress> saved) {
     if (_filled) return;
     _filled = true;
@@ -41,7 +42,11 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen> {
       if (address.id != id) continue;
       _form = formOf(address);
       _pin = pinOf(address);
+      return;
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.pop();
+    });
   }
 
   Future<void> _choosePin() async {
@@ -93,7 +98,14 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen> {
     if (editing && !_filled) {
       return Scaffold(
         appBar: AppBar(title: Text(l10n.customerEditAddress)),
-        body: const Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: saved is AsyncError
+              ? TextButton(
+                  onPressed: () => ref.invalidate(savedAddressesProvider),
+                  child: Text(l10n.customerTryAgain),
+                )
+              : const CircularProgressIndicator(),
+        ),
       );
     }
     final pin = _pin;

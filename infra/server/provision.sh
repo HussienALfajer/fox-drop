@@ -221,7 +221,10 @@ step "Map"
 # MAPS_PORT, so a new environment's first run skips it.
 if [ -L "$home/current" ] &&
   grep -q '^MAPS_PORT=' "$home/current/infra/environments/$environment.env"; then
-  foxdrop-maps-build "$environment" --if-missing
+  # A failed build (a download refused, glyphs without Arabic) is reported
+  # and leaves the rest of the provisioning to run.
+  foxdrop-maps-build "$environment" --if-missing ||
+    echo "the map build failed: run foxdrop-maps-build $environment again (docs/runbooks/maps.md)"
 else
   echo "skipped: deploy $environment, then run this again to build the map"
 fi
