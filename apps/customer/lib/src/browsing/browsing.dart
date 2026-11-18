@@ -32,23 +32,55 @@ typedef RestaurantCard = CustomerRestaurantListDtoOutputRestaurantsInner;
 typedef HomeSection = CustomerRestaurantListDtoOutputSectionsInner;
 typedef HomeSectionKind = CustomerRestaurantListDtoOutputSectionsInnerKindEnum;
 
+typedef HomeBanner = CustomerRestaurantListDtoOutputBannersInner;
+typedef HomeBannerTarget =
+    CustomerRestaurantListDtoOutputBannersInnerTargetEnum;
+
 /// The home (CU §8.1, slice 2.27b): every card for the point in the list's
 /// order, and the sections the panel shows, in its order, each naming its
-/// cards.
+/// cards, and the banners in the panel's order (slice 2.27c).
 class HomeView {
-  const HomeView({required this.restaurants, required this.sections});
+  const HomeView({
+    required this.restaurants,
+    required this.sections,
+    this.banners = const [],
+  });
 
   final List<RestaurantCard> restaurants;
   final List<HomeSection> sections;
+  final List<HomeBanner> banners;
 
   static const empty = HomeView(restaurants: [], sections: []);
 
   /// A section's cards in the section's order.
-  List<RestaurantCard> cardsOf(HomeSection section) {
+  List<RestaurantCard> cardsOf(HomeSection section) =>
+      _cards(section.restaurantIds);
+
+  /// A banner's list of restaurants in its order (open first, closed last).
+  List<RestaurantCard> cardsOfBanner(HomeBanner banner) =>
+      _cards(banner.restaurantIds);
+
+  HomeBanner? bannerById(String id) =>
+      banners.where((banner) => banner.id == id).firstOrNull;
+
+  List<RestaurantCard> _cards(Iterable<String> ids) {
     final byId = {for (final card in restaurants) card.id: card};
-    return [for (final id in section.restaurantIds) ?byId[id]];
+    return [for (final id in ids) ?byId[id]];
   }
 }
+
+/// Where a banner's tap goes (CU §8.1): the restaurant's page, the
+/// category's page, the banner's own list under its title, or «أكوادي» on
+/// its code.
+String bannerPath(HomeBanner banner) => switch (banner.target) {
+  HomeBannerTarget.restaurant => '/restaurants/${banner.restaurantIds.first}',
+  HomeBannerTarget.category => '/categories/${banner.categoryId}',
+  HomeBannerTarget.code => Uri(
+    path: '/codes',
+    queryParameters: {'code': banner.code},
+  ).toString(),
+  _ => '/banners/${banner.id}',
+};
 
 /// CU §8.1: the home's cards and sections for the point. Pull to refresh
 /// reads it again.
@@ -67,6 +99,7 @@ final homeProvider = FutureProvider.autoDispose<HomeView>((ref) async {
   return HomeView(
     restaurants: data.restaurants.toList(),
     sections: data.sections?.toList() ?? const [],
+    banners: data.banners?.toList() ?? const [],
   );
 });
 

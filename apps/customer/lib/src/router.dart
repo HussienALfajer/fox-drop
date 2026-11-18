@@ -8,6 +8,7 @@ import 'account/delete_account_screen.dart';
 import 'account/my_account_screen.dart';
 import 'auth.dart';
 import 'blocked_screen.dart';
+import 'browsing/banner_list_screen.dart';
 import 'browsing/category_screen.dart';
 import 'browsing/price_report_screen.dart';
 import 'browsing/restaurant_screen.dart';
@@ -97,6 +98,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) =>
             RestaurantScreen(restaurantId: state.pathParameters['id']!),
       ),
+      // A banner's list of restaurants (AP §9.11.2, slice 2.27c).
+      GoRoute(
+        path: '/banners/:id',
+        builder: (context, state) =>
+            BannerListScreen(bannerId: state.pathParameters['id']!),
+      ),
       GoRoute(
         path: '/categories/:id',
         builder: (context, state) =>
@@ -146,14 +153,16 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
-      // CU §12.4 «أكوادي»: the account's, so a guest signs in first.
+      // CU §12.4 «أكوادي»: the account's, so a guest signs in first. A
+      // banner's code opens it on that code (`?code=`, CU §8.1).
       GoRoute(
         path: '/codes',
         redirect: (context, state) =>
             ref.read(customerAuth.session).value is SignedIn
             ? null
-            : signInFrom('/codes'),
-        builder: (context, state) => const MyCodesScreen(),
+            : signInFrom(state.uri.toString()),
+        builder: (context, state) =>
+            MyCodesScreen(shown: state.uri.queryParameters['code']),
       ),
       GoRoute(
         path: '/checkout',

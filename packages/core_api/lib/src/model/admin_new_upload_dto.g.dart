@@ -17,6 +17,8 @@ const AdminNewUploadDtoPurposeEnum _$adminNewUploadDtoPurposeEnum_itemPhoto =
 const AdminNewUploadDtoPurposeEnum
 _$adminNewUploadDtoPurposeEnum_categoryImage =
     const AdminNewUploadDtoPurposeEnum._('categoryImage');
+const AdminNewUploadDtoPurposeEnum _$adminNewUploadDtoPurposeEnum_bannerImage =
+    const AdminNewUploadDtoPurposeEnum._('bannerImage');
 
 AdminNewUploadDtoPurposeEnum _$adminNewUploadDtoPurposeEnumValueOf(
   String name,
@@ -30,6 +32,8 @@ AdminNewUploadDtoPurposeEnum _$adminNewUploadDtoPurposeEnumValueOf(
       return _$adminNewUploadDtoPurposeEnum_itemPhoto;
     case 'categoryImage':
       return _$adminNewUploadDtoPurposeEnum_categoryImage;
+    case 'bannerImage':
+      return _$adminNewUploadDtoPurposeEnum_bannerImage;
     default:
       throw ArgumentError(name);
   }
@@ -42,6 +46,7 @@ _$adminNewUploadDtoPurposeEnumValues =
       _$adminNewUploadDtoPurposeEnum_restaurantCover,
       _$adminNewUploadDtoPurposeEnum_itemPhoto,
       _$adminNewUploadDtoPurposeEnum_categoryImage,
+      _$adminNewUploadDtoPurposeEnum_bannerImage,
     ]);
 
 const AdminNewUploadDtoContentTypeEnum
@@ -93,12 +98,14 @@ class _$AdminNewUploadDtoPurposeEnumSerializer
     'restaurantCover': 'restaurant_cover',
     'itemPhoto': 'item_photo',
     'categoryImage': 'category_image',
+    'bannerImage': 'banner_image',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_logo': 'restaurantLogo',
     'restaurant_cover': 'restaurantCover',
     'item_photo': 'itemPhoto',
     'category_image': 'categoryImage',
+    'banner_image': 'bannerImage',
   };
 
   @override

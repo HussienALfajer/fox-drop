@@ -5,6 +5,7 @@
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/customer_restaurant_list_dto_output_sections_inner.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/customer_restaurant_list_dto_output_banners_inner.dart';
 import 'package:core_api/src/model/customer_restaurant_list_dto_output_restaurants_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -15,7 +16,8 @@ part 'customer_restaurant_list_dto_output.g.dart';
 ///
 /// Properties:
 /// * [restaurants] - CU §8.2: open first, then busy and paused, then closed; with similarTo, the open ones only (CU §11.9).
-/// * [sections] - With home: the home sections shown, in the panel’s order (CU §8.1, AP §9.11.3); a restaurant section with no restaurant is left out. Null otherwise.
+/// * [sections] - With home: the home sections shown, in the panel’s order (CU §8.1, AP §9.11.3); a restaurant section with no restaurant is left out, and «البانرات» without a banner. Null otherwise.
+/// * [banners] - With home: the banners running in the point’s zone, in the panel’s order, at most 10 (CU §8.1, AP §9.11.2); one the customer cannot open here is left out. Null otherwise.
 @BuiltValue()
 abstract class CustomerRestaurantListDtoOutput
     implements
@@ -27,9 +29,13 @@ abstract class CustomerRestaurantListDtoOutput
   @BuiltValueField(wireName: r'restaurants')
   BuiltList<CustomerRestaurantListDtoOutputRestaurantsInner> get restaurants;
 
-  /// With home: the home sections shown, in the panel’s order (CU §8.1, AP §9.11.3); a restaurant section with no restaurant is left out. Null otherwise.
+  /// With home: the home sections shown, in the panel’s order (CU §8.1, AP §9.11.3); a restaurant section with no restaurant is left out, and «البانرات» without a banner. Null otherwise.
   @BuiltValueField(wireName: r'sections')
   BuiltList<CustomerRestaurantListDtoOutputSectionsInner>? get sections;
+
+  /// With home: the banners running in the point’s zone, in the panel’s order, at most 10 (CU §8.1, AP §9.11.2); one the customer cannot open here is left out. Null otherwise.
+  @BuiltValueField(wireName: r'banners')
+  BuiltList<CustomerRestaurantListDtoOutputBannersInner>? get banners;
 
   CustomerRestaurantListDtoOutput._();
 
@@ -75,6 +81,15 @@ class _$CustomerRestaurantListDtoOutputSerializer
             object.sections,
             specifiedType: const FullType.nullable(BuiltList, [
               FullType(CustomerRestaurantListDtoOutputSectionsInner),
+            ]),
+          );
+    yield r'banners';
+    yield object.banners == null
+        ? null
+        : serializers.serialize(
+            object.banners,
+            specifiedType: const FullType.nullable(BuiltList, [
+              FullType(CustomerRestaurantListDtoOutputBannersInner),
             ]),
           );
   }
@@ -126,6 +141,18 @@ class _$CustomerRestaurantListDtoOutputSerializer
                   as BuiltList<CustomerRestaurantListDtoOutputSectionsInner>?;
           if (valueDes == null) continue;
           result.sections.replace(valueDes);
+          break;
+        case r'banners':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(BuiltList, [
+                      FullType(CustomerRestaurantListDtoOutputBannersInner),
+                    ]),
+                  )
+                  as BuiltList<CustomerRestaurantListDtoOutputBannersInner>?;
+          if (valueDes == null) continue;
+          result.banners.replace(valueDes);
           break;
         default:
           unhandled.add(key);

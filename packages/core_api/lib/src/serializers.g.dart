@@ -27,6 +27,12 @@ Serializers _$serializers =
           ..add(AdminApproveCompensationDtoValue.serializer)
           ..add(AdminApproveCompensationDtoValueKindEnum.serializer)
           ..add(AdminAssignDto.serializer)
+          ..add(AdminBannerCityDto.serializer)
+          ..add(AdminBannersDtoOutput.serializer)
+          ..add(AdminBannersDtoOutputBannersInner.serializer)
+          ..add(AdminBannersDtoOutputBannersInnerTargetEnum.serializer)
+          ..add(AdminBannersDtoOutputCodesInner.serializer)
+          ..add(AdminBannersOrderDto.serializer)
           ..add(AdminBlockCustomerDto.serializer)
           ..add(AdminBlockCustomerDtoKindEnum.serializer)
           ..add(AdminBoardDtoOutput.serializer)
@@ -301,6 +307,8 @@ Serializers _$serializers =
           ..add(AdminMerchantStatementDtoOutputLinesInnerCauseEnum.serializer)
           ..add(AdminMerchantStatementDtoOutputLinesInnerKindEnum.serializer)
           ..add(AdminMerchantStatementDtoOutputStatusEnum.serializer)
+          ..add(AdminNewBannerDto.serializer)
+          ..add(AdminNewBannerDtoTargetEnum.serializer)
           ..add(AdminNewCategoryDto.serializer)
           ..add(AdminNewHomeSectionDto.serializer)
           ..add(AdminNewUploadDto.serializer)
@@ -749,6 +757,8 @@ Serializers _$serializers =
           ..add(AdminTicketTypesDtoOutput.serializer)
           ..add(AdminTicketsDtoOutput.serializer)
           ..add(AdminUnblockCustomerDto.serializer)
+          ..add(AdminUpdateBannerDto.serializer)
+          ..add(AdminUpdateBannerDtoTargetEnum.serializer)
           ..add(AdminUpdateCategoryDto.serializer)
           ..add(AdminUpdateContactDto.serializer)
           ..add(AdminUpdateHomeSectionDto.serializer)
@@ -1107,6 +1117,10 @@ Serializers _$serializers =
           ..add(CustomerReportOrderDto.serializer)
           ..add(CustomerReportOrderDtoItemsInner.serializer)
           ..add(CustomerRestaurantListDtoOutput.serializer)
+          ..add(CustomerRestaurantListDtoOutputBannersInner.serializer)
+          ..add(
+            CustomerRestaurantListDtoOutputBannersInnerTargetEnum.serializer,
+          )
           ..add(CustomerRestaurantListDtoOutputRestaurantsInner.serializer)
           ..add(
             CustomerRestaurantListDtoOutputRestaurantsInnerDeliveryFee
@@ -1380,6 +1394,46 @@ Serializers _$serializers =
               const FullType(AdminAlertsDtoOutputAlertsInner),
             ]),
             () => ListBuilder<AdminAlertsDtoOutputAlertsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminBannersDtoOutputBannersInner),
+            ]),
+            () => ListBuilder<AdminBannersDtoOutputBannersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType.nullable(
+                AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType.nullable(
+                AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminBannersDtoOutputCodesInner),
+            ]),
+            () => ListBuilder<AdminBannersDtoOutputCodesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminPeakBonusDtoOutputZonesInner),
+            ]),
+            () => ListBuilder<AdminPeakBonusDtoOutputZonesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -3028,6 +3082,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(CustomerRestaurantListDtoOutputBannersInner),
+            ]),
+            () => ListBuilder<CustomerRestaurantListDtoOutputBannersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(
                 CustomerRestaurantPageDtoOutputMenuInnerItemsInner,
               ),
@@ -3697,6 +3757,14 @@ Serializers _$serializers =
             () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType(CaptainCarriedCurrenciesDtoOutputChoicesInner),
             ]),
@@ -3711,6 +3779,30 @@ Serializers _$serializers =
               const FullType(MerchantPickupCurrenciesDtoOutputChoicesInner),
             ]),
             () => ListBuilder<MerchantPickupCurrenciesDtoOutputChoicesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

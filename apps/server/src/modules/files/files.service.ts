@@ -15,6 +15,7 @@ import { and, count, eq, gt } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { PRIVATE_DOCS_BUCKET, PUBLIC_MEDIA_BUCKET } from '../../storage/storage-setup.js';
+import { imageSize } from './image-size.js';
 import { type ImageType, type UploadPurpose, uploads } from './schema.js';
 
 // Architecture §5.8: the largest image the panel may upload. A phone photo is
@@ -36,6 +37,7 @@ export type FilesRefusal =
   | 'upload_expired'
   | 'upload_missing'
   | 'upload_invalid'
+  | 'upload_wrong_size'
   | 'too_many_uploads';
 
 export class FilesRefusedError extends Error {
@@ -76,7 +78,17 @@ const folders: Record<UploadPurpose, string> = {
   item_photo: 'menu/items',
   report_photo: 'tickets/photos',
   category_image: 'content/categories',
+  banner_image: 'marketing/banners',
 };
+
+// The purposes whose image must have an exact size in pixels: a banner is
+// cut to 1200×500 in the panel before it is uploaded (AP §9.11.2, owner
+// decision 2026-11-18), so every phone shows the same frame.
+export const EXACT_IMAGE_SIZES: Partial<Record<UploadPurpose, { width: number; height: number }>> =
+  { banner_image: { width: 1200, height: 500 } };
+// How much of the file the size is read from: a JPEG's frame header follows
+// its other segments (EXIF can run to 64 KB).
+const SIZE_HEAD_BYTES = 128 * 1024;
 
 // A report's photo is the customer's (owner decision 2026-11-17): it goes to
 // private-docs, uploaded from the app; the others to public-media from the
@@ -263,7 +275,7 @@ export class FilesService {
       }
       throw error;
     }
-    await this.check(bucket, key, row.contentType, row.sizeBytes);
+    await this.check(bucket, key, row.contentType, row.sizeBytes, EXACT_IMAGE_SIZES[row.purpose]);
   }
 
   // The second half, in the record's transaction after `prepare`: takes the
@@ -337,7 +349,14 @@ export class FilesService {
     );
   }
 
-  private async check(bucket: string, key: string, type: ImageType, size: number): Promise<void> {
+  // `exact`: the pixel size the image must have (`upload_wrong_size`).
+  private async check(
+    bucket: string,
+    key: string,
+    type: ImageType,
+    size: number,
+    exact?: { width: number; height: number },
+  ): Promise<void> {
     const object = { Bucket: bucket, Key: key };
     let head;
     try {
@@ -352,11 +371,25 @@ export class FilesService {
       throw new FilesRefusedError('upload_invalid', 'the stored file differs from the upload');
     }
     const start = await this.store.internal.send(
-      new GetObjectCommand({ ...object, Range: 'bytes=0-15' }),
+      new GetObjectCommand({
+        ...object,
+        Range: `bytes=0-${exact === undefined ? 15 : SIZE_HEAD_BYTES - 1}`,
+      }),
     );
     const bytes = (await start.Body?.transformToByteArray()) ?? new Uint8Array();
     if (!hasImageSignature(type, bytes)) {
       throw new FilesRefusedError('upload_invalid', `the file is not a ${type} image`);
+    }
+    if (exact === undefined) return;
+    const found = imageSize(type, bytes);
+    if (found === null) {
+      throw new FilesRefusedError('upload_invalid', `the ${type} image has no readable size`);
+    }
+    if (found.width !== exact.width || found.height !== exact.height) {
+      throw new FilesRefusedError(
+        'upload_wrong_size',
+        `the image is ${found.width}×${found.height}, not ${exact.width}×${exact.height}`,
+      );
     }
   }
 }

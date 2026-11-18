@@ -10,6 +10,7 @@ import { OPERATIONS_READ } from './orders-board.js';
 import { ZONES_READ } from './peak-bonus.js';
 import { canApproveCompensations } from './order-compensation.js';
 import { canReadTickets } from './tickets.js';
+import { canSeeBanners } from './banners.js';
 import { canSeeHomeSections } from './home-sections.js';
 import { canSeePromoCodes } from './promo-codes.js';
 import { RESTAURANT_STATEMENTS } from './restaurant-statements.js';
@@ -106,6 +107,11 @@ export function HomePage() {
           {canSeeHomeSections(session) && (
             <li>
               <Link to="/home-sections">{t('homeSections.title')}</Link>
+            </li>
+          )}
+          {canSeeBanners(session) && (
+            <li>
+              <Link to="/banners">{t('banners.title')}</Link>
             </li>
           )}
           {can(session, ZONES_READ) && (

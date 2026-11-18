@@ -1426,6 +1426,18 @@ abstract class AppLocalizations {
   /// **'انتهى {date}'**
   String customerCodeExpiredOn(String date);
 
+  /// «أكوادي» opened from a banner's code that is not among the customer's available codes (CU §8.1; our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'الكود {code} غير متاح لك الآن'**
+  String customerCodeNotAvailable(String code);
+
+  /// The home's banner strip, for screen readers (CU §8.1, AP §9.11.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'البانرات'**
+  String get customerBanners;
+
   /// Confirms replacing the applied code (CU §10.4; our words).
   ///
   /// In ar, this message translates to:

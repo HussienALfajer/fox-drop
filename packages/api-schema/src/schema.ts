@@ -2532,6 +2532,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/banners": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminBannersList"];
+        put?: never;
+        post: operations["adminBannersCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/banners/{bannerId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminBannersUpdate"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/banners/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminBannersOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/banners/{bannerId}/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminBannersRemove"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/realtime/token": {
         parameters: {
             query?: never;
@@ -5954,7 +6018,7 @@ export interface components {
              * @description The record the file is for (architecture §5.8).
              * @enum {string}
              */
-            purpose: "restaurant_logo" | "restaurant_cover" | "item_photo" | "category_image";
+            purpose: "restaurant_logo" | "restaurant_cover" | "item_photo" | "category_image" | "banner_image";
             /** @enum {string} */
             contentType: "image/jpeg" | "image/png" | "image/webp";
             sizeBytes: number;
@@ -7099,7 +7163,7 @@ export interface components {
                     message: string | null;
                 };
             }[];
-            /** @description With home: the home sections shown, in the panel’s order (CU §8.1, AP §9.11.3); a restaurant section with no restaurant is left out. Null otherwise. */
+            /** @description With home: the home sections shown, in the panel’s order (CU §8.1, AP §9.11.3); a restaurant section with no restaurant is left out, and «البانرات» without a banner. Null otherwise. */
             sections: {
                 /**
                  * @description «البانرات», «التصنيفات», «الأقرب إليك», «الأكثر طلباً», «جديد على FOX DROP», «العروض», or a custom section under its title.
@@ -7110,6 +7174,23 @@ export interface components {
                 title: string | null;
                 /** @description The cards of `restaurants` it shows, in its order (open first, closed last); empty for banners and categories, which the app fills. */
                 restaurantIds: string[];
+            }[] | null;
+            /** @description With home: the banners running in the point’s zone, in the panel’s order, at most 10 (CU §8.1, AP §9.11.2); one the customer cannot open here is left out. Null otherwise. */
+            banners: {
+                /** Format: uuid */
+                id: string;
+                title: string;
+                /** @description In public-media, 1200×500 (architecture §5.8). */
+                imageKey: string;
+                /**
+                 * @description The tap opens the restaurant’s page (restaurantIds holds it), the category’s page, the banner’s list under its title (restaurantIds), or «أكوادي» on its code.
+                 * @enum {string}
+                 */
+                target: "restaurant" | "category" | "restaurants" | "code";
+                /** @description Cards of `restaurants`, open first and closed last; empty otherwise. */
+                restaurantIds: string[];
+                categoryId: string | null;
+                code: string | null;
             }[] | null;
         };
         CustomerRestaurantPageDto_Output: {
@@ -8211,6 +8292,123 @@ export interface components {
             restaurantIds: string[];
         };
         AdminHomeSectionCityDto: {
+            /** Format: uuid */
+            cityId: string;
+        };
+        AdminBannersDto_Output: {
+            /** @description The city’s banners in the strip’s order, ended ones included. */
+            banners: {
+                /** Format: uuid */
+                id: string;
+                title: string;
+                /** @description In public-media, 1200×500 (architecture §5.8). */
+                imageKey: string;
+                /**
+                 * @description `restaurant` opens its page (restaurantIds holds it), `category` its category page, `restaurants` the banner’s own list under its title (restaurantIds in order), `code` «أكوادي» on that code.
+                 * @enum {string}
+                 */
+                target: "restaurant" | "category" | "restaurants" | "code";
+                restaurantIds: string[];
+                categoryId: string | null;
+                codeId: string | null;
+                /** @description The code target's code; null otherwise. */
+                code: string | null;
+                /** @description None: every zone of the city. */
+                zoneIds: string[];
+                /** Format: date-time */
+                startsAt: string;
+                /** Format: date-time */
+                endsAt: string;
+            }[];
+            /** @description The city's restaurants a target picks from. */
+            restaurants: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            }[];
+            /** @description The active categories, in their order. */
+            categories: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            }[];
+            /** @description The city's visible codes running now in its base currency, newest first. */
+            codes: {
+                /** Format: uuid */
+                id: string;
+                code: string;
+            }[];
+            zones: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                active: boolean;
+            }[];
+            /** @description Whether this admin may publish (marketing.banners). */
+            canManage: boolean;
+        };
+        AdminNewBannerDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description Trimmed, 1 to 60 characters. */
+            title: string;
+            /**
+             * @description `restaurant` opens its page (restaurantIds holds it), `category` its category page, `restaurants` the banner’s own list under its title (restaurantIds in order), `code` «أكوادي» on that code.
+             * @enum {string}
+             */
+            target: "restaurant" | "category" | "restaurants" | "code";
+            /** @description One for `restaurant`, 1 to 30 for `restaurants`. */
+            restaurantIds: string[];
+            categoryId: string | null;
+            codeId: string | null;
+            /** @description The city's zones; none for all. */
+            zoneIds: string[];
+            /** Format: date-time */
+            startsAt: string;
+            /**
+             * Format: date-time
+             * @description After the start and after now.
+             */
+            endsAt: string;
+            /**
+             * Format: uuid
+             * @description From POST /v1/admin/uploads (banner_image), cut to exactly 1200×500.
+             */
+            uploadId: string;
+        };
+        AdminUpdateBannerDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description Trimmed, 1 to 60 characters. */
+            title: string;
+            /**
+             * @description `restaurant` opens its page (restaurantIds holds it), `category` its category page, `restaurants` the banner’s own list under its title (restaurantIds in order), `code` «أكوادي» on that code.
+             * @enum {string}
+             */
+            target: "restaurant" | "category" | "restaurants" | "code";
+            /** @description One for `restaurant`, 1 to 30 for `restaurants`. */
+            restaurantIds: string[];
+            categoryId: string | null;
+            codeId: string | null;
+            /** @description The city's zones; none for all. */
+            zoneIds: string[];
+            /** Format: date-time */
+            startsAt: string;
+            /**
+             * Format: date-time
+             * @description After the start and after now.
+             */
+            endsAt: string;
+            /** @description A new image (banner_image); null keeps the image. */
+            uploadId: string | null;
+        };
+        AdminBannersOrderDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description Every banner of the city once (ended ones included), in the new order. */
+            ids: string[];
+        };
+        AdminBannerCityDto: {
             /** Format: uuid */
             cityId: string;
         };
@@ -19618,6 +19816,131 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminHomeSectionsDto_Output"];
+                };
+            };
+        };
+    };
+    adminBannersList: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBannersDto_Output"];
+                };
+            };
+        };
+    };
+    adminBannersCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminNewBannerDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBannersDto_Output"];
+                };
+            };
+        };
+    };
+    adminBannersUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bannerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminUpdateBannerDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBannersDto_Output"];
+                };
+            };
+        };
+    };
+    adminBannersOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminBannersOrderDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBannersDto_Output"];
+                };
+            };
+        };
+    };
+    adminBannersRemove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bannerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminBannerCityDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBannersDto_Output"];
                 };
             };
         };

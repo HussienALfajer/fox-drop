@@ -812,6 +812,14 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String customerCodeNotAvailable(String code) {
+    return 'الكود $code غير متاح لك الآن';
+  }
+
+  @override
+  String get customerBanners => 'البانرات';
+
+  @override
   String get customerCodeReplace => 'استبدال';
 
   @override

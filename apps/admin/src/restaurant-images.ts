@@ -110,9 +110,26 @@ async function link(target: ImageTarget, uploadId: string) {
     : api.PUT('/v1/admin/restaurants/{restaurantId}/cover', { params: { path }, body });
 }
 
-// Architecture §5.8: ask for a signed upload, PUT the file straight to the
+export type UploadPurpose = components['schemas']['AdminNewUploadDto']['purpose'];
+
+// Architecture §5.8: ask for a signed upload and PUT the file straight to the
 // storage on the panel's own origin (/public-media, not the API, so not
-// through the API client), then link it, which the server checks.
+// through the API client). The upload's id, which the record's route links
+// (and the server checks), or null when the storage refused the file.
+export async function uploadImage(purpose: UploadPurpose, file: Blob): Promise<string | null> {
+  const asked = await api.POST('/v1/admin/uploads', {
+    body: { purpose, contentType: file.type as ImageType, sizeBytes: file.size },
+  });
+  if (!asked.data) throw new Error('The upload was not signed.');
+  const put = await fetch(asked.data.url, {
+    method: 'PUT',
+    body: file,
+    headers: { 'Content-Type': file.type },
+  });
+  return put.ok ? asked.data.uploadId : null;
+}
+
+// Uploads the file, then links it with the record's route.
 export function useSetImage() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -125,21 +142,9 @@ export function useSetImage() {
     }): Promise<ImageResult> => {
       const refusal = fileRefusal(file);
       if (refusal) return { status: 'refused', refusal };
-      const asked = await api.POST('/v1/admin/uploads', {
-        body: {
-          purpose: purposes[target.kind],
-          contentType: file.type as ImageType,
-          sizeBytes: file.size,
-        },
-      });
-      if (!asked.data) throw new Error('The upload was not signed.');
-      const put = await fetch(asked.data.url, {
-        method: 'PUT',
-        body: file,
-        headers: { 'Content-Type': file.type },
-      });
-      if (!put.ok) return { status: 'refused', refusal: 'upload_failed' };
-      const linked = await link(target, asked.data.uploadId);
+      const uploadId = await uploadImage(purposes[target.kind], file);
+      if (uploadId === null) return { status: 'refused', refusal: 'upload_failed' };
+      const linked = await link(target, uploadId);
       if (linked.data) return { status: 'set', key: linked.data.key };
       const error = (linked.error as { error?: unknown } | undefined)?.error;
       if (linked.response.status === 400 || linked.response.status === 409) {

@@ -121,6 +121,7 @@ async function restaurant(name: string, steps: number, daysAgo: number, open = t
 
 type Home = {
   restaurants: { id: string }[];
+  banners: unknown[];
   sections: { kind: string; title: string | null; restaurantIds: string[] }[];
 };
 const home = async (): Promise<Home> => {
@@ -153,14 +154,10 @@ describe('the customer home', () => {
   it('shows the built-in sections in the default order, open first, closed last', async () => {
     const body = await home();
     expect(body.restaurants).toHaveLength(12);
-    // Nothing delivered and no code yet: those sections are left out.
-    expect(body.sections.map((each) => each.kind)).toEqual([
-      'banners',
-      'categories',
-      'nearest',
-      'new',
-    ]);
-    expect(body.sections[0]).toEqual({ kind: 'banners', title: null, restaurantIds: [] });
+    // Nothing delivered, no code and no banner yet: those sections are left
+    // out (slice 2.27c: «البانرات» too, home-banners.test.ts).
+    expect(body.sections.map((each) => each.kind)).toEqual(['categories', 'nearest', 'new']);
+    expect(body.banners).toEqual([]);
     // The 10 nearest whatever their state, the closed one last.
     expect(section(body, 'nearest')).toEqual([...r.slice(1, 10), r[0]]);
     // Activated within 30 days, newest first: r[0] a day back, then r[1]…
@@ -276,7 +273,6 @@ describe('the customer home', () => {
     const body = await home();
     expect(body.sections.map((each) => each.kind)).toEqual([
       'custom',
-      'banners',
       'categories',
       'most_ordered',
       'new',

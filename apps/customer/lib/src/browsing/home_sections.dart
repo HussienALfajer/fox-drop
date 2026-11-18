@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'browsing.dart';
+import 'banner_strip.dart';
 import 'categories.dart';
 import 'category_screen.dart';
 import 'restaurant_list.dart';
@@ -10,8 +11,8 @@ import 'restaurant_list.dart';
 /// The home (CU §8.1, AP §9.11.3; slice 2.27b): the sections the panel
 /// shows, in its order, then every restaurant that delivers to the point.
 /// A section's restaurants come open first and closed last (the server's
-/// order). «البانرات» waits for its slice. Pull to refresh reads the
-/// sections and the categories again.
+/// order); «البانرات» is the strip of banners (slice 2.27c). Pull to refresh
+/// reads the sections, the banners and the categories again.
 class HomeSections extends ConsumerWidget {
   const HomeSections({super.key});
 
@@ -25,8 +26,16 @@ class HomeSections extends ConsumerWidget {
         return ref.refresh(homeProvider.future);
       },
       child: switch (home) {
+        // No restaurant at the point: a code banner still opens (the
+        // server keeps it), so the strip stays above the message.
         AsyncData(:final value) when value.restaurants.isEmpty => ListView(
-          children: [ListTile(title: Text(l10n.customerNoRestaurantsHere))],
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            if (value.banners.isNotEmpty &&
+                value.sections.any((s) => s.kind == HomeSectionKind.banners))
+              BannerStrip(banners: value.banners),
+            ListTile(title: Text(l10n.customerNoRestaurantsHere)),
+          ],
         ),
         AsyncData(:final value) => ListView(
           // A short home still pulls to refresh.
@@ -60,7 +69,9 @@ class HomeSections extends ConsumerWidget {
 
   Widget? _section(AppLocalizations l10n, HomeView home, HomeSection section) {
     final kind = section.kind;
-    if (kind == HomeSectionKind.banners) return null;
+    if (kind == HomeSectionKind.banners) {
+      return home.banners.isEmpty ? null : BannerStrip(banners: home.banners);
+    }
     if (kind == HomeSectionKind.categories) return const CategoryRow();
     final title = switch (kind) {
       HomeSectionKind.nearest => l10n.customerHomeNearest,

@@ -12,6 +12,8 @@ class _$CustomerRestaurantListDtoOutput
   final BuiltList<CustomerRestaurantListDtoOutputRestaurantsInner> restaurants;
   @override
   final BuiltList<CustomerRestaurantListDtoOutputSectionsInner>? sections;
+  @override
+  final BuiltList<CustomerRestaurantListDtoOutputBannersInner>? banners;
 
   factory _$CustomerRestaurantListDtoOutput([
     void Function(CustomerRestaurantListDtoOutputBuilder)? updates,
@@ -20,6 +22,7 @@ class _$CustomerRestaurantListDtoOutput
   _$CustomerRestaurantListDtoOutput._({
     required this.restaurants,
     this.sections,
+    this.banners,
   }) : super._();
   @override
   CustomerRestaurantListDtoOutput rebuild(
@@ -35,7 +38,8 @@ class _$CustomerRestaurantListDtoOutput
     if (identical(other, this)) return true;
     return other is CustomerRestaurantListDtoOutput &&
         restaurants == other.restaurants &&
-        sections == other.sections;
+        sections == other.sections &&
+        banners == other.banners;
   }
 
   @override
@@ -43,6 +47,7 @@ class _$CustomerRestaurantListDtoOutput
     var _$hash = 0;
     _$hash = $jc(_$hash, restaurants.hashCode);
     _$hash = $jc(_$hash, sections.hashCode);
+    _$hash = $jc(_$hash, banners.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -51,7 +56,8 @@ class _$CustomerRestaurantListDtoOutput
   String toString() {
     return (newBuiltValueToStringHelper(r'CustomerRestaurantListDtoOutput')
           ..add('restaurants', restaurants)
-          ..add('sections', sections))
+          ..add('sections', sections)
+          ..add('banners', banners))
         .toString();
   }
 }
@@ -80,6 +86,14 @@ class CustomerRestaurantListDtoOutputBuilder
     ListBuilder<CustomerRestaurantListDtoOutputSectionsInner>? sections,
   ) => _$this._sections = sections;
 
+  ListBuilder<CustomerRestaurantListDtoOutputBannersInner>? _banners;
+  ListBuilder<CustomerRestaurantListDtoOutputBannersInner> get banners =>
+      _$this._banners ??=
+          ListBuilder<CustomerRestaurantListDtoOutputBannersInner>();
+  set banners(
+    ListBuilder<CustomerRestaurantListDtoOutputBannersInner>? banners,
+  ) => _$this._banners = banners;
+
   CustomerRestaurantListDtoOutputBuilder() {
     CustomerRestaurantListDtoOutput._defaults(this);
   }
@@ -89,6 +103,7 @@ class CustomerRestaurantListDtoOutputBuilder
     if ($v != null) {
       _restaurants = $v.restaurants.toBuilder();
       _sections = $v.sections?.toBuilder();
+      _banners = $v.banners?.toBuilder();
       _$v = null;
     }
     return this;
@@ -115,6 +130,7 @@ class CustomerRestaurantListDtoOutputBuilder
           _$CustomerRestaurantListDtoOutput._(
             restaurants: restaurants.build(),
             sections: _sections?.build(),
+            banners: _banners?.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -123,6 +139,8 @@ class CustomerRestaurantListDtoOutputBuilder
         restaurants.build();
         _$failedField = 'sections';
         _sections?.build();
+        _$failedField = 'banners';
+        _banners?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'CustomerRestaurantListDtoOutput',

@@ -10,9 +10,14 @@ import 'my_codes.dart';
 /// «أكوادي» (CU §12.4): «متاحة» and «منتهية». Each code shows its value,
 /// its conditions (minimum, restaurants, zones, hours), «ينتهي {التاريخ}»
 /// and the uses left, with «استخدم»; an ended one says when it was used or
-/// ended. Unstyled until the design.
+/// ended. Opened from a banner's code (CU §8.1, slice 2.27c), «متاحة»
+/// shows that code first and selected, or says it is not available to the
+/// customer now. Unstyled until the design.
 class MyCodesScreen extends ConsumerWidget {
-  const MyCodesScreen({super.key});
+  const MyCodesScreen({super.key, this.shown});
+
+  /// The banner's code, as the customer types it; null otherwise.
+  final String? shown;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -47,7 +52,10 @@ class MyCodesScreen extends ConsumerWidget {
           AsyncData(value: final MyCodes mine) => TabBarView(
             children: [
               tab([
-                for (final code in mine.codes.where((c) => c.ended == null))
+                ..._shownFirst(l10n, mine),
+                for (final code in mine.codes.where(
+                  (c) => c.ended == null && c.code != shown,
+                ))
                   _CodeTile(code: code, currency: mine.currency ?? ''),
               ]),
               tab([
@@ -67,13 +75,37 @@ class MyCodesScreen extends ConsumerWidget {
       ),
     );
   }
+
+  // The banner's code first and selected when the customer may use it,
+  // else the line that says it is not available now.
+  List<Widget> _shownFirst(AppLocalizations l10n, MyCodes mine) {
+    final code = shown;
+    if (code == null) return const [];
+    final found = mine.codes
+        .where((c) => c.ended == null && c.code == code)
+        .firstOrNull;
+    return [
+      if (found != null)
+        _CodeTile(code: found, currency: mine.currency ?? '', selected: true)
+      else
+        ListTile(
+          key: const Key('my-code-not-available'),
+          title: Text(l10n.customerCodeNotAvailable(code)),
+        ),
+    ];
+  }
 }
 
 class _CodeTile extends StatelessWidget {
-  const _CodeTile({required this.code, required this.currency});
+  const _CodeTile({
+    required this.code,
+    required this.currency,
+    this.selected = false,
+  });
 
   final MyCode code;
   final String currency;
+  final bool selected;
 
   @override
   Widget build(BuildContext context) {
@@ -113,6 +145,7 @@ class _CodeTile extends StatelessWidget {
     ];
     return ListTile(
       key: Key('my-code-${code.code}'),
+      selected: selected,
       title: Text(code.code),
       subtitle: Text(lines.join('\n')),
       trailing: ended != null
