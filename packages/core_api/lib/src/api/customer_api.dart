@@ -652,6 +652,7 @@ class CustomerApi {
   /// * [longitude]
   /// * [similarTo] - CU §11.9: under a rejected or unanswered order, at its pin: up to 5 open restaurants sharing an active category with this one, without it; empty when it has none.
   /// * [categoryId] - CU §8.2: the category page, only the restaurants of that category in the list's order; empty for a category that is not active. Ignored with similarTo.
+  /// * [home] - CU §8.1: the home, which adds `sections`. Ignored with similarTo or categoryId.
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -666,6 +667,7 @@ class CustomerApi {
     required String longitude,
     String? similarTo,
     String? categoryId,
+    String? home,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -702,6 +704,12 @@ class CustomerApi {
         r'categoryId': encodeQueryParameter(
           _serializers,
           categoryId,
+          const FullType(String),
+        ),
+      if (home != null)
+        r'home': encodeQueryParameter(
+          _serializers,
+          home,
           const FullType(String),
         ),
     };

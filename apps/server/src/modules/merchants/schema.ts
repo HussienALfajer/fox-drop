@@ -68,6 +68,9 @@ export const restaurants = merchants.table(
     // The reason of the latest suspension, shown in the restaurant app (RA §5.5).
     suspensionReason: text('suspension_reason'),
     visible: boolean('visible').notNull().default(true),
+    // CU §8.1 «جديد على FOX DROP» (slice 2.27b): the first time it became
+    // active; a reactivation after a suspension keeps it.
+    activatedAt: timestamp('activated_at', { withTimezone: true }),
     // AP §9.6.5: the position in a home section or the category list.
     sortWeight: integer('sort_weight').notNull().default(0),
     // Owner decision 2026-11-06: a radius around the pin, or chosen zones

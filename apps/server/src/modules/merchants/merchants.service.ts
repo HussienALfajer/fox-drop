@@ -134,6 +134,8 @@ export interface Restaurant {
   // The reason of a suspension, for the restaurant app's banner (RA §5.5).
   suspensionReason: string | null;
   visible: boolean;
+  // CU §8.1 «جديد على FOX DROP»: its first activation; null before.
+  activatedAt: Date | null;
   location: Point;
   // The street address the captain app shows (CA §9.2); null until entered.
   address: string | null;
@@ -449,6 +451,7 @@ export class MerchantsService implements OnModuleInit {
         accountStatus: restaurants.accountStatus,
         suspensionReason: restaurants.suspensionReason,
         visible: restaurants.visible,
+        activatedAt: restaurants.activatedAt,
         latitude: sql<number>`ST_Y(${restaurants.location})`,
         longitude: sql<number>`ST_X(${restaurants.location})`,
         address: restaurants.address,
@@ -488,6 +491,7 @@ export class MerchantsService implements OnModuleInit {
       accountStatus: row.accountStatus,
       suspensionReason: row.suspensionReason,
       visible: row.visible,
+      activatedAt: row.activatedAt,
       location: { latitude: row.latitude, longitude: row.longitude },
       address: row.address,
       phone: row.phone,
@@ -541,6 +545,10 @@ export class MerchantsService implements OnModuleInit {
         .set({
           accountStatus: status,
           suspensionReason: status === 'suspended' ? change.reason!.trim() : null,
+          // CU §8.1: the first activation, from a draft or test mode.
+          ...(status === 'active'
+            ? { activatedAt: sql`coalesce(${restaurants.activatedAt}, now())` }
+            : {}),
           updatedAt: sql`now()`,
         })
         .where(eq(restaurants.id, restaurantId));

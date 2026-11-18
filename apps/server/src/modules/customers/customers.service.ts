@@ -100,6 +100,15 @@ export type CustomerActiveOrders = (
 
 export type CustomerOrderFacts = (accountId: string, cityId: string) => Promise<CustomerOrders>;
 
+// CU §8.1 «الأكثر طلباً» (slice 2.27b): what ordering registers
+// (useDeliveredCounts), each restaurant's orders delivered since a moment,
+// test orders and free re-deliveries left out; a restaurant with none is
+// missing from the map.
+export type DeliveredCounts = (
+  restaurantIds: string[],
+  since: Date,
+) => Promise<Map<string, number>>;
+
 // CU §12.1, AP §9.8 (slice 2.26a): what ordering registers (useRatings), the
 // ratings it keeps: each restaurant's count and average for the cards, and
 // the ratings a customer wrote for the profile.
@@ -300,6 +309,21 @@ export class CustomersService {
   ordersOf(accountId: string, cityId: string): Promise<CustomerOrders> {
     if (this.orderFacts === null) throw new Error('ordering has not registered its facts');
     return this.orderFacts(accountId, cityId);
+  }
+
+  // CU §8.1 (slice 2.27b): the delivered counts of «الأكثر طلباً»,
+  // registered by ordering at start.
+  private deliveredPort: DeliveredCounts | null = null;
+
+  useDeliveredCounts(port: DeliveredCounts): void {
+    this.deliveredPort = port;
+  }
+
+  deliveredCounts(restaurantIds: string[], since: Date): Promise<Map<string, number>> {
+    if (this.deliveredPort === null) {
+      throw new Error('ordering has not registered its delivered counts');
+    }
+    return this.deliveredPort(restaurantIds, since);
   }
 
   // CU §12.1, AP §9.8 (slice 2.26a): the ratings ordering keeps, registered

@@ -4951,6 +4951,19 @@
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
               "type": "string"
             }
+          },
+          {
+            "name": "home",
+            "required": false,
+            "in": "query",
+            "description": "CU §8.1: the home, which adds `sections`. Ignored with similarTo or categoryId.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
           }
         ],
         "responses": {
@@ -22002,10 +22015,62 @@
               "additionalProperties": false
             },
             "description": "CU §8.2: open first, then busy and paused, then closed; with similarTo, the open ones only (CU §11.9)."
+          },
+          "sections": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "banners",
+                        "categories",
+                        "nearest",
+                        "most_ordered",
+                        "new",
+                        "offers",
+                        "custom"
+                      ],
+                      "description": "«البانرات», «التصنيفات», «الأقرب إليك», «الأكثر طلباً», «جديد على FOX DROP», «العروض», or a custom section under its title."
+                    },
+                    "title": {
+                      "description": "A custom section's title; null otherwise.",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "restaurantIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "description": "The cards of `restaurants` it shows, in its order (open first, closed last); empty for banners and categories, which the app fills."
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "title",
+                    "restaurantIds"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "With home: the home sections shown, in the panel’s order (CU §8.1, AP §9.11.3); a restaurant section with no restaurant is left out. Null otherwise."
           }
         },
         "required": [
-          "restaurants"
+          "restaurants",
+          "sections"
         ],
         "additionalProperties": false
       },

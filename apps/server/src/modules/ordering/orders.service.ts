@@ -77,6 +77,8 @@ export interface RestaurantPickup {
 // An order is picked up within days of its placing: the read bounds
 // `placed_at` by this much before the moment, so the partitions prune.
 const PICKED_UP_AFTER_PLACING_MS = 2 * 24 * 60 * 60_000;
+// The same bound for a delivery (CU §8.1 «الأكثر طلباً»).
+const DELIVERED_AFTER_PLACING_MS = 2 * 24 * 60 * 60_000;
 
 // CA §9.8, §10.6: a delivered order's pay as the collection recorded it.
 // The restaurant's weekly statement (slice 2.19a): an order's number and
@@ -156,6 +158,10 @@ export class OrdersService implements OnModuleInit {
     this.customers.useActiveOrders((accountId, executor) =>
       this.activeOrders.customerHasActive(accountId, executor),
     );
+    // CU §8.1 «الأكثر طلباً» (slice 2.27b).
+    this.customers.useDeliveredCounts((restaurantIds, since) =>
+      this.deliveredCounts(restaurantIds, since),
+    );
     // AP §9.8 (slice 2.25a): the panel's customer profile.
     this.customers.useOrderFacts(async (accountId, cityId) => {
       const rules = await this.activeOrders.rules(cityId);
@@ -172,6 +178,32 @@ export class OrdersService implements OnModuleInit {
         ...summary,
       };
     });
+  }
+
+  // CU §8.1 «الأكثر طلباً» (slice 2.27b, owner decision 2026-11-18): each
+  // restaurant's orders delivered since the moment, test orders and free
+  // re-deliveries left out. Placed at most DELIVERED_AFTER_PLACING_MS before
+  // it, so the month partitions prune (an order is delivered within hours).
+  private async deliveredCounts(
+    restaurantIds: string[],
+    since: Date,
+  ): Promise<Map<string, number>> {
+    if (restaurantIds.length === 0) return new Map();
+    const rows = await this.database.db
+      .select({ restaurantId: orders.restaurantId, n: sql<number>`count(*)::int` })
+      .from(orders)
+      .where(
+        and(
+          inArray(orders.restaurantId, restaurantIds),
+          eq(orders.status, 'delivered'),
+          eq(orders.testOrder, false),
+          isNull(orders.redeliveryOfId),
+          gte(orders.deliveredAt, since),
+          gte(orders.placedAt, new Date(since.getTime() - DELIVERED_AFTER_PLACING_MS)),
+        ),
+      )
+      .groupBy(orders.restaurantId);
+    return new Map(rows.map((row) => [row.restaurantId, Number(row.n)]));
   }
 
   // AP §9.8 «الطلبات» (slice 2.25b): the customer's orders in the city

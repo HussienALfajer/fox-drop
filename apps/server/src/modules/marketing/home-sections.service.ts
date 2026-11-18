@@ -1,12 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, asc, eq, isNull, sql } from 'drizzle-orm';
+import { and, asc, eq, gt, isNull, lte, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { AuditService } from '../audit/index.js';
+import { FxService } from '../fx/index.js';
 import { GeoService } from '../geo/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import type { PromoChange } from './promo-codes.service.js';
-import { type HomeSectionKind, homeSections } from './schema.js';
+import { type HomeSectionKind, homeSections, promoCodes } from './schema.js';
 
 // AP §9.11.3, CU §8.1: the built-in sections in the home's default order.
 export const BUILT_IN_SECTIONS = [
@@ -64,7 +65,34 @@ export class HomeSectionsService {
     private readonly audit: AuditService,
     private readonly geo: GeoService,
     private readonly merchants: MerchantsService,
+    private readonly fx: FxService,
   ) {}
+
+  // CU §8.1 «العروض» (owner decision 2026-11-18): the restaurants named by a
+  // visible code running now (active, started, not ended, saved in the
+  // city's base: «أكوادي»'s `runsNow`) that is limited to restaurants and
+  // works in the zone. Neither its hours, its limits nor its day's budget
+  // are read (decided by us: a code still on offer today).
+  async offerRestaurants(cityId: string, zoneId: string, now: Date): Promise<Set<string>> {
+    const base = await this.fx.baseCurrency(cityId);
+    if (base === null) return new Set();
+    const rows = await this.database.db
+      .select({ restaurantIds: promoCodes.restaurantIds })
+      .from(promoCodes)
+      .where(
+        and(
+          eq(promoCodes.cityId, cityId),
+          eq(promoCodes.visibility, 'visible'),
+          eq(promoCodes.status, 'active'),
+          eq(promoCodes.currency, base),
+          lte(promoCodes.validFrom, now),
+          gt(promoCodes.validTo, now),
+          sql`cardinality(${promoCodes.restaurantIds}) > 0`,
+          sql`(cardinality(${promoCodes.zoneIds}) = 0 OR ${zoneId}::uuid = ANY(${promoCodes.zoneIds}))`,
+        ),
+      );
+    return new Set(rows.flatMap((row) => row.restaurantIds));
+  }
 
   // Every section of the city in its order, hidden ones included: the
   // stored ones, then the built-in ones never stored, in the default order.

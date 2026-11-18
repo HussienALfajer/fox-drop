@@ -691,6 +691,7 @@ export 'package:core_api/src/model/customer_restaurant_list_dto_output_restauran
 export 'package:core_api/src/model/customer_restaurant_list_dto_output_restaurants_inner_delivery_fee.dart';
 export 'package:core_api/src/model/customer_restaurant_list_dto_output_restaurants_inner_estimate.dart';
 export 'package:core_api/src/model/customer_restaurant_list_dto_output_restaurants_inner_state.dart';
+export 'package:core_api/src/model/customer_restaurant_list_dto_output_sections_inner.dart';
 export 'package:core_api/src/model/customer_restaurant_page_dto_output.dart';
 export 'package:core_api/src/model/customer_restaurant_page_dto_output_delivery_fee.dart';
 export 'package:core_api/src/model/customer_restaurant_page_dto_output_menu_inner.dart';

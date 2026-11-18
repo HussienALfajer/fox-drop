@@ -7099,6 +7099,18 @@ export interface components {
                     message: string | null;
                 };
             }[];
+            /** @description With home: the home sections shown, in the panel’s order (CU §8.1, AP §9.11.3); a restaurant section with no restaurant is left out. Null otherwise. */
+            sections: {
+                /**
+                 * @description «البانرات», «التصنيفات», «الأقرب إليك», «الأكثر طلباً», «جديد على FOX DROP», «العروض», or a custom section under its title.
+                 * @enum {string}
+                 */
+                kind: "banners" | "categories" | "nearest" | "most_ordered" | "new" | "offers" | "custom";
+                /** @description A custom section's title; null otherwise. */
+                title: string | null;
+                /** @description The cards of `restaurants` it shows, in its order (open first, closed last); empty for banners and categories, which the app fills. */
+                restaurantIds: string[];
+            }[] | null;
         };
         CustomerRestaurantPageDto_Output: {
             /** Format: uuid */
@@ -18728,6 +18740,8 @@ export interface operations {
                 similarTo?: string;
                 /** @description CU §8.2: the category page, only the restaurants of that category in the list's order; empty for a category that is not active. Ignored with similarTo. */
                 categoryId?: string;
+                /** @description CU §8.1: the home, which adds `sections`. Ignored with similarTo or categoryId. */
+                home?: "true" | "false";
             };
             header?: never;
             path?: never;

@@ -764,6 +764,13 @@
       "when": 1794984390530,
       "tag": "0108_marketing_home_sections",
       "breakpoints": true
+    },
+    {
+      "idx": 109,
+      "version": "7",
+      "when": 1794984723434,
+      "tag": "0109_merchants_activated_at",
+      "breakpoints": true
     }
   ]
 }
