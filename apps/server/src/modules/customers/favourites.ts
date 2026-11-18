@@ -27,7 +27,9 @@ export class FavouritesService {
   async remove(accountId: string, restaurantId: string, at: Date): Promise<void> {
     await this.database.db
       .update(favourites)
-      .set({ removedAt: at })
+      // Never before its adding: a removal that reaches the database after a
+      // later heart keeps the CHECK.
+      .set({ removedAt: sql`GREATEST(${favourites.addedAt}, ${at.toISOString()}::timestamptz)` })
       .where(
         and(
           eq(favourites.accountId, accountId),

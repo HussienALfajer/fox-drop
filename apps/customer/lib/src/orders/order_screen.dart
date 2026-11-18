@@ -333,7 +333,11 @@ class OrderScreen extends ConsumerWidget {
               ListTile(
                 key: const Key('order-pay-in'),
                 title: Text(l10n.customerPayIn),
-                trailing: Text(order.payIn ?? l10n.customerPayInUnset),
+                trailing: Text(
+                  order.payIn == null
+                      ? l10n.customerPayInUnset
+                      : l10n.currencySymbol(order.payIn!),
+                ),
               ),
               if (order.delivery case final delivery?) ...[
                 if (delivery.received.isNotEmpty)

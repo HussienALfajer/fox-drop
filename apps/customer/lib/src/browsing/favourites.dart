@@ -1,12 +1,8 @@
 import 'package:core_auth/core_auth.dart';
-import 'package:core_l10n/core_l10n.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../api.dart';
 import '../auth.dart';
-import '../router.dart';
 import '../search/search.dart';
 import 'browsing.dart';
 
@@ -19,6 +15,7 @@ final favouritesProvider = FutureProvider.autoDispose<List<RestaurantCard>>((
 ) async {
   final point = browsingPoint(ref);
   if (point == null) return const [];
+  final since = DateTime.now();
   final response = await ref
       .watch(coreApiProvider)
       .getCustomerApi()
@@ -26,15 +23,26 @@ final favouritesProvider = FutureProvider.autoDispose<List<RestaurantCard>>((
         latitude: '${point.latitude}',
         longitude: '${point.longitude}',
       );
-  return [for (final card in response.data!.restaurants) cardOfSearch(card)];
+  final cards = [
+    for (final card in response.data!.restaurants) cardOfSearch(card),
+  ];
+  heartsRead(ref, cards.map((card) => card.id), since);
+  return cards;
 });
 
-/// The hearts changed on this device since the cards were read, by
-/// restaurant: a card shows its own `favourite` until then. They belong to
-/// the account, so a sign-in or sign-out starts again.
-class Hearts extends Notifier<Map<String, bool>> {
+/// A heart this device changed, and when.
+typedef Heart = ({bool favourite, DateTime at});
+
+/// The hearts changed on this device, by restaurant: a card or page read
+/// before the change shows it, and one read after shows the server's
+/// `favourite` again, so a change on another phone reaches this one at its
+/// next read (CU §9.6: the account's, on every device). They belong to the
+/// account, so a sign-in or sign-out starts again.
+class Hearts extends Notifier<Map<String, Heart>> {
+  final _sending = <String>{};
+
   @override
-  Map<String, bool> build() {
+  Map<String, Heart> build() {
     ref.watch(
       customerAuth.session.select(
         (session) => switch (session.value) {
@@ -43,15 +51,38 @@ class Hearts extends Notifier<Map<String, bool>> {
         },
       ),
     );
+    _sending.clear();
     return const {};
   }
 
+  /// What a card or page shows, given what the server answered with it.
+  bool shown(String restaurantId, bool favourite) =>
+      state[restaurantId]?.favourite ?? favourite;
+
+  /// Cards read from the server since [since] carry the hearts as they
+  /// are: the changes made before it are dropped.
+  void read(Iterable<String> restaurantIds, DateTime since) {
+    final dropped = {
+      for (final id in restaurantIds)
+        if (state[id] case final heart?
+            when heart.at.isBefore(since) && !_sending.contains(id))
+          id,
+    };
+    if (dropped.isEmpty) return;
+    state = {
+      for (final entry in state.entries)
+        if (!dropped.contains(entry.key)) entry.key: entry.value,
+    };
+  }
+
   /// Sets or removes the favourite on the server at once (no confirmation,
-  /// owner decision 2026-11-18); a failed call puts the heart back and
-  /// answers false.
+  /// owner decision 2026-11-18); a tap while the last one is on its way is
+  /// ignored, and a failed call puts the heart back and answers false.
   Future<bool> toggle(String restaurantId, {required bool favourite}) async {
+    if (!_sending.add(restaurantId)) return true;
+    final before = state[restaurantId];
     final next = !favourite;
-    state = {...state, restaurantId: next};
+    state = {...state, restaurantId: (favourite: next, at: DateTime.now())};
     final api = ref.read(coreApiProvider).getCustomerApi();
     try {
       if (next) {
@@ -60,51 +91,26 @@ class Hearts extends Notifier<Map<String, bool>> {
         await api.customerFavouritesRemove(restaurantId: restaurantId);
       }
     } on Object {
-      state = {...state, restaurantId: favourite};
+      state = {
+        for (final entry in state.entries)
+          if (entry.key != restaurantId) entry.key: entry.value,
+        restaurantId: ?before,
+      };
       return false;
+    } finally {
+      _sending.remove(restaurantId);
     }
     ref.invalidate(favouritesProvider);
     return true;
   }
 }
 
-final heartsProvider = NotifierProvider<Hearts, Map<String, bool>>(Hearts.new);
+final heartsProvider = NotifierProvider<Hearts, Map<String, Heart>>(Hearts.new);
 
-/// The heart on a restaurant card and page (CU §9.6). A guest is sent to
-/// sign in, then back where they were.
-class HeartButton extends ConsumerWidget {
-  const HeartButton({
-    super.key,
-    required this.restaurantId,
-    required this.favourite,
-  });
-
-  final String restaurantId;
-
-  /// What the server answered with the card or the page.
-  final bool favourite;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context);
-    final shown = ref.watch(heartsProvider)[restaurantId] ?? favourite;
-    return IconButton(
-      key: Key('heart-$restaurantId'),
-      tooltip: shown ? l10n.customerRemoveFavourite : l10n.customerAddFavourite,
-      icon: Icon(shown ? Icons.favorite : Icons.favorite_border),
-      onPressed: () async {
-        if (ref.read(customerAuth.session).value is! SignedIn) {
-          context.go(signInFrom(GoRouterState.of(context).uri.toString()));
-          return;
-        }
-        final messenger = ScaffoldMessenger.of(context);
-        final done = await ref
-            .read(heartsProvider.notifier)
-            .toggle(restaurantId, favourite: shown);
-        if (!done) {
-          messenger.showSnackBar(SnackBar(content: Text(l10n.statusError)));
-        }
-      },
-    );
-  }
+/// Called by a provider once its cards are read: they carry the server's
+/// hearts from [since], the moment the read started.
+void heartsRead(Ref ref, Iterable<String> restaurantIds, DateTime since) {
+  final hearts = ref.read(heartsProvider.notifier);
+  final ids = restaurantIds.toList();
+  Future.microtask(() => hearts.read(ids, since));
 }

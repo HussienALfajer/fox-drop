@@ -11,7 +11,7 @@ import '../cart/item_sheet.dart';
 import '../device.dart';
 import '../media_image.dart';
 import 'browsing.dart';
-import 'favourites.dart';
+import 'heart_button.dart';
 
 /// A restaurant's page (CU §9.1–9.3, §9.5's badge): the header, the state,
 /// «أوقات العمل», and the menu with «ابحث في القائمة». Unstyled until the

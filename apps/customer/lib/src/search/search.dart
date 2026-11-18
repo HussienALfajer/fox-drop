@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../api.dart';
 import '../browsing/browsing.dart';
+import '../browsing/favourites.dart';
 import '../device.dart';
 import '../location/delivery_point.dart';
 
@@ -103,6 +104,7 @@ final searchProvider = FutureProvider.autoDispose.family<SearchView?, String>((
 ) async {
   final point = browsingPoint(ref);
   if (point == null) return null;
+  final since = DateTime.now();
   final response = await ref
       .watch(coreApiProvider)
       .getCustomerApi()
@@ -112,6 +114,7 @@ final searchProvider = FutureProvider.autoDispose.family<SearchView?, String>((
         q: query,
       );
   final data = response.data!;
+  heartsRead(ref, data.restaurants.map((card) => card.id), since);
   return SearchView(
     restaurants: [for (final card in data.restaurants) cardOfSearch(card)],
     items: data.items.toList(),

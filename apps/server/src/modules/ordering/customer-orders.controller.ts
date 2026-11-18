@@ -34,9 +34,9 @@ import {
 import { UNTIL_ENDED } from './active-orders.js';
 import { lockOrder } from './order-events.js';
 import { type Captain, CaptainsService } from '../captains/index.js';
-import { unsavedAddressFields, withRecipient } from '../customers/index.js';
+import { CustomersService, unsavedAddressFields, withRecipient } from '../customers/index.js';
 import { type AppSession, CaptainAccountsService } from '../identity/index.js';
-import { MerchantsService } from '../merchants/index.js';
+import { MerchantsService, seenByCustomer } from '../merchants/index.js';
 import {
   appVersion,
   cartLines,
@@ -62,6 +62,7 @@ import {
   type RatingView,
 } from './ratings.js';
 import { orderStatuses } from './schema.js';
+import { timeline } from './customer-timeline.js';
 
 // A personal code with its value (CU §11.6, §11.9): a compensation's or the
 // late code.
@@ -324,6 +325,11 @@ const customerOrder = z.object({
     })
     .nullable()
     .describe('Once delivered; the order screen opens the rating sheet (CU §12.1).'),
+  orderAgain: z
+    .boolean()
+    .describe(
+      'CU §12.3 «اطلب مرة أخرى»: delivered, rejected or cancelled, not a free re-delivery, while customers see the restaurant; false in the list of active orders.',
+    ),
   timeline: z
     .array(
       z.object({
@@ -450,6 +456,7 @@ class CustomerOrderHistoryQueryDto extends createZodDto(
     cursor: z
       .string()
       .regex(CURSOR)
+      .refine((cursor) => !Number.isNaN(Date.parse(cursor.split('_')[0]!)), 'a real moment')
       .optional()
       .describe('The `next` of the page before; none for the first page.'),
   }),
@@ -543,6 +550,7 @@ export class CustomerOrdersController {
     private readonly lateCodes: LateCodesService,
     private readonly support: SupportService,
     private readonly ratings: RatingsService,
+    private readonly customers: CustomersService,
     @Inject(DATABASE) private readonly database: Database,
   ) {}
 
@@ -897,6 +905,7 @@ export class CustomerOrdersController {
         this.orders.redeliveriesOf(order.id),
         this.ratings.ofOrder(order.id),
       ]);
+    const orderAgain = await this.orderAgain(order);
     const ratingUntil = await this.ratings.until(order, deliveredAt);
     const captainRatable = order.captainId !== null && ratingUntil !== null;
     const left = ratings.length < (captainRatable ? 2 : 1);
@@ -920,7 +929,20 @@ export class CustomerOrdersController {
         restaurant: ratings.find((each) => each.party === 'restaurant') ?? null,
         captain: ratings.find((each) => each.party === 'captain') ?? null,
       },
+      orderAgain,
     });
+  }
+
+  // CU §12.3: «اطلب مرة أخرى» on a delivered, rejected or cancelled order,
+  // never a free re-delivery, while customers (or this admin test account)
+  // see its restaurant.
+  private async orderAgain(order: OrderView): Promise<boolean> {
+    if (order.redelivery !== null || !ORDER_AGAIN.includes(order.status)) return false;
+    const [restaurant, testAccount] = await Promise.all([
+      this.merchants.restaurant(order.restaurantId, new Date()),
+      this.customers.isTestAccount(order.customerAccountId),
+    ]);
+    return restaurant !== null && seenByCustomer(restaurant, testAccount);
   }
 
   // The captains of these orders; with their number once one of their orders
@@ -945,6 +967,9 @@ export class CustomerOrdersController {
     return new Map(found.flatMap((captain) => (captain ? [[captain.id, captain] as const] : [])));
   }
 }
+
+// CU §12.3: the orders «اطلب مرة أخرى» follows.
+const ORDER_AGAIN: readonly OrderView['status'][] = ['delivered', 'rejected', 'cancelled'];
 
 // CU §11.3, U12: «اتصال بالكابتن» from the pickup until the order ends.
 const CALL_CAPTAIN: readonly OrderView['status'][] = ['picked_up', 'arrived'];
@@ -974,7 +999,9 @@ function orderBody(
       restaurant: RatingView | null;
       captain: RatingView | null;
     } | null;
-  } = { report: null, reportUntil: null, redeliveries: [], rating: null },
+    // CU §12.3 (slice 2.28b): «اطلب مرة أخرى» is offered.
+    orderAgain: boolean;
+  } = { report: null, reportUntil: null, redeliveries: [], rating: null, orderAgain: false },
 ) {
   const captain = order.captainId === null ? undefined : captains.get(order.captainId);
   const restaurant = names.get(order.restaurantId);
@@ -1061,6 +1088,7 @@ function orderBody(
         currency: line.currency,
       })),
     },
+    orderAgain: after.orderAgain,
     timeline: timeline(order),
     restaurant: { id: order.restaurantId, ...restaurant },
     captain: captain
@@ -1102,37 +1130,6 @@ function orderBody(
 }
 
 const text = (value: bigint) => value.toString();
-
-type TimelineStep =
-  | 'placed'
-  | 'accepted'
-  | 'picked_up'
-  | 'arrived'
-  | 'delivered'
-  | 'failed'
-  | 'rejected'
-  | 'cancelled';
-
-// CU §12.3: the steps the order reached, oldest first. A delivery set by
-// «تحديد النتيجة» is the outcome's moment (its collection's, once collected).
-function timeline(order: OrderView): { step: TimelineStep; at: string }[] {
-  const ended =
-    order.status === 'delivered'
-      ? (order.delivery?.at ?? order.outcome?.collectedAt ?? order.outcome?.at ?? null)
-      : order.status === 'failed'
-        ? (order.outcome?.at ?? null)
-        : null;
-  const steps: [TimelineStep, Date | null | undefined][] = [
-    ['placed', order.placedAt],
-    ['accepted', order.acceptance?.at],
-    ['picked_up', order.pickup?.at],
-    ['arrived', order.customerArrival?.at],
-    [order.status === 'failed' ? 'failed' : 'delivered', ended],
-    ['rejected', order.rejection?.at],
-    ['cancelled', order.cancellation?.at],
-  ];
-  return steps.flatMap(([step, at]) => (at ? [{ step, at: at.toISOString() }] : []));
-}
 
 function sentBody(rating: RatingView) {
   return {

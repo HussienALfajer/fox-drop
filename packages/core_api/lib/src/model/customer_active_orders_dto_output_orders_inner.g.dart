@@ -172,6 +172,8 @@ class _$CustomerActiveOrdersDtoOutputOrdersInner
   @override
   final CustomerActiveOrdersDtoOutputOrdersInnerDelivery? delivery;
   @override
+  final bool orderAgain;
+  @override
   final BuiltList<CustomerActiveOrdersDtoOutputOrdersInnerTimelineInner>
   timeline;
   @override
@@ -226,6 +228,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInner
     this.rejection,
     this.outcome,
     this.delivery,
+    required this.orderAgain,
     required this.timeline,
     required this.restaurant,
     this.captain,
@@ -272,6 +275,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInner
         rejection == other.rejection &&
         outcome == other.outcome &&
         delivery == other.delivery &&
+        orderAgain == other.orderAgain &&
         timeline == other.timeline &&
         restaurant == other.restaurant &&
         captain == other.captain &&
@@ -309,6 +313,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInner
     _$hash = $jc(_$hash, rejection.hashCode);
     _$hash = $jc(_$hash, outcome.hashCode);
     _$hash = $jc(_$hash, delivery.hashCode);
+    _$hash = $jc(_$hash, orderAgain.hashCode);
     _$hash = $jc(_$hash, timeline.hashCode);
     _$hash = $jc(_$hash, restaurant.hashCode);
     _$hash = $jc(_$hash, captain.hashCode);
@@ -350,6 +355,7 @@ class _$CustomerActiveOrdersDtoOutputOrdersInner
           ..add('rejection', rejection)
           ..add('outcome', outcome)
           ..add('delivery', delivery)
+          ..add('orderAgain', orderAgain)
           ..add('timeline', timeline)
           ..add('restaurant', restaurant)
           ..add('captain', captain)
@@ -494,6 +500,10 @@ class CustomerActiveOrdersDtoOutputOrdersInnerBuilder
     CustomerActiveOrdersDtoOutputOrdersInnerDeliveryBuilder? delivery,
   ) => _$this._delivery = delivery;
 
+  bool? _orderAgain;
+  bool? get orderAgain => _$this._orderAgain;
+  set orderAgain(bool? orderAgain) => _$this._orderAgain = orderAgain;
+
   ListBuilder<CustomerActiveOrdersDtoOutputOrdersInnerTimelineInner>? _timeline;
   ListBuilder<CustomerActiveOrdersDtoOutputOrdersInnerTimelineInner>
   get timeline => _$this._timeline ??=
@@ -611,6 +621,7 @@ class CustomerActiveOrdersDtoOutputOrdersInnerBuilder
       _rejection = $v.rejection?.toBuilder();
       _outcome = $v.outcome?.toBuilder();
       _delivery = $v.delivery?.toBuilder();
+      _orderAgain = $v.orderAgain;
       _timeline = $v.timeline.toBuilder();
       _restaurant = $v.restaurant.toBuilder();
       _captain = $v.captain?.toBuilder();
@@ -689,6 +700,11 @@ class CustomerActiveOrdersDtoOutputOrdersInnerBuilder
             rejection: _rejection?.build(),
             outcome: _outcome?.build(),
             delivery: _delivery?.build(),
+            orderAgain: BuiltValueNullFieldError.checkNotNull(
+              orderAgain,
+              r'CustomerActiveOrdersDtoOutputOrdersInner',
+              'orderAgain',
+            ),
             timeline: timeline.build(),
             restaurant: restaurant.build(),
             captain: _captain?.build(),
@@ -740,6 +756,7 @@ class CustomerActiveOrdersDtoOutputOrdersInnerBuilder
         _outcome?.build();
         _$failedField = 'delivery';
         _delivery?.build();
+
         _$failedField = 'timeline';
         timeline.build();
         _$failedField = 'restaurant';

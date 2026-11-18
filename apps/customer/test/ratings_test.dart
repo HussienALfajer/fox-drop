@@ -56,6 +56,7 @@ Map<String, Object?> _order({Map<String, Object?>? rating}) => {
   ],
   'removedLines': <Object>[],
   'timeline': <Object>[],
+  'orderAgain': false,
   'edited': false,
   'payIn': null,
   'note': null,

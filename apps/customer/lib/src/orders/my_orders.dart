@@ -52,12 +52,20 @@ class MyOrders extends AsyncNotifier<MyOrdersView> {
     state = AsyncData(MyOrdersView(view.orders, view.next, loadingMore: true));
     try {
       final page = await _page(view.next);
+      // A refresh meanwhile wins.
+      if (!identical(state.value?.orders, view.orders)) return true;
+      // An active order that ended since the first page comes again.
+      final shown = {for (final order in view.orders) order.id};
       state = AsyncData(
-        MyOrdersView([...view.orders, ...page.orders], page.next),
+        MyOrdersView([
+          ...view.orders,
+          for (final order in page.orders)
+            if (!shown.contains(order.id)) order,
+        ], page.next),
       );
       return true;
     } on Object {
-      state = AsyncData(view);
+      if (identical(state.value?.orders, view.orders)) state = AsyncData(view);
       return false;
     }
   }
@@ -84,9 +92,3 @@ String timelineStepText(AppLocalizations l10n, String step) => switch (step) {
   'arrived' => l10n.customerTimelineArrived,
   _ => historyStatusText(l10n, step),
 };
-
-/// CU §12.3: «اطلب مرة أخرى» on a delivered, rejected or cancelled order,
-/// never on a free re-delivery.
-bool canOrderAgain(String status, {required bool redelivery}) =>
-    !redelivery &&
-    const {'delivered', 'rejected', 'cancelled'}.contains(status);

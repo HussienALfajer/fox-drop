@@ -1,5 +1,4 @@
 import 'package:core_auth/testing.dart';
-import 'package:customer/src/orders/my_orders.dart';
 import 'package:customer/src/router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -27,16 +26,6 @@ Map<String, Object?> _summary(
 
 // CU §12.3 (slice 2.28b): «طلباتي», active first, then past, in pages.
 void main() {
-  test('«اطلب مرة أخرى» follows a delivered, rejected or cancelled order', () {
-    for (final status in ['delivered', 'rejected', 'cancelled']) {
-      expect(canOrderAgain(status, redelivery: false), isTrue);
-      expect(canOrderAgain(status, redelivery: true), isFalse);
-    }
-    for (final status in ['placed', 'accepted', 'arrived', 'failed']) {
-      expect(canOrderAgain(status, redelivery: false), isFalse);
-    }
-  });
-
   Future<TestApp> open(WidgetTester tester, List<FakeAnswer> pages) async {
     final app = TestApp(signedIn: true);
     app.completedProfile();
@@ -62,8 +51,12 @@ void main() {
         ],
         'next': 'cursor-1',
       }),
+      // The active order ended since the first page: it comes again.
       FakeAnswer(200, {
-        'orders': [_summary(4, status: 'rejected')],
+        'orders': [
+          _summary(1, status: 'delivered'),
+          _summary(4, status: 'rejected'),
+        ],
         'next': null,
       }),
     ]);
@@ -94,6 +87,7 @@ void main() {
       'cursor-1',
     );
     expect(find.byKey(Key('my-order-${_id(4)}')), findsOneWidget);
+    expect(find.byKey(Key('my-order-${_id(1)}')), findsOneWidget);
     expect(find.textContaining('لم يقبل المطعم الطلب'), findsOneWidget);
     expect(find.byKey(const Key('orders-more')), findsNothing);
 

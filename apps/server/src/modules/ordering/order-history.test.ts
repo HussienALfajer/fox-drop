@@ -308,9 +308,28 @@ describe('GET /v1/customer/orders (CU §12.3)', () => {
     expect(second.orders.map((order) => order.id)).toEqual([past[20]]);
     expect(second.next).toBeNull();
 
+    // «اطلب مرة أخرى» follows a cancelled order, never an active one, and
+    // only while customers see the restaurant (CU §12.3).
+    expect((await detail(past[0]!, customer)).orderAgain).toBe(true);
+    expect((await detail(active.id, customer)).orderAgain).toBe(false);
+    const merchants = app.get(MerchantsService);
+    await merchants.setAccountStatus(restaurantId, 'suspended', change);
+    expect((await detail(past[0]!, customer)).orderAgain).toBe(false);
+    await merchants.setAccountStatus(restaurantId, 'active', change);
+
     // Another customer sees none of them.
     expect((await history(await signedIn('customer'))).orders).toEqual([]);
 
+    // A guest has no orders to list.
+    expect((await app.inject({ method: 'GET', url: '/v1/customer/orders' })).statusCode).toBe(401);
+
+    // A cursor that is not one, or names no real moment, is refused.
+    const unreal = await app.inject({
+      method: 'GET',
+      url: `/v1/customer/orders?cursor=2026-13-01T00:00:00.000Z_${randomUUID()}`,
+      headers: customer,
+    });
+    expect(unreal.statusCode).toBe(400);
     // A cursor that is not one is refused.
     const wrong = await app.inject({
       method: 'GET',

@@ -34,6 +34,7 @@ Map<String, Object?> _order({
   List<Map<String, Object?>> timeline = const [],
   String rounding = '0',
   String? payIn,
+  bool orderAgain = false,
 }) => {
   'id': _orderId,
   'number': '10423',
@@ -79,6 +80,7 @@ Map<String, Object?> _order({
       ],
   'removedLines': removedLines,
   'timeline': timeline,
+  'orderAgain': orderAgain,
   'edited': removedLines.isNotEmpty,
   'payIn': payIn,
   'note': null,
@@ -1096,6 +1098,7 @@ void main() {
     final delivered = _order(
       status: 'delivered',
       version: 9,
+      orderAgain: true,
       captain: _captain,
       rounding: '-500',
       total: '13500',
@@ -1158,7 +1161,7 @@ void main() {
         expect(trailing(tester, 'order-items-value'), '130 ₺');
         expect(trailing(tester, 'order-delivery-fee'), '10 ₺');
         expect(trailing(tester, 'order-rounding'), '-5 ₺');
-        expect(trailing(tester, 'order-pay-in'), 'USD');
+        expect(trailing(tester, 'order-pay-in'), r'$');
         expect(find.text('استلم الكابتن: 200 ₺'), findsOneWidget);
         expect(find.text('أعاد لك: 65 ₺'), findsOneWidget);
         expect(find.text('الكابتن: سامر'), findsOneWidget);
@@ -1236,25 +1239,24 @@ void main() {
       await app.done(tester);
     });
 
-    testWidgets(
-      'offers no «اطلب مرة أخرى» on a free re-delivery or an active order',
-      (tester) async {
-        final app = await open(tester, [
-          FakeAnswer(200, {
-            'order': _order(
-              status: 'delivered',
-              version: 9,
-              total: '0',
-              redeliveryOf: {
-                'orderId': '00000000-0000-4000-8000-0000000000e9',
-                'number': '10400',
-              },
-            ),
-          }),
-        ]);
-        expect(find.byKey(const Key('order-again')), findsNothing);
-        await app.done(tester);
-      },
-    );
+    testWidgets('offers no «اطلب مرة أخرى» when the server says so', (
+      tester,
+    ) async {
+      final app = await open(tester, [
+        FakeAnswer(200, {
+          'order': _order(
+            status: 'delivered',
+            version: 9,
+            total: '0',
+            redeliveryOf: {
+              'orderId': '00000000-0000-4000-8000-0000000000e9',
+              'number': '10400',
+            },
+          ),
+        }),
+      ]);
+      expect(find.byKey(const Key('order-again')), findsNothing);
+      await app.done(tester);
+    });
   });
 }

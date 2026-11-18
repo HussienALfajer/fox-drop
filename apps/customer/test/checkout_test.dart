@@ -156,6 +156,7 @@ Map<String, Object?> _order() => {
     ],
     'removedLines': <Object>[],
     'timeline': <Object>[],
+    'orderAgain': false,
     'edited': false,
     'payIn': null,
     'note': null,

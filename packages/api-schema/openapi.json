@@ -31927,6 +31927,10 @@
                   ],
                   "description": "Once delivered; the order screen opens the rating sheet (CU §12.1)."
                 },
+                "orderAgain": {
+                  "type": "boolean",
+                  "description": "CU §12.3 «اطلب مرة أخرى»: delivered, rejected or cancelled, not a free re-delivery, while customers see the restaurant; false in the list of active orders."
+                },
                 "timeline": {
                   "type": "array",
                   "items": {
@@ -32392,6 +32396,7 @@
                 "rejection",
                 "outcome",
                 "delivery",
+                "orderAgain",
                 "timeline",
                 "restaurant",
                 "captain",
@@ -33367,6 +33372,10 @@
                 ],
                 "description": "Once delivered; the order screen opens the rating sheet (CU §12.1)."
               },
+              "orderAgain": {
+                "type": "boolean",
+                "description": "CU §12.3 «اطلب مرة أخرى»: delivered, rejected or cancelled, not a free re-delivery, while customers see the restaurant; false in the list of active orders."
+              },
               "timeline": {
                 "type": "array",
                 "items": {
@@ -33832,6 +33841,7 @@
               "rejection",
               "outcome",
               "delivery",
+              "orderAgain",
               "timeline",
               "restaurant",
               "captain",

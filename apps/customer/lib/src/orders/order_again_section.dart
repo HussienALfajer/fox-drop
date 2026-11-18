@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../media_image.dart';
-import 'my_orders.dart';
 import 'order_again.dart';
 import 'order_live.dart';
 
@@ -76,12 +75,9 @@ class OrderAgainButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (!canOrderAgain(
-      order.status.name,
-      redelivery: order.redeliveryOf != null,
-    )) {
-      return const SizedBox.shrink();
-    }
+    // The server's rule: delivered, rejected or cancelled, not a free
+    // re-delivery, while customers see the restaurant.
+    if (!order.orderAgain) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsetsDirectional.all(16),
       child: OutlinedButton(

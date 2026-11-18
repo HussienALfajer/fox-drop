@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:core_auth/core_auth.dart';
 import 'package:core_auth/testing.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +28,8 @@ void main() {
     final app = await browsingApp(
       tester,
       signedIn: true,
+      // The page is read after the heart: the server answers it.
+      page: {...shamPage(), 'favourite': true},
       before: (app) {
         app.completedProfile();
         app.server.on('/v1/customer/favourites/$shamId', [
@@ -40,7 +44,6 @@ void main() {
     final sent = app.server.to('/v1/customer/favourites/$shamId');
     expect(sent.single.method, 'PUT');
 
-    // The page keeps the heart this device set, whatever it read before.
     await openSham(tester);
     expect(_full(tester, shamId), isTrue);
     await app.done(tester);
@@ -110,6 +113,64 @@ void main() {
       find.text('لا توجد مطاعم مفضلة توصل إلى هذا العنوان'),
       findsOneWidget,
     );
+    await app.done(tester);
+  });
+
+  testWidgets('a read after a change shows the account\'s heart again', (
+    tester,
+  ) async {
+    final app = await browsingApp(
+      tester,
+      signedIn: true,
+      before: (app) {
+        app.completedProfile();
+        // Removed here, then hearted again on another phone before the
+        // list is read again.
+        app.server.on('/v1/customer/favourites', [
+          FakeAnswer(200, {
+            'restaurants': [card(nourId, 'مطعم النور', favourite: true)],
+          }),
+        ]);
+        app.server.on('/v1/customer/favourites/$nourId', [
+          const FakeAnswer(200, {'restaurantId': nourId, 'favourite': false}),
+        ]);
+      },
+    );
+    await tester.tap(find.byKey(const Key('open-account')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('open-favourites')));
+    await tester.pumpAndSettle();
+    await tester.tap(_heart(nourId));
+    await tester.pumpAndSettle();
+    expect(app.server.to('/v1/customer/favourites'), hasLength(2));
+    expect(_full(tester, nourId), isTrue);
+    await app.done(tester);
+  });
+
+  testWidgets('a second tap while the first is on its way is ignored', (
+    tester,
+  ) async {
+    final app = await browsingApp(
+      tester,
+      signedIn: true,
+      before: (app) {
+        app.completedProfile();
+        app.server.on('/v1/customer/favourites/$shamId', [
+          const FakeAnswer(200, {'restaurantId': shamId, 'favourite': true}),
+        ]);
+      },
+    );
+    final gate = Completer<void>();
+    app.server.gate = gate;
+    await tester.tap(_heart(shamId));
+    await tester.pump();
+    await tester.tap(_heart(shamId));
+    await tester.pump();
+    gate.complete();
+    app.server.gate = null;
+    await tester.pumpAndSettle();
+    expect(app.server.to('/v1/customer/favourites/$shamId'), hasLength(1));
+    expect(_full(tester, shamId), isTrue);
     await app.done(tester);
   });
 }

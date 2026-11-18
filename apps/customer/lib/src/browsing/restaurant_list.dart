@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../device.dart';
 import '../media_image.dart';
 import 'browsing.dart';
-import 'favourites.dart';
+import 'heart_button.dart';
 
 /// A category's restaurants that deliver to the point (CU §8.2, slice
 /// 2.27a). Pull to refresh (CU §8.1).

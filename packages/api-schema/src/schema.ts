@@ -9403,6 +9403,8 @@ export interface components {
                         currency: string;
                     }[];
                 } | null;
+                /** @description CU §12.3 «اطلب مرة أخرى»: delivered, rejected or cancelled, not a free re-delivery, while customers see the restaurant; false in the list of active orders. */
+                orderAgain: boolean;
                 /** @description CU §12.3: the order's short timeline, oldest first; only the steps it reached. */
                 timeline: {
                     /**
@@ -9736,6 +9738,8 @@ export interface components {
                         currency: string;
                     }[];
                 } | null;
+                /** @description CU §12.3 «اطلب مرة أخرى»: delivered, rejected or cancelled, not a free re-delivery, while customers see the restaurant; false in the list of active orders. */
+                orderAgain: boolean;
                 /** @description CU §12.3: the order's short timeline, oldest first; only the steps it reached. */
                 timeline: {
                     /**

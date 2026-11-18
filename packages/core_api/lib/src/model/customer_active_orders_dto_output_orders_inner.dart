@@ -50,6 +50,7 @@ part 'customer_active_orders_dto_output_orders_inner.g.dart';
 /// * [rejection]
 /// * [outcome]
 /// * [delivery]
+/// * [orderAgain] - CU §12.3 «اطلب مرة أخرى»: delivered, rejected or cancelled, not a free re-delivery, while customers see the restaurant; false in the list of active orders.
 /// * [timeline] - CU §12.3: the order's short timeline, oldest first; only the steps it reached.
 /// * [restaurant]
 /// * [captain]
@@ -132,6 +133,10 @@ abstract class CustomerActiveOrdersDtoOutputOrdersInner
 
   @BuiltValueField(wireName: r'delivery')
   CustomerActiveOrdersDtoOutputOrdersInnerDelivery? get delivery;
+
+  /// CU §12.3 «اطلب مرة أخرى»: delivered, rejected or cancelled, not a free re-delivery, while customers see the restaurant; false in the list of active orders.
+  @BuiltValueField(wireName: r'orderAgain')
+  bool get orderAgain;
 
   /// CU §12.3: the order's short timeline, oldest first; only the steps it reached.
   @BuiltValueField(wireName: r'timeline')
@@ -352,6 +357,11 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerSerializer
               CustomerActiveOrdersDtoOutputOrdersInnerDelivery,
             ),
           );
+    yield r'orderAgain';
+    yield serializers.serialize(
+      object.orderAgain,
+      specifiedType: const FullType(bool),
+    );
     yield r'timeline';
     yield serializers.serialize(
       object.timeline,
@@ -673,6 +683,15 @@ class _$CustomerActiveOrdersDtoOutputOrdersInnerSerializer
                   as CustomerActiveOrdersDtoOutputOrdersInnerDelivery?;
           if (valueDes == null) continue;
           result.delivery.replace(valueDes);
+          break;
+        case r'orderAgain':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.orderAgain = valueDes;
           break;
         case r'timeline':
           final valueDes =

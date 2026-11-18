@@ -770,6 +770,11 @@ describe('the ordering tables (AP §8.1, §4.8; architecture §5.5)', () => {
     await expect(
       appQuery(`DELETE FROM customers.favourites WHERE account_id = '${city}'`),
     ).rejects.toThrow(/permission denied/);
+    await expect(
+      appQuery(
+        `UPDATE customers.favourites SET restaurant_id = '${randomUUID()}' WHERE account_id = '${city}'`,
+      ),
+    ).rejects.toThrow(/permission denied/);
   });
 
   it("keep a customer's blocks as they started, one open at a time, the dues kind never ending", async () => {
