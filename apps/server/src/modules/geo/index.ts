@@ -28,7 +28,13 @@ export {
 } from './weekly-hours.js';
 export { estimateRange, tripMinutes } from './delivery-estimate.js';
 export type { DeliveryFeeRule, DistanceBand } from './delivery-fee.js';
-export { type Distance, type DistanceMethod, type Point, straightLineMetres } from './distance.js';
+export {
+  type Distance,
+  type DistanceMethod,
+  type Point,
+  type Route,
+  straightLineMetres,
+} from './distance.js';
 export {
   type DeliveryFee,
   type GeoChange,

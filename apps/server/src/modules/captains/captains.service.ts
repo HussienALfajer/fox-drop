@@ -25,7 +25,12 @@ import {
   onlineBlocks,
   remitOnlineUntil,
 } from './availability.js';
-import { LIVE_POSITION_MAX_AGE_MS, LivePositions, type NearbyCaptain } from './live-positions.js';
+import {
+  LIVE_POSITION_MAX_AGE_MS,
+  type LivePosition,
+  LivePositions,
+  type NearbyCaptain,
+} from './live-positions.js';
 import { checkPayRate, orderPay, type PayParts, type PayRate } from './pay.js';
 import {
   captainRecords,
@@ -367,6 +372,11 @@ export class CaptainsService implements OnModuleInit {
   // Told in the transaction of a change the captain hears of
   // (onAvailabilityChanged).
   private readonly availabilityListeners: AvailabilityListener[] = [];
+  // Told of each new live position (onLivePosition).
+  private readonly positionListeners: ((
+    captainId: string,
+    position: LivePosition,
+  ) => Promise<void>)[] = [];
 
   constructor(
     @Inject(DATABASE) private readonly database: Database,
@@ -411,6 +421,15 @@ export class CaptainsService implements OnModuleInit {
     executor: Pick<NodePgDatabase, 'select'> = this.database.db,
   ): Promise<boolean> {
     return (await this.activeOrders([captainId], executor)).size > 0;
+  }
+
+  // Architecture §6.2, CU §11.3: ordering publishes the captain's live
+  // position to the order's channel after the pickup. Told after the point is
+  // written (or when Valkey failed, since the point is the newest of its
+  // batch), never for a point older than the live one; a listener that fails
+  // is logged and never fails the request.
+  onLivePosition(listener: (captainId: string, position: LivePosition) => Promise<void>): void {
+    this.positionListeners.push(listener);
   }
 
   // Dispatch withdraws a captain's open offer once the captain is offline
@@ -2000,7 +2019,16 @@ export class CaptainsService implements OnModuleInit {
       const newest = live.reduce((latest, point) =>
         point.recordedAt > latest.recordedAt ? point : latest,
       );
-      await this.positions.set(row.cityId, captainId, open.id, newest);
+      const written = await this.positions.set(row.cityId, captainId, open.id, newest);
+      if (written !== false) {
+        for (const listener of this.positionListeners) {
+          try {
+            await listener(captainId, newest);
+          } catch (error) {
+            this.logger.warn({ err: error }, 'a live position listener failed');
+          }
+        }
+      }
     }
     return { accepted: result.accepted };
   }

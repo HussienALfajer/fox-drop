@@ -11,9 +11,11 @@ import {
   type Distance,
   measureDistance,
   measureDistances,
+  measureRoute,
   type Point,
   ROAD_DISTANCES,
   type RoadDistances,
+  type Route,
 } from './distance.js';
 import { cities, feeBands, feeRules, officePeriods, offices, zones, zoneVotes } from './schema.js';
 import {
@@ -280,6 +282,25 @@ export class GeoService implements OnModuleInit {
       this.logger.warn(
         { vehicle, err: error },
         'OSRM did not answer: the straight line × 1.3 is used',
+      );
+    });
+  }
+
+  // A leg's route for the maps (architecture §7.1, CA §4.6, CU §11.3): by
+  // road with its line and duration, or the straight line × 1.3 at the city's
+  // order.eta_speed_kmh without a line when OSRM does not answer. It always
+  // asks OSRM: pricing.distance_method decides the fee's distance, not the map.
+  async route(
+    cityId: string,
+    from: Point,
+    to: Point,
+    { vehicle }: { vehicle: Vehicle },
+  ): Promise<Route> {
+    const speedKmh = await this.settings.get('order.eta_speed_kmh', { cityId });
+    return measureRoute(from, to, vehicle, speedKmh, this.road, (error) => {
+      this.logger.warn(
+        { vehicle, err: error },
+        'OSRM did not answer the route: the straight line × 1.3 is used',
       );
     });
   }

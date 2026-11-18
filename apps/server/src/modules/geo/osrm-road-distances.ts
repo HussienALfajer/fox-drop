@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { z } from 'zod';
 import { vehicles, type Vehicle } from '../settings/index.js';
-import type { Point, RoadDistances } from './distance.js';
+import type { Point, RoadDistances, RoadRoute } from './distance.js';
 
 // A route lookup that takes longer falls back to the straight line × 1.3, so
 // a slow OSRM never holds up a quote.
@@ -10,6 +10,24 @@ const TIMEOUT_MS = 1000;
 const routeAnswer = z.object({
   code: z.literal('Ok'),
   routes: z.tuple([z.object({ distance: z.number().nonnegative() })], z.unknown()),
+});
+
+// A GeoJSON line: [longitude, latitude] pairs.
+const lineAnswer = z.object({
+  code: z.literal('Ok'),
+  routes: z.tuple(
+    [
+      z.object({
+        distance: z.number().nonnegative(),
+        duration: z.number().nonnegative(),
+        geometry: z.object({
+          type: z.literal('LineString'),
+          coordinates: z.array(z.tuple([z.number(), z.number()])).min(2),
+        }),
+      }),
+    ],
+    z.unknown(),
+  ),
 });
 
 const tableAnswer = z.object({
@@ -39,6 +57,30 @@ export class OsrmRoadDistances implements RoadDistances {
     const body: unknown = await response.json();
     const route = routeAnswer.safeParse(body);
     if (route.success) return route.data.routes[0].distance;
+    const failure = failedAnswer.safeParse(body);
+    throw new Error(
+      `OSRM answered ${response.status} ${failure.success ? failure.data.code : 'without a route'}`,
+    );
+  }
+
+  // The route with its whole line as GeoJSON, for the maps (CA §4.6).
+  async route(from: Point, to: Point, vehicle: Vehicle): Promise<RoadRoute> {
+    const url = this.server(vehicle);
+    const points = `${from.longitude},${from.latitude};${to.longitude},${to.latitude}`;
+    const response = await fetch(
+      `${url}/route/v1/driving/${points}?overview=full&geometries=geojson&alternatives=false&steps=false`,
+      { signal: AbortSignal.timeout(this.timeoutMs) },
+    );
+    const body: unknown = await response.json();
+    const route = lineAnswer.safeParse(body);
+    if (route.success) {
+      const [{ distance, duration, geometry }] = route.data.routes;
+      return {
+        metres: distance,
+        seconds: duration,
+        line: geometry.coordinates.map(([longitude, latitude]) => ({ latitude, longitude })),
+      };
+    }
     const failure = failedAnswer.safeParse(body);
     throw new Error(
       `OSRM answered ${response.status} ${failure.success ? failure.data.code : 'without a route'}`,

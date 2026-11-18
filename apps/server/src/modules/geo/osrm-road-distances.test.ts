@@ -92,4 +92,42 @@ describe('OsrmRoadDistances', () => {
     await expect(osrm.table([from], to, 'car')).rejects.toThrow('InvalidQuery');
     await expect(osrm.table([from], to, 'walking')).rejects.toThrow('no OSRM server for walking');
   });
+
+  it('reads the route with its line as GeoJSON, longitude first', async () => {
+    answer(200, {
+      code: 'Ok',
+      routes: [
+        {
+          distance: 1834.7,
+          duration: 201.3,
+          geometry: {
+            type: 'LineString',
+            coordinates: [
+              [37.0463, 36.5866],
+              [37.049, 36.588],
+              [37.0518, 36.5901],
+            ],
+          },
+        },
+      ],
+    });
+    const osrm = new OsrmRoadDistances({ motorbike: baseUrl }, 1000);
+    await expect(osrm.route(from, to, 'motorbike')).resolves.toEqual({
+      metres: 1834.7,
+      seconds: 201.3,
+      line: [from, { latitude: 36.588, longitude: 37.049 }, to],
+    });
+    expect(paths.at(-1)).toBe(
+      '/route/v1/driving/37.0463,36.5866;37.0518,36.5901?overview=full&geometries=geojson&alternatives=false&steps=false',
+    );
+  });
+
+  it('fails when the route is refused, has no line or the vehicle has no server', async () => {
+    answer(400, { code: 'NoRoute' });
+    const osrm = new OsrmRoadDistances({ car: baseUrl }, 1000);
+    await expect(osrm.route(from, to, 'car')).rejects.toThrow('NoRoute');
+    answer(200, { code: 'Ok', routes: [{ distance: 10, duration: 2 }] });
+    await expect(osrm.route(from, to, 'car')).rejects.toThrow();
+    await expect(osrm.route(from, to, 'walking')).rejects.toThrow('no OSRM server for walking');
+  });
 });

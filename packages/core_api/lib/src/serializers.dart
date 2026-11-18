@@ -577,6 +577,8 @@ import 'package:core_api/src/model/captain_order_dto_output_order_outcome_to_col
 import 'package:core_api/src/model/captain_order_dto_output_order_pickup.dart';
 import 'package:core_api/src/model/captain_order_dto_output_order_pickup_request.dart';
 import 'package:core_api/src/model/captain_order_dto_output_order_redelivery_of.dart';
+import 'package:core_api/src/model/captain_order_route_dto_output.dart';
+import 'package:core_api/src/model/captain_order_route_dto_output_route.dart';
 import 'package:core_api/src/model/captain_outcome_payment_dto.dart';
 import 'package:core_api/src/model/captain_peak_bonus_dto_output.dart';
 import 'package:core_api/src/model/captain_peak_bonus_dto_output_active_inner.dart';
@@ -676,6 +678,8 @@ import 'package:core_api/src/model/customer_order_dto_output_order_delivery.dart
 import 'package:core_api/src/model/customer_order_dto_output_order_redeliveries_inner.dart';
 import 'package:core_api/src/model/customer_order_history_dto_output.dart';
 import 'package:core_api/src/model/customer_order_history_dto_output_orders_inner.dart';
+import 'package:core_api/src/model/customer_order_route_dto_output.dart';
+import 'package:core_api/src/model/customer_order_route_dto_output_captain.dart';
 import 'package:core_api/src/model/customer_place_order_dto.dart';
 import 'package:core_api/src/model/customer_place_order_dto_unsaved_address.dart';
 import 'package:core_api/src/model/customer_price_report_body_dto.dart';
@@ -1436,6 +1440,8 @@ part 'serializers.g.dart';
   CaptainOrderDtoOutputOrderPickup,
   CaptainOrderDtoOutputOrderPickupRequest,
   CaptainOrderDtoOutputOrderRedeliveryOf,
+  CaptainOrderRouteDtoOutput,
+  CaptainOrderRouteDtoOutputRoute,
   CaptainOutcomePaymentDto,
   CaptainPeakBonusDtoOutput,
   CaptainPeakBonusDtoOutputActiveInner,
@@ -1535,6 +1541,8 @@ part 'serializers.g.dart';
   CustomerOrderDtoOutputOrderRedeliveriesInner,
   CustomerOrderHistoryDtoOutput,
   CustomerOrderHistoryDtoOutputOrdersInner,
+  CustomerOrderRouteDtoOutput,
+  CustomerOrderRouteDtoOutputCaptain,
   CustomerPlaceOrderDto,
   CustomerPlaceOrderDtoUnsavedAddress,
   CustomerPriceReportBodyDto,
@@ -2958,6 +2966,12 @@ Serializers serializers =
             ]),
             () =>
                 ListBuilder<AdminCompensationRequestsDtoOutputRequestsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCustomerDtoOutputAddressesInnerLocation),
+            ]),
+            () => ListBuilder<AdminCustomerDtoOutputAddressesInnerLocation>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

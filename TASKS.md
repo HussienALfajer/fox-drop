@@ -4,13 +4,13 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.29b, the captain's map and following the captain (`docs/roadmap.md`, Phase 2, Finding food). Planned, not started. Owner decisions 2026-11-18 stand: the map screens unstyled with Flutter's defaults, logic apart from presentation; the tiles are ours (`public-maps` behind `/maps/`, slice 2.29a).
+Slice 2.29b, the captain's map and following the captain (`docs/roadmap.md`, Phase 2, Finding food). In progress. Owner decisions 2026-11-18 stand: the map screens unstyled with Flutter's defaults, logic apart from presentation; the tiles are ours (`public-maps` behind `/maps/`, slice 2.29a).
 
 - **Roadmap line:** 2.29b The captain's map and following the captain: the route and ETA of each leg from the routing service, the captain's map in steps 1 and 3 with navigation handed off, the customer's map from pickup with the captain's live position, the pin and the route line (architecture §6.2, §7.1–7.3, CU §11.3, CA §4.6, §9.2, §9.5). The owner follows a captain on the map.
 - **Specs:** architecture §6.2 (the order channel), §7.1 (OSRM, the straight line × 1.3 fallback), §7.2 (the map, `docs/runbooks/maps.md`), §7.3 (captain positions), §11.2 (`core_maps`: markers and the route line); CU §11.3; CA §4.6, §9.2, §9.5.
 - **Branch:** the cloud session's branch.
 - **Plan (one commit per step):**
-  - [ ] Server: the leg's route (OSRM `route` geometry and duration, or the straight line × 1.3 without a line when OSRM is down) for the captain's current leg (to the restaurant, then to the customer), read once per leg (CA §4.6); the captain's position published on `order:{order_id}` from `picked_up` until the order ends, and the customer's route read (CU §11.3, architecture §6.2).
+  - [x] Server: the leg's route (OSRM `route` geometry and duration, or the straight line × 1.3 without a line when OSRM is down) for the captain's current leg (to the restaurant, then to the customer), read once per leg (CA §4.6); the captain's position published on `order:{order_id}` from `picked_up` until the order ends, and the customer's route read (CU §11.3, architecture §6.2).
   - [ ] `core_maps`: markers and the route line on the MapLibre map (their first use), logic in plain Dart with tests; a map without the fixed pin.
   - [ ] Captain app: the map with the route and the ETA in step 1 (CA §9.2) and step 3 (CA §9.5), «ابدأ الملاحة» kept (it exists).
   - [ ] Customer app: the map on the order screen from `picked_up` until the order ends: the captain's live position, the delivery pin and the route line when available; none before pickup (CU §11.3).

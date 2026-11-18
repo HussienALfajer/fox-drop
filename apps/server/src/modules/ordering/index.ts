@@ -34,6 +34,11 @@ import { MerchantTicketsController } from './merchant-reports.controller.js';
 import { MerchantOrdersController } from './merchant-orders.controller.js';
 import { OrderAlerts, OrderAlertsWorker } from './order-alerts.js';
 import { OrderChannelAccess } from './order-channel.js';
+import {
+  CaptainOrderRouteController,
+  CustomerOrderRouteController,
+} from './order-routes.controller.js';
+import { OrderRoutes } from './order-routes.js';
 import { OrderAssignmentsModule } from './order-assignments.js';
 import { OrderCommands } from './order-commands.js';
 import { OrderPartitions } from './order-partitions.js';
@@ -100,6 +105,8 @@ import {
     MerchantRatingsController,
     CaptainRatingsController,
     AdminRatingsController,
+    CaptainOrderRouteController,
+    CustomerOrderRouteController,
   ],
   providers: [
     ActiveOrders,
@@ -119,6 +126,7 @@ import {
     EmergencyStops,
     RatingsService,
     RatingPagesService,
+    OrderRoutes,
   ],
   exports: [QuoteService, OrdersService],
 })

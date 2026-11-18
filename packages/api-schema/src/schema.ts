@@ -4164,6 +4164,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/captain/orders/{orderId}/route": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainOrderRouteRoute"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/customer/orders/{orderId}/route": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["customerOrderRouteRoute"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/tickets": {
         parameters: {
             query?: never;
@@ -13365,6 +13397,46 @@ export interface components {
                 count: number;
                 average: number | null;
             }[];
+        };
+        CaptainOrderRouteDto_Output: {
+            /** @enum {string} */
+            leg: "to_restaurant" | "to_customer";
+            destination: {
+                latitude: number;
+                longitude: number;
+            };
+            route: {
+                metres: number;
+                seconds: number;
+                /** @enum {string} */
+                method: "road" | "straight_x1.3";
+                line: {
+                    latitude: number;
+                    longitude: number;
+                }[] | null;
+            } | null;
+        };
+        CustomerOrderRouteDto_Output: {
+            captain: {
+                latitude: number;
+                longitude: number;
+                /** Format: date-time */
+                recordedAt: string;
+            } | null;
+            destination: {
+                latitude: number;
+                longitude: number;
+            };
+            route: {
+                metres: number;
+                seconds: number;
+                /** @enum {string} */
+                method: "road" | "straight_x1.3";
+                line: {
+                    latitude: number;
+                    longitude: number;
+                }[] | null;
+            } | null;
         };
         AdminTicketsDto_Output: {
             /** @description Newest first, the latest 200. */
@@ -23180,6 +23252,50 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminRatingsDto_Output"];
+                };
+            };
+        };
+    };
+    captainOrderRouteRoute: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainOrderRouteDto_Output"];
+                };
+            };
+        };
+    };
+    customerOrderRouteRoute: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerOrderRouteDto_Output"];
                 };
             };
         };

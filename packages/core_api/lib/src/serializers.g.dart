@@ -928,6 +928,10 @@ Serializers _$serializers =
           ..add(CaptainOrderDtoOutputOrderPickupRequestStatusEnum.serializer)
           ..add(CaptainOrderDtoOutputOrderRedeliveryOf.serializer)
           ..add(CaptainOrderDtoOutputOrderStatusEnum.serializer)
+          ..add(CaptainOrderRouteDtoOutput.serializer)
+          ..add(CaptainOrderRouteDtoOutputLegEnum.serializer)
+          ..add(CaptainOrderRouteDtoOutputRoute.serializer)
+          ..add(CaptainOrderRouteDtoOutputRouteMethodEnum.serializer)
           ..add(CaptainOutcomePaymentDto.serializer)
           ..add(CaptainPeakBonusDtoOutput.serializer)
           ..add(CaptainPeakBonusDtoOutputActiveInner.serializer)
@@ -1106,6 +1110,8 @@ Serializers _$serializers =
           ..add(CustomerOrderHistoryDtoOutput.serializer)
           ..add(CustomerOrderHistoryDtoOutputOrdersInner.serializer)
           ..add(CustomerOrderHistoryDtoOutputOrdersInnerStatusEnum.serializer)
+          ..add(CustomerOrderRouteDtoOutput.serializer)
+          ..add(CustomerOrderRouteDtoOutputCaptain.serializer)
           ..add(CustomerPlaceOrderDto.serializer)
           ..add(CustomerPlaceOrderDtoUnsavedAddress.serializer)
           ..add(CustomerPriceReportBodyDto.serializer)
@@ -1608,6 +1614,12 @@ Serializers _$serializers =
                 ListBuilder<
                   AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCustomerDtoOutputAddressesInnerLocation),
+            ]),
+            () => ListBuilder<AdminCustomerDtoOutputAddressesInnerLocation>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

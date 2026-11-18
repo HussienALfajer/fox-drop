@@ -552,6 +552,7 @@ const routeAccess: Record<string, Access> = {
   'GET /v1/customer/orders': 'app_session',
   'GET /v1/customer/orders/active': 'app_session',
   'GET /v1/customer/orders/{orderId}': 'app_session',
+  'GET /v1/customer/orders/{orderId}/route': 'app_session',
   'POST /v1/customer/orders/{orderId}/answer-ping': 'app_session',
   'POST /v1/customer/orders/{orderId}/cancel': 'app_session',
   'POST /v1/customer/orders/{orderId}/report': 'app_session',
@@ -670,6 +671,7 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/captain/reports': 'app_session',
   'GET /v1/captain/reports': 'app_session',
   'GET /v1/captain/ratings': 'app_session',
+  'GET /v1/captain/orders/{orderId}/route': 'app_session',
   'POST /v1/captain/orders/{orderId}/problem': 'app_session',
   'POST /v1/merchant/orders/{orderId}/item-report/withdraw': 'app_session',
   'POST /v1/admin/orders/{orderId}/resend-notification': {
