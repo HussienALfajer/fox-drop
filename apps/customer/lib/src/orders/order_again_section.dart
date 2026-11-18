@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../media_image.dart';
+import 'my_orders.dart';
 import 'order_again.dart';
 import 'order_live.dart';
 
@@ -32,7 +33,7 @@ class OrderAgainSection extends ConsumerWidget {
             padding: const EdgeInsetsDirectional.all(16),
             child: FilledButton(
               key: const Key('order-without-unavailable'),
-              onPressed: () => _orderWithout(context, ref, unavailable),
+              onPressed: () => rebuildCart(context, ref, order, unavailable),
               child: Text(l10n.customerOrderWithoutUnavailable),
             ),
           ),
@@ -63,57 +64,88 @@ class OrderAgainSection extends ConsumerWidget {
       ],
     );
   }
+}
 
-  /// Rebuilds the cart without the unavailable items, after asking when the
-  /// cart is not empty (CU §11.9, §12.3), then opens it.
-  Future<void> _orderWithout(
-    BuildContext context,
-    WidgetRef ref,
-    Set<String> unavailable,
-  ) async {
-    final l10n = AppLocalizations.of(context);
-    final messenger = ScaffoldMessenger.of(context);
-    final router = GoRouter.of(context);
-    final again = ref.read(orderAgainProvider);
-    final current = await again.cartToReplace();
-    if (current != null) {
-      if (!context.mounted) return;
-      final replace = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          content: Text(l10n.customerReplaceCart(current)),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(l10n.customerCancel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text(l10n.customerContinue),
-            ),
-          ],
-        ),
-      );
-      if (replace != true) return;
+/// «اطلب مرة أخرى» on a delivered, rejected or cancelled order (CU §12.3,
+/// U18): the cart rebuilt from the restaurant's current menu at current
+/// prices, the notes copied, the code not.
+class OrderAgainButton extends ConsumerWidget {
+  const OrderAgainButton({super.key, required this.order});
+
+  final CustomerOrder order;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (!canOrderAgain(
+      order.status.name,
+      redelivery: order.redeliveryOf != null,
+    )) {
+      return const SizedBox.shrink();
     }
-    final OrderAgainResult result;
-    try {
-      result = await again.run(order, unavailable);
-    } on Object {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.statusError)));
-      return;
-    }
-    if (result is RestaurantGone) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.statusError)));
-      return;
-    }
-    if (result.skipped.isNotEmpty) {
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(l10n.customerNotAdded(result.skipped.join('، '))),
-        ),
-      );
-    }
-    if (result is CartRebuilt) router.push('/cart');
+    return Padding(
+      padding: const EdgeInsetsDirectional.all(16),
+      child: OutlinedButton(
+        key: const Key('order-again'),
+        onPressed: () => rebuildCart(context, ref, order, const {}),
+        child: Text(AppLocalizations.of(context).customerOrderAgain),
+      ),
+    );
   }
+}
+
+/// Rebuilds the cart from [order] without the items in [without], after
+/// asking when the cart is not empty (CU §11.9, §12.3), names the lines it
+/// skipped, then opens the cart. A restaurant customers no longer see
+/// builds nothing.
+Future<void> rebuildCart(
+  BuildContext context,
+  WidgetRef ref,
+  CustomerOrder order,
+  Set<String> without,
+) async {
+  final l10n = AppLocalizations.of(context);
+  final messenger = ScaffoldMessenger.of(context);
+  final router = GoRouter.of(context);
+  final again = ref.read(orderAgainProvider);
+  final current = await again.cartToReplace();
+  if (current != null) {
+    if (!context.mounted) return;
+    final replace = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: Text(l10n.customerReplaceCart(current)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.customerCancel),
+          ),
+          FilledButton(
+            key: const Key('replace-cart'),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(l10n.customerContinue),
+          ),
+        ],
+      ),
+    );
+    if (replace != true) return;
+  }
+  final OrderAgainResult result;
+  try {
+    result = await again.run(order, without);
+  } on Object {
+    messenger.showSnackBar(SnackBar(content: Text(l10n.statusError)));
+    return;
+  }
+  if (result is RestaurantGone) {
+    messenger.showSnackBar(
+      SnackBar(content: Text(l10n.customerRestaurantUnavailable)),
+    );
+    return;
+  }
+  if (result.skipped.isNotEmpty) {
+    messenger.showSnackBar(
+      SnackBar(content: Text(l10n.customerNotAdded(result.skipped.join('، ')))),
+    );
+  }
+  if (result is CartRebuilt) router.push('/cart');
 }

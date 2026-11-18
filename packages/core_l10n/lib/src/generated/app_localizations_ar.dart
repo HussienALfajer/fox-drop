@@ -3994,4 +3994,79 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get customerSuggestThanks => 'شكراً، سنحاول إضافته';
+
+  @override
+  String get customerFavouritesTitle => 'المفضلة';
+
+  @override
+  String get customerNoFavourites => 'لا توجد مطاعم مفضلة توصل إلى هذا العنوان';
+
+  @override
+  String get customerAddFavourite => 'أضف إلى المفضلة';
+
+  @override
+  String get customerRemoveFavourite => 'إزالة من المفضلة';
+
+  @override
+  String get customerMyOrdersTitle => 'طلباتي';
+
+  @override
+  String get customerNoOrders => 'لا توجد طلبات بعد';
+
+  @override
+  String get customerActiveOrdersTitle => 'الطلبات الجارية';
+
+  @override
+  String get customerPastOrdersTitle => 'الطلبات السابقة';
+
+  @override
+  String get customerShowMore => 'عرض المزيد';
+
+  @override
+  String get customerOrderAgain => 'اطلب مرة أخرى';
+
+  @override
+  String get customerRestaurantUnavailable => 'المطعم غير متاح حالياً';
+
+  @override
+  String customerCaptainReceived(String amounts) {
+    return 'استلم الكابتن: $amounts';
+  }
+
+  @override
+  String customerChangeGiven(String amounts) {
+    return 'أعاد لك: $amounts';
+  }
+
+  @override
+  String customerCaptainFirstName(String name) {
+    return 'الكابتن: $name';
+  }
+
+  @override
+  String get customerTimelineTitle => 'مراحل الطلب';
+
+  @override
+  String get customerTimelinePlaced => 'أُرسل الطلب';
+
+  @override
+  String get customerTimelineAccepted => 'قبل المطعم الطلب';
+
+  @override
+  String get customerTimelinePickedUp => 'استلم الكابتن الطلب';
+
+  @override
+  String get customerTimelineArrived => 'وصل الكابتن إلى الباب';
+
+  @override
+  String get customerTimelineDelivered => 'تم التسليم';
+
+  @override
+  String get customerTimelineFailed => 'تعذّر التسليم';
+
+  @override
+  String get customerTimelineRejected => 'لم يقبل المطعم الطلب';
+
+  @override
+  String get customerTimelineCancelled => 'أُلغي الطلب';
 }

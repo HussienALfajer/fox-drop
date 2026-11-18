@@ -10,6 +10,7 @@ import '../notifications/notifications_off_banner.dart';
 import 'cancel_order.dart';
 import 'cancel_order_sheet.dart';
 import 'door_ring.dart';
+import 'my_orders.dart';
 import 'order_again_section.dart';
 import 'order_help_sheet.dart';
 import 'order_live.dart';
@@ -273,8 +274,29 @@ class OrderScreen extends ConsumerWidget {
                   subtitle: Text(l10n.customerLineRemoved),
                 ),
               ListTile(
+                key: const Key('order-address'),
                 title: Text(order.address.street),
                 subtitle: Text(order.address.landmark),
+              ),
+              // CU §12.3: the money lines.
+              ListTile(
+                key: const Key('order-items-value'),
+                title: Text(l10n.customerItemsValue),
+                trailing: Text(
+                  l10n.formatMoney(order.money.itemsValue, order.currency),
+                ),
+              ),
+              ListTile(
+                key: const Key('order-delivery-fee'),
+                title: Text(l10n.customerDeliveryFee),
+                trailing: Text(
+                  order.money.deliveryFree
+                      ? l10n.customerFree
+                      : l10n.formatMoney(
+                          order.money.deliveryFee,
+                          order.currency,
+                        ),
+                ),
               ),
               // «الخصم» with the code (CU §10.3 item 7, §10.4).
               if (order.promoCode case final code?)
@@ -293,10 +315,71 @@ class OrderScreen extends ConsumerWidget {
                     l10n.formatMoney(order.money.discount, order.currency),
                   ),
                 ),
+              // CU §12.3: the rounding, when not 0.
+              if (BigInt.parse(order.money.rounding) != BigInt.zero)
+                ListTile(
+                  key: const Key('order-rounding'),
+                  title: Text(l10n.customerRounding),
+                  trailing: Text(
+                    l10n.formatMoney(order.money.rounding, order.currency),
+                  ),
+                ),
               ListTile(
                 title: Text(l10n.customerTotal),
                 trailing: Text(total()),
               ),
+              // CU §12.3: the pay-in currency and what the captain recorded
+              // (Q23, CU §11.8).
+              ListTile(
+                key: const Key('order-pay-in'),
+                title: Text(l10n.customerPayIn),
+                trailing: Text(order.payIn ?? l10n.customerPayInUnset),
+              ),
+              if (order.delivery case final delivery?) ...[
+                if (delivery.received.isNotEmpty)
+                  ListTile(
+                    key: const Key('order-received'),
+                    title: Text(
+                      l10n.customerCaptainReceived(
+                        delivery.received
+                            .map((m) => l10n.formatMoney(m.amount, m.currency))
+                            .join(' + '),
+                      ),
+                    ),
+                  ),
+                if (delivery.change.isNotEmpty)
+                  ListTile(
+                    key: const Key('order-change'),
+                    title: Text(
+                      l10n.customerChangeGiven(
+                        delivery.change
+                            .map((m) => l10n.formatMoney(m.amount, m.currency))
+                            .join(' + '),
+                      ),
+                    ),
+                  ),
+              ],
+              // CU §12.3: the captain's first name once the order ended.
+              if (captain != null && ended)
+                ListTile(
+                  key: const Key('order-captain'),
+                  title: Text(l10n.customerCaptainFirstName(captain.firstName)),
+                ),
+              // CU §12.3: the short timeline.
+              if (order.timeline.isNotEmpty) ...[
+                ListTile(title: Text(l10n.customerTimelineTitle)),
+                for (final step in order.timeline)
+                  ListTile(
+                    key: Key('timeline-${step.step.name}'),
+                    dense: true,
+                    title: Text(timelineStepText(l10n, step.step.name)),
+                    trailing: Text(
+                      '${l10n.formatDate(step.at)} ${l10n.formatTime(step.at)}',
+                    ),
+                  ),
+              ],
+              // CU §12.3 «اطلب مرة أخرى».
+              OrderAgainButton(order: order),
               // CU §12.1: the ratings sent, «قيّم طلبك» and the sheet once.
               RatingSection(order: order),
               // CU §12.2, §12.3: the report, its window or «تواصل مع الدعم»,

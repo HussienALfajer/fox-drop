@@ -63,6 +63,7 @@ Map<String, Object?> _order({
     },
   ],
   'removedLines': <Object>[],
+  'timeline': <Object>[],
   'edited': false,
   'payIn': null,
   'note': null,

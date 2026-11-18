@@ -6553,6 +6553,144 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'شكراً، سنحاول إضافته'**
   String get customerSuggestThanks;
+
+  /// «حسابي» → «المفضلة», the favourite restaurants (CU §9.6, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'المفضلة'**
+  String get customerFavouritesTitle;
+
+  /// «المفضلة» with none that delivers to the point (CU §9.6); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد مطاعم مفضلة توصل إلى هذا العنوان'**
+  String get customerNoFavourites;
+
+  /// The empty heart's label (CU §9.6); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'أضف إلى المفضلة'**
+  String get customerAddFavourite;
+
+  /// The full heart's label (CU §9.6); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'إزالة من المفضلة'**
+  String get customerRemoveFavourite;
+
+  /// «طلباتي», the order list (CU §12.3, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'طلباتي'**
+  String get customerMyOrdersTitle;
+
+  /// «طلباتي» with no order (CU §12.3); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد طلبات بعد'**
+  String get customerNoOrders;
+
+  /// «طلباتي»'s active orders, listed first (CU §12.3); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلبات الجارية'**
+  String get customerActiveOrdersTitle;
+
+  /// «طلباتي»'s past orders (CU §12.3); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلبات السابقة'**
+  String get customerPastOrdersTitle;
+
+  /// Loads the next page of «طلباتي» (CU §12.3); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض المزيد'**
+  String get customerShowMore;
+
+  /// Rebuilds the cart from a past order (CU §12.3, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'اطلب مرة أخرى'**
+  String get customerOrderAgain;
+
+  /// «اطلب مرة أخرى» for a restaurant customers no longer see (CU §12.3); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'المطعم غير متاح حالياً'**
+  String get customerRestaurantUnavailable;
+
+  /// What the captain recorded as received (CU §11.8, Q23, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'استلم الكابتن: {amounts}'**
+  String customerCaptainReceived(String amounts);
+
+  /// The change the captain recorded (CU §11.8, Q23, Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'أعاد لك: {amounts}'**
+  String customerChangeGiven(String amounts);
+
+  /// The captain's first name on the order detail (CU §12.3); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكابتن: {name}'**
+  String customerCaptainFirstName(String name);
+
+  /// The order detail's short timeline (CU §12.3); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'مراحل الطلب'**
+  String get customerTimelineTitle;
+
+  /// A timeline step (CU §12.3); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'أُرسل الطلب'**
+  String get customerTimelinePlaced;
+
+  /// A timeline step (CU §12.3); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'قبل المطعم الطلب'**
+  String get customerTimelineAccepted;
+
+  /// A timeline step (CU §12.3); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'استلم الكابتن الطلب'**
+  String get customerTimelinePickedUp;
+
+  /// A timeline step (CU §12.3); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'وصل الكابتن إلى الباب'**
+  String get customerTimelineArrived;
+
+  /// A timeline step and a past order's status (CU §12.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'تم التسليم'**
+  String get customerTimelineDelivered;
+
+  /// A timeline step and a past order's status (CU §12.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر التسليم'**
+  String get customerTimelineFailed;
+
+  /// A timeline step and a past order's status (CU §12.3); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يقبل المطعم الطلب'**
+  String get customerTimelineRejected;
+
+  /// A timeline step and a past order's status (CU §12.3); the spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'أُلغي الطلب'**
+  String get customerTimelineCancelled;
 }
 
 class _AppLocalizationsDelegate

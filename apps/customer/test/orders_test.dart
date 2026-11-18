@@ -30,6 +30,10 @@ Map<String, Object?> _order({
   String discount = '0',
   String total = '14000',
   Map<String, Object?>? redeliveryOf,
+  Map<String, Object?>? delivery,
+  List<Map<String, Object?>> timeline = const [],
+  String rounding = '0',
+  String? payIn,
 }) => {
   'id': _orderId,
   'number': '10423',
@@ -41,7 +45,7 @@ Map<String, Object?> _order({
   'cancellation': cancellation,
   'rejection': rejection,
   'outcome': outcome,
-  'delivery': null,
+  'delivery': delivery,
   'itemReport': itemReport,
   'doorPing': doorPing,
   'restaurant': {'id': shamId, 'nameAr': 'مطعم الشام', 'nameEn': null},
@@ -52,7 +56,7 @@ Map<String, Object?> _order({
     'deliveryFee': '1000',
     'deliveryFree': false,
     'discount': discount,
-    'rounding': '0',
+    'rounding': rounding,
     'total': total,
   },
   'promoCode': promoCode,
@@ -74,8 +78,9 @@ Map<String, Object?> _order({
         },
       ],
   'removedLines': removedLines,
+  'timeline': timeline,
   'edited': removedLines.isNotEmpty,
-  'payIn': null,
+  'payIn': payIn,
   'note': null,
   'estimate': {'fromMin': 30, 'toMin': 40},
   'address': {
@@ -1084,5 +1089,172 @@ void main() {
     expect(app.launched, [Uri(scheme: 'tel', path: '+963944333333')]);
     expect(find.byKey(const Key('door-ring')), findsNothing);
     await app.done(tester);
+  });
+
+  // CU §12.3 (slice 2.28b): the detail of a past order and «اطلب مرة أخرى».
+  group('the order detail (CU §12.3)', () {
+    final delivered = _order(
+      status: 'delivered',
+      version: 9,
+      captain: _captain,
+      rounding: '-500',
+      total: '13500',
+      payIn: 'USD',
+      delivery: {
+        'at': '2026-11-07T12:40:00.000Z',
+        'received': [
+          {'amount': '20000', 'currency': 'TRY'},
+        ],
+        'change': [
+          {'amount': '6500', 'currency': 'TRY'},
+        ],
+      },
+      timeline: [
+        {'step': 'placed', 'at': '2026-11-07T12:00:00.000Z'},
+        {'step': 'accepted', 'at': '2026-11-07T12:02:00.000Z'},
+        {'step': 'picked_up', 'at': '2026-11-07T12:25:00.000Z'},
+        {'step': 'delivered', 'at': '2026-11-07T12:40:00.000Z'},
+      ],
+      lines: [
+        {
+          'position': 0,
+          'itemId': shawarmaId,
+          'name': 'شاورما دجاج',
+          'quantity': 2,
+          'note': 'بدون بصل',
+          'options': [
+            {'id': largeId, 'name': 'كبير', 'priceDelta': '1000'},
+          ],
+          'unitPrice': '6000',
+          'lineTotal': '12000',
+          'added': false,
+          'quantityBefore': null,
+        },
+        {
+          'position': 1,
+          'itemId': fulId,
+          'name': 'فول',
+          'quantity': 1,
+          'note': null,
+          'options': <Object>[],
+          'unitPrice': '1000',
+          'lineTotal': '1000',
+          'added': false,
+          'quantityBefore': null,
+        },
+      ],
+    );
+
+    String trailing(WidgetTester tester, String key) =>
+        ((tester.widget<ListTile>(find.byKey(Key(key))).trailing! as Text)
+            .data)!;
+
+    testWidgets(
+      'shows the money lines, the record, the captain and the timeline',
+      (tester) async {
+        final app = await open(tester, [
+          FakeAnswer(200, {'order': delivered}),
+        ]);
+        expect(trailing(tester, 'order-items-value'), '130 ₺');
+        expect(trailing(tester, 'order-delivery-fee'), '10 ₺');
+        expect(trailing(tester, 'order-rounding'), '-5 ₺');
+        expect(trailing(tester, 'order-pay-in'), 'USD');
+        expect(find.text('استلم الكابتن: 200 ₺'), findsOneWidget);
+        expect(find.text('أعاد لك: 65 ₺'), findsOneWidget);
+        expect(find.text('الكابتن: سامر'), findsOneWidget);
+        expect(find.text('مراحل الطلب'), findsOneWidget);
+        for (final step in ['placed', 'accepted', 'pickedUp', 'delivered']) {
+          expect(find.byKey(Key('timeline-$step')), findsOneWidget);
+        }
+        expect(find.text('استلم الكابتن الطلب'), findsOneWidget);
+        expect(find.byKey(const Key('timeline-arrived')), findsNothing);
+        await app.done(tester);
+      },
+    );
+
+    testWidgets('«اطلب مرة أخرى» rebuilds the cart at current prices', (
+      tester,
+    ) async {
+      final app = await open(
+        tester,
+        [
+          FakeAnswer(200, {'order': delivered}),
+        ],
+        before: (app) => app.server.on('/v1/customer/restaurants/$shamId', [
+          FakeAnswer(200, shamPage()),
+        ]),
+      );
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('order-again')),
+        200,
+      );
+      await tester.tap(find.byKey(const Key('order-again')));
+      await tester.pumpAndSettle();
+      // Read at the order's pin.
+      expect(
+        app.server
+            .to('/v1/customer/restaurants/$shamId')
+            .single
+            .uri
+            .queryParameters,
+        {'latitude': '36.5862', 'longitude': '37.0463'},
+      );
+      final cart = app.container.read(cartProvider).value!.cart!;
+      expect(cart.restaurantId, shamId);
+      expect(cart.code, isNull);
+      final shawarma = cart.lines.single;
+      expect(shawarma.optionIds, [largeId]);
+      expect(shawarma.quantity, 2);
+      expect(shawarma.note, 'بدون بصل');
+      // 5000 + 1000 large, from today's menu, not the order's 6000 each.
+      expect(shawarma.unitPrice, '6000');
+      expect(find.text('لم نضف: فول لأنها غير متوفرة'), findsOneWidget);
+      expect(app.container.read(routerProvider).state.uri.path, '/cart');
+      await app.done(tester);
+    });
+
+    testWidgets('says so when customers no longer see the restaurant', (
+      tester,
+    ) async {
+      final app = await open(
+        tester,
+        [
+          FakeAnswer(200, {'order': delivered}),
+        ],
+        before: (app) => app.server.on('/v1/customer/restaurants/$shamId', [
+          const FakeAnswer(404, {'statusCode': 404}),
+        ]),
+      );
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('order-again')),
+        200,
+      );
+      await tester.tap(find.byKey(const Key('order-again')));
+      await tester.pumpAndSettle();
+      expect(find.text('المطعم غير متاح حالياً'), findsOneWidget);
+      expect(app.container.read(cartProvider).value?.cart, isNull);
+      await app.done(tester);
+    });
+
+    testWidgets(
+      'offers no «اطلب مرة أخرى» on a free re-delivery or an active order',
+      (tester) async {
+        final app = await open(tester, [
+          FakeAnswer(200, {
+            'order': _order(
+              status: 'delivered',
+              version: 9,
+              total: '0',
+              redeliveryOf: {
+                'orderId': '00000000-0000-4000-8000-0000000000e9',
+                'number': '10400',
+              },
+            ),
+          }),
+        ]);
+        expect(find.byKey(const Key('order-again')), findsNothing);
+        await app.done(tester);
+      },
+    );
   });
 }
