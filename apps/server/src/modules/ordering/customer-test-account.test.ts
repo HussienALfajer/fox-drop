@@ -8,6 +8,7 @@ import {
   app,
   appSignIn,
   azaz,
+  cashier,
   centre,
   change,
   home,
@@ -150,6 +151,15 @@ describe('«حساب تجريبي للإدارة» (AP §9.8, §9.6.3)', () => {
       placed.json().order.id,
     ]);
     expect(rows[0].test_order).toBe(true);
+    // RA §8.16 (slice 2.30b): the cashier's card shows «طلب تجريبي».
+    const board = await app.inject({
+      method: 'GET',
+      url: '/v1/merchant/orders',
+      headers: await cashier(restaurant.id),
+    });
+    expect(board.json().orders).toEqual([
+      expect.objectContaining({ id: placed.json().order.id, testOrder: true, owner: null }),
+    ]);
 
     expect((await flag(['OWN'], tester.id, false)).json().testAccount).toBe(false);
     expect((await listed(tester.headers)).map((card) => card.id)).not.toContain(restaurant.id);

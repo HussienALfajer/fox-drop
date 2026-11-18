@@ -42,6 +42,9 @@ const boardOrder = z.object({
     .describe(
       '«إعادة توصيل مجانية لطلب #{رقم}» (AP §9.9.3): the order whose items it re-delivers (owner decision 2026-11-17: the badge); its items carry no price when the restaurant replaces them.',
     ),
+  testOrder: z
+    .boolean()
+    .describe('RA §8.16: the badge «طلب تجريبي», for owners and cashiers (AP §9.6.3 test mode).'),
   status: z.enum(orderStatuses).describe('AP §8.1; the board column (RA §8.1–8.2).'),
   version: z
     .int()
@@ -766,6 +769,7 @@ export class MerchantOrdersController {
               orderId: order.redelivery.ofOrderId,
               number: order.redelivery.ofNumber.toString(),
             },
+      testOrder: order.testOrder,
       status: order.status,
       version: order.version,
       placedAt: order.placedAt.toISOString(),

@@ -2237,6 +2237,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get merchantBadgeByOperations => 'قبلته العمليات';
 
   @override
+  String get merchantBadgeTestOrder => 'طلب تجريبي';
+
+  @override
   String merchantCancelledByOperations(String number, String reason) {
     return 'أوقف التحضير — أُلغي الطلب #$number: $reason';
   }

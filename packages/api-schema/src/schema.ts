@@ -10672,6 +10672,8 @@ export interface components {
                     orderId: string;
                     number: string;
                 } | null;
+                /** @description RA §8.16: the badge «طلب تجريبي», for owners and cashiers (AP §9.6.3 test mode). */
+                testOrder: boolean;
                 /**
                  * @description AP §8.1; the board column (RA §8.1–8.2).
                  * @enum {string}
@@ -10887,6 +10889,8 @@ export interface components {
                     orderId: string;
                     number: string;
                 } | null;
+                /** @description RA §8.16: the badge «طلب تجريبي», for owners and cashiers (AP §9.6.3 test mode). */
+                testOrder: boolean;
                 /**
                  * @description AP §8.1; the board column (RA §8.1–8.2).
                  * @enum {string}

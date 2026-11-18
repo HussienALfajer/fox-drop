@@ -26,6 +26,7 @@ part 'merchant_orders_dto_output_orders_inner.g.dart';
 /// * [id]
 /// * [number] - Shown as #10423 (AP §4.8).
 /// * [redeliveryOf]
+/// * [testOrder] - RA §8.16: the badge «طلب تجريبي», for owners and cashiers (AP §9.6.3 test mode).
 /// * [status] - AP §8.1; the board column (RA §8.1–8.2).
 /// * [version] - Increases with every change (architecture §5.3); ignore a real-time event not newer than the version shown (RA §4.3).
 /// * [placedAt]
@@ -62,6 +63,10 @@ abstract class MerchantOrdersDtoOutputOrdersInner
 
   @BuiltValueField(wireName: r'redeliveryOf')
   CustomerActiveOrdersDtoOutputOrdersInnerRedeliveriesInner? get redeliveryOf;
+
+  /// RA §8.16: the badge «طلب تجريبي», for owners and cashiers (AP §9.6.3 test mode).
+  @BuiltValueField(wireName: r'testOrder')
+  bool get testOrder;
 
   /// AP §8.1; the board column (RA §8.1–8.2).
   @BuiltValueField(wireName: r'status')
@@ -183,6 +188,11 @@ class _$MerchantOrdersDtoOutputOrdersInnerSerializer
               CustomerActiveOrdersDtoOutputOrdersInnerRedeliveriesInner,
             ),
           );
+    yield r'testOrder';
+    yield serializers.serialize(
+      object.testOrder,
+      specifiedType: const FullType(bool),
+    );
     yield r'status';
     yield serializers.serialize(
       object.status,
@@ -381,6 +391,15 @@ class _$MerchantOrdersDtoOutputOrdersInnerSerializer
                   as CustomerActiveOrdersDtoOutputOrdersInnerRedeliveriesInner?;
           if (valueDes == null) continue;
           result.redeliveryOf.replace(valueDes);
+          break;
+        case r'testOrder':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.testOrder = valueDes;
           break;
         case r'status':
           final valueDes =

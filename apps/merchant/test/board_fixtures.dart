@@ -30,12 +30,14 @@ Map<String, Object?> orderJson({
   Map<String, Object?>? itemReport,
   List<Map<String, Object?>> edits = const [],
   Map<String, Object?>? owner,
+  bool testOrder = false,
 }) {
   final at = placed ?? placedAt;
   final accepted = acceptedAfter == null ? null : at.add(acceptedAfter);
   return {
     'id': id,
     'number': number,
+    'testOrder': testOrder,
     'status': status,
     'version': version,
     'placedAt': at.toIso8601String(),

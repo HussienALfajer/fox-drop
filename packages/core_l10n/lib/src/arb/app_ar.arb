@@ -1206,6 +1206,8 @@
   "@merchantRejectedByOperations": {"description": "Rejected by operations (RA §8.15, §16 #6).", "placeholders": {"number": {"type": "String"}, "reason": {"type": "String"}}},
   "merchantBadgeByOperations": "قبلته العمليات",
   "@merchantBadgeByOperations": {"description": "The card's badge of an order operations accepted (RA §8.15)."},
+  "merchantBadgeTestOrder": "طلب تجريبي",
+  "@merchantBadgeTestOrder": {"description": "The card's and the detail's badge of a test order (RA §8.16, AP §9.6.3)."},
   "merchantCancelledByOperations": "أوقف التحضير — أُلغي الطلب #{number}: {reason}",
   "@merchantCancelledByOperations": {"description": "The ring prompt after operations cancelled an accepted order, until «حسناً» on any device (RA §8.14, §16 #18); {reason} is the reason's label.", "placeholders": {"number": {"type": "String"}, "reason": {"type": "String"}}},
   "merchantOk": "حسناً",

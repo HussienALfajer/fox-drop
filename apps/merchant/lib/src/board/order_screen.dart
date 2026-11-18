@@ -72,6 +72,12 @@ class OrderScreen extends ConsumerWidget {
               ),
               subtitle: timer == null ? null : Text(timer),
             ),
+            // RA §8.16: «طلب تجريبي».
+            if (order.testOrder)
+              ListTile(
+                key: const Key('test-order'),
+                title: Text(l10n.merchantBadgeTestOrder),
+              ),
             // AP §9.9.3 (owner decision 2026-11-17): the badge.
             if (order.redeliveryOf case final of?)
               ListTile(

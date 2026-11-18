@@ -361,6 +361,8 @@ class OrderCard extends ConsumerWidget {
                     .take(2)
                     .map((l) => '${l.quantity} × ${l.name}')
                     .join('، '),
+                // RA §8.16: «طلب تجريبي».
+                if (order.testOrder) l10n.merchantBadgeTestOrder,
                 // AP §9.9.3 (owner decision 2026-11-17): the badge.
                 if (order.redeliveryOf case final of?)
                   l10n.redeliveryOf(of.number),
