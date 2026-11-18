@@ -12160,6 +12160,11 @@ export interface components {
             }[];
         };
         MerchantRatingsDto_Output: {
+            /**
+             * Format: date-time
+             * @description The moment the pages are read up to.
+             */
+            asOf: string;
             /** @description The ratings of the period, test orders left out. */
             count: number;
             /** @description Their average stars to one decimal; null with none. */
@@ -12169,10 +12174,8 @@ export interface components {
                 stars: number;
                 count: number;
             }[];
-            /** @description The page, newest first. Never the customer or the order (RA §13, CU §12.1), so a comment cannot be traced. */
+            /** @description The page, newest first. Never the customer, the order or the time, so a comment cannot be traced (RA §13, CU §12.1). */
             ratings: {
-                /** Format: uuid */
-                id: string;
                 stars: number;
                 /** @description The reasons the customer picked, their labels as chosen. */
                 reasons: {
@@ -12180,11 +12183,14 @@ export interface components {
                     label: string;
                 }[];
                 comment: string | null;
-                /** Format: date-time */
-                at: string;
+                /**
+                 * Format: date
+                 * @description The business day it was sent, on the city’s clock.
+                 */
+                day: string;
             }[];
-            /** @description The cursor of the next page; null on the last. */
-            next: string | null;
+            /** @description Whether a next page follows. */
+            more: boolean;
         };
         AdminTicketsDto_Output: {
             /** @description Newest first, the latest 200. */
@@ -21124,8 +21130,10 @@ export interface operations {
                 period?: "all" | "today" | "yesterday" | "last_7_days" | "last_30_days";
                 /** @description Only the ratings with these stars; the summary counts every star. */
                 stars?: number;
-                /** @description The `next` cursor of the page before, for «عرض المزيد». */
-                before?: string;
+                /** @description The page, from 0, for «عرض المزيد». */
+                page?: number;
+                /** @description The first page’s `asOf`, sent with every next page so the pages agree. */
+                asOf?: string;
             };
             header?: never;
             path?: never;

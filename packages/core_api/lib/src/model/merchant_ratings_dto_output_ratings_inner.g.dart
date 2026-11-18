@@ -9,15 +9,13 @@ part of 'merchant_ratings_dto_output_ratings_inner.dart';
 class _$MerchantRatingsDtoOutputRatingsInner
     extends MerchantRatingsDtoOutputRatingsInner {
   @override
-  final String id;
-  @override
   final int stars;
   @override
   final BuiltList<AdminCustomerDtoOutputRatingsInnerReasonsInner?> reasons;
   @override
   final String? comment;
   @override
-  final DateTime at;
+  final Date day;
 
   factory _$MerchantRatingsDtoOutputRatingsInner([
     void Function(MerchantRatingsDtoOutputRatingsInnerBuilder)? updates,
@@ -25,11 +23,10 @@ class _$MerchantRatingsDtoOutputRatingsInner
       (MerchantRatingsDtoOutputRatingsInnerBuilder()..update(updates))._build();
 
   _$MerchantRatingsDtoOutputRatingsInner._({
-    required this.id,
     required this.stars,
     required this.reasons,
     this.comment,
-    required this.at,
+    required this.day,
   }) : super._();
   @override
   MerchantRatingsDtoOutputRatingsInner rebuild(
@@ -44,21 +41,19 @@ class _$MerchantRatingsDtoOutputRatingsInner
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is MerchantRatingsDtoOutputRatingsInner &&
-        id == other.id &&
         stars == other.stars &&
         reasons == other.reasons &&
         comment == other.comment &&
-        at == other.at;
+        day == other.day;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
-    _$hash = $jc(_$hash, id.hashCode);
     _$hash = $jc(_$hash, stars.hashCode);
     _$hash = $jc(_$hash, reasons.hashCode);
     _$hash = $jc(_$hash, comment.hashCode);
-    _$hash = $jc(_$hash, at.hashCode);
+    _$hash = $jc(_$hash, day.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -66,11 +61,10 @@ class _$MerchantRatingsDtoOutputRatingsInner
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'MerchantRatingsDtoOutputRatingsInner')
-          ..add('id', id)
           ..add('stars', stars)
           ..add('reasons', reasons)
           ..add('comment', comment)
-          ..add('at', at))
+          ..add('day', day))
         .toString();
   }
 }
@@ -82,10 +76,6 @@ class MerchantRatingsDtoOutputRatingsInnerBuilder
           MerchantRatingsDtoOutputRatingsInnerBuilder
         > {
   _$MerchantRatingsDtoOutputRatingsInner? _$v;
-
-  String? _id;
-  String? get id => _$this._id;
-  set id(String? id) => _$this._id = id;
 
   int? _stars;
   int? get stars => _$this._stars;
@@ -103,9 +93,9 @@ class MerchantRatingsDtoOutputRatingsInnerBuilder
   String? get comment => _$this._comment;
   set comment(String? comment) => _$this._comment = comment;
 
-  DateTime? _at;
-  DateTime? get at => _$this._at;
-  set at(DateTime? at) => _$this._at = at;
+  Date? _day;
+  Date? get day => _$this._day;
+  set day(Date? day) => _$this._day = day;
 
   MerchantRatingsDtoOutputRatingsInnerBuilder() {
     MerchantRatingsDtoOutputRatingsInner._defaults(this);
@@ -114,11 +104,10 @@ class MerchantRatingsDtoOutputRatingsInnerBuilder
   MerchantRatingsDtoOutputRatingsInnerBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _id = $v.id;
       _stars = $v.stars;
       _reasons = $v.reasons.toBuilder();
       _comment = $v.comment;
-      _at = $v.at;
+      _day = $v.day;
       _$v = null;
     }
     return this;
@@ -145,11 +134,6 @@ class MerchantRatingsDtoOutputRatingsInnerBuilder
       _$result =
           _$v ??
           _$MerchantRatingsDtoOutputRatingsInner._(
-            id: BuiltValueNullFieldError.checkNotNull(
-              id,
-              r'MerchantRatingsDtoOutputRatingsInner',
-              'id',
-            ),
             stars: BuiltValueNullFieldError.checkNotNull(
               stars,
               r'MerchantRatingsDtoOutputRatingsInner',
@@ -157,10 +141,10 @@ class MerchantRatingsDtoOutputRatingsInnerBuilder
             ),
             reasons: reasons.build(),
             comment: comment,
-            at: BuiltValueNullFieldError.checkNotNull(
-              at,
+            day: BuiltValueNullFieldError.checkNotNull(
+              day,
               r'MerchantRatingsDtoOutputRatingsInner',
-              'at',
+              'day',
             ),
           );
     } catch (_) {

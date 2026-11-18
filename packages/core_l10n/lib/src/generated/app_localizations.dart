@@ -6356,6 +6356,12 @@ abstract class AppLocalizations {
   /// **'التقييمات للمالكين فقط.'**
   String get merchantRatingsNotAllowed;
 
+  /// A terminated restaurant's owners keep only the money section (RA §5.5; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهى حساب مطعمك، والتقييمات لم تعد متاحة.'**
+  String get merchantRatingsTerminated;
+
   /// A rating's stars (RA §13).
   ///
   /// In ar, this message translates to:
@@ -6367,12 +6373,6 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'«{comment}»'**
   String merchantRatingComment(String comment);
-
-  /// When the rating was sent, on the city's clock (RA §13).
-  ///
-  /// In ar, this message translates to:
-  /// **'{date} {time}'**
-  String merchantRatingAt(String date, String time);
 
   /// Between a rating's reasons.
   ///

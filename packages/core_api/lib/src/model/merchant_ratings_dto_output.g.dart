@@ -8,6 +8,8 @@ part of 'merchant_ratings_dto_output.dart';
 
 class _$MerchantRatingsDtoOutput extends MerchantRatingsDtoOutput {
   @override
+  final DateTime asOf;
+  @override
   final int count;
   @override
   final num? average;
@@ -16,18 +18,19 @@ class _$MerchantRatingsDtoOutput extends MerchantRatingsDtoOutput {
   @override
   final BuiltList<MerchantRatingsDtoOutputRatingsInner> ratings;
   @override
-  final String? next;
+  final bool more;
 
   factory _$MerchantRatingsDtoOutput([
     void Function(MerchantRatingsDtoOutputBuilder)? updates,
   ]) => (MerchantRatingsDtoOutputBuilder()..update(updates))._build();
 
   _$MerchantRatingsDtoOutput._({
+    required this.asOf,
     required this.count,
     this.average,
     required this.distribution,
     required this.ratings,
-    this.next,
+    required this.more,
   }) : super._();
   @override
   MerchantRatingsDtoOutput rebuild(
@@ -42,21 +45,23 @@ class _$MerchantRatingsDtoOutput extends MerchantRatingsDtoOutput {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is MerchantRatingsDtoOutput &&
+        asOf == other.asOf &&
         count == other.count &&
         average == other.average &&
         distribution == other.distribution &&
         ratings == other.ratings &&
-        next == other.next;
+        more == other.more;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, asOf.hashCode);
     _$hash = $jc(_$hash, count.hashCode);
     _$hash = $jc(_$hash, average.hashCode);
     _$hash = $jc(_$hash, distribution.hashCode);
     _$hash = $jc(_$hash, ratings.hashCode);
-    _$hash = $jc(_$hash, next.hashCode);
+    _$hash = $jc(_$hash, more.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -64,11 +69,12 @@ class _$MerchantRatingsDtoOutput extends MerchantRatingsDtoOutput {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'MerchantRatingsDtoOutput')
+          ..add('asOf', asOf)
           ..add('count', count)
           ..add('average', average)
           ..add('distribution', distribution)
           ..add('ratings', ratings)
-          ..add('next', next))
+          ..add('more', more))
         .toString();
   }
 }
@@ -77,6 +83,10 @@ class MerchantRatingsDtoOutputBuilder
     implements
         Builder<MerchantRatingsDtoOutput, MerchantRatingsDtoOutputBuilder> {
   _$MerchantRatingsDtoOutput? _$v;
+
+  DateTime? _asOf;
+  DateTime? get asOf => _$this._asOf;
+  set asOf(DateTime? asOf) => _$this._asOf = asOf;
 
   int? _count;
   int? get count => _$this._count;
@@ -100,9 +110,9 @@ class MerchantRatingsDtoOutputBuilder
   set ratings(ListBuilder<MerchantRatingsDtoOutputRatingsInner>? ratings) =>
       _$this._ratings = ratings;
 
-  String? _next;
-  String? get next => _$this._next;
-  set next(String? next) => _$this._next = next;
+  bool? _more;
+  bool? get more => _$this._more;
+  set more(bool? more) => _$this._more = more;
 
   MerchantRatingsDtoOutputBuilder() {
     MerchantRatingsDtoOutput._defaults(this);
@@ -111,11 +121,12 @@ class MerchantRatingsDtoOutputBuilder
   MerchantRatingsDtoOutputBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _asOf = $v.asOf;
       _count = $v.count;
       _average = $v.average;
       _distribution = $v.distribution.toBuilder();
       _ratings = $v.ratings.toBuilder();
-      _next = $v.next;
+      _more = $v.more;
       _$v = null;
     }
     return this;
@@ -140,6 +151,11 @@ class MerchantRatingsDtoOutputBuilder
       _$result =
           _$v ??
           _$MerchantRatingsDtoOutput._(
+            asOf: BuiltValueNullFieldError.checkNotNull(
+              asOf,
+              r'MerchantRatingsDtoOutput',
+              'asOf',
+            ),
             count: BuiltValueNullFieldError.checkNotNull(
               count,
               r'MerchantRatingsDtoOutput',
@@ -148,7 +164,11 @@ class MerchantRatingsDtoOutputBuilder
             average: average,
             distribution: distribution.build(),
             ratings: ratings.build(),
-            next: next,
+            more: BuiltValueNullFieldError.checkNotNull(
+              more,
+              r'MerchantRatingsDtoOutput',
+              'more',
+            ),
           );
     } catch (_) {
       late String _$failedField;

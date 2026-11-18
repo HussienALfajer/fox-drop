@@ -1,5 +1,6 @@
 import 'package:core_api/core_api.dart';
 import 'package:core_l10n/core_l10n.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../api.dart';
@@ -31,13 +32,14 @@ class RatingsFilter {
 }
 
 /// The ratings shown: the summary of the first page and every page read
-/// since, with the cursor of the next (null on the last).
+/// since, all as of the first page's `asOf`; `pages` is how many were read.
 class RatingsView {
   const RatingsView({
     required this.filter,
     required this.summary,
     required this.ratings,
-    required this.next,
+    required this.pages,
+    required this.hasMore,
     this.loadingMore = false,
     this.moreFailed = false,
   });
@@ -45,20 +47,23 @@ class RatingsView {
   final RatingsFilter filter;
   final RatingsPage summary;
   final List<Rating> ratings;
-  final String? next;
+  final int pages;
+  final bool hasMore;
   final bool loadingMore;
   final bool moreFailed;
 
-  RatingsView more({
+  RatingsView copyWith({
     List<Rating>? ratings,
-    String? next,
+    int? pages,
+    bool? hasMore,
     required bool loadingMore,
     bool moreFailed = false,
   }) => RatingsView(
     filter: filter,
     summary: summary,
     ratings: ratings ?? this.ratings,
-    next: ratings == null ? this.next : next,
+    pages: pages ?? this.pages,
+    hasMore: hasMore ?? this.hasMore,
     loadingMore: loadingMore,
     moreFailed: moreFailed,
   );
@@ -66,7 +71,7 @@ class RatingsView {
 
 /// `GET /v1/merchant/ratings` (RA §13), the owners' (a cashier gets `403
 /// owner_only`): read on opening «التقييمات», on each filter and on
-/// «تحديث»; «عرض المزيد» adds the next page.
+/// «تحديث»; «عرض المزيد» adds the next page, read as of the first.
 class RatingsNotifier extends AsyncNotifier<RatingsView> {
   MerchantApi get _api => ref.read(coreApiProvider).getMerchantApi();
 
@@ -87,7 +92,8 @@ class RatingsNotifier extends AsyncNotifier<RatingsView> {
       filter: filter,
       summary: page,
       ratings: page.ratings.toList(),
-      next: page.next,
+      pages: 1,
+      hasMore: page.more,
     );
   }
 
@@ -99,29 +105,44 @@ class RatingsNotifier extends AsyncNotifier<RatingsView> {
 
   Future<void> more() async {
     final shown = state.value;
-    if (shown == null || shown.next == null || shown.loadingMore) return;
+    if (shown == null || !shown.hasMore || shown.loadingMore) return;
     final read = _read;
-    state = AsyncData(shown.more(loadingMore: true));
+    state = AsyncData(shown.copyWith(loadingMore: true));
+    // The screen closed, or a filter or «تحديث» replaced what was shown.
+    bool stale() => !ref.mounted || read != _read;
     try {
       final page = (await _api.merchantRatingsRead(
         period: shown.filter.period.query,
         stars: shown.filter.stars,
-        before: shown.next,
+        page: shown.pages,
+        asOf: shown.summary.asOf,
       )).data!;
-      // A filter chosen or «تحديث» meanwhile replaced what was shown.
-      if (read != _read) return;
+      if (stale()) return;
       state = AsyncData(
-        shown.more(
+        shown.copyWith(
           ratings: [...shown.ratings, ...page.ratings],
-          next: page.next,
+          pages: shown.pages + 1,
+          hasMore: page.more,
           loadingMore: false,
         ),
       );
     } catch (_) {
-      if (read != _read) return;
-      state = AsyncData(shown.more(loadingMore: false, moreFailed: true));
+      if (stale()) return;
+      state = AsyncData(shown.copyWith(loadingMore: false, moreFailed: true));
     }
   }
+}
+
+/// Why a read was refused (RA §5.4, §5.5): a cashier, or a terminated
+/// restaurant; null for any other failure, which is worth a retry.
+enum RatingsRefusal { ownersOnly, terminated }
+
+RatingsRefusal? refusalOf(Object error) {
+  if (error is! DioException || error.response?.statusCode != 403) return null;
+  final body = error.response?.data;
+  return body is Map && body['error'] == 'restaurant_terminated'
+      ? RatingsRefusal.terminated
+      : RatingsRefusal.ownersOnly;
 }
 
 final ratingsProvider =

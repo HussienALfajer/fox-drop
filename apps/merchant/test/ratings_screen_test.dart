@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'dart:convert';
 
 import 'package:core_auth/testing.dart';
@@ -118,30 +120,28 @@ class _App {
   }
 }
 
-Map<String, Object?> _open() =>
-    statusJson(closesAt: _now.add(const Duration(hours: 10)));
-
 Map<String, Object?> _rating(
-  String id,
   int stars, {
   String? comment,
   List<String> reasons = const [],
 }) => {
-  'id': id,
   'stars': stars,
   'reasons': [
     for (final label in reasons) {'code': 'code-$label', 'label': label},
   ],
   'comment': comment,
-  'at': '2026-11-09T09:00:00.000Z',
+  'day': '2026-11-09',
 };
+
+const _asOf = '2026-11-09T09:01:00.000Z';
 
 Map<String, Object?> _page(
   List<Map<String, Object?>> ratings, {
-  String? next,
+  bool more = false,
   int count = 3,
   num? average = 3.7,
 }) => {
+  'asOf': _asOf,
   'count': count,
   'average': average,
   'distribution': [
@@ -152,12 +152,27 @@ Map<String, Object?> _page(
     {'stars': 1, 'count': 0},
   ],
   'ratings': ratings,
-  'next': next,
+  'more': more,
 };
 
-const _first = '00000000-0000-4000-8000-0000000000a1';
-const _second = '00000000-0000-4000-8000-0000000000a2';
-const _third = '00000000-0000-4000-8000-0000000000a3';
+Future<void> _open(WidgetTester tester) async {
+  await tester.tap(find.byKey(const Key('open-ratings')));
+  await tester.pumpAndSettle();
+}
+
+Future<void> _tapMore(WidgetTester tester) async {
+  await tester.ensureVisible(find.byKey(const Key('ratings-more')));
+  await tester.tap(find.byKey(const Key('ratings-more')));
+  await tester.pump();
+}
+
+List<Map<String, dynamic>> _sent(_App app) => app.server
+    .to('/v1/merchant/ratings')
+    .map((r) => r.queryParameters)
+    .toList();
+
+Map<String, Object?> _status() =>
+    statusJson(closesAt: _now.add(const Duration(hours: 10)));
 
 void main() {
   test('the average drops a needless «.0»', () {
@@ -175,35 +190,27 @@ void main() {
       FakeAnswer(
         200,
         _page([
-          _rating(_first, 5),
-          _rating(
-            _second,
-            2,
-            comment: 'بارد',
-            reasons: ['الطعام بارد', 'التغليف سيئ'],
-          ),
-        ], next: 'cursor-1'),
+          _rating(5),
+          _rating(2, comment: 'بارد', reasons: ['الطعام بارد', 'التغليف سيئ']),
+        ], more: true),
       ),
-      FakeAnswer(200, _page([_rating(_third, 4)])),
+      FakeAnswer(200, _page([_rating(4)])),
       FakeAnswer(200, _page([], count: 0, average: null)),
-      FakeAnswer(200, _page([_rating(_second, 2)])),
+      FakeAnswer(200, _page([_rating(2)])),
     ]);
-    await app.pump(tester, [FakeAnswer(200, _open())]);
-    await tester.tap(find.byKey(const Key('open-ratings')));
-    await tester.pumpAndSettle();
-    expect(find.text('التقييمات'), findsWidgets);
+    await app.pump(tester, [FakeAnswer(200, _status())]);
+    await _open(tester);
     expect(find.text('3.7 من 5'), findsOneWidget);
     expect(find.text('عدد التقييمات: 3'), findsOneWidget);
     expect(find.text('الطعام بارد، التغليف سيئ'), findsOneWidget);
     expect(find.text('«بارد»'), findsOneWidget);
-    // Noon in Azaz (UTC+3) on 9 November.
-    expect(find.text('09/11/2026 12:00 م'), findsNWidgets(2));
-    expect(find.byKey(const Key('rating-$_third')), findsNothing);
+    // The day only, never the time (RA §13).
+    expect(find.text('09/11/2026'), findsNWidgets(2));
+    expect(find.byKey(const Key('rating-2')), findsNothing);
 
-    await tester.ensureVisible(find.byKey(const Key('ratings-more')));
-    await tester.tap(find.byKey(const Key('ratings-more')));
+    await _tapMore(tester);
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('rating-$_third')), findsOneWidget);
+    expect(find.byKey(const Key('rating-2')), findsOneWidget);
     expect(find.byKey(const Key('ratings-more')), findsNothing);
 
     await tester.scrollUntilVisible(
@@ -217,28 +224,87 @@ void main() {
 
     await tester.tap(find.byKey(const Key('ratings-filter-2')));
     await tester.pumpAndSettle();
-    final sent = app.server
-        .to('/v1/merchant/ratings')
-        .map((r) => r.queryParameters)
-        .toList();
-    expect(sent, [
-      {'period': 'all'},
-      {'period': 'all', 'before': 'cursor-1'},
-      {'period': 'yesterday'},
-      {'period': 'yesterday', 'stars': 2},
+    expect(_sent(app), [
+      {'period': 'all', 'page': 0},
+      {'period': 'all', 'page': 1, 'asOf': _asOf},
+      {'period': 'yesterday', 'page': 0},
+      {'period': 'yesterday', 'stars': 2, 'page': 0},
     ]);
-    expect(find.byKey(const Key('rating-$_second')), findsOneWidget);
+    expect(find.byKey(const Key('rating-0')), findsOneWidget);
+    await app.done(tester);
+  });
+
+  testWidgets('a next page answered after another filter is dropped', (
+    tester,
+  ) async {
+    final app = _App(role: 'owner');
+    app.server.on('/v1/merchant/ratings', [
+      FakeAnswer(200, _page([_rating(5), _rating(4)], more: true)),
+      // The gated next page takes its answer last, after the new first page.
+      FakeAnswer(200, _page([_rating(3)], count: 1, average: 3)),
+      FakeAnswer(200, _page([_rating(1), _rating(1), _rating(1)])),
+    ]);
+    await app.pump(tester, [FakeAnswer(200, _status())]);
+    await _open(tester);
+    final gate = app.server.gate = Completer<void>();
+    await _tapMore(tester);
+    // Held once it reaches the server; the first page after it is not.
+    for (var tick = 0; tick < 50 && _sent(app).length < 2; tick += 1) {
+      await tester.pump(const Duration(milliseconds: 10));
+    }
+    expect(_sent(app), hasLength(2));
+    app.server.gate = null;
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('ratings-period-today')),
+      -200,
+    );
+    await tester.tap(find.byKey(const Key('ratings-period-today')));
+    await tester.pumpAndSettle();
+    expect(find.text('3 من 5'), findsWidgets);
+    gate.complete();
+    await tester.pumpAndSettle();
+    expect(find.text('3 من 5'), findsWidgets);
+    expect(find.byKey(const Key('rating-0')), findsOneWidget);
+    expect(find.byKey(const Key('rating-1')), findsNothing);
+    expect(find.text('1 من 5'), findsNothing);
+    await app.done(tester);
+  });
+
+  testWidgets('a failed next page is tried again from its button', (
+    tester,
+  ) async {
+    final app = _App(role: 'owner');
+    app.server.on('/v1/merchant/ratings', [
+      FakeAnswer(200, _page([_rating(5)], more: true)),
+      const FakeAnswer(500, {'statusCode': 500}),
+      FakeAnswer(200, _page([_rating(4)])),
+      FakeAnswer(200, _page([_rating(2)])),
+    ]);
+    await app.pump(tester, [FakeAnswer(200, _status())]);
+    await _open(tester);
+    await _tapMore(tester);
+    await tester.pumpAndSettle();
+    expect(find.text('تعذّر التحميل، حاول مرة أخرى'), findsOneWidget);
+    await _tapMore(tester);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('rating-1')), findsOneWidget);
+    // «تحديث» reads the first page again.
+    await tester.tap(find.byKey(const Key('ratings-refresh')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('rating-1')), findsNothing);
+    expect(find.text('2 من 5'), findsOneWidget);
+    expect(_sent(app).last, {'period': 'all', 'page': 0});
     await app.done(tester);
   });
 
   testWidgets('a cashier has no «التقييمات»', (tester) async {
     final app = _App();
-    await app.pump(tester, [FakeAnswer(200, _open())]);
+    await app.pump(tester, [FakeAnswer(200, _status())]);
     expect(find.byKey(const Key('open-ratings')), findsNothing);
     await app.done(tester);
   });
 
-  testWidgets('a refused read says the ratings are the owners\' only', (
+  testWidgets('a terminated restaurant is told why it cannot read them', (
     tester,
   ) async {
     final app = _App(role: 'owner');
@@ -248,10 +314,12 @@ void main() {
         'error': 'restaurant_terminated',
       }),
     ]);
-    await app.pump(tester, [FakeAnswer(200, _open())]);
-    await tester.tap(find.byKey(const Key('open-ratings')));
-    await tester.pumpAndSettle();
-    expect(find.text('التقييمات للمالكين فقط.'), findsOneWidget);
+    await app.pump(tester, [FakeAnswer(200, _status())]);
+    await _open(tester);
+    expect(
+      find.text('انتهى حساب مطعمك، والتقييمات لم تعد متاحة.'),
+      findsOneWidget,
+    );
     await app.done(tester);
   });
 }

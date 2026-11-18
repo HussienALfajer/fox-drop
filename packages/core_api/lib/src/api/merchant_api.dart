@@ -2378,7 +2378,8 @@ class MerchantApi {
   /// Parameters:
   /// * [period] - Business days on the city’s clock (RA §11): «الكل», «اليوم», «أمس», «آخر 7 أيام», «آخر 30 يوماً».
   /// * [stars] - Only the ratings with these stars; the summary counts every star.
-  /// * [before] - The `next` cursor of the page before, for «عرض المزيد».
+  /// * [page] - The page, from 0, for «عرض المزيد».
+  /// * [asOf] - The first page’s `asOf`, sent with every next page so the pages agree.
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -2391,7 +2392,8 @@ class MerchantApi {
   Future<Response<MerchantRatingsDtoOutput>> merchantRatingsRead({
     String? period = 'all',
     int? stars,
-    String? before,
+    int? page = 0,
+    DateTime? asOf,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -2420,11 +2422,13 @@ class MerchantApi {
           stars,
           const FullType(int),
         ),
-      if (before != null)
-        r'before': encodeQueryParameter(
+      if (page != null)
+        r'page': encodeQueryParameter(_serializers, page, const FullType(int)),
+      if (asOf != null)
+        r'asOf': encodeQueryParameter(
           _serializers,
-          before,
-          const FullType(String),
+          asOf,
+          const FullType(DateTime),
         ),
     };
 

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq, gte, lt, or, sql, type SQL } from 'drizzle-orm';
+import { and, desc, eq, gte, lt, lte, sql, type SQL } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { GeoService, lastCutoff } from '../geo/index.js';
@@ -40,38 +40,35 @@ export function periodBounds(
 }
 
 export interface RestaurantRating {
-  id: string;
   stars: number;
   reasons: { code: string; label: string }[];
   comment: string | null;
-  at: Date;
+  // The business day it was sent, YYYY-MM-DD on the city's clock: never its
+  // time, which with the board's times could trace it to an order (RA §13).
+  day: string;
 }
 
 export interface RestaurantRatings {
+  // The moment the first page was read: the next pages read up to it, so
+  // they neither repeat nor miss a rating, and keep its period.
+  asOf: Date;
   count: number;
   average: number | null;
   // From 5 stars down to 1.
   distribution: { stars: number; count: number }[];
   ratings: RestaurantRating[];
-  // The cursor of the next page, null on the last.
-  next: string | null;
+  // Whether a page follows.
+  more: boolean;
 }
 
-export class RatingsCursorError extends Error {
-  constructor() {
-    super('invalid_cursor');
-  }
-}
-
-// The cursor is the last rating's moment and id: `<ms>.<uuid>`.
-function cursorOf(rating: RestaurantRating): string {
-  return `${rating.at.getTime()}.${rating.id}`;
-}
-
-function readCursor(cursor: string): { at: Date; id: string } {
-  const found = /^(\d{1,15})\.([0-9a-f-]{36})$/.exec(cursor);
-  if (!found) throw new RatingsCursorError();
-  return { at: new Date(Number(found[1])), id: found[2]! };
+// The calendar day of an instant on the city's clock, YYYY-MM-DD.
+function dayOf(instant: Date, timeZone: string): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(instant);
 }
 
 @Injectable()
@@ -83,35 +80,32 @@ export class RestaurantRatingsService {
   ) {}
 
   // The period's count, average and distribution, whatever the stars
-  // chosen, and a page of its ratings with those stars, newest first.
+  // chosen, and a page of its ratings with those stars, newest first, all
+  // as of `asOf` (now on the first page; never after now).
   async read(
     restaurant: { id: string; cityId: string },
-    query: { period: RatingPeriod; stars: number | null; before: string | null },
+    query: { period: RatingPeriod; stars: number | null; page: number; asOf: Date | null },
     now: Date,
   ): Promise<RestaurantRatings> {
-    const cursor = query.before === null ? null : readCursor(query.before);
+    const asOf = query.asOf === null || query.asOf.getTime() > now.getTime() ? now : query.asOf;
     const [timeZone, cutoff] = await Promise.all([
       this.geo.cityTimeZone(restaurant.cityId),
       this.settings.get('finance.business_day_cutoff', { cityId: restaurant.cityId }),
     ]);
     if (timeZone === null) throw new Error('the restaurant’s city has no clock');
     const [hours, minutes] = cutoff.split(':').map(Number) as [number, number];
-    const { from, to } = periodBounds(query.period, now, hours * 60 + minutes, timeZone);
+    const cutoffMinutes = hours * 60 + minutes;
+    const { from, to } = periodBounds(query.period, asOf, cutoffMinutes, timeZone);
     const inPeriod: SQL[] = [
       eq(ratings.party, 'restaurant'),
       eq(ratings.restaurantId, restaurant.id),
       eq(ratings.testOrder, false),
+      lte(ratings.at, asOf),
     ];
     if (from !== null) inPeriod.push(gte(ratings.at, from));
     if (to !== null) inPeriod.push(lt(ratings.at, to));
-
     const page: SQL[] = [...inPeriod];
     if (query.stars !== null) page.push(eq(ratings.stars, query.stars));
-    if (cursor !== null) {
-      page.push(
-        or(lt(ratings.at, cursor.at), and(eq(ratings.at, cursor.at), lt(ratings.id, cursor.id)))!,
-      );
-    }
     const [byStars, rows] = await Promise.all([
       this.database.db
         .select({ stars: ratings.stars, count: sql<number>`count(*)::int` })
@@ -120,7 +114,6 @@ export class RestaurantRatingsService {
         .groupBy(ratings.stars),
       this.database.db
         .select({
-          id: ratings.id,
           stars: ratings.stars,
           reasons: sql<{ code: string; label: string }[]>`${ratings.reasons}`,
           comment: ratings.comment,
@@ -129,6 +122,7 @@ export class RestaurantRatingsService {
         .from(ratings)
         .where(and(...page))
         .orderBy(desc(ratings.at), desc(ratings.id))
+        .offset(query.page * RATINGS_PAGE)
         .limit(RATINGS_PAGE + 1),
     ]);
     const counts = new Map(byStars.map((row) => [row.stars, row.count]));
@@ -138,13 +132,16 @@ export class RestaurantRatingsService {
     }));
     const count = distribution.reduce((sum, each) => sum + each.count, 0);
     const total = distribution.reduce((sum, each) => sum + each.stars * each.count, 0);
-    const shown = rows.slice(0, RATINGS_PAGE);
     return {
+      asOf,
       count,
       average: count === 0 ? null : Math.round((total / count) * 10) / 10,
       distribution,
-      ratings: shown,
-      next: rows.length > RATINGS_PAGE ? cursorOf(shown[shown.length - 1]!) : null,
+      ratings: rows.slice(0, RATINGS_PAGE).map(({ at, ...rating }) => ({
+        ...rating,
+        day: dayOf(lastCutoff(at, cutoffMinutes, timeZone), timeZone),
+      })),
+      more: rows.length > RATINGS_PAGE,
     };
   }
 }

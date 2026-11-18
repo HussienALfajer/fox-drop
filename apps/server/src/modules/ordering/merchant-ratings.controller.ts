@@ -1,15 +1,11 @@
-import { BadRequestException, ForbiddenException, Get, HttpStatus, Query } from '@nestjs/common';
+import { ForbiddenException, Get, HttpStatus, Query } from '@nestjs/common';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
 import { AppSignedIn, CurrentAppSession } from '../../http/access.js';
 import { MerchantController } from '../../http/route-groups.js';
 import type { AppSession } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
-import {
-  ratingPeriods,
-  RatingsCursorError,
-  RestaurantRatingsService,
-} from './restaurant-ratings.js';
+import { ratingPeriods, RestaurantRatingsService } from './restaurant-ratings.js';
 
 class MerchantRatingsQueryDto extends createZodDto(
   z.object({
@@ -26,16 +22,23 @@ class MerchantRatingsQueryDto extends createZodDto(
       .max(5)
       .optional()
       .describe('Only the ratings with these stars; the summary counts every star.'),
-    before: z
-      .string()
-      .max(64)
+    page: z.coerce
+      .number()
+      .int()
+      .min(0)
+      .max(10_000)
+      .default(0)
+      .describe('The page, from 0, for «عرض المزيد».'),
+    asOf: z.iso
+      .datetime()
       .optional()
-      .describe('The `next` cursor of the page before, for «عرض المزيد».'),
+      .describe('The first page’s `asOf`, sent with every next page so the pages agree.'),
   }),
 ) {}
 
 class MerchantRatingsDto extends createZodDto(
   z.object({
+    asOf: z.iso.datetime().describe('The moment the pages are read up to.'),
     count: z.int().describe('The ratings of the period, test orders left out.'),
     average: z.number().nullable().describe('Their average stars to one decimal; null with none.'),
     distribution: z
@@ -44,19 +47,18 @@ class MerchantRatingsDto extends createZodDto(
     ratings: z
       .array(
         z.object({
-          id: z.uuid(),
           stars: z.int(),
           reasons: z
             .array(z.object({ code: z.string(), label: z.string() }))
             .describe('The reasons the customer picked, their labels as chosen.'),
           comment: z.string().nullable(),
-          at: z.iso.datetime(),
+          day: z.iso.date().describe('The business day it was sent, on the city’s clock.'),
         }),
       )
       .describe(
-        'The page, newest first. Never the customer or the order (RA §13, CU §12.1), so a comment cannot be traced.',
+        'The page, newest first. Never the customer, the order or the time, so a comment cannot be traced (RA §13, CU §12.1).',
       ),
-    next: z.string().nullable().describe('The cursor of the next page; null on the last.'),
+    more: z.boolean().describe('Whether a next page follows.'),
   }),
 ) {}
 
@@ -87,24 +89,16 @@ export class MerchantRatingsController {
         error: 'restaurant_terminated',
       });
     }
-    try {
-      const found = await this.ratings.read(
-        restaurant,
-        { period: query.period, stars: query.stars ?? null, before: query.before ?? null },
-        new Date(),
-      );
-      return {
-        ...found,
-        ratings: found.ratings.map((rating) => ({ ...rating, at: rating.at.toISOString() })),
-      };
-    } catch (error) {
-      if (error instanceof RatingsCursorError) {
-        throw new BadRequestException({
-          statusCode: HttpStatus.BAD_REQUEST,
-          error: 'invalid_cursor',
-        });
-      }
-      throw error;
-    }
+    const found = await this.ratings.read(
+      restaurant,
+      {
+        period: query.period,
+        stars: query.stars ?? null,
+        page: query.page,
+        asOf: query.asOf === undefined ? null : new Date(query.asOf),
+      },
+      new Date(),
+    );
+    return { ...found, asOf: found.asOf.toISOString() };
   }
 }

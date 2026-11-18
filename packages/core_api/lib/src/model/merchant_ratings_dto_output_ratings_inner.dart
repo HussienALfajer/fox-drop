@@ -4,6 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/admin_customer_dto_output_ratings_inner_reasons_inner.dart';
+import 'package:core_api/src/model/date.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -13,11 +14,10 @@ part 'merchant_ratings_dto_output_ratings_inner.g.dart';
 /// MerchantRatingsDtoOutputRatingsInner
 ///
 /// Properties:
-/// * [id]
 /// * [stars]
 /// * [reasons] - The reasons the customer picked, their labels as chosen.
 /// * [comment]
-/// * [at]
+/// * [day] - The business day it was sent, on the city’s clock.
 @BuiltValue()
 abstract class MerchantRatingsDtoOutputRatingsInner
     implements
@@ -25,9 +25,6 @@ abstract class MerchantRatingsDtoOutputRatingsInner
           MerchantRatingsDtoOutputRatingsInner,
           MerchantRatingsDtoOutputRatingsInnerBuilder
         > {
-  @BuiltValueField(wireName: r'id')
-  String get id;
-
   @BuiltValueField(wireName: r'stars')
   int get stars;
 
@@ -38,8 +35,9 @@ abstract class MerchantRatingsDtoOutputRatingsInner
   @BuiltValueField(wireName: r'comment')
   String? get comment;
 
-  @BuiltValueField(wireName: r'at')
-  DateTime get at;
+  /// The business day it was sent, on the city’s clock.
+  @BuiltValueField(wireName: r'day')
+  Date get day;
 
   MerchantRatingsDtoOutputRatingsInner._();
 
@@ -71,11 +69,6 @@ class _$MerchantRatingsDtoOutputRatingsInnerSerializer
     MerchantRatingsDtoOutputRatingsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'id';
-    yield serializers.serialize(
-      object.id,
-      specifiedType: const FullType(String),
-    );
     yield r'stars';
     yield serializers.serialize(
       object.stars,
@@ -95,10 +88,10 @@ class _$MerchantRatingsDtoOutputRatingsInnerSerializer
             object.comment,
             specifiedType: const FullType.nullable(String),
           );
-    yield r'at';
+    yield r'day';
     yield serializers.serialize(
-      object.at,
-      specifiedType: const FullType(DateTime),
+      object.day,
+      specifiedType: const FullType(Date),
     );
   }
 
@@ -127,15 +120,6 @@ class _$MerchantRatingsDtoOutputRatingsInnerSerializer
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'id':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
-          result.id = valueDes;
-          break;
         case r'stars':
           final valueDes =
               serializers.deserialize(value, specifiedType: const FullType(int))
@@ -165,14 +149,14 @@ class _$MerchantRatingsDtoOutputRatingsInnerSerializer
           if (valueDes == null) continue;
           result.comment = valueDes;
           break;
-        case r'at':
+        case r'day':
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(DateTime),
+                    specifiedType: const FullType(Date),
                   )
-                  as DateTime;
-          result.at = valueDes;
+                  as Date;
+          result.day = valueDes;
           break;
         default:
           unhandled.add(key);

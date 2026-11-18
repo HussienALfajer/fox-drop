@@ -3880,6 +3880,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get merchantRatingsNotAllowed => 'التقييمات للمالكين فقط.';
 
   @override
+  String get merchantRatingsTerminated =>
+      'انتهى حساب مطعمك، والتقييمات لم تعد متاحة.';
+
+  @override
   String merchantRatingStars(int stars) {
     return '$stars من 5';
   }
@@ -3887,11 +3891,6 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String merchantRatingComment(String comment) {
     return '«$comment»';
-  }
-
-  @override
-  String merchantRatingAt(String date, String time) {
-    return '$date $time';
   }
 
   @override

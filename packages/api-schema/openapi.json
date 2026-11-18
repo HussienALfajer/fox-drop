@@ -10069,12 +10069,25 @@
             }
           },
           {
-            "name": "before",
+            "name": "page",
             "required": false,
             "in": "query",
-            "description": "The `next` cursor of the page before, for «عرض المزيد».",
+            "description": "The page, from 0, for «عرض المزيد».",
             "schema": {
-              "maxLength": 64,
+              "minimum": 0,
+              "maximum": 10000,
+              "default": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "asOf",
+            "required": false,
+            "in": "query",
+            "description": "The first page’s `asOf`, sent with every next page so the pages agree.",
+            "schema": {
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
               "type": "string"
             }
           }
@@ -44439,6 +44452,12 @@
       "MerchantRatingsDto_Output": {
         "type": "object",
         "properties": {
+          "asOf": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "The moment the pages are read up to."
+          },
           "count": {
             "type": "integer",
             "minimum": -9007199254740991,
@@ -44481,11 +44500,6 @@
             "items": {
               "type": "object",
               "properties": {
-                "id": {
-                  "type": "string",
-                  "format": "uuid",
-                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                },
                 "stars": {
                   "type": "integer",
                   "minimum": -9007199254740991,
@@ -44517,37 +44531,35 @@
                     "null"
                   ]
                 },
-                "at": {
+                "day": {
                   "type": "string",
-                  "format": "date-time",
-                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  "format": "date",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                  "description": "The business day it was sent, on the city’s clock."
                 }
               },
               "required": [
-                "id",
                 "stars",
                 "reasons",
                 "comment",
-                "at"
+                "day"
               ],
               "additionalProperties": false
             },
-            "description": "The page, newest first. Never the customer or the order (RA §13, CU §12.1), so a comment cannot be traced."
+            "description": "The page, newest first. Never the customer, the order or the time, so a comment cannot be traced (RA §13, CU §12.1)."
           },
-          "next": {
-            "description": "The cursor of the next page; null on the last.",
-            "type": [
-              "string",
-              "null"
-            ]
+          "more": {
+            "type": "boolean",
+            "description": "Whether a next page follows."
           }
         },
         "required": [
+          "asOf",
           "count",
           "average",
           "distribution",
           "ratings",
-          "next"
+          "more"
         ],
         "additionalProperties": false
       },

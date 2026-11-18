@@ -14,15 +14,20 @@ part 'merchant_ratings_dto_output.g.dart';
 /// MerchantRatingsDtoOutput
 ///
 /// Properties:
+/// * [asOf] - The moment the pages are read up to.
 /// * [count] - The ratings of the period, test orders left out.
 /// * [average] - Their average stars to one decimal; null with none.
 /// * [distribution] - The count of each star, from 5 down to 1.
-/// * [ratings] - The page, newest first. Never the customer or the order (RA §13, CU §12.1), so a comment cannot be traced.
-/// * [next] - The cursor of the next page; null on the last.
+/// * [ratings] - The page, newest first. Never the customer, the order or the time, so a comment cannot be traced (RA §13, CU §12.1).
+/// * [more] - Whether a next page follows.
 @BuiltValue()
 abstract class MerchantRatingsDtoOutput
     implements
         Built<MerchantRatingsDtoOutput, MerchantRatingsDtoOutputBuilder> {
+  /// The moment the pages are read up to.
+  @BuiltValueField(wireName: r'asOf')
+  DateTime get asOf;
+
   /// The ratings of the period, test orders left out.
   @BuiltValueField(wireName: r'count')
   int get count;
@@ -35,13 +40,13 @@ abstract class MerchantRatingsDtoOutput
   @BuiltValueField(wireName: r'distribution')
   BuiltList<MerchantRatingsDtoOutputDistributionInner> get distribution;
 
-  /// The page, newest first. Never the customer or the order (RA §13, CU §12.1), so a comment cannot be traced.
+  /// The page, newest first. Never the customer, the order or the time, so a comment cannot be traced (RA §13, CU §12.1).
   @BuiltValueField(wireName: r'ratings')
   BuiltList<MerchantRatingsDtoOutputRatingsInner> get ratings;
 
-  /// The cursor of the next page; null on the last.
-  @BuiltValueField(wireName: r'next')
-  String? get next;
+  /// Whether a next page follows.
+  @BuiltValueField(wireName: r'more')
+  bool get more;
 
   MerchantRatingsDtoOutput._();
 
@@ -73,6 +78,11 @@ class _$MerchantRatingsDtoOutputSerializer
     MerchantRatingsDtoOutput object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    yield r'asOf';
+    yield serializers.serialize(
+      object.asOf,
+      specifiedType: const FullType(DateTime),
+    );
     yield r'count';
     yield serializers.serialize(
       object.count,
@@ -99,13 +109,11 @@ class _$MerchantRatingsDtoOutputSerializer
         FullType(MerchantRatingsDtoOutputRatingsInner),
       ]),
     );
-    yield r'next';
-    yield object.next == null
-        ? null
-        : serializers.serialize(
-            object.next,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield r'more';
+    yield serializers.serialize(
+      object.more,
+      specifiedType: const FullType(bool),
+    );
   }
 
   @override
@@ -133,6 +141,15 @@ class _$MerchantRatingsDtoOutputSerializer
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'asOf':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
+          result.asOf = valueDes;
+          break;
         case r'count':
           final valueDes =
               serializers.deserialize(value, specifiedType: const FullType(int))
@@ -171,15 +188,14 @@ class _$MerchantRatingsDtoOutputSerializer
                   as BuiltList<MerchantRatingsDtoOutputRatingsInner>;
           result.ratings.replace(valueDes);
           break;
-        case r'next':
+        case r'more':
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType.nullable(String),
+                    specifiedType: const FullType(bool),
                   )
-                  as String?;
-          if (valueDes == null) continue;
-          result.next = valueDes;
+                  as bool;
+          result.more = valueDes;
           break;
         default:
           unhandled.add(key);

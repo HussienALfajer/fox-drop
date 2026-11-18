@@ -2084,12 +2084,12 @@
   "@merchantRatingsFailed": {"description": "The ratings could not be read (the wording ours)."},
   "merchantRatingsNotAllowed": "التقييمات للمالكين فقط.",
   "@merchantRatingsNotAllowed": {"description": "A cashier's or a terminated restaurant's read is refused (RA §5.4, §5.5; the wording ours)."},
+  "merchantRatingsTerminated": "انتهى حساب مطعمك، والتقييمات لم تعد متاحة.",
+  "@merchantRatingsTerminated": {"description": "A terminated restaurant's owners keep only the money section (RA §5.5; the wording ours)."},
   "merchantRatingStars": "{stars} من 5",
   "@merchantRatingStars": {"description": "A rating's stars (RA §13).", "placeholders": {"stars": {"type": "int"}}},
   "merchantRatingComment": "«{comment}»",
   "@merchantRatingComment": {"description": "A rating's comment as the customer wrote it (RA §13).", "placeholders": {"comment": {"type": "String"}}},
-  "merchantRatingAt": "{date} {time}",
-  "@merchantRatingAt": {"description": "When the rating was sent, on the city's clock (RA §13).", "placeholders": {"date": {"type": "String"}, "time": {"type": "String"}}},
   "merchantRatingsReasonSeparator": "، ",
   "@merchantRatingsReasonSeparator": {"description": "Between a rating's reasons."}
 }

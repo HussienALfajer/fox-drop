@@ -86,15 +86,15 @@ describe('«التقييمات» of the restaurant', () => {
         { stars: 2, count: 1 },
         { stars: 1, count: 0 },
       ],
-      next: null,
+      more: false,
     });
     expect(body.ratings.map((each: { stars: number }) => each.stars)).toEqual([5, 2, 4]);
+    // The business day only: never the time, nor an id that carries it.
     expect(body.ratings[1]).toEqual({
-      id: expect.any(String),
       stars: 2,
       reasons: [{ code: 'cold_food', label: 'الطعام بارد' }],
       comment: 'بارد',
-      at: expect.any(String),
+      day: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
     });
     // Nothing that names the customer or the order (RA §13).
     const text = JSON.stringify(body);
@@ -119,36 +119,42 @@ describe('«التقييمات» of the restaurant', () => {
     const week = (await read(owner, '?period=last_7_days')).json();
     expect(week.count).toBe(3);
     const yesterday = (await read(owner, '?period=yesterday')).json();
-    expect(yesterday).toMatchObject({ count: 0, average: null, ratings: [], next: null });
+    expect(yesterday).toMatchObject({ count: 0, average: null, ratings: [], more: false });
 
     expect((await read(owner, '?stars=6')).statusCode).toBe(400);
     expect((await read(owner, '?period=week')).statusCode).toBe(400);
-    const cursor = await read(owner, '?before=nonsense');
-    expect(cursor.statusCode).toBe(400);
-    expect(cursor.json().error).toBe('invalid_cursor');
+    expect((await read(owner, '?page=-1')).statusCode).toBe(400);
+    expect((await read(owner, '?asOf=nonsense')).statusCode).toBe(400);
   });
 
-  it('pages the ratings, newest first', async () => {
+  it('pages the ratings, newest first, as of the first page', async () => {
     const owner = await user(restaurant, 'owner');
     const before = (await read(owner)).json().count as number;
-    const start = Date.now() - DAY;
-    for (let each = 0; each <= RATINGS_PAGE - before; each += 1) {
+    // Older than every rating before, so the two oldest are these.
+    const start = Date.now() - 5 * DAY;
+    const added = RATINGS_PAGE + 1 - before;
+    for (let each = 0; each < added; each += 1) {
       const order = await deliveredOrder();
-      await ratedAt(order.id, 3, new Date(start + each * 1000));
+      // The two oldest share their moment, on either side of the page's end.
+      await ratedAt(order.id, each < 2 ? 1 : 3, new Date(start + Math.max(each, 1) * 1000));
     }
     const first = (await read(owner)).json();
     expect(first.count).toBe(RATINGS_PAGE + 1);
     expect(first.ratings).toHaveLength(RATINGS_PAGE);
-    expect(first.next).toEqual(expect.any(String));
-    const second = (await read(owner, `?before=${encodeURIComponent(first.next)}`)).json();
+    expect(first.more).toBe(true);
+    // A rating sent after the first page shows in neither page.
+    await rated(5, [], 'جديد');
+    const asOf = encodeURIComponent(first.asOf);
+    const second = (await read(owner, `?page=1&asOf=${asOf}`)).json();
+    expect(second).toMatchObject({ count: RATINGS_PAGE + 1, more: false, asOf: first.asOf });
     expect(second.ratings).toHaveLength(1);
-    expect(second.next).toBeNull();
-    const ids = [...first.ratings, ...second.ratings].map((each: { id: string }) => each.id);
-    expect(new Set(ids).size).toBe(RATINGS_PAGE + 1);
-    const times = [...first.ratings, ...second.ratings].map((each: { at: string }) =>
-      Date.parse(each.at),
-    );
-    expect(times).toEqual([...times].sort((a, b) => b - a));
+    const pages = [...first.ratings, ...second.ratings];
+    expect(pages.filter((each: { stars: number }) => each.stars === 1)).toHaveLength(2);
+    expect(pages.some((each: { comment: string | null }) => each.comment === 'جديد')).toBe(false);
+    const days = pages.map((each: { day: string }) => each.day);
+    expect(days).toEqual([...days].sort().reverse());
+    // A page read afresh counts it.
+    expect((await read(owner)).json().count).toBe(RATINGS_PAGE + 2);
   });
 
   it('refuses a cashier, and a terminated restaurant’s owners', async () => {

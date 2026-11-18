@@ -1,8 +1,8 @@
 import 'package:core_l10n/core_l10n.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../account/account.dart' show noonOf;
 import 'ratings.dart';
 
 /// «التقييمات», the owners' (RA §13, §6.1 row 7): the period's average,
@@ -31,9 +31,13 @@ class RatingsScreen extends ConsumerWidget {
       body: switch (ratings) {
         AsyncData(:final value) => _RatingsView(view: value),
         // A 403 (a cashier, a terminated restaurant) would fail again.
-        AsyncError(:final error)
-            when error is DioException && error.response?.statusCode == 403 =>
-          Center(child: Text(l10n.merchantRatingsNotAllowed)),
+        AsyncError(:final error) when refusalOf(error) != null => Center(
+          child: Text(
+            refusalOf(error) == RatingsRefusal.terminated
+                ? l10n.merchantRatingsTerminated
+                : l10n.merchantRatingsNotAllowed,
+          ),
+        ),
         AsyncError() => Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -145,8 +149,9 @@ class _RatingsView extends ConsumerWidget {
               textAlign: TextAlign.center,
             ),
           ),
-        for (final rating in view.ratings) _RatingTile(rating: rating),
-        if (view.next != null)
+        for (final (index, rating) in view.ratings.indexed)
+          _RatingTile(key: Key('rating-$index'), rating: rating),
+        if (view.hasMore)
           Center(
             child: view.loadingMore
                 ? const CircularProgressIndicator()
@@ -166,7 +171,7 @@ class _RatingsView extends ConsumerWidget {
 }
 
 class _RatingTile extends StatelessWidget {
-  const _RatingTile({required this.rating});
+  const _RatingTile({super.key, required this.rating});
 
   final Rating rating;
 
@@ -176,7 +181,6 @@ class _RatingTile extends StatelessWidget {
     final reasons = l10n.reasonsText(rating);
     final comment = rating.comment;
     return ListTile(
-      key: Key('rating-${rating.id}'),
       contentPadding: EdgeInsetsDirectional.zero,
       title: Text(l10n.merchantRatingStars(rating.stars)),
       subtitle: Column(
@@ -184,12 +188,8 @@ class _RatingTile extends StatelessWidget {
         children: [
           if (reasons.isNotEmpty) Text(reasons),
           if (comment != null) Text(l10n.merchantRatingComment(comment)),
-          Text(
-            l10n.merchantRatingAt(
-              l10n.formatDate(rating.at),
-              l10n.formatTime(rating.at),
-            ),
-          ),
+          // The day only, never the time (RA §13).
+          Text(l10n.formatDate(noonOf(rating.day))),
         ],
       ),
     );
