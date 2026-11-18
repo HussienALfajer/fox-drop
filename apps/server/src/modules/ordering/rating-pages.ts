@@ -49,7 +49,9 @@ export type RatingTarget =
 
 export interface RatingRow {
   orderId: string;
-  orderNumber: string;
+  // The order's number; null unless the caller asked for it (`withOrder`),
+  // so the owners' read never touches the partitioned orders.
+  orderNumber: string | null;
   stars: number;
   reasons: { code: string; label: string }[];
   comment: string | null;
@@ -113,6 +115,7 @@ export class RatingPagesService {
     target: RatingTarget,
     query: { period: RatingPeriod; stars: number | null; page: number; asOf: Date | null },
     now: Date,
+    withOrder = false,
   ): Promise<RatingPage> {
     const asOf = query.asOf === null || query.asOf.getTime() > now.getTime() ? now : query.asOf;
     const [timeZone, cutoff] = await Promise.all([
@@ -141,22 +144,20 @@ export class RatingPagesService {
       this.database.db
         .select({
           orderId: ratings.orderId,
-          orderNumber: sql<string>`${orders.number}::text`,
+          orderPlacedAt: ratings.orderPlacedAt,
           stars: ratings.stars,
           reasons: sql<{ code: string; label: string }[]>`${ratings.reasons}`,
           comment: ratings.comment,
           at: ratings.at,
         })
         .from(ratings)
-        .innerJoin(
-          orders,
-          and(eq(orders.id, ratings.orderId), eq(orders.placedAt, ratings.orderPlacedAt)),
-        )
         .where(and(...page))
         .orderBy(desc(ratings.at), desc(ratings.id))
         .offset(query.page * RATINGS_PAGE)
         .limit(RATINGS_PAGE + 1),
     ]);
+    const shown = rows.slice(0, RATINGS_PAGE);
+    const numbers = withOrder ? await this.orderNumbers(shown) : new Map<string, string>();
     const counts = new Map(byStars.map((row) => [row.stars, row.count]));
     const distribution = [5, 4, 3, 2, 1].map((stars) => ({
       stars,
@@ -169,12 +170,41 @@ export class RatingPagesService {
       count,
       average: averageOf(total, count),
       distribution,
-      ratings: rows.slice(0, RATINGS_PAGE).map((rating) => ({
-        ...rating,
+      ratings: shown.map((rating) => ({
+        orderId: rating.orderId,
+        orderNumber: numbers.get(rating.orderId) ?? null,
+        stars: rating.stars,
+        reasons: rating.reasons,
+        comment: rating.comment,
+        at: rating.at,
         day: dayOf(lastCutoff(rating.at, cutoffMinutes, timeZone), timeZone),
       })),
       more: rows.length > RATINGS_PAGE,
     };
+  }
+
+  // The page's order numbers, by the orders' ids and placing moments so the
+  // month partitions prune.
+  private async orderNumbers(
+    rows: readonly { orderId: string; orderPlacedAt: Date }[],
+  ): Promise<Map<string, string>> {
+    if (rows.length === 0) return new Map();
+    const found = await this.database.db
+      .select({ id: orders.id, number: sql<string>`${orders.number}::text` })
+      .from(orders)
+      .where(
+        and(
+          inArray(
+            orders.id,
+            rows.map((row) => row.orderId),
+          ),
+          inArray(
+            orders.placedAt,
+            rows.map((row) => row.orderPlacedAt),
+          ),
+        ),
+      );
+    return new Map(found.map((row) => [row.id, row.number]));
   }
 
   // CA §11.2: the captain's count and average, and each reason picked with

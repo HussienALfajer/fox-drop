@@ -53,7 +53,7 @@ test('reads a captain’s ratings with the comments, filters and reads more', as
   await page.goto('/');
 
   await page.getByRole('link', { name: 'التقييمات' }).click();
-  await page.getByLabel('الكابتن').selectOption({ label: 'أحمد (2.5 من 5، 21 تقييم)' });
+  await page.getByLabel('الكابتن').selectOption({ label: 'أحمد (2.5 من 5، التقييمات: 21)' });
   await expect(page.getByText('2.5 من 5', { exact: true })).toBeVisible();
   await expect(page.getByText('عدد التقييمات: 21')).toBeVisible();
   const list = page.getByRole('list', { name: 'التقييمات' });

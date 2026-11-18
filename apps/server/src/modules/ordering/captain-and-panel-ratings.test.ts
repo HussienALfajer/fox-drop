@@ -139,6 +139,13 @@ describe('the panel’s ratings', () => {
       { count: 1, ratings: [] },
     );
 
+    // A test order's rating counts in neither of the panel's figures.
+    await captainRatedAt((await deliveredOrder()).id, captainId, 1, [late], true);
+    expect((await ops.get(`/v1/admin/ratings/captains/${captainId}`)).json()).toMatchObject({
+      count: 1,
+      average: 4,
+    });
+
     const captains = (await ops.get(`/v1/admin/ratings/captains?cityId=${azaz}`)).json().captains;
     expect(captains.find((each: { id: string }) => each.id === captainId)).toMatchObject({
       count: 1,

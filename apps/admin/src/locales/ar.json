@@ -2498,7 +2498,7 @@
     "chooseRestaurant": "اختر مطعماً",
     "captain": "الكابتن",
     "chooseCaptain": "اختر كابتناً",
-    "captainRated": "{{name}} ({{average}} من 5، {{count}} تقييم)",
+    "captainRated": "{{name}} ({{average}} من 5، التقييمات: {{count}})",
     "captainUnrated": "{{name}} (لا تقييم بعد)",
     "period": "الفترة",
     "periods": {

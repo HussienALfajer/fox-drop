@@ -83,14 +83,11 @@ function body(found: RatingPage) {
     count: found.count,
     average: found.average,
     distribution: found.distribution,
-    ratings: found.ratings.map(({ orderId, orderNumber, stars, reasons, comment, at }) => ({
-      orderId,
-      orderNumber,
-      stars,
-      reasons,
-      comment,
-      at: at.toISOString(),
-    })),
+    ratings: found.ratings.map(({ orderId, orderNumber, stars, reasons, comment, at }) => {
+      // A rating's order always exists (its foreign key).
+      if (orderNumber === null) throw new Error('a rating without its order');
+      return { orderId, orderNumber, stars, reasons, comment, at: at.toISOString() };
+    }),
     more: found.more,
   };
 }
@@ -133,6 +130,7 @@ export class AdminRatingsController {
         { party: 'restaurant', id: restaurant.id, cityId: restaurant.cityId },
         query(found),
         new Date(),
+        true,
       ),
     );
   }
@@ -162,6 +160,7 @@ export class AdminRatingsController {
         { party: 'captain', id: captain.id, cityId: captain.cityId },
         query(found),
         new Date(),
+        true,
       ),
     );
   }
