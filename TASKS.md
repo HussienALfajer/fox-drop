@@ -4,7 +4,7 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.27b, Home sections (`docs/roadmap.md`, Phase 2, Finding food). Not started.
+Slice 2.27b, Home sections (`docs/roadmap.md`, Phase 2, Finding food). In progress.
 
 - **Roadmap line:** 2.27b Home sections: «أقسام الرئيسية» in the panel (drag to order, show or hide, custom sections with a title and hand-picked restaurants), «الأقرب إليك» (the 10 nearest), «الأكثر طلباً» (the 10 with the most delivered orders in 30 days, test orders left out), «جديد على FOX DROP» (activated in the last 30 days, newest first, 10), «العروض» (restaurants with an active visible code limited to restaurants), and the customer home in the panel's order with pull to refresh (AP §9.11.3, CU §8.1). The owner reorders a section and the home follows.
 - **Specs:** AP §9.11.3 «أقسام الرئيسية», AP §6 (Marketing: OWN full, OPS read, DATA banners), AP §9.6.5 «تثبيت» (`sort_weight`: a restaurant's position in a home section), CU §8.1, CU §8.2 (only restaurants delivering to the point; open first, closed last, inside every section).
@@ -12,8 +12,12 @@ Slice 2.27b, Home sections (`docs/roadmap.md`, Phase 2, Finding food). Not start
 - **Owner decisions (2026-11-18):** the split into 2.27a–d; a restaurant links to one or more of the panel's categories, the free-text values carried over by name and the old column dropped later in its own migration; «الأكثر طلباً» the 10 with the most delivered orders in 30 days, test orders left out; «جديد على FOX DROP» activated in the last 30 days, newest first, 10; «الأقرب إليك» the 10 nearest; «العروض» counts only an active visible code limited to restaurants; a banner at 1200×500; a banner's «قائمة مطاعم» is its own hand-picked list, opened under its title; a mass push's «أُرسل» is FCM's acceptance and «وصل» the app's acknowledgement. The screens stay unstyled (logic and presentation apart) until the design stop is lifted.
 - **What exists:** the categories (2.27a: `CategoriesService`, `GET /v1/customer/categories`, the app's `CategoryRow` on home above the list), the customer's cards (`BrowsingService.restaurants`), the visible promo codes (`marketing`), delivered orders (`ordering`), the activation (`merchants.setAccountStatus`).
 - **Plan:**
-  - [ ] Write the plan here, one step per commit, after reading AP §9.11.3 and CU §8.1 (likely: the sections' table and the panel's routes; the computed sections and `GET /v1/customer/home`; the panel's page; the app's home in the sections' order).
-- **To ask the owner first:** who edits «أقسام الرئيسية» (AP §6's Marketing row: OWN only, or DATA too, since DATA has banners); whether a hidden built-in section can be deleted (likely not: only hidden); the design stop for the home's screens.
+  - [x] The sections' table and the panel's routes: `marketing.home_sections` per city (the six built-in sections and the custom ones: title, hand-picked restaurants), read merged with the built-ins not stored yet; order, show or hide, add, edit and remove a custom section; OWN edits (`marketing.manage`), OPS reads.
+  - [ ] The computed sections: `merchants.restaurants.activated_at` (the first activation), ordering's delivered counts in 30 days without test orders, marketing's restaurants with an active visible code limited to restaurants, and `GET /v1/customer/restaurants?home=true` answering the sections in the panel's order with their restaurants.
+  - [ ] The panel's «أقسام الرئيسية» page.
+  - [ ] The customer home in the sections' order, pull to refresh.
+  - [ ] The review's fixes; the handover.
+- **Owner answers (2026-11-18):** OWN alone edits «أقسام الرئيسية», OPS reads (DATA has banners only); «الأقرب إليك», «الأكثر طلباً» and «جديد على FOX DROP» take their 10 by their own rule whatever the state, then show open first and closed last; «العروض» shows every such restaurant in the sort weight's order.
 
 ### Left from 2.27a (`claude/awesome-wright-l6hsmr`)
 

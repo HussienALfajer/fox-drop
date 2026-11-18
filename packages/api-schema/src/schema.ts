@@ -2452,6 +2452,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/home-sections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminHomeSectionsList"];
+        put?: never;
+        post: operations["adminHomeSectionsCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/home-sections/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminHomeSectionsOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/home-sections/visibility": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminHomeSectionsVisibility"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/home-sections/{sectionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminHomeSectionsUpdate"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/home-sections/{sectionId}/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminHomeSectionsRemove"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchant/realtime/token": {
         parameters: {
             query?: never;
@@ -8062,6 +8142,63 @@ export interface components {
             codeValidTo: string | null;
         };
         AdminRejectCompensationDto: {
+            /** Format: uuid */
+            cityId: string;
+        };
+        AdminHomeSectionsDto_Output: {
+            /** @description Every section of the city in the home’s order, hidden ones included. */
+            sections: {
+                /** @description A built-in section's kind, or a custom section's id: what the commands name. */
+                key: string;
+                /**
+                 * @description «البانرات», «التصنيفات», «الأقرب إليك», «الأكثر طلباً», «جديد على FOX DROP», «العروض», or a custom section.
+                 * @enum {string}
+                 */
+                kind: "banners" | "categories" | "nearest" | "most_ordered" | "new" | "offers" | "custom";
+                /** @description A custom section's title; null for a built-in one. */
+                title: string | null;
+                /** @description A custom section's restaurants in the admin's order; empty for a built-in one. */
+                restaurantIds: string[];
+                visible: boolean;
+            }[];
+            /** @description The city's restaurants a custom section picks from. */
+            restaurants: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            }[];
+            /** @description Whether this admin may change them (marketing.manage). */
+            canManage: boolean;
+        };
+        AdminHomeSectionsOrderDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description Every section of the city once, in the new order. */
+            keys: string[];
+        };
+        AdminHomeSectionVisibilityDto: {
+            /** Format: uuid */
+            cityId: string;
+            key: string;
+            visible: boolean;
+        };
+        AdminNewHomeSectionDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description Trimmed, 1 to 40 characters. */
+            title: string;
+            /** @description 1 to 30 of the city's restaurants, in the home's order. */
+            restaurantIds: string[];
+        };
+        AdminUpdateHomeSectionDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description Trimmed, 1 to 40 characters. */
+            title: string;
+            /** @description 1 to 30 of the city's restaurants, in the home's order. */
+            restaurantIds: string[];
+        };
+        AdminHomeSectionCityDto: {
             /** Format: uuid */
             cityId: string;
         };
@@ -19318,6 +19455,152 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminCompensationDto_Output"];
+                };
+            };
+        };
+    };
+    adminHomeSectionsList: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminHomeSectionsDto_Output"];
+                };
+            };
+        };
+    };
+    adminHomeSectionsCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminNewHomeSectionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminHomeSectionsDto_Output"];
+                };
+            };
+        };
+    };
+    adminHomeSectionsOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminHomeSectionsOrderDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminHomeSectionsDto_Output"];
+                };
+            };
+        };
+    };
+    adminHomeSectionsVisibility: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminHomeSectionVisibilityDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminHomeSectionsDto_Output"];
+                };
+            };
+        };
+    };
+    adminHomeSectionsUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sectionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminUpdateHomeSectionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminHomeSectionsDto_Output"];
+                };
+            };
+        };
+    };
+    adminHomeSectionsRemove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sectionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminHomeSectionCityDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminHomeSectionsDto_Output"];
                 };
             };
         };

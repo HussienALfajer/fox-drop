@@ -9,8 +9,10 @@ import { MerchantsModule } from '../merchants/index.js';
 import { NotificationsModule } from '../notifications/index.js';
 import { SettingsModule } from '../settings/index.js';
 import { AdminCompensationsController } from './admin-compensations.controller.js';
+import { AdminHomeSectionsController } from './admin-home-sections.controller.js';
 import { AdminPromoCodesController } from './admin-promo-codes.controller.js';
 import { CompensationsService } from './compensations.service.js';
+import { HomeSectionsService } from './home-sections.service.js';
 import { LateCodesService } from './late-codes.service.js';
 import { PromoCodeUsesService } from './promo-code-uses.service.js';
 import { PromoCodesService } from './promo-codes.service.js';
@@ -18,8 +20,9 @@ import { PromoCodesService } from './promo-codes.service.js';
 // The marketing module (architecture §4.2): promo codes «أكواد الخصم»
 // (AP §9.11.1, slice 2.21a), their use in orders (slice 2.21b), and picking
 // them, «أكوادي» and the code report (slice 2.21d), and «تعويض الزبون»
-// with its caps and approvals (slice 2.22a), and the late code (slice 2.22c). Banners, home sections
-// and mass pushes come with 2.27.
+// with its caps and approvals (slice 2.22a), the late code (slice 2.22c),
+// and the home sections (slice 2.27b). Banners and mass pushes come with
+// 2.27c and 2.27d.
 @Module({
   imports: [
     DatabaseModule,
@@ -32,9 +35,19 @@ import { PromoCodesService } from './promo-codes.service.js';
     NotificationsModule,
     SettingsModule,
   ],
-  controllers: [AdminPromoCodesController, AdminCompensationsController],
-  providers: [PromoCodesService, PromoCodeUsesService, CompensationsService, LateCodesService],
-  exports: [PromoCodeUsesService, CompensationsService, LateCodesService],
+  controllers: [
+    AdminPromoCodesController,
+    AdminCompensationsController,
+    AdminHomeSectionsController,
+  ],
+  providers: [
+    PromoCodesService,
+    PromoCodeUsesService,
+    CompensationsService,
+    LateCodesService,
+    HomeSectionsService,
+  ],
+  exports: [PromoCodeUsesService, CompensationsService, LateCodesService, HomeSectionsService],
 })
 export class MarketingModule {}
 
@@ -57,6 +70,11 @@ export {
   type PreparedCompensation,
   WRONG_CHANGE_COMPENSATION,
 } from './compensations.service.js';
+export {
+  BUILT_IN_SECTIONS,
+  type HomeSection,
+  HomeSectionsService,
+} from './home-sections.service.js';
 export {
   type LateCode,
   type LateCodeOrder,

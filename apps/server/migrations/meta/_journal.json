@@ -757,6 +757,13 @@
       "when": 1794970580371,
       "tag": "0107_content_categories",
       "breakpoints": true
+    },
+    {
+      "idx": 108,
+      "version": "7",
+      "when": 1794984390530,
+      "tag": "0108_marketing_home_sections",
+      "breakpoints": true
     }
   ]
 }
