@@ -2,6 +2,8 @@
 /// §11.2): the FCM token kept registered and the pushes tapped.
 library;
 
+export 'package:firebase_messaging/firebase_messaging.dart' show RemoteMessage;
+
 export 'src/notification_permission.dart';
 export 'src/push.dart';
 export 'src/push_tokens.dart';

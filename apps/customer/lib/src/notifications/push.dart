@@ -42,17 +42,51 @@ final pushTokensProvider = Provider<PushTokens>((ref) {
 });
 
 /// The route a push's data opens (CU §14): rows 1 to 15 open their order.
-/// The codes and the account («أكوادي», rows 16 and 21) come with their
-/// slices; until then such a tap only opens the app.
+/// The account (row 21) comes with its slice; until then such a tap only
+/// opens the app.
 String? pushTargetPath(Map<String, String> data) => switch (data) {
   {'target': 'order', 'orderId': final id} when id.isNotEmpty =>
     '/orders/${Uri.encodeComponent(id)}',
-  // CU §14 #19: «الخدمة عادت».
+  // CU §14 #19: «الخدمة عادت»; #22: a mass push to the home.
   {'target': 'home'} => '/',
+  // CU §14 #22 (AP §9.11.4): a mass push's restaurant, or «أكوادي» on its
+  // code, as a banner opens them.
+  {'target': 'restaurant', 'restaurantId': final id} when id.isNotEmpty =>
+    '/restaurants/${Uri.encodeComponent(id)}',
+  {'target': 'codes', 'code': final code} when code.isNotEmpty => Uri(
+    path: '/codes',
+    queryParameters: {'code': code},
+  ).toString(),
   // CU §14 #23: «أُعيد الكود {الكود} إلى أكوادك».
   {'target': 'codes'} => '/codes',
   _ => null,
 };
+
+/// AP §9.11.4 «وصل»: the app acknowledges a mass push when it arrives
+/// (`POST /v1/customer/push-receipts`, public: the background handler has
+/// no session). A failed call is not tried again: the count is a measure.
+Future<void> acknowledgePush(CoreApi api, PushData data) async {
+  final messageId = data['messageId'];
+  if (data['kind'] != 'mass_push' || messageId == null) return;
+  try {
+    await api.getCustomerApi().customerPushReceiptsReceive(
+      customerPushReceiptDto: CustomerPushReceiptDto(
+        (b) => b..messageId = messageId,
+      ),
+    );
+  } catch (error) {
+    debugPrint('Push receipt failed: $error');
+  }
+}
+
+/// The mass pushes that arrive while the app is open.
+final pushReceiptsProvider = Provider<void>((ref) {
+  final push = ref.watch(pushProvider);
+  final receipts = push.received.listen(
+    (data) => unawaited(acknowledgePush(ref.read(authApiProvider), data)),
+  );
+  ref.onDispose(receipts.cancel);
+});
 
 /// Opens the target of the push the customer tapped: the one that started
 /// the app, and each one tapped while it ran in the background.

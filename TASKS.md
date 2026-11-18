@@ -14,7 +14,7 @@ Slice 2.27d, Mass push (`docs/roadmap.md`, Phase 2, Finding food). In progress.
   - [x] Notifications: `push_messages` gains `title`, `campaign_id` and `delivered_at` (migration, expand only); the relay sends a push's own title and a campaign's pushes after every other due push; «الإشعارات» shows a push only once its time came; `PushQueue.campaignCounts` and `cancelCampaign`; the app's receipt `POST /v1/customer/push-receipts` (public: the background handler has no session).
   - [x] Marketing: `marketing.mass_pushes`, the audience (customers registers it, with geo's points in a zone and ordering's last delivered order per account), `GET /v1/admin/mass-pushes`, `GET …/audience`, `POST /v1/admin/mass-pushes` (the size confirmed, `Idempotency-Key`; the pushes queued for their time in the same transaction) and `POST …/{id}/cancel`.
   - [x] Panel: «الإشعارات الجماعية» with the form, the audience size, the confirmation and the history.
-  - [ ] Customer app: a mass push's target (a restaurant, «أكوادي» on a code, home) and its receipt, in the foreground and in the background.
+  - [x] Customer app: a mass push's target (a restaurant, «أكوادي» on a code, home) and its receipt, in the foreground and in the background.
   - [ ] Review, handover.
 - **Owner decisions (2026-11-18):** OWN alone sends (`marketing.manage`), OPS reads the history; «لم يطلب منذ N يوماً» counts delivered orders only and leaves out the accounts that never had one (they are «سجّل ولم يطلب»); «وصل» is the app's acknowledgement when the push arrives; a scheduled push can be cancelled before its time, never edited; a code target opens «أكوادي» on it, as a banner does; guests are in no audience; a zone's audience is the customers with a saved address in it.
 
