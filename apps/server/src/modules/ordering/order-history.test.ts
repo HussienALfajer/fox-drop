@@ -262,7 +262,11 @@ const history = async (headers: Record<string, string>, cursor?: string) => {
 
 const detail = async (orderId: string, headers: Record<string, string>) =>
   (await app.inject({ method: 'GET', url: `/v1/customer/orders/${orderId}`, headers })).json()
-    .order as { timeline: { step: string; at: string }[]; money: { total: string } };
+    .order as {
+    timeline: { step: string; at: string }[];
+    money: { total: string };
+    orderAgain: boolean;
+  };
 
 describe('GET /v1/customer/orders (CU §12.3)', () => {
   it('lists the active orders first, then the past ones newest first, in pages of 20', async () => {
