@@ -50,14 +50,16 @@ export class LivePositions {
 
   constructor(@Inject(VALKEY) private readonly valkey: Valkey) {}
 
+  // True when written, false when the point is not newer or the period
+  // ended, null when Valkey failed.
   async set(
     cityId: string,
     captainId: string,
     periodId: string,
     position: LivePosition,
-  ): Promise<void> {
+  ): Promise<boolean | null> {
     try {
-      await this.valkey.eval(
+      const written = await this.valkey.eval(
         SET_IF_NEWER,
         3,
         cityKey(cityId),
@@ -71,8 +73,10 @@ export class LivePositions {
         periodId,
         String(POSITION_TTL_SECONDS),
       );
+      return written === 1;
     } catch (error) {
       this.logger.warn({ err: error }, 'the live position was not written');
+      return null;
     }
   }
 

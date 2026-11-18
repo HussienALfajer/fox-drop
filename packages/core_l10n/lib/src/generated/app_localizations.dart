@@ -2626,6 +2626,12 @@ abstract class AppLocalizations {
   /// **'على بعد {distance}'**
   String captainDistanceAway(String distance);
 
+  /// The leg's arrival time from the routing service under the map (CA §9.2, §9.5): the read's moment plus the leg's duration. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الوصول حوالي {time}'**
+  String captainEta(String time);
+
   /// The waiting timer from arrival (CA §9.3). The spec gives no wording.
   ///
   /// In ar, this message translates to:

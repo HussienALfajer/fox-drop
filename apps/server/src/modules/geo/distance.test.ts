@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   measureDistance,
   measureDistances,
+  measureRoute,
   type RoadDistances,
   straightLineMetres,
 } from './distance.js';
@@ -21,11 +22,16 @@ function road(answer: () => Promise<number>): RoadDistances & { calls: unknown[]
       return answer();
     },
     table: () => Promise.reject(new Error('not asked')),
+    route: () => Promise.reject(new Error('not asked')),
   };
 }
 
 function matrix(answer: () => Promise<(number | null)[]>): RoadDistances {
-  return { metres: () => Promise.reject(new Error('not asked')), table: answer };
+  return {
+    metres: () => Promise.reject(new Error('not asked')),
+    table: answer,
+    route: () => Promise.reject(new Error('not asked')),
+  };
 }
 
 describe('straightLineMetres', () => {
@@ -124,6 +130,60 @@ describe('measureDistances (AP §9.12.6)', () => {
     ]);
     await expect(
       measureDistances([{ latitude: 91, longitude: 0 }], market, 'car', 'road', never),
+    ).rejects.toThrow(RangeError);
+  });
+});
+
+describe('measureRoute', () => {
+  const line = [azaz, market];
+  const routed = (answer: () => Promise<{ metres: number; seconds: number; line: typeof line }>) =>
+    ({
+      metres: () => Promise.reject(new Error('not asked')),
+      table: () => Promise.reject(new Error('not asked')),
+      route: answer,
+    }) satisfies RoadDistances;
+
+  it('answers the road route in whole metres and seconds with its line', async () => {
+    const route = await measureRoute(
+      azaz,
+      market,
+      'motorbike',
+      30,
+      routed(() => Promise.resolve({ metres: 1834.7, seconds: 201.3, line })),
+    );
+    expect(route).toEqual({ metres: 1835, seconds: 201, method: 'road', line });
+  });
+
+  it('falls back to the straight line × 1.3 at the speed, without a line', async () => {
+    const onFallback = vi.fn();
+    const route = await measureRoute(
+      azaz,
+      market,
+      'motorbike',
+      30,
+      routed(() => Promise.reject(new Error('down'))),
+      onFallback,
+    );
+    const metres = Math.round(straightLineMetres(azaz, market) * 1.3);
+    // 30 km/h is 500 metres a minute.
+    expect(route).toEqual({
+      metres,
+      seconds: Math.round((metres / 500) * 60),
+      method: 'straight_x1.3',
+      line: null,
+    });
+    expect(onFallback).toHaveBeenCalledOnce();
+  });
+
+  it('refuses a point off the map', async () => {
+    await expect(
+      measureRoute(
+        { latitude: 91, longitude: 0 },
+        market,
+        'car',
+        30,
+        routed(() => Promise.reject(new Error('not asked'))),
+      ),
     ).rejects.toThrow(RangeError);
   });
 });

@@ -844,6 +844,8 @@
   "@captainWeakGps": {"description": "GPS worse than 100 m (K3)."},
   "captainDistanceAway": "على بعد {distance}",
   "@captainDistanceAway": {"description": "The distance from the latest fix. The spec gives no wording.", "placeholders": {"distance": {"type": "String"}}},
+  "captainEta": "الوصول حوالي {time}",
+  "@captainEta": {"description": "The leg's arrival time from the routing service under the map (CA §9.2, §9.5): the read's moment plus the leg's duration. The spec gives no wording.", "placeholders": {"time": {"type": "String"}}},
   "captainWaitingSince": "تنتظر منذ {duration}",
   "@captainWaitingSince": {"description": "The waiting timer from arrival (CA §9.3). The spec gives no wording.", "placeholders": {"duration": {"type": "String"}}},
   "captainOrderReadyNow": "الطلب جاهز",

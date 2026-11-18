@@ -5,3 +5,5 @@ export 'src/geo_point.dart';
 export 'src/map_camera.dart';
 export 'src/map_style.dart';
 export 'src/pin_map.dart';
+export 'src/route_map.dart';
+export 'src/route_view.dart';

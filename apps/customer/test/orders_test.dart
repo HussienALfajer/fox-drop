@@ -1,7 +1,9 @@
 import 'package:core_api/core_api.dart';
 import 'package:core_auth/testing.dart';
+import 'package:core_maps/core_maps.dart';
 import 'package:core_realtime/core_realtime.dart';
 import 'package:customer/src/cart/cart.dart';
+import 'package:customer/src/orders/captain_map.dart';
 import 'package:customer/src/orders/door_ring.dart';
 import 'package:customer/src/orders/order_live.dart';
 import 'package:customer/src/router.dart';
@@ -649,6 +651,151 @@ void main() {
     );
     expect(find.byKey(const Key('late-code-codes')), findsOneWidget);
     await app.done(tester);
+  });
+
+  group('the map from the pickup (CU §11.3)', () {
+    const route = '/v1/customer/orders/$_orderId/route';
+    const channel = 'order:$_orderId';
+    const pin = GeoPoint(36.59, 37.046);
+    const start = GeoPoint(36.587, 37.046);
+    Map<String, Object?> routeJson({bool line = true}) => {
+      'captain': {
+        'latitude': start.latitude,
+        'longitude': start.longitude,
+        'recordedAt': '2026-11-07T12:30:00.000Z',
+      },
+      'destination': {'latitude': pin.latitude, 'longitude': pin.longitude},
+      'route': {
+        'metres': 400,
+        'seconds': 80,
+        'method': line ? 'road' : 'straight_x1.3',
+        'line': line
+            ? [
+                {'latitude': start.latitude, 'longitude': start.longitude},
+                {'latitude': pin.latitude, 'longitude': pin.longitude},
+              ]
+            : null,
+      },
+    };
+    Map<String, Object?> position(double latitude, String at) => {
+      'type': 'captain.position',
+      'schema': 1,
+      'orderId': _orderId,
+      'latitude': latitude,
+      'longitude': 37.046,
+      'recordedAt': at,
+    };
+
+    testWidgets('no map before the pickup', (tester) async {
+      final app = await open(tester, [
+        FakeAnswer(200, {
+          'order': _order(status: 'accepted', version: 3, captain: _captain),
+        }),
+      ]);
+      expect(find.byKey(const Key('captain-map')), findsNothing);
+      expect(app.server.to(route), isEmpty);
+      await app.done(tester);
+    });
+
+    testWidgets('shows the captain, the pin and the line, and follows the '
+        'captain live', (tester) async {
+      final app = await open(tester, [
+        FakeAnswer(200, {
+          'order': _order(status: 'picked_up', version: 6, captain: _captain),
+        }),
+      ], before: (app) => app.server.on(route, [FakeAnswer(200, routeJson())]));
+      expect(find.byKey(const Key('captain-map')), findsOneWidget);
+      expect(app.mapViews.last.markers, const [
+        MapMarker(MapMarkerKind.destination, pin),
+        MapMarker(MapMarkerKind.captain, start),
+      ]);
+      expect(app.mapViews.last.line, const [start, pin]);
+
+      // A new position moves the captain; an older one is dropped; the
+      // order is not read again (a position has no version).
+      final reads = app.server.to('/v1/customer/orders/$_orderId').length;
+      app.transport.send(
+        channel,
+        RealtimePublication(position(36.588, '2026-11-07T12:30:10.000Z')),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        app.mapViews.last.markers.last,
+        const MapMarker(MapMarkerKind.captain, GeoPoint(36.588, 37.046)),
+      );
+      app.transport.send(
+        channel,
+        RealtimePublication(position(36.5875, '2026-11-07T12:30:05.000Z')),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        app.mapViews.last.markers.last,
+        const MapMarker(MapMarkerKind.captain, GeoPoint(36.588, 37.046)),
+      );
+      expect(app.server.to('/v1/customer/orders/$_orderId'), hasLength(reads));
+      expect(app.server.to(route), hasLength(1));
+
+      // The first subscription reads nothing more; a later reconnect
+      // without recovery reads the route again.
+      app.transport.send(channel, const RealtimeUp(recovered: false));
+      await tester.pumpAndSettle();
+      expect(app.server.to(route), hasLength(1));
+      app.server.on(route, [FakeAnswer(200, routeJson(line: false))]);
+      app.transport.send(channel, const RealtimeUp(recovered: false));
+      await tester.pumpAndSettle();
+      expect(app.server.to(route), hasLength(2));
+      expect(app.mapViews.last.line, isNull);
+      // The newer point it had stays.
+      expect(
+        app.mapViews.last.markers.last,
+        const MapMarker(MapMarkerKind.captain, GeoPoint(36.588, 37.046)),
+      );
+
+      // A handover reads the new captain's way.
+      app.server.on(route, [FakeAnswer(200, routeJson())]);
+      app.transport.send(
+        channel,
+        const RealtimePublication({
+          'type': 'order.handed_over',
+          'orderId': _orderId,
+          'version': 7,
+        }),
+      );
+      await tester.pumpAndSettle();
+      expect(app.server.to(route), hasLength(3));
+      expect(app.mapViews.last.line, const [start, pin]);
+      await app.done(tester);
+    });
+
+    testWidgets('a failed read shows no map, and reads again 30 seconds '
+        'later', (tester) async {
+      final app = await open(tester, [
+        FakeAnswer(200, {
+          'order': _order(status: 'arrived', version: 7, captain: _captain),
+        }),
+      ], before: (app) => app.server.on(route, [const FakeAnswer(500, {})]));
+      expect(find.byKey(const Key('captain-map')), findsNothing);
+      app.server.on(route, [FakeAnswer(200, routeJson())]);
+      await tester.pump(followRetry);
+      await tester.pumpAndSettle();
+      expect(app.server.to(route), hasLength(2));
+      expect(find.byKey(const Key('captain-map')), findsOneWidget);
+      await app.done(tester);
+    });
+  });
+
+  test('positionOf reads only this order\'s captain.position', () {
+    final data = {
+      'type': 'captain.position',
+      'orderId': _orderId,
+      'latitude': 36.5,
+      'longitude': 37.0,
+      'recordedAt': '2026-11-07T12:30:00.000Z',
+    };
+    expect(positionOf(data, _orderId)?.point, const GeoPoint(36.5, 37.0));
+    expect(positionOf({...data, 'orderId': 'other'}, _orderId), isNull);
+    expect(positionOf({...data, 'type': 'order.delivered'}, _orderId), isNull);
+    expect(positionOf({...data, 'latitude': null}, _orderId), isNull);
   });
 
   group('«مساعدة» and «إلغاء الطلب» (CU §11.4–11.5)', () {

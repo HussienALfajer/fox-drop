@@ -33,6 +33,10 @@ const fakeRoad: RoadDistances = {
       sources.map((_each, index) => (vehicle === 'car' && index === 1 ? null : 1000.6 + index)),
     );
   },
+  route: (from, to, vehicle) => {
+    calls.push(['route', vehicle]);
+    return Promise.resolve({ metres: 1500.4, seconds: 180.6, line: [from, to] });
+  },
 };
 
 beforeAll(async () => {
@@ -85,6 +89,22 @@ describe('GeoService.distance', () => {
     expect(distance.metres).toBeGreaterThan(700);
     expect(distance.metres).toBeLessThan(900);
     expect(calls).toEqual([]);
+  });
+});
+
+describe('GeoService.route (CA §4.6, CU §11.3)', () => {
+  it('asks OSRM whatever pricing.distance_method says, and answers the line', async () => {
+    calls.length = 0;
+    await settings.update('pricing.distance_method', {}, 'straight_line', system);
+    const [azaz] = await geo.activeCities();
+    await expect(geo.route(azaz!.id, from, to, { vehicle: 'motorbike' })).resolves.toEqual({
+      metres: 1500,
+      seconds: 181,
+      method: 'road',
+      line: [from, to],
+    });
+    expect(calls).toEqual([['route', 'motorbike']]);
+    await settings.update('pricing.distance_method', {}, 'road', system);
   });
 });
 

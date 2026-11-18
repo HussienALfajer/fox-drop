@@ -11,7 +11,9 @@ import 'package:captain/src/work/alerts.dart';
 import 'package:captain/src/work/call.dart';
 import 'package:captain/src/work/commands.dart';
 import 'package:captain/src/work/location.dart';
+import 'package:captain/src/work/route.dart';
 import 'package:core_auth/testing.dart';
+import 'package:core_maps/core_maps.dart';
 import 'package:core_push/testing.dart';
 import 'package:core_realtime/core_realtime.dart';
 import 'package:core_storage/core_storage.dart';
@@ -497,6 +499,8 @@ class TestApp {
   final caller = FakeCaller();
   // The images shared through the share sheet, by name (CA §10.7).
   final shared = <String, Uint8List>{};
+  // Each view the route map drew (slice 2.29b), the latest last.
+  final mapViews = <RouteView>[];
   late final ProviderContainer container;
 
   /// The server's clock in the test, which [advance] moves.
@@ -607,6 +611,10 @@ class TestApp {
         operationsCallerProvider.overrideWithValue(caller),
         imageSharerProvider.overrideWithValue((png, name) async {
           shared[name] = png;
+        }),
+        routeMapProvider.overrideWithValue(({required view}) {
+          mapViews.add(view);
+          return const Text('الخريطة', key: Key('route-map'));
         }),
         serverClockProvider.overrideWithValue(
           ServerClock(deviceNow: () => clockNow),

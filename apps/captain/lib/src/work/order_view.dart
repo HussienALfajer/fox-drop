@@ -11,13 +11,14 @@ import 'door_payment.dart';
 import 'location.dart';
 import 'payment_form.dart';
 import 'reason_sheet.dart';
+import 'route.dart';
 import 'texts.dart';
 import 'work.dart';
 
 /// The active order (CA §9.1): the progress through the four steps and the
 /// step's own screen, each with one main button. Unstyled until the design;
-/// the map and the route wait for Phase 2; «مشكلة» is `ProblemBar` above it
-/// (slice 2.13b) and «طوارئ» waits for slice 2.13c.
+/// steps 1 and 3 show the map with the route and the ETA (`LegMap`, slice
+/// 2.29b); «مشكلة» is `ProblemBar` above it and «طوارئ» `EmergencyButton`.
 class OrderView extends ConsumerWidget {
   const OrderView({super.key, required this.order});
 
@@ -170,6 +171,7 @@ class _ToRestaurant extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        LegMap(order: order, toCustomer: false),
         Text(restaurant.name),
         if (restaurant.address case final address?) Text(address),
         if (distance != null)
@@ -515,6 +517,7 @@ class _ToCustomer extends ConsumerWidget {
               : l10n.captainPickedUp,
         ),
         if (order.pickup.disputedAt != null) Text(l10n.captainPickupDisputed),
+        LegMap(order: order, toCustomer: true),
         if (distance != null)
           Text(l10n.captainDistanceAway(l10n.formatDistance(distance))),
         _CustomerBlock(order: order),

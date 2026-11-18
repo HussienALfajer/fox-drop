@@ -54,6 +54,7 @@ export type {
   NoOffersReason,
   OnlineBlock,
 } from './availability.js';
+export type { LivePosition } from './live-positions.js';
 export { orderPay, type PayParts, type PayRate } from './pay.js';
 export { localClock, type PeakWindow } from './peak-bonus.js';
 export {
