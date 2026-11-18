@@ -6469,6 +6469,90 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'لا تظهر هنا أسماء الزبائن ولا تعليقاتهم.'**
   String get captainRatingPrivate;
+
+  /// «البحث», the search screen and its bottom-bar name (CU §6.1, §8.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'البحث'**
+  String get customerSearchTitle;
+
+  /// The search box's placeholder, on the home header and «البحث» (CU §8.3; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'ابحث عن مطعم أو صنف'**
+  String get customerSearchHint;
+
+  /// The heading over the last 10 searches kept on the phone (CU §8.3; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'عمليات البحث الأخيرة'**
+  String get customerSearchRecent;
+
+  /// Clears the recent searches (CU §8.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'مسح'**
+  String get customerSearchClear;
+
+  /// The search results' restaurants tab (CU §8.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'المطاعم'**
+  String get customerSearchRestaurants;
+
+  /// The search results' items tab (CU §8.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'الأصناف'**
+  String get customerSearchItems;
+
+  /// A search that found no restaurant and no item (CU §8.3; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد نتائج لـ «{query}»'**
+  String customerSearchNoResults(String query);
+
+  /// A results tab with nothing while the other has results (CU §8.3; the wording ours).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد نتائج في هذا القسم'**
+  String get customerSearchNothingHere;
+
+  /// An item found: its restaurant and price (CU §8.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'{restaurant} · {price}'**
+  String customerSearchItemLine(String restaurant, String price);
+
+  /// Opens the form to suggest a restaurant after a search with no results (CU §8.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم تجده؟ أخبرنا'**
+  String get customerSuggestOpen;
+
+  /// The suggestion form's required restaurant name (CU §8.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'اسم المطعم'**
+  String get customerSuggestName;
+
+  /// The suggestion form's optional note (CU §8.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'ملاحظة (اختياري)'**
+  String get customerSuggestNote;
+
+  /// Sends the suggestion (CU §8.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'إرسال'**
+  String get customerSuggestSend;
+
+  /// The answer to a suggestion (CU §8.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'شكراً، سنحاول إضافته'**
+  String get customerSuggestThanks;
 }
 
 class _AppLocalizationsDelegate

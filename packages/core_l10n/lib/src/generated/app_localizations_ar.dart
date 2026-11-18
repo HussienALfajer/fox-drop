@@ -3948,4 +3948,50 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get captainRatingPrivate => 'لا تظهر هنا أسماء الزبائن ولا تعليقاتهم.';
+
+  @override
+  String get customerSearchTitle => 'البحث';
+
+  @override
+  String get customerSearchHint => 'ابحث عن مطعم أو صنف';
+
+  @override
+  String get customerSearchRecent => 'عمليات البحث الأخيرة';
+
+  @override
+  String get customerSearchClear => 'مسح';
+
+  @override
+  String get customerSearchRestaurants => 'المطاعم';
+
+  @override
+  String get customerSearchItems => 'الأصناف';
+
+  @override
+  String customerSearchNoResults(String query) {
+    return 'لا توجد نتائج لـ «$query»';
+  }
+
+  @override
+  String get customerSearchNothingHere => 'لا توجد نتائج في هذا القسم';
+
+  @override
+  String customerSearchItemLine(String restaurant, String price) {
+    return '$restaurant · $price';
+  }
+
+  @override
+  String get customerSuggestOpen => 'لم تجده؟ أخبرنا';
+
+  @override
+  String get customerSuggestName => 'اسم المطعم';
+
+  @override
+  String get customerSuggestNote => 'ملاحظة (اختياري)';
+
+  @override
+  String get customerSuggestSend => 'إرسال';
+
+  @override
+  String get customerSuggestThanks => 'شكراً، سنحاول إضافته';
 }

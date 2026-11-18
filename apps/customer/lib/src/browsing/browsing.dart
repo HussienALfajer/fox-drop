@@ -12,7 +12,7 @@ import '../location/position.dart';
 /// and the page also follow the account, since an admin test account sees
 /// the restaurants in test mode (AP §9.8) and a session ended elsewhere must
 /// read them again as a guest.
-GeoPoint? _browsingPoint(Ref ref) {
+GeoPoint? browsingPoint(Ref ref) {
   ref.watch(
     customerAuth.session.select(
       (session) => switch (session.value) {
@@ -85,7 +85,7 @@ String bannerPath(HomeBanner banner) => switch (banner.target) {
 /// CU §8.1: the home's cards and sections for the point. Pull to refresh
 /// reads it again.
 final homeProvider = FutureProvider.autoDispose<HomeView>((ref) async {
-  final point = _browsingPoint(ref);
+  final point = browsingPoint(ref);
   if (point == null) return HomeView.empty;
   final response = await ref
       .watch(coreApiProvider)
@@ -108,7 +108,7 @@ final homeProvider = FutureProvider.autoDispose<HomeView>((ref) async {
 /// paused, then closed.
 final categoryRestaurantsProvider = FutureProvider.autoDispose
     .family<List<RestaurantCard>, String>((ref, categoryId) async {
-      final point = _browsingPoint(ref);
+      final point = browsingPoint(ref);
       if (point == null) return const [];
       final response = await ref
           .watch(coreApiProvider)
@@ -128,7 +128,7 @@ String? categoriesText(AppLocalizations l10n, Iterable<String> names) =>
 /// A restaurant's page and menu for the point (CU §9.1–9.3).
 final restaurantPageProvider = FutureProvider.autoDispose
     .family<CustomerRestaurantPageDtoOutput?, String>((ref, id) async {
-      final point = _browsingPoint(ref);
+      final point = browsingPoint(ref);
       if (point == null) return null;
       final response = await ref
           .watch(coreApiProvider)
