@@ -26,8 +26,16 @@ class HomeSections extends ConsumerWidget {
         return ref.refresh(homeProvider.future);
       },
       child: switch (home) {
+        // No restaurant at the point: a code banner still opens (the
+        // server keeps it), so the strip stays above the message.
         AsyncData(:final value) when value.restaurants.isEmpty => ListView(
-          children: [ListTile(title: Text(l10n.customerNoRestaurantsHere))],
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            if (value.banners.isNotEmpty &&
+                value.sections.any((s) => s.kind == HomeSectionKind.banners))
+              BannerStrip(banners: value.banners),
+            ListTile(title: Text(l10n.customerNoRestaurantsHere)),
+          ],
         ),
         AsyncData(:final value) => ListView(
           // A short home still pulls to refresh.

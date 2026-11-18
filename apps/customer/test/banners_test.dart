@@ -206,6 +206,46 @@ void main() {
     await app.done(tester);
   });
 
+  testWidgets('keeps a code banner when no restaurant delivers here', (
+    tester,
+  ) async {
+    final app = await browsingApp(
+      tester,
+      signedIn: true,
+      before: (app) => app.server.on('/v1/customer/restaurants', [
+        FakeAnswer(200, {
+          'restaurants': <Object?>[],
+          'sections': [
+            {'kind': 'banners', 'title': null, 'restaurantIds': <Object?>[]},
+          ],
+          'banners': [_banner('b6', 'كود الشتاء', 'code', code: 'SHITA')],
+        }),
+      ]),
+    );
+    expect(find.byKey(const Key('banner-b6')), findsOneWidget);
+    expect(find.text('لا توجد مطاعم توصل إلى موقعك حالياً'), findsOneWidget);
+    await app.done(tester);
+  });
+
+  testWidgets('a list banner\'s screen offers a retry when the home fails', (
+    tester,
+  ) async {
+    final app = await _home(tester, [
+      _banner(_list, 'أطباق الشتاء', 'restaurants', restaurantIds: [shamId]),
+    ]);
+    app.server.on('/v1/customer/restaurants', [
+      const FakeAnswer(500, {'statusCode': 500}),
+    ]);
+    await tester.tap(find.byKey(const Key('banner-$_list')));
+    await tester.pumpAndSettle();
+    expect(find.text('مطعم الشام'), findsOneWidget);
+    // A failed read, as after a pull to refresh: the retry, not a spinner.
+    app.container.invalidate(homeProvider);
+    await tester.pumpAndSettle();
+    expect(find.text('حاول مجدداً'), findsOneWidget);
+    await app.done(tester);
+  });
+
   testWidgets('home has no strip without a banner', (tester) async {
     final app = await _home(tester, []);
     expect(find.byKey(const Key('banners')), findsNothing);

@@ -17,20 +17,32 @@ class BannerListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final home = ref.watch(homeProvider).value;
-    final banner = home?.bannerById(bannerId);
-    final cards = banner == null
-        ? const <RestaurantCard>[]
-        : home!.cardsOfBanner(banner);
+    final home = ref.watch(homeProvider);
+    final banner = home.value?.bannerById(bannerId);
     return Scaffold(
       appBar: AppBar(title: Text(banner?.title ?? '')),
-      body: home == null
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              children: cards.isEmpty
-                  ? [ListTile(title: Text(l10n.customerNoRestaurantsHere))]
-                  : [for (final card in cards) RestaurantTile(card: card)],
+      body: switch (home) {
+        AsyncData(:final value) => ListView(
+          children: switch (banner == null
+              ? const <RestaurantCard>[]
+              : value.cardsOfBanner(banner)) {
+            [] => [ListTile(title: Text(l10n.customerNoRestaurantsHere))],
+            final cards => [
+              for (final card in cards) RestaurantTile(card: card),
+            ],
+          },
+        ),
+        AsyncError() => ListView(
+          children: [
+            ListTile(title: Text(l10n.statusError)),
+            TextButton(
+              onPressed: () => ref.invalidate(homeProvider),
+              child: Text(l10n.customerTryAgain),
             ),
+          ],
+        ),
+        _ => const Center(child: CircularProgressIndicator()),
+      },
     );
   }
 }
