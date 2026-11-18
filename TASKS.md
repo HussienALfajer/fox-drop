@@ -4,14 +4,21 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.30, adding a restaurant (`docs/roadmap.md`, Phase 2). Planned, not started. Larger than one pull request: split it with the owner first (the `slice-plan` skill), as 2.29 was.
+Slice 2.30a, the wizard's steps 1 to 6 with its draft (`docs/roadmap.md`, Phase 2; owner decision 2026-11-18: 2.30 in three slices, 2.30a, 2.30b and 2.30c, and a map in the panel).
 
-- **Roadmap line:** 2.30 Adding a restaurant: the 8-step wizard, the activation checklist, test mode and test orders, the restaurant list, profile and actions, commission edits by OWN for new orders only (AP §9.6.1–9.6.5, RA §8.16). The owner adds a restaurant from the panel and activates it.
-- **Specs:** AP §9.6.1 (states), §9.6.2 (the list), §9.6.3 (the wizard, the activation checklist, test mode), §9.6.4 (the profile's tabs), §9.6.5 (the actions, the auto-pause rule, who ends a pause), D16 (commission for new orders only), D17, D26; RA §8.16 (test orders), §5.1, §7.4, §12.7; AP §14 (definition of done).
-- **Branch:** the cloud session's branch.
-- **Already built (reuse, do not rebuild):** restaurant states and test orders' money (AP §9.6.3: no commission, `platform.test_cost`, slices 2.19, 2.25b), the merchants module's restaurant record, hours, menu and images, pauses and busy mode (slices 2.6), categories per restaurant (2.27a), the panel's restaurant ratings (2.26c), the restaurant's statement (2.19), the commission push deferred from 2.19 (roadmap line 2.19 «Deferred»). Read `apps/server/src/modules/merchants/CLAUDE.md` and `apps/admin/CLAUDE.md` first.
-- **Plan:** to write with the owner's split (`slice-plan`): likely the wizard and its draft (steps 1–7, the map pin with the panel's map, see below), then the activation checklist with test mode, then the list, profile and actions with the commission change for new orders only.
-- **To decide in the slice:** the wizard's map pin needs a map in the panel: its style must be read from the panel's own host (the style names `https://<API host>/maps/`, and the panel's CSP allows `connect-src 'self'` only): a style per host, or CSP and CORS for the API host (the 2.29a review; 2.29b left the panel without a map).
+- **Roadmap line:** 2.30a The wizard, steps 1 to 6, with its draft: «إضافة مطعم» starts a `draft` saved at every step and resumed from the list of drafts; basics, the location on the panel's own map with the address, the restaurant's phone and the owner's name and phone, operations (hours, default prep time, minimum order, coverage), the commission by OWN alone with an optional launch rate until a date and the settlement terms (D26), the contract with its scans in the private bucket and the price-parity pledge, and the owner and cashier accounts. The owner fills a restaurant up to its accounts, leaves and comes back to the same draft.
+- **Specs:** AP §9.6.3 steps 1–6 (who may do each step), §9.6.1, D16, D26, RA §5.1, §5.2 items 3–4 (a draft cannot sign in), AP §6 (permissions: `restaurants.create` DATA, OPS, OWN; `restaurants.commission` OWN; `restaurants.manage` OWN, OPS; `restaurants.owner_accounts` OWN, OPS), architecture §5.8 (uploads), §7.2 (the map), AP §14.
+- **Branch:** the cloud session's branch (`claude/festive-goodall-3rtthg`).
+- **Owner decisions 2026-11-18:** three slices; the pin on a map in the panel; the device check shows in 2.30b's checklist as «غير متاح بعد» without blocking until 2.42.
+- **Decided by us (to confirm in the report):** a draft's record columns (pin, coverage, minimum order, prep time) stay empty until their step, and `restaurant(id)` answers null for a draft without them, so no other reader meets an incomplete restaurant; the map reads `/maps/style.json` on the panel's own origin and points its URLs there, so the Content-Security-Policy keeps `'self'` (only `worker-src` for MapLibre's own worker file); a commission version not yet in force can be withdrawn by a newer setting (`withdrawn_at`), so re-saving step 4 replaces the launch plan; the scans are images (JPEG, PNG, WebP) like every upload; a draft's accounts can be removed, other restaurants' with 2.33.
+
+### Plan
+
+- [x] Record the split: the three slices in `docs/roadmap.md` and this plan.
+- [ ] Server, steps 1–3: the draft record (migration: the record columns empty for a draft only, the owner's name and phone), start a draft, save basics, location and contacts, operations (hours, prep time, minimum order, coverage) in one transaction each, the wizard's read with each step's state and the list of drafts; routes under `/v1/admin/restaurant-drafts`; tests first.
+- [ ] Server, steps 4–6: the commission with an optional launch rate (OWN), withdrawing versions not yet in force; the contract (dates, duration, scans in `private-docs`, the pledge) saved by DATA and confirmed by OWN or OPS, with nginx forwarding the panel's private uploads and the scans' signed reads; the owner and cashier accounts (list, add, remove while a draft); `pnpm generate:api`.
+- [ ] Panel: «إضافة مطعم» and the drafts list, the six steps with each step's save, the map (MapLibre, the style from the panel's own `/maps/`) with typed coordinates as a fallback, the translations, unit tests and the smoke test; the folder `CLAUDE.md` files.
+- [ ] Review (`reviewer`), fixes, hand over to 2.30b.
 
 ### Left from 2.29b (the cloud session's branch)
 
