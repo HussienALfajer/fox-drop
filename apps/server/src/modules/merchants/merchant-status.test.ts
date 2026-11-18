@@ -8,6 +8,7 @@ import { startTestDatabase, type TestDatabase } from '../../database/test-databa
 import { createApiApp } from '../../http/create-api-app.js';
 import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
 import { FxService } from '../fx/index.js';
+import { GeoService } from '../geo/index.js';
 import {
   CODE_SENDER,
   type DevelopmentCodeSender,
@@ -508,6 +509,7 @@ describe('state events and timers (RA §16 #24, #25, §18)', () => {
       app.get(PushQueue),
       app.get(NotificationTexts),
       app.get(AlertsService),
+      app.get(GeoService),
     );
     await relay.drain(new Date());
     published.length = 0;

@@ -902,6 +902,8 @@
           "paused_by_operations": "إيقاف العمليات للمطعم",
           "resumed_by_operations": "إعادة العمليات تشغيل المطعم",
           "busy_ended_by_operations": "إنهاء العمليات وضع الضغط",
+          "suspended_by_operations": "تعليق العمليات حساب المطعم",
+          "reactivated_by_operations": "إعادة العمليات تفعيل حساب المطعم",
           "pause_ended": "انتهاء الإيقاف المؤقت",
           "busy_reminder": "تذكير وضع الضغط",
           "no_receiving_device": "لا جهاز يستقبل الطلبات",

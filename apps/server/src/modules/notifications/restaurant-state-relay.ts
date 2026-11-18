@@ -11,6 +11,7 @@ import { QUEUES } from '../../jobs/job-queue.js';
 import { Jobs } from '../../jobs/jobs.module.js';
 import { reportError } from '../../observability/error-tracking.js';
 import { NotificationTexts } from '../content/index.js';
+import { GeoService } from '../geo/index.js';
 import {
   type RelayedStateChange,
   RestaurantStatusService,
@@ -31,7 +32,8 @@ const BACKSTOP_MS = 60_000;
 export function restaurantStatePush(
   kind: StateKind,
   values: RelayedStateChange['values'],
-): { templateKey: string; values: Record<string, string> } | null {
+  timeZone: string,
+): { templateKey: string; values: Record<string, string>; owners?: boolean } | null {
   switch (kind) {
     // #3: «أُوقف مطعمك تلقائياً بعد {العدد} طلبات دون رد…»
     case 'auto_paused':
@@ -53,9 +55,44 @@ export function restaurantStatePush(
       return { templateKey: 'merchant.resumed_by_operations', values: {} };
     case 'busy_ended_by_operations':
       return { templateKey: 'merchant.busy_ended_by_operations', values: {} };
+    // #23 (slice 2.30c): RA §16 names the suspension without its words, so
+    // they are ours, as the reactivation's.
+    case 'suspended_by_operations':
+      return {
+        templateKey: 'merchant.suspended_by_operations',
+        values: { السبب: String(values.reason) },
+      };
+    case 'reactivated_by_operations':
+      return { templateKey: 'merchant.reactivated_by_operations', values: {} };
+    // #33, owners only: «تتغيّر عمولتك إلى {النسبة}% اعتباراً من {التاريخ}».
+    case 'commission_change':
+      return {
+        templateKey: 'merchant.commission_change',
+        values: {
+          النسبة: percentOf(Number(values.rateBp)),
+          التاريخ: dateOn(new Date(String(values.from)), timeZone),
+        },
+        owners: true,
+      };
     default:
       return null;
   }
+}
+
+// Basis points as a percentage with Western digits: 1500 is «15», 1250
+// «12.5», 1234 «12.34».
+export function percentOf(rateBp: number): string {
+  return (rateBp / 100).toFixed(2).replace(/\.?0+$/, '');
+}
+
+// A day on the city's clock as the panel writes it, «19/11/2026» (AP §4.7).
+export function dateOn(moment: Date, timeZone: string): string {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-GB', { timeZone, day: '2-digit', month: '2-digit', year: 'numeric' })
+      .formatToParts(moment)
+      .map((part) => [part.type, part.value]),
+  );
+  return `${parts.day}/${parts.month}/${parts.year}`;
 }
 
 // RA §18 «restaurant state changed», E4: publishes each committed change of
@@ -73,11 +110,18 @@ export class RestaurantStateRelay {
     private readonly queue: PushQueue,
     private readonly texts: NotificationTexts,
     private readonly alerts: AlertsService,
+    private readonly geo: GeoService,
   ) {}
 
   async drain(now: Date): Promise<number> {
     return this.status.relayStateChanges(async (change) => {
-      const push = restaurantStatePush(change.kind, change.values);
+      const push = restaurantStatePush(
+        change.kind,
+        change.values,
+        change.kind === 'commission_change'
+          ? ((await this.geo.cityTimeZone(change.cityId)) ?? 'UTC')
+          : 'UTC',
+      );
       if (push !== null) {
         const rendered = await this.texts.render(push.templateKey, push.values);
         // A repeat of the same source adds nothing, so a row relayed again
@@ -87,7 +131,11 @@ export class RestaurantStateRelay {
           [
             {
               source: `merchants-state:${change.id}:${push.templateKey}`,
-              recipient: { party: 'merchant', restaurantId: change.restaurantId, owners: false },
+              recipient: {
+                party: 'merchant',
+                restaurantId: change.restaurantId,
+                owners: push.owners ?? false,
+              },
               templateKey: push.templateKey,
               body: rendered.body,
               level: rendered.level,

@@ -149,6 +149,10 @@ const merchant: Entry[] = [
   ['paused_by_operations', '23', 'أوقفت العمليات مطعمك مؤقتاً: {السبب}', 'chime'],
   ['resumed_by_operations', '23', 'أعادت العمليات تشغيل مطعمك', 'chime'],
   ['busy_ended_by_operations', '23', 'أنهت العمليات وضع الضغط', 'chime'],
+  // RA §16 #23 names the suspension without its words (slice 2.30c): ours,
+  // as the reactivation's, to confirm with the owner.
+  ['suspended_by_operations', '23', 'علّقت العمليات حساب مطعمك: {السبب}', 'chime'],
+  ['reactivated_by_operations', '23', 'أعادت العمليات تفعيل حساب مطعمك', 'chime'],
   ['pause_ended', '24', 'انتهى الإيقاف المؤقت — مطعمك يستقبل الطلبات', 'chime'],
   ['busy_reminder', '25', 'وضع الضغط ما زال مفعّلاً (+{د} د)', 'chime'],
   ['no_receiving_device', '27', 'لا يوجد جهاز يستقبل الطلبات في مطعمك الآن', 'chime'],

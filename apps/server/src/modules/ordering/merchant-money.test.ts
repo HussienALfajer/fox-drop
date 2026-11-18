@@ -212,3 +212,26 @@ describe('GET /v1/merchant/account (RA §12.2)', () => {
     }
   });
 });
+
+// D16, AP §9.6.5 (slice 2.30c): «The owner changes a commission to start
+// tomorrow and today's order keeps the old rate».
+describe('a commission changed for tomorrow', () => {
+  it('leaves an order placed today at the old rate', async () => {
+    const merchants = app.get(MerchantsService);
+    const tomorrow = new Date(Date.now() + 86_400_000);
+    await merchants.setCommission(
+      restaurant,
+      { rateBp: 1300, effectiveFrom: tomorrow },
+      { ...change, reason: 'renegotiated' },
+    );
+    const order = await acceptedOrder();
+    const owners = await owner();
+    const seen = (await board(owners))
+      .json()
+      .orders.find((each: { id: string }) => each.id === order.id);
+    expect(seen.owner).toMatchObject({ commissionBp: 1500, commission: '3600' });
+    expect(
+      (await merchants.restaurant(restaurant, new Date(tomorrow.getTime() + 1)))?.commissionBp,
+    ).toBe(1300);
+  });
+});

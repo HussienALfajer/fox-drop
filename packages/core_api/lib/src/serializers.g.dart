@@ -667,8 +667,15 @@ Serializers _$serializers =
           ..add(
             AdminRestaurantAccountsDtoOutputAccountsInnerRoleEnum.serializer,
           )
+          ..add(AdminRestaurantActionsDtoOutput.serializer)
+          ..add(AdminRestaurantActionsDtoOutputAccountStatusEnum.serializer)
+          ..add(
+            AdminRestaurantActionsDtoOutputCommissionHistoryInner.serializer,
+          )
+          ..add(AdminRestaurantActionsDtoOutputNextCommission.serializer)
           ..add(AdminRestaurantCategoriesDto.serializer)
           ..add(AdminRestaurantCategoriesDtoOutput.serializer)
+          ..add(AdminRestaurantCommissionDto.serializer)
           ..add(AdminRestaurantDraftChoicesDtoOutput.serializer)
           ..add(AdminRestaurantDraftDtoOutput.serializer)
           ..add(AdminRestaurantDraftDtoOutputBasics.serializer)
@@ -703,6 +710,7 @@ Serializers _$serializers =
                 .serializer,
           )
           ..add(AdminRestaurantPickupCurrenciesDto.serializer)
+          ..add(AdminRestaurantReasonDto.serializer)
           ..add(AdminRestaurantReceiptDtoOutput.serializer)
           ..add(AdminRestaurantReceiptDtoOutputLinesInner.serializer)
           ..add(AdminRestaurantReceiptDtoOutputMethodEnum.serializer)
@@ -726,6 +734,7 @@ Serializers _$serializers =
           ..add(
             AdminRestaurantSettlementsDtoOutputSettlementWeekdayEnum.serializer,
           )
+          ..add(AdminRestaurantSortWeightDto.serializer)
           ..add(AdminRestaurantStatementExportDto.serializer)
           ..add(AdminRestaurantStatusDtoOutput.serializer)
           ..add(AdminRestaurantStatusDtoOutputAccountStatusEnum.serializer)
@@ -733,6 +742,10 @@ Serializers _$serializers =
           ..add(AdminRestaurantStatusDtoOutputPauseSourceEnum.serializer)
           ..add(AdminRestaurantStatusDtoOutputPickupBaseCurrency.serializer)
           ..add(AdminRestaurantStatusDtoOutputStateEnum.serializer)
+          ..add(AdminRestaurantTerminatedDtoOutput.serializer)
+          ..add(AdminRestaurantTerminatedDtoOutputAccountStatusEnum.serializer)
+          ..add(AdminRestaurantTerminationDto.serializer)
+          ..add(AdminRestaurantVisibilityDto.serializer)
           ..add(AdminRestaurantsDtoOutput.serializer)
           ..add(AdminRestaurantsDtoOutputRestaurantsInner.serializer)
           ..add(AdminResumeEmergencyStopDto.serializer)
@@ -2560,6 +2573,17 @@ Serializers _$serializers =
               const FullType(AdminRestaurantAccountsDtoOutputAccountsInner),
             ]),
             () => ListBuilder<AdminRestaurantAccountsDtoOutputAccountsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminRestaurantActionsDtoOutputCommissionHistoryInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminRestaurantActionsDtoOutputCommissionHistoryInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

@@ -16,6 +16,8 @@ import { AdminCashDeskController } from './admin-cash-desk.controller.js';
 import { AdminCustomerDuesController } from './admin-customer-dues.controller.js';
 import { AdminExchangeRatesController } from './admin-exchange-rates.controller.js';
 import { AdminRestaurantSettlementController } from './admin-restaurant-settlement.controller.js';
+import { AdminRestaurantTerminationController } from './admin-restaurant-termination.controller.js';
+import { RestaurantTerminationService } from './restaurant-termination.service.js';
 import { CaptainCustodyController } from './captain-custody.controller.js';
 import { CaptainEarningsController } from './captain-earnings.controller.js';
 import { CaptainStatementsController } from './captain-statements.controller.js';
@@ -56,6 +58,7 @@ import { SettlementService } from './settlement.service.js';
     AdminCashDeskController,
     AdminManualEntriesController,
     AdminRestaurantSettlementController,
+    AdminRestaurantTerminationController,
     AdminCustomerDuesController,
     AdminExchangeRatesController,
     CaptainCustodyController,
@@ -74,6 +77,7 @@ import { SettlementService } from './settlement.service.js';
     MerchantSettlementService,
     ManualEntriesService,
     CustomerDuesService,
+    RestaurantTerminationService,
   ],
   exports: [CashDeskService, SettlementService],
 })

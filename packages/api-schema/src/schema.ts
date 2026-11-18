@@ -1476,6 +1476,102 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/restaurants/{restaurantId}/account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRestaurantAccountRead"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurants/{restaurantId}/suspend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminRestaurantAccountSuspend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurants/{restaurantId}/reactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminRestaurantAccountReactivate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurants/{restaurantId}/visibility": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantAccountSetVisibility"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurants/{restaurantId}/sort-weight": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantAccountSetSortWeight"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurants/{restaurantId}/commission": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminRestaurantAccountSetCommission"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/cities": {
         parameters: {
             query?: never;
@@ -5220,6 +5316,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/restaurants/{restaurantId}/terminate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminRestaurantTerminationTerminate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/cash-desk/customer-dues/preview": {
         parameters: {
             query?: never;
@@ -6826,6 +6938,58 @@ export interface components {
         };
         AdminImagesWaiverDto: {
             waived: boolean;
+        };
+        AdminRestaurantActionsDto_Output: {
+            nameAr: string;
+            /** @enum {string} */
+            accountStatus: "draft" | "test" | "active" | "suspended" | "terminated";
+            /** @description The latest suspension’s, while suspended. */
+            suspensionReason: string | null;
+            /** @description «إخفاء أو إظهار»: customers see an active restaurant only while visible. */
+            visible: boolean;
+            /** @description «تثبيت»: the higher first in the customers’ lists. */
+            sortWeight: number;
+            sortWeightMax: number;
+            /** @description The commission in force now, in basis points. */
+            commissionBp: number | null;
+            /** @description The next version, scheduled after now. */
+            nextCommission: {
+                rateBp: number;
+                /** Format: date-time */
+                from: string;
+            } | null;
+            /** @description Every version not withdrawn, the latest start first (D16). */
+            commissionHistory: {
+                /** Format: uuid */
+                id: string;
+                rateBp: number;
+                /** Format: date-time */
+                from: string;
+                reason: string | null;
+                /** Format: date-time */
+                setAt: string;
+                /** @description Set from the panel; false for the system or the seed. */
+                byAdmin: boolean;
+            }[];
+        };
+        AdminRestaurantReasonDto: {
+            /** @description Why, for the change log (AP §9.6.5). */
+            reason: string;
+        };
+        AdminRestaurantVisibilityDto: {
+            visible: boolean;
+        };
+        AdminRestaurantSortWeightDto: {
+            /** @description 0 to 1000, the higher first. */
+            sortWeight: number;
+        };
+        AdminRestaurantCommissionDto: {
+            /** @description Basis points of the items value: 1500 is 15%. */
+            rateBp: number;
+            /** @description A later moment; null for the new orders from now. */
+            effectiveFrom: string | null;
+            /** @description Why, for the change log (AP §9.6.5). */
+            reason: string;
         };
         AdminCitiesDto_Output: {
             /** @description The active cities, by name. */
@@ -16075,6 +16239,16 @@ export interface components {
                 reason: string | null;
             }[];
         };
+        AdminRestaurantTerminationDto: {
+            /** @description Why the contract ends (AP §9.6.5). */
+            reason: string;
+        };
+        AdminRestaurantTerminatedDto_Output: {
+            /** Format: uuid */
+            restaurantId: string;
+            /** @constant */
+            accountStatus: "terminated";
+        };
         AdminCustomerDuesPreviewRequestDto: {
             /** Format: uuid */
             cityId: string;
@@ -19345,6 +19519,158 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminChecklistDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantAccountRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantActionsDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantAccountSuspend: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRestaurantReasonDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantActionsDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantAccountReactivate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRestaurantReasonDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantActionsDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantAccountSetVisibility: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRestaurantVisibilityDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantActionsDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantAccountSetSortWeight: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRestaurantSortWeightDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantActionsDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantAccountSetCommission: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRestaurantCommissionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantActionsDto_Output"];
                 };
             };
         };
@@ -25676,6 +26002,32 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminMerchantStatementDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantTerminationTerminate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRestaurantTerminationDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantTerminatedDto_Output"];
                 };
             };
         };

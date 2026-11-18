@@ -91,6 +91,8 @@ export const adminPermissions = [
   // AP §9.6.3 step 8 (slice 2.30b): the waiver of the checklist's image rule,
   // OWN alone.
   'restaurants.waive_menu_images',
+  // AP §9.6.5 «إنهاء» (slice 2.30c): ending a restaurant's contract, OWN alone.
+  'restaurants.terminate',
 ] as const;
 
 export type AdminPermission = (typeof adminPermissions)[number];

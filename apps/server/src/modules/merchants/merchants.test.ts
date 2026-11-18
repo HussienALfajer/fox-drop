@@ -71,7 +71,10 @@ async function city(): Promise<{ cityId: string; zoneId: string }> {
   cities += 1;
   const { rows } = await sql.query<{ id: string }>(
     'INSERT INTO geo.cities (code, name) VALUES ($1, $2) RETURNING id',
-    [`M${String.fromCharCode(64 + cities)}`, `test city ${cities}`],
+    [
+      `M${String.fromCharCode(65 + Math.floor(cities / 26))}${String.fromCharCode(65 + (cities % 26))}`,
+      `test city ${cities}`,
+    ],
   );
   const cityId = rows[0]!.id;
   await fx.setCityCurrency(cityId, { currency: 'TRY', displayOrder: 1, enabled: true }, fxSystem);
@@ -378,6 +381,7 @@ describe('MerchantsService.setCommission (AP §9.6.5, D16)', () => {
   it('keeps the current commission until a later one takes effect', async () => {
     const { cityId } = await city();
     const id = await merchants.createRestaurant(cityId, restaurant, change);
+    await merchants.setAccountStatus(id, 'active', change);
     const from = new Date(Date.now() + 86_400_000);
     await merchants.setCommission(
       id,
@@ -396,6 +400,7 @@ describe('MerchantsService.setCommission (AP §9.6.5, D16)', () => {
   it('refuses a change without a reason or from a moment already past', async () => {
     const { cityId } = await city();
     const id = await merchants.createRestaurant(cityId, restaurant, change);
+    await merchants.setAccountStatus(id, 'active', change);
     await expect(merchants.setCommission(id, { rateBp: 1000 }, change)).rejects.toEqual(
       refusal('reason_required'),
     );
@@ -406,6 +411,106 @@ describe('MerchantsService.setCommission (AP §9.6.5, D16)', () => {
         { ...change, reason: 'backdated' },
       ),
     ).rejects.toEqual(refusal('invalid_commission'));
+  });
+
+  // Slice 2.30c: a draft's commission is the wizard's step 4; a terminated
+  // restaurant takes no new order.
+  it('refuses a draft and a terminated restaurant', async () => {
+    const { cityId } = await city();
+    const id = await merchants.createRestaurant(cityId, restaurant, change);
+    const reasoned = { ...change, reason: 'renegotiated' };
+    await expect(merchants.setCommission(id, { rateBp: 1000 }, reasoned)).rejects.toEqual(
+      refusal('not_a_draft'),
+    );
+    await merchants.setAccountStatus(id, 'active', change);
+    await merchants.setAccountStatus(id, 'terminated', { ...change, reason: 'ended' });
+    await expect(merchants.setCommission(id, { rateBp: 1000 }, reasoned)).rejects.toEqual(
+      refusal('restaurant_terminated'),
+    );
+  });
+
+  // RA §16 #33, §12.2 (slice 2.30c): the owners hear the rate and its start.
+  it('records the change for the owners’ push, with its start', async () => {
+    const { cityId } = await city();
+    const id = await merchants.createRestaurant(cityId, restaurant, change);
+    await merchants.setAccountStatus(id, 'active', change);
+    const from = new Date(Date.now() + 86_400_000);
+    await merchants.setCommission(
+      id,
+      { rateBp: 1250, effectiveFrom: from },
+      { ...change, reason: 'renegotiated' },
+    );
+    await merchants.setCommission(id, { rateBp: 1300 }, { ...change, reason: 'now' });
+    const { rows } = await sql.query(
+      "SELECT payload FROM merchants.state_outbox WHERE restaurant_id = $1 AND kind = 'commission_change' ORDER BY id",
+      [id],
+    );
+    expect(rows.map((row) => row.payload.values.rateBp)).toEqual([1250, 1300]);
+    expect(rows[0].payload.values.from).toBe(from.toISOString());
+    expect(new Date(rows[1].payload.values.from).getTime()).toBeLessThanOrEqual(Date.now());
+    const versions = await merchants.commissionVersions(id);
+    expect(versions.map((version) => version.rateBp)).toEqual([1250, 1300, 1500]);
+    expect(versions[0]).toMatchObject({ reason: 'renegotiated', changedByType: 'admin' });
+  });
+});
+
+describe('MerchantsService account actions (AP §9.6.5, slice 2.30c)', () => {
+  it('tells the restaurant of a suspension, a reactivation and a termination', async () => {
+    const { cityId } = await city();
+    const id = await merchants.createRestaurant(cityId, restaurant, change);
+    await merchants.setAccountStatus(id, 'active', change);
+    await merchants.setAccountStatus(id, 'suspended', { ...change, reason: ' مخالفة ' });
+    await merchants.setAccountStatus(id, 'active', { ...change, reason: 'fixed' });
+    await merchants.setAccountStatus(id, 'terminated', { ...change, reason: 'ended' });
+    const { rows } = await sql.query(
+      'SELECT kind, payload FROM merchants.state_outbox WHERE restaurant_id = $1 ORDER BY id',
+      [id],
+    );
+    expect(rows.map((row) => [row.kind, row.payload.values])).toEqual([
+      ['suspended_by_operations', { reason: 'مخالفة' }],
+      ['reactivated_by_operations', {}],
+      ['terminated', {}],
+    ]);
+  });
+
+  it('hides and shows a restaurant, once per change', async () => {
+    const { cityId } = await city();
+    const id = await merchants.createRestaurant(cityId, restaurant, change);
+    await merchants.setAccountStatus(id, 'active', change);
+    expect(await merchants.coveringRestaurants(cityId, pin)).toEqual([id]);
+    await merchants.setVisibility(id, false, change);
+    await merchants.setVisibility(id, false, change);
+    expect(await merchants.coveringRestaurants(cityId, pin)).toEqual([]);
+    expect((await merchants.accountSettings(id))?.visible).toBe(false);
+    await merchants.setVisibility(id, true, change);
+    expect(await merchants.coveringRestaurants(cityId, pin)).toEqual([id]);
+    const { rows } = await sql.query(
+      "SELECT changes FROM audit.events WHERE target_id = $1 AND action = 'restaurant.visibility' ORDER BY occurred_at",
+      [id],
+    );
+    expect(rows.map((row) => row.changes.visible.after)).toEqual([false, true]);
+  });
+
+  it('orders the customers’ list by the sort weight, the higher first', async () => {
+    const { cityId } = await city();
+    const first = await merchants.createRestaurant(cityId, restaurant, change);
+    const second = await merchants.createRestaurant(cityId, restaurant, change);
+    for (const id of [first, second]) await merchants.setAccountStatus(id, 'active', change);
+    await merchants.setSortWeight(second, 10, change);
+    expect(await merchants.coveringRestaurants(cityId, pin)).toEqual([second, first]);
+    await expect(merchants.setSortWeight(first, 1001, change)).rejects.toEqual(
+      refusal('invalid_sort_weight'),
+    );
+    await expect(merchants.setSortWeight(first, 1.5, change)).rejects.toEqual(
+      refusal('invalid_sort_weight'),
+    );
+    await merchants.setAccountStatus(first, 'terminated', { ...change, reason: 'ended' });
+    await expect(merchants.setSortWeight(first, 5, change)).rejects.toEqual(
+      refusal('restaurant_terminated'),
+    );
+    await expect(merchants.setVisibility(first, false, change)).rejects.toEqual(
+      refusal('restaurant_terminated'),
+    );
   });
 });
 

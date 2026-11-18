@@ -73,7 +73,11 @@ export type CashDeskRefusal =
   | 'invalid_account'
   | 'no_base_currency'
   | 'already_reversed'
-  | 'not_reversible';
+  | 'not_reversible'
+  // AP §9.6.5 «إنهاء» (slice 2.30c): the account not settled to zero, or an
+  // order not finished.
+  | 'balance_not_zero'
+  | 'orders_unfinished';
 
 export class CashDeskRefusedError extends Error {
   override readonly name = 'CashDeskRefusedError';
