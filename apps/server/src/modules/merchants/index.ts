@@ -7,7 +7,10 @@ import { JobsModule } from '../../jobs/jobs.module.js';
 import { FxModule } from '../fx/index.js';
 import { GeoModule } from '../geo/index.js';
 import { SettingsModule } from '../settings/index.js';
-import { AdminRestaurantDraftsController } from './admin-restaurant-drafts.controller.js';
+import {
+  AdminRestaurantDraftsController,
+  AdminRestaurantProfileController,
+} from './admin-restaurant-drafts.controller.js';
 import { AdminRestaurantAccountController } from './admin-restaurant-account.controller.js';
 import { AdminRestaurantActivationController } from './admin-restaurant-activation.controller.js';
 import { ActivationService } from './activation.service.js';
@@ -42,6 +45,7 @@ import { MerchantStatusController } from './merchant-status.controller.js';
     AdminRestaurantImagesController,
     AdminRestaurantStatusController,
     AdminRestaurantDraftsController,
+    AdminRestaurantProfileController,
     AdminRestaurantMenuController,
     AdminRestaurantActivationController,
     AdminRestaurantAccountController,

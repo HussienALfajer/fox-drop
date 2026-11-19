@@ -13,7 +13,7 @@ Slice 2.30d, the profile (`docs/roadmap.md`, Phase 2; owner decision 2026-11-18:
 - **Owner decisions 2026-11-18:** one slice (not split); past the draft the profile edits the data (names, categories, description, logo, cover), the location (pin, address, number, owner's name) and the operations (hours, prep time, minimum order, coverage), never for a terminated restaurant; the commission only through «تغيير العمولة», the contract read-only; every reader of restaurants (`restaurants.read`) adds a note, never edited or removed.
 - **Plan** (one step per commit):
   - [x] 1. Server: the overview's figures for today, 7 and 30 days (`GET /v1/admin/restaurants/{id}/overview`).
-  - [ ] 2. Server: the edits past the draft for data, location and operations (`PUT /v1/admin/restaurants/{id}/profile/*`), audited, the devices told of new hours.
+  - [x] 2. Server: the edits past the draft for data, location and operations (`PUT /v1/admin/restaurants/{id}/profile/*`), audited, the devices told of new hours.
   - [ ] 3. Server: accounts past the draft (add and remove, a removed user signed out), the devices list and their force sign-out.
   - [ ] 4. Server: the notes (a new table) and the change log over the audit log; the restaurant's orders.
   - [ ] 5. Panel: the profile `/restaurants/$restaurantId` with its tabs, replacing «حالة المطاعم», «الصور» and «تصنيفات المطعم», the restaurant ratings moved in.

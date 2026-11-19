@@ -366,6 +366,7 @@ import 'package:core_api/src/model/admin_picker_dto_output_captains_inner.dart';
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody.dart';
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody_limit.dart';
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody_usage.dart';
+import 'package:core_api/src/model/admin_profile_basics_dto.dart';
 import 'package:core_api/src/model/admin_promo_code_city_dto.dart';
 import 'package:core_api/src/model/admin_promo_code_dto_output.dart';
 import 'package:core_api/src/model/admin_promo_code_report_dto_output.dart';
@@ -1291,6 +1292,7 @@ part 'serializers.g.dart';
   AdminPickerDtoOutputCaptainsInnerCustody,
   AdminPickerDtoOutputCaptainsInnerCustodyLimit,
   AdminPickerDtoOutputCaptainsInnerCustodyUsage,
+  AdminProfileBasicsDto,
   AdminPromoCodeCityDto,
   AdminPromoCodeDtoOutput,
   AdminPromoCodeReportDtoOutput,

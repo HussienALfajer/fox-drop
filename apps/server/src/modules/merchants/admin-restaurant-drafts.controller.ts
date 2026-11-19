@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   ConflictException,
+  ForbiddenException,
   Get,
   HttpStatus,
   NotFoundException,
@@ -243,6 +244,18 @@ class AdminDraftBasicsDto extends createZodDto(
   }),
 ) {}
 
+class AdminProfileBasicsDto extends createZodDto(
+  z.object({
+    nameAr: z.string().max(DRAFT_NAME_MAX),
+    nameEn: z.string().max(DRAFT_NAME_MAX).nullable(),
+    categoryIds: z
+      .array(z.uuid())
+      .max(RESTAURANT_CATEGORIES_MAX)
+      .describe('Active categories of «التصنيفات», once each, in the chosen order.'),
+    description: z.string().max(DRAFT_DESCRIPTION_MAX).nullable(),
+  }),
+) {}
+
 class AdminDraftLocationDto extends createZodDto(
   z.object({
     location: point,
@@ -261,14 +274,27 @@ class AdminDraftOperationsDto extends createZodDto(
   }),
 ) {}
 
+const operationsOf = (body: AdminDraftOperationsDto) => ({
+  ...body,
+  coverage: coverageOf(body.coverage),
+  minimumOrder: {
+    amount: BigInt(body.minimumOrder.amount),
+    currency: body.minimumOrder.currency,
+  },
+});
+
 function refusalAsHttp(error: unknown): never {
   if (error instanceof MerchantsRefusedError) {
     const body = { error: error.refusal };
     if (error.refusal === 'unknown_restaurant' || error.refusal === 'unknown_city') {
       throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, ...body });
     }
+    if (error.refusal === 'restaurant_terminated') {
+      throw new ForbiddenException({ statusCode: HttpStatus.FORBIDDEN, ...body });
+    }
     if (
       error.refusal === 'not_a_draft' ||
+      error.refusal === 'still_a_draft' ||
       error.refusal === 'not_in_base_currency' ||
       error.refusal === 'upload_used'
     ) {
@@ -495,14 +521,7 @@ export class AdminRestaurantDraftsController {
     try {
       await this.drafts.saveOperations(
         params.restaurantId,
-        {
-          ...body,
-          coverage: coverageOf(body.coverage),
-          minimumOrder: {
-            amount: BigInt(body.minimumOrder.amount),
-            currency: body.minimumOrder.currency,
-          },
-        },
+        operationsOf(body),
         adminChange(session, request),
       );
     } catch (error) {
@@ -592,5 +611,89 @@ export class AdminRestaurantDraftsController {
       });
     }
     return draft;
+  }
+}
+
+// AP §9.6.4 «البيانات», «الموقع», «الأوقات» (slice 2.30d, owner decision
+// 2026-11-18): the restaurant profile edits the wizard's steps 1–3 of a
+// restaurant past its draft (test mode, active or suspended), OWN and OPS
+// (restaurants.manage: «Edit, except commission», AP §6.2). The same bodies
+// and checks as the wizard's, each answering the restaurant as the wizard
+// reads it; no Idempotency-Key, since each sets values. 409 still_a_draft
+// (the wizard's), 403 restaurant_terminated.
+@AdminController('restaurants')
+export class AdminRestaurantProfileController {
+  constructor(
+    private readonly drafts: RestaurantDraftsService,
+    private readonly files: FilesService,
+  ) {}
+
+  @Put(':restaurantId/profile/basics')
+  @RequirePermission('restaurants.manage')
+  @ZodResponse({ status: 200, type: AdminRestaurantDraftDto })
+  async basics(
+    @Param() params: AdminRestaurantDraftParamsDto,
+    @Body() body: AdminProfileBasicsDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    try {
+      await this.drafts.editBasics(params.restaurantId, body, adminChange(session, request));
+    } catch (error) {
+      refusalAsHttp(error);
+    }
+    return this.answer(params.restaurantId);
+  }
+
+  @Put(':restaurantId/profile/location')
+  @RequirePermission('restaurants.manage')
+  @ZodResponse({ status: 200, type: AdminRestaurantDraftDto })
+  async location(
+    @Param() params: AdminRestaurantDraftParamsDto,
+    @Body() body: AdminDraftLocationDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    try {
+      await this.drafts.saveLocation(
+        params.restaurantId,
+        body,
+        adminChange(session, request),
+        'profile',
+      );
+    } catch (error) {
+      refusalAsHttp(error);
+    }
+    return this.answer(params.restaurantId);
+  }
+
+  @Put(':restaurantId/profile/operations')
+  @RequirePermission('restaurants.manage')
+  @ZodResponse({ status: 200, type: AdminRestaurantDraftDto })
+  async operations(
+    @Param() params: AdminRestaurantDraftParamsDto,
+    @Body() body: AdminDraftOperationsDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    try {
+      await this.drafts.saveOperations(
+        params.restaurantId,
+        operationsOf(body),
+        adminChange(session, request),
+        'profile',
+      );
+    } catch (error) {
+      refusalAsHttp(error);
+    }
+    return this.answer(params.restaurantId);
+  }
+
+  private async answer(restaurantId: string) {
+    const draft = await this.drafts.draft(restaurantId);
+    if (draft === null) {
+      throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: 'unknown_restaurant' });
+    }
+    return draftAsJson(draft, this.files);
   }
 }

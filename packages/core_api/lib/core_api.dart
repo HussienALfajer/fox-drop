@@ -367,6 +367,7 @@ export 'package:core_api/src/model/admin_picker_dto_output_captains_inner.dart';
 export 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody.dart';
 export 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody_limit.dart';
 export 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody_usage.dart';
+export 'package:core_api/src/model/admin_profile_basics_dto.dart';
 export 'package:core_api/src/model/admin_promo_code_city_dto.dart';
 export 'package:core_api/src/model/admin_promo_code_dto_output.dart';
 export 'package:core_api/src/model/admin_promo_code_report_dto_output.dart';

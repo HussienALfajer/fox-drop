@@ -81,7 +81,10 @@ export type MerchantsRefusal =
   // missing.
   | 'checklist_incomplete'
   // AP §9.6.5 «تثبيت» (slice 2.30c): outside 0 to SORT_WEIGHT_MAX.
-  | 'invalid_sort_weight';
+  | 'invalid_sort_weight'
+  // AP §9.6.4 (slice 2.30d): the profile edits a restaurant past its draft;
+  // a draft is the wizard's.
+  | 'still_a_draft';
 
 // Slice 2.30c: the same commission «now» again within this is a repeat.
 const COMMISSION_REPEAT_WINDOW_MS = 60_000;
