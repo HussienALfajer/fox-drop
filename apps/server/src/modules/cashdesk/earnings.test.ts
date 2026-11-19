@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { AccountEntry, JournalType } from '../ledger/index.js';
-import { otherLines, orderLines, payoutCycle, windowTotals } from './earnings.js';
+import { monthFrom, otherLines, orderLines, payoutCycle, windowTotals } from './earnings.js';
 
 // CA §10.6 «أرباحي» (slice 2.18b): the pure rules of the screen. «هذا
 // الأسبوع» is the payout cycle since the last payout weekday, by business
@@ -141,5 +141,24 @@ describe('otherLines (CA §10.6: bonuses, charges, instalments, payouts)', () =>
       ['bonus', 1_000n, 'مكافأة', null],
       ['charge', -1_000n, 'إرجاع', 'b'],
     ]);
+  });
+});
+
+describe('monthFrom (AP §9.7.4, slice 2.36a)', () => {
+  it('starts at the business day on the first of the city’s month', () => {
+    // Thursday 2026-11-19 12:00 in Azaz: the month from 2026-11-01 06:00.
+    const today = payoutCycle(new Date('2026-11-19T09:00:00Z'), six, azaz, 'thursday').todayFrom;
+    expect(monthFrom(today, six, azaz).toISOString()).toBe('2026-11-01T03:00:00.000Z');
+  });
+
+  it('counts the hours before the first’s cutoff in the month before', () => {
+    // Sunday 2026-11-01 05:00 in Azaz: still 31 October's business day.
+    const today = payoutCycle(new Date('2026-11-01T02:00:00Z'), six, azaz, 'thursday').todayFrom;
+    expect(monthFrom(today, six, azaz).toISOString()).toBe('2026-10-01T03:00:00.000Z');
+  });
+
+  it('is today on the first', () => {
+    const today = payoutCycle(new Date('2026-12-01T09:00:00Z'), six, azaz, 'thursday').todayFrom;
+    expect(monthFrom(today, six, azaz)).toEqual(today);
   });
 });

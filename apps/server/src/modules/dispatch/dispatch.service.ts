@@ -156,6 +156,19 @@ export interface PickerCaptain {
   acceptanceRate: number | null;
 }
 
+// One offer of the captain's log (AP §9.7.4): the order, the kind, whether
+// it was a handover, and the response with its time (null while open).
+export interface CaptainOfferLogRow {
+  id: string;
+  orderId: string;
+  orderPlacedAt: Date;
+  kind: 'manual' | 'auto';
+  handover: boolean;
+  offeredAt: Date;
+  status: 'open' | 'accepted' | 'declined' | 'expired' | 'withdrawn';
+  respondedAt: Date | null;
+}
+
 export interface AdminCommand {
   orderId: string;
   captainId: string;
@@ -1036,24 +1049,75 @@ export class DispatchService implements OnModuleInit {
     captainIds: string[],
     window: number,
   ): Promise<Map<string, number | null>> {
-    const rates = new Map<string, number | null>();
-    for (const captainId of captainIds) {
-      const last = await this.database.db
-        .select({ status: offers.status })
-        .from(offers)
-        .where(and(eq(offers.captainId, captainId), ne(offers.status, 'open')))
-        .orderBy(desc(offers.offeredAt))
-        .limit(window);
-      rates.set(
-        captainId,
-        last.length === 0
-          ? null
-          : Math.round(
-              (last.filter((each) => each.status === 'accepted').length * 100) / last.length,
-            ),
-      );
-    }
-    return rates;
+    const counts = await this.acceptance(captainIds, window);
+    return new Map(
+      captainIds.map((captainId) => {
+        const count = counts.get(captainId);
+        return [
+          captainId,
+          count === undefined ? null : Math.round((count.accepted * 100) / count.answered),
+        ];
+      }),
+    );
+  }
+
+  // AP §9.7.6, CA §11.1 (slice 2.36a): of each captain's last `window`
+  // offers answered (accepted, declined or expired), how many it accepted.
+  // An offer withdrawn (the captain went offline first, operations ended the
+  // order) is no answer (AP §9.7.4 lists the three). A captain without one
+  // is absent.
+  async acceptance(
+    captainIds: readonly string[],
+    window: number,
+  ): Promise<Map<string, { accepted: number; answered: number }>> {
+    if (captainIds.length === 0) return new Map();
+    const { rows } = await this.database.db.execute<{
+      captain_id: string;
+      accepted: number;
+      answered: number;
+    }>(sql`
+      SELECT captain_id,
+             count(*) FILTER (WHERE status = 'accepted')::int AS accepted,
+             count(*)::int AS answered
+        FROM (
+          SELECT captain_id, status,
+                 row_number() OVER (PARTITION BY captain_id ORDER BY offered_at DESC, id DESC) AS n
+            FROM ${offers}
+           WHERE captain_id IN (${sql.join(
+             captainIds.map((id) => sql`${id}::uuid`),
+             sql`, `,
+           )})
+             AND status IN ('accepted', 'declined', 'expired')
+        ) AS answered
+       WHERE n <= ${window}
+       GROUP BY captain_id`);
+    return new Map(
+      rows.map((row) => [
+        row.captain_id,
+        { accepted: Number(row.accepted), answered: Number(row.answered) },
+      ]),
+    );
+  }
+
+  // AP §9.7.4 «سجل العروض» (slice 2.36a): the captain's latest offers,
+  // newest first, every response with its time.
+  async captainOffers(captainId: string, limit: number): Promise<CaptainOfferLogRow[]> {
+    const rows = await this.database.db
+      .select({
+        id: offers.id,
+        orderId: offers.orderId,
+        orderPlacedAt: offers.orderPlacedAt,
+        kind: offers.kind,
+        handover: offers.handover,
+        offeredAt: offers.offeredAt,
+        status: offers.status,
+        respondedAt: offers.respondedAt,
+      })
+      .from(offers)
+      .where(eq(offers.captainId, captainId))
+      .orderBy(desc(offers.offeredAt), desc(offers.id))
+      .limit(limit);
+    return rows;
   }
 
   // CA §8: the captain's open offer still in time, or null.

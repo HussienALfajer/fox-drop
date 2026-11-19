@@ -194,6 +194,7 @@ export class DispatcherModule {}
 
 export {
   type CaptainOffer,
+  type CaptainOfferLogRow,
   DispatchRefusedError,
   DispatchService,
   type DispatchState,

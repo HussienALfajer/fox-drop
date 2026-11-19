@@ -258,9 +258,15 @@ const captain: Entry[] = [
   ['weekly_statement', '20', 'كشف الأسبوع جاهز: قبضت {المبلغ}', 'silent'],
   ['bonus', '21', 'مكافأة {المبلغ}: {السبب}', 'silent'],
   ['pay_table_change', '22', 'جدول أجور جديد يبدأ في {التاريخ}', 'silent'],
+  // CA §14 #24 (slice 2.36a): operations' direct message, the text as typed.
+  ['message', '24', '{الرسالة}', 'chime'],
   ['violation', '25', 'سُجّلت عليك مخالفة: {النوع} — {النتيجة}', 'silent'],
   // CA §14 #26 «With the reason» (slice 2.13a): a force offline at once, or
   // during an order (K18); the wording is ours.
+  // CA §14 #26 (slice 2.36a): a suspension with its reason, a reactivation;
+  // the wording is ours.
+  ['suspended', '26', 'أوقفت العمليات حسابك: {السبب}', 'chime'],
+  ['reactivated', '26', 'أعادت العمليات تفعيل حسابك', 'chime'],
   ['forced_offline', '26', 'فصلتك العمليات من الاتصال: {السبب}', 'chime'],
   ['forced_last_order', '26', 'ستصبح غير متصل بعد هذا الطلب: {السبب}', 'chime'],
   ['document_expiring', '27', 'تنتهي صلاحية {المستند} في {التاريخ}', 'silent'],

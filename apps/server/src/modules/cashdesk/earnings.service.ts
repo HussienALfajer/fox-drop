@@ -4,7 +4,14 @@ import { GeoService } from '../geo/index.js';
 import { type OrderPayParts, OrdersService } from '../ordering/index.js';
 import { SettingsService } from '../settings/index.js';
 import { CashDeskService } from './cashdesk.service.js';
-import { type OtherKind, orderLines, otherLines, payoutCycle, windowTotals } from './earnings.js';
+import {
+  monthFrom,
+  type OtherKind,
+  orderLines,
+  otherLines,
+  payoutCycle,
+  windowTotals,
+} from './earnings.js';
 import type { NegativeEarningsPolicy, PayoutWeekday } from './settlement.service.js';
 
 export interface EarningsWindow {
@@ -43,6 +50,14 @@ export interface CaptainEarnings {
   policy: NegativeEarningsPolicy;
 }
 
+export interface CaptainEarningsOverview {
+  currency: string;
+  balance: bigint;
+  today: EarningsWindow;
+  week: EarningsWindow;
+  month: EarningsWindow;
+}
+
 // CA §10.6 «أرباحي» (slice 2.18b): today and this week (the payout cycle
 // since the last payout weekday, by business day; owner decision
 // 2026-11-15) with the earnings, the orders and the online hours; this
@@ -59,6 +74,31 @@ export class EarningsService {
     private readonly geo: GeoService,
     private readonly settings: SettingsService,
   ) {}
+
+  // AP §9.7.4 «نظرة عامة» (slice 2.36a): the earnings and online hours of
+  // the payout week and of the calendar month (from the business day on its
+  // first), today's online hours and the balance, in the city's base.
+  async overview(captainId: string, now: Date): Promise<CaptainEarningsOverview> {
+    const read = await this.earnings(captainId, now);
+    const captain = (await this.captains.captain(captainId, now))!;
+    const [timeZone, cutoff] = await Promise.all([
+      this.geo.cityTimeZone(captain.cityId),
+      this.settings.get('finance.business_day_cutoff', { cityId: captain.cityId }),
+    ]);
+    const [hours, minutes] = cutoff.split(':').map(Number) as [number, number];
+    const from = monthFrom(read.today.from, hours * 60 + minutes, timeZone!);
+    const [{ entries }, online] = await Promise.all([
+      this.captains.earnings(captainId, from),
+      this.captains.onlineMinutes(captainId, from, now),
+    ]);
+    return {
+      currency: read.currency,
+      balance: read.balance,
+      today: read.today,
+      week: read.week,
+      month: { from, ...windowTotals(entries, from), onlineMinutes: online },
+    };
+  }
 
   async earnings(captainId: string, now: Date): Promise<CaptainEarnings> {
     const captain = await this.captains.captain(captainId, now);

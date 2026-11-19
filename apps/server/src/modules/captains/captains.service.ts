@@ -172,7 +172,19 @@ export type AvailabilityChange =
     }
   // CA §10.4, §14 #15 (slice 2.17d): usage rose past captain.custody_warn_pct
   // («اقتربت من حد العهدة. سلّم النقد قريباً.»), once each time.
-  | { kind: 'custody_warning'; captainId: string; cityId: string; at: Date };
+  | { kind: 'custody_warning'; captainId: string; cityId: string; at: Date }
+  // AP §9.7.5, CA §14 #26 (slice 2.36a): operations suspended the captain
+  // (the reason shown to them, the end or null for further notice), or
+  // lifted a suspension.
+  | {
+      kind: 'suspended';
+      captainId: string;
+      cityId: string;
+      reason: string;
+      until: Date | null;
+      at: Date;
+    }
+  | { kind: 'reactivated'; captainId: string; cityId: string; at: Date };
 
 // CA §10.3, §14 #16–#17 (slice 2.17d): what the hand-in reminders of one
 // captain read.
@@ -867,6 +879,23 @@ export class CaptainsService implements OnModuleInit {
       status === 'active'
         ? await this.clearLastOrder(tx, captainId, 'suspended')
         : await this.offlineOrLastOrder(tx, captainId, status, null, now);
+    if (status === 'suspended') {
+      await this.availabilityChanged(tx, {
+        kind: 'suspended',
+        captainId,
+        cityId: row.cityId,
+        reason: change.reason!.trim(),
+        until,
+        at: now,
+      });
+    } else if (status === 'active') {
+      await this.availabilityChanged(tx, {
+        kind: 'reactivated',
+        captainId,
+        cityId: row.cityId,
+        at: now,
+      });
+    }
     await this.audit.recordWrite(
       {
         actor: change.actor,
@@ -1085,6 +1114,14 @@ export class CaptainsService implements OnModuleInit {
         },
         tx,
       );
+      // The open app reads its state again: a new limit can lift or set
+      // the cash-limit block at once (slice 2.36a).
+      await this.availabilityChanged(tx, {
+        kind: 'custody_changed',
+        captainId,
+        cityId: row.cityId,
+        at: new Date(),
+      });
     });
   }
 
@@ -1316,48 +1353,68 @@ export class CaptainsService implements OnModuleInit {
       .orderBy(captainRecords.name);
     if (rows.length === 0) return [];
     const rules = await this.cityRules(cityId, now);
-    const { base, toBase } = await this.fx.currentValue(cityId);
+    const value = await this.fx.currentValue(cityId);
     const listed: CaptainBalance[] = [];
     for (const row of rows) {
-      const executor = this.database.db;
       // A captain whose cash cannot be read now (a currency without a rate)
       // is logged and left out, as cashLimits does, so the list still shows.
-      const custody = await this.custody(executor, row, rules.lastCutoff, rules.warnPct).catch(
-        (error: unknown) => {
-          this.logger.warn({ err: error, captainId: row.id }, 'balance not read');
-          return null;
-        },
-      );
-      if (custody === null) continue;
-      let earnings = 0n;
-      for (const account of await this.ledger.ownerAccounts(
-        cityId,
-        row.id,
-        'captain.earnings',
-        executor,
-      )) {
-        const { amount } = await this.ledger.balance(account.id, executor);
-        earnings +=
-          account.currency === base || amount === 0n ? amount : toBase(amount, account.currency);
-      }
-      const held = custody.currencies.some((line) => line.balance !== 0n);
-      if (row.status === 'terminated' && !held && earnings === 0n) continue;
-      const handInGrace = await this.graceOf(executor, cityId, row.id, now);
-      const blocks: CaptainBalance['blocks'] = [];
-      const graced = handInGrace !== null && now < handInGrace.until;
-      if (custody.closedDue.amount > rules.remitTolerance && !graced) blocks.push('closed_due');
-      if (custody.usage.amount >= custody.limit.amount) blocks.push('cash_limit');
-      listed.push({
-        captainId: row.id,
-        name: row.name,
-        status: row.status,
-        custody,
-        blocks,
-        handInGrace,
-        earnings: { amount: earnings, currency: base },
+      const balance = await this.balanceOf(row, rules, value, now).catch((error: unknown) => {
+        this.logger.warn({ err: error, captainId: row.id }, 'balance not read');
+        return null;
       });
+      if (balance === null) continue;
+      const held = balance.custody.currencies.some((line) => line.balance !== 0n);
+      if (row.status === 'terminated' && !held && balance.earnings.amount === 0n) continue;
+      listed.push(balance);
     }
     return listed;
+  }
+
+  // AP §9.7.4 (slice 2.36a): one captain's money as «أرصدة الكباتن» reads
+  // it, whatever its status; null for an unknown captain.
+  async balance(captainId: string, now: Date): Promise<CaptainBalance | null> {
+    const [row] = await this.database.db
+      .select()
+      .from(captainRecords)
+      .where(eq(captainRecords.id, captainId));
+    if (!row) return null;
+    const rules = await this.cityRules(row.cityId, now);
+    return this.balanceOf(row, rules, await this.fx.currentValue(row.cityId), now);
+  }
+
+  private async balanceOf(
+    row: typeof captainRecords.$inferSelect,
+    rules: Awaited<ReturnType<CaptainsService['cityRules']>>,
+    { base, toBase }: Awaited<ReturnType<FxService['currentValue']>>,
+    now: Date,
+  ): Promise<CaptainBalance> {
+    const executor = this.database.db;
+    const custody = await this.custody(executor, row, rules.lastCutoff, rules.warnPct);
+    let earnings = 0n;
+    for (const account of await this.ledger.ownerAccounts(
+      row.cityId,
+      row.id,
+      'captain.earnings',
+      executor,
+    )) {
+      const { amount } = await this.ledger.balance(account.id, executor);
+      earnings +=
+        account.currency === base || amount === 0n ? amount : toBase(amount, account.currency);
+    }
+    const handInGrace = await this.graceOf(executor, row.cityId, row.id, now);
+    const blocks: CaptainBalance['blocks'] = [];
+    const graced = handInGrace !== null && now < handInGrace.until;
+    if (custody.closedDue.amount > rules.remitTolerance && !graced) blocks.push('closed_due');
+    if (custody.usage.amount >= custody.limit.amount) blocks.push('cash_limit');
+    return {
+      captainId: row.id,
+      name: row.name,
+      status: row.status,
+      custody,
+      blocks,
+      handInGrace,
+      earnings: { amount: earnings, currency: base },
+    };
   }
 
   // AP §8.5.4 «Hand-in grace» for one captain (OWN or FIN, with a reason):

@@ -953,6 +953,13 @@
       "when": 1795098873478,
       "tag": "0135_captains_contracts_index",
       "breakpoints": true
+    },
+    {
+      "idx": 136,
+      "version": "7",
+      "when": 1795100761593,
+      "tag": "0136_captains_notes",
+      "breakpoints": true
     }
   ]
 }

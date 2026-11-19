@@ -701,3 +701,31 @@ export const applicationEvents = captains.table(
     index('application_events_application').on(table.applicationId, table.at),
   ],
 );
+
+// AP §9.7.4 «ملاحظات» (slice 2.36a): internal notes on a captain, as the
+// restaurants' (AP §9.6.4), added by any reader of captains, never changed
+// or removed, so the application role cannot update them. The
+// Idempotency-Key is kept with the note per author, so a retry adds none.
+export const captainNotes = captains.table(
+  'notes',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    cityId: uuid('city_id').notNull(),
+    captainId: uuid('captain_id')
+      .notNull()
+      .references(() => captainRecords.id),
+    body: text('body').notNull(),
+    // The admin account that wrote it (identity's id, a plain column).
+    authorId: uuid('author_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    idempotencyKey: text('idempotency_key').notNull(),
+    requestHash: text('request_hash').notNull(),
+  },
+  (table) => [
+    uniqueIndex('notes_key').on(table.authorId, table.idempotencyKey),
+    index('notes_captain').on(table.captainId, table.createdAt),
+    check('notes_body', sql`length(${table.body}) BETWEEN 1 AND 500`),
+  ],
+);

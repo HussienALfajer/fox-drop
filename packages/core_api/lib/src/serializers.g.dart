@@ -11,6 +11,7 @@ Serializers _$serializers =
           ..add(AddReasonDto.serializer)
           ..add(AddReasonDtoNoteEnum.serializer)
           ..add(AdminAcceptDto.serializer)
+          ..add(AdminAddCaptainNoteDto.serializer)
           ..add(AdminAddCustomerNoteDto.serializer)
           ..add(AdminAddRestaurantNoteDto.serializer)
           ..add(AdminAlertDtoOutput.serializer)
@@ -60,6 +61,8 @@ Serializers _$serializers =
           ..add(AdminCannedRepliesDtoOutput.serializer)
           ..add(AdminCannedRepliesDtoOutputRepliesInner.serializer)
           ..add(AdminCannedRepliesDtoRepliesInner.serializer)
+          ..add(AdminCaptainActionDoneDtoOutput.serializer)
+          ..add(AdminCaptainActionDoneDtoOutputDoneEnum.serializer)
           ..add(AdminCaptainApplicationContractDto.serializer)
           ..add(AdminCaptainApplicationDocumentDto.serializer)
           ..add(AdminCaptainApplicationDtoOutput.serializer)
@@ -156,8 +159,57 @@ Serializers _$serializers =
           ..add(AdminCaptainBalancesDtoOutputCaptainsInnerBlocksEnum.serializer)
           ..add(AdminCaptainBalancesDtoOutputCaptainsInnerEarnings.serializer)
           ..add(AdminCaptainBalancesDtoOutputCaptainsInnerStatusEnum.serializer)
+          ..add(AdminCaptainCashLimitDto.serializer)
+          ..add(AdminCaptainChangeLogDtoOutput.serializer)
+          ..add(AdminCaptainChangeLogDtoOutputEntriesInner.serializer)
+          ..add(
+            AdminCaptainChangeLogDtoOutputEntriesInnerActorTypeEnum.serializer,
+          )
+          ..add(
+            AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner.serializer,
+          )
           ..add(AdminCaptainDeviceDtoOutput.serializer)
           ..add(AdminCaptainDeviceDtoOutputDevice.serializer)
+          ..add(AdminCaptainListDtoOutput.serializer)
+          ..add(AdminCaptainListDtoOutputCaptainsInner.serializer)
+          ..add(AdminCaptainListDtoOutputCaptainsInnerAcceptance.serializer)
+          ..add(
+            AdminCaptainListDtoOutputCaptainsInnerContractPhaseEnum.serializer,
+          )
+          ..add(AdminCaptainListDtoOutputCaptainsInnerCustody.serializer)
+          ..add(
+            AdminCaptainListDtoOutputCaptainsInnerCustodyClosedDue.serializer,
+          )
+          ..add(AdminCaptainListDtoOutputCaptainsInnerCustodyLimit.serializer)
+          ..add(AdminCaptainListDtoOutputCaptainsInnerCustodyUsage.serializer)
+          ..add(AdminCaptainListDtoOutputCaptainsInnerEarnings.serializer)
+          ..add(AdminCaptainListDtoOutputCaptainsInnerStatusEnum.serializer)
+          ..add(AdminCaptainListQueryDto.serializer)
+          ..add(AdminCaptainListQueryDtoStatusEnum.serializer)
+          ..add(AdminCaptainMessageDto.serializer)
+          ..add(AdminCaptainMessageSentDtoOutput.serializer)
+          ..add(AdminCaptainMessageSentDtoOutputSentEnum.serializer)
+          ..add(AdminCaptainNotesDtoOutput.serializer)
+          ..add(AdminCaptainOffersDtoOutput.serializer)
+          ..add(AdminCaptainOffersDtoOutputOffersInner.serializer)
+          ..add(AdminCaptainOffersDtoOutputOffersInnerKindEnum.serializer)
+          ..add(AdminCaptainOffersDtoOutputOffersInnerStatusEnum.serializer)
+          ..add(AdminCaptainProfileDtoOutput.serializer)
+          ..add(AdminCaptainProfileDtoOutputApp.serializer)
+          ..add(AdminCaptainProfileDtoOutputContractPhaseEnum.serializer)
+          ..add(AdminCaptainProfileDtoOutputCustody.serializer)
+          ..add(AdminCaptainProfileDtoOutputCustodyBlocksEnum.serializer)
+          ..add(AdminCaptainProfileDtoOutputCustodyCurrenciesInner.serializer)
+          ..add(AdminCaptainProfileDtoOutputEarnings.serializer)
+          ..add(AdminCaptainProfileDtoOutputEarningsMonth.serializer)
+          ..add(AdminCaptainProfileDtoOutputEarningsToday.serializer)
+          ..add(AdminCaptainProfileDtoOutputEarningsWeek.serializer)
+          ..add(AdminCaptainProfileDtoOutputOnTime.serializer)
+          ..add(AdminCaptainProfileDtoOutputRating.serializer)
+          ..add(AdminCaptainProfileDtoOutputStatusEnum.serializer)
+          ..add(AdminCaptainProfileDtoOutputSuspension.serializer)
+          ..add(AdminCaptainStatusDto.serializer)
+          ..add(AdminCaptainStatusDtoStatusEnum.serializer)
           ..add(AdminCategoriesDtoOutput.serializer)
           ..add(AdminCategoriesDtoOutputCategoriesInner.serializer)
           ..add(AdminCategoryDtoOutput.serializer)
@@ -836,10 +888,6 @@ Serializers _$serializers =
           ..add(AdminRestaurantChangeLogDtoOutputEntriesInner.serializer)
           ..add(
             AdminRestaurantChangeLogDtoOutputEntriesInnerActorTypeEnum
-                .serializer,
-          )
-          ..add(
-            AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner
                 .serializer,
           )
           ..add(AdminRestaurantCommissionDto.serializer)
@@ -1976,6 +2024,63 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminCaptainChangeLogDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<AdminCaptainChangeLogDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCaptainListDtoOutputCaptainsInner),
+            ]),
+            () => ListBuilder<AdminCaptainListDtoOutputCaptainsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCaptainOffersDtoOutputOffersInner),
+            ]),
+            () => ListBuilder<AdminCaptainOffersDtoOutputOffersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminCaptainProfileDtoOutputCustodyCurrenciesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminCaptainProfileDtoOutputCustodyCurrenciesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCaptainProfileDtoOutputCustodyBlocksEnum),
+            ]),
+            () => ListBuilder<AdminCaptainProfileDtoOutputCustodyBlocksEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminCategoriesDtoOutputCategoriesInner),
             ]),
             () => ListBuilder<AdminCategoriesDtoOutputCategoriesInner>(),
@@ -2183,6 +2288,12 @@ Serializers _$serializers =
               const FullType(AdminCustomerDtoOutputDevicesInner),
             ]),
             () => ListBuilder<AdminCustomerDtoOutputDevicesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCustomerDtoOutputNotesInner),
+            ]),
+            () => ListBuilder<AdminCustomerDtoOutputNotesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -3132,17 +3243,6 @@ Serializers _$serializers =
               const FullType(AdminRestaurantChangeLogDtoOutputEntriesInner),
             ]),
             () => ListBuilder<AdminRestaurantChangeLogDtoOutputEntriesInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(
-                AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner,
-              ),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner
-                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -4629,6 +4729,10 @@ Serializers _$serializers =
               const FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
             ]),
             () => ListBuilder<SettingListDtoOutputSettingsInnerEditRolesEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),
