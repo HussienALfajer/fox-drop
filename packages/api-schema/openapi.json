@@ -22722,7 +22722,7 @@
                   "enum": [
                     "code",
                     "category",
-                    "name",
+                    "item_name",
                     "description",
                     "price",
                     "groups"
@@ -22834,7 +22834,7 @@
                     "type": "string",
                     "enum": [
                       "category",
-                      "name",
+                      "item_name",
                       "description",
                       "price",
                       "groups"

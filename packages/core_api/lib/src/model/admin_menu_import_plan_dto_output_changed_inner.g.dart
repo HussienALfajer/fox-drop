@@ -10,8 +10,8 @@ const AdminMenuImportPlanDtoOutputChangedInnerFieldsEnum
 _$adminMenuImportPlanDtoOutputChangedInnerFieldsEnum_category =
     const AdminMenuImportPlanDtoOutputChangedInnerFieldsEnum._('category');
 const AdminMenuImportPlanDtoOutputChangedInnerFieldsEnum
-_$adminMenuImportPlanDtoOutputChangedInnerFieldsEnum_name =
-    const AdminMenuImportPlanDtoOutputChangedInnerFieldsEnum._('name');
+_$adminMenuImportPlanDtoOutputChangedInnerFieldsEnum_itemName =
+    const AdminMenuImportPlanDtoOutputChangedInnerFieldsEnum._('itemName');
 const AdminMenuImportPlanDtoOutputChangedInnerFieldsEnum
 _$adminMenuImportPlanDtoOutputChangedInnerFieldsEnum_description =
     const AdminMenuImportPlanDtoOutputChangedInnerFieldsEnum._('description');
@@ -27,8 +27,8 @@ _$adminMenuImportPlanDtoOutputChangedInnerFieldsEnumValueOf(String name) {
   switch (name) {
     case 'category':
       return _$adminMenuImportPlanDtoOutputChangedInnerFieldsEnum_category;
-    case 'name':
-      return _$adminMenuImportPlanDtoOutputChangedInnerFieldsEnum_name;
+    case 'itemName':
+      return _$adminMenuImportPlanDtoOutputChangedInnerFieldsEnum_itemName;
     case 'description':
       return _$adminMenuImportPlanDtoOutputChangedInnerFieldsEnum_description;
     case 'price':
@@ -45,7 +45,7 @@ _$adminMenuImportPlanDtoOutputChangedInnerFieldsEnumValues =
     BuiltSet<AdminMenuImportPlanDtoOutputChangedInnerFieldsEnum>(
       const <AdminMenuImportPlanDtoOutputChangedInnerFieldsEnum>[
         _$adminMenuImportPlanDtoOutputChangedInnerFieldsEnum_category,
-        _$adminMenuImportPlanDtoOutputChangedInnerFieldsEnum_name,
+        _$adminMenuImportPlanDtoOutputChangedInnerFieldsEnum_itemName,
         _$adminMenuImportPlanDtoOutputChangedInnerFieldsEnum_description,
         _$adminMenuImportPlanDtoOutputChangedInnerFieldsEnum_price,
         _$adminMenuImportPlanDtoOutputChangedInnerFieldsEnum_groups,
@@ -63,14 +63,14 @@ class _$AdminMenuImportPlanDtoOutputChangedInnerFieldsEnumSerializer
         > {
   static const Map<String, Object> _toWire = const <String, Object>{
     'category': 'category',
-    'name': 'name',
+    'itemName': 'item_name',
     'description': 'description',
     'price': 'price',
     'groups': 'groups',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'category': 'category',
-    'name': 'name',
+    'item_name': 'itemName',
     'description': 'description',
     'price': 'price',
     'groups': 'groups',

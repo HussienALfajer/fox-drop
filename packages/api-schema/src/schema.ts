@@ -7421,7 +7421,7 @@ export interface components {
                 /** @description The sheet's row number, the header being 1. */
                 row: number;
                 /** @enum {string} */
-                column: "code" | "category" | "name" | "description" | "price" | "groups";
+                column: "code" | "category" | "item_name" | "description" | "price" | "groups";
                 /** @enum {string} */
                 error: "required" | "too_long" | "invalid_price" | "repeated_code" | "unknown_group" | "ambiguous_name";
             }[];
@@ -7442,7 +7442,7 @@ export interface components {
                 /** Format: uuid */
                 itemId: string;
                 code: string;
-                fields: ("category" | "name" | "description" | "price" | "groups")[];
+                fields: ("category" | "item_name" | "description" | "price" | "groups")[];
                 categoryName: string;
                 name: string;
                 description: string | null;

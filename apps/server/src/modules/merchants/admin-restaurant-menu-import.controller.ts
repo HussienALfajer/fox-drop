@@ -83,7 +83,7 @@ class AdminMenuImportPlanDto extends createZodDto(
         row: z.int(),
         itemId: z.uuid(),
         code: z.string(),
-        fields: z.array(z.enum(['category', 'name', 'description', 'price', 'groups'])),
+        fields: z.array(z.enum(['category', 'item_name', 'description', 'price', 'groups'])),
         ...importItem,
         oldPrice: minorUnits,
       }),

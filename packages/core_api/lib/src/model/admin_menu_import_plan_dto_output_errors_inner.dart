@@ -28,7 +28,7 @@ abstract class AdminMenuImportPlanDtoOutputErrorsInner
 
   @BuiltValueField(wireName: r'column')
   AdminMenuImportPlanDtoOutputErrorsInnerColumnEnum get column;
-  // enum columnEnum {  code,  category,  name,  description,  price,  groups,  };
+  // enum columnEnum {  code,  category,  item_name,  description,  price,  groups,  };
 
   @BuiltValueField(wireName: r'error')
   AdminMenuImportPlanDtoOutputErrorsInnerErrorEnum get error;
@@ -171,9 +171,9 @@ class AdminMenuImportPlanDtoOutputErrorsInnerColumnEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'category')
   static const AdminMenuImportPlanDtoOutputErrorsInnerColumnEnum category =
       _$adminMenuImportPlanDtoOutputErrorsInnerColumnEnum_category;
-  @BuiltValueEnumConst(wireName: r'name')
-  static const AdminMenuImportPlanDtoOutputErrorsInnerColumnEnum name =
-      _$adminMenuImportPlanDtoOutputErrorsInnerColumnEnum_name;
+  @BuiltValueEnumConst(wireName: r'item_name')
+  static const AdminMenuImportPlanDtoOutputErrorsInnerColumnEnum itemName =
+      _$adminMenuImportPlanDtoOutputErrorsInnerColumnEnum_itemName;
   @BuiltValueEnumConst(wireName: r'description')
   static const AdminMenuImportPlanDtoOutputErrorsInnerColumnEnum description =
       _$adminMenuImportPlanDtoOutputErrorsInnerColumnEnum_description;

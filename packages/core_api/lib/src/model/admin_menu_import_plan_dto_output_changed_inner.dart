@@ -40,7 +40,7 @@ abstract class AdminMenuImportPlanDtoOutputChangedInner
 
   @BuiltValueField(wireName: r'fields')
   BuiltList<AdminMenuImportPlanDtoOutputChangedInnerFieldsEnum> get fields;
-  // enum fieldsEnum {  category,  name,  description,  price,  groups,  };
+  // enum fieldsEnum {  category,  item_name,  description,  price,  groups,  };
 
   @BuiltValueField(wireName: r'categoryName')
   String get categoryName;
@@ -302,9 +302,9 @@ class AdminMenuImportPlanDtoOutputChangedInnerFieldsEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'category')
   static const AdminMenuImportPlanDtoOutputChangedInnerFieldsEnum category =
       _$adminMenuImportPlanDtoOutputChangedInnerFieldsEnum_category;
-  @BuiltValueEnumConst(wireName: r'name')
-  static const AdminMenuImportPlanDtoOutputChangedInnerFieldsEnum name =
-      _$adminMenuImportPlanDtoOutputChangedInnerFieldsEnum_name;
+  @BuiltValueEnumConst(wireName: r'item_name')
+  static const AdminMenuImportPlanDtoOutputChangedInnerFieldsEnum itemName =
+      _$adminMenuImportPlanDtoOutputChangedInnerFieldsEnum_itemName;
   @BuiltValueEnumConst(wireName: r'description')
   static const AdminMenuImportPlanDtoOutputChangedInnerFieldsEnum description =
       _$adminMenuImportPlanDtoOutputChangedInnerFieldsEnum_description;

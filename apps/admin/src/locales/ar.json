@@ -3062,14 +3062,14 @@
       "columns": {
         "code": "رمز الصنف",
         "category": "التصنيف",
-        "name": "الصنف",
+        "item_name": "الصنف",
         "description": "الوصف",
         "price": "السعر",
         "groups": "مجموعات الخيارات"
       },
       "field": {
         "category": "التصنيف",
-        "name": "الاسم",
+        "item_name": "الاسم",
         "description": "الوصف",
         "price": "السعر",
         "groups": "مجموعات الخيارات"

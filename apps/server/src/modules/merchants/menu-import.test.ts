@@ -67,7 +67,7 @@ describe('planImport', () => {
         row: 3,
         itemId: 'b',
         code: 'B1',
-        fields: ['name', 'price'],
+        fields: ['item_name', 'price'],
         next: {
           categoryName: 'مشروبات',
           name: 'عصير برتقال',
@@ -115,7 +115,7 @@ describe('planImport', () => {
     );
     expect(plan.errors).toEqual([
       { row: 2, column: 'category', error: 'required' },
-      { row: 3, column: 'name', error: 'required' },
+      { row: 3, column: 'item_name', error: 'required' },
       { row: 3, column: 'price', error: 'invalid_price' },
       { row: 4, column: 'price', error: 'invalid_price' },
       { row: 5, column: 'code', error: 'repeated_code' },
@@ -136,7 +136,7 @@ describe('planImport', () => {
   it('takes the headers in any order and a name too long as an error', () => {
     const reordered = ['السعر', 'الصنف', 'التصنيف', 'رمز الصنف', 'الوصف', 'مجموعات الخيارات'];
     const plan = planImport([reordered, ['120', 'ش'.repeat(81), 'وجبات', 'A1', '', 'الحجم']], menu);
-    expect(plan.errors).toEqual([{ row: 2, column: 'name', error: 'too_long' }]);
+    expect(plan.errors).toEqual([{ row: 2, column: 'item_name', error: 'too_long' }]);
   });
 
   it('refuses a category or group name two rows of the menu share', () => {
@@ -162,7 +162,7 @@ describe('planImport', () => {
 
   it('numbers the rows as the sheet does, blank rows left out', () => {
     const plan = planImport([header, row('', 'وجبات', '', '10')], menu, [1, 7]);
-    expect(plan.errors).toEqual([{ row: 7, column: 'name', error: 'required' }]);
+    expect(plan.errors).toEqual([{ row: 7, column: 'item_name', error: 'required' }]);
   });
 });
 

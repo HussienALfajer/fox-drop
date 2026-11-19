@@ -5,7 +5,7 @@ import { ITEM_CODE_MAX, MENU_DESCRIPTION_MAX, MENU_NAME_MAX } from './menu-edito
 export const IMPORT_COLUMNS = [
   'code',
   'category',
-  'name',
+  'item_name',
   'description',
   'price',
   'groups',
@@ -73,7 +73,7 @@ export interface ImportPlan {
     row: number;
     itemId: string;
     code: string;
-    fields: ('category' | 'name' | 'description' | 'price' | 'groups')[];
+    fields: ('category' | 'item_name' | 'description' | 'price' | 'groups')[];
     next: ImportItem;
     oldPrice: bigint;
   }[];
@@ -135,9 +135,9 @@ export function planImport(
     if (categoryName.length === 0) error('category', 'required');
     else if (categoryName.length > MENU_NAME_MAX) error('category', 'too_long');
     else if (sharedCategories.has(categoryName)) error('category', 'ambiguous_name');
-    const name = cell('name');
-    if (name.length === 0) error('name', 'required');
-    else if (name.length > MENU_NAME_MAX) error('name', 'too_long');
+    const name = cell('item_name');
+    if (name.length === 0) error('item_name', 'required');
+    else if (name.length > MENU_NAME_MAX) error('item_name', 'too_long');
     const description = cell('description');
     if (description.length > MENU_DESCRIPTION_MAX) error('description', 'too_long');
     const price = minorOf(cell('price'), menu.decimals);
@@ -173,7 +173,7 @@ export function planImport(
     const fields = (
       [
         ['category', categoryNames.get(existing.categoryId) !== categoryName],
-        ['name', existing.name !== next.name],
+        ['item_name', existing.name !== next.name],
         ['description', existing.description !== next.description],
         ['price', existing.price !== next.price],
         ['groups', existing.groupIds.join() !== next.groupIds.join()],

@@ -13,8 +13,8 @@ const AdminMenuImportPlanDtoOutputErrorsInnerColumnEnum
 _$adminMenuImportPlanDtoOutputErrorsInnerColumnEnum_category =
     const AdminMenuImportPlanDtoOutputErrorsInnerColumnEnum._('category');
 const AdminMenuImportPlanDtoOutputErrorsInnerColumnEnum
-_$adminMenuImportPlanDtoOutputErrorsInnerColumnEnum_name =
-    const AdminMenuImportPlanDtoOutputErrorsInnerColumnEnum._('name');
+_$adminMenuImportPlanDtoOutputErrorsInnerColumnEnum_itemName =
+    const AdminMenuImportPlanDtoOutputErrorsInnerColumnEnum._('itemName');
 const AdminMenuImportPlanDtoOutputErrorsInnerColumnEnum
 _$adminMenuImportPlanDtoOutputErrorsInnerColumnEnum_description =
     const AdminMenuImportPlanDtoOutputErrorsInnerColumnEnum._('description');
@@ -32,8 +32,8 @@ _$adminMenuImportPlanDtoOutputErrorsInnerColumnEnumValueOf(String name) {
       return _$adminMenuImportPlanDtoOutputErrorsInnerColumnEnum_code;
     case 'category':
       return _$adminMenuImportPlanDtoOutputErrorsInnerColumnEnum_category;
-    case 'name':
-      return _$adminMenuImportPlanDtoOutputErrorsInnerColumnEnum_name;
+    case 'itemName':
+      return _$adminMenuImportPlanDtoOutputErrorsInnerColumnEnum_itemName;
     case 'description':
       return _$adminMenuImportPlanDtoOutputErrorsInnerColumnEnum_description;
     case 'price':
@@ -51,7 +51,7 @@ _$adminMenuImportPlanDtoOutputErrorsInnerColumnEnumValues =
       const <AdminMenuImportPlanDtoOutputErrorsInnerColumnEnum>[
         _$adminMenuImportPlanDtoOutputErrorsInnerColumnEnum_code,
         _$adminMenuImportPlanDtoOutputErrorsInnerColumnEnum_category,
-        _$adminMenuImportPlanDtoOutputErrorsInnerColumnEnum_name,
+        _$adminMenuImportPlanDtoOutputErrorsInnerColumnEnum_itemName,
         _$adminMenuImportPlanDtoOutputErrorsInnerColumnEnum_description,
         _$adminMenuImportPlanDtoOutputErrorsInnerColumnEnum_price,
         _$adminMenuImportPlanDtoOutputErrorsInnerColumnEnum_groups,
@@ -123,7 +123,7 @@ class _$AdminMenuImportPlanDtoOutputErrorsInnerColumnEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'code': 'code',
     'category': 'category',
-    'name': 'name',
+    'itemName': 'item_name',
     'description': 'description',
     'price': 'price',
     'groups': 'groups',
@@ -131,7 +131,7 @@ class _$AdminMenuImportPlanDtoOutputErrorsInnerColumnEnumSerializer
   static const Map<Object, String> _fromWire = const <Object, String>{
     'code': 'code',
     'category': 'category',
-    'name': 'name',
+    'item_name': 'itemName',
     'description': 'description',
     'price': 'price',
     'groups': 'groups',
