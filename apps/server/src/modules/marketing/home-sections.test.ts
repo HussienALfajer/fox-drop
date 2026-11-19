@@ -118,7 +118,7 @@ describe('«أقسام الرئيسية»', () => {
       keys: [...BUILT_IN].reverse(),
     });
     expect(refused.statusCode).toBe(403);
-    const unknown = await ops('GET', `/v1/admin/home-sections?cityId=${azaz.replace(/.$/, '0')}`);
+    const unknown = await ops('GET', `/v1/admin/home-sections?cityId=${randomUUID()}`);
     expect(unknown.statusCode).toBe(404);
   });
 

@@ -294,9 +294,11 @@ describe('«تفعيل» (AP §9.7.1, CA §5.4–5.5)', () => {
     });
     await deposit(own, id, { amount: '25000', instalment: '10000', paidNow: '10000' });
     expect((await ops('POST', `captain-applications/${id}/activate`)).statusCode).toBe(200);
-    // Today is the payout day (the instalment is a payout day's).
+    // Today is the payout day (the instalment is a payout day's): the
+    // business day's weekday, which starts at the 06:00 cutoff, so a run
+    // between midnight and 06:00 in Damascus still counts the day before.
     const weekday = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Damascus', weekday: 'long' })
-      .format(new Date())
+      .format(new Date(Date.now() - 6 * 3_600_000))
       .toLowerCase();
     await app.get(SettingsService).update('captain.payout_weekday', { cityId: azaz }, weekday, {
       editor: 'system',

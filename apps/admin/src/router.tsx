@@ -58,6 +58,10 @@ import { TicketPage } from './ticket-page.js';
 import { PromoCodesPage } from './promo-codes-page.js';
 import { PromoCodeReportPage } from './promo-code-report-page.js';
 import { OfficePage } from './office-page.js';
+import { CityProfilePage } from './city-profile-page.js';
+import { DefaultsPage, DispatchRulesPage } from './city-settings-page.js';
+import { SETTINGS_MANAGE, SWITCH_DISPATCH_MODE } from './city-settings.js';
+import { ZonesPage } from './zones-page.js';
 import { ReceiptPage } from './receipt-page.js';
 import { RESTAURANT_STATEMENTS } from './restaurant-statements.js';
 import { RestaurantStatementsPage } from './restaurant-statements-page.js';
@@ -555,6 +559,52 @@ const officeRoute = createRoute({
   component: OfficePage,
 });
 
+// AP §9.12.2 «مناطق الخدمة» (slice 2.37c): read with zones.read (OWN, OPS,
+// FIN); OWN draws, edits and activates a zone (zones.manage).
+const zonesRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/zones',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, ZONES_READ)) throw redirect({ to: '/' });
+  },
+  component: ZonesPage,
+});
+
+// AP §9.12.1 «المدن» (slice 2.37c): read with zones.read; OWN changes the
+// city (zones.manage).
+const citiesRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/cities',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, ZONES_READ)) throw redirect({ to: '/' });
+  },
+  component: CityProfilePage,
+});
+
+// AP §9.12.4 «الإعدادات الافتراضية» (slice 2.37c): OWN's settings.
+const defaultsRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/defaults',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, SETTINGS_MANAGE)) throw redirect({ to: '/' });
+  },
+  component: DefaultsPage,
+});
+
+// AP §9.12.6 «قواعد التوزيع» (slice 2.37c): OWN, and OPS for the mode only.
+const dispatchRulesRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/dispatch-rules',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, SWITCH_DISPATCH_MODE)) throw redirect({ to: '/' });
+  },
+  component: DispatchRulesPage,
+});
+
 // AP §9.10.3 «الصندوق» (slice 2.17a): the drawer session and the daily
 // hand-in, the sessions with their variances and a receipt to print, for
 // OWN and FIN (cash_desk.record).
@@ -817,6 +867,10 @@ const routeTree = rootRoute.addChildren([
     menuChangesRoute,
     menuChangeRoute,
     officeRoute,
+    zonesRoute,
+    citiesRoute,
+    defaultsRoute,
+    dispatchRulesRoute,
     cashDeskRoute,
     cashDeskSessionsRoute,
     captainBalancesRoute,

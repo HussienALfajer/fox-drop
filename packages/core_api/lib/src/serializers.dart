@@ -24,6 +24,8 @@ import 'package:core_api/src/model/admin_alerts_dto_output.dart';
 import 'package:core_api/src/model/admin_alerts_dto_output_alerts_inner.dart';
 import 'package:core_api/src/model/admin_alerts_dto_output_alerts_inner_acknowledged.dart';
 import 'package:core_api/src/model/admin_alerts_dto_output_alerts_inner_location.dart';
+import 'package:core_api/src/model/admin_all_cities_dto_output.dart';
+import 'package:core_api/src/model/admin_all_cities_dto_output_cities_inner.dart';
 import 'package:core_api/src/model/admin_approve_compensation_dto.dart';
 import 'package:core_api/src/model/admin_approve_compensation_dto_value.dart';
 import 'package:core_api/src/model/admin_assign_dto.dart';
@@ -148,6 +150,9 @@ import 'package:core_api/src/model/admin_checklist_dto_output_images_waiver.dart
 import 'package:core_api/src/model/admin_checklist_dto_output_items_inner.dart';
 import 'package:core_api/src/model/admin_cities_dto_output.dart';
 import 'package:core_api/src/model/admin_cities_dto_output_cities_inner.dart';
+import 'package:core_api/src/model/admin_city_dto_output.dart';
+import 'package:core_api/src/model/admin_city_dto_output_currencies_inner.dart';
+import 'package:core_api/src/model/admin_city_dto_output_other_currencies_inner.dart';
 import 'package:core_api/src/model/admin_city_office_dto_output.dart';
 import 'package:core_api/src/model/admin_city_office_dto_output_office.dart';
 import 'package:core_api/src/model/admin_city_office_dto_output_office_hours_inner.dart';
@@ -604,7 +609,11 @@ import 'package:core_api/src/model/admin_restaurant_visibility_dto.dart';
 import 'package:core_api/src/model/admin_restaurants_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurants_dto_output_restaurants_inner.dart';
 import 'package:core_api/src/model/admin_resume_emergency_stop_dto.dart';
+import 'package:core_api/src/model/admin_save_zone_dto.dart';
+import 'package:core_api/src/model/admin_save_zone_dto_area_inner.dart';
 import 'package:core_api/src/model/admin_session_dto_output.dart';
+import 'package:core_api/src/model/admin_set_base_currency_dto.dart';
+import 'package:core_api/src/model/admin_set_city_currency_dto.dart';
 import 'package:core_api/src/model/admin_set_city_office_dto.dart';
 import 'package:core_api/src/model/admin_set_city_office_dto_hours_inner.dart';
 import 'package:core_api/src/model/admin_set_city_office_dto_location.dart';
@@ -684,12 +693,17 @@ import 'package:core_api/src/model/admin_tickets_dto_output.dart';
 import 'package:core_api/src/model/admin_unblock_customer_dto.dart';
 import 'package:core_api/src/model/admin_update_banner_dto.dart';
 import 'package:core_api/src/model/admin_update_category_dto.dart';
+import 'package:core_api/src/model/admin_update_city_dto.dart';
 import 'package:core_api/src/model/admin_update_contact_dto.dart';
 import 'package:core_api/src/model/admin_update_home_section_dto.dart';
 import 'package:core_api/src/model/admin_update_notification_text_dto.dart';
 import 'package:core_api/src/model/admin_upload_dto_output.dart';
 import 'package:core_api/src/model/admin_work_rules_dto.dart';
 import 'package:core_api/src/model/admin_work_rules_dto_output.dart';
+import 'package:core_api/src/model/admin_zones_dto_output.dart';
+import 'package:core_api/src/model/admin_zones_dto_output_votes_inner.dart';
+import 'package:core_api/src/model/admin_zones_dto_output_zones_inner.dart';
+import 'package:core_api/src/model/admin_zones_dto_output_zones_inner_area_inner.dart';
 import 'package:core_api/src/model/backup_codes_dto_output.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_cancelled.dart';
@@ -1181,6 +1195,8 @@ part 'serializers.g.dart';
   AdminAlertsDtoOutputAlertsInner,
   AdminAlertsDtoOutputAlertsInnerAcknowledged,
   AdminAlertsDtoOutputAlertsInnerLocation,
+  AdminAllCitiesDtoOutput,
+  AdminAllCitiesDtoOutputCitiesInner,
   AdminApproveCompensationDto,
   AdminApproveCompensationDtoValue,
   AdminAssignDto,
@@ -1305,6 +1321,9 @@ part 'serializers.g.dart';
   AdminChecklistDtoOutputItemsInner,
   AdminCitiesDtoOutput,
   AdminCitiesDtoOutputCitiesInner,
+  AdminCityDtoOutput,
+  AdminCityDtoOutputCurrenciesInner,
+  AdminCityDtoOutputOtherCurrenciesInner,
   AdminCityOfficeDtoOutput,
   AdminCityOfficeDtoOutputOffice,
   AdminCityOfficeDtoOutputOfficeHoursInner,
@@ -1761,7 +1780,11 @@ part 'serializers.g.dart';
   AdminRestaurantsDtoOutput,
   AdminRestaurantsDtoOutputRestaurantsInner,
   AdminResumeEmergencyStopDto,
+  AdminSaveZoneDto,
+  AdminSaveZoneDtoAreaInner,
   AdminSessionDtoOutput,
+  AdminSetBaseCurrencyDto,
+  AdminSetCityCurrencyDto,
   AdminSetCityOfficeDto,
   AdminSetCityOfficeDtoHoursInner,
   AdminSetCityOfficeDtoLocation,
@@ -1841,12 +1864,17 @@ part 'serializers.g.dart';
   AdminUnblockCustomerDto,
   AdminUpdateBannerDto,
   AdminUpdateCategoryDto,
+  AdminUpdateCityDto,
   AdminUpdateContactDto,
   AdminUpdateHomeSectionDto,
   AdminUpdateNotificationTextDto,
   AdminUploadDtoOutput,
   AdminWorkRulesDto,
   AdminWorkRulesDtoOutput,
+  AdminZonesDtoOutput,
+  AdminZonesDtoOutputVotesInner,
+  AdminZonesDtoOutputZonesInner,
+  AdminZonesDtoOutputZonesInnerAreaInner,
   BackupCodesDtoOutput,
   CaptainActiveOrderDtoOutput,
   CaptainActiveOrderDtoOutputCancelled,
@@ -2861,6 +2889,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminAllCitiesDtoOutputCitiesInner),
+            ]),
+            () => ListBuilder<AdminAllCitiesDtoOutputCitiesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminPickerDtoOutputCaptainsInner),
             ]),
             () => ListBuilder<AdminPickerDtoOutputCaptainsInner>(),
@@ -3010,6 +3044,10 @@ Serializers serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, [FullType(AdminDraftPeriod)]),
             () => ListBuilder<AdminDraftPeriod>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [FullType(AdminSaveZoneDtoAreaInner)]),
+            () => ListBuilder<AdminSaveZoneDtoAreaInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -3195,6 +3233,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminZonesDtoOutputZonesInnerAreaInner),
+            ]),
+            () => ListBuilder<AdminZonesDtoOutputZonesInnerAreaInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminManualEntriesDtoOutputEntriesInner),
             ]),
             () => ListBuilder<AdminManualEntriesDtoOutputEntriesInner>(),
@@ -3343,6 +3387,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminCityDtoOutputCurrenciesInner),
+            ]),
+            () => ListBuilder<AdminCityDtoOutputCurrenciesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminOrderDtoOutputOrderPickupRequestsInner),
             ]),
             () => ListBuilder<AdminOrderDtoOutputOrderPickupRequestsInner>(),
@@ -3352,6 +3402,12 @@ Serializers serializers =
               FullType(AdminMenuImportPlanDtoOutputErrorsInner),
             ]),
             () => ListBuilder<AdminMenuImportPlanDtoOutputErrorsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminZonesDtoOutputZonesInner),
+            ]),
+            () => ListBuilder<AdminZonesDtoOutputZonesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -3740,6 +3796,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminZonesDtoOutputVotesInner),
+            ]),
+            () => ListBuilder<AdminZonesDtoOutputVotesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminNotificationTextsDtoOutputTemplatesInner),
             ]),
             () => ListBuilder<AdminNotificationTextsDtoOutputTemplatesInner>(),
@@ -3885,6 +3947,12 @@ Serializers serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, [FullType(AdminChangeRequestRowOutput)]),
             () => ListBuilder<AdminChangeRequestRowOutput>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCityDtoOutputOtherCurrenciesInner),
+            ]),
+            () => ListBuilder<AdminCityDtoOutputOtherCurrenciesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

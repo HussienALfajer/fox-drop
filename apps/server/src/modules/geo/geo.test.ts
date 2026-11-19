@@ -323,6 +323,241 @@ describe('GeoService.zoneAt (AP §9.12.2, CU §7.1)', () => {
   });
 });
 
+describe('GeoService.saveZone (AP §9.12.2: drawing and editing a zone)', () => {
+  it('creates a zone under the id the panel chose, and saving it again changes nothing', async () => {
+    const cityId = await city();
+    const id = crypto.randomUUID();
+    const zone = { name: 'drawn', area: square(36.6, 37.05), active: false };
+    await expect(geo.saveZone(cityId, id, zone, change)).resolves.toBe('created');
+    await expect(geo.saveZone(cityId, id, zone, change)).resolves.toBe('updated');
+    await expect(geo.zoneOutlines(cityId)).resolves.toEqual([{ id, ...zone }]);
+    const { rows } = await sql.query(
+      "SELECT action FROM audit.events WHERE target_id = $1 AND action LIKE 'zone.%'",
+      [id],
+    );
+    expect(rows).toEqual([{ action: 'zone.create' }]);
+  });
+
+  it('renames a zone and moves its outline, audited with what changed', async () => {
+    const cityId = await city();
+    const id = await geo.createZone(
+      cityId,
+      { name: 'old name', area: square(36.6, 37.05), active: true },
+      change,
+    );
+    await geo.saveZone(
+      cityId,
+      id,
+      { name: ' new name ', area: square(36.6, 37.05, 0.003), active: true },
+      change,
+    );
+    await expect(geo.zoneAt(cityId, { latitude: 36.604, longitude: 37.05 })).resolves.toBeNull();
+    await expect(geo.zoneAt(cityId, centre)).resolves.toEqual({ id, name: 'new name' });
+    await expect(geo.zoneOutlines(cityId)).resolves.toEqual([
+      { id, name: 'new name', active: true, area: square(36.6, 37.05, 0.003) },
+    ]);
+    // The same value again changes and records nothing.
+    await geo.saveZone(
+      cityId,
+      id,
+      { name: 'new name', area: square(36.6, 37.05, 0.003), active: true },
+      change,
+    );
+    const { rows } = await sql.query(
+      "SELECT changes FROM audit.events WHERE target_id = $1 AND action = 'zone.update'",
+      [id],
+    );
+    expect(rows).toEqual([
+      {
+        changes: {
+          name: { before: 'old name', after: 'new name' },
+          area: { before: square(36.6, 37.05), after: square(36.6, 37.05, 0.003) },
+        },
+      },
+    ]);
+  });
+
+  it('writes and audits a new order of the same corners', async () => {
+    const cityId = await city();
+    const id = await geo.createZone(
+      cityId,
+      { name: 'order', area: square(36.6, 37.05), active: false },
+      change,
+    );
+    const [a, b, c, d] = square(36.6, 37.05) as [Point, Point, Point, Point];
+    await geo.saveZone(cityId, id, { name: 'order', area: [b, c, d, a], active: false }, change);
+    await expect(geo.zoneOutlines(cityId)).resolves.toEqual([
+      { id, name: 'order', active: false, area: [b, c, d, a] },
+    ]);
+  });
+
+  it('refuses taking another city code', async () => {
+    const one = await city();
+    const two = await city();
+    const other = (await geo.city(two))!;
+    await geo.updateCity(one, { ...(await geo.city(one))!, code: 'QZ' }, change);
+    await expect(geo.updateCity(two, { ...other, code: 'QZ' }, change)).rejects.toMatchObject({
+      refusal: 'city_code_taken',
+    });
+  });
+
+  it('activates a zone with its new outline, refusing one that overlaps an active zone', async () => {
+    const cityId = await city();
+    await geo.createZone(cityId, { name: 'west', area: square(36.6, 37.05), active: true }, change);
+    const id = await geo.createZone(
+      cityId,
+      { name: 'east', area: square(36.6, 37.058), active: false },
+      change,
+    );
+    await expect(
+      geo.saveZone(cityId, id, { name: 'east', area: square(36.6, 37.058), active: true }, change),
+    ).rejects.toMatchObject({ refusal: 'zones_overlap' });
+    // Moved to share the edge at longitude 37.055, it may be active.
+    await geo.saveZone(
+      cityId,
+      id,
+      { name: 'east', area: square(36.6, 37.06), active: true },
+      change,
+    );
+    await expect(geo.zoneAt(cityId, { latitude: 36.6, longitude: 37.06 })).resolves.toEqual({
+      id,
+      name: 'east',
+    });
+    // An active zone's outline cannot move over another active one.
+    await expect(
+      geo.saveZone(cityId, id, { name: 'east', area: square(36.6, 37.058), active: true }, change),
+    ).rejects.toMatchObject({ refusal: 'zones_overlap' });
+  });
+
+  it('refuses a bad outline, an empty or repeated name and a zone of another city', async () => {
+    const cityId = await city();
+    const id = await geo.createZone(
+      cityId,
+      { name: 'one', area: square(36.6, 37.05), active: false },
+      change,
+    );
+    await geo.createZone(cityId, { name: 'two', area: square(36.7, 37.1), active: false }, change);
+    const [a, b, c, d] = square(36.6, 37.05) as [Point, Point, Point, Point];
+    const update = (zone: { name: string; area: Point[] }, inCity = cityId) =>
+      geo.saveZone(inCity, id, { ...zone, active: false }, change).catch((error: unknown) => error);
+    await expect(update({ name: 'one', area: [a, c, b, d] })).resolves.toMatchObject({
+      refusal: 'invalid_area',
+    });
+    await expect(update({ name: 'one', area: [a, b] })).resolves.toMatchObject({
+      refusal: 'invalid_area',
+    });
+    await expect(update({ name: ' ', area: [a, b, c, d] })).resolves.toMatchObject({
+      refusal: 'invalid_name',
+    });
+    await expect(update({ name: 'two', area: [a, b, c, d] })).resolves.toMatchObject({
+      refusal: 'zone_name_taken',
+    });
+    await expect(update({ name: 'one', area: [a, b, c, d] }, await city())).resolves.toMatchObject({
+      refusal: 'unknown_zone',
+    });
+  });
+});
+
+describe('GeoService.voteMap (AP §9.12.2: votes from outside the zones)', () => {
+  it("counts the city's votes by cells of about 100 m, the most voted first", async () => {
+    const cityId = await city();
+    // Far from the other tests' zones, so the votes belong to this city.
+    await geo.createZone(cityId, { name: 'far', area: square(10, 10), active: true }, change);
+    const device = () => crypto.randomUUID();
+    await geo.castVote(device(), { latitude: 10.02011, longitude: 10.00021 });
+    await geo.castVote(device(), { latitude: 10.02014, longitude: 10.00024 });
+    await geo.castVote(device(), { latitude: 10.0301, longitude: 10.0102 });
+    await expect(geo.voteMap(cityId)).resolves.toEqual([
+      { latitude: 10.02, longitude: 10, votes: 2 },
+      { latitude: 10.03, longitude: 10.01, votes: 1 },
+    ]);
+    await expect(geo.voteMap(await city())).resolves.toEqual([]);
+    // A zone drawn over a vote and activated leaves it off the map.
+    await geo.createZone(
+      cityId,
+      { name: 'covered', area: square(10.03, 10.01, 0.002), active: true },
+      change,
+    );
+    await expect(geo.voteMap(cityId)).resolves.toEqual([
+      { latitude: 10.02, longitude: 10, votes: 2 },
+    ]);
+  });
+});
+
+describe('GeoService.updateCity (AP §9.12.1 «المدن»)', () => {
+  it('changes the name, code, clock and status, audited with what changed', async () => {
+    const cityId = await city();
+    await geo.updateCity(
+      cityId,
+      { name: ' renamed ', code: 'QQ', timeZone: 'Europe/Istanbul', status: 'inactive' },
+      { ...change, reason: 'testing' },
+    );
+    await expect(geo.city(cityId)).resolves.toEqual({
+      id: cityId,
+      name: 'renamed',
+      code: 'QQ',
+      timeZone: 'Europe/Istanbul',
+      status: 'inactive',
+    });
+    expect((await geo.activeCities()).map((each) => each.id)).not.toContain(cityId);
+    expect(await geo.cities()).toContainEqual(await geo.city(cityId));
+    // The same values again record nothing.
+    await geo.updateCity(
+      cityId,
+      { name: 'renamed', code: 'QQ', timeZone: 'Europe/Istanbul', status: 'inactive' },
+      change,
+    );
+    const { rows } = await sql.query(
+      "SELECT changes, reason FROM audit.events WHERE target_id = $1 AND action = 'city.update'",
+      [cityId],
+    );
+    expect(rows).toEqual([
+      {
+        changes: {
+          name: { before: expect.stringMatching(/^test city/), after: 'renamed' },
+          code: { before: expect.any(String), after: 'QQ' },
+          timeZone: { before: 'Asia/Damascus', after: 'Europe/Istanbul' },
+          status: { before: 'active', after: 'inactive' },
+        },
+        reason: 'testing',
+      },
+    ]);
+  });
+
+  it('refuses to deactivate the last active city', async () => {
+    const { rows } = await sql.query<{ id: string }>(
+      "SELECT id FROM geo.cities WHERE status = 'active'",
+    );
+    // Every other active city is made inactive by the application role's
+    // own update, so Azaz is the last.
+    const azaz = (await geo.cities()).find((each) => each.code === 'AZ')!;
+    await sql.query("UPDATE geo.cities SET status = 'inactive' WHERE id <> $1", [azaz.id]);
+    await expect(
+      geo.updateCity(azaz.id, { ...azaz, status: 'inactive' }, change),
+    ).rejects.toMatchObject({ refusal: 'last_active_city' });
+    await sql.query("UPDATE geo.cities SET status = 'active' WHERE id = ANY($1)", [
+      rows.map((row) => row.id),
+    ]);
+  });
+
+  it('refuses an empty name, a malformed or taken code, an unknown clock and city', async () => {
+    const cityId = await city();
+    const current = (await geo.city(cityId))!;
+    const update = (fields: Partial<typeof current>, id = cityId) =>
+      geo.updateCity(id, { ...current, ...fields }, change).catch((error: unknown) => error);
+    await expect(update({ name: '  ' })).resolves.toMatchObject({ refusal: 'invalid_name' });
+    await expect(update({ code: 'az' })).resolves.toMatchObject({ refusal: 'invalid_city' });
+    await expect(update({ code: 'AZ' })).resolves.toMatchObject({ refusal: 'city_code_taken' });
+    await expect(update({ timeZone: 'Mars/Olympus' })).resolves.toMatchObject({
+      refusal: 'invalid_city',
+    });
+    await expect(update({}, crypto.randomUUID())).resolves.toMatchObject({
+      refusal: 'unknown_city',
+    });
+    await expect(geo.city(crypto.randomUUID())).resolves.toBeNull();
+  });
+});
+
 describe('GeoService.deliveryFee (AP §9.12.3)', () => {
   const flat = {
     kind: 'flat',

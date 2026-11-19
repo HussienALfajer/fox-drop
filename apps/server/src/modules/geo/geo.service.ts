@@ -46,6 +46,9 @@ export type GeoRefusal =
   | 'no_fee_rule'
   | 'inside_zone'
   | 'invalid_office'
+  | 'invalid_city'
+  | 'city_code_taken'
+  | 'last_active_city'
   | 'unknown_city';
 
 // A change or a fee geo refuses, with the reason the routes and the ordering
@@ -71,6 +74,27 @@ export interface Zone {
   id: string;
   name: string;
   active: boolean;
+}
+
+// A zone with its outline, its corners in order without the closing one.
+export interface ZoneOutline extends Zone {
+  area: Point[];
+}
+
+// AP §9.12.1 «المدن»: a city's own fields.
+export interface City {
+  id: string;
+  code: string;
+  name: string;
+  timeZone: string;
+  status: 'active' | 'inactive';
+}
+
+// AP §9.12.2: a cell of the vote map, about 100 m across, with its votes.
+export interface VoteCell {
+  latitude: number;
+  longitude: number;
+  votes: number;
 }
 
 export interface DeliveryFee {
@@ -160,6 +184,97 @@ export class GeoService implements OnModuleInit {
       .from(cities)
       .where(eq(cities.status, 'active'))
       .orderBy(asc(cities.name));
+  }
+
+  // Every city, active or not, by name: «المدن» (AP §9.12.1), where an
+  // inactive city can be activated again.
+  async cities(): Promise<City[]> {
+    return this.database.db.select(cityFields).from(cities).orderBy(asc(cities.name));
+  }
+
+  // One city, active or not; null for an unknown one.
+  async city(cityId: string): Promise<City | null> {
+    const [row] = await this.database.db
+      .select(cityFields)
+      .from(cities)
+      .where(eq(cities.id, cityId));
+    return row ?? null;
+  }
+
+  // AP §9.12.1 «المدن» (OWN): the city's name, its code (used in receipt
+  // numbers from now on; those issued keep theirs), its clock and its status.
+  // Owner decision 2026-11-19: the clock may change at any time, orders or
+  // not. A value already in place changes and records nothing.
+  async updateCity(cityId: string, fields: Omit<City, 'id'>, change: GeoChange): Promise<void> {
+    const name = fields.name.trim();
+    if (name.length === 0) throw new GeoRefusedError('invalid_name', 'a city needs a name');
+    if (!/^[A-Z]{2,3}$/.test(fields.code)) {
+      throw new GeoRefusedError('invalid_city', 'a city code is two or three capital letters');
+    }
+    await this.database.db.transaction(async (tx) => {
+      const [{ known } = { known: false }] = await tx
+        .execute<{ known: boolean }>(
+          sql`SELECT EXISTS (SELECT 1 FROM pg_timezone_names WHERE name = ${fields.timeZone}) AS known`,
+        )
+        .then((result) => result.rows);
+      if (!known || !knownTimeZone(fields.timeZone)) {
+        throw new GeoRefusedError('invalid_city', `unknown time zone ${fields.timeZone}`);
+      }
+      const [before] = await tx
+        .select(cityFields)
+        .from(cities)
+        .where(eq(cities.id, cityId))
+        .for('update');
+      if (!before) throw new GeoRefusedError('unknown_city', 'no such city');
+      const after = { name, code: fields.code, timeZone: fields.timeZone, status: fields.status };
+      const changed = (Object.keys(after) as (keyof typeof after)[]).filter(
+        (key) => before[key] !== after[key],
+      );
+      if (changed.length === 0) return;
+      if (changed.includes('code')) {
+        const [taken] = await tx
+          .select({ id: cities.id })
+          .from(cities)
+          .where(and(eq(cities.code, after.code), ne(cities.id, cityId)));
+        if (taken) {
+          throw new GeoRefusedError('city_code_taken', `another city has the code ${after.code}`);
+        }
+      }
+      if (changed.includes('status') && after.status === 'inactive') {
+        // What an inactive city stops is the owner's to decide; until then
+        // the platform keeps one active city (decided by us).
+        const [other] = await tx
+          .select({ id: cities.id })
+          .from(cities)
+          .where(and(eq(cities.status, 'active'), ne(cities.id, cityId)))
+          .limit(1);
+        if (!other) {
+          throw new GeoRefusedError('last_active_city', 'the last active city stays active');
+        }
+      }
+      try {
+        await tx.update(cities).set(after).where(eq(cities.id, cityId));
+      } catch (error) {
+        // Another city took the code meanwhile.
+        if ((error as { cause?: { code?: string } }).cause?.code === '23505') {
+          throw new GeoRefusedError('city_code_taken', `another city has the code ${after.code}`);
+        }
+        throw error;
+      }
+      await this.audit.recordWrite(
+        {
+          actor: change.actor,
+          context: change.context,
+          cityId,
+          action: 'city.update',
+          target: { type: 'city', id: cityId },
+          before: Object.fromEntries(changed.map((key) => [key, before[key]])),
+          after: Object.fromEntries(changed.map((key) => [key, after[key]])),
+          reason: change.reason ?? null,
+        },
+        tx,
+      );
+    });
   }
 
   // The city's id by its code, such as AZ; null for an unknown code.
@@ -382,6 +497,47 @@ export class GeoService implements OnModuleInit {
       .orderBy(asc(zones.name));
   }
 
+  // The city's zones with their outlines, by name: the zones map (AP
+  // §9.12.2). The corners leave SQL as GeoJSON, never as a polygon value.
+  async zoneOutlines(cityId: string): Promise<ZoneOutline[]> {
+    const rows = await this.database.db
+      .select({
+        id: zones.id,
+        name: zones.name,
+        active: zones.active,
+        area: sql<string>`ST_AsGeoJSON(${zones.area}, 15)`,
+      })
+      .from(zones)
+      .where(eq(zones.cityId, cityId))
+      .orderBy(asc(zones.name));
+    return rows.map((row) => ({ ...row, area: cornersOf(row.area) }));
+  }
+
+  // AP §9.12.2: the city's votes from outside its active zones (a zone
+  // drawn over a vote later leaves it off), counted by cells of a thousandth
+  // of a degree (about 100 m), the most voted first.
+  async voteMap(cityId: string): Promise<VoteCell[]> {
+    const latitude = sql<string>`round(ST_Y(${zoneVotes.location})::numeric, 3)`;
+    const longitude = sql<string>`round(ST_X(${zoneVotes.location})::numeric, 3)`;
+    const rows = await this.database.db
+      .select({ latitude, longitude, votes: sql<number>`count(*)::int` })
+      .from(zoneVotes)
+      .where(
+        and(
+          eq(zoneVotes.cityId, cityId),
+          sql`NOT EXISTS (SELECT 1 FROM geo.zones covering WHERE covering.city_id = ${cityId}
+            AND covering.active AND ST_Covers(covering.area, ${zoneVotes.location}))`,
+        ),
+      )
+      .groupBy(latitude, longitude)
+      .orderBy(sql`count(*) DESC`, latitude, longitude);
+    return rows.map((row) => ({
+      latitude: Number(row.latitude),
+      longitude: Number(row.longitude),
+      votes: row.votes,
+    }));
+  }
+
   // The centre of the city's active zones, where a map of the city starts
   // (the wizard's pin, slice 2.30a); null without any.
   async zonesCentre(cityId: string): Promise<Point | null> {
@@ -406,55 +562,58 @@ export class GeoService implements OnModuleInit {
     zone: { name: string; area: Point[]; active: boolean },
     change: GeoChange,
   ): Promise<string> {
-    const name = zone.name.trim();
-    if (name.length === 0) throw new GeoRefusedError('invalid_name', 'a zone needs a name');
-    const corners = zone.area.map(({ latitude, longitude }) => [longitude, latitude]);
-    if (
-      new Set(corners.map((corner) => corner.join())).size < 3 ||
-      !zone.area.every(
-        ({ latitude, longitude }) => Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180,
-      )
-    ) {
-      throw new GeoRefusedError('invalid_area', 'a zone needs at least three corners on the map');
-    }
-    const ring = JSON.stringify({ type: 'Polygon', coordinates: [[...corners, corners[0]]] });
-    const area = sql`ST_SetSRID(ST_GeomFromGeoJSON(${ring}), 4326)`;
-
+    const { name, area } = zoneInput(zone);
     return this.database.db.transaction(async (tx) => {
-      const [{ valid } = { valid: false }] = await tx
-        .execute<{ valid: boolean }>(sql`SELECT ST_IsValid(${area}) AS valid`)
-        .then((result) => result.rows);
-      if (!valid) {
-        throw new GeoRefusedError('invalid_area', 'the zone outline crosses itself');
-      }
+      await refuseInvalidArea(tx, area);
       await lockZones(tx, cityId);
-      const [taken] = await tx
-        .select({ id: zones.id })
-        .from(zones)
-        .where(and(eq(zones.cityId, cityId), eq(zones.name, name)));
-      if (taken) {
-        throw new GeoRefusedError('zone_name_taken', `the city already has a zone named ${name}`);
-      }
-      if (zone.active) await this.refuseOverlap(tx, cityId, area, null);
-      const [{ id }] = (await tx
-        .insert(zones)
-        .values({ cityId, name, area, active: zone.active })
-        .returning({ id: zones.id })) as [{ id: string }];
-      await this.audit.recordWrite(
-        {
-          actor: change.actor,
-          context: change.context,
-          cityId,
-          action: 'zone.create',
-          target: { type: 'zone', id },
-          before: null,
-          after: { name, active: zone.active, area: zone.area },
-          reason: change.reason ?? null,
-        },
+      return this.insertZone(
         tx,
+        cityId,
+        null,
+        { name, area, active: zone.active },
+        change,
+        zone.area,
       );
-      return id;
     });
+  }
+
+  // Adds a zone under the city's zones lock: its name free in the city, and
+  // when active, clear of the other active zones. Audited with its corners.
+  private async insertZone(
+    tx: Pick<NodePgDatabase, 'select' | 'insert' | 'execute'>,
+    cityId: string,
+    id: string | null,
+    zone: { name: string; area: SQL; active: boolean },
+    change: GeoChange,
+    corners: Point[],
+  ): Promise<string> {
+    const { name, area, active } = zone;
+    const [taken] = await tx
+      .select({ id: zones.id })
+      .from(zones)
+      .where(and(eq(zones.cityId, cityId), eq(zones.name, name)));
+    if (taken) {
+      throw new GeoRefusedError('zone_name_taken', `the city already has a zone named ${name}`);
+    }
+    if (active) await this.refuseOverlap(tx, cityId, area, null);
+    const [created] = (await tx
+      .insert(zones)
+      .values({ ...(id === null ? {} : { id }), cityId, name, area, active })
+      .returning({ id: zones.id })) as [{ id: string }];
+    await this.audit.recordWrite(
+      {
+        actor: change.actor,
+        context: change.context,
+        cityId,
+        action: 'zone.create',
+        target: { type: 'zone', id: created.id },
+        before: null,
+        after: { name, active, area: corners },
+        reason: change.reason ?? null,
+      },
+      tx,
+    );
+    return created.id;
   }
 
   // Activates or deactivates one of the city's zones (AP §9.12.2). A zone
@@ -498,6 +657,84 @@ export class GeoService implements OnModuleInit {
         },
         tx,
       );
+    });
+  }
+
+  // AP §9.12.2: a zone's name, outline and state as the zones map saves
+  // them, under an id the panel chose: a new id creates the zone (as
+  // createZone), so saving again changes nothing. An id of another city's
+  // zone is unknown_zone. The checks of createZone apply; an active zone, or
+  // one being activated, must not overlap another active zone. Only what
+  // changed is written and audited.
+  async saveZone(
+    cityId: string,
+    zoneId: string,
+    zone: { name: string; area: Point[]; active: boolean },
+    change: GeoChange,
+  ): Promise<'created' | 'updated'> {
+    const { name, area } = zoneInput(zone);
+    return this.database.db.transaction(async (tx) => {
+      await refuseInvalidArea(tx, area);
+      await lockZones(tx, cityId);
+      const [before] = await tx
+        .select({
+          cityId: zones.cityId,
+          name: zones.name,
+          active: zones.active,
+          area: sql<string>`ST_AsGeoJSON(${zones.area}, 15)`,
+          sameArea: sql<boolean>`ST_OrderingEquals(${zones.area}, ${area})`,
+        })
+        .from(zones)
+        .where(eq(zones.id, zoneId));
+      if (before && before.cityId !== cityId) {
+        throw new GeoRefusedError('unknown_zone', 'the city has no such zone');
+      }
+      if (!before) {
+        await this.insertZone(
+          tx,
+          cityId,
+          zoneId,
+          { name, area, active: zone.active },
+          change,
+          zone.area,
+        );
+        return 'created';
+      }
+      const nameChanged = before.name !== name;
+      if (!nameChanged && before.sameArea && before.active === zone.active) return 'updated';
+      if (nameChanged) {
+        const [taken] = await tx
+          .select({ id: zones.id })
+          .from(zones)
+          .where(and(eq(zones.cityId, cityId), eq(zones.name, name), ne(zones.id, zoneId)));
+        if (taken) {
+          throw new GeoRefusedError('zone_name_taken', `the city already has a zone named ${name}`);
+        }
+      }
+      if (zone.active) await this.refuseOverlap(tx, cityId, area, zoneId);
+      await tx
+        .update(zones)
+        .set({ name, area, active: zone.active, updatedAt: sql`now()` })
+        .where(eq(zones.id, zoneId));
+      const was: Record<string, unknown> = {};
+      const now: Record<string, unknown> = {};
+      if (nameChanged) [was.name, now.name] = [before.name, name];
+      if (!before.sameArea) [was.area, now.area] = [cornersOf(before.area), zone.area];
+      if (before.active !== zone.active) [was.active, now.active] = [before.active, zone.active];
+      await this.audit.recordWrite(
+        {
+          actor: change.actor,
+          context: change.context,
+          cityId,
+          action: 'zone.update',
+          target: { type: 'zone', id: zoneId },
+          before: was,
+          after: now,
+          reason: change.reason ?? null,
+        },
+        tx,
+      );
+      return 'updated';
     });
   }
 
@@ -928,6 +1165,60 @@ async function withBands(
           };
     return { rule, editorId: row.editorId, reason: row.reason, createdAt: row.createdAt };
   });
+}
+
+const cityFields = {
+  id: cities.id,
+  code: cities.code,
+  name: cities.name,
+  timeZone: cities.timeZone,
+  status: cities.status,
+};
+
+// Whether the JavaScript clock knows the zone too (business-day.ts and the
+// weekly hours compute on it), besides PostgreSQL.
+function knownTimeZone(timeZone: string): boolean {
+  try {
+    new Intl.DateTimeFormat('en', { timeZone });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// A zone's name trimmed and its outline as a PostGIS polygon, the ring
+// closed; an empty name, fewer than three distinct corners or one off the
+// map is refused.
+function zoneInput(zone: { name: string; area: Point[] }): { name: string; area: SQL } {
+  const name = zone.name.trim();
+  if (name.length === 0) throw new GeoRefusedError('invalid_name', 'a zone needs a name');
+  const corners = zone.area.map(({ latitude, longitude }) => [longitude, latitude]);
+  if (
+    new Set(corners.map((corner) => corner.join())).size < 3 ||
+    !zone.area.every(
+      ({ latitude, longitude }) => Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180,
+    )
+  ) {
+    throw new GeoRefusedError('invalid_area', 'a zone needs at least three corners on the map');
+  }
+  const ring = JSON.stringify({ type: 'Polygon', coordinates: [[...corners, corners[0]]] });
+  return { name, area: sql`ST_SetSRID(ST_GeomFromGeoJSON(${ring}), 4326)` };
+}
+
+// An outline that crosses itself is refused.
+async function refuseInvalidArea(executor: Pick<NodePgDatabase, 'execute'>, area: SQL) {
+  const [{ valid } = { valid: false }] = await executor
+    .execute<{ valid: boolean }>(sql`SELECT ST_IsValid(${area}) AS valid`)
+    .then((result) => result.rows);
+  if (!valid) throw new GeoRefusedError('invalid_area', 'the zone outline crosses itself');
+}
+
+// A polygon's GeoJSON as its corners in order, without the closing one.
+function cornersOf(geoJson: string): Point[] {
+  const { coordinates } = JSON.parse(geoJson) as { coordinates: [number, number][][] };
+  return (coordinates[0] ?? [])
+    .slice(0, -1)
+    .map(([longitude, latitude]) => ({ latitude, longitude }));
 }
 
 // Changes of one city's zones take turns, so the overlap check of one sees

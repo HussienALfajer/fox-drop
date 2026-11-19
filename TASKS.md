@@ -4,18 +4,24 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.37c, the city, its zones and rules in the panel (`docs/roadmap.md`, Phase 2; the last of 2.37's three pull requests, owner decision 2026-11-19).
+Slice 2.38, panel administration (`docs/roadmap.md`, Phase 2).
 
-- **Roadmap line:** 2.37c The city, its zones and rules: the zones on the map (drawing one, editing its outline and name, activating it), the vote map, «المدن» for the existing city only (name, code, time zone, base and accepted currencies, cutoff, platform hours, status; adding a city waits for a second city, owner decision 2026-11-19), the defaults of §9.12.4 and the dispatch rules with OPS switching the mode only (AP §9.12.1–9.12.2, §9.12.4, §9.12.6, CU §18 item 6: the neighbourhoods' names typed on the screen). The owner draws a neighbourhood, activates it, and OPS switches the dispatch mode.
-- **Specs:** AP §9.12.1, §9.12.2, §9.12.4, §9.12.6 (docs/product/v1/admin-panel/09-modules/12-zones-and-pricing.md), AP §6.2–6.3 (`zones.read`, `zones.manage`, the dispatch mode for OPS), AP §14 item 27, CU §18 item 6 (docs/product/v1/customer-app/18-open-items.md).
+- **Roadmap line:** 2.38 Panel administration: the admin team, settings and audit log screens, the top bar and side menu (AP §7, §9.14–9.16). The owner edits a setting and finds it in the audit log.
+- **Specs:** AP §7 (docs/product/v1/admin-panel/07-global-layout-and-navigation.md), AP §9.14–9.16 (docs/product/v1/admin-panel/09-modules/), AP Appendix A (the settings catalogue), AP §5.2–5.3 and §6 (the admin team and roles).
 - **Branch:** the cloud session's branch, from an up-to-date `main`.
-- **Already built (reuse):** geo's zones (`createZone`, `zones`, `zoneAt`) and cities, the office screen (2.17c), `PinMap` (MapLibre, 2.30a), the votes of CU §8.3 (2.28a), the settings routes (`PUT /v1/admin/settings/{key}`), the dispatch mode setting and dispatch module (2.15), the fee and pay screens' patterns (2.37a, 2.37b).
-- **Plan (to check against the spec first):**
-  - [ ] Server: the zones' routes (draw, edit outline and name, activate), the vote map's read, «المدن» edit of the existing city, the defaults and dispatch rules read and edit (OPS the mode only); tests first for the zone rules.
-  - [ ] Panel: the zones on the map with drawing and editing, the vote map, «المدن», the defaults and «قواعد التوزيع»; unit and Playwright tests.
-  - [ ] Review (`reviewer`), fixes, then hand over to the next slice of the roadmap.
-- **Ask the owner first:** whether the panel's map may draw polygons with a MapLibre drawing library (a new dependency) or with our own vertex editing; whether changing the city's base currency or time zone from «المدن» is allowed once orders exist (fx locks the base after the first order); the neighbourhood names to seed, if the owner has a list.
-- **Stopped at:** 2.37b done (its pull request); 2.37c not started.
+- **Already built (reuse):** the settings routes and catalogue (`GET`/`PUT /v1/admin/settings`, reset and history), «التطبيقات» (2.4a), the generic setting field of 2.37c (`SettingsList` in `apps/admin/src/city-settings-page.tsx`), the admin team service and routes (identity, AP §9.15), the audit log (audit module), «أرقام إرسال الرموز» routes.
+- **First:** split the slice into pull requests with the owner (`slice-plan`): it spans three screens and the layout. The top bar and side menu are layout: check the design stop with the owner before any styling.
+- **Plan:** to write once the split is approved.
+- **Stopped at:** 2.37c done (its pull request); 2.38 not started.
+
+### Left from 2.37c (the cloud session's branch)
+
+- **Before deploying to staging:** no migration. New routes: `GET /v1/admin/cities/all`, `GET`/`PUT /v1/admin/cities/{cityId}`, `PUT …/currencies/{currency}`, `PUT …/base-currency`, `GET …/zones`, `PUT …/zones/{zoneId}`. Deploy the server before the panel. No app needs a new build.
+- **To check on staging (after the merge and the deploy):** 1. The home page › «مناطق الخدمة»: the zones on the map and the votes from outside them. 2. «رسم منطقة جديدة», tap the corners on the map, type the name as people call it, tick «منطقة نشطة», «حفظ المنطقة»; one over an active zone is refused «المنطقة تتداخل…». 3. «تعديل …»: drag a corner, rename, save. 4. The home page › «المدن»: the city, its currencies, «يوم العمل وساعات المنصة». 5. As OPS: «قواعد التوزيع» › «طريقة التوزيع» «آلي» › save.
+- **Owner decisions 2026-11-19:** our own corner editing on MapLibre (no drawing library); the city's time zone may change at any time; the neighbourhood names typed on the screen.
+- **Decided by us (to confirm with the owner):** the last active city cannot be deactivated (`last_active_city`) until the owner says what an inactive city stops (today it leaves the panel's selector, the customer app's location, automatic dispatch and the workers' sweeps, while quotes by city id go on); the vote map counts votes outside the active zones by cells of about 100 m (a one-vote cell places that device's vote to about 100 m for `zones.read`); a currency added from «المدن» starts not accepted (accepting it needs its rate); the platform hours typed as periods per weekday.
+- **Open (ask the owner):** AP §6.2 gives OPS and FIN read access to «Zones and pricing», but the settings routes give each role only what it may edit (owner decision 2026-11-05), so OPS sees only «طريقة التوزيع» on «قواعد التوزيع», FIN cannot open the defaults or the dispatch rules, and neither sees the cutoff or the platform hours on «المدن».
+- **Not checked locally:** Turborepo, Garage (no IPv6) and Flutter (as root) do not run in the cloud container; the panel's type check, lint, unit tests and the new Playwright specs ran one by one, the server's geo, identity and OpenAPI tests too; CI runs the rest. The zones map was not seen drawing tiles (no map files in the container); its GeoJSON is unit tested.
 
 ### Left from 2.37b (the cloud session's branch)
 

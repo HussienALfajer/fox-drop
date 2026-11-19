@@ -2244,6 +2244,102 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/cities/all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCitiesAll"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cities/{cityId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCitiesCity"];
+        put: operations["adminCitiesUpdateCity"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cities/{cityId}/currencies/{currency}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminCitiesSetCurrency"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cities/{cityId}/base-currency": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminCitiesSetBaseCurrency"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cities/{cityId}/zones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCitiesZones"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cities/{cityId}/zones/{zoneId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminCitiesSaveZone"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/cities/{cityId}/office": {
         parameters: {
             query?: never;
@@ -9290,6 +9386,101 @@ export interface components {
                 /** @description The city's clock, such as Asia/Damascus. */
                 timeZone: string;
             }[];
+        };
+        AdminAllCitiesDto_Output: {
+            /** @description Every city, active or not, by name. */
+            cities: {
+                /** Format: uuid */
+                id: string;
+                /** @description Two or three capital letters, such as AZ (AP §4.8). */
+                code: string;
+                name: string;
+                /** @description An IANA time zone, such as Asia/Damascus. */
+                timeZone: string;
+                /** @enum {string} */
+                status: "active" | "inactive";
+            }[];
+        };
+        AdminCityDto_Output: {
+            city: {
+                /** Format: uuid */
+                id: string;
+                /** @description Two or three capital letters, such as AZ (AP §4.8). */
+                code: string;
+                name: string;
+                /** @description An IANA time zone, such as Asia/Damascus. */
+                timeZone: string;
+                /** @enum {string} */
+                status: "active" | "inactive";
+            };
+            /** @description The city's currencies in display order, enabled or not. */
+            currencies: {
+                code: string;
+                name: string;
+                symbol: string;
+                displayOrder: number;
+                enabled: boolean;
+                isBase: boolean;
+            }[];
+            /** @description The currencies in use the city does not have yet. */
+            otherCurrencies: {
+                code: string;
+                name: string;
+                symbol: string;
+            }[];
+            /** @description Whether the first order has locked the base (D25). */
+            baseLocked: boolean;
+        };
+        AdminUpdateCityDto: {
+            name: string;
+            code: string;
+            timeZone: string;
+            /** @enum {string} */
+            status: "active" | "inactive";
+            /** @description Why, for the audit log; optional. */
+            reason?: string | null;
+        };
+        AdminSetCityCurrencyDto: {
+            displayOrder: number;
+            enabled: boolean;
+            /** @description Why, for the audit log; optional. */
+            reason?: string | null;
+        };
+        AdminSetBaseCurrencyDto: {
+            currency: string;
+            /** @description Why, for the audit log; optional. */
+            reason?: string | null;
+        };
+        AdminZonesDto_Output: {
+            /** @description The city's zones, active or not, by name. */
+            zones: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                active: boolean;
+                /** @description The corners in order, the ring left open. */
+                area: {
+                    latitude: number;
+                    longitude: number;
+                }[];
+            }[];
+            /** @description Votes from outside the zones, the most voted first (AP §9.12.2). */
+            votes: {
+                latitude: number;
+                longitude: number;
+                /** @description The votes in this cell of about 100 m. */
+                votes: number;
+            }[];
+        };
+        AdminSaveZoneDto: {
+            name: string;
+            area: {
+                latitude: number;
+                longitude: number;
+            }[];
+            active: boolean;
+            /** @description Why, for the audit log; optional. */
+            reason?: string | null;
         };
         AdminCityOfficeDto_Output: {
             /** @description Null until the owner saves one. */
@@ -24763,6 +24954,176 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminCitiesDto_Output"];
+                };
+            };
+        };
+    };
+    adminCitiesAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminAllCitiesDto_Output"];
+                };
+            };
+        };
+    };
+    adminCitiesCity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                cityId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCityDto_Output"];
+                };
+            };
+        };
+    };
+    adminCitiesUpdateCity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                cityId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminUpdateCityDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCityDto_Output"];
+                };
+            };
+        };
+    };
+    adminCitiesSetCurrency: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                cityId: string;
+                currency: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminSetCityCurrencyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCityDto_Output"];
+                };
+            };
+        };
+    };
+    adminCitiesSetBaseCurrency: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                cityId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminSetBaseCurrencyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCityDto_Output"];
+                };
+            };
+        };
+    };
+    adminCitiesZones: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                cityId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminZonesDto_Output"];
+                };
+            };
+        };
+    };
+    adminCitiesSaveZone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                cityId: string;
+                zoneId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminSaveZoneDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminZonesDto_Output"];
                 };
             };
         };
