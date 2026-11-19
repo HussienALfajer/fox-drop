@@ -713,6 +713,12 @@ export 'package:core_api/src/model/captain_delivery_summary_dto_output_summary.d
 export 'package:core_api/src/model/captain_delivery_summary_dto_output_summary_custody_change.dart';
 export 'package:core_api/src/model/captain_delivery_summary_dto_output_summary_hand_in_today.dart';
 export 'package:core_api/src/model/captain_delivery_summary_dto_output_summary_pay.dart';
+export 'package:core_api/src/model/captain_document_replacement_dto.dart';
+export 'package:core_api/src/model/captain_documents_dto_output.dart';
+export 'package:core_api/src/model/captain_documents_dto_output_documents_inner.dart';
+export 'package:core_api/src/model/captain_documents_dto_output_documents_inner_pending.dart';
+export 'package:core_api/src/model/captain_documents_dto_output_documents_inner_rejection.dart';
+export 'package:core_api/src/model/captain_documents_dto_output_documents_inner_valid.dart';
 export 'package:core_api/src/model/captain_earnings_dto_output.dart';
 export 'package:core_api/src/model/captain_earnings_dto_output_lines_inner.dart';
 export 'package:core_api/src/model/captain_earnings_dto_output_orders_inner.dart';

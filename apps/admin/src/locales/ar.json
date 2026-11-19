@@ -112,7 +112,8 @@
     "openTicket": "فتح التذكرة",
     "openPriceLog": "فتح سجل الأسعار",
     "openApplication": "فتح طلب الانضمام",
-    "openContract": "فتح العقد"
+    "openContract": "فتح العقد",
+    "openDocuments": "فتح المستندات"
   },
   "board": {
     "title": "غرفة العمليات",
@@ -181,6 +182,7 @@
       "captainApplication": "طلب انضمام كابتن",
       "probationEnding": "نهاية فترة تجربة",
       "probationOverdue": "انتهت فترة التجربة دون مراجعة",
+      "documentExpiring": "مستند ينتهي",
       "restaurantSettlementOverdue": "مطعم متأخر في التسوية",
       "rateStale": "سعر صرف قديم",
       "compensationApproval": "طلب موافقة تعويض",

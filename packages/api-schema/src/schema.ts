@@ -3044,6 +3044,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/captain/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainDocumentsDocuments"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/documents/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainDocumentsUpload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/documents/{kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["captainDocumentsReplace"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/captains/{captainId}/availability": {
         parameters: {
             query?: never;
@@ -9811,6 +9859,45 @@ export interface components {
                 } | null;
             };
         };
+        CaptainDocumentsDto_Output: {
+            documents: {
+                /** @enum {string} */
+                kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence";
+                required: boolean;
+                /**
+                 * @description «expiring» from captain.document_expiry_notice_days before its expiry.
+                 * @enum {string}
+                 */
+                state: "valid" | "expiring" | "expired" | "missing";
+                /** @description The one in force, valid until it expires. */
+                valid: {
+                    issueDate: string | null;
+                    expiresOn: string | null;
+                    /** Format: date-time */
+                    uploadedAt: string;
+                } | null;
+                /** @description «رفع نسخة جديدة» waiting for OPS. */
+                pending: {
+                    issueDate: string | null;
+                    expiresOn: string | null;
+                    /** Format: date-time */
+                    uploadedAt: string;
+                } | null;
+                rejection: {
+                    reason: string;
+                    /** Format: date-time */
+                    at: string;
+                } | null;
+            }[];
+        };
+        CaptainDocumentReplacementDto: {
+            /** @description From POST /v1/captain/documents/upload, once uploaded. */
+            uploadIds: string[];
+            /** @description The national ID’s number. */
+            number?: string | null;
+            /** @description The criminal record's issue date. */
+            issueDate?: string | null;
+        };
         AdminCaptainAvailabilityDto_Output: {
             /** @enum {string} */
             state: "offline" | "online_available" | "busy" | "last_order" | "not_receiving_offers" | "suspended";
@@ -12145,7 +12232,7 @@ export interface components {
                  * @description The rule of AP §9.1.3.
                  * @enum {string}
                  */
-                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket" | "urgent_dispute_ticket" | "large_price_change" | "captain_application" | "probation_ending" | "probation_overdue";
+                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket" | "urgent_dispute_ticket" | "large_price_change" | "captain_application" | "probation_ending" | "probation_overdue" | "document_expiring";
                 /**
                  * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
                  * @enum {string}
@@ -12198,7 +12285,7 @@ export interface components {
              * @description The rule of AP §9.1.3.
              * @enum {string}
              */
-            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket" | "urgent_dispute_ticket" | "large_price_change" | "captain_application" | "probation_ending" | "probation_overdue";
+            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket" | "urgent_dispute_ticket" | "large_price_change" | "captain_application" | "probation_ending" | "probation_overdue" | "document_expiring";
             /**
              * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
              * @enum {string}
@@ -24630,6 +24717,76 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptainContractDto_Output"];
+                };
+            };
+        };
+    };
+    captainDocumentsDocuments: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainDocumentsDto_Output"];
+                };
+            };
+        };
+    };
+    captainDocumentsUpload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerNewUploadDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerUploadDto_Output"];
+                };
+            };
+        };
+    };
+    captainDocumentsReplace: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence";
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainDocumentReplacementDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainDocumentsDto_Output"];
                 };
             };
         };

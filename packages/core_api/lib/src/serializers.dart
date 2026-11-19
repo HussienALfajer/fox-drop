@@ -712,6 +712,12 @@ import 'package:core_api/src/model/captain_delivery_summary_dto_output_summary.d
 import 'package:core_api/src/model/captain_delivery_summary_dto_output_summary_custody_change.dart';
 import 'package:core_api/src/model/captain_delivery_summary_dto_output_summary_hand_in_today.dart';
 import 'package:core_api/src/model/captain_delivery_summary_dto_output_summary_pay.dart';
+import 'package:core_api/src/model/captain_document_replacement_dto.dart';
+import 'package:core_api/src/model/captain_documents_dto_output.dart';
+import 'package:core_api/src/model/captain_documents_dto_output_documents_inner.dart';
+import 'package:core_api/src/model/captain_documents_dto_output_documents_inner_pending.dart';
+import 'package:core_api/src/model/captain_documents_dto_output_documents_inner_rejection.dart';
+import 'package:core_api/src/model/captain_documents_dto_output_documents_inner_valid.dart';
 import 'package:core_api/src/model/captain_earnings_dto_output.dart';
 import 'package:core_api/src/model/captain_earnings_dto_output_lines_inner.dart';
 import 'package:core_api/src/model/captain_earnings_dto_output_orders_inner.dart';
@@ -1773,6 +1779,12 @@ part 'serializers.g.dart';
   CaptainDeliverySummaryDtoOutputSummaryCustodyChange,
   CaptainDeliverySummaryDtoOutputSummaryHandInToday,
   CaptainDeliverySummaryDtoOutputSummaryPay,
+  CaptainDocumentReplacementDto,
+  CaptainDocumentsDtoOutput,
+  CaptainDocumentsDtoOutputDocumentsInner,
+  CaptainDocumentsDtoOutputDocumentsInnerPending,
+  CaptainDocumentsDtoOutputDocumentsInnerRejection,
+  CaptainDocumentsDtoOutputDocumentsInnerValid,
   CaptainEarningsDtoOutput,
   CaptainEarningsDtoOutputLinesInner,
   CaptainEarningsDtoOutputOrdersInner,
@@ -3224,6 +3236,12 @@ Serializers serializers =
               FullType(AdminOrderDtoOutputOrderNoAnswerPingsInner),
             ]),
             () => ListBuilder<AdminOrderDtoOutputOrderNoAnswerPingsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CaptainDocumentsDtoOutputDocumentsInner),
+            ]),
+            () => ListBuilder<CaptainDocumentsDtoOutputDocumentsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

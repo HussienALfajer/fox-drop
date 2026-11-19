@@ -22,6 +22,7 @@ const ready: AvailabilityInput = {
   minVersion: '1.2.0',
   simulatedLocation: false,
   termsPending: false,
+  expiredDocuments: [],
   activeOrder: false,
   lastOrder: null,
   offersExpired: null,
@@ -36,6 +37,12 @@ describe('onlineBlocks', () => {
   it('waits for the terms in force (K7)', () => {
     expect(onlineBlocks({ ...ready, termsPending: true }, now)).toEqual([
       { kind: 'terms_not_accepted' },
+    ]);
+  });
+
+  it('refuses an expired required document (K6, slice 2.35a)', () => {
+    expect(onlineBlocks({ ...ready, expiredDocuments: ['criminal_record'] }, now)).toEqual([
+      { kind: 'document_expired', documents: ['criminal_record'] },
     ]);
   });
 

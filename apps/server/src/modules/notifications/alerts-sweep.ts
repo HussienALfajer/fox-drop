@@ -50,6 +50,7 @@ export class AlertsSweep {
       this.autoPauses(now).catch((error: unknown) => this.failed('auto-pauses', error)),
       this.staleRates(now).catch((error: unknown) => this.failed('stale rates', error)),
       this.probations(now).catch((error: unknown) => this.failed('probations', error)),
+      this.documents(now).catch((error: unknown) => this.failed('documents', error)),
     ]);
   }
 
@@ -138,6 +139,33 @@ export class AlertsSweep {
           now,
         );
       }
+    }
+  }
+
+  // AP §9.1.3 «مستند ينتهي», AP §9.7.4 (slice 2.35a): open while a
+  // captain's document in force is within its notice or expired.
+  async documents(now: Date): Promise<void> {
+    const code: AlertCode = 'document_expiring';
+    const seen = new Set<string>();
+    for (const city of await this.geo.activeCities()) {
+      for (const captain of await this.pipeline.expiringDocuments(city.id, now)) {
+        seen.add(captain.captainId);
+        await this.sync(
+          {
+            type: 'captain',
+            id: captain.captainId,
+            cityId: city.id,
+            details: { captainName: captain.fullName, applicationId: captain.applicationId },
+          },
+          [code],
+          [code],
+          now,
+        );
+      }
+    }
+    for (const subject of await this.alerts.openSubjects(code)) {
+      if (seen.has(subject.id)) continue;
+      await this.sync({ type: 'captain', id: subject.id, cityId: subject.cityId }, [code], [], now);
     }
   }
 

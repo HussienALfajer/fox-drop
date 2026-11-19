@@ -16,6 +16,13 @@ import {
 import { type AccountEntry, type JournalType, LedgerService } from '../ledger/index.js';
 import { lockCityCurrencies, SettingsService, type Vehicle, vehicles } from '../settings/index.js';
 import {
+  type ApplicationDocumentKind,
+  cityDay,
+  documentStates,
+  expiredRequired,
+} from './applications.js';
+import { captainUploads } from './captain-documents.js';
+import {
   type Availability,
   availability,
   type AvailabilityInput,
@@ -1907,6 +1914,7 @@ export class CaptainsService implements OnModuleInit {
             appVersion: device.appVersion,
             simulatedLocation: device.simulatedLocation,
             termsPending: device.termsPending,
+            expiredDocuments: await this.expiredDocuments(tx, row, now),
           },
           now,
         );
@@ -1920,6 +1928,27 @@ export class CaptainsService implements OnModuleInit {
       }
       return stateOf(input, rules.remitTolerance, now);
     });
+  }
+
+  // K6 (slice 2.35a): the captain's required documents expired on the
+  // city's day.
+  private async expiredDocuments(
+    tx: Tx,
+    row: typeof captainRecords.$inferSelect,
+    now: Date,
+  ): Promise<ApplicationDocumentKind[]> {
+    const found = await captainUploads(tx, row.id);
+    if (found === null) return [];
+    const timeZone = (await this.geo.cityTimeZone(row.cityId)) ?? 'UTC';
+    const notice = await this.settings.get(
+      'captain.document_expiry_notice_days',
+      { cityId: row.cityId },
+      tx,
+    );
+    return expiredRequired(
+      documentStates(found.uploads, cityDay(now, timeZone), notice),
+      row.vehicle,
+    );
   }
 
   // CA §7.5: one tap with no active order. The answer carries the cash to
@@ -2114,6 +2143,7 @@ export class CaptainsService implements OnModuleInit {
         minVersion: rules.minVersion,
         simulatedLocation: latest?.simulated ?? false,
         termsPending: false,
+        expiredDocuments: [],
         activeOrder: open ? (await this.activeOrders([row.id], executor)).size > 0 : false,
         lastOrder:
           open?.lastOrderBy == null ? null : { by: open.lastOrderBy, reason: open.lastOrderReason },

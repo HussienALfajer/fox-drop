@@ -19,7 +19,7 @@ Slice 2.35a, activation, the contract and the documents (`docs/roadmap.md`, Phas
   - [x] 5. Server: «تفعيل»: its conditions, the captain made from the application, the account linked, the push device rebound, the push (with step 3).
   - [x] 6. Server: the Thursday settlement posts the deposit's instalments.
   - [x] 7. Server: the contract's phases: the probation review task and alert, the confirmation, the commitment's automatic end, the pushes; the captain's contract and kit route.
-  - [ ] 8. Server: documents' expiry: the reminder push and the alert «مستند ينتهي», an expired required document blocks going online, the captain's documents with «رفع نسخة جديدة» and their review.
+  - [x] 8. Server: documents' expiry: the reminder push and the alert «مستند ينتهي», an expired required document blocks going online, the captain's documents with «رفع نسخة جديدة» and their review.
   - [ ] 9. Panel: the actions at «بانتظار العدة» and «تفعيل», the contract and its phase, the kit and deposit, the documents' expiry, the desk's deposit payment.
   - [ ] 10. Captain app: the welcome tour, the ask for «أقصى مبلغ أحمله» and «العملات التي أحملها» after activation, the profile's documents, contract and kit.
   - [ ] 11. Review, then the handover to 2.35b.

@@ -208,6 +208,64 @@ export function probationReview(review: {
   return review.today >= addDays(review.probationEndsOn, -review.noticeDays) ? 'due' : 'none';
 }
 
+// CA §12.2, AP §9.7.4, K6 (slice 2.35a): a captain's documents. The newest
+// accepted upload of a kind is the one in force until it expires («The old
+// document stays valid until it expires»), and a newer upload waits for
+// review beside it. `expiring` from `captain.document_expiry_notice_days`
+// before its expiry, `expired` on it; `missing` with none accepted.
+export interface DocumentUpload {
+  id: string;
+  kind: ApplicationDocumentKind;
+  status: 'pending' | 'accepted' | 'rejected';
+  expiresOn: string | null;
+  createdAt: Date;
+}
+
+export type DocumentState = 'valid' | 'expiring' | 'expired' | 'missing';
+
+export function documentStates<Upload extends DocumentUpload>(
+  uploads: readonly Upload[],
+  today: string,
+  noticeDays: number,
+): Map<
+  ApplicationDocumentKind,
+  { valid: Upload | null; pending: Upload | null; state: DocumentState }
+> {
+  const newestFirst = [...uploads].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  const states = new Map<
+    ApplicationDocumentKind,
+    { valid: Upload | null; pending: Upload | null; state: DocumentState }
+  >();
+  for (const kind of new Set(newestFirst.map((upload) => upload.kind))) {
+    const ofKind = newestFirst.filter((upload) => upload.kind === kind);
+    const valid = ofKind.find((upload) => upload.status === 'accepted') ?? null;
+    const newest = ofKind[0]!;
+    const pending = newest.status === 'pending' && newest !== valid ? newest : null;
+    let state: DocumentState = 'missing';
+    if (valid !== null) {
+      state =
+        valid.expiresOn === null
+          ? 'valid'
+          : valid.expiresOn <= today
+            ? 'expired'
+            : addDays(valid.expiresOn, -noticeDays) <= today
+              ? 'expiring'
+              : 'valid';
+    }
+    states.set(kind, { valid, pending, state });
+  }
+  return states;
+}
+
+// K6: the required documents expired block going online; an optional one
+// does not.
+export function expiredRequired(
+  states: ReturnType<typeof documentStates>,
+  vehicle: Vehicle,
+): ApplicationDocumentKind[] {
+  return requiredDocuments(vehicle).filter((kind) => states.get(kind)?.state === 'expired');
+}
+
 // AP §8.5.5 step 2: the instalment a Thursday settlement posts, never more
 // than what is left of the deposit (owner decision 2026-11-19).
 export function depositInstalmentDue(deposit: {
@@ -271,8 +329,9 @@ const PIPELINE: Record<
   PipelineAction,
   { from: readonly ApplicationStage[]; to: ApplicationStage | null }
 > = {
-  review_document: { from: OPEN, to: null },
-  upload_document: { from: OPEN, to: null },
+  // A captain's replacement too, after activation (CA §12.2, slice 2.35a).
+  review_document: { from: [...OPEN, 'active'], to: null },
+  upload_document: { from: [...OPEN, 'active'], to: null },
   request_document: { from: OPEN, to: null },
   note: { from: OPEN, to: null },
   schedule_interview: { from: ['new', 'under_review', 'interview'], to: 'interview' },

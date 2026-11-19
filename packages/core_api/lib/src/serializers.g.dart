@@ -1200,6 +1200,14 @@ Serializers _$serializers =
           ..add(CaptainDeliverySummaryDtoOutputSummaryCustodyChange.serializer)
           ..add(CaptainDeliverySummaryDtoOutputSummaryHandInToday.serializer)
           ..add(CaptainDeliverySummaryDtoOutputSummaryPay.serializer)
+          ..add(CaptainDocumentReplacementDto.serializer)
+          ..add(CaptainDocumentsDtoOutput.serializer)
+          ..add(CaptainDocumentsDtoOutputDocumentsInner.serializer)
+          ..add(CaptainDocumentsDtoOutputDocumentsInnerKindEnum.serializer)
+          ..add(CaptainDocumentsDtoOutputDocumentsInnerPending.serializer)
+          ..add(CaptainDocumentsDtoOutputDocumentsInnerRejection.serializer)
+          ..add(CaptainDocumentsDtoOutputDocumentsInnerStateEnum.serializer)
+          ..add(CaptainDocumentsDtoOutputDocumentsInnerValid.serializer)
           ..add(CaptainEarningsDtoOutput.serializer)
           ..add(CaptainEarningsDtoOutputLinesInner.serializer)
           ..add(CaptainEarningsDtoOutputLinesInnerKindEnum.serializer)
@@ -3594,6 +3602,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(CaptainDocumentsDtoOutputDocumentsInner),
+            ]),
+            () => ListBuilder<CaptainDocumentsDtoOutputDocumentsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(CaptainEarningsDtoOutputOrdersInner),
             ]),
             () => ListBuilder<CaptainEarningsDtoOutputOrdersInner>(),
@@ -4596,6 +4610,10 @@ Serializers _$serializers =
               const FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
             ]),
             () => ListBuilder<SettingListDtoOutputSettingsInnerEditRolesEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

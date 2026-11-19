@@ -1,7 +1,19 @@
-import { Injectable, Logger, type OnApplicationShutdown, type OnModuleInit } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  type OnApplicationShutdown,
+  type OnModuleInit,
+} from '@nestjs/common';
+import { DATABASE } from '../../database/database.module.js';
+import type { Database } from '../../database/database.js';
 import { reportError } from '../../observability/error-tracking.js';
-import { ApplicationPipelineService, type ContractPhaseChange } from '../captains/index.js';
-import { formatDate, NotificationTexts } from '../content/index.js';
+import {
+  ApplicationPipelineService,
+  type ContractPhaseChange,
+  type ExpiringDocuments,
+} from '../captains/index.js';
+import { applicationDocumentLabels, formatDate, NotificationTexts } from '../content/index.js';
 import { GeoService } from '../geo/index.js';
 import { PushQueue } from './push-queue.js';
 
@@ -28,6 +40,7 @@ export class CaptainContractNotices {
   private readonly logger = new Logger('CaptainContractNotices');
 
   constructor(
+    @Inject(DATABASE) private readonly database: Database,
     private readonly pipeline: ApplicationPipelineService,
     private readonly geo: GeoService,
     private readonly texts: NotificationTexts,
@@ -36,15 +49,54 @@ export class CaptainContractNotices {
 
   async run(now: Date): Promise<void> {
     for (const city of await this.geo.activeCities()) {
-      try {
-        await this.pipeline.sweepContractPhases(city.id, now, async (tx, change) => {
-          await this.push(tx, change, now);
-        });
-      } catch (error) {
-        this.logger.error({ err: error, cityId: city.id }, 'contract notices failed');
-        reportError(error);
+      // A failure of one never holds back the other.
+      for (const [step, work] of [
+        [
+          'contract phases',
+          () =>
+            this.pipeline.sweepContractPhases(city.id, now, async (tx, change) => {
+              await this.push(tx, change, now);
+            }),
+        ],
+        ['documents', () => this.documents(city.id, now)],
+      ] as const) {
+        try {
+          await work();
+        } catch (error) {
+          this.logger.error({ err: error, cityId: city.id, step }, 'contract notices failed');
+          reportError(error);
+        }
       }
     }
+  }
+
+  // CA §12.2, §14 #27 «تنتهي صلاحية {المستند} في {التاريخ}»: once per
+  // document in force entering its notice (the source names it), silently;
+  // the app's amber banner reads the documents.
+  private async documents(cityId: string, now: Date): Promise<void> {
+    const captains: ExpiringDocuments[] = await this.pipeline.expiringDocuments(cityId, now);
+    const pushes = [];
+    for (const captain of captains) {
+      for (const document of captain.documents) {
+        if (document.expired) continue;
+        const templateKey = 'captain.document_expiring';
+        const rendered = await this.texts.render(templateKey, {
+          المستند: applicationDocumentLabels[document.kind],
+          التاريخ: formatDate(new Date(`${document.expiresOn}T12:00:00Z`), captain.timeZone),
+        });
+        pushes.push({
+          source: `captain:document_expiring:${document.documentId}`,
+          recipient: { party: 'captain' as const, captainId: captain.captainId },
+          templateKey,
+          body: rendered.body,
+          level: rendered.level,
+          priority: rendered.priority,
+          data: { target: 'documents' },
+          at: now,
+        });
+      }
+    }
+    if (pushes.length > 0) await this.pushes.enqueue(this.database.db, pushes, now);
   }
 
   private async push(tx: ContractTx, change: ContractPhaseChange, now: Date): Promise<void> {

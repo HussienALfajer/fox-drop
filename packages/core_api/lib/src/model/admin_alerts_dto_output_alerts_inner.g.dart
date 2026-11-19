@@ -92,6 +92,9 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnum_probationEnding =
 const AdminAlertsDtoOutputAlertsInnerCodeEnum
 _$adminAlertsDtoOutputAlertsInnerCodeEnum_probationOverdue =
     const AdminAlertsDtoOutputAlertsInnerCodeEnum._('probationOverdue');
+const AdminAlertsDtoOutputAlertsInnerCodeEnum
+_$adminAlertsDtoOutputAlertsInnerCodeEnum_documentExpiring =
+    const AdminAlertsDtoOutputAlertsInnerCodeEnum._('documentExpiring');
 
 AdminAlertsDtoOutputAlertsInnerCodeEnum
 _$adminAlertsDtoOutputAlertsInnerCodeEnumValueOf(String name) {
@@ -152,6 +155,8 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnumValueOf(String name) {
       return _$adminAlertsDtoOutputAlertsInnerCodeEnum_probationEnding;
     case 'probationOverdue':
       return _$adminAlertsDtoOutputAlertsInnerCodeEnum_probationOverdue;
+    case 'documentExpiring':
+      return _$adminAlertsDtoOutputAlertsInnerCodeEnum_documentExpiring;
     default:
       throw ArgumentError(name);
   }
@@ -189,6 +194,7 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnumValues =
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_captainApplication,
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_probationEnding,
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_probationOverdue,
+        _$adminAlertsDtoOutputAlertsInnerCodeEnum_documentExpiring,
       ],
     );
 
@@ -345,6 +351,7 @@ class _$AdminAlertsDtoOutputAlertsInnerCodeEnumSerializer
     'captainApplication': 'captain_application',
     'probationEnding': 'probation_ending',
     'probationOverdue': 'probation_overdue',
+    'documentExpiring': 'document_expiring',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_not_accepted': 'restaurantNotAccepted',
@@ -375,6 +382,7 @@ class _$AdminAlertsDtoOutputAlertsInnerCodeEnumSerializer
     'captain_application': 'captainApplication',
     'probation_ending': 'probationEnding',
     'probation_overdue': 'probationOverdue',
+    'document_expiring': 'documentExpiring',
   };
 
   @override

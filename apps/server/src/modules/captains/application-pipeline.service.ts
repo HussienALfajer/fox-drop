@@ -8,6 +8,7 @@ import { FilesService } from '../files/index.js';
 import { GeoService } from '../geo/index.js';
 import { LedgerService } from '../ledger/index.js';
 import { SettingsService, type Vehicle } from '../settings/index.js';
+import { captainUploads } from './captain-documents.js';
 import {
   type ActivationMissing,
   activationMissing,
@@ -18,6 +19,8 @@ import {
   type ContractPhase,
   contractDates,
   contractPhase,
+  type DocumentState,
+  documentStates,
   probationReview,
   type ApplicationStage,
   isMotorVehicle,
@@ -125,6 +128,30 @@ export interface ContractPhaseChange {
   // The day it started on the city's clock.
   from: string;
   timeZone: string;
+}
+
+// CA §12.2: one of a captain's documents as the app shows it.
+export interface CaptainDocument {
+  kind: ApplicationDocumentKind;
+  required: boolean;
+  state: DocumentState;
+  valid: { issueDate: string | null; expiresOn: string | null; uploadedAt: Date } | null;
+  pending: { issueDate: string | null; expiresOn: string | null; uploadedAt: Date } | null;
+  rejection: { reason: string; at: Date } | null;
+}
+
+// AP §9.1.3 «مستند ينتهي»: a captain's documents expiring or expired.
+export interface ExpiringDocuments {
+  captainId: string;
+  applicationId: string;
+  fullName: string;
+  timeZone: string;
+  documents: {
+    documentId: string;
+    kind: ApplicationDocumentKind;
+    expiresOn: string;
+    expired: boolean;
+  }[];
 }
 
 // A captain whose probation review is due or overdue (AP §9.1.3).
@@ -1284,6 +1311,135 @@ export class ApplicationPipelineService {
     };
   }
 
+  // CA §12.2 (slice 2.35a): the captain's documents by kind, the required
+  // ones and any other uploaded (the driving licence), each with the one in
+  // force, a replacement waiting and its state; the latest rejection's
+  // reason while no newer upload replaced it.
+  async captainDocuments(captainId: string, now: Date): Promise<CaptainDocument[]> {
+    const found = await captainUploads(this.database.db, captainId);
+    if (found === null) return [];
+    const { application, uploads } = found;
+    const timeZone = (await this.geo.cityTimeZone(application.cityId)) ?? 'UTC';
+    const notice = await this.settings.get('captain.document_expiry_notice_days', {
+      cityId: application.cityId,
+    });
+    const states = documentStates(uploads, cityDay(now, timeZone), notice);
+    const required = requiredDocuments(application.vehicle);
+    const kinds = [
+      ...required,
+      ...[...states.keys()].filter(
+        (kind) => !required.includes(kind) && kind !== 'signed_contract',
+      ),
+    ];
+    return kinds.map((kind) => {
+      const state = states.get(kind);
+      const newest = uploads.find((upload) => upload.kind === kind) ?? null;
+      const view = (upload: (typeof uploads)[number] | null | undefined) =>
+        upload
+          ? {
+              issueDate: upload.issueDate,
+              expiresOn: upload.expiresOn,
+              uploadedAt: upload.createdAt,
+            }
+          : null;
+      return {
+        kind,
+        required: required.includes(kind),
+        state: state?.state ?? 'missing',
+        valid: view(state?.valid),
+        pending: view(state?.pending),
+        rejection:
+          newest !== null && newest.status === 'rejected'
+            ? { reason: newest.reason ?? '', at: newest.reviewedAt ?? newest.createdAt }
+            : null,
+      };
+    });
+  }
+
+  // «رفع نسخة جديدة» (CA §12.2): the captain's replacement waits for OPS's
+  // review; the one in force stays valid until it expires. Not the signed
+  // contract (the office's).
+  async replaceDocument(
+    captain: { captainId: string; accountId: string },
+    kind: ApplicationDocumentKind,
+    document: NewDocument,
+    now = new Date(),
+  ): Promise<void> {
+    if (kind === 'signed_contract') throw new PipelineRefusedError('document_not_needed');
+    const found = await captainUploads(this.database.db, captain.captainId);
+    if (found === null) throw new PipelineRefusedError('unknown_application');
+    const checked = await this.applications.checkedDocument(
+      found.application,
+      kind,
+      document,
+      captain.accountId,
+      now,
+    );
+    const timeZone = (await this.geo.cityTimeZone(found.application.cityId)) ?? 'UTC';
+    await this.actIn(
+      undefined,
+      found.application.id,
+      { actor: { type: 'captain', id: captain.captainId, role: null }, context: NO_CONTEXT },
+      'upload_document',
+      now,
+      timeZone,
+      async (tx, locked) => {
+        if (
+          !(await this.applications.storeDocument(
+            tx,
+            locked,
+            kind,
+            checked,
+            captain.accountId,
+            now,
+          ))
+        ) {
+          return null;
+        }
+        return {
+          event: { kind: 'document_upload', documentKind: kind },
+          audit: 'document_upload',
+          after: { kind },
+        };
+      },
+    );
+  }
+
+  // AP §9.1.3 «مستند ينتهي», CA §12.2 (the worker's): the city's activated
+  // captains with a document in force expiring within
+  // `captain.document_expiry_notice_days` or expired, not replaced by an
+  // accepted one.
+  async expiringDocuments(cityId: string, now: Date): Promise<ExpiringDocuments[]> {
+    const timeZone = (await this.geo.cityTimeZone(cityId)) ?? 'UTC';
+    const today = cityDay(now, timeZone);
+    const notice = await this.settings.get('captain.document_expiry_notice_days', { cityId });
+    const found: ExpiringDocuments[] = [];
+    for (const row of await this.activeContracts(cityId)) {
+      const uploads = await this.database.db
+        .select()
+        .from(applicationDocuments)
+        .where(eq(applicationDocuments.applicationId, row.id));
+      const documents = [...documentStates(uploads, today, notice)]
+        .filter(([kind, each]) => kind !== 'signed_contract' && each.valid !== null)
+        .filter(([, each]) => each.state === 'expiring' || each.state === 'expired')
+        .map(([kind, each]) => ({
+          documentId: each.valid!.id,
+          kind,
+          expiresOn: each.valid!.expiresOn!,
+          expired: each.state === 'expired',
+        }));
+      if (documents.length === 0) continue;
+      found.push({
+        captainId: row.captainId!,
+        applicationId: row.id,
+        fullName: row.fullName,
+        timeZone,
+        documents,
+      });
+    }
+    return found;
+  }
+
   // The activated applications of a city whose captain is not terminated.
   private async activeContracts(cityId: string): Promise<Row[]> {
     return this.database.db
@@ -1319,7 +1475,7 @@ export class ApplicationPipelineService {
   }
 
   private async actIn(
-    tx: Tx,
+    given: Tx | undefined,
     applicationId: string,
     admin: PipelineAdmin,
     action: PipelineAction,
@@ -1327,6 +1483,12 @@ export class ApplicationPipelineService {
     timeZone: string,
     work: (tx: Tx, row: Row) => Promise<Outcome | null>,
   ): Promise<void> {
+    if (given === undefined) {
+      return this.database.db.transaction((tx) =>
+        this.actIn(tx, applicationId, admin, action, now, timeZone, work),
+      );
+    }
+    const tx = given;
     {
       const [row] = await tx
         .select()
@@ -1353,7 +1515,7 @@ export class ApplicationPipelineService {
           .values({
             applicationId: row.id,
             at: now,
-            actorId: admin.actor.id,
+            actorId: eventActorOf(admin),
             kind: 'stage',
             stage: step,
             note: step === 'rejected' ? (outcome.reason ?? null) : null,
@@ -1369,7 +1531,7 @@ export class ApplicationPipelineService {
             ...outcome.event,
             applicationId: row.id,
             at: now,
-            actorId: admin.actor.id,
+            actorId: eventActorOf(admin),
             stage,
           })
           .returning({ id: applicationEvents.id });
@@ -1434,6 +1596,14 @@ export class ApplicationPipelineService {
 }
 
 type Executor = Pick<Database['db'], 'select' | 'insert'>;
+
+// The history names an admin; a captain's own upload is the applicant's
+// (null), as before the activation.
+function eventActorOf(admin: PipelineAdmin): string | null {
+  return admin.actor.type === 'admin' ? admin.actor.id : null;
+}
+
+const NO_CONTEXT = { ipAddress: null, device: null };
 
 // The captain an application makes: its own id for a new captain.
 function captainIdOf(row: { id: string; captainId: string | null }): string {

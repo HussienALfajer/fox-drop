@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { LedgerService } from '../ledger/index.js';
 import { ApplicationPipelineService } from './application-pipeline.service.js';
+import { CaptainsService } from './captains.service.js';
 import {
   admin,
   app,
@@ -451,5 +452,74 @@ describe('the contract phases (AP §9.7.2, CA §12.3, §14 #28)', () => {
         instalment: { amount: '10000', currency: 'TRY' },
       },
     });
+  });
+});
+
+describe('the documents of a captain (CA §12.2, AP §9.7.4, K6)', () => {
+  it('reminds before expiry, keeps the old one with its replacement, and blocks once expired', async () => {
+    const { who, id, ops } = await activated();
+    const pipeline = app.get(ApplicationPipelineService);
+    const inDays = (days: number) => new Date(Date.now() + days * 86_400_000);
+    const mine = await who.call('GET', '/documents');
+    expect(mine.statusCode).toBe(200);
+    const criminal = () =>
+      mine.json().documents.find((each: { kind: string }) => each.kind === 'criminal_record');
+    expect(criminal()).toMatchObject({ required: true, state: 'valid', pending: null });
+
+    // 12 months from today, within the 30 days' notice 20 days before.
+    const expiring = async (days: number) =>
+      (await pipeline.expiringDocuments(azaz, inDays(days))).find((each) => each.captainId === id);
+    expect(await expiring(0)).toBeUndefined();
+    expect((await expiring(350))?.documents).toEqual([
+      expect.objectContaining({ kind: 'criminal_record', expired: false }),
+    ]);
+
+    // Expired, it blocks going online.
+    const refused = await app
+      .get(CaptainsService)
+      .goOnline(
+        id,
+        { appVersion: '9.0.0', simulatedLocation: false, termsPending: false },
+        inDays(400),
+      )
+      .catch((error: { blocks?: unknown }) => error.blocks);
+    expect(refused).toEqual(
+      expect.arrayContaining([{ kind: 'document_expired', documents: ['criminal_record'] }]),
+    );
+
+    // «رفع نسخة جديدة»: pending beside the one in force.
+    const asked = await who.call('POST', '/documents/upload', {
+      contentType: 'image/jpeg',
+      sizeBytes: jpeg.length,
+    });
+    expect(asked.statusCode).toBe(201);
+    await put(asked.json().url);
+    const replaced = await who.call('PUT', '/documents/criminal_record', {
+      uploadIds: [asked.json().uploadId],
+      issueDate: day(0),
+    });
+    expect(replaced.statusCode).toBe(200);
+    expect(
+      replaced.json().documents.find((each: { kind: string }) => each.kind === 'criminal_record'),
+    ).toMatchObject({ state: 'valid', pending: expect.objectContaining({ issueDate: day(0) }) });
+    const contract = await who.call('PUT', '/documents/signed_contract', {
+      uploadIds: [asked.json().uploadId],
+    });
+    expect(contract.statusCode).toBe(400);
+
+    // OPS accepts it from the captain's page.
+    const page = (await ops('GET', `captain-applications/${id}`)).json();
+    const fresh = page.documents.find(
+      (each: { kind: string; inForce: boolean }) => each.kind === 'criminal_record' && each.inForce,
+    );
+    expect(fresh.status).toBe('pending');
+    const accepted = await ops('POST', `captain-applications/${id}/documents/${fresh.id}/review`, {
+      status: 'accepted',
+    });
+    expect(accepted.statusCode).toBe(200);
+    const after = (await who.call('GET', '/documents')).json();
+    expect(
+      after.documents.find((each: { kind: string }) => each.kind === 'criminal_record'),
+    ).toMatchObject({ state: 'valid', pending: null });
   });
 });

@@ -82,6 +82,9 @@ _$adminAlertDtoOutputCodeEnum_probationEnding =
 const AdminAlertDtoOutputCodeEnum
 _$adminAlertDtoOutputCodeEnum_probationOverdue =
     const AdminAlertDtoOutputCodeEnum._('probationOverdue');
+const AdminAlertDtoOutputCodeEnum
+_$adminAlertDtoOutputCodeEnum_documentExpiring =
+    const AdminAlertDtoOutputCodeEnum._('documentExpiring');
 
 AdminAlertDtoOutputCodeEnum _$adminAlertDtoOutputCodeEnumValueOf(String name) {
   switch (name) {
@@ -141,6 +144,8 @@ AdminAlertDtoOutputCodeEnum _$adminAlertDtoOutputCodeEnumValueOf(String name) {
       return _$adminAlertDtoOutputCodeEnum_probationEnding;
     case 'probationOverdue':
       return _$adminAlertDtoOutputCodeEnum_probationOverdue;
+    case 'documentExpiring':
+      return _$adminAlertDtoOutputCodeEnum_documentExpiring;
     default:
       throw ArgumentError(name);
   }
@@ -177,6 +182,7 @@ _$adminAlertDtoOutputCodeEnumValues =
       _$adminAlertDtoOutputCodeEnum_captainApplication,
       _$adminAlertDtoOutputCodeEnum_probationEnding,
       _$adminAlertDtoOutputCodeEnum_probationOverdue,
+      _$adminAlertDtoOutputCodeEnum_documentExpiring,
     ]);
 
 const AdminAlertDtoOutputSeverityEnum
@@ -332,6 +338,7 @@ class _$AdminAlertDtoOutputCodeEnumSerializer
     'captainApplication': 'captain_application',
     'probationEnding': 'probation_ending',
     'probationOverdue': 'probation_overdue',
+    'documentExpiring': 'document_expiring',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_not_accepted': 'restaurantNotAccepted',
@@ -362,6 +369,7 @@ class _$AdminAlertDtoOutputCodeEnumSerializer
     'captain_application': 'captainApplication',
     'probation_ending': 'probationEnding',
     'probation_overdue': 'probationOverdue',
+    'document_expiring': 'documentExpiring',
   };
 
   @override

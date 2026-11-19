@@ -170,9 +170,13 @@ export function documentsOf(application: Pick<Application, 'documents'>, kind: D
 
 // The alert «طلب انضمام كابتن»: its application, for the review page.
 export function applicationOfAlert(alert: AdminAlert): string | null {
-  if (alert.code === 'probation_ending' || alert.code === 'probation_overdue') {
-    // «نهاية فترة تجربة» (slice 2.35a): the captain's application holds the
-    // contract.
+  if (
+    alert.code === 'probation_ending' ||
+    alert.code === 'probation_overdue' ||
+    alert.code === 'document_expiring'
+  ) {
+    // «نهاية فترة تجربة» and «مستند ينتهي» (slice 2.35a): the captain's
+    // application holds the contract and the documents.
     return alert.applicationId;
   }
   return alert.code === 'captain_application' && alert.subjectType === 'captain_application'

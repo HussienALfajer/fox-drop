@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   activationMissing,
+  documentStates,
+  expiredRequired,
   commitmentOf,
   contractPhase,
   probationReview,
@@ -288,5 +290,64 @@ describe('the contract phases', () => {
     expect(review('2026-12-19')).toBe('due');
     expect(review('2026-12-20')).toBe('overdue');
     expect(review('2026-12-25', true)).toBe('none');
+  });
+});
+
+// A captain's documents after activation (CA §12.2, AP §9.7.4, K6; slice
+// 2.35a): the newest accepted upload of a kind is the one in force until it
+// expires, a replacement waiting beside it.
+describe('the documents of a captain', () => {
+  const at = (day: number) => new Date(Date.UTC(2026, 10, day));
+  const upload = (
+    id: string,
+    kind: string,
+    status: 'pending' | 'accepted' | 'rejected',
+    expiresOn: string | null,
+    day: number,
+  ) => ({ id, kind: kind as never, status, expiresOn, createdAt: at(day) });
+
+  it('keeps the old document valid while its replacement waits', () => {
+    const states = documentStates(
+      [
+        upload('old', 'criminal_record', 'accepted', '2026-12-10', 1),
+        upload('new', 'criminal_record', 'pending', '2027-11-15', 15),
+      ],
+      '2026-11-19',
+      30,
+    );
+    expect(states.get('criminal_record')).toEqual({
+      valid: expect.objectContaining({ id: 'old' }),
+      pending: expect.objectContaining({ id: 'new' }),
+      state: 'expiring',
+    });
+  });
+
+  it('says valid, expiring from the notice, expired on the day, missing without one', () => {
+    const state = (expiresOn: string | null, today: string) =>
+      documentStates([upload('d', 'criminal_record', 'accepted', expiresOn, 1)], today, 30).get(
+        'criminal_record',
+      )?.state;
+    expect(state(null, '2030-01-01')).toBe('valid');
+    expect(state('2026-12-30', '2026-11-29')).toBe('valid');
+    expect(state('2026-12-30', '2026-11-30')).toBe('expiring');
+    expect(state('2026-12-30', '2026-12-30')).toBe('expired');
+    expect(
+      documentStates([upload('d', 'civil_registry', 'rejected', null, 1)], '2026-11-19', 30).get(
+        'civil_registry',
+      )?.state,
+    ).toBe('missing');
+  });
+
+  it('blocks going online for an expired required document only (K6)', () => {
+    const states = documentStates(
+      [
+        upload('a', 'criminal_record', 'accepted', '2026-11-10', 1),
+        upload('b', 'driving_licence', 'accepted', '2026-11-10', 1),
+        upload('c', 'national_id', 'accepted', null, 1),
+      ],
+      '2026-11-19',
+      30,
+    );
+    expect(expiredRequired(states, 'bicycle')).toEqual(['criminal_record']);
   });
 });

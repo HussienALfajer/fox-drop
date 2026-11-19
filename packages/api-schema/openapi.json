@@ -7782,6 +7782,121 @@
         ]
       }
     },
+    "/v1/captain/documents": {
+      "get": {
+        "operationId": "captainDocumentsDocuments",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainDocumentsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
+    "/v1/captain/documents/upload": {
+      "post": {
+        "operationId": "captainDocumentsUpload",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerNewUploadDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerUploadDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
+    "/v1/captain/documents/{kind}": {
+      "put": {
+        "operationId": "captainDocumentsReplace",
+        "parameters": [
+          {
+            "name": "kind",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "national_id",
+                "personal_photo",
+                "civil_registry",
+                "criminal_record",
+                "vehicle_papers",
+                "driving_licence"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaptainDocumentReplacementDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainDocumentsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
     "/v1/admin/captains/{captainId}/availability": {
       "get": {
         "operationId": "adminCaptainsAvailability",
@@ -31360,6 +31475,221 @@
         ],
         "additionalProperties": false
       },
+      "CaptainDocumentsDto_Output": {
+        "type": "object",
+        "properties": {
+          "documents": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "national_id",
+                    "personal_photo",
+                    "civil_registry",
+                    "criminal_record",
+                    "vehicle_papers",
+                    "driving_licence"
+                  ]
+                },
+                "required": {
+                  "type": "boolean"
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "valid",
+                    "expiring",
+                    "expired",
+                    "missing"
+                  ],
+                  "description": "«expiring» from captain.document_expiry_notice_days before its expiry."
+                },
+                "valid": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "issueDate": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "date",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "expiresOn": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "date",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "uploadedAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        }
+                      },
+                      "required": [
+                        "issueDate",
+                        "expiresOn",
+                        "uploadedAt"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The one in force, valid until it expires."
+                },
+                "pending": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "issueDate": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "date",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "expiresOn": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "date",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "uploadedAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        }
+                      },
+                      "required": [
+                        "issueDate",
+                        "expiresOn",
+                        "uploadedAt"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "«رفع نسخة جديدة» waiting for OPS."
+                },
+                "rejection": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "reason": {
+                          "type": "string"
+                        },
+                        "at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        }
+                      },
+                      "required": [
+                        "reason",
+                        "at"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "required",
+                "state",
+                "valid",
+                "pending",
+                "rejection"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "documents"
+        ],
+        "additionalProperties": false
+      },
+      "CaptainDocumentReplacementDto": {
+        "type": "object",
+        "properties": {
+          "uploadIds": {
+            "minItems": 1,
+            "maxItems": 2,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "description": "From POST /v1/captain/documents/upload, once uploaded."
+          },
+          "number": {
+            "description": "The national ID’s number.",
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "issueDate": {
+            "description": "The criminal record's issue date.",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "uploadIds"
+        ]
+      },
       "AdminCaptainAvailabilityDto_Output": {
         "type": "object",
         "properties": {
@@ -41605,7 +41935,8 @@
                     "large_price_change",
                     "captain_application",
                     "probation_ending",
-                    "probation_overdue"
+                    "probation_overdue",
+                    "document_expiring"
                   ],
                   "description": "The rule of AP §9.1.3."
                 },
@@ -41860,7 +42191,8 @@
               "large_price_change",
               "captain_application",
               "probation_ending",
-              "probation_overdue"
+              "probation_overdue",
+              "document_expiring"
             ],
             "description": "The rule of AP §9.1.3."
           },
