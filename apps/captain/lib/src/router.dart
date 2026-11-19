@@ -22,7 +22,8 @@ import 'joining/welcome_screen.dart';
 import 'not_found_screen.dart';
 import 'peak_bonus.dart';
 import 'platform.dart';
-import 'rating.dart';
+import 'performance/appeal_screen.dart';
+import 'performance/performance_screen.dart';
 import 'settings/settings_screen.dart';
 import 'shell.dart';
 import 'starting_screen.dart';
@@ -167,10 +168,18 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/peak-bonus',
         builder: (context, state) => const PeakWindowsScreen(),
       ),
-      // CA §11.2 «تقييمي» (slice 2.26c), until «أدائي» (2.36).
+      // CA §11 «أدائي» (slice 2.36b), the rating of 2.26c inside it.
       GoRoute(
-        path: '/rating',
-        builder: (context, state) => const RatingScreen(),
+        path: '/performance',
+        builder: (context, state) => const PerformanceScreen(),
+        routes: [
+          // CA §11.3 «اعتراض» on one violation.
+          GoRoute(
+            path: 'appeal/:violationId',
+            builder: (context, state) =>
+                AppealScreen(violationId: state.pathParameters['violationId']!),
+          ),
+        ],
       ),
       // «الإعدادات» (owner decision 2026-11-11): «العملات التي أحملها».
       GoRoute(

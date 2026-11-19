@@ -1198,6 +1198,8 @@ Serializers _$serializers =
           ..add(CaptainActiveOrderDtoOutputOrderStatusEnum.serializer)
           ..add(CaptainActiveOrderDtoOutputWithdrawn.serializer)
           ..add(CaptainActiveOrderDtoOutputWithdrawnCashEnum.serializer)
+          ..add(CaptainAppealBodyDto.serializer)
+          ..add(CaptainAppealTicketDtoOutput.serializer)
           ..add(CaptainApplicationDocumentDto.serializer)
           ..add(CaptainApplicationDtoOutput.serializer)
           ..add(CaptainApplicationDtoOutputApplication.serializer)
@@ -1346,6 +1348,21 @@ Serializers _$serializers =
           ..add(CaptainPeakBonusDtoOutputWindowsInner.serializer)
           ..add(CaptainPeakBonusDtoOutputWindowsInnerAmount.serializer)
           ..add(CaptainPeakBonusDtoOutputWindowsInnerZonesInner.serializer)
+          ..add(CaptainPerformanceDtoOutput.serializer)
+          ..add(CaptainPerformanceDtoOutputAcceptance.serializer)
+          ..add(CaptainPerformanceDtoOutputAcceptanceOffersInner.serializer)
+          ..add(
+            CaptainPerformanceDtoOutputAcceptanceOffersInnerResponseEnum
+                .serializer,
+          )
+          ..add(CaptainPerformanceDtoOutputOnline.serializer)
+          ..add(CaptainPerformanceDtoOutputViolationsInner.serializer)
+          ..add(CaptainPerformanceDtoOutputViolationsInnerAppeal.serializer)
+          ..add(
+            CaptainPerformanceDtoOutputViolationsInnerAppealOutcomeEnum
+                .serializer,
+          )
+          ..add(CaptainPerformanceDtoOutputViolationsInnerStepEnum.serializer)
           ..add(CaptainPickupRequestDto.serializer)
           ..add(CaptainProblemBodyDto.serializer)
           ..add(CaptainRatingsDtoOutput.serializer)
@@ -3892,6 +3909,19 @@ Serializers _$serializers =
               const FullType(CustomerRestaurantPageDtoOutputMenuInner),
             ]),
             () => ListBuilder<CustomerRestaurantPageDtoOutputMenuInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPerformanceDtoOutputAcceptanceOffersInner),
+            ]),
+            () =>
+                ListBuilder<CaptainPerformanceDtoOutputAcceptanceOffersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPerformanceDtoOutputViolationsInner),
+            ]),
+            () => ListBuilder<CaptainPerformanceDtoOutputViolationsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

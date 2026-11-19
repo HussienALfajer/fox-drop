@@ -11,6 +11,7 @@ import {
   slaAtOpening,
   slaState,
   slaStop,
+  managingPermission,
   ticketKind,
   TICKET_TYPE_LISTS,
 } from './tickets.js';
@@ -375,5 +376,22 @@ describe('the money of a resolution', () => {
       'invalid_resolution',
     );
     expect(moneyProblem({ ...missing, chargePay: true })).toBe('invalid_resolution');
+  });
+});
+
+// CA §11.3, AP §9.7.5 (slice 2.36b): an appeal is decided by OWN or OPS,
+// accepted or rejected, with no responsible party.
+describe('an appeal', () => {
+  it('takes its own resolutions without a party', () => {
+    expect(ticketKind('violation_appeal')).toBe('appeal');
+    expect(resolutionsOf('appeal')).toEqual(['appeal_accepted', 'appeal_rejected']);
+    const appeal = (
+      resolution: 'appeal_accepted' | 'none_explained',
+      responsible: 'captain' | null,
+    ) => resolutionProblem({ kind: 'appeal', resolution, responsible, lines: null });
+    expect(appeal('appeal_accepted', null)).toBeNull();
+    expect(appeal('appeal_accepted', 'captain')).toBe('invalid_resolution');
+    expect(appeal('none_explained', null)).toBe('invalid_resolution');
+    expect(managingPermission('appeal')).toBe('captains.manage');
   });
 });

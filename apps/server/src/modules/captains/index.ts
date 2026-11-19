@@ -134,6 +134,7 @@ export {
   type Money,
   type NewCaptain,
   type PayTable,
+  type StatusChanged,
 } from './captains.service.js';
 export {
   type ActivePeakWindow,

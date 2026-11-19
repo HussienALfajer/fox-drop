@@ -33,7 +33,7 @@ abstract class AdminTicketResolveDto
   /// From the ticket kind's (AP §9.9.3).
   @BuiltValueField(wireName: r'resolution')
   AdminTicketResolveDtoResolutionEnum get resolution;
-  // enum resolutionEnum {  none_explained,  compensation_code,  free_redelivery,  price_corrected,  price_correct,  captain_paid,  accounts_corrected,  payment_correct,  };
+  // enum resolutionEnum {  none_explained,  compensation_code,  free_redelivery,  price_corrected,  price_correct,  captain_paid,  accounts_corrected,  payment_correct,  appeal_accepted,  appeal_rejected,  };
 
   /// Required for a general ticket; none for a price difference or a pickup dispute.
   @BuiltValueField(wireName: r'responsible')
@@ -342,6 +342,12 @@ class AdminTicketResolveDtoResolutionEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'payment_correct')
   static const AdminTicketResolveDtoResolutionEnum paymentCorrect =
       _$adminTicketResolveDtoResolutionEnum_paymentCorrect;
+  @BuiltValueEnumConst(wireName: r'appeal_accepted')
+  static const AdminTicketResolveDtoResolutionEnum appealAccepted =
+      _$adminTicketResolveDtoResolutionEnum_appealAccepted;
+  @BuiltValueEnumConst(wireName: r'appeal_rejected')
+  static const AdminTicketResolveDtoResolutionEnum appealRejected =
+      _$adminTicketResolveDtoResolutionEnum_appealRejected;
 
   static Serializer<AdminTicketResolveDtoResolutionEnum> get serializer =>
       _$adminTicketResolveDtoResolutionEnumSerializer;

@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { randomUUID } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
-import { admin, onlineCaptain, orderAtDoor, sql } from './delivery.fixture.js';
+import { admin, app, onlineCaptain, orderAtDoor, sql } from './delivery.fixture.js';
 
 // AP §9.7.5–9.7.6, CA §11.3, §14 #25 (slice 2.36b): «تسجيل مخالفة» in the
 // panel's «المخالفات والإيقافات», with the ladder's suggestion and the
@@ -155,5 +155,134 @@ describe('«تسجيل مخالفة» (AP §9.7.5–9.7.6)', () => {
     const sup = await admin(['SUP']);
     expect((await record(sup, captainId, {})).statusCode).toBe(403);
     expect((await ops.get(`/v1/admin/captains/${randomUUID()}/violations`)).statusCode).toBe(404);
+  });
+});
+
+// CA §11.3, AP §9.7.5, CA §14 #30 (slice 2.36b): «اعتراض» opens a ticket and
+// its resolution records the outcome on the violation.
+describe('«اعتراض» (CA §11.3)', () => {
+  it('opens a ticket the panel sees; accepted, it voids the violation and lifts its suspension', async () => {
+    const door = await orderAtDoor();
+    expect((await door.deliver()).statusCode).toBe(200);
+    const { captainId, headers } = door.captain;
+    const ops = await admin(['OPS']);
+    const recorded = await record(ops, captainId, { step: 'suspension_1d' });
+    const violationId = recorded.json().violations[0].id as string;
+    const appeal = (key: string, text = 'كان الطريق مغلقاً') =>
+      app.inject({
+        method: 'POST',
+        url: `/v1/captain/violations/${violationId}/appeal`,
+        headers: { ...headers, 'idempotency-key': key },
+        payload: { text, photoUploadId: null },
+      });
+    const key = randomUUID();
+    const opened = await appeal(key);
+    expect(opened.statusCode).toBe(200);
+    const ticket = opened.json().ticket;
+    expect(ticket).toMatchObject({
+      typeLabel: 'اعتراض على مخالفة',
+      description: 'كان الطريق مغلقاً',
+      status: 'new',
+      openedBy: 'me',
+    });
+    // A repeat answers the ticket; a second appeal is refused.
+    expect((await appeal(key)).json().ticket.id).toBe(ticket.id);
+    const again = await appeal(randomUUID());
+    expect(again.statusCode).toBe(409);
+    expect(again.json().error).toBe('already_appealed');
+    const unknown = await app.inject({
+      method: 'POST',
+      url: `/v1/captain/violations/${randomUUID()}/appeal`,
+      headers: { ...headers, 'idempotency-key': randomUUID() },
+      payload: { text: 'x', photoUploadId: null },
+    });
+    expect(unknown.statusCode).toBe(404);
+    // «بلاغاتي» lists it; the panel sees it on the violation.
+    const mine = await app.inject({ method: 'GET', url: '/v1/captain/reports', headers });
+    expect(mine.json().tickets.map((each: { id: string }) => each.id)).toContain(ticket.id);
+    const listed = (await ops.get(`/v1/admin/captains/${captainId}/violations`)).json();
+    expect(listed.violations[0].appeal).toMatchObject({ ticketId: ticket.id, outcome: null });
+    expect(listed.suggestion.step).toBe('suspension_1d');
+
+    // SUP cannot decide it, nor can anyone close it.
+    const { cityId } = (await ops.get(`/v1/admin/captains/${captainId}/profile`)).json();
+    const sup = await admin(['SUP']);
+    const bySup = await sup.post(`/v1/admin/tickets/${ticket.id}/resolve`, {
+      cityId,
+      resolution: 'appeal_accepted',
+      responsible: null,
+      message: 'قبلنا اعتراضك',
+      receivedLines: null,
+    });
+    expect(bySup.statusCode).toBe(403);
+    const closed = await ops.post(`/v1/admin/tickets/${ticket.id}/close`, {
+      cityId,
+      reason: 'لا شيء',
+    });
+    expect(closed.statusCode).toBe(409);
+    expect(closed.json().error).toBe('appeal_needs_decision');
+    const wrong = await ops.post(`/v1/admin/tickets/${ticket.id}/resolve`, {
+      cityId,
+      resolution: 'none_explained',
+      responsible: 'captain',
+      message: 'x',
+      receivedLines: null,
+    });
+    expect(wrong.statusCode).toBe(400);
+
+    const accepted = await ops.post(`/v1/admin/tickets/${ticket.id}/resolve`, {
+      cityId,
+      resolution: 'appeal_accepted',
+      responsible: null,
+      message: 'قبلنا اعتراضك وأُلغيت المخالفة',
+      receivedLines: null,
+    });
+    expect(accepted.statusCode).toBe(200);
+    const after = (await ops.get(`/v1/admin/captains/${captainId}/violations`)).json();
+    expect(after.violations[0].appeal).toMatchObject({ outcome: 'accepted' });
+    // Voided: the ladder starts again, and the suspension it set is lifted.
+    expect(after.suggestion.step).toBe('warning');
+    const profile = (await ops.get(`/v1/admin/captains/${captainId}/profile`)).json();
+    expect(profile.status).not.toBe('suspended');
+    expect(await pushes(captainId, 'captain.ticket_resolved')).toEqual([
+      expect.stringMatching(/^تم الرد على بلاغك T-\d+$/),
+    ]);
+    const performance = await app.inject({
+      method: 'GET',
+      url: '/v1/captain/performance',
+      headers,
+    });
+    expect(performance.json().violations[0].appeal).toMatchObject({ outcome: 'accepted' });
+  });
+
+  it('rejected, the violation and its suspension stay', async () => {
+    const door = await orderAtDoor();
+    const { captainId, headers } = door.captain;
+    const ops = await admin(['OPS']);
+    const recorded = await record(ops, captainId, { step: 'suspension_7d' });
+    const violationId = recorded.json().violations[0].id as string;
+    const opened = await app.inject({
+      method: 'POST',
+      url: `/v1/captain/violations/${violationId}/appeal`,
+      headers: { ...headers, 'idempotency-key': randomUUID() },
+      payload: { text: 'لم أتأخر', photoUploadId: null },
+    });
+    const { cityId } = (await ops.get(`/v1/admin/captains/${captainId}/profile`)).json();
+    const rejected = await ops.post(`/v1/admin/tickets/${opened.json().ticket.id}/resolve`, {
+      cityId,
+      resolution: 'appeal_rejected',
+      responsible: null,
+      message: 'راجعنا الطلب والتأخير ثابت',
+      receivedLines: null,
+    });
+    expect(rejected.statusCode).toBe(200);
+    const after = (await ops.get(`/v1/admin/captains/${captainId}/violations`)).json();
+    expect(after.violations[0].appeal.outcome).toBe('rejected');
+    expect(after.suggestion.step).toBe('suspension_1d');
+    // The captain at the door is in the suspension's last-order mode.
+    const suspended = (
+      await sql.query('SELECT status FROM captains.captains WHERE id = $1', [captainId])
+    ).rows[0].status;
+    expect(suspended).toBe('suspended');
   });
 });

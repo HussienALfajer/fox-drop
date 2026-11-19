@@ -2530,10 +2530,10 @@ abstract class AppLocalizations {
   /// **'رفض'**
   String get captainDecline;
 
-  /// The offer expired (CA §8.3).
+  /// CA §11.1: an offer that expired unanswered.
   ///
   /// In ar, this message translates to:
-  /// **'انتهى العرض'**
+  /// **'انتهت المهلة'**
   String get captainOfferExpired;
 
   /// The offer was taken or withdrawn (CA §8.3, §14).
@@ -8203,6 +8203,186 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'المتبقي من التأمين: {amount}'**
   String captainDepositLeft(String amount);
+
+  /// CA §11 «أدائي» (slice 2.36b): the screen's title and its entry in «المزيد».
+  ///
+  /// In ar, this message translates to:
+  /// **'أدائي'**
+  String get captainPerformance;
+
+  /// CA §11.1: the acceptance rate over the last answered offers, whole percent.
+  ///
+  /// In ar, this message translates to:
+  /// **'نسبة القبول: {rate}%'**
+  String captainAcceptanceRate(int rate);
+
+  /// CA §11.1: the offers counted, the window captain.acceptance_window_offers (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'قبلت {accepted} من {answered} (آخر {window} عرضاً)'**
+  String captainAcceptanceCounts(int accepted, int answered, int window);
+
+  /// CA §11.1: before any answered offer (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا عروض بعد'**
+  String get captainAcceptanceNone;
+
+  /// CA §11.1: below captain.acceptance_alert_pct, on «أدائي» and home.
+  ///
+  /// In ar, this message translates to:
+  /// **'نسبة قبولك منخفضة ({rate}%). حاول قبول العروض المناسبة لك.'**
+  String captainAcceptanceWarning(int rate);
+
+  /// CA §11.1: the heading of the last offers listed (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'آخر العروض'**
+  String get captainLastOffers;
+
+  /// CA §11.1: one offer: its time, restaurant and response.
+  ///
+  /// In ar, this message translates to:
+  /// **'{time} — {restaurant} — {response}'**
+  String captainOfferLine(String time, String restaurant, String response);
+
+  /// CA §11.1: an offer accepted.
+  ///
+  /// In ar, this message translates to:
+  /// **'قُبل'**
+  String get captainOfferAccepted;
+
+  /// CA §11.1: an offer rejected.
+  ///
+  /// In ar, this message translates to:
+  /// **'رُفض'**
+  String get captainOfferDeclined;
+
+  /// CA §11.2: of the last 50 delivered, those at or before the promised time (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'في الوقت: {onTime} من {counted}'**
+  String captainOnTime(int onTime, int counted);
+
+  /// CA §11.2: before any delivered order (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا طلبات مسلّمة بعد'**
+  String get captainOnTimeNone;
+
+  /// CA §11.2: the captain cancellations within captain.violation_window_days (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'إلغاءاتك خلال {days} يوماً: {count}'**
+  String captainCancellations(int days, int count);
+
+  /// CA §11.2: online hours today and this week, to one decimal (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'ساعات الاتصال: اليوم {today} س، هذا الأسبوع {week} س'**
+  String captainOnlineHours(String today, String week);
+
+  /// CA §11.3: the heading of the violations.
+  ///
+  /// In ar, this message translates to:
+  /// **'المخالفات'**
+  String get captainViolations;
+
+  /// CA §11.3: without a violation (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'لا مخالفات'**
+  String get captainViolationsNone;
+
+  /// CA §11.3: a violation's date, type and step on the ladder.
+  ///
+  /// In ar, this message translates to:
+  /// **'{date}: {type} — {step}'**
+  String captainViolationLine(String date, String type, String step);
+
+  /// AP §9.7.6: the ladder's first step.
+  ///
+  /// In ar, this message translates to:
+  /// **'تنبيه'**
+  String get captainStepWarning;
+
+  /// AP §9.7.6: the ladder's second step.
+  ///
+  /// In ar, this message translates to:
+  /// **'إيقاف يوم'**
+  String get captainStepSuspension1d;
+
+  /// AP §9.7.6: the ladder's third step.
+  ///
+  /// In ar, this message translates to:
+  /// **'إيقاف 7 أيام'**
+  String get captainStepSuspension7d;
+
+  /// AP §9.7.6: the ladder's last step.
+  ///
+  /// In ar, this message translates to:
+  /// **'إنهاء التعاقد'**
+  String get captainStepTermination;
+
+  /// CA §11.3: the order a violation names.
+  ///
+  /// In ar, this message translates to:
+  /// **'الطلب #{number}'**
+  String captainViolationOrder(String number);
+
+  /// CA §11.3: the consequence of a suspension step (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'موقوف حتى {time}'**
+  String captainViolationSuspendedUntil(String time);
+
+  /// CA §11.3: the appeal's button on a violation.
+  ///
+  /// In ar, this message translates to:
+  /// **'اعتراض'**
+  String get captainAppeal;
+
+  /// CA §11.3: an appeal waiting for the decision (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'اعتراضك قيد المراجعة'**
+  String get captainAppealOpen;
+
+  /// CA §11.3: an accepted appeal voids the violation (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'قُبل اعتراضك وأُلغيت المخالفة'**
+  String get captainAppealAccepted;
+
+  /// CA §11.3: a rejected appeal (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'رُفض اعتراضك'**
+  String get captainAppealRejected;
+
+  /// CA §11.3: the appeal's text field (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'اشرح سبب اعتراضك'**
+  String get captainAppealText;
+
+  /// CA §11.3: sends the appeal (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'إرسال الاعتراض'**
+  String get captainAppealSend;
+
+  /// CA §11.3: the appeal's ticket number; its status is in Support (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'استلمنا اعتراضك T-{number}. تابعه في «الدعم».'**
+  String captainAppealSent(String number);
+
+  /// CA §11.3: a second appeal is refused (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'سبق أن اعترضت على هذه المخالفة.'**
+  String get captainAppealAlready;
 }
 
 class _AppLocalizationsDelegate

@@ -697,6 +697,8 @@ export 'package:core_api/src/model/captain_active_order_dto_output_order_radii.d
 export 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant_location.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_withdrawn.dart';
+export 'package:core_api/src/model/captain_appeal_body_dto.dart';
+export 'package:core_api/src/model/captain_appeal_ticket_dto_output.dart';
 export 'package:core_api/src/model/captain_application_document_dto.dart';
 export 'package:core_api/src/model/captain_application_dto_output.dart';
 export 'package:core_api/src/model/captain_application_dto_output_application.dart';
@@ -801,6 +803,12 @@ export 'package:core_api/src/model/captain_peak_bonus_dto_output_active_inner_am
 export 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner.dart';
 export 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_amount.dart';
 export 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_zones_inner.dart';
+export 'package:core_api/src/model/captain_performance_dto_output.dart';
+export 'package:core_api/src/model/captain_performance_dto_output_acceptance.dart';
+export 'package:core_api/src/model/captain_performance_dto_output_acceptance_offers_inner.dart';
+export 'package:core_api/src/model/captain_performance_dto_output_online.dart';
+export 'package:core_api/src/model/captain_performance_dto_output_violations_inner.dart';
+export 'package:core_api/src/model/captain_performance_dto_output_violations_inner_appeal.dart';
 export 'package:core_api/src/model/captain_pickup_request_dto.dart';
 export 'package:core_api/src/model/captain_problem_body_dto.dart';
 export 'package:core_api/src/model/captain_ratings_dto_output.dart';

@@ -30,6 +30,12 @@ _$adminTicketResolveDtoResolutionEnum_accountsCorrected =
 const AdminTicketResolveDtoResolutionEnum
 _$adminTicketResolveDtoResolutionEnum_paymentCorrect =
     const AdminTicketResolveDtoResolutionEnum._('paymentCorrect');
+const AdminTicketResolveDtoResolutionEnum
+_$adminTicketResolveDtoResolutionEnum_appealAccepted =
+    const AdminTicketResolveDtoResolutionEnum._('appealAccepted');
+const AdminTicketResolveDtoResolutionEnum
+_$adminTicketResolveDtoResolutionEnum_appealRejected =
+    const AdminTicketResolveDtoResolutionEnum._('appealRejected');
 
 AdminTicketResolveDtoResolutionEnum
 _$adminTicketResolveDtoResolutionEnumValueOf(String name) {
@@ -50,6 +56,10 @@ _$adminTicketResolveDtoResolutionEnumValueOf(String name) {
       return _$adminTicketResolveDtoResolutionEnum_accountsCorrected;
     case 'paymentCorrect':
       return _$adminTicketResolveDtoResolutionEnum_paymentCorrect;
+    case 'appealAccepted':
+      return _$adminTicketResolveDtoResolutionEnum_appealAccepted;
+    case 'appealRejected':
+      return _$adminTicketResolveDtoResolutionEnum_appealRejected;
     default:
       throw ArgumentError(name);
   }
@@ -67,6 +77,8 @@ _$adminTicketResolveDtoResolutionEnumValues =
         _$adminTicketResolveDtoResolutionEnum_captainPaid,
         _$adminTicketResolveDtoResolutionEnum_accountsCorrected,
         _$adminTicketResolveDtoResolutionEnum_paymentCorrect,
+        _$adminTicketResolveDtoResolutionEnum_appealAccepted,
+        _$adminTicketResolveDtoResolutionEnum_appealRejected,
       ],
     );
 
@@ -128,6 +140,8 @@ class _$AdminTicketResolveDtoResolutionEnumSerializer
     'captainPaid': 'captain_paid',
     'accountsCorrected': 'accounts_corrected',
     'paymentCorrect': 'payment_correct',
+    'appealAccepted': 'appeal_accepted',
+    'appealRejected': 'appeal_rejected',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'none_explained': 'noneExplained',
@@ -138,6 +152,8 @@ class _$AdminTicketResolveDtoResolutionEnumSerializer
     'captain_paid': 'captainPaid',
     'accounts_corrected': 'accountsCorrected',
     'payment_correct': 'paymentCorrect',
+    'appeal_accepted': 'appealAccepted',
+    'appeal_rejected': 'appealRejected',
   };
 
   @override

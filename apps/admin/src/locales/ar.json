@@ -2110,7 +2110,8 @@
       "merchantReport": "إبلاغ من المطعم",
       "orderProblem": "مشكلة في الطلب من المطعم",
       "captainReport": "إبلاغ من الكابتن",
-      "captainProblem": "مشكلة في الطلب من الكابتن"
+      "captainProblem": "مشكلة في الطلب من الكابتن",
+      "captainAppeal": "اعتراض الكابتن على مخالفة"
     },
     "restaurant": "المطعم",
     "chooseRestaurant": "المطعم الذي يخصّه البلاغ",
@@ -2122,7 +2123,9 @@
       "priceCorrect": "السعر صحيح",
       "captainPaid": "دفع الكابتن الفرق",
       "accountsCorrected": "تصحيح في الحسابات",
-      "paymentCorrect": "الدفعة صحيحة"
+      "paymentCorrect": "الدفعة صحيحة",
+      "appealAccepted": "قبول الاعتراض وإلغاء المخالفة",
+      "appealRejected": "رفض الاعتراض"
     },
     "responsible": {
       "restaurant": "المطعم",

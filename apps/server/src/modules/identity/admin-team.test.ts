@@ -818,6 +818,8 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/captain/reports': 'app_session',
   'GET /v1/captain/reports': 'app_session',
   'GET /v1/captain/ratings': 'app_session',
+  'GET /v1/captain/performance': 'app_session',
+  'POST /v1/captain/violations/{violationId}/appeal': 'app_session',
   'GET /v1/captain/orders/{orderId}/route': 'app_session',
   'POST /v1/captain/orders/{orderId}/problem': 'app_session',
   'POST /v1/merchant/orders/{orderId}/item-report/withdraw': 'app_session',

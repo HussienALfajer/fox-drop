@@ -38,6 +38,8 @@ export const ticketSources = [
   'order_problem',
   'captain_report',
   'captain_problem',
+  // CA §11.3 (slice 2.36b): the captain's «اعتراض» on a violation.
+  'captain_appeal',
 ] as const;
 export type TicketSource = (typeof ticketSources)[number];
 
@@ -194,7 +196,7 @@ export const tickets = support.table(
     // «مشكلة في مبلغ الاستلام» is a pickup dispute whose party is the captain.
     check(
       'tickets_captain_sources',
-      sql`(${table.source} NOT IN ('captain_report', 'captain_problem') OR ${table.party} = 'captain') AND (${table.source} <> 'captain_problem' OR ${table.orderId} IS NOT NULL) AND (${table.source} <> 'pickup_dispute' OR ${table.party} IN ('restaurant', 'captain'))`,
+      sql`(${table.source} NOT IN ('captain_report', 'captain_problem', 'captain_appeal') OR ${table.party} = 'captain') AND ((${table.source} = 'captain_appeal') = (${table.typeCode} = 'violation_appeal')) AND (${table.source} <> 'captain_problem' OR ${table.orderId} IS NOT NULL) AND (${table.source} <> 'pickup_dispute' OR ${table.party} IN ('restaurant', 'captain'))`,
     ),
     check(
       'tickets_request_subject_values',

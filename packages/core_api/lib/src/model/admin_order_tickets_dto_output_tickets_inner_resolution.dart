@@ -34,7 +34,7 @@ abstract class AdminOrderTicketsDtoOutputTicketsInnerResolution
         > {
   @BuiltValueField(wireName: r'code')
   AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum get code;
-  // enum codeEnum {  none_explained,  compensation_code,  free_redelivery,  price_corrected,  price_correct,  captain_paid,  accounts_corrected,  payment_correct,  };
+  // enum codeEnum {  none_explained,  compensation_code,  free_redelivery,  price_corrected,  price_correct,  captain_paid,  accounts_corrected,  payment_correct,  appeal_accepted,  appeal_rejected,  };
 
   @BuiltValueField(wireName: r'responsible')
   AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum?
@@ -408,6 +408,14 @@ class AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
   static const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
   paymentCorrect =
       _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_paymentCorrect;
+  @BuiltValueEnumConst(wireName: r'appeal_accepted')
+  static const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
+  appealAccepted =
+      _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_appealAccepted;
+  @BuiltValueEnumConst(wireName: r'appeal_rejected')
+  static const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
+  appealRejected =
+      _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_appealRejected;
 
   static Serializer<AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum>
   get serializer =>

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../api.dart';
 import '../content.dart';
+import '../performance/performance.dart';
 import '../work/door_payment.dart';
 import 'report_photo.dart';
 
@@ -81,6 +82,11 @@ class PickupAlreadyDisputed extends ReportOutcome {
 /// «مشكلة في مبلغ الاستلام»: the lines are the ones recorded at the pickup.
 class PickupAmountSame extends ReportOutcome {
   const PickupAmountSame();
+}
+
+/// CA §11.3 (slice 2.36b): the violation was appealed already.
+class AppealAlreadySent extends ReportOutcome {
+  const AppealAlreadySent();
 }
 
 /// No answer or another refusal: the same report may be sent again.
@@ -177,6 +183,38 @@ class CaptainReports {
     },
   );
 
+  /// CA §11.3 «اعتراض» (slice 2.36b): the text and an optional photo on one
+  /// of the captain's violations; its ticket shows in «بلاغاتي».
+  Future<ReportOutcome> appeal({
+    required String violationId,
+    required String text,
+    required ReportPhoto? photo,
+  }) async {
+    final String? uploadId;
+    try {
+      uploadId = photo == null ? null : await uploadPhoto(_ref, photo);
+    } on DioException {
+      return const ReportPhotoFailed();
+    }
+    final body = ['appeal', violationId, text, uploadId ?? ''].join('\n');
+    final outcome = await _send(body, photo, (key) async {
+      final answer = await _api.captainAppealsAppeal(
+        violationId: violationId,
+        idempotencyKey: key,
+        captainAppealBodyDto: CaptainAppealBodyDto(
+          (b) => b
+            ..text = text
+            ..photoUploadId = uploadId,
+        ),
+      );
+      return answer.data!.ticket;
+    });
+    if (outcome is ReportSent || outcome is AppealAlreadySent) {
+      _ref.invalidate(performanceProvider);
+    }
+    return outcome;
+  }
+
   CaptainApi get _api => _ref.read(coreApiProvider).getCaptainApi();
 
   Future<ReportOutcome> _send(
@@ -207,6 +245,8 @@ class CaptainReports {
           return const PickupAlreadyDisputed();
         case 'no_difference':
           return const PickupAmountSame();
+        case 'already_appealed':
+          return const AppealAlreadySent();
         case 'upload_not_found' ||
             'upload_expired' ||
             'upload_missing' ||

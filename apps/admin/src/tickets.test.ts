@@ -81,6 +81,9 @@ describe('the resolution form', () => {
     expect(needsResponsible('general')).toBe(true);
     expect(needsResponsible('price_difference')).toBe(false);
     expect(needsResponsible('pickup_dispute')).toBe(true);
+    // CA §11.3 (slice 2.36b): an appeal is accepted or rejected, no party.
+    expect(resolutionChoices('appeal')).toEqual(['appeal_accepted', 'appeal_rejected']);
+    expect(needsResponsible('appeal')).toBe(false);
   });
 
   it('lets support.manage resolve a ticket and support.resolve_pickup_dispute a dispute', () => {
@@ -162,5 +165,19 @@ describe('the money of a problem after delivery', () => {
     expect(shortAmountOf('20', 'TRY')).toBe('2000');
     expect(shortAmountOf('0', 'TRY')).toBeNull();
     expect(shortAmountOf('x', 'TRY')).toBeNull();
+  });
+});
+
+// AP §9.7.5 (slice 2.36b): OWN and OPS decide an appeal; nobody closes one.
+describe('an appeal', () => {
+  it('is decided with captains.manage and never closed', async () => {
+    const { canCloseTicket, canResolve } = await import('./tickets.js');
+    const appeal = { kind: 'appeal' as const, status: 'new' as const };
+    const ops = { permissions: ['support.manage', 'captains.manage'] } as never;
+    const sup = { permissions: ['support.manage'] } as never;
+    expect(canResolve(ops, appeal)).toBe(true);
+    expect(canResolve(sup, appeal)).toBe(false);
+    expect(canCloseTicket(ops, appeal)).toBe(false);
+    expect(canCloseTicket(ops, { kind: 'general', status: 'new' })).toBe(true);
   });
 });

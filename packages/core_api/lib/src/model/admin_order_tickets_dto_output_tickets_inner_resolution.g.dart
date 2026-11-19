@@ -46,6 +46,16 @@ _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_paymentCorrect =
     const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum._(
       'paymentCorrect',
     );
+const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
+_$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_appealAccepted =
+    const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum._(
+      'appealAccepted',
+    );
+const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
+_$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_appealRejected =
+    const AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum._(
+      'appealRejected',
+    );
 
 AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum
 _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnumValueOf(String name) {
@@ -66,6 +76,10 @@ _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnumValueOf(String name) {
       return _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_accountsCorrected;
     case 'paymentCorrect':
       return _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_paymentCorrect;
+    case 'appealAccepted':
+      return _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_appealAccepted;
+    case 'appealRejected':
+      return _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_appealRejected;
     default:
       throw ArgumentError(name);
   }
@@ -84,6 +98,8 @@ _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnumValues =
       _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_captainPaid,
       _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_accountsCorrected,
       _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_paymentCorrect,
+      _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_appealAccepted,
+      _$adminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnum_appealRejected,
     ]);
 
 const AdminOrderTicketsDtoOutputTicketsInnerResolutionResponsibleEnum
@@ -157,6 +173,8 @@ class _$AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnumSerializer
     'captainPaid': 'captain_paid',
     'accountsCorrected': 'accounts_corrected',
     'paymentCorrect': 'payment_correct',
+    'appealAccepted': 'appeal_accepted',
+    'appealRejected': 'appeal_rejected',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'none_explained': 'noneExplained',
@@ -167,6 +185,8 @@ class _$AdminOrderTicketsDtoOutputTicketsInnerResolutionCodeEnumSerializer
     'captain_paid': 'captainPaid',
     'accounts_corrected': 'accountsCorrected',
     'payment_correct': 'paymentCorrect',
+    'appeal_accepted': 'appealAccepted',
+    'appeal_rejected': 'appealRejected',
   };
 
   @override

@@ -4,14 +4,15 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'fixtures.dart';
 
-// CA §11.2 (C14), CU Q16 (slice 2.26c): «تقييمي» from «المزيد», the average,
-// the count and the reasons with counts, never a name or a comment.
+// CA §11.2 (C14), CU Q16 (slice 2.26c): the rating inside «أدائي» (slice
+// 2.36b), the average, the count and the reasons with counts, never a name
+// or a comment.
 Future<void> openRating(WidgetTester tester, TestApp app) async {
   await app.pump(tester);
   await app.live(tester);
   await tester.tap(find.text('المزيد'));
   await app.settle(tester);
-  await tester.tap(find.byKey(const Key('more-rating')));
+  await tester.tap(find.byKey(const Key('more-performance')));
   await app.settle(tester);
 }
 

@@ -1520,7 +1520,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get captainDecline => 'رفض';
 
   @override
-  String get captainOfferExpired => 'انتهى العرض';
+  String get captainOfferExpired => 'انتهت المهلة';
 
   @override
   String get captainOfferUnavailable => 'لم يعد العرض متاحاً';
@@ -4922,4 +4922,116 @@ class AppLocalizationsAr extends AppLocalizations {
   String captainDepositLeft(String amount) {
     return 'المتبقي من التأمين: $amount';
   }
+
+  @override
+  String get captainPerformance => 'أدائي';
+
+  @override
+  String captainAcceptanceRate(int rate) {
+    return 'نسبة القبول: $rate%';
+  }
+
+  @override
+  String captainAcceptanceCounts(int accepted, int answered, int window) {
+    return 'قبلت $accepted من $answered (آخر $window عرضاً)';
+  }
+
+  @override
+  String get captainAcceptanceNone => 'لا عروض بعد';
+
+  @override
+  String captainAcceptanceWarning(int rate) {
+    return 'نسبة قبولك منخفضة ($rate%). حاول قبول العروض المناسبة لك.';
+  }
+
+  @override
+  String get captainLastOffers => 'آخر العروض';
+
+  @override
+  String captainOfferLine(String time, String restaurant, String response) {
+    return '$time — $restaurant — $response';
+  }
+
+  @override
+  String get captainOfferAccepted => 'قُبل';
+
+  @override
+  String get captainOfferDeclined => 'رُفض';
+
+  @override
+  String captainOnTime(int onTime, int counted) {
+    return 'في الوقت: $onTime من $counted';
+  }
+
+  @override
+  String get captainOnTimeNone => 'لا طلبات مسلّمة بعد';
+
+  @override
+  String captainCancellations(int days, int count) {
+    return 'إلغاءاتك خلال $days يوماً: $count';
+  }
+
+  @override
+  String captainOnlineHours(String today, String week) {
+    return 'ساعات الاتصال: اليوم $today س، هذا الأسبوع $week س';
+  }
+
+  @override
+  String get captainViolations => 'المخالفات';
+
+  @override
+  String get captainViolationsNone => 'لا مخالفات';
+
+  @override
+  String captainViolationLine(String date, String type, String step) {
+    return '$date: $type — $step';
+  }
+
+  @override
+  String get captainStepWarning => 'تنبيه';
+
+  @override
+  String get captainStepSuspension1d => 'إيقاف يوم';
+
+  @override
+  String get captainStepSuspension7d => 'إيقاف 7 أيام';
+
+  @override
+  String get captainStepTermination => 'إنهاء التعاقد';
+
+  @override
+  String captainViolationOrder(String number) {
+    return 'الطلب #$number';
+  }
+
+  @override
+  String captainViolationSuspendedUntil(String time) {
+    return 'موقوف حتى $time';
+  }
+
+  @override
+  String get captainAppeal => 'اعتراض';
+
+  @override
+  String get captainAppealOpen => 'اعتراضك قيد المراجعة';
+
+  @override
+  String get captainAppealAccepted => 'قُبل اعتراضك وأُلغيت المخالفة';
+
+  @override
+  String get captainAppealRejected => 'رُفض اعتراضك';
+
+  @override
+  String get captainAppealText => 'اشرح سبب اعتراضك';
+
+  @override
+  String get captainAppealSend => 'إرسال الاعتراض';
+
+  @override
+  String captainAppealSent(String number) {
+    return 'استلمنا اعتراضك T-$number. تابعه في «الدعم».';
+  }
+
+  @override
+  String get captainAppealAlready => 'سبق أن اعترضت على هذه المخالفة.';
 }

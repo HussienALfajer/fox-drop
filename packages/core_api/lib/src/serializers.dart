@@ -696,6 +696,8 @@ import 'package:core_api/src/model/captain_active_order_dto_output_order_radii.d
 import 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant_location.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_withdrawn.dart';
+import 'package:core_api/src/model/captain_appeal_body_dto.dart';
+import 'package:core_api/src/model/captain_appeal_ticket_dto_output.dart';
 import 'package:core_api/src/model/captain_application_document_dto.dart';
 import 'package:core_api/src/model/captain_application_dto_output.dart';
 import 'package:core_api/src/model/captain_application_dto_output_application.dart';
@@ -800,6 +802,12 @@ import 'package:core_api/src/model/captain_peak_bonus_dto_output_active_inner_am
 import 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner.dart';
 import 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_amount.dart';
 import 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_zones_inner.dart';
+import 'package:core_api/src/model/captain_performance_dto_output.dart';
+import 'package:core_api/src/model/captain_performance_dto_output_acceptance.dart';
+import 'package:core_api/src/model/captain_performance_dto_output_acceptance_offers_inner.dart';
+import 'package:core_api/src/model/captain_performance_dto_output_online.dart';
+import 'package:core_api/src/model/captain_performance_dto_output_violations_inner.dart';
+import 'package:core_api/src/model/captain_performance_dto_output_violations_inner_appeal.dart';
 import 'package:core_api/src/model/captain_pickup_request_dto.dart';
 import 'package:core_api/src/model/captain_problem_body_dto.dart';
 import 'package:core_api/src/model/captain_ratings_dto_output.dart';
@@ -1811,6 +1819,8 @@ part 'serializers.g.dart';
   CaptainActiveOrderDtoOutputOrderRestaurant,
   CaptainActiveOrderDtoOutputOrderRestaurantLocation,
   CaptainActiveOrderDtoOutputWithdrawn,
+  CaptainAppealBodyDto,
+  CaptainAppealTicketDtoOutput,
   CaptainApplicationDocumentDto,
   CaptainApplicationDtoOutput,
   CaptainApplicationDtoOutputApplication,
@@ -1915,6 +1925,12 @@ part 'serializers.g.dart';
   CaptainPeakBonusDtoOutputWindowsInner,
   CaptainPeakBonusDtoOutputWindowsInnerAmount,
   CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
+  CaptainPerformanceDtoOutput,
+  CaptainPerformanceDtoOutputAcceptance,
+  CaptainPerformanceDtoOutputAcceptanceOffersInner,
+  CaptainPerformanceDtoOutputOnline,
+  CaptainPerformanceDtoOutputViolationsInner,
+  CaptainPerformanceDtoOutputViolationsInnerAppeal,
   CaptainPickupRequestDto,
   CaptainProblemBodyDto,
   CaptainRatingsDtoOutput,
@@ -3306,6 +3322,13 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(CaptainPerformanceDtoOutputAcceptanceOffersInner),
+            ]),
+            () =>
+                ListBuilder<CaptainPerformanceDtoOutputAcceptanceOffersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminCustomerDtoOutputBlockReasonsInner),
             ]),
             () => ListBuilder<AdminCustomerDtoOutputBlockReasonsInner>(),
@@ -3703,6 +3726,12 @@ Serializers serializers =
               FullType(AdminRatedCaptainsDtoOutputCaptainsInner),
             ]),
             () => ListBuilder<AdminRatedCaptainsDtoOutputCaptainsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CaptainPerformanceDtoOutputViolationsInner),
+            ]),
+            () => ListBuilder<CaptainPerformanceDtoOutputViolationsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

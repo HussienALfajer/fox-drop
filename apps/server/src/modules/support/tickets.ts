@@ -38,17 +38,21 @@ export function isOpen(status: TicketStatus): boolean {
 // general.
 export const PRICE_DIFFERENCE_TYPE = 'price_difference';
 export const PICKUP_DISPUTE_TYPE = 'pickup_dispute';
+// CA §11.3, AP §9.7.5 (slice 2.36b): the captain's «اعتراض» on a violation.
+export const VIOLATION_APPEAL_TYPE = 'violation_appeal';
 export const FIXED_TYPE_LABELS = {
   [PRICE_DIFFERENCE_TYPE]: 'سعر مختلف عن المحل',
   [PICKUP_DISPUTE_TYPE]: 'خلاف على دفعة الاستلام',
+  [VIOLATION_APPEAL_TYPE]: 'اعتراض على مخالفة',
 } as const;
 
-export const ticketKinds = ['general', 'price_difference', 'pickup_dispute'] as const;
+export const ticketKinds = ['general', 'price_difference', 'pickup_dispute', 'appeal'] as const;
 export type TicketKind = (typeof ticketKinds)[number];
 
 export function ticketKind(typeCode: string): TicketKind {
   if (typeCode === PRICE_DIFFERENCE_TYPE) return 'price_difference';
   if (typeCode === PICKUP_DISPUTE_TYPE) return 'pickup_dispute';
+  if (typeCode === VIOLATION_APPEAL_TYPE) return 'appeal';
   return 'general';
 }
 
@@ -65,6 +69,9 @@ export const ticketResolutions = [
   'captain_paid',
   'accounts_corrected',
   'payment_correct',
+  // An appeal's outcome (slice 2.36b): accepted voids the violation.
+  'appeal_accepted',
+  'appeal_rejected',
 ] as const;
 export type TicketResolution = (typeof ticketResolutions)[number];
 
@@ -72,6 +79,7 @@ const RESOLUTIONS: Record<TicketKind, readonly TicketResolution[]> = {
   general: ['compensation_code', 'free_redelivery', 'none_explained'],
   price_difference: ['price_corrected', 'price_correct'],
   pickup_dispute: ['captain_paid', 'accounts_corrected', 'payment_correct'],
+  appeal: ['appeal_accepted', 'appeal_rejected'],
 };
 
 export function resolutionsOf(kind: TicketKind): readonly TicketResolution[] {
@@ -85,7 +93,7 @@ export type ResponsibleParty = (typeof responsibleParties)[number];
 export type ResolutionProblem = 'invalid_resolution' | 'responsible_required' | 'lines_required';
 
 // AP §9.9.3: the responsible party is required to resolve, except for a
-// price difference, which takes none. The lines the restaurant received go
+// price difference and an appeal (slice 2.36b), which take none. The lines the restaurant received go
 // with «تصحيح في الحسابات» only.
 export function resolutionProblem(input: {
   kind: TicketKind;
@@ -94,7 +102,7 @@ export function resolutionProblem(input: {
   lines: readonly unknown[] | null;
 }): ResolutionProblem | null {
   if (!RESOLUTIONS[input.kind].includes(input.resolution)) return 'invalid_resolution';
-  if (input.kind === 'price_difference') {
+  if (input.kind === 'price_difference' || input.kind === 'appeal') {
     if (input.responsible !== null) return 'invalid_resolution';
   } else if (input.responsible === null) {
     return 'responsible_required';
@@ -106,14 +114,18 @@ export function resolutionProblem(input: {
 }
 
 // «إغلاق» (owner decision 2026-11-17): an open ticket ends without a
-// resolution, message or entries.
+// resolution, message or entries; an appeal needs its decision (slice
+// 2.36b), so it is resolved, never closed.
 export function canClose(status: TicketStatus): boolean {
   return isOpen(status);
 }
 
 // AP §6.3: who may resolve or close a ticket of this kind: a pickup dispute
 // only OWN, OPS and FIN.
+// AP §9.7.5 (slice 2.36b): an appeal's result is OWN's and OPS's, as is
+// recording the violation.
 export function managingPermission(kind: TicketKind): string {
+  if (kind === 'appeal') return 'captains.manage';
   return kind === 'pickup_dispute' ? 'support.resolve_pickup_dispute' : 'support.manage';
 }
 

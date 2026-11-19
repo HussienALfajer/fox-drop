@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'api.dart';
 import 'auth.dart';
 import 'joining/application.dart';
+import 'performance/performance.dart';
 import 'profile/profile.dart';
 import 'router.dart';
 
@@ -87,6 +88,8 @@ String? pushTargetPath(Map<String, String> data) => switch (data['target']) {
   'home' => '/',
   'contract' => '/contract',
   'documents' => '/documents',
+  // CA §14 #25 (slice 2.36b): a violation opens «أدائي».
+  'performance' => '/performance',
   _ => null,
 };
 
@@ -109,6 +112,8 @@ final pushTapsProvider = Provider<void>((ref) {
         ref.invalidate(contractProvider);
       case 'documents':
         ref.invalidate(captainDocumentsProvider);
+      case 'performance':
+        ref.invalidate(performanceProvider);
     }
   }
 

@@ -5,7 +5,12 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type AuditActor, type AuditRequestContext, AuditService } from '../audit/index.js';
-import { CaptainsService } from '../captains/index.js';
+import {
+  CaptainsService,
+  type StatusChanged,
+  ViolationRefusedError,
+  ViolationsService,
+} from '../captains/index.js';
 import {
   ContentRefusedError,
   ContentService,
@@ -56,6 +61,7 @@ import {
   canClose,
   canSetStatus,
   FIXED_TYPE_LABELS,
+  VIOLATION_APPEAL_TYPE,
   isUrgent,
   managingPermission,
   moneyProblem,
@@ -383,7 +389,11 @@ export type TicketRefusal =
   | 'unknown_order'
   | 'lines_not_allowed'
   | 'order_state_changed'
-  | 'pickup_already_disputed';
+  | 'pickup_already_disputed'
+  // CA §11.3 (slice 2.36b): the appeal.
+  | 'unknown_violation'
+  | 'already_appealed'
+  | 'appeal_needs_decision';
 
 export class TicketRefusedError extends Error {
   constructor(
@@ -437,6 +447,7 @@ export class SupportService implements OnModuleInit {
     private readonly sync: TicketSync,
     private readonly admins: AdminSessionsService,
     private readonly captains: CaptainsService,
+    private readonly violations: ViolationsService,
     private readonly merchants: MerchantsService,
     private readonly customers: CustomersService,
     private readonly captainAccounts: CaptainAccountsService,
@@ -1406,6 +1417,85 @@ export class SupportService implements OnModuleInit {
     );
   }
 
+  // CA §11.3, AP §9.7.5 (slice 2.36b): the captain's «اعتراض» on one of its
+  // violations opens «اعتراض على مخالفة» for the supervisor, with the text
+  // and an optional photo, linked to the violation's order (not urgent: the
+  // resolution's timer). Once per violation (409 already_appealed; 404
+  // unknown_violation for one not the captain's). A repeat of the key
+  // answers its ticket. Resolved with its decision (`resolve`).
+  async appealViolation(
+    violationId: string,
+    appeal: { text: string; photoUploadId: string | null },
+    by: ReportingCaptain,
+    idempotencyKey: string,
+    now: Date,
+  ): Promise<CaptainTicketView> {
+    const captain = await this.captains.captain(by.captainId, now);
+    if (captain === null) throw new TicketRefusedError('unknown_violation', 'no such captain');
+    const photos = appeal.photoUploadId === null ? [] : [appeal.photoUploadId];
+    await this.preparePhotos(photos, by.accountId, now);
+    const timers = await this.timers(captain.cityId);
+    const requestHash = hashOf([
+      'captain_appeal',
+      violationId,
+      appeal.text.trim(),
+      appeal.photoUploadId,
+    ]);
+    const id = await this.database.db
+      .transaction(async (tx) => {
+        const replayed = await this.replayedIn(tx, by.accountId, idempotencyKey, requestHash);
+        if (replayed !== null) return replayed;
+        const violation = await this.violations.lockForAppeal(tx, by.captainId, violationId);
+        const photoKeys = await this.linkPhotos(tx, photos, now);
+        const ticketId = await this.insertTicket(
+          tx,
+          {
+            cityId: violation.cityId,
+            source: 'captain_appeal',
+            party: 'captain',
+            partyId: by.captainId,
+            order:
+              violation.orderId === null
+                ? null
+                : {
+                    id: violation.orderId,
+                    number: violation.orderNumber!,
+                    cityId: violation.cityId,
+                    active: false,
+                    // Only the order's id, number and state reach the ticket.
+                    customerId: '',
+                    restaurantId: '',
+                    captainId: by.captainId,
+                  },
+            typeCode: VIOLATION_APPEAL_TYPE,
+            typeLabel: FIXED_TYPE_LABELS[VIOLATION_APPEAL_TYPE],
+            description: appeal.text.trim(),
+            restaurantId: null,
+            pickupDisputeId: null,
+            openedBy: by.accountId,
+            idempotencyKey,
+            requestHash,
+            report: { photoKeys: photoKeys.length === 0 ? null : photoKeys },
+          },
+          timers,
+          { actor: { type: 'captain', id: by.captainId, role: null }, context: by.context },
+          now,
+        );
+        await this.violations.linkAppealIn(tx, violation.id, ticketId, now);
+        return ticketId;
+      })
+      .catch((error: unknown) => {
+        if (error instanceof ViolationRefusedError) {
+          throw new TicketRefusedError(
+            error.refusal === 'already_appealed' ? 'already_appealed' : 'unknown_violation',
+            error.message,
+          );
+        }
+        throw error;
+      });
+    return (await this.captainTicket(by, id))!;
+  }
+
   // CA §13 «بلاغاتي»: the captain's tickets, whoever opened them, newest
   // first, the latest CAPTAIN_LISTED.
   async captainTickets(viewer: {
@@ -1495,7 +1585,8 @@ export class SupportService implements OnModuleInit {
       row.source !== 'customer_report' &&
       row.source !== 'price_report' &&
       row.source !== 'merchant_report' &&
-      row.source !== 'captain_report'
+      row.source !== 'captain_report' &&
+      row.source !== 'captain_appeal'
     ) {
       return null;
     }
@@ -1920,10 +2011,22 @@ export class SupportService implements OnModuleInit {
       رقم: found.number.toString(),
       الرد: message,
     });
+    let appealed: { captainId: string; changed: StatusChanged | null } | null = null;
     await this.database.db.transaction(async (tx) => {
       const before = await lockTicket(tx, cityId, id);
       if (!isOpenStatus(before.status)) {
         throw new TicketRefusedError('ticket_not_open', 'the ticket is no longer open');
+      }
+      // AP §9.7.5 (slice 2.36b): the appeal's result is recorded on its
+      // violation; an accepted one voids it and lifts its suspension.
+      if (kind === 'appeal') {
+        appealed = await this.violations.decideAppealIn(
+          tx,
+          id,
+          input.resolution === 'appeal_accepted' ? 'accepted' : 'rejected',
+          { actor: admin.actor, context: admin.context },
+          now,
+        );
       }
       const actor = { type: 'admin' as const, id: admin.accountId };
       if (money !== null) await this.checkEarlierMoney(tx, before, money, facts!);
@@ -2043,6 +2146,7 @@ export class SupportService implements OnModuleInit {
         tx,
       );
     });
+    if (appealed !== null) await this.violations.afterAppeal(appealed, now);
     return this.ticket(cityId, id);
   }
 
@@ -2122,9 +2226,14 @@ export class SupportService implements OnModuleInit {
     now: Date,
   ): Promise<TicketPage> {
     const text = reason.trim();
-    const needed = managingPermission(ticketKind((await this.row(cityId, id)).typeCode));
+    const kind = ticketKind((await this.row(cityId, id)).typeCode);
+    const needed = managingPermission(kind);
     if (!admin.permissions.includes(needed)) {
       throw new TicketRefusedError('forbidden', `closing this ticket needs ${needed}`);
+    }
+    // An appeal is resolved with its decision, never closed (slice 2.36b).
+    if (kind === 'appeal') {
+      throw new TicketRefusedError('appeal_needs_decision', 'an appeal takes a decision');
     }
     await this.database.db.transaction(async (tx) => {
       const before = await lockTicket(tx, cityId, id);

@@ -14,10 +14,10 @@ Slice 2.36b, performance, violations and appeals (`docs/roadmap.md`, Phase 2; th
 - **Plan:**
   - [x] Violations: the Content list, `captains.violations` (type, step, order, consequence, appeal state), the ladder rule (failing test first: the suggested step within the window, severe types, voided ones left out), the panel's «تسجيل مخالفة» in «المخالفات والإيقافات» with the suggestion and the history of suspensions, the push #25.
   - [x] The acceptance alert: the warning in the app below 70%, the OPS review task below 50% (AP §9.1.3), no automatic suspension.
-  - [ ] «أدائي» in the captain app: the rate with the last 50 offers (time, restaurant, response), on time, cancellations, rating with reasons, online hours, the violations, the work rules link.
-  - [ ] «اعتراض»: the captain's appeal opening a support ticket (text, optional photo), its status in Support, OPS recording the result on the violation (accepted voids it and lifts its suspension), the push #30.
+  - [x] «أدائي» in the captain app: the rate with the last 50 offers (time, restaurant, response), on time, cancellations, rating with reasons, online hours, the violations, the work rules link.
+  - [x] «اعتراض»: the captain's appeal opening a support ticket (text, optional photo), its status in Support, OPS recording the result on the violation (accepted voids it and lifts its suspension), the push #30.
   - [ ] Review, then hand over to 2.36c.
-- **Stopped at:** steps 1–2 done (the app's warning below 70% shows in «أدائي», step 3); next «أدائي».
+- **Stopped at:** steps 1–4 done; next the review and the handover.
 
 ### Left from 2.36a (the cloud session's branch)
 

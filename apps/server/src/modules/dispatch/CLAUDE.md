@@ -30,6 +30,6 @@ Eligibility, ranking, offers, assignments and handovers (architecture §4.2): ma
 
 ## Not yet
 
-- The reassignment before the pickup is ordering's since slice 2.12a (the order then comes back to dispatch «بحاجة لتعيين»); the captain app's «أدائي» with the last 50 offers (CA §11.1, 2.36b).
+- The reassignment before the pickup is ordering's since slice 2.12a (the order then comes back to dispatch «بحاجة لتعيين»).
 - The captain's location on the offer answers (CA §15; the order commands in `ordering` record it since slice 1.12), the open offer and the captain's phone, live position and cash in the order detail (AP §9.3.1), reading `dispatch.no_captain_alert_min` when the search starts rather than at acceptance.
 - `offers` is not partitioned; partition it by month with the orders before its volume matters.

@@ -16413,7 +16413,8 @@
                 "merchant_report",
                 "order_problem",
                 "captain_report",
-                "captain_problem"
+                "captain_problem",
+                "captain_appeal"
               ]
             }
           },
@@ -17026,6 +17027,63 @@
         },
         "tags": [
           "customer"
+        ]
+      }
+    },
+    "/v1/captain/violations/{violationId}/appeal": {
+      "post": {
+        "operationId": "captainAppealsAppeal",
+        "parameters": [
+          {
+            "name": "violationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaptainAppealBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainAppealTicketDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
         ]
       }
     },
@@ -19667,6 +19725,32 @@
         },
         "tags": [
           "admin"
+        ]
+      }
+    },
+    "/v1/captain/performance": {
+      "get": {
+        "operationId": "captainPerformanceRead",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainPerformanceDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
         ]
       }
     },
@@ -57168,7 +57252,7 @@
                 },
                 "source": {
                   "type": "string",
-                  "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem so far."
+                  "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem, captain_appeal so far."
                 },
                 "party": {
                   "type": "string",
@@ -57218,7 +57302,8 @@
                   "enum": [
                     "general",
                     "price_difference",
-                    "pickup_dispute"
+                    "pickup_dispute",
+                    "appeal"
                   ],
                   "description": "Which resolutions it takes (AP §9.9.3): general, price_difference, pickup_dispute."
                 },
@@ -57351,7 +57436,9 @@
                             "price_correct",
                             "captain_paid",
                             "accounts_corrected",
-                            "payment_correct"
+                            "payment_correct",
+                            "appeal_accepted",
+                            "appeal_rejected"
                           ]
                         },
                         "responsible": {
@@ -57622,7 +57709,7 @@
           },
           "source": {
             "type": "string",
-            "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem so far."
+            "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem, captain_appeal so far."
           },
           "party": {
             "type": "string",
@@ -57672,7 +57759,8 @@
             "enum": [
               "general",
               "price_difference",
-              "pickup_dispute"
+              "pickup_dispute",
+              "appeal"
             ],
             "description": "Which resolutions it takes (AP §9.9.3): general, price_difference, pickup_dispute."
           },
@@ -57805,7 +57893,9 @@
                       "price_correct",
                       "captain_paid",
                       "accounts_corrected",
-                      "payment_correct"
+                      "payment_correct",
+                      "appeal_accepted",
+                      "appeal_rejected"
                     ]
                   },
                   "responsible": {
@@ -62697,7 +62787,7 @@
                 },
                 "source": {
                   "type": "string",
-                  "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem so far."
+                  "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem, captain_appeal so far."
                 },
                 "party": {
                   "type": "string",
@@ -62747,7 +62837,8 @@
                   "enum": [
                     "general",
                     "price_difference",
-                    "pickup_dispute"
+                    "pickup_dispute",
+                    "appeal"
                   ],
                   "description": "Which resolutions it takes (AP §9.9.3): general, price_difference, pickup_dispute."
                 },
@@ -62880,7 +62971,9 @@
                             "price_correct",
                             "captain_paid",
                             "accounts_corrected",
-                            "payment_correct"
+                            "payment_correct",
+                            "appeal_accepted",
+                            "appeal_rejected"
                           ]
                         },
                         "responsible": {
@@ -63333,7 +63426,7 @@
           },
           "source": {
             "type": "string",
-            "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem so far."
+            "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem, captain_appeal so far."
           },
           "party": {
             "type": "string",
@@ -63383,7 +63476,8 @@
             "enum": [
               "general",
               "price_difference",
-              "pickup_dispute"
+              "pickup_dispute",
+              "appeal"
             ],
             "description": "Which resolutions it takes (AP §9.9.3): general, price_difference, pickup_dispute."
           },
@@ -63516,7 +63610,9 @@
                       "price_correct",
                       "captain_paid",
                       "accounts_corrected",
-                      "payment_correct"
+                      "payment_correct",
+                      "appeal_accepted",
+                      "appeal_rejected"
                     ]
                   },
                   "responsible": {
@@ -63750,7 +63846,7 @@
           },
           "source": {
             "type": "string",
-            "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem so far."
+            "description": "Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem, captain_appeal so far."
           },
           "party": {
             "type": "string",
@@ -63800,7 +63896,8 @@
             "enum": [
               "general",
               "price_difference",
-              "pickup_dispute"
+              "pickup_dispute",
+              "appeal"
             ],
             "description": "Which resolutions it takes (AP §9.9.3): general, price_difference, pickup_dispute."
           },
@@ -63933,7 +64030,9 @@
                       "price_correct",
                       "captain_paid",
                       "accounts_corrected",
-                      "payment_correct"
+                      "payment_correct",
+                      "appeal_accepted",
+                      "appeal_rejected"
                     ]
                   },
                   "responsible": {
@@ -65062,7 +65161,9 @@
               "price_correct",
               "captain_paid",
               "accounts_corrected",
-              "payment_correct"
+              "payment_correct",
+              "appeal_accepted",
+              "appeal_rejected"
             ],
             "description": "From the ticket kind's (AP §9.9.3)."
           },
@@ -65623,6 +65724,152 @@
         },
         "required": [
           "tickets"
+        ],
+        "additionalProperties": false
+      },
+      "CaptainAppealBodyDto": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300,
+            "description": "Why the captain appeals."
+          },
+          "photoUploadId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "One photo at most, from POST /v1/captain/uploads/report-photo once uploaded."
+          }
+        },
+        "required": [
+          "text",
+          "photoUploadId"
+        ]
+      },
+      "CaptainAppealTicketDto_Output": {
+        "type": "object",
+        "properties": {
+          "ticket": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "number": {
+                "type": "string",
+                "pattern": "^\\d{1,18}$",
+                "description": "Shown as `T-{number}`."
+              },
+              "typeLabel": {
+                "type": "string"
+              },
+              "orderId": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "orderNumber": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^\\d{1,18}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "description": "The note sent."
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "new",
+                  "in_progress",
+                  "waiting",
+                  "resolved",
+                  "closed"
+                ],
+                "description": "AP Appendix C: «جديدة», «قيد المعالجة», «بانتظار رد», «محلولة», «مغلقة»."
+              },
+              "openedAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              "openedBy": {
+                "type": "string",
+                "enum": [
+                  "me",
+                  "operations"
+                ],
+                "description": "Who opened it: the captain, or the panel."
+              },
+              "replyWithinMinutes": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "description": "«سنرد عليك خلال {المدة}»: the ticket's timer from its opening."
+              },
+              "message": {
+                "description": "The resolution message, once resolved.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "resolvedAt": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "number",
+              "typeLabel",
+              "orderId",
+              "orderNumber",
+              "description",
+              "status",
+              "openedAt",
+              "openedBy",
+              "replyWithinMinutes",
+              "message",
+              "resolvedAt"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ticket"
         ],
         "additionalProperties": false
       },
@@ -75970,6 +76217,258 @@
           "orderId",
           "reason"
         ]
+      },
+      "CaptainPerformanceDto_Output": {
+        "type": "object",
+        "properties": {
+          "acceptance": {
+            "type": "object",
+            "properties": {
+              "rate": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Whole percent; null without an answered offer."
+              },
+              "accepted": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "answered": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "windowOffers": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "description": "captain.acceptance_window_offers"
+              },
+              "warn": {
+                "type": "boolean",
+                "description": "Below captain.acceptance_alert_pct: the app warns."
+              },
+              "alertPct": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "offers": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "offeredAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    "restaurantName": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "response": {
+                      "type": "string",
+                      "enum": [
+                        "accepted",
+                        "declined",
+                        "expired"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "offeredAt",
+                    "restaurantName",
+                    "response"
+                  ],
+                  "additionalProperties": false
+                },
+                "description": "The answered offers counted, newest first."
+              }
+            },
+            "required": [
+              "rate",
+              "accepted",
+              "answered",
+              "windowOffers",
+              "warn",
+              "alertPct",
+              "offers"
+            ],
+            "additionalProperties": false
+          },
+          "onTime": {
+            "type": "object",
+            "properties": {
+              "onTime": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "counted": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "onTime",
+              "counted"
+            ],
+            "additionalProperties": false,
+            "description": "Of the last 50 delivered: those at or before the promised time."
+          },
+          "cancellations": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "Captain cancellations within the window."
+          },
+          "windowDays": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "captain.violation_window_days"
+          },
+          "online": {
+            "type": "object",
+            "properties": {
+              "todayMinutes": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "weekMinutes": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "description": "The payout week."
+              }
+            },
+            "required": [
+              "todayMinutes",
+              "weekMinutes"
+            ],
+            "additionalProperties": false
+          },
+          "violations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "recordedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "The type as chosen, with the text of «أخرى»."
+                },
+                "step": {
+                  "type": "string",
+                  "enum": [
+                    "warning",
+                    "suspension_1d",
+                    "suspension_7d",
+                    "termination"
+                  ]
+                },
+                "orderNumber": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "suspendedUntil": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "appeal": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "ticketId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "outcome": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "accepted",
+                                "rejected"
+                              ]
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "ticketId",
+                        "outcome"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "«اعتراض»; an accepted one voids the violation."
+                }
+              },
+              "required": [
+                "id",
+                "recordedAt",
+                "type",
+                "step",
+                "orderNumber",
+                "suspendedUntil",
+                "appeal"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Newest first."
+          }
+        },
+        "required": [
+          "acceptance",
+          "onTime",
+          "cancellations",
+          "windowDays",
+          "online",
+          "violations"
+        ],
+        "additionalProperties": false
       },
       "AdminRestaurantListQueryDto": {
         "type": "object",

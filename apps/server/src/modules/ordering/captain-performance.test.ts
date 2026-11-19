@@ -5,7 +5,7 @@ import { AcceptanceReviews, DispatchService } from '../dispatch/index.js';
 import { GeoService } from '../geo/index.js';
 import { AlertsService } from '../notifications/index.js';
 import { SettingsService } from '../settings/index.js';
-import { app, db, orderAtDoor, sql } from './delivery.fixture.js';
+import { admin, app, db, orderAtDoor, sql } from './delivery.fixture.js';
 
 // AP §9.7.6, CA §11.1–11.3 (slice 2.36b): the acceptance review task and
 // the captain's «أدائي».
@@ -58,5 +58,60 @@ describe('the acceptance review (AP §9.7.6)', () => {
     await offersOf(door.order.id, captainId, ['accepted', 'accepted', 'accepted'], 10);
     await reviews().run(new Date());
     expect(await reviewOpen(captainId)).toBe(0);
+  });
+});
+
+describe('«أدائي» (CA §11.1–11.3)', () => {
+  it('answers the rate with its offers and warning, on time and the violations', async () => {
+    const door = await orderAtDoor();
+    expect((await door.deliver()).statusCode).toBe(200);
+    const { captainId, headers } = door.captain;
+    // 2 accepted of 3 answered: 67%, below 70%.
+    await offersOf(door.order.id, captainId, ['accepted', 'withdrawn', 'declined', 'accepted']);
+    const ops = await admin(['OPS']);
+    expect(
+      (
+        await ops.post(`/v1/admin/captains/${captainId}/violations`, {
+          severe: false,
+          typeCode: 'no_helmet',
+          typeNote: null,
+          step: 'warning',
+          orderId: door.order.id,
+          reason: 'شوهد بلا خوذة',
+        })
+      ).statusCode,
+    ).toBe(201);
+
+    const read = await app.inject({ method: 'GET', url: '/v1/captain/performance', headers });
+    expect(read.statusCode).toBe(200);
+    const body = read.json();
+    expect(body.acceptance).toMatchObject({
+      rate: 67,
+      accepted: 2,
+      answered: 3,
+      windowOffers: 50,
+      warn: true,
+      alertPct: 70,
+    });
+    expect(body.acceptance.offers.map((offer: { response: string }) => offer.response)).toEqual([
+      'accepted',
+      'declined',
+      'accepted',
+    ]);
+    expect(body.acceptance.offers[0].restaurantName).toEqual(expect.any(String));
+    expect(body).toMatchObject({
+      onTime: { onTime: 1, counted: 1 },
+      cancellations: 0,
+      windowDays: 90,
+    });
+    expect(body.violations).toEqual([
+      expect.objectContaining({
+        type: 'عدم ارتداء الخوذة',
+        step: 'warning',
+        orderNumber: expect.any(String),
+        suspendedUntil: null,
+        appeal: null,
+      }),
+    ]);
   });
 });

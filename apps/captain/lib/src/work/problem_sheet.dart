@@ -142,7 +142,9 @@ Future<void> _report(
     ReportClosed() => l10n.captainProblemClosed,
     PickupAlreadyDisputed() => l10n.captainPickupAmountDisputed,
     PickupAmountSame() => l10n.captainPickupAmountSame,
-    ReportPhotoFailed() || ReportFailed() => l10n.captainReportFailed,
+    ReportPhotoFailed() ||
+    ReportFailed() ||
+    AppealAlreadySent() => l10n.captainReportFailed,
   };
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
 }
