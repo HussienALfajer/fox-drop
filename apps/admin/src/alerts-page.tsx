@@ -14,6 +14,7 @@ import {
   staleRateOf,
   useAcknowledgeAlert,
 } from './alerts.js';
+import { applicationOfAlert, canSeeApplications } from './captain-applications.js';
 import { CASH_DESK, FINANCE_READ } from './cash-desk.js';
 import { type City, chosenCity, citiesQuery } from './cities.js';
 import { formatDateTime } from './format.js';
@@ -165,6 +166,8 @@ function AlertLine({ alert, city }: { alert: AdminAlert; city: City }) {
     canReadTickets(session)
       ? alert.subjectId
       : null;
+  // AP §9.1.3 «طلب انضمام كابتن» (slice 2.34b): «فتح طلب الانضمام».
+  const applicationId = canSeeApplications(session) ? applicationOfAlert(alert) : null;
   // AP §9.1.3 «تغيير أسعار كبير» (slice 2.32a): «فتح سجل الأسعار».
   const priceLogOf = can(session, RESTAURANTS_READ) ? priceChangeRestaurantOf(alert) : null;
   return (
@@ -211,6 +214,15 @@ function AlertLine({ alert, city }: { alert: AdminAlert; city: City }) {
           search={{ city: city.code, tab: 'menu' }}
         >
           {t('alerts.openPriceLog')}
+        </Link>
+      )}
+      {applicationId && (
+        <Link
+          to="/captain-applications/$applicationId"
+          params={{ applicationId }}
+          search={{ city: city.code }}
+        >
+          {t('alerts.openApplication')}
         </Link>
       )}
       {ticketId && (

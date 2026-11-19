@@ -14,10 +14,10 @@ Slice 2.34b, the captain applications' pipeline in the panel (`docs/roadmap.md`,
 - **Plan (one commit per step):**
   - [x] Server (one commit for the two server steps: the actions share the records' code), the pipeline's records and reads: a migration for the stage history with notes (`captains.application_events`), the open document requests, the interview (time, place, point) and the rejection (reason, re-apply date); `GET /v1/admin/captain-applications?stage=` (counts by stage, the list) and `GET …/{applicationId}` (the data, the documents with their files signed for the panel and their history, the duplicate check on the ID number, the phone and the plate against other applicants and captains, the notes and history); the alert «طلب انضمام كابتن» raised at «إرسال الطلب»; re-applying after a rejection (K11: 30 days from it, fixed); the applicant may upload a document again after submission while it is requested or rejected.
   - [x] Server, the pipeline's actions (`captains.manage`, audited, each moving «جديد» to «قيد المراجعة» first): a document's «مقبول» or «مرفوض» with a reason, the office's scan, «طلب مستند», a note, «تحديد مقابلة» (→ «مقابلة وتدريب»), training passed (→ «بانتظار العدة»), «رفض» with a reason, «قائمة انتظار» and back to «قيد المراجعة»; the applicant's silent push at every change (CA §14 #29, the CA §5.4 texts), which needs an applicant's push token (the captain party without a captain).
-  - [ ] Admin panel: the pipeline (stages with counts, the list) and the review page with every action, unstyled (design stop).
+  - [x] Admin panel: the pipeline (stages with counts, the list) and the review page with every action, unstyled (design stop).
   - [ ] Captain app: the status page's every stage (CA §5.4: the requested documents and their re-upload, the interview with its place, the rejection's reason and date with «تقديم طلب جديد» once it passed), the push token registered for an applicant.
   - [ ] Review (`reviewer` with the sections above), then the hand-over.
-- **Stopped at:** the server steps done; the panel next.
+- **Stopped at:** the server and the panel done; the captain app next.
 
 ### Left from 2.34a (the cloud session's branch)
 
