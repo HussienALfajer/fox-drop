@@ -2949,7 +2949,10 @@
       "unknown_restaurant": "لم يعد هذا المطعم موجوداً.",
       "not_in_base_currency": "السعر ليس بالعملة الأساسية للمدينة.",
       "restaurant_terminated": "انتهى حساب هذا المطعم.",
-      "price_edit_not_allowed": "لا تملك صلاحية تعديل الأسعار بعد التفعيل."
+      "price_edit_not_allowed": "لا تملك صلاحية تعديل الأسعار بعد التفعيل.",
+      "price_reaches_zero": "سيصل سعر صنف إلى صفر أو أقل. غيّر القيمة.",
+      "rounding_unit_missing": "لم تُحدَّد وحدة التقريب للعملة الأساسية بعد.",
+      "idempotency_key_reused": "أعد المعاينة ثم أكّد."
     },
     "pricesLocked": "بعد التفعيل يعدّل الأسعار من يملك صلاحية تعديل أسعار القوائم فقط. يُبلَّغ مالك المطعم بكل تغيير في السعر.",
     "groups": {
@@ -2978,6 +2981,52 @@
       "optionFree": "{{name}} · مجاني",
       "ofItem": "مجموعات الخيارات لهذا الصنف",
       "list": "الخيارات: {{names}}"
+    },
+    "bulk": {
+      "title": "تعديل جماعي للأسعار",
+      "scope": "على",
+      "wholeMenu": "القائمة كلها",
+      "direction": "الاتجاه",
+      "up": "رفع",
+      "down": "خفض",
+      "kind": "بـ",
+      "percent": "نسبة مئوية (%)",
+      "amount": "مبلغ ثابت ({{currency}})",
+      "value": "القيمة",
+      "preview": "معاينة قبل وبعد",
+      "problem": "اكتب القيمة بالأرقام، أكبر من صفر.",
+      "summary": "سيتغيّر {{changed}} صنفاً، ويبقى {{unchanged}} كما هو. التقريب إلى {{unit}}.",
+      "refusedRows": "{{count}} من الأسعار ستصل إلى صفر أو أقل: غيّر القيمة.",
+      "previewTable": "الأسعار قبل التعديل وبعده",
+      "item": "الصنف",
+      "itemCell": "{{code}} · {{name}}",
+      "before": "قبل",
+      "after": "بعد",
+      "reachesZero": "يصل إلى صفر",
+      "confirm": "تأكيد التعديل ({{count}})",
+      "applied": "عُدّلت أسعار {{count}} صنفاً وأُبلغ مالك المطعم."
+    },
+    "bulkAvailability": {
+      "title": "توفر جماعي",
+      "off": "{{name}} (غير متوفر)",
+      "chosen": "المحدد: {{count}}",
+      "on": "متوفر",
+      "offTomorrow": "غير متوفر حتى الغد",
+      "offUntilBack": "غير متوفر حتى أعيده"
+    },
+    "priceLog": {
+      "title": "سجل الأسعار",
+      "none": "لم يتغيّر أي سعر بعد.",
+      "row": "الصنف أو الخيار",
+      "option": "{{group}}: {{name}}",
+      "who": "من",
+      "when": "متى",
+      "restaurant": "المطعم",
+      "by": {
+        "admin": "الإدارة",
+        "merchant": "المطعم",
+        "system": "النظام"
+      }
     }
   },
   "activation": {

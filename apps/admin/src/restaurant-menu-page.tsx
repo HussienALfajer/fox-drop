@@ -4,6 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { formatMoney } from './format.js';
 import { timeOf } from './peak-bonus.js';
 import { ImageField } from './restaurant-images-page.js';
+import {
+  BulkAvailabilitySection,
+  BulkPriceSection,
+  PriceLogSection,
+} from './restaurant-menu-bulk-page.js';
 import { CommandStatus } from './restaurant-menu-status.js';
 import { OptionGroupsSection } from './restaurant-option-groups-page.js';
 import {
@@ -34,6 +39,7 @@ import type { AdminSession } from './session.js';
 export function MenuStep(props: {
   restaurantId: string;
   currency: string | null;
+  timeZone: string;
   session: AdminSession;
 }) {
   const { t } = useTranslation();
@@ -91,6 +97,19 @@ export function MenuStep(props: {
         currency={props.currency}
         editable={editable}
       />
+      {editable && menu.data.categories.length > 0 && (
+        <>
+          {props.currency !== null && !menu.data.pricesLocked && (
+            <BulkPriceSection
+              restaurantId={props.restaurantId}
+              menu={menu.data}
+              currency={props.currency}
+            />
+          )}
+          <BulkAvailabilitySection restaurantId={props.restaurantId} menu={menu.data} />
+        </>
+      )}
+      <PriceLogSection restaurantId={props.restaurantId} timeZone={props.timeZone} />
     </section>
   );
 }
