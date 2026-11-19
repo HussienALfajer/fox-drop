@@ -42912,7 +42912,8 @@
                     "captain_application",
                     "probation_ending",
                     "probation_overdue",
-                    "document_expiring"
+                    "document_expiring",
+                    "acceptance_review"
                   ],
                   "description": "The rule of AP §9.1.3."
                 },
@@ -43168,7 +43169,8 @@
               "captain_application",
               "probation_ending",
               "probation_overdue",
-              "document_expiring"
+              "document_expiring",
+              "acceptance_review"
             ],
             "description": "The rule of AP §9.1.3."
           },

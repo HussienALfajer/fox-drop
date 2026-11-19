@@ -40,7 +40,7 @@ abstract class AdminAlertDtoOutput
   /// The rule of AP §9.1.3.
   @BuiltValueField(wireName: r'code')
   AdminAlertDtoOutputCodeEnum get code;
-  // enum codeEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  captain_cash_limit,  codes_cannot_send,  code_number_stopped,  away_from_address,  item_unavailable,  edit_unacknowledged,  captain_cannot_complete,  captain_emergency,  customer_not_answering,  restaurant_auto_paused,  restaurant_settlement_overdue,  rate_stale,  compensation_approval,  urgent_ticket,  urgent_dispute_ticket,  large_price_change,  captain_application,  probation_ending,  probation_overdue,  document_expiring,  };
+  // enum codeEnum {  restaurant_not_accepted,  no_captain,  no_captain_after_ready,  captain_gps_lost,  pickup_disputed,  prep_late,  captain_waiting,  delivery_late,  collection_shortfall,  captain_cash_limit,  codes_cannot_send,  code_number_stopped,  away_from_address,  item_unavailable,  edit_unacknowledged,  captain_cannot_complete,  captain_emergency,  customer_not_answering,  restaurant_auto_paused,  restaurant_settlement_overdue,  rate_stale,  compensation_approval,  urgent_ticket,  urgent_dispute_ticket,  large_price_change,  captain_application,  probation_ending,  probation_overdue,  document_expiring,  acceptance_review,  };
 
   /// critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
   @BuiltValueField(wireName: r'severity')
@@ -556,6 +556,9 @@ class AdminAlertDtoOutputCodeEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'document_expiring')
   static const AdminAlertDtoOutputCodeEnum documentExpiring =
       _$adminAlertDtoOutputCodeEnum_documentExpiring;
+  @BuiltValueEnumConst(wireName: r'acceptance_review')
+  static const AdminAlertDtoOutputCodeEnum acceptanceReview =
+      _$adminAlertDtoOutputCodeEnum_acceptanceReview;
 
   static Serializer<AdminAlertDtoOutputCodeEnum> get serializer =>
       _$adminAlertDtoOutputCodeEnumSerializer;

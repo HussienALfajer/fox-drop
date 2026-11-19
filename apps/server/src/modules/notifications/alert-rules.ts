@@ -110,6 +110,10 @@ export const alertCodes = [
   // force within captain.document_expiry_notice_days of its expiry, or
   // expired, until an accepted one replaces it.
   'document_expiring',
+  // «مراجعة نسبة القبول» (AP §9.1.3, §9.7.6, CA §11.1; slice 2.36b): a
+  // captain's acceptance over captain.acceptance_window_offers below
+  // captain.acceptance_review_pct, until it is back at it or above.
+  'acceptance_review',
 ] as const;
 export type AlertCode = (typeof alertCodes)[number];
 
@@ -161,6 +165,7 @@ export const ALERT_RULES: Record<AlertCode, AlertRule> = {
   probation_ending: rule('information', OPERATIONS, 'captain'),
   probation_overdue: rule('warning', OPERATIONS, 'captain'),
   document_expiring: rule('information', OPERATIONS, 'captain'),
+  acceptance_review: rule('information', OPERATIONS, 'captain'),
 };
 
 function rule(

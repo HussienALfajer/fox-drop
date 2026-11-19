@@ -59,6 +59,7 @@ export const alertKeys = {
   probation_ending: 'order.alert.probationEnding',
   probation_overdue: 'order.alert.probationOverdue',
   document_expiring: 'order.alert.documentExpiring',
+  acceptance_review: 'order.alert.acceptanceReview',
 } as const satisfies Record<AlertCode, string>;
 
 export const badgeKeys = {

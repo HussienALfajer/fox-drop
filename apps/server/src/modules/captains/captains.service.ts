@@ -796,6 +796,15 @@ export class CaptainsService implements OnModuleInit {
       .where(eq(captainRecords.cityId, cityId));
   }
 
+  // AP §9.7.6 (slice 2.36b): the city's captains not terminated, by name,
+  // for the acceptance review.
+  async reviewable(cityId: string): Promise<{ id: string; name: string }[]> {
+    return this.database.db
+      .select({ id: captainRecords.id, name: captainRecords.name })
+      .from(captainRecords)
+      .where(and(eq(captainRecords.cityId, cityId), ne(captainRecords.status, 'terminated')));
+  }
+
   // The captains' names by id, in one read (AP §9.10.7's list).
   async names(captainIds: readonly string[]): Promise<Map<string, string>> {
     if (captainIds.length === 0) return new Map();
