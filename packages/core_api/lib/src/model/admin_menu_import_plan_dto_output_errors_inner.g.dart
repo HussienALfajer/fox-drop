@@ -73,6 +73,9 @@ _$adminMenuImportPlanDtoOutputErrorsInnerErrorEnum_repeatedCode =
 const AdminMenuImportPlanDtoOutputErrorsInnerErrorEnum
 _$adminMenuImportPlanDtoOutputErrorsInnerErrorEnum_unknownGroup =
     const AdminMenuImportPlanDtoOutputErrorsInnerErrorEnum._('unknownGroup');
+const AdminMenuImportPlanDtoOutputErrorsInnerErrorEnum
+_$adminMenuImportPlanDtoOutputErrorsInnerErrorEnum_ambiguousName =
+    const AdminMenuImportPlanDtoOutputErrorsInnerErrorEnum._('ambiguousName');
 
 AdminMenuImportPlanDtoOutputErrorsInnerErrorEnum
 _$adminMenuImportPlanDtoOutputErrorsInnerErrorEnumValueOf(String name) {
@@ -87,6 +90,8 @@ _$adminMenuImportPlanDtoOutputErrorsInnerErrorEnumValueOf(String name) {
       return _$adminMenuImportPlanDtoOutputErrorsInnerErrorEnum_repeatedCode;
     case 'unknownGroup':
       return _$adminMenuImportPlanDtoOutputErrorsInnerErrorEnum_unknownGroup;
+    case 'ambiguousName':
+      return _$adminMenuImportPlanDtoOutputErrorsInnerErrorEnum_ambiguousName;
     default:
       throw ArgumentError(name);
   }
@@ -101,6 +106,7 @@ _$adminMenuImportPlanDtoOutputErrorsInnerErrorEnumValues =
         _$adminMenuImportPlanDtoOutputErrorsInnerErrorEnum_invalidPrice,
         _$adminMenuImportPlanDtoOutputErrorsInnerErrorEnum_repeatedCode,
         _$adminMenuImportPlanDtoOutputErrorsInnerErrorEnum_unknownGroup,
+        _$adminMenuImportPlanDtoOutputErrorsInnerErrorEnum_ambiguousName,
       ],
     );
 
@@ -164,6 +170,7 @@ class _$AdminMenuImportPlanDtoOutputErrorsInnerErrorEnumSerializer
     'invalidPrice': 'invalid_price',
     'repeatedCode': 'repeated_code',
     'unknownGroup': 'unknown_group',
+    'ambiguousName': 'ambiguous_name',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'required': 'required_',
@@ -171,6 +178,7 @@ class _$AdminMenuImportPlanDtoOutputErrorsInnerErrorEnumSerializer
     'invalid_price': 'invalidPrice',
     'repeated_code': 'repeatedCode',
     'unknown_group': 'unknownGroup',
+    'ambiguous_name': 'ambiguousName',
   };
 
   @override

@@ -352,7 +352,14 @@ describe('step 7, the basic menu', () => {
     expect(await log()).toHaveLength(2);
     expect((await log())[1]).toEqual({ old: '13000', new: '15000', currency: 'TRY', by: 'admin' });
     expect(await told()).toEqual([
-      { itemId: shawarma, name: 'شاورما', oldPrice: '13000', newPrice: '15000', currency: 'TRY' },
+      {
+        itemId: shawarma,
+        name: 'شاورما',
+        oldPrice: '13000',
+        newPrice: '15000',
+        currency: 'TRY',
+        changedById: expect.any(String),
+      },
     ]);
 
     // DATA edits the names and the switches of an active restaurant, never
@@ -594,7 +601,14 @@ describe('option groups and add-ons (AP §9.6.6)', () => {
       [id],
     );
     expect(told.rows.map((row) => row.payload.values)).toEqual([
-      { optionId: cheese, name: 'جبنة إضافية', oldPrice: '500', newPrice: '750', currency: 'TRY' },
+      {
+        optionId: cheese,
+        name: 'جبنة إضافية',
+        oldPrice: '500',
+        newPrice: '750',
+        currency: 'TRY',
+        changedById: expect.any(String),
+      },
     ]);
   });
 });
@@ -846,6 +860,8 @@ describe('«سجل الأسعار» and «سجل التغييرات» (AP §9.6.
     // FIN reads no menu.
     const fin = await admin('FIN');
     expect((await fin('GET', `/v1/admin/restaurants/${id}/menu/price-log`)).statusCode).toBe(403);
+    // An availability switch stays out of the change log.
+    await ops('PUT', `/${id}/menu/availability`, { type: 'item', id: shawarma, available: false });
     // OPS reads the change log with the menu's own events.
     const changes = (await ops('GET', `/v1/admin/restaurants/${id}/change-log`)).json().entries;
     expect(changes.map((entry: { action: string }) => entry.action)).toEqual(
@@ -856,6 +872,9 @@ describe('«سجل الأسعار» and «سجل التغييرات» (AP §9.6.
         'menu.option_group.create',
         'menu.option.update',
       ]),
+    );
+    expect(changes.map((entry: { action: string }) => entry.action)).not.toContain(
+      'menu.item.availability',
     );
   });
 });

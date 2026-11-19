@@ -65,6 +65,7 @@ class AdminMenuImportPlanDto extends createZodDto(
             'invalid_price',
             'repeated_code',
             'unknown_group',
+            'ambiguous_name',
           ]),
         }),
       )

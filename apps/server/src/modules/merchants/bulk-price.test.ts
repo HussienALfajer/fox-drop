@@ -79,6 +79,38 @@ describe('bulkPrices', () => {
     });
   });
 
+  it('never moves a price off the grid against the direction asked', () => {
+    const half = { unit: 500n, mode: 'nearest' as const };
+    // 760 down 1% is 752.4, which rounds to 1000: kept at 760.
+    expect(
+      bulkPrices([{ id: 'a', price: 760n }], { kind: 'percent', direction: 'down', bp: 100 }, half)
+        .rows,
+    ).toEqual([{ id: 'a', before: 760n, after: 760n }]);
+    // The floor of one unit never raises a lowered price.
+    expect(
+      bulkPrices([{ id: 'a', price: 300n }], { kind: 'percent', direction: 'down', bp: 5000 }, half)
+        .rows,
+    ).toEqual([{ id: 'a', before: 300n, after: 300n }]);
+    // 1010 up 1% is 1020.1, which rounds to 1000: kept at 1010.
+    expect(
+      bulkPrices([{ id: 'a', price: 1_010n }], { kind: 'percent', direction: 'up', bp: 100 }, half)
+        .rows,
+    ).toEqual([{ id: 'a', before: 1_010n, after: 1_010n }]);
+  });
+
+  it('refuses a percentage above 1000% and a price above 15 digits', () => {
+    expect(() =>
+      bulkPrices(items, { kind: 'percent', direction: 'up', bp: 100_001 }, lira),
+    ).toThrow(RangeError);
+    expect(() =>
+      bulkPrices(
+        [{ id: 'a', price: 999_999_999_999_000n }],
+        { kind: 'amount', direction: 'up', amount: 10_000n },
+        lira,
+      ),
+    ).toThrow(RangeError);
+  });
+
   it('refuses a change of nothing', () => {
     expect(() => bulkPrices(items, { kind: 'percent', direction: 'up', bp: 0 }, lira)).toThrow(
       RangeError,

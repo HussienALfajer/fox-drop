@@ -9,7 +9,15 @@ import { FilesService } from '../files/index.js';
 import { FxService } from '../fx/index.js';
 import { keep, replay, requestHash } from './menu-bulk.service.js';
 import { type MenuChange, MenuEditorService, type PriceChange } from './menu-editor.service.js';
-import { IMPORT_HEADERS, type ImportMenu, type ImportPlan, planImport } from './menu-import.js';
+import {
+  IMPORT_HEADERS,
+  IMPORT_MAX_ROWS,
+  IMPORT_MAX_UNZIPPED,
+  type ImportMenu,
+  type ImportPlan,
+  planImport,
+  unzippedSize,
+} from './menu-import.js';
 import {
   forAudit,
   type MerchantChange,
@@ -19,6 +27,9 @@ import {
 } from './merchants.service.js';
 import { OptionGroupsService } from './option-groups.service.js';
 import { categories, itemOptionGroups, items } from './schema.js';
+
+// The commit's transaction, or the pool for the template and the dry run.
+type Reader = Tx | Database['db'];
 
 export interface ImportResult {
   added: number;
@@ -47,7 +58,11 @@ export class MenuImportService {
   // The template, filled with the current menu so a re-import changes only
   // what was edited: one right-to-left sheet, a row per item.
   async template(restaurantId: string): Promise<Buffer> {
-    const menu = await this.importMenu(restaurantId);
+    const menu = await this.importMenu(
+      this.database.db,
+      restaurantId,
+      await this.cityOf(restaurantId),
+    );
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('القائمة', { views: [{ rightToLeft: true }] });
     sheet.addRow([...IMPORT_HEADERS]);
@@ -70,11 +85,9 @@ export class MenuImportService {
 
   // What the import would do, writing nothing.
   async dryRun(restaurantId: string, uploadId: string): Promise<ImportPlan> {
-    const rows = await this.rows(uploadId);
-    if ((await this.merchants.cityAndStatus(restaurantId))?.accountStatus === 'terminated') {
-      throw new MerchantsRefusedError('restaurant_terminated', 'the restaurant is terminated');
-    }
-    return this.plan(this.database.db, restaurantId, rows);
+    const cityId = await this.cityOf(restaurantId);
+    const sheet = await this.rows(uploadId);
+    return this.plan(this.database.db, restaurantId, cityId, sheet);
   }
 
   // Applies the workbook. A repeat of the key answers its first result.
@@ -84,12 +97,12 @@ export class MenuImportService {
     change: MenuChange & { accountId: string; idempotencyKey: string },
   ): Promise<ImportResult> {
     const hash = requestHash({ kind: 'menu_import', restaurantId, uploadId });
-    const rows = await this.rows(uploadId);
+    const sheet = await this.rows(uploadId);
     return this.database.db.transaction(async (tx) => {
       const row = await this.editor.lockEditable(tx, restaurantId);
       const kept = await replay(tx, change.accountId, change.idempotencyKey, hash);
       if (kept !== null) return kept as ImportResult;
-      const plan = await this.plan(tx, restaurantId, rows);
+      const plan = await this.plan(tx, restaurantId, row.cityId, sheet);
       if (plan.fileError !== null || plan.errors.length > 0) {
         throw new MerchantsRefusedError('import_invalid', 'the workbook has errors');
       }
@@ -150,18 +163,19 @@ export class MenuImportService {
         });
       }
       for (const changed of plan.changed) {
-        const categoryId = categoryIds.get(changed.next.categoryName)!;
+        // Only a changed category moves the item (to its new category's end).
+        const moved = changed.fields.includes('category');
+        const categoryId = moved ? categoryIds.get(changed.next.categoryName)! : null;
         await tx
           .update(items)
           .set({
-            categoryId,
+            ...(categoryId === null
+              ? {}
+              : { categoryId, position: await this.endOf(tx, categoryId) }),
             name: changed.next.name,
             description: changed.next.description,
             price: changed.next.price,
             currency: base,
-            ...(changed.fields.includes('category')
-              ? { position: await this.endOf(tx, categoryId) }
-              : {}),
             updatedAt: sql`now()`,
           })
           .where(eq(items.id, changed.itemId));
@@ -176,7 +190,7 @@ export class MenuImportService {
           'menu_item',
           changed.itemId,
           { fields: changed.fields, price: changed.oldPrice },
-          { categoryId, ...changed.next },
+          { ...(categoryId === null ? {} : { categoryId }), ...changed.next },
         );
         if (changed.fields.includes('price')) {
           prices.push({
@@ -205,35 +219,48 @@ export class MenuImportService {
     });
   }
 
-  // The workbook's first sheet as text cells, after files checked it.
-  private async rows(uploadId: string): Promise<string[][]> {
+  // The workbook's first sheet as text cells with their sheet row numbers,
+  // after files checked it. A workbook that would unzip beyond
+  // IMPORT_MAX_UNZIPPED bytes is refused before it is read (a zip bomb), and
+  // only the first filled rows past the limit are kept.
+  private async rows(uploadId: string): Promise<{ rows: string[][]; numbers: number[] }> {
     await this.files.prepare(uploadId, 'menu_import');
+    const bytes = await this.files.preparedBytes(uploadId);
+    const size = unzippedSize(bytes);
+    if (size === null || size > IMPORT_MAX_UNZIPPED) {
+      throw new MerchantsRefusedError('import_unreadable', 'the workbook is not a small zip');
+    }
     const workbook = new ExcelJS.Workbook();
     try {
-      await workbook.xlsx.load(
-        (await this.files.preparedBytes(uploadId)) as unknown as ArrayBuffer,
-      );
+      await workbook.xlsx.load(bytes as unknown as ArrayBuffer);
     } catch {
       throw new MerchantsRefusedError('import_unreadable', 'the file is not a readable workbook');
     }
     const sheet = workbook.worksheets[0];
-    if (!sheet) return [];
     const rows: string[][] = [];
-    sheet.eachRow({ includeEmpty: true }, (row, number) => {
+    const numbers: number[] = [];
+    sheet?.eachRow((row, number) => {
+      if (rows.length > IMPORT_MAX_ROWS + 1) return;
       const cells: string[] = [];
       for (let column = 1; column <= IMPORT_HEADERS.length + 4; column += 1) {
         cells.push(textOf(row.getCell(column).value));
       }
-      rows[number - 1] = cells;
+      rows.push(cells);
+      numbers.push(number);
     });
-    return Array.from(rows, (cells) => cells ?? []);
+    return { rows, numbers };
   }
 
-  private async plan(executor: Tx | Database['db'], restaurantId: string, rows: string[][]) {
-    const menu = await this.importMenu(restaurantId);
-    const plan = planImport(rows, menu);
-    // A code a deleted item still holds is taken (codes are unique in the
-    // restaurant, deleted rows included).
+  private async plan(
+    executor: Reader,
+    restaurantId: string,
+    cityId: string,
+    sheet: { rows: string[][]; numbers: number[] },
+  ) {
+    const menu = await this.importMenu(executor, restaurantId, cityId);
+    const plan = planImport(sheet.rows, menu, sheet.numbers);
+    // A code a deleted item, or one priced in another currency than the
+    // base, still holds is taken (codes are unique in the restaurant).
     const codes = plan.added.flatMap((each) => (each.code === null ? [] : [each.code]));
     if (codes.length > 0) {
       const taken = new Set(
@@ -253,29 +280,46 @@ export class MenuImportService {
     return plan;
   }
 
-  private async importMenu(restaurantId: string): Promise<ImportMenu> {
+  private async cityOf(restaurantId: string): Promise<string> {
     const found = await this.merchants.cityAndStatus(restaurantId);
     if (found === null) throw new MerchantsRefusedError('unknown_restaurant', 'no such restaurant');
-    const base = await this.fx.baseCurrency(found.cityId);
+    if (found.accountStatus === 'terminated') {
+      throw new MerchantsRefusedError('restaurant_terminated', 'the restaurant is terminated');
+    }
+    return found.cityId;
+  }
+
+  // The published menu through the executor (the commit's transaction under
+  // the restaurant's lock, so no pool read runs inside it). An item still
+  // priced in another currency than the base is left out: the template and
+  // the prices are the base's.
+  private async importMenu(
+    executor: Reader,
+    restaurantId: string,
+    cityId: string,
+  ): Promise<ImportMenu> {
+    const base = await this.fx.baseCurrency(cityId, executor);
     const decimals =
-      (await this.fx.currencies()).find((currency) => currency.code === base)?.decimals ?? 2;
-    const [menu, groups] = await Promise.all([
-      this.merchants.menu(restaurantId),
-      this.groups.groups(restaurantId),
-    ]);
+      (await this.fx.currencies(executor)).find((currency) => currency.code === base)?.decimals ??
+      2;
+    const now = new Date();
+    const menu = await this.merchants.menu(restaurantId, now, executor);
+    const groups = await this.groups.groups(restaurantId, now, executor);
     return {
       decimals,
       categories: menu.categories.map((category) => ({ id: category.id, name: category.name })),
       items: menu.categories.flatMap((category) =>
-        category.items.map((item) => ({
-          id: item.id,
-          code: item.code,
-          categoryId: category.id,
-          name: item.name,
-          description: item.description,
-          price: item.price.amount,
-          groupIds: item.optionGroups.map((group) => group.id),
-        })),
+        category.items
+          .filter((item) => item.price.currency === base)
+          .map((item) => ({
+            id: item.id,
+            code: item.code,
+            categoryId: category.id,
+            name: item.name,
+            description: item.description,
+            price: item.price.amount,
+            groupIds: item.optionGroups.map((group) => group.id),
+          })),
       ),
       groups: groups.map((group) => ({ id: group.id, name: group.name })),
     };
@@ -293,7 +337,14 @@ export class MenuImportService {
     const live = await tx
       .select({ id: categories.id, name: categories.name })
       .from(categories)
-      .where(and(eq(categories.restaurantId, restaurantId), isNull(categories.deletedAt)));
+      .where(
+        and(
+          eq(categories.restaurantId, restaurantId),
+          eq(categories.published, true),
+          isNull(categories.deletedAt),
+        ),
+      );
+    // The plan refuses a name two of them share, so each name is one row.
     const ids = new Map(live.map((each) => [each.name, each.id]));
     const [{ count }] = (await tx
       .select({ count: sql<number>`count(*)::int` })

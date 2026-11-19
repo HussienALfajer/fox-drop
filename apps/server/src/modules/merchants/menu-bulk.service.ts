@@ -59,12 +59,14 @@ export class MenuBulkService {
     private readonly settings: SettingsService,
   ) {}
 
-  // What the change would do, writing nothing.
+  // What the change would do, writing nothing (no lock: a read).
   async preview(restaurantId: string, scope: BulkScope, change: BulkPriceChange) {
-    return this.database.db.transaction(async (tx) => {
-      const row = await this.editor.lockEditable(tx, restaurantId);
-      return this.compute(tx, restaurantId, row.cityId, scope, change);
-    });
+    const found = await this.merchants.cityAndStatus(restaurantId);
+    if (found === null) throw new MerchantsRefusedError('unknown_restaurant', 'no such restaurant');
+    if (found.accountStatus === 'terminated') {
+      throw new MerchantsRefusedError('restaurant_terminated', 'the restaurant is terminated');
+    }
+    return this.compute(this.database.db, restaurantId, found.cityId, scope, change);
   }
 
   // Applies the change: past test mode with `menus.edit_prices`; refused
@@ -161,7 +163,7 @@ export class MenuBulkService {
   }
 
   private async compute(
-    tx: Tx,
+    tx: Tx | Database['db'],
     restaurantId: string,
     cityId: string,
     scope: BulkScope,
@@ -238,7 +240,7 @@ export class MenuBulkService {
 
   // The base's rounding unit and mode (D14), as fx reads them.
   private async rounding(
-    tx: Tx,
+    tx: Tx | Database['db'],
     cityId: string,
   ): Promise<{ currency: string; unit: bigint; mode: RoundingMode }> {
     const currency = await this.fx.baseCurrency(cityId, tx);

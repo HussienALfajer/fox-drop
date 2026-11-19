@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { and, asc, eq, inArray, isNull, sql } from 'drizzle-orm';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { AuditService } from '../audit/index.js';
@@ -60,8 +61,12 @@ export class OptionGroupsService {
 
   // Every live group of the restaurant, by name, with its options in order
   // and its linked items.
-  async groups(restaurantId: string, now = new Date()): Promise<EditorOptionGroup[]> {
-    const db = this.database.db;
+  async groups(
+    restaurantId: string,
+    now = new Date(),
+    executor: Pick<NodePgDatabase, 'select'> = this.database.db,
+  ): Promise<EditorOptionGroup[]> {
+    const db = executor;
     const groupRows = await db
       .select()
       .from(optionGroups)

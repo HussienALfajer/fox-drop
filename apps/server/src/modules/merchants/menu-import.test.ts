@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { IMPORT_HEADERS, type ImportMenu, planImport } from './menu-import.js';
+import ExcelJS from 'exceljs';
+import { IMPORT_HEADERS, type ImportMenu, planImport, unzippedSize } from './menu-import.js';
 
 // AP §9.6.6 «استيراد من Excel» (slice 2.31): the rows of the template checked
 // against the menu, and what an import would add, change or leave alone.
@@ -136,5 +137,43 @@ describe('planImport', () => {
     const reordered = ['السعر', 'الصنف', 'التصنيف', 'رمز الصنف', 'الوصف', 'مجموعات الخيارات'];
     const plan = planImport([reordered, ['120', 'ش'.repeat(81), 'وجبات', 'A1', '', 'الحجم']], menu);
     expect(plan.errors).toEqual([{ row: 2, column: 'name', error: 'too_long' }]);
+  });
+
+  it('refuses a category or group name two rows of the menu share', () => {
+    const twice: ImportMenu = {
+      ...menu,
+      categories: [...menu.categories, { id: 'meals2', name: 'وجبات' }],
+      groups: [...menu.groups, { id: 'size2', name: 'الحجم' }],
+    };
+    expect(
+      planImport(
+        [
+          header,
+          row('A1', 'وجبات', 'شاورما', '120'),
+          row('B1', 'مشروبات', 'عصير', '30', ['', 'الحجم']),
+        ],
+        twice,
+      ).errors,
+    ).toEqual([
+      { row: 2, column: 'category', error: 'ambiguous_name' },
+      { row: 3, column: 'groups', error: 'ambiguous_name' },
+    ]);
+  });
+
+  it('numbers the rows as the sheet does, blank rows left out', () => {
+    const plan = planImport([header, row('', 'وجبات', '', '10')], menu, [1, 7]);
+    expect(plan.errors).toEqual([{ row: 7, column: 'name', error: 'required' }]);
+  });
+});
+
+describe('unzippedSize', () => {
+  it('reads what a workbook holds once unzipped, and refuses what is no zip', async () => {
+    const workbook = new ExcelJS.Workbook();
+    workbook.addWorksheet('القائمة').addRow([...IMPORT_HEADERS]);
+    const bytes = new Uint8Array(await workbook.xlsx.writeBuffer());
+    const size = unzippedSize(bytes);
+    expect(size).toBeGreaterThan(bytes.length);
+    expect(size).toBeLessThan(100_000);
+    expect(unzippedSize(new TextEncoder().encode('not a zip at all, nothing here'))).toBe(null);
   });
 });

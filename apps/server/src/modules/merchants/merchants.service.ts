@@ -1468,14 +1468,20 @@ export class MerchantsService implements OnModuleInit {
   // marked; deleted rows are left out. A switch off «حتى الغد» is on again
   // from its time. A category outside its daily window, on the city's clock,
   // is unavailable with its items (CU §9.3).
-  async menu(restaurantId: string, now = new Date()): Promise<Menu> {
-    const db = this.database.db;
+  // `executor`: a command's transaction that reads the menu under its lock
+  // (the Excel import, slice 2.31); the pool otherwise.
+  async menu(
+    restaurantId: string,
+    now = new Date(),
+    executor: Pick<NodePgDatabase, 'select'> = this.database.db,
+  ): Promise<Menu> {
+    const db = executor;
     const [restaurant] = await db
       .select({ id: restaurants.id, cityId: restaurants.cityId })
       .from(restaurants)
       .where(eq(restaurants.id, restaurantId));
     if (!restaurant) throw new MerchantsRefusedError('unknown_restaurant', 'no such restaurant');
-    const timeZone = await this.geo.cityTimeZone(restaurant.cityId);
+    const timeZone = await this.geo.cityTimeZone(restaurant.cityId, db);
     if (timeZone === null) throw new Error(`restaurant ${restaurantId} is in an unknown city`);
     const published = (table: { published: AnyPgColumn; deletedAt: AnyPgColumn }) =>
       and(eq(table.published, true), isNull(table.deletedAt));

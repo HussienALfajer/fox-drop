@@ -212,8 +212,8 @@ test('builds the menu, then starts test mode', async ({ page }) => {
   await page.getByRole('button', { name: 'إضافة فئة' }).click();
   await page.getByLabel('اسم الفئة').fill('فطور');
   await page.getByLabel('متوفرة في ساعات محددة فقط').check();
-  await page.getByLabel('من').fill('06:00');
-  await page.getByLabel('إلى').fill('12:00');
+  await page.getByLabel('من', { exact: true }).fill('06:00');
+  await page.getByLabel('إلى', { exact: true }).fill('12:00');
   await page.getByRole('button', { name: 'حفظ' }).click();
   await expect(page.getByText('متوفرة من 06:00 إلى 12:00')).toBeVisible();
   expect(sent[0]).toEqual({ name: 'فطور', hidden: false, window: { startsAt: 360, endsAt: 720 } });

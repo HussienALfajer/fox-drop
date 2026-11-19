@@ -248,6 +248,9 @@ export class AdminRestaurantProfileReadsController {
         ...(await this.merchants.menuRowIds(params.restaurantId)),
       ],
       CHANGE_LOG_LIMIT,
+      // The daily switches of availability would push the changes AP §9.6.4
+      // names (prices, commission, hours, state) out of the log.
+      '.availability',
     );
     const admins = await this.admins.names(
       entries.flatMap((entry) =>

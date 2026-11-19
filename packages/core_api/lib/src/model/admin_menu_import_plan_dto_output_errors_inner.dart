@@ -32,7 +32,7 @@ abstract class AdminMenuImportPlanDtoOutputErrorsInner
 
   @BuiltValueField(wireName: r'error')
   AdminMenuImportPlanDtoOutputErrorsInnerErrorEnum get error;
-  // enum errorEnum {  required,  too_long,  invalid_price,  repeated_code,  unknown_group,  };
+  // enum errorEnum {  required,  too_long,  invalid_price,  repeated_code,  unknown_group,  ambiguous_name,  };
 
   AdminMenuImportPlanDtoOutputErrorsInner._();
 
@@ -214,6 +214,9 @@ class AdminMenuImportPlanDtoOutputErrorsInnerErrorEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'unknown_group')
   static const AdminMenuImportPlanDtoOutputErrorsInnerErrorEnum unknownGroup =
       _$adminMenuImportPlanDtoOutputErrorsInnerErrorEnum_unknownGroup;
+  @BuiltValueEnumConst(wireName: r'ambiguous_name')
+  static const AdminMenuImportPlanDtoOutputErrorsInnerErrorEnum ambiguousName =
+      _$adminMenuImportPlanDtoOutputErrorsInnerErrorEnum_ambiguousName;
 
   static Serializer<AdminMenuImportPlanDtoOutputErrorsInnerErrorEnum>
   get serializer =>

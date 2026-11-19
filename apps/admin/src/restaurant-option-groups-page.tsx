@@ -181,6 +181,8 @@ function OptionRow(props: {
   const { t } = useTranslation();
   const command = useMenuCommand(props.restaurantId);
   const [editing, setEditing] = useState(false);
+  // A removal is for good: the second press confirms it.
+  const [removing, setRemoving] = useState(false);
   const { option } = props;
   const free = /^0+$/.test(option.priceDelta.amount);
   return (
@@ -222,20 +224,17 @@ function OptionRow(props: {
           <button
             type="button"
             disabled={command.isPending}
-            onClick={() =>
+            onClick={() => {
+              if (!removing) return setRemoving(true);
               command.mutate({
                 kind: 'option',
                 groupId: props.group.id,
                 id: option.id,
-                body: {
-                  name: option.name,
-                  priceDelta: option.priceDelta,
-                  removed: true,
-                },
-              })
-            }
+                body: { name: option.name, priceDelta: option.priceDelta, removed: true },
+              });
+            }}
           >
-            {t('menu.groups.removeOption')}
+            {removing ? t('menu.groups.confirmRemove') : t('menu.groups.removeOption')}
           </button>
         </p>
       )}

@@ -22735,7 +22735,8 @@
                     "too_long",
                     "invalid_price",
                     "repeated_code",
-                    "unknown_group"
+                    "unknown_group",
+                    "ambiguous_name"
                   ]
                 }
               },

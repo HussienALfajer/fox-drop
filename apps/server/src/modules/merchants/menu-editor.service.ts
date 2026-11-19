@@ -436,6 +436,7 @@ export class MenuEditorService {
               oldPrice: only.old.amount.toString(),
               newPrice: only.new.amount.toString(),
               currency: only.new.currency,
+              ...(change.actor.id === null ? {} : { changedById: change.actor.id }),
             },
           }
         : { kind: 'price_change_bulk', values: { count: changes.length } }),

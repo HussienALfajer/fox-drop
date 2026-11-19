@@ -7423,7 +7423,7 @@ export interface components {
                 /** @enum {string} */
                 column: "code" | "category" | "name" | "description" | "price" | "groups";
                 /** @enum {string} */
-                error: "required" | "too_long" | "invalid_price" | "repeated_code" | "unknown_group";
+                error: "required" | "too_long" | "invalid_price" | "repeated_code" | "unknown_group" | "ambiguous_name";
             }[];
             categoriesAdded: string[];
             added: {

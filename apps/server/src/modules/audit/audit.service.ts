@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { and, desc, eq, inArray, or } from 'drizzle-orm';
+import { and, desc, eq, inArray, notLike, or } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type Changes, changedFields } from './changes.js';
@@ -71,7 +71,13 @@ export class AuditService {
 
   // AP §9.6.4 «سجل التغييرات» (slice 2.30d): the write events of these
   // targets of one type each, newest first, at most `limit`.
-  async history(targets: { type: string; ids: string[] }[], limit: number): Promise<AuditEntry[]> {
+  // `skipSuffix` leaves out the actions ending with it (the menu's
+  // availability switches, slice 2.31).
+  async history(
+    targets: { type: string; ids: string[] }[],
+    limit: number,
+    skipSuffix: string | null = null,
+  ): Promise<AuditEntry[]> {
     const wanted = targets.filter((target) => target.ids.length > 0);
     if (wanted.length === 0) return [];
     const rows = await this.database.db
@@ -91,6 +97,7 @@ export class AuditService {
       .where(
         and(
           eq(events.kind, 'write'),
+          ...(skipSuffix === null ? [] : [notLike(events.action, `%${skipSuffix}`)]),
           or(
             ...wanted.map((target) =>
               and(eq(events.targetType, target.type), inArray(events.targetId, target.ids)),

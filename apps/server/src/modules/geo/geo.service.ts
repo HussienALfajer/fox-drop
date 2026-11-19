@@ -152,8 +152,11 @@ export class GeoService implements OnModuleInit {
 
   // The city's time zone, such as Asia/Damascus, the clock of its restaurants'
   // hours; null for an unknown city.
-  async cityTimeZone(cityId: string): Promise<string | null> {
-    const [row] = await this.database.db
+  async cityTimeZone(
+    cityId: string,
+    executor: Pick<Database['db'], 'select'> = this.database.db,
+  ): Promise<string | null> {
+    const [row] = await executor
       .select({ timeZone: cities.timeZone })
       .from(cities)
       .where(eq(cities.id, cityId));
