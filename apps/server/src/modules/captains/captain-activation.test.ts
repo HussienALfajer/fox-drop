@@ -241,8 +241,13 @@ describe('«تفعيل» (AP §9.7.1, CA §5.4–5.5)', () => {
       [who.accountId],
     );
     expect(accounts).toEqual([{ captain_id: id }]);
-    // The same session is the captain's now.
+    // The same session is the captain's now, «ملفي» with the application's
+    // neighbourhood (CA §12.1).
     expect((await who.call('GET', '/availability')).statusCode).toBe(200);
+    expect((await who.call('GET', '/profile')).json()).toMatchObject({
+      neighbourhood: 'الحي الشمالي',
+      vehicle: 'car',
+    });
     const { rows: devices } = await sql.query(
       'SELECT captain_id FROM notifications.push_devices WHERE account_id = $1',
       [who.accountId],

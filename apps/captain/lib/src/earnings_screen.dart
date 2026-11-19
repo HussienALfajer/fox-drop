@@ -72,6 +72,15 @@ class _EarningsView extends StatelessWidget {
             child: Text(l10n.captainStatementTitle),
           ),
         ),
+        // CA §12.5, Appendix B: «احسب أجري» on «ملفي».
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: TextButton(
+            key: const Key('earnings-calculator'),
+            onPressed: () => context.push('/profile'),
+            child: Text(l10n.captainPayCalculator),
+          ),
+        ),
         const SizedBox(height: 16),
         Text(l10n.captainEarningsToday, style: title),
         Text(l10n.captainEarningsSoFar(money(earnings.today.earnings))),

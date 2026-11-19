@@ -8383,6 +8383,162 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'سبق أن اعترضت على هذه المخالفة.'**
   String get captainAppealAlready;
+
+  /// The profile (CA §12, §6 tab 7).
+  ///
+  /// In ar, this message translates to:
+  /// **'ملفي'**
+  String get captainMyProfile;
+
+  /// CA §12.1 section title (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'بياناتي'**
+  String get captainProfileData;
+
+  /// CA §12.1: the captain's id shown short (owner decision 2026-11-19).
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم الهوية في FOX DROP: {id}'**
+  String captainProfileId(String id);
+
+  /// CA §12.1 (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسم: {name}'**
+  String captainProfileName(String name);
+
+  /// CA §12.1: the label above the number, which reads left to right (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'الهاتف'**
+  String get captainProfilePhone;
+
+  /// CA §12.1 (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'الحي: {name}'**
+  String captainProfileNeighbourhood(String name);
+
+  /// CA §12.1 (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'المركبة: {vehicle}'**
+  String captainProfileVehicle(String vehicle);
+
+  /// CA §12.1 (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم اللوحة: {plate}'**
+  String captainProfilePlate(String plate);
+
+  /// CA §12.1: changes are asked through Support and made by OPS (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'لتعديل الهاتف أو المركبة أو الحي اطلب ذلك عبر «الدعم».'**
+  String get captainProfileChangeViaSupport;
+
+  /// CA §12.1: opens «إبلاغ عن مشكلة» with «طلب تعديل بيانات» chosen (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'طلب تعديل'**
+  String get captainProfileRequestChange;
+
+  /// CA §12.5 section title (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'جدول الأجور'**
+  String get captainPayTable;
+
+  /// CA §12.5: no table in force yet (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُحدَّد جدول الأجور بعد.'**
+  String get captainPayTableNone;
+
+  /// CA §12.5: the base pay and the distance it includes (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'الأجر الأساسي: {amount} يشمل أول {distance}'**
+  String captainPayTableBase(String amount, String distance);
+
+  /// CA §12.5 (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'لكل كم إضافي: {amount}'**
+  String captainPayTablePerKm(String amount);
+
+  /// CA §12.5: the waiting rate past captain.waiting_threshold_min, the duration formatted («10 د») (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'الانتظار: {amount} لكل دقيقة بعد {duration}'**
+  String captainPayTableWaiting(String amount, String duration);
+
+  /// CA §12.5 (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'الحد الأدنى للأجر: {amount}'**
+  String captainPayTableMinimum(String amount);
+
+  /// CA §12.5: an announced table and its first moment on the city's clock (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'الجدول الجديد من {date} {time}'**
+  String captainPayTableAnnounced(String date, String time);
+
+  /// CA §12.5, Appendix B.
+  ///
+  /// In ar, this message translates to:
+  /// **'احسب أجري'**
+  String get captainPayCalculator;
+
+  /// «احسب أجري»'s distance field (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'المسافة (كم)'**
+  String get captainPayDistanceField;
+
+  /// «احسب أجري»'s optional waiting field: waiting counts from the later of the arrival and the prep due time (docs/domain/04; owner decision 2026-11-19; our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'دقائق الانتظار بعد موعد جاهزية الطلب'**
+  String get captainPayWaitedField;
+
+  /// «احسب أجري»'s button (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'احسب'**
+  String get captainPayCalculate;
+
+  /// A distance that is not a number of 0 to 100 km (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب المسافة بالكيلومتر، حتى 100 كم.'**
+  String get captainPayInvalidDistance;
+
+  /// Waiting minutes that are not a whole number of 0 to 1440 (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب الدقائق رقماً صحيحاً حتى 1440.'**
+  String get captainPayInvalidWaited;
+
+  /// «احسب أجري»'s result: the order pay and the waiting pay (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'المجموع: {amount}'**
+  String captainPayTotal(String amount);
+
+  /// «احسب أجري»'s result by an announced table, from its first moment (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'بالجدول الجديد من {date} {time}:'**
+  String captainPayByAnnounced(String date, String time);
+
+  /// «احسب أجري»'s read failed (our words).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر الحساب، حاول مجدداً.'**
+  String get captainPayCalculateFailed;
 }
 
 class _AppLocalizationsDelegate

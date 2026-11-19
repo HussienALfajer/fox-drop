@@ -67,3 +67,20 @@ export function orderPay(
     waiting: BigInt(waitingMinutes) * rate.waitingPerMinute,
   };
 }
+
+// CA §12.5 «احسب أجري»: the pay of a sample trip by a rate, the waiting
+// minutes typed counted past captain.waiting_threshold_min only, as an
+// order's are (owner decision 2026-11-19).
+export function samplePay(
+  rate: PayRate,
+  {
+    metres,
+    waitedMinutes,
+    thresholdMin,
+  }: { metres: number; waitedMinutes: number; thresholdMin: number },
+): PayParts {
+  if (!Number.isInteger(waitedMinutes) || waitedMinutes < 0) {
+    throw new RangeError('the waiting time is whole minutes, zero or more');
+  }
+  return orderPay(rate, { metres, waitingMinutes: Math.max(0, waitedMinutes - thresholdMin) });
+}

@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
 import {
   and,
+  asc,
   desc,
   eq,
   gt,
@@ -1237,7 +1238,26 @@ export class CaptainsService implements OnModuleInit {
       .where(and(eq(payTables.cityId, cityId), lte(payTables.effectiveFrom, at)))
       .orderBy(desc(payTables.effectiveFrom), desc(payTables.id))
       .limit(1);
-    if (!table) return null;
+    return table ? this.withRates(table) : null;
+  }
+
+  // CA §12.5 (slice 2.36c): the versions published to start after a moment,
+  // by start; of two with the same start, the later version only, the one
+  // that will be in force.
+  async announcedPayTables(cityId: string, at: Date): Promise<PayTable[]> {
+    const tables = await this.database.db
+      .select()
+      .from(payTables)
+      .where(and(eq(payTables.cityId, cityId), gt(payTables.effectiveFrom, at)))
+      .orderBy(asc(payTables.effectiveFrom), desc(payTables.id));
+    const latest = tables.filter(
+      (table, index) =>
+        index === 0 || table.effectiveFrom.getTime() !== tables[index - 1]!.effectiveFrom.getTime(),
+    );
+    return Promise.all(latest.map((table) => this.withRates(table)));
+  }
+
+  private async withRates(table: typeof payTables.$inferSelect): Promise<PayTable> {
     const rows = await this.database.db
       .select()
       .from(payRates)

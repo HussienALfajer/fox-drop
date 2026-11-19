@@ -1342,6 +1342,14 @@ Serializers _$serializers =
           ..add(CaptainOrderRouteDtoOutputRoute.serializer)
           ..add(CaptainOrderRouteDtoOutputRouteMethodEnum.serializer)
           ..add(CaptainOutcomePaymentDto.serializer)
+          ..add(CaptainPayCalculationDtoOutput.serializer)
+          ..add(CaptainPayCalculationDtoOutputAnnouncedInner.serializer)
+          ..add(CaptainPayCalculationDtoOutputCurrent.serializer)
+          ..add(CaptainPayMoneyOutput.serializer)
+          ..add(CaptainPayTableDtoOutput.serializer)
+          ..add(CaptainPayTableDtoOutputAnnouncedInner.serializer)
+          ..add(CaptainPayTableDtoOutputCurrent.serializer)
+          ..add(CaptainPayTableDtoOutputVehicleEnum.serializer)
           ..add(CaptainPeakBonusDtoOutput.serializer)
           ..add(CaptainPeakBonusDtoOutputActiveInner.serializer)
           ..add(CaptainPeakBonusDtoOutputActiveInnerAmount.serializer)
@@ -1365,6 +1373,8 @@ Serializers _$serializers =
           ..add(CaptainPerformanceDtoOutputViolationsInnerStepEnum.serializer)
           ..add(CaptainPickupRequestDto.serializer)
           ..add(CaptainProblemBodyDto.serializer)
+          ..add(CaptainProfileDtoOutput.serializer)
+          ..add(CaptainProfileDtoOutputVehicleEnum.serializer)
           ..add(CaptainRatingsDtoOutput.serializer)
           ..add(CaptainRatingsDtoOutputReasonsInner.serializer)
           ..add(CaptainRefreshDto.serializer)
@@ -3822,6 +3832,18 @@ Serializers _$serializers =
               const FullType(CaptainLocationsDtoPointsInner),
             ]),
             () => ListBuilder<CaptainLocationsDtoPointsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPayCalculationDtoOutputAnnouncedInner),
+            ]),
+            () => ListBuilder<CaptainPayCalculationDtoOutputAnnouncedInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPayTableDtoOutputAnnouncedInner),
+            ]),
+            () => ListBuilder<CaptainPayTableDtoOutputAnnouncedInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

@@ -5034,4 +5034,108 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get captainAppealAlready => 'سبق أن اعترضت على هذه المخالفة.';
+
+  @override
+  String get captainMyProfile => 'ملفي';
+
+  @override
+  String get captainProfileData => 'بياناتي';
+
+  @override
+  String captainProfileId(String id) {
+    return 'رقم الهوية في FOX DROP: $id';
+  }
+
+  @override
+  String captainProfileName(String name) {
+    return 'الاسم: $name';
+  }
+
+  @override
+  String get captainProfilePhone => 'الهاتف';
+
+  @override
+  String captainProfileNeighbourhood(String name) {
+    return 'الحي: $name';
+  }
+
+  @override
+  String captainProfileVehicle(String vehicle) {
+    return 'المركبة: $vehicle';
+  }
+
+  @override
+  String captainProfilePlate(String plate) {
+    return 'رقم اللوحة: $plate';
+  }
+
+  @override
+  String get captainProfileChangeViaSupport =>
+      'لتعديل الهاتف أو المركبة أو الحي اطلب ذلك عبر «الدعم».';
+
+  @override
+  String get captainProfileRequestChange => 'طلب تعديل';
+
+  @override
+  String get captainPayTable => 'جدول الأجور';
+
+  @override
+  String get captainPayTableNone => 'لم يُحدَّد جدول الأجور بعد.';
+
+  @override
+  String captainPayTableBase(String amount, String distance) {
+    return 'الأجر الأساسي: $amount يشمل أول $distance';
+  }
+
+  @override
+  String captainPayTablePerKm(String amount) {
+    return 'لكل كم إضافي: $amount';
+  }
+
+  @override
+  String captainPayTableWaiting(String amount, String duration) {
+    return 'الانتظار: $amount لكل دقيقة بعد $duration';
+  }
+
+  @override
+  String captainPayTableMinimum(String amount) {
+    return 'الحد الأدنى للأجر: $amount';
+  }
+
+  @override
+  String captainPayTableAnnounced(String date, String time) {
+    return 'الجدول الجديد من $date $time';
+  }
+
+  @override
+  String get captainPayCalculator => 'احسب أجري';
+
+  @override
+  String get captainPayDistanceField => 'المسافة (كم)';
+
+  @override
+  String get captainPayWaitedField => 'دقائق الانتظار بعد موعد جاهزية الطلب';
+
+  @override
+  String get captainPayCalculate => 'احسب';
+
+  @override
+  String get captainPayInvalidDistance =>
+      'اكتب المسافة بالكيلومتر، حتى 100 كم.';
+
+  @override
+  String get captainPayInvalidWaited => 'اكتب الدقائق رقماً صحيحاً حتى 1440.';
+
+  @override
+  String captainPayTotal(String amount) {
+    return 'المجموع: $amount';
+  }
+
+  @override
+  String captainPayByAnnounced(String date, String time) {
+    return 'بالجدول الجديد من $date $time:';
+  }
+
+  @override
+  String get captainPayCalculateFailed => 'تعذّر الحساب، حاول مجدداً.';
 }

@@ -98,16 +98,11 @@ class MoreScreen extends StatelessWidget {
             title: Text(l10n.captainPerformance),
             onTap: () => context.push('/performance'),
           ),
-          // CA §12.2–12.4 (slice 2.35a), until the profile of 2.36.
+          // CA §12 (slice 2.36c): «ملفي», with the documents and the contract.
           ListTile(
-            key: const Key('more-documents'),
-            title: Text(l10n.captainProfileDocuments),
-            onTap: () => context.push('/documents'),
-          ),
-          ListTile(
-            key: const Key('more-contract'),
-            title: Text(l10n.captainProfileContract),
-            onTap: () => context.push('/contract'),
+            key: const Key('more-profile'),
+            title: Text(l10n.captainMyProfile),
+            onTap: () => context.push('/profile'),
           ),
           ListTile(
             title: Text(l10n.captainSettings),

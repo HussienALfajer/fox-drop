@@ -1,4 +1,5 @@
 import { CaptainPerformanceController } from './captain-performance.controller.js';
+import { CaptainProfileController } from './captain-profile.controller.js';
 import { AdminCaptainViolationsController } from './admin-captain-violations.controller.js';
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module.js';
@@ -70,6 +71,7 @@ const imports = [
     AdminCaptainProfileController,
     AdminCaptainViolationsController,
     CaptainPerformanceController,
+    CaptainProfileController,
     AdminRestaurantListController,
     AdminRestaurantProfileReadsController,
     AdminRestaurantStatementsController,

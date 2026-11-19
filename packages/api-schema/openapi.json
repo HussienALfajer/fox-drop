@@ -7756,6 +7756,80 @@
         ]
       }
     },
+    "/v1/captain/pay-table": {
+      "get": {
+        "operationId": "captainPayTablePayTable",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainPayTableDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
+    "/v1/captain/pay-table/calculate": {
+      "get": {
+        "operationId": "captainPayTableCalculate",
+        "parameters": [
+          {
+            "name": "metres",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "maximum": 100000,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "waitedMinutes",
+            "required": false,
+            "in": "query",
+            "description": "Minutes waited at the restaurant; those past the threshold are paid.",
+            "schema": {
+              "minimum": 0,
+              "maximum": 1440,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainPayCalculationDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
     "/v1/captain/contract": {
       "get": {
         "operationId": "captainContractContract",
@@ -19739,6 +19813,32 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CaptainPerformanceDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "captain"
+        ]
+      }
+    },
+    "/v1/captain/profile": {
+      "get": {
+        "operationId": "captainProfileProfile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptainProfileDto_Output"
                 }
               }
             },
@@ -32159,6 +32259,228 @@
         "required": [
           "windows",
           "active"
+        ],
+        "additionalProperties": false
+      },
+      "CaptainPayMoney_Output": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string",
+            "pattern": "^\\d+$"
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          }
+        },
+        "required": [
+          "amount",
+          "currency"
+        ],
+        "additionalProperties": false
+      },
+      "CaptainPayTableDto_Output": {
+        "type": "object",
+        "properties": {
+          "vehicle": {
+            "type": "string",
+            "enum": [
+              "walking",
+              "bicycle",
+              "motorbike",
+              "car"
+            ]
+          },
+          "waitingThresholdMin": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "captain.waiting_threshold_min"
+          },
+          "current": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "effectiveFrom": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "basePay": {
+                    "$ref": "#/components/schemas/CaptainPayMoney_Output"
+                  },
+                  "includedMetres": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991,
+                    "description": "The distance the base pay includes."
+                  },
+                  "perExtraKm": {
+                    "$ref": "#/components/schemas/CaptainPayMoney_Output"
+                  },
+                  "waitingPerMinute": {
+                    "$ref": "#/components/schemas/CaptainPayMoney_Output"
+                  },
+                  "minimumPay": {
+                    "$ref": "#/components/schemas/CaptainPayMoney_Output"
+                  }
+                },
+                "required": [
+                  "effectiveFrom",
+                  "basePay",
+                  "includedMetres",
+                  "perExtraKm",
+                  "waitingPerMinute",
+                  "minimumPay"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The table in force for the captain's vehicle."
+          },
+          "announced": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "effectiveFrom": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "basePay": {
+                  "$ref": "#/components/schemas/CaptainPayMoney_Output"
+                },
+                "includedMetres": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "description": "The distance the base pay includes."
+                },
+                "perExtraKm": {
+                  "$ref": "#/components/schemas/CaptainPayMoney_Output"
+                },
+                "waitingPerMinute": {
+                  "$ref": "#/components/schemas/CaptainPayMoney_Output"
+                },
+                "minimumPay": {
+                  "$ref": "#/components/schemas/CaptainPayMoney_Output"
+                }
+              },
+              "required": [
+                "effectiveFrom",
+                "basePay",
+                "includedMetres",
+                "perExtraKm",
+                "waitingPerMinute",
+                "minimumPay"
+              ],
+              "additionalProperties": false
+            },
+            "description": "The tables published to start later, soonest first (AP §9.12.5: 7 days ahead)."
+          }
+        },
+        "required": [
+          "vehicle",
+          "waitingThresholdMin",
+          "current",
+          "announced"
+        ],
+        "additionalProperties": false
+      },
+      "CaptainPayCalculationDto_Output": {
+        "type": "object",
+        "properties": {
+          "current": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "base": {
+                    "$ref": "#/components/schemas/CaptainPayMoney_Output"
+                  },
+                  "distance": {
+                    "$ref": "#/components/schemas/CaptainPayMoney_Output"
+                  },
+                  "topUp": {
+                    "$ref": "#/components/schemas/CaptainPayMoney_Output"
+                  },
+                  "orderPay": {
+                    "$ref": "#/components/schemas/CaptainPayMoney_Output"
+                  },
+                  "waiting": {
+                    "$ref": "#/components/schemas/CaptainPayMoney_Output"
+                  },
+                  "total": {
+                    "$ref": "#/components/schemas/CaptainPayMoney_Output"
+                  }
+                },
+                "required": [
+                  "base",
+                  "distance",
+                  "topUp",
+                  "orderPay",
+                  "waiting",
+                  "total"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "announced": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "base": {
+                  "$ref": "#/components/schemas/CaptainPayMoney_Output"
+                },
+                "distance": {
+                  "$ref": "#/components/schemas/CaptainPayMoney_Output"
+                },
+                "topUp": {
+                  "$ref": "#/components/schemas/CaptainPayMoney_Output"
+                },
+                "orderPay": {
+                  "$ref": "#/components/schemas/CaptainPayMoney_Output"
+                },
+                "waiting": {
+                  "$ref": "#/components/schemas/CaptainPayMoney_Output"
+                },
+                "total": {
+                  "$ref": "#/components/schemas/CaptainPayMoney_Output"
+                },
+                "effectiveFrom": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "base",
+                "distance",
+                "topUp",
+                "orderPay",
+                "waiting",
+                "total",
+                "effectiveFrom"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "current",
+          "announced"
         ],
         "additionalProperties": false
       },
@@ -76467,6 +76789,56 @@
           "windowDays",
           "online",
           "violations"
+        ],
+        "additionalProperties": false
+      },
+      "CaptainProfileDto_Output": {
+        "type": "object",
+        "properties": {
+          "foxDropId": {
+            "type": "string",
+            "description": "«رقم الهوية في FOX DROP», the id shown short."
+          },
+          "name": {
+            "type": "string"
+          },
+          "phone": {
+            "description": "The number the captain signs in with.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "neighbourhood": {
+            "description": "The application's zone; null for a captain the seed made.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "vehicle": {
+            "type": "string",
+            "enum": [
+              "walking",
+              "bicycle",
+              "motorbike",
+              "car"
+            ]
+          },
+          "plateNumber": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "foxDropId",
+          "name",
+          "phone",
+          "neighbourhood",
+          "vehicle",
+          "plateNumber"
         ],
         "additionalProperties": false
       },
