@@ -29,6 +29,7 @@ export type FigureKey =
   | 'testCost'
   | 'fxRounding'
   | 'adjustments'
+  | 'withheldDeposits'
   | 'margin'
   | 'restaurantCommission'
   | 'restaurantDiscountShare'
@@ -61,6 +62,7 @@ export const figureLines: [
   ['testCost', (d) => ({ amount: d.testCost })],
   ['fxRounding', (d) => ({ amount: d.fxRounding })],
   ['adjustments', (d) => ({ amount: d.adjustments })],
+  ['withheldDeposits', (d) => ({ amount: d.withheldDeposits })],
   ['margin', (d) => ({ amount: d.margin })],
   ['restaurantCommission', (d) => ({ amount: d.restaurants.commission })],
   ['restaurantDiscountShare', (d) => ({ amount: d.restaurants.discountShare })],

@@ -3,6 +3,7 @@ import { getRouteApi, Link } from '@tanstack/react-router';
 import { type FormEvent, lazy, type ReactNode, Suspense, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivationSection } from './captain-activation-page.js';
+import { OffboardingSection } from './captain-offboarding-page.js';
 import {
   actionsOf,
   type Application,
@@ -205,6 +206,13 @@ function Review(props: {
           </dd>
         </dl>
       </section>
+      {application.formerCaptain && (
+        <p role="alert">
+          {application.formerCaptain.earlyExit
+            ? t('captainOffboarding.formerCaptainEarlyExit')
+            : t('captainOffboarding.formerCaptain')}
+        </p>
+      )}
       {application.duplicates.length > 0 && (
         <section aria-label={t('captainApplications.duplicates')}>
           <p role="alert">{t('captainApplications.duplicates')}</p>
@@ -222,6 +230,7 @@ function Review(props: {
                         stage: t(stageKeys[duplicate.stage]),
                       })
                     : null}{' '}
+                {duplicate.earlyExit && t('captainOffboarding.earlyExitFlag')}{' '}
                 {duplicate.applicationId !== null && (
                   <Link
                     to="/captain-applications/$applicationId"
@@ -301,6 +310,12 @@ function Review(props: {
         session={props.session}
         actions={actions}
         today={new Intl.DateTimeFormat('en-CA', { timeZone }).format(serverNow())}
+        cityCode={props.cityCode}
+      />
+      <OffboardingSection
+        application={application}
+        session={props.session}
+        actions={actions}
         cityCode={props.cityCode}
       />
       <StageActions application={application} actions={actions} />

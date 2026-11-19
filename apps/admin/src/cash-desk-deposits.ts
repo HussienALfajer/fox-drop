@@ -160,3 +160,100 @@ export function useSetCashLimit(cityId: string) {
     },
   });
 }
+
+// «التأمينات» at termination (AP §9.7.5 step 4, §9.10.3; slice 2.35b; owner
+// decision 2026-11-19): the contracts being ended whose deposit is still
+// held, refunded in cash when the kit came back and withheld whole to the
+// platform's revenue otherwise.
+export type DepositRefund =
+  components['schemas']['AdminDepositRefundsDto_Output']['contracts'][number];
+export type Settlement = components['schemas']['AdminSettleDepositDto']['settlement'];
+
+export function useDepositRefunds(cityId: string | undefined) {
+  return useQuery({
+    queryKey: ['cash-desk', 'deposit-refunds', cityId ?? ''],
+    enabled: cityId !== undefined,
+    queryFn: async () => {
+      const { data } = await api.GET('/v1/admin/cash-desk/deposit-refunds', {
+        params: { query: { cityId: cityId! } },
+      });
+      if (!data) throw new Error('The deposit refunds read failed.');
+      return data.contracts;
+    },
+  });
+}
+
+// What the kit's step says, or null until OPS checked the kit.
+export function settlementOf(contract: Pick<DepositRefund, 'kitReturned'>): Settlement | null {
+  if (contract.kitReturned === null) return null;
+  return contract.kitReturned ? 'refunded' : 'withheld';
+}
+
+export type SettleRefusal =
+  | 'no_open_session'
+  | 'not_terminated'
+  | 'contract_ended'
+  | 'kit_not_checked'
+  | 'deposit_settled'
+  | 'wrong_settlement'
+  | 'nothing_held'
+  | 'unknown_party'
+  | 'no_base_currency';
+
+const settleRefusals: readonly string[] = [
+  'no_open_session',
+  'not_terminated',
+  'contract_ended',
+  'kit_not_checked',
+  'deposit_settled',
+  'wrong_settlement',
+  'nothing_held',
+  'unknown_party',
+  'no_base_currency',
+] satisfies SettleRefusal[];
+
+export type SettleResult =
+  { status: 'settled'; receipt: Receipt | null } | { status: 'refused'; refusal: SettleRefusal };
+
+// One Idempotency-Key per contract and settlement until an answer arrives,
+// so a retry after a lost answer pays the cash once.
+export function useSettleDeposit(cityId: string) {
+  const queryClient = useQueryClient();
+  const keys = useRef(new Map<string, string>());
+  return useMutation({
+    mutationFn: async (input: {
+      applicationId: string;
+      settlement: Settlement;
+    }): Promise<SettleResult> => {
+      const choice = JSON.stringify(input);
+      let key = keys.current.get(choice);
+      if (key === undefined) {
+        key = crypto.randomUUID();
+        keys.current.set(choice, key);
+      }
+      const { data, error, response } = await api.POST('/v1/admin/cash-desk/deposit-refunds', {
+        params: { header: { 'Idempotency-Key': key } },
+        body: { cityId, ...input },
+      });
+      if (data) {
+        keys.current.delete(choice);
+        return { status: 'settled', receipt: data.receipt };
+      }
+      const refusal = (error as { error?: unknown } | undefined)?.error;
+      const status: number = response.status;
+      if (
+        (status === 404 || status === 409) &&
+        typeof refusal === 'string' &&
+        settleRefusals.includes(refusal)
+      ) {
+        keys.current.delete(choice);
+        return { status: 'refused', refusal: refusal as SettleRefusal };
+      }
+      throw new Error(`The deposit settlement failed with ${status}.`);
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: ['cash-desk'] });
+      void queryClient.invalidateQueries({ queryKey: ['captain-application'] });
+    },
+  });
+}
