@@ -4,18 +4,23 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.36c, «ملفي» in the captain app (`docs/roadmap.md`, Phase 2; the last of 2.36's three pull requests, owner decision 2026-11-19). In progress.
+Slice 2.37, zones and pricing in the panel (`docs/roadmap.md`, Phase 2). Not started; it needs splitting first.
 
-- **Roadmap line:** 2.36c «ملفي» in the captain app: the data and vehicle read-only, the pay table for the captain's vehicle and «احسب أجري» (CA §12.1, §12.5). The captain computes the pay for a sample distance.
-- **Specs:** CA §12.1 (name, phone, neighbourhood, vehicle type, plate, the FOX DROP ID number, read-only; changes through Support), CA §12.5 (the pay table for the captain's vehicle: base pay and its included km, the rate per extra km, the waiting rate, the minimum pay; «احسب أجري»; announced changes 7 days ahead; the peak windows), AP §9.12.5 (pay tables), docs/domain/04 (the pay of an order).
+- **Roadmap line:** 2.37 Zones and pricing in the panel: cities, zone outlines and names, the fee screen with its preview calculator, pay tables with their calculator, defaults, per-restaurant fee overrides, the vote map, the dispatch rules (AP §9.12). The owner changes a fee and previews it.
+- **Specs:** AP §9.12 (docs/product/v1/admin-panel/09-modules/12-zones-and-pricing.md), with its definition of done (AP §14), the open item on neighbourhood names (CU §18 item 6).
 - **Branch:** the cloud session's branch, from an up-to-date `main`.
-- **Already built (reuse):** the pay table and `orderPay`/`pay.ts` (captains), `GET /v1/captain/peak-bonus` and `PeakWindowsScreen`, «المستندات» and «العقد والعدة» (2.35a), the captain's account and phone (identity), the zones' names (geo).
-- **Owner decisions (2026-11-19):** «رقم الهوية في FOX DROP» is the captain's id shown short (`C-` and its last 8 hex digits: a UUIDv7's first ones are its time); an announced table shows beside the one in force with its start; «احسب أجري» takes the distance and the minutes waited, paid past `captain.waiting_threshold_min`.
-- **Plan:**
-  - [x] The server: `GET /v1/captain/profile` (the data and vehicle) and `GET /v1/captain/pay-table` (the table in force for the captain's vehicle and the one announced), and the calculator's pure rule (failing test first: base, extra km rounded down, the minimum, waiting).
-  - [x] «ملفي» in the captain app: the data read-only with «طلب تعديل» through Support, the pay table, «احسب أجري», the peak windows and the documents and contract moved under it.
-  - [ ] Review, then hand over to 2.37.
-- **Stopped at:** the server and the app committed; the review next.
+- **First:** the line is larger than one pull request. Run the `slice-plan` skill and get the owner's approval of the split (2.37a, 2.37b, …) before building.
+- **Already built (reuse):** the zones and cities (geo), the delivery fee rules and their quote (ordering), the pay table versions with `setPayTable`, `payTable`, `announcedPayTables` and `samplePay` (captains, 2.36c), the peak bonus screen and routes (2.16), the dispatch mode and settings (dispatch, settings).
+- **Plan:** written once the split is approved.
+- **Stopped at:** 2.36c merged; 2.37 not started.
+
+### Left from 2.36c (the cloud session's branch)
+
+- **Before deploying to staging:** no migration. New routes: `GET /v1/captain/profile`, `GET /v1/captain/pay-table`, `GET /v1/captain/pay-table/calculate`. Deploy the server before the captain app; the app needs a new build for «ملفي» («المزيد» › «ملفي» replaces the links to «المستندات» and «العقد والعدة»).
+- **To check on staging (after the merge and the deploy):** 1. On the captain's phone, «المزيد» › «ملفي»: «رقم الهوية في FOX DROP: C-…», the name, the number, the neighbourhood, the vehicle and the plate. 2. «طلب تعديل» opens «إبلاغ عن مشكلة» with «طلب تعديل بيانات» chosen. 3. «جدول الأجور» shows the vehicle's base pay, per extra km, the waiting rate and the minimum; «احسب أجري» with 6.4 km and 25 minutes shows the parts and «المجموع». 4. After OWN publishes a new table (from 2.37, or the seed's way), «الجدول الجديد من {التاريخ} {الساعة}» shows beside it and the calculator prices by both.
+- **Decided by us (to confirm with the owner):** the id shown is `C-` and the last 8 hex digits (the first ones are a UUIDv7's time); the sample is 100 km and a day of waiting at most; every label of «ملفي» but «ملفي» and «احسب أجري» (our words); «أرباحي» links «احسب أجري» to «ملفي».
+- **Not yet:** the push announcing a new table or a peak bonus change (CA §12.5, AP §10); the panel's pay preview calculator (2.37); OPS cannot search a captain by the id «C-…» the captain quotes to Support; «احسب أجري» from «أرباحي» opens «ملفي» at its top, not at the calculator.
+- **Not checked locally:** Turborepo does not run in the cloud container, so the parts ran one by one (see the pull request's test plan); the activation test (Garage) ran with a temporary IPv4 bind of `infra/storage/garage.toml`, not committed. The panel's type check fails in the container on `pin-map.tsx` without this slice (the container lacks `maplibre-gl`'s types); CI runs it.
 
 ### Left from 2.36b (the cloud session's branch)
 
