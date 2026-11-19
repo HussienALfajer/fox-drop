@@ -4,15 +4,22 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.38, panel administration (`docs/roadmap.md`, Phase 2).
+Slice 2.38a, settings and the audit log (`docs/roadmap.md`, Phase 2; 2.38 split in two, owner decision 2026-11-19).
 
-- **Roadmap line:** 2.38 Panel administration: the admin team, settings and audit log screens, the top bar and side menu (AP §7, §9.14–9.16). The owner edits a setting and finds it in the audit log.
-- **Specs:** AP §7 (docs/product/v1/admin-panel/07-global-layout-and-navigation.md), AP §9.14–9.16 (docs/product/v1/admin-panel/09-modules/), AP Appendix A (the settings catalogue), AP §5.2–5.3 and §6 (the admin team and roles).
+- **Roadmap line:** 2.38a Settings and the audit log: «الإعدادات» with its group screens, «أرقام إرسال الرموز» and «سجل التدقيق» (AP §9.14, §9.16, Appendix A). The owner edits a setting and finds it in the audit log.
+- **Specs:** AP §9.14 (docs/product/v1/admin-panel/09-modules/14-settings.md), AP §9.16 (09-modules/16-audit-log.md), AP Appendix A (appendix-a-settings-catalogue.md), AP §4.4, §4.6, D27, D28, architecture §8.3.3 item 13.
 - **Branch:** the cloud session's branch, from an up-to-date `main`.
-- **Already built (reuse):** the settings routes and catalogue (`GET`/`PUT /v1/admin/settings`, reset and history), «التطبيقات» (2.4a), the generic setting field of 2.37c (`SettingsList` in `apps/admin/src/city-settings-page.tsx`), the admin team service and routes (identity, AP §9.15), the audit log (audit module), «أرقام إرسال الرموز» routes.
-- **First:** split the slice into pull requests with the owner (`slice-plan`): it spans three screens and the layout. The top bar and side menu are layout: check the design stop with the owner before any styling.
-- **Plan:** to write once the split is approved.
-- **Stopped at:** 2.37c done (its pull request); 2.38 not started.
+- **Owner decisions 2026-11-19:** 2.38 in two pull requests (2.38a settings and audit log; 2.38b the admin team, the side menu, the top bar and the global search); no design yet, so everything unstyled; pairing a sending number stays the server command (the panel's QR pairing later); no provider keys in V1.
+- **Already built (reuse):** the settings routes (`GET`/`PUT /v1/admin/settings`, reset, history) and `SettingsList` (`apps/admin/src/city-settings-page.tsx`), «التطبيقات» (2.4a), the routes of «أرقام إرسال الرموز» (W2), `AuditService.history` and the change logs' actor names (`admin-captain-profile.controller.ts`).
+
+### Plan
+
+- [x] Split 2.38 with the owner and record it (roadmap, this file).
+- [ ] Server: `GET /v1/admin/audit-log` (`audit_log.read`, OWN): the events newest first, filtered by actor, action, target and dates, a page at a time, with the admins' names (AP §9.16).
+- [ ] Panel: «سجل التدقيق» (`/audit-log`): the filters, the events with their diff, reason, IP and device.
+- [ ] Panel: «الإعدادات» (`/settings`): the nine group screens, every setting with its Arabic name, description, default, value, unit and «استعادة الافتراضي».
+- [ ] Panel: «أرقام إرسال الرموز» (`/settings/otp-senders`): the numbers, their state and daily counts, active or standby, disable, and how pairing is done.
+- [ ] Review, fixes, hand over to 2.38b.
 
 ### Left from 2.37c (the cloud session's branch)
 
