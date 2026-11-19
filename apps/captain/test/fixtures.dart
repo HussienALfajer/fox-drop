@@ -7,6 +7,7 @@ import 'package:captain/src/app.dart';
 import 'package:captain/src/auth.dart';
 import 'package:captain/src/joining/application.dart';
 import 'package:captain/src/joining/photo_check.dart';
+import 'package:captain/src/profile/profile.dart';
 import 'package:captain/src/push.dart';
 import 'package:captain/src/statements.dart';
 import 'package:captain/src/support/report_photo.dart';
@@ -100,6 +101,30 @@ Map<String, Object?> officeJson({bool open = true}) => {
 };
 
 /// `GET /v1/captain/settings/max-pickup-amount` (CA §10.5, K2).
+/// `GET /v1/captain/contract` (slice 2.35a): [phase] null for no contract.
+Map<String, Object?> contractJson(String? phase) => {
+  'contract': phase == null
+      ? null
+      : {
+          'signedOn': '2026-11-19',
+          'startsOn': '2026-11-19',
+          'probationEndsOn': '2026-12-19',
+          'commitmentStartsOn': '2026-12-19',
+          'commitmentEndsOn': '2027-03-19',
+          'probationConfirmed': false,
+          'phase': phase,
+        },
+  'kit': [
+    {'label': 'حقيبة حرارية', 'size': null, 'quantity': 1},
+    {'label': 'سترة', 'size': 'L', 'quantity': 1},
+  ],
+  'deposit': {
+    'amount': moneyJson('50000'),
+    'paid': '20000',
+    'instalment': moneyJson('10000'),
+  },
+};
+
 Map<String, Object?> maxPickupJson({String? limit, bool answered = true}) => {
   'limit': limit == null ? null : moneyJson(limit),
   'answered': answered,
@@ -512,6 +537,8 @@ class TestApp {
   PhotoQuality? photoQuality = PhotoQuality.ok;
   // The storage URLs each photo was put to.
   final puts = <String>[];
+  // The device's preferences (the welcome tour's mark, slice 2.35a).
+  final deviceStore = MemoryDeviceStore();
   late final ProviderContainer container;
 
   /// The server's clock in the test, which [advance] moves.
@@ -586,6 +613,16 @@ class TestApp {
       emergencyStop();
     }
     if (!server.routes.containsKey('/v1/captain/terms')) terms();
+    // CA §12.2–12.4 (slice 2.35a): no contract (no welcome tour) and no
+    // documents unless a test says otherwise.
+    if (!server.routes.containsKey('/v1/captain/contract')) {
+      server.on('/v1/captain/contract', [FakeAnswer(200, contractJson(null))]);
+    }
+    if (!server.routes.containsKey('/v1/captain/documents')) {
+      server.on('/v1/captain/documents', [
+        const FakeAnswer(200, {'documents': <Object?>[]}),
+      ]);
+    }
     server.on('/v1/captain/content', [FakeAnswer(200, contentJson())]);
     server.on('/v1/captain/push-token', [
       const FakeAnswer(200, {'status': 'registered'}),
@@ -636,6 +673,7 @@ class TestApp {
           pickedFrom.add(source);
           return picked.isEmpty ? null : picked.removeAt(0);
         }),
+        deviceStoreProvider.overrideWithValue(deviceStore),
         photoPutProvider.overrideWithValue((url, photo) async {
           puts.add(url);
         }),

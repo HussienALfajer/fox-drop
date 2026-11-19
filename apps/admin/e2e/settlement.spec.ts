@@ -39,6 +39,7 @@ const balance = {
   blocks: [],
   handInGrace: null,
   earnings: { amount: '50000', currency: 'TRY' },
+  instalment: '0',
   lastHandInAt: null,
   lastPayoutAt: null,
 };
@@ -119,6 +120,7 @@ test('settles a captain on Thursday and shows the statement', async ({ page }) =
         policy: 'carry_forward',
         custody: [{ currency: 'TRY', balance: '30000', balanceInBase: '30000' }],
         earnings: { amount: '50000', currency: 'TRY' },
+        instalment: '0',
         payout: { currency: 'TRY', amount: '50000', rates: [], unit: null },
         collect: null,
         net: [{ currency: 'TRY', amount: '-20000' }],

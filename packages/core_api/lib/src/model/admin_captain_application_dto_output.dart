@@ -7,6 +7,7 @@ import 'package:core_api/src/model/captain_application_dto_output_application_in
 import 'package:core_api/src/model/date.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output_duplicates_inner.dart';
+import 'package:core_api/src/model/admin_captain_application_dto_output_activation.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output_requests_inner.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output_events_inner.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output_documents_inner.dart';
@@ -38,6 +39,7 @@ part 'admin_captain_application_dto_output.g.dart';
 /// * [rejection]
 /// * [duplicates] - Another applicant or captain with the same ID number, phone or plate.
 /// * [events]
+/// * [activation]
 @BuiltValue()
 abstract class AdminCaptainApplicationDtoOutput
     implements
@@ -88,7 +90,7 @@ abstract class AdminCaptainApplicationDtoOutput
   @BuiltValueField(wireName: r'requiredDocuments')
   BuiltList<AdminCaptainApplicationDtoOutputRequiredDocumentsEnum>
   get requiredDocuments;
-  // enum requiredDocumentsEnum {  national_id,  personal_photo,  civil_registry,  criminal_record,  vehicle_papers,  driving_licence,  };
+  // enum requiredDocumentsEnum {  national_id,  personal_photo,  civil_registry,  criminal_record,  vehicle_papers,  driving_licence,  signed_contract,  };
 
   /// Every upload, newest first.
   @BuiltValueField(wireName: r'documents')
@@ -109,6 +111,9 @@ abstract class AdminCaptainApplicationDtoOutput
 
   @BuiltValueField(wireName: r'events')
   BuiltList<AdminCaptainApplicationDtoOutputEventsInner> get events;
+
+  @BuiltValueField(wireName: r'activation')
+  AdminCaptainApplicationDtoOutputActivation get activation;
 
   AdminCaptainApplicationDtoOutput._();
 
@@ -264,6 +269,11 @@ class _$AdminCaptainApplicationDtoOutputSerializer
       specifiedType: const FullType(BuiltList, [
         FullType(AdminCaptainApplicationDtoOutputEventsInner),
       ]),
+    );
+    yield r'activation';
+    yield serializers.serialize(
+      object.activation,
+      specifiedType: const FullType(AdminCaptainApplicationDtoOutputActivation),
     );
   }
 
@@ -492,6 +502,17 @@ class _$AdminCaptainApplicationDtoOutputSerializer
                   as BuiltList<AdminCaptainApplicationDtoOutputEventsInner>;
           result.events.replace(valueDes);
           break;
+        case r'activation':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminCaptainApplicationDtoOutputActivation,
+                    ),
+                  )
+                  as AdminCaptainApplicationDtoOutputActivation;
+          result.activation.replace(valueDes);
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -609,6 +630,10 @@ class AdminCaptainApplicationDtoOutputRequiredDocumentsEnum extends EnumClass {
   static const AdminCaptainApplicationDtoOutputRequiredDocumentsEnum
   drivingLicence =
       _$adminCaptainApplicationDtoOutputRequiredDocumentsEnum_drivingLicence;
+  @BuiltValueEnumConst(wireName: r'signed_contract')
+  static const AdminCaptainApplicationDtoOutputRequiredDocumentsEnum
+  signedContract =
+      _$adminCaptainApplicationDtoOutputRequiredDocumentsEnum_signedContract;
 
   static Serializer<AdminCaptainApplicationDtoOutputRequiredDocumentsEnum>
   get serializer =>

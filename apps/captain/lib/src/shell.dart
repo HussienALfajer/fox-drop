@@ -98,6 +98,17 @@ class MoreScreen extends StatelessWidget {
             title: Text(l10n.captainRating),
             onTap: () => context.push('/rating'),
           ),
+          // CA §12.2–12.4 (slice 2.35a), until the profile of 2.36.
+          ListTile(
+            key: const Key('more-documents'),
+            title: Text(l10n.captainProfileDocuments),
+            onTap: () => context.push('/documents'),
+          ),
+          ListTile(
+            key: const Key('more-contract'),
+            title: Text(l10n.captainProfileContract),
+            onTap: () => context.push('/contract'),
+          ),
           ListTile(
             title: Text(l10n.captainSettings),
             onTap: () => context.push('/settings'),

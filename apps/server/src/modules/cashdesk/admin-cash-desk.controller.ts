@@ -6,6 +6,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Put,
   Query,
   Req,
 } from '@nestjs/common';
@@ -24,6 +25,7 @@ import {
   type Receipt,
 } from './cashdesk.service.js';
 import { phoneOf } from '../../http/phone-search.js';
+import { DepositsService } from './deposits.service.js';
 import { deskUser, refusalsAsHttp } from './desk-http.js';
 import { captainReceiptTypes, sessionKinds } from './schema.js';
 import { type SettlementPreview, SettlementService, type Statement } from './settlement.service.js';
@@ -166,7 +168,8 @@ class AdminSettlementPreviewDto extends createZodDto(
         balanceInBase: signedMinor,
       }),
     ),
-    earnings: money.describe('+ the platform owes the captain.'),
+    earnings: money.describe('+ the platform owes the captain, before the instalment.'),
+    instalment: minor.describe('The deposit instalment posted first (AP §8.5.5 step 2).'),
     payout: z
       .object({
         currency,
@@ -327,6 +330,55 @@ class AdminReceiptDto extends createZodDto(receiptBody) {}
 
 class AdminHandInReceiptsDto extends createZodDto(z.object({ receipts: z.array(receiptBody) })) {}
 
+const depositState = z.object({
+  amount: money.nullable(),
+  instalment: money.nullable().describe('Deducted each Thursday until paid; null for none.'),
+  paid: minor.describe("Paid so far, in the city's base."),
+  recorded: z.boolean().describe('As «تفعيل» counts it: with instalments or paid in full.'),
+});
+
+class AdminDepositsQueryDto extends createZodDto(z.object({ cityId: z.uuid() })) {}
+
+class AdminDepositsDto extends createZodDto(
+  z.object({
+    applications: z.array(
+      z.object({
+        applicationId: z.uuid(),
+        fullName: z.string(),
+        deposit: depositState,
+        suggested: money.nullable().describe('captain.kit_deposit_amount.'),
+        cashLimit: money.nullable().describe('Set before activation (D10).'),
+        suggestedCashLimit: money
+          .nullable()
+          .describe('The setting captain.custody_limit_suggested of the vehicle.'),
+      }),
+    ),
+  }),
+) {}
+
+class AdminRecordDepositDto extends createZodDto(
+  z.object({
+    cityId: z.uuid(),
+    applicationId: z.uuid(),
+    amount: minor.describe("The deposit, in the city's base."),
+    instalment: minor.nullable().describe('Deducted each Thursday until paid; null for none.'),
+    paidNow: minor.describe('The cash received now; 0 records the plan alone.'),
+  }),
+) {}
+
+class AdminDepositParamsDto extends createZodDto(z.object({ applicationId: z.uuid() })) {}
+
+class AdminDepositCashLimitDto extends createZodDto(
+  z.object({
+    cityId: z.uuid(),
+    cashLimit: z.object({ amount: minor, currency }).describe("In the city's base currency."),
+  }),
+) {}
+
+class AdminRecordDepositAnswerDto extends createZodDto(
+  z.object({ receipt: receiptBody.nullable().describe('None when nothing was paid now.') }),
+) {}
+
 class AdminReceiptParamsDto extends createZodDto(z.object({ receiptId: z.uuid() })) {}
 
 const statementBody = z.object({
@@ -376,7 +428,91 @@ export class AdminCashDeskController {
     private readonly captains: CaptainsService,
     private readonly accounts: CaptainAccountsService,
     private readonly settlements: SettlementService,
+    private readonly deposits: DepositsService,
   ) {}
+
+  // «تأمين العدة» (AP §9.7.1, slice 2.35a): the applications at «بانتظار
+  // العدة» with their deposit.
+  @Get('deposits')
+  @RequirePermission('cash_desk.record')
+  @ZodResponse({ status: 200, type: AdminDepositsDto })
+  async awaitingDeposits(@Query() query: AdminDepositsQueryDto) {
+    return this.depositsOf(query.cityId);
+  }
+
+  // The cash limit before activation (D10; FIN, OWN: captains.cash_limit),
+  // answering the list. 400 invalid_amounts (not above zero),
+  // invalid_currency (not the base); 404 unknown_party; 409 wrong_stage. It
+  // sets a value: no key.
+  @Put('deposits/:applicationId/cash-limit')
+  @RequirePermission('captains.cash_limit')
+  @ZodResponse({ status: 200, type: AdminDepositsDto })
+  setCashLimit(
+    @Param() params: AdminDepositParamsDto,
+    @Body() body: AdminDepositCashLimitDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(async () => {
+      await this.deposits.setCashLimit(
+        deskUser(session, request),
+        params.applicationId,
+        { amount: BigInt(body.cashLimit.amount), currency: body.cashLimit.currency },
+        new Date(),
+      );
+      return this.depositsOf(body.cityId);
+    });
+  }
+
+  private async depositsOf(cityId: string) {
+    const found = await this.deposits.awaiting(cityId);
+    return {
+      applications: found.map((each) => ({
+        applicationId: each.applicationId,
+        fullName: each.fullName,
+        deposit: {
+          amount: moneyOf(each.deposit.amount),
+          instalment: moneyOf(each.deposit.instalment),
+          paid: each.deposit.paid.toString(),
+          recorded: each.deposit.recorded,
+        },
+        suggested: moneyOf(each.suggested),
+        cashLimit: moneyOf(each.cashLimit),
+        suggestedCashLimit: moneyOf(each.suggestedCashLimit),
+      })),
+    };
+  }
+
+  // The deposit's plan and the cash paid now, with its receipt «تأمين
+  // العدة». 400 invalid_amounts (an instalment above the deposit); 404
+  // unknown_party; 409 no_open_session (cash without a drawer), wrong_stage,
+  // above_balance (more than is left to pay), no_base_currency.
+  @Post('deposits')
+  @RequirePermission('cash_desk.record')
+  @Idempotent()
+  @ZodResponse({ status: 201, type: AdminRecordDepositAnswerDto })
+  recordDeposit(
+    @Body() body: AdminRecordDepositDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(async () => {
+      const receipt = await this.deposits.record(
+        deskUser(session, request),
+        {
+          cityId: body.cityId,
+          applicationId: body.applicationId,
+          amount: BigInt(body.amount),
+          instalment: body.instalment === null ? null : BigInt(body.instalment),
+          paidNow: BigInt(body.paidNow),
+          idempotencyKey,
+        },
+        new Date(),
+      );
+      return { receipt: receipt && receiptBodyOf(receipt) };
+    });
+  }
 
   // Step 1: by a part of the name, or by the number. A read, sent as a POST
   // so a number never sits in a URL (access logs, history); it changes
@@ -670,6 +806,10 @@ export class AdminCashDeskController {
   }
 }
 
+function moneyOf(value: { amount: bigint; currency: string } | null) {
+  return value && { amount: value.amount.toString(), currency: value.currency };
+}
+
 function cashLine(line: { currency: string; amount: string }) {
   return { currency: line.currency, amount: BigInt(line.amount) };
 }
@@ -723,6 +863,7 @@ function previewBody(preview: SettlementPreview) {
       balanceInBase: line.balanceInBase.toString(),
     })),
     earnings: { amount: preview.earnings.amount.toString(), currency: preview.earnings.currency },
+    instalment: preview.instalment.toString(),
     payout: preview.payout && {
       currency: preview.payout.currency,
       amount: preview.payout.amount.toString(),

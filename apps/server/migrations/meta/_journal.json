@@ -904,6 +904,34 @@
       "when": 1795086355881,
       "tag": "0128_captains_application_pipeline",
       "breakpoints": true
+    },
+    {
+      "idx": 129,
+      "version": "7",
+      "when": 1795088051901,
+      "tag": "0129_content_kit_items",
+      "breakpoints": true
+    },
+    {
+      "idx": 130,
+      "version": "7",
+      "when": 1795088921348,
+      "tag": "0130_captains_activation",
+      "breakpoints": true
+    },
+    {
+      "idx": 131,
+      "version": "7",
+      "when": 1795089549535,
+      "tag": "0131_cashdesk_deposits",
+      "breakpoints": true
+    },
+    {
+      "idx": 132,
+      "version": "7",
+      "when": 1795090598649,
+      "tag": "0132_captains_contract_phases",
+      "breakpoints": true
     }
   ]
 }

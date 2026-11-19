@@ -12,6 +12,7 @@ import 'custody.dart';
 import 'custody_screen.dart';
 import 'peak_bonus.dart';
 import 'platform.dart';
+import 'profile/profile_notices.dart';
 import 'settings/max_pickup_form.dart';
 import 'terms.dart';
 import 'work/alerts.dart';
@@ -189,6 +190,8 @@ class _AvailabilityView extends ConsumerWidget {
       padding: const EdgeInsetsDirectional.all(16),
       children: [
         CashLines(availability: availability),
+        // CA §12.2, §5.5 (slice 2.35a).
+        const ProfileNotices(),
         Text(
           l10n.stateText(state.state),
           style: Theme.of(context).textTheme.headlineSmall,

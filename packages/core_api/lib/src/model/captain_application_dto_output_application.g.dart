@@ -144,6 +144,11 @@ _$captainApplicationDtoOutputApplicationMissingEnum_documentColonDrivingLicence 
       'documentColonDrivingLicence',
     );
 const CaptainApplicationDtoOutputApplicationMissingEnum
+_$captainApplicationDtoOutputApplicationMissingEnum_documentColonSignedContract =
+    const CaptainApplicationDtoOutputApplicationMissingEnum._(
+      'documentColonSignedContract',
+    );
+const CaptainApplicationDtoOutputApplicationMissingEnum
 _$captainApplicationDtoOutputApplicationMissingEnum_terms =
     const CaptainApplicationDtoOutputApplicationMissingEnum._('terms');
 
@@ -164,6 +169,8 @@ _$captainApplicationDtoOutputApplicationMissingEnumValueOf(String name) {
       return _$captainApplicationDtoOutputApplicationMissingEnum_documentColonVehiclePapers;
     case 'documentColonDrivingLicence':
       return _$captainApplicationDtoOutputApplicationMissingEnum_documentColonDrivingLicence;
+    case 'documentColonSignedContract':
+      return _$captainApplicationDtoOutputApplicationMissingEnum_documentColonSignedContract;
     case 'terms':
       return _$captainApplicationDtoOutputApplicationMissingEnum_terms;
     default:
@@ -183,6 +190,7 @@ _$captainApplicationDtoOutputApplicationMissingEnumValues =
       _$captainApplicationDtoOutputApplicationMissingEnum_documentColonCriminalRecord,
       _$captainApplicationDtoOutputApplicationMissingEnum_documentColonVehiclePapers,
       _$captainApplicationDtoOutputApplicationMissingEnum_documentColonDrivingLicence,
+      _$captainApplicationDtoOutputApplicationMissingEnum_documentColonSignedContract,
       _$captainApplicationDtoOutputApplicationMissingEnum_terms,
     ]);
 
@@ -295,6 +303,7 @@ class _$CaptainApplicationDtoOutputApplicationMissingEnumSerializer
     'documentColonCriminalRecord': 'document:criminal_record',
     'documentColonVehiclePapers': 'document:vehicle_papers',
     'documentColonDrivingLicence': 'document:driving_licence',
+    'documentColonSignedContract': 'document:signed_contract',
     'terms': 'terms',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
@@ -305,6 +314,7 @@ class _$CaptainApplicationDtoOutputApplicationMissingEnumSerializer
     'document:criminal_record': 'documentColonCriminalRecord',
     'document:vehicle_papers': 'documentColonVehiclePapers',
     'document:driving_licence': 'documentColonDrivingLicence',
+    'document:signed_contract': 'documentColonSignedContract',
     'terms': 'terms',
   };
 

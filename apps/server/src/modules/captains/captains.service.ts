@@ -16,6 +16,13 @@ import {
 import { type AccountEntry, type JournalType, LedgerService } from '../ledger/index.js';
 import { lockCityCurrencies, SettingsService, type Vehicle, vehicles } from '../settings/index.js';
 import {
+  type ApplicationDocumentKind,
+  cityDay,
+  documentStates,
+  expiredRequired,
+} from './applications.js';
+import { captainUploads } from './captain-documents.js';
+import {
   type Availability,
   availability,
   type AvailabilityInput,
@@ -399,6 +406,14 @@ export class CaptainsService implements OnModuleInit {
         SELECT 'captain.max_pickup_amount' AS key, max_pickup_currency AS currency
           FROM captains.captains WHERE city_id = ${cityId} AND status <> 'terminated'
             AND max_pickup_currency IS NOT NULL
+        UNION
+        SELECT 'captain.custody_limit' AS key, custody_limit_currency AS currency
+          FROM captains.applications WHERE city_id = ${cityId} AND stage = 'awaiting_kit'
+            AND custody_limit_currency IS NOT NULL
+        UNION
+        SELECT 'captain.kit_deposit' AS key, deposit_currency AS currency
+          FROM captains.applications WHERE city_id = ${cityId} AND deposit_currency IS NOT NULL
+            AND stage IN ('awaiting_kit', 'active')
         UNION
         SELECT 'captain.pay_table' AS key, currency FROM captains.pay_tables
           WHERE city_id = ${cityId} AND (effective_from > now() OR id = (
@@ -1900,6 +1915,7 @@ export class CaptainsService implements OnModuleInit {
             appVersion: device.appVersion,
             simulatedLocation: device.simulatedLocation,
             termsPending: device.termsPending,
+            expiredDocuments: await this.expiredDocuments(tx, row, rules.timeZone, now),
           },
           now,
         );
@@ -1913,6 +1929,27 @@ export class CaptainsService implements OnModuleInit {
       }
       return stateOf(input, rules.remitTolerance, now);
     });
+  }
+
+  // K6 (slice 2.35a): the captain's required documents expired on the
+  // city's day.
+  private async expiredDocuments(
+    tx: Tx,
+    row: typeof captainRecords.$inferSelect,
+    timeZone: string,
+    now: Date,
+  ): Promise<ApplicationDocumentKind[]> {
+    const found = await captainUploads(tx, row.id);
+    if (found === null) return [];
+    const notice = await this.settings.get(
+      'captain.document_expiry_notice_days',
+      { cityId: row.cityId },
+      tx,
+    );
+    return expiredRequired(
+      documentStates(found.uploads, cityDay(now, timeZone), notice),
+      row.vehicle,
+    );
   }
 
   // CA §7.5: one tap with no active order. The answer carries the cash to
@@ -2107,6 +2144,7 @@ export class CaptainsService implements OnModuleInit {
         minVersion: rules.minVersion,
         simulatedLocation: latest?.simulated ?? false,
         termsPending: false,
+        expiredDocuments: [],
         activeOrder: open ? (await this.activeOrders([row.id], executor)).size > 0 : false,
         lastOrder:
           open?.lastOrderBy == null ? null : { by: open.lastOrderBy, reason: open.lastOrderReason },
@@ -2209,18 +2247,24 @@ export class CaptainsService implements OnModuleInit {
   // As the merchants' amounts: the base, or until the first order locks it,
   // another of the city's currencies.
   private async checkBaseCurrency(tx: Tx, cityId: string, currency: string): Promise<void> {
-    await lockCityCurrencies(tx, cityId);
-    const base = await this.fx.baseCurrency(cityId, tx);
-    const allowed =
-      currency === base ||
-      (!(await this.fx.baseLocked(cityId, tx)) &&
-        (await this.fx.cityCurrencies(cityId, tx)).some((entry) => entry.currency === currency));
-    if (!allowed) {
+    if (!(await this.inBaseCurrency(tx, cityId, currency))) {
       throw new CaptainsRefusedError(
         'not_in_base_currency',
-        `amounts are in the city's base currency, ${base ?? 'not chosen yet'}`,
+        `amounts are in the city's base currency`,
       );
     }
+  }
+
+  // Under the city's currencies lock: the application pipeline's cash limit
+  // checks it too (slice 2.35a).
+  async inBaseCurrency(tx: Tx, cityId: string, currency: string): Promise<boolean> {
+    await lockCityCurrencies(tx, cityId);
+    const base = await this.fx.baseCurrency(cityId, tx);
+    return (
+      currency === base ||
+      (!(await this.fx.baseLocked(cityId, tx)) &&
+        (await this.fx.cityCurrencies(cityId, tx)).some((entry) => entry.currency === currency))
+    );
   }
 }
 

@@ -3028,6 +3028,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/captain/contract": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainContractContract"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainDocumentsDocuments"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/documents/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainDocumentsUpload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/documents/{kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["captainDocumentsReplace"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/captains/{captainId}/availability": {
         parameters: {
             query?: never;
@@ -3262,6 +3326,70 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["adminCaptainApplicationsBackFromWaitlist"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captain-applications/{applicationId}/kit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminCaptainApplicationsIssueKit"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captain-applications/{applicationId}/contract": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminCaptainApplicationsRecordContract"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captain-applications/{applicationId}/confirm-probation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCaptainApplicationsConfirmProbation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captain-applications/{applicationId}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCaptainApplicationsActivate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5966,6 +6094,38 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["captainOffersDecline"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cash-desk/deposits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCashDeskAwaitingDeposits"];
+        put?: never;
+        post: operations["adminCashDeskRecordDeposit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cash-desk/deposits/{applicationId}/cash-limit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminCashDeskSetCashLimit"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -9086,7 +9246,7 @@ export interface components {
         AdminReasonListsDto_Output: {
             lists: {
                 /** @enum {string} */
-                list: "merchant_rejection" | "merchant_problem" | "item_unavailable_note" | "merchant_ticket_type" | "captain_cannot_complete" | "captain_away" | "shortfall" | "food_after_failed" | "captain_ticket_type" | "captain_problem" | "customer_cancel" | "customer_problem" | "order_note" | "restaurant_rating_low" | "restaurant_rating_mid" | "restaurant_rating_high" | "captain_rating_low" | "captain_rating_mid" | "captain_rating_high" | "ops_cancel" | "reassignment" | "captain_suspension" | "customer_block" | "emergency_stop" | "compensation" | "failed_outcome" | "system_cancellation";
+                list: "merchant_rejection" | "merchant_problem" | "item_unavailable_note" | "merchant_ticket_type" | "captain_cannot_complete" | "captain_away" | "shortfall" | "food_after_failed" | "captain_ticket_type" | "captain_problem" | "customer_cancel" | "customer_problem" | "order_note" | "restaurant_rating_low" | "restaurant_rating_mid" | "restaurant_rating_high" | "captain_rating_low" | "captain_rating_mid" | "captain_rating_high" | "ops_cancel" | "reassignment" | "captain_suspension" | "customer_block" | "emergency_stop" | "compensation" | "kit_item" | "failed_outcome" | "system_cancellation";
                 apps: ("merchant" | "captain" | "customer")[];
                 /** @description Its reasons may carry «نص للزبون». */
                 customerText: boolean;
@@ -9375,7 +9535,7 @@ export interface components {
                 plate: string | null;
                 documents: {
                     /** @enum {string} */
-                    kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence";
+                    kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence" | "signed_contract";
                     /** @enum {string} */
                     status: "pending" | "accepted" | "rejected";
                     /** @description Why it was rejected. */
@@ -9390,12 +9550,12 @@ export interface components {
                     uploadedAt: string;
                 }[];
                 /** @description What «إرسال الطلب» waits for, in the form’s order. */
-                missing: ("vehicle" | "document:national_id" | "document:personal_photo" | "document:civil_registry" | "document:criminal_record" | "document:vehicle_papers" | "document:driving_licence" | "terms")[];
+                missing: ("vehicle" | "document:national_id" | "document:personal_photo" | "document:civil_registry" | "document:criminal_record" | "document:vehicle_papers" | "document:driving_licence" | "document:signed_contract" | "terms")[];
                 submittedAt: string | null;
                 /** @description What the panel asked for: «يرجى رفع {المستند}: {السبب}». */
                 requests: {
                     /** @enum {string} */
-                    kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence";
+                    kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence" | "signed_contract";
                     reason: string;
                     /** Format: date-time */
                     requestedAt: string;
@@ -9662,6 +9822,82 @@ export interface components {
                 }[];
             }[];
         };
+        CaptainContractDto_Output: {
+            /** @description Null for a captain who joined before the contracts. */
+            contract: {
+                /** Format: date */
+                signedOn: string;
+                /** Format: date */
+                startsOn: string;
+                /** Format: date */
+                probationEndsOn: string;
+                /** Format: date */
+                commitmentStartsOn: string;
+                /** Format: date */
+                commitmentEndsOn: string;
+                probationConfirmed: boolean;
+                /** @enum {string} */
+                phase: "probation" | "commitment" | "open";
+            } | null;
+            /** @description The items issued, with their labels as issued. */
+            kit: {
+                label: string;
+                size: string | null;
+                quantity: number;
+            }[];
+            deposit: {
+                amount: {
+                    amount: string;
+                    currency: string;
+                } | null;
+                /** @description Minor units in the city's base. */
+                paid: string;
+                /** @description Deducted each Thursday until paid; null for none. */
+                instalment: {
+                    amount: string;
+                    currency: string;
+                } | null;
+            };
+        };
+        CaptainDocumentsDto_Output: {
+            documents: {
+                /** @enum {string} */
+                kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence";
+                required: boolean;
+                /**
+                 * @description «expiring» from captain.document_expiry_notice_days before its expiry.
+                 * @enum {string}
+                 */
+                state: "valid" | "expiring" | "expired" | "missing";
+                /** @description The one in force, valid until it expires. */
+                valid: {
+                    issueDate: string | null;
+                    expiresOn: string | null;
+                    /** Format: date-time */
+                    uploadedAt: string;
+                } | null;
+                /** @description «رفع نسخة جديدة» waiting for OPS. */
+                pending: {
+                    issueDate: string | null;
+                    expiresOn: string | null;
+                    /** Format: date-time */
+                    uploadedAt: string;
+                } | null;
+                rejection: {
+                    reason: string;
+                    /** Format: date-time */
+                    at: string;
+                } | null;
+            }[];
+        };
+        CaptainDocumentReplacementDto: {
+            /** @description From POST /v1/captain/documents/upload, once uploaded. */
+            uploadIds: string[];
+            /** @description The national ID’s number. */
+            number?: string | null;
+            /** @description The criminal record's issue date. */
+            issueDate?: string | null;
+        };
         AdminCaptainAvailabilityDto_Output: {
             /** @enum {string} */
             state: "offline" | "online_available" | "busy" | "last_order" | "not_receiving_offers" | "suspended";
@@ -9756,13 +9992,13 @@ export interface components {
             /** Format: date-time */
             updatedAt: string;
             /** @description The documents activation waits for (D24). */
-            requiredDocuments: ("national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence")[];
+            requiredDocuments: ("national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence" | "signed_contract")[];
             /** @description Every upload, newest first. */
             documents: {
                 /** Format: uuid */
                 id: string;
                 /** @enum {string} */
-                kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence";
+                kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence" | "signed_contract";
                 /** @enum {string} */
                 status: "pending" | "accepted" | "rejected";
                 reason: string | null;
@@ -9783,7 +10019,7 @@ export interface components {
             }[];
             requests: {
                 /** @enum {string} */
-                kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence";
+                kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence" | "signed_contract";
                 reason: string;
                 /** Format: date-time */
                 requestedAt: string;
@@ -9820,13 +10056,88 @@ export interface components {
                 /** @description The admin; null for the applicant. */
                 actor: string | null;
                 /** @enum {string} */
-                kind: "submitted" | "stage" | "note" | "document_review" | "document_request" | "document_upload" | "interview";
+                kind: "submitted" | "stage" | "note" | "document_review" | "document_request" | "document_upload" | "interview" | "kit" | "cash_limit" | "contract" | "deposit" | "probation_confirmed";
                 /** @enum {string} */
                 stage: "draft" | "new" | "under_review" | "interview" | "awaiting_kit" | "active" | "waitlist" | "rejected";
-                documentKind: ("national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence") | null;
+                documentKind: ("national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence" | "signed_contract") | null;
                 documentStatus: ("pending" | "accepted" | "rejected") | null;
                 note: string | null;
             }[];
+            /** @description «بانتظار العدة» and «تفعيل» (slice 2.35a). */
+            activation: {
+                kit: {
+                    items: {
+                        code: string;
+                        label: string;
+                        size: string | null;
+                        quantity: number;
+                    }[];
+                    /** Format: date-time */
+                    issuedAt: string;
+                } | null;
+                cashLimit: {
+                    /** @description Minor units. */
+                    amount: string;
+                    currency: string;
+                } | null;
+                /** @description The setting captain.custody_limit_suggested of the vehicle. */
+                suggestedCashLimit: {
+                    /** @description Minor units. */
+                    amount: string;
+                    currency: string;
+                } | null;
+                contract: {
+                    /** Format: date */
+                    signedOn: string;
+                    /** Format: date */
+                    startsOn: string;
+                    probationDays: number;
+                    commitmentMonths: number;
+                    /** Format: date */
+                    probationEndsOn: string;
+                    /**
+                     * Format: date
+                     * @description As confirmed, or expected on the probation end.
+                     */
+                    commitmentStartsOn: string;
+                    /** Format: date */
+                    commitmentEndsOn: string;
+                    probationConfirmedOn: string | null;
+                    /** @enum {string} */
+                    phase: "probation" | "commitment" | "open";
+                    /**
+                     * @description The probation review: due from its notice, overdue past its end.
+                     * @enum {string}
+                     */
+                    review: "none" | "due" | "overdue";
+                } | null;
+                deposit: {
+                    amount: {
+                        /** @description Minor units. */
+                        amount: string;
+                        currency: string;
+                    } | null;
+                    /** @description Deducted each Thursday until paid. */
+                    instalment: {
+                        /** @description Minor units. */
+                        amount: string;
+                        currency: string;
+                    } | null;
+                    /** @description Minor units in the city’s base, paid at the desk. */
+                    paid: string;
+                    recorded: boolean;
+                };
+                /** @description captain.kit_deposit_amount. */
+                suggestedDeposit: {
+                    /** @description Minor units. */
+                    amount: string;
+                    currency: string;
+                } | null;
+                /** @description What «تفعيل» still waits for. */
+                missing: string[];
+                captainId: string | null;
+                activatedAt: string | null;
+            };
         };
         AdminCaptainApplicationReviewDto: {
             /** @enum {string} */
@@ -9844,7 +10155,7 @@ export interface components {
         };
         AdminCaptainApplicationRequestDto: {
             /** @enum {string} */
-            kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence";
+            kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence" | "signed_contract";
             /** @description Sent to the applicant. */
             reason: string;
         };
@@ -9864,6 +10175,28 @@ export interface components {
         AdminCaptainApplicationRejectDto: {
             /** @description Sent to the applicant (CA §5.4). */
             reason: string;
+        };
+        AdminCaptainApplicationKitDto: {
+            items: {
+                /** @description A reason of the list kit_item. */
+                code: string;
+                size?: string | null;
+                quantity: number;
+            }[];
+        };
+        AdminCaptainApplicationContractDto: {
+            /**
+             * Format: date
+             * @description Not after today on the city's clock.
+             */
+            signedOn: string;
+            /**
+             * Format: date
+             * @description Not before the signing.
+             */
+            startsOn: string;
+            /** @description The scan’s pages, from POST /v1/admin/uploads (captain_document). */
+            uploadIds: string[];
         };
         AdminPeakBonusDto_Output: {
             /** @description Null until the owner first saves it: off (D15). */
@@ -11891,7 +12224,7 @@ export interface components {
                  * @description The rule of AP §9.1.3.
                  * @enum {string}
                  */
-                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket" | "urgent_dispute_ticket" | "large_price_change" | "captain_application";
+                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket" | "urgent_dispute_ticket" | "large_price_change" | "captain_application" | "probation_ending" | "probation_overdue" | "document_expiring";
                 /**
                  * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
                  * @enum {string}
@@ -11915,6 +12248,8 @@ export interface components {
                 ticketNumber: string | null;
                 /** @description «مطعم متأخر في التسوية» (AP §9.1.3, slice 2.19f): the oldest statement still unpaid, for «فتح الكشف»; null for the others. */
                 statementId: string | null;
+                /** @description «نهاية فترة تجربة» (AP §9.1.3, slice 2.35a): the captain’s application, whose page holds the contract; null for the others. */
+                applicationId: string | null;
                 /** @description «طوارئ كابتن» (AP §9.1.3, CA §9.11): the location the captain sent, for «فتح الخريطة»; null for the others and an emergency without a fix. */
                 location: {
                     latitude: number;
@@ -11942,7 +12277,7 @@ export interface components {
              * @description The rule of AP §9.1.3.
              * @enum {string}
              */
-            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket" | "urgent_dispute_ticket" | "large_price_change" | "captain_application";
+            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket" | "urgent_dispute_ticket" | "large_price_change" | "captain_application" | "probation_ending" | "probation_overdue" | "document_expiring";
             /**
              * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
              * @enum {string}
@@ -11966,6 +12301,8 @@ export interface components {
             ticketNumber: string | null;
             /** @description «مطعم متأخر في التسوية» (AP §9.1.3, slice 2.19f): the oldest statement still unpaid, for «فتح الكشف»; null for the others. */
             statementId: string | null;
+            /** @description «نهاية فترة تجربة» (AP §9.1.3, slice 2.35a): the captain’s application, whose page holds the contract; null for the others. */
+            applicationId: string | null;
             /** @description «طوارئ كابتن» (AP §9.1.3, CA §9.11): the location the captain sent, for «فتح الخريطة»; null for the others and an emergency without a fix. */
             location: {
                 latitude: number;
@@ -17378,6 +17715,101 @@ export interface components {
                 aboveMaxPickup: boolean;
             };
         };
+        AdminDepositsDto_Output: {
+            applications: {
+                /** Format: uuid */
+                applicationId: string;
+                fullName: string;
+                deposit: {
+                    amount: {
+                        amount: string;
+                        currency: string;
+                    } | null;
+                    /** @description Deducted each Thursday until paid; null for none. */
+                    instalment: {
+                        amount: string;
+                        currency: string;
+                    } | null;
+                    /** @description Paid so far, in the city's base. */
+                    paid: string;
+                    /** @description As «تفعيل» counts it: with instalments or paid in full. */
+                    recorded: boolean;
+                };
+                /** @description captain.kit_deposit_amount. */
+                suggested: {
+                    amount: string;
+                    currency: string;
+                } | null;
+                /** @description Set before activation (D10). */
+                cashLimit: {
+                    amount: string;
+                    currency: string;
+                } | null;
+                /** @description The setting captain.custody_limit_suggested of the vehicle. */
+                suggestedCashLimit: {
+                    amount: string;
+                    currency: string;
+                } | null;
+            }[];
+        };
+        AdminDepositCashLimitDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description In the city's base currency. */
+            cashLimit: {
+                amount: string;
+                currency: string;
+            };
+        };
+        AdminRecordDepositDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** Format: uuid */
+            applicationId: string;
+            /** @description The deposit, in the city's base. */
+            amount: string;
+            /** @description Deducted each Thursday until paid; null for none. */
+            instalment: string | null;
+            /** @description The cash received now; 0 records the plan alone. */
+            paidNow: string;
+        };
+        AdminRecordDepositAnswerDto_Output: {
+            /** @description None when nothing was paid now. */
+            receipt: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                cityId: string;
+                /** @description Such as AZ-2026-000123 (AP §4.8). */
+                number: string;
+                /** @enum {string} */
+                type: "captain_hand_in" | "captain_reimbursement" | "captain_payout" | "captain_earnings_collection" | "captain_deposit";
+                /** Format: uuid */
+                sessionId: string;
+                /** Format: uuid */
+                cashierId: string;
+                cashierName: string | null;
+                /** Format: uuid */
+                captainId: string;
+                captainName: string;
+                /** Format: date-time */
+                createdAt: string;
+                conversions: {
+                    from: string;
+                    amount: string;
+                    to: string;
+                    converted: string;
+                }[];
+                lines: {
+                    currency: string;
+                    /** @description The custody before, + to hand in, − owed to the captain. */
+                    expected: string;
+                    amount: string;
+                    /** @description What stays open after it. */
+                    remaining: string;
+                }[];
+            } | null;
+        };
         AdminDeskCaptainSearchDto: {
             /** Format: uuid */
             cityId: string;
@@ -17592,11 +18024,13 @@ export interface components {
                 balance: string;
                 balanceInBase: string;
             }[];
-            /** @description + the platform owes the captain. */
+            /** @description + the platform owes the captain, before the instalment. */
             earnings: {
                 amount: string;
                 currency: string;
             };
+            /** @description The deposit instalment posted first (AP §8.5.5 step 2). */
+            instalment: string;
             /** @description The whole positive balance in the currency asked, at the current rate. */
             payout: {
                 currency: string;
@@ -17698,7 +18132,7 @@ export interface components {
                 /** @description Such as AZ-2026-000123 (AP §4.8). */
                 number: string;
                 /** @enum {string} */
-                type: "captain_hand_in" | "captain_reimbursement" | "captain_payout" | "captain_earnings_collection";
+                type: "captain_hand_in" | "captain_reimbursement" | "captain_payout" | "captain_earnings_collection" | "captain_deposit";
                 /** Format: uuid */
                 sessionId: string;
                 /** Format: uuid */
@@ -17923,7 +18357,7 @@ export interface components {
                 /** @description Such as AZ-2026-000123 (AP §4.8). */
                 number: string;
                 /** @enum {string} */
-                type: "captain_hand_in" | "captain_reimbursement" | "captain_payout" | "captain_earnings_collection";
+                type: "captain_hand_in" | "captain_reimbursement" | "captain_payout" | "captain_earnings_collection" | "captain_deposit";
                 /** Format: uuid */
                 sessionId: string;
                 /** Format: uuid */
@@ -17984,7 +18418,7 @@ export interface components {
             /** @description Such as AZ-2026-000123 (AP §4.8). */
             number: string;
             /** @enum {string} */
-            type: "captain_hand_in" | "captain_reimbursement" | "captain_payout" | "captain_earnings_collection";
+            type: "captain_hand_in" | "captain_reimbursement" | "captain_payout" | "captain_earnings_collection" | "captain_deposit";
             /** Format: uuid */
             sessionId: string;
             /** Format: uuid */
@@ -24017,7 +24451,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence";
+                kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence" | "signed_contract";
             };
             cookie?: never;
         };
@@ -24278,6 +24712,96 @@ export interface operations {
             };
         };
     };
+    captainContractContract: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainContractDto_Output"];
+                };
+            };
+        };
+    };
+    captainDocumentsDocuments: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainDocumentsDto_Output"];
+                };
+            };
+        };
+    };
+    captainDocumentsUpload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerNewUploadDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerUploadDto_Output"];
+                };
+            };
+        };
+    };
+    captainDocumentsReplace: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence";
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainDocumentReplacementDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainDocumentsDto_Output"];
+                };
+            };
+        };
+    };
     adminCaptainsAvailability: {
         parameters: {
             query?: never;
@@ -24454,7 +24978,7 @@ export interface operations {
             header?: never;
             path: {
                 applicationId: string;
-                kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence";
+                kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence" | "signed_contract";
             };
             cookie?: never;
         };
@@ -24627,6 +25151,102 @@ export interface operations {
         };
     };
     adminCaptainApplicationsBackFromWaitlist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainApplicationDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainApplicationsIssueKit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCaptainApplicationKitDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainApplicationDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainApplicationsRecordContract: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCaptainApplicationContractDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainApplicationDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainApplicationsConfirmProbation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainApplicationDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainApplicationsActivate: {
         parameters: {
             query?: never;
             header?: never;
@@ -29297,6 +29917,81 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptainOfferDto_Output"];
+                };
+            };
+        };
+    };
+    adminCashDeskAwaitingDeposits: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDepositsDto_Output"];
+                };
+            };
+        };
+    };
+    adminCashDeskRecordDeposit: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRecordDepositDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRecordDepositAnswerDto_Output"];
+                };
+            };
+        };
+    };
+    adminCashDeskSetCashLimit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminDepositCashLimitDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDepositsDto_Output"];
                 };
             };
         };

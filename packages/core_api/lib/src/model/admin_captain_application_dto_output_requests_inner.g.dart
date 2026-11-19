@@ -34,6 +34,11 @@ _$adminCaptainApplicationDtoOutputRequestsInnerKindEnum_drivingLicence =
     const AdminCaptainApplicationDtoOutputRequestsInnerKindEnum._(
       'drivingLicence',
     );
+const AdminCaptainApplicationDtoOutputRequestsInnerKindEnum
+_$adminCaptainApplicationDtoOutputRequestsInnerKindEnum_signedContract =
+    const AdminCaptainApplicationDtoOutputRequestsInnerKindEnum._(
+      'signedContract',
+    );
 
 AdminCaptainApplicationDtoOutputRequestsInnerKindEnum
 _$adminCaptainApplicationDtoOutputRequestsInnerKindEnumValueOf(String name) {
@@ -50,6 +55,8 @@ _$adminCaptainApplicationDtoOutputRequestsInnerKindEnumValueOf(String name) {
       return _$adminCaptainApplicationDtoOutputRequestsInnerKindEnum_vehiclePapers;
     case 'drivingLicence':
       return _$adminCaptainApplicationDtoOutputRequestsInnerKindEnum_drivingLicence;
+    case 'signedContract':
+      return _$adminCaptainApplicationDtoOutputRequestsInnerKindEnum_signedContract;
     default:
       throw ArgumentError(name);
   }
@@ -65,6 +72,7 @@ _$adminCaptainApplicationDtoOutputRequestsInnerKindEnumValues =
         _$adminCaptainApplicationDtoOutputRequestsInnerKindEnum_criminalRecord,
         _$adminCaptainApplicationDtoOutputRequestsInnerKindEnum_vehiclePapers,
         _$adminCaptainApplicationDtoOutputRequestsInnerKindEnum_drivingLicence,
+        _$adminCaptainApplicationDtoOutputRequestsInnerKindEnum_signedContract,
       ],
     );
 
@@ -84,6 +92,7 @@ class _$AdminCaptainApplicationDtoOutputRequestsInnerKindEnumSerializer
     'criminalRecord': 'criminal_record',
     'vehiclePapers': 'vehicle_papers',
     'drivingLicence': 'driving_licence',
+    'signedContract': 'signed_contract',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'national_id': 'nationalId',
@@ -92,6 +101,7 @@ class _$AdminCaptainApplicationDtoOutputRequestsInnerKindEnumSerializer
     'criminal_record': 'criminalRecord',
     'vehicle_papers': 'vehiclePapers',
     'driving_licence': 'drivingLicence',
+    'signed_contract': 'signedContract',
   };
 
   @override

@@ -1,13 +1,13 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'admin_settlement_dto_output_receipts_inner_conversions_inner.dart';
+part of 'admin_record_deposit_answer_dto_output_receipt_conversions_inner.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$AdminSettlementDtoOutputReceiptsInnerConversionsInner
-    extends AdminSettlementDtoOutputReceiptsInnerConversionsInner {
+class _$AdminRecordDepositAnswerDtoOutputReceiptConversionsInner
+    extends AdminRecordDepositAnswerDtoOutputReceiptConversionsInner {
   @override
   final String from;
   @override
@@ -17,35 +17,39 @@ class _$AdminSettlementDtoOutputReceiptsInnerConversionsInner
   @override
   final String converted;
 
-  factory _$AdminSettlementDtoOutputReceiptsInnerConversionsInner([
-    void Function(AdminSettlementDtoOutputReceiptsInnerConversionsInnerBuilder)?
+  factory _$AdminRecordDepositAnswerDtoOutputReceiptConversionsInner([
+    void Function(
+      AdminRecordDepositAnswerDtoOutputReceiptConversionsInnerBuilder,
+    )?
     updates,
   ]) =>
-      (AdminSettlementDtoOutputReceiptsInnerConversionsInnerBuilder()
+      (AdminRecordDepositAnswerDtoOutputReceiptConversionsInnerBuilder()
             ..update(updates))
           ._build();
 
-  _$AdminSettlementDtoOutputReceiptsInnerConversionsInner._({
+  _$AdminRecordDepositAnswerDtoOutputReceiptConversionsInner._({
     required this.from,
     required this.amount,
     required this.to,
     required this.converted,
   }) : super._();
   @override
-  AdminSettlementDtoOutputReceiptsInnerConversionsInner rebuild(
-    void Function(AdminSettlementDtoOutputReceiptsInnerConversionsInnerBuilder)
+  AdminRecordDepositAnswerDtoOutputReceiptConversionsInner rebuild(
+    void Function(
+      AdminRecordDepositAnswerDtoOutputReceiptConversionsInnerBuilder,
+    )
     updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  AdminSettlementDtoOutputReceiptsInnerConversionsInnerBuilder toBuilder() =>
-      AdminSettlementDtoOutputReceiptsInnerConversionsInnerBuilder()
+  AdminRecordDepositAnswerDtoOutputReceiptConversionsInnerBuilder toBuilder() =>
+      AdminRecordDepositAnswerDtoOutputReceiptConversionsInnerBuilder()
         ..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is AdminSettlementDtoOutputReceiptsInnerConversionsInner &&
+    return other is AdminRecordDepositAnswerDtoOutputReceiptConversionsInner &&
         from == other.from &&
         amount == other.amount &&
         to == other.to &&
@@ -66,7 +70,7 @@ class _$AdminSettlementDtoOutputReceiptsInnerConversionsInner
   @override
   String toString() {
     return (newBuiltValueToStringHelper(
-            r'AdminSettlementDtoOutputReceiptsInnerConversionsInner',
+            r'AdminRecordDepositAnswerDtoOutputReceiptConversionsInner',
           )
           ..add('from', from)
           ..add('amount', amount)
@@ -76,13 +80,13 @@ class _$AdminSettlementDtoOutputReceiptsInnerConversionsInner
   }
 }
 
-class AdminSettlementDtoOutputReceiptsInnerConversionsInnerBuilder
+class AdminRecordDepositAnswerDtoOutputReceiptConversionsInnerBuilder
     implements
         Builder<
-          AdminSettlementDtoOutputReceiptsInnerConversionsInner,
-          AdminSettlementDtoOutputReceiptsInnerConversionsInnerBuilder
+          AdminRecordDepositAnswerDtoOutputReceiptConversionsInner,
+          AdminRecordDepositAnswerDtoOutputReceiptConversionsInnerBuilder
         > {
-  _$AdminSettlementDtoOutputReceiptsInnerConversionsInner? _$v;
+  _$AdminRecordDepositAnswerDtoOutputReceiptConversionsInner? _$v;
 
   String? _from;
   String? get from => _$this._from;
@@ -100,11 +104,11 @@ class AdminSettlementDtoOutputReceiptsInnerConversionsInnerBuilder
   String? get converted => _$this._converted;
   set converted(String? converted) => _$this._converted = converted;
 
-  AdminSettlementDtoOutputReceiptsInnerConversionsInnerBuilder() {
-    AdminSettlementDtoOutputReceiptsInnerConversionsInner._defaults(this);
+  AdminRecordDepositAnswerDtoOutputReceiptConversionsInnerBuilder() {
+    AdminRecordDepositAnswerDtoOutputReceiptConversionsInner._defaults(this);
   }
 
-  AdminSettlementDtoOutputReceiptsInnerConversionsInnerBuilder get _$this {
+  AdminRecordDepositAnswerDtoOutputReceiptConversionsInnerBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _from = $v.from;
@@ -117,43 +121,45 @@ class AdminSettlementDtoOutputReceiptsInnerConversionsInnerBuilder
   }
 
   @override
-  void replace(AdminSettlementDtoOutputReceiptsInnerConversionsInner other) {
-    _$v = other as _$AdminSettlementDtoOutputReceiptsInnerConversionsInner;
+  void replace(AdminRecordDepositAnswerDtoOutputReceiptConversionsInner other) {
+    _$v = other as _$AdminRecordDepositAnswerDtoOutputReceiptConversionsInner;
   }
 
   @override
   void update(
-    void Function(AdminSettlementDtoOutputReceiptsInnerConversionsInnerBuilder)?
+    void Function(
+      AdminRecordDepositAnswerDtoOutputReceiptConversionsInnerBuilder,
+    )?
     updates,
   ) {
     if (updates != null) updates(this);
   }
 
   @override
-  AdminSettlementDtoOutputReceiptsInnerConversionsInner build() => _build();
+  AdminRecordDepositAnswerDtoOutputReceiptConversionsInner build() => _build();
 
-  _$AdminSettlementDtoOutputReceiptsInnerConversionsInner _build() {
+  _$AdminRecordDepositAnswerDtoOutputReceiptConversionsInner _build() {
     final _$result =
         _$v ??
-        _$AdminSettlementDtoOutputReceiptsInnerConversionsInner._(
+        _$AdminRecordDepositAnswerDtoOutputReceiptConversionsInner._(
           from: BuiltValueNullFieldError.checkNotNull(
             from,
-            r'AdminSettlementDtoOutputReceiptsInnerConversionsInner',
+            r'AdminRecordDepositAnswerDtoOutputReceiptConversionsInner',
             'from',
           ),
           amount: BuiltValueNullFieldError.checkNotNull(
             amount,
-            r'AdminSettlementDtoOutputReceiptsInnerConversionsInner',
+            r'AdminRecordDepositAnswerDtoOutputReceiptConversionsInner',
             'amount',
           ),
           to: BuiltValueNullFieldError.checkNotNull(
             to,
-            r'AdminSettlementDtoOutputReceiptsInnerConversionsInner',
+            r'AdminRecordDepositAnswerDtoOutputReceiptConversionsInner',
             'to',
           ),
           converted: BuiltValueNullFieldError.checkNotNull(
             converted,
-            r'AdminSettlementDtoOutputReceiptsInnerConversionsInner',
+            r'AdminRecordDepositAnswerDtoOutputReceiptConversionsInner',
             'converted',
           ),
         );

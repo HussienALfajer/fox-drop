@@ -117,6 +117,9 @@ export const journalRules = {
   'earn.bonus': { account: 'captain.earnings', counters: ['platform.captain_pay'], reason: true },
   'earn.charge': { account: 'captain.earnings', counters: orderOrTicketCounter },
   'earn.deposit_instalment': { account: 'captain.earnings', counters: ['captain.deposit'] },
+  // The kit deposit paid in cash at the desk (AP §9.7.1, slice 2.35a): the
+  // captain's deposit against the drawer's cash, in the base.
+  'deposit.payment': { account: 'captain.deposit', ...desk },
   'earn.payout': { account: 'captain.earnings', ...deskInAnyCurrency },
   'earn.adjustment': { account: 'captain.earnings', ...adjustment },
   // Revenue on a normal order. On an order that failed after pickup it

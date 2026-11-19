@@ -77,7 +77,9 @@ export type CashDeskRefusal =
   // AP §9.6.5 «إنهاء» (slice 2.30c): the account not settled to zero, or an
   // order not finished.
   | 'balance_not_zero'
-  | 'orders_unfinished';
+  | 'orders_unfinished'
+  // «تسجيل التأمين» (slice 2.35a): the application is not at «بانتظار العدة».
+  | 'wrong_stage';
 
 export class CashDeskRefusedError extends Error {
   override readonly name = 'CashDeskRefusedError';
@@ -220,6 +222,8 @@ const kinds: Record<CaptainReceiptType, { journal: JournalType; sign: 1n | -1n }
   captain_reimbursement: { journal: 'custody.reimburse', sign: -1n },
   captain_payout: { journal: 'earn.payout', sign: -1n },
   captain_earnings_collection: { journal: 'earn.payout', sign: 1n },
+  // The deposit's line expects what was left to pay (slice 2.35a).
+  captain_deposit: { journal: 'deposit.payment', sign: 1n },
 };
 
 // What an earnings receipt moves in the base (the payout's value when paid

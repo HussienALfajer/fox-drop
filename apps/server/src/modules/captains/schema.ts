@@ -8,6 +8,7 @@ import {
   doublePrecision,
   index,
   integer,
+  jsonb,
   pgSchema,
   primaryKey,
   real,
@@ -343,6 +344,9 @@ export const custodyWarnings = captains.table(
   ],
 );
 
+// AP §9.7.2 (slice 2.35a): the contract's phases.
+export const contractPhases = ['probation', 'commitment', 'open'] as const;
+
 // CA §5.4, AP §9.7.1 (slice 2.34a): an application's stage. `draft` is the
 // form before «إرسال الطلب» (CA §5.1: saved after every step); the others are
 // the panel's stages and its two side stages.
@@ -391,6 +395,43 @@ export const applications = captains.table(
     // application follows 30 days after it (K11).
     rejectedAt: timestamp('rejected_at', { withTimezone: true }),
     rejectionReason: text('rejection_reason'),
+    // The activation's records at «بانتظار العدة» (AP §9.7.1, slice 2.35a).
+    // «تسليم العدة»: the items from the list `kit_item`, with their labels as
+    // issued and the size typed (owner decision 2026-11-19).
+    kitItems: jsonb('kit_items').$type<KitItem[]>(),
+    kitIssuedAt: timestamp('kit_issued_at', { withTimezone: true }),
+    // The cash limit (D10), in the city's base currency.
+    custodyLimit: bigint('custody_limit', { mode: 'bigint' }),
+    custodyLimitCurrency: text('custody_limit_currency'),
+    // «تسجيل العقد» (AP §9.7.2, D24): the signing and start dates, the
+    // probation and commitment lengths of the settings when it was recorded,
+    // and the probation's end they compute. The scan is the document
+    // `signed_contract`.
+    contractSignedOn: date('contract_signed_on', { mode: 'string' }),
+    contractStartsOn: date('contract_starts_on', { mode: 'string' }),
+    probationDays: integer('probation_days'),
+    commitmentMonths: integer('commitment_months'),
+    probationEndsOn: date('probation_ends_on', { mode: 'string' }),
+    // The deposit (AP §9.7.1, §8.5; owner decision 2026-11-19): its amount
+    // in the city's base and the instalment deducted each Thursday from the
+    // earnings until it is paid (null: no instalments). What is paid is the
+    // captain.deposit account; the desk records it with its receipt.
+    depositAmount: bigint('deposit_amount', { mode: 'bigint' }),
+    depositInstalment: bigint('deposit_instalment', { mode: 'bigint' }),
+    depositCurrency: text('deposit_currency'),
+    // «تفعيل»: the captain made from it, whose id is the application's for a
+    // new captain (so the deposit paid before is already its account).
+    captainId: uuid('captain_id'),
+    activatedAt: timestamp('activated_at', { withTimezone: true }),
+    // The probation's confirmation (AP §9.7.2): by whom and on which day of
+    // the city, and the commitment it starts (`commitmentOf`).
+    probationConfirmedOn: date('probation_confirmed_on', { mode: 'string' }),
+    probationConfirmedBy: uuid('probation_confirmed_by'),
+    commitmentStartsOn: date('commitment_starts_on', { mode: 'string' }),
+    commitmentEndsOn: date('commitment_ends_on', { mode: 'string' }),
+    // The phase the captain was last told of (CA §14 #28), so each change
+    // pushes once.
+    phaseNotified: text('phase_notified', { enum: contractPhases }),
     createdAt: createdAt(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
@@ -422,8 +463,43 @@ export const applications = captains.table(
     uniqueIndex('applications_open_account')
       .on(table.accountId)
       .where(sql`${table.stage} <> 'rejected'`),
+    check('applications_kit', sql`(${table.kitItems} IS NULL) = (${table.kitIssuedAt} IS NULL)`),
+    check(
+      'applications_custody_limit',
+      sql`(${table.custodyLimit} IS NULL) = (${table.custodyLimitCurrency} IS NULL) AND (${table.custodyLimit} IS NULL OR ${table.custodyLimit} > 0)`,
+    ),
+    check(
+      'applications_contract',
+      sql`(${table.contractSignedOn} IS NULL) = (${table.contractStartsOn} IS NULL) AND (${table.contractSignedOn} IS NULL) = (${table.probationDays} IS NULL) AND (${table.contractSignedOn} IS NULL) = (${table.commitmentMonths} IS NULL) AND (${table.contractSignedOn} IS NULL) = (${table.probationEndsOn} IS NULL) AND (${table.contractStartsOn} IS NULL OR ${table.contractStartsOn} >= ${table.contractSignedOn})`,
+    ),
+    check(
+      'applications_deposit',
+      sql`(${table.depositAmount} IS NULL) = (${table.depositCurrency} IS NULL) AND (${table.depositAmount} IS NULL OR ${table.depositAmount} >= 0) AND (${table.depositInstalment} IS NULL OR (${table.depositAmount} IS NOT NULL AND ${table.depositInstalment} > 0))`,
+    ),
+    check(
+      'applications_activated',
+      sql`(${table.stage} = 'active') = (${table.activatedAt} IS NOT NULL) AND (${table.activatedAt} IS NULL) = (${table.captainId} IS NULL)`,
+    ),
+    uniqueIndex('applications_captain').on(table.captainId),
+    check(
+      'applications_probation_confirmed',
+      sql`(${table.probationConfirmedOn} IS NULL) = (${table.probationConfirmedBy} IS NULL) AND (${table.probationConfirmedOn} IS NULL) = (${table.commitmentStartsOn} IS NULL) AND (${table.commitmentStartsOn} IS NULL) = (${table.commitmentEndsOn} IS NULL) AND (${table.probationConfirmedOn} IS NULL OR ${table.activatedAt} IS NOT NULL)`,
+    ),
+    check(
+      'applications_phase_notified',
+      sql`${table.phaseNotified} IN ('probation', 'commitment', 'open')`,
+    ),
   ],
 );
+
+// An item of «تسليم العدة» (owner decision 2026-11-19): its code and label
+// in the list `kit_item` when issued, the size typed, how many.
+export interface KitItem {
+  code: string;
+  label: string;
+  size: string | null;
+  quantity: number;
+}
 
 // CA §5.3, AP §9.7.1, D24: the documents an applicant uploads. The signed
 // contract is the office's (2.35).
@@ -434,6 +510,8 @@ export const applicationDocumentKinds = [
   'criminal_record',
   'vehicle_papers',
   'driving_licence',
+  // «العقد الموقّع» (D24, slice 2.35a): the office's only, with «تسجيل العقد».
+  'signed_contract',
 ] as const;
 const documentKindValues = sql.raw(applicationDocumentKinds.map((kind) => `'${kind}'`).join(', '));
 
@@ -474,7 +552,10 @@ export const applicationDocuments = captains.table(
       'application_documents_status_values',
       sql`${table.status} IN ('pending', 'accepted', 'rejected')`,
     ),
-    check('application_documents_files', sql`cardinality(${table.fileKeys}) BETWEEN 1 AND 2`),
+    check(
+      'application_documents_files',
+      sql`cardinality(${table.fileKeys}) BETWEEN 1 AND (CASE WHEN ${table.kind} = 'signed_contract' THEN 6 ELSE 2 END)`,
+    ),
     uniqueIndex('application_documents_in_force')
       .on(table.applicationId, table.kind)
       .where(sql`${table.replacedAt} IS NULL`),
@@ -530,6 +611,12 @@ export const applicationEventKinds = [
   'document_request',
   'document_upload',
   'interview',
+  // The activation's records (slice 2.35a).
+  'kit',
+  'cash_limit',
+  'contract',
+  'deposit',
+  'probation_confirmed',
 ] as const;
 const eventKindValues = sql.raw(applicationEventKinds.map((kind) => `'${kind}'`).join(', '));
 

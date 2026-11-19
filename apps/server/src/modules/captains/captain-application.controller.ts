@@ -278,7 +278,7 @@ function refused(error: ApplicationRefusedError): HttpException {
     : new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, ...response });
 }
 
-function filesRefused(error: unknown): unknown {
+export function filesRefused(error: unknown): unknown {
   if (!(error instanceof FilesRefusedError)) return error;
   if (error.refusal === 'too_many_uploads') {
     return new HttpException(

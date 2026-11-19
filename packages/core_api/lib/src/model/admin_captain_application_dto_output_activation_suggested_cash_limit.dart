@@ -6,91 +6,76 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_settlement_dto_output_receipts_inner_conversions_inner.g.dart';
+part 'admin_captain_application_dto_output_activation_suggested_cash_limit.g.dart';
 
-/// AdminSettlementDtoOutputReceiptsInnerConversionsInner
+/// The setting captain.custody_limit_suggested of the vehicle.
 ///
 /// Properties:
-/// * [from]
-/// * [amount]
-/// * [to]
-/// * [converted]
+/// * [amount] - Minor units.
+/// * [currency]
 @BuiltValue()
-abstract class AdminSettlementDtoOutputReceiptsInnerConversionsInner
+abstract class AdminCaptainApplicationDtoOutputActivationSuggestedCashLimit
     implements
         Built<
-          AdminSettlementDtoOutputReceiptsInnerConversionsInner,
-          AdminSettlementDtoOutputReceiptsInnerConversionsInnerBuilder
+          AdminCaptainApplicationDtoOutputActivationSuggestedCashLimit,
+          AdminCaptainApplicationDtoOutputActivationSuggestedCashLimitBuilder
         > {
-  @BuiltValueField(wireName: r'from')
-  String get from;
-
+  /// Minor units.
   @BuiltValueField(wireName: r'amount')
   String get amount;
 
-  @BuiltValueField(wireName: r'to')
-  String get to;
+  @BuiltValueField(wireName: r'currency')
+  String get currency;
 
-  @BuiltValueField(wireName: r'converted')
-  String get converted;
+  AdminCaptainApplicationDtoOutputActivationSuggestedCashLimit._();
 
-  AdminSettlementDtoOutputReceiptsInnerConversionsInner._();
-
-  factory AdminSettlementDtoOutputReceiptsInnerConversionsInner([
+  factory AdminCaptainApplicationDtoOutputActivationSuggestedCashLimit([
     void updates(
-      AdminSettlementDtoOutputReceiptsInnerConversionsInnerBuilder b,
+      AdminCaptainApplicationDtoOutputActivationSuggestedCashLimitBuilder b,
     ),
-  ]) = _$AdminSettlementDtoOutputReceiptsInnerConversionsInner;
+  ]) = _$AdminCaptainApplicationDtoOutputActivationSuggestedCashLimit;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(
-    AdminSettlementDtoOutputReceiptsInnerConversionsInnerBuilder b,
+    AdminCaptainApplicationDtoOutputActivationSuggestedCashLimitBuilder b,
   ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminSettlementDtoOutputReceiptsInnerConversionsInner>
+  static Serializer<
+    AdminCaptainApplicationDtoOutputActivationSuggestedCashLimit
+  >
   get serializer =>
-      _$AdminSettlementDtoOutputReceiptsInnerConversionsInnerSerializer();
+      _$AdminCaptainApplicationDtoOutputActivationSuggestedCashLimitSerializer();
 }
 
-class _$AdminSettlementDtoOutputReceiptsInnerConversionsInnerSerializer
+class _$AdminCaptainApplicationDtoOutputActivationSuggestedCashLimitSerializer
     implements
         PrimitiveSerializer<
-          AdminSettlementDtoOutputReceiptsInnerConversionsInner
+          AdminCaptainApplicationDtoOutputActivationSuggestedCashLimit
         > {
   @override
   final Iterable<Type> types = const [
-    AdminSettlementDtoOutputReceiptsInnerConversionsInner,
-    _$AdminSettlementDtoOutputReceiptsInnerConversionsInner,
+    AdminCaptainApplicationDtoOutputActivationSuggestedCashLimit,
+    _$AdminCaptainApplicationDtoOutputActivationSuggestedCashLimit,
   ];
 
   @override
   final String wireName =
-      r'AdminSettlementDtoOutputReceiptsInnerConversionsInner';
+      r'AdminCaptainApplicationDtoOutputActivationSuggestedCashLimit';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminSettlementDtoOutputReceiptsInnerConversionsInner object, {
+    AdminCaptainApplicationDtoOutputActivationSuggestedCashLimit object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'from';
-    yield serializers.serialize(
-      object.from,
-      specifiedType: const FullType(String),
-    );
     yield r'amount';
     yield serializers.serialize(
       object.amount,
       specifiedType: const FullType(String),
     );
-    yield r'to';
+    yield r'currency';
     yield serializers.serialize(
-      object.to,
-      specifiedType: const FullType(String),
-    );
-    yield r'converted';
-    yield serializers.serialize(
-      object.converted,
+      object.currency,
       specifiedType: const FullType(String),
     );
   }
@@ -98,7 +83,7 @@ class _$AdminSettlementDtoOutputReceiptsInnerConversionsInnerSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminSettlementDtoOutputReceiptsInnerConversionsInner object, {
+    AdminCaptainApplicationDtoOutputActivationSuggestedCashLimit object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -113,7 +98,7 @@ class _$AdminSettlementDtoOutputReceiptsInnerConversionsInnerSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminSettlementDtoOutputReceiptsInnerConversionsInnerBuilder
+    required AdminCaptainApplicationDtoOutputActivationSuggestedCashLimitBuilder
     result,
     required List<Object?> unhandled,
   }) {
@@ -121,15 +106,6 @@ class _$AdminSettlementDtoOutputReceiptsInnerConversionsInnerSerializer
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'from':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
-          result.from = valueDes;
-          break;
         case r'amount':
           final valueDes =
               serializers.deserialize(
@@ -139,23 +115,14 @@ class _$AdminSettlementDtoOutputReceiptsInnerConversionsInnerSerializer
                   as String;
           result.amount = valueDes;
           break;
-        case r'to':
+        case r'currency':
           final valueDes =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(String),
                   )
                   as String;
-          result.to = valueDes;
-          break;
-        case r'converted':
-          final valueDes =
-              serializers.deserialize(
-                    value,
-                    specifiedType: const FullType(String),
-                  )
-                  as String;
-          result.converted = valueDes;
+          result.currency = valueDes;
           break;
         default:
           unhandled.add(key);
@@ -166,13 +133,13 @@ class _$AdminSettlementDtoOutputReceiptsInnerConversionsInnerSerializer
   }
 
   @override
-  AdminSettlementDtoOutputReceiptsInnerConversionsInner deserialize(
+  AdminCaptainApplicationDtoOutputActivationSuggestedCashLimit deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
     final result =
-        AdminSettlementDtoOutputReceiptsInnerConversionsInnerBuilder();
+        AdminCaptainApplicationDtoOutputActivationSuggestedCashLimitBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

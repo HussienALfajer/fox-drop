@@ -42,6 +42,8 @@ export const receiptTypeLabels = {
   // «تصفية الخميس» (slice 2.18a): the payout and a negative balance collected.
   captain_payout: 'صرف المستحقات',
   captain_earnings_collection: 'تحصيل رصيد سالب',
+  // «تأمين العدة» (slice 2.35a): the kit deposit paid at the desk.
+  captain_deposit: 'تأمين العدة',
   // «تسوية المطاعم» (slice 2.19b): the restaurant's payment, and the desk
   // paying a restaurant the platform owes.
   merchant_settlement: 'تسوية حساب المطعم',
@@ -59,6 +61,7 @@ export const applicationDocumentLabels = {
   criminal_record: 'لا حكم عليه',
   vehicle_papers: 'أوراق المركبة',
   driving_licence: 'شهادة قيادة',
+  signed_contract: 'العقد الموقّع',
 } as const;
 
 const WEEKDAYS = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];

@@ -64,15 +64,22 @@ describe('actionsOf', () => {
     expect(actions('interview')).toEqual(
       [...documents, 'reject', 'schedule_interview', 'training_passed', 'waitlist'].sort(),
     );
-    expect(actions('awaiting_kit')).toEqual([...documents, 'reject', 'waitlist'].sort());
+    expect(actions('awaiting_kit')).toEqual(
+      [...documents, 'activate', 'issue_kit', 'record_contract', 'reject', 'waitlist'].sort(),
+    );
   });
 
   it('brings a waitlisted application back to the review', () => {
     expect(actions('waitlist')).toEqual([...documents, 'back_from_waitlist', 'reject'].sort());
   });
 
-  it('offers nothing once active or rejected, or without captains.manage', () => {
-    expect(actions('active')).toEqual([]);
+  it('offers a captain’s documents and the probation once active (slice 2.35a)', () => {
+    expect(actions('active')).toEqual(
+      ['confirm_probation', 'review_document', 'upload_document'].sort(),
+    );
+  });
+
+  it('offers nothing once rejected, or without captains.manage', () => {
     expect(actions('rejected')).toEqual([]);
     expect(actions('draft')).toEqual([]);
     expect(actionsOf(session(['captains.read']), 'new').size).toBe(0);

@@ -151,6 +151,10 @@ void main() {
       '/earnings/statements/$orderId',
     );
     expect(pushTargetPath({'target': 'statement'}), '/earnings/statements');
+    // Slice 2.35a: the activation, a contract phase, a document.
+    expect(pushTargetPath({'target': 'home'}), '/');
+    expect(pushTargetPath({'target': 'contract'}), '/contract');
+    expect(pushTargetPath({'target': 'documents'}), '/documents');
     expect(pushTargetPath({'target': 'application'}), '/application');
     expect(pushTargetPath({'target': 'document'}), isNull);
     expect(pushTargetPath({}), isNull);

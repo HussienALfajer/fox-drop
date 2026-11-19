@@ -3,9 +3,9 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/admin_settlement_preview_dto_output_earnings.dart';
 import 'package:core_api/src/model/admin_ticket_page_dto_output_pickup_dispute_pickup_payment.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_captain_balances_dto_output_captains_inner_earnings.dart';
 import 'package:core_api/src/model/admin_settlement_preview_dto_output_custody_inner.dart';
 import 'package:core_api/src/model/admin_settlement_preview_dto_output_payout.dart';
 import 'package:built_value/built_value.dart';
@@ -24,6 +24,7 @@ part 'admin_settlement_preview_dto_output.g.dart';
 /// * [policy] - captain.negative_earnings_policy.
 /// * [custody]
 /// * [earnings]
+/// * [instalment] - The deposit instalment posted first (AP §8.5.5 step 2).
 /// * [payout]
 /// * [collect] - A negative balance collected (collect_at_desk).
 /// * [net] - The cash per currency: + the captain gives, − the desk pays.
@@ -60,7 +61,11 @@ abstract class AdminSettlementPreviewDtoOutput
   BuiltList<AdminSettlementPreviewDtoOutputCustodyInner> get custody;
 
   @BuiltValueField(wireName: r'earnings')
-  AdminCaptainBalancesDtoOutputCaptainsInnerEarnings get earnings;
+  AdminSettlementPreviewDtoOutputEarnings get earnings;
+
+  /// The deposit instalment posted first (AP §8.5.5 step 2).
+  @BuiltValueField(wireName: r'instalment')
+  String get instalment;
 
   @BuiltValueField(wireName: r'payout')
   AdminSettlementPreviewDtoOutputPayout? get payout;
@@ -145,9 +150,12 @@ class _$AdminSettlementPreviewDtoOutputSerializer
     yield r'earnings';
     yield serializers.serialize(
       object.earnings,
-      specifiedType: const FullType(
-        AdminCaptainBalancesDtoOutputCaptainsInnerEarnings,
-      ),
+      specifiedType: const FullType(AdminSettlementPreviewDtoOutputEarnings),
+    );
+    yield r'instalment';
+    yield serializers.serialize(
+      object.instalment,
+      specifiedType: const FullType(String),
     );
     yield r'payout';
     yield object.payout == null
@@ -273,11 +281,20 @@ class _$AdminSettlementPreviewDtoOutputSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(
-                      AdminCaptainBalancesDtoOutputCaptainsInnerEarnings,
+                      AdminSettlementPreviewDtoOutputEarnings,
                     ),
                   )
-                  as AdminCaptainBalancesDtoOutputCaptainsInnerEarnings;
+                  as AdminSettlementPreviewDtoOutputEarnings;
           result.earnings.replace(valueDes);
+          break;
+        case r'instalment':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.instalment = valueDes;
           break;
         case r'payout':
           final valueDes =

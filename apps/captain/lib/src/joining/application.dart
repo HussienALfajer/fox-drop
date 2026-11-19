@@ -50,6 +50,15 @@ enum DocumentKind {
   bool get frontCamera => this == personalPhoto;
 }
 
+/// A document's kind by its wire name, null for one the app does not show
+/// (the office's signed contract).
+DocumentKind? documentKindOf(Object? wire) {
+  for (final kind in DocumentKind.values) {
+    if (kind.wire == wire) return kind;
+  }
+  return null;
+}
+
 /// The documents the form shows for a vehicle: the vehicle papers only for a
 /// motor vehicle, the driving licence always (optional).
 List<DocumentKind> formDocuments(Vehicle? vehicle) => [
@@ -260,24 +269,27 @@ Application? applicationOf(CaptainApplicationDtoOutput answer) {
     vehicle: found.vehicle == null ? null : _vehicles[found.vehicle],
     plate: found.plate,
     documents: [
+      // The signed contract is the office's (slice 2.35a): not shown here.
       for (final document in found.documents)
-        ApplicationDocument(
-          kind: _kinds[document.kind]!,
-          status: _statuses[document.status]!,
-          reason: document.reason,
-          number: document.number,
-          issueDate: document.issueDate?.toString(),
-          expiresOn: document.expiresOn?.toString(),
-        ),
+        if (_kinds[document.kind] case final kind?)
+          ApplicationDocument(
+            kind: kind,
+            status: _statuses[document.status]!,
+            reason: document.reason,
+            number: document.number,
+            issueDate: document.issueDate?.toString(),
+            expiresOn: document.expiresOn?.toString(),
+          ),
     ],
     missing: [for (final each in found.missing) _missing[each]!],
     requests: [
       for (final request in found.requests)
-        DocumentRequest(
-          kind: _requestKinds[request.kind]!,
-          reason: request.reason,
-          requestedAt: request.requestedAt,
-        ),
+        if (_requestKinds[request.kind] case final kind?)
+          DocumentRequest(
+            kind: kind,
+            reason: request.reason,
+            requestedAt: request.requestedAt,
+          ),
     ],
     interview: switch (found.interview) {
       final interview? => Interview(
@@ -452,7 +464,7 @@ class ApplicationRefusal implements Exception {
   static const twoSides = 'two_sides';
 }
 
-ApplicationRefusal _refusalOf(Object error) {
+ApplicationRefusal refusalOf(Object error) {
   if (error is ApplicationRefusal) return error;
   if (error is DioException) {
     final body = error.response?.data;
@@ -596,7 +608,7 @@ class ApplicationController extends AsyncNotifier<Application?> {
       final answer = await call();
       state = AsyncData(applicationOf(answer.data!));
     } on Object catch (error) {
-      throw _refusalOf(error);
+      throw refusalOf(error);
     }
   }
 }

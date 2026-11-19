@@ -1,4 +1,5 @@
 import { versionBelow } from '../settings/index.js';
+import type { ApplicationDocumentKind } from './applications.js';
 
 // AP §9.7.5: a captain's account status. Activation is the pipeline's last
 // step (AP §9.7.1), so a captain record starts active.
@@ -28,6 +29,9 @@ export interface AvailabilityInput {
   // K7: the captain has not accepted the terms in force. Known only when
   // going online, the one moment it blocks (CA §7.2).
   termsPending: boolean;
+  // K6, CA §12.2 (slice 2.35a): the required documents expired. Known only
+  // when going online, the one moment they block.
+  expiredDocuments: ApplicationDocumentKind[];
   // CA §7.1: the captain has an active order (AP §9.12.6: no stacking in V1).
   activeOrder: boolean;
   // CA §7.3, §7.6, K18: the open online period's last-order mode, or null.
@@ -59,6 +63,7 @@ export type OnlineBlock =
   | { kind: 'closed_due'; amount: bigint; cutoff: Date }
   | { kind: 'cash_limit'; limit: bigint }
   | { kind: 'terms_not_accepted' }
+  | { kind: 'document_expired'; documents: ApplicationDocumentKind[] }
   | { kind: 'version_below_minimum'; minVersion: string }
   | { kind: 'simulated_location' };
 
@@ -103,7 +108,6 @@ function suspendedAt(input: AvailabilityInput, now: Date) {
 }
 
 // Every block that refuses going online now, so the app shows each (CA §7.2).
-// Required documents (K6) join with their slice.
 export function onlineBlocks(input: AvailabilityInput, now: Date): OnlineBlock[] {
   const blocks: OnlineBlock[] = [];
   if (input.status === 'terminated') return [{ kind: 'contract_ended' }];
@@ -118,6 +122,9 @@ export function onlineBlocks(input: AvailabilityInput, now: Date): OnlineBlock[]
     blocks.push({ kind: 'cash_limit', limit: input.custodyLimit });
   }
   if (input.termsPending) blocks.push({ kind: 'terms_not_accepted' });
+  if (input.expiredDocuments.length > 0) {
+    blocks.push({ kind: 'document_expired', documents: input.expiredDocuments });
+  }
   if (
     input.minVersion !== null &&
     (input.appVersion === null || versionBelow(input.appVersion, input.minVersion))

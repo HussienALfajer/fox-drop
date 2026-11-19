@@ -1,40 +1,40 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'captain_active_order_dto_output_ended_pay.dart';
+part of 'admin_settlement_preview_dto_output_earnings.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$CaptainActiveOrderDtoOutputEndedPay
-    extends CaptainActiveOrderDtoOutputEndedPay {
+class _$AdminSettlementPreviewDtoOutputEarnings
+    extends AdminSettlementPreviewDtoOutputEarnings {
   @override
   final String amount;
   @override
   final String currency;
 
-  factory _$CaptainActiveOrderDtoOutputEndedPay([
-    void Function(CaptainActiveOrderDtoOutputEndedPayBuilder)? updates,
-  ]) =>
-      (CaptainActiveOrderDtoOutputEndedPayBuilder()..update(updates))._build();
+  factory _$AdminSettlementPreviewDtoOutputEarnings([
+    void Function(AdminSettlementPreviewDtoOutputEarningsBuilder)? updates,
+  ]) => (AdminSettlementPreviewDtoOutputEarningsBuilder()..update(updates))
+      ._build();
 
-  _$CaptainActiveOrderDtoOutputEndedPay._({
+  _$AdminSettlementPreviewDtoOutputEarnings._({
     required this.amount,
     required this.currency,
   }) : super._();
   @override
-  CaptainActiveOrderDtoOutputEndedPay rebuild(
-    void Function(CaptainActiveOrderDtoOutputEndedPayBuilder) updates,
+  AdminSettlementPreviewDtoOutputEarnings rebuild(
+    void Function(AdminSettlementPreviewDtoOutputEarningsBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  CaptainActiveOrderDtoOutputEndedPayBuilder toBuilder() =>
-      CaptainActiveOrderDtoOutputEndedPayBuilder()..replace(this);
+  AdminSettlementPreviewDtoOutputEarningsBuilder toBuilder() =>
+      AdminSettlementPreviewDtoOutputEarningsBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is CaptainActiveOrderDtoOutputEndedPay &&
+    return other is AdminSettlementPreviewDtoOutputEarnings &&
         amount == other.amount &&
         currency == other.currency;
   }
@@ -50,20 +50,22 @@ class _$CaptainActiveOrderDtoOutputEndedPay
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'CaptainActiveOrderDtoOutputEndedPay')
+    return (newBuiltValueToStringHelper(
+            r'AdminSettlementPreviewDtoOutputEarnings',
+          )
           ..add('amount', amount)
           ..add('currency', currency))
         .toString();
   }
 }
 
-class CaptainActiveOrderDtoOutputEndedPayBuilder
+class AdminSettlementPreviewDtoOutputEarningsBuilder
     implements
         Builder<
-          CaptainActiveOrderDtoOutputEndedPay,
-          CaptainActiveOrderDtoOutputEndedPayBuilder
+          AdminSettlementPreviewDtoOutputEarnings,
+          AdminSettlementPreviewDtoOutputEarningsBuilder
         > {
-  _$CaptainActiveOrderDtoOutputEndedPay? _$v;
+  _$AdminSettlementPreviewDtoOutputEarnings? _$v;
 
   String? _amount;
   String? get amount => _$this._amount;
@@ -73,11 +75,11 @@ class CaptainActiveOrderDtoOutputEndedPayBuilder
   String? get currency => _$this._currency;
   set currency(String? currency) => _$this._currency = currency;
 
-  CaptainActiveOrderDtoOutputEndedPayBuilder() {
-    CaptainActiveOrderDtoOutputEndedPay._defaults(this);
+  AdminSettlementPreviewDtoOutputEarningsBuilder() {
+    AdminSettlementPreviewDtoOutputEarnings._defaults(this);
   }
 
-  CaptainActiveOrderDtoOutputEndedPayBuilder get _$this {
+  AdminSettlementPreviewDtoOutputEarningsBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _amount = $v.amount;
@@ -88,32 +90,32 @@ class CaptainActiveOrderDtoOutputEndedPayBuilder
   }
 
   @override
-  void replace(CaptainActiveOrderDtoOutputEndedPay other) {
-    _$v = other as _$CaptainActiveOrderDtoOutputEndedPay;
+  void replace(AdminSettlementPreviewDtoOutputEarnings other) {
+    _$v = other as _$AdminSettlementPreviewDtoOutputEarnings;
   }
 
   @override
   void update(
-    void Function(CaptainActiveOrderDtoOutputEndedPayBuilder)? updates,
+    void Function(AdminSettlementPreviewDtoOutputEarningsBuilder)? updates,
   ) {
     if (updates != null) updates(this);
   }
 
   @override
-  CaptainActiveOrderDtoOutputEndedPay build() => _build();
+  AdminSettlementPreviewDtoOutputEarnings build() => _build();
 
-  _$CaptainActiveOrderDtoOutputEndedPay _build() {
+  _$AdminSettlementPreviewDtoOutputEarnings _build() {
     final _$result =
         _$v ??
-        _$CaptainActiveOrderDtoOutputEndedPay._(
+        _$AdminSettlementPreviewDtoOutputEarnings._(
           amount: BuiltValueNullFieldError.checkNotNull(
             amount,
-            r'CaptainActiveOrderDtoOutputEndedPay',
+            r'AdminSettlementPreviewDtoOutputEarnings',
             'amount',
           ),
           currency: BuiltValueNullFieldError.checkNotNull(
             currency,
-            r'CaptainActiveOrderDtoOutputEndedPay',
+            r'AdminSettlementPreviewDtoOutputEarnings',
             'currency',
           ),
         );

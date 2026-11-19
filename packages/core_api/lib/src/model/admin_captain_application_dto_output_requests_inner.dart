@@ -25,7 +25,7 @@ abstract class AdminCaptainApplicationDtoOutputRequestsInner
         > {
   @BuiltValueField(wireName: r'kind')
   AdminCaptainApplicationDtoOutputRequestsInnerKindEnum get kind;
-  // enum kindEnum {  national_id,  personal_photo,  civil_registry,  criminal_record,  vehicle_papers,  driving_licence,  };
+  // enum kindEnum {  national_id,  personal_photo,  civil_registry,  criminal_record,  vehicle_papers,  driving_licence,  signed_contract,  };
 
   @BuiltValueField(wireName: r'reason')
   String get reason;
@@ -213,6 +213,10 @@ class AdminCaptainApplicationDtoOutputRequestsInnerKindEnum extends EnumClass {
   static const AdminCaptainApplicationDtoOutputRequestsInnerKindEnum
   drivingLicence =
       _$adminCaptainApplicationDtoOutputRequestsInnerKindEnum_drivingLicence;
+  @BuiltValueEnumConst(wireName: r'signed_contract')
+  static const AdminCaptainApplicationDtoOutputRequestsInnerKindEnum
+  signedContract =
+      _$adminCaptainApplicationDtoOutputRequestsInnerKindEnum_signedContract;
 
   static Serializer<AdminCaptainApplicationDtoOutputRequestsInnerKindEnum>
   get serializer =>

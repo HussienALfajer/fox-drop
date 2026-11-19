@@ -4773,4 +4773,153 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get captainApplicationFailed => 'تعذّر الحفظ. حاول مرة أخرى.';
+
+  @override
+  String captainBlockDocumentExpired(String documents) {
+    return 'انتهت صلاحية $documents. ارفع نسخة جديدة من «المستندات» لتعود للعمل.';
+  }
+
+  @override
+  String get captainProfileDocuments => 'المستندات';
+
+  @override
+  String get captainProfileContract => 'العقد والعدة';
+
+  @override
+  String get captainDocumentValid => 'ساري';
+
+  @override
+  String get captainDocumentExpiring => 'ينتهي قريباً';
+
+  @override
+  String get captainDocumentExpired => 'منتهي';
+
+  @override
+  String get captainDocumentReplacementPending => 'نسخة جديدة بانتظار التحقق';
+
+  @override
+  String captainDocumentExpiringBanner(String document, String date) {
+    return 'تنتهي صلاحية $document في $date';
+  }
+
+  @override
+  String captainDocumentExpiredBanner(String document) {
+    return 'انتهت صلاحية $document';
+  }
+
+  @override
+  String captainContractPhase(String phase) {
+    return 'المرحلة: $phase';
+  }
+
+  @override
+  String get captainContractProbation => 'فترة تجربة';
+
+  @override
+  String get captainContractCommitment => 'فترة التزام';
+
+  @override
+  String get captainContractOpen => 'مفتوح';
+
+  @override
+  String captainContractStart(String date) {
+    return 'تاريخ البدء: $date';
+  }
+
+  @override
+  String captainContractProbationEnd(String date) {
+    return 'نهاية فترة التجربة: $date';
+  }
+
+  @override
+  String captainContractCommitmentEnd(String date) {
+    return 'نهاية فترة الالتزام: $date';
+  }
+
+  @override
+  String get captainContractNone => 'لا يوجد عقد مسجّل.';
+
+  @override
+  String get captainEarlyExitTitle => 'الخروج المبكر';
+
+  @override
+  String get captainEarlyExitNoPenalty => 'لا توجد غرامة مالية.';
+
+  @override
+  String get captainEarlyExitKit => 'يجب إعادة العدة، وإلا يُحتجز التأمين.';
+
+  @override
+  String get captainEarlyExitFlag =>
+      'يُسجَّل في ملفك «خروج مبكر»، وإعادة التوظيف تحتاج موافقة المالك.';
+
+  @override
+  String get captainContractEndViaSupport =>
+      'لإنهاء العقد اطلب ذلك عبر «الدعم».';
+
+  @override
+  String get captainKitTitle => 'العدة والتأمين';
+
+  @override
+  String captainKitLine(String label, String quantity) {
+    return '$label × $quantity';
+  }
+
+  @override
+  String captainKitLineSized(String label, String size, String quantity) {
+    return '$label ($size) × $quantity';
+  }
+
+  @override
+  String get captainKitNone => 'لم تُسلَّم عدة.';
+
+  @override
+  String captainDepositLine(String amount, String paid) {
+    return 'التأمين: $amount، المدفوع: $paid';
+  }
+
+  @override
+  String captainDepositInstalment(String amount) {
+    return 'القسط الأسبوعي: $amount، يُخصم كل خميس';
+  }
+
+  @override
+  String get captainDepositRefund =>
+      'يُعاد التأمين عند إنهاء العقد إذا أُعيدت العدة سليمة.';
+
+  @override
+  String get captainTourTitle => 'مرحباً بك في FOX DROP!';
+
+  @override
+  String get captainTourOnline =>
+      'اضغط «متصل» لتبدأ استقبال العروض، و«غير متصل» عندما تنتهي.';
+
+  @override
+  String get captainTourOffer =>
+      'يصلك العرض برنين: اقبله أو ارفضه قبل انتهاء وقته.';
+
+  @override
+  String get captainTourOrder =>
+      'اتبع خطوات الطلب من المطعم إلى الزبون، وسجّل كل خطوة في وقتها.';
+
+  @override
+  String get captainTourCustody =>
+      'النقد الذي تحصّله عهدة عليك: سلّمه في المكتب كل يوم.';
+
+  @override
+  String get captainTourEarnings => 'أجرك يُجمع في «أرباحي» وتقبضه كل خميس.';
+
+  @override
+  String get captainTourNext => 'التالي';
+
+  @override
+  String get captainTourSettings =>
+      'قبل أن تبدأ: حدّد «أقصى مبلغ أحمله» و«العملات التي أحملها».';
+
+  @override
+  String get captainTourDone => 'ابدأ العمل';
+
+  @override
+  String captainDepositLeft(String amount) {
+    return 'المتبقي من التأمين: $amount';
+  }
 }

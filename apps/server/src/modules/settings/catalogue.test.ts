@@ -99,6 +99,7 @@ describe('the settings catalogue', () => {
       'captain.custody_limit_suggested.<vehicle>',
       'captain.remit_tolerance',
       'captain.negative_earnings_policy',
+      'captain.kit_deposit_amount',
       'customer.fake_order_dues_rule',
       'customer.fake_order_dues_fixed',
       'support.compensation_cap_pct.SUP',

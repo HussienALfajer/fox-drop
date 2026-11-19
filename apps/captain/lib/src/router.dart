@@ -15,6 +15,9 @@ import 'custody_screen.dart';
 import 'earnings_screen.dart';
 import 'home_screen.dart';
 import 'joining/application_screen.dart';
+import 'profile/contract_screen.dart';
+import 'profile/documents_screen.dart';
+import 'profile/tour_screen.dart';
 import 'joining/welcome_screen.dart';
 import 'not_found_screen.dart';
 import 'peak_bonus.dart';
@@ -174,6 +177,17 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/settings',
         builder: (context, state) => const SettingsScreen(),
       ),
+      // CA §12.2–12.4, §5.5 (slice 2.35a): «المستندات», «العقد والعدة» and
+      // the welcome tour after the activation.
+      GoRoute(
+        path: '/documents',
+        builder: (context, state) => const DocumentsScreen(),
+      ),
+      GoRoute(
+        path: '/contract',
+        builder: (context, state) => const ContractScreen(),
+      ),
+      GoRoute(path: '/tour', builder: (context, state) => const TourScreen()),
       // AP §9.13, K7: the captain terms, accepted before going online.
       GoRoute(
         path: '/terms',

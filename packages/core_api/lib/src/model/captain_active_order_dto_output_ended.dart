@@ -4,7 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/captain_active_order_dto_output_ended_pay.dart';
+import 'package:core_api/src/model/captain_contract_dto_output_deposit_amount.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -49,10 +49,10 @@ abstract class CaptainActiveOrderDtoOutputEnded
   // enum foodEnum {  kept_by_captain,  returned_to_restaurant,  destroyed,  };
 
   @BuiltValueField(wireName: r'pay')
-  CaptainActiveOrderDtoOutputEndedPay? get pay;
+  CaptainContractDtoOutputDepositAmount? get pay;
 
   @BuiltValueField(wireName: r'charge')
-  CaptainActiveOrderDtoOutputEndedPay? get charge;
+  CaptainContractDtoOutputDepositAmount? get charge;
 
   @BuiltValueField(wireName: r'at')
   DateTime get at;
@@ -124,7 +124,7 @@ class _$CaptainActiveOrderDtoOutputEndedSerializer
         : serializers.serialize(
             object.pay,
             specifiedType: const FullType.nullable(
-              CaptainActiveOrderDtoOutputEndedPay,
+              CaptainContractDtoOutputDepositAmount,
             ),
           );
     yield r'charge';
@@ -133,7 +133,7 @@ class _$CaptainActiveOrderDtoOutputEndedSerializer
         : serializers.serialize(
             object.charge,
             specifiedType: const FullType.nullable(
-              CaptainActiveOrderDtoOutputEndedPay,
+              CaptainContractDtoOutputDepositAmount,
             ),
           );
     yield r'at';
@@ -225,10 +225,10 @@ class _$CaptainActiveOrderDtoOutputEndedSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      CaptainActiveOrderDtoOutputEndedPay,
+                      CaptainContractDtoOutputDepositAmount,
                     ),
                   )
-                  as CaptainActiveOrderDtoOutputEndedPay?;
+                  as CaptainContractDtoOutputDepositAmount?;
           if (valueDes == null) continue;
           result.pay.replace(valueDes);
           break;
@@ -237,10 +237,10 @@ class _$CaptainActiveOrderDtoOutputEndedSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType.nullable(
-                      CaptainActiveOrderDtoOutputEndedPay,
+                      CaptainContractDtoOutputDepositAmount,
                     ),
                   )
-                  as CaptainActiveOrderDtoOutputEndedPay?;
+                  as CaptainContractDtoOutputDepositAmount?;
           if (valueDes == null) continue;
           result.charge.replace(valueDes);
           break;

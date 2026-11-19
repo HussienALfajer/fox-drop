@@ -222,7 +222,11 @@ function AlertLine({ alert, city }: { alert: AdminAlert; city: City }) {
           params={{ applicationId }}
           search={{ city: city.code }}
         >
-          {t('alerts.openApplication')}
+          {alert.code === 'captain_application'
+            ? t('alerts.openApplication')
+            : alert.code === 'document_expiring'
+              ? t('alerts.openDocuments')
+              : t('alerts.openContract')}
         </Link>
       )}
       {ticketId && (

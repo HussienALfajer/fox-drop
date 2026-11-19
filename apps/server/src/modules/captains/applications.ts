@@ -1,5 +1,5 @@
 import type { Vehicle } from '../settings/index.js';
-import type { applicationDocumentKinds, applicationStages } from './schema.js';
+import type { applicationDocumentKinds, applicationStages, contractPhases } from './schema.js';
 
 // The pure rules of the application form (CA §5.2–5.3, AP §9.7.1; slice
 // 2.34a). Dates are the city's calendar days as YYYY-MM-DD.
@@ -27,8 +27,12 @@ export function requiredDocuments(vehicle: Vehicle | null): ApplicationDocumentK
 // How many files each document takes: the ID's front and back, one or two
 // pages of the others (decided by us).
 export function fileCountAllowed(kind: ApplicationDocumentKind, count: number): boolean {
-  return kind === 'national_id' ? count === 2 : count >= 1 && count <= 2;
+  if (kind === 'national_id') return count === 2;
+  // The signed contract's pages, up to CONTRACT_PAGES_MAX (decided by us).
+  return count >= 1 && count <= (kind === 'signed_contract' ? CONTRACT_PAGES_MAX : 2);
 }
+
+export const CONTRACT_PAGES_MAX = 6;
 
 // What the application still needs before it is sent, in the form's order:
 // the vehicle (step 2), each required document in force (step 3), the
@@ -101,6 +105,179 @@ export function criminalRecordExpiry(issueDate: string, validityMonths: number):
   return addMonths(issueDate, validityMonths);
 }
 
+// The day `days` after `day`.
+export function addDays(day: string, days: number): string {
+  const date = new Date(`${day}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+// AP §9.7.2, D24: the probation ends `captain.probation_days` after the
+// start; the commitment lasts `captain.min_commitment_months` from the
+// probation's confirmation, which is the probation's end when confirmed on
+// time.
+export function contractDates(contract: {
+  startsOn: string;
+  probationDays: number;
+  commitmentMonths: number;
+}): { probationEndsOn: string; commitmentEndsOn: string } {
+  const probationEndsOn = addDays(contract.startsOn, contract.probationDays);
+  return {
+    probationEndsOn,
+    commitmentEndsOn: addMonths(probationEndsOn, contract.commitmentMonths),
+  };
+}
+
+// AP §9.7.1 «تفعيل»: what the activation still waits for, in the order of
+// its conditions. The training passed is the stage «بانتظار العدة» itself;
+// the vehicle is the application's (step 2). Each required document and the
+// signed contract must be accepted and not expired.
+export type ActivationMissing =
+  `document:${ApplicationDocumentKind}` | 'kit' | 'deposit' | 'contract' | 'cash_limit';
+
+export function activationMissing(application: {
+  vehicle: Vehicle;
+  documents: {
+    kind: ApplicationDocumentKind;
+    status: 'pending' | 'accepted' | 'rejected';
+    expiresOn: string | null;
+  }[];
+  kitIssued: boolean;
+  depositRecorded: boolean;
+  contractRecorded: boolean;
+  cashLimitSet: boolean;
+  today: string;
+}): ActivationMissing[] {
+  const found: ActivationMissing[] = [];
+  for (const kind of [...requiredDocuments(application.vehicle), 'signed_contract' as const]) {
+    const document = application.documents.find((each) => each.kind === kind);
+    if (
+      !document ||
+      document.status !== 'accepted' ||
+      (document.expiresOn !== null && document.expiresOn <= application.today)
+    ) {
+      found.push(`document:${kind}`);
+    }
+  }
+  if (!application.kitIssued) found.push('kit');
+  if (!application.depositRecorded) found.push('deposit');
+  if (!application.contractRecorded) found.push('contract');
+  if (!application.cashLimitSet) found.push('cash_limit');
+  return found;
+}
+
+// AP §9.7.2, D24: the contract's phases. «فترة تجربة» until the
+// commitment starts: on the probation's end when OPS confirmed it by then,
+// else on the confirmation's day; «فترة التزام» for
+// `captain.min_commitment_months` from that start; «مفتوح» after.
+export type ContractPhase = (typeof contractPhases)[number];
+
+export function commitmentOf(contract: {
+  probationEndsOn: string;
+  confirmedOn: string;
+  months: number;
+}): { startsOn: string; endsOn: string } {
+  const startsOn =
+    contract.confirmedOn > contract.probationEndsOn
+      ? contract.confirmedOn
+      : contract.probationEndsOn;
+  return { startsOn, endsOn: addMonths(startsOn, contract.months) };
+}
+
+export function contractPhase(
+  contract: { commitmentStartsOn: string | null; commitmentEndsOn: string | null },
+  today: string,
+): ContractPhase {
+  if (contract.commitmentStartsOn === null || today < contract.commitmentStartsOn) {
+    return 'probation';
+  }
+  return today < contract.commitmentEndsOn! ? 'commitment' : 'open';
+}
+
+// AP §9.7.2: the probation review is OPS's task from
+// `captain.probation_review_notice_days` before the probation ends, and a
+// warning once it ended without one, until someone decides.
+export function probationReview(review: {
+  probationEndsOn: string;
+  noticeDays: number;
+  confirmed: boolean;
+  today: string;
+}): 'none' | 'due' | 'overdue' {
+  if (review.confirmed) return 'none';
+  if (review.today >= review.probationEndsOn) return 'overdue';
+  return review.today >= addDays(review.probationEndsOn, -review.noticeDays) ? 'due' : 'none';
+}
+
+// CA §12.2, AP §9.7.4, K6 (slice 2.35a): a captain's documents. The newest
+// accepted upload of a kind is the one in force until it expires («The old
+// document stays valid until it expires»), and a newer upload waits for
+// review beside it. `expiring` from `captain.document_expiry_notice_days`
+// before its expiry, `expired` on it; `missing` with none accepted.
+export interface DocumentUpload {
+  id: string;
+  kind: ApplicationDocumentKind;
+  status: 'pending' | 'accepted' | 'rejected';
+  expiresOn: string | null;
+  createdAt: Date;
+}
+
+export type DocumentState = 'valid' | 'expiring' | 'expired' | 'missing';
+
+export function documentStates<Upload extends DocumentUpload>(
+  uploads: readonly Upload[],
+  today: string,
+  noticeDays: number,
+): Map<
+  ApplicationDocumentKind,
+  { valid: Upload | null; pending: Upload | null; state: DocumentState }
+> {
+  const newestFirst = [...uploads].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  const states = new Map<
+    ApplicationDocumentKind,
+    { valid: Upload | null; pending: Upload | null; state: DocumentState }
+  >();
+  for (const kind of new Set(newestFirst.map((upload) => upload.kind))) {
+    const ofKind = newestFirst.filter((upload) => upload.kind === kind);
+    const valid = ofKind.find((upload) => upload.status === 'accepted') ?? null;
+    const newest = ofKind[0]!;
+    const pending = newest.status === 'pending' && newest !== valid ? newest : null;
+    let state: DocumentState = 'missing';
+    if (valid !== null) {
+      state =
+        valid.expiresOn === null
+          ? 'valid'
+          : valid.expiresOn <= today
+            ? 'expired'
+            : addDays(valid.expiresOn, -noticeDays) <= today
+              ? 'expiring'
+              : 'valid';
+    }
+    states.set(kind, { valid, pending, state });
+  }
+  return states;
+}
+
+// K6: the required documents expired block going online; an optional one
+// does not.
+export function expiredRequired(
+  states: ReturnType<typeof documentStates>,
+  vehicle: Vehicle,
+): ApplicationDocumentKind[] {
+  return requiredDocuments(vehicle).filter((kind) => states.get(kind)?.state === 'expired');
+}
+
+// AP §8.5.5 step 2: the instalment a Thursday settlement posts, never more
+// than what is left of the deposit (owner decision 2026-11-19).
+export function depositInstalmentDue(deposit: {
+  amount: bigint;
+  paid: bigint;
+  instalment: bigint | null;
+}): bigint {
+  const left = deposit.amount - deposit.paid;
+  if (deposit.instalment === null || left <= 0n) return 0n;
+  return left < deposit.instalment ? left : deposit.instalment;
+}
+
 // The calendar day of a moment on a city's clock.
 export function cityDay(at: Date, timeZone: string): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone }).format(at);
@@ -128,7 +305,16 @@ export type PipelineAction =
   | 'training_passed'
   | 'reject'
   | 'waitlist'
-  | 'back_from_waitlist';
+  | 'back_from_waitlist'
+  // At «بانتظار العدة» (slice 2.35a): the activation's records, then
+  // «تفعيل».
+  | 'issue_kit'
+  | 'set_cash_limit'
+  | 'record_contract'
+  | 'record_deposit'
+  | 'activate'
+  // After it (AP §9.7.2): the probation confirmed.
+  | 'confirm_probation';
 
 // The stages each action takes an application in, and where it leaves it
 // (null: where it was). «مفعّل» is the activation's (2.35).
@@ -143,8 +329,9 @@ const PIPELINE: Record<
   PipelineAction,
   { from: readonly ApplicationStage[]; to: ApplicationStage | null }
 > = {
-  review_document: { from: OPEN, to: null },
-  upload_document: { from: OPEN, to: null },
+  // A captain's replacement too, after activation (CA §12.2, slice 2.35a).
+  review_document: { from: [...OPEN, 'active'], to: null },
+  upload_document: { from: [...OPEN, 'active'], to: null },
   request_document: { from: OPEN, to: null },
   note: { from: OPEN, to: null },
   schedule_interview: { from: ['new', 'under_review', 'interview'], to: 'interview' },
@@ -153,6 +340,12 @@ const PIPELINE: Record<
   waitlist: { from: ['new', 'under_review', 'interview', 'awaiting_kit'], to: 'waitlist' },
   // Owner decision 2026-11-19: back to «قيد المراجعة».
   back_from_waitlist: { from: ['waitlist'], to: 'under_review' },
+  issue_kit: { from: ['awaiting_kit'], to: null },
+  set_cash_limit: { from: ['awaiting_kit'], to: null },
+  record_contract: { from: ['awaiting_kit'], to: null },
+  record_deposit: { from: ['awaiting_kit'], to: null },
+  activate: { from: ['awaiting_kit'], to: 'active' },
+  confirm_probation: { from: ['active'], to: null },
 };
 
 // The stages an action passes through from `stage`, in order, or null when

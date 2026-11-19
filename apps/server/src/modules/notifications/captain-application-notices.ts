@@ -12,6 +12,7 @@ import {
   NotificationTexts,
 } from '../content/index.js';
 import { AlertsService } from './alerts.service.js';
+import { PushDevices } from './push-devices.js';
 import { PushQueue, type QueuedPush } from './push-queue.js';
 
 // AP §9.7.1, §9.1.3, CA §5.4, §14 #29 (slice 2.34b): in the transaction of
@@ -28,6 +29,7 @@ export class CaptainApplicationNotices implements OnModuleInit {
     private readonly alerts: AlertsService,
     private readonly texts: NotificationTexts,
     private readonly pushes: PushQueue,
+    private readonly devices: PushDevices,
   ) {}
 
   onModuleInit(): void {
@@ -46,6 +48,10 @@ export class CaptainApplicationNotices implements OnModuleInit {
         change.stage === 'new' ? ['captain_application'] : [],
         change.at,
       );
+      // «مفعّل» (slice 2.35a): the account's devices are the captain's now.
+      if (change.captainId !== null && change.stage === 'active') {
+        await this.devices.bindCaptain(tx, change.accountId, change.captainId);
+      }
       const pushes: QueuedPush[] = [];
       for (const notice of change.notices) {
         const push = await this.push(tx, change, notice);
@@ -65,12 +71,23 @@ export class CaptainApplicationNotices implements OnModuleInit {
     const rendered = await this.texts.render(message.templateKey, message.values, tx);
     return {
       source: `captain:${message.templateKey}:${change.eventId}`,
-      recipient: { party: 'applicant', accountId: change.accountId },
+      recipient:
+        change.captainId === null
+          ? { party: 'applicant', accountId: change.accountId }
+          : { party: 'captain', captainId: change.captainId },
       templateKey: message.templateKey,
       body: rendered.body,
       level: rendered.level,
       priority: rendered.priority,
-      data: { target: 'application' },
+      // A captain's rejected replacement opens «المستندات» (CA §14 #27).
+      data: {
+        target:
+          change.captainId === null
+            ? 'application'
+            : notice.kind === 'document_rejected'
+              ? 'documents'
+              : 'home',
+      },
       at: change.at,
     };
   }
@@ -110,6 +127,8 @@ export class CaptainApplicationNotices implements OnModuleInit {
         return { templateKey: 'captain.application_awaiting_kit', values: {} };
       case 'waitlist':
         return { templateKey: 'captain.application_waitlist', values: {} };
+      case 'active':
+        return { templateKey: 'captain.application_active', values: {} };
       case 'rejected':
         return change.rejection === null
           ? null

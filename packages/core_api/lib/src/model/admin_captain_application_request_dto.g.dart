@@ -24,6 +24,9 @@ _$adminCaptainApplicationRequestDtoKindEnum_vehiclePapers =
 const AdminCaptainApplicationRequestDtoKindEnum
 _$adminCaptainApplicationRequestDtoKindEnum_drivingLicence =
     const AdminCaptainApplicationRequestDtoKindEnum._('drivingLicence');
+const AdminCaptainApplicationRequestDtoKindEnum
+_$adminCaptainApplicationRequestDtoKindEnum_signedContract =
+    const AdminCaptainApplicationRequestDtoKindEnum._('signedContract');
 
 AdminCaptainApplicationRequestDtoKindEnum
 _$adminCaptainApplicationRequestDtoKindEnumValueOf(String name) {
@@ -40,6 +43,8 @@ _$adminCaptainApplicationRequestDtoKindEnumValueOf(String name) {
       return _$adminCaptainApplicationRequestDtoKindEnum_vehiclePapers;
     case 'drivingLicence':
       return _$adminCaptainApplicationRequestDtoKindEnum_drivingLicence;
+    case 'signedContract':
+      return _$adminCaptainApplicationRequestDtoKindEnum_signedContract;
     default:
       throw ArgumentError(name);
   }
@@ -55,6 +60,7 @@ _$adminCaptainApplicationRequestDtoKindEnumValues =
         _$adminCaptainApplicationRequestDtoKindEnum_criminalRecord,
         _$adminCaptainApplicationRequestDtoKindEnum_vehiclePapers,
         _$adminCaptainApplicationRequestDtoKindEnum_drivingLicence,
+        _$adminCaptainApplicationRequestDtoKindEnum_signedContract,
       ],
     );
 
@@ -71,6 +77,7 @@ class _$AdminCaptainApplicationRequestDtoKindEnumSerializer
     'criminalRecord': 'criminal_record',
     'vehiclePapers': 'vehicle_papers',
     'drivingLicence': 'driving_licence',
+    'signedContract': 'signed_contract',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'national_id': 'nationalId',
@@ -79,6 +86,7 @@ class _$AdminCaptainApplicationRequestDtoKindEnumSerializer
     'criminal_record': 'criminalRecord',
     'vehicle_papers': 'vehiclePapers',
     'driving_licence': 'drivingLicence',
+    'signed_contract': 'signedContract',
   };
 
   @override

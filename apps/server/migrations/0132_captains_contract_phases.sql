@@ -1,0 +1,9 @@
+ALTER TABLE "captains"."application_events" DROP CONSTRAINT "application_events_kind_values";--> statement-breakpoint
+ALTER TABLE "captains"."applications" ADD COLUMN "probation_confirmed_on" date;--> statement-breakpoint
+ALTER TABLE "captains"."applications" ADD COLUMN "probation_confirmed_by" uuid;--> statement-breakpoint
+ALTER TABLE "captains"."applications" ADD COLUMN "commitment_starts_on" date;--> statement-breakpoint
+ALTER TABLE "captains"."applications" ADD COLUMN "commitment_ends_on" date;--> statement-breakpoint
+ALTER TABLE "captains"."applications" ADD COLUMN "phase_notified" text;--> statement-breakpoint
+ALTER TABLE "captains"."application_events" ADD CONSTRAINT "application_events_kind_values" CHECK ("captains"."application_events"."kind" IN ('submitted', 'stage', 'note', 'document_review', 'document_request', 'document_upload', 'interview', 'kit', 'cash_limit', 'contract', 'deposit', 'probation_confirmed'));--> statement-breakpoint
+ALTER TABLE "captains"."applications" ADD CONSTRAINT "applications_probation_confirmed" CHECK (("captains"."applications"."probation_confirmed_on" IS NULL) = ("captains"."applications"."probation_confirmed_by" IS NULL) AND ("captains"."applications"."probation_confirmed_on" IS NULL) = ("captains"."applications"."commitment_starts_on" IS NULL) AND ("captains"."applications"."commitment_starts_on" IS NULL) = ("captains"."applications"."commitment_ends_on" IS NULL) AND ("captains"."applications"."probation_confirmed_on" IS NULL OR "captains"."applications"."activated_at" IS NOT NULL));--> statement-breakpoint
+ALTER TABLE "captains"."applications" ADD CONSTRAINT "applications_phase_notified" CHECK ("captains"."applications"."phase_notified" IN ('probation', 'commitment', 'open'));

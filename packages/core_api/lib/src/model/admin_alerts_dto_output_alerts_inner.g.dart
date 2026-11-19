@@ -86,6 +86,15 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnum_largePriceChange =
 const AdminAlertsDtoOutputAlertsInnerCodeEnum
 _$adminAlertsDtoOutputAlertsInnerCodeEnum_captainApplication =
     const AdminAlertsDtoOutputAlertsInnerCodeEnum._('captainApplication');
+const AdminAlertsDtoOutputAlertsInnerCodeEnum
+_$adminAlertsDtoOutputAlertsInnerCodeEnum_probationEnding =
+    const AdminAlertsDtoOutputAlertsInnerCodeEnum._('probationEnding');
+const AdminAlertsDtoOutputAlertsInnerCodeEnum
+_$adminAlertsDtoOutputAlertsInnerCodeEnum_probationOverdue =
+    const AdminAlertsDtoOutputAlertsInnerCodeEnum._('probationOverdue');
+const AdminAlertsDtoOutputAlertsInnerCodeEnum
+_$adminAlertsDtoOutputAlertsInnerCodeEnum_documentExpiring =
+    const AdminAlertsDtoOutputAlertsInnerCodeEnum._('documentExpiring');
 
 AdminAlertsDtoOutputAlertsInnerCodeEnum
 _$adminAlertsDtoOutputAlertsInnerCodeEnumValueOf(String name) {
@@ -142,6 +151,12 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnumValueOf(String name) {
       return _$adminAlertsDtoOutputAlertsInnerCodeEnum_largePriceChange;
     case 'captainApplication':
       return _$adminAlertsDtoOutputAlertsInnerCodeEnum_captainApplication;
+    case 'probationEnding':
+      return _$adminAlertsDtoOutputAlertsInnerCodeEnum_probationEnding;
+    case 'probationOverdue':
+      return _$adminAlertsDtoOutputAlertsInnerCodeEnum_probationOverdue;
+    case 'documentExpiring':
+      return _$adminAlertsDtoOutputAlertsInnerCodeEnum_documentExpiring;
     default:
       throw ArgumentError(name);
   }
@@ -177,6 +192,9 @@ _$adminAlertsDtoOutputAlertsInnerCodeEnumValues =
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_urgentDisputeTicket,
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_largePriceChange,
         _$adminAlertsDtoOutputAlertsInnerCodeEnum_captainApplication,
+        _$adminAlertsDtoOutputAlertsInnerCodeEnum_probationEnding,
+        _$adminAlertsDtoOutputAlertsInnerCodeEnum_probationOverdue,
+        _$adminAlertsDtoOutputAlertsInnerCodeEnum_documentExpiring,
       ],
     );
 
@@ -331,6 +349,9 @@ class _$AdminAlertsDtoOutputAlertsInnerCodeEnumSerializer
     'urgentDisputeTicket': 'urgent_dispute_ticket',
     'largePriceChange': 'large_price_change',
     'captainApplication': 'captain_application',
+    'probationEnding': 'probation_ending',
+    'probationOverdue': 'probation_overdue',
+    'documentExpiring': 'document_expiring',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_not_accepted': 'restaurantNotAccepted',
@@ -359,6 +380,9 @@ class _$AdminAlertsDtoOutputAlertsInnerCodeEnumSerializer
     'urgent_dispute_ticket': 'urgentDisputeTicket',
     'large_price_change': 'largePriceChange',
     'captain_application': 'captainApplication',
+    'probation_ending': 'probationEnding',
+    'probation_overdue': 'probationOverdue',
+    'document_expiring': 'documentExpiring',
   };
 
   @override
@@ -502,6 +526,8 @@ class _$AdminAlertsDtoOutputAlertsInner
   @override
   final String? statementId;
   @override
+  final String? applicationId;
+  @override
   final AdminAlertsDtoOutputAlertsInnerLocation? location;
   @override
   final DateTime raisedAt;
@@ -527,6 +553,7 @@ class _$AdminAlertsDtoOutputAlertsInner
     this.currency,
     this.ticketNumber,
     this.statementId,
+    this.applicationId,
     this.location,
     required this.raisedAt,
     this.acknowledged,
@@ -557,6 +584,7 @@ class _$AdminAlertsDtoOutputAlertsInner
         currency == other.currency &&
         ticketNumber == other.ticketNumber &&
         statementId == other.statementId &&
+        applicationId == other.applicationId &&
         location == other.location &&
         raisedAt == other.raisedAt &&
         acknowledged == other.acknowledged &&
@@ -578,6 +606,7 @@ class _$AdminAlertsDtoOutputAlertsInner
     _$hash = $jc(_$hash, currency.hashCode);
     _$hash = $jc(_$hash, ticketNumber.hashCode);
     _$hash = $jc(_$hash, statementId.hashCode);
+    _$hash = $jc(_$hash, applicationId.hashCode);
     _$hash = $jc(_$hash, location.hashCode);
     _$hash = $jc(_$hash, raisedAt.hashCode);
     _$hash = $jc(_$hash, acknowledged.hashCode);
@@ -601,6 +630,7 @@ class _$AdminAlertsDtoOutputAlertsInner
           ..add('currency', currency)
           ..add('ticketNumber', ticketNumber)
           ..add('statementId', statementId)
+          ..add('applicationId', applicationId)
           ..add('location', location)
           ..add('raisedAt', raisedAt)
           ..add('acknowledged', acknowledged)
@@ -671,6 +701,11 @@ class AdminAlertsDtoOutputAlertsInnerBuilder
   String? get statementId => _$this._statementId;
   set statementId(String? statementId) => _$this._statementId = statementId;
 
+  String? _applicationId;
+  String? get applicationId => _$this._applicationId;
+  set applicationId(String? applicationId) =>
+      _$this._applicationId = applicationId;
+
   AdminAlertsDtoOutputAlertsInnerLocationBuilder? _location;
   AdminAlertsDtoOutputAlertsInnerLocationBuilder get location =>
       _$this._location ??= AdminAlertsDtoOutputAlertsInnerLocationBuilder();
@@ -712,6 +747,7 @@ class AdminAlertsDtoOutputAlertsInnerBuilder
       _currency = $v.currency;
       _ticketNumber = $v.ticketNumber;
       _statementId = $v.statementId;
+      _applicationId = $v.applicationId;
       _location = $v.location?.toBuilder();
       _raisedAt = $v.raisedAt;
       _acknowledged = $v.acknowledged?.toBuilder();
@@ -772,6 +808,7 @@ class AdminAlertsDtoOutputAlertsInnerBuilder
             currency: currency,
             ticketNumber: ticketNumber,
             statementId: statementId,
+            applicationId: applicationId,
             location: _location?.build(),
             raisedAt: BuiltValueNullFieldError.checkNotNull(
               raisedAt,

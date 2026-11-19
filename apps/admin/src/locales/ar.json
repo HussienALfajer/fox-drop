@@ -111,7 +111,9 @@
     "ticket": "التذكرة {{number}}",
     "openTicket": "فتح التذكرة",
     "openPriceLog": "فتح سجل الأسعار",
-    "openApplication": "فتح طلب الانضمام"
+    "openApplication": "فتح طلب الانضمام",
+    "openContract": "فتح العقد",
+    "openDocuments": "فتح المستندات"
   },
   "board": {
     "title": "غرفة العمليات",
@@ -178,6 +180,9 @@
       "restaurantAutoPaused": "مطعم أوقف تلقائياً",
       "largePriceChange": "تغيير أسعار كبير",
       "captainApplication": "طلب انضمام كابتن",
+      "probationEnding": "نهاية فترة تجربة",
+      "probationOverdue": "انتهت فترة التجربة دون مراجعة",
+      "documentExpiring": "مستند ينتهي",
       "restaurantSettlementOverdue": "مطعم متأخر في التسوية",
       "rateStale": "سعر صرف قديم",
       "compensationApproval": "طلب موافقة تعويض",
@@ -793,6 +798,7 @@
       "customer_block": "حظر الزبون",
       "emergency_stop": "الإيقاف الطارئ",
       "compensation": "تعويض الزبون",
+      "kit_item": "عناصر العدة",
       "failed_outcome": "نتائج الطلب الفاشل",
       "system_cancellation": "الإلغاء التلقائي"
     },
@@ -964,6 +970,7 @@
           "application_interview": "موعد المقابلة والتدريب",
           "application_awaiting_kit": "اجتياز التدريب",
           "application_waitlist": "طلب الانضمام في قائمة الانتظار",
+          "application_active": "تفعيل الكابتن",
           "application_rejected": "رفض طلب الانضمام",
           "ticket_resolved": "الرد على بلاغ",
           "pickup_corrected": "تصحيح دفعة استلام"
@@ -1271,6 +1278,7 @@
       "captain_reimbursement": "صرف للكابتن",
       "captain_payout": "صرف المستحقات",
       "captain_earnings_collection": "تحصيل رصيد سالب",
+      "captain_deposit": "تأمين العدة",
       "merchant_settlement": "تسوية حساب المطعم",
       "merchant_payout": "صرف للمطعم",
       "customer_dues_payment": "دفع مستحقات زبون"
@@ -1287,7 +1295,8 @@
       "remaining": "المتبقي",
       "conversion": "تحويل {{amount}} من العهدة إلى {{converted}} بسعر الصرف الحالي.",
       "expectedAfterConversion": "العهدة بعد التحويل",
-      "expectedEarnings": "المستحقات"
+      "expectedEarnings": "المستحقات",
+      "expectedDeposit": "المتبقي من التأمين"
     },
     "sessions": {
       "title": "جلسات الصندوق",
@@ -1384,6 +1393,7 @@
     "custodyHandIn": "يسلّم {{amount}}",
     "custodyReimburse": "يُصرف له {{amount}}",
     "earnings": "رصيد المستحقات",
+    "instalment": "يُخصم قسط التأمين أولاً: {{amount}}",
     "payoutCurrency": "عملة الصرف",
     "payout": "يُصرف كامل الرصيد: {{amount}}",
     "collect": "رصيد سالب يُحصَّل من الكابتن: {{amount}}",
@@ -3575,7 +3585,8 @@
       "civil_registry": "إخراج قيد",
       "criminal_record": "لا حكم عليه",
       "vehicle_papers": "أوراق المركبة",
-      "driving_licence": "شهادة قيادة"
+      "driving_licence": "شهادة قيادة",
+      "signed_contract": "العقد الموقّع"
     },
     "documentStatus": {
       "pending": "بانتظار التحقق",
@@ -3589,7 +3600,12 @@
       "document_review": "{{kind}}: {{status}}",
       "document_request": "طلب مستند: {{kind}}",
       "document_upload": "رفع {{kind}}",
-      "interview": "حدّد المقابلة"
+      "interview": "حدّد المقابلة",
+      "kit": "سلّم العدة",
+      "cash_limit": "حدّد حد النقد",
+      "contract": "سجّل العقد",
+      "deposit": "سجّل التأمين",
+      "probation_confirmed": "أكّد فترة التجربة"
     },
     "duplicate": {
       "id_number": "رقم الهوية",
@@ -3622,7 +3638,103 @@
       "type": "الملف ليس صورة (JPEG أو PNG أو WebP).",
       "size": "حجم الملف أكبر من 8 ميغابايت.",
       "not_image": "الملف ليس صورة صالحة.",
-      "upload_failed": "تعذّر رفع الملف. حاول مرة أخرى."
+      "upload_failed": "تعذّر رفع الملف. حاول مرة أخرى.",
+      "invalid_kit": "اختر عنصراً واحداً على الأقل من قائمة العدة، بعدد من 1 إلى 20.",
+      "not_in_base_currency": "المبالغ بالعملة الأساسية للمدينة.",
+      "invalid_contract": "تاريخ التوقيع لا يكون بعد اليوم، وتاريخ البدء لا يسبق التوقيع.",
+      "activation_incomplete": "لم تكتمل شروط التفعيل بعد.",
+      "already_confirmed": "أُكّدت فترة التجربة من قبل.",
+      "deposit_paid": "دُفع جزء من التأمين: لا يُرفض الطلب قبل إعادته.",
+      "document_in_force": "المستند مقبول وساري حتى ينتهي؛ عالج المشكلة بإيقاف الكابتن.",
+      "captain_terminated": "انتهى عقد هذا الكابتن."
     }
+  },
+  "captainActivation": {
+    "title": "العدة والعقد والتفعيل",
+    "kit": "العدة",
+    "noKit": "لم تُسلَّم العدة بعد.",
+    "kitLine": "{{label}} × {{quantity}} — المقاس: {{size}}",
+    "issueKit": "تسليم العدة",
+    "size": "المقاس",
+    "quantity": "العدد",
+    "cashLimit": "حد النقد",
+    "noCashLimit": "لم يُحدَّد حد النقد بعد.",
+    "contract": "العقد",
+    "noContract": "لم يُسجَّل العقد بعد.",
+    "signedOn": "تاريخ التوقيع",
+    "startsOn": "تاريخ البدء",
+    "probationEndsOn": "نهاية فترة التجربة",
+    "commitment": "فترة الالتزام",
+    "commitmentDates": "من {{from}} إلى {{to}}",
+    "phaseNow": "المرحلة الآن",
+    "probationConfirmed": "تأكيد فترة التجربة",
+    "notYet": "لم يُؤكَّد بعد",
+    "confirmProbation": "تأكيد فترة التجربة",
+    "recordContract": "تسجيل العقد",
+    "scan": "صفحات العقد الموقّع",
+    "deposit": "التأمين",
+    "noDeposit": "لم يُسجَّل التأمين بعد.",
+    "depositLine": "التأمين {{amount}}، المدفوع {{paid}}، المتبقي {{left}}.",
+    "instalment": "قسط أسبوعي {{amount}} يُخصم كل خميس.",
+    "noInstalment": "دون أقساط: يُدفع كاملاً في الصندوق.",
+    "recordDeposit": "تسجيل التأمين في الصندوق",
+    "activate": "تفعيل",
+    "ready": "اكتملت الشروط.",
+    "waitingFor": "ينتظر التفعيل:",
+    "activatedAt": "فُعّل في {{day}}",
+    "phase": {
+      "probation": "فترة تجربة",
+      "commitment": "فترة التزام",
+      "open": "مفتوح"
+    },
+    "review": {
+      "due": "تقترب نهاية فترة التجربة: أكّدها أو أنهِ العقد.",
+      "overdue": "انتهت فترة التجربة دون مراجعة."
+    },
+    "missing": {
+      "document": "المستند مقبولاً وساري المفعول: {{kind}}",
+      "kit": "تسليم العدة",
+      "deposit": "تسجيل التأمين (بأقساط أو مدفوعاً كاملاً)",
+      "contract": "تسجيل العقد",
+      "cash_limit": "تحديد حد النقد"
+    },
+    "problem": {
+      "kit": "اختر عنصراً واحداً على الأقل، بعدد من 1 إلى 20 ومقاس لا يتجاوز 20 حرفاً.",
+      "contractDates": "تاريخ التوقيع لا يكون بعد اليوم، وتاريخ البدء لا يسبق التوقيع.",
+      "contractFiles": "اختر من صفحة إلى 6 صفحات."
+    },
+    "setCashLimitAtDesk": "تحديد حد النقد في الصندوق"
+  },
+  "deposits": {
+    "title": "تأمين العدة",
+    "none": "لا طلبات بانتظار العدة.",
+    "openDrawer": "افتح الصندوق لتسجيل مبلغ مدفوع الآن.",
+    "state": "التأمين {{amount}}، المدفوع {{paid}}.",
+    "notRecorded": "لم يُسجَّل التأمين بعد.",
+    "noCurrency": "لم تُحدَّد العملة الأساسية للمدينة بعد.",
+    "amount": "مبلغ التأمين ({{currency}})",
+    "instalment": "القسط الأسبوعي ({{currency}})، فارغ دون أقساط",
+    "paidNow": "المدفوع الآن ({{currency}})",
+    "record": "تسجيل التأمين",
+    "recorded": "سُجّل التأمين.",
+    "receipt": "الإيصال {{number}}",
+    "problem": {
+      "amount": "اكتب مبلغ التأمين.",
+      "instalment": "القسط أكبر من صفر ولا يتجاوز التأمين.",
+      "paidNow": "المدفوع الآن لا يتجاوز المتبقي من التأمين.",
+      "cashLimit": "اكتب مبلغاً أكبر من صفر."
+    },
+    "refusal": {
+      "above_balance": "المدفوع يتجاوز المتبقي من التأمين.",
+      "wrong_stage": "الطلب لم يعد بانتظار العدة.",
+      "invalid_amounts": "القسط لا يتجاوز التأمين.",
+      "unknown_party": "الطلب غير موجود في هذه المدينة.",
+      "no_base_currency": "لم تُحدَّد العملة الأساسية للمدينة بعد.",
+      "invalid_currency": "المبالغ بالعملة الأساسية للمدينة."
+    },
+    "cashLimitNow": "حد النقد: {{amount}}",
+    "noCashLimit": "لم يُحدَّد حد النقد بعد.",
+    "cashLimitAmount": "حد النقد ({{currency}})",
+    "setCashLimit": "حفظ حد النقد"
   }
 }
