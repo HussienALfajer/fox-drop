@@ -102,6 +102,10 @@ class SettingHistoryDto extends createZodDto(
   }),
 ) {}
 
+class DispatchModeDto extends createZodDto(
+  z.object({ mode: z.enum(['manual', 'auto', 'mixed']).describe('«يدوي», «آلي» or «مختلط».') }),
+) {}
+
 // The roles of the session the settings catalogue knows.
 function rolesOf(session: AdminSession): AdminRole[] {
   return session.roles.filter((role): role is AdminRole =>
@@ -145,6 +149,15 @@ export class SettingsController {
   async list(@Query() query: CityQueryDto, @CurrentAdminSession() session: AdminSession) {
     const entries = await refusalsAsHttp(() => this.settings.list(query.cityId, rolesOf(session)));
     return { settings: entries.map(entryBody) };
+  }
+
+  // AP §7.2 the top bar's dispatch mode, for every panel user: the list
+  // above gives each role only the settings it may edit.
+  @Get('dispatch-mode')
+  @SignedIn()
+  @ZodResponse({ status: 200, type: DispatchModeDto })
+  async dispatchMode(@Query() query: CityQueryDto) {
+    return { mode: await this.settings.get('dispatch.mode', { cityId: query.cityId }) };
   }
 
   @Put(':key')

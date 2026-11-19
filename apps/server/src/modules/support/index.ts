@@ -108,7 +108,7 @@ export {
   ticketBody,
   ticketOut,
 } from './ticket-body.js';
-export { type TicketParty } from './tickets.js';
+export { type TicketParty, ticketStatuses } from './tickets.js';
 export { dataChangeSubjects, MERCHANT_REPORT_PHOTOS_MAX } from './merchant-reports.js';
 export {
   CAPTAIN_REPORT_PHOTOS_MAX,

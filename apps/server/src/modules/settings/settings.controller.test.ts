@@ -189,6 +189,18 @@ describe('the grouped settings (AP §9.14)', () => {
   });
 });
 
+describe("the top bar's dispatch mode (AP §7.2)", () => {
+  it('answers every role the mode of the city', async () => {
+    for (const role of ['OWN', 'SUP', 'FIN', 'DATA']) {
+      const read = await (
+        await admin([role])
+      ).get(`/v1/admin/settings/dispatch-mode?cityId=${azaz}`);
+      expect(read.statusCode).toBe(200);
+      expect(['manual', 'auto', 'mixed']).toContain(read.json().mode);
+    }
+  });
+});
+
 describe('editing a setting (AP §9.14, §14 item 28)', () => {
   it('lets OPS switch the dispatch mode, audited, and nothing else', async () => {
     const ops = await admin(['OPS']);

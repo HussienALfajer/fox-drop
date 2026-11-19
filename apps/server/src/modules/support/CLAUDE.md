@@ -23,5 +23,5 @@ Tickets «الدعم» (architecture §4.2; AP §9.9). Compensation and its appr
 
 ## Not yet
 
-- The ticket page shows the code's id, not its state (the order's «تعويض الزبون» list has it); a resolution cannot be changed or reopened; «الرسائل»; the panel's type filter offers `merchant_ticket_type`'s codes, not `merchant_problem`'s (a problem on an order shows its label); the global search by ticket number (AP §7).
+- The ticket page shows the code's id, not its state (the order's «تعويض الزبون» list has it); a resolution cannot be changed or reopened; «الرسائل»; the panel's type filter offers `merchant_ticket_type`'s codes, not `merchant_problem`'s (a problem on an order shows its label).
 - The list shows the latest 200 with no paging.

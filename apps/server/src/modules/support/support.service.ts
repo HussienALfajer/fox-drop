@@ -587,6 +587,18 @@ export class SupportService implements OnModuleInit {
     }
   }
 
+  // AP §7.2 the top bar's search: the city's ticket of a number (`T-5521`
+  // reads 5521), none or one.
+  async ticketsByNumber(
+    cityId: string,
+    number: bigint,
+  ): Promise<{ id: string; number: bigint; status: (typeof tickets.$inferSelect)['status'] }[]> {
+    return this.database.db
+      .select({ id: tickets.id, number: tickets.number, status: tickets.status })
+      .from(tickets)
+      .where(and(eq(tickets.cityId, cityId), eq(tickets.number, number)));
+  }
+
   // «تذكرة يدوية» without an order, from the list. 400 unknown_reason;
   // 404 unknown_party; 422 idempotency_key_reused.
   async open(

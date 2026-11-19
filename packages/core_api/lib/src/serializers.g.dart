@@ -1079,6 +1079,13 @@ Serializers _$serializers =
           ..add(AdminResumeEmergencyStopDto.serializer)
           ..add(AdminSaveZoneDto.serializer)
           ..add(AdminSaveZoneDtoAreaInner.serializer)
+          ..add(AdminSearchQueryDto.serializer)
+          ..add(AdminSearchResultsDtoOutput.serializer)
+          ..add(AdminSearchResultsDtoOutputCustomersInner.serializer)
+          ..add(AdminSearchResultsDtoOutputOrdersInner.serializer)
+          ..add(AdminSearchResultsDtoOutputOrdersInnerStatusEnum.serializer)
+          ..add(AdminSearchResultsDtoOutputTicketsInner.serializer)
+          ..add(AdminSearchResultsDtoOutputTicketsInnerStatusEnum.serializer)
           ..add(AdminSessionDtoOutput.serializer)
           ..add(AdminSetBaseCurrencyDto.serializer)
           ..add(AdminSetCityCurrencyDto.serializer)
@@ -1712,6 +1719,8 @@ Serializers _$serializers =
           ..add(CustomerZoneVoteDtoLocation.serializer)
           ..add(CustomerZoneVotedDtoOutput.serializer)
           ..add(CustomerZoneVotedDtoOutputStatusEnum.serializer)
+          ..add(DispatchModeDtoOutput.serializer)
+          ..add(DispatchModeDtoOutputModeEnum.serializer)
           ..add(DoneDtoOutput.serializer)
           ..add(DoneDtoOutputStatusEnum.serializer)
           ..add(EmergencySignInCodeDtoOutput.serializer)
@@ -3609,6 +3618,46 @@ Serializers _$serializers =
               const FullType(AdminSaveZoneDtoAreaInner),
             ]),
             () => ListBuilder<AdminSaveZoneDtoAreaInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminSearchResultsDtoOutputOrdersInner),
+            ]),
+            () => ListBuilder<AdminSearchResultsDtoOutputOrdersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType.nullable(
+                AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType.nullable(
+                AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminSearchResultsDtoOutputTicketsInner),
+            ]),
+            () => ListBuilder<AdminSearchResultsDtoOutputTicketsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminSearchResultsDtoOutputCustomersInner),
+            ]),
+            () => ListBuilder<AdminSearchResultsDtoOutputCustomersInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
