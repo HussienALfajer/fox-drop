@@ -88,7 +88,7 @@ test('starts a draft, saves its basics, then its pin', async ({ page }) => {
   );
   let draft: ReturnType<typeof draftOf> | null = null;
   const bodies: Record<string, unknown> = {};
-  await page.route(/\/v1\/admin\/restaurant-drafts\/[0-9a-f-]{36}(\/\w+)?$/, (route) => {
+  await page.route(/\/v1\/admin\/restaurant-drafts\/[0-9a-f-]{36}(\/\w+)?(\?.*)?$/, (route) => {
     const url = new URL(route.request().url());
     const [, , , , id, step] = url.pathname.split('/');
     if (route.request().method() === 'GET') {
@@ -149,7 +149,7 @@ test('builds the menu, then starts test mode', async ({ page }) => {
   await page.route('**/v1/admin/restaurant-drafts/choices?*', (route) =>
     route.fulfill({ json: choices }),
   );
-  await page.route(`**/v1/admin/restaurant-drafts/${id}`, (route) =>
+  await page.route(`**/v1/admin/restaurant-drafts/${id}?*`, (route) =>
     route.fulfill({ json: draftOf(id, 'مطعم الضيعة', { latitude: 36.58, longitude: 37.04 }) }),
   );
   await page.route('**/v1/admin/restaurants/*/accounts', (route) =>

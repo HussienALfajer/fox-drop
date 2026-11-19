@@ -332,6 +332,10 @@ export class MerchantsService implements OnModuleInit {
     await this.checkCategories(categoryIds);
     return this.database.db.transaction(async (tx) => {
       const row = await this.lockRestaurant(tx, restaurantId);
+      // AP §9.6.4 (slice 2.30d): a terminated restaurant's data is read only.
+      if (row.accountStatus === 'terminated') {
+        throw new MerchantsRefusedError('restaurant_terminated', 'the restaurant is terminated');
+      }
       const [{ before }] = (await tx
         .select({ before: restaurants.categoryIds })
         .from(restaurants)
@@ -1825,6 +1829,10 @@ export class MerchantsService implements OnModuleInit {
     await this.files.prepare(uploadId, purpose);
     return this.database.db.transaction(async (tx) => {
       const row = await this.lockRestaurant(tx, restaurantId);
+      // AP §9.6.4 (slice 2.30d): a terminated restaurant's data is read only.
+      if (row.accountStatus === 'terminated') {
+        throw new MerchantsRefusedError('restaurant_terminated', 'the restaurant is terminated');
+      }
       const column = image === 'logo' ? restaurants.logoKey : restaurants.coverKey;
       const [{ before }] = (await tx
         .select({ before: column })

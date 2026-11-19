@@ -107,7 +107,7 @@ test('lists the restaurants, filters them, suspends one and changes its commissi
   await page.route('**/v1/admin/restaurants?*', (route) =>
     route.fulfill({ json: { restaurants: [{ id: restaurantId, nameAr: 'مطعم الشام' }] } }),
   );
-  await page.route(`**/v1/admin/restaurant-drafts/${restaurantId}`, (route) =>
+  await page.route(`**/v1/admin/restaurant-drafts/${restaurantId}?*`, (route) =>
     route.fulfill({
       json: {
         id: restaurantId,

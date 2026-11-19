@@ -19481,7 +19481,10 @@ export interface operations {
     };
     adminRestaurantDraftsRead: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description false leaves the scans’ signed links out (the profile’s tabs); past the draft each read with them is audited as a document view (AP §14). */
+                scans?: "true" | "false";
+            };
             header?: never;
             path: {
                 restaurantId: string;

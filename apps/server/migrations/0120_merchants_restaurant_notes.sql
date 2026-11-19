@@ -13,4 +13,5 @@ CREATE TABLE "merchants"."restaurant_notes" (
 ALTER TABLE "merchants"."restaurant_notes" ADD CONSTRAINT "restaurant_notes_restaurant_id_restaurants_id_fk" FOREIGN KEY ("restaurant_id") REFERENCES "merchants"."restaurants"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 CREATE UNIQUE INDEX "restaurant_notes_key" ON "merchants"."restaurant_notes" USING btree ("author_id","idempotency_key");--> statement-breakpoint
 CREATE INDEX "restaurant_notes_restaurant" ON "merchants"."restaurant_notes" USING btree ("restaurant_id","created_at");--> statement-breakpoint
+REVOKE UPDATE ON "merchants"."restaurant_notes" FROM fox_drop_app;--> statement-breakpoint
 CREATE INDEX "events_target" ON "audit"."events" USING btree ("target_type","target_id","occurred_at");

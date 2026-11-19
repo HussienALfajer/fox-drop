@@ -483,21 +483,23 @@ export class RestaurantDraftsService {
           updatedAt: sql`now()`,
         })
         .where(eq(restaurants.id, restaurantId));
-      // The numbers stay out of the audit log, which keeps no phone.
+      // The numbers stay out of the audit log, which keeps no phone; a new
+      // number shows as phoneChanged.
       const audited = (value: typeof after) => ({
         latitude: value.latitude,
         longitude: value.longitude,
         address: value.address,
         ownerName: value.ownerName,
       });
+      const phoneChanged = before.phone !== after.phone;
       await this.record(
         tx,
         change,
         row.cityId,
         restaurantId,
         'restaurant.location',
-        row.latitude === null ? null : audited(before as typeof after),
-        audited(after),
+        row.latitude === null ? null : { ...audited(before as typeof after), phoneChanged: false },
+        { ...audited(after), phoneChanged },
       );
     });
   }

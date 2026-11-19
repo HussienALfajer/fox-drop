@@ -130,22 +130,25 @@ export const draftChoicesQuery = (cityId: string) =>
     },
   });
 
-const draftKey = (restaurantId: string) => ['restaurant-draft', restaurantId] as const;
+const draftKey = (restaurantId: string, scans = true) =>
+  ['restaurant-draft', restaurantId, scans ? 'scans' : 'plain'] as const;
 
 // A draft, or null before step 1 is saved (the id the panel just named).
-export const draftQuery = (restaurantId: string) =>
+// Without `scans` (the profile's tabs, slice 2.30d) the scans' signed links
+// are left out; past the draft the server audits a read with them (AP §14).
+export const draftQuery = (restaurantId: string, scans = true) =>
   queryOptions({
-    queryKey: draftKey(restaurantId),
+    queryKey: draftKey(restaurantId, scans),
     queryFn: async (): Promise<Draft | null> => {
       const { data, response } = await api.GET('/v1/admin/restaurant-drafts/{restaurantId}', {
-        params: { path: { restaurantId } },
+        params: { path: { restaurantId }, query: { scans: scans ? 'true' : 'false' } },
       });
       if (response.status === 404) return null;
       if (!data) throw new Error('The draft read failed.');
       return data;
     },
     // The scans' signed links last 10 minutes: read them again before.
-    refetchInterval: 5 * 60_000,
+    ...(scans ? { refetchInterval: 5 * 60_000 } : {}),
   });
 
 const accountsKey = (restaurantId: string) => ['restaurant-accounts', restaurantId] as const;
@@ -579,7 +582,12 @@ export function useSaveStep(restaurantId: string, where: SaveWhere = 'draft') {
     mutationFn: (save: StepSave) => run(restaurantId, save, where),
     onSuccess: (result) => {
       if (result.status !== 'saved') return;
-      queryClient.setQueryData(draftKey(restaurantId), result.draft);
+      // The wizard's saves answer with the scans, the profile's without.
+      queryClient.setQueryData(draftKey(restaurantId, where === 'draft'), result.draft);
+      void queryClient.invalidateQueries({
+        queryKey: draftKey(restaurantId, where !== 'draft'),
+        exact: true,
+      });
       void queryClient.invalidateQueries({ queryKey: ['restaurant-drafts'] });
       if (where === 'profile') {
         void queryClient.invalidateQueries({ queryKey: ['restaurant-list'] });

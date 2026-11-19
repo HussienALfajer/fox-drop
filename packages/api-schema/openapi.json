@@ -3051,6 +3051,20 @@
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
               "type": "string"
             }
+          },
+          {
+            "name": "scans",
+            "required": false,
+            "in": "query",
+            "description": "false leaves the scans’ signed links out (the profile’s tabs); past the draft each read with them is audited as a document view (AP §14).",
+            "schema": {
+              "default": "true",
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
           }
         ],
         "responses": {

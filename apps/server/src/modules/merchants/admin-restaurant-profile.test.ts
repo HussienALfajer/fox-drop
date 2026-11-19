@@ -338,3 +338,70 @@ describe('«ملاحظات» and «سجل التغييرات» (AP §9.6.4)', ()
     expect(entries.at(-1).action).toBe('restaurant.create');
   });
 });
+
+describe('the review of slice 2.30d', () => {
+  it('keeps one owner past the draft', async () => {
+    const id = await restaurant();
+    const ops = await admin('OPS');
+    const added = await ops('POST', `${id}/accounts`, {
+      role: 'owner',
+      name: 'مالك',
+      phone: '+963944000780',
+    });
+    const ownerId = added.json().accounts[0].id;
+    const refused = await ops('POST', `${id}/accounts/${ownerId}/remove`);
+    expect(refused.statusCode).toBe(409);
+    expect(refused.json().error).toBe('last_owner');
+    await ops('POST', `${id}/accounts`, { role: 'owner', name: 'شريك', phone: '+963944000781' });
+    expect((await ops('POST', `${id}/accounts/${ownerId}/remove`)).statusCode).toBe(200);
+  });
+
+  it('refuses a terminated restaurant’s categories', async () => {
+    const ended = await restaurant('terminated');
+    const ops = await admin('OPS');
+    const refused = await ops('PUT', `${ended}/categories`, { categoryIds: [] });
+    expect(refused.statusCode).toBe(403);
+  });
+
+  it('audits a note without its text, and the scans’ view past the draft', async () => {
+    const id = await restaurant();
+    const { cookies } = await adminCookies('OPS');
+    await app.inject({
+      method: 'POST',
+      url: `/v1/admin/restaurants/${id}/notes`,
+      cookies,
+      headers: { 'idempotency-key': randomUUID() },
+      payload: { body: 'المدير الجديد 0944000782' },
+    });
+    const audited = await sql.query(
+      "SELECT changes::text AS changes FROM audit.events WHERE target_id = $1 AND action = 'restaurant.note'",
+      [id],
+    );
+    expect(audited.rows[0].changes).not.toContain('0944000782');
+    await sql.query(
+      `INSERT INTO merchants.contracts (restaurant_id, signed_on, duration_months, contract_key, updated_by)
+       VALUES ($1, '2026-11-01', 12, 'restaurants/contract.png', $2)`,
+      [id, randomUUID()],
+    );
+    const read = (scans: string) =>
+      app.inject({
+        method: 'GET',
+        url: `/v1/admin/restaurant-drafts/${id}?scans=${scans}`,
+        cookies,
+      });
+    const withoutScans = await read('false');
+    expect(withoutScans.json()).toMatchObject({ contract: { contractUrl: null } });
+    const views = async () =>
+      (
+        await sql.query(
+          "SELECT count(*)::int AS n FROM audit.events WHERE target_id = $1 AND action = 'restaurant.contract.view'",
+          [id],
+        )
+      ).rows[0].n;
+    expect(await views()).toBe(0);
+    // The links need the object storage, which this file does not start: the
+    // view is recorded before they are signed.
+    await read('true');
+    expect(await views()).toBe(1);
+  });
+});

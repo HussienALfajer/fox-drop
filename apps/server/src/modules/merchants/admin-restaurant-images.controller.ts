@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   ConflictException,
+  ForbiddenException,
   Get,
   HttpStatus,
   NotFoundException,
@@ -81,6 +82,9 @@ function refusalAsHttp(error: unknown): never {
     }
     if (error.refusal === 'unknown_category') {
       throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, ...body });
+    }
+    if (error.refusal === 'restaurant_terminated') {
+      throw new ForbiddenException({ statusCode: HttpStatus.FORBIDDEN, ...body });
     }
     throw new ConflictException({ statusCode: HttpStatus.CONFLICT, ...body });
   }

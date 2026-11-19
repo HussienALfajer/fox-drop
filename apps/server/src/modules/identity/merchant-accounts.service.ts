@@ -28,7 +28,8 @@ export class MerchantAccountRefusedError extends Error {
       | 'phone_taken'
       | 'invalid_account'
       | 'unknown_account'
-      | 'restaurant_terminated',
+      | 'restaurant_terminated'
+      | 'last_owner',
     message: string,
   ) {
     super(message);
@@ -205,7 +206,12 @@ export class MerchantAccountsService implements OnModuleInit {
     now = new Date(),
   ): Promise<string[]> {
     return this.database.db.transaction(async (tx) => {
-      await this.checkOpen(tx, restaurantId);
+      const status = await this.checkOpen(tx, restaurantId);
+      // Two removals of one restaurant's users take turns, so the owner
+      // count below never misses the other's.
+      await tx.execute(
+        sql`SELECT pg_advisory_xact_lock(hashtextextended(${`identity.merchant_users:${restaurantId}`}, 0))`,
+      );
       const [removed] = await tx
         .update(merchantAccounts)
         .set({ removedAt: now })
@@ -223,6 +229,22 @@ export class MerchantAccountsService implements OnModuleInit {
         });
       if (!removed) {
         throw new MerchantAccountRefusedError('unknown_account', 'no such account');
+      }
+      // RA §5.1: past the draft a restaurant keeps one owner or more.
+      if (removed.role === 'owner' && status !== 'draft') {
+        const [left] = await tx
+          .select({ count: sql<number>`count(*)::int` })
+          .from(merchantAccounts)
+          .where(
+            and(
+              eq(merchantAccounts.restaurantId, restaurantId),
+              eq(merchantAccounts.role, 'owner'),
+              isNull(merchantAccounts.removedAt),
+            ),
+          );
+        if ((left?.count ?? 0) === 0) {
+          throw new MerchantAccountRefusedError('last_owner', 'the restaurant keeps one owner');
+        }
       }
       const ended = await tx
         .update(appSessions)
@@ -264,6 +286,7 @@ export class MerchantAccountsService implements OnModuleInit {
     if (status === 'terminated') {
       throw new MerchantAccountRefusedError('restaurant_terminated', 'the contract has ended');
     }
+    return status;
   }
 
   // AP §9.6.4 «سجل التغييرات» (slice 2.30d): every account the restaurant

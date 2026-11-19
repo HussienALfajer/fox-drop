@@ -93,7 +93,7 @@ test('opens the profile, edits the hours and reads the change in the log', async
   await fakeSession(page, ['restaurants.read', 'restaurants.manage']);
   await fakeRestaurant(page);
   let current = restaurant(600);
-  await page.route(`**/v1/admin/restaurant-drafts/${restaurantId}`, (route) =>
+  await page.route(`**/v1/admin/restaurant-drafts/${restaurantId}?*`, (route) =>
     route.fulfill({ json: current }),
   );
   let sent: { periods: unknown[] } | undefined;
@@ -156,7 +156,7 @@ test('opens the profile, edits the hours and reads the change in the log', async
 test('uploads an item photo from the menu tab', async ({ page }) => {
   await fakeSession(page, ['restaurants.read', 'restaurants.menus']);
   await fakeRestaurant(page);
-  await page.route(`**/v1/admin/restaurant-drafts/${restaurantId}`, (route) =>
+  await page.route(`**/v1/admin/restaurant-drafts/${restaurantId}?*`, (route) =>
     route.fulfill({ json: restaurant(600) }),
   );
   let photoKey: string | null = null;
@@ -230,7 +230,7 @@ test('uploads an item photo from the menu tab', async ({ page }) => {
 test('refuses a logo that is not an image before uploading', async ({ page }) => {
   await fakeSession(page, ['restaurants.read', 'restaurants.manage']);
   await fakeRestaurant(page);
-  await page.route(`**/v1/admin/restaurant-drafts/${restaurantId}`, (route) =>
+  await page.route(`**/v1/admin/restaurant-drafts/${restaurantId}?*`, (route) =>
     route.fulfill({ json: restaurant(600) }),
   );
   let uploads = 0;

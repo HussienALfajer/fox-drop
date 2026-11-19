@@ -9,7 +9,7 @@ const {
   changeFieldOf,
   isProfileTab,
   noteOf,
-  valueText,
+  changeValue,
 } = await import('./restaurant-profile.js');
 
 const session = (permissions: string[]) => ({ permissions }) as never;
@@ -41,12 +41,21 @@ describe('the profile', () => {
     expect(changeFieldOf('phoneHash')).toBeNull();
   });
 
-  it('shows a text, a number or a flag, never a list or an object', () => {
-    expect(valueText('"الساحة"')).toBe('الساحة');
-    expect(valueText('25')).toBe('25');
-    expect(valueText('false')).toBe('false');
-    expect(valueText('[1,2]')).toBeNull();
-    expect(valueText('{"amount":"1"}')).toBeNull();
-    expect(valueText(null)).toBeNull();
+  it('reads a commission, a status, a moment, a flag, a text; never a list', () => {
+    expect(changeValue('rateBp', '1500')).toEqual({ kind: 'percent', bp: 1500 });
+    expect(changeValue('accountStatus', '"suspended"')).toEqual({
+      kind: 'status',
+      status: 'suspended',
+    });
+    expect(changeValue('effectiveFrom', '"now"')).toEqual({ kind: 'now' });
+    expect(changeValue('effectiveFrom', '"2026-11-19T21:00:00.000Z"')).toEqual({
+      kind: 'time',
+      at: '2026-11-19T21:00:00.000Z',
+    });
+    expect(changeValue('visible', 'false')).toEqual({ kind: 'flag', on: false });
+    expect(changeValue('address', '"الساحة"')).toEqual({ kind: 'text', text: 'الساحة' });
+    expect(changeValue('defaultPrepMin', '25')).toEqual({ kind: 'text', text: '25' });
+    expect(changeValue('periods', '[1,2]')).toBeNull();
+    expect(changeValue('address', null)).toBeNull();
   });
 });

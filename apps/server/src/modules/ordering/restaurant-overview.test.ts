@@ -67,3 +67,13 @@ describe('GET /v1/admin/restaurants/{id}/overview (AP §9.6.4)', () => {
     expect((await data.get(`/v1/admin/restaurants/${restaurant}/overview`)).statusCode).toBe(403);
   });
 });
+
+describe('GET /v1/admin/restaurants/{id}/orders', () => {
+  it('answers 404 for an unknown restaurant', async () => {
+    const ops = await admin(['OPS']);
+    const unknown = await ops.get(
+      '/v1/admin/restaurants/0190f3a0-0000-7000-8000-000000000999/orders',
+    );
+    expect(unknown.statusCode).toBe(404);
+  });
+});

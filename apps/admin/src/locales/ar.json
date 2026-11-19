@@ -3229,16 +3229,19 @@
         "sortWeight": "التثبيت",
         "maxActiveOrders": "الحد الأقصى للطلبات النشطة",
         "pickupCurrencies": "عملات الاستلام",
-        "logoKey": "الشعار",
-        "coverKey": "الغلاف",
         "body": "النص",
         "role": "الدور",
         "name": "الاسم",
         "signedOn": "تاريخ التوقيع",
-        "durationMonths": "مدة العقد"
+        "durationMonths": "مدة العقد",
+        "key": "الصورة",
+        "phoneChanged": "تغيّر الرقم"
       },
       "line": "{{time}} · {{action}} · بواسطة {{name}}",
-      "lineAccount": "{{time}} · {{action}} · {{account}} · بواسطة {{name}}"
+      "lineAccount": "{{time}} · {{action}} · {{account}} · بواسطة {{name}}",
+      "now": "من الآن",
+      "yes": "نعم",
+      "no": "لا"
     }
   }
 }

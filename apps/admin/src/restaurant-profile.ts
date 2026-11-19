@@ -233,8 +233,8 @@ export const changeFields = [
   'sortWeight',
   'maxActiveOrders',
   'pickupCurrencies',
-  'logoKey',
-  'coverKey',
+  'key',
+  'phoneChanged',
   'body',
   'role',
   'name',
@@ -247,12 +247,34 @@ export function changeFieldOf(field: string): ChangeField | null {
   return changeFields.find((each) => each === field) ?? null;
 }
 
-// A changed value as the log shows it: a text as written, a number or a
-// flag as JSON, a list or an object by its size; null for none.
-export function valueText(json: string | null): string | null {
+const accountStatuses = ['draft', 'test', 'active', 'suspended', 'terminated'] as const;
+export type AccountStatusValue = (typeof accountStatuses)[number];
+
+// A changed value as the log shows it: a commission in percent, an account
+// status by its label, a moment on the city's clock, a flag as yes or no, a
+// text or a number as written; null for none, or for a list or an object.
+export type ChangeValue =
+  | { kind: 'text'; text: string }
+  | { kind: 'percent'; bp: number }
+  | { kind: 'status'; status: AccountStatusValue }
+  | { kind: 'time'; at: string }
+  | { kind: 'now' }
+  | { kind: 'flag'; on: boolean };
+
+export function changeValue(field: string, json: string | null): ChangeValue | null {
   if (json === null) return null;
   const value: unknown = JSON.parse(json);
-  if (typeof value === 'string') return value;
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (field === 'rateBp' && typeof value === 'number') return { kind: 'percent', bp: value };
+  if ((field === 'accountStatus' || field === 'status') && typeof value === 'string') {
+    const status = accountStatuses.find((each) => each === value);
+    if (status) return { kind: 'status', status };
+  }
+  if (field === 'effectiveFrom' && value === 'now') return { kind: 'now' };
+  if (field === 'effectiveFrom' && typeof value === 'string' && !Number.isNaN(Date.parse(value))) {
+    return { kind: 'time', at: value };
+  }
+  if (typeof value === 'boolean') return { kind: 'flag', on: value };
+  if (typeof value === 'string') return { kind: 'text', text: value };
+  if (typeof value === 'number') return { kind: 'text', text: String(value) };
   return null;
 }

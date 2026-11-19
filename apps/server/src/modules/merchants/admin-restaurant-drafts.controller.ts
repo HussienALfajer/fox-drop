@@ -19,6 +19,7 @@ import { z } from 'zod';
 import { CurrentAdminSession, RequireAnyPermission, RequirePermission } from '../../http/access.js';
 import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
+import { AuditService } from '../audit/index.js';
 import { CategoriesService } from '../content/index.js';
 import { FilesRefusedError, FilesService } from '../files/index.js';
 import { FxService } from '../fx/index.js';
@@ -113,6 +114,17 @@ const steps = z
 class AdminRestaurantDraftsQueryDto extends createZodDto(z.object({ cityId: z.uuid() })) {}
 
 class AdminRestaurantDraftParamsDto extends createZodDto(z.object({ restaurantId: z.uuid() })) {}
+
+class AdminRestaurantDraftReadQueryDto extends createZodDto(
+  z.object({
+    scans: z
+      .enum(['true', 'false'])
+      .default('true')
+      .describe(
+        'false leaves the scans’ signed links out (the profile’s tabs); past the draft each read with them is audited as a document view (AP §14).',
+      ),
+  }),
+) {}
 
 class AdminRestaurantDraftsDto extends createZodDto(
   z.object({
@@ -325,9 +337,9 @@ function adminChange(session: AdminSession, request: FastifyRequest): MerchantCh
 // How long a scan's signed GET lasts.
 const SCAN_URL_SECONDS = 600;
 
-async function draftAsJson(draft: RestaurantDraft, files: FilesService) {
+async function draftAsJson(draft: RestaurantDraft, files: FilesService, scans = true) {
   const scan = (key: string | null) =>
-    key === null ? Promise.resolve(null) : files.privateImageUrl(key, SCAN_URL_SECONDS);
+    key === null || !scans ? Promise.resolve(null) : files.privateImageUrl(key, SCAN_URL_SECONDS);
   const contract = draft.contract;
   return {
     id: draft.id,
@@ -391,6 +403,7 @@ export class AdminRestaurantDraftsController {
     private readonly fx: FxService,
     private readonly settings: SettingsService,
     private readonly files: FilesService,
+    private readonly audit: AuditService,
   ) {}
 
   @Get()
@@ -449,7 +462,9 @@ export class AdminRestaurantDraftsController {
   @ZodResponse({ status: 200, type: AdminRestaurantDraftDto })
   async read(
     @Param() params: AdminRestaurantDraftParamsDto,
+    @Query() query: AdminRestaurantDraftReadQueryDto,
     @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
   ) {
     const draft = await this.found(params.restaurantId);
     // DATA (restaurants.create without restaurants.read, owner decision
@@ -466,7 +481,19 @@ export class AdminRestaurantDraftsController {
         error: 'unknown_restaurant',
       });
     }
-    return draftAsJson(draft, this.files);
+    const scans = query.scans === 'true';
+    const scanned = draft.contract?.contractKey != null || draft.contract?.licenceKey != null;
+    // AP §14: a document file shown past the onboarding is a sensitive view.
+    if (scans && scanned && draft.accountStatus !== 'draft' && draft.accountStatus !== 'test') {
+      await this.audit.recordView({
+        actor: { type: 'admin', id: session.accountId, role: session.roles.join(',') },
+        context: requestContext(request),
+        cityId: draft.cityId,
+        action: 'restaurant.contract.view',
+        target: { type: 'restaurant', id: draft.id },
+      });
+    }
+    return draftAsJson(draft, this.files, scans);
   }
 
   @Put(':restaurantId/basics')
@@ -697,6 +724,6 @@ export class AdminRestaurantProfileController {
         error: 'unknown_restaurant',
       });
     }
-    return draftAsJson(draft, this.files);
+    return draftAsJson(draft, this.files, false);
   }
 }

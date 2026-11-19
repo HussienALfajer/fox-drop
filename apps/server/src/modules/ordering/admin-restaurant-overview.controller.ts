@@ -3,6 +3,7 @@ import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
 import { RequirePermission } from '../../http/access.js';
 import { AdminController } from '../../http/route-groups.js';
+import { MerchantsService } from '../merchants/index.js';
 import { overviewPeriods, RestaurantFiguresService } from './restaurant-figures.js';
 
 class AdminRestaurantOverviewParamsDto extends createZodDto(z.object({ restaurantId: z.uuid() })) {}
@@ -81,7 +82,10 @@ class AdminRestaurantOrdersDto extends createZodDto(
 // and unanswered orders, for today, 7 or 30 business days.
 @AdminController('restaurants')
 export class AdminRestaurantOverviewController {
-  constructor(private readonly figures: RestaurantFiguresService) {}
+  constructor(
+    private readonly figures: RestaurantFiguresService,
+    private readonly merchants: MerchantsService,
+  ) {}
 
   @Get(':restaurantId/overview')
   @RequirePermission('restaurants.read')
@@ -122,6 +126,12 @@ export class AdminRestaurantOverviewController {
   @RequirePermission('restaurants.read')
   @ZodResponse({ status: 200, type: AdminRestaurantOrdersDto })
   async orders(@Param() params: AdminRestaurantOverviewParamsDto) {
+    if ((await this.merchants.cityAndStatus(params.restaurantId)) === null) {
+      throw new NotFoundException({
+        statusCode: HttpStatus.NOT_FOUND,
+        error: 'unknown_restaurant',
+      });
+    }
     const rows = await this.figures.latestOrders(params.restaurantId, RESTAURANT_ORDERS_LIMIT);
     return {
       orders: rows.map((row) => ({

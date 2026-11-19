@@ -16316,6 +16316,7 @@ class AdminApi {
   ///
   /// Parameters:
   /// * [restaurantId]
+  /// * [scans] - false leaves the scans’ signed links out (the profile’s tabs); past the draft each read with them is audited as a document view (AP §14).
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -16327,6 +16328,7 @@ class AdminApi {
   /// Throws [DioException] if API call or serialization fails
   Future<Response<AdminRestaurantDraftDtoOutput>> adminRestaurantDraftsRead({
     required String restaurantId,
+    String? scans = 'true',
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -16351,9 +16353,19 @@ class AdminApi {
       validateStatus: validateStatus,
     );
 
+    final _queryParameters = <String, dynamic>{
+      if (scans != null)
+        r'scans': encodeQueryParameter(
+          _serializers,
+          scans,
+          const FullType(String),
+        ),
+    };
+
     final _response = await _dio.request<Object>(
       _path,
       options: _options,
+      queryParameters: _queryParameters,
       cancelToken: cancelToken,
       onSendProgress: onSendProgress,
       onReceiveProgress: onReceiveProgress,

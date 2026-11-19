@@ -34,7 +34,8 @@ import {
   restaurantOrdersQuery,
   useAddNote,
   useSignOutDevices,
-  valueText,
+  type ChangeValue,
+  changeValue,
 } from './restaurant-profile.js';
 import { defaultPeriod } from './restaurant-statements.js';
 import { RestaurantStatusSection } from './restaurant-status-page.js';
@@ -53,7 +54,7 @@ export function RestaurantProfilePage() {
   const search = route.useSearch();
   const tab: ProfileTab = search.tab ?? 'overview';
   const cities = useQuery(citiesQuery);
-  const draft = useQuery(draftQuery(restaurantId));
+  const draft = useQuery(draftQuery(restaurantId, false));
   const city = cities.data?.find((each) => each.id === draft.data?.cityId);
   const choices = useQuery({ ...draftChoicesQuery(city?.id ?? ''), enabled: city !== undefined });
   if (draft.isError || cities.isError || choices.isError) {
@@ -171,7 +172,7 @@ function Tab(props: {
     case 'ratings':
       return <Ratings restaurantId={restaurantId} city={city} />;
     case 'contract':
-      return <Contract draft={draft} city={city} />;
+      return <Contract restaurantId={restaurantId} city={city} />;
     case 'notes':
       return <Notes restaurantId={restaurantId} city={city} />;
     case 'log':
@@ -418,9 +419,13 @@ function Ratings({ restaurantId, city }: { restaurantId: string; city: City }) {
   );
 }
 
-function Contract({ draft, city }: { draft: Draft; city: City }) {
+// The scans' signed links are read here only, an audited view (AP §14).
+function Contract({ restaurantId, city }: { restaurantId: string; city: City }) {
   const { t } = useTranslation();
-  const contract = draft.contract;
+  const read = useQuery(draftQuery(restaurantId));
+  if (read.isError) return <p role="alert">{t('common.failed')}</p>;
+  if (!read.data) return <p role="status">{t('status.loading')}</p>;
+  const contract = read.data.contract;
   return (
     <section aria-label={t('profile.tab.contract')}>
       {contract === null ? (
@@ -509,6 +514,26 @@ function Notes({ restaurantId, city }: { restaurantId: string; city: City }) {
 
 function ChangeLog({ restaurantId, city }: { restaurantId: string; city: City }) {
   const { t } = useTranslation();
+  const text = (value: ChangeValue): string => {
+    switch (value.kind) {
+      case 'text':
+        return value.text;
+      case 'percent':
+        return percentText(value.bp);
+      case 'status':
+        return t(`restaurantList.accountStatus.${value.status}`);
+      case 'time':
+        return formatDateTime(value.at, city.timeZone);
+      case 'now':
+        return t('profile.log.now');
+      case 'flag':
+        return value.on ? t('profile.log.yes') : t('profile.log.no');
+    }
+  };
+  const valueOf = (field: string, json: string | null) => {
+    const value = changeValue(field, json);
+    return value === null ? null : text(value);
+  };
   const log = useQuery(changeLogQuery(restaurantId));
   if (log.isError) return <p role="alert">{t('common.failed')}</p>;
   if (!log.data) return <p role="status">{t('status.loading')}</p>;
@@ -537,8 +562,8 @@ function ChangeLog({ restaurantId, city }: { restaurantId: string; city: City })
               {entry.changes.length > 0 && (
                 <ul>
                   {entry.changes.map((change) => {
-                    const before = valueText(change.before);
-                    const after = valueText(change.after);
+                    const before = valueOf(change.field, change.before);
+                    const after = valueOf(change.field, change.after);
                     return (
                       <li key={change.field}>
                         {(() => {

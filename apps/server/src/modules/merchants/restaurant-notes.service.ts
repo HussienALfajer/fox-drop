@@ -113,7 +113,8 @@ export class RestaurantNotesService {
           action: 'restaurant.note',
           target: { type: 'restaurant', id: restaurantId },
           before: null,
-          after: { body },
+          // Never the text, which may hold a number (the audit log's rule).
+          after: { noteId: inserted[0]!.id, length: body.length },
         },
         tx,
       );
