@@ -26,6 +26,7 @@ import { CustomerAuthController } from './customer-auth.controller.js';
 import { EmergencySignInController } from './emergency-sign-in.controller.js';
 import { EmergencySignInService } from './emergency-sign-in.service.js';
 import { MerchantAccountsService } from './merchant-accounts.service.js';
+import { RestaurantDevicesService } from './restaurant-devices.service.js';
 import { MerchantAuthController } from './merchant-auth.controller.js';
 import { OtpSenderNumbersController } from './otp-sender-numbers.controller.js';
 import { OtpSenderPoolService } from './otp-sender-pool.service.js';
@@ -74,6 +75,7 @@ import { IDENTITY_SECRETS, identitySecretsFromEnvironment } from './secrets.js';
     AppSessionsService,
     AppSignInService,
     MerchantAccountsService,
+    RestaurantDevicesService,
     CaptainAccountsService,
     CustomerAccountsService,
     PhoneCipher,

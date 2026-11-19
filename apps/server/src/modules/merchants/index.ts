@@ -90,6 +90,7 @@ export {
   type Money,
   type NewRestaurant,
   type Restaurant,
+  type RestaurantDevice,
   type RestaurantListRow,
   type StorefrontState,
   type SwitchedOff,

@@ -677,6 +677,16 @@ Serializers _$serializers =
           ..add(AdminRestaurantCategoriesDto.serializer)
           ..add(AdminRestaurantCategoriesDtoOutput.serializer)
           ..add(AdminRestaurantCommissionDto.serializer)
+          ..add(AdminRestaurantDevicesDtoOutput.serializer)
+          ..add(AdminRestaurantDevicesDtoOutputDevicesInner.serializer)
+          ..add(
+            AdminRestaurantDevicesDtoOutputDevicesInnerPlatformEnum.serializer,
+          )
+          ..add(AdminRestaurantDevicesDtoOutputDevicesInnerUser.serializer)
+          ..add(
+            AdminRestaurantDevicesDtoOutputDevicesInnerUserRoleEnum.serializer,
+          )
+          ..add(AdminRestaurantDevicesSignOutDto.serializer)
           ..add(AdminRestaurantDraftChoicesDtoOutput.serializer)
           ..add(AdminRestaurantDraftDtoOutput.serializer)
           ..add(AdminRestaurantDraftDtoOutputBasics.serializer)
@@ -2600,6 +2610,12 @@ Serializers _$serializers =
                 ListBuilder<
                   AdminRestaurantActionsDtoOutputCommissionHistoryInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminRestaurantDevicesDtoOutputDevicesInner),
+            ]),
+            () => ListBuilder<AdminRestaurantDevicesDtoOutputDevicesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

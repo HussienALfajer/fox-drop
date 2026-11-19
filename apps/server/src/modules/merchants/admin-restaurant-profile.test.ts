@@ -9,7 +9,12 @@ import { startTestDatabase, type TestDatabase } from '../../database/test-databa
 import { createApiApp } from '../../http/create-api-app.js';
 import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
 import { FxService } from '../fx/index.js';
-import { ADMIN_SESSION_COOKIE, AdminSessionsService } from '../identity/index.js';
+import {
+  ADMIN_SESSION_COOKIE,
+  AdminSessionsService,
+  CODE_SENDER,
+  type DevelopmentCodeSender,
+} from '../identity/index.js';
 import { MerchantsService } from './index.js';
 
 // The restaurant profile (AP §9.6.4, slice 2.30d): the edits past the
@@ -183,5 +188,101 @@ describe('the profile’s edits past the draft (AP §9.6.4)', () => {
       payload: operations(600),
     });
     expect(wizard.json().error).toBe('not_a_draft');
+  });
+});
+
+async function merchantSignIn(phone: string) {
+  const deviceId = randomUUID();
+  // A second device of the same user: past the resend wait.
+  await sql.query(
+    "UPDATE identity.app_sign_in_codes SET created_at = created_at - interval '1 hour'",
+  );
+  await app.inject({ method: 'POST', url: '/v1/merchant/auth/code', payload: { phone, deviceId } });
+  const code = app.get<DevelopmentCodeSender>(CODE_SENDER).lastCode(phone);
+  const answer = await app.inject({
+    method: 'POST',
+    url: '/v1/merchant/auth/sign-in',
+    payload: { phone, deviceId, code },
+  });
+  expect(answer.statusCode).toBe(200);
+  const headers = { authorization: `Bearer ${answer.json().accessToken}` };
+  const named = await app.inject({
+    method: 'PUT',
+    url: '/v1/merchant/auth/device',
+    headers,
+    payload: { name: 'جهاز الكاشير', platform: 'android', appVersion: '1.2.0' },
+  });
+  expect(named.statusCode).toBe(200);
+  return { headers, deviceId };
+}
+
+const signedIn = async (headers: Record<string, string>) =>
+  (await app.inject({ method: 'GET', url: '/v1/merchant/restaurant', headers })).statusCode;
+
+describe('the profile’s «الحسابات» and devices (AP §9.6.4, RA §14)', () => {
+  it('adds a cashier past the draft, lists the device, signs it out, removes the cashier', async () => {
+    const id = await restaurant();
+    const ops = await admin('OPS');
+    const added = await ops('POST', `${id}/accounts`, {
+      role: 'cashier',
+      name: 'كاشير',
+      phone: '+963944000777',
+    });
+    expect(added.statusCode).toBe(200);
+    const cashierId = added.json().accounts[0].id;
+    const first = await merchantSignIn('+963944000777');
+    const devices = await ops('GET', `${id}/devices`);
+    expect(devices.json().devices).toEqual([
+      expect.objectContaining({
+        deviceId: first.deviceId,
+        name: 'جهاز الكاشير',
+        platform: 'android',
+        appVersion: '1.2.0',
+        user: { name: 'كاشير', role: 'cashier' },
+        signedIn: true,
+        ringing: null,
+        deviceCheck: null,
+      }),
+    ]);
+    const out = await ops('POST', `${id}/devices/sign-out`, {
+      deviceId: first.deviceId,
+      reason: 'جهاز مفقود',
+    });
+    expect(out.statusCode).toBe(200);
+    expect(out.json().devices[0].signedIn).toBe(false);
+    expect(await signedIn(first.headers)).toBe(401);
+    // A second sign-out finds nothing signed in.
+    const again = await ops('POST', `${id}/devices/sign-out`, { deviceId: null, reason: 'x' });
+    expect(again.json().error).toBe('no_device');
+    // The cashier stays and signs in again; removing them signs them out.
+    const second = await merchantSignIn('+963944000777');
+    expect(await signedIn(second.headers)).toBe(200);
+    const removed = await ops('POST', `${id}/accounts/${cashierId}/remove`);
+    expect(removed.json().accounts).toEqual([]);
+    expect(await signedIn(second.headers)).toBe(401);
+    const reasons = await sql.query(
+      `SELECT end_reason FROM identity.app_sessions WHERE device_id IN ($1, $2) ORDER BY signed_in_at`,
+      [first.deviceId, second.deviceId],
+    );
+    expect(reasons.rows.map((row) => row.end_reason)).toEqual([
+      'signed_out_by_operations',
+      'account_removed',
+    ]);
+  });
+
+  it('refuses accounts of a terminated restaurant and the sign-out to FIN', async () => {
+    const ended = await restaurant('terminated');
+    const ops = await admin('OPS');
+    const refused = await ops('POST', `${ended}/accounts`, {
+      role: 'owner',
+      name: 'مالك',
+      phone: '+963944000778',
+    });
+    expect(refused.statusCode).toBe(403);
+    expect(refused.json().error).toBe('restaurant_terminated');
+    const fin = await admin('FIN');
+    expect(
+      (await fin('POST', `${ended}/devices/sign-out`, { deviceId: null, reason: 'x' })).statusCode,
+    ).toBe(403);
   });
 });

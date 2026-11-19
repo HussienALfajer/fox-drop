@@ -131,6 +131,16 @@ export class MerchantsRefusedError extends Error {
   }
 }
 
+// A restaurant's device (RA §5.2 item 5), as named.
+export interface RestaurantDevice {
+  deviceId: string;
+  name: string;
+  platform: DevicePlatform;
+  appVersion: string;
+  namedById: string;
+  updatedAt: Date;
+}
+
 // Who changes a restaurant and why, for the audit log.
 export interface MerchantChange {
   actor: AuditActor;
@@ -1557,6 +1567,23 @@ export class MerchantsService implements OnModuleInit {
       .from(devices)
       .where(and(eq(devices.restaurantId, restaurantId), inArray(devices.deviceId, deviceIds)));
     return new Map(rows.map((row) => [row.deviceId, row.name]));
+  }
+
+  // AP §9.6.4, RA §14.2 (slice 2.30d): the restaurant's devices as named,
+  // the latest named first.
+  async devices(restaurantId: string): Promise<RestaurantDevice[]> {
+    return this.database.db
+      .select({
+        deviceId: devices.deviceId,
+        name: devices.name,
+        platform: devices.platform,
+        appVersion: devices.appVersion,
+        namedById: devices.namedById,
+        updatedAt: devices.updatedAt,
+      })
+      .from(devices)
+      .where(eq(devices.restaurantId, restaurantId))
+      .orderBy(desc(devices.updatedAt));
   }
 
   async deviceNamed(restaurantId: string, deviceId: string): Promise<boolean> {

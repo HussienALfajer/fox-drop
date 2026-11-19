@@ -402,6 +402,8 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/admin/restaurants/{restaurantId}/accounts': 'restaurants.owner_accounts',
   'POST /v1/admin/restaurants/{restaurantId}/accounts/{accountId}/remove':
     'restaurants.owner_accounts',
+  'GET /v1/admin/restaurants/{restaurantId}/devices': 'restaurants.read',
+  'POST /v1/admin/restaurants/{restaurantId}/devices/sign-out': 'restaurants.owner_accounts',
   'GET /v1/customer/categories': 'public',
   'GET /v1/admin/content/categories': { anyOf: ['content.read', 'content.categories'] },
   'POST /v1/admin/content/categories': 'content.categories',

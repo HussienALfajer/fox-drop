@@ -409,6 +409,10 @@ export 'package:core_api/src/model/admin_restaurant_actions_dto_output_next_comm
 export 'package:core_api/src/model/admin_restaurant_categories_dto.dart';
 export 'package:core_api/src/model/admin_restaurant_categories_dto_output.dart';
 export 'package:core_api/src/model/admin_restaurant_commission_dto.dart';
+export 'package:core_api/src/model/admin_restaurant_devices_dto_output.dart';
+export 'package:core_api/src/model/admin_restaurant_devices_dto_output_devices_inner.dart';
+export 'package:core_api/src/model/admin_restaurant_devices_dto_output_devices_inner_user.dart';
+export 'package:core_api/src/model/admin_restaurant_devices_sign_out_dto.dart';
 export 'package:core_api/src/model/admin_restaurant_draft_choices_dto_output.dart';
 export 'package:core_api/src/model/admin_restaurant_draft_dto_output.dart';
 export 'package:core_api/src/model/admin_restaurant_draft_dto_output_basics.dart';

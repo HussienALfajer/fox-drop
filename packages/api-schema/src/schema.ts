@@ -676,6 +676,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/restaurants/{restaurantId}/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRestaurantAccountsListDevices"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurants/{restaurantId}/devices/sign-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminRestaurantAccountsSignOutDevices"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/settings": {
         parameters: {
             query?: never;
@@ -6247,6 +6279,34 @@ export interface components {
             name: string;
             /** @description A Syrian or Turkish mobile in E.164, as at sign-in. */
             phone: string;
+        };
+        AdminRestaurantDevicesDto_Output: {
+            /** @description Every device named on the restaurant, the latest named first. */
+            devices: {
+                deviceId: string;
+                name: string;
+                /** @enum {string} */
+                platform: "android" | "ios" | "windows";
+                appVersion: string;
+                /** @description Signed in on it now, else the latest who was; null before any sign-in. */
+                user: {
+                    name: string;
+                    /** @enum {string} */
+                    role: "owner" | "cashier";
+                } | null;
+                signedIn: boolean;
+                /** @description Its session’s last refresh (every 15 minutes while open), or its end. */
+                lastSeenAt: string | null;
+                /** @description Null until the devices report it (2.42). */
+                ringing: boolean | null;
+                /** @description Null until the device check (2.42). */
+                deviceCheck: string | null;
+            }[];
+        };
+        AdminRestaurantDevicesSignOutDto: {
+            /** @description One device; null for every one. */
+            deviceId: string | null;
+            reason: string;
         };
         SettingListDto_Output: {
             settings: {
@@ -18375,6 +18435,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminRestaurantAccountsDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantAccountsListDevices: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantDevicesDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantAccountsSignOutDevices: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRestaurantDevicesSignOutDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantDevicesDto_Output"];
                 };
             };
         };
