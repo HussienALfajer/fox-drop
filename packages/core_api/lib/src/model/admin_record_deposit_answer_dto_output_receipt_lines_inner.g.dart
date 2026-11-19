@@ -1,13 +1,13 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'admin_settlement_dto_output_receipts_inner_lines_inner.dart';
+part of 'admin_record_deposit_answer_dto_output_receipt_lines_inner.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$AdminSettlementDtoOutputReceiptsInnerLinesInner
-    extends AdminSettlementDtoOutputReceiptsInnerLinesInner {
+class _$AdminRecordDepositAnswerDtoOutputReceiptLinesInner
+    extends AdminRecordDepositAnswerDtoOutputReceiptLinesInner {
   @override
   final String currency;
   @override
@@ -17,34 +17,35 @@ class _$AdminSettlementDtoOutputReceiptsInnerLinesInner
   @override
   final String remaining;
 
-  factory _$AdminSettlementDtoOutputReceiptsInnerLinesInner([
-    void Function(AdminSettlementDtoOutputReceiptsInnerLinesInnerBuilder)?
+  factory _$AdminRecordDepositAnswerDtoOutputReceiptLinesInner([
+    void Function(AdminRecordDepositAnswerDtoOutputReceiptLinesInnerBuilder)?
     updates,
   ]) =>
-      (AdminSettlementDtoOutputReceiptsInnerLinesInnerBuilder()
+      (AdminRecordDepositAnswerDtoOutputReceiptLinesInnerBuilder()
             ..update(updates))
           ._build();
 
-  _$AdminSettlementDtoOutputReceiptsInnerLinesInner._({
+  _$AdminRecordDepositAnswerDtoOutputReceiptLinesInner._({
     required this.currency,
     required this.expected,
     required this.amount,
     required this.remaining,
   }) : super._();
   @override
-  AdminSettlementDtoOutputReceiptsInnerLinesInner rebuild(
-    void Function(AdminSettlementDtoOutputReceiptsInnerLinesInnerBuilder)
+  AdminRecordDepositAnswerDtoOutputReceiptLinesInner rebuild(
+    void Function(AdminRecordDepositAnswerDtoOutputReceiptLinesInnerBuilder)
     updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  AdminSettlementDtoOutputReceiptsInnerLinesInnerBuilder toBuilder() =>
-      AdminSettlementDtoOutputReceiptsInnerLinesInnerBuilder()..replace(this);
+  AdminRecordDepositAnswerDtoOutputReceiptLinesInnerBuilder toBuilder() =>
+      AdminRecordDepositAnswerDtoOutputReceiptLinesInnerBuilder()
+        ..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is AdminSettlementDtoOutputReceiptsInnerLinesInner &&
+    return other is AdminRecordDepositAnswerDtoOutputReceiptLinesInner &&
         currency == other.currency &&
         expected == other.expected &&
         amount == other.amount &&
@@ -65,7 +66,7 @@ class _$AdminSettlementDtoOutputReceiptsInnerLinesInner
   @override
   String toString() {
     return (newBuiltValueToStringHelper(
-            r'AdminSettlementDtoOutputReceiptsInnerLinesInner',
+            r'AdminRecordDepositAnswerDtoOutputReceiptLinesInner',
           )
           ..add('currency', currency)
           ..add('expected', expected)
@@ -75,13 +76,13 @@ class _$AdminSettlementDtoOutputReceiptsInnerLinesInner
   }
 }
 
-class AdminSettlementDtoOutputReceiptsInnerLinesInnerBuilder
+class AdminRecordDepositAnswerDtoOutputReceiptLinesInnerBuilder
     implements
         Builder<
-          AdminSettlementDtoOutputReceiptsInnerLinesInner,
-          AdminSettlementDtoOutputReceiptsInnerLinesInnerBuilder
+          AdminRecordDepositAnswerDtoOutputReceiptLinesInner,
+          AdminRecordDepositAnswerDtoOutputReceiptLinesInnerBuilder
         > {
-  _$AdminSettlementDtoOutputReceiptsInnerLinesInner? _$v;
+  _$AdminRecordDepositAnswerDtoOutputReceiptLinesInner? _$v;
 
   String? _currency;
   String? get currency => _$this._currency;
@@ -99,11 +100,11 @@ class AdminSettlementDtoOutputReceiptsInnerLinesInnerBuilder
   String? get remaining => _$this._remaining;
   set remaining(String? remaining) => _$this._remaining = remaining;
 
-  AdminSettlementDtoOutputReceiptsInnerLinesInnerBuilder() {
-    AdminSettlementDtoOutputReceiptsInnerLinesInner._defaults(this);
+  AdminRecordDepositAnswerDtoOutputReceiptLinesInnerBuilder() {
+    AdminRecordDepositAnswerDtoOutputReceiptLinesInner._defaults(this);
   }
 
-  AdminSettlementDtoOutputReceiptsInnerLinesInnerBuilder get _$this {
+  AdminRecordDepositAnswerDtoOutputReceiptLinesInnerBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _currency = $v.currency;
@@ -116,43 +117,43 @@ class AdminSettlementDtoOutputReceiptsInnerLinesInnerBuilder
   }
 
   @override
-  void replace(AdminSettlementDtoOutputReceiptsInnerLinesInner other) {
-    _$v = other as _$AdminSettlementDtoOutputReceiptsInnerLinesInner;
+  void replace(AdminRecordDepositAnswerDtoOutputReceiptLinesInner other) {
+    _$v = other as _$AdminRecordDepositAnswerDtoOutputReceiptLinesInner;
   }
 
   @override
   void update(
-    void Function(AdminSettlementDtoOutputReceiptsInnerLinesInnerBuilder)?
+    void Function(AdminRecordDepositAnswerDtoOutputReceiptLinesInnerBuilder)?
     updates,
   ) {
     if (updates != null) updates(this);
   }
 
   @override
-  AdminSettlementDtoOutputReceiptsInnerLinesInner build() => _build();
+  AdminRecordDepositAnswerDtoOutputReceiptLinesInner build() => _build();
 
-  _$AdminSettlementDtoOutputReceiptsInnerLinesInner _build() {
+  _$AdminRecordDepositAnswerDtoOutputReceiptLinesInner _build() {
     final _$result =
         _$v ??
-        _$AdminSettlementDtoOutputReceiptsInnerLinesInner._(
+        _$AdminRecordDepositAnswerDtoOutputReceiptLinesInner._(
           currency: BuiltValueNullFieldError.checkNotNull(
             currency,
-            r'AdminSettlementDtoOutputReceiptsInnerLinesInner',
+            r'AdminRecordDepositAnswerDtoOutputReceiptLinesInner',
             'currency',
           ),
           expected: BuiltValueNullFieldError.checkNotNull(
             expected,
-            r'AdminSettlementDtoOutputReceiptsInnerLinesInner',
+            r'AdminRecordDepositAnswerDtoOutputReceiptLinesInner',
             'expected',
           ),
           amount: BuiltValueNullFieldError.checkNotNull(
             amount,
-            r'AdminSettlementDtoOutputReceiptsInnerLinesInner',
+            r'AdminRecordDepositAnswerDtoOutputReceiptLinesInner',
             'amount',
           ),
           remaining: BuiltValueNullFieldError.checkNotNull(
             remaining,
-            r'AdminSettlementDtoOutputReceiptsInnerLinesInner',
+            r'AdminRecordDepositAnswerDtoOutputReceiptLinesInner',
             'remaining',
           ),
         );

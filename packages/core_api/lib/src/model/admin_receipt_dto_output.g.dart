@@ -18,6 +18,9 @@ _$adminReceiptDtoOutputTypeEnum_captainPayout =
 const AdminReceiptDtoOutputTypeEnum
 _$adminReceiptDtoOutputTypeEnum_captainEarningsCollection =
     const AdminReceiptDtoOutputTypeEnum._('captainEarningsCollection');
+const AdminReceiptDtoOutputTypeEnum
+_$adminReceiptDtoOutputTypeEnum_captainDeposit =
+    const AdminReceiptDtoOutputTypeEnum._('captainDeposit');
 
 AdminReceiptDtoOutputTypeEnum _$adminReceiptDtoOutputTypeEnumValueOf(
   String name,
@@ -31,6 +34,8 @@ AdminReceiptDtoOutputTypeEnum _$adminReceiptDtoOutputTypeEnumValueOf(
       return _$adminReceiptDtoOutputTypeEnum_captainPayout;
     case 'captainEarningsCollection':
       return _$adminReceiptDtoOutputTypeEnum_captainEarningsCollection;
+    case 'captainDeposit':
+      return _$adminReceiptDtoOutputTypeEnum_captainDeposit;
     default:
       throw ArgumentError(name);
   }
@@ -43,6 +48,7 @@ _$adminReceiptDtoOutputTypeEnumValues = BuiltSet<AdminReceiptDtoOutputTypeEnum>(
     _$adminReceiptDtoOutputTypeEnum_captainReimbursement,
     _$adminReceiptDtoOutputTypeEnum_captainPayout,
     _$adminReceiptDtoOutputTypeEnum_captainEarningsCollection,
+    _$adminReceiptDtoOutputTypeEnum_captainDeposit,
   ],
 );
 
@@ -57,12 +63,14 @@ class _$AdminReceiptDtoOutputTypeEnumSerializer
     'captainReimbursement': 'captain_reimbursement',
     'captainPayout': 'captain_payout',
     'captainEarningsCollection': 'captain_earnings_collection',
+    'captainDeposit': 'captain_deposit',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'captain_hand_in': 'captainHandIn',
     'captain_reimbursement': 'captainReimbursement',
     'captain_payout': 'captainPayout',
     'captain_earnings_collection': 'captainEarningsCollection',
+    'captain_deposit': 'captainDeposit',
   };
 
   @override
@@ -109,10 +117,10 @@ class _$AdminReceiptDtoOutput extends AdminReceiptDtoOutput {
   @override
   final DateTime createdAt;
   @override
-  final BuiltList<AdminSettlementDtoOutputReceiptsInnerConversionsInner>
+  final BuiltList<AdminRecordDepositAnswerDtoOutputReceiptConversionsInner>
   conversions;
   @override
-  final BuiltList<AdminSettlementDtoOutputReceiptsInnerLinesInner> lines;
+  final BuiltList<AdminRecordDepositAnswerDtoOutputReceiptLinesInner> lines;
 
   factory _$AdminReceiptDtoOutput([
     void Function(AdminReceiptDtoOutputBuilder)? updates,
@@ -241,22 +249,22 @@ class AdminReceiptDtoOutputBuilder
   DateTime? get createdAt => _$this._createdAt;
   set createdAt(DateTime? createdAt) => _$this._createdAt = createdAt;
 
-  ListBuilder<AdminSettlementDtoOutputReceiptsInnerConversionsInner>?
+  ListBuilder<AdminRecordDepositAnswerDtoOutputReceiptConversionsInner>?
   _conversions;
-  ListBuilder<AdminSettlementDtoOutputReceiptsInnerConversionsInner>
+  ListBuilder<AdminRecordDepositAnswerDtoOutputReceiptConversionsInner>
   get conversions => _$this._conversions ??=
-      ListBuilder<AdminSettlementDtoOutputReceiptsInnerConversionsInner>();
+      ListBuilder<AdminRecordDepositAnswerDtoOutputReceiptConversionsInner>();
   set conversions(
-    ListBuilder<AdminSettlementDtoOutputReceiptsInnerConversionsInner>?
+    ListBuilder<AdminRecordDepositAnswerDtoOutputReceiptConversionsInner>?
     conversions,
   ) => _$this._conversions = conversions;
 
-  ListBuilder<AdminSettlementDtoOutputReceiptsInnerLinesInner>? _lines;
-  ListBuilder<AdminSettlementDtoOutputReceiptsInnerLinesInner> get lines =>
+  ListBuilder<AdminRecordDepositAnswerDtoOutputReceiptLinesInner>? _lines;
+  ListBuilder<AdminRecordDepositAnswerDtoOutputReceiptLinesInner> get lines =>
       _$this._lines ??=
-          ListBuilder<AdminSettlementDtoOutputReceiptsInnerLinesInner>();
+          ListBuilder<AdminRecordDepositAnswerDtoOutputReceiptLinesInner>();
   set lines(
-    ListBuilder<AdminSettlementDtoOutputReceiptsInnerLinesInner>? lines,
+    ListBuilder<AdminRecordDepositAnswerDtoOutputReceiptLinesInner>? lines,
   ) => _$this._lines = lines;
 
   AdminReceiptDtoOutputBuilder() {

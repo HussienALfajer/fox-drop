@@ -6036,6 +6036,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/cash-desk/deposits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCashDeskAwaitingDeposits"];
+        put?: never;
+        post: operations["adminCashDeskRecordDeposit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/cash-desk/captains/search": {
         parameters: {
             query?: never;
@@ -17537,6 +17553,82 @@ export interface components {
                 aboveMaxPickup: boolean;
             };
         };
+        AdminDepositsDto_Output: {
+            applications: {
+                /** Format: uuid */
+                applicationId: string;
+                fullName: string;
+                deposit: {
+                    amount: {
+                        amount: string;
+                        currency: string;
+                    } | null;
+                    /** @description Deducted each Thursday until paid; null for none. */
+                    instalment: {
+                        amount: string;
+                        currency: string;
+                    } | null;
+                    /** @description Paid so far, in the city's base. */
+                    paid: string;
+                    /** @description As «تفعيل» counts it: with instalments or paid in full. */
+                    recorded: boolean;
+                };
+                /** @description captain.kit_deposit_amount. */
+                suggested: {
+                    amount: string;
+                    currency: string;
+                } | null;
+            }[];
+        };
+        AdminRecordDepositDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** Format: uuid */
+            applicationId: string;
+            /** @description The deposit, in the city's base. */
+            amount: string;
+            /** @description Deducted each Thursday until paid; null for none. */
+            instalment: string | null;
+            /** @description The cash received now; 0 records the plan alone. */
+            paidNow: string;
+        };
+        AdminRecordDepositAnswerDto_Output: {
+            /** @description None when nothing was paid now. */
+            receipt: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                cityId: string;
+                /** @description Such as AZ-2026-000123 (AP §4.8). */
+                number: string;
+                /** @enum {string} */
+                type: "captain_hand_in" | "captain_reimbursement" | "captain_payout" | "captain_earnings_collection" | "captain_deposit";
+                /** Format: uuid */
+                sessionId: string;
+                /** Format: uuid */
+                cashierId: string;
+                cashierName: string | null;
+                /** Format: uuid */
+                captainId: string;
+                captainName: string;
+                /** Format: date-time */
+                createdAt: string;
+                conversions: {
+                    from: string;
+                    amount: string;
+                    to: string;
+                    converted: string;
+                }[];
+                lines: {
+                    currency: string;
+                    /** @description The custody before, + to hand in, − owed to the captain. */
+                    expected: string;
+                    amount: string;
+                    /** @description What stays open after it. */
+                    remaining: string;
+                }[];
+            } | null;
+        };
         AdminDeskCaptainSearchDto: {
             /** Format: uuid */
             cityId: string;
@@ -17857,7 +17949,7 @@ export interface components {
                 /** @description Such as AZ-2026-000123 (AP §4.8). */
                 number: string;
                 /** @enum {string} */
-                type: "captain_hand_in" | "captain_reimbursement" | "captain_payout" | "captain_earnings_collection";
+                type: "captain_hand_in" | "captain_reimbursement" | "captain_payout" | "captain_earnings_collection" | "captain_deposit";
                 /** Format: uuid */
                 sessionId: string;
                 /** Format: uuid */
@@ -18082,7 +18174,7 @@ export interface components {
                 /** @description Such as AZ-2026-000123 (AP §4.8). */
                 number: string;
                 /** @enum {string} */
-                type: "captain_hand_in" | "captain_reimbursement" | "captain_payout" | "captain_earnings_collection";
+                type: "captain_hand_in" | "captain_reimbursement" | "captain_payout" | "captain_earnings_collection" | "captain_deposit";
                 /** Format: uuid */
                 sessionId: string;
                 /** Format: uuid */
@@ -18143,7 +18235,7 @@ export interface components {
             /** @description Such as AZ-2026-000123 (AP §4.8). */
             number: string;
             /** @enum {string} */
-            type: "captain_hand_in" | "captain_reimbursement" | "captain_payout" | "captain_earnings_collection";
+            type: "captain_hand_in" | "captain_reimbursement" | "captain_payout" | "captain_earnings_collection" | "captain_deposit";
             /** Format: uuid */
             sessionId: string;
             /** Format: uuid */
@@ -29556,6 +29648,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptainOfferDto_Output"];
+                };
+            };
+        };
+    };
+    adminCashDeskAwaitingDeposits: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDepositsDto_Output"];
+                };
+            };
+        };
+    };
+    adminCashDeskRecordDeposit: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRecordDepositDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRecordDepositAnswerDto_Output"];
                 };
             };
         };

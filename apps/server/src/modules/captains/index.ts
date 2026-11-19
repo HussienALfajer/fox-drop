@@ -80,7 +80,9 @@ export {
 } from './applications.service.js';
 export {
   ApplicationPipelineService,
+  type DepositAwaiting,
   type PipelineIdentity,
+  PipelineRefusedError,
 } from './application-pipeline.service.js';
 export { orderPay, type PayParts, type PayRate } from './pay.js';
 export { localClock, type PeakWindow } from './peak-bonus.js';

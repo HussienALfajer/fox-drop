@@ -88,6 +88,13 @@ export interface DepositState {
   recorded: boolean;
 }
 
+export interface DepositAwaiting {
+  applicationId: string;
+  fullName: string;
+  deposit: DepositState;
+  suggested: Money | null;
+}
+
 export interface Contract {
   signedOn: string;
   startsOn: string;
@@ -977,6 +984,7 @@ export class ApplicationPipelineService {
     applicationId: string,
   ): Promise<{
     id: string;
+    accountId: string;
     cityId: string;
     fullName: string;
     captainId: string;
@@ -993,11 +1001,35 @@ export class ApplicationPipelineService {
     }
     return {
       id: row.id,
+      accountId: row.accountId,
       cityId: row.cityId,
       fullName: row.fullName,
       captainId: captainIdOf(row),
       stage: row.stage,
     };
+  }
+
+  // The desk's tab (slice 2.35a): the city's applications at «بانتظار
+  // العدة», oldest sent first, with their deposit and the amount offered.
+  async depositsAwaiting(cityId: string): Promise<DepositAwaiting[]> {
+    const rows = await this.database.db
+      .select()
+      .from(applications)
+      .where(and(eq(applications.cityId, cityId), eq(applications.stage, 'awaiting_kit')))
+      .orderBy(asc(applications.submittedAt), asc(applications.id));
+    const suggested = moneySetting(
+      await this.settings.get('captain.kit_deposit_amount', { cityId }),
+    );
+    const found: DepositAwaiting[] = [];
+    for (const row of rows) {
+      found.push({
+        applicationId: row.id,
+        fullName: row.fullName,
+        deposit: await this.depositOf(row, this.database.db),
+        suggested,
+      });
+    }
+    return found;
   }
 
   // «تفعيل» (AP §9.7.1, CA §5.5): once every condition is met, the

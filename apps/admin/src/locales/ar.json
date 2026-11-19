@@ -1273,6 +1273,7 @@
       "captain_reimbursement": "صرف للكابتن",
       "captain_payout": "صرف المستحقات",
       "captain_earnings_collection": "تحصيل رصيد سالب",
+      "captain_deposit": "تأمين العدة",
       "merchant_settlement": "تسوية حساب المطعم",
       "merchant_payout": "صرف للمطعم",
       "customer_dues_payment": "دفع مستحقات زبون"
@@ -1289,7 +1290,8 @@
       "remaining": "المتبقي",
       "conversion": "تحويل {{amount}} من العهدة إلى {{converted}} بسعر الصرف الحالي.",
       "expectedAfterConversion": "العهدة بعد التحويل",
-      "expectedEarnings": "المستحقات"
+      "expectedEarnings": "المستحقات",
+      "expectedDeposit": "المتبقي من التأمين"
     },
     "sessions": {
       "title": "جلسات الصندوق",

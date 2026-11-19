@@ -6,9 +6,9 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_settlement_dto_output_receipts_inner_conversions_inner.g.dart';
+part 'admin_record_deposit_answer_dto_output_receipt_conversions_inner.g.dart';
 
-/// AdminSettlementDtoOutputReceiptsInnerConversionsInner
+/// AdminRecordDepositAnswerDtoOutputReceiptConversionsInner
 ///
 /// Properties:
 /// * [from]
@@ -16,11 +16,11 @@ part 'admin_settlement_dto_output_receipts_inner_conversions_inner.g.dart';
 /// * [to]
 /// * [converted]
 @BuiltValue()
-abstract class AdminSettlementDtoOutputReceiptsInnerConversionsInner
+abstract class AdminRecordDepositAnswerDtoOutputReceiptConversionsInner
     implements
         Built<
-          AdminSettlementDtoOutputReceiptsInnerConversionsInner,
-          AdminSettlementDtoOutputReceiptsInnerConversionsInnerBuilder
+          AdminRecordDepositAnswerDtoOutputReceiptConversionsInner,
+          AdminRecordDepositAnswerDtoOutputReceiptConversionsInnerBuilder
         > {
   @BuiltValueField(wireName: r'from')
   String get from;
@@ -34,43 +34,43 @@ abstract class AdminSettlementDtoOutputReceiptsInnerConversionsInner
   @BuiltValueField(wireName: r'converted')
   String get converted;
 
-  AdminSettlementDtoOutputReceiptsInnerConversionsInner._();
+  AdminRecordDepositAnswerDtoOutputReceiptConversionsInner._();
 
-  factory AdminSettlementDtoOutputReceiptsInnerConversionsInner([
+  factory AdminRecordDepositAnswerDtoOutputReceiptConversionsInner([
     void updates(
-      AdminSettlementDtoOutputReceiptsInnerConversionsInnerBuilder b,
+      AdminRecordDepositAnswerDtoOutputReceiptConversionsInnerBuilder b,
     ),
-  ]) = _$AdminSettlementDtoOutputReceiptsInnerConversionsInner;
+  ]) = _$AdminRecordDepositAnswerDtoOutputReceiptConversionsInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(
-    AdminSettlementDtoOutputReceiptsInnerConversionsInnerBuilder b,
+    AdminRecordDepositAnswerDtoOutputReceiptConversionsInnerBuilder b,
   ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminSettlementDtoOutputReceiptsInnerConversionsInner>
+  static Serializer<AdminRecordDepositAnswerDtoOutputReceiptConversionsInner>
   get serializer =>
-      _$AdminSettlementDtoOutputReceiptsInnerConversionsInnerSerializer();
+      _$AdminRecordDepositAnswerDtoOutputReceiptConversionsInnerSerializer();
 }
 
-class _$AdminSettlementDtoOutputReceiptsInnerConversionsInnerSerializer
+class _$AdminRecordDepositAnswerDtoOutputReceiptConversionsInnerSerializer
     implements
         PrimitiveSerializer<
-          AdminSettlementDtoOutputReceiptsInnerConversionsInner
+          AdminRecordDepositAnswerDtoOutputReceiptConversionsInner
         > {
   @override
   final Iterable<Type> types = const [
-    AdminSettlementDtoOutputReceiptsInnerConversionsInner,
-    _$AdminSettlementDtoOutputReceiptsInnerConversionsInner,
+    AdminRecordDepositAnswerDtoOutputReceiptConversionsInner,
+    _$AdminRecordDepositAnswerDtoOutputReceiptConversionsInner,
   ];
 
   @override
   final String wireName =
-      r'AdminSettlementDtoOutputReceiptsInnerConversionsInner';
+      r'AdminRecordDepositAnswerDtoOutputReceiptConversionsInner';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminSettlementDtoOutputReceiptsInnerConversionsInner object, {
+    AdminRecordDepositAnswerDtoOutputReceiptConversionsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'from';
@@ -98,7 +98,7 @@ class _$AdminSettlementDtoOutputReceiptsInnerConversionsInnerSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminSettlementDtoOutputReceiptsInnerConversionsInner object, {
+    AdminRecordDepositAnswerDtoOutputReceiptConversionsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -113,7 +113,7 @@ class _$AdminSettlementDtoOutputReceiptsInnerConversionsInnerSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminSettlementDtoOutputReceiptsInnerConversionsInnerBuilder
+    required AdminRecordDepositAnswerDtoOutputReceiptConversionsInnerBuilder
     result,
     required List<Object?> unhandled,
   }) {
@@ -166,13 +166,13 @@ class _$AdminSettlementDtoOutputReceiptsInnerConversionsInnerSerializer
   }
 
   @override
-  AdminSettlementDtoOutputReceiptsInnerConversionsInner deserialize(
+  AdminRecordDepositAnswerDtoOutputReceiptConversionsInner deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
     final result =
-        AdminSettlementDtoOutputReceiptsInnerConversionsInnerBuilder();
+        AdminRecordDepositAnswerDtoOutputReceiptConversionsInnerBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

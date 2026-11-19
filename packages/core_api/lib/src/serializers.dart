@@ -181,6 +181,9 @@ import 'package:core_api/src/model/admin_daily_report_dto_output_orders.dart';
 import 'package:core_api/src/model/admin_daily_report_dto_output_previous_inner.dart';
 import 'package:core_api/src/model/admin_daily_report_dto_output_restaurants.dart';
 import 'package:core_api/src/model/admin_daily_report_export_dto.dart';
+import 'package:core_api/src/model/admin_deposits_dto_output.dart';
+import 'package:core_api/src/model/admin_deposits_dto_output_applications_inner.dart';
+import 'package:core_api/src/model/admin_deposits_dto_output_applications_inner_deposit.dart';
 import 'package:core_api/src/model/admin_desk_captain_search_dto.dart';
 import 'package:core_api/src/model/admin_desk_captains_dto_output.dart';
 import 'package:core_api/src/model/admin_desk_captains_dto_output_captains_inner.dart';
@@ -456,6 +459,11 @@ import 'package:core_api/src/model/admin_record_delivery_dto.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_amount_due.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_received_inner.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto_shortfall.dart';
+import 'package:core_api/src/model/admin_record_deposit_answer_dto_output.dart';
+import 'package:core_api/src/model/admin_record_deposit_answer_dto_output_receipt.dart';
+import 'package:core_api/src/model/admin_record_deposit_answer_dto_output_receipt_conversions_inner.dart';
+import 'package:core_api/src/model/admin_record_deposit_answer_dto_output_receipt_lines_inner.dart';
+import 'package:core_api/src/model/admin_record_deposit_dto.dart';
 import 'package:core_api/src/model/admin_reject_compensation_dto.dart';
 import 'package:core_api/src/model/admin_reject_dto.dart';
 import 'package:core_api/src/model/admin_reject_dto_items_inner.dart';
@@ -544,8 +552,6 @@ import 'package:core_api/src/model/admin_settle_dto_payout.dart';
 import 'package:core_api/src/model/admin_settle_dto_payout_rates_inner.dart';
 import 'package:core_api/src/model/admin_settlement_dto_output.dart';
 import 'package:core_api/src/model/admin_settlement_dto_output_receipts_inner.dart';
-import 'package:core_api/src/model/admin_settlement_dto_output_receipts_inner_conversions_inner.dart';
-import 'package:core_api/src/model/admin_settlement_dto_output_receipts_inner_lines_inner.dart';
 import 'package:core_api/src/model/admin_settlement_dto_output_statement.dart';
 import 'package:core_api/src/model/admin_settlement_dto_output_statement_payout.dart';
 import 'package:core_api/src/model/admin_settlement_preview_dto_output.dart';
@@ -1231,6 +1237,9 @@ part 'serializers.g.dart';
   AdminDailyReportDtoOutputPreviousInner,
   AdminDailyReportDtoOutputRestaurants,
   AdminDailyReportExportDto,
+  AdminDepositsDtoOutput,
+  AdminDepositsDtoOutputApplicationsInner,
+  AdminDepositsDtoOutputApplicationsInnerDeposit,
   AdminDeskCaptainSearchDto,
   AdminDeskCaptainsDtoOutput,
   AdminDeskCaptainsDtoOutputCaptainsInner,
@@ -1506,6 +1515,11 @@ part 'serializers.g.dart';
   AdminRecordDeliveryDtoAmountDue,
   AdminRecordDeliveryDtoReceivedInner,
   AdminRecordDeliveryDtoShortfall,
+  AdminRecordDepositAnswerDtoOutput,
+  AdminRecordDepositAnswerDtoOutputReceipt,
+  AdminRecordDepositAnswerDtoOutputReceiptConversionsInner,
+  AdminRecordDepositAnswerDtoOutputReceiptLinesInner,
+  AdminRecordDepositDto,
   AdminRejectCompensationDto,
   AdminRejectDto,
   AdminRejectDtoItemsInner,
@@ -1594,8 +1608,6 @@ part 'serializers.g.dart';
   AdminSettleDtoPayoutRatesInner,
   AdminSettlementDtoOutput,
   AdminSettlementDtoOutputReceiptsInner,
-  AdminSettlementDtoOutputReceiptsInnerConversionsInner,
-  AdminSettlementDtoOutputReceiptsInnerLinesInner,
   AdminSettlementDtoOutputStatement,
   AdminSettlementDtoOutputStatementPayout,
   AdminSettlementPreviewDtoOutput,
@@ -2679,6 +2691,15 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminRecordDepositAnswerDtoOutputReceiptLinesInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminRecordDepositAnswerDtoOutputReceiptLinesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(
                 CustomerSearchDtoOutputItemsInnerOptionGroupsInnerOptionsInner,
               ),
@@ -2711,15 +2732,6 @@ Serializers serializers =
               FullType(AdminExchangeRateHistoryDtoOutputVersionsInner),
             ]),
             () => ListBuilder<AdminExchangeRateHistoryDtoOutputVersionsInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, [
-              FullType(AdminSettlementDtoOutputReceiptsInnerConversionsInner),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminSettlementDtoOutputReceiptsInnerConversionsInner
-                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -2797,6 +2809,17 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(
+                AdminRecordDepositAnswerDtoOutputReceiptConversionsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminRecordDepositAnswerDtoOutputReceiptConversionsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminCustomerDtoOutputRatingsInner),
             ]),
             () => ListBuilder<AdminCustomerDtoOutputRatingsInner>(),
@@ -2812,6 +2835,12 @@ Serializers serializers =
               FullType(AdminMenuPreviewDtoOutputMenuInner),
             ]),
             () => ListBuilder<AdminMenuPreviewDtoOutputMenuInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminDepositsDtoOutputApplicationsInner),
+            ]),
+            () => ListBuilder<AdminDepositsDtoOutputApplicationsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -3409,13 +3438,6 @@ Serializers serializers =
               FullType(MerchantMenuDtoOutputCategoriesInner),
             ]),
             () => ListBuilder<MerchantMenuDtoOutputCategoriesInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, [
-              FullType(AdminSettlementDtoOutputReceiptsInnerLinesInner),
-            ]),
-            () =>
-                ListBuilder<AdminSettlementDtoOutputReceiptsInnerLinesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

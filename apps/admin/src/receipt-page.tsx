@@ -14,6 +14,7 @@ export const receiptTypeKeys = {
   captain_reimbursement: 'cashDesk.receiptType.captain_reimbursement',
   captain_payout: 'cashDesk.receiptType.captain_payout',
   captain_earnings_collection: 'cashDesk.receiptType.captain_earnings_collection',
+  captain_deposit: 'cashDesk.receiptType.captain_deposit',
 } as const satisfies Record<ReceiptType, string>;
 
 const paperClasses = { thermal: 'paper-thermal', a4: 'paper-a4' } as const satisfies Record<
@@ -103,10 +104,14 @@ function ReceiptView({
                 : receipt.type === 'captain_payout' ||
                     receipt.type === 'captain_earnings_collection'
                   ? t('cashDesk.receipt.expectedEarnings')
-                  : t('cashDesk.receipt.expected')}
+                  : receipt.type === 'captain_deposit'
+                    ? t('cashDesk.receipt.expectedDeposit')
+                    : t('cashDesk.receipt.expected')}
             </th>
             <th scope="col">
-              {receipt.type === 'captain_hand_in' || receipt.type === 'captain_earnings_collection'
+              {receipt.type === 'captain_hand_in' ||
+              receipt.type === 'captain_earnings_collection' ||
+              receipt.type === 'captain_deposit'
                 ? t('cashDesk.receipt.received')
                 : t('cashDesk.receipt.paid')}
             </th>

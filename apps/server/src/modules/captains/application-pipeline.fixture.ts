@@ -134,7 +134,9 @@ export const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Da
 
 // An applicant whose application is sent: a car with its plate and every
 // required document.
-export async function sent(options: { idNumber?: string; plate?: string } = {}): Promise<Applicant> {
+export async function sent(
+  options: { idNumber?: string; plate?: string } = {},
+): Promise<Applicant> {
   const who = await applicant();
   await who.call('PUT', '/application/personal', {
     fullName: `محمد أحمد ${randomUUID().slice(0, 6)}`,
@@ -208,4 +210,3 @@ export async function alertOf(applicationId: string) {
   );
   return rows;
 }
-

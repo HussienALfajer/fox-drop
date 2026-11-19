@@ -1,17 +1,16 @@
+import { randomUUID } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import {
   admin,
   app,
   applicationOf,
-  db,
+  azaz,
   jpeg,
   put,
   sent,
   sql,
-  system,
   type Applicant,
 } from './application-pipeline.fixture.js';
-import { ApplicationPipelineService } from './application-pipeline.service.js';
 
 // AP §9.7.1–9.7.2, CA §5.4–5.5, D24 (slice 2.35a): the activation's records
 // at «بانتظار العدة» (the kit, the cash limit, the contract with its scan,
@@ -66,18 +65,18 @@ const day = (offsetDays: number) =>
     new Date(Date.now() + offsetDays * 86_400_000),
   );
 
-// The deposit's plan as the desk records it (its cash comes with the desk's
-// receipt).
-async function depositPlan(id: string, amount: bigint, instalment: bigint | null) {
-  const pipeline = app.get(ApplicationPipelineService);
-  await db.db.transaction((tx) =>
-    pipeline.recordDeposit(
-      tx,
-      id,
-      { actor: system, context: { ipAddress: null, device: null } },
-      { amount: { amount, currency: 'TRY' }, instalment },
-      new Date(),
-    ),
+// The deposit as FIN records it at the desk (AP §9.7.1), with what is paid
+// now from an open drawer.
+async function deposit(
+  fin: Admin,
+  id: string,
+  body: { amount: string; instalment: string | null; paidNow: string },
+) {
+  return fin(
+    'POST',
+    'cash-desk/deposits',
+    { cityId: azaz, applicationId: id, ...body },
+    { 'idempotency-key': randomUUID() },
   );
 }
 
@@ -166,6 +165,63 @@ describe('the records at «بانتظار العدة» (AP §9.7.1)', () => {
   });
 });
 
+describe('the deposit at the desk (AP §9.7.1, §8.5)', () => {
+  it('records the plan and the cash paid now with its receipt «تأمين العدة»', async () => {
+    const { who, id } = await awaitingKit();
+    const fin = await admin('FIN');
+    const offered = (await fin('GET', `cash-desk/deposits?cityId=${azaz}`)).json();
+    expect(offered.applications).toContainEqual(
+      expect.objectContaining({
+        applicationId: id,
+        deposit: { amount: null, instalment: null, paid: '0', recorded: false },
+      }),
+    );
+    // Cash needs an open drawer; the plan alone does not.
+    const noDrawer = await deposit(fin, id, {
+      amount: '50000',
+      instalment: '10000',
+      paidNow: '20000',
+    });
+    expect(noDrawer.json().error).toBe('no_open_session');
+    await fin('POST', 'cash-desk/sessions', { cityId: azaz, floats: [] });
+    const tooMuch = await deposit(fin, id, {
+      amount: '50000',
+      instalment: '10000',
+      paidNow: '60000',
+    });
+    expect(tooMuch.json().error).toBe('above_balance');
+    const paid = await deposit(fin, id, {
+      amount: '50000',
+      instalment: '10000',
+      paidNow: '20000',
+    });
+    expect(paid.statusCode).toBe(201);
+    expect(paid.json().receipt).toMatchObject({
+      type: 'captain_deposit',
+      captainId: id,
+      lines: [{ currency: 'TRY', expected: '50000', amount: '20000', remaining: '30000' }],
+    });
+    const after = (await fin('GET', `captain-applications/${id}`)).json().activation.deposit;
+    expect(after).toEqual({
+      amount: { amount: '50000', currency: 'TRY' },
+      instalment: { amount: '10000', currency: 'TRY' },
+      paid: '20000',
+      recorded: true,
+    });
+    const { rows } = await sql.query(
+      `SELECT template_key, body FROM notifications.push_messages
+       WHERE account_id = $1 AND template_key = 'captain.desk_receipt'`,
+      [who.accountId],
+    );
+    expect(rows).toEqual([
+      { template_key: 'captain.desk_receipt', body: expect.stringMatching(/تأمين العدة/) },
+    ]);
+    // The rest of what is left, never more.
+    const rest = await deposit(fin, id, { amount: '50000', instalment: null, paidNow: '30000' });
+    expect(rest.json().receipt.lines[0]).toMatchObject({ expected: '30000', remaining: '0' });
+  });
+});
+
 describe('«تفعيل» (AP §9.7.1, CA §5.4–5.5)', () => {
   it('waits for every condition, then makes the applicant a captain', async () => {
     const { who, id, ops } = await awaitingKit();
@@ -189,11 +245,11 @@ describe('«تفعيل» (AP §9.7.1, CA §5.4–5.5)', () => {
       cashLimit: { amount: '40000', currency: 'TRY' },
     });
     // A deposit without instalments waits until it is paid in full.
-    await depositPlan(id, 50_000n, null);
+    await deposit(own, id, { amount: '50000', instalment: null, paidNow: '0' });
     expect((await ops('GET', `captain-applications/${id}`)).json().activation.missing).toEqual([
       'deposit',
     ]);
-    await depositPlan(id, 50_000n, 10_000n);
+    await deposit(own, id, { amount: '50000', instalment: '10000', paidNow: '0' });
     // A device the applicant registered before is the captain's after.
     await who.call('PUT', '/push-token', { token: `fid-${id}`, platform: 'android' });
 

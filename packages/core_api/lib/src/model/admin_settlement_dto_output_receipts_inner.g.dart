@@ -22,6 +22,9 @@ _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainEarningsCollection =
     const AdminSettlementDtoOutputReceiptsInnerTypeEnum._(
       'captainEarningsCollection',
     );
+const AdminSettlementDtoOutputReceiptsInnerTypeEnum
+_$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainDeposit =
+    const AdminSettlementDtoOutputReceiptsInnerTypeEnum._('captainDeposit');
 
 AdminSettlementDtoOutputReceiptsInnerTypeEnum
 _$adminSettlementDtoOutputReceiptsInnerTypeEnumValueOf(String name) {
@@ -34,6 +37,8 @@ _$adminSettlementDtoOutputReceiptsInnerTypeEnumValueOf(String name) {
       return _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainPayout;
     case 'captainEarningsCollection':
       return _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainEarningsCollection;
+    case 'captainDeposit':
+      return _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainDeposit;
     default:
       throw ArgumentError(name);
   }
@@ -48,6 +53,7 @@ _$adminSettlementDtoOutputReceiptsInnerTypeEnumValues =
       _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainReimbursement,
       _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainPayout,
       _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainEarningsCollection,
+      _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainDeposit,
     ]);
 
 Serializer<AdminSettlementDtoOutputReceiptsInnerTypeEnum>
@@ -62,12 +68,14 @@ class _$AdminSettlementDtoOutputReceiptsInnerTypeEnumSerializer
     'captainReimbursement': 'captain_reimbursement',
     'captainPayout': 'captain_payout',
     'captainEarningsCollection': 'captain_earnings_collection',
+    'captainDeposit': 'captain_deposit',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'captain_hand_in': 'captainHandIn',
     'captain_reimbursement': 'captainReimbursement',
     'captain_payout': 'captainPayout',
     'captain_earnings_collection': 'captainEarningsCollection',
+    'captain_deposit': 'captainDeposit',
   };
 
   @override
@@ -117,10 +125,10 @@ class _$AdminSettlementDtoOutputReceiptsInner
   @override
   final DateTime createdAt;
   @override
-  final BuiltList<AdminSettlementDtoOutputReceiptsInnerConversionsInner>
+  final BuiltList<AdminRecordDepositAnswerDtoOutputReceiptConversionsInner>
   conversions;
   @override
-  final BuiltList<AdminSettlementDtoOutputReceiptsInnerLinesInner> lines;
+  final BuiltList<AdminRecordDepositAnswerDtoOutputReceiptLinesInner> lines;
 
   factory _$AdminSettlementDtoOutputReceiptsInner([
     void Function(AdminSettlementDtoOutputReceiptsInnerBuilder)? updates,
@@ -257,22 +265,22 @@ class AdminSettlementDtoOutputReceiptsInnerBuilder
   DateTime? get createdAt => _$this._createdAt;
   set createdAt(DateTime? createdAt) => _$this._createdAt = createdAt;
 
-  ListBuilder<AdminSettlementDtoOutputReceiptsInnerConversionsInner>?
+  ListBuilder<AdminRecordDepositAnswerDtoOutputReceiptConversionsInner>?
   _conversions;
-  ListBuilder<AdminSettlementDtoOutputReceiptsInnerConversionsInner>
+  ListBuilder<AdminRecordDepositAnswerDtoOutputReceiptConversionsInner>
   get conversions => _$this._conversions ??=
-      ListBuilder<AdminSettlementDtoOutputReceiptsInnerConversionsInner>();
+      ListBuilder<AdminRecordDepositAnswerDtoOutputReceiptConversionsInner>();
   set conversions(
-    ListBuilder<AdminSettlementDtoOutputReceiptsInnerConversionsInner>?
+    ListBuilder<AdminRecordDepositAnswerDtoOutputReceiptConversionsInner>?
     conversions,
   ) => _$this._conversions = conversions;
 
-  ListBuilder<AdminSettlementDtoOutputReceiptsInnerLinesInner>? _lines;
-  ListBuilder<AdminSettlementDtoOutputReceiptsInnerLinesInner> get lines =>
+  ListBuilder<AdminRecordDepositAnswerDtoOutputReceiptLinesInner>? _lines;
+  ListBuilder<AdminRecordDepositAnswerDtoOutputReceiptLinesInner> get lines =>
       _$this._lines ??=
-          ListBuilder<AdminSettlementDtoOutputReceiptsInnerLinesInner>();
+          ListBuilder<AdminRecordDepositAnswerDtoOutputReceiptLinesInner>();
   set lines(
-    ListBuilder<AdminSettlementDtoOutputReceiptsInnerLinesInner>? lines,
+    ListBuilder<AdminRecordDepositAnswerDtoOutputReceiptLinesInner>? lines,
   ) => _$this._lines = lines;
 
   AdminSettlementDtoOutputReceiptsInnerBuilder() {

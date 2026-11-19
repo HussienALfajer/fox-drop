@@ -587,6 +587,8 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/admin/cash-desk/sessions': 'cash_desk.record',
   'POST /v1/admin/cash-desk/sessions/{sessionId}/close': 'cash_desk.record',
   'POST /v1/admin/cash-desk/hand-ins': 'cash_desk.record',
+  'GET /v1/admin/cash-desk/deposits': 'cash_desk.record',
+  'POST /v1/admin/cash-desk/deposits': 'cash_desk.record',
   'POST /v1/admin/cash-desk/conversions/quote': 'cash_desk.record',
   'GET /v1/admin/cash-desk/receipts/{receiptId}': 'cash_desk.record',
   'GET /v1/admin/cash-desk/balances': 'finance.read',

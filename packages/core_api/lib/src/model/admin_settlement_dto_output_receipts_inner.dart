@@ -3,9 +3,9 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/admin_settlement_dto_output_receipts_inner_conversions_inner.dart';
+import 'package:core_api/src/model/admin_record_deposit_answer_dto_output_receipt_lines_inner.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_settlement_dto_output_receipts_inner_lines_inner.dart';
+import 'package:core_api/src/model/admin_record_deposit_answer_dto_output_receipt_conversions_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -45,7 +45,7 @@ abstract class AdminSettlementDtoOutputReceiptsInner
 
   @BuiltValueField(wireName: r'type')
   AdminSettlementDtoOutputReceiptsInnerTypeEnum get type;
-  // enum typeEnum {  captain_hand_in,  captain_reimbursement,  captain_payout,  captain_earnings_collection,  };
+  // enum typeEnum {  captain_hand_in,  captain_reimbursement,  captain_payout,  captain_earnings_collection,  captain_deposit,  };
 
   @BuiltValueField(wireName: r'sessionId')
   String get sessionId;
@@ -66,11 +66,11 @@ abstract class AdminSettlementDtoOutputReceiptsInner
   DateTime get createdAt;
 
   @BuiltValueField(wireName: r'conversions')
-  BuiltList<AdminSettlementDtoOutputReceiptsInnerConversionsInner>
+  BuiltList<AdminRecordDepositAnswerDtoOutputReceiptConversionsInner>
   get conversions;
 
   @BuiltValueField(wireName: r'lines')
-  BuiltList<AdminSettlementDtoOutputReceiptsInnerLinesInner> get lines;
+  BuiltList<AdminRecordDepositAnswerDtoOutputReceiptLinesInner> get lines;
 
   AdminSettlementDtoOutputReceiptsInner._();
 
@@ -160,14 +160,14 @@ class _$AdminSettlementDtoOutputReceiptsInnerSerializer
     yield serializers.serialize(
       object.conversions,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminSettlementDtoOutputReceiptsInnerConversionsInner),
+        FullType(AdminRecordDepositAnswerDtoOutputReceiptConversionsInner),
       ]),
     );
     yield r'lines';
     yield serializers.serialize(
       object.lines,
       specifiedType: const FullType(BuiltList, [
-        FullType(AdminSettlementDtoOutputReceiptsInnerLinesInner),
+        FullType(AdminRecordDepositAnswerDtoOutputReceiptLinesInner),
       ]),
     );
   }
@@ -296,12 +296,12 @@ class _$AdminSettlementDtoOutputReceiptsInnerSerializer
                     value,
                     specifiedType: const FullType(BuiltList, [
                       FullType(
-                        AdminSettlementDtoOutputReceiptsInnerConversionsInner,
+                        AdminRecordDepositAnswerDtoOutputReceiptConversionsInner,
                       ),
                     ]),
                   )
                   as BuiltList<
-                    AdminSettlementDtoOutputReceiptsInnerConversionsInner
+                    AdminRecordDepositAnswerDtoOutputReceiptConversionsInner
                   >;
           result.conversions.replace(valueDes);
           break;
@@ -310,10 +310,14 @@ class _$AdminSettlementDtoOutputReceiptsInnerSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(AdminSettlementDtoOutputReceiptsInnerLinesInner),
+                      FullType(
+                        AdminRecordDepositAnswerDtoOutputReceiptLinesInner,
+                      ),
                     ]),
                   )
-                  as BuiltList<AdminSettlementDtoOutputReceiptsInnerLinesInner>;
+                  as BuiltList<
+                    AdminRecordDepositAnswerDtoOutputReceiptLinesInner
+                  >;
           result.lines.replace(valueDes);
           break;
         default:
@@ -360,6 +364,9 @@ class AdminSettlementDtoOutputReceiptsInnerTypeEnum extends EnumClass {
   static const AdminSettlementDtoOutputReceiptsInnerTypeEnum
   captainEarningsCollection =
       _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainEarningsCollection;
+  @BuiltValueEnumConst(wireName: r'captain_deposit')
+  static const AdminSettlementDtoOutputReceiptsInnerTypeEnum captainDeposit =
+      _$adminSettlementDtoOutputReceiptsInnerTypeEnum_captainDeposit;
 
   static Serializer<AdminSettlementDtoOutputReceiptsInnerTypeEnum>
   get serializer => _$adminSettlementDtoOutputReceiptsInnerTypeEnumSerializer;

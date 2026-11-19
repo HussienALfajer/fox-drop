@@ -17028,6 +17028,88 @@
         ]
       }
     },
+    "/v1/admin/cash-desk/deposits": {
+      "get": {
+        "operationId": "adminCashDeskAwaitingDeposits",
+        "parameters": [
+          {
+            "name": "cityId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDepositsDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "adminCashDeskRecordDeposit",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminRecordDepositDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRecordDepositAnswerDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/cash-desk/captains/search": {
       "post": {
         "operationId": "adminCashDeskFindCaptains",
@@ -64997,6 +65079,334 @@
         ],
         "additionalProperties": false
       },
+      "AdminDepositsDto_Output": {
+        "type": "object",
+        "properties": {
+          "applications": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "applicationId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "fullName": {
+                  "type": "string"
+                },
+                "deposit": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "string",
+                              "pattern": "^-?\\d{1,18}$"
+                            },
+                            "currency": {
+                              "type": "string",
+                              "pattern": "^[A-Z]{3}$"
+                            }
+                          },
+                          "required": [
+                            "amount",
+                            "currency"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "instalment": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "string",
+                              "pattern": "^-?\\d{1,18}$"
+                            },
+                            "currency": {
+                              "type": "string",
+                              "pattern": "^[A-Z]{3}$"
+                            }
+                          },
+                          "required": [
+                            "amount",
+                            "currency"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Deducted each Thursday until paid; null for none."
+                    },
+                    "paid": {
+                      "type": "string",
+                      "pattern": "^\\d{1,18}$",
+                      "description": "Paid so far, in the city's base."
+                    },
+                    "recorded": {
+                      "type": "boolean",
+                      "description": "As «تفعيل» counts it: with instalments or paid in full."
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "instalment",
+                    "paid",
+                    "recorded"
+                  ],
+                  "additionalProperties": false
+                },
+                "suggested": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "amount": {
+                          "type": "string",
+                          "pattern": "^-?\\d{1,18}$"
+                        },
+                        "currency": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{3}$"
+                        }
+                      },
+                      "required": [
+                        "amount",
+                        "currency"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "captain.kit_deposit_amount."
+                }
+              },
+              "required": [
+                "applicationId",
+                "fullName",
+                "deposit",
+                "suggested"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "applications"
+        ],
+        "additionalProperties": false
+      },
+      "AdminRecordDepositDto": {
+        "type": "object",
+        "properties": {
+          "cityId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "applicationId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^\\d{1,18}$",
+            "description": "The deposit, in the city's base."
+          },
+          "instalment": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{1,18}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Deducted each Thursday until paid; null for none."
+          },
+          "paidNow": {
+            "type": "string",
+            "pattern": "^\\d{1,18}$",
+            "description": "The cash received now; 0 records the plan alone."
+          }
+        },
+        "required": [
+          "cityId",
+          "applicationId",
+          "amount",
+          "instalment",
+          "paidNow"
+        ]
+      },
+      "AdminRecordDepositAnswerDto_Output": {
+        "type": "object",
+        "properties": {
+          "receipt": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "cityId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "number": {
+                    "type": "string",
+                    "description": "Such as AZ-2026-000123 (AP §4.8)."
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "captain_hand_in",
+                      "captain_reimbursement",
+                      "captain_payout",
+                      "captain_earnings_collection",
+                      "captain_deposit"
+                    ]
+                  },
+                  "sessionId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "cashierId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "cashierName": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "captainId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "captainName": {
+                    "type": "string"
+                  },
+                  "createdAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "conversions": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "from": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{3}$"
+                        },
+                        "amount": {
+                          "type": "string",
+                          "pattern": "^\\d{1,18}$"
+                        },
+                        "to": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{3}$"
+                        },
+                        "converted": {
+                          "type": "string",
+                          "pattern": "^\\d{1,18}$"
+                        }
+                      },
+                      "required": [
+                        "from",
+                        "amount",
+                        "to",
+                        "converted"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "lines": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "currency": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{3}$"
+                        },
+                        "expected": {
+                          "type": "string",
+                          "pattern": "^-?\\d{1,18}$",
+                          "description": "The custody before, + to hand in, − owed to the captain."
+                        },
+                        "amount": {
+                          "type": "string",
+                          "pattern": "^\\d{1,18}$"
+                        },
+                        "remaining": {
+                          "type": "string",
+                          "pattern": "^-?\\d{1,18}$",
+                          "description": "What stays open after it."
+                        }
+                      },
+                      "required": [
+                        "currency",
+                        "expected",
+                        "amount",
+                        "remaining"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "id",
+                  "cityId",
+                  "number",
+                  "type",
+                  "sessionId",
+                  "cashierId",
+                  "cashierName",
+                  "captainId",
+                  "captainName",
+                  "createdAt",
+                  "conversions",
+                  "lines"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "None when nothing was paid now."
+          }
+        },
+        "required": [
+          "receipt"
+        ],
+        "additionalProperties": false
+      },
       "AdminDeskCaptainSearchDto": {
         "type": "object",
         "properties": {
@@ -66327,7 +66737,8 @@
                     "captain_hand_in",
                     "captain_reimbursement",
                     "captain_payout",
-                    "captain_earnings_collection"
+                    "captain_earnings_collection",
+                    "captain_deposit"
                   ]
                 },
                 "sessionId": {
@@ -67368,7 +67779,8 @@
                     "captain_hand_in",
                     "captain_reimbursement",
                     "captain_payout",
-                    "captain_earnings_collection"
+                    "captain_earnings_collection",
+                    "captain_deposit"
                   ]
                 },
                 "sessionId": {
@@ -67617,7 +68029,8 @@
               "captain_hand_in",
               "captain_reimbursement",
               "captain_payout",
-              "captain_earnings_collection"
+              "captain_earnings_collection",
+              "captain_deposit"
             ]
           },
           "sessionId": {

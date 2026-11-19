@@ -24,6 +24,7 @@ import {
   type Receipt,
 } from './cashdesk.service.js';
 import { phoneOf } from '../../http/phone-search.js';
+import { DepositsService } from './deposits.service.js';
 import { deskUser, refusalsAsHttp } from './desk-http.js';
 import { captainReceiptTypes, sessionKinds } from './schema.js';
 import { type SettlementPreview, SettlementService, type Statement } from './settlement.service.js';
@@ -327,6 +328,42 @@ class AdminReceiptDto extends createZodDto(receiptBody) {}
 
 class AdminHandInReceiptsDto extends createZodDto(z.object({ receipts: z.array(receiptBody) })) {}
 
+const depositState = z.object({
+  amount: money.nullable(),
+  instalment: money.nullable().describe('Deducted each Thursday until paid; null for none.'),
+  paid: minor.describe("Paid so far, in the city's base."),
+  recorded: z.boolean().describe('As «تفعيل» counts it: with instalments or paid in full.'),
+});
+
+class AdminDepositsQueryDto extends createZodDto(z.object({ cityId: z.uuid() })) {}
+
+class AdminDepositsDto extends createZodDto(
+  z.object({
+    applications: z.array(
+      z.object({
+        applicationId: z.uuid(),
+        fullName: z.string(),
+        deposit: depositState,
+        suggested: money.nullable().describe('captain.kit_deposit_amount.'),
+      }),
+    ),
+  }),
+) {}
+
+class AdminRecordDepositDto extends createZodDto(
+  z.object({
+    cityId: z.uuid(),
+    applicationId: z.uuid(),
+    amount: minor.describe("The deposit, in the city's base."),
+    instalment: minor.nullable().describe('Deducted each Thursday until paid; null for none.'),
+    paidNow: minor.describe('The cash received now; 0 records the plan alone.'),
+  }),
+) {}
+
+class AdminRecordDepositAnswerDto extends createZodDto(
+  z.object({ receipt: receiptBody.nullable().describe('None when nothing was paid now.') }),
+) {}
+
 class AdminReceiptParamsDto extends createZodDto(z.object({ receiptId: z.uuid() })) {}
 
 const statementBody = z.object({
@@ -376,7 +413,61 @@ export class AdminCashDeskController {
     private readonly captains: CaptainsService,
     private readonly accounts: CaptainAccountsService,
     private readonly settlements: SettlementService,
+    private readonly deposits: DepositsService,
   ) {}
+
+  // «تأمين العدة» (AP §9.7.1, slice 2.35a): the applications at «بانتظار
+  // العدة» with their deposit.
+  @Get('deposits')
+  @RequirePermission('cash_desk.record')
+  @ZodResponse({ status: 200, type: AdminDepositsDto })
+  async awaitingDeposits(@Query() query: AdminDepositsQueryDto) {
+    const found = await this.deposits.awaiting(query.cityId);
+    return {
+      applications: found.map((each) => ({
+        applicationId: each.applicationId,
+        fullName: each.fullName,
+        deposit: {
+          amount: moneyOf(each.deposit.amount),
+          instalment: moneyOf(each.deposit.instalment),
+          paid: each.deposit.paid.toString(),
+          recorded: each.deposit.recorded,
+        },
+        suggested: moneyOf(each.suggested),
+      })),
+    };
+  }
+
+  // The deposit's plan and the cash paid now, with its receipt «تأمين
+  // العدة». 400 invalid_amounts (an instalment above the deposit); 404
+  // unknown_party; 409 no_open_session (cash without a drawer), wrong_stage,
+  // above_balance (more than is left to pay), no_base_currency.
+  @Post('deposits')
+  @RequirePermission('cash_desk.record')
+  @Idempotent()
+  @ZodResponse({ status: 201, type: AdminRecordDepositAnswerDto })
+  recordDeposit(
+    @Body() body: AdminRecordDepositDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(async () => {
+      const receipt = await this.deposits.record(
+        deskUser(session, request),
+        {
+          cityId: body.cityId,
+          applicationId: body.applicationId,
+          amount: BigInt(body.amount),
+          instalment: body.instalment === null ? null : BigInt(body.instalment),
+          paidNow: BigInt(body.paidNow),
+          idempotencyKey,
+        },
+        new Date(),
+      );
+      return { receipt: receipt && receiptBodyOf(receipt) };
+    });
+  }
 
   // Step 1: by a part of the name, or by the number. A read, sent as a POST
   // so a number never sits in a URL (access logs, history); it changes
@@ -668,6 +759,10 @@ export class AdminCashDeskController {
     }
     return receiptBodyOf(found);
   }
+}
+
+function moneyOf(value: { amount: bigint; currency: string } | null) {
+  return value && { amount: value.amount.toString(), currency: value.currency };
 }
 
 function cashLine(line: { currency: string; amount: string }) {
