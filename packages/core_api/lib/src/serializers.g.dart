@@ -361,6 +361,17 @@ Serializers _$serializers =
           ..add(AdminMenuDtoOutputOptionGroupsInner.serializer)
           ..add(AdminMenuDtoOutputOptionGroupsInnerOptionsInner.serializer)
           ..add(AdminMenuGroupItemsDto.serializer)
+          ..add(AdminMenuImportPlanDtoOutput.serializer)
+          ..add(AdminMenuImportPlanDtoOutputAddedInner.serializer)
+          ..add(AdminMenuImportPlanDtoOutputChangedInner.serializer)
+          ..add(AdminMenuImportPlanDtoOutputChangedInnerFieldsEnum.serializer)
+          ..add(AdminMenuImportPlanDtoOutputErrorsInner.serializer)
+          ..add(AdminMenuImportPlanDtoOutputErrorsInnerColumnEnum.serializer)
+          ..add(AdminMenuImportPlanDtoOutputErrorsInnerErrorEnum.serializer)
+          ..add(AdminMenuImportPlanDtoOutputFileErrorEnum.serializer)
+          ..add(AdminMenuImportResultDtoOutput.serializer)
+          ..add(AdminMenuImportTemplateDtoOutput.serializer)
+          ..add(AdminMenuImportUploadDto.serializer)
           ..add(AdminMenuItemDto.serializer)
           ..add(AdminMenuItemDtoBadgeEnum.serializer)
           ..add(AdminMenuItemGroupsDto.serializer)
@@ -2230,6 +2241,43 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(
+                AdminMenuImportPlanDtoOutputChangedInnerFieldsEnum,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminMenuImportPlanDtoOutputChangedInnerFieldsEnum
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminMenuImportPlanDtoOutputErrorsInner),
+            ]),
+            () => ListBuilder<AdminMenuImportPlanDtoOutputErrorsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminMenuImportPlanDtoOutputAddedInner),
+            ]),
+            () => ListBuilder<AdminMenuImportPlanDtoOutputAddedInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminMenuImportPlanDtoOutputChangedInner),
+            ]),
+            () => ListBuilder<AdminMenuImportPlanDtoOutputChangedInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminMerchantStatementDtoOutputLinesInner),
             ]),
             () => ListBuilder<AdminMerchantStatementDtoOutputLinesInner>(),
@@ -4078,6 +4126,10 @@ Serializers _$serializers =
               const FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
             ]),
             () => ListBuilder<SettingListDtoOutputSettingsInnerEditRolesEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

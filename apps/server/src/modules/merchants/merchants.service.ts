@@ -94,7 +94,11 @@ export type MerchantsRefusal =
   | 'price_reaches_zero'
   | 'rounding_unit_missing'
   // Architecture §5.3: a key sent again with another command.
-  | 'idempotency_key_reused';
+  | 'idempotency_key_reused'
+  // AP §9.6.6 «استيراد من Excel» (slice 2.31): a workbook with a row error,
+  // or not a workbook at all.
+  | 'import_invalid'
+  | 'import_unreadable';
 
 // Slice 2.30c: the same commission «now» again within this is a repeat.
 const COMMISSION_REPEAT_WINDOW_MS = 60_000;

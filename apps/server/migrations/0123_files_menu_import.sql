@@ -1,0 +1,4 @@
+ALTER TABLE "files"."uploads" DROP CONSTRAINT "uploads_purpose_values";--> statement-breakpoint
+ALTER TABLE "files"."uploads" DROP CONSTRAINT "uploads_content_type_values";--> statement-breakpoint
+ALTER TABLE "files"."uploads" ADD CONSTRAINT "uploads_purpose_values" CHECK ("files"."uploads"."purpose" IN ('restaurant_logo', 'restaurant_cover', 'item_photo', 'report_photo', 'category_image', 'banner_image', 'restaurant_contract', 'restaurant_licence', 'menu_import'));--> statement-breakpoint
+ALTER TABLE "files"."uploads" ADD CONSTRAINT "uploads_content_type_values" CHECK ("files"."uploads"."content_type" IN ('image/jpeg', 'image/png', 'image/webp', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'));

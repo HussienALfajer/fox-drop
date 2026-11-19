@@ -13,7 +13,7 @@ part 'admin_new_upload_dto.g.dart';
 ///
 /// Properties:
 /// * [purpose] - The record the file is for (architecture §5.8).
-/// * [contentType]
+/// * [contentType] - An image (8 MB at most); for menu_import an .xlsx workbook (2 MB at most).
 /// * [sizeBytes]
 @BuiltValue()
 abstract class AdminNewUploadDto
@@ -21,11 +21,12 @@ abstract class AdminNewUploadDto
   /// The record the file is for (architecture §5.8).
   @BuiltValueField(wireName: r'purpose')
   AdminNewUploadDtoPurposeEnum get purpose;
-  // enum purposeEnum {  restaurant_logo,  restaurant_cover,  item_photo,  category_image,  banner_image,  restaurant_contract,  restaurant_licence,  };
+  // enum purposeEnum {  restaurant_logo,  restaurant_cover,  item_photo,  category_image,  banner_image,  restaurant_contract,  restaurant_licence,  menu_import,  };
 
+  /// An image (8 MB at most); for menu_import an .xlsx workbook (2 MB at most).
   @BuiltValueField(wireName: r'contentType')
   AdminNewUploadDtoContentTypeEnum get contentType;
-  // enum contentTypeEnum {  image/jpeg,  image/png,  image/webp,  };
+  // enum contentTypeEnum {  image/jpeg,  image/png,  image/webp,  application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,  };
 
   @BuiltValueField(wireName: r'sizeBytes')
   int get sizeBytes;
@@ -176,6 +177,9 @@ class AdminNewUploadDtoPurposeEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'restaurant_licence')
   static const AdminNewUploadDtoPurposeEnum restaurantLicence =
       _$adminNewUploadDtoPurposeEnum_restaurantLicence;
+  @BuiltValueEnumConst(wireName: r'menu_import')
+  static const AdminNewUploadDtoPurposeEnum menuImport =
+      _$adminNewUploadDtoPurposeEnum_menuImport;
 
   static Serializer<AdminNewUploadDtoPurposeEnum> get serializer =>
       _$adminNewUploadDtoPurposeEnumSerializer;
@@ -188,6 +192,7 @@ class AdminNewUploadDtoPurposeEnum extends EnumClass {
       _$adminNewUploadDtoPurposeEnumValueOf(name);
 }
 
+/// An image (8 MB at most); for menu_import an .xlsx workbook (2 MB at most).
 class AdminNewUploadDtoContentTypeEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'image/jpeg')
   static const AdminNewUploadDtoContentTypeEnum imageSlashJpeg =
@@ -198,6 +203,13 @@ class AdminNewUploadDtoContentTypeEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'image/webp')
   static const AdminNewUploadDtoContentTypeEnum imageSlashWebp =
       _$adminNewUploadDtoContentTypeEnum_imageSlashWebp;
+  @BuiltValueEnumConst(
+    wireName:
+        r'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  )
+  static const AdminNewUploadDtoContentTypeEnum
+  applicationSlashVndPeriodOpenxmlformatsOfficedocumentPeriodSpreadsheetmlPeriodSheet =
+      _$adminNewUploadDtoContentTypeEnum_applicationSlashVndPeriodOpenxmlformatsOfficedocumentPeriodSpreadsheetmlPeriodSheet;
 
   static Serializer<AdminNewUploadDtoContentTypeEnum> get serializer =>
       _$adminNewUploadDtoContentTypeEnumSerializer;

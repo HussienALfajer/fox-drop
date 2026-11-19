@@ -1620,6 +1620,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/import-template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRestaurantMenuImportTemplate"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/import/dry-run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminRestaurantMenuImportDryRun"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminRestaurantMenuImportCommit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/restaurant-drafts/{restaurantId}/checklist": {
         parameters: {
             query?: never;
@@ -7337,6 +7385,64 @@ export interface components {
             /** @description The item's groups, in order. */
             groupIds: string[];
         };
+        AdminMenuImportTemplateDto_Output: {
+            fileName: string;
+            /** @description The .xlsx workbook, filled with the current menu. */
+            contentBase64: string;
+        };
+        AdminMenuImportUploadDto: {
+            /**
+             * Format: uuid
+             * @description A menu_import upload of POST /v1/admin/uploads.
+             */
+            uploadId: string;
+        };
+        AdminMenuImportPlanDto_Output: {
+            /** @description The file cannot be read as the template (2000 rows at most). */
+            fileError: ("missing_headers" | "no_rows" | "too_many_rows") | null;
+            /** @description Every row error; the import runs only without any. */
+            errors: {
+                /** @description The sheet's row number, the header being 1. */
+                row: number;
+                /** @enum {string} */
+                column: "code" | "category" | "name" | "description" | "price" | "groups";
+                /** @enum {string} */
+                error: "required" | "too_long" | "invalid_price" | "repeated_code" | "unknown_group";
+            }[];
+            categoriesAdded: string[];
+            added: {
+                row: number;
+                /** @description null: generated. */
+                code: string | null;
+                categoryName: string;
+                name: string;
+                description: string | null;
+                /** @description In the city's base currency. */
+                price: string;
+                groupIds: string[];
+            }[];
+            changed: {
+                row: number;
+                /** Format: uuid */
+                itemId: string;
+                code: string;
+                fields: ("category" | "name" | "description" | "price" | "groups")[];
+                categoryName: string;
+                name: string;
+                description: string | null;
+                /** @description In the city's base currency. */
+                price: string;
+                groupIds: string[];
+                oldPrice: string;
+            }[];
+            unchanged: number;
+        };
+        AdminMenuImportResultDto_Output: {
+            added: number;
+            changed: number;
+            unchanged: number;
+            categoriesAdded: number;
+        };
         AdminChecklistDto_Output: {
             /** @enum {string} */
             accountStatus: "draft" | "test" | "active" | "suspended" | "terminated";
@@ -7480,9 +7586,12 @@ export interface components {
              * @description The record the file is for (architecture §5.8).
              * @enum {string}
              */
-            purpose: "restaurant_logo" | "restaurant_cover" | "item_photo" | "category_image" | "banner_image" | "restaurant_contract" | "restaurant_licence";
-            /** @enum {string} */
-            contentType: "image/jpeg" | "image/png" | "image/webp";
+            purpose: "restaurant_logo" | "restaurant_cover" | "item_photo" | "category_image" | "banner_image" | "restaurant_contract" | "restaurant_licence" | "menu_import";
+            /**
+             * @description An image (8 MB at most); for menu_import an .xlsx workbook (2 MB at most).
+             * @enum {string}
+             */
+            contentType: "image/jpeg" | "image/png" | "image/webp" | "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
             sizeBytes: number;
         };
         AdminUploadDto_Output: {
@@ -20370,6 +20479,83 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminMenuDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuImportTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuImportTemplateDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuImportDryRun: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMenuImportUploadDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuImportPlanDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuImportCommit: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMenuImportUploadDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuImportResultDto_Output"];
                 };
             };
         };

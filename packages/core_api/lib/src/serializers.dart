@@ -254,6 +254,13 @@ import 'package:core_api/src/model/admin_menu_dto_output_categories_inner_items_
 import 'package:core_api/src/model/admin_menu_dto_output_option_groups_inner.dart';
 import 'package:core_api/src/model/admin_menu_dto_output_option_groups_inner_options_inner.dart';
 import 'package:core_api/src/model/admin_menu_group_items_dto.dart';
+import 'package:core_api/src/model/admin_menu_import_plan_dto_output.dart';
+import 'package:core_api/src/model/admin_menu_import_plan_dto_output_added_inner.dart';
+import 'package:core_api/src/model/admin_menu_import_plan_dto_output_changed_inner.dart';
+import 'package:core_api/src/model/admin_menu_import_plan_dto_output_errors_inner.dart';
+import 'package:core_api/src/model/admin_menu_import_result_dto_output.dart';
+import 'package:core_api/src/model/admin_menu_import_template_dto_output.dart';
+import 'package:core_api/src/model/admin_menu_import_upload_dto.dart';
 import 'package:core_api/src/model/admin_menu_item_dto.dart';
 import 'package:core_api/src/model/admin_menu_item_groups_dto.dart';
 import 'package:core_api/src/model/admin_menu_item_order_dto.dart';
@@ -1206,6 +1213,13 @@ part 'serializers.g.dart';
   AdminMenuDtoOutputOptionGroupsInner,
   AdminMenuDtoOutputOptionGroupsInnerOptionsInner,
   AdminMenuGroupItemsDto,
+  AdminMenuImportPlanDtoOutput,
+  AdminMenuImportPlanDtoOutputAddedInner,
+  AdminMenuImportPlanDtoOutputChangedInner,
+  AdminMenuImportPlanDtoOutputErrorsInner,
+  AdminMenuImportResultDtoOutput,
+  AdminMenuImportTemplateDtoOutput,
+  AdminMenuImportUploadDto,
   AdminMenuItemDto,
   AdminMenuItemGroupsDto,
   AdminMenuItemOrderDto,
@@ -2572,6 +2586,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminMenuImportPlanDtoOutputChangedInner),
+            ]),
+            () => ListBuilder<AdminMenuImportPlanDtoOutputChangedInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminCostReportDtoOutputCodesInner),
             ]),
             () => ListBuilder<AdminCostReportDtoOutputCodesInner>(),
@@ -2732,6 +2752,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminMenuImportPlanDtoOutputAddedInner),
+            ]),
+            () => ListBuilder<AdminMenuImportPlanDtoOutputAddedInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(CaptainAvailabilityDtoOutputOfficeHoursInner),
             ]),
             () => ListBuilder<CaptainAvailabilityDtoOutputOfficeHoursInner>(),
@@ -2752,6 +2778,12 @@ Serializers serializers =
               FullType(AdminOrderDtoOutputOrderPickupRequestsInner),
             ]),
             () => ListBuilder<AdminOrderDtoOutputOrderPickupRequestsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminMenuImportPlanDtoOutputErrorsInner),
+            ]),
+            () => ListBuilder<AdminMenuImportPlanDtoOutputErrorsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

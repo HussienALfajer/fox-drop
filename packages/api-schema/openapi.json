@@ -4260,6 +4260,147 @@
         ]
       }
     },
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/import-template": {
+      "get": {
+        "operationId": "adminRestaurantMenuImportTemplate",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminMenuImportTemplateDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/import/dry-run": {
+      "post": {
+        "operationId": "adminRestaurantMenuImportDryRun",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminMenuImportUploadDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminMenuImportPlanDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/import": {
+      "post": {
+        "operationId": "adminRestaurantMenuImportCommit",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminMenuImportUploadDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminMenuImportResultDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/restaurant-drafts/{restaurantId}/checklist": {
       "get": {
         "operationId": "adminRestaurantActivationRead",
@@ -22478,6 +22619,283 @@
           "groupIds"
         ]
       },
+      "AdminMenuImportTemplateDto_Output": {
+        "type": "object",
+        "properties": {
+          "fileName": {
+            "type": "string"
+          },
+          "contentBase64": {
+            "type": "string",
+            "description": "The .xlsx workbook, filled with the current menu."
+          }
+        },
+        "required": [
+          "fileName",
+          "contentBase64"
+        ],
+        "additionalProperties": false
+      },
+      "AdminMenuImportUploadDto": {
+        "type": "object",
+        "properties": {
+          "uploadId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "A menu_import upload of POST /v1/admin/uploads."
+          }
+        },
+        "required": [
+          "uploadId"
+        ]
+      },
+      "AdminMenuImportPlanDto_Output": {
+        "type": "object",
+        "properties": {
+          "fileError": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "missing_headers",
+                  "no_rows",
+                  "too_many_rows"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The file cannot be read as the template (2000 rows at most)."
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "row": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "description": "The sheet's row number, the header being 1."
+                },
+                "column": {
+                  "type": "string",
+                  "enum": [
+                    "code",
+                    "category",
+                    "name",
+                    "description",
+                    "price",
+                    "groups"
+                  ]
+                },
+                "error": {
+                  "type": "string",
+                  "enum": [
+                    "required",
+                    "too_long",
+                    "invalid_price",
+                    "repeated_code",
+                    "unknown_group"
+                  ]
+                }
+              },
+              "required": [
+                "row",
+                "column",
+                "error"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Every row error; the import runs only without any."
+          },
+          "categoriesAdded": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "added": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "row": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "code": {
+                  "description": "null: generated.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "categoryName": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "price": {
+                  "type": "string",
+                  "pattern": "^\\d{1,15}$",
+                  "description": "In the city's base currency."
+                },
+                "groupIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                }
+              },
+              "required": [
+                "row",
+                "code",
+                "categoryName",
+                "name",
+                "description",
+                "price",
+                "groupIds"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "changed": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "row": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "itemId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "code": {
+                  "type": "string"
+                },
+                "fields": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "category",
+                      "name",
+                      "description",
+                      "price",
+                      "groups"
+                    ]
+                  }
+                },
+                "categoryName": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "price": {
+                  "type": "string",
+                  "pattern": "^\\d{1,15}$",
+                  "description": "In the city's base currency."
+                },
+                "groupIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "oldPrice": {
+                  "type": "string",
+                  "pattern": "^\\d{1,15}$"
+                }
+              },
+              "required": [
+                "row",
+                "itemId",
+                "code",
+                "fields",
+                "categoryName",
+                "name",
+                "description",
+                "price",
+                "groupIds",
+                "oldPrice"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "unchanged": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "fileError",
+          "errors",
+          "categoriesAdded",
+          "added",
+          "changed",
+          "unchanged"
+        ],
+        "additionalProperties": false
+      },
+      "AdminMenuImportResultDto_Output": {
+        "type": "object",
+        "properties": {
+          "added": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "changed": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "unchanged": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "categoriesAdded": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "added",
+          "changed",
+          "unchanged",
+          "categoriesAdded"
+        ],
+        "additionalProperties": false
+      },
       "AdminChecklistDto_Output": {
         "type": "object",
         "properties": {
@@ -23058,7 +23476,8 @@
               "category_image",
               "banner_image",
               "restaurant_contract",
-              "restaurant_licence"
+              "restaurant_licence",
+              "menu_import"
             ],
             "description": "The record the file is for (architecture §5.8)."
           },
@@ -23067,8 +23486,10 @@
             "enum": [
               "image/jpeg",
               "image/png",
-              "image/webp"
-            ]
+              "image/webp",
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            ],
+            "description": "An image (8 MB at most); for menu_import an .xlsx workbook (2 MB at most)."
           },
           "sizeBytes": {
             "type": "integer",

@@ -255,6 +255,13 @@ export 'package:core_api/src/model/admin_menu_dto_output_categories_inner_items_
 export 'package:core_api/src/model/admin_menu_dto_output_option_groups_inner.dart';
 export 'package:core_api/src/model/admin_menu_dto_output_option_groups_inner_options_inner.dart';
 export 'package:core_api/src/model/admin_menu_group_items_dto.dart';
+export 'package:core_api/src/model/admin_menu_import_plan_dto_output.dart';
+export 'package:core_api/src/model/admin_menu_import_plan_dto_output_added_inner.dart';
+export 'package:core_api/src/model/admin_menu_import_plan_dto_output_changed_inner.dart';
+export 'package:core_api/src/model/admin_menu_import_plan_dto_output_errors_inner.dart';
+export 'package:core_api/src/model/admin_menu_import_result_dto_output.dart';
+export 'package:core_api/src/model/admin_menu_import_template_dto_output.dart';
+export 'package:core_api/src/model/admin_menu_import_upload_dto.dart';
 export 'package:core_api/src/model/admin_menu_item_dto.dart';
 export 'package:core_api/src/model/admin_menu_item_groups_dto.dart';
 export 'package:core_api/src/model/admin_menu_item_order_dto.dart';
