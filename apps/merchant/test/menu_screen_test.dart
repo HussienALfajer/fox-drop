@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:core_auth/testing.dart';
 import 'package:core_push/testing.dart';
@@ -17,6 +18,7 @@ import 'package:merchant/src/board/board_screen.dart';
 import 'package:merchant/src/device.dart';
 import 'package:merchant/src/push.dart';
 import 'package:merchant/src/menu/menu.dart';
+import 'package:merchant/src/support/report_photo.dart';
 
 import 'board_fixtures.dart';
 import 'status_fixtures.dart' hide now;
@@ -29,7 +31,11 @@ final _now = placedAt.add(const Duration(minutes: 1));
 
 // «القائمة» (RA §9, slice 2.32a) against a fake server and channel.
 class _App {
-  _App({this.role = 'cashier'});
+  _App({this.role = 'cashier', this.ids = const []});
+
+  /// The ids the app names its new rows with, in order (RA §9.2).
+  final List<String> ids;
+  final puts = <String>[];
 
   final String role;
   final server = FakeServer();
@@ -88,6 +94,14 @@ class _App {
         ),
         appVersionProvider.overrideWith((ref) async => '0.1.0'),
         realtimeTransportProvider.overrideWithValue(transport),
+        newMenuIdProvider.overrideWithValue(() => ids.removeAt(0)),
+        photoPickerProvider.overrideWithValue(
+          (source) async => PickedPhoto(
+            Uint8List.fromList([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]),
+            'image/jpeg',
+          ),
+        ),
+        photoPutProvider.overrideWithValue((url, photo) async => puts.add(url)),
         ringerProvider.overrideWithValue(ringer),
         keepScreenOnProvider.overrideWithValue((on) {}),
         notificationPermissionProvider.overrideWithValue(
@@ -201,14 +215,87 @@ Map<String, Object?> _menu({
   };
   return {
     'categories': [for (final id in order) categories[id]],
+    'optionGroups': [
+      {
+        'id': _size,
+        'name': 'الحجم',
+        'minChoices': 1,
+        'maxChoices': 1,
+        'itemIds': [_shawarma],
+        'options': [
+          {
+            'id': _large,
+            'name': 'كبير',
+            'priceDelta': _money('2000'),
+            'switchedOff': null,
+            'pending': <Object?>[],
+          },
+        ],
+        'pending': <Object?>[],
+      },
+    ],
   };
 }
+
+const _size = '40000000-0000-4000-8000-000000000001';
+
+// RA §9.5: a pending request as the server sends it beside its row.
+Map<String, Object?> _pending(
+  String id,
+  String field, {
+  String? name,
+  String? description,
+  String? photoKey,
+}) => {
+  'requestId': id,
+  'field': field,
+  'createdAt': '2026-11-07T09:00:00.000Z',
+  'name': name,
+  'description': description,
+  'photoKey': photoKey,
+  'price': null,
+  'categoryId': null,
+  'groupId': null,
+  'minChoices': null,
+  'maxChoices': null,
+  'itemIds': null,
+  'options': null,
+};
+
+// The menu with a change: `change` edits the JSON (a pending request, a new
+// row waiting for review).
+Map<String, Object?> _changed(void Function(Map<String, dynamic> menu) change) {
+  final menu = jsonDecode(jsonEncode(_menu())) as Map<String, dynamic>;
+  change(menu);
+  return menu;
+}
+
+Map<String, dynamic> _category(Map<String, dynamic> menu, String id) =>
+    (menu['categories'] as List).cast<Map<String, dynamic>>().firstWhere(
+      (c) => c['id'] == id,
+    );
+
+Map<String, dynamic> _row(Map<String, dynamic> menu, String id) =>
+    (menu['categories'] as List)
+        .cast<Map<String, dynamic>>()
+        .expand((c) => (c['items'] as List).cast<Map<String, dynamic>>())
+        .firstWhere((i) => i['id'] == id);
 
 Map<String, Object?> _status() =>
     statusJson(closesAt: _now.add(const Duration(hours: 10)));
 
 Future<void> _open(WidgetTester tester) async {
   await tester.tap(find.byKey(const Key('open-menu')));
+  await tester.pumpAndSettle();
+}
+
+// Scrolls the menu's lazy list to a row.
+Future<void> _show(WidgetTester tester, String key) async {
+  await tester.scrollUntilVisible(
+    find.byKey(Key(key)),
+    200,
+    scrollable: find.byType(Scrollable).last,
+  );
   await tester.pumpAndSettle();
 }
 
@@ -223,6 +310,7 @@ Future<void> _tap(WidgetTester tester, String key) async {
     );
   }
   await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
   await tester.tap(finder);
   await tester.pumpAndSettle();
 }
@@ -470,6 +558,216 @@ void main() {
     await app.done(tester);
   });
 
+  testWidgets(
+    'an owner asks a new category and a new item with a photo (RA §9.2)',
+    (tester) async {
+      const desserts = '10000000-0000-4000-8000-000000000009';
+      const kunafa = '20000000-0000-4000-8000-000000000009';
+      final app = _App(role: 'owner', ids: [desserts, kunafa]);
+      final withCategory = _changed(
+        (menu) => (menu['categories'] as List).add({
+          'id': desserts,
+          'name': 'حلويات',
+          'hidden': false,
+          'available': false,
+          'switchedOff': null,
+          'window': null,
+          'items': <Object?>[],
+          'pending': [_pending('r1', 'created', name: 'حلويات')],
+        }),
+      );
+      final withItem =
+          jsonDecode(jsonEncode(withCategory)) as Map<String, dynamic>;
+      (_category(withItem, desserts)['items'] as List).add({
+        ..._item(kunafa, 'كنافة', '7500'),
+        'available': false,
+        'pending': [_pending('r2', 'created', name: 'كنافة')],
+      });
+      app.server
+        ..on('/v1/merchant/menu', [FakeAnswer(200, _menu())])
+        ..on('/v1/merchant/menu/requests/categories/$desserts', [
+          FakeAnswer(200, withCategory),
+        ])
+        ..on('/v1/merchant/uploads/item-photo', [
+          const FakeAnswer(201, {
+            'uploadId': '50000000-0000-4000-8000-000000000001',
+            'url': 'http://storage.test/public-media/incoming/a.jpg',
+            'expiresAt': '2026-11-07T09:10:00.000Z',
+          }),
+        ])
+        ..on('/v1/merchant/menu/requests/items/$kunafa', [
+          FakeAnswer(200, withItem),
+        ]);
+      await app.pump(tester, [FakeAnswer(200, _status())]);
+      await _open(tester);
+      await _tap(tester, 'menu-add-category');
+      await tester.enterText(find.byKey(const Key('request-name')), 'حلويات');
+      await _tap(tester, 'request-send');
+      expect(
+        _body(
+          app.server
+              .to('/v1/merchant/menu/requests/categories/$desserts')
+              .single,
+        ),
+        {'name': 'حلويات'},
+      );
+      await _show(tester, 'category-$desserts');
+      expect(find.text('بانتظار المراجعة'), findsWidgets);
+      // A new category has no switch, order or window until approved.
+      expect(find.byKey(const Key('switch-category-$desserts')), findsNothing);
+      expect(find.byKey(const Key('up-category-$desserts')), findsNothing);
+
+      await _tap(tester, 'add-item-$desserts');
+      await tester.enterText(find.byKey(const Key('item-name')), 'كنافة');
+      await tester.enterText(find.byKey(const Key('item-price')), '75');
+      await _tap(tester, 'item-photo');
+      await _tap(tester, 'photo-gallery');
+      expect(find.text('تم اختيار صورة'), findsOneWidget);
+      await _tap(tester, 'item-send');
+      expect(app.puts, ['http://storage.test/public-media/incoming/a.jpg']);
+      expect(
+        _body(app.server.to('/v1/merchant/menu/requests/items/$kunafa').single),
+        {
+          'categoryId': desserts,
+          'name': 'كنافة',
+          'description': null,
+          'price': {'amount': '7500', 'currency': 'TRY'},
+          'uploadId': '50000000-0000-4000-8000-000000000001',
+        },
+      );
+      await _show(tester, 'item-$kunafa');
+      expect(
+        find.text('جديد — لا يراه الزبائن قبل الموافقة'),
+        findsNWidgets(2),
+      );
+      expect(find.byKey(const Key('switch-item-$kunafa')), findsNothing);
+      expect(find.byKey(const Key('edit-new-item-$kunafa')), findsOneWidget);
+      await app.done(tester);
+    },
+  );
+
+  testWidgets(
+    'a pending name shows beside the old one; the owner withdraws it (RA §9.5)',
+    (tester) async {
+      final app = _App(role: 'owner');
+      final renamed = _changed(
+        (menu) => _row(menu, _shawarma)['pending'] = [
+          _pending('r1', 'rename', name: 'شاورما دجاج'),
+        ],
+      );
+      app.server
+        ..on('/v1/merchant/menu', [FakeAnswer(200, _menu())])
+        ..on('/v1/merchant/menu/requests/items/$_shawarma/text', [
+          FakeAnswer(200, renamed),
+        ])
+        ..on('/v1/merchant/menu/requests/r1/withdraw', [
+          FakeAnswer(200, _menu()),
+        ]);
+      await app.pump(tester, [FakeAnswer(200, _status())]);
+      await _open(tester);
+      await _tap(tester, 'text-item-$_shawarma');
+      await tester.enterText(find.byKey(const Key('item-name')), 'شاورما دجاج');
+      await _tap(tester, 'item-send');
+      expect(
+        _body(
+          app.server
+              .to('/v1/merchant/menu/requests/items/$_shawarma/text')
+              .single,
+        ),
+        {'name': 'شاورما دجاج', 'description': null},
+      );
+      // The old name stays until approval, with the pending value.
+      expect(find.text('شاورما'), findsOneWidget);
+      expect(find.text('الاسم المطلوب: شاورما دجاج'), findsOneWidget);
+      await _tap(tester, 'withdraw-r1');
+      expect(
+        app.server.to('/v1/merchant/menu/requests/r1/withdraw'),
+        hasLength(1),
+      );
+      expect(find.text('الاسم المطلوب: شاورما دجاج'), findsNothing);
+      await app.done(tester);
+    },
+  );
+
+  testWidgets(
+    'a cashier sees the badge but neither the forms nor «سحب الطلب»',
+    (tester) async {
+      final app = _App();
+      app.server.on('/v1/merchant/menu', [
+        FakeAnswer(
+          200,
+          _changed(
+            (menu) => _row(menu, _falafel)['pending'] = [
+              _pending('r1', 'photo', photoKey: 'menu/items/b.jpg'),
+            ],
+          ),
+        ),
+      ]);
+      await app.pump(tester, [FakeAnswer(200, _status())]);
+      await _open(tester);
+      expect(
+        find.text(
+          'صورة جديدة بانتظار المراجعة؛ تبقى الصورة الحالية حتى الموافقة',
+        ),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('withdraw-r1')), findsNothing);
+      expect(find.byKey(const Key('menu-add-category')), findsNothing);
+      expect(find.byKey(const Key('text-item-$_falafel')), findsNothing);
+      await app.done(tester);
+    },
+  );
+
+  testWidgets(
+    "an owner asks a group's new option, keeping the published deltas",
+    (tester) async {
+      const family = '30000000-0000-4000-8000-000000000009';
+      final app = _App(role: 'owner', ids: [family]);
+      app.server
+        ..on('/v1/merchant/menu', [FakeAnswer(200, _menu())])
+        ..on('/v1/merchant/menu/requests/option-groups/$_size', [
+          FakeAnswer(200, _menu()),
+        ]);
+      await app.pump(tester, [FakeAnswer(200, _status())]);
+      await _open(tester);
+      await _tap(tester, 'edit-group-$_size');
+      final delta = tester.widget<TextField>(
+        find.byKey(const Key('option-delta-0')),
+      );
+      expect(delta.enabled, isFalse);
+      await _tap(tester, 'group-add-option');
+      await tester.enterText(find.byKey(const Key('option-name-1')), 'عائلي');
+      await tester.enterText(find.byKey(const Key('option-delta-1')), '50');
+      await _tap(tester, 'group-send');
+      expect(
+        _body(
+          app.server
+              .to('/v1/merchant/menu/requests/option-groups/$_size')
+              .single,
+        ),
+        {
+          'name': 'الحجم',
+          'minChoices': 1,
+          'maxChoices': 1,
+          'itemIds': [_shawarma],
+          'options': [
+            {
+              'id': _large,
+              'name': 'كبير',
+              'priceDelta': {'amount': '2000', 'currency': 'TRY'},
+            },
+            {
+              'id': family,
+              'name': 'عائلي',
+              'priceDelta': {'amount': '5000', 'currency': 'TRY'},
+            },
+          ],
+        },
+      );
+      await app.done(tester);
+    },
+  );
+
   test('the menu rules (RA §9.2–9.6)', () {
     expect(moved(['a', 'b', 'c'], 'b', -1), ['b', 'a', 'c']);
     expect(moved(['a', 'b'], 'a', -1), isNull);
@@ -486,5 +784,16 @@ void main() {
       changesMenu({'type': 'restaurant.state_changed', 'kind': 'auto_paused'}),
       isFalse,
     );
+    // RA §18: a review's decision changes the menu (slice 2.32b).
+    expect(
+      changesMenu({
+        'type': 'restaurant.state_changed',
+        'kind': 'menu_change_rejected',
+      }),
+      isTrue,
+    );
+    expect(publishedIds([(id: 'a', isNew: false), (id: 'b', isNew: true)]), [
+      'a',
+    ]);
   });
 }

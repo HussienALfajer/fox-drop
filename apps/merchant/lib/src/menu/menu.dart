@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../api.dart';
 import '../device.dart';
+import '../support/report_photo.dart';
 
 typedef Menu = MerchantMenuDtoOutput;
 typedef MenuCategory = MerchantMenuDtoOutputCategoriesInner;
@@ -19,6 +20,11 @@ typedef MenuOption =
 typedef PriceLogEntry = MerchantPriceLogDtoOutputEntriesInner;
 typedef BulkPreview = MerchantMenuBulkPreviewDtoOutput;
 typedef PreviewCategory = MerchantMenuPreviewCategoryOutput;
+typedef Pending = MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner;
+typedef PendingField =
+    MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum;
+typedef MenuGroup = MerchantMenuDtoOutputOptionGroupsInner;
+typedef GroupOption = MerchantMenuDtoOutputOptionGroupsInnerOptionsInner;
 
 /// What a row is, for the availability switch (RA §9.3).
 enum RowType { category, item, option }
@@ -27,9 +33,44 @@ enum RowType { category, item, option }
 enum OffFor { tomorrow, untilBack }
 
 /// The kinds of `restaurant.state_changed` after which the menu is read
-/// again (RA §18 «menu changed», slice 2.32a): the restaurant's own change
-/// on another device, and an admin's price change.
-const menuKinds = {'menu_changed', 'price_change', 'price_change_bulk'};
+/// again (RA §18 «menu changed», slices 2.32a and 2.32b): the restaurant's
+/// own change on another device, an admin's price change and a review's
+/// decision.
+const menuKinds = {
+  'menu_changed',
+  'price_change',
+  'price_change_bulk',
+  'menu_change_approved',
+  'menu_change_rejected',
+};
+
+/// RA §9.5: a row waiting for review as a new one (its request `created`):
+/// customers do not see it, and only its request can change it.
+bool isNew(Iterable<Pending> pending) =>
+    pending.any((each) => each.field == PendingField.created);
+
+/// A new row's id (RA §9.2): the app names it, so sending a request again
+/// changes that row and never adds a second one. Tests give their own.
+final newMenuIdProvider = Provider<String Function()>((ref) => uuidV4);
+
+/// The menu's currency, from its prices (the base): null for a menu without
+/// a price yet, which onboarding never leaves past activation.
+String? menuCurrency(Menu menu) =>
+    menu.categories
+        .expand((c) => c.items)
+        .map((i) => i.price.currency)
+        .firstOrNull ??
+    menu.optionGroups
+        .expand((g) => g.options)
+        .map((o) => o.priceDelta.currency)
+        .firstOrNull;
+
+/// The published rows' ids in order, which the reorder names (RA §9.2: a new
+/// row takes the end once approved).
+List<String> publishedIds(Iterable<({String id, bool isNew})> rows) => [
+  for (final row in rows)
+    if (!row.isNew) row.id,
+];
 
 bool changesMenu(Map<String, Object?> publication) =>
     publication['type'] == 'restaurant.state_changed' &&
@@ -93,17 +134,23 @@ enum MenuRefusal {
   terminated,
   gone,
   priceReachesZero,
+  notPending,
+  photo,
   other,
 }
 
 MenuRefusal refusalOf(DioException error) {
   final body = error.response?.data;
-  return switch (body is Map ? body['error'] : null) {
+  final code = body is Map ? body['error'] : null;
+  return switch (code) {
     'invalid_menu' => MenuRefusal.invalid,
     'owner_only' => MenuRefusal.ownerOnly,
     'restaurant_terminated' => MenuRefusal.terminated,
-    'unknown_menu_row' => MenuRefusal.gone,
+    'unknown_menu_row' || 'unknown_change_request' => MenuRefusal.gone,
     'price_reaches_zero' => MenuRefusal.priceReachesZero,
+    // RA §9.5: decided by operations, or withdrawn, meanwhile.
+    'request_not_pending' => MenuRefusal.notPending,
+    String() when code.startsWith('upload_') => MenuRefusal.photo,
     _ => MenuRefusal.other,
   };
 }
@@ -131,7 +178,7 @@ List<QuickRow> quickRows(Menu menu, {String query = '', String? categoryId}) {
   return [
     for (final category in menu.categories)
       if (categoryId == null || category.id == categoryId)
-        for (final item in category.items) ...[
+        for (final item in category.items.where((i) => !isNew(i.pending))) ...[
           if (matches(item.name)) QuickRow.item(category, item),
           for (final group in item.optionGroups)
             for (final option in group.options)
@@ -282,6 +329,99 @@ class MenuCommands {
     ),
   );
 
+  /// RA §9.2 «After admin review» (slice 2.32b): a new category (a new id)
+  /// or a category's name, as a request «بانتظار المراجعة».
+  Future<MenuRefusal?> requestCategory(String categoryId, String name) => _menu(
+    () => _api.merchantMenuRequestCategory(
+      categoryId: categoryId,
+      merchantCategoryRequestDto: MerchantCategoryRequestDto(
+        (b) => b.name = name,
+      ),
+    ),
+  );
+
+  /// A new item (a new id) with its price and photo, or the one waiting for
+  /// review edited; the photo is uploaded first, once.
+  Future<MenuRefusal?> requestNewItem(String itemId, NewItem item) =>
+      _run(() async {
+        final uploadId = item.photo == null
+            ? null
+            : await uploadItemPhoto(_ref, item.photo!);
+        final answer = await _api.merchantMenuRequestNewItem(
+          itemId: itemId,
+          merchantNewItemRequestDto: MerchantNewItemRequestDto(
+            (b) => b
+              ..categoryId = item.categoryId
+              ..name = item.name
+              ..description = item.description
+              ..price.amount = item.price
+              ..price.currency = item.currency
+              ..uploadId = uploadId,
+          ),
+        );
+        _ref.read(menuProvider.notifier).answered(answer.data!);
+      });
+
+  /// A published item's name and description (RA §9.5: one request per
+  /// field; the published value withdraws its request).
+  Future<MenuRefusal?> requestItemText(
+    String itemId,
+    String name,
+    String? description,
+  ) => _menu(
+    () => _api.merchantMenuRequestItemText(
+      itemId: itemId,
+      merchantItemTextRequestDto: MerchantItemTextRequestDto(
+        (b) => b
+          ..name = name
+          ..description = description,
+      ),
+    ),
+  );
+
+  /// RA §9.2: a new or replaced photo; the old one stays until approval.
+  Future<MenuRefusal?> requestItemPhoto(String itemId, ItemPhoto photo) =>
+      _run(() async {
+        final uploadId = await uploadItemPhoto(_ref, photo);
+        final answer = await _api.merchantMenuRequestItemPhoto(
+          itemId: itemId,
+          merchantItemPhotoRequestDto: MerchantItemPhotoRequestDto(
+            (b) => b.uploadId = uploadId,
+          ),
+        );
+        _ref.read(menuProvider.notifier).answered(answer.data!);
+      });
+
+  /// A new option group (a new id) or a group's name, choices, items, new
+  /// options and options' names.
+  Future<MenuRefusal?> requestOptionGroup(String groupId, GroupRequest group) =>
+      _menu(
+        () => _api.merchantMenuRequestOptionGroup(
+          groupId: groupId,
+          merchantOptionGroupRequestDto: MerchantOptionGroupRequestDto(
+            (b) => b
+              ..name = group.name
+              ..minChoices = group.minChoices
+              ..maxChoices = group.maxChoices
+              ..itemIds = ListBuilder(group.itemIds)
+              ..options = ListBuilder([
+                for (final option in group.options)
+                  MerchantRequestOption(
+                    (o) => o
+                      ..id = option.id
+                      ..name = option.name
+                      ..priceDelta.amount = option.delta
+                      ..priceDelta.currency = option.currency,
+                  ),
+              ]),
+          ),
+        ),
+      );
+
+  /// RA §9.5: the owner withdraws a pending request.
+  Future<MenuRefusal?> withdraw(String requestId) =>
+      _menu(() => _api.merchantMenuWithdraw(requestId: requestId));
+
   /// The before and after of the bulk change (AP §9.6.6); a read.
   Future<(BulkPreview?, MenuRefusal?)> previewBulk(BulkChange change) async {
     try {
@@ -408,3 +548,79 @@ bool isTerminated(Object error) =>
 /// A read refused to a cashier (RA §6: the owners' screens).
 bool isOwnerOnly(Object error) =>
     error is DioException && refusalOf(error) == MenuRefusal.ownerOnly;
+
+/// A new item as the owner asks it (RA §9.2: its price is part of the
+/// request).
+class NewItem {
+  const NewItem({
+    required this.categoryId,
+    required this.name,
+    required this.description,
+    required this.price,
+    required this.currency,
+    this.photo,
+  });
+
+  final String categoryId;
+  final String name;
+  final String? description;
+
+  /// Minor units.
+  final String price;
+  final String currency;
+
+  /// A new photo; null keeps the one asked.
+  final ItemPhoto? photo;
+}
+
+/// An option group as the owner asks it.
+class GroupRequest {
+  const GroupRequest({
+    required this.name,
+    required this.minChoices,
+    required this.maxChoices,
+    required this.itemIds,
+    required this.options,
+  });
+
+  final String name;
+  final int minChoices;
+  final int maxChoices;
+  final List<String> itemIds;
+  final List<({String id, String name, String delta, String currency})> options;
+}
+
+/// A photo on its way into a request: uploaded once, then sent by its
+/// upload id however often the request is sent again.
+class ItemPhoto {
+  ItemPhoto(this.photo);
+
+  final PickedPhoto photo;
+  String? uploadId;
+}
+
+/// Uploads the photo unless it was: `POST /v1/merchant/uploads/item-photo`
+/// for a signed PUT into public-media, then the PUT. Answers its upload id.
+Future<String> uploadItemPhoto(Ref ref, ItemPhoto photo) async {
+  final known = photo.uploadId;
+  if (known != null) return known;
+  final answer = await ref
+      .read(coreApiProvider)
+      .getMerchantApi()
+      .merchantMenuItemPhotoUpload(
+        merchantNewUploadDto: MerchantNewUploadDto(
+          (b) => b
+            ..contentType = _uploadTypes[photo.photo.contentType]
+            ..sizeBytes = photo.photo.bytes.length,
+        ),
+      );
+  final upload = answer.data!;
+  await ref.read(photoPutProvider)(upload.url, photo.photo);
+  return photo.uploadId = upload.uploadId;
+}
+
+const _uploadTypes = {
+  'image/jpeg': MerchantNewUploadDtoContentTypeEnum.imageSlashJpeg,
+  'image/png': MerchantNewUploadDtoContentTypeEnum.imageSlashPng,
+  'image/webp': MerchantNewUploadDtoContentTypeEnum.imageSlashWebp,
+};

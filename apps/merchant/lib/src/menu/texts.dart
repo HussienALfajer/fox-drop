@@ -23,13 +23,46 @@ String windowText(AppLocalizations l10n, MenuCategory category) {
   );
 }
 
-String refusalText(AppLocalizations l10n, MenuRefusal refusal) =>
-    switch (refusal) {
-      MenuRefusal.invalid => l10n.merchantMenuInvalidPrice,
-      MenuRefusal.terminated => l10n.merchantMenuTerminated,
-      MenuRefusal.priceReachesZero => l10n.merchantMenuBulkRefused,
-      _ => l10n.merchantSaveFailed,
-    };
+String refusalText(
+  AppLocalizations l10n,
+  MenuRefusal refusal, {
+  bool request = false,
+}) => switch (refusal) {
+  MenuRefusal.invalid when request => l10n.merchantMenuRequestInvalid,
+  MenuRefusal.invalid => l10n.merchantMenuInvalidPrice,
+  MenuRefusal.terminated => l10n.merchantMenuTerminated,
+  MenuRefusal.priceReachesZero => l10n.merchantMenuBulkRefused,
+  MenuRefusal.notPending => l10n.merchantMenuRequestGone,
+  MenuRefusal.photo => l10n.merchantMenuPhotoFailed,
+  _ => l10n.merchantSaveFailed,
+};
+
+/// RA §9.5: what a pending request asks, beside its row; `itemName` names a
+/// group's items.
+String pendingText(
+  AppLocalizations l10n,
+  Pending pending,
+  String Function(String id) itemName,
+) => switch (pending.field) {
+  PendingField.created => l10n.merchantMenuPendingNew,
+  PendingField.rename => l10n.merchantMenuPendingName(pending.name ?? ''),
+  PendingField.description =>
+    pending.description == null
+        ? l10n.merchantMenuPendingNoDescription
+        : l10n.merchantMenuPendingDescription(pending.description!),
+  PendingField.photo => l10n.merchantMenuPendingPhoto,
+  PendingField.choices => l10n.merchantMenuPendingChoices(
+    '${pending.minChoices}',
+    '${pending.maxChoices}',
+  ),
+  PendingField.items =>
+    pending.itemIds == null || pending.itemIds!.isEmpty
+        ? l10n.merchantMenuPendingNoItems
+        : l10n.merchantMenuPendingItems(
+            pending.itemIds!.map(itemName).join('، '),
+          ),
+  _ => l10n.merchantMenuPendingReview,
+};
 
 /// Who changed a price (RA §9.4): the restaurant user, or «FOX DROP».
 String changedByText(AppLocalizations l10n, PriceLogEntry entry) =>
