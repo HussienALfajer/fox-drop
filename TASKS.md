@@ -14,10 +14,10 @@ Slice 2.32b, change requests and their review (`docs/roadmap.md`, Phase 2). It m
 - **Plan:**
   - [x] Server, failing tests first (`change-requests.service.ts`): the owners' requests under `/v1/merchant/menu/requests`: a category (new, or its name), an item (new with its category, name, description, price and photo; or a published item's name and description), an item's photo (the old one stays until approval), an option group (new with its options and items; or a published group's name, choices, items, new options and option names); each a pending request (a newer edit replaces its value, one per field; the same value as published withdraws it); `POST …/requests/{id}/withdraw`; the menu read answers the pending values, the badge and the unpublished new rows; the merchant photo upload (`POST /v1/merchant/uploads/item-photo`, nginx `/public-media/incoming/` on the API host); the reorder names only published rows.
   - [x] Server: the panel's `GET /v1/admin/menu-change-requests` (oldest first, with the age), `GET …/{id}` (before and after), `POST …/{id}/approve` (a text correction) and `POST …/{id}/reject` (a reason), `menus.review_change_requests`, audited, publishing in the approval's transaction with `menu_changed`, and the owners' silent push (RA §16 #22) through the state outbox.
-  - [ ] `pnpm generate:api`; the panel's «طلبات تعديل القائمة» with before and after and the customer preview.
+  - [x] `pnpm generate:api`; the panel's «طلبات تعديل القائمة» with before and after and the customer preview.
   - [ ] Restaurant app: the request forms, the badge «بانتظار المراجعة», the pending value and «سحب الطلب».
   - [ ] Tests (server, panel and widget), `checker`, `reviewer` against RA §9.2, §9.5 and AP §9.6.7; the pull request.
-- **Stopped at:** the server and the regenerated clients; next the panel's «طلبات تعديل القائمة».
+- **Stopped at:** the server and the panel; next the restaurant app's request forms.
 
 ### Left from 2.32a (the cloud session's branch)
 
