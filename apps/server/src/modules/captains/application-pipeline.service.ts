@@ -163,8 +163,8 @@ interface Outcome {
   before?: Record<string, unknown>;
   after?: Record<string, unknown>;
   reason?: string | null;
-  // Undefined: the stage it moved to, if any (CA §14 #29).
-  notice?: ApplicationNotice | null;
+  // What the applicant is told besides the stage it moved to (CA §14 #29).
+  notices?: ApplicationNotice[];
 }
 
 // AP §9.7.1 (slice 2.34b): the panel's pipeline of captain applications:
@@ -431,7 +431,7 @@ export class ApplicationPipelineService {
         reason,
         ...(reason === null
           ? {}
-          : { notice: { kind: 'document_rejected', document: document.kind, reason } }),
+          : { notices: [{ kind: 'document_rejected', document: document.kind, reason }] }),
       };
     });
   }
@@ -455,7 +455,11 @@ export class ApplicationPipelineService {
       now,
     );
     await this.act(applicationId, admin, 'upload_document', now, async (tx, locked) => {
-      await this.applications.storeDocument(tx, locked, kind, checked, admin.actor.id!, now);
+      if (
+        !(await this.applications.storeDocument(tx, locked, kind, checked, admin.actor.id!, now))
+      ) {
+        return null;
+      }
       return {
         event: { kind: 'document_upload', documentKind: kind },
         audit: 'document_upload',
@@ -496,7 +500,7 @@ export class ApplicationPipelineService {
         audit: 'document_request',
         after: { kind: request.kind },
         reason: request.reason,
-        notice: { kind: 'document_requested', document: request.kind, reason: request.reason },
+        notices: [{ kind: 'document_requested', document: request.kind, reason: request.reason }],
       };
     });
   }
@@ -509,13 +513,12 @@ export class ApplicationPipelineService {
     idempotencyKey: string,
     now = new Date(),
   ): Promise<void> {
-    if (await this.noted(this.database.db, admin, idempotencyKey)) return;
+    if (await this.noted(this.database.db, applicationId, admin, idempotencyKey)) return;
     await this.act(applicationId, admin, 'note', now, async (tx) => {
-      if (await this.noted(tx, admin, idempotencyKey)) return null;
+      if (await this.noted(tx, applicationId, admin, idempotencyKey)) return null;
       return {
         event: { kind: 'note', note, idempotencyKey },
         audit: 'note',
-        notice: null,
       };
     });
   }
@@ -552,7 +555,8 @@ export class ApplicationPipelineService {
         audit: 'interview',
         before: current === null ? {} : { interviewAt: current.at.toISOString() },
         after: { interviewAt: interview.at.toISOString(), place: interview.place },
-        notice: { kind: 'stage', stage: 'interview' },
+        // A new time is told even when the stage stays.
+        notices: [{ kind: 'stage', stage: 'interview' }],
       };
     });
   }
@@ -572,11 +576,20 @@ export class ApplicationPipelineService {
     reason: string,
     now = new Date(),
   ): Promise<void> {
-    return this.act(applicationId, admin, 'reject', now, async () => ({
-      set: { rejectedAt: now, rejectionReason: reason },
-      audit: 'reject',
-      reason,
-    }));
+    return this.act(applicationId, admin, 'reject', now, async (tx, row) => {
+      // Nothing more is uploaded to a rejected application: its open
+      // requests close with it.
+      await tx
+        .update(applicationDocumentRequests)
+        .set({ fulfilledAt: now })
+        .where(
+          and(
+            eq(applicationDocumentRequests.applicationId, row.id),
+            isNull(applicationDocumentRequests.fulfilledAt),
+          ),
+        );
+      return { set: { rejectedAt: now, rejectionReason: reason }, audit: 'reject', reason };
+    });
   }
 
   // «قائمة انتظار» when no captains are needed now; the applicant is told.
@@ -661,13 +674,14 @@ export class ApplicationPipelineService {
         },
         tx,
       );
-      const notice =
-        outcome.notice !== undefined
-          ? outcome.notice
-          : stage !== row.stage
-            ? ({ kind: 'stage', stage } as const)
-            : null;
-      await this.applications.notify(tx, changeOf(updated!, eventId!, now, notice, timeZone));
+      // The stage it moved to, unless the action tells it itself, then the
+      // action's own notices.
+      const own = outcome.notices ?? [];
+      const notices: ApplicationNotice[] =
+        stage !== row.stage && !own.some((notice) => notice.kind === 'stage')
+          ? [{ kind: 'stage', stage }, ...own]
+          : own;
+      await this.applications.notify(tx, changeOf(updated!, eventId!, now, notices, timeZone));
     });
   }
 
@@ -682,6 +696,7 @@ export class ApplicationPipelineService {
 
   private async noted(
     executor: Pick<Database['db'], 'select'>,
+    applicationId: string,
     admin: PipelineAdmin,
     idempotencyKey: string,
   ): Promise<boolean> {
@@ -690,6 +705,7 @@ export class ApplicationPipelineService {
       .from(applicationEvents)
       .where(
         and(
+          eq(applicationEvents.applicationId, applicationId),
           eq(applicationEvents.actorId, admin.actor.id!),
           eq(applicationEvents.idempotencyKey, idempotencyKey),
         ),

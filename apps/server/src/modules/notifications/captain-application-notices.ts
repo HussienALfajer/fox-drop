@@ -46,16 +46,21 @@ export class CaptainApplicationNotices implements OnModuleInit {
         change.stage === 'new' ? ['captain_application'] : [],
         change.at,
       );
-      const push = await this.push(tx, change);
-      if (push !== null) await this.pushes.enqueue(tx, [push], change.at);
+      const pushes: QueuedPush[] = [];
+      for (const notice of change.notices) {
+        const push = await this.push(tx, change, notice);
+        if (push !== null) pushes.push(push);
+      }
+      if (pushes.length > 0) await this.pushes.enqueue(tx, pushes, change.at);
     });
   }
 
   private async push(
     tx: Parameters<NotificationTexts['render']>[2],
     change: ApplicationChange,
+    notice: ApplicationNotice,
   ): Promise<QueuedPush | null> {
-    const message = this.message(change, change.notice);
+    const message = this.message(change, notice);
     if (message === null) return null;
     const rendered = await this.texts.render(message.templateKey, message.values, tx);
     return {
@@ -72,9 +77,9 @@ export class CaptainApplicationNotices implements OnModuleInit {
 
   private message(
     change: ApplicationChange,
-    notice: ApplicationNotice | null,
+    notice: ApplicationNotice,
   ): { templateKey: string; values: Record<string, string> } | null {
-    if (notice === null || notice.kind === 'submitted') return null;
+    if (notice.kind === 'submitted') return null;
     if (notice.kind === 'document_requested') {
       return {
         templateKey: 'captain.application_document_requested',

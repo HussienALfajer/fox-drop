@@ -514,6 +514,7 @@ export const applicationDocumentRequests = captains.table(
     uniqueIndex('application_document_requests_open')
       .on(table.applicationId, table.kind)
       .where(sql`${table.fulfilledAt} IS NULL`),
+    index('application_document_requests_application').on(table.applicationId),
   ],
 );
 
@@ -556,9 +557,17 @@ export const applicationEvents = captains.table(
   (table) => [
     check('application_events_kind_values', sql`${table.kind} IN (${eventKindValues})`),
     uniqueIndex('application_events_key')
-      .on(table.actorId, table.idempotencyKey)
+      .on(table.applicationId, table.actorId, table.idempotencyKey)
       .where(sql`${table.idempotencyKey} IS NOT NULL`),
     check('application_events_stage_values', sql`${table.stage} IN (${stageValues})`),
+    check(
+      'application_events_document_kind_values',
+      sql`${table.documentKind} IN (${documentKindValues})`,
+    ),
+    check(
+      'application_events_document_status_values',
+      sql`${table.documentStatus} IN ('pending', 'accepted', 'rejected')`,
+    ),
     index('application_events_application').on(table.applicationId, table.at),
   ],
 );

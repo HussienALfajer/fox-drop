@@ -93,7 +93,9 @@ export type ApplicationNotice =
   | { kind: 'document_rejected'; document: ApplicationDocumentKind; reason: string };
 
 // Heard in the transaction of every change of a sent application: the alert
-// «طلب انضمام كابتن» and the applicant's push (notifications).
+// «طلب انضمام كابتن» and the applicant's pushes (notifications), one per
+// notice: a document asked for on a «جديد» application tells both the stage
+// and the request.
 export interface ApplicationChange {
   applicationId: string;
   accountId: string;
@@ -103,7 +105,7 @@ export interface ApplicationChange {
   // The event that tells it: names the push once.
   eventId: string;
   at: Date;
-  notice: ApplicationNotice | null;
+  notices: ApplicationNotice[];
   interview: Interview | null;
   rejection: Rejection | null;
   timeZone: string;
@@ -371,7 +373,7 @@ export class ApplicationsService {
         };
         if (!uploadAgain(again, kind)) throw new ApplicationRefusedError('application_submitted');
       }
-      await this.storeDocument(tx, locked, kind, checked, applicant.accountId, now);
+      if (!(await this.storeDocument(tx, locked, kind, checked, applicant.accountId, now))) return;
       await tx.update(applications).set({ updatedAt: now }).where(eq(applications.id, locked.id));
       if (locked.stage !== 'draft') {
         await tx.insert(applicationEvents).values({
@@ -441,7 +443,8 @@ export class ApplicationsService {
   // A checked document's row, in the caller's transaction under the
   // application's lock: it replaces the one in force and answers the
   // panel's open request for it. `uploadedBy` is the applicant's account or
-  // the admin's (the office's scan).
+  // the admin's (the office's scan). The files of the document in force sent
+  // again change nothing (a retry): it answers false.
   async storeDocument(
     tx: Tx,
     application: { id: string; vehicle: Vehicle | null },
@@ -449,7 +452,7 @@ export class ApplicationsService {
     checked: CheckedDocument,
     uploadedBy: string,
     now: Date,
-  ): Promise<void> {
+  ): Promise<boolean> {
     // Checked again under the lock: a vehicle changed since the read.
     if (
       kind === 'vehicle_papers' &&
@@ -458,6 +461,7 @@ export class ApplicationsService {
       throw new ApplicationRefusedError('document_not_needed');
     }
     const fileKeys: string[] = [];
+    let sameFiles = 0;
     for (const uploadId of checked.uploadIds) {
       const { key, alreadyLinked } = await this.files.link(tx, uploadId, now);
       // A file linked before belongs to another document (or to this one
@@ -475,8 +479,22 @@ export class ApplicationsService {
             ),
           );
         if (!same) throw new ApplicationRefusedError('invalid_files');
+        sameFiles += 1;
       }
       fileKeys.push(key);
+    }
+    if (sameFiles === fileKeys.length) {
+      const [inForce] = await tx
+        .select({ fileKeys: applicationDocuments.fileKeys })
+        .from(applicationDocuments)
+        .where(
+          and(
+            eq(applicationDocuments.applicationId, application.id),
+            eq(applicationDocuments.kind, kind),
+            isNull(applicationDocuments.replacedAt),
+          ),
+        );
+      if (inForce?.fileKeys.length === fileKeys.length) return false;
     }
     await tx
       .update(applicationDocuments)
@@ -509,6 +527,7 @@ export class ApplicationsService {
           isNull(applicationDocumentRequests.fulfilledAt),
         ),
       );
+    return true;
   }
 
   // Step 5 «إرسال الطلب»: the draft becomes «جديد» once nothing is missing,
@@ -554,7 +573,7 @@ export class ApplicationsService {
             stage: 'new',
           })
           .returning({ id: applicationEvents.id });
-        await this.notify(tx, changeOf(row!, event!.id, now, { kind: 'submitted' }, timeZone));
+        await this.notify(tx, changeOf(row!, event!.id, now, [{ kind: 'submitted' }], timeZone));
       });
     } catch (error) {
       // A submission at the same time sent it: answer it.
@@ -702,7 +721,7 @@ export function changeOf(
   row: ApplicationRow,
   eventId: string,
   at: Date,
-  notice: ApplicationNotice | null,
+  notices: ApplicationNotice[],
   timeZone: string,
 ): ApplicationChange {
   return {
@@ -713,7 +732,7 @@ export function changeOf(
     stage: row.stage,
     eventId,
     at,
-    notice,
+    notices,
     interview: interviewOf(row),
     rejection: rejectionOf(row),
     timeZone,

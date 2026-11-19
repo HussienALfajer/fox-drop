@@ -19,6 +19,7 @@ import { CurrentAdminSession, RequirePermission } from '../../http/access.js';
 import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
+import { AuditService } from '../audit/index.js';
 import { FilesRefusedError } from '../files/index.js';
 import type { AdminSession } from '../identity/index.js';
 import { vehicles } from '../settings/index.js';
@@ -203,7 +204,38 @@ class AdminCaptainApplicationRejectDto extends createZodDto(
 // 409 wrong_stage with the application's `stage`.
 @AdminController('captain-applications')
 export class AdminCaptainApplicationsController {
-  constructor(private readonly pipeline: ApplicationPipelineService) {}
+  constructor(
+    private readonly pipeline: ApplicationPipelineService,
+    private readonly audit: AuditService,
+  ) {}
+
+  // Runs the action, then answers the review page. The applicant's number
+  // in full (captains.manage, who calls to schedule the interview) is
+  // audited as a view each time (`captain_application.phone_view`, AP §14),
+  // as the restaurants' accounts are; masked for any other reader.
+  private async page(
+    applicationId: string,
+    session: AdminSession,
+    request: FastifyRequest,
+    run: () => Promise<void>,
+  ) {
+    try {
+      await run();
+      const review = await this.pipeline.review(applicationId);
+      if (review.phone !== null && session.permissions.includes('captains.manage')) {
+        await this.audit.recordView({
+          actor: adminOf(session, request).actor,
+          context: requestContext(request),
+          cityId: review.cityId,
+          action: 'captain_application.phone_view',
+          target: { type: 'captain_application', id: review.id },
+        });
+      }
+      return body(review, session);
+    } catch (error) {
+      throw refused(error);
+    }
+  }
 
   @Get()
   @RequirePermission('captains.read')
@@ -226,8 +258,9 @@ export class AdminCaptainApplicationsController {
   review(
     @Param() params: AdminCaptainApplicationParamsDto,
     @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
   ) {
-    return page(this.pipeline, params.applicationId, session, async () => undefined);
+    return this.page(params.applicationId, session, request, async () => undefined);
   }
 
   // 404 unknown_document; 409 document_replaced (a newer upload).
@@ -241,7 +274,7 @@ export class AdminCaptainApplicationsController {
     @CurrentAdminSession() session: AdminSession,
     @Req() request: FastifyRequest,
   ) {
-    return page(this.pipeline, params.applicationId, session, () =>
+    return this.page(params.applicationId, session, request, () =>
       this.pipeline.reviewDocument(params.applicationId, adminOf(session, request), {
         documentId: params.documentId,
         status: body.status,
@@ -262,7 +295,7 @@ export class AdminCaptainApplicationsController {
     @CurrentAdminSession() session: AdminSession,
     @Req() request: FastifyRequest,
   ) {
-    return page(this.pipeline, params.applicationId, session, () =>
+    return this.page(params.applicationId, session, request, () =>
       this.pipeline.uploadDocument(
         params.applicationId,
         adminOf(session, request),
@@ -283,7 +316,7 @@ export class AdminCaptainApplicationsController {
     @CurrentAdminSession() session: AdminSession,
     @Req() request: FastifyRequest,
   ) {
-    return page(this.pipeline, params.applicationId, session, () =>
+    return this.page(params.applicationId, session, request, () =>
       this.pipeline.requestDocument(params.applicationId, adminOf(session, request), body),
     );
   }
@@ -300,7 +333,7 @@ export class AdminCaptainApplicationsController {
     @CurrentAdminSession() session: AdminSession,
     @Req() request: FastifyRequest,
   ) {
-    return page(this.pipeline, params.applicationId, session, () =>
+    return this.page(params.applicationId, session, request, () =>
       this.pipeline.addNote(
         params.applicationId,
         adminOf(session, request),
@@ -320,7 +353,7 @@ export class AdminCaptainApplicationsController {
     @CurrentAdminSession() session: AdminSession,
     @Req() request: FastifyRequest,
   ) {
-    return page(this.pipeline, params.applicationId, session, () =>
+    return this.page(params.applicationId, session, request, () =>
       this.pipeline.scheduleInterview(params.applicationId, adminOf(session, request), {
         ...body,
         at: new Date(body.at),
@@ -337,7 +370,7 @@ export class AdminCaptainApplicationsController {
     @CurrentAdminSession() session: AdminSession,
     @Req() request: FastifyRequest,
   ) {
-    return page(this.pipeline, params.applicationId, session, () =>
+    return this.page(params.applicationId, session, request, () =>
       this.pipeline.trainingPassed(params.applicationId, adminOf(session, request)),
     );
   }
@@ -352,7 +385,7 @@ export class AdminCaptainApplicationsController {
     @CurrentAdminSession() session: AdminSession,
     @Req() request: FastifyRequest,
   ) {
-    return page(this.pipeline, params.applicationId, session, () =>
+    return this.page(params.applicationId, session, request, () =>
       this.pipeline.reject(params.applicationId, adminOf(session, request), body.reason),
     );
   }
@@ -366,7 +399,7 @@ export class AdminCaptainApplicationsController {
     @CurrentAdminSession() session: AdminSession,
     @Req() request: FastifyRequest,
   ) {
-    return page(this.pipeline, params.applicationId, session, () =>
+    return this.page(params.applicationId, session, request, () =>
       this.pipeline.waitlist(params.applicationId, adminOf(session, request)),
     );
   }
@@ -380,7 +413,7 @@ export class AdminCaptainApplicationsController {
     @CurrentAdminSession() session: AdminSession,
     @Req() request: FastifyRequest,
   ) {
-    return page(this.pipeline, params.applicationId, session, () =>
+    return this.page(params.applicationId, session, request, () =>
       this.pipeline.backFromWaitlist(params.applicationId, adminOf(session, request)),
     );
   }
@@ -393,23 +426,9 @@ function adminOf(session: AdminSession, request: FastifyRequest): PipelineAdmin 
   };
 }
 
-// Runs the action, then answers the review page.
-async function page(
-  pipeline: ApplicationPipelineService,
-  applicationId: string,
-  session: AdminSession,
-  run: () => Promise<void>,
-) {
-  try {
-    await run();
-    return body(await pipeline.review(applicationId), session);
-  } catch (error) {
-    throw refused(error);
-  }
-}
-
 // architecture §15.3: a number is masked in the panel unless its holder must
-// act on it (who schedules the interview calls the applicant).
+// act on it (who schedules the interview calls the applicant), its view
+// audited.
 function masked(phone: string): string {
   const code = phone.startsWith('+90') ? '+90' : phone.startsWith('+963') ? '+963' : '+';
   return `${code} ••• ${phone.slice(-3)}`;

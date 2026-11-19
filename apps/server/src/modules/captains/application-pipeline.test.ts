@@ -407,10 +407,10 @@ describe('the pipeline actions (AP §9.7.1, CA §5.4)', () => {
     // Every change the applicant hears, silently, on their account's devices.
     expect(await pushes(who)).toEqual([
       { template_key: 'captain.application_under_review', body: 'طلبك قيد المراجعة.' },
-      { template_key: 'captain.document_rejected', body: 'رُفض إخراج القيد: الصورة غير واضحة' },
+      { template_key: 'captain.document_rejected', body: 'رُفض إخراج قيد: الصورة غير واضحة' },
       {
         template_key: 'captain.application_document_requested',
-        body: 'يرجى رفع شهادة القيادة: نحتاج شهادة القيادة',
+        body: 'يرجى رفع شهادة قيادة: نحتاج شهادة القيادة',
       },
       {
         template_key: 'captain.application_interview',
@@ -422,7 +422,9 @@ describe('the pipeline actions (AP §9.7.1, CA §5.4)', () => {
       },
     ]);
     const { rows: audited } = await sql.query(
-      `SELECT action FROM audit.events WHERE target_id = $1 ORDER BY occurred_at, id`,
+      `SELECT action FROM audit.events
+       WHERE target_id = $1 AND action <> 'captain_application.phone_view'
+       ORDER BY occurred_at, id`,
       [id],
     );
     expect(audited.map((row: { action: string }) => row.action)).toEqual([
@@ -463,6 +465,57 @@ describe('the pipeline actions (AP §9.7.1, CA §5.4)', () => {
       [true, true],
       [false, false],
     ]);
+    // The same files again (a retry) change nothing.
+    const repeated = await ops('PUT', `captain-applications/${id}/documents/civil_registry`, {
+      uploadIds: [asked.json().uploadId],
+    });
+    expect(repeated.statusCode).toBe(200);
+    expect(
+      repeated.json().documents.filter((each: { kind: string }) => each.kind === 'civil_registry'),
+    ).toHaveLength(2);
+    expect(
+      repeated.json().events.filter((each: { kind: string }) => each.kind === 'document_upload'),
+    ).toHaveLength(1);
+  });
+
+  it('tells the stage at a note on «جديد», and both the stage and a request', async () => {
+    const noted = await sent();
+    const ops = await admin('OPS');
+    await ops(
+      'POST',
+      `captain-applications/${await applicationOf(noted)}/notes`,
+      { note: 'أول ملاحظة' },
+      { 'idempotency-key': randomUUID() },
+    );
+    expect((await pushes(noted)).map((each) => each.template_key)).toEqual([
+      'captain.application_under_review',
+    ]);
+    const asked = await sent();
+    await ops('POST', `captain-applications/${await applicationOf(asked)}/document-requests`, {
+      kind: 'driving_licence',
+      reason: 'نحتاجها',
+    });
+    expect((await pushes(asked)).map((each) => each.template_key)).toEqual([
+      'captain.application_under_review',
+      'captain.application_document_requested',
+    ]);
+  });
+
+  it('audits each view of the number in full', async () => {
+    const who = await sent();
+    const id = await applicationOf(who);
+    await (
+      await admin('OPS')
+    )('GET', `captain-applications/${id}`);
+    await (
+      await admin('SUP')
+    )('GET', `captain-applications/${id}`);
+    const { rows } = await sql.query(
+      `SELECT count(*)::int AS n FROM audit.events
+       WHERE target_id = $1 AND action = 'captain_application.phone_view'`,
+      [id],
+    );
+    expect(rows).toEqual([{ n: 1 }]);
   });
 
   it('waitlists, brings back, rejects, and lets the applicant apply again after 30 days', async () => {
@@ -475,9 +528,15 @@ describe('the pipeline actions (AP §9.7.1, CA §5.4)', () => {
     expect((await ops('POST', `captain-applications/${id}/back-from-waitlist`)).json().stage).toBe(
       'under_review',
     );
+    await ops('POST', `captain-applications/${id}/document-requests`, {
+      kind: 'driving_licence',
+      reason: 'نحتاجها',
+    });
     const rejected = await ops('POST', `captain-applications/${id}/reject`, {
       reason: 'لا تتوفر الشروط',
     });
+    // Its open requests close with it.
+    expect(rejected.json().requests).toEqual([]);
     expect(rejected.json()).toMatchObject({
       stage: 'rejected',
       rejection: { reason: 'لا تتوفر الشروط' },
@@ -492,6 +551,7 @@ describe('the pipeline actions (AP §9.7.1, CA §5.4)', () => {
     expect((await pushes(who)).map((each) => each.template_key)).toEqual([
       'captain.application_waitlist',
       'captain.application_under_review',
+      'captain.application_document_requested',
       'captain.application_rejected',
     ]);
 

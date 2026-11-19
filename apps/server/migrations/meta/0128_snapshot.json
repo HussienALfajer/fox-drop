@@ -1,5 +1,5 @@
 {
-  "id": "78e6f233-f9d3-49ed-a5cf-05c60f5d1235",
+  "id": "3b0be56f-cd31-4d10-97e7-26dfe4882ae3",
   "prevId": "a30db63b-1601-44d6-80d4-8d605566aa73",
   "version": "7",
   "dialect": "postgresql",
@@ -223,6 +223,21 @@
           ],
           "isUnique": true,
           "where": "\"captains\".\"application_document_requests\".\"fulfilled_at\" IS NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "application_document_requests_application": {
+          "name": "application_document_requests_application",
+          "columns": [
+            {
+              "expression": "application_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -513,6 +528,12 @@
           "name": "application_events_key",
           "columns": [
             {
+              "expression": "application_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
               "expression": "actor_id",
               "isExpression": false,
               "asc": true,
@@ -580,6 +601,14 @@
         "application_events_stage_values": {
           "name": "application_events_stage_values",
           "value": "\"captains\".\"application_events\".\"stage\" IN ('draft', 'new', 'under_review', 'interview', 'awaiting_kit', 'active', 'waitlist', 'rejected')"
+        },
+        "application_events_document_kind_values": {
+          "name": "application_events_document_kind_values",
+          "value": "\"captains\".\"application_events\".\"document_kind\" IN ('national_id', 'personal_photo', 'civil_registry', 'criminal_record', 'vehicle_papers', 'driving_licence')"
+        },
+        "application_events_document_status_values": {
+          "name": "application_events_document_status_values",
+          "value": "\"captains\".\"application_events\".\"document_status\" IN ('pending', 'accepted', 'rejected')"
         }
       },
       "isRLSEnabled": false

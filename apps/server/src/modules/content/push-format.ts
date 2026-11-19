@@ -50,15 +50,15 @@ export const receiptTypeLabels = {
   customer_dues_payment: 'دفع مستحقات زبون',
 } as const;
 
-// CA §5.3, AP §9.7.1 (slice 2.34b): a captain applicant's documents as the
-// app names them, for the pushes that name one.
+// CA §5.3, AP §9.7.1 (slice 2.34b): a captain applicant's documents in
+// CA §5.3's words, as the app names them, for the pushes that name one.
 export const applicationDocumentLabels = {
   national_id: 'الهوية',
-  personal_photo: 'الصورة الشخصية',
-  civil_registry: 'إخراج القيد',
+  personal_photo: 'صورة شخصية',
+  civil_registry: 'إخراج قيد',
   criminal_record: 'لا حكم عليه',
   vehicle_papers: 'أوراق المركبة',
-  driving_licence: 'شهادة القيادة',
+  driving_licence: 'شهادة قيادة',
 } as const;
 
 const WEEKDAYS = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
