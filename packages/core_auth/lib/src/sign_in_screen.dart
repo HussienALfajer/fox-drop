@@ -14,9 +14,18 @@ import 'sign_in.dart';
 /// design (the design stop in the root `CLAUDE.md`): plain Material widgets,
 /// with the logic in [SignInController].
 class SignInScreen extends ConsumerStatefulWidget {
-  const SignInScreen({super.key, required this.scope, this.notice});
+  const SignInScreen({
+    super.key,
+    required this.scope,
+    this.notice,
+    this.join = false,
+  });
 
   final AuthScope scope;
+
+  /// The captain app's «انضم ككابتن» (CA §5.1): the same steps, titled so,
+  /// whose code reaches a number without an account.
+  final bool join;
 
   /// Shown above the number, such as «سُجّل دخولك من جهاز آخر».
   final String? notice;
@@ -59,7 +68,9 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       if (next == SignInStep.code) _code.clear();
     });
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.signInTitle)),
+      appBar: AppBar(
+        title: Text(widget.join ? l10n.captainJoin : l10n.signInTitle),
+      ),
       body: ListView(
         padding: const EdgeInsetsDirectional.all(16),
         children: switch (state.step) {
@@ -106,12 +117,13 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
           labelText: l10n.signInPhoneLabel,
           errorText: state.invalidPhone ? l10n.signInInvalidPhone : null,
         ),
-        onSubmitted: controller.requestCode,
+        onSubmitted: (input) =>
+            controller.requestCode(input, join: widget.join),
       ),
       FilledButton(
         onPressed: state.busy
             ? null
-            : () => controller.requestCode(_phone.text),
+            : () => controller.requestCode(_phone.text, join: widget.join),
         child: Text(l10n.signInSendCode),
       ),
       if (refusal != null) Text(_message(l10n, refusal)),

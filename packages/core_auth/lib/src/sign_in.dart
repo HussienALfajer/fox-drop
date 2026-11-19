@@ -52,6 +52,10 @@ class SignInController extends Notifier<SignInState> {
 
   final AuthScope _scope;
 
+  /// The captain app's «انضم ككابتن» (CA §5.1): the code goes to a number
+  /// without an account too, and its sign-in makes the applicant's account.
+  bool _join = false;
+
   @override
   SignInState build() => const SignInState();
 
@@ -59,8 +63,10 @@ class SignInController extends Notifier<SignInState> {
     state = SignInState(country: country);
   }
 
-  /// Asks for a code for the number typed in the selected country.
-  Future<void> requestCode(String input) async {
+  /// Asks for a code for the number typed in the selected country; [join]
+  /// is «انضم ككابتن» (CA §5.1), kept for «إعادة الإرسال».
+  Future<void> requestCode(String input, {bool join = false}) async {
+    _join = join;
     final phone = e164Phone(state.country, input);
     if (phone == null) {
       state = SignInState(country: state.country, invalidPhone: true);
@@ -94,6 +100,7 @@ class SignInController extends Notifier<SignInState> {
             phone: phone,
             deviceId: deviceId,
             appCheckToken: appCheckToken,
+            join: _join,
           );
       if (!ref.mounted) return;
       state = SignInState(

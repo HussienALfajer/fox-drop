@@ -4512,4 +4512,223 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get merchantPlatformWindows => 'ويندوز';
+
+  @override
+  String get captainJoin => 'انضم ككابتن';
+
+  @override
+  String get captainApplicationTitle => 'طلب الانضمام';
+
+  @override
+  String get captainApplicationStepPersonal => 'البيانات الشخصية';
+
+  @override
+  String get captainApplicationStepVehicle => 'المركبة';
+
+  @override
+  String get captainApplicationStepDocuments => 'المستندات';
+
+  @override
+  String get captainApplicationStepTerms => 'الشروط';
+
+  @override
+  String get captainApplicationStepReview => 'المراجعة والإرسال';
+
+  @override
+  String get captainApplicationFullName => 'الاسم الثلاثي';
+
+  @override
+  String get captainApplicationBirthDate => 'تاريخ الميلاد';
+
+  @override
+  String get captainApplicationChooseDate => 'اختر التاريخ';
+
+  @override
+  String get captainApplicationNeighbourhood => 'الحي';
+
+  @override
+  String get captainApplicationSaveAndContinue => 'حفظ ومتابعة';
+
+  @override
+  String get captainApplicationPrevious => 'السابق';
+
+  @override
+  String get captainApplicationVehicleMotorbike => 'دراجة نارية';
+
+  @override
+  String get captainApplicationVehicleCar => 'سيارة';
+
+  @override
+  String get captainApplicationVehicleBicycle => 'دراجة هوائية أو كهربائية';
+
+  @override
+  String get captainApplicationVehicleWalking => 'مشياً';
+
+  @override
+  String get captainApplicationPlate => 'رقم اللوحة';
+
+  @override
+  String get captainApplicationLicensedOnly => 'نقبل المركبات المرخّصة فقط';
+
+  @override
+  String get captainDocumentNationalId => 'الهوية';
+
+  @override
+  String get captainDocumentPersonalPhoto => 'صورة شخصية';
+
+  @override
+  String get captainDocumentCivilRegistry => 'إخراج قيد';
+
+  @override
+  String get captainDocumentCriminalRecord => 'لا حكم عليه';
+
+  @override
+  String get captainDocumentVehiclePapers => 'أوراق المركبة';
+
+  @override
+  String get captainDocumentDrivingLicence => 'شهادة قيادة';
+
+  @override
+  String get captainDocumentOptional => 'اختياري';
+
+  @override
+  String get captainDocumentPending => 'بانتظار التحقق';
+
+  @override
+  String get captainDocumentAccepted => 'مقبول';
+
+  @override
+  String captainDocumentRejected(String reason) {
+    return 'مرفوض: $reason';
+  }
+
+  @override
+  String get captainDocumentNotUploaded => 'لم يُرفع بعد';
+
+  @override
+  String get captainDocumentUpload => 'رفع';
+
+  @override
+  String get captainDocumentUploadAgain => 'رفع نسخة جديدة';
+
+  @override
+  String get captainDocumentIdFront => 'الوجه الأمامي';
+
+  @override
+  String get captainDocumentIdBack => 'الوجه الخلفي';
+
+  @override
+  String get captainDocumentIdNumber => 'الرقم الوطني';
+
+  @override
+  String get captainDocumentPhotoHint => 'بخلفية سادة ومن دون نظارات شمسية';
+
+  @override
+  String get captainDocumentIssueDate => 'تاريخ الإصدار';
+
+  @override
+  String captainDocumentExpiresOn(String date) {
+    return 'صالحة حتى $date';
+  }
+
+  @override
+  String captainDocumentPage(String number) {
+    return 'صفحة $number';
+  }
+
+  @override
+  String get captainDocumentTakePhoto => 'التقاط صورة';
+
+  @override
+  String get captainDocumentPickFile => 'اختيار ملف';
+
+  @override
+  String get captainDocumentAddPage => 'إضافة صفحة ثانية';
+
+  @override
+  String get captainDocumentSave => 'حفظ المستند';
+
+  @override
+  String get captainPhotoBlurry => 'الصورة غير واضحة. أعد التصوير.';
+
+  @override
+  String get captainPhotoDark =>
+      'الصورة مظلمة. أعد التصوير في مكان أكثر إضاءة.';
+
+  @override
+  String get captainPhotoUnreadable => 'تعذّرت قراءة الصورة. اختر صورة أخرى.';
+
+  @override
+  String get captainApplicationTermsRead => 'قراءة الشروط والموافقة';
+
+  @override
+  String get captainApplicationTermsAccepted => 'وافقت على الشروط';
+
+  @override
+  String get captainApplicationSubmit => 'إرسال الطلب';
+
+  @override
+  String get captainApplicationMissingTitle => 'أكمل قبل الإرسال:';
+
+  @override
+  String get captainApplicationStageNew => 'أُرسل طلبك. سنراجعه قريباً.';
+
+  @override
+  String get captainApplicationStageUnderReview => 'طلبك قيد المراجعة.';
+
+  @override
+  String get captainApplicationStageInterview => 'مقابلة وتدريب';
+
+  @override
+  String get captainApplicationStageAwaitingKit =>
+      'اجتزت التدريب. استلم العدة ووقّع العقد في المكتب.';
+
+  @override
+  String get captainApplicationStageActive => 'مرحباً بك في FOX DROP!';
+
+  @override
+  String get captainApplicationStageWaitlist =>
+      'لا نحتاج كباتن جدداً حالياً. طلبك محفوظ وسنتواصل معك.';
+
+  @override
+  String get captainApplicationStageRejected => 'مرفوض';
+
+  @override
+  String get captainApplicationInvalidName => 'اكتب اسمك الثلاثي.';
+
+  @override
+  String get captainApplicationTooYoung => 'عمرك أقل من الحد الأدنى للتقديم.';
+
+  @override
+  String get captainApplicationUnknownZone => 'اختر الحي من القائمة.';
+
+  @override
+  String get captainApplicationPlateRequired => 'اكتب رقم اللوحة.';
+
+  @override
+  String get captainApplicationIdNumberRequired =>
+      'اكتب الرقم الوطني كما في الهوية.';
+
+  @override
+  String get captainApplicationTwoSides => 'صوّر وجهَي الهوية.';
+
+  @override
+  String get captainApplicationIssueDateRequired => 'اختر تاريخ إصدار الوثيقة.';
+
+  @override
+  String get captainApplicationIssueDateFuture => 'تاريخ الإصدار بعد اليوم.';
+
+  @override
+  String get captainApplicationDocumentExpired =>
+      'انتهت صلاحية الوثيقة. استخرج وثيقة حديثة.';
+
+  @override
+  String get captainApplicationSubmitted => 'أُرسل طلبك ولا يمكن تعديله الآن.';
+
+  @override
+  String get captainApplicationTooManyUploads =>
+      'رفعت صوراً كثيرة. حاول بعد ساعة.';
+
+  @override
+  String get captainApplicationFailed => 'تعذّر الحفظ. حاول مرة أخرى.';
 }

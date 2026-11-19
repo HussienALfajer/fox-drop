@@ -19,7 +19,8 @@ class PickedPhoto {
 /// The server's largest image (architecture §5.8: 8 MB).
 const maxPhotoBytes = 8 * 1024 * 1024;
 
-enum PhotoSource { camera, gallery }
+/// The front camera takes the applicant's personal photo (CA §5.3).
+enum PhotoSource { camera, frontCamera, gallery }
 
 /// The camera on the phones; elsewhere (tests) a file.
 bool get cameraAvailable =>
@@ -33,9 +34,12 @@ typedef PhotoPicker = Future<PickedPhoto?> Function(PhotoSource source);
 final photoPickerProvider = Provider<PhotoPicker>(
   (ref) => (source) async {
     final file = await ImagePicker().pickImage(
-      source: source == PhotoSource.camera
-          ? ImageSource.camera
-          : ImageSource.gallery,
+      source: source == PhotoSource.gallery
+          ? ImageSource.gallery
+          : ImageSource.camera,
+      preferredCameraDevice: source == PhotoSource.frontCamera
+          ? CameraDevice.front
+          : CameraDevice.rear,
       maxWidth: 1600,
       maxHeight: 1600,
       imageQuality: 80,

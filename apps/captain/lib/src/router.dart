@@ -5,11 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'api.dart';
 import 'auth.dart';
 import 'content.dart';
 import 'custody_screen.dart';
 import 'earnings_screen.dart';
 import 'home_screen.dart';
+import 'joining/application_screen.dart';
+import 'joining/welcome_screen.dart';
 import 'not_found_screen.dart';
 import 'peak_bonus.dart';
 import 'platform.dart';
@@ -23,7 +26,9 @@ import 'support/support_screen.dart';
 import 'terms.dart';
 import 'work/work.dart';
 
-/// Signed out, every route leads to sign-in; signed in, sign-in leads home.
+/// Signed out, every route leads to the entry screen (CA §5.1: «انضم ككابتن»
+/// or «تسجيل الدخول»); signed in, they lead home, or an applicant to the
+/// application (slice 2.34a).
 /// Maintenance or a required update leads to `/blocked`, unless the captain
 /// may finish what they are doing (`captainBlocked`).
 final routerProvider = Provider<GoRouter>((ref) {
@@ -35,16 +40,29 @@ final routerProvider = Provider<GoRouter>((ref) {
     (previous, next) => work.value = next.value?.value,
     fireImmediately: true,
   );
+  // CA §5.1: the session's read tells an applicant (no captain yet).
+  final applicant = ValueNotifier<bool>(false);
+  ref.listen(captainSessionProvider, (previous, next) {
+    final value = next.value;
+    applicant.value = value != null && value.captainId == null;
+  }, fireImmediately: true);
   final platform = ref.watch(platformCheckProvider);
   // The root navigator, which shows a tab's screens above the tabs.
   final root = GlobalKey<NavigatorState>();
   final router = GoRouter(
     navigatorKey: root,
-    refreshListenable: Listenable.merge([session, work, platform]),
+    refreshListenable: Listenable.merge([session, work, applicant, platform]),
     redirect: (context, state) {
       final current = session.value;
       final at = state.matchedLocation;
       if (!current.hasValue) return at == '/starting' ? null : '/starting';
+      final signedIn = current.value is SignedIn;
+      // An applicant reaches the application, the terms and the work rules
+      // (CA §5.2 step 4); maintenance or a required update blocks it.
+      if (signedIn && applicant.value) {
+        if (platform.status.blocks) return at == '/blocked' ? null : '/blocked';
+        return _applicantRoutes.contains(at) ? null : '/application';
+      }
       // Signed in, nothing is decided before the first read of the work:
       // a current order is never left, even for a moment.
       final known = current.value is! SignedIn || work.value != null;
@@ -52,9 +70,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         return at == '/blocked' ? null : '/blocked';
       }
       if (known && at == '/blocked') return '/';
-      final signedIn = current.value is SignedIn;
-      if (!signedIn) return at == '/sign-in' ? null : '/sign-in';
-      return at == '/sign-in' || at == '/starting' ? '/' : null;
+      if (!signedIn) {
+        if (_signedOutRoutes.contains(at)) return null;
+        // CA §4.9: «سُجّل دخولك من جهاز آخر» shows on the sign-in.
+        final ended = current.value;
+        return ended is SignedOut &&
+                ended.reason == SessionEndReason.otherDevice
+            ? '/sign-in'
+            : '/welcome';
+      }
+      return _signedOutRoutes.contains(at) ||
+              at == '/starting' ||
+              at == '/application'
+          ? '/'
+          : null;
     },
     routes: [
       // CA §6.2: the bottom navigation's tabs.
@@ -153,6 +182,21 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/sign-in',
         builder: (context, state) => const _CaptainSignInScreen(),
       ),
+      // CA §5.1–5.4 (slice 2.34a): the entry, «انضم ككابتن» and the
+      // applicant's application.
+      GoRoute(
+        path: '/welcome',
+        builder: (context, state) => const WelcomeScreen(),
+      ),
+      GoRoute(
+        path: '/join',
+        builder: (context, state) =>
+            SignInScreen(scope: captainAuth, join: true),
+      ),
+      GoRoute(
+        path: '/application',
+        builder: (context, state) => const ApplicationScreen(),
+      ),
     ],
     errorBuilder: (context, state) => const NotFoundScreen(),
   );
@@ -160,9 +204,13 @@ final routerProvider = Provider<GoRouter>((ref) {
     router.dispose();
     session.dispose();
     work.dispose();
+    applicant.dispose();
   });
   return router;
 });
+
+const _signedOutRoutes = {'/welcome', '/sign-in', '/join'};
+const _applicantRoutes = {'/application', '/terms', '/work-rules'};
 
 /// CA §4.9: after a sign-in on another device, «سُجّل دخولك من جهاز آخر».
 class _CaptainSignInScreen extends ConsumerWidget {

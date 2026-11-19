@@ -7483,6 +7483,420 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'ويندوز'**
   String get merchantPlatformWindows;
+
+  /// CA §5.1: the entry button that applies with a new number.
+  ///
+  /// In ar, this message translates to:
+  /// **'انضم ككابتن'**
+  String get captainJoin;
+
+  /// The application form and status page (CA §5.2, §5.4). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'طلب الانضمام'**
+  String get captainApplicationTitle;
+
+  /// CA §5.2 step 1.
+  ///
+  /// In ar, this message translates to:
+  /// **'البيانات الشخصية'**
+  String get captainApplicationStepPersonal;
+
+  /// CA §5.2 step 2.
+  ///
+  /// In ar, this message translates to:
+  /// **'المركبة'**
+  String get captainApplicationStepVehicle;
+
+  /// CA §5.2 step 3.
+  ///
+  /// In ar, this message translates to:
+  /// **'المستندات'**
+  String get captainApplicationStepDocuments;
+
+  /// CA §5.2 step 4.
+  ///
+  /// In ar, this message translates to:
+  /// **'الشروط'**
+  String get captainApplicationStepTerms;
+
+  /// CA §5.2 step 5.
+  ///
+  /// In ar, this message translates to:
+  /// **'المراجعة والإرسال'**
+  String get captainApplicationStepReview;
+
+  /// CA §5.2 step 1: the full three-part name.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسم الثلاثي'**
+  String get captainApplicationFullName;
+
+  /// CA §5.2 step 1.
+  ///
+  /// In ar, this message translates to:
+  /// **'تاريخ الميلاد'**
+  String get captainApplicationBirthDate;
+
+  /// A date not chosen yet. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر التاريخ'**
+  String get captainApplicationChooseDate;
+
+  /// CA §5.2 step 1: one of the city's zones (owner decision 2026-11-19).
+  ///
+  /// In ar, this message translates to:
+  /// **'الحي'**
+  String get captainApplicationNeighbourhood;
+
+  /// Saves a step of the form and moves on (CA §5.1: a draft after every step). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'حفظ ومتابعة'**
+  String get captainApplicationSaveAndContinue;
+
+  /// Back to the previous step. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'السابق'**
+  String get captainApplicationPrevious;
+
+  /// CA §5.2 step 2.
+  ///
+  /// In ar, this message translates to:
+  /// **'دراجة نارية'**
+  String get captainApplicationVehicleMotorbike;
+
+  /// CA §5.2 step 2.
+  ///
+  /// In ar, this message translates to:
+  /// **'سيارة'**
+  String get captainApplicationVehicleCar;
+
+  /// CA §5.2 step 2.
+  ///
+  /// In ar, this message translates to:
+  /// **'دراجة هوائية أو كهربائية'**
+  String get captainApplicationVehicleBicycle;
+
+  /// CA §5.2 step 2.
+  ///
+  /// In ar, this message translates to:
+  /// **'مشياً'**
+  String get captainApplicationVehicleWalking;
+
+  /// CA §5.2 step 2, for a motor vehicle.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم اللوحة'**
+  String get captainApplicationPlate;
+
+  /// CA §5.2 step 2: only licensed vehicles. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'نقبل المركبات المرخّصة فقط'**
+  String get captainApplicationLicensedOnly;
+
+  /// CA §5.3.
+  ///
+  /// In ar, this message translates to:
+  /// **'الهوية'**
+  String get captainDocumentNationalId;
+
+  /// CA §5.3.
+  ///
+  /// In ar, this message translates to:
+  /// **'صورة شخصية'**
+  String get captainDocumentPersonalPhoto;
+
+  /// CA §5.3.
+  ///
+  /// In ar, this message translates to:
+  /// **'إخراج قيد'**
+  String get captainDocumentCivilRegistry;
+
+  /// CA §5.3.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا حكم عليه'**
+  String get captainDocumentCriminalRecord;
+
+  /// CA §5.3.
+  ///
+  /// In ar, this message translates to:
+  /// **'أوراق المركبة'**
+  String get captainDocumentVehiclePapers;
+
+  /// CA §5.3.
+  ///
+  /// In ar, this message translates to:
+  /// **'شهادة قيادة'**
+  String get captainDocumentDrivingLicence;
+
+  /// An optional document (the driving licence, CA §5.3). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختياري'**
+  String get captainDocumentOptional;
+
+  /// CA §5.3, Appendix B.
+  ///
+  /// In ar, this message translates to:
+  /// **'بانتظار التحقق'**
+  String get captainDocumentPending;
+
+  /// CA §5.3, Appendix B.
+  ///
+  /// In ar, this message translates to:
+  /// **'مقبول'**
+  String get captainDocumentAccepted;
+
+  /// CA §5.3: a rejected document with its reason.
+  ///
+  /// In ar, this message translates to:
+  /// **'مرفوض: {reason}'**
+  String captainDocumentRejected(String reason);
+
+  /// A document not uploaded yet. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُرفع بعد'**
+  String get captainDocumentNotUploaded;
+
+  /// Uploads a document. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'رفع'**
+  String get captainDocumentUpload;
+
+  /// CA §5.3, Appendix B: a document uploaded again.
+  ///
+  /// In ar, this message translates to:
+  /// **'رفع نسخة جديدة'**
+  String get captainDocumentUploadAgain;
+
+  /// The ID's front (CA §5.3). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الوجه الأمامي'**
+  String get captainDocumentIdFront;
+
+  /// The ID's back (CA §5.3). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الوجه الخلفي'**
+  String get captainDocumentIdBack;
+
+  /// The ID's number, for the duplicate check (CA §5.2). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرقم الوطني'**
+  String get captainDocumentIdNumber;
+
+  /// CA §5.3: the personal photo's rules.
+  ///
+  /// In ar, this message translates to:
+  /// **'بخلفية سادة ومن دون نظارات شمسية'**
+  String get captainDocumentPhotoHint;
+
+  /// CA §5.3: the criminal record's issue date.
+  ///
+  /// In ar, this message translates to:
+  /// **'تاريخ الإصدار'**
+  String get captainDocumentIssueDate;
+
+  /// The criminal record's expiry (C18). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'صالحة حتى {date}'**
+  String captainDocumentExpiresOn(String date);
+
+  /// One page of a document (one or two). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'صفحة {number}'**
+  String captainDocumentPage(String number);
+
+  /// CA §5.3: the camera. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'التقاط صورة'**
+  String get captainDocumentTakePhoto;
+
+  /// CA §5.3: a file from the phone. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختيار ملف'**
+  String get captainDocumentPickFile;
+
+  /// A second page of a document. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة صفحة ثانية'**
+  String get captainDocumentAddPage;
+
+  /// Uploads the document's photos. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'حفظ المستند'**
+  String get captainDocumentSave;
+
+  /// CA §5.3: the photo failed the blur check. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الصورة غير واضحة. أعد التصوير.'**
+  String get captainPhotoBlurry;
+
+  /// CA §5.3: the photo failed the darkness check. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'الصورة مظلمة. أعد التصوير في مكان أكثر إضاءة.'**
+  String get captainPhotoDark;
+
+  /// The picked file is not an image the server takes. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّرت قراءة الصورة. اختر صورة أخرى.'**
+  String get captainPhotoUnreadable;
+
+  /// CA §5.2 step 4: the captain terms and the work rules. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'قراءة الشروط والموافقة'**
+  String get captainApplicationTermsRead;
+
+  /// Step 4 done. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'وافقت على الشروط'**
+  String get captainApplicationTermsAccepted;
+
+  /// CA §5.2 step 5, Appendix B.
+  ///
+  /// In ar, this message translates to:
+  /// **'إرسال الطلب'**
+  String get captainApplicationSubmit;
+
+  /// What «إرسال الطلب» still waits for. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'أكمل قبل الإرسال:'**
+  String get captainApplicationMissingTitle;
+
+  /// CA §5.4: the stage «جديد».
+  ///
+  /// In ar, this message translates to:
+  /// **'أُرسل طلبك. سنراجعه قريباً.'**
+  String get captainApplicationStageNew;
+
+  /// CA §5.4: the stage «قيد المراجعة».
+  ///
+  /// In ar, this message translates to:
+  /// **'طلبك قيد المراجعة.'**
+  String get captainApplicationStageUnderReview;
+
+  /// CA §5.4: the stage's name, until its appointment text (slice 2.34b).
+  ///
+  /// In ar, this message translates to:
+  /// **'مقابلة وتدريب'**
+  String get captainApplicationStageInterview;
+
+  /// CA §5.4: the stage «بانتظار العدة».
+  ///
+  /// In ar, this message translates to:
+  /// **'اجتزت التدريب. استلم العدة ووقّع العقد في المكتب.'**
+  String get captainApplicationStageAwaitingKit;
+
+  /// CA §5.4: the stage «مفعّل».
+  ///
+  /// In ar, this message translates to:
+  /// **'مرحباً بك في FOX DROP!'**
+  String get captainApplicationStageActive;
+
+  /// CA §5.4: the stage «قائمة انتظار».
+  ///
+  /// In ar, this message translates to:
+  /// **'لا نحتاج كباتن جدداً حالياً. طلبك محفوظ وسنتواصل معك.'**
+  String get captainApplicationStageWaitlist;
+
+  /// CA §5.4: the stage's name, until its reason and date (slice 2.34b).
+  ///
+  /// In ar, this message translates to:
+  /// **'مرفوض'**
+  String get captainApplicationStageRejected;
+
+  /// 400 invalid_name. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب اسمك الثلاثي.'**
+  String get captainApplicationInvalidName;
+
+  /// 400 too_young (captain.min_age). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'عمرك أقل من الحد الأدنى للتقديم.'**
+  String get captainApplicationTooYoung;
+
+  /// 400 unknown_zone. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر الحي من القائمة.'**
+  String get captainApplicationUnknownZone;
+
+  /// 400 plate_required. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب رقم اللوحة.'**
+  String get captainApplicationPlateRequired;
+
+  /// 400 number_required. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتب الرقم الوطني كما في الهوية.'**
+  String get captainApplicationIdNumberRequired;
+
+  /// The ID needs its front and back. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'صوّر وجهَي الهوية.'**
+  String get captainApplicationTwoSides;
+
+  /// 400 issue_date_required. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر تاريخ إصدار الوثيقة.'**
+  String get captainApplicationIssueDateRequired;
+
+  /// 400 issue_date_in_future. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تاريخ الإصدار بعد اليوم.'**
+  String get captainApplicationIssueDateFuture;
+
+  /// 400 document_expired (C18). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهت صلاحية الوثيقة. استخرج وثيقة حديثة.'**
+  String get captainApplicationDocumentExpired;
+
+  /// 409 application_submitted. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'أُرسل طلبك ولا يمكن تعديله الآن.'**
+  String get captainApplicationSubmitted;
+
+  /// 429 too_many_uploads. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'رفعت صوراً كثيرة. حاول بعد ساعة.'**
+  String get captainApplicationTooManyUploads;
+
+  /// Any other failure of a step. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر الحفظ. حاول مرة أخرى.'**
+  String get captainApplicationFailed;
 }
 
 class _AppLocalizationsDelegate

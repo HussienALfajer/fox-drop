@@ -82,6 +82,29 @@ void main() {
     expect(h.store.values['session'], contains('refresh-1'));
   });
 
+  test(
+    '«انضم ككابتن» asks with join, and so does its resend (CA §5.1)',
+    () async {
+      final h = _Harness();
+      addTearDown(h.container.dispose);
+      h.server.on(_code, [FakeAnswer(200, _sent())]);
+      await h.controller.requestCode('0944123456');
+      expect(
+        (h.server.to(_code).single.data as Map).containsKey('join'),
+        isFalse,
+      );
+      await h.controller.requestCode('0944123456', join: true);
+      await h.controller.resend();
+      expect(
+        [
+          for (final each in h.server.to(_code).skip(1))
+            (each.data as Map)['join'],
+        ],
+        [true, true],
+      );
+    },
+  );
+
   test('a wrong code shows the tries left and stays on the code', () async {
     final h = _Harness();
     addTearDown(h.container.dispose);
