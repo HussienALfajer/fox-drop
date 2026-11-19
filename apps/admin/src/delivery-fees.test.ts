@@ -16,6 +16,7 @@ const bands: FeeRule = {
   id: '01900000-0000-7000-8000-0000000000f1',
   kind: 'distance_bands',
   currency: 'TRY',
+  flatFee: null,
   bands: [
     { upToMetres: 2000, fee: '3000' },
     { upToMetres: 4500, fee: '4000' },
@@ -60,6 +61,7 @@ describe('the form of a rule', () => {
       rule: {
         kind: 'distance_bands',
         currency: 'TRY',
+        flatFee: null,
         bands: [
           { upToMetres: 2000, fee: '3000' },
           { upToMetres: 4500, fee: '4000' },
@@ -82,6 +84,7 @@ describe('the form of a rule', () => {
         kind: 'flat',
         currency: 'TRY',
         flatFee: '4000',
+        bands: null,
         minimumFee: '2550',
         freeDeliveryFrom: null,
       },
@@ -109,7 +112,6 @@ describe('the form of a rule', () => {
 
 describe('the bands as lines', () => {
   it('starts each band at the edge before it', () => {
-    if (bands.kind !== 'distance_bands') throw new Error('bands');
     expect(bandLines(bands)).toEqual([
       { fromMetres: 0, upToMetres: 2000, fee: '3000' },
       { fromMetres: 2000, upToMetres: 4500, fee: '4000' },

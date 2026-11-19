@@ -62,14 +62,14 @@ export function ruleFormOf(rule: FeeRule | null, currency: string): RuleForm {
   const money = (minor: string | null) => (minor === null ? '' : decimalOf(minor, rule.currency));
   return {
     kind: rule.kind,
-    flatFee: rule.kind === 'flat' ? money(rule.flatFee) : '',
+    flatFee: rule.flatFee === null ? '' : money(rule.flatFee),
     bands:
-      rule.kind === 'distance_bands'
-        ? rule.bands.map((band) => ({
+      rule.bands === null
+        ? emptyRule.bands
+        : rule.bands.map((band) => ({
             upToKm: band.upToMetres === null ? '' : kmOf(band.upToMetres),
             fee: money(band.fee),
-          }))
-        : emptyRule.bands,
+          })),
     minimumFee: money(rule.minimumFee),
     freeDeliveryFrom: money(rule.freeDeliveryFrom),
   };
@@ -97,7 +97,7 @@ export function ruleRequestOf(
   if (form.kind === 'flat') {
     const flatFee = minorOf(form.flatFee, currency);
     if (flatFee === null) return { problem: 'fee' };
-    return { rule: { kind: 'flat', flatFee, ...common } };
+    return { rule: { kind: 'flat', flatFee, bands: null, ...common } };
   }
   const bands: { upToMetres: number | null; fee: string }[] = [];
   let previous = 0;
@@ -116,7 +116,7 @@ export function ruleRequestOf(
     previous = upToMetres;
     bands.push({ upToMetres, fee });
   }
-  return { rule: { kind: 'distance_bands', bands, ...common } };
+  return { rule: { kind: 'distance_bands', flatFee: null, bands, ...common } };
 }
 
 // A rule as lines the page prints: each band's range from the edge before.
@@ -126,9 +126,10 @@ export interface BandLine {
   fee: string;
 }
 
-export function bandLines(rule: Extract<FeeRule, { kind: 'distance_bands' }>): BandLine[] {
-  return rule.bands.map((band, index) => ({
-    fromMetres: index === 0 ? 0 : (rule.bands[index - 1]!.upToMetres ?? 0),
+export function bandLines(rule: FeeRule): BandLine[] {
+  const bands = rule.bands ?? [];
+  return bands.map((band, index) => ({
+    fromMetres: index === 0 ? 0 : (bands[index - 1]!.upToMetres ?? 0),
     upToMetres: band.upToMetres,
     fee: band.fee,
   }));

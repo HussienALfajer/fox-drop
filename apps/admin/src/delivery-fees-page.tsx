@@ -146,7 +146,7 @@ function RuleSummary({ rule }: { rule: FeeRule }) {
   const money = (amount: string) => formatMoney({ amount, currency: rule.currency });
   return (
     <ul>
-      {rule.kind === 'flat' ? (
+      {rule.flatFee !== null ? (
         <li>{t('deliveryFees.flatLine', { fee: money(rule.flatFee) })}</li>
       ) : (
         bandLines(rule).map((band, index) => (

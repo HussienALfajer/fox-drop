@@ -7,6 +7,9 @@ part of 'admin_delivery_fees_dto_output_versions_inner_rule.dart';
 // **************************************************************************
 
 const AdminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum
+_$adminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum_flat =
+    const AdminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum._('flat');
+const AdminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum
 _$adminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum_distanceBands =
     const AdminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum._(
       'distanceBands',
@@ -15,6 +18,8 @@ _$adminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum_distanceBands =
 AdminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum
 _$adminDeliveryFeesDtoOutputVersionsInnerRuleKindEnumValueOf(String name) {
   switch (name) {
+    case 'flat':
+      return _$adminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum_flat;
     case 'distanceBands':
       return _$adminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum_distanceBands;
     default:
@@ -26,6 +31,7 @@ final BuiltSet<AdminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum>
 _$adminDeliveryFeesDtoOutputVersionsInnerRuleKindEnumValues =
     BuiltSet<AdminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum>(
       const <AdminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum>[
+        _$adminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum_flat,
         _$adminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum_distanceBands,
       ],
     );
@@ -40,9 +46,11 @@ class _$AdminDeliveryFeesDtoOutputVersionsInnerRuleKindEnumSerializer
           AdminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum
         > {
   static const Map<String, Object> _toWire = const <String, Object>{
+    'flat': 'flat',
     'distanceBands': 'distance_bands',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
+    'flat': 'flat',
     'distance_bands': 'distanceBands',
   };
 
@@ -73,15 +81,34 @@ class _$AdminDeliveryFeesDtoOutputVersionsInnerRuleKindEnumSerializer
 class _$AdminDeliveryFeesDtoOutputVersionsInnerRule
     extends AdminDeliveryFeesDtoOutputVersionsInnerRule {
   @override
-  final OneOf oneOf;
+  final String id;
+  @override
+  final AdminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum kind;
+  @override
+  final String? flatFee;
+  @override
+  final String currency;
+  @override
+  final String? minimumFee;
+  @override
+  final String? freeDeliveryFrom;
+  @override
+  final BuiltList<AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner>? bands;
 
   factory _$AdminDeliveryFeesDtoOutputVersionsInnerRule([
     void Function(AdminDeliveryFeesDtoOutputVersionsInnerRuleBuilder)? updates,
   ]) => (AdminDeliveryFeesDtoOutputVersionsInnerRuleBuilder()..update(updates))
       ._build();
 
-  _$AdminDeliveryFeesDtoOutputVersionsInnerRule._({required this.oneOf})
-    : super._();
+  _$AdminDeliveryFeesDtoOutputVersionsInnerRule._({
+    required this.id,
+    required this.kind,
+    this.flatFee,
+    required this.currency,
+    this.minimumFee,
+    this.freeDeliveryFrom,
+    this.bands,
+  }) : super._();
   @override
   AdminDeliveryFeesDtoOutputVersionsInnerRule rebuild(
     void Function(AdminDeliveryFeesDtoOutputVersionsInnerRuleBuilder) updates,
@@ -95,13 +122,25 @@ class _$AdminDeliveryFeesDtoOutputVersionsInnerRule
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is AdminDeliveryFeesDtoOutputVersionsInnerRule &&
-        oneOf == other.oneOf;
+        id == other.id &&
+        kind == other.kind &&
+        flatFee == other.flatFee &&
+        currency == other.currency &&
+        minimumFee == other.minimumFee &&
+        freeDeliveryFrom == other.freeDeliveryFrom &&
+        bands == other.bands;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
-    _$hash = $jc(_$hash, oneOf.hashCode);
+    _$hash = $jc(_$hash, id.hashCode);
+    _$hash = $jc(_$hash, kind.hashCode);
+    _$hash = $jc(_$hash, flatFee.hashCode);
+    _$hash = $jc(_$hash, currency.hashCode);
+    _$hash = $jc(_$hash, minimumFee.hashCode);
+    _$hash = $jc(_$hash, freeDeliveryFrom.hashCode);
+    _$hash = $jc(_$hash, bands.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -109,8 +148,16 @@ class _$AdminDeliveryFeesDtoOutputVersionsInnerRule
   @override
   String toString() {
     return (newBuiltValueToStringHelper(
-      r'AdminDeliveryFeesDtoOutputVersionsInnerRule',
-    )..add('oneOf', oneOf)).toString();
+            r'AdminDeliveryFeesDtoOutputVersionsInnerRule',
+          )
+          ..add('id', id)
+          ..add('kind', kind)
+          ..add('flatFee', flatFee)
+          ..add('currency', currency)
+          ..add('minimumFee', minimumFee)
+          ..add('freeDeliveryFrom', freeDeliveryFrom)
+          ..add('bands', bands))
+        .toString();
   }
 }
 
@@ -122,9 +169,39 @@ class AdminDeliveryFeesDtoOutputVersionsInnerRuleBuilder
         > {
   _$AdminDeliveryFeesDtoOutputVersionsInnerRule? _$v;
 
-  OneOf? _oneOf;
-  OneOf? get oneOf => _$this._oneOf;
-  set oneOf(OneOf? oneOf) => _$this._oneOf = oneOf;
+  String? _id;
+  String? get id => _$this._id;
+  set id(String? id) => _$this._id = id;
+
+  AdminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum? _kind;
+  AdminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum? get kind => _$this._kind;
+  set kind(AdminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum? kind) =>
+      _$this._kind = kind;
+
+  String? _flatFee;
+  String? get flatFee => _$this._flatFee;
+  set flatFee(String? flatFee) => _$this._flatFee = flatFee;
+
+  String? _currency;
+  String? get currency => _$this._currency;
+  set currency(String? currency) => _$this._currency = currency;
+
+  String? _minimumFee;
+  String? get minimumFee => _$this._minimumFee;
+  set minimumFee(String? minimumFee) => _$this._minimumFee = minimumFee;
+
+  String? _freeDeliveryFrom;
+  String? get freeDeliveryFrom => _$this._freeDeliveryFrom;
+  set freeDeliveryFrom(String? freeDeliveryFrom) =>
+      _$this._freeDeliveryFrom = freeDeliveryFrom;
+
+  ListBuilder<AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner>? _bands;
+  ListBuilder<AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner>
+  get bands => _$this._bands ??=
+      ListBuilder<AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner>();
+  set bands(
+    ListBuilder<AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner>? bands,
+  ) => _$this._bands = bands;
 
   AdminDeliveryFeesDtoOutputVersionsInnerRuleBuilder() {
     AdminDeliveryFeesDtoOutputVersionsInnerRule._defaults(this);
@@ -133,7 +210,13 @@ class AdminDeliveryFeesDtoOutputVersionsInnerRuleBuilder
   AdminDeliveryFeesDtoOutputVersionsInnerRuleBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _oneOf = $v.oneOf;
+      _id = $v.id;
+      _kind = $v.kind;
+      _flatFee = $v.flatFee;
+      _currency = $v.currency;
+      _minimumFee = $v.minimumFee;
+      _freeDeliveryFrom = $v.freeDeliveryFrom;
+      _bands = $v.bands?.toBuilder();
       _$v = null;
     }
     return this;
@@ -155,15 +238,45 @@ class AdminDeliveryFeesDtoOutputVersionsInnerRuleBuilder
   AdminDeliveryFeesDtoOutputVersionsInnerRule build() => _build();
 
   _$AdminDeliveryFeesDtoOutputVersionsInnerRule _build() {
-    final _$result =
-        _$v ??
-        _$AdminDeliveryFeesDtoOutputVersionsInnerRule._(
-          oneOf: BuiltValueNullFieldError.checkNotNull(
-            oneOf,
-            r'AdminDeliveryFeesDtoOutputVersionsInnerRule',
-            'oneOf',
-          ),
+    _$AdminDeliveryFeesDtoOutputVersionsInnerRule _$result;
+    try {
+      _$result =
+          _$v ??
+          _$AdminDeliveryFeesDtoOutputVersionsInnerRule._(
+            id: BuiltValueNullFieldError.checkNotNull(
+              id,
+              r'AdminDeliveryFeesDtoOutputVersionsInnerRule',
+              'id',
+            ),
+            kind: BuiltValueNullFieldError.checkNotNull(
+              kind,
+              r'AdminDeliveryFeesDtoOutputVersionsInnerRule',
+              'kind',
+            ),
+            flatFee: flatFee,
+            currency: BuiltValueNullFieldError.checkNotNull(
+              currency,
+              r'AdminDeliveryFeesDtoOutputVersionsInnerRule',
+              'currency',
+            ),
+            minimumFee: minimumFee,
+            freeDeliveryFrom: freeDeliveryFrom,
+            bands: _bands?.build(),
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'bands';
+        _bands?.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+          r'AdminDeliveryFeesDtoOutputVersionsInnerRule',
+          _$failedField,
+          e.toString(),
         );
+      }
+      rethrow;
+    }
     replace(_$result);
     return _$result;
   }

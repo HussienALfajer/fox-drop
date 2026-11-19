@@ -231,9 +231,7 @@ import 'package:core_api/src/model/admin_delivery_fees_dto_output_restaurants_in
 import 'package:core_api/src/model/admin_delivery_fees_dto_output_restaurants_inner_own_rule.dart';
 import 'package:core_api/src/model/admin_delivery_fees_dto_output_versions_inner.dart';
 import 'package:core_api/src/model/admin_delivery_fees_dto_output_versions_inner_rule.dart';
-import 'package:core_api/src/model/admin_delivery_fees_dto_output_versions_inner_rule_one_of.dart';
-import 'package:core_api/src/model/admin_delivery_fees_dto_output_versions_inner_rule_one_of1.dart';
-import 'package:core_api/src/model/admin_delivery_fees_dto_output_versions_inner_rule_one_of1_bands_inner.dart';
+import 'package:core_api/src/model/admin_delivery_fees_dto_output_versions_inner_rule_bands_inner.dart';
 import 'package:core_api/src/model/admin_deposit_cash_limit_dto.dart';
 import 'package:core_api/src/model/admin_deposit_cash_limit_dto_cash_limit.dart';
 import 'package:core_api/src/model/admin_deposit_refunds_dto_output.dart';
@@ -601,9 +599,7 @@ import 'package:core_api/src/model/admin_set_city_office_dto_location.dart';
 import 'package:core_api/src/model/admin_set_customer_test_account_dto.dart';
 import 'package:core_api/src/model/admin_set_delivery_fee_dto.dart';
 import 'package:core_api/src/model/admin_set_delivery_fee_dto_rule.dart';
-import 'package:core_api/src/model/admin_set_delivery_fee_dto_rule_one_of.dart';
-import 'package:core_api/src/model/admin_set_delivery_fee_dto_rule_one_of1.dart';
-import 'package:core_api/src/model/admin_set_delivery_fee_dto_rule_one_of1_bands_inner.dart';
+import 'package:core_api/src/model/admin_set_delivery_fee_dto_rule_bands_inner.dart';
 import 'package:core_api/src/model/admin_set_exchange_rate_dto.dart';
 import 'package:core_api/src/model/admin_set_image_dto.dart';
 import 'package:core_api/src/model/admin_set_outcome_dto.dart';
@@ -1380,9 +1376,7 @@ part 'serializers.g.dart';
   AdminDeliveryFeesDtoOutputRestaurantsInnerOwnRule,
   AdminDeliveryFeesDtoOutputVersionsInner,
   AdminDeliveryFeesDtoOutputVersionsInnerRule,
-  AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf,
-  AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1,
-  AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInner,
+  AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner,
   AdminDepositCashLimitDto,
   AdminDepositCashLimitDtoCashLimit,
   AdminDepositRefundsDtoOutput,
@@ -1750,9 +1744,7 @@ part 'serializers.g.dart';
   AdminSetCustomerTestAccountDto,
   AdminSetDeliveryFeeDto,
   AdminSetDeliveryFeeDtoRule,
-  AdminSetDeliveryFeeDtoRuleOneOf,
-  AdminSetDeliveryFeeDtoRuleOneOf1,
-  AdminSetDeliveryFeeDtoRuleOneOf1BandsInner,
+  AdminSetDeliveryFeeDtoRuleBandsInner,
   AdminSetExchangeRateDto,
   AdminSetImageDto,
   AdminSetOutcomeDto,
@@ -3399,6 +3391,15 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminBoardDtoOutputOrdersInner),
             ]),
             () => ListBuilder<AdminBoardDtoOutputOrdersInner>(),
@@ -3558,6 +3559,12 @@ Serializers serializers =
                 ListBuilder<
                   CustomerActiveOrdersDtoOutputOrdersInnerRedeliveriesInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminSetDeliveryFeeDtoRuleBandsInner),
+            ]),
+            () => ListBuilder<AdminSetDeliveryFeeDtoRuleBandsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -3805,17 +3812,6 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
-              FullType(
-                AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInner,
-              ),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInner
-                >(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, [
               FullType(AdminSetPeakBonusDtoWindowsInner),
             ]),
             () => ListBuilder<AdminSetPeakBonusDtoWindowsInner>(),
@@ -3866,12 +3862,6 @@ Serializers serializers =
               FullType(AdminSettlementPreviewDtoOutputCustodyInner),
             ]),
             () => ListBuilder<AdminSettlementPreviewDtoOutputCustodyInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, [
-              FullType(AdminSetDeliveryFeeDtoRuleOneOf1BandsInner),
-            ]),
-            () => ListBuilder<AdminSetDeliveryFeeDtoRuleOneOf1BandsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

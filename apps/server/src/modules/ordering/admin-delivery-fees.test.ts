@@ -11,6 +11,7 @@ const put = (cookies: Record<string, string>, url: string, payload: object) =>
 const bands = {
   kind: 'distance_bands',
   currency: 'TRY',
+  flatFee: null,
   bands: [
     { upToMetres: 2000, fee: '3000' },
     { upToMetres: null, fee: '5000' },
@@ -72,6 +73,7 @@ describe('«رسوم التوصيل» (AP §9.12.3)', () => {
         kind: 'flat',
         currency: 'TRY',
         flatFee: '4000',
+        bands: null,
         minimumFee: null,
         freeDeliveryFrom: null,
       },
@@ -88,6 +90,7 @@ describe('«رسوم التوصيل» (AP §9.12.3)', () => {
         kind: 'flat',
         currency: 'TRY',
         flatFee: '2500',
+        bands: null,
         minimumFee: null,
         freeDeliveryFrom: null,
       },
@@ -129,6 +132,13 @@ describe('«رسوم التوصيل» (AP §9.12.3)', () => {
     });
     expect(malformed.statusCode).toBe(400);
     expect(malformed.json()).toMatchObject({ error: 'invalid_fee_rule' });
+    // A flat fee sent with bands matches neither kind.
+    const mixed = await put(owner.cookies, '/v1/admin/delivery-fees', {
+      cityId: azaz,
+      rule: { ...bands, kind: 'flat', flatFee: '4000' },
+      reason: null,
+    });
+    expect(mixed.json()).toMatchObject({ error: 'invalid_fee_rule' });
     const usd = await put(owner.cookies, '/v1/admin/delivery-fees', {
       cityId: azaz,
       rule: { ...bands, currency: 'EUR' },
@@ -220,6 +230,7 @@ describe('«رسوم التوصيل» (AP §9.12.3)', () => {
         kind: 'flat',
         currency: 'TRY',
         flatFee: '900',
+        bands: null,
         minimumFee: null,
         freeDeliveryFrom: null,
       },

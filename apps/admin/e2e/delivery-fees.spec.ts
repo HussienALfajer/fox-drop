@@ -11,6 +11,7 @@ const flat = {
     id: '01900000-0000-7000-8000-0000000000f1',
     kind: 'flat',
     flatFee: '4000',
+    bands: null,
     currency: 'TRY',
     minimumFee: null,
     freeDeliveryFrom: null,
@@ -23,6 +24,7 @@ const banded = {
   rule: {
     id: '01900000-0000-7000-8000-0000000000f2',
     kind: 'distance_bands',
+    flatFee: null,
     bands: [
       { upToMetres: 2000, fee: '3000' },
       { upToMetres: null, fee: '5000' },
@@ -98,6 +100,7 @@ test('changes the fee to distance bands and previews it', async ({ page }) => {
     rule: {
       kind: 'distance_bands',
       currency: 'TRY',
+      flatFee: null,
       bands: [
         { upToMetres: 2000, fee: '3000' },
         { upToMetres: null, fee: '5000' },

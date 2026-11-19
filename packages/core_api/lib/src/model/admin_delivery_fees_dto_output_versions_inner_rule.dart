@@ -3,13 +3,10 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:core_api/src/model/admin_delivery_fees_dto_output_versions_inner_rule_one_of.dart';
-import 'package:core_api/src/model/admin_delivery_fees_dto_output_versions_inner_rule_one_of1.dart';
+import 'package:core_api/src/model/admin_delivery_fees_dto_output_versions_inner_rule_bands_inner.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:core_api/src/model/admin_delivery_fees_dto_output_versions_inner_rule_one_of1_bands_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
-import 'package:one_of/one_of.dart';
 
 part 'admin_delivery_fees_dto_output_versions_inner_rule.g.dart';
 
@@ -18,11 +15,11 @@ part 'admin_delivery_fees_dto_output_versions_inner_rule.g.dart';
 /// Properties:
 /// * [id]
 /// * [kind]
-/// * [flatFee]
+/// * [flatFee] - The fee of a flat rule; null for distance bands.
 /// * [currency]
 /// * [minimumFee] - A lower fee is raised to it; null for none.
 /// * [freeDeliveryFrom] - An items value from which delivery is free; null for none.
-/// * [bands]
+/// * [bands] - Null for a flat rule.
 @BuiltValue()
 abstract class AdminDeliveryFeesDtoOutputVersionsInnerRule
     implements
@@ -30,8 +27,31 @@ abstract class AdminDeliveryFeesDtoOutputVersionsInnerRule
           AdminDeliveryFeesDtoOutputVersionsInnerRule,
           AdminDeliveryFeesDtoOutputVersionsInnerRuleBuilder
         > {
-  /// One Of [AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf], [AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1]
-  OneOf get oneOf;
+  @BuiltValueField(wireName: r'id')
+  String get id;
+
+  @BuiltValueField(wireName: r'kind')
+  AdminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum get kind;
+  // enum kindEnum {  flat,  distance_bands,  };
+
+  /// The fee of a flat rule; null for distance bands.
+  @BuiltValueField(wireName: r'flatFee')
+  String? get flatFee;
+
+  @BuiltValueField(wireName: r'currency')
+  String get currency;
+
+  /// A lower fee is raised to it; null for none.
+  @BuiltValueField(wireName: r'minimumFee')
+  String? get minimumFee;
+
+  /// An items value from which delivery is free; null for none.
+  @BuiltValueField(wireName: r'freeDeliveryFrom')
+  String? get freeDeliveryFrom;
+
+  /// Null for a flat rule.
+  @BuiltValueField(wireName: r'bands')
+  BuiltList<AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner>? get bands;
 
   AdminDeliveryFeesDtoOutputVersionsInnerRule._();
 
@@ -64,7 +84,55 @@ class _$AdminDeliveryFeesDtoOutputVersionsInnerRuleSerializer
     Serializers serializers,
     AdminDeliveryFeesDtoOutputVersionsInnerRule object, {
     FullType specifiedType = FullType.unspecified,
-  }) sync* {}
+  }) sync* {
+    yield r'id';
+    yield serializers.serialize(
+      object.id,
+      specifiedType: const FullType(String),
+    );
+    yield r'kind';
+    yield serializers.serialize(
+      object.kind,
+      specifiedType: const FullType(
+        AdminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum,
+      ),
+    );
+    yield r'flatFee';
+    yield object.flatFee == null
+        ? null
+        : serializers.serialize(
+            object.flatFee,
+            specifiedType: const FullType.nullable(String),
+          );
+    yield r'currency';
+    yield serializers.serialize(
+      object.currency,
+      specifiedType: const FullType(String),
+    );
+    yield r'minimumFee';
+    yield object.minimumFee == null
+        ? null
+        : serializers.serialize(
+            object.minimumFee,
+            specifiedType: const FullType.nullable(String),
+          );
+    yield r'freeDeliveryFrom';
+    yield object.freeDeliveryFrom == null
+        ? null
+        : serializers.serialize(
+            object.freeDeliveryFrom,
+            specifiedType: const FullType.nullable(String),
+          );
+    yield r'bands';
+    yield object.bands == null
+        ? null
+        : serializers.serialize(
+            object.bands,
+            specifiedType: const FullType.nullable(BuiltList, [
+              FullType(AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner),
+            ]),
+          );
+  }
 
   @override
   Object serialize(
@@ -72,11 +140,106 @@ class _$AdminDeliveryFeesDtoOutputVersionsInnerRuleSerializer
     AdminDeliveryFeesDtoOutputVersionsInnerRule object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final oneOf = object.oneOf;
-    return serializers.serialize(
-      oneOf.value,
-      specifiedType: FullType(oneOf.valueType),
-    )!;
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
+  }
+
+  void _deserializeProperties(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+    required List<Object?> serializedList,
+    required AdminDeliveryFeesDtoOutputVersionsInnerRuleBuilder result,
+    required List<Object?> unhandled,
+  }) {
+    for (var i = 0; i < serializedList.length; i += 2) {
+      final key = serializedList[i] as String;
+      final value = serializedList[i + 1];
+      switch (key) {
+        case r'id':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.id = valueDes;
+          break;
+        case r'kind':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      AdminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum,
+                    ),
+                  )
+                  as AdminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum;
+          result.kind = valueDes;
+          break;
+        case r'flatFee':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.flatFee = valueDes;
+          break;
+        case r'currency':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.currency = valueDes;
+          break;
+        case r'minimumFee':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.minimumFee = valueDes;
+          break;
+        case r'freeDeliveryFrom':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.freeDeliveryFrom = valueDes;
+          break;
+        case r'bands':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(BuiltList, [
+                      FullType(
+                        AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner,
+                      ),
+                    ]),
+                  )
+                  as BuiltList<
+                    AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner
+                  >?;
+          if (valueDes == null) continue;
+          result.bands.replace(valueDes);
+          break;
+        default:
+          unhandled.add(key);
+          unhandled.add(value);
+          break;
+      }
+    }
   }
 
   @override
@@ -86,20 +249,24 @@ class _$AdminDeliveryFeesDtoOutputVersionsInnerRuleSerializer
     FullType specifiedType = FullType.unspecified,
   }) {
     final result = AdminDeliveryFeesDtoOutputVersionsInnerRuleBuilder();
-    Object? oneOfDataSrc;
-    final targetType = const FullType(OneOf, [
-      FullType(AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf),
-      FullType(AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1),
-    ]);
-    oneOfDataSrc = serialized;
-    result.oneOf =
-        serializers.deserialize(oneOfDataSrc, specifiedType: targetType)
-            as OneOf;
+    final serializedList = (serialized as Iterable<Object?>).toList();
+    final unhandled = <Object?>[];
+    _deserializeProperties(
+      serializers,
+      serialized,
+      specifiedType: specifiedType,
+      serializedList: serializedList,
+      unhandled: unhandled,
+      result: result,
+    );
     return result.build();
   }
 }
 
 class AdminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'flat')
+  static const AdminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum flat =
+      _$adminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum_flat;
   @BuiltValueEnumConst(wireName: r'distance_bands')
   static const AdminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum
   distanceBands =

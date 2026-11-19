@@ -47,23 +47,28 @@ const band = z.object({
   fee: minor,
 });
 // «ثابت» or «شرائح مسافة» (AP §9.12.3), amounts in minor units.
-const ruleBody = z.discriminatedUnion('kind', [
-  z.object({ kind: z.literal('flat'), flatFee: minor, ...ruleFields }),
-  z.object({
-    kind: z.literal('distance_bands'),
-    bands: z.array(band).min(1).max(20),
-    ...ruleFields,
-  }),
-]);
-const storedRule = z.discriminatedUnion('kind', [
-  z.object({ id: z.uuid(), kind: z.literal('flat'), flatFee: minor, ...ruleFields }),
-  z.object({
-    id: z.uuid(),
-    kind: z.literal('distance_bands'),
-    bands: z.array(band),
-    ...ruleFields,
-  }),
-]);
+// «ثابت» or «شرائح مسافة» (AP §9.12.3), amounts in minor units: one object
+// (no oneOf, which the Dart client cannot take) whose `flatFee` goes with
+// `flat` and `bands` with `distance_bands`, the other null.
+const ruleShape = {
+  kind: z.enum(['flat', 'distance_bands']),
+  flatFee: minor.nullable().describe('The fee of a flat rule; null for distance bands.'),
+  ...ruleFields,
+};
+const ruleBody = z.object({
+  ...ruleShape,
+  bands: z
+    .array(band)
+    .min(1)
+    .max(20)
+    .nullable()
+    .describe('The bands in order, the last without an edge; null for a flat rule.'),
+});
+const storedRule = z.object({
+  id: z.uuid(),
+  ...ruleShape,
+  bands: z.array(band).nullable().describe('Null for a flat rule.'),
+});
 const version = z.object({
   rule: storedRule,
   editorName: z.string().nullable().describe('Null for the system or an unknown admin.'),
@@ -347,38 +352,42 @@ function changeOf(
   };
 }
 
+// The rule sent, or invalid_fee_rule when its fields do not match its kind.
 function ruleOf(body: z.infer<typeof ruleBody>): DeliveryFeeRule {
   const common = {
     currency: body.currency,
     minimumFee: body.minimumFee === null ? null : BigInt(body.minimumFee),
     freeDeliveryFrom: body.freeDeliveryFrom === null ? null : BigInt(body.freeDeliveryFrom),
   };
-  return body.kind === 'flat'
-    ? { ...common, kind: 'flat', flatFee: BigInt(body.flatFee) }
-    : {
-        ...common,
-        kind: 'distance_bands',
-        bands: body.bands.map((each) => ({ upToMetres: each.upToMetres, fee: BigInt(each.fee) })),
-      };
+  if (body.kind === 'flat' && body.flatFee !== null && body.bands === null) {
+    return { ...common, kind: 'flat', flatFee: BigInt(body.flatFee) };
+  }
+  if (body.kind === 'distance_bands' && body.bands !== null && body.flatFee === null) {
+    return {
+      ...common,
+      kind: 'distance_bands',
+      bands: body.bands.map((each) => ({ upToMetres: each.upToMetres, fee: BigInt(each.fee) })),
+    };
+  }
+  throw new GeoRefusedError(
+    'invalid_fee_rule',
+    'a flat rule has its fee and no bands, a distance-band rule its bands and no fee',
+  );
 }
 
 function ruleView(rule: FeeRuleVersion['rule']): z.infer<typeof storedRule> {
-  const common = {
+  return {
     id: rule.id,
+    kind: rule.kind,
     currency: rule.currency,
+    flatFee: rule.kind === 'flat' ? rule.flatFee.toString() : null,
+    bands:
+      rule.kind === 'distance_bands'
+        ? rule.bands.map((each) => ({ upToMetres: each.upToMetres, fee: each.fee.toString() }))
+        : null,
     minimumFee: rule.minimumFee?.toString() ?? null,
     freeDeliveryFrom: rule.freeDeliveryFrom?.toString() ?? null,
   };
-  return rule.kind === 'flat'
-    ? { ...common, kind: 'flat', flatFee: rule.flatFee.toString() }
-    : {
-        ...common,
-        kind: 'distance_bands',
-        bands: rule.bands.map((each) => ({
-          upToMetres: each.upToMetres,
-          fee: each.fee.toString(),
-        })),
-      };
 }
 
 // Geo's refusals as the routes answer them.

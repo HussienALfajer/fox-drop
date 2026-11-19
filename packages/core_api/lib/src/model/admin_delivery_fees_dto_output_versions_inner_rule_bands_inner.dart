@@ -6,19 +6,19 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_delivery_fees_dto_output_versions_inner_rule_one_of1_bands_inner.g.dart';
+part 'admin_delivery_fees_dto_output_versions_inner_rule_bands_inner.g.dart';
 
-/// AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInner
+/// AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner
 ///
 /// Properties:
 /// * [upToMetres] - The band's upper edge in metres, included; null for the last band.
 /// * [fee]
 @BuiltValue()
-abstract class AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInner
+abstract class AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner
     implements
         Built<
-          AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInner,
-          AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInnerBuilder
+          AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner,
+          AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInnerBuilder
         > {
   /// The band's upper edge in metres, included; null for the last band.
   @BuiltValueField(wireName: r'upToMetres')
@@ -27,43 +27,43 @@ abstract class AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInner
   @BuiltValueField(wireName: r'fee')
   String get fee;
 
-  AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInner._();
+  AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner._();
 
-  factory AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInner([
+  factory AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner([
     void updates(
-      AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInnerBuilder b,
+      AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInnerBuilder b,
     ),
-  ]) = _$AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInner;
+  ]) = _$AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(
-    AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInnerBuilder b,
+    AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInnerBuilder b,
   ) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInner>
+  static Serializer<AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner>
   get serializer =>
-      _$AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInnerSerializer();
+      _$AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInnerSerializer();
 }
 
-class _$AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInnerSerializer
+class _$AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInnerSerializer
     implements
         PrimitiveSerializer<
-          AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInner
+          AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner
         > {
   @override
   final Iterable<Type> types = const [
-    AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInner,
-    _$AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInner,
+    AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner,
+    _$AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner,
   ];
 
   @override
   final String wireName =
-      r'AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInner';
+      r'AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInner object, {
+    AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'upToMetres';
@@ -83,7 +83,7 @@ class _$AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInnerSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInner object, {
+    AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -98,7 +98,7 @@ class _$AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInnerSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInnerBuilder
+    required AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInnerBuilder
     result,
     required List<Object?> unhandled,
   }) {
@@ -134,13 +134,13 @@ class _$AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInnerSerializer
   }
 
   @override
-  AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInner deserialize(
+  AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
     final result =
-        AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInnerBuilder();
+        AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInnerBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

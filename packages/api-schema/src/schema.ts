@@ -17246,29 +17246,21 @@ export interface components {
                 rule: {
                     /** Format: uuid */
                     id: string;
-                    /** @constant */
-                    kind: "flat";
-                    flatFee: string;
+                    /** @enum {string} */
+                    kind: "flat" | "distance_bands";
+                    /** @description The fee of a flat rule; null for distance bands. */
+                    flatFee: string | null;
                     currency: string;
                     /** @description A lower fee is raised to it; null for none. */
                     minimumFee: string | null;
                     /** @description An items value from which delivery is free; null for none. */
                     freeDeliveryFrom: string | null;
-                } | {
-                    /** Format: uuid */
-                    id: string;
-                    /** @constant */
-                    kind: "distance_bands";
+                    /** @description Null for a flat rule. */
                     bands: {
                         /** @description The band's upper edge in metres, included; null for the last band. */
                         upToMetres: number | null;
                         fee: string;
-                    }[];
-                    currency: string;
-                    /** @description A lower fee is raised to it; null for none. */
-                    minimumFee: string | null;
-                    /** @description An items value from which delivery is free; null for none. */
-                    freeDeliveryFrom: string | null;
+                    }[] | null;
                 };
                 /** @description Null for the system or an unknown admin. */
                 editorName: string | null;
@@ -17290,29 +17282,21 @@ export interface components {
                     rule: {
                         /** Format: uuid */
                         id: string;
-                        /** @constant */
-                        kind: "flat";
-                        flatFee: string;
+                        /** @enum {string} */
+                        kind: "flat" | "distance_bands";
+                        /** @description The fee of a flat rule; null for distance bands. */
+                        flatFee: string | null;
                         currency: string;
                         /** @description A lower fee is raised to it; null for none. */
                         minimumFee: string | null;
                         /** @description An items value from which delivery is free; null for none. */
                         freeDeliveryFrom: string | null;
-                    } | {
-                        /** Format: uuid */
-                        id: string;
-                        /** @constant */
-                        kind: "distance_bands";
+                        /** @description Null for a flat rule. */
                         bands: {
                             /** @description The band's upper edge in metres, included; null for the last band. */
                             upToMetres: number | null;
                             fee: string;
-                        }[];
-                        currency: string;
-                        /** @description A lower fee is raised to it; null for none. */
-                        minimumFee: string | null;
-                        /** @description An items value from which delivery is free; null for none. */
-                        freeDeliveryFrom: string | null;
+                        }[] | null;
                     };
                     /** @description Null for the system or an unknown admin. */
                     editorName: string | null;
@@ -17326,27 +17310,21 @@ export interface components {
             /** Format: uuid */
             cityId: string;
             rule: {
-                /** @constant */
-                kind: "flat";
-                flatFee: string;
+                /** @enum {string} */
+                kind: "flat" | "distance_bands";
+                /** @description The fee of a flat rule; null for distance bands. */
+                flatFee: string | null;
                 currency: string;
                 /** @description A lower fee is raised to it; null for none. */
                 minimumFee: string | null;
                 /** @description An items value from which delivery is free; null for none. */
                 freeDeliveryFrom: string | null;
-            } | {
-                /** @constant */
-                kind: "distance_bands";
+                /** @description The bands in order, the last without an edge; null for a flat rule. */
                 bands: {
                     /** @description The band's upper edge in metres, included; null for the last band. */
                     upToMetres: number | null;
                     fee: string;
-                }[];
-                currency: string;
-                /** @description A lower fee is raised to it; null for none. */
-                minimumFee: string | null;
-                /** @description An items value from which delivery is free; null for none. */
-                freeDeliveryFrom: string | null;
+                }[] | null;
             };
             reason: string | null;
         };
@@ -17354,29 +17332,23 @@ export interface components {
             /** Format: uuid */
             cityId: string;
             /** @description Null returns the restaurant to the city's rule. */
-            rule: ({
-                /** @constant */
-                kind: "flat";
-                flatFee: string;
+            rule: {
+                /** @enum {string} */
+                kind: "flat" | "distance_bands";
+                /** @description The fee of a flat rule; null for distance bands. */
+                flatFee: string | null;
                 currency: string;
                 /** @description A lower fee is raised to it; null for none. */
                 minimumFee: string | null;
                 /** @description An items value from which delivery is free; null for none. */
                 freeDeliveryFrom: string | null;
-            } | {
-                /** @constant */
-                kind: "distance_bands";
+                /** @description The bands in order, the last without an edge; null for a flat rule. */
                 bands: {
                     /** @description The band's upper edge in metres, included; null for the last band. */
                     upToMetres: number | null;
                     fee: string;
-                }[];
-                currency: string;
-                /** @description A lower fee is raised to it; null for none. */
-                minimumFee: string | null;
-                /** @description An items value from which delivery is free; null for none. */
-                freeDeliveryFrom: string | null;
-            }) | null;
+                }[] | null;
+            } | null;
             reason: string | null;
         };
         AdminDeliveryFeePreviewDto_Output: {

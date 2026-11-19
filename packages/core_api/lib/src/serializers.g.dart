@@ -396,19 +396,10 @@ Serializers _$serializers =
           ..add(AdminDeliveryFeesDtoOutputRestaurantsInnerOwnRule.serializer)
           ..add(AdminDeliveryFeesDtoOutputVersionsInner.serializer)
           ..add(AdminDeliveryFeesDtoOutputVersionsInnerRule.serializer)
-          ..add(AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf.serializer)
-          ..add(AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1.serializer)
           ..add(
-            AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInner
-                .serializer,
+            AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner.serializer,
           )
-          ..add(
-            AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1KindEnum
-                .serializer,
-          )
-          ..add(
-            AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOfKindEnum.serializer,
-          )
+          ..add(AdminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum.serializer)
           ..add(AdminDepositCashLimitDto.serializer)
           ..add(AdminDepositCashLimitDtoCashLimit.serializer)
           ..add(AdminDepositRefundsDtoOutput.serializer)
@@ -1063,11 +1054,8 @@ Serializers _$serializers =
           ..add(AdminSetCustomerTestAccountDto.serializer)
           ..add(AdminSetDeliveryFeeDto.serializer)
           ..add(AdminSetDeliveryFeeDtoRule.serializer)
-          ..add(AdminSetDeliveryFeeDtoRuleOneOf.serializer)
-          ..add(AdminSetDeliveryFeeDtoRuleOneOf1.serializer)
-          ..add(AdminSetDeliveryFeeDtoRuleOneOf1BandsInner.serializer)
-          ..add(AdminSetDeliveryFeeDtoRuleOneOf1KindEnum.serializer)
-          ..add(AdminSetDeliveryFeeDtoRuleOneOfKindEnum.serializer)
+          ..add(AdminSetDeliveryFeeDtoRuleBandsInner.serializer)
+          ..add(AdminSetDeliveryFeeDtoRuleKindEnum.serializer)
           ..add(AdminSetExchangeRateDto.serializer)
           ..add(AdminSetExchangeRateDtoDirectionEnum.serializer)
           ..add(AdminSetImageDto.serializer)
@@ -1079,6 +1067,7 @@ Serializers _$serializers =
           ..add(AdminSetPeakBonusDtoWindowsInner.serializer)
           ..add(AdminSetRestaurantDeliveryFeeDto.serializer)
           ..add(AdminSetRestaurantDeliveryFeeDtoRule.serializer)
+          ..add(AdminSetRestaurantDeliveryFeeDtoRuleKindEnum.serializer)
           ..add(AdminSettleDepositDto.serializer)
           ..add(AdminSettleDepositDtoSettlementEnum.serializer)
           ..add(AdminSettleDto.serializer)
@@ -2492,12 +2481,12 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType(
-                AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInner,
+                AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner,
               ),
             ]),
             () =>
                 ListBuilder<
-                  AdminDeliveryFeesDtoOutputVersionsInnerRuleOneOf1BandsInner
+                  AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner
                 >(),
           )
           ..addBuilderFactory(
@@ -3523,9 +3512,15 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
-              const FullType(AdminSetDeliveryFeeDtoRuleOneOf1BandsInner),
+              const FullType(AdminSetDeliveryFeeDtoRuleBandsInner),
             ]),
-            () => ListBuilder<AdminSetDeliveryFeeDtoRuleOneOf1BandsInner>(),
+            () => ListBuilder<AdminSetDeliveryFeeDtoRuleBandsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminSetDeliveryFeeDtoRuleBandsInner),
+            ]),
+            () => ListBuilder<AdminSetDeliveryFeeDtoRuleBandsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

@@ -6,19 +6,19 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_set_delivery_fee_dto_rule_one_of1_bands_inner.g.dart';
+part 'admin_set_delivery_fee_dto_rule_bands_inner.g.dart';
 
-/// AdminSetDeliveryFeeDtoRuleOneOf1BandsInner
+/// AdminSetDeliveryFeeDtoRuleBandsInner
 ///
 /// Properties:
 /// * [upToMetres] - The band's upper edge in metres, included; null for the last band.
 /// * [fee]
 @BuiltValue()
-abstract class AdminSetDeliveryFeeDtoRuleOneOf1BandsInner
+abstract class AdminSetDeliveryFeeDtoRuleBandsInner
     implements
         Built<
-          AdminSetDeliveryFeeDtoRuleOneOf1BandsInner,
-          AdminSetDeliveryFeeDtoRuleOneOf1BandsInnerBuilder
+          AdminSetDeliveryFeeDtoRuleBandsInner,
+          AdminSetDeliveryFeeDtoRuleBandsInnerBuilder
         > {
   /// The band's upper edge in metres, included; null for the last band.
   @BuiltValueField(wireName: r'upToMetres')
@@ -27,35 +27,34 @@ abstract class AdminSetDeliveryFeeDtoRuleOneOf1BandsInner
   @BuiltValueField(wireName: r'fee')
   String get fee;
 
-  AdminSetDeliveryFeeDtoRuleOneOf1BandsInner._();
+  AdminSetDeliveryFeeDtoRuleBandsInner._();
 
-  factory AdminSetDeliveryFeeDtoRuleOneOf1BandsInner([
-    void updates(AdminSetDeliveryFeeDtoRuleOneOf1BandsInnerBuilder b),
-  ]) = _$AdminSetDeliveryFeeDtoRuleOneOf1BandsInner;
+  factory AdminSetDeliveryFeeDtoRuleBandsInner([
+    void updates(AdminSetDeliveryFeeDtoRuleBandsInnerBuilder b),
+  ]) = _$AdminSetDeliveryFeeDtoRuleBandsInner;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(AdminSetDeliveryFeeDtoRuleOneOf1BandsInnerBuilder b) =>
-      b;
+  static void _defaults(AdminSetDeliveryFeeDtoRuleBandsInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminSetDeliveryFeeDtoRuleOneOf1BandsInner>
-  get serializer => _$AdminSetDeliveryFeeDtoRuleOneOf1BandsInnerSerializer();
+  static Serializer<AdminSetDeliveryFeeDtoRuleBandsInner> get serializer =>
+      _$AdminSetDeliveryFeeDtoRuleBandsInnerSerializer();
 }
 
-class _$AdminSetDeliveryFeeDtoRuleOneOf1BandsInnerSerializer
-    implements PrimitiveSerializer<AdminSetDeliveryFeeDtoRuleOneOf1BandsInner> {
+class _$AdminSetDeliveryFeeDtoRuleBandsInnerSerializer
+    implements PrimitiveSerializer<AdminSetDeliveryFeeDtoRuleBandsInner> {
   @override
   final Iterable<Type> types = const [
-    AdminSetDeliveryFeeDtoRuleOneOf1BandsInner,
-    _$AdminSetDeliveryFeeDtoRuleOneOf1BandsInner,
+    AdminSetDeliveryFeeDtoRuleBandsInner,
+    _$AdminSetDeliveryFeeDtoRuleBandsInner,
   ];
 
   @override
-  final String wireName = r'AdminSetDeliveryFeeDtoRuleOneOf1BandsInner';
+  final String wireName = r'AdminSetDeliveryFeeDtoRuleBandsInner';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminSetDeliveryFeeDtoRuleOneOf1BandsInner object, {
+    AdminSetDeliveryFeeDtoRuleBandsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'upToMetres';
@@ -75,7 +74,7 @@ class _$AdminSetDeliveryFeeDtoRuleOneOf1BandsInnerSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminSetDeliveryFeeDtoRuleOneOf1BandsInner object, {
+    AdminSetDeliveryFeeDtoRuleBandsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -90,7 +89,7 @@ class _$AdminSetDeliveryFeeDtoRuleOneOf1BandsInnerSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminSetDeliveryFeeDtoRuleOneOf1BandsInnerBuilder result,
+    required AdminSetDeliveryFeeDtoRuleBandsInnerBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -125,12 +124,12 @@ class _$AdminSetDeliveryFeeDtoRuleOneOf1BandsInnerSerializer
   }
 
   @override
-  AdminSetDeliveryFeeDtoRuleOneOf1BandsInner deserialize(
+  AdminSetDeliveryFeeDtoRuleBandsInner deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminSetDeliveryFeeDtoRuleOneOf1BandsInnerBuilder();
+    final result = AdminSetDeliveryFeeDtoRuleBandsInnerBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

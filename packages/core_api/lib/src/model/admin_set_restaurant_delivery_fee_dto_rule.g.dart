@@ -7,12 +7,17 @@ part of 'admin_set_restaurant_delivery_fee_dto_rule.dart';
 // **************************************************************************
 
 const AdminSetRestaurantDeliveryFeeDtoRuleKindEnum
+_$adminSetRestaurantDeliveryFeeDtoRuleKindEnum_flat =
+    const AdminSetRestaurantDeliveryFeeDtoRuleKindEnum._('flat');
+const AdminSetRestaurantDeliveryFeeDtoRuleKindEnum
 _$adminSetRestaurantDeliveryFeeDtoRuleKindEnum_distanceBands =
     const AdminSetRestaurantDeliveryFeeDtoRuleKindEnum._('distanceBands');
 
 AdminSetRestaurantDeliveryFeeDtoRuleKindEnum
 _$adminSetRestaurantDeliveryFeeDtoRuleKindEnumValueOf(String name) {
   switch (name) {
+    case 'flat':
+      return _$adminSetRestaurantDeliveryFeeDtoRuleKindEnum_flat;
     case 'distanceBands':
       return _$adminSetRestaurantDeliveryFeeDtoRuleKindEnum_distanceBands;
     default:
@@ -24,6 +29,7 @@ final BuiltSet<AdminSetRestaurantDeliveryFeeDtoRuleKindEnum>
 _$adminSetRestaurantDeliveryFeeDtoRuleKindEnumValues =
     BuiltSet<AdminSetRestaurantDeliveryFeeDtoRuleKindEnum>(
       const <AdminSetRestaurantDeliveryFeeDtoRuleKindEnum>[
+        _$adminSetRestaurantDeliveryFeeDtoRuleKindEnum_flat,
         _$adminSetRestaurantDeliveryFeeDtoRuleKindEnum_distanceBands,
       ],
     );
@@ -36,9 +42,11 @@ class _$AdminSetRestaurantDeliveryFeeDtoRuleKindEnumSerializer
     implements
         PrimitiveSerializer<AdminSetRestaurantDeliveryFeeDtoRuleKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
+    'flat': 'flat',
     'distanceBands': 'distance_bands',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
+    'flat': 'flat',
     'distance_bands': 'distanceBands',
   };
 
@@ -69,14 +77,31 @@ class _$AdminSetRestaurantDeliveryFeeDtoRuleKindEnumSerializer
 class _$AdminSetRestaurantDeliveryFeeDtoRule
     extends AdminSetRestaurantDeliveryFeeDtoRule {
   @override
-  final OneOf oneOf;
+  final AdminSetRestaurantDeliveryFeeDtoRuleKindEnum kind;
+  @override
+  final String? flatFee;
+  @override
+  final String currency;
+  @override
+  final String? minimumFee;
+  @override
+  final String? freeDeliveryFrom;
+  @override
+  final BuiltList<AdminSetDeliveryFeeDtoRuleBandsInner>? bands;
 
   factory _$AdminSetRestaurantDeliveryFeeDtoRule([
     void Function(AdminSetRestaurantDeliveryFeeDtoRuleBuilder)? updates,
   ]) =>
       (AdminSetRestaurantDeliveryFeeDtoRuleBuilder()..update(updates))._build();
 
-  _$AdminSetRestaurantDeliveryFeeDtoRule._({required this.oneOf}) : super._();
+  _$AdminSetRestaurantDeliveryFeeDtoRule._({
+    required this.kind,
+    this.flatFee,
+    required this.currency,
+    this.minimumFee,
+    this.freeDeliveryFrom,
+    this.bands,
+  }) : super._();
   @override
   AdminSetRestaurantDeliveryFeeDtoRule rebuild(
     void Function(AdminSetRestaurantDeliveryFeeDtoRuleBuilder) updates,
@@ -90,22 +115,37 @@ class _$AdminSetRestaurantDeliveryFeeDtoRule
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is AdminSetRestaurantDeliveryFeeDtoRule &&
-        oneOf == other.oneOf;
+        kind == other.kind &&
+        flatFee == other.flatFee &&
+        currency == other.currency &&
+        minimumFee == other.minimumFee &&
+        freeDeliveryFrom == other.freeDeliveryFrom &&
+        bands == other.bands;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
-    _$hash = $jc(_$hash, oneOf.hashCode);
+    _$hash = $jc(_$hash, kind.hashCode);
+    _$hash = $jc(_$hash, flatFee.hashCode);
+    _$hash = $jc(_$hash, currency.hashCode);
+    _$hash = $jc(_$hash, minimumFee.hashCode);
+    _$hash = $jc(_$hash, freeDeliveryFrom.hashCode);
+    _$hash = $jc(_$hash, bands.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(
-      r'AdminSetRestaurantDeliveryFeeDtoRule',
-    )..add('oneOf', oneOf)).toString();
+    return (newBuiltValueToStringHelper(r'AdminSetRestaurantDeliveryFeeDtoRule')
+          ..add('kind', kind)
+          ..add('flatFee', flatFee)
+          ..add('currency', currency)
+          ..add('minimumFee', minimumFee)
+          ..add('freeDeliveryFrom', freeDeliveryFrom)
+          ..add('bands', bands))
+        .toString();
   }
 }
 
@@ -117,9 +157,33 @@ class AdminSetRestaurantDeliveryFeeDtoRuleBuilder
         > {
   _$AdminSetRestaurantDeliveryFeeDtoRule? _$v;
 
-  OneOf? _oneOf;
-  OneOf? get oneOf => _$this._oneOf;
-  set oneOf(OneOf? oneOf) => _$this._oneOf = oneOf;
+  AdminSetRestaurantDeliveryFeeDtoRuleKindEnum? _kind;
+  AdminSetRestaurantDeliveryFeeDtoRuleKindEnum? get kind => _$this._kind;
+  set kind(AdminSetRestaurantDeliveryFeeDtoRuleKindEnum? kind) =>
+      _$this._kind = kind;
+
+  String? _flatFee;
+  String? get flatFee => _$this._flatFee;
+  set flatFee(String? flatFee) => _$this._flatFee = flatFee;
+
+  String? _currency;
+  String? get currency => _$this._currency;
+  set currency(String? currency) => _$this._currency = currency;
+
+  String? _minimumFee;
+  String? get minimumFee => _$this._minimumFee;
+  set minimumFee(String? minimumFee) => _$this._minimumFee = minimumFee;
+
+  String? _freeDeliveryFrom;
+  String? get freeDeliveryFrom => _$this._freeDeliveryFrom;
+  set freeDeliveryFrom(String? freeDeliveryFrom) =>
+      _$this._freeDeliveryFrom = freeDeliveryFrom;
+
+  ListBuilder<AdminSetDeliveryFeeDtoRuleBandsInner>? _bands;
+  ListBuilder<AdminSetDeliveryFeeDtoRuleBandsInner> get bands =>
+      _$this._bands ??= ListBuilder<AdminSetDeliveryFeeDtoRuleBandsInner>();
+  set bands(ListBuilder<AdminSetDeliveryFeeDtoRuleBandsInner>? bands) =>
+      _$this._bands = bands;
 
   AdminSetRestaurantDeliveryFeeDtoRuleBuilder() {
     AdminSetRestaurantDeliveryFeeDtoRule._defaults(this);
@@ -128,7 +192,12 @@ class AdminSetRestaurantDeliveryFeeDtoRuleBuilder
   AdminSetRestaurantDeliveryFeeDtoRuleBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _oneOf = $v.oneOf;
+      _kind = $v.kind;
+      _flatFee = $v.flatFee;
+      _currency = $v.currency;
+      _minimumFee = $v.minimumFee;
+      _freeDeliveryFrom = $v.freeDeliveryFrom;
+      _bands = $v.bands?.toBuilder();
       _$v = null;
     }
     return this;
@@ -150,15 +219,40 @@ class AdminSetRestaurantDeliveryFeeDtoRuleBuilder
   AdminSetRestaurantDeliveryFeeDtoRule build() => _build();
 
   _$AdminSetRestaurantDeliveryFeeDtoRule _build() {
-    final _$result =
-        _$v ??
-        _$AdminSetRestaurantDeliveryFeeDtoRule._(
-          oneOf: BuiltValueNullFieldError.checkNotNull(
-            oneOf,
-            r'AdminSetRestaurantDeliveryFeeDtoRule',
-            'oneOf',
-          ),
+    _$AdminSetRestaurantDeliveryFeeDtoRule _$result;
+    try {
+      _$result =
+          _$v ??
+          _$AdminSetRestaurantDeliveryFeeDtoRule._(
+            kind: BuiltValueNullFieldError.checkNotNull(
+              kind,
+              r'AdminSetRestaurantDeliveryFeeDtoRule',
+              'kind',
+            ),
+            flatFee: flatFee,
+            currency: BuiltValueNullFieldError.checkNotNull(
+              currency,
+              r'AdminSetRestaurantDeliveryFeeDtoRule',
+              'currency',
+            ),
+            minimumFee: minimumFee,
+            freeDeliveryFrom: freeDeliveryFrom,
+            bands: _bands?.build(),
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'bands';
+        _bands?.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+          r'AdminSetRestaurantDeliveryFeeDtoRule',
+          _$failedField,
+          e.toString(),
         );
+      }
+      rethrow;
+    }
     replace(_$result);
     return _$result;
   }

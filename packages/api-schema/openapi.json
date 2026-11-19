@@ -63101,75 +63101,63 @@
               "type": "object",
               "properties": {
                 "rule": {
-                  "oneOf": [
-                    {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string",
-                          "format": "uuid",
-                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                        },
-                        "kind": {
-                          "type": "string",
-                          "const": "flat"
-                        },
-                        "flatFee": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "flat",
+                        "distance_bands"
+                      ]
+                    },
+                    "flatFee": {
+                      "anyOf": [
+                        {
                           "type": "string",
                           "pattern": "^\\d{1,18}$"
                         },
-                        "currency": {
-                          "type": "string",
-                          "pattern": "^[A-Z]{3}$"
-                        },
-                        "minimumFee": {
-                          "anyOf": [
-                            {
-                              "type": "string",
-                              "pattern": "^\\d{1,18}$"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ],
-                          "description": "A lower fee is raised to it; null for none."
-                        },
-                        "freeDeliveryFrom": {
-                          "anyOf": [
-                            {
-                              "type": "string",
-                              "pattern": "^\\d{1,18}$"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ],
-                          "description": "An items value from which delivery is free; null for none."
+                        {
+                          "type": "null"
                         }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "flatFee",
-                        "currency",
-                        "minimumFee",
-                        "freeDeliveryFrom"
                       ],
-                      "additionalProperties": false
+                      "description": "The fee of a flat rule; null for distance bands."
                     },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "id": {
+                    "currency": {
+                      "type": "string",
+                      "pattern": "^[A-Z]{3}$"
+                    },
+                    "minimumFee": {
+                      "anyOf": [
+                        {
                           "type": "string",
-                          "format": "uuid",
-                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          "pattern": "^\\d{1,18}$"
                         },
-                        "kind": {
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "A lower fee is raised to it; null for none."
+                    },
+                    "freeDeliveryFrom": {
+                      "anyOf": [
+                        {
                           "type": "string",
-                          "const": "distance_bands"
+                          "pattern": "^\\d{1,18}$"
                         },
-                        "bands": {
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "An items value from which delivery is free; null for none."
+                    },
+                    "bands": {
+                      "anyOf": [
+                        {
                           "type": "array",
                           "items": {
                             "type": "object",
@@ -63199,46 +63187,23 @@
                             "additionalProperties": false
                           }
                         },
-                        "currency": {
-                          "type": "string",
-                          "pattern": "^[A-Z]{3}$"
-                        },
-                        "minimumFee": {
-                          "anyOf": [
-                            {
-                              "type": "string",
-                              "pattern": "^\\d{1,18}$"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ],
-                          "description": "A lower fee is raised to it; null for none."
-                        },
-                        "freeDeliveryFrom": {
-                          "anyOf": [
-                            {
-                              "type": "string",
-                              "pattern": "^\\d{1,18}$"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ],
-                          "description": "An items value from which delivery is free; null for none."
+                        {
+                          "type": "null"
                         }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "bands",
-                        "currency",
-                        "minimumFee",
-                        "freeDeliveryFrom"
                       ],
-                      "additionalProperties": false
+                      "description": "Null for a flat rule."
                     }
-                  ]
+                  },
+                  "required": [
+                    "id",
+                    "kind",
+                    "flatFee",
+                    "currency",
+                    "minimumFee",
+                    "freeDeliveryFrom",
+                    "bands"
+                  ],
+                  "additionalProperties": false
                 },
                 "editorName": {
                   "description": "Null for the system or an unknown admin.",
@@ -63308,75 +63273,63 @@
                       "type": "object",
                       "properties": {
                         "rule": {
-                          "oneOf": [
-                            {
-                              "type": "object",
-                              "properties": {
-                                "id": {
-                                  "type": "string",
-                                  "format": "uuid",
-                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                                },
-                                "kind": {
-                                  "type": "string",
-                                  "const": "flat"
-                                },
-                                "flatFee": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "flat",
+                                "distance_bands"
+                              ]
+                            },
+                            "flatFee": {
+                              "anyOf": [
+                                {
                                   "type": "string",
                                   "pattern": "^\\d{1,18}$"
                                 },
-                                "currency": {
-                                  "type": "string",
-                                  "pattern": "^[A-Z]{3}$"
-                                },
-                                "minimumFee": {
-                                  "anyOf": [
-                                    {
-                                      "type": "string",
-                                      "pattern": "^\\d{1,18}$"
-                                    },
-                                    {
-                                      "type": "null"
-                                    }
-                                  ],
-                                  "description": "A lower fee is raised to it; null for none."
-                                },
-                                "freeDeliveryFrom": {
-                                  "anyOf": [
-                                    {
-                                      "type": "string",
-                                      "pattern": "^\\d{1,18}$"
-                                    },
-                                    {
-                                      "type": "null"
-                                    }
-                                  ],
-                                  "description": "An items value from which delivery is free; null for none."
+                                {
+                                  "type": "null"
                                 }
-                              },
-                              "required": [
-                                "id",
-                                "kind",
-                                "flatFee",
-                                "currency",
-                                "minimumFee",
-                                "freeDeliveryFrom"
                               ],
-                              "additionalProperties": false
+                              "description": "The fee of a flat rule; null for distance bands."
                             },
-                            {
-                              "type": "object",
-                              "properties": {
-                                "id": {
+                            "currency": {
+                              "type": "string",
+                              "pattern": "^[A-Z]{3}$"
+                            },
+                            "minimumFee": {
+                              "anyOf": [
+                                {
                                   "type": "string",
-                                  "format": "uuid",
-                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                  "pattern": "^\\d{1,18}$"
                                 },
-                                "kind": {
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "description": "A lower fee is raised to it; null for none."
+                            },
+                            "freeDeliveryFrom": {
+                              "anyOf": [
+                                {
                                   "type": "string",
-                                  "const": "distance_bands"
+                                  "pattern": "^\\d{1,18}$"
                                 },
-                                "bands": {
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "description": "An items value from which delivery is free; null for none."
+                            },
+                            "bands": {
+                              "anyOf": [
+                                {
                                   "type": "array",
                                   "items": {
                                     "type": "object",
@@ -63406,46 +63359,23 @@
                                     "additionalProperties": false
                                   }
                                 },
-                                "currency": {
-                                  "type": "string",
-                                  "pattern": "^[A-Z]{3}$"
-                                },
-                                "minimumFee": {
-                                  "anyOf": [
-                                    {
-                                      "type": "string",
-                                      "pattern": "^\\d{1,18}$"
-                                    },
-                                    {
-                                      "type": "null"
-                                    }
-                                  ],
-                                  "description": "A lower fee is raised to it; null for none."
-                                },
-                                "freeDeliveryFrom": {
-                                  "anyOf": [
-                                    {
-                                      "type": "string",
-                                      "pattern": "^\\d{1,18}$"
-                                    },
-                                    {
-                                      "type": "null"
-                                    }
-                                  ],
-                                  "description": "An items value from which delivery is free; null for none."
+                                {
+                                  "type": "null"
                                 }
-                              },
-                              "required": [
-                                "id",
-                                "kind",
-                                "bands",
-                                "currency",
-                                "minimumFee",
-                                "freeDeliveryFrom"
                               ],
-                              "additionalProperties": false
+                              "description": "Null for a flat rule."
                             }
-                          ]
+                          },
+                          "required": [
+                            "id",
+                            "kind",
+                            "flatFee",
+                            "currency",
+                            "minimumFee",
+                            "freeDeliveryFrom",
+                            "bands"
+                          ],
+                          "additionalProperties": false
                         },
                         "editorName": {
                           "description": "Null for the system or an unknown admin.",
@@ -63509,63 +63439,58 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           },
           "rule": {
-            "oneOf": [
-              {
-                "type": "object",
-                "properties": {
-                  "kind": {
-                    "type": "string",
-                    "const": "flat"
-                  },
-                  "flatFee": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "flat",
+                  "distance_bands"
+                ]
+              },
+              "flatFee": {
+                "anyOf": [
+                  {
                     "type": "string",
                     "pattern": "^\\d{1,18}$"
                   },
-                  "currency": {
-                    "type": "string",
-                    "pattern": "^[A-Z]{3}$"
-                  },
-                  "minimumFee": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "pattern": "^\\d{1,18}$"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ],
-                    "description": "A lower fee is raised to it; null for none."
-                  },
-                  "freeDeliveryFrom": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "pattern": "^\\d{1,18}$"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ],
-                    "description": "An items value from which delivery is free; null for none."
+                  {
+                    "type": "null"
                   }
-                },
-                "required": [
-                  "kind",
-                  "flatFee",
-                  "currency",
-                  "minimumFee",
-                  "freeDeliveryFrom"
-                ]
+                ],
+                "description": "The fee of a flat rule; null for distance bands."
               },
-              {
-                "type": "object",
-                "properties": {
-                  "kind": {
+              "currency": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              "minimumFee": {
+                "anyOf": [
+                  {
                     "type": "string",
-                    "const": "distance_bands"
+                    "pattern": "^\\d{1,18}$"
                   },
-                  "bands": {
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "A lower fee is raised to it; null for none."
+              },
+              "freeDeliveryFrom": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^\\d{1,18}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "An items value from which delivery is free; null for none."
+              },
+              "bands": {
+                "anyOf": [
+                  {
                     "minItems": 1,
                     "maxItems": 20,
                     "type": "array",
@@ -63596,43 +63521,20 @@
                       ]
                     }
                   },
-                  "currency": {
-                    "type": "string",
-                    "pattern": "^[A-Z]{3}$"
-                  },
-                  "minimumFee": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "pattern": "^\\d{1,18}$"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ],
-                    "description": "A lower fee is raised to it; null for none."
-                  },
-                  "freeDeliveryFrom": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                        "pattern": "^\\d{1,18}$"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ],
-                    "description": "An items value from which delivery is free; null for none."
+                  {
+                    "type": "null"
                   }
-                },
-                "required": [
-                  "kind",
-                  "bands",
-                  "currency",
-                  "minimumFee",
-                  "freeDeliveryFrom"
-                ]
+                ],
+                "description": "The bands in order, the last without an edge; null for a flat rule."
               }
+            },
+            "required": [
+              "kind",
+              "flatFee",
+              "currency",
+              "minimumFee",
+              "freeDeliveryFrom",
+              "bands"
             ]
           },
           "reason": {
@@ -63664,63 +63566,58 @@
           "rule": {
             "anyOf": [
               {
-                "oneOf": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "kind": {
-                        "type": "string",
-                        "const": "flat"
-                      },
-                      "flatFee": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "flat",
+                      "distance_bands"
+                    ]
+                  },
+                  "flatFee": {
+                    "anyOf": [
+                      {
                         "type": "string",
                         "pattern": "^\\d{1,18}$"
                       },
-                      "currency": {
-                        "type": "string",
-                        "pattern": "^[A-Z]{3}$"
-                      },
-                      "minimumFee": {
-                        "anyOf": [
-                          {
-                            "type": "string",
-                            "pattern": "^\\d{1,18}$"
-                          },
-                          {
-                            "type": "null"
-                          }
-                        ],
-                        "description": "A lower fee is raised to it; null for none."
-                      },
-                      "freeDeliveryFrom": {
-                        "anyOf": [
-                          {
-                            "type": "string",
-                            "pattern": "^\\d{1,18}$"
-                          },
-                          {
-                            "type": "null"
-                          }
-                        ],
-                        "description": "An items value from which delivery is free; null for none."
+                      {
+                        "type": "null"
                       }
-                    },
-                    "required": [
-                      "kind",
-                      "flatFee",
-                      "currency",
-                      "minimumFee",
-                      "freeDeliveryFrom"
-                    ]
+                    ],
+                    "description": "The fee of a flat rule; null for distance bands."
                   },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "kind": {
+                  "currency": {
+                    "type": "string",
+                    "pattern": "^[A-Z]{3}$"
+                  },
+                  "minimumFee": {
+                    "anyOf": [
+                      {
                         "type": "string",
-                        "const": "distance_bands"
+                        "pattern": "^\\d{1,18}$"
                       },
-                      "bands": {
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "A lower fee is raised to it; null for none."
+                  },
+                  "freeDeliveryFrom": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^\\d{1,18}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "An items value from which delivery is free; null for none."
+                  },
+                  "bands": {
+                    "anyOf": [
+                      {
                         "minItems": 1,
                         "maxItems": 20,
                         "type": "array",
@@ -63751,43 +63648,20 @@
                           ]
                         }
                       },
-                      "currency": {
-                        "type": "string",
-                        "pattern": "^[A-Z]{3}$"
-                      },
-                      "minimumFee": {
-                        "anyOf": [
-                          {
-                            "type": "string",
-                            "pattern": "^\\d{1,18}$"
-                          },
-                          {
-                            "type": "null"
-                          }
-                        ],
-                        "description": "A lower fee is raised to it; null for none."
-                      },
-                      "freeDeliveryFrom": {
-                        "anyOf": [
-                          {
-                            "type": "string",
-                            "pattern": "^\\d{1,18}$"
-                          },
-                          {
-                            "type": "null"
-                          }
-                        ],
-                        "description": "An items value from which delivery is free; null for none."
+                      {
+                        "type": "null"
                       }
-                    },
-                    "required": [
-                      "kind",
-                      "bands",
-                      "currency",
-                      "minimumFee",
-                      "freeDeliveryFrom"
-                    ]
+                    ],
+                    "description": "The bands in order, the last without an edge; null for a flat rule."
                   }
+                },
+                "required": [
+                  "kind",
+                  "flatFee",
+                  "currency",
+                  "minimumFee",
+                  "freeDeliveryFrom",
+                  "bands"
                 ]
               },
               {
