@@ -29,6 +29,7 @@ function day(date: string, margin: string) {
     testCost: '0',
     fxRounding: '0',
     adjustments: '0',
+    withheldDeposits: '0',
     margin,
     cash: [
       {
