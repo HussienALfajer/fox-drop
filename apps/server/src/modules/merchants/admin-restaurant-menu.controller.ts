@@ -26,6 +26,7 @@ import {
   MenuEditorService,
 } from './menu-editor.service.js';
 import { MerchantsRefusedError, MerchantsService, type SwitchedOff } from './merchants.service.js';
+import { OptionGroupsService } from './option-groups.service.js';
 
 const minorUnits = z
   .string()
@@ -93,10 +94,30 @@ class AdminMenuDto extends createZodDto(
             hidden: z.boolean(),
             badge,
             switchedOff,
+            optionGroupIds: z.array(z.uuid()).describe('Its option groups, in order.'),
           }),
         ),
       }),
     ),
+    optionGroups: z
+      .array(
+        z.object({
+          id: z.uuid(),
+          name: z.string(),
+          minChoices: z.int().describe('0: an add-on group; 1 or more: required.'),
+          maxChoices: z.int(),
+          options: z.array(
+            z.object({
+              id: z.uuid(),
+              name: z.string(),
+              priceDelta: money,
+              switchedOff,
+            }),
+          ),
+          itemIds: z.array(z.uuid()).describe('The items it is linked to, in menu order.'),
+        }),
+      )
+      .describe('Every option group of the restaurant, by name.'),
   }),
 ) {}
 
@@ -131,6 +152,46 @@ class AdminMenuItemDto extends createZodDto(
     hidden: z.boolean(),
     badge,
   }),
+) {}
+
+class AdminMenuGroupParamsDto extends createZodDto(
+  z.object({ restaurantId: z.uuid(), groupId: z.uuid() }),
+) {}
+
+class AdminMenuOptionParamsDto extends createZodDto(
+  z.object({ restaurantId: z.uuid(), groupId: z.uuid(), optionId: z.uuid() }),
+) {}
+
+class AdminMenuOptionGroupDto extends createZodDto(
+  z.object({
+    name: z.string(),
+    minChoices: z.int().min(0).max(50).describe('0: an add-on group; 1 or more: required.'),
+    maxChoices: z
+      .int()
+      .min(1)
+      .max(50)
+      .describe('At least the minimum; once it has options, at most their count.'),
+  }),
+) {}
+
+class AdminMenuOptionDto extends createZodDto(
+  z.object({
+    name: z.string(),
+    priceDelta: money.describe("0 or more, in the city's base currency."),
+    removed: z.boolean().describe('true removes the option for good.'),
+  }),
+) {}
+
+class AdminMenuOptionOrderDto extends createZodDto(
+  z.object({ optionIds: z.array(z.uuid()).describe('Every option of the group once, in order.') }),
+) {}
+
+class AdminMenuGroupItemsDto extends createZodDto(
+  z.object({ itemIds: z.array(z.uuid()).describe('Every item the group is linked to.') }),
+) {}
+
+class AdminMenuItemGroupsDto extends createZodDto(
+  z.object({ groupIds: z.array(z.uuid()).describe("The item's groups, in order.") }),
 ) {}
 
 class AdminMenuCategoryOrderDto extends createZodDto(
@@ -196,6 +257,7 @@ export class AdminRestaurantMenuController {
   constructor(
     private readonly merchants: MerchantsService,
     private readonly editor: MenuEditorService,
+    private readonly groups: OptionGroupsService,
   ) {}
 
   @Get(':restaurantId/menu')
@@ -321,6 +383,126 @@ export class AdminRestaurantMenuController {
     return this.answer(params.restaurantId, session);
   }
 
+  // AP §9.6.6 «مجموعات الخيارات» and «الإضافات» (slice 2.31).
+  @Put(':restaurantId/menu/option-groups/:groupId')
+  @RequirePermission('restaurants.menus')
+  @ZodResponse({ status: 200, type: AdminMenuDto })
+  async optionGroup(
+    @Param() params: AdminMenuGroupParamsDto,
+    @Body() body: AdminMenuOptionGroupDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    try {
+      await this.groups.saveGroup(
+        params.restaurantId,
+        params.groupId,
+        body,
+        adminChange(session, request),
+      );
+    } catch (error) {
+      refusalAsHttp(error);
+    }
+    return this.answer(params.restaurantId, session);
+  }
+
+  @Put(':restaurantId/menu/option-groups/:groupId/options/:optionId')
+  @RequirePermission('restaurants.menus')
+  @ZodResponse({ status: 200, type: AdminMenuDto })
+  async option(
+    @Param() params: AdminMenuOptionParamsDto,
+    @Body() body: AdminMenuOptionDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    try {
+      await this.groups.saveOption(
+        params.restaurantId,
+        params.groupId,
+        params.optionId,
+        {
+          name: body.name,
+          priceDelta: {
+            amount: BigInt(body.priceDelta.amount),
+            currency: body.priceDelta.currency,
+          },
+          removed: body.removed,
+        },
+        adminChange(session, request),
+      );
+    } catch (error) {
+      refusalAsHttp(error);
+    }
+    return this.answer(params.restaurantId, session);
+  }
+
+  @Put(':restaurantId/menu/option-groups/:groupId/option-order')
+  @RequirePermission('restaurants.menus')
+  @ZodResponse({ status: 200, type: AdminMenuDto })
+  async optionOrder(
+    @Param() params: AdminMenuGroupParamsDto,
+    @Body() body: AdminMenuOptionOrderDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    try {
+      await this.groups.orderOptions(
+        params.restaurantId,
+        params.groupId,
+        body.optionIds,
+        adminChange(session, request),
+      );
+    } catch (error) {
+      refusalAsHttp(error);
+    }
+    return this.answer(params.restaurantId, session);
+  }
+
+  // «ربط بعدة أصناف»: one group linked to many items at once.
+  @Put(':restaurantId/menu/option-groups/:groupId/items')
+  @RequirePermission('restaurants.menus')
+  @ZodResponse({ status: 200, type: AdminMenuDto })
+  async groupItems(
+    @Param() params: AdminMenuGroupParamsDto,
+    @Body() body: AdminMenuGroupItemsDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    try {
+      await this.groups.linkItems(
+        params.restaurantId,
+        params.groupId,
+        body.itemIds,
+        adminChange(session, request),
+      );
+    } catch (error) {
+      refusalAsHttp(error);
+    }
+    return this.answer(params.restaurantId, session);
+  }
+
+  @Put(':restaurantId/menu/items/:itemId/option-groups')
+  @RequirePermission('restaurants.menus')
+  @ZodResponse({ status: 200, type: AdminMenuDto })
+  async itemGroups(
+    @Param() params: AdminMenuItemParamsDto,
+    @Body() body: AdminMenuItemGroupsDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    try {
+      await this.groups.setItemGroups(
+        params.restaurantId,
+        params.itemId,
+        body.groupIds,
+        adminChange(session, request),
+      );
+    } catch (error) {
+      refusalAsHttp(error);
+    }
+    return this.answer(params.restaurantId, session);
+  }
+
   private async answer(restaurantId: string, session: AdminSession) {
     const found = await this.merchants.cityAndStatus(restaurantId);
     if (found === null) {
@@ -329,7 +511,11 @@ export class AdminRestaurantMenuController {
         error: 'unknown_restaurant',
       });
     }
-    const menu = await this.merchants.menu(restaurantId);
+    const now = new Date();
+    const [menu, groups] = await Promise.all([
+      this.merchants.menu(restaurantId, now),
+      this.groups.groups(restaurantId, now),
+    ]);
     return {
       accountStatus: found.accountStatus,
       editable: MenuEditorService.editable(found.accountStatus),
@@ -355,7 +541,24 @@ export class AdminRestaurantMenuController {
           hidden: item.hidden,
           badge: item.badge,
           switchedOff: offJson(item.switchedOff),
+          optionGroupIds: item.optionGroups.map((group) => group.id),
         })),
+      })),
+      optionGroups: groups.map((group) => ({
+        id: group.id,
+        name: group.name,
+        minChoices: group.minChoices,
+        maxChoices: group.maxChoices,
+        options: group.options.map((option) => ({
+          id: option.id,
+          name: option.name,
+          priceDelta: {
+            amount: option.priceDelta.amount.toString(),
+            currency: option.priceDelta.currency,
+          },
+          switchedOff: offJson(option.switchedOff),
+        })),
+        itemIds: group.itemIds,
       })),
     };
   }

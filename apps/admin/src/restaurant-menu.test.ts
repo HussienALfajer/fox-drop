@@ -87,6 +87,7 @@ describe('step 7, the menu (slice 2.30b)', () => {
           hidden: false,
           badge: 'new',
           switchedOff: null,
+          optionGroupIds: [],
         },
         'cat',
       ),

@@ -4,6 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
+import 'package:core_api/src/model/admin_menu_dto_output_option_groups_inner.dart';
 import 'package:core_api/src/model/admin_menu_dto_output_categories_inner.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -20,6 +21,7 @@ part 'admin_menu_dto_output.g.dart';
 /// * [descriptionMax]
 /// * [codeMax]
 /// * [categories]
+/// * [optionGroups] - Every option group of the restaurant, by name.
 @BuiltValue()
 abstract class AdminMenuDtoOutput
     implements Built<AdminMenuDtoOutput, AdminMenuDtoOutputBuilder> {
@@ -46,6 +48,10 @@ abstract class AdminMenuDtoOutput
 
   @BuiltValueField(wireName: r'categories')
   BuiltList<AdminMenuDtoOutputCategoriesInner> get categories;
+
+  /// Every option group of the restaurant, by name.
+  @BuiltValueField(wireName: r'optionGroups')
+  BuiltList<AdminMenuDtoOutputOptionGroupsInner> get optionGroups;
 
   AdminMenuDtoOutput._();
 
@@ -108,6 +114,13 @@ class _$AdminMenuDtoOutputSerializer
       object.categories,
       specifiedType: const FullType(BuiltList, [
         FullType(AdminMenuDtoOutputCategoriesInner),
+      ]),
+    );
+    yield r'optionGroups';
+    yield serializers.serialize(
+      object.optionGroups,
+      specifiedType: const FullType(BuiltList, [
+        FullType(AdminMenuDtoOutputOptionGroupsInner),
       ]),
     );
   }
@@ -194,6 +207,17 @@ class _$AdminMenuDtoOutputSerializer
                   )
                   as BuiltList<AdminMenuDtoOutputCategoriesInner>;
           result.categories.replace(valueDes);
+          break;
+        case r'optionGroups':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdminMenuDtoOutputOptionGroupsInner),
+                    ]),
+                  )
+                  as BuiltList<AdminMenuDtoOutputOptionGroupsInner>;
+          result.optionGroups.replace(valueDes);
           break;
         default:
           unhandled.add(key);

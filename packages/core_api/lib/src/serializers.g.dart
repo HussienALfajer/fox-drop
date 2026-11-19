@@ -350,11 +350,18 @@ Serializers _$serializers =
           ..add(AdminMenuDtoOutputCategoriesInner.serializer)
           ..add(AdminMenuDtoOutputCategoriesInnerItemsInner.serializer)
           ..add(AdminMenuDtoOutputCategoriesInnerItemsInnerBadgeEnum.serializer)
+          ..add(AdminMenuDtoOutputOptionGroupsInner.serializer)
+          ..add(AdminMenuDtoOutputOptionGroupsInnerOptionsInner.serializer)
+          ..add(AdminMenuGroupItemsDto.serializer)
           ..add(AdminMenuItemDto.serializer)
           ..add(AdminMenuItemDtoBadgeEnum.serializer)
+          ..add(AdminMenuItemGroupsDto.serializer)
           ..add(AdminMenuItemOrderDto.serializer)
           ..add(AdminMenuMoney.serializer)
           ..add(AdminMenuMoneyOutput.serializer)
+          ..add(AdminMenuOptionDto.serializer)
+          ..add(AdminMenuOptionGroupDto.serializer)
+          ..add(AdminMenuOptionOrderDto.serializer)
           ..add(AdminMenuSwitchedOffOutput.serializer)
           ..add(AdminMenuWindow.serializer)
           ..add(AdminMenuWindowOutput.serializer)
@@ -2176,9 +2183,26 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminMenuDtoOutputOptionGroupsInner),
+            ]),
+            () => ListBuilder<AdminMenuDtoOutputOptionGroupsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminMenuDtoOutputCategoriesInnerItemsInner),
             ]),
             () => ListBuilder<AdminMenuDtoOutputCategoriesInnerItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminMenuDtoOutputOptionGroupsInnerOptionsInner),
+            ]),
+            () =>
+                ListBuilder<AdminMenuDtoOutputOptionGroupsInnerOptionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -4024,6 +4048,22 @@ Serializers _$serializers =
               const FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
             ]),
             () => ListBuilder<SettingListDtoOutputSettingsInnerEditRolesEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

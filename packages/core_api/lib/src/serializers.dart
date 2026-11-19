@@ -246,10 +246,17 @@ import 'package:core_api/src/model/admin_menu_category_order_dto.dart';
 import 'package:core_api/src/model/admin_menu_dto_output.dart';
 import 'package:core_api/src/model/admin_menu_dto_output_categories_inner.dart';
 import 'package:core_api/src/model/admin_menu_dto_output_categories_inner_items_inner.dart';
+import 'package:core_api/src/model/admin_menu_dto_output_option_groups_inner.dart';
+import 'package:core_api/src/model/admin_menu_dto_output_option_groups_inner_options_inner.dart';
+import 'package:core_api/src/model/admin_menu_group_items_dto.dart';
 import 'package:core_api/src/model/admin_menu_item_dto.dart';
+import 'package:core_api/src/model/admin_menu_item_groups_dto.dart';
 import 'package:core_api/src/model/admin_menu_item_order_dto.dart';
 import 'package:core_api/src/model/admin_menu_money.dart';
 import 'package:core_api/src/model/admin_menu_money_output.dart';
+import 'package:core_api/src/model/admin_menu_option_dto.dart';
+import 'package:core_api/src/model/admin_menu_option_group_dto.dart';
+import 'package:core_api/src/model/admin_menu_option_order_dto.dart';
 import 'package:core_api/src/model/admin_menu_switched_off_output.dart';
 import 'package:core_api/src/model/admin_menu_window.dart';
 import 'package:core_api/src/model/admin_menu_window_output.dart';
@@ -1183,10 +1190,17 @@ part 'serializers.g.dart';
   AdminMenuDtoOutput,
   AdminMenuDtoOutputCategoriesInner,
   AdminMenuDtoOutputCategoriesInnerItemsInner,
+  AdminMenuDtoOutputOptionGroupsInner,
+  AdminMenuDtoOutputOptionGroupsInnerOptionsInner,
+  AdminMenuGroupItemsDto,
   AdminMenuItemDto,
+  AdminMenuItemGroupsDto,
   AdminMenuItemOrderDto,
   AdminMenuMoney,
   AdminMenuMoneyOutput,
+  AdminMenuOptionDto,
+  AdminMenuOptionGroupDto,
+  AdminMenuOptionOrderDto,
   AdminMenuSwitchedOffOutput,
   AdminMenuWindow,
   AdminMenuWindowOutput,
@@ -2261,6 +2275,13 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminMenuDtoOutputOptionGroupsInnerOptionsInner),
+            ]),
+            () =>
+                ListBuilder<AdminMenuDtoOutputOptionGroupsInnerOptionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminFaqsDtoOutputCustomerInner),
             ]),
             () => ListBuilder<AdminFaqsDtoOutputCustomerInner>(),
@@ -2398,6 +2419,12 @@ Serializers serializers =
                 ListBuilder<
                   CustomerSearchDtoOutputItemsInnerOptionGroupsInnerOptionsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminMenuDtoOutputOptionGroupsInner),
+            ]),
+            () => ListBuilder<AdminMenuDtoOutputOptionGroupsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

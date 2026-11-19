@@ -105,6 +105,8 @@ class _$AdminMenuDtoOutputCategoriesInnerItemsInner
   final AdminMenuDtoOutputCategoriesInnerItemsInnerBadgeEnum? badge;
   @override
   final AdminMenuSwitchedOffOutput? switchedOff;
+  @override
+  final BuiltList<String> optionGroupIds;
 
   factory _$AdminMenuDtoOutputCategoriesInnerItemsInner([
     void Function(AdminMenuDtoOutputCategoriesInnerItemsInnerBuilder)? updates,
@@ -121,6 +123,7 @@ class _$AdminMenuDtoOutputCategoriesInnerItemsInner
     required this.hidden,
     this.badge,
     this.switchedOff,
+    required this.optionGroupIds,
   }) : super._();
   @override
   AdminMenuDtoOutputCategoriesInnerItemsInner rebuild(
@@ -143,7 +146,8 @@ class _$AdminMenuDtoOutputCategoriesInnerItemsInner
         price == other.price &&
         hidden == other.hidden &&
         badge == other.badge &&
-        switchedOff == other.switchedOff;
+        switchedOff == other.switchedOff &&
+        optionGroupIds == other.optionGroupIds;
   }
 
   @override
@@ -158,6 +162,7 @@ class _$AdminMenuDtoOutputCategoriesInnerItemsInner
     _$hash = $jc(_$hash, hidden.hashCode);
     _$hash = $jc(_$hash, badge.hashCode);
     _$hash = $jc(_$hash, switchedOff.hashCode);
+    _$hash = $jc(_$hash, optionGroupIds.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -175,7 +180,8 @@ class _$AdminMenuDtoOutputCategoriesInnerItemsInner
           ..add('price', price)
           ..add('hidden', hidden)
           ..add('badge', badge)
-          ..add('switchedOff', switchedOff))
+          ..add('switchedOff', switchedOff)
+          ..add('optionGroupIds', optionGroupIds))
         .toString();
   }
 }
@@ -229,6 +235,12 @@ class AdminMenuDtoOutputCategoriesInnerItemsInnerBuilder
   set switchedOff(AdminMenuSwitchedOffOutputBuilder? switchedOff) =>
       _$this._switchedOff = switchedOff;
 
+  ListBuilder<String>? _optionGroupIds;
+  ListBuilder<String> get optionGroupIds =>
+      _$this._optionGroupIds ??= ListBuilder<String>();
+  set optionGroupIds(ListBuilder<String>? optionGroupIds) =>
+      _$this._optionGroupIds = optionGroupIds;
+
   AdminMenuDtoOutputCategoriesInnerItemsInnerBuilder() {
     AdminMenuDtoOutputCategoriesInnerItemsInner._defaults(this);
   }
@@ -245,6 +257,7 @@ class AdminMenuDtoOutputCategoriesInnerItemsInnerBuilder
       _hidden = $v.hidden;
       _badge = $v.badge;
       _switchedOff = $v.switchedOff?.toBuilder();
+      _optionGroupIds = $v.optionGroupIds.toBuilder();
       _$v = null;
     }
     return this;
@@ -296,6 +309,7 @@ class AdminMenuDtoOutputCategoriesInnerItemsInnerBuilder
             ),
             badge: badge,
             switchedOff: _switchedOff?.build(),
+            optionGroupIds: optionGroupIds.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -305,6 +319,8 @@ class AdminMenuDtoOutputCategoriesInnerItemsInnerBuilder
 
         _$failedField = 'switchedOff';
         _switchedOff?.build();
+        _$failedField = 'optionGroupIds';
+        optionGroupIds.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminMenuDtoOutputCategoriesInnerItemsInner',

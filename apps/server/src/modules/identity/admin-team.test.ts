@@ -234,12 +234,7 @@ const specifiedGrants: Record<string, AdminPermission[]> = {
     'ledger.manual_adjustment',
     'fx.edit_rates',
   ],
-  DATA: [
-    'restaurants.create',
-    'restaurants.menus',
-    'marketing.banners',
-    'content.categories',
-  ],
+  DATA: ['restaurants.create', 'restaurants.menus', 'marketing.banners', 'content.categories'],
 };
 
 function grantsOf(role: string): string[] {
@@ -388,6 +383,16 @@ const routeAccess: Record<string, Access> = {
   'PUT /v1/admin/restaurant-drafts/{restaurantId}/menu/categories/{categoryId}/item-order':
     'restaurants.menus',
   'PUT /v1/admin/restaurant-drafts/{restaurantId}/menu/availability': 'restaurants.menus',
+  'PUT /v1/admin/restaurant-drafts/{restaurantId}/menu/option-groups/{groupId}':
+    'restaurants.menus',
+  'PUT /v1/admin/restaurant-drafts/{restaurantId}/menu/option-groups/{groupId}/options/{optionId}':
+    'restaurants.menus',
+  'PUT /v1/admin/restaurant-drafts/{restaurantId}/menu/option-groups/{groupId}/option-order':
+    'restaurants.menus',
+  'PUT /v1/admin/restaurant-drafts/{restaurantId}/menu/option-groups/{groupId}/items':
+    'restaurants.menus',
+  'PUT /v1/admin/restaurant-drafts/{restaurantId}/menu/items/{itemId}/option-groups':
+    'restaurants.menus',
   'GET /v1/admin/restaurant-drafts/{restaurantId}/checklist': {
     anyOf: ['restaurants.read', 'restaurants.create'],
   },

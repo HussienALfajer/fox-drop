@@ -385,3 +385,198 @@ describe('step 7, the basic menu', () => {
     });
   });
 });
+
+async function activeRestaurant(): Promise<string> {
+  const merchants = app.get(MerchantsService);
+  const id = await merchants.createRestaurant(
+    azaz,
+    {
+      nameAr: 'مطعم فعّال',
+      location: { latitude: 36.5866, longitude: 37.0463 },
+      coverage: { kind: 'radius', radiusMetres: 3000 },
+      minimumOrder: { amount: 10_000n, currency: 'TRY' },
+      commissionBp: 1500,
+      defaultPrepMin: 20,
+    },
+    change,
+  );
+  await merchants.setAccountStatus(id, 'test', change);
+  await merchants.setAccountStatus(id, 'active', change);
+  return id;
+}
+
+const try_ = (amount: string) => ({ amount, currency: 'TRY' });
+
+describe('option groups and add-ons (AP §9.6.6)', () => {
+  it('builds a group, its options and its links to many items', async () => {
+    const data = await admin('DATA');
+    const id = await draft(data);
+    const meals = randomUUID();
+    const [a, b] = [randomUUID(), randomUUID()];
+    await data('PUT', `/${id}/menu/categories/${meals}`, category('وجبات'));
+    await data('PUT', `/${id}/menu/items/${a}`, item(meals, 'برغر'));
+    await data('PUT', `/${id}/menu/items/${b}`, item(meals, 'شاورما'));
+    const size = randomUUID();
+    const extras = randomUUID();
+    const [small, large] = [randomUUID(), randomUUID()];
+    expect(
+      (
+        await data('PUT', `/${id}/menu/option-groups/${size}`, {
+          name: 'الحجم',
+          minChoices: 1,
+          maxChoices: 1,
+        })
+      ).statusCode,
+    ).toBe(200);
+    await data('PUT', `/${id}/menu/option-groups/${size}/options/${small}`, {
+      name: 'صغير',
+      priceDelta: try_('0'),
+      removed: false,
+    });
+    await data('PUT', `/${id}/menu/option-groups/${size}/options/${large}`, {
+      name: 'كبير',
+      priceDelta: try_('2000'),
+      removed: false,
+    });
+    await data('PUT', `/${id}/menu/option-groups/${extras}`, {
+      name: 'إضافات',
+      minChoices: 0,
+      maxChoices: 3,
+    });
+    const linked = await data('PUT', `/${id}/menu/option-groups/${size}/items`, {
+      itemIds: [a, b],
+    });
+    expect(linked.statusCode).toBe(200);
+    await data('PUT', `/${id}/menu/items/${a}/option-groups`, { groupIds: [extras, size] });
+    await data('PUT', `/${id}/menu/option-groups/${size}/option-order`, {
+      optionIds: [large, small],
+    });
+    const menu = (await data('GET', `/${id}/menu`)).json();
+    expect(menu.categories[0].items).toMatchObject([
+      { id: a, optionGroupIds: [extras, size] },
+      { id: b, optionGroupIds: [size] },
+    ]);
+    expect(menu.optionGroups).toEqual([
+      { id: extras, name: 'إضافات', minChoices: 0, maxChoices: 3, options: [], itemIds: [a] },
+      {
+        id: size,
+        name: 'الحجم',
+        minChoices: 1,
+        maxChoices: 1,
+        options: [
+          { id: large, name: 'كبير', priceDelta: try_('2000'), switchedOff: null },
+          { id: small, name: 'صغير', priceDelta: try_('0'), switchedOff: null },
+        ],
+        itemIds: [a, b],
+      },
+    ]);
+
+    // A maximum above the options' count, a negative delta, another's group.
+    expect(
+      (
+        await data('PUT', `/${id}/menu/option-groups/${size}`, {
+          name: 'الحجم',
+          minChoices: 1,
+          maxChoices: 3,
+        })
+      ).json(),
+    ).toMatchObject({ statusCode: 400, error: 'invalid_menu' });
+    expect(
+      (
+        await data('PUT', `/${id}/menu/option-groups/${size}/options/${randomUUID()}`, {
+          name: 'سالب',
+          priceDelta: try_('0'),
+          removed: true,
+        })
+      ).json(),
+    ).toMatchObject({ statusCode: 404, error: 'unknown_menu_row' });
+    const other = await draft(data);
+    expect(
+      (await data('PUT', `/${other}/menu/option-groups/${size}/items`, { itemIds: [] })).json(),
+    ).toMatchObject({ statusCode: 404, error: 'unknown_menu_row' });
+
+    // Unlinking one item, removing an option, switching one off.
+    await data('PUT', `/${id}/menu/option-groups/${size}/items`, { itemIds: [b] });
+    await data('PUT', `/${id}/menu/option-groups/${size}/options/${small}`, {
+      name: 'صغير',
+      priceDelta: try_('0'),
+      removed: true,
+    });
+    await data('PUT', `/${id}/menu/availability`, { type: 'option', id: large, available: false });
+    const after = (await data('GET', `/${id}/menu`)).json();
+    expect(after.categories[0].items[0].optionGroupIds).toEqual([extras]);
+    expect(after.optionGroups[1]).toMatchObject({
+      itemIds: [b],
+      options: [{ id: large, switchedOff: { until: null } }],
+    });
+    // Linking it again puts it at the end of the item's groups.
+    await data('PUT', `/${id}/menu/option-groups/${size}/items`, { itemIds: [a, b] });
+    expect((await data('GET', `/${id}/menu`)).json().categories[0].items[0].optionGroupIds).toEqual(
+      [extras, size],
+    );
+  });
+
+  it('logs and tells a delta change past test mode, which DATA cannot make', async () => {
+    const id = await activeRestaurant();
+    const ops = await admin('OPS');
+    const data = await admin('DATA');
+    const group = randomUUID();
+    const cheese = randomUUID();
+    await data('PUT', `/${id}/menu/option-groups/${group}`, {
+      name: 'إضافات',
+      minChoices: 0,
+      maxChoices: 2,
+    });
+    expect(
+      (
+        await data('PUT', `/${id}/menu/option-groups/${group}/options/${cheese}`, {
+          name: 'جبنة',
+          priceDelta: try_('500'),
+          removed: false,
+        })
+      ).json(),
+    ).toMatchObject({ statusCode: 403, error: 'price_edit_not_allowed' });
+    await ops('PUT', `/${id}/menu/option-groups/${group}/options/${cheese}`, {
+      name: 'جبنة',
+      priceDelta: try_('500'),
+      removed: false,
+    });
+    // DATA renames it, but changes no delta.
+    expect(
+      (
+        await data('PUT', `/${id}/menu/option-groups/${group}/options/${cheese}`, {
+          name: 'جبنة إضافية',
+          priceDelta: try_('500'),
+          removed: false,
+        })
+      ).statusCode,
+    ).toBe(200);
+    expect(
+      (
+        await data('PUT', `/${id}/menu/option-groups/${group}/options/${cheese}`, {
+          name: 'جبنة إضافية',
+          priceDelta: try_('700'),
+          removed: false,
+        })
+      ).json(),
+    ).toMatchObject({ statusCode: 403, error: 'price_edit_not_allowed' });
+    await ops('PUT', `/${id}/menu/option-groups/${group}/options/${cheese}`, {
+      name: 'جبنة إضافية',
+      priceDelta: try_('750'),
+      removed: false,
+    });
+    const { rows } = await sql.query(
+      `SELECT old_price::text AS old, new_price::text AS new, item_id
+         FROM merchants.price_changes WHERE option_id = $1`,
+      [cheese],
+    );
+    expect(rows).toEqual([{ old: '500', new: '750', item_id: null }]);
+    const told = await sql.query(
+      `SELECT payload FROM merchants.state_outbox WHERE restaurant_id = $1 AND kind = 'price_change'`,
+      [id],
+    );
+    expect(told.rows.map((row) => row.payload.values)).toEqual([
+      { optionId: cheese, name: 'جبنة إضافية', oldPrice: '500', newPrice: '750', currency: 'TRY' },
+    ]);
+  });
+});

@@ -1492,6 +1492,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/option-groups/{groupId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantMenuOptionGroup"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/option-groups/{groupId}/options/{optionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantMenuOption"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/option-groups/{groupId}/option-order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantMenuOptionOrder"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/option-groups/{groupId}/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantMenuGroupItems"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/items/{itemId}/option-groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantMenuItemGroups"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/restaurant-drafts/{restaurantId}/checklist": {
         parameters: {
             query?: never;
@@ -7049,7 +7129,28 @@ export interface components {
                     badge: ("new" | "most_ordered" | "spicy") | null;
                     /** @description Its own switch off (RA §9.3); null while on. */
                     switchedOff: components["schemas"]["AdminMenuSwitchedOff_Output"];
+                    /** @description Its option groups, in order. */
+                    optionGroupIds: string[];
                 }[];
+            }[];
+            /** @description Every option group of the restaurant, by name. */
+            optionGroups: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                /** @description 0: an add-on group; 1 or more: required. */
+                minChoices: number;
+                maxChoices: number;
+                options: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                    priceDelta: components["schemas"]["AdminMenuMoney_Output"];
+                    /** @description Its own switch off (RA §9.3); null while on. */
+                    switchedOff: components["schemas"]["AdminMenuSwitchedOff_Output"];
+                }[];
+                /** @description The items it is linked to, in menu order. */
+                itemIds: string[];
             }[];
         };
         AdminMenuWindow: {
@@ -7101,6 +7202,32 @@ export interface components {
              * @enum {string}
              */
             until?: "tomorrow" | "turned_back_on";
+        };
+        AdminMenuOptionGroupDto: {
+            name: string;
+            /** @description 0: an add-on group; 1 or more: required. */
+            minChoices: number;
+            /** @description At least the minimum; once it has options, at most their count. */
+            maxChoices: number;
+        };
+        AdminMenuOptionDto: {
+            name: string;
+            /** @description 0 or more, in the city's base currency. */
+            priceDelta: components["schemas"]["AdminMenuMoney"];
+            /** @description true removes the option for good. */
+            removed: boolean;
+        };
+        AdminMenuOptionOrderDto: {
+            /** @description Every option of the group once, in order. */
+            optionIds: string[];
+        };
+        AdminMenuGroupItemsDto: {
+            /** @description Every item the group is linked to. */
+            itemIds: string[];
+        };
+        AdminMenuItemGroupsDto: {
+            /** @description The item's groups, in order. */
+            groupIds: string[];
         };
         AdminChecklistDto_Output: {
             /** @enum {string} */
@@ -19881,6 +20008,142 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["AdminMenuAvailabilityDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuOptionGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+                groupId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMenuOptionGroupDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuOption: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+                groupId: string;
+                optionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMenuOptionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuOptionOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+                groupId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMenuOptionOrderDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuGroupItems: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+                groupId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMenuGroupItemsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuItemGroups: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+                itemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMenuItemGroupsDto"];
             };
         };
         responses: {
