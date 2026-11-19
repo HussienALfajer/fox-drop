@@ -15,14 +15,14 @@ Slice 2.36a, the captain list and profile in the panel (`docs/roadmap.md`, Phase
 ### Plan
 
 - [x] Record the split (`docs/roadmap.md`, this file).
-- [ ] The performance figures: dispatch's acceptance over the last 50 offers and the offer log; ordering's on-time over the last 50 delivered orders, captain cancellations in 90 days, orders today and the rating (failing tests first).
-- [ ] `POST /v1/admin/captain-list`: every column of AP §9.7.3, filtered by status and searched by name or number.
-- [ ] `GET /v1/admin/captains/{id}/profile` (the overview and the app tab) and `GET …/offers`.
-- [ ] The actions and the notes: suspend and reactivate, the cash limit, the message or push, the notes (`captains.notes`) and the change log.
-- [ ] The panel: «الكباتن» with its columns, filters and sorting; the profile with its tabs and actions; «إنهاء التعاقد» moved from the application's page.
+- [x] The performance figures: dispatch's acceptance over the last 50 offers and the offer log; ordering's on-time over the last 50 delivered orders, captain cancellations in 90 days, orders today and the rating (failing tests first).
+- [x] `POST /v1/admin/captain-list`: every column of AP §9.7.3, filtered by status and searched by name or number.
+- [x] `GET /v1/admin/captains/{id}/profile` (the overview and the app tab) and `GET …/offers`.
+- [x] The actions and the notes: suspend and reactivate, the cash limit, the message or push, the notes (`captains.notes`) and the change log.
+- [x] The panel: «الكباتن» with its columns, filters and sorting; the profile with its tabs and actions; «إنهاء التعاقد» moved from the application's page.
 - [ ] Review, then hand over to 2.36b.
 
-- **Stopped at:** the split recorded; the figures next.
+- **Stopped at:** server and panel built; the review next.
 
 ### Left from 2.35b (the cloud session's branch)
 

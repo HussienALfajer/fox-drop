@@ -78,6 +78,11 @@ describe('the captain list and profile (AP §9.7.3–9.7.4)', () => {
     expect(masked.statusCode).toBe(200);
     expect(masked.json().phone).toMatch(/^\+963 ••• \d{3}$/);
 
+    const latest = await ops.get(`/v1/admin/captains/${captainId}/orders`);
+    expect(latest.statusCode).toBe(200);
+    expect(latest.json().orders).toEqual([
+      expect.objectContaining({ id: door.order.id, status: 'delivered', testOrder: false }),
+    ]);
     const offers = await ops.get(`/v1/admin/captains/${captainId}/offers`);
     expect(offers.statusCode).toBe(200);
     expect(offers.json().offers).toEqual([]);

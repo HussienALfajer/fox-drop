@@ -12,7 +12,8 @@ export type CaptainDevice = NonNullable<
 >;
 
 // Owner decision 2026-11-11: on the order detail's captain line while the
-// order is active with a captain (until AP §9.7's captain page), since a
+// order is active with a captain (and always in the captain profile's
+// «التطبيق», slice 2.36a), since a
 // captain with no active order signs in on a new phone by themselves.
 export function canReleaseDevice(
   session: AdminSession | null | undefined,

@@ -19281,6 +19281,43 @@
         ]
       }
     },
+    "/v1/admin/captains/{captainId}/orders": {
+      "get": {
+        "operationId": "adminCaptainProfileLatestOrders",
+        "parameters": [
+          {
+            "name": "captainId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCaptainOrdersDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/captains/{captainId}/offers": {
       "get": {
         "operationId": "adminCaptainProfileOffers",
@@ -75052,6 +75089,75 @@
           "acceptance",
           "rating",
           "app"
+        ],
+        "additionalProperties": false
+      },
+      "AdminCaptainOrdersDto_Output": {
+        "type": "object",
+        "properties": {
+          "orders": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "number": {
+                  "type": "string"
+                },
+                "placedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "placed",
+                    "accepted",
+                    "ready",
+                    "picked_up",
+                    "arrived",
+                    "delivered",
+                    "rejected",
+                    "cancelled",
+                    "failed"
+                  ]
+                },
+                "total": {
+                  "type": "string",
+                  "description": "The customer’s total in minor units."
+                },
+                "currency": {
+                  "type": "string"
+                },
+                "testOrder": {
+                  "type": "boolean"
+                },
+                "redelivery": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "number",
+                "placedAt",
+                "status",
+                "total",
+                "currency",
+                "testOrder",
+                "redelivery"
+              ],
+              "additionalProperties": false
+            },
+            "description": "The latest 50, newest first."
+          }
+        },
+        "required": [
+          "orders"
         ],
         "additionalProperties": false
       },

@@ -73,6 +73,10 @@ import { RestaurantListPage } from './restaurant-list-page.js';
 import { isProfileTab, type ProfileTab } from './restaurant-profile.js';
 import { RestaurantProfilePage } from './restaurant-profile-page.js';
 import { boardSearch, canSeeApplications } from './captain-applications.js';
+import { type CaptainListFilter, canSeeCaptains, captainListFilterOf } from './captain-list.js';
+import { CaptainListPage } from './captain-list-page.js';
+import { type CaptainTab, isCaptainTab } from './captain-profile.js';
+import { CaptainProfilePage } from './captain-profile-page.js';
 import { CaptainApplicationPage, CaptainApplicationsPage } from './captain-applications-page.js';
 import { RatingsPage } from './ratings-page.js';
 import { canSeeRatings, ratingsSearch } from './ratings.js';
@@ -301,6 +305,37 @@ const restaurantProfileRoute = createRoute({
     if (!canSeeRestaurantList(context.session)) throw redirect({ to: '/' });
   },
   component: RestaurantProfilePage,
+});
+
+// AP §9.7.3 «الكباتن» (slice 2.36a): captains.read or captains.money; the
+// status, a name searched and the order in the search (a number stays in
+// the page).
+const captainListRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/captains',
+  validateSearch: (search: Record<string, unknown>): { city?: string } & CaptainListFilter => ({
+    ...citySearch(search),
+    ...captainListFilterOf(search),
+  }),
+  beforeLoad: ({ context }) => {
+    if (!canSeeCaptains(context.session)) throw redirect({ to: '/' });
+  },
+  component: CaptainListPage,
+});
+
+// AP §9.7.4 «ملف الكابتن» (slice 2.36a): as the list; each tab's actions
+// check their own permission (the server too).
+const captainProfileRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/captains/$captainId',
+  validateSearch: (search: Record<string, unknown>): { city?: string; tab?: CaptainTab } => ({
+    ...citySearch(search),
+    ...(isCaptainTab(search.tab) ? { tab: search.tab } : {}),
+  }),
+  beforeLoad: ({ context }) => {
+    if (!canSeeCaptains(context.session)) throw redirect({ to: '/' });
+  },
+  component: CaptainProfilePage,
 });
 
 // «التقييمات» (slice 2.26c; AP §9.7.4): a captain's, captains.read, until
@@ -777,6 +812,8 @@ const routeTree = rootRoute.addChildren([
     categoriesRoute,
     restaurantListRoute,
     restaurantProfileRoute,
+    captainListRoute,
+    captainProfileRoute,
     ratingsRoute,
     captainApplicationsRoute,
     captainApplicationRoute,

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { sql } from 'drizzle-orm';
+import { desc, eq, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { GeoService } from '../geo/index.js';
@@ -113,5 +113,26 @@ export class CaptainFiguresService {
       });
     }
     return figures;
+  }
+
+  // AP §9.7.4 «الطلبات» (slice 2.36a): the captain's latest orders (those it
+  // holds or delivered; one withdrawn from it or handed over is the other
+  // captain's), newest first, every partition.
+  async latestOrders(captainId: string, limit: number) {
+    return this.database.db
+      .select({
+        id: orders.id,
+        number: orders.number,
+        placedAt: orders.placedAt,
+        status: orders.status,
+        currency: orders.currency,
+        total: orders.total,
+        testOrder: orders.testOrder,
+        redelivery: sql<boolean>`${orders.redeliveryOfId} IS NOT NULL`,
+      })
+      .from(orders)
+      .where(eq(orders.captainId, captainId))
+      .orderBy(desc(orders.placedAt), desc(orders.id))
+      .limit(limit);
   }
 }

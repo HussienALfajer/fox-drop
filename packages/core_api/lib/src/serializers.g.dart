@@ -194,6 +194,7 @@ Serializers _$serializers =
           ..add(AdminCaptainOffersDtoOutputOffersInner.serializer)
           ..add(AdminCaptainOffersDtoOutputOffersInnerKindEnum.serializer)
           ..add(AdminCaptainOffersDtoOutputOffersInnerStatusEnum.serializer)
+          ..add(AdminCaptainOrdersDtoOutput.serializer)
           ..add(AdminCaptainProfileDtoOutput.serializer)
           ..add(AdminCaptainProfileDtoOutputApp.serializer)
           ..add(AdminCaptainProfileDtoOutputContractPhaseEnum.serializer)
@@ -3278,6 +3279,12 @@ Serializers _$serializers =
               const FullType(AdminRestaurantListDtoOutputRestaurantsInner),
             ]),
             () => ListBuilder<AdminRestaurantListDtoOutputRestaurantsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminRestaurantOrdersDtoOutputOrdersInner),
+            ]),
+            () => ListBuilder<AdminRestaurantOrdersDtoOutputOrdersInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

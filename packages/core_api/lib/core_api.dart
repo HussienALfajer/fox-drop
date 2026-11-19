@@ -103,6 +103,7 @@ export 'package:core_api/src/model/admin_captain_message_sent_dto_output.dart';
 export 'package:core_api/src/model/admin_captain_notes_dto_output.dart';
 export 'package:core_api/src/model/admin_captain_offers_dto_output.dart';
 export 'package:core_api/src/model/admin_captain_offers_dto_output_offers_inner.dart';
+export 'package:core_api/src/model/admin_captain_orders_dto_output.dart';
 export 'package:core_api/src/model/admin_captain_profile_dto_output.dart';
 export 'package:core_api/src/model/admin_captain_profile_dto_output_app.dart';
 export 'package:core_api/src/model/admin_captain_profile_dto_output_custody.dart';

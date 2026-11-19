@@ -46,7 +46,9 @@ import { SettingsService } from '../settings/index.js';
 import { CHANGE_LOG_LIMIT } from './admin-restaurant-profile.controller.js';
 import { CaptainListService, listedCaptainStatuses, listedStatus } from './captain-list.service.js';
 
-// «سجل العروض» shows as many, newest first (decided by us).
+// «الطلبات» and «سجل العروض» show as many, newest first (decided by us).
+export const CAPTAIN_ORDERS_LIMIT = 50;
+
 export const OFFER_LOG_LIMIT = 200;
 
 // CA §14 #24: operations' direct message, at most this long (decided by us).
@@ -193,6 +195,35 @@ class AdminCaptainOffersDto extends createZodDto(
         }),
       )
       .describe(`The latest ${OFFER_LOG_LIMIT}, newest first.`),
+  }),
+) {}
+
+class AdminCaptainOrdersDto extends createZodDto(
+  z.object({
+    orders: z
+      .array(
+        z.object({
+          id: z.uuid(),
+          number: z.string(),
+          placedAt: z.iso.datetime(),
+          status: z.enum([
+            'placed',
+            'accepted',
+            'ready',
+            'picked_up',
+            'arrived',
+            'delivered',
+            'rejected',
+            'cancelled',
+            'failed',
+          ]),
+          total: z.string().describe('The customer’s total in minor units.'),
+          currency: z.string(),
+          testOrder: z.boolean(),
+          redelivery: z.boolean(),
+        }),
+      )
+      .describe(`The latest ${CAPTAIN_ORDERS_LIMIT}, newest first.`),
   }),
 ) {}
 
@@ -426,6 +457,27 @@ export class AdminCaptainProfileController {
         carriedCurrencies: carried.carried,
         expiredInRow: firstNotExpired === -1 ? answered.length : firstNotExpired,
       },
+    };
+  }
+
+  // «الطلبات» (AP §9.7.4): the captain's latest orders. 404 unknown_captain.
+  @Get(':captainId/orders')
+  @RequireAnyPermission('captains.read', 'captains.money')
+  @ZodResponse({ status: 200, type: AdminCaptainOrdersDto })
+  async latestOrders(@Param() params: AdminCaptainProfileParamsDto) {
+    await this.found(params.captainId, new Date());
+    const rows = await this.figures.latestOrders(params.captainId, CAPTAIN_ORDERS_LIMIT);
+    return {
+      orders: rows.map((row) => ({
+        id: row.id,
+        number: row.number.toString(),
+        placedAt: row.placedAt.toISOString(),
+        status: row.status,
+        total: row.total.toString(),
+        currency: row.currency,
+        testOrder: row.testOrder,
+        redelivery: row.redelivery,
+      })),
     };
   }
 

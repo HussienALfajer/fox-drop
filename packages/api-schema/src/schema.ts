@@ -6884,6 +6884,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/captains/{captainId}/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCaptainProfileLatestOrders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/captains/{captainId}/offers": {
         parameters: {
             query?: never;
@@ -19935,6 +19951,23 @@ export interface components {
                 expiredInRow: number;
             };
         };
+        AdminCaptainOrdersDto_Output: {
+            /** @description The latest 50, newest first. */
+            orders: {
+                /** Format: uuid */
+                id: string;
+                number: string;
+                /** Format: date-time */
+                placedAt: string;
+                /** @enum {string} */
+                status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                /** @description The customer’s total in minor units. */
+                total: string;
+                currency: string;
+                testOrder: boolean;
+                redelivery: boolean;
+            }[];
+        };
         AdminCaptainOffersDto_Output: {
             /** @description The latest 200, newest first. */
             offers: {
@@ -31706,6 +31739,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminCaptainProfileDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainProfileLatestOrders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                captainId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainOrdersDto_Output"];
                 };
             };
         };
