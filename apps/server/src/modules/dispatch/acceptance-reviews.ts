@@ -20,6 +20,17 @@ export const ACCEPTANCE_REVIEW_MS = 60_000;
 
 const CODE: AlertCode = 'acceptance_review';
 
+// Whether the rate is below a threshold in percent, compared unrounded
+// (AP §9.7.6 «below 50%»: 49.6% is below); false without an answered offer.
+export function rateBelow(
+  counts: { accepted: number; answered: number } | undefined,
+  percent: number,
+): boolean {
+  return (
+    counts !== undefined && counts.answered > 0 && counts.accepted * 100 < percent * counts.answered
+  );
+}
+
 // A rate in whole percent, as the app and the panel show it; null without
 // an answered offer.
 export function acceptanceRate(counts: { accepted: number; answered: number } | undefined) {
@@ -58,7 +69,8 @@ export class AcceptanceReviews {
       );
       for (const captain of captains) {
         seen.add(captain.id);
-        const rate = acceptanceRate(counts.get(captain.id));
+        const count = counts.get(captain.id);
+        const rate = acceptanceRate(count);
         await this.sync(
           {
             type: 'captain',
@@ -66,7 +78,7 @@ export class AcceptanceReviews {
             cityId: city.id,
             details: { captainName: captain.name, rate: String(rate ?? '') },
           },
-          rate !== null && rate < threshold,
+          rateBelow(count, threshold),
           now,
         );
       }

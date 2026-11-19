@@ -286,3 +286,70 @@ describe('«اعتراض» (CA §11.3)', () => {
     expect(suspended).toBe('suspended');
   });
 });
+
+// Review of slice 2.36b: a step never shortens a running suspension, the
+// suspensions' history reads a replaced suspension as one, an appeal is
+// the captain's own, and the application role changes only the appeal.
+describe('the suspension a step sets', () => {
+  it('keeps a longer suspension, which an accepted appeal leaves alone', async () => {
+    const { captainId, headers } = await onlineCaptain();
+    const ops = await admin(['OPS']);
+    const manual = await ops.post(`/v1/admin/captains/${captainId}/status`, {
+      status: 'suspended',
+      until: null,
+      reason: 'تحقيق',
+    });
+    expect(manual.statusCode).toBe(200);
+    const recorded = await record(ops, captainId, { step: 'suspension_1d' });
+    expect(recorded.statusCode).toBe(201);
+    const profile = (await ops.get(`/v1/admin/captains/${captainId}/profile`)).json();
+    expect(profile.suspension).toEqual({ reason: 'تحقيق', until: null });
+    const violationId = recorded.json().violations[0].id as string;
+    const opened = await app.inject({
+      method: 'POST',
+      url: `/v1/captain/violations/${violationId}/appeal`,
+      headers: { ...headers, 'idempotency-key': randomUUID() },
+      payload: { text: 'لم أخطئ', photoUploadId: null },
+    });
+    const accepted = await ops.post(`/v1/admin/tickets/${opened.json().ticket.id}/resolve`, {
+      cityId: profile.cityId,
+      resolution: 'appeal_accepted',
+      responsible: null,
+      message: 'قُبل',
+      receivedLines: null,
+    });
+    expect(accepted.statusCode).toBe(200);
+    const after = (await ops.get(`/v1/admin/captains/${captainId}/profile`)).json();
+    expect(after.suspension).toEqual({ reason: 'تحقيق', until: null });
+  });
+
+  it('lists a suspension that replaced a running one as a suspension', async () => {
+    const { captainId } = await onlineCaptain();
+    const ops = await admin(['OPS']);
+    await record(ops, captainId, { step: 'suspension_1d' });
+    const second = await record(ops, captainId, { step: 'suspension_7d' });
+    expect(second.json().suspensions.map((each: { status: string }) => each.status)).toEqual([
+      'suspended',
+      'suspended',
+    ]);
+  });
+
+  it('refuses an appeal on another captain’s violation, and the role changes only the appeal', async () => {
+    const first = await onlineCaptain();
+    const second = await onlineCaptain();
+    const ops = await admin(['OPS']);
+    const recorded = await record(ops, first.captainId, {});
+    const violationId = recorded.json().violations[0].id as string;
+    const theirs = await app.inject({
+      method: 'POST',
+      url: `/v1/captain/violations/${violationId}/appeal`,
+      headers: { ...second.headers, 'idempotency-key': randomUUID() },
+      payload: { text: 'x', photoUploadId: null },
+    });
+    expect(theirs.statusCode).toBe(404);
+    expect(theirs.json().error).toBe('unknown_violation');
+    await expect(
+      sql.query("UPDATE captains.violations SET reason = 'x' WHERE id = $1", [violationId]),
+    ).rejects.toThrow(/permission denied/);
+  });
+});

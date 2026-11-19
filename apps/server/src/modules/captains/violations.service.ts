@@ -45,7 +45,6 @@ export type ViolationRefusal =
   | 'already_terminated'
   | 'offboarding_open'
   | 'already_appealed'
-  | 'violation_voided'
   | 'idempotency_key_reused';
 
 export class ViolationRefusedError extends Error {
@@ -145,6 +144,32 @@ export class ViolationsService {
     if (reason === '') throw new ViolationRefusedError('reason_required', 'a reason is required');
     const captain = await this.captains.captain(captainId, now);
     if (captain === null) throw new ViolationRefusedError('unknown_captain', 'no such captain');
+    const requestHash = hashOf([
+      captainId,
+      input.severe,
+      input.typeCode,
+      input.typeNote?.trim() || '',
+      input.step,
+      input.order?.id ?? '',
+      reason,
+    ]);
+    // A repeat answers the first before anything it read can refuse it (a
+    // type deactivated since).
+    const [earlier] = await this.database.db
+      .select({ id: violations.id, requestHash: violations.requestHash })
+      .from(violations)
+      .where(
+        and(
+          eq(violations.recordedBy, admin.actor.id!),
+          eq(violations.idempotencyKey, input.idempotencyKey),
+        ),
+      );
+    if (earlier) {
+      if (earlier.requestHash !== requestHash) {
+        throw new ViolationRefusedError('idempotency_key_reused', 'the key named another');
+      }
+      return earlier.id;
+    }
     const chosen = await this.content
       .choose(input.severe ? VIOLATION_LISTS.severe : VIOLATION_LISTS.regular, {
         code: input.typeCode,
@@ -160,15 +185,6 @@ export class ViolationsService {
     const [windowDays, timeZone] = await Promise.all([
       this.settings.get('captain.violation_window_days', { cityId: captain.cityId }),
       this.geo.cityTimeZone(captain.cityId),
-    ]);
-    const requestHash = hashOf([
-      captainId,
-      input.severe,
-      chosen.code,
-      chosen.note ?? '',
-      input.step,
-      input.order?.id ?? '',
-      reason,
     ]);
     const typeLabel = chosen.note === null ? chosen.label : `${chosen.label}: ${chosen.note}`;
     let changed: StatusChanged | null = null;
@@ -208,13 +224,30 @@ export class ViolationsService {
         const until = suspensionEnd(input.step, now);
         const consequence = `${STEP_LABELS[input.step]}: ${typeLabel}`;
         if (until !== null) {
-          changed = await this.captains.setStatusIn(
-            tx,
-            captainId,
-            'suspended',
-            { ...admin, reason: consequence, until, byViolation: true },
-            now,
-          );
+          // A suspension running longer (or until further notice) stays: the
+          // step never shortens it, and its appeal then lifts nothing.
+          const [current] = await tx
+            .select({
+              status: captainRecords.status,
+              suspendedUntil: captainRecords.suspendedUntil,
+            })
+            .from(captainRecords)
+            .where(eq(captainRecords.id, captainId))
+            .for('update');
+          const running =
+            current?.status === 'suspended' &&
+            (current.suspendedUntil === null || current.suspendedUntil > now);
+          const longer =
+            running && (current.suspendedUntil === null || current.suspendedUntil >= until);
+          if (!longer) {
+            changed = await this.captains.setStatusIn(
+              tx,
+              captainId,
+              'suspended',
+              { ...admin, reason: consequence, until, byViolation: true },
+              now,
+            );
+          }
         }
         if (input.step === 'termination') {
           const applicationId = await this.pipeline.contractOf(tx, captainId);
@@ -287,6 +320,10 @@ export class ViolationsService {
         return inserted!.id;
       })
       .catch((error: unknown) => {
+        // Two requests with one key for different captains at once.
+        if (uniqueViolation(error, 'violations_key')) {
+          throw new ViolationRefusedError('idempotency_key_reused', 'the key named another');
+        }
         throw refusalOf(error);
       });
     if (changed !== null) await this.captains.afterStatus(captainId, changed, now);
@@ -396,6 +433,15 @@ export class ViolationsService {
       .where(eq(violations.captainId, captainId));
     return rows.map((row) => ({ recordedAt: row.recordedAt, voided: row.outcome === 'accepted' }));
   }
+}
+
+function uniqueViolation(error: unknown, constraint: string): boolean {
+  for (let cause: unknown = error; cause instanceof Object;) {
+    const each = cause as { code?: string; constraint?: string; cause?: unknown };
+    if (each.code === '23505' && each.constraint === constraint) return true;
+    cause = each.cause;
+  }
+  return false;
 }
 
 function hashOf(parts: readonly unknown[]): string {

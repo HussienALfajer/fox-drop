@@ -130,11 +130,11 @@ export class AdminCaptainViolationsController {
       this.violations.suggestion(captain.id, captain.cityId, now),
       this.content.reasonsOf(VIOLATION_LISTS.regular),
       this.content.reasonsOf(VIOLATION_LISTS.severe),
-      this.audit.history([{ type: 'captain', ids: [captain.id] }], 500),
+      this.audit.history([{ type: 'captain', ids: [captain.id] }], SUSPENSIONS_SHOWN, null, null, [
+        'captain.status',
+      ]),
     ]);
-    const statuses = history
-      .filter((entry) => entry.action === 'captain.status')
-      .slice(0, SUSPENSIONS_SHOWN);
+    const statuses = history;
     const names = await this.admins.names([
       ...rows.map((row) => row.recordedBy),
       ...statuses.flatMap((entry) =>
@@ -173,11 +173,13 @@ export class AdminCaptainViolationsController {
       suggestion,
       types: { regular: active(regular), severe: active(severe) },
       suspensions: statuses.map((entry) => {
-        const after = (entry.changes?.status?.after ?? null) as string | null;
+        // The audit keeps the fields that changed: a suspension that replaced
+        // a running one keeps its status, the only change with no status.
+        const after = (entry.changes?.status?.after ?? 'suspended') as string;
         const until = (entry.changes?.suspendedUntil?.after ?? null) as string | null;
         return {
           at: entry.occurredAt.toISOString(),
-          status: (after ?? 'active') as 'active' | 'suspended' | 'terminated',
+          status: after as 'active' | 'suspended' | 'terminated',
           until,
           reason: entry.reason,
           actorName:

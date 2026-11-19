@@ -199,7 +199,7 @@ export class AutoDispatcher implements OnApplicationBootstrap, OnModuleDestroy {
 @Module({ imports, providers: [DispatchService, AutoDispatcher] })
 export class DispatcherModule {}
 
-export { AcceptanceReviews, acceptanceRate } from './acceptance-reviews.js';
+export { AcceptanceReviews, acceptanceRate, rateBelow } from './acceptance-reviews.js';
 export {
   type CaptainOffer,
   type CaptainOfferLogRow,

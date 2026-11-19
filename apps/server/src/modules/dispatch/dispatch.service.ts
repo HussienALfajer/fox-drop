@@ -1120,6 +1120,31 @@ export class DispatchService implements OnModuleInit {
     return rows;
   }
 
+  // CA §11.1 «أدائي» (slice 2.36b): the captain's last `window` answered
+  // offers, newest first: those `acceptance` counts.
+  async answeredOffers(captainId: string, window: number): Promise<CaptainOfferLogRow[]> {
+    return this.database.db
+      .select({
+        id: offers.id,
+        orderId: offers.orderId,
+        orderPlacedAt: offers.orderPlacedAt,
+        kind: offers.kind,
+        handover: offers.handover,
+        offeredAt: offers.offeredAt,
+        status: offers.status,
+        respondedAt: offers.respondedAt,
+      })
+      .from(offers)
+      .where(
+        and(
+          eq(offers.captainId, captainId),
+          inArray(offers.status, ['accepted', 'declined', 'expired']),
+        ),
+      )
+      .orderBy(desc(offers.offeredAt), desc(offers.id))
+      .limit(window);
+  }
+
   // CA §8: the captain's open offer still in time, or null.
   async currentOffer(captainId: string, now: Date): Promise<CaptainOffer | null> {
     const [offer] = await this.database.db

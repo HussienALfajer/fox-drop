@@ -5,7 +5,7 @@ import { AppSignedIn, CurrentAppSession } from '../../http/access.js';
 import { CaptainController } from '../../http/route-groups.js';
 import { CaptainsService, ViolationsService, violationSteps } from '../captains/index.js';
 import { EarningsService } from '../cashdesk/index.js';
-import { acceptanceRate, DispatchService } from '../dispatch/index.js';
+import { acceptanceRate, DispatchService, rateBelow } from '../dispatch/index.js';
 import type { AppSession } from '../identity/index.js';
 import { MerchantsService } from '../merchants/index.js';
 import { CaptainFiguresService } from '../ordering/index.js';
@@ -97,18 +97,15 @@ export class CaptainPerformanceController {
     ]);
     const [counts, latest, figures, earnings, violations] = await Promise.all([
       this.dispatch.acceptance([captainId], window),
-      // Enough to hold the window's answered offers with a few withdrawn.
-      this.dispatch.captainOffers(captainId, window * 2),
+      this.dispatch.answeredOffers(captainId, window),
       this.figures.ofCaptains(cityId, [captainId], now),
       this.earnings.earnings(captainId, now),
       this.violations.list(captainId),
     ]);
-    const answered = latest
-      .filter(
-        (offer): offer is typeof offer & { status: 'accepted' | 'declined' | 'expired' } =>
-          offer.status === 'accepted' || offer.status === 'declined' || offer.status === 'expired',
-      )
-      .slice(0, window);
+    const answered = latest.filter(
+      (offer): offer is typeof offer & { status: 'accepted' | 'declined' | 'expired' } =>
+        offer.status === 'accepted' || offer.status === 'declined' || offer.status === 'expired',
+    );
     const restaurants = await this.figures.orderRestaurants(answered.map((offer) => offer.orderId));
     const names = await this.merchants.names([...new Set(restaurants.values())]);
     const count = counts.get(captainId);
@@ -120,7 +117,7 @@ export class CaptainPerformanceController {
         accepted: count?.accepted ?? 0,
         answered: count?.answered ?? 0,
         windowOffers: window,
-        warn: rate !== null && rate < alertPct,
+        warn: rateBelow(count, alertPct),
         alertPct,
         offers: answered.map((offer) => {
           const restaurantId = restaurants.get(offer.orderId);
