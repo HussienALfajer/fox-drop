@@ -3512,6 +3512,157 @@
         ]
       }
     },
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/bulk-price/preview": {
+      "post": {
+        "operationId": "adminRestaurantMenuBulkPricePreview",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminMenuBulkPriceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminMenuBulkPreviewDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/bulk-price": {
+      "post": {
+        "operationId": "adminRestaurantMenuBulkPrice",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "One per command, sent again with each retry: 16 to 128 letters, digits, - or _.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminMenuBulkPriceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminMenuBulkPriceResultDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/bulk-availability": {
+      "put": {
+        "operationId": "adminRestaurantMenuBulkAvailability",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminMenuBulkAvailabilityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminMenuDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/restaurant-drafts/{restaurantId}/menu": {
       "get": {
         "operationId": "adminRestaurantMenuRead",
@@ -21497,6 +21648,188 @@
           "nameEn",
           "categoryIds",
           "description"
+        ]
+      },
+      "AdminMenuBulkPriceDto": {
+        "type": "object",
+        "properties": {
+          "categoryId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "One category; null: the whole menu."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "percent",
+              "amount"
+            ]
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "up",
+              "down"
+            ]
+          },
+          "value": {
+            "type": "string",
+            "pattern": "^[1-9]\\d{0,14}$",
+            "description": "Basis points for a percentage (1000 is 10%); minor units of the base for an amount."
+          }
+        },
+        "required": [
+          "categoryId",
+          "kind",
+          "direction",
+          "value"
+        ]
+      },
+      "AdminMenuBulkPreviewDto_Output": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string"
+          },
+          "roundingUnit": {
+            "type": "string",
+            "pattern": "^\\d{1,15}$",
+            "description": "The base's rounding unit each new price is rounded to."
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "itemId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "code": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "categoryId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "before": {
+                  "type": "string",
+                  "pattern": "^\\d{1,15}$",
+                  "description": "Integer minor units of the currency, as a string."
+                },
+                "after": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^\\d{1,15}$",
+                      "description": "Integer minor units of the currency, as a string."
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "null: the change would bring it to 0 (refused)."
+                }
+              },
+              "required": [
+                "itemId",
+                "code",
+                "name",
+                "categoryId",
+                "before",
+                "after"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "changed": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "unchanged": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "refused": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "Above 0, the change cannot be applied."
+          }
+        },
+        "required": [
+          "currency",
+          "roundingUnit",
+          "rows",
+          "changed",
+          "unchanged",
+          "refused"
+        ],
+        "additionalProperties": false
+      },
+      "AdminMenuBulkPriceResultDto_Output": {
+        "type": "object",
+        "properties": {
+          "changed": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "unchanged": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "changed",
+          "unchanged"
+        ],
+        "additionalProperties": false
+      },
+      "AdminMenuBulkAvailabilityDto": {
+        "type": "object",
+        "properties": {
+          "itemIds": {
+            "minItems": 1,
+            "maxItems": 500,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "until": {
+            "description": "When switching off: «حتى الغد» or «حتى أعيده» (the default).",
+            "type": "string",
+            "enum": [
+              "tomorrow",
+              "turned_back_on"
+            ]
+          }
+        },
+        "required": [
+          "itemIds",
+          "available"
         ]
       },
       "AdminMenuSwitchedOff_Output": {

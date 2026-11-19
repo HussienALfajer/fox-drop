@@ -241,6 +241,11 @@ import 'package:core_api/src/model/admin_mass_push_city_dto.dart';
 import 'package:core_api/src/model/admin_mass_pushes_dto_output.dart';
 import 'package:core_api/src/model/admin_mass_pushes_dto_output_pushes_inner.dart';
 import 'package:core_api/src/model/admin_menu_availability_dto.dart';
+import 'package:core_api/src/model/admin_menu_bulk_availability_dto.dart';
+import 'package:core_api/src/model/admin_menu_bulk_preview_dto_output.dart';
+import 'package:core_api/src/model/admin_menu_bulk_preview_dto_output_rows_inner.dart';
+import 'package:core_api/src/model/admin_menu_bulk_price_dto.dart';
+import 'package:core_api/src/model/admin_menu_bulk_price_result_dto_output.dart';
 import 'package:core_api/src/model/admin_menu_category_dto.dart';
 import 'package:core_api/src/model/admin_menu_category_order_dto.dart';
 import 'package:core_api/src/model/admin_menu_dto_output.dart';
@@ -1185,6 +1190,11 @@ part 'serializers.g.dart';
   AdminMassPushesDtoOutput,
   AdminMassPushesDtoOutputPushesInner,
   AdminMenuAvailabilityDto,
+  AdminMenuBulkAvailabilityDto,
+  AdminMenuBulkPreviewDtoOutput,
+  AdminMenuBulkPreviewDtoOutputRowsInner,
+  AdminMenuBulkPriceDto,
+  AdminMenuBulkPriceResultDtoOutput,
   AdminMenuCategoryDto,
   AdminMenuCategoryOrderDto,
   AdminMenuDtoOutput,
@@ -2793,6 +2803,12 @@ Serializers serializers =
               FullType(AdminShortfallsDtoOutputShortfallsInner),
             ]),
             () => ListBuilder<AdminShortfallsDtoOutputShortfallsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminMenuBulkPreviewDtoOutputRowsInner),
+            ]),
+            () => ListBuilder<AdminMenuBulkPreviewDtoOutputRowsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

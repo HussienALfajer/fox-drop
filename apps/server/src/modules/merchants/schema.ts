@@ -651,3 +651,19 @@ export const restaurantNotes = merchants.table(
     check('restaurant_notes_body', sql`length(${table.body}) BETWEEN 1 AND 500`),
   ],
 );
+
+// Architecture §5.3 (slice 2.31): the Idempotency-Key of a menu command that
+// changes many rows (a bulk price change, an Excel import), kept per admin
+// account with a hash of the command and its answer for 24 hours, in the
+// command's transaction.
+export const idempotencyKeys = merchants.table(
+  'idempotency_keys',
+  {
+    accountId: uuid('account_id').notNull(),
+    key: text('key').notNull(),
+    requestHash: text('request_hash').notNull(),
+    result: jsonb('result').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.accountId, table.key] })],
+);

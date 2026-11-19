@@ -343,6 +343,14 @@ Serializers _$serializers =
           ..add(AdminMenuAvailabilityDto.serializer)
           ..add(AdminMenuAvailabilityDtoTypeEnum.serializer)
           ..add(AdminMenuAvailabilityDtoUntilEnum.serializer)
+          ..add(AdminMenuBulkAvailabilityDto.serializer)
+          ..add(AdminMenuBulkAvailabilityDtoUntilEnum.serializer)
+          ..add(AdminMenuBulkPreviewDtoOutput.serializer)
+          ..add(AdminMenuBulkPreviewDtoOutputRowsInner.serializer)
+          ..add(AdminMenuBulkPriceDto.serializer)
+          ..add(AdminMenuBulkPriceDtoDirectionEnum.serializer)
+          ..add(AdminMenuBulkPriceDtoKindEnum.serializer)
+          ..add(AdminMenuBulkPriceResultDtoOutput.serializer)
           ..add(AdminMenuCategoryDto.serializer)
           ..add(AdminMenuCategoryOrderDto.serializer)
           ..add(AdminMenuDtoOutput.serializer)
@@ -2174,6 +2182,12 @@ Serializers _$serializers =
                 ListBuilder<
                   AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner?
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminMenuBulkPreviewDtoOutputRowsInner),
+            ]),
+            () => ListBuilder<AdminMenuBulkPreviewDtoOutputRowsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -4048,6 +4062,10 @@ Serializers _$serializers =
               const FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
             ]),
             () => ListBuilder<SettingListDtoOutputSettingsInnerEditRolesEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

@@ -7,13 +7,16 @@ import {
   HttpStatus,
   NotFoundException,
   Param,
+  Post,
   Put,
   Req,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import type { FastifyRequest } from 'fastify';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
 import { CurrentAdminSession, RequireAnyPermission, RequirePermission } from '../../http/access.js';
+import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
 import type { AdminSession } from '../identity/index.js';
@@ -26,6 +29,8 @@ import {
   MenuEditorService,
 } from './menu-editor.service.js';
 import { MerchantsRefusedError, MerchantsService, type SwitchedOff } from './merchants.service.js';
+import type { BulkPriceChange } from './bulk-price.js';
+import { MenuBulkService } from './menu-bulk.service.js';
 import { OptionGroupsService } from './option-groups.service.js';
 
 const minorUnits = z
@@ -194,6 +199,55 @@ class AdminMenuItemGroupsDto extends createZodDto(
   z.object({ groupIds: z.array(z.uuid()).describe("The item's groups, in order.") }),
 ) {}
 
+class AdminMenuBulkPriceDto extends createZodDto(
+  z.object({
+    categoryId: z.uuid().nullable().describe('One category; null: the whole menu.'),
+    kind: z.enum(['percent', 'amount']),
+    direction: z.enum(['up', 'down']),
+    value: z
+      .string()
+      .regex(/^[1-9]\d{0,14}$/)
+      .describe(
+        'Basis points for a percentage (1000 is 10%); minor units of the base for an amount.',
+      ),
+  }),
+) {}
+
+class AdminMenuBulkPreviewDto extends createZodDto(
+  z.object({
+    currency: z.string(),
+    roundingUnit: minorUnits.describe("The base's rounding unit each new price is rounded to."),
+    rows: z.array(
+      z.object({
+        itemId: z.uuid(),
+        code: z.string(),
+        name: z.string(),
+        categoryId: z.uuid(),
+        before: minorUnits,
+        after: minorUnits.nullable().describe('null: the change would bring it to 0 (refused).'),
+      }),
+    ),
+    changed: z.int(),
+    unchanged: z.int(),
+    refused: z.int().describe('Above 0, the change cannot be applied.'),
+  }),
+) {}
+
+class AdminMenuBulkPriceResultDto extends createZodDto(
+  z.object({ changed: z.int(), unchanged: z.int() }),
+) {}
+
+class AdminMenuBulkAvailabilityDto extends createZodDto(
+  z.object({
+    itemIds: z.array(z.uuid()).min(1).max(500),
+    available: z.boolean(),
+    until: z
+      .enum(['tomorrow', 'turned_back_on'])
+      .optional()
+      .describe('When switching off: «حتى الغد» or «حتى أعيده» (the default).'),
+  }),
+) {}
+
 class AdminMenuCategoryOrderDto extends createZodDto(
   z.object({ categoryIds: z.array(z.uuid()).describe('Every category once, in the new order.') }),
 ) {}
@@ -226,9 +280,21 @@ function refusalAsHttp(error: unknown): never {
     if (error.refusal === 'restaurant_terminated' || error.refusal === 'price_edit_not_allowed') {
       throw new ForbiddenException({ statusCode: HttpStatus.FORBIDDEN, ...body });
     }
+    if (error.refusal === 'idempotency_key_reused') {
+      throw new UnprocessableEntityException({
+        statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+        ...body,
+      });
+    }
     throw new ConflictException({ statusCode: HttpStatus.CONFLICT, ...body });
   }
   throw error;
+}
+
+function bulkChange(body: AdminMenuBulkPriceDto): BulkPriceChange {
+  return body.kind === 'percent'
+    ? { kind: 'percent', direction: body.direction, bp: Number(body.value) }
+    : { kind: 'amount', direction: body.direction, amount: BigInt(body.value) };
 }
 
 function adminChange(session: AdminSession, request: FastifyRequest): MenuChange {
@@ -258,7 +324,88 @@ export class AdminRestaurantMenuController {
     private readonly merchants: MerchantsService,
     private readonly editor: MenuEditorService,
     private readonly groups: OptionGroupsService,
+    private readonly bulk: MenuBulkService,
   ) {}
+
+  // AP §9.6.6 «تعديل جماعي» (slice 2.31): the before and after of every item
+  // in scope; a read, so no key.
+  @Post(':restaurantId/menu/bulk-price/preview')
+  @RequirePermission('restaurants.menus')
+  @ZodResponse({ status: 200, type: AdminMenuBulkPreviewDto })
+  async bulkPricePreview(@Param() params: AdminMenuParamsDto, @Body() body: AdminMenuBulkPriceDto) {
+    try {
+      const preview = await this.bulk.preview(
+        params.restaurantId,
+        { categoryId: body.categoryId },
+        bulkChange(body),
+      );
+      return {
+        ...preview,
+        roundingUnit: preview.roundingUnit.toString(),
+        rows: preview.rows.map((row) => ({
+          ...row,
+          before: row.before.toString(),
+          after: row.after?.toString() ?? null,
+        })),
+      };
+    } catch (error) {
+      refusalAsHttp(error);
+    }
+  }
+
+  // Applies it: the same input recomputed under the restaurant's lock, past
+  // test mode with menus.edit_prices; one summary to the owners.
+  @Post(':restaurantId/menu/bulk-price')
+  @Idempotent()
+  @RequirePermission('restaurants.menus')
+  @ZodResponse({ status: 200, type: AdminMenuBulkPriceResultDto })
+  async bulkPrice(
+    @Param() params: AdminMenuParamsDto,
+    @Body() body: AdminMenuBulkPriceDto,
+    @IdempotencyKey() key: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    try {
+      return await this.bulk.apply(
+        params.restaurantId,
+        { categoryId: body.categoryId },
+        bulkChange(body),
+        {
+          ...adminChange(session, request),
+          accountId: session.accountId,
+          idempotencyKey: key,
+        },
+      );
+    } catch (error) {
+      refusalAsHttp(error);
+    }
+  }
+
+  // «توفر جماعي»: many items switched at once; it sets a value, so no key.
+  @Put(':restaurantId/menu/bulk-availability')
+  @RequirePermission('restaurants.menus')
+  @ZodResponse({ status: 200, type: AdminMenuDto })
+  async bulkAvailability(
+    @Param() params: AdminMenuParamsDto,
+    @Body() body: AdminMenuBulkAvailabilityDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    try {
+      await this.bulk.setItemsAvailability(
+        params.restaurantId,
+        body.itemIds,
+        body.available
+          ? { available: true }
+          : { available: false, until: body.until ?? 'turned_back_on' },
+        adminChange(session, request),
+      );
+    } catch (error) {
+      refusalAsHttp(error);
+    }
+    return this.answer(params.restaurantId, session);
+  }
 
   @Get(':restaurantId/menu')
   @RequireAnyPermission('restaurants.read', 'restaurants.menus')

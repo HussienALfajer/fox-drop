@@ -383,6 +383,9 @@ const routeAccess: Record<string, Access> = {
   'PUT /v1/admin/restaurant-drafts/{restaurantId}/menu/categories/{categoryId}/item-order':
     'restaurants.menus',
   'PUT /v1/admin/restaurant-drafts/{restaurantId}/menu/availability': 'restaurants.menus',
+  'POST /v1/admin/restaurant-drafts/{restaurantId}/menu/bulk-price/preview': 'restaurants.menus',
+  'POST /v1/admin/restaurant-drafts/{restaurantId}/menu/bulk-price': 'restaurants.menus',
+  'PUT /v1/admin/restaurant-drafts/{restaurantId}/menu/bulk-availability': 'restaurants.menus',
   'PUT /v1/admin/restaurant-drafts/{restaurantId}/menu/option-groups/{groupId}':
     'restaurants.menus',
   'PUT /v1/admin/restaurant-drafts/{restaurantId}/menu/option-groups/{groupId}/options/{optionId}':

@@ -19,6 +19,7 @@ import { AdminRestaurantImagesController } from './admin-restaurant-images.contr
 import { AdminRestaurantStatusController } from './admin-restaurant-status.controller.js';
 import { MerchantMenuController } from './merchant-menu.controller.js';
 import { RestaurantNotesService } from './restaurant-notes.service.js';
+import { MenuBulkService } from './menu-bulk.service.js';
 import { MenuEditorService } from './menu-editor.service.js';
 import { OptionGroupsService } from './option-groups.service.js';
 import { MerchantsService } from './merchants.service.js';
@@ -58,6 +59,7 @@ import { MerchantStatusController } from './merchant-status.controller.js';
     RestaurantDraftsService,
     MenuEditorService,
     OptionGroupsService,
+    MenuBulkService,
     ActivationService,
     RestaurantNotesService,
   ],

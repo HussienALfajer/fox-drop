@@ -87,7 +87,13 @@ export type MerchantsRefusal =
   | 'still_a_draft'
   // AP §9.6.5, §6.3 (slice 2.31): a price set past test mode without
   // `menus.edit_prices`.
-  | 'price_edit_not_allowed';
+  | 'price_edit_not_allowed'
+  // AP §9.6.6 «تعديل جماعي» (slice 2.31): a change that brings a price to 0
+  // or below, or a city whose base has no rounding unit yet.
+  | 'price_reaches_zero'
+  | 'rounding_unit_missing'
+  // Architecture §5.3: a key sent again with another command.
+  | 'idempotency_key_reused';
 
 // Slice 2.30c: the same commission «now» again within this is a repeat.
 const COMMISSION_REPEAT_WINDOW_MS = 60_000;
@@ -1652,6 +1658,19 @@ export class MerchantsService implements OnModuleInit {
     change: MerchantChange,
     now = new Date(),
   ): Promise<SwitchedOff> {
+    return this.setAvailabilities(restaurantId, [target], availability, change, now);
+  }
+
+  // AP §9.6.6 «توفر جماعي» (slice 2.31): many rows switched at once, in one
+  // transaction, each audited as its own switch; a row not the restaurant's
+  // refuses them all.
+  async setAvailabilities(
+    restaurantId: string,
+    targets: { type: 'category' | 'item' | 'option'; id: string }[],
+    availability: { available: true } | { available: false; until: 'tomorrow' | 'turned_back_on' },
+    change: MerchantChange,
+    now = new Date(),
+  ): Promise<SwitchedOff> {
     const until = availability.available
       ? null
       : await this.switchedOffUntil(restaurantId, availability.until, now);
@@ -1661,18 +1680,20 @@ export class MerchantsService implements OnModuleInit {
       if (row.accountStatus === 'terminated') {
         throw new MerchantsRefusedError('restaurant_terminated', 'the restaurant is terminated');
       }
-      const switched = await this.writeAvailability(
-        tx,
-        row.cityId,
-        restaurantId,
-        target,
-        availability.available,
-        until,
-        change,
-        now,
-      );
-      if (!switched) {
-        throw new MerchantsRefusedError('unknown_menu_row', `no such ${target.type} here`);
+      for (const target of targets) {
+        const switched = await this.writeAvailability(
+          tx,
+          row.cityId,
+          restaurantId,
+          target,
+          availability.available,
+          until,
+          change,
+          now,
+        );
+        if (!switched) {
+          throw new MerchantsRefusedError('unknown_menu_row', `no such ${target.type} here`);
+        }
       }
       return availability.available ? null : { until };
     });

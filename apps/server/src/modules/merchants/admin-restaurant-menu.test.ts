@@ -64,14 +64,22 @@ async function admin(role: string) {
     .get(AdminSessionsService)
     .start(db.db, rows[0].id, { ipAddress: '203.0.113.9', device: 'test' }, new Date());
   const cookies = { [ADMIN_SESSION_COOKIE]: token };
-  return (method: 'GET' | 'PUT', url: string, payload?: object) =>
+  return (
+    method: 'GET' | 'PUT' | 'POST',
+    url: string,
+    payload?: object,
+    headers: Record<string, string> = {},
+  ) =>
     app.inject({
       method,
       url: `/v1/admin/restaurant-drafts${url}`,
       cookies,
+      headers,
       ...(payload ? { payload } : {}),
     });
 }
+
+const key = () => randomUUID().replaceAll('-', '');
 
 type Call = Awaited<ReturnType<typeof admin>>;
 
@@ -578,5 +586,145 @@ describe('option groups and add-ons (AP §9.6.6)', () => {
     expect(told.rows.map((row) => row.payload.values)).toEqual([
       { optionId: cheese, name: 'جبنة إضافية', oldPrice: '500', newPrice: '750', currency: 'TRY' },
     ]);
+  });
+});
+
+describe('bulk changes (AP §9.6.6 «تعديل جماعي», «توفر جماعي»)', () => {
+  it('previews, applies once per key and tells the owners one summary', async () => {
+    const { SettingsService } = await import('../settings/index.js');
+    await app
+      .get(SettingsService)
+      .update(
+        'currency.<code>.rounding_unit',
+        { cityId: azaz, parameter: 'TRY' },
+        { amountMinor: 100 },
+        { editor: 'system', context: change.context, reason: 'test' },
+      );
+    const id = await activeRestaurant();
+    const ops = await admin('OPS');
+    const data = await admin('DATA');
+    const meals = randomUUID();
+    const drinks = randomUUID();
+    const [a, b, c] = [randomUUID(), randomUUID(), randomUUID()];
+    await ops('PUT', `/${id}/menu/categories/${meals}`, category('وجبات'));
+    await ops('PUT', `/${id}/menu/categories/${drinks}`, category('مشروبات'));
+    await ops('PUT', `/${id}/menu/items/${a}`, item(meals, 'برغر', { price: try_('12000') }));
+    await ops('PUT', `/${id}/menu/items/${b}`, item(meals, 'شاورما', { price: try_('9950') }));
+    await ops('PUT', `/${id}/menu/items/${c}`, item(drinks, 'عصير', { price: try_('3000') }));
+    const body = { categoryId: meals, kind: 'percent', direction: 'up', value: '1000' };
+    const preview = await ops('POST', `/${id}/menu/bulk-price/preview`, body);
+    expect(preview.statusCode).toBe(200);
+    expect(preview.json()).toEqual({
+      currency: 'TRY',
+      roundingUnit: '100',
+      rows: [
+        {
+          itemId: a,
+          code: 'I0001',
+          name: 'برغر',
+          categoryId: meals,
+          before: '12000',
+          after: '13200',
+        },
+        {
+          itemId: b,
+          code: 'I0002',
+          name: 'شاورما',
+          categoryId: meals,
+          before: '9950',
+          after: '10900',
+        },
+      ],
+      changed: 2,
+      unchanged: 0,
+      refused: 0,
+    });
+    // DATA previews but applies no price change past test mode; no key is 400.
+    expect(
+      (await data('POST', `/${id}/menu/bulk-price`, body, { 'idempotency-key': key() })).json(),
+    ).toMatchObject({ statusCode: 403, error: 'price_edit_not_allowed' });
+    expect((await ops('POST', `/${id}/menu/bulk-price`, body)).json()).toMatchObject({
+      statusCode: 400,
+      error: 'idempotency_key_required',
+    });
+    const once = key();
+    const applied = await ops('POST', `/${id}/menu/bulk-price`, body, { 'idempotency-key': once });
+    expect(applied.json()).toEqual({ changed: 2, unchanged: 0 });
+    // The same key answers the first result and changes nothing again.
+    expect(
+      (await ops('POST', `/${id}/menu/bulk-price`, body, { 'idempotency-key': once })).json(),
+    ).toEqual({ changed: 2, unchanged: 0 });
+    expect(
+      (
+        await ops(
+          'POST',
+          `/${id}/menu/bulk-price`,
+          { ...body, value: '500' },
+          { 'idempotency-key': once },
+        )
+      ).json(),
+    ).toMatchObject({ statusCode: 422, error: 'idempotency_key_reused' });
+    const menu = (await ops('GET', `/${id}/menu`)).json();
+    expect(
+      menu.categories.flatMap((each: { items: { price: { amount: string } }[] }) =>
+        each.items.map((one) => one.price.amount),
+      ),
+    ).toEqual(['13200', '10900', '3000']);
+    const logged = await sql.query(
+      'SELECT count(*)::int AS count FROM merchants.price_changes WHERE restaurant_id = $1',
+      [id],
+    );
+    expect(logged.rows[0].count).toBe(2);
+    const told = await sql.query(
+      `SELECT kind, payload FROM merchants.state_outbox
+        WHERE restaurant_id = $1 AND kind LIKE 'price_change%'`,
+      [id],
+    );
+    expect(told.rows).toEqual([
+      { kind: 'price_change_bulk', payload: { schema: 1, values: { count: 2 } } },
+    ]);
+    expect(await audits('menu.bulk_price', id)).toBe(1);
+
+    // A change that would bring a price to 0 is shown and refused whole.
+    const tooLow = { categoryId: null, kind: 'amount', direction: 'down', value: '5000' };
+    expect((await ops('POST', `/${id}/menu/bulk-price/preview`, tooLow)).json()).toMatchObject({
+      changed: 2,
+      refused: 1,
+    });
+    expect(
+      (await ops('POST', `/${id}/menu/bulk-price`, tooLow, { 'idempotency-key': key() })).json(),
+    ).toMatchObject({ statusCode: 409, error: 'price_reaches_zero' });
+  });
+
+  it('switches many items at once, each audited', async () => {
+    const data = await admin('DATA');
+    const id = await activeRestaurant();
+    const meals = randomUUID();
+    const [a, b] = [randomUUID(), randomUUID()];
+    const ops = await admin('OPS');
+    await ops('PUT', `/${id}/menu/categories/${meals}`, category('وجبات'));
+    await ops('PUT', `/${id}/menu/items/${a}`, item(meals, 'أ'));
+    await ops('PUT', `/${id}/menu/items/${b}`, item(meals, 'ب'));
+    const off = await data('PUT', `/${id}/menu/bulk-availability`, {
+      itemIds: [a, b],
+      available: false,
+      until: 'tomorrow',
+    });
+    expect(off.statusCode).toBe(200);
+    expect(
+      off.json().categories[0].items.map((each: { switchedOff: unknown }) => each.switchedOff),
+    ).toEqual([{ until: expect.any(String) }, { until: expect.any(String) }]);
+    expect(await audits('menu.item.availability', a)).toBe(1);
+    expect(await audits('menu.item.availability', b)).toBe(1);
+    expect(
+      (
+        await data('PUT', `/${id}/menu/bulk-availability`, {
+          itemIds: [a, randomUUID()],
+          available: true,
+        })
+      ).json(),
+    ).toMatchObject({ statusCode: 404, error: 'unknown_menu_row' });
+    // Nothing switched on: the refusal rolls every row back.
+    expect(await audits('menu.item.availability', a)).toBe(1);
   });
 });

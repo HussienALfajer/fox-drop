@@ -1396,6 +1396,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/bulk-price/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminRestaurantMenuBulkPricePreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/bulk-price": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminRestaurantMenuBulkPrice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurant-drafts/{restaurantId}/menu/bulk-availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminRestaurantMenuBulkAvailability"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/restaurant-drafts/{restaurantId}/menu": {
         parameters: {
             query?: never;
@@ -7080,6 +7128,50 @@ export interface components {
             /** @description Active categories of «التصنيفات», once each, in the chosen order. */
             categoryIds: string[];
             description: string | null;
+        };
+        AdminMenuBulkPriceDto: {
+            /** @description One category; null: the whole menu. */
+            categoryId: string | null;
+            /** @enum {string} */
+            kind: "percent" | "amount";
+            /** @enum {string} */
+            direction: "up" | "down";
+            /** @description Basis points for a percentage (1000 is 10%); minor units of the base for an amount. */
+            value: string;
+        };
+        AdminMenuBulkPreviewDto_Output: {
+            currency: string;
+            /** @description The base's rounding unit each new price is rounded to. */
+            roundingUnit: string;
+            rows: {
+                /** Format: uuid */
+                itemId: string;
+                code: string;
+                name: string;
+                /** Format: uuid */
+                categoryId: string;
+                /** @description Integer minor units of the currency, as a string. */
+                before: string;
+                /** @description null: the change would bring it to 0 (refused). */
+                after: string | null;
+            }[];
+            changed: number;
+            unchanged: number;
+            /** @description Above 0, the change cannot be applied. */
+            refused: number;
+        };
+        AdminMenuBulkPriceResultDto_Output: {
+            changed: number;
+            unchanged: number;
+        };
+        AdminMenuBulkAvailabilityDto: {
+            itemIds: string[];
+            available: boolean;
+            /**
+             * @description When switching off: «حتى الغد» or «حتى أعيده» (the default).
+             * @enum {string}
+             */
+            until?: "tomorrow" | "turned_back_on";
         };
         AdminMenuSwitchedOff_Output: {
             /** @description «حتى الغد» ends at the next business-day cutoff; null is «حتى أعيده». */
@@ -19863,6 +19955,87 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminRestaurantDraftDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuBulkPricePreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMenuBulkPriceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuBulkPreviewDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuBulkPrice: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMenuBulkPriceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuBulkPriceResultDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantMenuBulkAvailability: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminMenuBulkAvailabilityDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuDto_Output"];
                 };
             };
         };
