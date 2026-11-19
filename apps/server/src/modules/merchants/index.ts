@@ -14,7 +14,9 @@ import {
 import { AdminRestaurantAccountController } from './admin-restaurant-account.controller.js';
 import { AdminRestaurantActivationController } from './admin-restaurant-activation.controller.js';
 import { ActivationService } from './activation.service.js';
+import { AdminMenuChangeRequestsController } from './admin-menu-change-requests.controller.js';
 import { AdminRestaurantMenuController } from './admin-restaurant-menu.controller.js';
+import { ChangeRequestsService } from './change-requests.service.js';
 import { AdminRestaurantMenuImportController } from './admin-restaurant-menu-import.controller.js';
 import { AdminRestaurantImagesController } from './admin-restaurant-images.controller.js';
 import { AdminRestaurantStatusController } from './admin-restaurant-status.controller.js';
@@ -56,6 +58,7 @@ import { MerchantStatusController } from './merchant-status.controller.js';
     AdminRestaurantMenuImportController,
     AdminRestaurantActivationController,
     AdminRestaurantAccountController,
+    AdminMenuChangeRequestsController,
   ],
   providers: [
     MerchantsService,
@@ -68,6 +71,7 @@ import { MerchantStatusController } from './merchant-status.controller.js';
     RestaurantMenuService,
     ActivationService,
     RestaurantNotesService,
+    ChangeRequestsService,
   ],
   exports: [
     MerchantsService,

@@ -9,12 +9,17 @@ part of 'merchant_menu_dto_output.dart';
 class _$MerchantMenuDtoOutput extends MerchantMenuDtoOutput {
   @override
   final BuiltList<MerchantMenuDtoOutputCategoriesInner> categories;
+  @override
+  final BuiltList<MerchantMenuDtoOutputOptionGroupsInner> optionGroups;
 
   factory _$MerchantMenuDtoOutput([
     void Function(MerchantMenuDtoOutputBuilder)? updates,
   ]) => (MerchantMenuDtoOutputBuilder()..update(updates))._build();
 
-  _$MerchantMenuDtoOutput._({required this.categories}) : super._();
+  _$MerchantMenuDtoOutput._({
+    required this.categories,
+    required this.optionGroups,
+  }) : super._();
   @override
   MerchantMenuDtoOutput rebuild(
     void Function(MerchantMenuDtoOutputBuilder) updates,
@@ -27,22 +32,26 @@ class _$MerchantMenuDtoOutput extends MerchantMenuDtoOutput {
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is MerchantMenuDtoOutput && categories == other.categories;
+    return other is MerchantMenuDtoOutput &&
+        categories == other.categories &&
+        optionGroups == other.optionGroups;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, categories.hashCode);
+    _$hash = $jc(_$hash, optionGroups.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(
-      r'MerchantMenuDtoOutput',
-    )..add('categories', categories)).toString();
+    return (newBuiltValueToStringHelper(r'MerchantMenuDtoOutput')
+          ..add('categories', categories)
+          ..add('optionGroups', optionGroups))
+        .toString();
   }
 }
 
@@ -58,6 +67,14 @@ class MerchantMenuDtoOutputBuilder
     ListBuilder<MerchantMenuDtoOutputCategoriesInner>? categories,
   ) => _$this._categories = categories;
 
+  ListBuilder<MerchantMenuDtoOutputOptionGroupsInner>? _optionGroups;
+  ListBuilder<MerchantMenuDtoOutputOptionGroupsInner> get optionGroups =>
+      _$this._optionGroups ??=
+          ListBuilder<MerchantMenuDtoOutputOptionGroupsInner>();
+  set optionGroups(
+    ListBuilder<MerchantMenuDtoOutputOptionGroupsInner>? optionGroups,
+  ) => _$this._optionGroups = optionGroups;
+
   MerchantMenuDtoOutputBuilder() {
     MerchantMenuDtoOutput._defaults(this);
   }
@@ -66,6 +83,7 @@ class MerchantMenuDtoOutputBuilder
     final $v = _$v;
     if ($v != null) {
       _categories = $v.categories.toBuilder();
+      _optionGroups = $v.optionGroups.toBuilder();
       _$v = null;
     }
     return this;
@@ -88,12 +106,18 @@ class MerchantMenuDtoOutputBuilder
     _$MerchantMenuDtoOutput _$result;
     try {
       _$result =
-          _$v ?? _$MerchantMenuDtoOutput._(categories: categories.build());
+          _$v ??
+          _$MerchantMenuDtoOutput._(
+            categories: categories.build(),
+            optionGroups: optionGroups.build(),
+          );
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'categories';
         categories.build();
+        _$failedField = 'optionGroups';
+        optionGroups.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'MerchantMenuDtoOutput',

@@ -59,9 +59,20 @@ import 'package:core_api/src/model/admin_categories_dto_output_categories_inner.
 import 'package:core_api/src/model/admin_category_dto_output.dart';
 import 'package:core_api/src/model/admin_category_image_dto.dart';
 import 'package:core_api/src/model/admin_category_order_dto.dart';
+import 'package:core_api/src/model/admin_change_approve_dto.dart';
 import 'package:core_api/src/model/admin_change_customer_phone_dto.dart';
+import 'package:core_api/src/model/admin_change_decided_dto_output.dart';
+import 'package:core_api/src/model/admin_change_item_name_output.dart';
+import 'package:core_api/src/model/admin_change_item_output.dart';
+import 'package:core_api/src/model/admin_change_money_output.dart';
+import 'package:core_api/src/model/admin_change_option_output.dart';
 import 'package:core_api/src/model/admin_change_outcome_dto.dart';
+import 'package:core_api/src/model/admin_change_reject_dto.dart';
+import 'package:core_api/src/model/admin_change_request_dto_output.dart';
+import 'package:core_api/src/model/admin_change_request_row_output.dart';
+import 'package:core_api/src/model/admin_change_requests_dto_output.dart';
 import 'package:core_api/src/model/admin_change_time_dto.dart';
+import 'package:core_api/src/model/admin_change_values_output.dart';
 import 'package:core_api/src/model/admin_checklist_dto_output.dart';
 import 'package:core_api/src/model/admin_checklist_dto_output_images.dart';
 import 'package:core_api/src/model/admin_checklist_dto_output_images_waiver.dart';
@@ -857,6 +868,7 @@ import 'package:core_api/src/model/merchant_acknowledge_edit_dto.dart';
 import 'package:core_api/src/model/merchant_availability_dto.dart';
 import 'package:core_api/src/model/merchant_availability_saved_dto_output.dart';
 import 'package:core_api/src/model/merchant_busy_mode_dto.dart';
+import 'package:core_api/src/model/merchant_category_request_dto.dart';
 import 'package:core_api/src/model/merchant_code_request_dto.dart';
 import 'package:core_api/src/model/merchant_code_sent_dto_output.dart';
 import 'package:core_api/src/model/merchant_content_dto_output.dart';
@@ -870,7 +882,9 @@ import 'package:core_api/src/model/merchant_holiday_close_dto.dart';
 import 'package:core_api/src/model/merchant_hours_dto_output.dart';
 import 'package:core_api/src/model/merchant_hours_dto_output_coverage.dart';
 import 'package:core_api/src/model/merchant_hours_dto_output_periods_inner.dart';
+import 'package:core_api/src/model/merchant_item_photo_request_dto.dart';
 import 'package:core_api/src/model/merchant_item_report_dto.dart';
+import 'package:core_api/src/model/merchant_item_text_request_dto.dart';
 import 'package:core_api/src/model/merchant_menu_bulk_preview_dto_output.dart';
 import 'package:core_api/src/model/merchant_menu_bulk_preview_dto_output_rows_inner.dart';
 import 'package:core_api/src/model/merchant_menu_bulk_price_dto.dart';
@@ -881,9 +895,13 @@ import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner.dar
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_items_inner.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_items_inner_option_groups_inner.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_items_inner_option_groups_inner_options_inner.dart';
+import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_items_inner_pending_inner.dart';
+import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_items_inner_pending_inner_options_inner.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_items_inner_price.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_switched_off.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_window.dart';
+import 'package:core_api/src/model/merchant_menu_dto_output_option_groups_inner.dart';
+import 'package:core_api/src/model/merchant_menu_dto_output_option_groups_inner_options_inner.dart';
 import 'package:core_api/src/model/merchant_menu_hidden_dto.dart';
 import 'package:core_api/src/model/merchant_menu_item_order_dto.dart';
 import 'package:core_api/src/model/merchant_menu_item_price_dto.dart';
@@ -894,6 +912,9 @@ import 'package:core_api/src/model/merchant_menu_preview_category_output.dart';
 import 'package:core_api/src/model/merchant_menu_preview_dto_output.dart';
 import 'package:core_api/src/model/merchant_menu_window_dto.dart';
 import 'package:core_api/src/model/merchant_menu_window_dto_window.dart';
+import 'package:core_api/src/model/merchant_new_item_request_dto.dart';
+import 'package:core_api/src/model/merchant_new_upload_dto.dart';
+import 'package:core_api/src/model/merchant_option_group_request_dto.dart';
 import 'package:core_api/src/model/merchant_order_dto_output.dart';
 import 'package:core_api/src/model/merchant_order_dto_output_order.dart';
 import 'package:core_api/src/model/merchant_order_dto_output_order_pickup.dart';
@@ -919,6 +940,7 @@ import 'package:core_api/src/model/merchant_orders_dto_output_prep_time.dart';
 import 'package:core_api/src/model/merchant_overdue_dto_output.dart';
 import 'package:core_api/src/model/merchant_overdue_dto_output_overdue.dart';
 import 'package:core_api/src/model/merchant_pause_dto.dart';
+import 'package:core_api/src/model/merchant_pending_money_output.dart';
 import 'package:core_api/src/model/merchant_pickup_currencies_dto_output.dart';
 import 'package:core_api/src/model/merchant_pickup_currencies_dto_output_base_currency.dart';
 import 'package:core_api/src/model/merchant_pickup_currencies_dto_output_choices_inner.dart';
@@ -940,6 +962,8 @@ import 'package:core_api/src/model/merchant_report_body_dto.dart';
 import 'package:core_api/src/model/merchant_report_ticket_dto_output.dart';
 import 'package:core_api/src/model/merchant_report_ticket_dto_output_ticket.dart';
 import 'package:core_api/src/model/merchant_reports_dto_output.dart';
+import 'package:core_api/src/model/merchant_request_option.dart';
+import 'package:core_api/src/model/merchant_request_option_price_delta.dart';
 import 'package:core_api/src/model/merchant_restaurant_dto_output.dart';
 import 'package:core_api/src/model/merchant_schedule_dto.dart';
 import 'package:core_api/src/model/merchant_schedule_dto_periods_inner.dart';
@@ -957,6 +981,7 @@ import 'package:core_api/src/model/merchant_status_dto_output.dart';
 import 'package:core_api/src/model/merchant_status_dto_output_busy_mode.dart';
 import 'package:core_api/src/model/merchant_status_dto_output_holiday.dart';
 import 'package:core_api/src/model/merchant_tokens_dto_output.dart';
+import 'package:core_api/src/model/merchant_upload_dto_output.dart';
 import 'package:core_api/src/model/platform_dto_output.dart';
 import 'package:core_api/src/model/push_token_dto.dart';
 import 'package:core_api/src/model/push_token_registered_dto_output.dart';
@@ -1039,9 +1064,20 @@ part 'serializers.g.dart';
   AdminCategoryDtoOutput,
   AdminCategoryImageDto,
   AdminCategoryOrderDto,
+  AdminChangeApproveDto,
   AdminChangeCustomerPhoneDto,
+  AdminChangeDecidedDtoOutput,
+  AdminChangeItemNameOutput,
+  AdminChangeItemOutput,
+  AdminChangeMoneyOutput,
+  AdminChangeOptionOutput,
   AdminChangeOutcomeDto,
+  AdminChangeRejectDto,
+  AdminChangeRequestDtoOutput,
+  AdminChangeRequestRowOutput,
+  AdminChangeRequestsDtoOutput,
   AdminChangeTimeDto,
+  AdminChangeValuesOutput,
   AdminChecklistDtoOutput,
   AdminChecklistDtoOutputImages,
   AdminChecklistDtoOutputImagesWaiver,
@@ -1837,6 +1873,7 @@ part 'serializers.g.dart';
   MerchantAvailabilityDto,
   MerchantAvailabilitySavedDtoOutput,
   MerchantBusyModeDto,
+  MerchantCategoryRequestDto,
   MerchantCodeRequestDto,
   MerchantCodeSentDtoOutput,
   MerchantContentDtoOutput,
@@ -1850,7 +1887,9 @@ part 'serializers.g.dart';
   MerchantHoursDtoOutput,
   MerchantHoursDtoOutputCoverage,
   MerchantHoursDtoOutputPeriodsInner,
+  MerchantItemPhotoRequestDto,
   MerchantItemReportDto,
+  MerchantItemTextRequestDto,
   MerchantMenuBulkPreviewDtoOutput,
   MerchantMenuBulkPreviewDtoOutputRowsInner,
   MerchantMenuBulkPriceDto,
@@ -1861,9 +1900,13 @@ part 'serializers.g.dart';
   MerchantMenuDtoOutputCategoriesInnerItemsInner,
   MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInner,
   MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner,
+  MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner,
+  MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerOptionsInner,
   MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice,
   MerchantMenuDtoOutputCategoriesInnerSwitchedOff,
   MerchantMenuDtoOutputCategoriesInnerWindow,
+  MerchantMenuDtoOutputOptionGroupsInner,
+  MerchantMenuDtoOutputOptionGroupsInnerOptionsInner,
   MerchantMenuHiddenDto,
   MerchantMenuItemOrderDto,
   MerchantMenuItemPriceDto,
@@ -1874,6 +1917,9 @@ part 'serializers.g.dart';
   MerchantMenuPreviewDtoOutput,
   MerchantMenuWindowDto,
   MerchantMenuWindowDtoWindow,
+  MerchantNewItemRequestDto,
+  MerchantNewUploadDto,
+  MerchantOptionGroupRequestDto,
   MerchantOrderDtoOutput,
   MerchantOrderDtoOutputOrder,
   MerchantOrderDtoOutputOrderPickup,
@@ -1899,6 +1945,7 @@ part 'serializers.g.dart';
   MerchantOverdueDtoOutput,
   MerchantOverdueDtoOutputOverdue,
   MerchantPauseDto,
+  MerchantPendingMoneyOutput,
   MerchantPickupCurrenciesDtoOutput,
   MerchantPickupCurrenciesDtoOutputBaseCurrency,
   MerchantPickupCurrenciesDtoOutputChoicesInner,
@@ -1920,6 +1967,8 @@ part 'serializers.g.dart';
   MerchantReportTicketDtoOutput,
   MerchantReportTicketDtoOutputTicket,
   MerchantReportsDtoOutput,
+  MerchantRequestOption,
+  MerchantRequestOptionPriceDelta,
   MerchantRestaurantDtoOutput,
   MerchantScheduleDto,
   MerchantScheduleDtoPeriodsInner,
@@ -1937,6 +1986,7 @@ part 'serializers.g.dart';
   MerchantStatusDtoOutputBusyMode,
   MerchantStatusDtoOutputHoliday,
   MerchantTokensDtoOutput,
+  MerchantUploadDtoOutput,
   PlatformDtoOutput,
   PushTokenDto,
   PushTokenRegisteredDtoOutput,
@@ -1973,6 +2023,12 @@ part 'serializers.g.dart';
 ])
 Serializers serializers =
     (_$serializers.toBuilder()
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(MerchantMenuDtoOutputOptionGroupsInner),
+            ]),
+            () => ListBuilder<MerchantMenuDtoOutputOptionGroupsInner>(),
+          )
           ..addBuilderFactory(
             const FullType(BuiltList, [
               FullType(AdminCannedRepliesDtoRepliesInner),
@@ -2040,6 +2096,10 @@ Serializers serializers =
               FullType(CustomerRestaurantPageDtoOutputMenuInner),
             ]),
             () => ListBuilder<CustomerRestaurantPageDtoOutputMenuInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [FullType(MerchantRequestOption)]),
+            () => ListBuilder<MerchantRequestOption>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -2554,6 +2614,15 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(MerchantMenuDtoOutputOptionGroupsInnerOptionsInner),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantMenuDtoOutputOptionGroupsInnerOptionsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(MerchantStatementDtoOutputLinesInnerPickupLinesInner),
             ]),
             () =>
@@ -2758,6 +2827,17 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(
+                MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerOptionsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerOptionsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(CaptainStatementListDtoOutputStatementsInner),
             ]),
             () => ListBuilder<CaptainStatementListDtoOutputStatementsInner>(),
@@ -2803,6 +2883,10 @@ Serializers serializers =
               FullType(AdminMenuImportPlanDtoOutputAddedInner),
             ]),
             () => ListBuilder<AdminMenuImportPlanDtoOutputAddedInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [FullType(AdminChangeItemNameOutput)]),
+            () => ListBuilder<AdminChangeItemNameOutput>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -3257,8 +3341,27 @@ Serializers serializers =
             () => ListBuilder<AdminHomeSectionsDtoOutputSectionsInner>(),
           )
           ..addBuilderFactory(
+            const FullType(BuiltList, [FullType(AdminChangeRequestRowOutput)]),
+            () => ListBuilder<AdminChangeRequestRowOutput>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(
+                MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner
+                >(),
+          )
+          ..addBuilderFactory(
             const FullType(BuiltList, [FullType(AdminEditDtoKeepInner)]),
             () => ListBuilder<AdminEditDtoKeepInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [FullType(AdminChangeOptionOutput)]),
+            () => ListBuilder<AdminChangeOptionOutput>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

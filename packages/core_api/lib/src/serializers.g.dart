@@ -75,12 +75,29 @@ Serializers _$serializers =
           ..add(AdminCategoryDtoOutput.serializer)
           ..add(AdminCategoryImageDto.serializer)
           ..add(AdminCategoryOrderDto.serializer)
+          ..add(AdminChangeApproveDto.serializer)
           ..add(AdminChangeCustomerPhoneDto.serializer)
+          ..add(AdminChangeDecidedDtoOutput.serializer)
+          ..add(AdminChangeDecidedDtoOutputStatusEnum.serializer)
+          ..add(AdminChangeItemNameOutput.serializer)
+          ..add(AdminChangeItemOutput.serializer)
+          ..add(AdminChangeMoneyOutput.serializer)
+          ..add(AdminChangeOptionOutput.serializer)
           ..add(AdminChangeOutcomeDto.serializer)
           ..add(AdminChangeOutcomeDtoFoodEnum.serializer)
           ..add(AdminChangeOutcomeDtoOutcomeEnum.serializer)
           ..add(AdminChangeOutcomeDtoResponsibleEnum.serializer)
+          ..add(AdminChangeRejectDto.serializer)
+          ..add(AdminChangeRequestDtoOutput.serializer)
+          ..add(AdminChangeRequestDtoOutputFieldEnum.serializer)
+          ..add(AdminChangeRequestDtoOutputStatusEnum.serializer)
+          ..add(AdminChangeRequestDtoOutputTargetTypeEnum.serializer)
+          ..add(AdminChangeRequestRowOutput.serializer)
+          ..add(AdminChangeRequestRowOutputFieldEnum.serializer)
+          ..add(AdminChangeRequestRowOutputTargetTypeEnum.serializer)
+          ..add(AdminChangeRequestsDtoOutput.serializer)
           ..add(AdminChangeTimeDto.serializer)
+          ..add(AdminChangeValuesOutput.serializer)
           ..add(AdminChecklistDtoOutput.serializer)
           ..add(AdminChecklistDtoOutputAccountStatusEnum.serializer)
           ..add(AdminChecklistDtoOutputImages.serializer)
@@ -1401,6 +1418,7 @@ Serializers _$serializers =
           ..add(MerchantAvailabilityDtoUntilEnum.serializer)
           ..add(MerchantAvailabilitySavedDtoOutput.serializer)
           ..add(MerchantBusyModeDto.serializer)
+          ..add(MerchantCategoryRequestDto.serializer)
           ..add(MerchantCodeRequestDto.serializer)
           ..add(MerchantCodeRequestDtoPlatformEnum.serializer)
           ..add(MerchantCodeSentDtoOutput.serializer)
@@ -1425,7 +1443,9 @@ Serializers _$serializers =
           ..add(MerchantHoursDtoOutputCoverage.serializer)
           ..add(MerchantHoursDtoOutputCoverageKindEnum.serializer)
           ..add(MerchantHoursDtoOutputPeriodsInner.serializer)
+          ..add(MerchantItemPhotoRequestDto.serializer)
           ..add(MerchantItemReportDto.serializer)
+          ..add(MerchantItemTextRequestDto.serializer)
           ..add(MerchantMenuBulkPreviewDtoOutput.serializer)
           ..add(MerchantMenuBulkPreviewDtoOutputRowsInner.serializer)
           ..add(MerchantMenuBulkPriceDto.serializer)
@@ -1444,9 +1464,23 @@ Serializers _$serializers =
             MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner
                 .serializer,
           )
+          ..add(
+            MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner
+                .serializer,
+          )
+          ..add(
+            MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum
+                .serializer,
+          )
+          ..add(
+            MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerOptionsInner
+                .serializer,
+          )
           ..add(MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice.serializer)
           ..add(MerchantMenuDtoOutputCategoriesInnerSwitchedOff.serializer)
           ..add(MerchantMenuDtoOutputCategoriesInnerWindow.serializer)
+          ..add(MerchantMenuDtoOutputOptionGroupsInner.serializer)
+          ..add(MerchantMenuDtoOutputOptionGroupsInnerOptionsInner.serializer)
           ..add(MerchantMenuHiddenDto.serializer)
           ..add(MerchantMenuItemOrderDto.serializer)
           ..add(MerchantMenuItemPriceDto.serializer)
@@ -1457,6 +1491,10 @@ Serializers _$serializers =
           ..add(MerchantMenuPreviewDtoOutput.serializer)
           ..add(MerchantMenuWindowDto.serializer)
           ..add(MerchantMenuWindowDtoWindow.serializer)
+          ..add(MerchantNewItemRequestDto.serializer)
+          ..add(MerchantNewUploadDto.serializer)
+          ..add(MerchantNewUploadDtoContentTypeEnum.serializer)
+          ..add(MerchantOptionGroupRequestDto.serializer)
           ..add(MerchantOrderDtoOutput.serializer)
           ..add(MerchantOrderDtoOutputOrder.serializer)
           ..add(MerchantOrderDtoOutputOrderCaptainTrackEnum.serializer)
@@ -1509,6 +1547,7 @@ Serializers _$serializers =
           ..add(MerchantOverdueDtoOutput.serializer)
           ..add(MerchantOverdueDtoOutputOverdue.serializer)
           ..add(MerchantPauseDto.serializer)
+          ..add(MerchantPendingMoneyOutput.serializer)
           ..add(MerchantPickupCurrenciesDtoOutput.serializer)
           ..add(MerchantPickupCurrenciesDtoOutputBaseCurrency.serializer)
           ..add(MerchantPickupCurrenciesDtoOutputChoicesInner.serializer)
@@ -1541,6 +1580,8 @@ Serializers _$serializers =
           ..add(MerchantReportTicketDtoOutputTicketStatusEnum.serializer)
           ..add(MerchantReportTicketDtoOutputTicketSubjectEnum.serializer)
           ..add(MerchantReportsDtoOutput.serializer)
+          ..add(MerchantRequestOption.serializer)
+          ..add(MerchantRequestOptionPriceDelta.serializer)
           ..add(MerchantRestaurantDtoOutput.serializer)
           ..add(MerchantRestaurantDtoOutputAccountStatusEnum.serializer)
           ..add(MerchantRestaurantDtoOutputStateEnum.serializer)
@@ -1572,6 +1613,7 @@ Serializers _$serializers =
           ..add(MerchantStatusDtoOutputPauseSourceEnum.serializer)
           ..add(MerchantStatusDtoOutputStateEnum.serializer)
           ..add(MerchantTokensDtoOutput.serializer)
+          ..add(MerchantUploadDtoOutput.serializer)
           ..add(PlatformDtoOutput.serializer)
           ..add(PlatformDtoOutputUpdateNeedEnum.serializer)
           ..add(PushTokenDto.serializer)
@@ -1717,6 +1759,18 @@ Serializers _$serializers =
               const FullType(AdminCategoriesDtoOutputCategoriesInner),
             ]),
             () => ListBuilder<AdminCategoriesDtoOutputCategoriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminChangeItemNameOutput),
+            ]),
+            () => ListBuilder<AdminChangeItemNameOutput>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminChangeRequestRowOutput),
+            ]),
+            () => ListBuilder<AdminChangeRequestRowOutput>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -3937,9 +3991,26 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(MerchantMenuDtoOutputOptionGroupsInner),
+            ]),
+            () => ListBuilder<MerchantMenuDtoOutputOptionGroupsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(MerchantMenuDtoOutputCategoriesInnerItemsInner),
             ]),
             () => ListBuilder<MerchantMenuDtoOutputCategoriesInnerItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner
+                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -3955,12 +4026,34 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [
               const FullType(
+                MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
                 MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner,
               ),
             ]),
             () =>
                 ListBuilder<
                   MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInnerOptionsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner
                 >(),
           )
           ..addBuilderFactory(
@@ -4397,6 +4490,16 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminChangeOptionOutput),
+            ]),
+            () => ListBuilder<AdminChangeOptionOutput>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(CaptainCarriedCurrenciesDtoOutputChoicesInner),
             ]),
             () => ListBuilder<CaptainCarriedCurrenciesDtoOutputChoicesInner>(),
@@ -4407,9 +4510,60 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(
+                MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerOptionsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerOptionsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantMenuDtoOutputOptionGroupsInnerOptionsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantMenuDtoOutputOptionGroupsInnerOptionsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(MerchantPickupCurrenciesDtoOutputChoicesInner),
             ]),
             () => ListBuilder<MerchantPickupCurrenciesDtoOutputChoicesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(MerchantRequestOption),
+            ]),
+            () => ListBuilder<MerchantRequestOption>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

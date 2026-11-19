@@ -4,6 +4,8 @@ import {
   ConflictException,
   ForbiddenException,
   Get,
+  HttpCode,
+  HttpException,
   HttpStatus,
   NotFoundException,
   Param,
@@ -16,11 +18,17 @@ import type { FastifyRequest } from 'fastify';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
 import { AppSignedIn, CurrentAppSession } from '../../http/access.js';
+import { FilesRefusedError, FilesService, imageTypes, MAX_IMAGE_BYTES } from '../files/index.js';
 import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { MerchantController } from '../../http/route-groups.js';
 import type { AppSession, MerchantAccount } from '../identity/index.js';
 import {
-  type Menu,
+  ChangeRequestsService,
+  changeFields,
+  type OwnersMenu,
+  type PendingChange,
+} from './change-requests.service.js';
+import {
   type MerchantChange,
   MerchantsRefusedError,
   MerchantsService,
@@ -70,6 +78,43 @@ const dailyWindow = z
     "A category's daily window, minutes after midnight on the city's clock (breakfast until 12:00 is 0 to 720); an end not after the start crosses midnight; null all day (RA §9.1).",
   );
 
+// Its own component, so the generator never merges it with the menu's
+// money and renames the app's models.
+const pendingMoney = z
+  .object({
+    amount: z.string().regex(/^\d+$/).describe('Integer minor units (AP §8.6).'),
+    currency: z.string().length(3),
+  })
+  .meta({ id: 'MerchantPendingMoney' });
+
+// RA §9.5 (slice 2.32b): a request «بانتظار المراجعة» beside its row, with
+// its pending value: each field fills only its own part.
+const pendingChange = z.object({
+  requestId: z.uuid(),
+  field: z
+    .enum(changeFields)
+    .describe(
+      '`created`: a new row, unseen by customers until approved; otherwise the field asked.',
+    ),
+  createdAt: z.iso.datetime(),
+  name: z.string().nullable(),
+  description: z.string().nullable(),
+  photoKey: z.string().nullable().describe('A photo waiting for review, in public-media.'),
+  price: pendingMoney.nullable().describe("A new item's price, a new option's delta."),
+  categoryId: z.uuid().nullable(),
+  groupId: z.uuid().nullable(),
+  minChoices: z.int().nullable(),
+  maxChoices: z.int().nullable(),
+  itemIds: z.array(z.uuid()).nullable(),
+  options: z
+    .array(z.object({ id: z.uuid(), name: z.string(), priceDelta: pendingMoney }))
+    .nullable(),
+});
+
+const pending = z
+  .array(pendingChange)
+  .describe('The pending requests on this row (RA §9.5): the badge «بانتظار المراجعة».');
+
 const menuOption = z.object({
   id: z.uuid(),
   name: z.string(),
@@ -94,6 +139,10 @@ class MerchantMenuDto extends createZodDto(
             code: z.string(),
             name: z.string(),
             description: z.string().nullable(),
+            photoKey: z
+              .string()
+              .nullable()
+              .describe('Its published photo in public-media (architecture §5.8).'),
             price: money,
             available: z
               .boolean()
@@ -111,10 +160,33 @@ class MerchantMenuDto extends createZodDto(
                 options: z.array(menuOption),
               }),
             ),
+            pending,
           }),
         ),
+        pending,
       }),
     ),
+    optionGroups: z
+      .array(
+        z.object({
+          id: z.uuid(),
+          name: z.string(),
+          minChoices: z.int(),
+          maxChoices: z.int(),
+          itemIds: z.array(z.uuid()),
+          options: z.array(
+            z.object({
+              id: z.uuid(),
+              name: z.string(),
+              priceDelta: money,
+              switchedOff,
+              pending,
+            }),
+          ),
+          pending,
+        }),
+      )
+      .describe('Every option group of the restaurant, new ones waiting for review included.'),
   }),
 ) {}
 
@@ -204,6 +276,67 @@ class MerchantMenuBulkPriceResultDto extends createZodDto(
   z.object({ changed: z.int(), unchanged: z.int() }),
 ) {}
 
+class MerchantMenuRequestParamsDto extends createZodDto(z.object({ requestId: z.uuid() })) {}
+class MerchantMenuGroupParamsDto extends createZodDto(z.object({ groupId: z.uuid() })) {}
+
+class MerchantCategoryRequestDto extends createZodDto(z.object({ name: z.string() })) {}
+
+class MerchantNewItemRequestDto extends createZodDto(
+  z.object({
+    categoryId: z.uuid(),
+    name: z.string(),
+    description: z.string().nullable(),
+    price: priceInput.describe('Above 0 (RA §9.4).'),
+    uploadId: z
+      .uuid()
+      .nullable()
+      .describe('A new photo from POST /v1/merchant/uploads/item-photo; null keeps the one asked.'),
+  }),
+) {}
+
+class MerchantItemTextRequestDto extends createZodDto(
+  z.object({ name: z.string(), description: z.string().nullable() }),
+) {}
+
+class MerchantItemPhotoRequestDto extends createZodDto(z.object({ uploadId: z.uuid() })) {}
+
+class MerchantOptionGroupRequestDto extends createZodDto(
+  z.object({
+    name: z.string(),
+    minChoices: z.int().min(0).max(50),
+    maxChoices: z.int().min(1).max(50),
+    itemIds: z.array(z.uuid()).describe('The items the group is linked to, as a set.'),
+    options: z
+      .array(
+        z
+          .object({
+            id: z.uuid().describe('A new option takes a new id.'),
+            name: z.string(),
+            priceDelta: priceInput.describe(
+              "0 or more; a published option's delta changes through «تعديل السعر» only.",
+            ),
+          })
+          .meta({ id: 'MerchantRequestOption' }),
+      )
+      .describe('The options asked; a published option left out stays as it is.'),
+  }),
+) {}
+
+class MerchantNewUploadDto extends createZodDto(
+  z.object({
+    contentType: z.enum(imageTypes),
+    sizeBytes: z.int().min(1).max(MAX_IMAGE_BYTES),
+  }),
+) {}
+
+class MerchantUploadDto extends createZodDto(
+  z.object({
+    uploadId: z.uuid().describe('Sent with the request once the file is uploaded.'),
+    url: z.string().describe('A PUT of the exact bytes, with the same Content-Type.'),
+    expiresAt: z.iso.datetime(),
+  }),
+) {}
+
 class MerchantAvailabilitySavedDto extends createZodDto(z.object({ switchedOff })) {}
 
 function moneyBody(value: Money) {
@@ -214,16 +347,31 @@ function switchedOffBody(value: SwitchedOff) {
   return value === null ? null : { until: value.until?.toISOString() ?? null };
 }
 
-function menuBody(menu: Menu) {
+function pendingBody(list: PendingChange[]) {
+  return list.map((change) => ({
+    ...change,
+    createdAt: change.createdAt.toISOString(),
+    price: change.price === null ? null : moneyBody(change.price),
+    options:
+      change.options?.map((option) => ({
+        ...option,
+        priceDelta: moneyBody(option.priceDelta),
+      })) ?? null,
+  }));
+}
+
+function menuBody(menu: OwnersMenu) {
   return {
     categories: menu.categories.map((category) => ({
       ...category,
       window: category.window,
       switchedOff: switchedOffBody(category.switchedOff),
+      pending: pendingBody(category.pending),
       items: category.items.map((item) => ({
         ...item,
         price: moneyBody(item.price),
         switchedOff: switchedOffBody(item.switchedOff),
+        pending: pendingBody(item.pending),
         optionGroups: item.optionGroups.map((group) => ({
           ...group,
           options: group.options.map((option) => ({
@@ -232,6 +380,16 @@ function menuBody(menu: Menu) {
             switchedOff: switchedOffBody(option.switchedOff),
           })),
         })),
+      })),
+    })),
+    optionGroups: menu.optionGroups.map((group) => ({
+      ...group,
+      pending: pendingBody(group.pending),
+      options: group.options.map((option) => ({
+        ...option,
+        priceDelta: moneyBody(option.priceDelta),
+        switchedOff: switchedOffBody(option.switchedOff),
+        pending: pendingBody(option.pending),
       })),
     })),
   };
@@ -245,6 +403,8 @@ export class MerchantMenuController {
   constructor(
     private readonly merchants: MerchantsService,
     private readonly menus: RestaurantMenuService,
+    private readonly requests: ChangeRequestsService,
+    private readonly files: FilesService,
   ) {}
 
   @Get('restaurant')
@@ -271,7 +431,7 @@ export class MerchantMenuController {
   @ZodResponse({ status: 200, type: MerchantMenuDto })
   async menu(@CurrentAppSession() session: AppSession) {
     const { restaurantId } = await this.notTerminated(session);
-    return menuBody(await this.merchants.menu(restaurantId));
+    return this.answer(restaurantId);
   }
 
   // RA §9.3: owners and cashiers switch a category, an item or an option.
@@ -337,7 +497,7 @@ export class MerchantMenuController {
         menuChangeOf(session, request),
       ),
     );
-    return menuBody(await this.merchants.menu(owner.restaurantId));
+    return this.answer(owner.restaurantId);
   }
 
   @Put('menu/options/:optionId/price')
@@ -358,7 +518,7 @@ export class MerchantMenuController {
         menuChangeOf(session, request),
       ),
     );
-    return menuBody(await this.merchants.menu(owner.restaurantId));
+    return this.answer(owner.restaurantId);
   }
 
   @Put('menu/items/:itemId/hidden')
@@ -379,7 +539,7 @@ export class MerchantMenuController {
         menuChangeOf(session, request),
       ),
     );
-    return menuBody(await this.merchants.menu(owner.restaurantId));
+    return this.answer(owner.restaurantId);
   }
 
   @Put('menu/categories/:categoryId/hidden')
@@ -400,7 +560,7 @@ export class MerchantMenuController {
         menuChangeOf(session, request),
       ),
     );
-    return menuBody(await this.merchants.menu(owner.restaurantId));
+    return this.answer(owner.restaurantId);
   }
 
   @Put('menu/categories/:categoryId/window')
@@ -421,7 +581,7 @@ export class MerchantMenuController {
         menuChangeOf(session, request),
       ),
     );
-    return menuBody(await this.merchants.menu(owner.restaurantId));
+    return this.answer(owner.restaurantId);
   }
 
   @Put('menu/category-order')
@@ -440,7 +600,7 @@ export class MerchantMenuController {
         menuChangeOf(session, request),
       ),
     );
-    return menuBody(await this.merchants.menu(owner.restaurantId));
+    return this.answer(owner.restaurantId);
   }
 
   @Put('menu/categories/:categoryId/item-order')
@@ -461,7 +621,7 @@ export class MerchantMenuController {
         menuChangeOf(session, request),
       ),
     );
-    return menuBody(await this.merchants.menu(owner.restaurantId));
+    return this.answer(owner.restaurantId);
   }
 
   // The bulk change's before and after (AP §9.6.6); a read, so no key.
@@ -505,6 +665,188 @@ export class MerchantMenuController {
         idempotencyKey: key,
       }),
     );
+  }
+
+  // RA §9.2 «After admin review», §9.5, §18 (slice 2.32b): the owners' change
+  // requests, each answering the menu with its pending values. The app names
+  // a new row's id, so each sets a value and takes no key; the same value
+  // again writes nothing, the published one withdraws its request. Refusals
+  // as above, and 404 upload_not_found, unknown_change_request; 409
+  // already_published, not_published, request_not_pending, upload_used,
+  // upload_expired, upload_missing; 400 upload_invalid, upload_wrong_purpose.
+  @Put('menu/requests/categories/:categoryId')
+  @AppSignedIn()
+  @ZodResponse({ status: 200, type: MerchantMenuDto })
+  async requestCategory(
+    @CurrentAppSession() session: AppSession,
+    @Param() params: MerchantMenuCategoryParamsDto,
+    @Body() body: MerchantCategoryRequestDto,
+    @Req() request: FastifyRequest,
+  ) {
+    const owner = ownerOf(session);
+    await refused(() =>
+      this.requests.requestCategory(
+        owner.restaurantId,
+        params.categoryId,
+        body.name,
+        menuChangeOf(session, request),
+      ),
+    );
+    return this.answer(owner.restaurantId);
+  }
+
+  @Put('menu/requests/items/:itemId')
+  @AppSignedIn()
+  @ZodResponse({ status: 200, type: MerchantMenuDto })
+  async requestNewItem(
+    @CurrentAppSession() session: AppSession,
+    @Param() params: MerchantMenuItemParamsDto,
+    @Body() body: MerchantNewItemRequestDto,
+    @Req() request: FastifyRequest,
+  ) {
+    const owner = ownerOf(session);
+    await refused(() =>
+      this.requests.requestNewItem(
+        owner.restaurantId,
+        params.itemId,
+        {
+          categoryId: body.categoryId,
+          name: body.name,
+          description: body.description,
+          price: { amount: BigInt(body.price.amount), currency: body.price.currency },
+          uploadId: body.uploadId,
+        },
+        menuChangeOf(session, request),
+      ),
+    );
+    return this.answer(owner.restaurantId);
+  }
+
+  @Put('menu/requests/items/:itemId/text')
+  @AppSignedIn()
+  @ZodResponse({ status: 200, type: MerchantMenuDto })
+  async requestItemText(
+    @CurrentAppSession() session: AppSession,
+    @Param() params: MerchantMenuItemParamsDto,
+    @Body() body: MerchantItemTextRequestDto,
+    @Req() request: FastifyRequest,
+  ) {
+    const owner = ownerOf(session);
+    await refused(() =>
+      this.requests.requestItemText(
+        owner.restaurantId,
+        params.itemId,
+        body,
+        menuChangeOf(session, request),
+      ),
+    );
+    return this.answer(owner.restaurantId);
+  }
+
+  @Put('menu/requests/items/:itemId/photo')
+  @AppSignedIn()
+  @ZodResponse({ status: 200, type: MerchantMenuDto })
+  async requestItemPhoto(
+    @CurrentAppSession() session: AppSession,
+    @Param() params: MerchantMenuItemParamsDto,
+    @Body() body: MerchantItemPhotoRequestDto,
+    @Req() request: FastifyRequest,
+  ) {
+    const owner = ownerOf(session);
+    await refused(() =>
+      this.requests.requestItemPhoto(
+        owner.restaurantId,
+        params.itemId,
+        body.uploadId,
+        menuChangeOf(session, request),
+      ),
+    );
+    return this.answer(owner.restaurantId);
+  }
+
+  @Put('menu/requests/option-groups/:groupId')
+  @AppSignedIn()
+  @ZodResponse({ status: 200, type: MerchantMenuDto })
+  async requestOptionGroup(
+    @CurrentAppSession() session: AppSession,
+    @Param() params: MerchantMenuGroupParamsDto,
+    @Body() body: MerchantOptionGroupRequestDto,
+    @Req() request: FastifyRequest,
+  ) {
+    const owner = ownerOf(session);
+    await refused(() =>
+      this.requests.requestOptionGroup(
+        owner.restaurantId,
+        params.groupId,
+        {
+          ...body,
+          options: body.options.map((option) => ({
+            ...option,
+            priceDelta: {
+              amount: BigInt(option.priceDelta.amount),
+              currency: option.priceDelta.currency,
+            },
+          })),
+        },
+        menuChangeOf(session, request),
+      ),
+    );
+    return this.answer(owner.restaurantId);
+  }
+
+  // RA §9.5: withdraws a pending request. Its repeat is refused (409
+  // request_not_pending), so it takes no key.
+  @Post('menu/requests/:requestId/withdraw')
+  @HttpCode(200)
+  @AppSignedIn()
+  @ZodResponse({ status: 200, type: MerchantMenuDto })
+  async withdraw(
+    @CurrentAppSession() session: AppSession,
+    @Param() params: MerchantMenuRequestParamsDto,
+    @Req() request: FastifyRequest,
+  ) {
+    const owner = ownerOf(session);
+    await refused(() =>
+      this.requests.withdraw(owner.restaurantId, params.requestId, menuChangeOf(session, request)),
+    );
+    return this.answer(owner.restaurantId);
+  }
+
+  // RA §9.2 (slice 2.32b): an owner's item photo, a pre-signed PUT into
+  // public-media's incoming/ on the apps' host. No key: the answer is a URL
+  // to upload with, and only the photo a request links is used. 429
+  // too_many_uploads past REPORT_UPLOADS_PER_HOUR.
+  @Post('uploads/item-photo')
+  @HttpCode(201)
+  @AppSignedIn()
+  @ZodResponse({ status: 201, type: MerchantUploadDto })
+  async itemPhotoUpload(
+    @CurrentAppSession() session: AppSession,
+    @Body() body: MerchantNewUploadDto,
+  ) {
+    const owner = ownerOf(session);
+    await this.notTerminated(session);
+    try {
+      const upload = await this.files.createUpload(
+        { ...body, purpose: 'item_photo' },
+        owner.id,
+        new Date(),
+        'app',
+      );
+      return { ...upload, expiresAt: upload.expiresAt.toISOString() };
+    } catch (error) {
+      if (error instanceof FilesRefusedError && error.refusal === 'too_many_uploads') {
+        throw new HttpException(
+          { statusCode: HttpStatus.TOO_MANY_REQUESTS, error: error.refusal },
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
+      }
+      throw error;
+    }
+  }
+
+  private async answer(restaurantId: string) {
+    return menuBody(await this.requests.ownersMenu(restaurantId));
   }
 
   private async notTerminated(session: AppSession): Promise<MerchantAccount> {
@@ -553,9 +895,23 @@ async function refused<T>(run: () => Promise<T>): Promise<T> {
   try {
     return await run();
   } catch (error) {
+    if (error instanceof FilesRefusedError) {
+      const body = { error: error.refusal };
+      if (error.refusal === 'upload_not_found') {
+        throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, ...body });
+      }
+      if (error.refusal === 'upload_wrong_purpose' || error.refusal === 'upload_invalid') {
+        throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, ...body });
+      }
+      throw new ConflictException({ statusCode: HttpStatus.CONFLICT, ...body });
+    }
     if (!(error instanceof MerchantsRefusedError)) throw error;
     const body = { error: error.refusal };
-    if (error.refusal === 'unknown_restaurant' || error.refusal === 'unknown_menu_row') {
+    if (
+      error.refusal === 'unknown_restaurant' ||
+      error.refusal === 'unknown_menu_row' ||
+      error.refusal === 'unknown_change_request'
+    ) {
       throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, ...body });
     }
     if (error.refusal === 'invalid_menu') {

@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_items_inner_pending_inner.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_switched_off.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_items_inner_option_groups_inner.dart';
@@ -19,11 +20,13 @@ part 'merchant_menu_dto_output_categories_inner_items_inner.g.dart';
 /// * [code]
 /// * [name]
 /// * [description]
+/// * [photoKey] - Its published photo in public-media (architecture §5.8).
 /// * [price]
 /// * [available] - Whether customers can order it: its switch, its category and its required groups (RA §9.3).
 /// * [switchedOff]
 /// * [hidden]
 /// * [optionGroups]
+/// * [pending] - The pending requests on this row (RA §9.5): the badge «بانتظار المراجعة».
 @BuiltValue()
 abstract class MerchantMenuDtoOutputCategoriesInnerItemsInner
     implements
@@ -43,6 +46,10 @@ abstract class MerchantMenuDtoOutputCategoriesInnerItemsInner
   @BuiltValueField(wireName: r'description')
   String? get description;
 
+  /// Its published photo in public-media (architecture §5.8).
+  @BuiltValueField(wireName: r'photoKey')
+  String? get photoKey;
+
   @BuiltValueField(wireName: r'price')
   MerchantMenuDtoOutputCategoriesInnerItemsInnerPrice get price;
 
@@ -59,6 +66,11 @@ abstract class MerchantMenuDtoOutputCategoriesInnerItemsInner
   @BuiltValueField(wireName: r'optionGroups')
   BuiltList<MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInner>
   get optionGroups;
+
+  /// The pending requests on this row (RA §9.5): the badge «بانتظار المراجعة».
+  @BuiltValueField(wireName: r'pending')
+  BuiltList<MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner>
+  get pending;
 
   MerchantMenuDtoOutputCategoriesInnerItemsInner._();
 
@@ -116,6 +128,13 @@ class _$MerchantMenuDtoOutputCategoriesInnerItemsInnerSerializer
             object.description,
             specifiedType: const FullType.nullable(String),
           );
+    yield r'photoKey';
+    yield object.photoKey == null
+        ? null
+        : serializers.serialize(
+            object.photoKey,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'price';
     yield serializers.serialize(
       object.price,
@@ -149,6 +168,13 @@ class _$MerchantMenuDtoOutputCategoriesInnerItemsInnerSerializer
         FullType(
           MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInner,
         ),
+      ]),
+    );
+    yield r'pending';
+    yield serializers.serialize(
+      object.pending,
+      specifiedType: const FullType(BuiltList, [
+        FullType(MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner),
       ]),
     );
   }
@@ -215,6 +241,16 @@ class _$MerchantMenuDtoOutputCategoriesInnerItemsInnerSerializer
           if (valueDes == null) continue;
           result.description = valueDes;
           break;
+        case r'photoKey':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(String),
+                  )
+                  as String?;
+          if (valueDes == null) continue;
+          result.photoKey = valueDes;
+          break;
         case r'price':
           final valueDes =
               serializers.deserialize(
@@ -270,6 +306,21 @@ class _$MerchantMenuDtoOutputCategoriesInnerItemsInnerSerializer
                     MerchantMenuDtoOutputCategoriesInnerItemsInnerOptionGroupsInner
                   >;
           result.optionGroups.replace(valueDes);
+          break;
+        case r'pending':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(
+                        MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner,
+                      ),
+                    ]),
+                  )
+                  as BuiltList<
+                    MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner
+                  >;
+          result.pending.replace(valueDes);
           break;
         default:
           unhandled.add(key);

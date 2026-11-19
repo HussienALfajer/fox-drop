@@ -22,6 +22,9 @@ class _$MerchantMenuDtoOutputCategoriesInner
   final MerchantMenuDtoOutputCategoriesInnerWindow? window;
   @override
   final BuiltList<MerchantMenuDtoOutputCategoriesInnerItemsInner> items;
+  @override
+  final BuiltList<MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner>
+  pending;
 
   factory _$MerchantMenuDtoOutputCategoriesInner([
     void Function(MerchantMenuDtoOutputCategoriesInnerBuilder)? updates,
@@ -36,6 +39,7 @@ class _$MerchantMenuDtoOutputCategoriesInner
     this.switchedOff,
     this.window,
     required this.items,
+    required this.pending,
   }) : super._();
   @override
   MerchantMenuDtoOutputCategoriesInner rebuild(
@@ -56,7 +60,8 @@ class _$MerchantMenuDtoOutputCategoriesInner
         available == other.available &&
         switchedOff == other.switchedOff &&
         window == other.window &&
-        items == other.items;
+        items == other.items &&
+        pending == other.pending;
   }
 
   @override
@@ -69,6 +74,7 @@ class _$MerchantMenuDtoOutputCategoriesInner
     _$hash = $jc(_$hash, switchedOff.hashCode);
     _$hash = $jc(_$hash, window.hashCode);
     _$hash = $jc(_$hash, items.hashCode);
+    _$hash = $jc(_$hash, pending.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -82,7 +88,8 @@ class _$MerchantMenuDtoOutputCategoriesInner
           ..add('available', available)
           ..add('switchedOff', switchedOff)
           ..add('window', window)
-          ..add('items', items))
+          ..add('items', items)
+          ..add('pending', pending))
         .toString();
   }
 }
@@ -133,6 +140,16 @@ class MerchantMenuDtoOutputCategoriesInnerBuilder
     ListBuilder<MerchantMenuDtoOutputCategoriesInnerItemsInner>? items,
   ) => _$this._items = items;
 
+  ListBuilder<MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner>?
+  _pending;
+  ListBuilder<MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner>
+  get pending => _$this._pending ??=
+      ListBuilder<MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner>();
+  set pending(
+    ListBuilder<MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner>?
+    pending,
+  ) => _$this._pending = pending;
+
   MerchantMenuDtoOutputCategoriesInnerBuilder() {
     MerchantMenuDtoOutputCategoriesInner._defaults(this);
   }
@@ -147,6 +164,7 @@ class MerchantMenuDtoOutputCategoriesInnerBuilder
       _switchedOff = $v.switchedOff?.toBuilder();
       _window = $v.window?.toBuilder();
       _items = $v.items.toBuilder();
+      _pending = $v.pending.toBuilder();
       _$v = null;
     }
     return this;
@@ -196,6 +214,7 @@ class MerchantMenuDtoOutputCategoriesInnerBuilder
             switchedOff: _switchedOff?.build(),
             window: _window?.build(),
             items: items.build(),
+            pending: pending.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -206,6 +225,8 @@ class MerchantMenuDtoOutputCategoriesInnerBuilder
         _window?.build();
         _$failedField = 'items';
         items.build();
+        _$failedField = 'pending';
+        pending.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'MerchantMenuDtoOutputCategoriesInner',

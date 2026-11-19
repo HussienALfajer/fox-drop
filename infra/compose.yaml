@@ -40,8 +40,8 @@ x-server-environment: &server-environment
   VALKEY_URL: redis://:${VALKEY_PASSWORD:?}@valkey:6379
   IDENTITY_ENCRYPTION_KEY: ${IDENTITY_ENCRYPTION_KEY:?}
   ADMIN_PANEL_URL: https://${ADMIN_HOST:?}
-  # The apps' uploads (CU §12.2): nginx forwards /private-docs/incoming/ on
-  # the API's host to the storage.
+  # The apps' uploads (CU §12.2, RA §9.2): nginx forwards /private-docs/incoming/
+  # and /public-media/incoming/ on the API's host to the storage.
   APP_UPLOAD_URL: https://${API_HOST:?}
   # Empty until the owner sets it: the server then sends nothing (§16).
   SENTRY_DSN: ${SENTRY_DSN:-}

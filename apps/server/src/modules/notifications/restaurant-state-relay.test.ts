@@ -83,6 +83,21 @@ describe('restaurantStatePush', () => {
     });
   });
 
+  it("tells the owners only of a review's decision (RA §16 #22)", () => {
+    expect(restaurantStatePush('menu_change_approved', { name: 'كنافة' }, 'UTC')).toEqual({
+      templateKey: 'merchant.menu_change_approved',
+      values: { الصنف: 'كنافة' },
+      owners: true,
+    });
+    expect(
+      restaurantStatePush('menu_change_rejected', { name: 'كباب', reason: 'الصورة مطلوبة' }, 'UTC'),
+    ).toEqual({
+      templateKey: 'merchant.menu_change_rejected',
+      values: { الصنف: 'كباب', السبب: 'الصورة مطلوبة' },
+      owners: true,
+    });
+  });
+
   it('stays silent for a pause that ended with the opening period, and for commands', () => {
     expect(restaurantStatePush('pause_ended', { push: false }, 'UTC')).toBe(null);
     for (const kind of ['paused', 'resumed', 'busy_mode', 'holiday_close', 'hours'] as const) {

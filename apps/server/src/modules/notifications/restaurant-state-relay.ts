@@ -98,6 +98,20 @@ export function restaurantStatePush(
         values: { العدد: String(values.count) },
         owners: true,
       };
+    // #22 (slice 2.32b), owners only, silent: «قُبل تعديلك على {الصنف}» or
+    // «رُفض تعديلك على {الصنف}: {السبب}».
+    case 'menu_change_approved':
+      return {
+        templateKey: 'merchant.menu_change_approved',
+        values: { الصنف: String(values.name) },
+        owners: true,
+      };
+    case 'menu_change_rejected':
+      return {
+        templateKey: 'merchant.menu_change_rejected',
+        values: { الصنف: String(values.name), السبب: String(values.reason) },
+        owners: true,
+      };
     default:
       return null;
   }
@@ -109,6 +123,8 @@ const OWNERS_ONLY: ReadonlySet<StateKind> = new Set([
   'commission_change',
   'price_change',
   'price_change_bulk',
+  'menu_change_approved',
+  'menu_change_rejected',
 ]);
 
 // Basis points as a percentage with Western digits: 1500 is «15», 1250
@@ -216,9 +232,9 @@ export class RestaurantStateRelay {
           restaurantId: change.restaurantId,
           kind: change.kind,
           // What its notice says, as its push: the count, the minutes. The
-          // commission and an admin's price change are the owners' alone (RA
-          // §16 #21, #33, R10), so their values stay off the channel every
-          // device of the restaurant hears.
+          // commission, an admin's price change and a review's decision are
+          // the owners' alone (RA §16 #21, #22, #33, R10), so their values
+          // stay off the channel every device of the restaurant hears.
           values: OWNERS_ONLY.has(change.kind) ? {} : change.values,
           at: change.at.toISOString(),
         },

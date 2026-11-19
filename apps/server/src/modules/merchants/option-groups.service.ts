@@ -350,36 +350,48 @@ export class OptionGroupsService {
       const row = await this.editor.lockEditable(tx, restaurantId);
       await this.ownGroup(tx, restaurantId, groupId);
       await this.ownItems(tx, restaurantId, itemIds);
-      const linked = await tx
-        .select({ itemId: itemOptionGroups.itemId, removedAt: itemOptionGroups.removedAt })
-        .from(itemOptionGroups)
-        .where(eq(itemOptionGroups.groupId, groupId));
-      const live = linked.filter((link) => link.removedAt === null).map((link) => link.itemId);
-      const added = itemIds.filter((id) => !live.includes(id));
-      const removed = live.filter((id) => !itemIds.includes(id));
+      const { added, removed } = await this.linkItemsIn(tx, groupId, itemIds);
       if (added.length === 0 && removed.length === 0) return;
-      for (const itemId of added) {
-        await this.link(
-          tx,
-          itemId,
-          groupId,
-          linked.some((link) => link.itemId === itemId),
-        );
-      }
-      if (removed.length > 0) {
-        await tx
-          .update(itemOptionGroups)
-          .set({ removedAt: sql`now()` })
-          .where(
-            and(eq(itemOptionGroups.groupId, groupId), inArray(itemOptionGroups.itemId, removed)),
-          );
-      }
       await this.editor.menuChanged(tx, restaurantId, row.cityId);
       await this.record(tx, change, row.cityId, 'menu.option_group.items', groupId, null, {
         added,
         removed,
       });
     });
+  }
+
+  // Module-internal: the group's items as a set, in the caller's transaction
+  // (an approved request's, slice 2.32b): a new link at the end of the item's
+  // groups, an old one again, the others unlinked.
+  async linkItemsIn(
+    tx: Tx,
+    groupId: string,
+    itemIds: string[],
+  ): Promise<{ added: string[]; removed: string[] }> {
+    const linked = await tx
+      .select({ itemId: itemOptionGroups.itemId, removedAt: itemOptionGroups.removedAt })
+      .from(itemOptionGroups)
+      .where(eq(itemOptionGroups.groupId, groupId));
+    const live = linked.filter((link) => link.removedAt === null).map((link) => link.itemId);
+    const added = itemIds.filter((id) => !live.includes(id));
+    const removed = live.filter((id) => !itemIds.includes(id));
+    for (const itemId of added) {
+      await this.link(
+        tx,
+        itemId,
+        groupId,
+        linked.some((link) => link.itemId === itemId),
+      );
+    }
+    if (removed.length > 0) {
+      await tx
+        .update(itemOptionGroups)
+        .set({ removedAt: sql`now()` })
+        .where(
+          and(eq(itemOptionGroups.groupId, groupId), inArray(itemOptionGroups.itemId, removed)),
+        );
+    }
+    return { added, removed };
   }
 
   // An item's groups, in order: the ones named are linked at these

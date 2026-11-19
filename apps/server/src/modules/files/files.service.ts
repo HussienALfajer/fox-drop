@@ -112,7 +112,9 @@ const SIZE_HEAD_BYTES = 128 * 1024;
 // A report's photo is the customer's (owner decision 2026-11-17): it goes to
 // private-docs, uploaded from the app. A restaurant's contract and licence
 // scans (AP §9.6.3 step 5, slice 2.30a) go to private-docs from the panel.
-// The others go to public-media from the panel.
+// The others go to public-media from the panel, and a restaurant owner's
+// item photo from the restaurant app too (slice 2.32b, `createUpload`'s
+// `from`).
 const APP_PURPOSES: readonly UploadPurpose[] = ['report_photo'];
 const PRIVATE_PURPOSES: readonly UploadPurpose[] = [
   'report_photo',
@@ -221,11 +223,17 @@ export class FilesService {
   // size are signed, so the storage refuses any other body. No
   // Idempotency-Key: the answer is a URL to upload with, never stored, and
   // asking again makes another upload, of which only the linked one is used.
-  // A report's photo (an app's) is signed for the apps' origin into
-  // private-docs; every other upload for the panel's into public-media.
-  async createUpload(upload: NewUpload, accountId: string, now = new Date()) {
+  // An app's upload (a report's photo, a restaurant owner's item photo,
+  // slice 2.32b) is signed for the apps' origin and limited per account and
+  // hour; every other upload for the panel's. The bucket follows the purpose.
+  async createUpload(
+    upload: NewUpload,
+    accountId: string,
+    now = new Date(),
+    from: 'panel' | 'app' = APP_PURPOSES.includes(upload.purpose) ? 'app' : 'panel',
+  ) {
     const key = `${INCOMING}/${randomUUID()}.${extensions[upload.contentType]}`;
-    const fromApp = APP_PURPOSES.includes(upload.purpose);
+    const fromApp = from === 'app';
     if (fromApp) {
       const [{ asked }] = (await this.database.db
         .select({ asked: count() })
