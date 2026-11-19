@@ -557,6 +557,7 @@ export 'package:core_api/src/model/admin_settlement_dto_output_statement.dart';
 export 'package:core_api/src/model/admin_settlement_dto_output_statement_payout.dart';
 export 'package:core_api/src/model/admin_settlement_preview_dto_output.dart';
 export 'package:core_api/src/model/admin_settlement_preview_dto_output_custody_inner.dart';
+export 'package:core_api/src/model/admin_settlement_preview_dto_output_earnings.dart';
 export 'package:core_api/src/model/admin_settlement_preview_dto_output_payout.dart';
 export 'package:core_api/src/model/admin_settlement_preview_dto_output_payout_rates_inner.dart';
 export 'package:core_api/src/model/admin_settlement_preview_dto_output_payout_unit.dart';

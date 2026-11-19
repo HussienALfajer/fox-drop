@@ -259,6 +259,13 @@ function SettleForm({
       )}
       <h3>{t('settlement.earnings')}</h3>
       <p>{formatMoney(preview.earnings)}</p>
+      {preview.instalment === '0' ? null : (
+        <p>
+          {t('settlement.instalment', {
+            amount: formatMoney({ amount: preview.instalment, currency: base }),
+          })}
+        </p>
+      )}
       {preview.payout ? (
         <>
           <label>

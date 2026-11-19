@@ -167,7 +167,8 @@ class AdminSettlementPreviewDto extends createZodDto(
         balanceInBase: signedMinor,
       }),
     ),
-    earnings: money.describe('+ the platform owes the captain.'),
+    earnings: money.describe('+ the platform owes the captain, before the instalment.'),
+    instalment: minor.describe('The deposit instalment posted first (AP §8.5.5 step 2).'),
     payout: z
       .object({
         currency,
@@ -818,6 +819,7 @@ function previewBody(preview: SettlementPreview) {
       balanceInBase: line.balanceInBase.toString(),
     })),
     earnings: { amount: preview.earnings.amount.toString(), currency: preview.earnings.currency },
+    instalment: preview.instalment.toString(),
     payout: preview.payout && {
       currency: preview.payout.currency,
       amount: preview.payout.amount.toString(),

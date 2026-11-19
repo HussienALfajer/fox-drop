@@ -4,7 +4,13 @@ import { and, desc, eq, gt, or, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { AuditService } from '../audit/index.js';
-import { CaptainsService, type CustodyCurrency, type DeskCaptain } from '../captains/index.js';
+import {
+  ApplicationPipelineService,
+  CaptainsService,
+  type CustodyCurrency,
+  type DeskCaptain,
+  depositInstalmentDue,
+} from '../captains/index.js';
 import { formatMoney, NotificationTexts } from '../content/index.js';
 import { FxService } from '../fx/index.js';
 import { GeoService, lastCutoff } from '../geo/index.js';
@@ -49,8 +55,11 @@ export interface SettlementPreview {
   policy: NegativeEarningsPolicy;
   // The currencies not at zero, from the captain's side.
   custody: { currency: string; balance: bigint; balanceInBase: bigint }[];
-  // + the platform owes the captain, in the base.
+  // + the platform owes the captain, in the base, before the instalment.
   earnings: { amount: bigint; currency: string };
+  // AP §8.5.5 step 2 (slice 2.35a): the deposit instalment posted first,
+  // taken off the earnings (0 for none).
+  instalment: bigint;
   payout: {
     currency: string;
     amount: bigint;
@@ -155,6 +164,7 @@ export class SettlementService {
     private readonly texts: NotificationTexts,
     private readonly pushes: PushQueue,
     private readonly orders: OrdersService,
+    private readonly pipeline: ApplicationPipelineService,
   ) {}
 
   async list(cityId: string, now: Date): Promise<SettlementList> {
@@ -182,22 +192,23 @@ export class SettlementService {
       this.earnings(this.database.db, found.cityId, captainId),
     ]);
     const custody = found.custody.currencies.filter((line) => line.balance !== 0n);
+    const instalment = await this.instalmentOf(this.database.db, captainId, earnings.amount);
+    const owed = earnings.amount - instalment;
     let payout: SettlementPreview['payout'] = null;
-    if (earnings.amount > 0n) {
+    if (owed > 0n) {
       const currency = payoutCurrency ?? earnings.currency;
       if (currency === earnings.currency) {
-        payout = { currency, amount: earnings.amount, rates: [], unit: null };
+        payout = { currency, amount: owed, rates: [], unit: null };
       } else {
         const quote = quoteOf(await this.desk.snapshotOf(found.cityId, this.database.db), {
           from: earnings.currency,
           to: currency,
-          amount: earnings.amount,
+          amount: owed,
         });
         payout = { currency, amount: quote.converted, rates: quote.rates, unit: quote.unit };
       }
     }
-    const collect =
-      earnings.amount < 0n && day.policy === 'collect_at_desk' ? -earnings.amount : null;
+    const collect = owed < 0n && day.policy === 'collect_at_desk' ? -owed : null;
     return {
       captainId,
       name: found.name,
@@ -209,6 +220,7 @@ export class SettlementService {
         balanceInBase,
       })),
       earnings: { amount: earnings.amount, currency: earnings.currency },
+      instalment,
       payout,
       collect,
       net: netOf(
@@ -293,14 +305,20 @@ export class SettlementService {
         .limit(1);
       const period = await this.period(tx, captain, anchor ?? null);
       const ledgerTo = await transactionTime(tx);
-      const earnings = { amount: period.balance, currency: period.currency };
       const held = custody.currencies.filter((line) => line.balance !== 0n);
-      if (held.length === 0 && earnings.amount === 0n) {
+      if (held.length === 0 && period.balance === 0n) {
         throw new CashDeskRefusedError('nothing_due', 'no custody and no earnings to settle');
       }
-      if (!sameCustody(held, command.custody) || earnings.amount !== command.earnings) {
+      if (!sameCustody(held, command.custody) || period.balance !== command.earnings) {
         throw new CashDeskRefusedError('balance_changed', 'the balances moved since the screen');
       }
+      // AP §8.5.5 step 2: the deposit instalment first, in this statement.
+      const instalment = await this.instalmentOf(tx, captain.id, period.balance);
+      if (instalment > 0n) {
+        period.journalIds.push(await this.postInstalment(tx, user, captain, instalment));
+        period.lines.instalments += instalment;
+      }
+      const earnings = { amount: period.balance - instalment, currency: period.currency };
       const payout = await this.checkPayout(tx, captain.cityId, earnings, command.payout);
       const collect =
         earnings.amount < 0n && day.policy === 'collect_at_desk' ? -earnings.amount : 0n;
@@ -608,6 +626,67 @@ export class SettlementService {
       carriedIn: balance - moved,
       journalIds: [...new Set(entries.map((entry) => entry.journalId))],
     };
+  }
+
+  // AP §8.5.5 step 2, §8.5 (owner decision 2026-11-19, slice 2.35a): the
+  // instalment of the captain's deposit (`captain.deposit` of its
+  // application), never more than is left of the deposit, and never more
+  // than the earnings owed, so it never takes them below zero (decided by
+  // us): what it cannot take waits for the next settlement.
+  private async instalmentOf(
+    executor: Tx | Database['db'],
+    captainId: string,
+    earnings: bigint,
+  ): Promise<bigint> {
+    const deposit = await this.pipeline.captainDeposit(captainId, executor);
+    if (deposit === null || deposit.amount === null) return 0n;
+    const due = depositInstalmentDue({
+      amount: deposit.amount.amount,
+      paid: deposit.paid,
+      instalment: deposit.instalment?.amount ?? null,
+    });
+    if (earnings <= 0n) return 0n;
+    return due < earnings ? due : earnings;
+  }
+
+  // earn.deposit_instalment: the earnings the platform owes go down (+ from
+  // its side) and the deposit it holds for the captain goes up (−).
+  private async postInstalment(
+    tx: Tx,
+    user: DeskUser,
+    captain: DeskCaptain,
+    amount: bigint,
+  ): Promise<string> {
+    const base = await this.fx.baseCurrency(captain.cityId, tx);
+    if (base === null) throw new Error(`city ${captain.cityId} has no base currency`);
+    const [earnings, deposit] = await Promise.all([
+      this.ledger.openAccount(
+        {
+          cityId: captain.cityId,
+          purpose: 'captain.earnings',
+          ownerId: captain.id,
+          currency: base,
+        },
+        tx,
+      ),
+      this.ledger.openAccount(
+        { cityId: captain.cityId, purpose: 'captain.deposit', ownerId: captain.id, currency: base },
+        tx,
+      ),
+    ]);
+    return this.ledger.post(
+      {
+        cityId: captain.cityId,
+        type: 'earn.deposit_instalment',
+        source: null,
+        actor: { type: 'admin', id: user.accountId },
+        entries: [
+          { accountId: earnings, currency: base, amount },
+          { accountId: deposit, currency: base, amount: -amount },
+        ],
+      },
+      tx,
+    );
   }
 
   // CA §14 #20: «كشف الأسبوع جاهز: قبضت {المبلغ}», silent.

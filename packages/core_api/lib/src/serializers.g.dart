@@ -960,6 +960,7 @@ Serializers _$serializers =
           ..add(AdminSettlementDtoOutputStatementPayout.serializer)
           ..add(AdminSettlementPreviewDtoOutput.serializer)
           ..add(AdminSettlementPreviewDtoOutputCustodyInner.serializer)
+          ..add(AdminSettlementPreviewDtoOutputEarnings.serializer)
           ..add(AdminSettlementPreviewDtoOutputPayout.serializer)
           ..add(AdminSettlementPreviewDtoOutputPayoutRatesInner.serializer)
           ..add(AdminSettlementPreviewDtoOutputPayoutUnit.serializer)

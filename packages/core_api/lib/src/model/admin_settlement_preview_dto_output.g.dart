@@ -197,7 +197,9 @@ class _$AdminSettlementPreviewDtoOutput
   @override
   final BuiltList<AdminSettlementPreviewDtoOutputCustodyInner> custody;
   @override
-  final AdminCaptainBalancesDtoOutputCaptainsInnerEarnings earnings;
+  final AdminSettlementPreviewDtoOutputEarnings earnings;
+  @override
+  final String instalment;
   @override
   final AdminSettlementPreviewDtoOutputPayout? payout;
   @override
@@ -218,6 +220,7 @@ class _$AdminSettlementPreviewDtoOutput
     required this.policy,
     required this.custody,
     required this.earnings,
+    required this.instalment,
     this.payout,
     this.collect,
     required this.net,
@@ -243,6 +246,7 @@ class _$AdminSettlementPreviewDtoOutput
         policy == other.policy &&
         custody == other.custody &&
         earnings == other.earnings &&
+        instalment == other.instalment &&
         payout == other.payout &&
         collect == other.collect &&
         net == other.net;
@@ -259,6 +263,7 @@ class _$AdminSettlementPreviewDtoOutput
     _$hash = $jc(_$hash, policy.hashCode);
     _$hash = $jc(_$hash, custody.hashCode);
     _$hash = $jc(_$hash, earnings.hashCode);
+    _$hash = $jc(_$hash, instalment.hashCode);
     _$hash = $jc(_$hash, payout.hashCode);
     _$hash = $jc(_$hash, collect.hashCode);
     _$hash = $jc(_$hash, net.hashCode);
@@ -277,6 +282,7 @@ class _$AdminSettlementPreviewDtoOutput
           ..add('policy', policy)
           ..add('custody', custody)
           ..add('earnings', earnings)
+          ..add('instalment', instalment)
           ..add('payout', payout)
           ..add('collect', collect)
           ..add('net', net))
@@ -328,13 +334,15 @@ class AdminSettlementPreviewDtoOutputBuilder
     ListBuilder<AdminSettlementPreviewDtoOutputCustodyInner>? custody,
   ) => _$this._custody = custody;
 
-  AdminCaptainBalancesDtoOutputCaptainsInnerEarningsBuilder? _earnings;
-  AdminCaptainBalancesDtoOutputCaptainsInnerEarningsBuilder get earnings =>
-      _$this._earnings ??=
-          AdminCaptainBalancesDtoOutputCaptainsInnerEarningsBuilder();
-  set earnings(
-    AdminCaptainBalancesDtoOutputCaptainsInnerEarningsBuilder? earnings,
-  ) => _$this._earnings = earnings;
+  AdminSettlementPreviewDtoOutputEarningsBuilder? _earnings;
+  AdminSettlementPreviewDtoOutputEarningsBuilder get earnings =>
+      _$this._earnings ??= AdminSettlementPreviewDtoOutputEarningsBuilder();
+  set earnings(AdminSettlementPreviewDtoOutputEarningsBuilder? earnings) =>
+      _$this._earnings = earnings;
+
+  String? _instalment;
+  String? get instalment => _$this._instalment;
+  set instalment(String? instalment) => _$this._instalment = instalment;
 
   AdminSettlementPreviewDtoOutputPayoutBuilder? _payout;
   AdminSettlementPreviewDtoOutputPayoutBuilder get payout =>
@@ -369,6 +377,7 @@ class AdminSettlementPreviewDtoOutputBuilder
       _policy = $v.policy;
       _custody = $v.custody.toBuilder();
       _earnings = $v.earnings.toBuilder();
+      _instalment = $v.instalment;
       _payout = $v.payout?.toBuilder();
       _collect = $v.collect;
       _net = $v.net.toBuilder();
@@ -428,6 +437,11 @@ class AdminSettlementPreviewDtoOutputBuilder
             ),
             custody: custody.build(),
             earnings: earnings.build(),
+            instalment: BuiltValueNullFieldError.checkNotNull(
+              instalment,
+              r'AdminSettlementPreviewDtoOutput',
+              'instalment',
+            ),
             payout: _payout?.build(),
             collect: collect,
             net: net.build(),
@@ -439,6 +453,7 @@ class AdminSettlementPreviewDtoOutputBuilder
         custody.build();
         _$failedField = 'earnings';
         earnings.build();
+
         _$failedField = 'payout';
         _payout?.build();
 

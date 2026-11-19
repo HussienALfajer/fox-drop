@@ -20,6 +20,7 @@ const preview: SettlementPreview = {
   policy: 'carry_forward',
   custody: [{ currency: 'TRY', balance: '30000', balanceInBase: '30000' }],
   earnings: { amount: '50000', currency: 'TRY' },
+  instalment: '0',
   payout: { currency: 'TRY', amount: '50000', rates: [], unit: null },
   collect: null,
   net: [{ currency: 'TRY', amount: '-20000' }],

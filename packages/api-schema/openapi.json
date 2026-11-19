@@ -66282,7 +66282,12 @@
               "currency"
             ],
             "additionalProperties": false,
-            "description": "+ the platform owes the captain."
+            "description": "+ the platform owes the captain, before the instalment."
+          },
+          "instalment": {
+            "type": "string",
+            "pattern": "^\\d{1,18}$",
+            "description": "The deposit instalment posted first (AP §8.5.5 step 2)."
           },
           "payout": {
             "anyOf": [
@@ -66409,6 +66414,7 @@
           "policy",
           "custody",
           "earnings",
+          "instalment",
           "payout",
           "collect",
           "net"

@@ -72,7 +72,11 @@ export type {
   OnlineBlock,
 } from './availability.js';
 export type { LivePosition } from './live-positions.js';
-export { type ApplicationDocumentKind, type ApplicationStage } from './applications.js';
+export {
+  type ApplicationDocumentKind,
+  type ApplicationStage,
+  depositInstalmentDue,
+} from './applications.js';
 export {
   type ApplicationChange,
   type ApplicationNotice,

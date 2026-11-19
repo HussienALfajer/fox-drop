@@ -16,8 +16,8 @@ Slice 2.35a, activation, the contract and the documents (`docs/roadmap.md`, Phas
   - [x] 2. Server: the kit list and the setting `captain.kit_deposit_amount`.
   - [x] 3. Server: the records at «بانتظار العدة»: «تسليم العدة», the cash limit, «تسجيل العقد» with the signed contract and its dates, the deposit's plan (migration).
   - [x] 4. Server: the deposit paid at the cash desk with its receipt (`deposit.payment`) and push.
-  - [ ] 5. Server: «تفعيل»: its conditions, the captain made from the application, the account linked, the push device rebound, the push.
-  - [ ] 6. Server: the Thursday settlement posts the deposit's instalments.
+  - [x] 5. Server: «تفعيل»: its conditions, the captain made from the application, the account linked, the push device rebound, the push (with step 3).
+  - [x] 6. Server: the Thursday settlement posts the deposit's instalments.
   - [ ] 7. Server: the contract's phases: the probation review task and alert, the confirmation, the commitment's automatic end, the pushes; the captain's contract and kit route.
   - [ ] 8. Server: documents' expiry: the reminder push and the alert «مستند ينتهي», an expired required document blocks going online, the captain's documents with «رفع نسخة جديدة» and their review.
   - [ ] 9. Panel: the actions at «بانتظار العدة» and «تفعيل», the contract and its phase, the kit and deposit, the documents' expiry, the desk's deposit payment.

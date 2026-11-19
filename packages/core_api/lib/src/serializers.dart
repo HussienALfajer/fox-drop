@@ -556,6 +556,7 @@ import 'package:core_api/src/model/admin_settlement_dto_output_statement.dart';
 import 'package:core_api/src/model/admin_settlement_dto_output_statement_payout.dart';
 import 'package:core_api/src/model/admin_settlement_preview_dto_output.dart';
 import 'package:core_api/src/model/admin_settlement_preview_dto_output_custody_inner.dart';
+import 'package:core_api/src/model/admin_settlement_preview_dto_output_earnings.dart';
 import 'package:core_api/src/model/admin_settlement_preview_dto_output_payout.dart';
 import 'package:core_api/src/model/admin_settlement_preview_dto_output_payout_rates_inner.dart';
 import 'package:core_api/src/model/admin_settlement_preview_dto_output_payout_unit.dart';
@@ -1612,6 +1613,7 @@ part 'serializers.g.dart';
   AdminSettlementDtoOutputStatementPayout,
   AdminSettlementPreviewDtoOutput,
   AdminSettlementPreviewDtoOutputCustodyInner,
+  AdminSettlementPreviewDtoOutputEarnings,
   AdminSettlementPreviewDtoOutputPayout,
   AdminSettlementPreviewDtoOutputPayoutRatesInner,
   AdminSettlementPreviewDtoOutputPayoutUnit,

@@ -1,10 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
+import { LedgerService } from '../ledger/index.js';
 import {
   admin,
   app,
   applicationOf,
   azaz,
+  db,
   jpeg,
   put,
   sent,
@@ -297,5 +299,74 @@ describe('«تفعيل» (AP §9.7.1, CA §5.4–5.5)', () => {
     // Once is enough.
     const again = await ops('POST', `captain-applications/${id}/activate`);
     expect(again.json()).toMatchObject({ error: 'wrong_stage', stage: 'active' });
+  });
+
+  it('takes the instalment off the earnings at the Thursday settlement (AP §8.5.5)', async () => {
+    const { id, ops } = await awaitingKit();
+    const own = await admin('OWN');
+    await ops('PUT', `captain-applications/${id}/kit`, {
+      items: [{ code: 'vest', size: 'M', quantity: 1 }],
+    });
+    await ops('PUT', `captain-applications/${id}/contract`, {
+      signedOn: day(0),
+      startsOn: day(0),
+      uploadIds: await scan(ops, 1),
+    });
+    await own('PUT', `captain-applications/${id}/cash-limit`, {
+      cashLimit: { amount: '40000', currency: 'TRY' },
+    });
+    await own('POST', 'cash-desk/sessions', {
+      cityId: azaz,
+      floats: [{ currency: 'TRY', amount: '100000' }],
+    });
+    await deposit(own, id, { amount: '25000', instalment: '10000', paidNow: '10000' });
+    expect((await ops('POST', `captain-applications/${id}/activate`)).statusCode).toBe(200);
+    // The captain earned 4 000 (a bonus, as the ledger books it).
+    const ledger = app.get(LedgerService);
+    await db.db.transaction(async (tx) => {
+      const [earnings, cost] = await Promise.all([
+        ledger.openAccount(
+          { cityId: azaz, purpose: 'captain.earnings', ownerId: id, currency: 'TRY' },
+          tx,
+        ),
+        ledger.openAccount(
+          { cityId: azaz, purpose: 'platform.captain_pay', ownerId: null, currency: 'TRY' },
+          tx,
+        ),
+      ]);
+      await ledger.post(
+        {
+          cityId: azaz,
+          type: 'earn.bonus',
+          source: null,
+          actor: { type: 'system', id: null },
+          reason: 'test',
+          entries: [
+            { accountId: earnings, currency: 'TRY', amount: -4_000n },
+            { accountId: cost, currency: 'TRY', amount: 4_000n },
+          ],
+        },
+        tx,
+      );
+    });
+    const preview = (
+      await own('POST', 'cash-desk/settlements/preview', { captainId: id, payoutCurrency: null })
+    ).json();
+    // The instalment never takes the earnings below zero: 4 000 of 10 000.
+    expect(preview).toMatchObject({
+      earnings: { amount: '4000', currency: 'TRY' },
+      instalment: '4000',
+      payout: null,
+    });
+    const settled = await own(
+      'POST',
+      'cash-desk/settlements',
+      { captainId: id, custody: [], earnings: '4000', payout: null, reason: 'اختبار' },
+      { 'idempotency-key': randomUUID() },
+    );
+    expect(settled.statusCode).toBe(201);
+    expect(settled.json().statement).toMatchObject({ instalments: '4000', balance: '0' });
+    const after = (await ops('GET', `captain-applications/${id}`)).json().activation.deposit;
+    expect(after.paid).toBe('14000');
   });
 });

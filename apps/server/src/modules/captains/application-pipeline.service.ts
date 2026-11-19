@@ -1009,6 +1009,19 @@ export class ApplicationPipelineService {
     };
   }
 
+  // AP §8.5.5 step 2 (slice 2.35a): the deposit of the captain's latest
+  // activated application, with what is paid, for the Thursday instalment;
+  // null when it has none.
+  async captainDeposit(captainId: string, executor: Executor): Promise<DepositState | null> {
+    const [row] = await executor
+      .select()
+      .from(applications)
+      .where(eq(applications.captainId, captainId))
+      .orderBy(desc(applications.activatedAt))
+      .limit(1);
+    return row ? this.depositOf(row, executor) : null;
+  }
+
   // The desk's tab (slice 2.35a): the city's applications at «بانتظار
   // العدة», oldest sent first, with their deposit and the amount offered.
   async depositsAwaiting(cityId: string): Promise<DepositAwaiting[]> {

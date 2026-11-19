@@ -1388,6 +1388,7 @@
     "custodyHandIn": "يسلّم {{amount}}",
     "custodyReimburse": "يُصرف له {{amount}}",
     "earnings": "رصيد المستحقات",
+    "instalment": "يُخصم قسط التأمين أولاً: {{amount}}",
     "payoutCurrency": "عملة الصرف",
     "payout": "يُصرف كامل الرصيد: {{amount}}",
     "collect": "رصيد سالب يُحصَّل من الكابتن: {{amount}}",

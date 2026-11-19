@@ -17843,11 +17843,13 @@ export interface components {
                 balance: string;
                 balanceInBase: string;
             }[];
-            /** @description + the platform owes the captain. */
+            /** @description + the platform owes the captain, before the instalment. */
             earnings: {
                 amount: string;
                 currency: string;
             };
+            /** @description The deposit instalment posted first (AP §8.5.5 step 2). */
+            instalment: string;
             /** @description The whole positive balance in the currency asked, at the current rate. */
             payout: {
                 currency: string;
