@@ -1,40 +1,39 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'admin_captain_application_cash_limit_dto_cash_limit.dart';
+part of 'admin_deposit_cash_limit_dto_cash_limit.dart';
 
 // **************************************************************************
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$AdminCaptainApplicationCashLimitDtoCashLimit
-    extends AdminCaptainApplicationCashLimitDtoCashLimit {
+class _$AdminDepositCashLimitDtoCashLimit
+    extends AdminDepositCashLimitDtoCashLimit {
   @override
   final String amount;
   @override
   final String currency;
 
-  factory _$AdminCaptainApplicationCashLimitDtoCashLimit([
-    void Function(AdminCaptainApplicationCashLimitDtoCashLimitBuilder)? updates,
-  ]) => (AdminCaptainApplicationCashLimitDtoCashLimitBuilder()..update(updates))
-      ._build();
+  factory _$AdminDepositCashLimitDtoCashLimit([
+    void Function(AdminDepositCashLimitDtoCashLimitBuilder)? updates,
+  ]) => (AdminDepositCashLimitDtoCashLimitBuilder()..update(updates))._build();
 
-  _$AdminCaptainApplicationCashLimitDtoCashLimit._({
+  _$AdminDepositCashLimitDtoCashLimit._({
     required this.amount,
     required this.currency,
   }) : super._();
   @override
-  AdminCaptainApplicationCashLimitDtoCashLimit rebuild(
-    void Function(AdminCaptainApplicationCashLimitDtoCashLimitBuilder) updates,
+  AdminDepositCashLimitDtoCashLimit rebuild(
+    void Function(AdminDepositCashLimitDtoCashLimitBuilder) updates,
   ) => (toBuilder()..update(updates)).build();
 
   @override
-  AdminCaptainApplicationCashLimitDtoCashLimitBuilder toBuilder() =>
-      AdminCaptainApplicationCashLimitDtoCashLimitBuilder()..replace(this);
+  AdminDepositCashLimitDtoCashLimitBuilder toBuilder() =>
+      AdminDepositCashLimitDtoCashLimitBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is AdminCaptainApplicationCashLimitDtoCashLimit &&
+    return other is AdminDepositCashLimitDtoCashLimit &&
         amount == other.amount &&
         currency == other.currency;
   }
@@ -50,22 +49,20 @@ class _$AdminCaptainApplicationCashLimitDtoCashLimit
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(
-            r'AdminCaptainApplicationCashLimitDtoCashLimit',
-          )
+    return (newBuiltValueToStringHelper(r'AdminDepositCashLimitDtoCashLimit')
           ..add('amount', amount)
           ..add('currency', currency))
         .toString();
   }
 }
 
-class AdminCaptainApplicationCashLimitDtoCashLimitBuilder
+class AdminDepositCashLimitDtoCashLimitBuilder
     implements
         Builder<
-          AdminCaptainApplicationCashLimitDtoCashLimit,
-          AdminCaptainApplicationCashLimitDtoCashLimitBuilder
+          AdminDepositCashLimitDtoCashLimit,
+          AdminDepositCashLimitDtoCashLimitBuilder
         > {
-  _$AdminCaptainApplicationCashLimitDtoCashLimit? _$v;
+  _$AdminDepositCashLimitDtoCashLimit? _$v;
 
   String? _amount;
   String? get amount => _$this._amount;
@@ -75,11 +72,11 @@ class AdminCaptainApplicationCashLimitDtoCashLimitBuilder
   String? get currency => _$this._currency;
   set currency(String? currency) => _$this._currency = currency;
 
-  AdminCaptainApplicationCashLimitDtoCashLimitBuilder() {
-    AdminCaptainApplicationCashLimitDtoCashLimit._defaults(this);
+  AdminDepositCashLimitDtoCashLimitBuilder() {
+    AdminDepositCashLimitDtoCashLimit._defaults(this);
   }
 
-  AdminCaptainApplicationCashLimitDtoCashLimitBuilder get _$this {
+  AdminDepositCashLimitDtoCashLimitBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _amount = $v.amount;
@@ -90,32 +87,32 @@ class AdminCaptainApplicationCashLimitDtoCashLimitBuilder
   }
 
   @override
-  void replace(AdminCaptainApplicationCashLimitDtoCashLimit other) {
-    _$v = other as _$AdminCaptainApplicationCashLimitDtoCashLimit;
+  void replace(AdminDepositCashLimitDtoCashLimit other) {
+    _$v = other as _$AdminDepositCashLimitDtoCashLimit;
   }
 
   @override
   void update(
-    void Function(AdminCaptainApplicationCashLimitDtoCashLimitBuilder)? updates,
+    void Function(AdminDepositCashLimitDtoCashLimitBuilder)? updates,
   ) {
     if (updates != null) updates(this);
   }
 
   @override
-  AdminCaptainApplicationCashLimitDtoCashLimit build() => _build();
+  AdminDepositCashLimitDtoCashLimit build() => _build();
 
-  _$AdminCaptainApplicationCashLimitDtoCashLimit _build() {
+  _$AdminDepositCashLimitDtoCashLimit _build() {
     final _$result =
         _$v ??
-        _$AdminCaptainApplicationCashLimitDtoCashLimit._(
+        _$AdminDepositCashLimitDtoCashLimit._(
           amount: BuiltValueNullFieldError.checkNotNull(
             amount,
-            r'AdminCaptainApplicationCashLimitDtoCashLimit',
+            r'AdminDepositCashLimitDtoCashLimit',
             'amount',
           ),
           currency: BuiltValueNullFieldError.checkNotNull(
             currency,
-            r'AdminCaptainApplicationCashLimitDtoCashLimit',
+            r'AdminDepositCashLimitDtoCashLimit',
             'currency',
           ),
         );

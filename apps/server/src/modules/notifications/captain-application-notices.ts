@@ -79,7 +79,15 @@ export class CaptainApplicationNotices implements OnModuleInit {
       body: rendered.body,
       level: rendered.level,
       priority: rendered.priority,
-      data: { target: change.captainId === null ? 'application' : 'home' },
+      // A captain's rejected replacement opens «المستندات» (CA §14 #27).
+      data: {
+        target:
+          change.captainId === null
+            ? 'application'
+            : notice.kind === 'document_rejected'
+              ? 'documents'
+              : 'home',
+      },
       at: change.at,
     };
   }

@@ -6,58 +6,54 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'admin_captain_application_cash_limit_dto_cash_limit.g.dart';
+part 'admin_deposit_cash_limit_dto_cash_limit.g.dart';
 
 /// In the city's base currency.
 ///
 /// Properties:
-/// * [amount] - Minor units.
+/// * [amount]
 /// * [currency]
 @BuiltValue()
-abstract class AdminCaptainApplicationCashLimitDtoCashLimit
+abstract class AdminDepositCashLimitDtoCashLimit
     implements
         Built<
-          AdminCaptainApplicationCashLimitDtoCashLimit,
-          AdminCaptainApplicationCashLimitDtoCashLimitBuilder
+          AdminDepositCashLimitDtoCashLimit,
+          AdminDepositCashLimitDtoCashLimitBuilder
         > {
-  /// Minor units.
   @BuiltValueField(wireName: r'amount')
   String get amount;
 
   @BuiltValueField(wireName: r'currency')
   String get currency;
 
-  AdminCaptainApplicationCashLimitDtoCashLimit._();
+  AdminDepositCashLimitDtoCashLimit._();
 
-  factory AdminCaptainApplicationCashLimitDtoCashLimit([
-    void updates(AdminCaptainApplicationCashLimitDtoCashLimitBuilder b),
-  ]) = _$AdminCaptainApplicationCashLimitDtoCashLimit;
+  factory AdminDepositCashLimitDtoCashLimit([
+    void updates(AdminDepositCashLimitDtoCashLimitBuilder b),
+  ]) = _$AdminDepositCashLimitDtoCashLimit;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(
-    AdminCaptainApplicationCashLimitDtoCashLimitBuilder b,
-  ) => b;
+  static void _defaults(AdminDepositCashLimitDtoCashLimitBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdminCaptainApplicationCashLimitDtoCashLimit>
-  get serializer => _$AdminCaptainApplicationCashLimitDtoCashLimitSerializer();
+  static Serializer<AdminDepositCashLimitDtoCashLimit> get serializer =>
+      _$AdminDepositCashLimitDtoCashLimitSerializer();
 }
 
-class _$AdminCaptainApplicationCashLimitDtoCashLimitSerializer
-    implements
-        PrimitiveSerializer<AdminCaptainApplicationCashLimitDtoCashLimit> {
+class _$AdminDepositCashLimitDtoCashLimitSerializer
+    implements PrimitiveSerializer<AdminDepositCashLimitDtoCashLimit> {
   @override
   final Iterable<Type> types = const [
-    AdminCaptainApplicationCashLimitDtoCashLimit,
-    _$AdminCaptainApplicationCashLimitDtoCashLimit,
+    AdminDepositCashLimitDtoCashLimit,
+    _$AdminDepositCashLimitDtoCashLimit,
   ];
 
   @override
-  final String wireName = r'AdminCaptainApplicationCashLimitDtoCashLimit';
+  final String wireName = r'AdminDepositCashLimitDtoCashLimit';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    AdminCaptainApplicationCashLimitDtoCashLimit object, {
+    AdminDepositCashLimitDtoCashLimit object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'amount';
@@ -75,7 +71,7 @@ class _$AdminCaptainApplicationCashLimitDtoCashLimitSerializer
   @override
   Object serialize(
     Serializers serializers,
-    AdminCaptainApplicationCashLimitDtoCashLimit object, {
+    AdminDepositCashLimitDtoCashLimit object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(
@@ -90,7 +86,7 @@ class _$AdminCaptainApplicationCashLimitDtoCashLimitSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required AdminCaptainApplicationCashLimitDtoCashLimitBuilder result,
+    required AdminDepositCashLimitDtoCashLimitBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
@@ -124,12 +120,12 @@ class _$AdminCaptainApplicationCashLimitDtoCashLimitSerializer
   }
 
   @override
-  AdminCaptainApplicationCashLimitDtoCashLimit deserialize(
+  AdminDepositCashLimitDtoCashLimit deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = AdminCaptainApplicationCashLimitDtoCashLimitBuilder();
+    final result = AdminDepositCashLimitDtoCashLimitBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

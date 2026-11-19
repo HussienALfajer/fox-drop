@@ -3348,22 +3348,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/admin/captain-applications/{applicationId}/cash-limit": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: operations["adminCaptainApplicationsSetCashLimit"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/v1/admin/captain-applications/{applicationId}/contract": {
         parameters: {
             query?: never;
@@ -6126,6 +6110,22 @@ export interface paths {
         get: operations["adminCashDeskAwaitingDeposits"];
         put?: never;
         post: operations["adminCashDeskRecordDeposit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cash-desk/deposits/{applicationId}/cash-limit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminCashDeskSetCashLimit"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -10183,14 +10183,6 @@ export interface components {
                 size?: string | null;
                 quantity: number;
             }[];
-        };
-        AdminCaptainApplicationCashLimitDto: {
-            /** @description In the city's base currency. */
-            cashLimit: {
-                /** @description Minor units. */
-                amount: string;
-                currency: string;
-            };
         };
         AdminCaptainApplicationContractDto: {
             /**
@@ -17748,7 +17740,26 @@ export interface components {
                     amount: string;
                     currency: string;
                 } | null;
+                /** @description Set before activation (D10). */
+                cashLimit: {
+                    amount: string;
+                    currency: string;
+                } | null;
+                /** @description The setting captain.custody_limit_suggested of the vehicle. */
+                suggestedCashLimit: {
+                    amount: string;
+                    currency: string;
+                } | null;
             }[];
+        };
+        AdminDepositCashLimitDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** @description In the city's base currency. */
+            cashLimit: {
+                amount: string;
+                currency: string;
+            };
         };
         AdminRecordDepositDto: {
             /** Format: uuid */
@@ -25187,32 +25198,6 @@ export interface operations {
             };
         };
     };
-    adminCaptainApplicationsSetCashLimit: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                applicationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminCaptainApplicationCashLimitDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    "Server-Time": components["headers"]["Server-Time"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminCaptainApplicationDto_Output"];
-                };
-            };
-        };
-    };
     adminCaptainApplicationsRecordContract: {
         parameters: {
             query?: never;
@@ -29981,6 +29966,32 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminRecordDepositAnswerDto_Output"];
+                };
+            };
+        };
+    };
+    adminCashDeskSetCashLimit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminDepositCashLimitDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDepositsDto_Output"];
                 };
             };
         };

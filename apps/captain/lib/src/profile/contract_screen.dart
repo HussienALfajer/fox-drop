@@ -82,6 +82,19 @@ class ContractScreen extends ConsumerWidget {
                   ),
                 ),
               ),
+              ListTile(
+                key: const Key('contract-deposit-left'),
+                title: Text(
+                  l10n.captainDepositLeft(
+                    l10n.formatMoney(
+                      (BigInt.parse(amount.amount) -
+                              BigInt.parse(value.deposit.paid))
+                          .toString(),
+                      amount.currency,
+                    ),
+                  ),
+                ),
+              ),
               if (value.deposit.instalment case final instalment?)
                 ListTile(
                   title: Text(

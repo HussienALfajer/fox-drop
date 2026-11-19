@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('./api.js', () => ({ api: {} }));
 
-const { cashLimitOf, contractProblem, kitBody, kitLinesOf, missingDocumentOf } =
+const { cashLimitOf, contractProblem, depositLeft, kitBody, kitLinesOf, missingDocumentOf } =
   await import('./captain-activation.js');
 const { depositBodyOf } = await import('./cash-desk-deposits.js');
 
@@ -44,6 +44,18 @@ describe('the activation forms', () => {
     expect(contractProblem({ ...form, files: [] }, '2026-11-19')).toBe('files');
   });
 
+  it('says what is left of the deposit (CA §12.4)', () => {
+    expect(
+      depositLeft({
+        amount: { amount: '50000', currency: 'TRY' },
+        instalment: null,
+        paid: '20000',
+        recorded: true,
+      }),
+    ).toBe('30000');
+    expect(depositLeft({ amount: null, instalment: null, paid: '0', recorded: false })).toBeNull();
+  });
+
   it('names a missing document by its kind', () => {
     expect(missingDocumentOf('document:signed_contract')).toBe('signed_contract');
     expect(missingDocumentOf('kit')).toBeNull();
@@ -56,6 +68,8 @@ describe('the deposit at the desk (AP §9.7.1, §8.5)', () => {
     fullName: 'خالد',
     deposit: { amount: null, instalment: null, paid: '10000', recorded: false },
     suggested: { amount: '50000', currency: 'TRY' },
+    cashLimit: null,
+    suggestedCashLimit: null,
   };
   const city = '01900000-0000-7000-8000-0000000000c1';
 

@@ -9,7 +9,8 @@ import { minorOf } from './format.js';
 // setting captain.kit_deposit_amount offered), the weekly instalment deducted
 // on Thursdays (none: paid in full), and the cash paid now with its receipt.
 
-export type AwaitingDeposit = components['schemas']['AdminDepositsDto_Output']['applications'][number];
+export type AwaitingDeposit =
+  components['schemas']['AdminDepositsDto_Output']['applications'][number];
 export type DepositBody = components['schemas']['AdminRecordDepositDto'];
 type Receipt = NonNullable<components['schemas']['AdminRecordDepositAnswerDto_Output']['receipt']>;
 
@@ -117,6 +118,45 @@ export function useRecordDeposit() {
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: ['cash-desk'] });
       void queryClient.invalidateQueries({ queryKey: ['captain-application'] });
+    },
+  });
+}
+
+// The cash limit before activation (D10; FIN, OWN: captains.cash_limit),
+// set here so FIN never reads the application's page. It sets a value: no
+// key; the answer replaces the list.
+export type CashLimitResult =
+  | { status: 'saved' }
+  | { status: 'refused'; refusal: 'invalid_amounts' | 'invalid_currency' | 'wrong_stage' };
+
+export function useSetCashLimit(cityId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      applicationId: string;
+      amount: string;
+      currency: string;
+    }): Promise<CashLimitResult> => {
+      const { data, error, response } = await api.PUT(
+        '/v1/admin/cash-desk/deposits/{applicationId}/cash-limit',
+        {
+          params: { path: { applicationId: input.applicationId } },
+          body: { cityId, cashLimit: { amount: input.amount, currency: input.currency } },
+        },
+      );
+      if (data) {
+        queryClient.setQueryData(['cash-desk', 'deposits', cityId], data.applications);
+        return { status: 'saved' };
+      }
+      const refusal = (error as { error?: unknown } | undefined)?.error;
+      if (
+        refusal === 'invalid_amounts' ||
+        refusal === 'invalid_currency' ||
+        refusal === 'wrong_stage'
+      ) {
+        return { status: 'refused', refusal };
+      }
+      throw new Error(`The cash limit failed with ${response.status}.`);
     },
   });
 }

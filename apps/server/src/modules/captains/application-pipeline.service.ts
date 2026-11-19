@@ -73,7 +73,12 @@ export type PipelineRefusal =
   | 'invalid_contract'
   | 'invalid_deposit'
   | 'activation_incomplete'
-  | 'already_confirmed';
+  | 'already_confirmed'
+  // Slice 2.35a's review: a paid deposit, an accepted document after the
+  // activation, a terminated captain's probation.
+  | 'deposit_paid'
+  | 'document_in_force'
+  | 'captain_terminated';
 
 export class PipelineRefusedError extends Error {
   constructor(
@@ -101,6 +106,9 @@ export interface DepositAwaiting {
   fullName: string;
   deposit: DepositState;
   suggested: Money | null;
+  // The cash limit FIN sets at the desk (D10), and its suggestion.
+  cashLimit: Money | null;
+  suggestedCashLimit: Money | null;
 }
 
 export interface Contract {
@@ -628,6 +636,15 @@ export class ApplicationPipelineService {
         .for('update');
       if (!document) throw new PipelineRefusedError('unknown_document');
       if (document.replacedAt !== null) throw new PipelineRefusedError('document_replaced');
+      // K6, CA §12.2 (slice 2.35a): an activated captain's accepted document
+      // stays valid until it expires; a problem with it is a suspension.
+      if (
+        row.stage === 'active' &&
+        document.status === 'accepted' &&
+        review.status === 'rejected'
+      ) {
+        throw new PipelineRefusedError('document_in_force');
+      }
       if (document.status === review.status && document.reason === reason) return null;
       await tx
         .update(applicationDocuments)
@@ -795,6 +812,9 @@ export class ApplicationPipelineService {
     now = new Date(),
   ): Promise<void> {
     return this.act(applicationId, admin, 'reject', now, async (tx, row) => {
+      // The deposit paid at the desk has no refund before 2.35b: an
+      // application holding it is not rejected (decided by us).
+      if ((await this.depositPaid(row, tx)) > 0n) throw new PipelineRefusedError('deposit_paid');
       // Nothing more is uploaded to a rejected application: its open
       // requests close with it.
       await tx
@@ -995,8 +1015,13 @@ export class ApplicationPipelineService {
     ) {
       throw new PipelineRefusedError('invalid_deposit');
     }
-    const { cityId } = await this.row(applicationId);
-    const timeZone = (await this.geo.cityTimeZone(cityId)) ?? 'UTC';
+    // Read in the desk's transaction, which holds the row (lockForDeposit).
+    const [found] = await tx
+      .select({ cityId: applications.cityId })
+      .from(applications)
+      .where(eq(applications.id, applicationId));
+    if (!found) throw new PipelineRefusedError('unknown_application');
+    const timeZone = (await this.geo.cityTimeZone(found.cityId, tx)) ?? 'UTC';
     await this.actIn(
       tx,
       applicationId,
@@ -1103,6 +1128,19 @@ export class ApplicationPipelineService {
         fullName: row.fullName,
         deposit: await this.depositOf(row, this.database.db),
         suggested,
+        cashLimit:
+          row.custodyLimit === null
+            ? null
+            : { amount: row.custodyLimit, currency: row.custodyLimitCurrency! },
+        suggestedCashLimit:
+          row.vehicle === null
+            ? null
+            : moneySetting(
+                await this.settings.get('captain.custody_limit_suggested.<vehicle>', {
+                  cityId,
+                  parameter: row.vehicle,
+                }),
+              ),
       });
     }
     return found;
@@ -1191,8 +1229,13 @@ export class ApplicationPipelineService {
     const { cityId } = await this.row(applicationId);
     const timeZone = (await this.geo.cityTimeZone(cityId)) ?? 'UTC';
     const today = cityDay(now, timeZone);
-    await this.act(applicationId, admin, 'confirm_probation', now, async (_tx, row) => {
+    await this.act(applicationId, admin, 'confirm_probation', now, async (tx, row) => {
       if (row.probationConfirmedOn !== null) throw new PipelineRefusedError('already_confirmed');
+      const [captain] = await tx
+        .select({ status: captainRecords.status })
+        .from(captainRecords)
+        .where(eq(captainRecords.id, row.captainId!));
+      if (captain?.status === 'terminated') throw new PipelineRefusedError('captain_terminated');
       const commitment = commitmentOf({
         probationEndsOn: row.probationEndsOn!,
         confirmedOn: today,

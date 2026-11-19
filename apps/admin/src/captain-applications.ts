@@ -16,8 +16,7 @@ export const CAPTAINS_READ = 'captains.read';
 export const CAPTAINS_CASH_LIMIT = 'captains.cash_limit';
 
 export function canSeeApplications(session: AdminSession | null | undefined): boolean {
-  // FIN reads the page for the cash limit (slice 2.35a).
-  return can(session, CAPTAINS_READ) || can(session, CAPTAINS_CASH_LIMIT);
+  return can(session, CAPTAINS_READ);
 }
 
 export type Board = components['schemas']['AdminCaptainApplicationsDto_Output'];
@@ -244,11 +243,13 @@ export type ApplicationRefusal =
   | 'issue_date_in_future'
   | 'document_expired'
   | 'invalid_kit'
-  | 'invalid_cash_limit'
   | 'not_in_base_currency'
   | 'invalid_contract'
   | 'activation_incomplete'
   | 'already_confirmed'
+  | 'deposit_paid'
+  | 'document_in_force'
+  | 'captain_terminated'
   | 'type'
   | 'size'
   | 'not_image'
@@ -272,11 +273,13 @@ const serverRefusals: readonly string[] = [
   'issue_date_in_future',
   'document_expired',
   'invalid_kit',
-  'invalid_cash_limit',
   'not_in_base_currency',
   'invalid_contract',
   'activation_incomplete',
   'already_confirmed',
+  'deposit_paid',
+  'document_in_force',
+  'captain_terminated',
 ] satisfies ApplicationRefusal[];
 
 type Answer = { data?: Application; error?: unknown; response: Response };

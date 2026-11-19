@@ -65,6 +65,19 @@ export class DepositsService {
     return this.pipeline.depositsAwaiting(cityId);
   }
 
+  // The cash limit before activation (D10, AP §9.7.1: FIN, OWN), set from
+  // the desk so FIN never reads the application's page (slice 2.35a).
+  async setCashLimit(
+    user: DeskUser,
+    applicationId: string,
+    limit: { amount: bigint; currency: string },
+    now: Date,
+  ): Promise<void> {
+    await this.pipeline.setCashLimit(applicationId, user, limit, now).catch((error: unknown) => {
+      throw deskRefusal(error);
+    });
+  }
+
   async record(user: DeskUser, command: DepositCommand, now: Date): Promise<Receipt | null> {
     if (
       command.amount < 0n ||
@@ -277,6 +290,10 @@ function deskRefusal(error: unknown): unknown {
       return new CashDeskRefusedError('unknown_party', 'no such application');
     case 'invalid_deposit':
       return new CashDeskRefusedError('invalid_amounts', 'the instalment is above the deposit');
+    case 'invalid_cash_limit':
+      return new CashDeskRefusedError('invalid_amounts', 'the cash limit is above zero');
+    case 'not_in_base_currency':
+      return new CashDeskRefusedError('invalid_currency', "in the city's base currency");
     case 'wrong_stage':
       return new CashDeskRefusedError('wrong_stage', `the application is ${error.stage}`);
     default:

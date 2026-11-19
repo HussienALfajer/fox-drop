@@ -10,12 +10,15 @@ import {
   type DepositRefusal,
   useAwaitingDeposits,
   useRecordDeposit,
+  useSetCashLimit,
 } from './cash-desk-deposits.js';
+import { canSetCashLimit, cashLimitOf } from './captain-activation.js';
 import { useCurrentSession } from './cash-desk.js';
 import { chosenCity, citiesQuery } from './cities.js';
 import { decimalOf, formatMoney } from './format.js';
 
 const route = getRouteApi('/signed-in/cash-desk/deposits');
+const signedIn = getRouteApi('/signed-in');
 
 const problemKeys = {
   amount: 'deposits.problem.amount',
@@ -40,6 +43,8 @@ export function DepositsPage() {
   const cities = useQuery(citiesQuery);
   const city = cities.data ? chosenCity(cities.data, search.city) : undefined;
   const awaiting = useAwaitingDeposits(city?.id);
+  const { session } = signedIn.useRouteContext();
+  const setsCashLimit = canSetCashLimit(session);
   const current = useCurrentSession(city?.id);
   return (
     <main>
@@ -64,6 +69,7 @@ export function DepositsPage() {
               application={application}
               cityId={city.id}
               cityCode={city.code}
+              setsCashLimit={setsCashLimit}
             />
           ))}
         </>
@@ -72,7 +78,12 @@ export function DepositsPage() {
   );
 }
 
-function DepositEntry(props: { application: AwaitingDeposit; cityId: string; cityCode: string }) {
+function DepositEntry(props: {
+  application: AwaitingDeposit;
+  cityId: string;
+  cityCode: string;
+  setsCashLimit: boolean;
+}) {
   const { t } = useTranslation();
   const { application } = props;
   const { deposit, suggested } = application;
@@ -117,6 +128,12 @@ function DepositEntry(props: { application: AwaitingDeposit; cityId: string; cit
             })
           : t('deposits.notRecorded')}
       </p>
+      <p>
+        {application.cashLimit
+          ? t('deposits.cashLimitNow', { amount: formatMoney(application.cashLimit) })
+          : t('deposits.noCashLimit')}
+      </p>
+      {props.setsCashLimit && <CashLimitForm application={application} cityId={props.cityId} />}
       {currency === null ? (
         <p role="alert">{t('deposits.noCurrency')}</p>
       ) : (
@@ -173,5 +190,46 @@ function DepositEntry(props: { application: AwaitingDeposit; cityId: string; cit
         </form>
       )}
     </section>
+  );
+}
+
+function CashLimitForm(props: { application: AwaitingDeposit; cityId: string }) {
+  const { t } = useTranslation();
+  const { cashLimit, suggestedCashLimit } = props.application;
+  const prefill = cashLimit ?? suggestedCashLimit;
+  const currency = prefill?.currency ?? props.application.suggested?.currency ?? null;
+  const [typed, setTyped] = useState(prefill ? decimalOf(prefill.amount, prefill.currency) : '');
+  const [problem, setProblem] = useState(false);
+  const save = useSetCashLimit(props.cityId);
+  if (currency === null) return null;
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    const amount = cashLimitOf(typed, currency);
+    setProblem(amount === null);
+    if (amount !== null) {
+      save.mutate({ applicationId: props.application.applicationId, amount, currency });
+    }
+  };
+  return (
+    <form onSubmit={submit} aria-label={t('deposits.setCashLimit')}>
+      <label>
+        {t('deposits.cashLimitAmount', { currency })}
+        <input
+          inputMode="decimal"
+          dir="ltr"
+          value={typed}
+          onChange={(event) => setTyped(event.target.value)}
+        />
+      </label>
+      <button type="submit" disabled={save.isPending}>
+        {t('deposits.setCashLimit')}
+      </button>
+      {problem && <p role="alert">{t('deposits.problem.cashLimit')}</p>}
+      {save.isError && <p role="alert">{t('common.failed')}</p>}
+      {save.data?.status === 'saved' && <p role="status">{t('captainApplications.done')}</p>}
+      {save.data?.status === 'refused' && (
+        <p role="alert">{t(`deposits.refusal.${save.data.refusal}`)}</p>
+      )}
+    </form>
   );
 }

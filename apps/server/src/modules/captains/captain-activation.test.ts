@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { LedgerService } from '../ledger/index.js';
+import { SettingsService } from '../settings/index.js';
 import { ApplicationPipelineService } from './application-pipeline.service.js';
 import { CaptainsService } from './captains.service.js';
 import {
@@ -149,23 +150,33 @@ describe('the records at «بانتظار العدة» (AP §9.7.1)', () => {
     expect(byOffice.json().error).toBe('document_not_needed');
   });
 
-  it("takes the cash limit from FIN or OWN, in the city's base", async () => {
+  it("takes the cash limit from FIN or OWN at the desk, in the city's base", async () => {
     const { id, ops } = await awaitingKit();
-    const byOps = await ops('PUT', `captain-applications/${id}/cash-limit`, {
-      cashLimit: { amount: '50000', currency: 'TRY' },
-    });
-    expect(byOps.statusCode).toBe(403);
+    const cashLimit = (who: Admin, currency: string) =>
+      who('PUT', `cash-desk/deposits/${id}/cash-limit`, {
+        cityId: azaz,
+        cashLimit: { amount: '50000', currency },
+      });
+    expect((await cashLimit(ops, 'TRY')).statusCode).toBe(403);
     const fin = await admin('FIN');
-    expect((await fin('GET', `captain-applications/${id}`)).statusCode).toBe(200);
-    const otherCurrency = await fin('PUT', `captain-applications/${id}/cash-limit`, {
-      cashLimit: { amount: '50000', currency: 'USD' },
-    });
-    expect(otherCurrency.json().error).toBe('not_in_base_currency');
-    const set = await fin('PUT', `captain-applications/${id}/cash-limit`, {
-      cashLimit: { amount: '50000', currency: 'TRY' },
-    });
+    // FIN never reads the application's page (its documents and data).
+    expect((await fin('GET', `captain-applications/${id}`)).statusCode).toBe(403);
+    expect((await cashLimit(fin, 'USD')).json().error).toBe('invalid_currency');
+    const set = await cashLimit(fin, 'TRY');
     expect(set.statusCode).toBe(200);
-    expect(set.json().activation.cashLimit).toEqual({ amount: '50000', currency: 'TRY' });
+    expect(
+      set.json().applications.find((each: { applicationId: string }) => each.applicationId === id)
+        .cashLimit,
+    ).toEqual({ amount: '50000', currency: 'TRY' });
+  });
+
+  it('refuses rejecting an application holding a paid deposit (no refund yet)', async () => {
+    const { id, ops } = await awaitingKit();
+    const fin = await admin('FIN');
+    await fin('POST', 'cash-desk/sessions', { cityId: azaz, floats: [] });
+    await deposit(fin, id, { amount: '30000', instalment: null, paidNow: '10000' });
+    const rejected = await ops('POST', `captain-applications/${id}/reject`, { reason: 'test' });
+    expect(rejected.json().error).toBe('deposit_paid');
   });
 });
 
@@ -194,18 +205,36 @@ describe('the deposit at the desk (AP §9.7.1, §8.5)', () => {
       paidNow: '60000',
     });
     expect(tooMuch.json().error).toBe('above_balance');
-    const paid = await deposit(fin, id, {
-      amount: '50000',
-      instalment: '10000',
-      paidNow: '20000',
-    });
+    const key = randomUUID();
+    const body = { cityId: azaz, applicationId: id, amount: '50000', instalment: '10000' };
+    const paid = await fin(
+      'POST',
+      'cash-desk/deposits',
+      { ...body, paidNow: '20000' },
+      { 'idempotency-key': key },
+    );
     expect(paid.statusCode).toBe(201);
+    // The same key again answers the same receipt and posts nothing more.
+    const again = await fin(
+      'POST',
+      'cash-desk/deposits',
+      { ...body, paidNow: '20000' },
+      { 'idempotency-key': key },
+    );
+    expect(again.json().receipt.id).toBe(paid.json().receipt.id);
+    const { rows: journals } = await sql.query(
+      "SELECT count(*)::int AS n FROM ledger.journals WHERE type = 'deposit.payment' AND source_id = $1",
+      [paid.json().receipt.id],
+    );
+    expect(journals).toEqual([{ n: 1 }]);
     expect(paid.json().receipt).toMatchObject({
       type: 'captain_deposit',
       captainId: id,
       lines: [{ currency: 'TRY', expected: '50000', amount: '20000', remaining: '30000' }],
     });
-    const after = (await fin('GET', `captain-applications/${id}`)).json().activation.deposit;
+    const after = (await fin('GET', `cash-desk/deposits?cityId=${azaz}`))
+      .json()
+      .applications.find((each: { applicationId: string }) => each.applicationId === id).deposit;
     expect(after).toEqual({
       amount: { amount: '50000', currency: 'TRY' },
       instalment: { amount: '10000', currency: 'TRY' },
@@ -245,7 +274,8 @@ describe('«تفعيل» (AP §9.7.1, CA §5.4–5.5)', () => {
       uploadIds: await scan(ops, 1),
     });
     const own = await admin('OWN');
-    await own('PUT', `captain-applications/${id}/cash-limit`, {
+    await own('PUT', `cash-desk/deposits/${id}/cash-limit`, {
+      cityId: azaz,
       cashLimit: { amount: '40000', currency: 'TRY' },
     });
     // A deposit without instalments waits until it is paid in full.
@@ -314,7 +344,8 @@ describe('«تفعيل» (AP §9.7.1, CA §5.4–5.5)', () => {
       startsOn: day(0),
       uploadIds: await scan(ops, 1),
     });
-    await own('PUT', `captain-applications/${id}/cash-limit`, {
+    await own('PUT', `cash-desk/deposits/${id}/cash-limit`, {
+      cityId: azaz,
       cashLimit: { amount: '40000', currency: 'TRY' },
     });
     await own('POST', 'cash-desk/sessions', {
@@ -323,6 +354,14 @@ describe('«تفعيل» (AP §9.7.1, CA §5.4–5.5)', () => {
     });
     await deposit(own, id, { amount: '25000', instalment: '10000', paidNow: '10000' });
     expect((await ops('POST', `captain-applications/${id}/activate`)).statusCode).toBe(200);
+    // Today is the payout day (the instalment is a payout day's).
+    const weekday = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Damascus', weekday: 'long' })
+      .format(new Date())
+      .toLowerCase();
+    await app.get(SettingsService).update('captain.payout_weekday', { cityId: azaz }, weekday, {
+      editor: 'system',
+      context: { ipAddress: null, device: null },
+    });
     // The captain earned 4 000 (a bonus, as the ledger books it).
     const ledger = app.get(LedgerService);
     await db.db.transaction(async (tx) => {
@@ -388,7 +427,8 @@ async function activated(): Promise<{ who: Applicant; id: string; ops: Admin }> 
     startsOn: day(0),
     uploadIds: await scan(ops, 1),
   });
-  await own('PUT', `captain-applications/${id}/cash-limit`, {
+  await own('PUT', `cash-desk/deposits/${id}/cash-limit`, {
+    cityId: azaz,
     cashLimit: { amount: '40000', currency: 'TRY' },
   });
   await deposit(own, id, { amount: '30000', instalment: '10000', paidNow: '0' });
@@ -517,6 +557,13 @@ describe('the documents of a captain (CA §12.2, AP §9.7.4, K6)', () => {
       status: 'accepted',
     });
     expect(accepted.statusCode).toBe(200);
+    // Accepted, it stays valid until it expires (K6).
+    const refusedReject = await ops(
+      'POST',
+      `captain-applications/${id}/documents/${fresh.id}/review`,
+      { status: 'rejected', reason: 'غير واضح' },
+    );
+    expect(refusedReject.json().error).toBe('document_in_force');
     const after = (await who.call('GET', '/documents')).json();
     expect(
       after.documents.find((each: { kind: string }) => each.kind === 'criminal_record'),

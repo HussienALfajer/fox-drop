@@ -16,6 +16,10 @@ class _$AdminDepositsDtoOutputApplicationsInner
   final AdminDepositsDtoOutputApplicationsInnerDeposit deposit;
   @override
   final AdminTicketPageDtoOutputPickupDisputePickupPayment? suggested;
+  @override
+  final AdminTicketPageDtoOutputPickupDisputePickupPayment? cashLimit;
+  @override
+  final AdminTicketPageDtoOutputPickupDisputePickupPayment? suggestedCashLimit;
 
   factory _$AdminDepositsDtoOutputApplicationsInner([
     void Function(AdminDepositsDtoOutputApplicationsInnerBuilder)? updates,
@@ -27,6 +31,8 @@ class _$AdminDepositsDtoOutputApplicationsInner
     required this.fullName,
     required this.deposit,
     this.suggested,
+    this.cashLimit,
+    this.suggestedCashLimit,
   }) : super._();
   @override
   AdminDepositsDtoOutputApplicationsInner rebuild(
@@ -44,7 +50,9 @@ class _$AdminDepositsDtoOutputApplicationsInner
         applicationId == other.applicationId &&
         fullName == other.fullName &&
         deposit == other.deposit &&
-        suggested == other.suggested;
+        suggested == other.suggested &&
+        cashLimit == other.cashLimit &&
+        suggestedCashLimit == other.suggestedCashLimit;
   }
 
   @override
@@ -54,6 +62,8 @@ class _$AdminDepositsDtoOutputApplicationsInner
     _$hash = $jc(_$hash, fullName.hashCode);
     _$hash = $jc(_$hash, deposit.hashCode);
     _$hash = $jc(_$hash, suggested.hashCode);
+    _$hash = $jc(_$hash, cashLimit.hashCode);
+    _$hash = $jc(_$hash, suggestedCashLimit.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -66,7 +76,9 @@ class _$AdminDepositsDtoOutputApplicationsInner
           ..add('applicationId', applicationId)
           ..add('fullName', fullName)
           ..add('deposit', deposit)
-          ..add('suggested', suggested))
+          ..add('suggested', suggested)
+          ..add('cashLimit', cashLimit)
+          ..add('suggestedCashLimit', suggestedCashLimit))
         .toString();
   }
 }
@@ -103,6 +115,24 @@ class AdminDepositsDtoOutputApplicationsInnerBuilder
     AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder? suggested,
   ) => _$this._suggested = suggested;
 
+  AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder? _cashLimit;
+  AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder get cashLimit =>
+      _$this._cashLimit ??=
+          AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder();
+  set cashLimit(
+    AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder? cashLimit,
+  ) => _$this._cashLimit = cashLimit;
+
+  AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder?
+  _suggestedCashLimit;
+  AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder
+  get suggestedCashLimit => _$this._suggestedCashLimit ??=
+      AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder();
+  set suggestedCashLimit(
+    AdminTicketPageDtoOutputPickupDisputePickupPaymentBuilder?
+    suggestedCashLimit,
+  ) => _$this._suggestedCashLimit = suggestedCashLimit;
+
   AdminDepositsDtoOutputApplicationsInnerBuilder() {
     AdminDepositsDtoOutputApplicationsInner._defaults(this);
   }
@@ -114,6 +144,8 @@ class AdminDepositsDtoOutputApplicationsInnerBuilder
       _fullName = $v.fullName;
       _deposit = $v.deposit.toBuilder();
       _suggested = $v.suggested?.toBuilder();
+      _cashLimit = $v.cashLimit?.toBuilder();
+      _suggestedCashLimit = $v.suggestedCashLimit?.toBuilder();
       _$v = null;
     }
     return this;
@@ -152,6 +184,8 @@ class AdminDepositsDtoOutputApplicationsInnerBuilder
             ),
             deposit: deposit.build(),
             suggested: _suggested?.build(),
+            cashLimit: _cashLimit?.build(),
+            suggestedCashLimit: _suggestedCashLimit?.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -160,6 +194,10 @@ class AdminDepositsDtoOutputApplicationsInnerBuilder
         deposit.build();
         _$failedField = 'suggested';
         _suggested?.build();
+        _$failedField = 'cashLimit';
+        _cashLimit?.build();
+        _$failedField = 'suggestedCashLimit';
+        _suggestedCashLimit?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
           r'AdminDepositsDtoOutputApplicationsInner',

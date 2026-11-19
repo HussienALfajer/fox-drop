@@ -2697,5 +2697,7 @@
   "captainTourSettings": "قبل أن تبدأ: حدّد «أقصى مبلغ أحمله» و«العملات التي أحملها».",
   "@captainTourSettings": {"description": "CA §5.5: the activation's ask. Our words, to confirm with the owner."},
   "captainTourDone": "ابدأ العمل",
-  "@captainTourDone": {"description": "The tour's last button. Our words."}
+  "@captainTourDone": {"description": "The tour's last button. Our words."},
+  "captainDepositLeft": "المتبقي من التأمين: {amount}",
+  "@captainDepositLeft": {"description": "CA §12.4: what is left of the deposit («instalments remaining»).", "placeholders": {"amount": {"type": "String"}}}
 }

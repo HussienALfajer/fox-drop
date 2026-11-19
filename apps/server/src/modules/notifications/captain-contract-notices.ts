@@ -26,8 +26,9 @@ export const CONTRACT_NOTICES_MS = 60_000;
 // CA §14 #28 «بدأت {المرحلة} من {التاريخ}» (the phases' words ours, to
 // confirm with the owner).
 export const phaseLabels = {
-  probation: 'فترة التجربة',
-  commitment: 'فترة الالتزام',
+  probation: 'فترة تجربة',
+  commitment: 'فترة التزام',
+  // «مفتوح» (AP §9.7.2) does not read after «بدأت»: our words.
   open: 'المرحلة المفتوحة',
 } as const;
 

@@ -48,8 +48,6 @@ import 'package:core_api/src/model/admin_canned_replies_dto.dart';
 import 'package:core_api/src/model/admin_canned_replies_dto_output.dart';
 import 'package:core_api/src/model/admin_canned_replies_dto_output_replies_inner.dart';
 import 'package:core_api/src/model/admin_canned_replies_dto_replies_inner.dart';
-import 'package:core_api/src/model/admin_captain_application_cash_limit_dto.dart';
-import 'package:core_api/src/model/admin_captain_application_cash_limit_dto_cash_limit.dart';
 import 'package:core_api/src/model/admin_captain_application_contract_dto.dart';
 import 'package:core_api/src/model/admin_captain_application_document_dto.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output.dart';
@@ -180,6 +178,8 @@ import 'package:core_api/src/model/admin_daily_report_dto_output_orders.dart';
 import 'package:core_api/src/model/admin_daily_report_dto_output_previous_inner.dart';
 import 'package:core_api/src/model/admin_daily_report_dto_output_restaurants.dart';
 import 'package:core_api/src/model/admin_daily_report_export_dto.dart';
+import 'package:core_api/src/model/admin_deposit_cash_limit_dto.dart';
+import 'package:core_api/src/model/admin_deposit_cash_limit_dto_cash_limit.dart';
 import 'package:core_api/src/model/admin_deposits_dto_output.dart';
 import 'package:core_api/src/model/admin_deposits_dto_output_applications_inner.dart';
 import 'package:core_api/src/model/admin_deposits_dto_output_applications_inner_deposit.dart';
@@ -1114,8 +1114,6 @@ part 'serializers.g.dart';
   AdminCannedRepliesDtoOutput,
   AdminCannedRepliesDtoOutputRepliesInner,
   AdminCannedRepliesDtoRepliesInner,
-  AdminCaptainApplicationCashLimitDto,
-  AdminCaptainApplicationCashLimitDtoCashLimit,
   AdminCaptainApplicationContractDto,
   AdminCaptainApplicationDocumentDto,
   AdminCaptainApplicationDtoOutput,
@@ -1246,6 +1244,8 @@ part 'serializers.g.dart';
   AdminDailyReportDtoOutputPreviousInner,
   AdminDailyReportDtoOutputRestaurants,
   AdminDailyReportExportDto,
+  AdminDepositCashLimitDto,
+  AdminDepositCashLimitDtoCashLimit,
   AdminDepositsDtoOutput,
   AdminDepositsDtoOutputApplicationsInner,
   AdminDepositsDtoOutputApplicationsInnerDeposit,

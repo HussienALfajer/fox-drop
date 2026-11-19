@@ -4917,4 +4917,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get captainTourDone => 'ابدأ العمل';
+
+  @override
+  String captainDepositLeft(String amount) {
+    return 'المتبقي من التأمين: $amount';
+  }
 }

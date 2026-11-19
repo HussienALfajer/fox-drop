@@ -3,8 +3,8 @@ import { type FormEvent, type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   type Activation,
-  cashLimitOf,
   canSetCashLimit,
+  depositLeft,
   type ContractForm,
   contractProblem,
   type ContractProblem,
@@ -26,7 +26,7 @@ import {
   stageKeys,
 } from './captain-applications.js';
 import { CASH_DESK } from './cash-desk.js';
-import { decimalOf, formatMoney } from './format.js';
+import { formatMoney } from './format.js';
 import { IMAGE_TYPES } from './restaurant-images.js';
 import { type AdminSession, can } from './session.js';
 import { useReasonLists } from './content.js';
@@ -52,6 +52,7 @@ export function ActivationSection(props: {
       <CashLimitPart
         application={application}
         canSet={application.stage === 'awaiting_kit' && canSetCashLimit(props.session)}
+        cityCode={props.cityCode}
       />
       <ContractPart
         application={application}
@@ -158,48 +159,20 @@ function KitForm({ application }: { application: Application }) {
   );
 }
 
-function CashLimitPart(props: { application: Application; canSet: boolean }) {
+function CashLimitPart(props: { application: Application; canSet: boolean; cityCode: string }) {
   const { t } = useTranslation();
-  const { cashLimit, suggestedCashLimit } = props.application.activation;
-  const currency = cashLimit?.currency ?? suggestedCashLimit?.currency ?? null;
-  const [typed, setTyped] = useState<string | null>(null);
-  const [problem, setProblem] = useState(false);
-  const command = useActivationCommand(props.application.id);
-  const prefill = cashLimit ?? suggestedCashLimit;
-  const value = typed ?? (prefill ? decimalOf(prefill.amount, prefill.currency) : '');
-  const submit = (event: FormEvent) => {
-    event.preventDefault();
-    const amount = currency === null ? null : cashLimitOf(value, currency);
-    setProblem(amount === null);
-    if (amount !== null && currency !== null) {
-      command.mutate({ action: 'set_cash_limit', amount, currency });
-    }
-  };
+  const { cashLimit } = props.application.activation;
   return (
     <>
       <h3>{t('captainActivation.cashLimit')}</h3>
       <p>{cashLimit ? formatMoney(cashLimit) : t('captainActivation.noCashLimit')}</p>
-      {props.canSet &&
-        (currency === null ? (
-          <p>{t('captainActivation.noSuggestedCurrency')}</p>
-        ) : (
-          <form onSubmit={submit} aria-label={t('captainActivation.setCashLimit')}>
-            <label>
-              {t('captainActivation.cashLimitAmount', { currency })}
-              <input
-                inputMode="decimal"
-                dir="ltr"
-                value={value}
-                onChange={(event) => setTyped(event.target.value)}
-              />
-            </label>
-            <button type="submit" disabled={command.isPending}>
-              {t('captainActivation.setCashLimit')}
-            </button>
-            {problem && <p role="alert">{t('captainActivation.problem.cashLimit')}</p>}
-            <Status pending={command.isPending} failed={command.isError} result={command.data} />
-          </form>
-        ))}
+      {props.canSet && (
+        <p>
+          <Link to="/cash-desk/deposits" search={{ city: props.cityCode }}>
+            {t('captainActivation.setCashLimitAtDesk')}
+          </Link>
+        </p>
+      )}
     </>
   );
 }
@@ -329,6 +302,10 @@ function DepositPart(props: { activation: Activation; canRecord: boolean; cityCo
           {t('captainActivation.depositLine', {
             amount: formatMoney(deposit.amount),
             paid: formatMoney({ amount: deposit.paid, currency: deposit.amount.currency }),
+            left: formatMoney({
+              amount: depositLeft(deposit) ?? '0',
+              currency: deposit.amount.currency,
+            }),
           })}{' '}
           {deposit.instalment
             ? t('captainActivation.instalment', { amount: formatMoney(deposit.instalment) })

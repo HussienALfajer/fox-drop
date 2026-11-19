@@ -15,7 +15,7 @@ import {
 import type { FastifyRequest } from 'fastify';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
-import { CurrentAdminSession, RequireAnyPermission, RequirePermission } from '../../http/access.js';
+import { CurrentAdminSession, RequirePermission } from '../../http/access.js';
 import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
@@ -231,10 +231,6 @@ class AdminCaptainApplicationKitDto extends createZodDto(
   }),
 ) {}
 
-class AdminCaptainApplicationCashLimitDto extends createZodDto(
-  z.object({ cashLimit: money.describe("In the city's base currency.") }),
-) {}
-
 class AdminCaptainApplicationContractDto extends createZodDto(
   z.object({
     signedOn: z.iso.date().describe("Not after today on the city's clock."),
@@ -335,7 +331,7 @@ export class AdminCaptainApplicationsController {
   }
 
   @Get()
-  @RequireAnyPermission('captains.read', 'captains.cash_limit')
+  @RequirePermission('captains.read')
   @ZodResponse({ status: 200, type: AdminCaptainApplicationsDto })
   async board(@Query() query: AdminCaptainApplicationsQueryDto) {
     const board = await this.pipeline.board(query.cityId, query.stage);
@@ -349,9 +345,8 @@ export class AdminCaptainApplicationsController {
     };
   }
 
-  // FIN reads it too, for the cash limit (slice 2.35a).
   @Get(':applicationId')
-  @RequireAnyPermission('captains.read', 'captains.cash_limit')
+  @RequirePermission('captains.read')
   @ZodResponse({ status: 200, type: AdminCaptainApplicationDto })
   review(
     @Param() params: AdminCaptainApplicationParamsDto,
@@ -535,25 +530,6 @@ export class AdminCaptainApplicationsController {
     );
   }
 
-  // The cash limit before activation (D10; FIN, OWN). 400
-  // invalid_cash_limit; 409 not_in_base_currency.
-  @Put(':applicationId/cash-limit')
-  @RequirePermission('captains.cash_limit')
-  @ZodResponse({ status: 200, type: AdminCaptainApplicationDto })
-  setCashLimit(
-    @Param() params: AdminCaptainApplicationParamsDto,
-    @Body() body: AdminCaptainApplicationCashLimitDto,
-    @CurrentAdminSession() session: AdminSession,
-    @Req() request: FastifyRequest,
-  ) {
-    return this.page(params.applicationId, session, request, () =>
-      this.pipeline.setCashLimit(params.applicationId, adminOf(session, request), {
-        amount: BigInt(body.cashLimit.amount),
-        currency: body.cashLimit.currency,
-      }),
-    );
-  }
-
   // «تسجيل العقد» with the scan (AP §9.7.2). 400 invalid_contract,
   // invalid_files and the uploads' refusals.
   @Put(':applicationId/contract')
@@ -681,7 +657,6 @@ const badRequests = new Set([
   'issue_date_in_future',
   'document_expired',
   'invalid_kit',
-  'invalid_cash_limit',
   'invalid_contract',
 ]);
 

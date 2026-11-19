@@ -17,6 +17,8 @@ part 'admin_deposits_dto_output_applications_inner.g.dart';
 /// * [fullName]
 /// * [deposit]
 /// * [suggested]
+/// * [cashLimit]
+/// * [suggestedCashLimit]
 @BuiltValue()
 abstract class AdminDepositsDtoOutputApplicationsInner
     implements
@@ -35,6 +37,12 @@ abstract class AdminDepositsDtoOutputApplicationsInner
 
   @BuiltValueField(wireName: r'suggested')
   AdminTicketPageDtoOutputPickupDisputePickupPayment? get suggested;
+
+  @BuiltValueField(wireName: r'cashLimit')
+  AdminTicketPageDtoOutputPickupDisputePickupPayment? get cashLimit;
+
+  @BuiltValueField(wireName: r'suggestedCashLimit')
+  AdminTicketPageDtoOutputPickupDisputePickupPayment? get suggestedCashLimit;
 
   AdminDepositsDtoOutputApplicationsInner._();
 
@@ -88,6 +96,24 @@ class _$AdminDepositsDtoOutputApplicationsInnerSerializer
         ? null
         : serializers.serialize(
             object.suggested,
+            specifiedType: const FullType.nullable(
+              AdminTicketPageDtoOutputPickupDisputePickupPayment,
+            ),
+          );
+    yield r'cashLimit';
+    yield object.cashLimit == null
+        ? null
+        : serializers.serialize(
+            object.cashLimit,
+            specifiedType: const FullType.nullable(
+              AdminTicketPageDtoOutputPickupDisputePickupPayment,
+            ),
+          );
+    yield r'suggestedCashLimit';
+    yield object.suggestedCashLimit == null
+        ? null
+        : serializers.serialize(
+            object.suggestedCashLimit,
             specifiedType: const FullType.nullable(
               AdminTicketPageDtoOutputPickupDisputePickupPayment,
             ),
@@ -159,6 +185,30 @@ class _$AdminDepositsDtoOutputApplicationsInnerSerializer
                   as AdminTicketPageDtoOutputPickupDisputePickupPayment?;
           if (valueDes == null) continue;
           result.suggested.replace(valueDes);
+          break;
+        case r'cashLimit':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminTicketPageDtoOutputPickupDisputePickupPayment,
+                    ),
+                  )
+                  as AdminTicketPageDtoOutputPickupDisputePickupPayment?;
+          if (valueDes == null) continue;
+          result.cashLimit.replace(valueDes);
+          break;
+        case r'suggestedCashLimit':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminTicketPageDtoOutputPickupDisputePickupPayment,
+                    ),
+                  )
+                  as AdminTicketPageDtoOutputPickupDisputePickupPayment?;
+          if (valueDes == null) continue;
+          result.suggestedCashLimit.replace(valueDes);
           break;
         default:
           unhandled.add(key);

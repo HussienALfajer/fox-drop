@@ -502,10 +502,8 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/admin/emergency-sign-in-codes': 'sign_in.emergency_code',
   'GET /v1/admin/captains/{captainId}/device': 'captains.manage',
   'POST /v1/admin/captains/{captainId}/release-device': 'captains.manage',
-  'GET /v1/admin/captain-applications': { anyOf: ['captains.read', 'captains.cash_limit'] },
-  'GET /v1/admin/captain-applications/{applicationId}': {
-    anyOf: ['captains.read', 'captains.cash_limit'],
-  },
+  'GET /v1/admin/captain-applications': 'captains.read',
+  'GET /v1/admin/captain-applications/{applicationId}': 'captains.read',
   'POST /v1/admin/captain-applications/{applicationId}/documents/{documentId}/review':
     'captains.manage',
   'PUT /v1/admin/captain-applications/{applicationId}/documents/{kind}': 'captains.manage',
@@ -517,7 +515,6 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/admin/captain-applications/{applicationId}/waitlist': 'captains.manage',
   'POST /v1/admin/captain-applications/{applicationId}/back-from-waitlist': 'captains.manage',
   'PUT /v1/admin/captain-applications/{applicationId}/kit': 'captains.manage',
-  'PUT /v1/admin/captain-applications/{applicationId}/cash-limit': 'captains.cash_limit',
   'PUT /v1/admin/captain-applications/{applicationId}/contract': 'captains.manage',
   'POST /v1/admin/captain-applications/{applicationId}/activate': 'captains.manage',
   'POST /v1/admin/captain-applications/{applicationId}/confirm-probation': 'captains.manage',
@@ -590,6 +587,7 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/admin/cash-desk/hand-ins': 'cash_desk.record',
   'GET /v1/admin/cash-desk/deposits': 'cash_desk.record',
   'POST /v1/admin/cash-desk/deposits': 'cash_desk.record',
+  'PUT /v1/admin/cash-desk/deposits/{applicationId}/cash-limit': 'captains.cash_limit',
   'POST /v1/admin/cash-desk/conversions/quote': 'cash_desk.record',
   'GET /v1/admin/cash-desk/receipts/{receiptId}': 'cash_desk.record',
   'GET /v1/admin/cash-desk/balances': 'finance.read',

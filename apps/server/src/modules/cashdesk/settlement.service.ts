@@ -192,7 +192,9 @@ export class SettlementService {
       this.earnings(this.database.db, found.cityId, captainId),
     ]);
     const custody = found.custody.currencies.filter((line) => line.balance !== 0n);
-    const instalment = await this.instalmentOf(this.database.db, captainId, earnings.amount);
+    const instalment = day.payoutDay
+      ? await this.instalmentOf(this.database.db, captainId, earnings.amount)
+      : 0n;
     const owed = earnings.amount - instalment;
     let payout: SettlementPreview['payout'] = null;
     if (owed > 0n) {
@@ -312,8 +314,12 @@ export class SettlementService {
       if (!sameCustody(held, command.custody) || period.balance !== command.earnings) {
         throw new CashDeskRefusedError('balance_changed', 'the balances moved since the screen');
       }
-      // AP §8.5.5 step 2: the deposit instalment first, in this statement.
-      const instalment = await this.instalmentOf(tx, captain.id, period.balance);
+      // AP §8.5.5 step 2: the deposit instalment first, in this statement,
+      // on the payout day only (owner decision 2026-11-19: «each Thursday»),
+      // so an off-cycle payout takes none.
+      const instalment = day.payoutDay
+        ? await this.instalmentOf(tx, captain.id, period.balance)
+        : 0n;
       if (instalment > 0n) {
         period.journalIds.push(await this.postInstalment(tx, user, captain, instalment));
         period.lines.instalments += instalment;

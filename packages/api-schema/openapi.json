@@ -8633,53 +8633,6 @@
         ]
       }
     },
-    "/v1/admin/captain-applications/{applicationId}/cash-limit": {
-      "put": {
-        "operationId": "adminCaptainApplicationsSetCashLimit",
-        "parameters": [
-          {
-            "name": "applicationId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AdminCaptainApplicationCashLimitDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AdminCaptainApplicationDto_Output"
-                }
-              }
-            },
-            "headers": {
-              "Server-Time": {
-                "$ref": "#/components/headers/Server-Time"
-              }
-            }
-          }
-        },
-        "tags": [
-          "admin"
-        ]
-      }
-    },
     "/v1/admin/captain-applications/{applicationId}/contract": {
       "put": {
         "operationId": "adminCaptainApplicationsRecordContract",
@@ -17273,6 +17226,53 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AdminRecordDepositAnswerDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/cash-desk/deposits/{applicationId}/cash-limit": {
+      "put": {
+        "operationId": "adminCashDeskSetCashLimit",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminDepositCashLimitDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDepositsDto_Output"
                 }
               }
             },
@@ -33053,33 +33053,6 @@
         },
         "required": [
           "items"
-        ]
-      },
-      "AdminCaptainApplicationCashLimitDto": {
-        "type": "object",
-        "properties": {
-          "cashLimit": {
-            "type": "object",
-            "properties": {
-              "amount": {
-                "type": "string",
-                "pattern": "^\\d{1,18}$",
-                "description": "Minor units."
-              },
-              "currency": {
-                "type": "string",
-                "pattern": "^[A-Z]{3}$"
-              }
-            },
-            "required": [
-              "amount",
-              "currency"
-            ],
-            "description": "In the city's base currency."
-          }
-        },
-        "required": [
-          "cashLimit"
         ]
       },
       "AdminCaptainApplicationContractDto": {
@@ -65813,13 +65786,67 @@
                     }
                   ],
                   "description": "captain.kit_deposit_amount."
+                },
+                "cashLimit": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "amount": {
+                          "type": "string",
+                          "pattern": "^-?\\d{1,18}$"
+                        },
+                        "currency": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{3}$"
+                        }
+                      },
+                      "required": [
+                        "amount",
+                        "currency"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Set before activation (D10)."
+                },
+                "suggestedCashLimit": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "amount": {
+                          "type": "string",
+                          "pattern": "^-?\\d{1,18}$"
+                        },
+                        "currency": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{3}$"
+                        }
+                      },
+                      "required": [
+                        "amount",
+                        "currency"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The setting captain.custody_limit_suggested of the vehicle."
                 }
               },
               "required": [
                 "applicationId",
                 "fullName",
                 "deposit",
-                "suggested"
+                "suggested",
+                "cashLimit",
+                "suggestedCashLimit"
               ],
               "additionalProperties": false
             }
@@ -65829,6 +65856,38 @@
           "applications"
         ],
         "additionalProperties": false
+      },
+      "AdminDepositCashLimitDto": {
+        "type": "object",
+        "properties": {
+          "cityId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "cashLimit": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "string",
+                "pattern": "^\\d{1,18}$"
+              },
+              "currency": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              }
+            },
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "description": "In the city's base currency."
+          }
+        },
+        "required": [
+          "cityId",
+          "cashLimit"
+        ]
       },
       "AdminRecordDepositDto": {
         "type": "object",

@@ -44,9 +44,18 @@ export const reviewKeys = {
   overdue: 'captainActivation.review.overdue',
 } as const satisfies Record<Contract['review'], string | null>;
 
-// FIN and OWN set the cash limit (AP §9.7.1, D10).
+// FIN and OWN set the cash limit (AP §9.7.1, D10), at the desk's «تأمين
+// العدة», so FIN never reads the application's page.
 export function canSetCashLimit(session: AdminSession | null | undefined): boolean {
   return can(session, CAPTAINS_CASH_LIMIT);
+}
+
+// What is left of the deposit to pay (CA §12.4, AP §9.7.4 «instalments
+// remaining»), in minor units.
+export function depositLeft(deposit: Activation['deposit']): string | null {
+  if (deposit.amount === null) return null;
+  const left = BigInt(deposit.amount.amount) - BigInt(deposit.paid);
+  return (left > 0n ? left : 0n).toString();
 }
 
 // «تسليم العدة»: each item of the list `kit_item` ticked, with its size and
@@ -125,10 +134,7 @@ export function contractProblem(form: ContractForm, today: string): ContractProb
 }
 
 export type ActivationCommand =
-  | { action: 'issue_kit'; body: KitBody }
-  | { action: 'set_cash_limit'; amount: string; currency: string }
-  | { action: 'activate' }
-  | { action: 'confirm_probation' };
+  { action: 'issue_kit'; body: KitBody } | { action: 'activate' } | { action: 'confirm_probation' };
 
 // Each sets a value or is refused once taken, so none takes a key; each
 // answers the review page.
@@ -143,13 +149,6 @@ export function useActivationCommand(applicationId: string) {
             await api.PUT('/v1/admin/captain-applications/{applicationId}/kit', {
               params: { path },
               body: command.body,
-            }),
-          );
-        case 'set_cash_limit':
-          return commandResult(
-            await api.PUT('/v1/admin/captain-applications/{applicationId}/cash-limit', {
-              params: { path },
-              body: { cashLimit: { amount: command.amount, currency: command.currency } },
             }),
           );
         case 'activate':

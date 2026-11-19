@@ -8197,6 +8197,12 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'ابدأ العمل'**
   String get captainTourDone;
+
+  /// CA §12.4: what is left of the deposit («instalments remaining»).
+  ///
+  /// In ar, this message translates to:
+  /// **'المتبقي من التأمين: {amount}'**
+  String captainDepositLeft(String amount);
 }
 
 class _AppLocalizationsDelegate

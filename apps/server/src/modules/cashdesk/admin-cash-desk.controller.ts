@@ -6,6 +6,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Put,
   Query,
   Req,
 } from '@nestjs/common';
@@ -346,6 +347,10 @@ class AdminDepositsDto extends createZodDto(
         fullName: z.string(),
         deposit: depositState,
         suggested: money.nullable().describe('captain.kit_deposit_amount.'),
+        cashLimit: money.nullable().describe('Set before activation (D10).'),
+        suggestedCashLimit: money
+          .nullable()
+          .describe('The setting captain.custody_limit_suggested of the vehicle.'),
       }),
     ),
   }),
@@ -358,6 +363,15 @@ class AdminRecordDepositDto extends createZodDto(
     amount: minor.describe("The deposit, in the city's base."),
     instalment: minor.nullable().describe('Deducted each Thursday until paid; null for none.'),
     paidNow: minor.describe('The cash received now; 0 records the plan alone.'),
+  }),
+) {}
+
+class AdminDepositParamsDto extends createZodDto(z.object({ applicationId: z.uuid() })) {}
+
+class AdminDepositCashLimitDto extends createZodDto(
+  z.object({
+    cityId: z.uuid(),
+    cashLimit: z.object({ amount: minor, currency }).describe("In the city's base currency."),
   }),
 ) {}
 
@@ -423,7 +437,35 @@ export class AdminCashDeskController {
   @RequirePermission('cash_desk.record')
   @ZodResponse({ status: 200, type: AdminDepositsDto })
   async awaitingDeposits(@Query() query: AdminDepositsQueryDto) {
-    const found = await this.deposits.awaiting(query.cityId);
+    return this.depositsOf(query.cityId);
+  }
+
+  // The cash limit before activation (D10; FIN, OWN: captains.cash_limit),
+  // answering the list. 400 invalid_amounts (not above zero),
+  // invalid_currency (not the base); 404 unknown_party; 409 wrong_stage. It
+  // sets a value: no key.
+  @Put('deposits/:applicationId/cash-limit')
+  @RequirePermission('captains.cash_limit')
+  @ZodResponse({ status: 200, type: AdminDepositsDto })
+  setCashLimit(
+    @Param() params: AdminDepositParamsDto,
+    @Body() body: AdminDepositCashLimitDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(async () => {
+      await this.deposits.setCashLimit(
+        deskUser(session, request),
+        params.applicationId,
+        { amount: BigInt(body.cashLimit.amount), currency: body.cashLimit.currency },
+        new Date(),
+      );
+      return this.depositsOf(body.cityId);
+    });
+  }
+
+  private async depositsOf(cityId: string) {
+    const found = await this.deposits.awaiting(cityId);
     return {
       applications: found.map((each) => ({
         applicationId: each.applicationId,
@@ -435,6 +477,8 @@ export class AdminCashDeskController {
           recorded: each.deposit.recorded,
         },
         suggested: moneyOf(each.suggested),
+        cashLimit: moneyOf(each.cashLimit),
+        suggestedCashLimit: moneyOf(each.suggestedCashLimit),
       })),
     };
   }

@@ -413,6 +413,7 @@ export class CaptainsService implements OnModuleInit {
         UNION
         SELECT 'captain.kit_deposit' AS key, deposit_currency AS currency
           FROM captains.applications WHERE city_id = ${cityId} AND deposit_currency IS NOT NULL
+            AND stage IN ('awaiting_kit', 'active')
         UNION
         SELECT 'captain.pay_table' AS key, currency FROM captains.pay_tables
           WHERE city_id = ${cityId} AND (effective_from > now() OR id = (
@@ -1914,7 +1915,7 @@ export class CaptainsService implements OnModuleInit {
             appVersion: device.appVersion,
             simulatedLocation: device.simulatedLocation,
             termsPending: device.termsPending,
-            expiredDocuments: await this.expiredDocuments(tx, row, now),
+            expiredDocuments: await this.expiredDocuments(tx, row, rules.timeZone, now),
           },
           now,
         );
@@ -1935,11 +1936,11 @@ export class CaptainsService implements OnModuleInit {
   private async expiredDocuments(
     tx: Tx,
     row: typeof captainRecords.$inferSelect,
+    timeZone: string,
     now: Date,
   ): Promise<ApplicationDocumentKind[]> {
     const found = await captainUploads(tx, row.id);
     if (found === null) return [];
-    const timeZone = (await this.geo.cityTimeZone(row.cityId)) ?? 'UTC';
     const notice = await this.settings.get(
       'captain.document_expiry_notice_days',
       { cityId: row.cityId },

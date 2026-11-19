@@ -161,6 +161,7 @@ void main() {
     );
     expect(find.text('سترة (L) × 1'), findsOneWidget);
     expect(find.text('التأمين: 500 ₺، المدفوع: 200 ₺'), findsOneWidget);
+    expect(find.text('المتبقي من التأمين: 300 ₺'), findsOneWidget);
     expect(find.text('القسط الأسبوعي: 100 ₺، يُخصم كل خميس'), findsOneWidget);
   });
 }

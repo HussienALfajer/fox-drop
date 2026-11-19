@@ -3,6 +3,7 @@ import type { Database } from '../../database/database.js';
 import type {
   ApplicationPipelineService,
   CaptainsService,
+  ExpiringDocuments,
   ProbationReview,
 } from '../captains/index.js';
 import type { FxService } from '../fx/index.js';
@@ -29,6 +30,7 @@ function sweep(options: {
   autoPaused?: { id: string; nameAr: string }[];
   staleRates?: string[];
   probations?: ProbationReview[];
+  expiring?: ExpiringDocuments[];
 }) {
   const synced: Synced[] = [];
   const alerts = {
@@ -63,6 +65,7 @@ function sweep(options: {
   } as unknown as FxService;
   const pipeline = {
     probationReviews: async () => options.probations ?? [],
+    expiringDocuments: async () => options.expiring ?? [],
   } as unknown as ApplicationPipelineService;
   return {
     sweep: new AlertsSweep(database, alerts, pool, captains, geo, restaurants, fx, pipeline),
@@ -190,6 +193,37 @@ describe('the alerts sweep (AP §9.1.3)', () => {
       { subject: 'captain:c2', evaluated: codes, open: ['probation_overdue'] },
       // Confirmed since: c3 has no review left.
       { subject: 'captain:c3', evaluated: codes, open: [] },
+    ]);
+  });
+
+  it('raises «مستند ينتهي» while a document is within its notice, and resolves it (AP §9.7.4)', async () => {
+    const { sweep: run, synced } = sweep({
+      numbers: [],
+      alerts: [],
+      captains: [],
+      expiring: [
+        {
+          captainId: 'c1',
+          applicationId: 'c1',
+          fullName: 'كابتن',
+          timeZone: 'Asia/Damascus',
+          documents: [
+            {
+              documentId: 'd1',
+              kind: 'criminal_record',
+              expiresOn: '2026-12-10',
+              expired: false,
+            },
+          ],
+        },
+      ],
+      openSubjects: ['c1', 'c2'],
+    });
+    await run.documents(new Date());
+    expect(synced).toEqual([
+      { subject: 'captain:c1', evaluated: ['document_expiring'], open: ['document_expiring'] },
+      // Replaced by an accepted copy since: c2 has none left.
+      { subject: 'captain:c2', evaluated: ['document_expiring'], open: [] },
     ]);
   });
 });
