@@ -17,6 +17,7 @@ import 'home_screen.dart';
 import 'joining/application_screen.dart';
 import 'profile/contract_screen.dart';
 import 'profile/documents_screen.dart';
+import 'profile/my_profile_screen.dart';
 import 'profile/tour_screen.dart';
 import 'joining/welcome_screen.dart';
 import 'not_found_screen.dart';
@@ -159,11 +160,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: 'report',
-            builder: (context, state) => const ReportScreen(),
+            // «طلب تعديل» of «ملفي» opens it with its type chosen (CA §12.1).
+            builder: (context, state) =>
+                ReportScreen(type: state.uri.queryParameters['type']),
           ),
         ],
       ),
-      // CA §12.5 (slice 2.16): the peak windows, until the profile (2.36).
+      // CA §12.5 (slice 2.16): the peak windows, from home and «ملفي».
       GoRoute(
         path: '/peak-bonus',
         builder: (context, state) => const PeakWindowsScreen(),
@@ -185,6 +188,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/settings',
         builder: (context, state) => const SettingsScreen(),
+      ),
+      // CA §12 (slice 2.36c): «ملفي», which opens the documents, the contract
+      // and the peak windows.
+      GoRoute(
+        path: '/profile',
+        builder: (context, state) => const MyProfileScreen(),
       ),
       // CA §12.2–12.4, §5.5 (slice 2.35a): «المستندات», «العقد والعدة» and
       // the welcome tour after the activation.

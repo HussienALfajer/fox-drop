@@ -125,6 +125,37 @@ Map<String, Object?> performanceJson({
   'violations': violations,
 };
 
+/// CA §12.1 «ملفي»'s data as the server answers it (slice 2.36c).
+Map<String, Object?> profileJson() => {
+  'foxDropId': 'C-00000002',
+  'name': 'أحمد محمد علي',
+  'phone': '+963912345678',
+  'neighbourhood': 'الحي الشمالي',
+  'vehicle': 'motorbike',
+  'plateNumber': '12345',
+};
+
+/// One table's row for the captain's vehicle (CA §12.5), in TRY.
+Map<String, Object?> payRateJson(String effectiveFrom, String basePay) => {
+  'effectiveFrom': effectiveFrom,
+  'basePay': {'amount': basePay, 'currency': 'TRY'},
+  'includedMetres': 3000,
+  'perExtraKm': {'amount': '500', 'currency': 'TRY'},
+  'waitingPerMinute': {'amount': '100', 'currency': 'TRY'},
+  'minimumPay': {'amount': '2000', 'currency': 'TRY'},
+};
+
+/// `GET /v1/captain/pay-table`: [current] null for none in force.
+Map<String, Object?> payTableJson({
+  Map<String, Object?>? current,
+  List<Map<String, Object?>> announced = const [],
+}) => {
+  'vehicle': 'motorbike',
+  'waitingThresholdMin': 10,
+  'current': current,
+  'announced': announced,
+};
+
 Map<String, Object?> contractJson(String? phase) => {
   'contract': phase == null
       ? null
@@ -402,6 +433,7 @@ Map<String, Object?> contentJson() => {
     'food_after_failed': [_reason('destroyed', 'أُتلف')],
     'captain_ticket_type': [
       _reason('app_problem', 'مشكلة في التطبيق'),
+      _reason('data_change', 'طلب تعديل بيانات'),
       _reason('other', 'أخرى'),
     ],
     'captain_problem': [
@@ -645,6 +677,14 @@ class TestApp {
       server.on('/v1/captain/documents', [
         const FakeAnswer(200, {'documents': <Object?>[]}),
       ]);
+    }
+    // CA §12.1, §12.5 (slice 2.36c): the data, and no pay table unless a
+    // test says otherwise.
+    if (!server.routes.containsKey('/v1/captain/profile')) {
+      server.on('/v1/captain/profile', [FakeAnswer(200, profileJson())]);
+    }
+    if (!server.routes.containsKey('/v1/captain/pay-table')) {
+      server.on('/v1/captain/pay-table', [FakeAnswer(200, payTableJson())]);
     }
     // CA §11 (slice 2.36b): no warning unless a test says otherwise.
     if (!server.routes.containsKey('/v1/captain/performance')) {

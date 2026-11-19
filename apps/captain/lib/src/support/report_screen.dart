@@ -13,14 +13,18 @@ import 'support.dart';
 /// among them, owner decision 2026-11-17), optionally the active order, a
 /// note and a photo. Unstyled until the design.
 class ReportScreen extends ConsumerStatefulWidget {
-  const ReportScreen({super.key});
+  const ReportScreen({super.key, this.type});
+
+  /// A type chosen when the screen opens, such as «طلب تعديل بيانات»
+  /// (`data_change`) from «ملفي»; one Content does not list is ignored.
+  final String? type;
 
   @override
   ConsumerState<ReportScreen> createState() => _ReportScreenState();
 }
 
 class _ReportScreenState extends ConsumerState<ReportScreen> {
-  String? _type;
+  late String? _type = widget.type;
   bool _aboutOrder = false;
   ReportPhoto? _photo;
   final _note = TextEditingController();
@@ -34,7 +38,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
 
   // A type whose text Content requires (AP §9.13) needs the note.
   bool _complete(List<ReasonChoice> types) =>
-      _type != null &&
+      types.any((t) => t.code == _type) &&
       (!types.any((t) => t.code == _type && t.needsNote) ||
           _note.text.trim().isNotEmpty);
 

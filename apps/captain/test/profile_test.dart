@@ -149,7 +149,14 @@ void main() {
     await app.live(tester);
     await tester.tap(find.text('المزيد'));
     await app.settle(tester);
-    await tester.tap(find.byKey(const Key('more-contract')));
+    await tester.tap(find.byKey(const Key('more-profile')));
+    await app.settle(tester);
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('profile-contract')),
+      100,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await app.tapVisible(tester, find.byKey(const Key('profile-contract')));
     await app.settle(tester);
     expect(find.text('المرحلة: فترة التزام'), findsOneWidget);
     expect(find.text('نهاية فترة الالتزام: 19/03/2027'), findsOneWidget);

@@ -13,9 +13,9 @@ Slice 2.36c, «ملفي» in the captain app (`docs/roadmap.md`, Phase 2; the la
 - **Owner decisions (2026-11-19):** «رقم الهوية في FOX DROP» is the captain's id shown short (`C-` and its last 8 hex digits: a UUIDv7's first ones are its time); an announced table shows beside the one in force with its start; «احسب أجري» takes the distance and the minutes waited, paid past `captain.waiting_threshold_min`.
 - **Plan:**
   - [x] The server: `GET /v1/captain/profile` (the data and vehicle) and `GET /v1/captain/pay-table` (the table in force for the captain's vehicle and the one announced), and the calculator's pure rule (failing test first: base, extra km rounded down, the minimum, waiting).
-  - [ ] «ملفي» in the captain app: the data read-only with «طلب تعديل» through Support, the pay table, «احسب أجري», the peak windows and the documents and contract moved under it.
+  - [x] «ملفي» in the captain app: the data read-only with «طلب تعديل» through Support, the pay table, «احسب أجري», the peak windows and the documents and contract moved under it.
   - [ ] Review, then hand over to 2.37.
-- **Stopped at:** the server step committed; the app's «ملفي» next.
+- **Stopped at:** the server and the app committed; the review next.
 
 ### Left from 2.36b (the cloud session's branch)
 
