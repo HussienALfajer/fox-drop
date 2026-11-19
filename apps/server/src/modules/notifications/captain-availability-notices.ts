@@ -45,10 +45,7 @@ export class CaptainAvailabilityNotices implements OnModuleInit {
         await this.pushes.enqueue(tx, [await this.warningPush(tx, change)], change.at);
       }
       // A violation's suspension is told by the violation's push (#25).
-      if (
-        (change.kind === 'suspended' && !change.byViolation) ||
-        change.kind === 'reactivated'
-      ) {
+      if ((change.kind === 'suspended' && !change.byViolation) || change.kind === 'reactivated') {
         await this.pushes.enqueue(tx, [await this.statusPush(tx, change)], change.at);
       }
       await this.broadcasts.enqueue(tx, {

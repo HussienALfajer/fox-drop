@@ -782,15 +782,9 @@ export const violations = captains.table(
     index('violations_captain').on(table.captainId, table.recordedAt),
     check('violations_step_values', sql`${table.step} IN (${stepValues})`),
     check('violations_suggested_step_values', sql`${table.suggestedStep} IN (${stepValues})`),
-    check(
-      'violations_appeal_outcome_values',
-      sql`${table.appealOutcome} IN (${outcomeValues})`,
-    ),
+    check('violations_appeal_outcome_values', sql`${table.appealOutcome} IN (${outcomeValues})`),
     check('violations_reason', sql`length(${table.reason}) BETWEEN 1 AND 500`),
-    check(
-      'violations_order',
-      sql`(${table.orderId} IS NULL) = (${table.orderNumber} IS NULL)`,
-    ),
+    check('violations_order', sql`(${table.orderId} IS NULL) = (${table.orderNumber} IS NULL)`),
     check(
       'violations_suspension',
       sql`(${table.suspendedUntil} IS NOT NULL) = (${table.step} IN ('suspension_1d', 'suspension_7d'))`,
