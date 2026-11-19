@@ -4,15 +4,25 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.36, captain management and performance (`docs/roadmap.md`, Phase 2). Planned, not started.
+Slice 2.36a, the captain list and profile in the panel (`docs/roadmap.md`, Phase 2; 2.36 is three pull requests, owner decision 2026-11-19).
 
-- **Roadmap line:** 2.36 Captain management and performance: the captain list, profile and actions, the acceptance rate over the last 50 offers, the on-time rate, violations and appeals, the acceptance-rate alert, the profile in the app with the pay table calculator (AP §9.7.3–9.7.6, CA §11, §12). A captain appeals a violation and the panel sees it.
-- **Specs:** AP §9.7.3 (the list), §9.7.4 (the profile's tabs), §9.7.5 (the actions: suspend, reactivate, force offline, release the device, the cash limit, the grace, a message, a violation, «إنهاء التعاقد» moving from the application's page), §9.7.6 (acceptance, conduct ladder, cancellations, automatic offline), CA §11 («أدائي», the violations and «اعتراض»), CA §12 (the profile, the pay table and «احسب أجري»), AP §6.
-- **Branch:** to create from an up-to-date `main` (`feat/captain-management`, or the cloud session's branch).
-- **Already built (reuse, do not rebuild):** `CaptainsService.setStatus`/`setStatusIn` (suspension with an end, reactivation; refused while a contract is being ended), `forceOffline`, the device release, the cash limit, the grace, the ratings pages (2.26c, moving into the profile), the offers log (2.15c), the reassignments' `captain_fault` and the handovers' fault (the captain's cancellations), the application's page as the captain file (2.34b–2.35b: the contract, kit, deposit, documents and the offboarding), the alerts machinery.
-- **To ask the owner first:** the split into pull requests (run the `slice-plan` skill: this line is several pull requests), and the design stop for any new screen in the captain app (the profile, «أدائي»); the open questions left by 2.35b (below).
-- **Plan:** to write as a checklist once the split is approved (one step per commit).
-- **Stopped at:** 2.35b merged; 2.36 not started.
+- **Roadmap line:** 2.36a The captain list and profile in the panel: the performance figures, the list with every column, filter and sort, the profile's tabs gathering the existing pages, «ملاحظات» and «سجل التغييرات», the message or push, «إنهاء التعاقد» moved from the application's page (AP §9.7.3–9.7.5). The owner sorts by highest custody and opens a captain's overview.
+- **Specs:** AP §9.7.3 (the list), §9.7.4 (the tabs), §9.7.5 (the actions), §9.7.6 (the acceptance rate's window), CA §11.2 (the on-time rate and the cancellations, the same figures), AP §6 (who: captains.read for the list and profile, OPS reads no money actions; suspend `captains.suspend`, the cash limit `captains.cash_limit`, the message `captains.manage`).
+- **Branch:** `claude/slide-2-36-f5jv9m` (the cloud session's branch).
+- **Already built (reuse):** the status change (`CaptainsService.setStatus`), force offline, the device release, the grace, the cash limit's service, the ratings, the balances, «أرباحي»'s windows, the application's page (contract, kit, deposit, documents, offboarding), the OPS task «مستند ينتهي» (2.35a: the 30 days of AP §9.7.4 are done).
+- **Owner decisions 2026-11-19:** three pull requests (2.36a the panel's list and profile; 2.36b «أدائي», the acceptance alert, violations and appeals; 2.36c «ملفي» and «احسب أجري»); the violation types, the ladder applying its suspension, an accepted appeal voiding the violation and the plain layout as proposed (for 2.36b).
+
+### Plan
+
+- [x] Record the split (`docs/roadmap.md`, this file).
+- [ ] The performance figures: dispatch's acceptance over the last 50 offers and the offer log; ordering's on-time over the last 50 delivered orders, captain cancellations in 90 days, orders today and the rating (failing tests first).
+- [ ] `POST /v1/admin/captain-list`: every column of AP §9.7.3, filtered by status and searched by name or number.
+- [ ] `GET /v1/admin/captains/{id}/profile` (the overview and the app tab) and `GET …/offers`.
+- [ ] The actions and the notes: suspend and reactivate, the cash limit, the message or push, the notes (`captains.notes`) and the change log.
+- [ ] The panel: «الكباتن» with its columns, filters and sorting; the profile with its tabs and actions; «إنهاء التعاقد» moved from the application's page.
+- [ ] Review, then hand over to 2.36b.
+
+- **Stopped at:** the split recorded; the figures next.
 
 ### Left from 2.35b (the cloud session's branch)
 
