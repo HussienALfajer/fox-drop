@@ -201,6 +201,6 @@ test('OPS reads the banners only', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'شاورما الشتاء' })).toBeVisible();
   await expect(page.getByText('لم يبدأ بعد')).toBeVisible();
   await expect(page.getByText('كل المناطق')).toBeVisible();
-  await expect(page.getByRole('button')).toHaveCount(0);
+  await expect(page.getByRole('main').getByRole('button')).toHaveCount(0);
   await expect(page.getByRole('region', { name: 'بانر جديد' })).toHaveCount(0);
 });

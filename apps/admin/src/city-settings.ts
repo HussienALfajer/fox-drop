@@ -213,6 +213,9 @@ export function useSaveCitySetting(cityId: string) {
         return { status: 'saved' };
       } finally {
         await queryClient.invalidateQueries({ queryKey: settingsKey(cityId) });
+        // The top bar's dispatch mode (AP §7.2) reads apart from the list;
+        // the answer never waits for it.
+        void queryClient.invalidateQueries({ queryKey: ['dispatch-mode', cityId] });
       }
     },
   });

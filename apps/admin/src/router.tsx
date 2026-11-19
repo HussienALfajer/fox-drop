@@ -5,6 +5,7 @@ import {
   createRouter,
   Outlet,
   redirect,
+  retainSearchParams,
 } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { OPERATIONS_MANAGE } from './assign-captain.js';
@@ -14,7 +15,7 @@ import { SETTINGS_READ } from './app-settings.js';
 import { AppSettingsPage } from './app-settings-page.js';
 import { EMERGENCY_CODE_PERMISSION } from './emergency-code.js';
 import { EMERGENCY_STOP_TOGGLE } from './emergency-stop.js';
-import { EmergencyStopBar } from './emergency-stop-bar.js';
+import { AlertsBell, SideMenu, TopBar } from './layout-page.js';
 import { EmergencyStopPage } from './emergency-stop-page.js';
 import { EmergencyCodePage } from './emergency-code-page.js';
 import { receivesAlerts } from './alerts.js';
@@ -129,11 +130,19 @@ const signInRoute = createRoute({
   component: SignInPage,
 });
 
+// The city chosen in the top bar's selector (AP §7.2), by its code; the
+// first city without one.
+const citySearch = (search: Record<string, unknown>): { city?: string } =>
+  typeof search.city === 'string' ? { city: search.city } : {};
+
 // Every other page needs a session; without one it opens the sign-in page.
-// fetchQuery reads the session again once it is stale (sessionQuery).
+// fetchQuery reads the session again once it is stale (sessionQuery). The
+// top bar's city stays in the address from page to page (retainSearchParams).
 const signedInRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: 'signed-in',
+  validateSearch: citySearch,
+  search: { middlewares: [retainSearchParams(['city'])] },
   beforeLoad: async ({ context }) => {
     const session = await context.queryClient.fetchQuery(sessionQuery);
     if (!session) throw redirect({ to: '/sign-in' });
@@ -142,17 +151,19 @@ const signedInRoute = createRoute({
   component: SignedInLayout,
 });
 
-// AP §7: every page shows the platform status; AP §7.3: a recipient of
-// alerts hears them on every page.
+// AP §7.1–7.2: every page shows the top bar and the side menu; AP §7.3: a
+// recipient of alerts hears them on every page.
 function SignedInLayout() {
   const { session } = signedInRoute.useRouteContext();
+  const { city } = signedInRoute.useSearch();
   const page = (
     <>
-      <EmergencyStopBar session={session} />
+      <TopBar session={session} cityCode={city} bell={<AlertsBell cityCode={city} />} />
+      <SideMenu session={session} />
       <Outlet />
     </>
   );
-  return receivesAlerts(session) ? <AlertsMonitor>{page}</AlertsMonitor> : page;
+  return receivesAlerts(session) ? <AlertsMonitor cityCode={city}>{page}</AlertsMonitor> : page;
 }
 
 const homeRoute = createRoute({
@@ -179,11 +190,6 @@ const emergencyStopRoute = createRoute({
   },
   component: EmergencyStopPage,
 });
-
-// The city chosen in the top bar's selector (AP §7.2), by its code; the
-// first city without one.
-const citySearch = (search: Record<string, unknown>): { city?: string } =>
-  typeof search.city === 'string' ? { city: search.city } : {};
 
 // AP §9.2: the operations room.
 const ordersRoute = createRoute({

@@ -118,7 +118,6 @@
   },
   "board": {
     "title": "غرفة العمليات",
-    "city": "المدينة",
     "noCity": "لا توجد مدينة فعّالة.",
     "filters": "التصفية",
     "restaurant": "المطعم",
@@ -5199,5 +5198,45 @@
       "restaurants.terminate": "إنهاء تعاقد مطعم"
     },
     "separator": "، "
+  },
+  "layout": {
+    "menu": "القائمة الرئيسية",
+    "start": "اختر صفحة من القائمة.",
+    "city": "المدينة",
+    "dispatchMode": "طريقة التوزيع: {{mode}}",
+    "dispatch": {
+      "manual": "يدوي",
+      "auto": "آلي",
+      "mixed": "مختلط"
+    },
+    "user": "حسابي ({{roles}})",
+    "module": {
+      "operations": "غرفة العمليات",
+      "restaurants": "المطاعم",
+      "captains": "الكباتن",
+      "customers": "الزبائن",
+      "support": "الدعم",
+      "finance": "المالية",
+      "marketing": "التسويق",
+      "zones": "المناطق والتسعير",
+      "content": "المحتوى",
+      "settings": "الإعدادات",
+      "team": "فريق الإدارة",
+      "auditLog": "سجل التدقيق",
+      "reports": "التقارير"
+    },
+    "search": {
+      "label": "بحث",
+      "submit": "ابحث",
+      "hint": "رقم طلب أو تذكرة، اسم مطعم أو كابتن، أو رقم هاتف.",
+      "none": "لا نتائج.",
+      "results": "نتائج البحث",
+      "order": "طلب #{{number}} ({{status}})",
+      "ticket": "تذكرة T-{{number}} ({{status}})",
+      "restaurant": "مطعم: {{name}}",
+      "captain": "كابتن: {{name}}",
+      "customer": "زبون: {{name}} {{phone}}",
+      "noName": "بلا اسم"
+    }
   }
 }

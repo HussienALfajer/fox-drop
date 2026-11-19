@@ -54,6 +54,8 @@ test('signs out', async ({ page }) => {
   );
   await page.goto('/');
 
+  // The user menu of the top bar (AP §7.2).
+  await page.getByText(/^حسابي/).click();
   await page.getByRole('button', { name: 'تسجيل الخروج' }).click();
 
   await expect(page).toHaveURL(/\/sign-in$/);
@@ -73,6 +75,8 @@ test('forgets the cached answers on sign-out', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('status')).toHaveText('الخادم يعمل');
 
+  // The user menu of the top bar (AP §7.2).
+  await page.getByText(/^حسابي/).click();
   await page.getByRole('button', { name: 'تسجيل الخروج' }).click();
   await page.getByLabel('البريد الإلكتروني أو رقم الهاتف').fill('next@example.com');
   await page.getByLabel('كلمة المرور').fill('a long password');

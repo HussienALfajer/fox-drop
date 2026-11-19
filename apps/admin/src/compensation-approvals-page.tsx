@@ -181,10 +181,10 @@ function RequestLine({ request, city }: { request: CompensationRequest; city: Ci
 
 // AP §9.1.4 «المهام»: the requests waiting for OWN, in the first city until
 // the top bar's selector, linking «طلبات الموافقة».
-export function ApprovalsLink() {
+export function ApprovalsLink({ cityCode }: { cityCode: string | undefined }) {
   const { t } = useTranslation();
   const cities = useQuery(citiesQuery);
-  const city = cities.data?.[0];
+  const city = cities.data ? chosenCity(cities.data, cityCode) : undefined;
   const requests = useCompensationRequests(city?.id);
   return (
     <Link to="/compensations" search={city ? { city: city.code } : {}}>

@@ -128,7 +128,7 @@ test('finds a customer and blocks them until further notice', async ({ page }) =
   await expect(page.getByText('تأخر كثيراً')).toBeVisible();
 
   await page.getByLabel('حتى إشعار آخر').check();
-  await page.getByRole('combobox').selectOption('abuse');
+  await page.getByRole('main').getByRole('combobox').selectOption('abuse');
   await page.getByLabel('السبب الداخلي').fill('أساء للكابتن');
   await page.getByRole('button', { name: 'حظر' }).click();
 
