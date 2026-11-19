@@ -425,6 +425,181 @@ void main() {
     await app.done(tester);
   });
 
+  // RA §14.1: the owners' «الموظفون» (owner decision 2026-11-19).
+  testWidgets('an owner adds a cashier and removes them after confirming', (
+    tester,
+  ) async {
+    final app = _App(role: 'owner');
+    Map<String, Object?> member(String id, String role, String name) => {
+      'accountId': id,
+      'role': role,
+      'name': name,
+      'phone': '+963900000$id',
+      'devices': role == 'owner' ? 1 : 0,
+      'lastActiveAt': role == 'owner' ? '2026-11-19T09:00:00.000Z' : null,
+    };
+    final owner = member('001', 'owner', 'ليلى');
+    final cashier = member('002', 'cashier', 'سامر');
+    app.server
+      ..on('/v1/merchant/settings/pickup-currencies', [
+        const FakeAnswer(200, {
+          'baseCurrency': null,
+          'accepted': <String>[],
+          'choices': <Object>[],
+        }),
+      ])
+      ..on('/v1/merchant/staff', [
+        FakeAnswer(200, {
+          'staff': [owner],
+        }),
+        const FakeAnswer(409, {'error': 'phone_taken'}),
+        FakeAnswer(200, {
+          'staff': [owner, cashier],
+        }),
+      ])
+      ..on('/v1/merchant/staff/002/remove', [
+        FakeAnswer(200, {
+          'staff': [owner],
+        }),
+      ]);
+    await app.pump(tester, [FakeAnswer(200, _open())]);
+    await tester.tap(find.byKey(const Key('open-settings')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('open-staff')));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('لإضافة مالك أو إزالته تواصل مع FOX DROP'),
+      findsOneWidget,
+    );
+    expect(find.text('ليلى'), findsOneWidget);
+    // Owners are read-only (RA §5.1).
+    expect(find.byKey(const Key('remove-001')), findsNothing);
+
+    await tester.tap(find.byKey(const Key('add-cashier')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('cashier-name')), 'سامر');
+    await tester.enterText(find.byKey(const Key('cashier-phone')), '123');
+    await tester.tap(find.byKey(const Key('cashier-add')));
+    await tester.pumpAndSettle();
+    expect(find.text('رقم الهاتف غير صحيح'), findsOneWidget);
+    await tester.enterText(
+      find.byKey(const Key('cashier-phone')),
+      '0912 345 678',
+    );
+    await tester.tap(find.byKey(const Key('cashier-add')));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('هذا الرقم مسجّل لدى مطعم آخر أو موظف آخر'),
+      findsOneWidget,
+    );
+    final sent = app.server
+        .to('/v1/merchant/staff')
+        .where((r) => r.method == 'POST')
+        .first;
+    expect(sent.data, {'name': 'سامر', 'phone': '+963912345678'});
+    // A refused number changes nothing; another one is added.
+    expect(find.text('سامر'), findsNothing);
+    await tester.tap(find.byKey(const Key('add-cashier')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('cashier-name')), 'سامر');
+    await tester.enterText(
+      find.byKey(const Key('cashier-phone')),
+      '0912345679',
+    );
+    await tester.tap(find.byKey(const Key('cashier-add')));
+    await tester.pumpAndSettle();
+    expect(find.text('سامر'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('remove-002')));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('حذف سامر؟ سيُسجَّل خروجه من كل أجهزته فوراً.'),
+      findsOneWidget,
+    );
+    await tester.tap(find.byKey(const Key('confirm')));
+    await tester.pumpAndSettle();
+    expect(app.server.to('/v1/merchant/staff/002/remove'), hasLength(1));
+    expect(find.text('سامر'), findsNothing);
+    await app.done(tester);
+  });
+
+  // RA §14.2: the owners' «الأجهزة».
+  testWidgets('an owner renames a device and signs it out', (tester) async {
+    final app = _App(role: 'owner');
+    Map<String, Object?> device(String name, {required bool signedIn}) => {
+      'deviceId': 'kitchen',
+      'name': name,
+      'platform': 'android',
+      'appVersion': '1.2.0',
+      'user': {'name': 'سامر', 'role': 'cashier'},
+      'signedIn': signedIn,
+      'lastSeenAt': '2026-11-19T09:00:00.000Z',
+      'ringing': null,
+      'deviceCheck': null,
+      'thisDevice': false,
+    };
+    app.server
+      ..on('/v1/merchant/settings/pickup-currencies', [
+        const FakeAnswer(200, {
+          'baseCurrency': null,
+          'accepted': <String>[],
+          'choices': <Object>[],
+        }),
+      ])
+      ..on('/v1/merchant/devices', [
+        FakeAnswer(200, {
+          'devices': [device('كاشير 1', signedIn: true)],
+        }),
+      ])
+      ..on('/v1/merchant/devices/kitchen/name', [
+        FakeAnswer(200, {
+          'devices': [device('تابلت المطبخ', signedIn: true)],
+        }),
+      ])
+      ..on('/v1/merchant/devices/kitchen/sign-out', [
+        FakeAnswer(200, {
+          'devices': [device('تابلت المطبخ', signedIn: false)],
+        }),
+      ]);
+    await app.pump(tester, [FakeAnswer(200, _open())]);
+    await tester.tap(find.byKey(const Key('open-settings')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('open-devices')));
+    await tester.pumpAndSettle();
+    expect(find.text('كاشير 1'), findsOneWidget);
+    expect(find.textContaining('سامر (كاشير)'), findsOneWidget);
+    expect(find.textContaining('أندرويد · الإصدار 1.2.0'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('rename-kitchen')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('device-name')),
+      'تابلت المطبخ',
+    );
+    await tester.tap(find.byKey(const Key('device-name-save')));
+    await tester.pumpAndSettle();
+    expect(app.server.to('/v1/merchant/devices/kitchen/name').single.data, {
+      'name': 'تابلت المطبخ',
+    });
+    expect(find.text('تابلت المطبخ'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('sign-out-kitchen')));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('تسجيل خروج «تابلت المطبخ»؟ يبقى المستخدم في الموظفين.'),
+      findsOneWidget,
+    );
+    await tester.tap(find.byKey(const Key('confirm')));
+    await tester.pumpAndSettle();
+    expect(
+      app.server.to('/v1/merchant/devices/kitchen/sign-out'),
+      hasLength(1),
+    );
+    expect(find.textContaining('غير مسجّل الدخول'), findsOneWidget);
+    expect(find.byKey(const Key('sign-out-kitchen')), findsNothing);
+    await app.done(tester);
+  });
+
   testWidgets('a cashier has no «الإعدادات»', (tester) async {
     final app = _App();
     await app.pump(tester, [FakeAnswer(200, _open())]);

@@ -4422,4 +4422,94 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get merchantMenuOptionName => 'اسم الخيار';
+
+  @override
+  String get merchantStaff => 'الموظفون';
+
+  @override
+  String get merchantDevices => 'الأجهزة';
+
+  @override
+  String get merchantRoleOwner => 'مالك';
+
+  @override
+  String get merchantRoleCashier => 'كاشير';
+
+  @override
+  String get merchantOwnersNote => 'لإضافة مالك أو إزالته تواصل مع FOX DROP';
+
+  @override
+  String merchantStaffDevices(int count) {
+    return 'الأجهزة: $count';
+  }
+
+  @override
+  String merchantLastActive(String date, String time) {
+    return 'آخر نشاط: $date $time';
+  }
+
+  @override
+  String get merchantNeverActive => 'لم يسجّل الدخول بعد';
+
+  @override
+  String get merchantAddCashier => 'إضافة كاشير';
+
+  @override
+  String get merchantCashierName => 'الاسم';
+
+  @override
+  String get merchantAdd => 'إضافة';
+
+  @override
+  String get merchantRemove => 'حذف';
+
+  @override
+  String merchantRemoveCashierConfirm(String name) {
+    return 'حذف $name؟ سيُسجَّل خروجه من كل أجهزته فوراً.';
+  }
+
+  @override
+  String get merchantPhoneTaken => 'هذا الرقم مسجّل لدى مطعم آخر أو موظف آخر';
+
+  @override
+  String get merchantDeviceSignedIn => 'مسجّل الدخول';
+
+  @override
+  String get merchantDeviceSignedOut => 'غير مسجّل الدخول';
+
+  @override
+  String merchantDeviceUser(String name, String role) {
+    return '$name ($role)';
+  }
+
+  @override
+  String merchantDeviceDetails(String platform, String version) {
+    return '$platform · الإصدار $version';
+  }
+
+  @override
+  String get merchantThisDevice => 'هذا الجهاز';
+
+  @override
+  String get merchantRenameDevice => 'إعادة تسمية';
+
+  @override
+  String get merchantSignOutDevice => 'تسجيل خروج الجهاز';
+
+  @override
+  String merchantSignOutDeviceConfirm(String name) {
+    return 'تسجيل خروج «$name»؟ يبقى المستخدم في الموظفين.';
+  }
+
+  @override
+  String get merchantNoDevices => 'لا أجهزة بعد';
+
+  @override
+  String get merchantPlatformAndroid => 'أندرويد';
+
+  @override
+  String get merchantPlatformIos => 'iOS';
+
+  @override
+  String get merchantPlatformWindows => 'ويندوز';
 }

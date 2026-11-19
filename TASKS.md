@@ -13,7 +13,7 @@ Slice 2.33, staff and devices (`docs/roadmap.md`, Phase 2).
 - **Owner decisions 2026-11-19:** «الموظفون» and «الأجهزة» are two rows at the top of the owners' «الإعدادات»; no cashier limit (RA §5.1 «any number»); a removed cashier's device, or a device an owner signs out, goes straight back to sign-in (no reason screen; a removed cashier who tries again sees «هذا الرقم غير مسجّل…»).
 - **Plan** (one step per commit):
   - [x] Server: the owners' routes `GET`/`POST /v1/merchant/staff`, `POST …/staff/{accountId}/remove` (cashiers only), `GET /v1/merchant/devices`, `PUT …/devices/{deviceId}/name`, `POST …/devices/{deviceId}/sign-out` (the end reason `signed_out_by_owner`, migration 0125); a cashier gets `403 owner_only`, a terminated restaurant `403 restaurant_terminated`; audited; the tests; the regenerated clients.
-  - [ ] Restaurant app: «الموظفون» (list, «إضافة كاشير», «حذف» with a confirmation, owners read-only with «لإضافة مالك أو إزالته تواصل مع FOX DROP») and «الأجهزة» (list, «إعادة تسمية», «تسجيل خروج الجهاز» with a confirmation) from «الإعدادات»; the strings; the widget tests.
+  - [x] Restaurant app: «الموظفون» (list, «إضافة كاشير», «حذف» with a confirmation, owners read-only with «لإضافة مالك أو إزالته تواصل مع FOX DROP») and «الأجهزة» (list, «إعادة تسمية», «تسجيل خروج الجهاز» with a confirmation) from «الإعدادات»; the strings; the widget tests.
   - [ ] `reviewer`, fixes, hand over to 2.34.
 - **Stopped at:** 2.33 started.
 

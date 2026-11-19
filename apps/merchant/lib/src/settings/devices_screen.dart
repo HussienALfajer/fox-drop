@@ -1,0 +1,176 @@
+import 'package:core_l10n/core_l10n.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'staff.dart';
+import 'staff_screen.dart';
+
+/// «الأجهزة» (RA §14.2), the owners': each device with its user, platform,
+/// version and whether someone is signed in on it, renamed or signed out
+/// (after a confirmation; its user stays). The ring setting, presence, the
+/// device check and the no-receiving-device banner join with 2.42.
+/// Unstyled until the design.
+class DevicesScreen extends ConsumerWidget {
+  const DevicesScreen({super.key});
+
+  Future<void> _rename(
+    BuildContext context,
+    WidgetRef ref,
+    RestaurantDevice device,
+  ) async {
+    final name = await showDialog<String>(
+      context: context,
+      builder: (context) => _RenameDialog(initial: device.name),
+    );
+    if (name == null || name == device.name || !context.mounted) return;
+    final saved = await ref
+        .read(devicesProvider.notifier)
+        .rename(device.deviceId, name);
+    if (!saved && context.mounted) _failed(context);
+  }
+
+  Future<void> _signOut(
+    BuildContext context,
+    WidgetRef ref,
+    RestaurantDevice device,
+  ) async {
+    final l10n = AppLocalizations.of(context);
+    final sure = await confirm(
+      context,
+      l10n.merchantSignOutDeviceConfirm(device.name),
+      l10n.merchantSignOutDevice,
+    );
+    if (!sure || !context.mounted) return;
+    final done = await ref
+        .read(devicesProvider.notifier)
+        .signOut(device.deviceId);
+    if (!done && context.mounted) _failed(context);
+  }
+
+  void _failed(BuildContext context) =>
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).merchantSaveFailed),
+        ),
+      );
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final devices = ref.watch(devicesProvider);
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.merchantDevices)),
+      body: switch (devices) {
+        AsyncData(:final value) when value.isEmpty => Center(
+          child: Text(l10n.merchantNoDevices),
+        ),
+        AsyncData(:final value) => ListView(
+          children: [
+            for (final device in value)
+              Column(
+                key: Key('device-${device.deviceId}'),
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ListTile(
+                    title: Text(
+                      device.thisDevice
+                          ? '${device.name} · ${l10n.merchantThisDevice}'
+                          : device.name,
+                    ),
+                    subtitle: Text(
+                      [
+                        if (device.user case final user?)
+                          l10n.merchantDeviceUser(
+                            user,
+                            device.userIsOwner
+                                ? l10n.merchantRoleOwner
+                                : l10n.merchantRoleCashier,
+                          ),
+                        l10n.merchantDeviceDetails(
+                          platformText(l10n, device.platform),
+                          device.appVersion,
+                        ),
+                        if (device.signedIn)
+                          l10n.merchantDeviceSignedIn
+                        else
+                          l10n.merchantDeviceSignedOut,
+                        lastActiveText(l10n, device.lastSeenAt),
+                      ].join(' · '),
+                    ),
+                  ),
+                  OverflowBar(
+                    alignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        key: Key('rename-${device.deviceId}'),
+                        onPressed: () => _rename(context, ref, device),
+                        child: Text(l10n.merchantRenameDevice),
+                      ),
+                      if (device.signedIn)
+                        TextButton(
+                          key: Key('sign-out-${device.deviceId}'),
+                          onPressed: () => _signOut(context, ref, device),
+                          child: Text(l10n.merchantSignOutDevice),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+          ],
+        ),
+        AsyncError(:final error) => Failure(
+          error: error,
+          retry: () => ref.invalidate(devicesProvider),
+        ),
+        _ => const Center(child: CircularProgressIndicator()),
+      },
+    );
+  }
+}
+
+class _RenameDialog extends StatefulWidget {
+  const _RenameDialog({required this.initial});
+
+  final String initial;
+
+  @override
+  State<_RenameDialog> createState() => _RenameDialogState();
+}
+
+class _RenameDialogState extends State<_RenameDialog> {
+  late final _name = TextEditingController(text: widget.initial);
+
+  @override
+  void dispose() {
+    _name.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return AlertDialog(
+      title: Text(l10n.merchantRenameDevice),
+      content: TextField(
+        key: const Key('device-name'),
+        controller: _name,
+        maxLength: 60,
+        decoration: InputDecoration(hintText: l10n.merchantDeviceNameHint),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.merchantMenuCancel),
+        ),
+        TextButton(
+          key: const Key('device-name-save'),
+          onPressed: () {
+            final name = _name.text.trim();
+            if (name.isNotEmpty) Navigator.of(context).pop(name);
+          },
+          child: Text(l10n.save),
+        ),
+      ],
+    );
+  }
+}
