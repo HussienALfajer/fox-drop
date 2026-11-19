@@ -17,6 +17,7 @@ import 'package:core_api/src/model/date.dart';
 import 'package:core_api/src/model/add_reason_dto.dart';
 import 'package:core_api/src/model/admin_accept_dto.dart';
 import 'package:core_api/src/model/admin_add_customer_note_dto.dart';
+import 'package:core_api/src/model/admin_add_restaurant_note_dto.dart';
 import 'package:core_api/src/model/admin_alert_dto_output.dart';
 import 'package:core_api/src/model/admin_alerts_dto_output.dart';
 import 'package:core_api/src/model/admin_alerts_dto_output_alerts_inner.dart';
@@ -407,6 +408,9 @@ import 'package:core_api/src/model/admin_restaurant_actions_dto_output_commissio
 import 'package:core_api/src/model/admin_restaurant_actions_dto_output_next_commission.dart';
 import 'package:core_api/src/model/admin_restaurant_categories_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_categories_dto_output.dart';
+import 'package:core_api/src/model/admin_restaurant_change_log_dto_output.dart';
+import 'package:core_api/src/model/admin_restaurant_change_log_dto_output_entries_inner.dart';
+import 'package:core_api/src/model/admin_restaurant_change_log_dto_output_entries_inner_changes_inner.dart';
 import 'package:core_api/src/model/admin_restaurant_commission_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_devices_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_devices_dto_output_devices_inner.dart';
@@ -431,6 +435,9 @@ import 'package:core_api/src/model/admin_restaurant_list_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_list_dto_output_restaurants_inner.dart';
 import 'package:core_api/src/model/admin_restaurant_list_query_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_max_active_orders_dto.dart';
+import 'package:core_api/src/model/admin_restaurant_notes_dto_output.dart';
+import 'package:core_api/src/model/admin_restaurant_orders_dto_output.dart';
+import 'package:core_api/src/model/admin_restaurant_orders_dto_output_orders_inner.dart';
 import 'package:core_api/src/model/admin_restaurant_overview_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_overview_dto_output_rejection_reasons_inner.dart';
 import 'package:core_api/src/model/admin_restaurant_pause_dto.dart';
@@ -947,6 +954,7 @@ part 'serializers.g.dart';
   AddReasonDto,
   AdminAcceptDto,
   AdminAddCustomerNoteDto,
+  AdminAddRestaurantNoteDto,
   AdminAlertDtoOutput,
   AdminAlertsDtoOutput,
   AdminAlertsDtoOutputAlertsInner,
@@ -1337,6 +1345,9 @@ part 'serializers.g.dart';
   AdminRestaurantActionsDtoOutputNextCommission,
   AdminRestaurantCategoriesDto,
   AdminRestaurantCategoriesDtoOutput,
+  AdminRestaurantChangeLogDtoOutput,
+  AdminRestaurantChangeLogDtoOutputEntriesInner,
+  AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner,
   AdminRestaurantCommissionDto,
   AdminRestaurantDevicesDtoOutput,
   AdminRestaurantDevicesDtoOutputDevicesInner,
@@ -1361,6 +1372,9 @@ part 'serializers.g.dart';
   AdminRestaurantListDtoOutputRestaurantsInner,
   AdminRestaurantListQueryDto,
   AdminRestaurantMaxActiveOrdersDto,
+  AdminRestaurantNotesDtoOutput,
+  AdminRestaurantOrdersDtoOutput,
+  AdminRestaurantOrdersDtoOutputOrdersInner,
   AdminRestaurantOverviewDtoOutput,
   AdminRestaurantOverviewDtoOutputRejectionReasonsInner,
   AdminRestaurantPauseDto,
@@ -2253,6 +2267,17 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(
+                AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminCannedRepliesDtoOutputRepliesInner),
             ]),
             () => ListBuilder<AdminCannedRepliesDtoOutputRepliesInner>(),
@@ -3002,6 +3027,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminRestaurantChangeLogDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<AdminRestaurantChangeLogDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminRestaurantActionsDtoOutputCommissionHistoryInner),
             ]),
             () =>
@@ -3093,6 +3124,12 @@ Serializers serializers =
               FullType(AdminSettlementPreviewDtoOutputCustodyInner),
             ]),
             () => ListBuilder<AdminSettlementPreviewDtoOutputCustodyInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminRestaurantOrdersDtoOutputOrdersInner),
+            ]),
+            () => ListBuilder<AdminRestaurantOrdersDtoOutputOrdersInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

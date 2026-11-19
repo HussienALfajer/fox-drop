@@ -266,6 +266,16 @@ export class MerchantAccountsService implements OnModuleInit {
     }
   }
 
+  // AP §9.6.4 «سجل التغييرات» (slice 2.30d): every account the restaurant
+  // ever had, removed ones included, by id with its name.
+  async everyAccount(restaurantId: string): Promise<Map<string, string>> {
+    const rows = await this.database.db
+      .select({ id: merchantAccounts.id, name: merchantAccounts.name })
+      .from(merchantAccounts)
+      .where(eq(merchantAccounts.restaurantId, restaurantId));
+    return new Map(rows.map((row) => [row.id, row.name]));
+  }
+
   // The restaurant's accounts not removed, owners first.
   async accounts(restaurantId: string): Promise<MerchantAccount[]> {
     return this.database.db

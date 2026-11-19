@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import {
   check,
+  index,
   inet,
   jsonb,
   pgSchema,
@@ -48,6 +49,8 @@ export const events = audit.table(
   (table) => [
     // A partitioned table's key includes its partition column.
     primaryKey({ columns: [table.id, table.occurredAt] }),
+    // AP §9.6.4 «سجل التغييرات» (slice 2.30d): a target's history.
+    index('events_target').on(table.targetType, table.targetId, table.occurredAt),
     check(
       'events_actor_type_values',
       sql`${table.actorType} IN ('admin', 'merchant', 'captain', 'customer', 'system')`,

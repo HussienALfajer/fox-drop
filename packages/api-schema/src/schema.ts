@@ -4692,6 +4692,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/restaurants/{restaurantId}/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRestaurantOverviewOrders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/captain/orders/{orderId}/route": {
         parameters: {
             query?: never;
@@ -5694,6 +5710,38 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["adminRestaurantListRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurants/{restaurantId}/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRestaurantProfileReadsListNotes"];
+        put?: never;
+        post: operations["adminRestaurantProfileReadsAddNote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/restaurants/{restaurantId}/change-log": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRestaurantProfileReadsChangeLog"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -14437,6 +14485,23 @@ export interface components {
             /** @description The period’s ratings; null with none. */
             ratingAverage: number | null;
         };
+        AdminRestaurantOrdersDto_Output: {
+            /** @description The latest 50, newest first. */
+            orders: {
+                /** Format: uuid */
+                id: string;
+                number: string;
+                /** Format: date-time */
+                placedAt: string;
+                /** @enum {string} */
+                status: "placed" | "accepted" | "ready" | "picked_up" | "arrived" | "delivered" | "rejected" | "cancelled" | "failed";
+                /** @description The customer’s total in minor units. */
+                total: string;
+                currency: string;
+                testOrder: boolean;
+                redelivery: boolean;
+            }[];
+        };
         CaptainOrderRouteDto_Output: {
             /** @enum {string} */
             leg: "to_restaurant" | "to_customer";
@@ -17132,6 +17197,46 @@ export interface components {
                 /** @description Minor units in the base: + the restaurant owes, − the platform owes it. */
                 balance: string;
                 lastOrderAt: string | null;
+            }[];
+        };
+        AdminRestaurantNotesDto_Output: {
+            /** @description Newest first. */
+            notes: {
+                /** Format: uuid */
+                id: string;
+                body: string;
+                authorName: string | null;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+        };
+        AdminAddRestaurantNoteDto: {
+            body: string;
+        };
+        AdminRestaurantChangeLogDto_Output: {
+            /** @description The latest 200 changes, newest first. */
+            entries: {
+                /** Format: uuid */
+                id: string;
+                /** Format: date-time */
+                at: string;
+                /** @description The audit action, such as restaurant.operations or restaurant.commission. */
+                action: string;
+                /** @enum {string} */
+                actorType: "admin" | "merchant" | "captain" | "customer" | "system";
+                /** @description The admin or the restaurant user; null for the system. */
+                actorName: string | null;
+                actorRole: string | null;
+                /** @description The restaurant user an account change is about, by name. */
+                account: string | null;
+                /** @description The changed fields only. */
+                changes: {
+                    field: string;
+                    /** @description The value as JSON; null for none. */
+                    before: string | null;
+                    after: string | null;
+                }[];
+                reason: string | null;
             }[];
         };
         AdminStatementRestaurantsDto_Output: {
@@ -25195,6 +25300,28 @@ export interface operations {
             };
         };
     };
+    adminRestaurantOverviewOrders: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantOrdersDto_Output"];
+                };
+            };
+        };
+    };
     captainOrderRouteRoute: {
         parameters: {
             query?: never;
@@ -26801,6 +26928,79 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminRestaurantListDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantProfileReadsListNotes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantNotesDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantProfileReadsAddNote: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminAddRestaurantNoteDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantNotesDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantProfileReadsChangeLog: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantChangeLogDto_Output"];
                 };
             };
         };

@@ -42,6 +42,19 @@ describe('GET /v1/admin/restaurants/{id}/overview (AP §9.6.4)', () => {
     expect(new Date(month.json().from).getTime()).toBeLessThan(
       new Date(today.json().from).getTime(),
     );
+    // «الطلبات»: the latest first.
+    const listed = await ops.get(`/v1/admin/restaurants/${restaurant}/orders`);
+    expect(listed.statusCode).toBe(200);
+    expect(listed.json().orders.map((order: { id: string }) => order.id)).toEqual([
+      late.id,
+      onTime.id,
+    ]);
+    expect(listed.json().orders[0]).toMatchObject({
+      status: 'ready',
+      currency: 'TRY',
+      testOrder: false,
+      redelivery: false,
+    });
   });
 
   it('answers 404 for an unknown restaurant and refuses a reader without restaurants.read', async () => {

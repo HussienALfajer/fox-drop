@@ -44,6 +44,38 @@ class AdminRestaurantOverviewDto extends createZodDto(
   }),
 ) {}
 
+// How many orders «الطلبات» shows (decided by us).
+export const RESTAURANT_ORDERS_LIMIT = 50;
+
+class AdminRestaurantOrdersDto extends createZodDto(
+  z.object({
+    orders: z
+      .array(
+        z.object({
+          id: z.uuid(),
+          number: z.string(),
+          placedAt: z.iso.datetime(),
+          status: z.enum([
+            'placed',
+            'accepted',
+            'ready',
+            'picked_up',
+            'arrived',
+            'delivered',
+            'rejected',
+            'cancelled',
+            'failed',
+          ]),
+          total: z.string().describe('The customer’s total in minor units.'),
+          currency: z.string(),
+          testOrder: z.boolean(),
+          redelivery: z.boolean(),
+        }),
+      )
+      .describe(`The latest ${RESTAURANT_ORDERS_LIMIT}, newest first.`),
+  }),
+) {}
+
 // AP §9.6.4 «نظرة عامة» (slice 2.30d): a restaurant's orders, sales,
 // acceptance, prep times, late and rejection rates with the reasons, rating
 // and unanswered orders, for today, 7 or 30 business days.
@@ -82,6 +114,26 @@ export class AdminRestaurantOverviewController {
       ratingCount: overview.rating?.count ?? 0,
       ratingAverage:
         overview.rating === null ? null : Math.round(overview.rating.average * 10) / 10,
+    };
+  }
+
+  // AP §9.6.4 «الطلبات»: the restaurant's latest orders.
+  @Get(':restaurantId/orders')
+  @RequirePermission('restaurants.read')
+  @ZodResponse({ status: 200, type: AdminRestaurantOrdersDto })
+  async orders(@Param() params: AdminRestaurantOverviewParamsDto) {
+    const rows = await this.figures.latestOrders(params.restaurantId, RESTAURANT_ORDERS_LIMIT);
+    return {
+      orders: rows.map((row) => ({
+        id: row.id,
+        number: row.number.toString(),
+        placedAt: row.placedAt.toISOString(),
+        status: row.status,
+        total: row.total.toString(),
+        currency: row.currency,
+        testOrder: row.testOrder,
+        redelivery: row.redelivery,
+      })),
     };
   }
 }

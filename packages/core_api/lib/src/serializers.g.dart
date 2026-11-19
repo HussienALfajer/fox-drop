@@ -12,6 +12,7 @@ Serializers _$serializers =
           ..add(AddReasonDtoNoteEnum.serializer)
           ..add(AdminAcceptDto.serializer)
           ..add(AdminAddCustomerNoteDto.serializer)
+          ..add(AdminAddRestaurantNoteDto.serializer)
           ..add(AdminAlertDtoOutput.serializer)
           ..add(AdminAlertDtoOutputCodeEnum.serializer)
           ..add(AdminAlertDtoOutputSeverityEnum.serializer)
@@ -676,6 +677,16 @@ Serializers _$serializers =
           ..add(AdminRestaurantActionsDtoOutputNextCommission.serializer)
           ..add(AdminRestaurantCategoriesDto.serializer)
           ..add(AdminRestaurantCategoriesDtoOutput.serializer)
+          ..add(AdminRestaurantChangeLogDtoOutput.serializer)
+          ..add(AdminRestaurantChangeLogDtoOutputEntriesInner.serializer)
+          ..add(
+            AdminRestaurantChangeLogDtoOutputEntriesInnerActorTypeEnum
+                .serializer,
+          )
+          ..add(
+            AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner
+                .serializer,
+          )
           ..add(AdminRestaurantCommissionDto.serializer)
           ..add(AdminRestaurantDevicesDtoOutput.serializer)
           ..add(AdminRestaurantDevicesDtoOutputDevicesInner.serializer)
@@ -720,6 +731,10 @@ Serializers _$serializers =
           ..add(AdminRestaurantListQueryDto.serializer)
           ..add(AdminRestaurantListQueryDtoStatusEnum.serializer)
           ..add(AdminRestaurantMaxActiveOrdersDto.serializer)
+          ..add(AdminRestaurantNotesDtoOutput.serializer)
+          ..add(AdminRestaurantOrdersDtoOutput.serializer)
+          ..add(AdminRestaurantOrdersDtoOutputOrdersInner.serializer)
+          ..add(AdminRestaurantOrdersDtoOutputOrdersInnerStatusEnum.serializer)
           ..add(AdminRestaurantOverviewDtoOutput.serializer)
           ..add(
             AdminRestaurantOverviewDtoOutputRejectionReasonsInner.serializer,
@@ -1838,6 +1853,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminCustomerDtoOutputNotesInner),
+            ]),
+            () => ListBuilder<AdminCustomerDtoOutputNotesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminTicketPageDtoOutputRedeliveriesInner),
             ]),
             () => ListBuilder<AdminTicketPageDtoOutputRedeliveriesInner>(),
@@ -2613,6 +2634,23 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminRestaurantChangeLogDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<AdminRestaurantChangeLogDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminRestaurantChangeLogDtoOutputEntriesInnerChangesInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminRestaurantDevicesDtoOutputDevicesInner),
             ]),
             () => ListBuilder<AdminRestaurantDevicesDtoOutputDevicesInner>(),
@@ -2645,6 +2683,12 @@ Serializers _$serializers =
               const FullType(AdminRestaurantListDtoOutputRestaurantsInner),
             ]),
             () => ListBuilder<AdminRestaurantListDtoOutputRestaurantsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminRestaurantOrdersDtoOutputOrdersInner),
+            ]),
+            () => ListBuilder<AdminRestaurantOrdersDtoOutputOrdersInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

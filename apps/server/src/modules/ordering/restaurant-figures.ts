@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq, gte, inArray, isNull, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, isNull, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { GeoService } from '../geo/index.js';
@@ -218,5 +218,26 @@ export class RestaurantFiguresService {
           ? { count: rated.count, average: rated.average }
           : null,
     };
+  }
+
+  // AP §9.6.4 «الطلبات» (slice 2.30d): the restaurant's latest orders, test
+  // orders and free re-deliveries included and marked; the panel's order
+  // history with its filters joins with 2.40. Reads every month's partition.
+  async latestOrders(restaurantId: string, limit: number) {
+    return this.database.db
+      .select({
+        id: orders.id,
+        number: orders.number,
+        placedAt: orders.placedAt,
+        status: orders.status,
+        currency: orders.currency,
+        total: orders.total,
+        testOrder: orders.testOrder,
+        redelivery: sql<boolean>`${orders.redeliveryOfId} IS NOT NULL`,
+      })
+      .from(orders)
+      .where(eq(orders.restaurantId, restaurantId))
+      .orderBy(desc(orders.placedAt), desc(orders.id))
+      .limit(limit);
   }
 }

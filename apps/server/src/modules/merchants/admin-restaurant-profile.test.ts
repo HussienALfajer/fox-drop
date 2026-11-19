@@ -286,3 +286,48 @@ describe('the profile’s «الحسابات» and devices (AP §9.6.4, RA §14)
     ).toBe(403);
   });
 });
+
+describe('«ملاحظات» and «سجل التغييرات» (AP §9.6.4)', () => {
+  it('adds a note once per key, by any reader of restaurants', async () => {
+    const id = await restaurant();
+    const fin = await admin('FIN');
+    // FIN reads statements without restaurants.read (owner decision 2026-11-05).
+    expect((await fin('GET', `${id}/notes`)).statusCode).toBe(403);
+    const { cookies: opsCookies } = await adminCookies('OPS');
+    const note = (body: string, key: string) =>
+      app.inject({
+        method: 'POST',
+        url: `/v1/admin/restaurants/${id}/notes`,
+        cookies: opsCookies,
+        headers: { 'idempotency-key': key },
+        payload: { body },
+      });
+    const key = randomUUID();
+    const first = await note('يفضل الاتصال صباحاً', key);
+    expect(first.statusCode).toBe(201);
+    expect(first.json().notes).toEqual([
+      expect.objectContaining({ body: 'يفضل الاتصال صباحاً', authorName: expect.any(String) }),
+    ]);
+    expect((await note('يفضل الاتصال صباحاً', key)).json().notes).toHaveLength(1);
+    expect((await note('نص آخر', key)).statusCode).toBe(422);
+  });
+
+  it('lists the restaurant’s changes with who made them, newest first', async () => {
+    const id = await restaurant();
+    const ops = await admin('OPS');
+    await ops('PUT', `${id}/profile/operations`, operations(540));
+    await ops('POST', `${id}/accounts`, { role: 'owner', name: 'مالك', phone: '+963944000779' });
+    const log = await ops('GET', `${id}/change-log`);
+    expect(log.statusCode).toBe(200);
+    const entries = log.json().entries;
+    expect(entries.slice(0, 2).map((entry: { action: string }) => entry.action)).toEqual([
+      'merchant_account.create',
+      'restaurant.operations',
+    ]);
+    expect(entries[0]).toMatchObject({ actorType: 'admin', account: 'مالك' });
+    expect(entries[0].actorName).toMatch(/^Operator/);
+    const hours = entries[1].changes.find((change: { field: string }) => change.field === 'periods');
+    expect(JSON.parse(hours.after)[0]).toEqual({ weekday: 0, opensAt: 540, closesAt: 1380 });
+    expect(entries.at(-1).action).toBe('restaurant.create');
+  });
+});
