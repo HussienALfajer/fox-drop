@@ -4,15 +4,19 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.37, zones and pricing in the panel (`docs/roadmap.md`, Phase 2). Not started; it needs splitting first.
+Slice 2.37a, delivery fees (`docs/roadmap.md`, Phase 2; 2.37 in three pull requests, owner decision 2026-11-19).
 
-- **Roadmap line:** 2.37 Zones and pricing in the panel: cities, zone outlines and names, the fee screen with its preview calculator, pay tables with their calculator, defaults, per-restaurant fee overrides, the vote map, the dispatch rules (AP §9.12). The owner changes a fee and previews it.
-- **Specs:** AP §9.12 (docs/product/v1/admin-panel/09-modules/12-zones-and-pricing.md), with its definition of done (AP §14), the open item on neighbourhood names (CU §18 item 6).
-- **Branch:** the cloud session's branch, from an up-to-date `main`.
-- **First:** the line is larger than one pull request. Run the `slice-plan` skill and get the owner's approval of the split (2.37a, 2.37b, …) before building.
-- **Already built (reuse):** the zones and cities (geo), the delivery fee rules and their quote (ordering), the pay table versions with `setPayTable`, `payTable`, `announcedPayTables` and `samplePay` (captains, 2.36c), the peak bonus screen and routes (2.16), the dispatch mode and settings (dispatch, settings).
-- **Plan:** written once the split is approved.
-- **Stopped at:** 2.36c merged; 2.37 not started.
+- **Roadmap line:** 2.37a Delivery fees: «رسوم التوصيل» with the city's rule and its versions, a restaurant's own rule, used by the quote and the cards, and the preview calculator (AP §9.12.3). The owner changes a fee band and previews a restaurant's fee at a point.
+- **Specs:** AP §9.12.3, AP §6.2 (zones and pricing: OWN full, OPS and FIN read), AP §14 item 27.
+- **Branch:** `claude/gifted-meitner-r729q6` (the cloud session's branch), from an up-to-date `main`.
+- **Owner decisions 2026-11-19:** 2.37 in three pull requests (2.37a fees, 2.37b pay, 2.37c the city, zones and rules); a restaurant's override is a whole rule of the city rule's shape that replaces it for that restaurant alone, set by OWN; «المدن» edits the existing city only.
+- **Plan:**
+  - [x] Record the split in `docs/roadmap.md` and this file.
+  - [ ] Server: a restaurant's fee rule in `geo.fee_rules` (migration: `restaurant_id`, the kind `city_rule` that returns a restaurant to the city's rule), `setRestaurantFeeRule`, `deliveryFee` taking the restaurant, the quote and the cards passing it, fx seeing the overrides' currencies; tests first.
+  - [ ] Server: the panel's routes (`GET /v1/admin/delivery-fees`, `PUT …` the city's rule, `PUT …/restaurants/{id}` a restaurant's, `GET …/preview`), audited, in the admin route table; `pnpm generate:api`.
+  - [ ] Panel: `/delivery-fees` «رسوم التوصيل»: the rule in force, its versions, the form (OWN), the restaurants' own rules, the preview calculator on the map; unit and Playwright tests.
+  - [ ] Review (`reviewer`), fixes, then hand over to 2.37b.
+- **Stopped at:** the split recorded; the server step not started.
 
 ### Left from 2.36c (the cloud session's branch)
 
