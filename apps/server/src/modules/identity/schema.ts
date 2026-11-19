@@ -364,17 +364,29 @@ export const merchantAccounts = identity.table(
 // A captain's sign-in (CA §4.9): one number per captain record, never created
 // by sign-in; OPS change the number (a later slice). The captain and its city
 // belong to captains and geo: plain columns here.
-export const captainAccounts = identity.table('captain_accounts', {
-  id: uuid('id')
-    .primaryKey()
-    .default(sql`uuidv7()`),
-  cityId: uuid('city_id').notNull(),
-  captainId: uuid('captain_id').notNull().unique(),
-  // The E.164 phone, encrypted, and its keyed hash to find it by.
-  phoneEncrypted: text('phone_encrypted').notNull(),
-  phoneHash: text('phone_hash').notNull().unique(),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-});
+// CA §5.1 (slice 2.34a): an applicant's account has no captain and no city
+// yet (its application has the city); activation gives it both (2.35), so a
+// number keeps one account from its application on.
+export const captainAccounts = identity.table(
+  'captain_accounts',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    cityId: uuid('city_id'),
+    captainId: uuid('captain_id').unique(),
+    // The E.164 phone, encrypted, and its keyed hash to find it by.
+    phoneEncrypted: text('phone_encrypted').notNull(),
+    phoneHash: text('phone_hash').notNull().unique(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    check(
+      'captain_accounts_applicant',
+      sql`(${table.captainId} IS NULL) = (${table.cityId} IS NULL)`,
+    ),
+  ],
+);
 
 // other_device: a captain signed in on another device (CA §4.9, K5);
 // device_released: OWN or OPS released a captain's device (AP §9.7.5).

@@ -5,8 +5,11 @@ import 'dart:typed_data';
 import 'package:captain/src/api.dart';
 import 'package:captain/src/app.dart';
 import 'package:captain/src/auth.dart';
+import 'package:captain/src/joining/application.dart';
+import 'package:captain/src/joining/photo_check.dart';
 import 'package:captain/src/push.dart';
 import 'package:captain/src/statements.dart';
+import 'package:captain/src/support/report_photo.dart';
 import 'package:captain/src/work/alerts.dart';
 import 'package:captain/src/work/call.dart';
 import 'package:captain/src/work/commands.dart';
@@ -501,6 +504,14 @@ class TestApp {
   final shared = <String, Uint8List>{};
   // Each view the route map drew (slice 2.29b), the latest last.
   final mapViews = <RouteView>[];
+  // The photos the picker gives, in order, and where each was asked from;
+  // none left reads as cancelled (CA §5.3).
+  final picked = <PickedPhoto>[];
+  final pickedFrom = <PhotoSource>[];
+  // What the blur and darkness check answers (CA §5.3).
+  PhotoQuality? photoQuality = PhotoQuality.ok;
+  // The storage URLs each photo was put to.
+  final puts = <String>[];
   late final ProviderContainer container;
 
   /// The server's clock in the test, which [advance] moves.
@@ -579,13 +590,15 @@ class TestApp {
     server.on('/v1/captain/push-token', [
       const FakeAnswer(200, {'status': 'registered'}),
     ]);
-    server.on('/v1/captain/auth/session', [
-      const FakeAnswer(200, {
-        'accountId': accountId,
-        'captainId': captainId,
-        'sessionId': '00000000-0000-4000-8000-000000000003',
-      }),
-    ]);
+    if (!server.routes.containsKey('/v1/captain/auth/session')) {
+      server.on('/v1/captain/auth/session', [
+        const FakeAnswer(200, {
+          'accountId': accountId,
+          'captainId': captainId,
+          'sessionId': '00000000-0000-4000-8000-000000000003',
+        }),
+      ]);
+    }
     container = ProviderContainer(
       overrides: [
         authApiProvider.overrideWithValue(server.client()),
@@ -619,6 +632,14 @@ class TestApp {
         serverClockProvider.overrideWithValue(
           ServerClock(deviceNow: () => clockNow),
         ),
+        photoPickerProvider.overrideWithValue((source) async {
+          pickedFrom.add(source);
+          return picked.isEmpty ? null : picked.removeAt(0);
+        }),
+        photoPutProvider.overrideWithValue((url, photo) async {
+          puts.add(url);
+        }),
+        photoCheckerProvider.overrideWithValue((photo) async => photoQuality),
       ],
       retry: (retryCount, error) => null,
     );

@@ -615,6 +615,14 @@ import 'package:core_api/src/model/captain_active_order_dto_output_order_radii.d
 import 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant_location.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_withdrawn.dart';
+import 'package:core_api/src/model/captain_application_document_dto.dart';
+import 'package:core_api/src/model/captain_application_dto_output.dart';
+import 'package:core_api/src/model/captain_application_dto_output_application.dart';
+import 'package:core_api/src/model/captain_application_dto_output_application_documents_inner.dart';
+import 'package:core_api/src/model/captain_application_personal_dto.dart';
+import 'package:core_api/src/model/captain_application_vehicle_dto.dart';
+import 'package:core_api/src/model/captain_application_zones_dto_output.dart';
+import 'package:core_api/src/model/captain_application_zones_dto_output_zones_inner.dart';
 import 'package:core_api/src/model/captain_arrive_at_customer_dto.dart';
 import 'package:core_api/src/model/captain_arrive_at_customer_dto_away.dart';
 import 'package:core_api/src/model/captain_arrive_dto.dart';
@@ -1626,6 +1634,14 @@ part 'serializers.g.dart';
   CaptainActiveOrderDtoOutputOrderRestaurant,
   CaptainActiveOrderDtoOutputOrderRestaurantLocation,
   CaptainActiveOrderDtoOutputWithdrawn,
+  CaptainApplicationDocumentDto,
+  CaptainApplicationDtoOutput,
+  CaptainApplicationDtoOutputApplication,
+  CaptainApplicationDtoOutputApplicationDocumentsInner,
+  CaptainApplicationPersonalDto,
+  CaptainApplicationVehicleDto,
+  CaptainApplicationZonesDtoOutput,
+  CaptainApplicationZonesDtoOutputZonesInner,
   CaptainArriveAtCustomerDto,
   CaptainArriveAtCustomerDtoAway,
   CaptainArriveDto,
@@ -2949,6 +2965,15 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(CaptainApplicationDtoOutputApplicationDocumentsInner),
+            ]),
+            () =>
+                ListBuilder<
+                  CaptainApplicationDtoOutputApplicationDocumentsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminTicketPageDtoOutputReportLinesInner),
             ]),
             () => ListBuilder<AdminTicketPageDtoOutputReportLinesInner>(),
@@ -3212,6 +3237,12 @@ Serializers serializers =
               FullType(AdminCostReportDtoOutputPartiesInner),
             ]),
             () => ListBuilder<AdminCostReportDtoOutputPartiesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CaptainApplicationZonesDtoOutputZonesInner),
+            ]),
+            () => ListBuilder<CaptainApplicationZonesDtoOutputZonesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

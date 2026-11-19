@@ -4,6 +4,7 @@ import {
   boolean,
   check,
   customType,
+  date,
   index,
   integer,
   pgSchema,
@@ -338,5 +339,122 @@ export const custodyWarnings = captains.table(
       'custody_warnings_cleared',
       sql`${table.clearedAt} IS NULL OR ${table.clearedAt} >= ${table.warnedAt}`,
     ),
+  ],
+);
+
+// CA §5.4, AP §9.7.1 (slice 2.34a): an application's stage. `draft` is the
+// form before «إرسال الطلب» (CA §5.1: saved after every step); the others are
+// the panel's stages and its two side stages.
+export const applicationStages = [
+  'draft',
+  'new',
+  'under_review',
+  'interview',
+  'awaiting_kit',
+  'active',
+  'waitlist',
+  'rejected',
+] as const;
+const stageValues = sql.raw(applicationStages.map((stage) => `'${stage}'`).join(', '));
+
+// CA §5.1–5.2 (slice 2.34a): one applicant's application, by their sign-in
+// account (identity's id, a plain column). An account has one application
+// not rejected; a rejected one stays as the history and a new one follows
+// after 30 days (K11, slice 2.34b). The city is the chosen zone's.
+export const applications = captains.table(
+  'applications',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    accountId: uuid('account_id').notNull(),
+    cityId: uuid('city_id').notNull(),
+    stage: text('stage', { enum: applicationStages }).notNull(),
+    // Step 1: the full three-part name, the date of birth, the
+    // neighbourhood (one of the city's active zones, owner decision
+    // 2026-11-19; geo's id).
+    fullName: text('full_name').notNull(),
+    birthDate: date('birth_date', { mode: 'string' }).notNull(),
+    zoneId: uuid('zone_id').notNull(),
+    // Step 2: null until chosen; the plate for a motorbike or a car only.
+    vehicle: text('vehicle', { enum: vehicles }),
+    plate: text('plate'),
+    submittedAt: timestamp('submitted_at', { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    check('applications_stage_values', sql`${table.stage} IN (${stageValues})`),
+    check('applications_vehicle_values', sql`${table.vehicle} IN (${vehicleValues})`),
+    check(
+      'applications_plate',
+      sql`(${table.plate} IS NOT NULL) = (${table.vehicle} IN ('motorbike', 'car'))`,
+    ),
+    check(
+      'applications_submitted',
+      sql`(${table.stage} = 'draft') = (${table.submittedAt} IS NULL) AND (${table.stage} = 'draft' OR ${table.vehicle} IS NOT NULL)`,
+    ),
+    uniqueIndex('applications_open_account')
+      .on(table.accountId)
+      .where(sql`${table.stage} <> 'rejected'`),
+  ],
+);
+
+// CA §5.3, AP §9.7.1, D24: the documents an applicant uploads. The signed
+// contract is the office's (2.35).
+export const applicationDocumentKinds = [
+  'national_id',
+  'personal_photo',
+  'civil_registry',
+  'criminal_record',
+  'vehicle_papers',
+  'driving_licence',
+] as const;
+const documentKindValues = sql.raw(applicationDocumentKinds.map((kind) => `'${kind}'`).join(', '));
+
+export const documentStatuses = ['pending', 'accepted', 'rejected'] as const;
+
+// One upload of a document: its files in private-docs (1 or 2: the ID's
+// front and back), its number (the ID's) and issue date (the criminal
+// record's, which sets its expiry, C18). A new upload of the same kind
+// replaces the row in force (`replaced_at`), which stays as the history.
+// The review's columns are the panel's (slice 2.34b).
+export const applicationDocuments = captains.table(
+  'application_documents',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    applicationId: uuid('application_id')
+      .notNull()
+      .references(() => applications.id),
+    kind: text('kind', { enum: applicationDocumentKinds }).notNull(),
+    fileKeys: text('file_keys').array().notNull(),
+    number: text('number'),
+    issueDate: date('issue_date', { mode: 'string' }),
+    expiresOn: date('expires_on', { mode: 'string' }),
+    status: text('status', { enum: documentStatuses }).notNull(),
+    reason: text('reason'),
+    reviewedBy: uuid('reviewed_by'),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+    // The account that uploaded it: the applicant's, or an admin's (the
+    // office's scans, slice 2.34b).
+    uploadedBy: uuid('uploaded_by').notNull(),
+    createdAt: createdAt(),
+    replacedAt: timestamp('replaced_at', { withTimezone: true }),
+  },
+  (table) => [
+    check('application_documents_kind_values', sql`${table.kind} IN (${documentKindValues})`),
+    check(
+      'application_documents_status_values',
+      sql`${table.status} IN ('pending', 'accepted', 'rejected')`,
+    ),
+    check('application_documents_files', sql`cardinality(${table.fileKeys}) BETWEEN 1 AND 2`),
+    uniqueIndex('application_documents_in_force')
+      .on(table.applicationId, table.kind)
+      .where(sql`${table.replacedAt} IS NULL`),
+    // Every upload of an application, the history included (slice 2.34b's
+    // review reads it).
+    index('application_documents_application').on(table.applicationId, table.createdAt),
   ],
 );

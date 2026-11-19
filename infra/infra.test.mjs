@@ -162,8 +162,11 @@ test("the storage's keys reach only the processes that use them (§15)", () => {
   // signs the exports' downloads; the worker writes and removes the exports.
   // maps-publish writes the map to public-maps (§7.2).
   assert.deepEqual(holders('STORAGE_SECRET'), ['api', 'maps-publish', 'storage-setup', 'worker']);
-  // The reader key: imgproxy (the nightly copy reads the file on the server).
+  // The reader key: imgproxy.
   assert.deepEqual(holders('STORAGE_READER_SECRET'), ['imgproxy', 'storage-setup']);
+  // The nightly copy's key reads private-docs: no container holds it; the
+  // copy reads it from the environment file on the server (slice 2.34a).
+  assert.deepEqual(holders('STORAGE_BACKUP_SECRET'), ['storage-setup']);
   assert.deepEqual(holders('GARAGE_ADMIN_TOKEN'), ['storage', 'storage-setup']);
 });
 

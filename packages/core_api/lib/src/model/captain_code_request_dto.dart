@@ -13,6 +13,7 @@ part 'captain_code_request_dto.g.dart';
 /// Properties:
 /// * [phone] - The mobile number in E.164: +9639xxxxxxxx or +905xxxxxxxxx.
 /// * [deviceId] - The device. The customer app's survives a reinstall (slice 2.25d: from Android ID on Android, a Keychain value on iOS), so a block follows the phone; the other apps' is the installation, kept until the app is removed.
+/// * [join] - «انضم ككابتن» (CA §5.1): a number without an account gets the code too, to apply. Without it only a captain or an applicant does.
 @BuiltValue()
 abstract class CaptainCodeRequestDto
     implements Built<CaptainCodeRequestDto, CaptainCodeRequestDtoBuilder> {
@@ -23,6 +24,10 @@ abstract class CaptainCodeRequestDto
   /// The device. The customer app's survives a reinstall (slice 2.25d: from Android ID on Android, a Keychain value on iOS), so a block follows the phone; the other apps' is the installation, kept until the app is removed.
   @BuiltValueField(wireName: r'deviceId')
   String get deviceId;
+
+  /// «انضم ككابتن» (CA §5.1): a number without an account gets the code too, to apply. Without it only a captain or an applicant does.
+  @BuiltValueField(wireName: r'join')
+  bool? get join;
 
   CaptainCodeRequestDto._();
 
@@ -64,6 +69,13 @@ class _$CaptainCodeRequestDtoSerializer
       object.deviceId,
       specifiedType: const FullType(String),
     );
+    if (object.join != null) {
+      yield r'join';
+      yield serializers.serialize(
+        object.join,
+        specifiedType: const FullType(bool),
+      );
+    }
   }
 
   @override
@@ -108,6 +120,16 @@ class _$CaptainCodeRequestDtoSerializer
                   )
                   as String;
           result.deviceId = valueDes;
+          break;
+        case r'join':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(bool),
+                  )
+                  as bool?;
+          if (valueDes == null) continue;
+          result.join = valueDes;
           break;
         default:
           unhandled.add(key);

@@ -12,7 +12,7 @@ part 'captain_session_dto_output.g.dart';
 ///
 /// Properties:
 /// * [accountId]
-/// * [captainId]
+/// * [captainId] - Null for an applicant (CA §5.1): the app opens the application, not home.
 /// * [sessionId]
 @BuiltValue()
 abstract class CaptainSessionDtoOutput
@@ -20,8 +20,9 @@ abstract class CaptainSessionDtoOutput
   @BuiltValueField(wireName: r'accountId')
   String get accountId;
 
+  /// Null for an applicant (CA §5.1): the app opens the application, not home.
   @BuiltValueField(wireName: r'captainId')
-  String get captainId;
+  String? get captainId;
 
   @BuiltValueField(wireName: r'sessionId')
   String get sessionId;
@@ -62,10 +63,12 @@ class _$CaptainSessionDtoOutputSerializer
       specifiedType: const FullType(String),
     );
     yield r'captainId';
-    yield serializers.serialize(
-      object.captainId,
-      specifiedType: const FullType(String),
-    );
+    yield object.captainId == null
+        ? null
+        : serializers.serialize(
+            object.captainId,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'sessionId';
     yield serializers.serialize(
       object.sessionId,
@@ -111,9 +114,10 @@ class _$CaptainSessionDtoOutputSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(String),
+                    specifiedType: const FullType.nullable(String),
                   )
-                  as String;
+                  as String?;
+          if (valueDes == null) continue;
           result.captainId = valueDes;
           break;
         case r'sessionId':

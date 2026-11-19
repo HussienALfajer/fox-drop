@@ -706,6 +706,13 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/captain/auth/refresh': 'public',
   'GET /v1/captain/auth/session': 'app_session',
   'POST /v1/captain/auth/sign-out': 'app_session',
+  'GET /v1/captain/application': 'app_session',
+  'GET /v1/captain/application/zones': 'app_session',
+  'PUT /v1/captain/application/personal': 'app_session',
+  'PUT /v1/captain/application/vehicle': 'app_session',
+  'POST /v1/captain/application/documents/upload': 'app_session',
+  'PUT /v1/captain/application/documents/{kind}': 'app_session',
+  'POST /v1/captain/application/submit': 'app_session',
   'GET /v1/captain/availability': 'app_session',
   'POST /v1/captain/availability/online': 'app_session',
   'POST /v1/captain/availability/offline': 'app_session',
@@ -828,7 +835,9 @@ function routes(cityId: string = randomUUID()): {
 }
 
 describe('every route with every role (architecture §15.2, AP §14 item 2)', () => {
-  it('declares its access in this test', () => {
+  // It builds the whole OpenAPI document (about 2 s alone, more than 5 s
+  // under the full parallel run of `pnpm verify`), so it has its own budget.
+  it('declares its access in this test', { timeout: 30_000 }, () => {
     const found = routes().map((route) => `${route.method} ${route.path}`);
     expect(found.sort()).toEqual(Object.keys(routeAccess).sort());
     for (const route of found) {

@@ -98,6 +98,7 @@ const folders: Record<UploadPurpose, string> = {
   restaurant_contract: 'restaurants/contracts',
   restaurant_licence: 'restaurants/licences',
   menu_import: 'menus/imports',
+  captain_document: 'captains/documents',
 };
 
 // The purposes whose image must have an exact size in pixels: a banner is
@@ -115,12 +116,13 @@ const SIZE_HEAD_BYTES = 128 * 1024;
 // The others go to public-media from the panel, and a restaurant owner's
 // item photo from the restaurant app too (slice 2.32b, `createUpload`'s
 // `from`).
-const APP_PURPOSES: readonly UploadPurpose[] = ['report_photo'];
+const APP_PURPOSES: readonly UploadPurpose[] = ['report_photo', 'captain_document'];
 const PRIVATE_PURPOSES: readonly UploadPurpose[] = [
   'report_photo',
   'restaurant_contract',
   'restaurant_licence',
   'menu_import',
+  'captain_document',
 ];
 
 function bucketOf(purpose: UploadPurpose): string {

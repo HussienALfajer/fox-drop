@@ -18,8 +18,12 @@ export interface StorageKey {
   secret: string;
   name: string;
   // What the key may do on public-media; a key that writes is the server's,
-  // which alone reads and writes private-docs.
+  // which alone writes private-docs.
   write: boolean;
+  // A key that only reads may read private-docs too: the nightly copy's
+  // (architecture §17.2; slice 2.34a, owner decision 2026-11-19, so the
+  // captain documents are copied), never imgproxy's.
+  readsPrivate?: boolean;
 }
 
 export interface StorageSetupOptions {
@@ -92,7 +96,10 @@ export async function setUpStorage(options: StorageSetupOptions): Promise<void> 
     { alias: PUBLIC_MEDIA_BUCKET, rights: (key: StorageKey) => ({ read: true, write: key.write }) },
     {
       alias: PRIVATE_DOCS_BUCKET,
-      rights: (key: StorageKey) => ({ read: key.write, write: key.write }),
+      rights: (key: StorageKey) => ({
+        read: key.write || key.readsPrivate === true,
+        write: key.write,
+      }),
     },
     {
       alias: PUBLIC_MAPS_BUCKET,
@@ -172,8 +179,9 @@ async function waitForAdmin(admin: ReturnType<typeof adminApi>, waitMs: number) 
 
 // The setup's options from the environment: STORAGE_ADMIN_URL,
 // GARAGE_ADMIN_TOKEN, the server's key (STORAGE_KEY_ID, STORAGE_SECRET) and
-// imgproxy's and the backups' reader key (STORAGE_READER_KEY_ID,
-// STORAGE_READER_SECRET).
+// imgproxy's reader key (STORAGE_READER_KEY_ID, STORAGE_READER_SECRET) and the
+// nightly copy's (STORAGE_BACKUP_KEY_ID, STORAGE_BACKUP_SECRET), which reads
+// both buckets and writes none.
 export function storageSetupFromEnvironment(
   env: NodeJS.ProcessEnv = process.env,
 ): StorageSetupOptions {
@@ -192,6 +200,13 @@ export function storageSetupFromEnvironment(
         secret: value('STORAGE_READER_SECRET'),
         name: 'reader',
         write: false,
+      },
+      {
+        id: value('STORAGE_BACKUP_KEY_ID'),
+        secret: value('STORAGE_BACKUP_SECRET'),
+        name: 'backup',
+        write: false,
+        readsPrivate: true,
       },
     ],
   };

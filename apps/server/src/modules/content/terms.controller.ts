@@ -148,8 +148,10 @@ export class CaptainTermsController {
     return read(this.terms, 'captain', session);
   }
 
+  // CA §5.2 step 4 (slice 2.34a): an applicant accepts the captain terms on
+  // the form, with the account they keep as a captain.
   @Post('accept')
-  @AppSignedIn()
+  @AppSignedIn({ applicants: true })
   @HttpCode(200)
   @ZodResponse({ status: 200, type: TermsAcceptedDto })
   accept(@CurrentAppSession() session: AppSession, @Body() body: TermsAcceptDto) {

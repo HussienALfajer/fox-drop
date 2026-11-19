@@ -10,7 +10,7 @@ class _$CaptainSessionDtoOutput extends CaptainSessionDtoOutput {
   @override
   final String accountId;
   @override
-  final String captainId;
+  final String? captainId;
   @override
   final String sessionId;
 
@@ -20,7 +20,7 @@ class _$CaptainSessionDtoOutput extends CaptainSessionDtoOutput {
 
   _$CaptainSessionDtoOutput._({
     required this.accountId,
-    required this.captainId,
+    this.captainId,
     required this.sessionId,
   }) : super._();
   @override
@@ -115,11 +115,7 @@ class CaptainSessionDtoOutputBuilder
             r'CaptainSessionDtoOutput',
             'accountId',
           ),
-          captainId: BuiltValueNullFieldError.checkNotNull(
-            captainId,
-            r'CaptainSessionDtoOutput',
-            'captainId',
-          ),
+          captainId: captainId,
           sessionId: BuiltValueNullFieldError.checkNotNull(
             sessionId,
             r'CaptainSessionDtoOutput',

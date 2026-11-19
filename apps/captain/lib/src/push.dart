@@ -37,6 +37,9 @@ Future<void> askNotifications(Ref ref) async {
 /// architecture §8.1).
 final pushTokensProvider = Provider<PushTokens>((ref) {
   final tokens = PushTokens(ref.watch(pushProvider), (token) async {
+    // An applicant's pushes come with the panel's pipeline (slice 2.34b).
+    final session = await ref.read(captainSessionProvider.future);
+    if (session == null || session.captainId == null) return;
     await ref
         .read(coreApiProvider)
         .getCaptainApi()

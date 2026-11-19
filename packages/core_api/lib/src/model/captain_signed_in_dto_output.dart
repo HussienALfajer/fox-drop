@@ -12,7 +12,7 @@ part 'captain_signed_in_dto_output.g.dart';
 ///
 /// Properties:
 /// * [accountId]
-/// * [captainId]
+/// * [captainId] - Null for an applicant (CA §5.1): the app opens the application, not home.
 /// * [accessToken] - A JWT for the Authorization header, valid 15 minutes.
 /// * [accessTokenExpiresAt]
 /// * [refreshToken] - Used once at /refresh for a new pair; using it twice signs the device out.
@@ -23,8 +23,9 @@ abstract class CaptainSignedInDtoOutput
   @BuiltValueField(wireName: r'accountId')
   String get accountId;
 
+  /// Null for an applicant (CA §5.1): the app opens the application, not home.
   @BuiltValueField(wireName: r'captainId')
-  String get captainId;
+  String? get captainId;
 
   /// A JWT for the Authorization header, valid 15 minutes.
   @BuiltValueField(wireName: r'accessToken')
@@ -73,10 +74,12 @@ class _$CaptainSignedInDtoOutputSerializer
       specifiedType: const FullType(String),
     );
     yield r'captainId';
-    yield serializers.serialize(
-      object.captainId,
-      specifiedType: const FullType(String),
-    );
+    yield object.captainId == null
+        ? null
+        : serializers.serialize(
+            object.captainId,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'accessToken';
     yield serializers.serialize(
       object.accessToken,
@@ -132,9 +135,10 @@ class _$CaptainSignedInDtoOutputSerializer
           final valueDes =
               serializers.deserialize(
                     value,
-                    specifiedType: const FullType(String),
+                    specifiedType: const FullType.nullable(String),
                   )
-                  as String;
+                  as String?;
+          if (valueDes == null) continue;
           result.captainId = valueDes;
           break;
         case r'accessToken':

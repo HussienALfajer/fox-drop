@@ -630,7 +630,7 @@ void main() {
     // Not awaited: the sign-out completes while the frames are pumped.
     unawaited(app.container.read(captainAuth.session.notifier).signOut());
     await app.settle(tester);
-    expect(find.text('رقم الهاتف'), findsOneWidget);
+    expect(find.text('انضم ككابتن'), findsOneWidget);
     expect(tracker.tracking, isFalse);
     expect(tracker.queued, 0);
     await app.done(tester);

@@ -19,6 +19,7 @@ import { AdminSessionsService } from './admin-sessions.service.js';
 import { AppSessionsService } from './app-sessions.service.js';
 import { changePlaceholderPhone } from './placeholder-phone.js';
 import { ADMIN_SESSION_COOKIE } from './route-access.guard.js';
+import { createOpenApiDocument } from '../../http/openapi.js';
 import { IDENTITY_SECRETS, type IdentitySecrets } from './secrets.js';
 
 // The captain app's sign-in (CA §4.9) on the app sign-in engine, served by the
@@ -321,6 +322,179 @@ async function pastResendWait() {
 // CA §4.9 «During an active order», AP §9.7.5 «تحرير الجهاز» (slice 2.12c).
 // Which captains have an active order is ordering's lookup (proved by its own
 // tests); here a stand-in names them.
+describe('joining (CA §5.1, slice 2.34a; owner decision 2026-11-19)', () => {
+  function joinCode(phone: string, deviceId: string) {
+    return app.inject({
+      method: 'POST',
+      url: '/v1/captain/auth/code',
+      payload: { phone, deviceId, join: true },
+    });
+  }
+
+  async function join(phone: string, deviceId = randomUUID()) {
+    expect((await joinCode(phone, deviceId)).statusCode).toBe(200);
+    return app.inject({
+      method: 'POST',
+      url: '/v1/captain/auth/sign-in',
+      payload: { phone, deviceId, code: sender.lastCode(phone) },
+    });
+  }
+
+  it('sends «انضم ككابتن» a code and makes an applicant who keeps the number', async () => {
+    const phone = newPhone();
+    const signedIn = await join(phone);
+    expect(signedIn.statusCode).toBe(200);
+    const body = signedIn.json();
+    expect(body.captainId).toBeNull();
+    const current = await session(body.accessToken);
+    expect(current.statusCode).toBe(200);
+    expect(current.json()).toMatchObject({ accountId: body.accountId, captainId: null });
+    // The account is a captain_accounts row without a captain or a city.
+    const { rows } = await sql.query(
+      'SELECT captain_id, city_id FROM identity.captain_accounts WHERE id = $1',
+      [body.accountId],
+    );
+    expect(rows).toEqual([{ captain_id: null, city_id: null }]);
+    // «تسجيل الدخول» now sends the applicant a code and signs in the same
+    // account.
+    await sql.query(
+      "UPDATE identity.app_sign_in_codes SET created_at = created_at - interval '2 minutes'",
+    );
+    const again = (await signIn(phone)).json();
+    expect(again).toMatchObject({ accountId: body.accountId, captainId: null });
+    // The refresh works as a captain's.
+    const refreshed = await app.inject({
+      method: 'POST',
+      url: '/v1/captain/auth/refresh',
+      payload: { refreshToken: again.refreshToken },
+    });
+    expect(refreshed.statusCode).toBe(200);
+  });
+
+  it('stores a code sent to no one as no code, so a guess never makes an applicant', async () => {
+    const phone = newPhone();
+    const deviceId = randomUUID();
+    expect((await requestCode(phone, deviceId)).statusCode).toBe(200);
+    const secrets = app.get<IdentitySecrets>(IDENTITY_SECRETS);
+    const { rows } = await sql.query(
+      'SELECT code_hash FROM identity.app_sign_in_codes WHERE phone_hash = $1 AND ended_at IS NULL',
+      [secrets.phoneHash(phone)],
+    );
+    const stored: string = rows[0].code_hash;
+    // No 6-digit code matches it.
+    for (let code = 0; code < 1_000_000; code += 1) {
+      if (secrets.signInCodeHash(phone, code.toString().padStart(6, '0')) === stored) {
+        throw new Error('a code matches the silent code');
+      }
+    }
+    const guessed = await app.inject({
+      method: 'POST',
+      url: '/v1/captain/auth/sign-in',
+      payload: { phone, deviceId, code: '123456' },
+    });
+    expect(guessed.json()).toMatchObject({ error: 'wrong_code' });
+    const accounts = await sql.query(
+      'SELECT count(*)::int AS n FROM identity.captain_accounts WHERE phone_hash = $1',
+      [secrets.phoneHash(phone)],
+    );
+    expect(accounts.rows).toEqual([{ n: 0 }]);
+  }, 60_000);
+
+  it('answers an applicant 403 applicant on every captain route but its own', async () => {
+    const { accessToken } = (await join(newPhone())).json();
+    const document = createOpenApiDocument(app);
+    // The routes an applicant may call (CA §5.1–5.2): the session, the
+    // terms and the application (and the sign-out, left out here since it
+    // ends the session; the next test calls it).
+    const allowed = [
+      'GET /v1/captain/auth/session',
+      'POST /v1/captain/terms/accept',
+      'GET /v1/captain/application',
+      'GET /v1/captain/application/zones',
+      'PUT /v1/captain/application/personal',
+      'PUT /v1/captain/application/vehicle',
+      'POST /v1/captain/application/documents/upload',
+      'PUT /v1/captain/application/documents/{kind}',
+      'POST /v1/captain/application/submit',
+    ];
+    const reached: string[] = [];
+    for (const [path, item] of Object.entries(document.paths)) {
+      if (!path.startsWith('/v1/captain/')) continue;
+      for (const method of ['get', 'put', 'post'] as const) {
+        const operation = item[method];
+        if (!operation || path === '/v1/captain/auth/sign-out') continue;
+        const response = await app.inject({
+          method: method.toUpperCase() as 'GET',
+          url: path.replaceAll(/\{[^}]+\}/g, randomUUID()),
+          headers: { authorization: `Bearer ${accessToken}` },
+          ...(method === 'get' ? {} : { payload: {} }),
+        });
+        const refused = response.statusCode === 403 && response.json().error === 'applicant';
+        if (!refused) reached.push(`${method.toUpperCase()} ${path}`);
+      }
+    }
+    const open = reached.filter((route) => !allowed.includes(route));
+    // The rest it reaches are the public and guest routes, which take no
+    // session.
+    for (const route of open) {
+      const [method, path] = route.split(' ') as [string, string];
+      const anonymous = await app.inject({
+        method: method as 'GET',
+        url: path.replaceAll(/\{[^}]+\}/g, randomUUID()),
+        ...(method === 'GET' ? {} : { payload: {} }),
+      });
+      expect([route, anonymous.statusCode === 401]).toEqual([route, false]);
+    }
+    expect(allowed.filter((route) => !reached.includes(route))).toEqual([]);
+  }, 120_000);
+
+  it('keeps an applicant to the routes that take applicants', async () => {
+    const { accessToken } = (await join(newPhone())).json();
+    const availability = await app.inject({
+      method: 'GET',
+      url: '/v1/captain/availability',
+      headers: { authorization: `Bearer ${accessToken}` },
+    });
+    expect(availability.statusCode).toBe(403);
+    expect(availability.json()).toMatchObject({ error: 'applicant' });
+    const terms = await app.inject({
+      method: 'GET',
+      url: '/v1/captain/terms',
+      headers: { authorization: `Bearer ${accessToken}` },
+    });
+    expect(terms.statusCode).toBe(200);
+    expect(terms.json()).toMatchObject({ pending: true });
+    const out = await app.inject({
+      method: 'POST',
+      url: '/v1/captain/auth/sign-out',
+      headers: { authorization: `Bearer ${accessToken}` },
+    });
+    expect(out.statusCode).toBe(200);
+    expect((await session(accessToken)).statusCode).toBe(401);
+  });
+
+  it('sends a terminated captain nothing even to join, and never makes a second account', async () => {
+    const { captainId, phone, accountId } = await captain();
+    await captains.setStatus(captainId, 'terminated', change, new Date());
+    const deviceId = randomUUID();
+    expect((await joinCode(phone, deviceId)).statusCode).toBe(200);
+    expect(sender.lastCode(phone)).toBeUndefined();
+    const { rows } = await sql.query(
+      'SELECT count(*)::int AS n FROM identity.captain_accounts WHERE id = $1 OR captain_id = $2',
+      [accountId, captainId],
+    );
+    expect(rows).toEqual([{ n: 1 }]);
+  });
+
+  it('refuses an applicant the emergency code (W4)', async () => {
+    const phone = newPhone();
+    expect((await join(phone)).statusCode).toBe(200);
+    const code = await (await admin(['OPS'])).issueCode(phone);
+    expect(code.statusCode).toBe(409);
+    expect(code.json()).toMatchObject({ error: 'not_registered' });
+  });
+});
+
 describe('one device during an active order (CA §4.9, K5)', () => {
   const busy = new Set<string>();
   beforeAll(() => {

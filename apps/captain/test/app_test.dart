@@ -25,6 +25,10 @@ void main() {
   ) async {
     final app = TestApp();
     await app.pump(tester, stored: {});
+    // CA §5.1: the entry screen, then «تسجيل الدخول».
+    expect(find.text('انضم ككابتن'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('welcome-sign-in')));
+    await tester.pumpAndSettle();
     expect(find.text('تسجيل الدخول'), findsWidgets);
     expect(
       Directionality.of(tester.element(find.text('رقم الهاتف'))),
@@ -63,7 +67,7 @@ void main() {
 
     await tester.tap(find.text('تسجيل الخروج'));
     await app.settle(tester);
-    expect(find.text('رقم الهاتف'), findsOneWidget);
+    expect(find.byKey(const Key('welcome-join')), findsOneWidget);
     expect(app.server.to('/v1/captain/auth/sign-out'), hasLength(1));
     await app.done(tester);
   });
@@ -73,6 +77,8 @@ void main() {
   ) async {
     final app = TestApp();
     await app.pump(tester, stored: {});
+    await tester.tap(find.byKey(const Key('welcome-sign-in')));
+    await tester.pumpAndSettle();
     app.server.on('/v1/captain/auth/code', [
       const FakeAnswer(503, {'error': 'unavailable'}),
     ]);
@@ -105,6 +111,8 @@ void main() {
   ) async {
     final app = TestApp();
     await app.pump(tester, stored: {});
+    await tester.tap(find.byKey(const Key('welcome-sign-in')));
+    await tester.pumpAndSettle();
     app.server.on('/v1/captain/auth/code', [FakeAnswer(200, _codeSent())]);
     app.server.on('/v1/captain/auth/sign-in', [
       const FakeAnswer(403, {'error': 'active_order_elsewhere'}),

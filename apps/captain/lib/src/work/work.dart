@@ -107,7 +107,8 @@ PickupRequest? refusedRequest(ActiveOrder order) {
 /// recovery, and polled while the connection is down.
 final workFeedProvider = Provider.autoDispose<LiveFeed<Work>?>((ref) {
   final session = ref.watch(captainSessionProvider).value;
-  if (session == null) return null;
+  // An applicant (CA §5.1) has no captain and no work yet.
+  if (session == null || session.captainId == null) return null;
   final api = ref.watch(coreApiProvider).getCaptainApi();
   final feed = LiveFeed<Work>(
     transport: ref.watch(realtimeTransportProvider),

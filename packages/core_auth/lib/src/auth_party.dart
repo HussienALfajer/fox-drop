@@ -100,11 +100,14 @@ abstract class AuthParty {
   final CoreApi api;
 
   /// Asks for a code; [appCheckToken] travels as `X-Firebase-AppCheck`
-  /// (architecture §8.3.3 item 1), the only call that carries it.
+  /// (architecture §8.3.3 item 1), the only call that carries it. [join] is
+  /// the captain app's «انضم ككابتن» (CA §5.1): a number without an account
+  /// gets the code too; the other apps ignore it.
   Future<CodeSent> requestCode({
     required String phone,
     required String deviceId,
     String? appCheckToken,
+    bool join = false,
   });
 
   /// Signs in and returns the account id and the tokens.
@@ -177,6 +180,7 @@ class CustomerAuth extends AuthParty {
     required String phone,
     required String deviceId,
     String? appCheckToken,
+    bool join = false,
   }) async {
     final sent = await AuthParty.guard(
       () => _routes.customerAuthRequestCode(
@@ -255,6 +259,7 @@ class MerchantAuth extends AuthParty {
     required String phone,
     required String deviceId,
     String? appCheckToken,
+    bool join = false,
   }) async {
     final sent = await AuthParty.guard(
       () => _routes.merchantAuthRequestCode(
@@ -331,6 +336,7 @@ class CaptainAuth extends AuthParty {
     required String phone,
     required String deviceId,
     String? appCheckToken,
+    bool join = false,
   }) async {
     final sent = await AuthParty.guard(
       () => _routes.captainAuthRequestCode(
@@ -338,7 +344,8 @@ class CaptainAuth extends AuthParty {
         captainCodeRequestDto: CaptainCodeRequestDto(
           (b) => b
             ..phone = phone
-            ..deviceId = deviceId,
+            ..deviceId = deviceId
+            ..join = join ? true : null,
         ),
       ),
     );

@@ -146,6 +146,8 @@ services:
       STORAGE_SECRET: ${STORAGE_SECRET:?}
       STORAGE_READER_KEY_ID: ${STORAGE_READER_KEY_ID:?}
       STORAGE_READER_SECRET: ${STORAGE_READER_SECRET:?}
+      STORAGE_BACKUP_KEY_ID: ${STORAGE_BACKUP_KEY_ID:?}
+      STORAGE_BACKUP_SECRET: ${STORAGE_BACKUP_SECRET:?}
 
   # The map (architecture §7.2): maps-build makes Azaz's tiles, the glyphs,
   # the sprite and the style in the maps-data volume (maps/build.sh, from

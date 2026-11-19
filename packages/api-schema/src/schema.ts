@@ -2788,6 +2788,118 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/captain/application": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainApplicationGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/application/zones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainApplicationZones"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/application/personal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["captainApplicationPersonal"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/application/vehicle": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["captainApplicationVehicle"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/application/documents/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainApplicationUpload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/application/documents/{kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["captainApplicationDocument"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/application/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainApplicationSubmit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/captain/availability": {
         parameters: {
             query?: never;
@@ -6792,6 +6904,8 @@ export interface components {
              * @description The device. The customer app's survives a reinstall (slice 2.25d: from Android ID on Android, a Keychain value on iOS), so a block follows the phone; the other apps' is the installation, kept until the app is removed.
              */
             deviceId: string;
+            /** @description «انضم ككابتن» (CA §5.1): a number without an account gets the code too, to apply. Without it only a captain or an applicant does. */
+            join?: boolean;
         };
         CaptainCodeSentDto_Output: {
             /**
@@ -6817,8 +6931,8 @@ export interface components {
         CaptainSignedInDto_Output: {
             /** Format: uuid */
             accountId: string;
-            /** Format: uuid */
-            captainId: string;
+            /** @description Null for an applicant (CA §5.1): the app opens the application, not home. */
+            captainId: string | null;
             /** @description A JWT for the Authorization header, valid 15 minutes. */
             accessToken: string;
             /** Format: date-time */
@@ -6840,8 +6954,8 @@ export interface components {
         CaptainSessionDto_Output: {
             /** Format: uuid */
             accountId: string;
-            /** Format: uuid */
-            captainId: string;
+            /** @description Null for an applicant (CA §5.1): the app opens the application, not home. */
+            captainId: string | null;
             /** Format: uuid */
             sessionId: string;
         };
@@ -9063,6 +9177,84 @@ export interface components {
             body: string;
             /** Format: date-time */
             publishedAt: string;
+        };
+        CaptainApplicationDto_Output: {
+            application: {
+                /** Format: uuid */
+                id: string;
+                /**
+                 * @description draft until «إرسال الطلب», then the panel’s stage (CA §5.4).
+                 * @enum {string}
+                 */
+                stage: "draft" | "new" | "under_review" | "interview" | "awaiting_kit" | "active" | "waitlist" | "rejected";
+                fullName: string;
+                /**
+                 * Format: date
+                 * @description A calendar day, YYYY-MM-DD.
+                 */
+                birthDate: string;
+                /** Format: uuid */
+                zoneId: string;
+                vehicle: ("walking" | "bicycle" | "motorbike" | "car") | null;
+                plate: string | null;
+                documents: {
+                    /** @enum {string} */
+                    kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence";
+                    /** @enum {string} */
+                    status: "pending" | "accepted" | "rejected";
+                    /** @description Why it was rejected. */
+                    reason: string | null;
+                    fileCount: number;
+                    /** @description The ID's number. */
+                    number: string | null;
+                    issueDate: string | null;
+                    /** @description The criminal record's expiry (C18). */
+                    expiresOn: string | null;
+                    /** Format: date-time */
+                    uploadedAt: string;
+                }[];
+                /** @description What «إرسال الطلب» waits for, in the form’s order. */
+                missing: ("vehicle" | "document:national_id" | "document:personal_photo" | "document:civil_registry" | "document:criminal_record" | "document:vehicle_papers" | "document:driving_licence" | "terms")[];
+                submittedAt: string | null;
+            } | null;
+        };
+        CaptainApplicationZonesDto_Output: {
+            zones: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                /** Format: uuid */
+                cityId: string;
+                cityName: string;
+            }[];
+        };
+        CaptainApplicationPersonalDto: {
+            /** @description Three parts at least, 80 characters at most. */
+            fullName: string;
+            /**
+             * Format: date
+             * @description A calendar day, YYYY-MM-DD.
+             */
+            birthDate: string;
+            /**
+             * Format: uuid
+             * @description One of GET /v1/captain/application/zones.
+             */
+            zoneId: string;
+        };
+        CaptainApplicationVehicleDto: {
+            /** @enum {string} */
+            vehicle: "walking" | "bicycle" | "motorbike" | "car";
+            /** @description Required for a motorbike or a car. */
+            plate?: string | null;
+        };
+        CaptainApplicationDocumentDto: {
+            /** @description From POST /v1/captain/application/documents/upload, once uploaded. */
+            uploadIds: string[];
+            /** @description The national ID’s number. */
+            number?: string | null;
+            /** @description The criminal record's issue date. */
+            issueDate?: string | null;
         };
         CaptainAvailabilityDto_Output: {
             /** @description CA §7.1: «غير متصل», «متصل متاح», «مشغول» (an active order), «آخر طلب» (last-order mode), «لا تصلك عروض» with its reasons, «موقوف». */
@@ -23345,6 +23537,164 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminTermsVersionDto_Output"];
+                };
+            };
+        };
+    };
+    captainApplicationGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainApplicationDto_Output"];
+                };
+            };
+        };
+    };
+    captainApplicationZones: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainApplicationZonesDto_Output"];
+                };
+            };
+        };
+    };
+    captainApplicationPersonal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainApplicationPersonalDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainApplicationDto_Output"];
+                };
+            };
+        };
+    };
+    captainApplicationVehicle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainApplicationVehicleDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainApplicationDto_Output"];
+                };
+            };
+        };
+    };
+    captainApplicationUpload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerNewUploadDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerUploadDto_Output"];
+                };
+            };
+        };
+    };
+    captainApplicationDocument: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: "national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence";
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainApplicationDocumentDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainApplicationDto_Output"];
+                };
+            };
+        };
+    };
+    captainApplicationSubmit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainApplicationDto_Output"];
                 };
             };
         };

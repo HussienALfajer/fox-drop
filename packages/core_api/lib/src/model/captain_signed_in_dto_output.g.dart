@@ -10,7 +10,7 @@ class _$CaptainSignedInDtoOutput extends CaptainSignedInDtoOutput {
   @override
   final String accountId;
   @override
-  final String captainId;
+  final String? captainId;
   @override
   final String accessToken;
   @override
@@ -24,7 +24,7 @@ class _$CaptainSignedInDtoOutput extends CaptainSignedInDtoOutput {
 
   _$CaptainSignedInDtoOutput._({
     required this.accountId,
-    required this.captainId,
+    this.captainId,
     required this.accessToken,
     required this.accessTokenExpiresAt,
     required this.refreshToken,
@@ -138,11 +138,7 @@ class CaptainSignedInDtoOutputBuilder
             r'CaptainSignedInDtoOutput',
             'accountId',
           ),
-          captainId: BuiltValueNullFieldError.checkNotNull(
-            captainId,
-            r'CaptainSignedInDtoOutput',
-            'captainId',
-          ),
+          captainId: captainId,
           accessToken: BuiltValueNullFieldError.checkNotNull(
             accessToken,
             r'CaptainSignedInDtoOutput',

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module.js';
 import { AuditModule } from '../audit/index.js';
 import { ContentModule } from '../content/index.js';
+import { FilesModule } from '../files/index.js';
 import { FxModule } from '../fx/index.js';
 import { GeoModule } from '../geo/index.js';
 import { LedgerModule } from '../ledger/index.js';
@@ -9,6 +10,8 @@ import { SettingsModule } from '../settings/index.js';
 import { ValkeyModule } from '../../valkey/valkey.module.js';
 import { AdminCaptainsController } from './admin-captains.controller.js';
 import { AdminPeakBonusController } from './admin-peak-bonus.controller.js';
+import { ApplicationsService } from './applications.service.js';
+import { CaptainApplicationController } from './captain-application.controller.js';
 import { CaptainAvailabilityController } from './captain-availability.controller.js';
 import { CaptainPeakBonusController } from './captain-peak-bonus.controller.js';
 import { CaptainsService } from './captains.service.js';
@@ -16,7 +19,8 @@ import { LivePositions } from './live-positions.js';
 import { LocationPartitions } from './location-partitions.js';
 import { PeakBonusService } from './peak-bonus.service.js';
 
-// The captains module (architecture §4.2): the captain record, its cash
+// The captains module (architecture §4.2): the applications (slice 2.34a),
+// the captain record, its cash
 // limit, availability and location, and the city's pay table and peak
 // bonus. Other modules read them through CaptainsService and PeakBonusService
 // only.
@@ -30,14 +34,16 @@ import { PeakBonusService } from './peak-bonus.service.js';
     LedgerModule,
     AuditModule,
     ContentModule,
+    FilesModule,
   ],
   controllers: [
+    CaptainApplicationController,
     CaptainAvailabilityController,
     CaptainPeakBonusController,
     AdminCaptainsController,
     AdminPeakBonusController,
   ],
-  providers: [CaptainsService, PeakBonusService, LivePositions],
+  providers: [CaptainsService, PeakBonusService, LivePositions, ApplicationsService],
   exports: [CaptainsService, PeakBonusService],
 })
 export class CaptainsModule {}

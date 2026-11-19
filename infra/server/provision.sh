@@ -98,8 +98,8 @@ add_secret CENTRIFUGO_API_KEY
 add_secret CENTRIFUGO_PROXY_SECRET
 # The object storage (architecture §5.8): Garage's RPC secret and admin
 # token, and the S3 keys the storage setup imports (an ID is GK and 24 hex
-# digits): the server's, which reads and writes, and the reader's, for
-# imgproxy and the nightly copy. Garage never changes a key's secret, so a
+# digits): the server's, which reads and writes, the reader's, for
+# imgproxy, and the nightly copy's, which reads both buckets (slice 2.34a). Garage never changes a key's secret, so a
 # key is replaced by removing both its lines and deploying: the setup then
 # imports a new ID.
 add_secret GARAGE_RPC_SECRET
@@ -114,6 +114,7 @@ add_storage_key() {
 }
 add_storage_key STORAGE_KEY_ID STORAGE_SECRET
 add_storage_key STORAGE_READER_KEY_ID STORAGE_READER_SECRET
+add_storage_key STORAGE_BACKUP_KEY_ID STORAGE_BACKUP_SECRET
 chown "$user:$user" "$env_file"
 chmod 600 "$env_file"
 
