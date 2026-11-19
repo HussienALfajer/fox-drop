@@ -16539,6 +16539,43 @@
         ]
       }
     },
+    "/v1/admin/restaurants/{restaurantId}/menu/price-log": {
+      "get": {
+        "operationId": "adminRestaurantProfileReadsPriceLog",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRestaurantPriceLogDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/restaurants/{restaurantId}/change-log": {
       "get": {
         "operationId": "adminRestaurantProfileReadsChangeLog",
@@ -65606,6 +65643,110 @@
         "required": [
           "body"
         ]
+      },
+      "AdminPriceLogMoney_Output": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string",
+            "pattern": "^\\d{1,15}$"
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          }
+        },
+        "required": [
+          "amount",
+          "currency"
+        ],
+        "additionalProperties": false
+      },
+      "AdminRestaurantPriceLogDto_Output": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "targetType": {
+                  "type": "string",
+                  "enum": [
+                    "item",
+                    "option"
+                  ]
+                },
+                "targetId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "The item's name, or the option's."
+                },
+                "groupName": {
+                  "description": "An option's group; null for an item.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "oldPrice": {
+                  "$ref": "#/components/schemas/AdminPriceLogMoney_Output"
+                },
+                "newPrice": {
+                  "$ref": "#/components/schemas/AdminPriceLogMoney_Output"
+                },
+                "byType": {
+                  "type": "string",
+                  "enum": [
+                    "admin",
+                    "merchant",
+                    "system"
+                  ]
+                },
+                "byName": {
+                  "description": "The admin's name, or the restaurant user's; null when unknown.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "id",
+                "targetType",
+                "targetId",
+                "name",
+                "groupName",
+                "oldPrice",
+                "newPrice",
+                "byType",
+                "byName",
+                "at"
+              ],
+              "additionalProperties": false
+            },
+            "description": "The latest 200, newest first."
+          }
+        },
+        "required": [
+          "entries"
+        ],
+        "additionalProperties": false
       },
       "AdminRestaurantChangeLogDto_Output": {
         "type": "object",

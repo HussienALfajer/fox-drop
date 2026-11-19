@@ -211,6 +211,7 @@ import 'package:core_api/src/model/admin_restaurant_overview_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_pause_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_period_statement_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_pickup_currencies_dto.dart';
+import 'package:core_api/src/model/admin_restaurant_price_log_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_reason_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_receipt_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_settle_dto.dart';
@@ -19475,6 +19476,91 @@ class AdminApi {
     }
 
     return Response<AdminRestaurantNotesDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminRestaurantProfileReadsPriceLog
+  ///
+  ///
+  /// Parameters:
+  /// * [restaurantId]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminRestaurantPriceLogDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminRestaurantPriceLogDtoOutput>>
+  adminRestaurantProfileReadsPriceLog({
+    required String restaurantId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/restaurants/{restaurantId}/menu/price-log'
+        .replaceAll(
+          '{'
+          r'restaurantId'
+          '}',
+          encodeQueryParameter(
+            _serializers,
+            restaurantId,
+            const FullType(String),
+          ).toString(),
+        );
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminRestaurantPriceLogDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(
+                    AdminRestaurantPriceLogDtoOutput,
+                  ),
+                )
+                as AdminRestaurantPriceLogDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminRestaurantPriceLogDtoOutput>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

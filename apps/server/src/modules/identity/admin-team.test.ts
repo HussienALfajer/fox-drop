@@ -437,6 +437,9 @@ const routeAccess: Record<string, Access> = {
   'GET /v1/admin/restaurants/{restaurantId}/notes': 'restaurants.read',
   'POST /v1/admin/restaurants/{restaurantId}/notes': 'restaurants.read',
   'GET /v1/admin/restaurants/{restaurantId}/change-log': 'restaurants.read',
+  'GET /v1/admin/restaurants/{restaurantId}/menu/price-log': {
+    anyOf: ['restaurants.read', 'restaurants.menus'],
+  },
   'PUT /v1/admin/restaurants/{restaurantId}/profile/basics': 'restaurants.manage',
   'PUT /v1/admin/restaurants/{restaurantId}/profile/location': 'restaurants.manage',
   'PUT /v1/admin/restaurants/{restaurantId}/profile/operations': 'restaurants.manage',

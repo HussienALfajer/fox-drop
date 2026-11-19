@@ -379,6 +379,7 @@ import 'package:core_api/src/model/admin_picker_dto_output_captains_inner.dart';
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody.dart';
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody_limit.dart';
 import 'package:core_api/src/model/admin_picker_dto_output_captains_inner_custody_usage.dart';
+import 'package:core_api/src/model/admin_price_log_money_output.dart';
 import 'package:core_api/src/model/admin_profile_basics_dto.dart';
 import 'package:core_api/src/model/admin_promo_code_city_dto.dart';
 import 'package:core_api/src/model/admin_promo_code_dto_output.dart';
@@ -456,6 +457,8 @@ import 'package:core_api/src/model/admin_restaurant_pause_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_period_statement_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_period_statement_dto_output_lines_inner.dart';
 import 'package:core_api/src/model/admin_restaurant_pickup_currencies_dto.dart';
+import 'package:core_api/src/model/admin_restaurant_price_log_dto_output.dart';
+import 'package:core_api/src/model/admin_restaurant_price_log_dto_output_entries_inner.dart';
 import 'package:core_api/src/model/admin_restaurant_reason_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_receipt_dto_output.dart';
 import 'package:core_api/src/model/admin_restaurant_receipt_dto_output_lines_inner.dart';
@@ -1328,6 +1331,7 @@ part 'serializers.g.dart';
   AdminPickerDtoOutputCaptainsInnerCustody,
   AdminPickerDtoOutputCaptainsInnerCustodyLimit,
   AdminPickerDtoOutputCaptainsInnerCustodyUsage,
+  AdminPriceLogMoneyOutput,
   AdminProfileBasicsDto,
   AdminPromoCodeCityDto,
   AdminPromoCodeDtoOutput,
@@ -1405,6 +1409,8 @@ part 'serializers.g.dart';
   AdminRestaurantPeriodStatementDtoOutput,
   AdminRestaurantPeriodStatementDtoOutputLinesInner,
   AdminRestaurantPickupCurrenciesDto,
+  AdminRestaurantPriceLogDtoOutput,
+  AdminRestaurantPriceLogDtoOutputEntriesInner,
   AdminRestaurantReasonDto,
   AdminRestaurantReceiptDtoOutput,
   AdminRestaurantReceiptDtoOutputLinesInner,
@@ -2429,6 +2435,12 @@ Serializers serializers =
                 ListBuilder<
                   CustomerSearchDtoOutputItemsInnerOptionGroupsInnerOptionsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminRestaurantPriceLogDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<AdminRestaurantPriceLogDtoOutputEntriesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

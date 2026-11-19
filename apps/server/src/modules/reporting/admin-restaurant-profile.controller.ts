@@ -12,7 +12,7 @@ import {
 import type { FastifyRequest } from 'fastify';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
-import { CurrentAdminSession, RequirePermission } from '../../http/access.js';
+import { CurrentAdminSession, RequireAnyPermission, RequirePermission } from '../../http/access.js';
 import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { requestContext } from '../../http/request-context.js';
 import { AdminController } from '../../http/route-groups.js';
@@ -32,6 +32,37 @@ import {
 
 // How many changes the log shows, newest first (decided by us).
 export const CHANGE_LOG_LIMIT = 200;
+
+// «سجل الأسعار» shows as many, newest first (slice 2.31, decided by us).
+export const PRICE_LOG_LIMIT = 200;
+
+const priceMoney = z
+  .object({ amount: z.string().regex(/^\d{1,15}$/), currency: z.string().length(3) })
+  .meta({ id: 'AdminPriceLogMoney' });
+
+class AdminRestaurantPriceLogDto extends createZodDto(
+  z.object({
+    entries: z
+      .array(
+        z.object({
+          id: z.uuid(),
+          targetType: z.enum(['item', 'option']),
+          targetId: z.uuid(),
+          name: z.string().describe("The item's name, or the option's."),
+          groupName: z.string().nullable().describe("An option's group; null for an item."),
+          oldPrice: priceMoney,
+          newPrice: priceMoney,
+          byType: z.enum(['admin', 'merchant', 'system']),
+          byName: z
+            .string()
+            .nullable()
+            .describe("The admin's name, or the restaurant user's; null when unknown."),
+          at: z.iso.datetime(),
+        }),
+      )
+      .describe(`The latest ${PRICE_LOG_LIMIT}, newest first.`),
+  }),
+) {}
 
 class AdminRestaurantProfileParamsDto extends createZodDto(z.object({ restaurantId: z.uuid() })) {}
 
@@ -155,16 +186,66 @@ export class AdminRestaurantProfileReadsController {
     return this.notesAnswer(params.restaurantId);
   }
 
+  // AP §9.6.6 «سجل الأسعار» (slice 2.31): every price change of an item or
+  // an option, with who and when.
+  @Get(':restaurantId/menu/price-log')
+  @RequireAnyPermission('restaurants.read', 'restaurants.menus')
+  @ZodResponse({ status: 200, type: AdminRestaurantPriceLogDto })
+  async priceLog(@Param() params: AdminRestaurantProfileParamsDto) {
+    await this.found(params.restaurantId);
+    const entries = await this.merchants.priceLog(params.restaurantId, PRICE_LOG_LIMIT);
+    const by = (type: string) =>
+      entries.flatMap((entry) =>
+        entry.changedByType === type && entry.changedById !== null ? [entry.changedById] : [],
+      );
+    const admins = await this.admins.names(by('admin'));
+    const users =
+      by('merchant').length > 0
+        ? await this.accounts.everyAccount(params.restaurantId)
+        : new Map<string, string>();
+    return {
+      entries: entries.map((entry) => ({
+        id: entry.id,
+        targetType: entry.target.type,
+        targetId: entry.target.id,
+        name: entry.target.name,
+        groupName: entry.target.type === 'option' ? entry.target.groupName : null,
+        oldPrice: {
+          amount: entry.oldPrice.amount.toString(),
+          currency: entry.oldPrice.currency,
+        },
+        newPrice: {
+          amount: entry.newPrice.amount.toString(),
+          currency: entry.newPrice.currency,
+        },
+        byType: entry.changedByType,
+        byName:
+          entry.changedById === null
+            ? null
+            : entry.changedByType === 'admin'
+              ? (admins.get(entry.changedById) ?? null)
+              : entry.changedByType === 'merchant'
+                ? (users.get(entry.changedById) ?? null)
+                : null,
+        at: entry.at.toISOString(),
+      })),
+    };
+  }
+
   @Get(':restaurantId/change-log')
   @RequirePermission('restaurants.read')
   @ZodResponse({ status: 200, type: AdminRestaurantChangeLogDto })
   async changeLog(@Param() params: AdminRestaurantProfileParamsDto) {
     await this.found(params.restaurantId);
     const users = await this.accounts.everyAccount(params.restaurantId);
+    // The menu's changes (slice 2.31) are its rows' own events, a price's
+    // included: menu.item.update and menu.option.update carry the old and
+    // new price, menu.bulk_price every item it changed.
     const entries = await this.audit.history(
       [
         { type: 'restaurant', ids: [params.restaurantId] },
         { type: 'merchant_account', ids: [...users.keys()] },
+        ...(await this.merchants.menuRowIds(params.restaurantId)),
       ],
       CHANGE_LOG_LIMIT,
     );

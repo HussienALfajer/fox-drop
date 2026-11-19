@@ -81,7 +81,8 @@ async function admin(role: string) {
   ) =>
     app.inject({
       method,
-      url: `/v1/admin/restaurant-drafts${url}`,
+      // The profile's routes are named whole; the menu's under the drafts.
+      url: url.startsWith('/v1/') ? url : `/v1/admin/restaurant-drafts${url}`,
       cookies,
       headers,
       ...(payload ? { payload } : {}),
@@ -781,6 +782,80 @@ describe("the owners' notice of an admin price change (D17, RA §16 #21)", () =>
     });
     expect(published).toContainEqual(
       expect.objectContaining({ restaurantId: id, kind: 'price_change', values: {} }),
+    );
+  });
+});
+
+describe('«سجل الأسعار» and «سجل التغييرات» (AP §9.6.4, §9.6.6)', () => {
+  it('lists every price change with its row and who made it, and the menu in the change log', async () => {
+    const id = await activeRestaurant();
+    const ops = await admin('OPS');
+    const data = await admin('DATA');
+    const meals = randomUUID();
+    const shawarma = randomUUID();
+    const group = randomUUID();
+    const cheese = randomUUID();
+    await ops('PUT', `/${id}/menu/categories/${meals}`, category('وجبات'));
+    await ops('PUT', `/${id}/menu/items/${shawarma}`, item(meals, 'شاورما'));
+    await ops(
+      'PUT',
+      `/${id}/menu/items/${shawarma}`,
+      item(meals, 'شاورما', { price: try_('13000') }),
+    );
+    await ops('PUT', `/${id}/menu/option-groups/${group}`, {
+      name: 'إضافات',
+      minChoices: 0,
+      maxChoices: 1,
+    });
+    await ops('PUT', `/${id}/menu/option-groups/${group}/options/${cheese}`, {
+      name: 'جبنة',
+      priceDelta: try_('500'),
+      removed: false,
+    });
+    await ops('PUT', `/${id}/menu/option-groups/${group}/options/${cheese}`, {
+      name: 'جبنة',
+      priceDelta: try_('700'),
+      removed: false,
+    });
+    const log = await data('GET', `/v1/admin/restaurants/${id}/menu/price-log`);
+    expect(log.statusCode).toBe(200);
+    const { rows } = await sql.query(
+      'SELECT name FROM identity.admin_accounts ORDER BY created_at DESC LIMIT 2',
+    );
+    const opsName = rows[1].name;
+    expect(log.json().entries).toMatchObject([
+      {
+        targetType: 'option',
+        targetId: cheese,
+        name: 'جبنة',
+        groupName: 'إضافات',
+        oldPrice: try_('500'),
+        newPrice: try_('700'),
+        byType: 'admin',
+        byName: opsName,
+      },
+      {
+        targetType: 'item',
+        targetId: shawarma,
+        name: 'شاورما',
+        groupName: null,
+        oldPrice: try_('12000'),
+        newPrice: try_('13000'),
+      },
+    ]);
+    // FIN reads no menu.
+    const fin = await admin('FIN');
+    expect((await fin('GET', `/v1/admin/restaurants/${id}/menu/price-log`)).statusCode).toBe(403);
+    // OPS reads the change log with the menu's own events.
+    const changes = (await ops('GET', `/v1/admin/restaurants/${id}/change-log`)).json().entries;
+    expect(changes.map((entry: { action: string }) => entry.action)).toEqual(
+      expect.arrayContaining([
+        'menu.category.create',
+        'menu.item.create',
+        'menu.item.update',
+        'menu.option_group.create',
+        'menu.option.update',
+      ]),
     );
   });
 });

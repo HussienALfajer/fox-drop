@@ -621,6 +621,7 @@ Serializers _$serializers =
           ..add(AdminPickerDtoOutputCaptainsInnerCustodyUsage.serializer)
           ..add(AdminPickerDtoOutputCaptainsInnerReasonsEnum.serializer)
           ..add(AdminPickerDtoOutputCaptainsInnerVehicleEnum.serializer)
+          ..add(AdminPriceLogMoneyOutput.serializer)
           ..add(AdminProfileBasicsDto.serializer)
           ..add(AdminPromoCodeCityDto.serializer)
           ..add(AdminPromoCodeDtoOutput.serializer)
@@ -766,6 +767,15 @@ Serializers _$serializers =
                 .serializer,
           )
           ..add(AdminRestaurantPickupCurrenciesDto.serializer)
+          ..add(AdminRestaurantPriceLogDtoOutput.serializer)
+          ..add(AdminRestaurantPriceLogDtoOutputEntriesInner.serializer)
+          ..add(
+            AdminRestaurantPriceLogDtoOutputEntriesInnerByTypeEnum.serializer,
+          )
+          ..add(
+            AdminRestaurantPriceLogDtoOutputEntriesInnerTargetTypeEnum
+                .serializer,
+          )
           ..add(AdminRestaurantReasonDto.serializer)
           ..add(AdminRestaurantReceiptDtoOutput.serializer)
           ..add(AdminRestaurantReceiptDtoOutputLinesInner.serializer)
@@ -2736,6 +2746,12 @@ Serializers _$serializers =
                 ListBuilder<
                   AdminRestaurantPeriodStatementDtoOutputLinesInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminRestaurantPriceLogDtoOutputEntriesInner),
+            ]),
+            () => ListBuilder<AdminRestaurantPriceLogDtoOutputEntriesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

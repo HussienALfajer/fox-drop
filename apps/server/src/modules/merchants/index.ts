@@ -96,6 +96,7 @@ export {
   type Menu,
   type MenuCategory,
   type MenuItem,
+  type PriceLogEntry,
   type MenuOption,
   type MenuOptionGroup,
   type Money,

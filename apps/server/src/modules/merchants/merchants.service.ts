@@ -36,6 +36,7 @@ import {
   optionGroups,
   options,
   pauses,
+  priceChanges,
   restaurants,
   weeklySchedules,
 } from './schema.js';
@@ -288,6 +289,19 @@ export interface MenuCategory {
 
 export interface Menu {
   categories: MenuCategory[];
+}
+
+// AP §9.6.6 «سجل الأسعار»: one price change of an item or an option.
+export interface PriceLogEntry {
+  id: string;
+  target:
+    | { type: 'item'; id: string; name: string }
+    | { type: 'option'; id: string; name: string; groupName: string };
+  oldPrice: Money;
+  newPrice: Money;
+  changedByType: 'admin' | 'merchant' | 'system';
+  changedById: string | null;
+  at: Date;
 }
 
 // AP §9.6.1, §9.6.3 step 8 and §9.6.5: the account status changes allowed.
@@ -1566,6 +1580,82 @@ export class MerchantsService implements OnModuleInit {
         };
       }),
     };
+  }
+
+  // AP §9.6.6 «سجل الأسعار» (slice 2.31): the latest price changes of the
+  // restaurant's items and options, newest first, with the row's name and
+  // who made it (an admin's or a restaurant user's id; reporting names them).
+  async priceLog(restaurantId: string, limit: number): Promise<PriceLogEntry[]> {
+    const rows = await this.database.db
+      .select({
+        id: priceChanges.id,
+        itemId: priceChanges.itemId,
+        optionId: priceChanges.optionId,
+        itemName: items.name,
+        optionName: options.name,
+        groupName: optionGroups.name,
+        currency: priceChanges.currency,
+        oldPrice: priceChanges.oldPrice,
+        newPrice: priceChanges.newPrice,
+        changedByType: priceChanges.changedByType,
+        changedById: priceChanges.changedById,
+        createdAt: priceChanges.createdAt,
+      })
+      .from(priceChanges)
+      .leftJoin(items, eq(items.id, priceChanges.itemId))
+      .leftJoin(options, eq(options.id, priceChanges.optionId))
+      .leftJoin(optionGroups, eq(optionGroups.id, options.groupId))
+      .where(eq(priceChanges.restaurantId, restaurantId))
+      .orderBy(desc(priceChanges.id))
+      .limit(limit);
+    return rows.map((row) => ({
+      id: row.id,
+      target:
+        row.itemId !== null
+          ? { type: 'item' as const, id: row.itemId, name: row.itemName ?? '' }
+          : {
+              type: 'option' as const,
+              id: row.optionId!,
+              name: row.optionName ?? '',
+              groupName: row.groupName ?? '',
+            },
+      oldPrice: { amount: row.oldPrice, currency: row.currency },
+      newPrice: { amount: row.newPrice, currency: row.currency },
+      changedByType: row.changedByType,
+      changedById: row.changedById,
+      at: row.createdAt,
+    }));
+  }
+
+  // The ids of every menu row the restaurant ever had, by its audit target
+  // type, for «سجل التغييرات» (slice 2.31).
+  async menuRowIds(restaurantId: string): Promise<{ type: string; ids: string[] }[]> {
+    const db = this.database.db;
+    const [categoryRows, itemRows, groupRows] = await Promise.all([
+      db
+        .select({ id: categories.id })
+        .from(categories)
+        .where(eq(categories.restaurantId, restaurantId)),
+      db.select({ id: items.id }).from(items).where(eq(items.restaurantId, restaurantId)),
+      db
+        .select({ id: optionGroups.id })
+        .from(optionGroups)
+        .where(eq(optionGroups.restaurantId, restaurantId)),
+    ]);
+    const groupIds = groupRows.map((row) => row.id);
+    const optionRows =
+      groupIds.length === 0
+        ? []
+        : await db
+            .select({ id: options.id })
+            .from(options)
+            .where(inArray(options.groupId, groupIds));
+    return [
+      { type: 'menu_category', ids: categoryRows.map((row) => row.id) },
+      { type: 'menu_item', ids: itemRows.map((row) => row.id) },
+      { type: 'menu_option_group', ids: groupIds },
+      { type: 'menu_option', ids: optionRows.map((row) => row.id) },
+    ];
   }
 
   // Whether this app installation has its name in the restaurant (RA §5.2

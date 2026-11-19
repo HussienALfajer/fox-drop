@@ -5860,6 +5860,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/restaurants/{restaurantId}/menu/price-log": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminRestaurantProfileReadsPriceLog"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/restaurants/{restaurantId}/change-log": {
         parameters: {
             query?: never;
@@ -17434,6 +17450,33 @@ export interface components {
         AdminAddRestaurantNoteDto: {
             body: string;
         };
+        AdminPriceLogMoney_Output: {
+            amount: string;
+            currency: string;
+        };
+        AdminRestaurantPriceLogDto_Output: {
+            /** @description The latest 200, newest first. */
+            entries: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                targetType: "item" | "option";
+                /** Format: uuid */
+                targetId: string;
+                /** @description The item's name, or the option's. */
+                name: string;
+                /** @description An option's group; null for an item. */
+                groupName: string | null;
+                oldPrice: components["schemas"]["AdminPriceLogMoney_Output"];
+                newPrice: components["schemas"]["AdminPriceLogMoney_Output"];
+                /** @enum {string} */
+                byType: "admin" | "merchant" | "system";
+                /** @description The admin's name, or the restaurant user's; null when unknown. */
+                byName: string | null;
+                /** Format: date-time */
+                at: string;
+            }[];
+        };
         AdminRestaurantChangeLogDto_Output: {
             /** @description The latest 200 changes, newest first. */
             entries: {
@@ -27420,6 +27463,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminRestaurantNotesDto_Output"];
+                };
+            };
+        };
+    };
+    adminRestaurantProfileReadsPriceLog: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRestaurantPriceLogDto_Output"];
                 };
             };
         };
