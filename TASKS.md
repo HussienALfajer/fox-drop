@@ -4,15 +4,20 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.35b, offboarding and termination (`docs/roadmap.md`, Phase 2). Planned, not started.
+Slice 2.35b, offboarding and termination (`docs/roadmap.md`, Phase 2). In progress.
 
 - **Roadmap line:** 2.35b Offboarding and termination: «إنهاء التعاقد» with its checklist (kit returned, custody zero, earnings settled, the deposit refunded or withheld, the account closed), early exit and the flag «خروج مبكر», a former captain applying again on the same account with OWN's approval (AP §9.7.2, §9.7.5, C17). The owner terminates a captain in the commitment period and the captain is flagged «خروج مبكر».
-- **Specs:** AP §9.7.5 (the actions «إنهاء التعاقد» and the offboarding checklist), AP §9.7.2 (ending the contract at the probation review, early exit), AP §9.7.1 (re-applying, the duplicate check showing the flag, «تفعيل» needing OWN's approval for a flagged captain, `captains.activate_early_exit`), AP §9.10.3 «التأمينات» (the deposit's refund), AP §8.5.5 (an off-cycle payout at termination, `captains.final_payout`), CA §12.3, C17, D24.
-- **Branch:** `feat/captain-offboarding`.
-- **Already built (reuse, do not rebuild):** 2.35a's contract and phases on the application (`contractPhase`, `commitment_ends_on`), the kit as `kit_items`, the deposit account `captain.deposit` and `depositPaid`, the desk's receipts and `DepositsService`, `CaptainsService.setStatus` (`terminated`, which does not run the checklist yet), the off-cycle settlement (`SettlementService.settle`, OWN), `captainIdOf` (an application keeps a former captain's id when its `captain_id` is set at submission).
-- **To ask the owner first:** the split, if any; the deposit's refund journal and its receipt («التأمينات»: in the base, in cash at the desk?); what «محتجز» means in the ledger (the withheld deposit to platform revenue or an adjustment?); whether ending at the probation review counts as early exit (C17 says during the commitment).
-- **Plan:** to write as a checklist once the questions are answered (one step per commit).
-- **Stopped at:** 2.35a merged; 2.35b not started.
+- **Specs:** AP §9.7.5, §9.7.2, §9.7.1 (re-applying, the duplicate check, `captains.activate_early_exit`), §9.10.3 «التأمينات», §8.5.5 (off-cycle payout), CA §12.3–12.4, C17, D24.
+- **Branch:** `claude/slice-2-35b-n4agfb` (the cloud session's branch).
+- **Owner decisions 2026-11-19:** one pull request; the deposit is refunded in cash at the desk («التأمينات», in the base, with a receipt «استرداد التأمين»); a deposit withheld goes whole to the platform's revenue (no partial withholding in V1); ending the contract at the probation review is no early exit (the flag only in «فترة التزام»).
+- **Decided by us (to confirm with the owner):** «إنهاء التعاقد» starts the checklist and suspends the captain until further notice with its reason (offline at once, last-order mode with an order), so custody and earnings stop moving while the app still shows them; step 5 «إغلاق الحساب» makes the captain `terminated`, ends its sessions and returns the sign-in account to an applicant's, so the same number applies again on the same account; the offboarding lives on the contract (the activated application); a captain without one (the seed's) cannot be terminated from the panel; no deposit instalment is taken once the contract is ended; a rehired captain keeps its captain id (its ledger accounts and history); a flagged account's activation needs OWN (`captains.activate_early_exit`) each time.
+- **Plan:**
+  - [ ] Server: the offboarding on the contract (migration: the columns, the event kinds, the open-account and captain indexes past an ended contract), terminate, kit returned, close, the checklist; a former captain's new application, the flag in the duplicate check, the rehire activation (OWN for a flagged captain); identity ends the sessions and frees the account; tests first.
+  - [ ] Ledger and desk: `deposit.refund` (cash, receipt «استرداد التأمين») and `deposit.withhold` (to the platform's revenue), the desk's «التأمينات» list and action; no instalment after termination; tests.
+  - [ ] Routes, the OpenAPI contract and the generated clients; the route table.
+  - [ ] Panel: «إنهاء التعاقد» and the checklist on the application page, the flag, the desk's refunds (unstyled, the design stop).
+  - [ ] Docs (`CLAUDE.md` of each module), review, handover to the next slice.
+- **Stopped at:** step 1.
 
 ### Left from 2.35a (`feat/captain-activation`)
 
