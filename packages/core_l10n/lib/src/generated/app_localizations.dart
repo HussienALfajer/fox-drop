@@ -7327,6 +7327,162 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'اسم الخيار'**
   String get merchantMenuOptionName;
+
+  /// «الموظفون» in the owners' «الإعدادات» and its screen (RA §14.1; owner decision 2026-11-19).
+  ///
+  /// In ar, this message translates to:
+  /// **'الموظفون'**
+  String get merchantStaff;
+
+  /// «الأجهزة» in the owners' «الإعدادات» and its screen (RA §14.2; owner decision 2026-11-19).
+  ///
+  /// In ar, this message translates to:
+  /// **'الأجهزة'**
+  String get merchantDevices;
+
+  /// The owner role (RA Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'مالك'**
+  String get merchantRoleOwner;
+
+  /// The cashier role (RA Appendix B).
+  ///
+  /// In ar, this message translates to:
+  /// **'كاشير'**
+  String get merchantRoleCashier;
+
+  /// Owners are read-only in the app (RA §5.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'لإضافة مالك أو إزالته تواصل مع FOX DROP'**
+  String get merchantOwnersNote;
+
+  /// How many devices a user is signed in on now (RA §14.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'الأجهزة: {count}'**
+  String merchantStaffDevices(int count);
+
+  /// A user's or device's last activity, on the city's clock (RA §14.1–14.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'آخر نشاط: {date} {time}'**
+  String merchantLastActive(String date, String time);
+
+  /// A user or device that never signed in. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يسجّل الدخول بعد'**
+  String get merchantNeverActive;
+
+  /// Adds a cashier with a name and phone (RA §14.1). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة كاشير'**
+  String get merchantAddCashier;
+
+  /// The cashier's name field.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسم'**
+  String get merchantCashierName;
+
+  /// Confirms adding a cashier. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة'**
+  String get merchantAdd;
+
+  /// Removes a cashier (RA §14.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'حذف'**
+  String get merchantRemove;
+
+  /// The confirmation before removing a cashier (RA §14.1). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'حذف {name}؟ سيُسجَّل خروجه من كل أجهزته فوراً.'**
+  String merchantRemoveCashierConfirm(String name);
+
+  /// A number already belonging to an account (S6). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا الرقم مسجّل لدى مطعم آخر أو موظف آخر'**
+  String get merchantPhoneTaken;
+
+  /// A device signed in now (RA §14.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'مسجّل الدخول'**
+  String get merchantDeviceSignedIn;
+
+  /// A device no one is signed in on. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'غير مسجّل الدخول'**
+  String get merchantDeviceSignedOut;
+
+  /// The device's user and their role (RA §14.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'{name} ({role})'**
+  String merchantDeviceUser(String name, String role);
+
+  /// The device's platform and app version (RA §14.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'{platform} · الإصدار {version}'**
+  String merchantDeviceDetails(String platform, String version);
+
+  /// Marks the device the owner is using. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا الجهاز'**
+  String get merchantThisDevice;
+
+  /// Renames a device (RA §14.2). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة تسمية'**
+  String get merchantRenameDevice;
+
+  /// Signs a device out (RA §14.2; the panel's label).
+  ///
+  /// In ar, this message translates to:
+  /// **'تسجيل خروج الجهاز'**
+  String get merchantSignOutDevice;
+
+  /// The confirmation before signing a device out (RA §14.2). The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'تسجيل خروج «{name}»؟ يبقى المستخدم في الموظفين.'**
+  String merchantSignOutDeviceConfirm(String name);
+
+  /// No device was named on the restaurant yet. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا أجهزة بعد'**
+  String get merchantNoDevices;
+
+  /// The Android platform.
+  ///
+  /// In ar, this message translates to:
+  /// **'أندرويد'**
+  String get merchantPlatformAndroid;
+
+  /// The iOS platform.
+  ///
+  /// In ar, this message translates to:
+  /// **'iOS'**
+  String get merchantPlatformIos;
+
+  /// The Windows platform.
+  ///
+  /// In ar, this message translates to:
+  /// **'ويندوز'**
+  String get merchantPlatformWindows;
 }
 
 class _AppLocalizationsDelegate

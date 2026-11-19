@@ -55,6 +55,8 @@ export type MerchantsRefusal =
   | 'restaurant_terminated'
   | 'invalid_device'
   | 'device_rename_not_allowed'
+  // RA §14.2 (slice 2.33): no device of this restaurant has that id.
+  | 'unknown_device'
   | 'reason_required'
   | 'upload_used'
   | 'restaurant_closed'
@@ -1783,6 +1785,50 @@ export class MerchantsService implements OnModuleInit {
       } else {
         await tx.insert(devices).values({ restaurantId, deviceId, createdAt: now, ...values });
       }
+    });
+  }
+
+  // RA §14.2, §18 (slice 2.33): an owner renames one of the restaurant's
+  // devices, audited `merchant_device.rename` with the user and the device.
+  // The same name again writes nothing. 404 unknown_device.
+  async renameDevice(
+    restaurantId: string,
+    deviceId: string,
+    newName: string,
+    change: MerchantChange,
+    now = new Date(),
+  ): Promise<void> {
+    const name = newName.trim();
+    if (name.length === 0)
+      throw new MerchantsRefusedError('invalid_device', 'a device needs a name');
+    await this.database.db.transaction(async (tx) => {
+      const row = await this.lockRestaurant(tx, restaurantId);
+      if (row.accountStatus === 'terminated') {
+        throw new MerchantsRefusedError('restaurant_terminated', 'the restaurant is terminated');
+      }
+      const [device] = await tx
+        .select({ id: devices.id, name: devices.name })
+        .from(devices)
+        .where(and(eq(devices.restaurantId, restaurantId), eq(devices.deviceId, deviceId)));
+      if (!device) throw new MerchantsRefusedError('unknown_device', 'no such device');
+      if (device.name === name) return;
+      await tx
+        .update(devices)
+        .set({ name, namedById: change.actor.id!, updatedAt: now })
+        .where(eq(devices.id, device.id));
+      await this.audit.recordWrite(
+        {
+          actor: change.actor,
+          context: change.context,
+          cityId: row.cityId,
+          action: 'merchant_device.rename',
+          target: { type: 'merchant_device', id: device.id },
+          before: { name: device.name },
+          after: { name },
+          reason: null,
+        },
+        tx,
+      );
     });
   }
 

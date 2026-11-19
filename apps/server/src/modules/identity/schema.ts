@@ -393,6 +393,8 @@ export const appSessionEndReasons = [
   // restaurant's device signed out by operations.
   'account_removed',
   'signed_out_by_operations',
+  // RA §14.2 (slice 2.33): a restaurant's device signed out by an owner.
+  'signed_out_by_owner',
 ] as const;
 
 // A signed-in app installation (architecture §15.1): one refresh token family.
@@ -432,10 +434,18 @@ export const appSessions = identity.table(
     index('app_sessions_customer_device')
       .on(table.deviceId)
       .where(sql`${table.party} = 'customer'`),
+    // RA §14.1–14.2 (slice 2.33): the owners' «الموظفون» and «الأجهزة»
+    // read every session, open or ended, of a restaurant's users and devices.
+    index('app_sessions_merchant_account')
+      .on(table.accountId)
+      .where(sql`${table.party} = 'merchant'`),
+    index('app_sessions_merchant_device')
+      .on(table.deviceId)
+      .where(sql`${table.party} = 'merchant'`),
     check('app_sessions_party_values', sql`${table.party} IN ('customer', 'merchant', 'captain')`),
     check(
       'app_sessions_end_reason_values',
-      sql`${table.endReason} IN ('sign_out', 'sign_out_everywhere', 'refresh_reuse', 'new_sign_in', 'other_device', 'device_released', 'phone_changed', 'account_closed', 'account_removed', 'signed_out_by_operations')`,
+      sql`${table.endReason} IN ('sign_out', 'sign_out_everywhere', 'refresh_reuse', 'new_sign_in', 'other_device', 'device_released', 'phone_changed', 'account_closed', 'account_removed', 'signed_out_by_operations', 'signed_out_by_owner')`,
     ),
     check(
       'app_sessions_ended_with_reason',

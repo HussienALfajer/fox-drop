@@ -19,7 +19,9 @@ import 'menu/quick_edit_screen.dart';
 import 'not_found_screen.dart';
 import 'platform.dart';
 import 'ratings/ratings_screen.dart';
+import 'settings/devices_screen.dart';
 import 'settings/settings_screen.dart';
+import 'settings/staff_screen.dart';
 import 'starting_screen.dart';
 import 'status/hours_screen.dart';
 import 'support/report_screen.dart';
@@ -104,10 +106,22 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
-      // RA §14.3: the owners' settings (a cashier's read is 403 owner_only).
+      // RA §14.3: the owners' settings (a cashier's read is 403 owner_only),
+      // with «الموظفون» and «الأجهزة» under them (RA §14.1–14.2; owner
+      // decision 2026-11-19).
       GoRoute(
         path: '/settings',
         builder: (context, state) => const SettingsScreen(),
+        routes: [
+          GoRoute(
+            path: 'staff',
+            builder: (context, state) => const StaffScreen(),
+          ),
+          GoRoute(
+            path: 'devices',
+            builder: (context, state) => const DevicesScreen(),
+          ),
+        ],
       ),
       // RA §13, §6.1 row 7: «التقييمات», the owners' (a cashier's read is
       // 403 owner_only).

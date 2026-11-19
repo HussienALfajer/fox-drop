@@ -1,0 +1,5 @@
+ALTER TABLE "identity"."app_sessions" DROP CONSTRAINT "app_sessions_end_reason_values";--> statement-breakpoint
+CREATE INDEX "app_sessions_merchant_account" ON "identity"."app_sessions" USING btree ("account_id") WHERE "identity"."app_sessions"."party" = 'merchant';--> statement-breakpoint
+CREATE INDEX "app_sessions_merchant_device" ON "identity"."app_sessions" USING btree ("device_id") WHERE "identity"."app_sessions"."party" = 'merchant';--> statement-breakpoint
+ALTER TABLE "identity"."app_sessions" ADD CONSTRAINT "app_sessions_end_reason_values" CHECK ("identity"."app_sessions"."end_reason" IN ('sign_out', 'sign_out_everywhere', 'refresh_reuse', 'new_sign_in', 'other_device', 'device_released', 'phone_changed', 'account_closed', 'account_removed', 'signed_out_by_operations', 'signed_out_by_owner')) NOT VALID;--> statement-breakpoint
+ALTER TABLE "identity"."app_sessions" VALIDATE CONSTRAINT "app_sessions_end_reason_values";
