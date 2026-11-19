@@ -124,6 +124,7 @@ export class MenuEditorService {
         await tx
           .insert(categories)
           .values({ id: categoryId, restaurantId, position: count, published: true, ...values });
+        await this.menuChanged(tx, restaurantId, row.cityId);
         await this.record(tx, change, row.cityId, 'menu.category.create', categoryId, null, {
           restaurantId,
           ...after,
@@ -146,6 +147,7 @@ export class MenuEditorService {
         .update(categories)
         .set({ ...values, updatedAt: sql`now()` })
         .where(eq(categories.id, categoryId));
+      await this.menuChanged(tx, restaurantId, row.cityId);
       await this.record(tx, change, row.cityId, 'menu.category.update', categoryId, was, after);
     });
   }
@@ -266,6 +268,7 @@ export class MenuEditorService {
           published: true,
           ...values,
         });
+        await this.menuChanged(tx, restaurantId, row.cityId);
         await this.record(
           tx,
           change,
@@ -298,6 +301,7 @@ export class MenuEditorService {
           updatedAt: sql`now()`,
         })
         .where(eq(items.id, itemId));
+      await this.menuChanged(tx, restaurantId, row.cityId);
       await this.record(tx, change, row.cityId, 'menu.item.update', itemId, was, after);
       if (priceChanged) {
         await this.logPrices(
@@ -324,8 +328,6 @@ export class MenuEditorService {
     restaurantId: string,
     categoryIds: string[],
     change: MerchantChange,
-    // The restaurant's own command tells its devices (slice 2.32a).
-    after?: (tx: Tx, cityId: string) => Promise<void>,
   ): Promise<void> {
     await this.database.db.transaction(async (tx) => {
       const row = await this.lockEditable(tx, restaurantId);
@@ -334,16 +336,17 @@ export class MenuEditorService {
         .from(categories)
         .where(and(eq(categories.restaurantId, restaurantId), isNull(categories.deletedAt)))
         .orderBy(asc(categories.position), asc(categories.id));
-      await this.reorder(
+      const changed = await this.reorder(
         tx,
         categories,
         current.map((each) => each.id),
         categoryIds,
       );
+      if (!changed) return;
+      await this.menuChanged(tx, restaurantId, row.cityId);
       await this.record(tx, change, row.cityId, 'menu.category.order', restaurantId, null, {
         categoryIds,
       });
-      await after?.(tx, row.cityId);
     });
   }
 
@@ -354,7 +357,6 @@ export class MenuEditorService {
     categoryId: string,
     itemIds: string[],
     change: MerchantChange,
-    after?: (tx: Tx, cityId: string) => Promise<void>,
   ): Promise<void> {
     await this.database.db.transaction(async (tx) => {
       const row = await this.lockEditable(tx, restaurantId);
@@ -374,14 +376,15 @@ export class MenuEditorService {
         .from(items)
         .where(and(eq(items.categoryId, categoryId), isNull(items.deletedAt)))
         .orderBy(asc(items.position), asc(items.id));
-      await this.reorder(
+      const changed = await this.reorder(
         tx,
         items,
         current.map((each) => each.id),
         itemIds,
       );
+      if (!changed) return;
+      await this.menuChanged(tx, restaurantId, row.cityId);
       await this.record(tx, change, row.cityId, 'menu.item.order', categoryId, null, { itemIds });
-      await after?.(tx, row.cityId);
     });
   }
 
@@ -440,8 +443,11 @@ export class MenuEditorService {
       const crossed =
         change.alertPct === undefined
           ? 0
-          : changes.filter((each) =>
-              movesBeyond(each.old.amount, each.new.amount, change.alertPct!),
+          : changes.filter(
+              (each) =>
+                // Two currencies cannot be compared (before the base locks).
+                each.old.currency === each.new.currency &&
+                movesBeyond(each.old.amount, each.new.amount, change.alertPct!),
             ).length;
       if (crossed > 0) {
         await this.merchants.tellLargePriceChange(tx, {
@@ -478,10 +484,16 @@ export class MenuEditorService {
   }
 
   // Module-internal: RA §18 «menu changed», so every device of the restaurant
-  // reads its menu again (slice 2.32a: the restaurant's own commands).
+  // reads its menu again (slice 2.32a: the restaurant's commands and the
+  // panel's), once per transaction however many rows it wrote.
   async menuChanged(tx: Tx, restaurantId: string, cityId: string, at = new Date()): Promise<void> {
+    if (this.told.has(tx)) return;
+    this.told.add(tx);
     await recordStateChange(tx, this.jobs, { restaurantId, cityId, kind: 'menu_changed', at });
   }
+
+  // The transactions that recorded `menu_changed` already.
+  private readonly told = new WeakSet<object>();
 
   // RA §9.3: a category, an item or an option switched on, or off «حتى الغد»
   // or «حتى أعيده», as the restaurant app does; never on a terminated
@@ -509,7 +521,7 @@ export class MenuEditorService {
     table: typeof categories | typeof items,
     current: string[],
     wanted: string[],
-  ): Promise<void> {
+  ): Promise<boolean> {
     if (
       wanted.length !== current.length ||
       new Set(wanted).size !== wanted.length ||
@@ -517,12 +529,15 @@ export class MenuEditorService {
     ) {
       throw new MerchantsRefusedError('invalid_menu', 'name every row once, in the new order');
     }
+    // The same order again writes nothing.
+    if (wanted.every((id, index) => current[index] === id)) return false;
     for (const [position, id] of wanted.entries()) {
       await tx
         .update(table)
         .set({ position, updatedAt: sql`now()` })
         .where(eq(table.id, id));
     }
+    return true;
   }
 
   private async record(

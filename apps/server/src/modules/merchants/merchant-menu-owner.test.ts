@@ -393,3 +393,97 @@ describe("the owners' commands (RA §9.2, §18)", () => {
     expect(noKey.statusCode).toBe(400);
   });
 });
+
+describe("the limits of the owners' commands (RA §5.5, §6, §18)", () => {
+  it("refuses another restaurant's rows on every command", async () => {
+    const r = await restaurant();
+    const other = await restaurant();
+    const foreign = [
+      send('PUT', `/options/${other.optionIds[1]}/price`, r.owner.headers, {
+        priceDelta: { amount: '100', currency: 'TRY' },
+      }),
+      send('PUT', `/items/${other.shawarma}/hidden`, r.owner.headers, { hidden: true }),
+      send('PUT', `/categories/${other.meals}/hidden`, r.owner.headers, { hidden: true }),
+      send('PUT', `/categories/${other.meals}/window`, r.owner.headers, { window: null }),
+      send('PUT', `/categories/${other.meals}/item-order`, r.owner.headers, {
+        itemIds: [other.falafel, other.shawarma],
+      }),
+    ];
+    for (const answer of await Promise.all(foreign)) {
+      expect(answer.statusCode).toBe(404);
+    }
+    const order = await send('PUT', '/category-order', r.owner.headers, {
+      categoryIds: [other.drinks, other.meals],
+    });
+    expect(order.statusCode).toBe(400);
+    const body = { categoryId: other.meals, kind: 'percent', direction: 'up', value: '1000' };
+    const preview = await send('POST', '/bulk-price/preview', r.owner.headers, body);
+    expect(preview.json()).toMatchObject({ rows: [], changed: 0 });
+    const applied = await send(
+      'POST',
+      '/bulk-price',
+      { ...r.owner.headers, 'idempotency-key': randomUUID() },
+      body,
+    );
+    expect(applied.json()).toEqual({ changed: 0, unchanged: 0 });
+    const prices = await sql.query(
+      'SELECT price FROM merchants.items WHERE category_id = $1 ORDER BY price',
+      [other.meals],
+    );
+    expect(prices.rows.map((row) => row.price)).toEqual(['5000', '10000']);
+  });
+
+  it("keeps a terminated restaurant's owners out (RA §5.5)", async () => {
+    const r = await restaurant();
+    await merchants.setAccountStatus(r.id, 'terminated', { ...change, reason: 'end' });
+    const key = { ...r.owner.headers, 'idempotency-key': randomUUID() };
+    const bulk = { categoryId: null, kind: 'percent', direction: 'up', value: '1000' };
+    const answers = await Promise.all([
+      send('PUT', `/items/${r.shawarma}/price`, r.owner.headers, {
+        price: { amount: '11000', currency: 'TRY' },
+      }),
+      send('PUT', `/items/${r.shawarma}/hidden`, r.owner.headers, { hidden: true }),
+      send('PUT', '/category-order', r.owner.headers, { categoryIds: [r.drinks, r.meals] }),
+      send('POST', '/bulk-price/preview', r.owner.headers, bulk),
+      send('POST', '/bulk-price', key, bulk),
+      send('GET', '/price-log', r.owner.headers),
+      send('GET', '/customer-preview', r.owner.headers),
+    ]);
+    for (const answer of answers) {
+      expect(answer.statusCode).toBe(403);
+      expect(answer.json()).toMatchObject({ error: 'restaurant_terminated' });
+    }
+  });
+
+  it('tells every device of a switch and of nothing when the order is the same', async () => {
+    const r = await restaurant();
+    await send('PUT', '/availability', r.cashier.headers, {
+      type: 'option',
+      id: r.optionIds[0],
+      available: false,
+      until: 'turned_back_on',
+    });
+    await send('PUT', '/category-order', r.owner.headers, { categoryIds: [r.meals, r.drinks] });
+    const kinds = await sql.query(
+      'SELECT kind FROM merchants.state_outbox WHERE restaurant_id = $1 ORDER BY id',
+      [r.id],
+    );
+    expect(kinds.rows.map((row) => row.kind)).toEqual(['menu_changed']);
+    const audited = await sql.query(
+      `SELECT count(*)::int AS count FROM audit.events
+        WHERE action = 'menu.category.order' AND target_id = $1`,
+      [r.id],
+    );
+    expect(audited.rows[0].count).toBe(0);
+  });
+
+  it('refuses a key reused for another bulk change', async () => {
+    const r = await restaurant();
+    const headers = { ...r.owner.headers, 'idempotency-key': randomUUID() };
+    const body = { categoryId: null, kind: 'percent', direction: 'up', value: '1000' };
+    expect((await send('POST', '/bulk-price', headers, body)).statusCode).toBe(200);
+    const reused = await send('POST', '/bulk-price', headers, { ...body, value: '2000' });
+    expect(reused.statusCode).toBe(422);
+    expect(reused.json()).toMatchObject({ error: 'idempotency_key_reused' });
+  });
+});

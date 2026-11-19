@@ -222,9 +222,7 @@ export class RestaurantMenuService {
     categoryIds: string[],
     change: MerchantChange,
   ): Promise<void> {
-    await this.editor.orderCategories(restaurantId, categoryIds, change, (tx, cityId) =>
-      this.editor.menuChanged(tx, restaurantId, cityId),
-    );
+    await this.editor.orderCategories(restaurantId, categoryIds, change);
   }
 
   async orderItems(
@@ -233,9 +231,7 @@ export class RestaurantMenuService {
     itemIds: string[],
     change: MerchantChange,
   ): Promise<void> {
-    await this.editor.orderItems(restaurantId, categoryId, itemIds, change, (tx, cityId) =>
-      this.editor.menuChanged(tx, restaurantId, cityId),
-    );
+    await this.editor.orderItems(restaurantId, categoryId, itemIds, change);
   }
 
   // RA §9.4 «Bulk change (owners)»: the panel's tool (AP §9.6.6).

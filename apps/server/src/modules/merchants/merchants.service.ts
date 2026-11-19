@@ -1823,16 +1823,9 @@ export class MerchantsService implements OnModuleInit {
           throw new MerchantsRefusedError('unknown_menu_row', `no such ${target.type} here`);
         }
       }
-      // RA §18 «menu changed» (slice 2.32a): a restaurant user's switch makes
-      // every other device of the restaurant read the menu again.
-      if (change.actor.type === 'merchant') {
-        await recordStateChange(tx, this.jobs, {
-          restaurantId,
-          cityId: row.cityId,
-          kind: 'menu_changed',
-          at: now,
-        });
-      }
+      // RA §18 «menu changed» (slice 2.32a): a switch, the restaurant's or
+      // the panel's, makes every device of the restaurant read the menu again.
+      await this.menuChanged(tx, restaurantId, row.cityId, now);
       return availability.available ? null : { until };
     });
   }
@@ -1884,6 +1877,7 @@ export class MerchantsService implements OnModuleInit {
         now,
       );
     }
+    await this.menuChanged(tx, restaurantId, row.cityId, now);
   }
 
   // RA §8.12 «تراجع — الصنف متوفر»: a withdrawn report's items switched on
@@ -1909,6 +1903,13 @@ export class MerchantsService implements OnModuleInit {
         now,
       );
     }
+    await this.menuChanged(tx, restaurantId, row.cityId, now);
+  }
+
+  // RA §18 «menu changed» (slice 2.32a): every device of the restaurant reads
+  // its menu again.
+  private async menuChanged(tx: Tx, restaurantId: string, cityId: string, at: Date) {
+    await recordStateChange(tx, this.jobs, { restaurantId, cityId, kind: 'menu_changed', at });
   }
 
   // One row's switch with its audit; false when the row is not the
@@ -2061,6 +2062,7 @@ export class MerchantsService implements OnModuleInit {
         },
         tx,
       );
+      await this.menuChanged(tx, restaurantId, row.cityId, new Date());
       return key;
     });
   }

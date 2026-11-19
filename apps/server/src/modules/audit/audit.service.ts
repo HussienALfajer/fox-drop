@@ -77,6 +77,9 @@ export class AuditService {
     targets: { type: string; ids: string[] }[],
     limit: number,
     skipSuffix: string | null = null,
+    // Keeps the skipped actions of this actor type (slice 2.32a: the
+    // restaurant's own switches stay in «سجل التغييرات», AP §9.6.6).
+    keepActor: (typeof events.actorType.enumValues)[number] | null = null,
   ): Promise<AuditEntry[]> {
     const wanted = targets.filter((target) => target.ids.length > 0);
     if (wanted.length === 0) return [];
@@ -97,7 +100,13 @@ export class AuditService {
       .where(
         and(
           eq(events.kind, 'write'),
-          ...(skipSuffix === null ? [] : [notLike(events.action, `%${skipSuffix}`)]),
+          ...(skipSuffix === null
+            ? []
+            : [
+                keepActor === null
+                  ? notLike(events.action, `%${skipSuffix}`)
+                  : or(notLike(events.action, `%${skipSuffix}`), eq(events.actorType, keepActor)),
+              ]),
           or(
             ...wanted.map((target) =>
               and(eq(events.targetType, target.type), inArray(events.targetId, target.ids)),

@@ -12,15 +12,21 @@ class MerchantMenuPreviewDto extends createZodDto(
   z.object({
     menu: z
       .array(
-        z.object({
-          id: z.uuid(),
-          name: z.string(),
-          window: z
-            .object({ startsAt: z.int(), endsAt: z.int() })
-            .nullable()
-            .describe('Minutes after midnight on the city clock; «متوفر من {الساعة}» outside it.'),
-          items: z.array(storefrontItem),
-        }),
+        z
+          .object({
+            id: z.uuid(),
+            name: z.string(),
+            window: z
+              .object({ startsAt: z.int(), endsAt: z.int() })
+              .nullable()
+              .describe(
+                'Minutes after midnight on the city clock; «متوفر من {الساعة}» outside it.',
+              ),
+            items: z.array(storefrontItem),
+          })
+          // Its own name, so the generator never ties the restaurant app's
+          // model to the panel's alike shape.
+          .meta({ id: 'MerchantMenuPreviewCategory' }),
       )
       .describe("The restaurant page's menu (CU §9.3): hidden rows left out."),
   }),

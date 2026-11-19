@@ -100,6 +100,7 @@ export class MenuImportService {
     const sheet = await this.rows(uploadId);
     return this.database.db.transaction(async (tx) => {
       const row = await this.editor.lockEditable(tx, restaurantId);
+      await this.editor.menuChanged(tx, restaurantId, row.cityId);
       const kept = await replay(tx, change.accountId, change.idempotencyKey, hash);
       if (kept !== null) return kept as ImportResult;
       const plan = await this.plan(tx, restaurantId, row.cityId, sheet);
