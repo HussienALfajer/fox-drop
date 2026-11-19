@@ -266,16 +266,96 @@ describe('the owners’ devices (RA §14.2)', () => {
     expect(again.json().error).toBe('no_device');
   });
 
-  it('keeps a terminated restaurant’s owners out (RA §5.5)', async () => {
+  // RA §5.4, §5.5: every route, refused to a cashier and to a terminated
+  // restaurant's owner, with nothing changed.
+  it('refuses every route to a cashier and to a terminated restaurant', async () => {
     const { id, owner } = await restaurant();
+    const { phone, accountId } = await addCashier(owner);
+    const cashier = await signIn(phone, 'كاشير 1');
+    const routes = (deviceId: string) => [
+      { method: 'GET' as const, url: '/v1/merchant/staff' },
+      {
+        method: 'POST' as const,
+        url: '/v1/merchant/staff',
+        payload: { name: 'كاشير', phone: newPhone() },
+      },
+      { method: 'POST' as const, url: `/v1/merchant/staff/${accountId}/remove` },
+      { method: 'GET' as const, url: '/v1/merchant/devices' },
+      {
+        method: 'PUT' as const,
+        url: `/v1/merchant/devices/${deviceId}/name`,
+        payload: { name: 'جهاز' },
+      },
+      { method: 'POST' as const, url: `/v1/merchant/devices/${deviceId}/sign-out` },
+    ];
+    for (const route of routes(cashier.deviceId)) {
+      const response = await app.inject({ ...route, headers: cashier.headers });
+      expect([route.url, response.statusCode, response.json().error]).toEqual([
+        route.url,
+        403,
+        'owner_only',
+      ]);
+    }
     await sql.query(
       "UPDATE merchants.restaurants SET account_status = 'terminated' WHERE id = $1",
       [id],
     );
-    for (const url of ['/v1/merchant/staff', '/v1/merchant/devices']) {
-      const response = await app.inject({ method: 'GET', url, ...owner });
-      expect(response.statusCode).toBe(403);
-      expect(response.json().error).toBe('restaurant_terminated');
+    for (const route of routes(cashier.deviceId)) {
+      const response = await app.inject({ ...route, headers: owner.headers });
+      expect([route.url, response.statusCode, response.json().error]).toEqual([
+        route.url,
+        403,
+        'restaurant_terminated',
+      ]);
     }
+    const { rows } = await sql.query(
+      'SELECT count(*)::int AS cashiers FROM identity.merchant_accounts WHERE restaurant_id = $1 AND removed_at IS NULL',
+      [id],
+    );
+    expect(rows).toEqual([{ cashiers: 2 }]);
+    const sessions = await sql.query(
+      'SELECT ended_at FROM identity.app_sessions WHERE device_id = $1',
+      [cashier.deviceId],
+    );
+    expect(sessions.rows).toEqual([{ ended_at: null }]);
+  });
+
+  it('never reaches another restaurant’s cashier or device', async () => {
+    const { owner } = await restaurant();
+    const other = await restaurant();
+    const { phone, accountId } = await addCashier(other.owner);
+    const cashier = await signIn(phone, 'كاشير الآخر');
+
+    const removed = await app.inject({
+      method: 'POST',
+      url: `/v1/merchant/staff/${accountId}/remove`,
+      ...owner,
+    });
+    expect(removed.statusCode).toBe(404);
+    const renamed = await app.inject({
+      method: 'PUT',
+      url: `/v1/merchant/devices/${cashier.deviceId}/name`,
+      headers: owner.headers,
+      payload: { name: 'جهازي' },
+    });
+    expect(renamed.statusCode).toBe(404);
+    const signedOut = await app.inject({
+      method: 'POST',
+      url: `/v1/merchant/devices/${cashier.deviceId}/sign-out`,
+      ...owner,
+    });
+    expect(signedOut.statusCode).toBe(409);
+    expect(signedOut.json().error).toBe('no_device');
+
+    const still = await app.inject({ method: 'GET', url: '/v1/merchant/devices', ...other.owner });
+    expect(
+      still.json().devices.find((each: { deviceId: string }) => each.deviceId === cashier.deviceId),
+    ).toMatchObject({ name: 'كاشير الآخر', signedIn: true });
+    const session = await app.inject({
+      method: 'GET',
+      url: '/v1/merchant/auth/session',
+      ...cashier,
+    });
+    expect(session.statusCode).toBe(200);
   });
 });

@@ -434,6 +434,14 @@ export const appSessions = identity.table(
     index('app_sessions_customer_device')
       .on(table.deviceId)
       .where(sql`${table.party} = 'customer'`),
+    // RA §14.1–14.2 (slice 2.33): the owners' «الموظفون» and «الأجهزة»
+    // read every session, open or ended, of a restaurant's users and devices.
+    index('app_sessions_merchant_account')
+      .on(table.accountId)
+      .where(sql`${table.party} = 'merchant'`),
+    index('app_sessions_merchant_device')
+      .on(table.deviceId)
+      .where(sql`${table.party} = 'merchant'`),
     check('app_sessions_party_values', sql`${table.party} IN ('customer', 'merchant', 'captain')`),
     check(
       'app_sessions_end_reason_values',

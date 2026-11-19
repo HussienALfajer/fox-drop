@@ -7,7 +7,7 @@ import 'staff_screen.dart';
 
 /// «الأجهزة» (RA §14.2), the owners': each device with its user, platform,
 /// version and whether someone is signed in on it, renamed or signed out
-/// (after a confirmation; its user stays). The ring setting, presence, the
+/// (after a confirmation; its user stays; never this device, RA §14.3). The ring setting, presence, the
 /// device check and the no-receiving-device banner join with 2.42.
 /// Unstyled until the design.
 class DevicesScreen extends ConsumerWidget {
@@ -106,7 +106,8 @@ class DevicesScreen extends ConsumerWidget {
                         onPressed: () => _rename(context, ref, device),
                         child: Text(l10n.merchantRenameDevice),
                       ),
-                      if (device.signedIn)
+                      // This device signs out from «هذا الجهاز» (RA §14.3).
+                      if (device.signedIn && !device.thisDevice)
                         TextButton(
                           key: Key('sign-out-${device.deviceId}'),
                           onPressed: () => _signOut(context, ref, device),

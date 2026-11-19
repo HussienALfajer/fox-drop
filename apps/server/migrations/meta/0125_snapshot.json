@@ -1,5 +1,5 @@
 {
-  "id": "d680cdd4-51da-4a8a-a59d-8a2a79f361c5",
+  "id": "191de439-5be0-4c46-b770-e7716b53c468",
   "prevId": "bb4e0964-aff5-4523-9481-622ac3381d39",
   "version": "7",
   "dialect": "postgresql",
@@ -6610,6 +6610,38 @@
           ],
           "isUnique": false,
           "where": "\"identity\".\"app_sessions\".\"party\" = 'customer'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "app_sessions_merchant_account": {
+          "name": "app_sessions_merchant_account",
+          "columns": [
+            {
+              "expression": "account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"identity\".\"app_sessions\".\"party\" = 'merchant'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "app_sessions_merchant_device": {
+          "name": "app_sessions_merchant_device",
+          "columns": [
+            {
+              "expression": "device_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"identity\".\"app_sessions\".\"party\" = 'merchant'",
           "concurrently": false,
           "method": "btree",
           "with": {}

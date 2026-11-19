@@ -472,6 +472,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('ليلى'), findsOneWidget);
+    expect(find.textContaining('\u2066+963900000001\u2069'), findsOneWidget);
     // Owners are read-only (RA §5.1).
     expect(find.byKey(const Key('remove-001')), findsNothing);
 

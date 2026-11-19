@@ -8,7 +8,7 @@ import { appSessions, merchantAccounts } from './schema.js';
 
 export class RestaurantDevicesRefusedError extends Error {
   constructor(
-    readonly refusal: 'unknown_restaurant' | 'no_device',
+    readonly refusal: 'unknown_restaurant' | 'no_device' | 'restaurant_terminated',
     message: string,
   ) {
     super(message);
@@ -101,6 +101,14 @@ export class RestaurantDevicesService {
       throw new RestaurantDevicesRefusedError('unknown_restaurant', 'no such restaurant');
     }
     return this.database.db.transaction(async (tx) => {
+      // RA §5.5: a terminated restaurant's owners keep only the money
+      // section, read under the restaurant row's share lock.
+      if (
+        change.actor.type === 'merchant' &&
+        (await this.merchants.lockedAccountStatus(tx, restaurantId)) === 'terminated'
+      ) {
+        throw new RestaurantDevicesRefusedError('restaurant_terminated', 'the contract has ended');
+      }
       const users = tx
         .select({ id: merchantAccounts.id })
         .from(merchantAccounts)

@@ -305,6 +305,8 @@ function refusalAsHttp(error: unknown): never {
         throw new ForbiddenException({ statusCode: HttpStatus.FORBIDDEN, ...body });
       case 'invalid_device':
         throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, ...body });
+      default:
+        throw new ConflictException({ statusCode: HttpStatus.CONFLICT, ...body });
     }
   }
   throw error;

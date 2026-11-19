@@ -85,7 +85,8 @@ class StaffScreen extends ConsumerWidget {
                     member.owner
                         ? l10n.merchantRoleOwner
                         : l10n.merchantRoleCashier,
-                    member.phone,
+                    // Left to right inside the Arabic line (AP §4.7).
+                    '\u2066${member.phone}\u2069',
                     l10n.merchantStaffDevices(member.devices),
                     lastActiveText(l10n, member.lastActiveAt),
                   ].join(' · '),
