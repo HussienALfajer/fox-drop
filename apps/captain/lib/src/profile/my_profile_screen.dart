@@ -31,10 +31,12 @@ class MyProfileScreen extends ConsumerWidget {
               ListTile(title: Text(l10n.captainProfileName(value.name))),
               if (value.phone case final phone?)
                 ListTile(
-                  title: Text(
-                    l10n.captainProfilePhone(phone),
+                  title: Text(l10n.captainProfilePhone),
+                  // A number reads left to right (AP §4.7).
+                  subtitle: Text(
+                    phone,
+                    key: const Key('profile-phone'),
                     textDirection: TextDirection.ltr,
-                    textAlign: TextAlign.start,
                   ),
                 ),
               if (value.neighbourhood case final neighbourhood?)
@@ -128,6 +130,7 @@ class _PayTableSection extends ConsumerWidget {
                 title: Text(
                   l10n.captainPayTableAnnounced(
                     l10n.formatDate(announced.effectiveFrom),
+                    l10n.formatTime(announced.effectiveFrom),
                   ),
                 ),
               ),
@@ -195,7 +198,7 @@ class _PayTableSection extends ConsumerWidget {
       title: Text(
         l10n.captainPayTableBase(
           _money(l10n, base),
-          l10n.formatDistance(includedMetres),
+          includedText(l10n, includedMetres),
         ),
       ),
     ),
@@ -206,7 +209,10 @@ class _PayTableSection extends ConsumerWidget {
     ListTile(
       key: Key('$key-waiting'),
       title: Text(
-        l10n.captainPayTableWaiting(_money(l10n, waiting), '$thresholdMin'),
+        l10n.captainPayTableWaiting(
+          _money(l10n, waiting),
+          l10n.durationMinutes(thresholdMin),
+        ),
       ),
     ),
     ListTile(
@@ -312,6 +318,7 @@ class _CalculatorState extends ConsumerState<_Calculator> {
               Text(
                 l10n.captainPayByAnnounced(
                   l10n.formatDate(announced.effectiveFrom),
+                  l10n.formatTime(announced.effectiveFrom),
                 ),
               ),
               ..._parts(

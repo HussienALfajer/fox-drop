@@ -1,5 +1,6 @@
 import 'package:captain/src/profile/my_profile.dart';
 import 'package:core_auth/testing.dart';
+import 'package:core_l10n/core_l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -49,6 +50,15 @@ void main() {
       expect(metresOf('-1'), isNull);
       expect(metresOf(''), isNull);
       expect(metresOf('أربعة'), isNull);
+      // An Arabic keyboard's digits and decimal mark.
+      expect(metresOf('٦٫٤'), 6400);
+    });
+
+    test('shows the included distance exact to the metre', () {
+      final l10n = lookupAppLocalizations(const Locale('ar'));
+      expect(includedText(l10n, 3000), '3 كم');
+      expect(includedText(l10n, 3250), '3.25 كم');
+      expect(includedText(l10n, 800), '800 م');
     });
 
     test('takes whole minutes up to a day, none being 0', () {
@@ -57,6 +67,7 @@ void main() {
       expect(waitedOf('1440'), 1440);
       expect(waitedOf('1441'), isNull);
       expect(waitedOf('2.5'), isNull);
+      expect(waitedOf('٢٥'), 25);
     });
   });
 
@@ -68,7 +79,7 @@ void main() {
     await openProfile(tester, app);
     await see(tester, 'رقم الهوية في FOX DROP: C-00000002');
     await see(tester, 'الاسم: أحمد محمد علي');
-    await see(tester, 'الهاتف: +963912345678');
+    await see(tester, '+963912345678');
     await see(tester, 'الحي: الحي الشمالي');
     await see(tester, 'المركبة: دراجة نارية');
     await see(tester, 'رقم اللوحة: 12345');
@@ -112,10 +123,10 @@ void main() {
       }),
     ]);
     await openProfile(tester, app);
-    await see(tester, 'الأجر الأساسي: 10 ₺ يشمل أول 3.0 كم');
+    await see(tester, 'الأجر الأساسي: 10 ₺ يشمل أول 3 كم');
     for (final (key, text) in [
       ('pay-current-per-km', 'لكل كم إضافي: 5 ₺'),
-      ('pay-current-waiting', 'الانتظار: 1 ₺ لكل دقيقة بعد 10 دقائق'),
+      ('pay-current-waiting', 'الانتظار: 1 ₺ لكل دقيقة بعد 10 د'),
       ('pay-current-minimum', 'الحد الأدنى للأجر: 20 ₺'),
     ]) {
       expect(
@@ -123,8 +134,8 @@ void main() {
         findsOneWidget,
       );
     }
-    await see(tester, 'الجدول الجديد من 28/11/2026');
-    await see(tester, 'الأجر الأساسي: 25 ₺ يشمل أول 3.0 كم');
+    await see(tester, 'الجدول الجديد من 28/11/2026 12:00 م');
+    await see(tester, 'الأجر الأساسي: 25 ₺ يشمل أول 3 كم');
 
     await tester.scrollUntilVisible(
       find.byKey(const Key('pay-calculate')),
@@ -147,7 +158,7 @@ void main() {
       'waitedMinutes': '25',
     });
     await see(tester, 'المجموع: 42 ₺');
-    await see(tester, 'بالجدول الجديد من 28/11/2026:');
+    await see(tester, 'بالجدول الجديد من 28/11/2026 12:00 م:');
     await see(tester, 'المجموع: 57 ₺');
     // The waiting past the 10 minutes, by both tables.
     expect(find.text('أجر الانتظار: 15 ₺'), findsNWidgets(2));

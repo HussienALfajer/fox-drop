@@ -36,11 +36,12 @@ const rate = (basePay: bigint) => ({
   waitingPerMinute: 100n,
   minimumPay: 2_000n,
 });
+// Each vehicle its own row, so the routes prove they answer the captain's.
 const rates = (basePay: bigint) => ({
   motorbike: rate(basePay),
-  car: rate(basePay),
-  bicycle: rate(basePay),
-  walking: rate(basePay),
+  car: rate(basePay + 100n),
+  bicycle: rate(basePay + 200n),
+  walking: rate(basePay + 300n),
 });
 
 beforeAll(async () => {
@@ -193,5 +194,6 @@ describe('«ملفي» (CA §12.1, §12.5)', () => {
     expect((await get('/v1/captain/pay-table/calculate?metres=-1')).statusCode).toBe(400);
     expect((await get('/v1/captain/pay-table/calculate?metres=1.5')).statusCode).toBe(400);
     expect((await get('/v1/captain/pay-table/calculate?metres=100001')).statusCode).toBe(400);
+    expect((await get('/v1/captain/pay-table/calculate?metres=')).statusCode).toBe(400);
   });
 });

@@ -8408,11 +8408,11 @@ abstract class AppLocalizations {
   /// **'الاسم: {name}'**
   String captainProfileName(String name);
 
-  /// CA §12.1 (our words).
+  /// CA §12.1: the label above the number, which reads left to right (our words).
   ///
   /// In ar, this message translates to:
-  /// **'الهاتف: {phone}'**
-  String captainProfilePhone(String phone);
+  /// **'الهاتف'**
+  String get captainProfilePhone;
 
   /// CA §12.1 (our words).
   ///
@@ -8468,11 +8468,11 @@ abstract class AppLocalizations {
   /// **'لكل كم إضافي: {amount}'**
   String captainPayTablePerKm(String amount);
 
-  /// CA §12.5: the waiting rate past captain.waiting_threshold_min (our words).
+  /// CA §12.5: the waiting rate past captain.waiting_threshold_min, the duration formatted («10 د») (our words).
   ///
   /// In ar, this message translates to:
-  /// **'الانتظار: {amount} لكل دقيقة بعد {minutes} دقائق'**
-  String captainPayTableWaiting(String amount, String minutes);
+  /// **'الانتظار: {amount} لكل دقيقة بعد {duration}'**
+  String captainPayTableWaiting(String amount, String duration);
 
   /// CA §12.5 (our words).
   ///
@@ -8480,11 +8480,11 @@ abstract class AppLocalizations {
   /// **'الحد الأدنى للأجر: {amount}'**
   String captainPayTableMinimum(String amount);
 
-  /// CA §12.5: an announced table and its first day (our words).
+  /// CA §12.5: an announced table and its first moment on the city's clock (our words).
   ///
   /// In ar, this message translates to:
-  /// **'الجدول الجديد من {date}'**
-  String captainPayTableAnnounced(String date);
+  /// **'الجدول الجديد من {date} {time}'**
+  String captainPayTableAnnounced(String date, String time);
 
   /// CA §12.5, Appendix B.
   ///
@@ -8498,10 +8498,10 @@ abstract class AppLocalizations {
   /// **'المسافة (كم)'**
   String get captainPayDistanceField;
 
-  /// «احسب أجري»'s optional waiting field (owner decision 2026-11-19; our words).
+  /// «احسب أجري»'s optional waiting field: waiting counts from the later of the arrival and the prep due time (docs/domain/04; owner decision 2026-11-19; our words).
   ///
   /// In ar, this message translates to:
-  /// **'دقائق الانتظار عند المطعم'**
+  /// **'دقائق الانتظار بعد موعد جاهزية الطلب'**
   String get captainPayWaitedField;
 
   /// «احسب أجري»'s button (our words).
@@ -8528,11 +8528,11 @@ abstract class AppLocalizations {
   /// **'المجموع: {amount}'**
   String captainPayTotal(String amount);
 
-  /// «احسب أجري»'s result by an announced table (our words).
+  /// «احسب أجري»'s result by an announced table, from its first moment (our words).
   ///
   /// In ar, this message translates to:
-  /// **'بالجدول الجديد من {date}:'**
-  String captainPayByAnnounced(String date);
+  /// **'بالجدول الجديد من {date} {time}:'**
+  String captainPayByAnnounced(String date, String time);
 
   /// «احسب أجري»'s read failed (our words).
   ///

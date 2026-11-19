@@ -4548,7 +4548,7 @@ class CaptainApi {
   /// Throws [DioException] if API call or serialization fails
   Future<Response<CaptainPayCalculationDtoOutput>> captainPayTableCalculate({
     required int metres,
-    int? waitedMinutes = 0,
+    int? waitedMinutes,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,

@@ -5052,9 +5052,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String captainProfilePhone(String phone) {
-    return 'الهاتف: $phone';
-  }
+  String get captainProfilePhone => 'الهاتف';
 
   @override
   String captainProfileNeighbourhood(String name) {
@@ -5095,8 +5093,8 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String captainPayTableWaiting(String amount, String minutes) {
-    return 'الانتظار: $amount لكل دقيقة بعد $minutes دقائق';
+  String captainPayTableWaiting(String amount, String duration) {
+    return 'الانتظار: $amount لكل دقيقة بعد $duration';
   }
 
   @override
@@ -5105,8 +5103,8 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String captainPayTableAnnounced(String date) {
-    return 'الجدول الجديد من $date';
+  String captainPayTableAnnounced(String date, String time) {
+    return 'الجدول الجديد من $date $time';
   }
 
   @override
@@ -5116,7 +5114,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get captainPayDistanceField => 'المسافة (كم)';
 
   @override
-  String get captainPayWaitedField => 'دقائق الانتظار عند المطعم';
+  String get captainPayWaitedField => 'دقائق الانتظار بعد موعد جاهزية الطلب';
 
   @override
   String get captainPayCalculate => 'احسب';
@@ -5134,8 +5132,8 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String captainPayByAnnounced(String date) {
-    return 'بالجدول الجديد من $date:';
+  String captainPayByAnnounced(String date, String time) {
+    return 'بالجدول الجديد من $date $time:';
   }
 
   @override

@@ -49,12 +49,21 @@ final payCalculatorProvider =
                   .data!,
     );
 
+/// What an Arabic keyboard types («٦٫٤», «٢٥») read as Western digits.
+String _western(String typed) => typed
+    .trim()
+    .replaceAll('٫', '.')
+    .replaceAllMapped(
+      RegExp('[٠-٩]'),
+      (m) => '${m[0]!.codeUnitAt(0) - 0x0660}',
+    );
+
 /// A distance typed in km («4», «4.5», «4,25»; up to three decimals) as
 /// whole metres, or null when it is not one of 0 to 100 km.
 int? metresOf(String typed) {
   final match = RegExp(
     r'^(\d{1,3})(?:[.,](\d{1,3}))?$',
-  ).firstMatch(typed.trim());
+  ).firstMatch(_western(typed));
   if (match == null) return null;
   final metres =
       int.parse(match[1]!) * 1000 +
@@ -65,11 +74,21 @@ int? metresOf(String typed) {
 /// Minutes waited as typed, none being 0, or null when they are not a whole
 /// number of 0 to a day.
 int? waitedOf(String typed) {
-  final text = typed.trim();
+  final text = _western(typed);
   if (text.isEmpty) return 0;
   if (!RegExp(r'^\d{1,4}$').hasMatch(text)) return null;
   final minutes = int.parse(text);
   return minutes <= sampleMaxWaitedMinutes ? minutes : null;
+}
+
+/// The distance a base pay includes, exact to the metre: the pay counts
+/// each metre past it (CA §12.5).
+String includedText(AppLocalizations l10n, int metres) {
+  if (metres < 1000) return l10n.distanceMetres(metres);
+  final km = (metres / 1000)
+      .toStringAsFixed(3)
+      .replaceFirst(RegExp(r'\.?0+$'), '');
+  return l10n.distanceKilometres(km);
 }
 
 String profileVehicleText(

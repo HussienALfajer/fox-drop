@@ -53,14 +53,18 @@ const parts = z.object({
   total: money,
 });
 
+// Whole numbers in the query; an empty value is no number (z.coerce alone
+// would read it as 0).
+const whole = (max: number) =>
+  z.preprocess(
+    (value) => (value === '' ? undefined : value),
+    z.coerce.number().int().min(0).max(max),
+  );
+
 class CaptainPayCalculationQueryDto extends createZodDto(
   z.object({
-    metres: z.coerce.number().int().min(0).max(SAMPLE_MAX_METRES),
-    waitedMinutes: z.coerce
-      .number()
-      .int()
-      .min(0)
-      .max(SAMPLE_MAX_WAITED_MINUTES)
+    metres: whole(SAMPLE_MAX_METRES),
+    waitedMinutes: whole(SAMPLE_MAX_WAITED_MINUTES)
       .default(0)
       .describe('Minutes waited at the restaurant; those past the threshold are paid.'),
   }),

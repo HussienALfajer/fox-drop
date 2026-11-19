@@ -7804,7 +7804,6 @@
             "schema": {
               "minimum": 0,
               "maximum": 1440,
-              "default": 0,
               "type": "integer"
             }
           }
