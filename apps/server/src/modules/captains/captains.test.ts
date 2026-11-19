@@ -482,7 +482,9 @@ describe('CaptainsService.setPayTable', () => {
       },
       { ...change, reason: 'رفع الحد الأدنى' },
     );
-    const versions = await captains.payTableVersions(cityId, now);
+    // The first starts at the database's clock when saved, after `now`: read
+    // as of a moment after the saves.
+    const versions = await captains.payTableVersions(cityId, new Date());
     expect(versions.map((version) => [version.id, version.state])).toEqual([
       [announced, 'announced'],
       [replaced, 'replaced'],
