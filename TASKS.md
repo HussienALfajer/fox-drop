@@ -4,22 +4,29 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.38a, settings and the audit log (`docs/roadmap.md`, Phase 2; 2.38 split in two, owner decision 2026-11-19).
+Slice 2.38b, the admin team and the layout (`docs/roadmap.md`, Phase 2; 2.38 split in two, owner decision 2026-11-19).
 
-- **Roadmap line:** 2.38a Settings and the audit log: «الإعدادات» with its group screens, «أرقام إرسال الرموز» and «سجل التدقيق» (AP §9.14, §9.16, Appendix A). The owner edits a setting and finds it in the audit log.
-- **Specs:** AP §9.14 (docs/product/v1/admin-panel/09-modules/14-settings.md), AP §9.16 (09-modules/16-audit-log.md), AP Appendix A (appendix-a-settings-catalogue.md), AP §4.4, §4.6, D27, D28, architecture §8.3.3 item 13.
+- **Roadmap line:** 2.38b The admin team and the layout: «فريق الإدارة» (the users, create with a setup link, roles, disable and enable, force sign-out, reset TOTP, the read-only role matrix with the compensation cap per role), the side menu by role and the top bar (city selector, platform status, dispatch mode, global search, alerts bell, approvals badge, user menu). The owner creates a user, and an OPS user's menu leaves Finance out.
+- **Specs:** AP §7.1–7.2 (docs/product/v1/admin-panel/07-global-layout-and-navigation.md), AP §9.15 (09-modules/15-admin-team.md), AP §5.2–5.3 (access and security), AP §6 (roles and permissions), AP §9.5 (the phone search rule the global search follows).
 - **Branch:** the cloud session's branch, from an up-to-date `main`.
-- **Owner decisions 2026-11-19:** 2.38 in two pull requests (2.38a settings and audit log; 2.38b the admin team, the side menu, the top bar and the global search); no design yet, so everything unstyled; pairing a sending number stays the server command (the panel's QR pairing later); no provider keys in V1.
-- **Already built (reuse):** the settings routes (`GET`/`PUT /v1/admin/settings`, reset, history) and `SettingsList` (`apps/admin/src/city-settings-page.tsx`), «التطبيقات» (2.4a), the routes of «أرقام إرسال الرموز» (W2), `AuditService.history` and the change logs' actor names (`admin-captain-profile.controller.ts`).
+- **Owner decisions 2026-11-19:** no design yet: the side menu and the top bar are built for structure and behaviour only, unstyled (no tokens, no shared UI package).
+- **Already built (reuse):** the admin team routes (`/v1/admin/team/users`, roles, disable, enable, sign-out, totp-reset, setup-link; `GET /v1/admin/team/roles`), the setup page (`/setup`), the compensation caps as the settings `support.compensation_cap_pct.SUP` and `.OPS` (edited through `useSettingCommand`, `apps/admin/src/settings.ts`), `EmergencyStopBar`, `AlertsMonitor` and its bell, «طلبات الموافقة» (`/compensations`), `citiesQuery` and the `city` search parameter every page reads, the home page's links (to become the side menu).
 
 ### Plan
 
-- [x] Split 2.38 with the owner and record it (roadmap, this file).
-- [x] Server: `GET /v1/admin/audit-log` (`audit_log.read`, OWN): the events newest first, filtered by actor, action, target and dates, a page at a time, with the admins' names (AP §9.16).
-- [x] Panel: «سجل التدقيق» (`/audit-log`): the filters, the events with their diff, reason, IP and device.
-- [x] Panel: «الإعدادات» (`/settings`): the nine group screens, every setting with its Arabic name, description, default, value, unit and «استعادة الافتراضي».
-- [x] Panel: «أرقام إرسال الرموز» (`/settings/otp-senders`): the numbers, their state and daily counts, active or standby, disable, and how pairing is done.
-- [ ] Review, fixes, hand over to 2.38b.
+- [ ] Panel: «فريق الإدارة» (`/team`): the users with AP §9.15's columns and actions, «مستخدم جديد» with its setup link, the role matrix with the caps.
+- [ ] Server: the global search (`GET` or `POST /v1/admin/search`): an order number, a restaurant name, a captain name or phone, a ticket number, a customer phone for OWN, OPS and SUP only, masked numbers (AP §7.2, §9.5).
+- [ ] Panel: the layout: the side menu of AP §7.1 by permission, the top bar (city selector kept in the search, platform status, dispatch mode, the search, the bell, the approvals badge for OWN, the user menu with sign-out).
+- [ ] Review, fixes, hand over to 2.39.
+
+### Left from 2.38a (the cloud session's branch)
+
+- **Before deploying to staging:** migration 0140 (expand only: the indexes `events_newest` and `events_actor` on `audit.events`, cascading to every month partition; a `CREATE INDEX` on the partitioned table locks its writes while it builds, short on staging's size). New route: `GET /v1/admin/audit-log`. Deploy the server before the panel. No app needs a new build.
+- **To check on staging (after the merge and the deploy):** 1. The home page › «الإعدادات»: «المؤقتات والحدود» lists each setting with its name, description, value and default. 2. Change «هامش الوقت المتوقع» to 12, «حفظ»: «حُفظ. يسري الآن.». 3. The home page › «سجل التدقيق»: the change heads the list, «تعديل إعداد» with your name, «value: من 10 إلى 12», the city, the IP and the device; filter «الإجراء» «تعديل إعداد» and «من تاريخ» today. 4. Back to the setting, «استعادة الافتراضي». 5. «الأمان» › «أرقام إرسال الرموز»: each number with its state and today's counts; «جعله احتياطياً» on one of two active numbers.
+- **Owner decisions 2026-11-19:** 2.38 in two pull requests; pairing a sending number stays the server command; no provider keys in V1.
+- **Decided by us (to confirm with the owner):** an action, a target type or a changed field the panel does not name shows its code in the audit log (the owner sees every event rather than a hidden one); the dates of the audit log are calendar days on the city's clock, not business days; the settings' Arabic names and descriptions are ours (Appendix A's are English); «الإعدادات» is OWN's (`settings.read`): FIN keeps the rounding on «أسعار الصرف» and OPS the dispatch mode on «قواعد التوزيع».
+- **Not yet:** pairing a number from the panel (QR); «الإعدادات الافتراضية», «قواعد التوزيع» and «المدن» still use `SettingsList` (`city-settings-page.tsx`) beside the general field of `settings.ts`, to merge into one; the audit log has no export.
+- **Not checked locally:** Turborepo does not run in the cloud container, so the parts ran one by one: the server's audit, settings controller, panel labels, admin team route table, OpenAPI, migrations and journal tests; the panel's type checks, lint, unit tests (359) and every Playwright spec (119, with the container's Chromium); `dart analyze` of `core_api`. The other server files and the Flutter tests did not run here; CI runs them.
 
 ### Left from 2.37c (the cloud session's branch)
 
