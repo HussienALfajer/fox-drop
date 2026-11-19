@@ -17276,7 +17276,7 @@ export interface components {
                 /** Format: date-time */
                 createdAt: string;
             }[];
-            /** @description The restaurants with a pin, not terminated, by name. */
+            /** @description The restaurants with a pin, not terminated (or terminated with their own rule), by name. */
             restaurants: {
                 /** Format: uuid */
                 id: string;

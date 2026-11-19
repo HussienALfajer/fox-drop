@@ -447,7 +447,8 @@ export class BrowsingService {
     const [card, deliversHere, rule, menu] = await Promise.all([
       this.card(restaurant, point, now, names),
       this.merchants.covers(id, point),
-      this.geo.deliveryFeeRule(restaurant.cityId),
+      // The restaurant's own rule, else the city's: the one the fee uses.
+      this.feeRuleOf(restaurant.cityId, id),
       this.merchants.menu(id, now),
     ]);
     if (rank(card.state) === null) return null;
@@ -513,6 +514,13 @@ export class BrowsingService {
       testMode: restaurant.accountStatus === 'test',
     };
     return { card, metres: distance.metres };
+  }
+
+  private async feeRuleOf(cityId: string, restaurantId: string) {
+    return (
+      (await this.geo.restaurantFeeRule(cityId, restaurantId)) ??
+      (await this.geo.deliveryFeeRule(cityId))
+    );
   }
 
   // The card shows the fee before any item (CU §8.2), so a free-delivery

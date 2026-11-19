@@ -18,8 +18,8 @@ import {
   useDeliveryFees,
   usePreviewFee,
   useSaveFeeRule,
-  ZONES_MANAGE,
 } from './delivery-fees.js';
+import { PRICING_EDIT } from './peak-bonus.js';
 import { formatDateTime, formatDistance, formatMoney, minorOf } from './format.js';
 import { degreesOf } from './restaurant-drafts.js';
 import { can } from './session.js';
@@ -77,7 +77,7 @@ export function DeliveryFeesPage() {
 function DeliveryFeesView({ fees, city }: { fees: DeliveryFees; city: City }) {
   const { t } = useTranslation();
   const { session } = signedIn.useRouteContext();
-  const manages = can(session, ZONES_MANAGE);
+  const manages = can(session, PRICING_EDIT);
   const save = useSaveFeeRule(city.id);
   const current = fees.versions[0] ?? null;
   return (
@@ -121,7 +121,9 @@ function DeliveryFeesView({ fees, city }: { fees: DeliveryFees; city: City }) {
         )}
       </section>
       <RestaurantRules fees={fees} city={city} manages={manages} />
-      <PreviewCalculator fees={fees} city={city} />
+      {fees.baseCurrency !== null && (
+        <PreviewCalculator fees={fees} city={city} currency={fees.baseCurrency} />
+      )}
     </>
   );
 }
@@ -189,7 +191,7 @@ function CityRuleForm({
   save: ReturnType<typeof useSaveFeeRule>;
 }) {
   const { t } = useTranslation();
-  const [form, setForm] = useState<RuleForm>(() => ruleFormOf(rule));
+  const [form, setForm] = useState<RuleForm>(() => ruleFormOf(rule, currency ?? ''));
   const [reason, setReason] = useState('');
   const [problem, setProblem] = useState<RuleProblem | null>(null);
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -401,14 +403,14 @@ function RestaurantRuleForm({
   const { t } = useTranslation();
   const save = useSaveFeeRule(city.id);
   const [restaurantId, setRestaurantId] = useState('');
-  const [form, setForm] = useState<RuleForm>(() => ruleFormOf(null));
+  const [form, setForm] = useState<RuleForm>(() => ruleFormOf(null, currency));
   const [reason, setReason] = useState('');
   const [problem, setProblem] = useState<RuleProblem | null>(null);
   const choose = (id: string) => {
     setRestaurantId(id);
     // The form starts from the restaurant's own rule, else the city's.
     const restaurant = fees.restaurants.find((each) => each.id === id);
-    setForm(ruleFormOf(restaurant?.ownRule?.rule ?? fees.versions[0]?.rule ?? null));
+    setForm(ruleFormOf(restaurant?.ownRule?.rule ?? fees.versions[0]?.rule ?? null, currency));
   };
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -476,7 +478,15 @@ function RestaurantSelect({
   );
 }
 
-function PreviewCalculator({ fees, city }: { fees: DeliveryFees; city: City }) {
+function PreviewCalculator({
+  fees,
+  city,
+  currency,
+}: {
+  fees: DeliveryFees;
+  city: City;
+  currency: string;
+}) {
   const { t } = useTranslation();
   const preview = usePreviewFee(city.id);
   const [restaurantId, setRestaurantId] = useState('');
@@ -495,7 +505,6 @@ function PreviewCalculator({ fees, city }: { fees: DeliveryFees; city: City }) {
       setProblem('point');
       return;
     }
-    const currency = fees.baseCurrency ?? '';
     const items = itemsValue.trim() === '' ? '0' : minorOf(itemsValue, currency);
     if (items === null) {
       setProblem('items');
@@ -545,7 +554,7 @@ function PreviewCalculator({ fees, city }: { fees: DeliveryFees; city: City }) {
                 />
               </label>
               <label>
-                {t('deliveryFees.preview.itemsValue', { currency: fees.baseCurrency ?? '' })}
+                {t('deliveryFees.preview.itemsValue', { currency })}
                 <input
                   inputMode="decimal"
                   value={itemsValue}

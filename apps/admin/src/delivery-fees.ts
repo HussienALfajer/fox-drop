@@ -3,9 +3,9 @@ import type { components } from '@fox-drop/api-schema';
 import { api } from './api.js';
 import { decimalOf, minorOf } from './format.js';
 
-// AP §9.12.3, §6.2: zones and pricing are read by OWN, OPS and FIN
-// (zones.read) and changed by OWN (zones.manage).
-export const ZONES_MANAGE = 'zones.manage';
+// AP §9.12.3, §6.2–6.3: zones and pricing are read by OWN, OPS and FIN
+// (zones.read); the delivery fee rules are OWN's, with the pay tables and
+// the peak bonus (pricing.edit_pay_tables, peak-bonus.ts's PRICING_EDIT).
 
 export type DeliveryFees = components['schemas']['AdminDeliveryFeesDto_Output'];
 export type FeeVersion = DeliveryFees['versions'][number];
@@ -54,9 +54,11 @@ export function metresOf(typed: string): number | null {
   return metres > 0 ? metres : null;
 }
 
-// The form of a rule, empty without one.
-export function ruleFormOf(rule: FeeRule | null): RuleForm {
-  if (rule === null) return emptyRule;
+// The form of a rule, empty without one or for a rule in another currency
+// than the one the form types (entered before a base change): its amounts
+// would be read in the wrong unit.
+export function ruleFormOf(rule: FeeRule | null, currency: string): RuleForm {
+  if (rule === null || rule.currency !== currency) return emptyRule;
   const money = (minor: string | null) => (minor === null ? '' : decimalOf(minor, rule.currency));
   return {
     kind: rule.kind,

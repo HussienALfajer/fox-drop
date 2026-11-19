@@ -99,7 +99,9 @@ class AdminDeliveryFeesDto extends createZodDto(
           ownRule: version.nullable().describe("Its own rule in effect; null: the city's."),
         }),
       )
-      .describe('The restaurants with a pin, not terminated, by name.'),
+      .describe(
+        'The restaurants with a pin, not terminated (or terminated with their own rule), by name.',
+      ),
   }),
 ) {}
 
@@ -159,7 +161,8 @@ class AdminDeliveryFeePreviewDto extends createZodDto(
 // AP §9.12.3 «رسوم التوصيل» (slice 2.37a): the city's rule and its versions,
 // the restaurants' own rules (owner decision 2026-11-19), and the preview
 // calculator. Read with zones.read (OWN, OPS, FIN; AP §6.2), changed with
-// zones.manage (OWN). The changes set a rule to the value sent, so no
+// pricing.edit_pay_tables (OWN: AP §6.3 «Edit captain pay tables, delivery
+// fee rules and the peak bonus»). The changes set a rule to the value sent, so no
 // Idempotency-Key. Here, not in geo, since the restaurants are merchants'
 // and the editors' names identity's.
 @AdminController('delivery-fees')
@@ -200,21 +203,25 @@ export class AdminDeliveryFeesController {
       baseCurrency,
       distanceMethod,
       versions: versions.map(view),
-      restaurants: listed(rows).map((row) => {
-        const entry = ownBy.get(row.id);
-        return {
-          id: row.id,
-          nameAr: row.nameAr,
-          location: row.location!,
-          ownRule: entry === undefined ? null : view(entry),
-        };
-      }),
+      // A terminated restaurant with its own rule stays listed, so the owner
+      // can return it to the city's (fx counts its currency until then).
+      restaurants: rows
+        .filter((row) => listed(row) || (row.location !== null && ownBy.has(row.id)))
+        .map((row) => {
+          const entry = ownBy.get(row.id);
+          return {
+            id: row.id,
+            nameAr: row.nameAr,
+            location: row.location!,
+            ownRule: entry === undefined ? null : view(entry),
+          };
+        }),
     };
   }
 
   // 400 invalid_fee_rule; 409 fee_not_in_base_currency; 404 unknown_city.
   @Put()
-  @RequirePermission('zones.manage')
+  @RequirePermission('pricing.edit_pay_tables')
   @ZodResponse({ status: 200, type: AdminDeliveryFeesDto })
   async setCityRule(
     @Body() body: AdminSetDeliveryFeeDto,
@@ -233,9 +240,10 @@ export class AdminDeliveryFeesController {
   }
 
   // 400 invalid_fee_rule; 409 fee_not_in_base_currency; 404 unknown_city,
-  // unknown_restaurant (not the city's, terminated or without its pin).
+  // unknown_restaurant (not the city's, without its pin, or terminated with a
+  // rule: a terminated one only returns to the city's).
   @Put('restaurants/:restaurantId')
-  @RequirePermission('zones.manage')
+  @RequirePermission('pricing.edit_pay_tables')
   @ZodResponse({ status: 200, type: AdminDeliveryFeesDto })
   async setRestaurantRule(
     @Param() params: AdminDeliveryFeeRestaurantParamsDto,
@@ -244,7 +252,7 @@ export class AdminDeliveryFeesController {
     @Req() request: FastifyRequest,
   ) {
     await this.knownCity(body.cityId);
-    await this.restaurantOf(body.cityId, params.restaurantId);
+    await this.restaurantOf(body.cityId, params.restaurantId, body.rule === null);
     await refusals(() =>
       this.geo.setRestaurantFeeRule(
         body.cityId,
@@ -302,9 +310,15 @@ export class AdminDeliveryFeesController {
     }
   }
 
-  private async restaurantOf(cityId: string, restaurantId: string): Promise<RestaurantListRow> {
-    const row = listed(await this.merchants.listRows(cityId)).find(
-      (each) => each.id === restaurantId,
+  // The city's restaurant with a pin, not terminated unless `ended` (a
+  // terminated restaurant may only return to the city's rule).
+  private async restaurantOf(
+    cityId: string,
+    restaurantId: string,
+    ended = false,
+  ): Promise<RestaurantListRow> {
+    const row = (await this.merchants.listRows(cityId)).find(
+      (each) => each.id === restaurantId && (listed(each) || (ended && each.location !== null)),
     );
     if (row === undefined) {
       throw new NotFoundException({
@@ -317,8 +331,8 @@ export class AdminDeliveryFeesController {
 }
 
 // The restaurants a fee applies to: with a pin and not terminated.
-function listed(rows: RestaurantListRow[]): RestaurantListRow[] {
-  return rows.filter((row) => row.location !== null && row.accountStatus !== 'terminated');
+function listed(row: RestaurantListRow): boolean {
+  return row.location !== null && row.accountStatus !== 'terminated';
 }
 
 function changeOf(

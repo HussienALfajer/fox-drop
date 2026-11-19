@@ -1,5 +1,5 @@
 {
-  "id": "0e45a510-b737-4e24-9db9-43bd6800ebd0",
+  "id": "7dadae3a-d891-4c41-b7dd-91ce6f0a6d37",
   "prevId": "8562ad8f-8d40-4c1d-9115-7f6a7790abcf",
   "version": "7",
   "dialect": "postgresql",
@@ -6437,12 +6437,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "restaurant_id": {
-          "name": "restaurant_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
         "kind": {
           "name": "kind",
           "type": "text",
@@ -6453,7 +6447,7 @@
           "name": "currency",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "flat_fee": {
           "name": "flat_fee",
@@ -6514,28 +6508,6 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
-        },
-        "fee_rules_restaurant_current": {
-          "name": "fee_rules_restaurant_current",
-          "columns": [
-            {
-              "expression": "restaurant_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "id",
-              "isExpression": false,
-              "asc": false,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "where": "\"geo\".\"fee_rules\".\"restaurant_id\" IS NOT NULL",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
         }
       },
       "foreignKeys": {
@@ -6560,15 +6532,7 @@
       "checkConstraints": {
         "fee_rules_kind_values": {
           "name": "fee_rules_kind_values",
-          "value": "\"geo\".\"fee_rules\".\"kind\" IN ('flat', 'distance_bands', 'city_rule')"
-        },
-        "fee_rules_city_rule": {
-          "name": "fee_rules_city_rule",
-          "value": "\"geo\".\"fee_rules\".\"kind\" <> 'city_rule' OR \"geo\".\"fee_rules\".\"restaurant_id\" IS NOT NULL"
-        },
-        "fee_rules_currency": {
-          "name": "fee_rules_currency",
-          "value": "(\"geo\".\"fee_rules\".\"kind\" = 'city_rule') = (\"geo\".\"fee_rules\".\"currency\" IS NULL)"
+          "value": "\"geo\".\"fee_rules\".\"kind\" IN ('flat', 'distance_bands')"
         },
         "fee_rules_flat_fee": {
           "name": "fee_rules_flat_fee",
@@ -6751,6 +6715,235 @@
         "offices_longitude": {
           "name": "offices_longitude",
           "value": "\"geo\".\"offices\".\"longitude\" BETWEEN -180 AND 180"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "geo.restaurant_fee_bands": {
+      "name": "restaurant_fee_bands",
+      "schema": "geo",
+      "columns": {
+        "rule_id": {
+          "name": "rule_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "up_to_metres": {
+          "name": "up_to_metres",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fee": {
+          "name": "fee",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "restaurant_fee_bands_rule_id_restaurant_fee_rules_id_fk": {
+          "name": "restaurant_fee_bands_rule_id_restaurant_fee_rules_id_fk",
+          "tableFrom": "restaurant_fee_bands",
+          "tableTo": "restaurant_fee_rules",
+          "schemaTo": "geo",
+          "columnsFrom": [
+            "rule_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "restaurant_fee_bands_rule_id_position_pk": {
+          "name": "restaurant_fee_bands_rule_id_position_pk",
+          "columns": [
+            "rule_id",
+            "position"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "restaurant_fee_bands_up_to_positive": {
+          "name": "restaurant_fee_bands_up_to_positive",
+          "value": "\"geo\".\"restaurant_fee_bands\".\"up_to_metres\" > 0"
+        },
+        "restaurant_fee_bands_fee": {
+          "name": "restaurant_fee_bands_fee",
+          "value": "\"geo\".\"restaurant_fee_bands\".\"fee\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "geo.restaurant_fee_rules": {
+      "name": "restaurant_fee_rules",
+      "schema": "geo",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuidv7()"
+        },
+        "city_id": {
+          "name": "city_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "restaurant_id": {
+          "name": "restaurant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "currency": {
+          "name": "currency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "flat_fee": {
+          "name": "flat_fee",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "minimum_fee": {
+          "name": "minimum_fee",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "free_delivery_from": {
+          "name": "free_delivery_from",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "editor_id": {
+          "name": "editor_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "restaurant_fee_rules_current": {
+          "name": "restaurant_fee_rules_current",
+          "columns": [
+            {
+              "expression": "restaurant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "restaurant_fee_rules_city": {
+          "name": "restaurant_fee_rules_city",
+          "columns": [
+            {
+              "expression": "city_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "restaurant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "restaurant_fee_rules_city_id_cities_id_fk": {
+          "name": "restaurant_fee_rules_city_id_cities_id_fk",
+          "tableFrom": "restaurant_fee_rules",
+          "tableTo": "cities",
+          "schemaTo": "geo",
+          "columnsFrom": [
+            "city_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "restaurant_fee_rules_kind_values": {
+          "name": "restaurant_fee_rules_kind_values",
+          "value": "\"geo\".\"restaurant_fee_rules\".\"kind\" IN ('flat', 'distance_bands', 'city_rule')"
+        },
+        "restaurant_fee_rules_currency": {
+          "name": "restaurant_fee_rules_currency",
+          "value": "(\"geo\".\"restaurant_fee_rules\".\"kind\" = 'city_rule') = (\"geo\".\"restaurant_fee_rules\".\"currency\" IS NULL)"
+        },
+        "restaurant_fee_rules_flat_fee": {
+          "name": "restaurant_fee_rules_flat_fee",
+          "value": "(\"geo\".\"restaurant_fee_rules\".\"kind\" = 'flat') = (\"geo\".\"restaurant_fee_rules\".\"flat_fee\" IS NOT NULL) AND \"geo\".\"restaurant_fee_rules\".\"flat_fee\" >= 0"
+        },
+        "restaurant_fee_rules_minimum_fee": {
+          "name": "restaurant_fee_rules_minimum_fee",
+          "value": "\"geo\".\"restaurant_fee_rules\".\"minimum_fee\" >= 0"
+        },
+        "restaurant_fee_rules_free_delivery_from": {
+          "name": "restaurant_fee_rules_free_delivery_from",
+          "value": "\"geo\".\"restaurant_fee_rules\".\"free_delivery_from\" > 0"
         }
       },
       "isRLSEnabled": false

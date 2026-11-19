@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { describe, expect, it } from 'vitest';
-import { admin, app, azaz, home, restaurant } from './delivery.fixture.js';
+import { GeoService } from '../geo/index.js';
+import { admin, app, azaz, change, home, restaurant, sql } from './delivery.fixture.js';
 
 // AP §9.12.3 «رسوم التوصيل» (slice 2.37a): the panel's fee screen, a
 // restaurant's own rule and the preview calculator, through the routes.
@@ -165,5 +166,68 @@ describe('«رسوم التوصيل» (AP §9.12.3)', () => {
     }
     const support = await admin(['SUP']);
     expect((await support.get(`/v1/admin/delivery-fees?cityId=${azaz}`)).statusCode).toBe(403);
+  });
+
+  it("refuses another city's restaurant on both routes", async () => {
+    const owner = await admin(['OWN']);
+    const { rows: cities } = await sql.query(
+      "INSERT INTO geo.cities (code, name) VALUES ('GQ', 'another') RETURNING id",
+    );
+    const { rows } = await sql.query(
+      `INSERT INTO merchants.restaurants (city_id, name_ar, location, coverage_kind, coverage_radius_metres, minimum_order, minimum_order_currency, default_prep_min)
+       VALUES ($1, 'elsewhere', ST_SetSRID(ST_MakePoint(37.05, 36.59), 4326), 'radius', 1000, 10000, 'TRY', 20) RETURNING id`,
+      [cities[0].id],
+    );
+    const elsewhere: string = rows[0].id;
+    const set = await put(owner.cookies, `/v1/admin/delivery-fees/restaurants/${elsewhere}`, {
+      cityId: azaz,
+      rule: null,
+      reason: null,
+    });
+    expect(set.json()).toMatchObject({ error: 'unknown_restaurant' });
+    const preview = await owner.get(
+      `/v1/admin/delivery-fees/preview?cityId=${azaz}&restaurantId=${elsewhere}&latitude=${home.latitude}&longitude=${home.longitude}`,
+    );
+    expect(preview.statusCode).toBe(404);
+  });
+
+  it("lists a terminated restaurant's own rule until the owner returns it to the city's", async () => {
+    const owner = await admin(['OWN']);
+    const { rows } = await sql.query(
+      `INSERT INTO merchants.restaurants (city_id, name_ar, location, coverage_kind, coverage_radius_metres, minimum_order, minimum_order_currency, default_prep_min, account_status)
+       VALUES ($1, 'ended', ST_SetSRID(ST_MakePoint(37.05, 36.59), 4326), 'radius', 1000, 10000, 'TRY', 20, 'terminated') RETURNING id`,
+      [azaz],
+    );
+    const ended: string = rows[0].id;
+    const listedIds = async () =>
+      (await owner.get(`/v1/admin/delivery-fees?cityId=${azaz}`))
+        .json()
+        .restaurants.map((each: { id: string }) => each.id);
+    expect(await listedIds()).not.toContain(ended);
+    await app
+      .get(GeoService)
+      .setRestaurantFeeRule(
+        azaz,
+        ended,
+        { kind: 'flat', currency: 'TRY', flatFee: 1000n, minimumFee: null, freeDeliveryFrom: null },
+        change,
+      );
+    expect(await listedIds()).toContain(ended);
+    const url = `/v1/admin/delivery-fees/restaurants/${ended}`;
+    const changed = await put(owner.cookies, url, {
+      cityId: azaz,
+      rule: {
+        kind: 'flat',
+        currency: 'TRY',
+        flatFee: '900',
+        minimumFee: null,
+        freeDeliveryFrom: null,
+      },
+      reason: null,
+    });
+    expect(changed.statusCode).toBe(404);
+    const back = await put(owner.cookies, url, { cityId: azaz, rule: null, reason: null });
+    expect(back.statusCode).toBe(200);
+    expect(await listedIds()).not.toContain(ended);
   });
 });

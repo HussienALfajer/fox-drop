@@ -52,7 +52,7 @@ const screen = (versions: object[]) => ({
 // AP §9.12.3: the owner changes the city's fee to distance bands and
 // previews a restaurant's fee at a point (the roadmap's 2.37 acceptance).
 test('changes the fee to distance bands and previews it', async ({ page }) => {
-  await fakeSession(page, ['zones.read', 'zones.manage']);
+  await fakeSession(page, ['zones.read', 'pricing.edit_pay_tables']);
   await page.route('**/v1/admin/cities', (route) => route.fulfill({ json: cities }));
   let sent: unknown = null;
   await page.route('**/v1/admin/delivery-fees?*', (route) =>

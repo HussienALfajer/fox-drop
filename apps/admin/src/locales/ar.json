@@ -3479,7 +3479,8 @@
         "restaurant.note": "ملاحظة داخلية",
         "merchant_account.create": "إضافة حساب",
         "merchant_account.remove": "حذف حساب",
-        "merchant_devices.sign_out": "تسجيل خروج الأجهزة"
+        "merchant_devices.sign_out": "تسجيل خروج الأجهزة",
+        "restaurant_fee_rule.set": "رسوم توصيل خاصة بالمطعم"
       },
       "fields": {
         "nameAr": "الاسم بالعربية",

@@ -72,11 +72,8 @@ export const zones = geo.table(
   ],
 );
 
-// AP §9.12.3: a city's delivery fee rule, or a restaurant's own rule that
-// replaces it for that restaurant alone (slice 2.37a, owner decision
-// 2026-11-19). A change adds a version, the newest in effect, so a quote can
-// name the rule it priced with. A restaurant's version of the kind
-// `city_rule` returns it to the city's rule.
+// AP §9.12.3: a city's delivery fee rule. A change adds a version, the newest
+// in effect, so a quote can name the rule it priced with.
 export const feeRules = geo.table(
   'fee_rules',
   {
@@ -86,12 +83,9 @@ export const feeRules = geo.table(
     cityId: uuid('city_id')
       .notNull()
       .references(() => cities.id),
-    // The merchants module's restaurant; null for the city's rule.
-    restaurantId: uuid('restaurant_id'),
-    kind: text('kind', { enum: ['flat', 'distance_bands', 'city_rule'] }).notNull(),
-    // The city's base currency when the rule was set (AP §8.6); null for
-    // `city_rule`, which charges nothing of its own.
-    currency: text('currency'),
+    kind: text('kind', { enum: ['flat', 'distance_bands'] }).notNull(),
+    // The city's base currency when the rule was set (AP §8.6).
+    currency: text('currency').notNull(),
     flatFee: bigint('flat_fee', { mode: 'bigint' }),
     minimumFee: bigint('minimum_fee', { mode: 'bigint' }),
     freeDeliveryFrom: bigint('free_delivery_from', { mode: 'bigint' }),
@@ -101,15 +95,7 @@ export const feeRules = geo.table(
   },
   (table) => [
     index('fee_rules_current').on(table.cityId, table.id.desc()),
-    index('fee_rules_restaurant_current')
-      .on(table.restaurantId, table.id.desc())
-      .where(sql`${table.restaurantId} IS NOT NULL`),
-    check('fee_rules_kind_values', sql`${table.kind} IN ('flat', 'distance_bands', 'city_rule')`),
-    check(
-      'fee_rules_city_rule',
-      sql`${table.kind} <> 'city_rule' OR ${table.restaurantId} IS NOT NULL`,
-    ),
-    check('fee_rules_currency', sql`(${table.kind} = 'city_rule') = (${table.currency} IS NULL)`),
+    check('fee_rules_kind_values', sql`${table.kind} IN ('flat', 'distance_bands')`),
     check(
       'fee_rules_flat_fee',
       sql`(${table.kind} = 'flat') = (${table.flatFee} IS NOT NULL) AND ${table.flatFee} >= 0`,
@@ -135,6 +121,71 @@ export const feeBands = geo.table(
     primaryKey({ columns: [table.ruleId, table.position] }),
     check('fee_bands_up_to_positive', sql`${table.upToMetres} > 0`),
     check('fee_bands_fee', sql`${table.fee} >= 0`),
+  ],
+);
+
+// AP §9.12.3 (slice 2.37a, owner decision 2026-11-19): a restaurant's own
+// rule, which replaces the city's for that restaurant alone. Versions as the
+// city's, the newest in effect; one of the kind `city_rule` returns the
+// restaurant to the city's rule. A table of its own, so a server reading
+// fee_rules before this slice never takes one for the city's rule.
+export const restaurantFeeRules = geo.table(
+  'restaurant_fee_rules',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    cityId: uuid('city_id')
+      .notNull()
+      .references(() => cities.id),
+    // The merchants module's restaurant.
+    restaurantId: uuid('restaurant_id').notNull(),
+    kind: text('kind', { enum: ['flat', 'distance_bands', 'city_rule'] }).notNull(),
+    // The city's base currency when the rule was set; null for `city_rule`,
+    // which charges nothing of its own.
+    currency: text('currency'),
+    flatFee: bigint('flat_fee', { mode: 'bigint' }),
+    minimumFee: bigint('minimum_fee', { mode: 'bigint' }),
+    freeDeliveryFrom: bigint('free_delivery_from', { mode: 'bigint' }),
+    editorId: uuid('editor_id'),
+    reason: text('reason'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('restaurant_fee_rules_current').on(table.restaurantId, table.id.desc()),
+    index('restaurant_fee_rules_city').on(table.cityId, table.restaurantId),
+    check(
+      'restaurant_fee_rules_kind_values',
+      sql`${table.kind} IN ('flat', 'distance_bands', 'city_rule')`,
+    ),
+    check(
+      'restaurant_fee_rules_currency',
+      sql`(${table.kind} = 'city_rule') = (${table.currency} IS NULL)`,
+    ),
+    check(
+      'restaurant_fee_rules_flat_fee',
+      sql`(${table.kind} = 'flat') = (${table.flatFee} IS NOT NULL) AND ${table.flatFee} >= 0`,
+    ),
+    check('restaurant_fee_rules_minimum_fee', sql`${table.minimumFee} >= 0`),
+    check('restaurant_fee_rules_free_delivery_from', sql`${table.freeDeliveryFrom} > 0`),
+  ],
+);
+
+// The bands of a restaurant's distance-band rule, as fee_bands.
+export const restaurantFeeBands = geo.table(
+  'restaurant_fee_bands',
+  {
+    ruleId: uuid('rule_id')
+      .notNull()
+      .references(() => restaurantFeeRules.id),
+    position: smallint('position').notNull(),
+    upToMetres: integer('up_to_metres'),
+    fee: bigint('fee', { mode: 'bigint' }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.ruleId, table.position] }),
+    check('restaurant_fee_bands_up_to_positive', sql`${table.upToMetres} > 0`),
+    check('restaurant_fee_bands_fee', sql`${table.fee} >= 0`),
   ],
 );
 

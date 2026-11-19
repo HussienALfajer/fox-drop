@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
-import { and, asc, desc, eq, inArray, isNotNull, isNull, ne, type SQL, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, ne, type SQL, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -17,7 +17,17 @@ import {
   type RoadDistances,
   type Route,
 } from './distance.js';
-import { cities, feeBands, feeRules, officePeriods, offices, zones, zoneVotes } from './schema.js';
+import {
+  cities,
+  feeBands,
+  feeRules,
+  officePeriods,
+  offices,
+  restaurantFeeBands,
+  restaurantFeeRules,
+  zones,
+  zoneVotes,
+} from './schema.js';
 import {
   checkWeeklySchedule,
   currentPeriod,
@@ -654,11 +664,11 @@ export class GeoService implements OnModuleInit {
     const [row] = await executor
       .select()
       .from(feeRules)
-      .where(and(eq(feeRules.cityId, cityId), isNull(feeRules.restaurantId)))
+      .where(eq(feeRules.cityId, cityId))
       .orderBy(desc(feeRules.id))
       .limit(1);
     if (!row) return null;
-    return (await withBands([row], executor))[0]!.rule;
+    return (await withBands([row], executor, 'city'))[0]!.rule;
   }
 
   // A restaurant's own rule in effect (slice 2.37a); null while it follows
@@ -670,12 +680,17 @@ export class GeoService implements OnModuleInit {
   ): Promise<FeeRule | null> {
     const [row] = await executor
       .select()
-      .from(feeRules)
-      .where(and(eq(feeRules.cityId, cityId), eq(feeRules.restaurantId, restaurantId)))
-      .orderBy(desc(feeRules.id))
+      .from(restaurantFeeRules)
+      .where(
+        and(
+          eq(restaurantFeeRules.cityId, cityId),
+          eq(restaurantFeeRules.restaurantId, restaurantId),
+        ),
+      )
+      .orderBy(desc(restaurantFeeRules.id))
       .limit(1);
     if (!row || row.kind === 'city_rule') return null;
-    return (await withBands([row], executor))[0]!.rule;
+    return (await withBands([row], executor, 'restaurant'))[0]!.rule;
   }
 
   // «رسوم التوصيل» (AP §9.12.3): the city's rule versions, newest first, at
@@ -684,10 +699,10 @@ export class GeoService implements OnModuleInit {
     const rows = await this.database.db
       .select()
       .from(feeRules)
-      .where(and(eq(feeRules.cityId, cityId), isNull(feeRules.restaurantId)))
+      .where(eq(feeRules.cityId, cityId))
       .orderBy(desc(feeRules.id))
       .limit(limit);
-    return withBands(rows, this.database.db);
+    return withBands(rows, this.database.db, 'city');
   }
 
   // The restaurants of the city with a rule of their own in effect, each
@@ -697,15 +712,15 @@ export class GeoService implements OnModuleInit {
     executor: Executor = this.database.db,
   ): Promise<(FeeRuleVersion & { restaurantId: string })[]> {
     const rows = await executor
-      .selectDistinctOn([feeRules.restaurantId])
-      .from(feeRules)
-      .where(and(eq(feeRules.cityId, cityId), isNotNull(feeRules.restaurantId)))
-      .orderBy(feeRules.restaurantId, desc(feeRules.id));
+      .selectDistinctOn([restaurantFeeRules.restaurantId])
+      .from(restaurantFeeRules)
+      .where(eq(restaurantFeeRules.cityId, cityId))
+      .orderBy(restaurantFeeRules.restaurantId, desc(restaurantFeeRules.id));
     const own = rows.filter((row) => row.kind !== 'city_rule');
-    const versions = await withBands(own, executor);
+    const versions = await withBands(own, executor, 'restaurant');
     return versions.map((version, index) => ({
       ...version,
-      restaurantId: own[index]!.restaurantId!,
+      restaurantId: own[index]!.restaurantId,
     }));
   }
 
@@ -773,24 +788,38 @@ export class GeoService implements OnModuleInit {
       // A change that changes nothing adds no version.
       if (before === null && rule === null) return null;
       if (before !== null && rule !== null && sameRule(before, rule)) return before.id;
-      const [{ id }] = (await tx
-        .insert(feeRules)
-        .values({
-          cityId,
-          restaurantId,
-          kind: rule?.kind ?? 'city_rule',
-          currency: rule?.currency ?? null,
-          flatFee: rule?.kind === 'flat' ? rule.flatFee : null,
-          minimumFee: rule?.minimumFee ?? null,
-          freeDeliveryFrom: rule?.freeDeliveryFrom ?? null,
-          editorId: change.actor.type === 'admin' ? change.actor.id : null,
-          reason: change.reason ?? null,
-        })
-        .returning({ id: feeRules.id })) as [{ id: string }];
-      if (rule?.kind === 'distance_bands') {
-        await tx
-          .insert(feeBands)
-          .values(rule.bands.map((band, position) => ({ ruleId: id, position, ...band })));
+      const values = {
+        cityId,
+        currency: rule?.currency ?? null,
+        flatFee: rule?.kind === 'flat' ? rule.flatFee : null,
+        minimumFee: rule?.minimumFee ?? null,
+        freeDeliveryFrom: rule?.freeDeliveryFrom ?? null,
+        editorId: change.actor.type === 'admin' ? change.actor.id : null,
+        reason: change.reason ?? null,
+      };
+      const bands = rule?.kind === 'distance_bands' ? rule.bands : [];
+      let id: string;
+      if (restaurantId === null) {
+        // The city's rule always has one.
+        [{ id }] = (await tx
+          .insert(feeRules)
+          .values({ ...values, kind: rule!.kind, currency: rule!.currency })
+          .returning({ id: feeRules.id })) as [{ id: string }];
+        if (bands.length > 0) {
+          await tx
+            .insert(feeBands)
+            .values(bands.map((band, position) => ({ ruleId: id, position, ...band })));
+        }
+      } else {
+        [{ id }] = (await tx
+          .insert(restaurantFeeRules)
+          .values({ ...values, restaurantId, kind: rule?.kind ?? 'city_rule' })
+          .returning({ id: restaurantFeeRules.id })) as [{ id: string }];
+        if (bands.length > 0) {
+          await tx
+            .insert(restaurantFeeBands)
+            .values(bands.map((band, position) => ({ ruleId: id, position, ...band })));
+        }
       }
       await this.audit.recordWrite(
         {
@@ -853,24 +882,33 @@ export class GeoService implements OnModuleInit {
   }
 }
 
-// Rule rows with their bands, in their order, in one query for the bands.
+// Rule rows with their bands, in their order, in one query for the bands:
+// the city's from fee_bands, a restaurant's from restaurant_fee_bands.
 async function withBands(
-  rows: (typeof feeRules.$inferSelect)[],
+  rows: {
+    id: string;
+    kind: 'flat' | 'distance_bands' | 'city_rule';
+    currency: string | null;
+    flatFee: bigint | null;
+    minimumFee: bigint | null;
+    freeDeliveryFrom: bigint | null;
+    editorId: string | null;
+    reason: string | null;
+    createdAt: Date;
+  }[],
   executor: Executor,
+  scope: 'city' | 'restaurant',
 ): Promise<FeeRuleVersion[]> {
   const banded = rows.filter((row) => row.kind === 'distance_bands').map((row) => row.id);
+  const table = scope === 'city' ? feeBands : restaurantFeeBands;
   const bands =
     banded.length === 0
       ? []
       : await executor
-          .select({
-            ruleId: feeBands.ruleId,
-            upToMetres: feeBands.upToMetres,
-            fee: feeBands.fee,
-          })
-          .from(feeBands)
-          .where(inArray(feeBands.ruleId, banded))
-          .orderBy(asc(feeBands.ruleId), asc(feeBands.position));
+          .select({ ruleId: table.ruleId, upToMetres: table.upToMetres, fee: table.fee })
+          .from(table)
+          .where(inArray(table.ruleId, banded))
+          .orderBy(asc(table.ruleId), asc(table.position));
   return rows.map((row) => {
     const common = {
       id: row.id,

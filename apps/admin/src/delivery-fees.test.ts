@@ -39,8 +39,10 @@ describe('the distances', () => {
 
 describe('the form of a rule', () => {
   it('starts empty without a rule and from the rule in major units', () => {
-    expect(ruleFormOf(null)).toEqual(emptyRule);
-    expect(ruleFormOf(bands)).toEqual({
+    expect(ruleFormOf(null, 'TRY')).toEqual(emptyRule);
+    // A rule entered in another currency than the form's starts empty.
+    expect(ruleFormOf(bands, 'USD')).toEqual(emptyRule);
+    expect(ruleFormOf(bands, 'TRY')).toEqual({
       kind: 'distance_bands',
       flatFee: '',
       bands: [
@@ -54,7 +56,7 @@ describe('the form of a rule', () => {
   });
 
   it('sends the bands back as they were', () => {
-    expect(ruleRequestOf(ruleFormOf(bands), 'TRY')).toEqual({
+    expect(ruleRequestOf(ruleFormOf(bands, 'TRY'), 'TRY')).toEqual({
       rule: {
         kind: 'distance_bands',
         currency: 'TRY',
@@ -88,7 +90,7 @@ describe('the form of a rule', () => {
 
   it('names the first problem', () => {
     expect(ruleRequestOf({ ...emptyRule, flatFee: 'x' }, 'TRY')).toEqual({ problem: 'fee' });
-    const form = ruleFormOf(bands);
+    const form = ruleFormOf(bands, 'TRY');
     expect(
       ruleRequestOf(
         { ...form, bands: [form.bands[0]!, { ...form.bands[1]!, upToKm: '1.5' }, form.bands[2]!] },

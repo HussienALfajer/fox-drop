@@ -342,28 +342,27 @@ describe('the zones and fee tables (AP §9.12.2–9.12.3)', () => {
     ).rejects.toThrow(/fee_rules_flat_fee/);
   });
 
-  it("take a restaurant's return to the city's rule, without a currency, for a restaurant only", async () => {
+  it("take a restaurant's return to the city's rule, without a currency, and refuse one with", async () => {
     await appQuery(
-      `INSERT INTO geo.fee_rules (city_id, restaurant_id, kind) VALUES (${azaz}, uuidv7(), 'city_rule')`,
+      `INSERT INTO geo.restaurant_fee_rules (city_id, restaurant_id, kind) VALUES (${azaz}, uuidv7(), 'city_rule')`,
     );
     await expect(
-      appQuery(`INSERT INTO geo.fee_rules (city_id, kind) VALUES (${azaz}, 'city_rule')`),
-    ).rejects.toThrow(/fee_rules_city_rule/);
+      appQuery(
+        `INSERT INTO geo.restaurant_fee_rules (city_id, restaurant_id, kind, currency) VALUES (${azaz}, uuidv7(), 'city_rule', 'TRY')`,
+      ),
+    ).rejects.toThrow(/restaurant_fee_rules_currency/);
     await expect(
       appQuery(
-        `INSERT INTO geo.fee_rules (city_id, restaurant_id, kind, currency) VALUES (${azaz}, uuidv7(), 'city_rule', 'TRY')`,
+        `INSERT INTO geo.restaurant_fee_rules (city_id, restaurant_id, kind, flat_fee) VALUES (${azaz}, uuidv7(), 'flat', 100)`,
       ),
-    ).rejects.toThrow(/fee_rules_currency/);
-    await expect(
-      appQuery(
-        `INSERT INTO geo.fee_rules (city_id, restaurant_id, kind, flat_fee) VALUES (${azaz}, uuidv7(), 'flat', 100)`,
-      ),
-    ).rejects.toThrow(/fee_rules_currency/);
+    ).rejects.toThrow(/restaurant_fee_rules_currency/);
   });
 
   it.each([
     ['change a fee rule', "UPDATE geo.fee_rules SET reason = 'x'"],
     ['change a fee band', 'UPDATE geo.fee_bands SET fee = 1'],
+    ['change a restaurant fee rule', "UPDATE geo.restaurant_fee_rules SET reason = 'x'"],
+    ['change a restaurant fee band', 'UPDATE geo.restaurant_fee_bands SET fee = 1'],
     ['delete a zone', 'DELETE FROM geo.zones'],
   ])('refuse the application role to %s', async (_, statement) => {
     await expect(appQuery(statement)).rejects.toThrow(/permission denied/);

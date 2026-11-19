@@ -17,7 +17,7 @@ part 'admin_delivery_fees_dto_output.g.dart';
 /// * [baseCurrency] - The amounts are typed in it; null while the city has none.
 /// * [distanceMethod] - pricing.distance_method: how a distance-band fee is measured.
 /// * [versions] - The city's rule, newest first (the first is in effect), the latest 50.
-/// * [restaurants] - The restaurants with a pin, not terminated, by name.
+/// * [restaurants] - The restaurants with a pin, not terminated (or terminated with their own rule), by name.
 @BuiltValue()
 abstract class AdminDeliveryFeesDtoOutput
     implements
@@ -35,7 +35,7 @@ abstract class AdminDeliveryFeesDtoOutput
   @BuiltValueField(wireName: r'versions')
   BuiltList<AdminDeliveryFeesDtoOutputVersionsInner> get versions;
 
-  /// The restaurants with a pin, not terminated, by name.
+  /// The restaurants with a pin, not terminated (or terminated with their own rule), by name.
   @BuiltValueField(wireName: r'restaurants')
   BuiltList<AdminDeliveryFeesDtoOutputRestaurantsInner> get restaurants;
 

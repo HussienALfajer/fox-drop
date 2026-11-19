@@ -427,6 +427,22 @@ describe('the restaurant page (CU §9.1–9.4)', () => {
     });
   });
 
+  it("shows the free-delivery threshold of the restaurant's own rule (AP §9.12.3)", async () => {
+    const geo = app.get(GeoService);
+    const own = { kind: 'flat', currency: 'TRY', flatFee: 2500n, minimumFee: null } as const;
+    await geo.setRestaurantFeeRule(azaz, open, { ...own, freeDeliveryFrom: 20_000n }, change);
+    try {
+      expect((await page(open)).json()).toMatchObject({
+        deliveryFee: { fee: { amount: '2500', currency: 'TRY' } },
+        freeDeliveryFrom: { amount: '20000', currency: 'TRY' },
+      });
+      await geo.setRestaurantFeeRule(azaz, open, { ...own, freeDeliveryFrom: null }, change);
+      expect((await page(open)).json().freeDeliveryFrom).toBeNull();
+    } finally {
+      await geo.setRestaurantFeeRule(azaz, open, null, change);
+    }
+  });
+
   it('says when it does not deliver to the point', async () => {
     expect((await page(distant)).json()).toMatchObject({ deliversHere: false });
   });
