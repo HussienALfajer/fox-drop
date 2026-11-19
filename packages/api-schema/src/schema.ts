@@ -3028,6 +3028,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/captain/pay-table": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainPayTablePayTable"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/pay-table/calculate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainPayTableCalculate"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/captain/contract": {
         parameters: {
             query?: never;
@@ -7028,6 +7060,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/captain/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainProfileProfile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/restaurant-list": {
         parameters: {
             query?: never;
@@ -10092,6 +10140,58 @@ export interface components {
                     id: string;
                     name: string;
                 }[];
+            }[];
+        };
+        CaptainPayMoney_Output: {
+            amount: string;
+            currency: string;
+        };
+        CaptainPayTableDto_Output: {
+            /** @enum {string} */
+            vehicle: "walking" | "bicycle" | "motorbike" | "car";
+            /** @description captain.waiting_threshold_min */
+            waitingThresholdMin: number;
+            /** @description The table in force for the captain's vehicle. */
+            current: {
+                /** Format: date-time */
+                effectiveFrom: string;
+                basePay: components["schemas"]["CaptainPayMoney_Output"];
+                /** @description The distance the base pay includes. */
+                includedMetres: number;
+                perExtraKm: components["schemas"]["CaptainPayMoney_Output"];
+                waitingPerMinute: components["schemas"]["CaptainPayMoney_Output"];
+                minimumPay: components["schemas"]["CaptainPayMoney_Output"];
+            } | null;
+            /** @description The tables published to start later, soonest first (AP §9.12.5: 7 days ahead). */
+            announced: {
+                /** Format: date-time */
+                effectiveFrom: string;
+                basePay: components["schemas"]["CaptainPayMoney_Output"];
+                /** @description The distance the base pay includes. */
+                includedMetres: number;
+                perExtraKm: components["schemas"]["CaptainPayMoney_Output"];
+                waitingPerMinute: components["schemas"]["CaptainPayMoney_Output"];
+                minimumPay: components["schemas"]["CaptainPayMoney_Output"];
+            }[];
+        };
+        CaptainPayCalculationDto_Output: {
+            current: {
+                base: components["schemas"]["CaptainPayMoney_Output"];
+                distance: components["schemas"]["CaptainPayMoney_Output"];
+                topUp: components["schemas"]["CaptainPayMoney_Output"];
+                orderPay: components["schemas"]["CaptainPayMoney_Output"];
+                waiting: components["schemas"]["CaptainPayMoney_Output"];
+                total: components["schemas"]["CaptainPayMoney_Output"];
+            } | null;
+            announced: {
+                base: components["schemas"]["CaptainPayMoney_Output"];
+                distance: components["schemas"]["CaptainPayMoney_Output"];
+                topUp: components["schemas"]["CaptainPayMoney_Output"];
+                orderPay: components["schemas"]["CaptainPayMoney_Output"];
+                waiting: components["schemas"]["CaptainPayMoney_Output"];
+                total: components["schemas"]["CaptainPayMoney_Output"];
+                /** Format: date-time */
+                effectiveFrom: string;
             }[];
         };
         CaptainContractDto_Output: {
@@ -20264,6 +20364,18 @@ export interface components {
                 } | null;
             }[];
         };
+        CaptainProfileDto_Output: {
+            /** @description «رقم الهوية في FOX DROP», the id shown short. */
+            foxDropId: string;
+            name: string;
+            /** @description The number the captain signs in with. */
+            phone: string | null;
+            /** @description The application's zone; null for a captain the seed made. */
+            neighbourhood: string | null;
+            /** @enum {string} */
+            vehicle: "walking" | "bicycle" | "motorbike" | "car";
+            plateNumber: string | null;
+        };
         AdminRestaurantListQueryDto: {
             /** Format: uuid */
             cityId: string;
@@ -25478,6 +25590,50 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptainPeakBonusDto_Output"];
+                };
+            };
+        };
+    };
+    captainPayTablePayTable: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainPayTableDto_Output"];
+                };
+            };
+        };
+    };
+    captainPayTableCalculate: {
+        parameters: {
+            query: {
+                metres: number;
+                /** @description Minutes waited at the restaurant; those past the threshold are paid. */
+                waitedMinutes?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainPayCalculationDto_Output"];
                 };
             };
         };
@@ -32239,6 +32395,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaptainPerformanceDto_Output"];
+                };
+            };
+        };
+    };
+    captainProfileProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainProfileDto_Output"];
                 };
             };
         };

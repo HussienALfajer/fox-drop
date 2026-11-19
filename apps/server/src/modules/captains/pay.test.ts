@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checkPayRate, orderPay, type PayRate } from './pay.js';
+import { checkPayRate, orderPay, samplePay, type PayRate } from './pay.js';
 
 // AP §9.12.5: the pay of one order for a vehicle, in minor units of the
 // table's currency. The placeholder of development and staging: 25 TRY
@@ -67,6 +67,41 @@ describe('orderPay', () => {
     expect(() => orderPay(placeholder, { metres: -1, waitingMinutes: 0 })).toThrow(RangeError);
     expect(() => orderPay(placeholder, { metres: 1.5, waitingMinutes: 0 })).toThrow(RangeError);
     expect(() => orderPay(placeholder, { metres: 0, waitingMinutes: -1 })).toThrow(RangeError);
+  });
+});
+
+describe('samplePay', () => {
+  const rate = { ...placeholder, basePay: 1_000n, minimumPay: 2_000n, waitingPerMinute: 100n };
+
+  it('prices a sample trip as an order: base, extra metres rounded down, the minimum', () => {
+    expect(samplePay(rate, { metres: 3_000, waitedMinutes: 0, thresholdMin: 10 })).toEqual({
+      base: 1_000n,
+      distance: 0n,
+      topUp: 1_000n,
+      orderPay: 2_000n,
+      waiting: 0n,
+    });
+    expect(samplePay(rate, { metres: 6_401, waitedMinutes: 0, thresholdMin: 10 }).orderPay).toBe(
+      2_700n,
+    );
+  });
+
+  it('pays the waiting minutes past captain.waiting_threshold_min only (CA §12.5)', () => {
+    const waiting = (waitedMinutes: number) =>
+      samplePay(rate, { metres: 0, waitedMinutes, thresholdMin: 10 }).waiting;
+    expect(waiting(0)).toBe(0n);
+    expect(waiting(10)).toBe(0n);
+    expect(waiting(11)).toBe(100n);
+    expect(waiting(25)).toBe(1_500n);
+  });
+
+  it('refuses a waiting time that is not whole minutes of zero or more', () => {
+    expect(() => samplePay(rate, { metres: 0, waitedMinutes: -1, thresholdMin: 10 })).toThrow(
+      RangeError,
+    );
+    expect(() => samplePay(rate, { metres: 0, waitedMinutes: 1.5, thresholdMin: 10 })).toThrow(
+      RangeError,
+    );
   });
 });
 

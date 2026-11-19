@@ -796,6 +796,13 @@ import 'package:core_api/src/model/captain_order_dto_output_order_redelivery_of.
 import 'package:core_api/src/model/captain_order_route_dto_output.dart';
 import 'package:core_api/src/model/captain_order_route_dto_output_route.dart';
 import 'package:core_api/src/model/captain_outcome_payment_dto.dart';
+import 'package:core_api/src/model/captain_pay_calculation_dto_output.dart';
+import 'package:core_api/src/model/captain_pay_calculation_dto_output_announced_inner.dart';
+import 'package:core_api/src/model/captain_pay_calculation_dto_output_current.dart';
+import 'package:core_api/src/model/captain_pay_money_output.dart';
+import 'package:core_api/src/model/captain_pay_table_dto_output.dart';
+import 'package:core_api/src/model/captain_pay_table_dto_output_announced_inner.dart';
+import 'package:core_api/src/model/captain_pay_table_dto_output_current.dart';
 import 'package:core_api/src/model/captain_peak_bonus_dto_output.dart';
 import 'package:core_api/src/model/captain_peak_bonus_dto_output_active_inner.dart';
 import 'package:core_api/src/model/captain_peak_bonus_dto_output_active_inner_amount.dart';
@@ -810,6 +817,7 @@ import 'package:core_api/src/model/captain_performance_dto_output_violations_inn
 import 'package:core_api/src/model/captain_performance_dto_output_violations_inner_appeal.dart';
 import 'package:core_api/src/model/captain_pickup_request_dto.dart';
 import 'package:core_api/src/model/captain_problem_body_dto.dart';
+import 'package:core_api/src/model/captain_profile_dto_output.dart';
 import 'package:core_api/src/model/captain_ratings_dto_output.dart';
 import 'package:core_api/src/model/captain_ratings_dto_output_reasons_inner.dart';
 import 'package:core_api/src/model/captain_refresh_dto.dart';
@@ -1919,6 +1927,13 @@ part 'serializers.g.dart';
   CaptainOrderRouteDtoOutput,
   CaptainOrderRouteDtoOutputRoute,
   CaptainOutcomePaymentDto,
+  CaptainPayCalculationDtoOutput,
+  CaptainPayCalculationDtoOutputAnnouncedInner,
+  CaptainPayCalculationDtoOutputCurrent,
+  CaptainPayMoneyOutput,
+  CaptainPayTableDtoOutput,
+  CaptainPayTableDtoOutputAnnouncedInner,
+  CaptainPayTableDtoOutputCurrent,
   CaptainPeakBonusDtoOutput,
   CaptainPeakBonusDtoOutputActiveInner,
   CaptainPeakBonusDtoOutputActiveInnerAmount,
@@ -1933,6 +1948,7 @@ part 'serializers.g.dart';
   CaptainPerformanceDtoOutputViolationsInnerAppeal,
   CaptainPickupRequestDto,
   CaptainProblemBodyDto,
+  CaptainProfileDtoOutput,
   CaptainRatingsDtoOutput,
   CaptainRatingsDtoOutputReasonsInner,
   CaptainRefreshDto,
@@ -3182,6 +3198,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(CaptainPayCalculationDtoOutputAnnouncedInner),
+            ]),
+            () => ListBuilder<CaptainPayCalculationDtoOutputAnnouncedInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(CustomerCodesDtoOutputCodesInner),
             ]),
             () => ListBuilder<CustomerCodesDtoOutputCodesInner>(),
@@ -3447,6 +3469,12 @@ Serializers serializers =
               FullType(AdminExchangeRatesDtoOutputCurrenciesInner),
             ]),
             () => ListBuilder<AdminExchangeRatesDtoOutputCurrenciesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CaptainPayTableDtoOutputAnnouncedInner),
+            ]),
+            () => ListBuilder<CaptainPayTableDtoOutputAnnouncedInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

@@ -797,6 +797,13 @@ export 'package:core_api/src/model/captain_order_dto_output_order_redelivery_of.
 export 'package:core_api/src/model/captain_order_route_dto_output.dart';
 export 'package:core_api/src/model/captain_order_route_dto_output_route.dart';
 export 'package:core_api/src/model/captain_outcome_payment_dto.dart';
+export 'package:core_api/src/model/captain_pay_calculation_dto_output.dart';
+export 'package:core_api/src/model/captain_pay_calculation_dto_output_announced_inner.dart';
+export 'package:core_api/src/model/captain_pay_calculation_dto_output_current.dart';
+export 'package:core_api/src/model/captain_pay_money_output.dart';
+export 'package:core_api/src/model/captain_pay_table_dto_output.dart';
+export 'package:core_api/src/model/captain_pay_table_dto_output_announced_inner.dart';
+export 'package:core_api/src/model/captain_pay_table_dto_output_current.dart';
 export 'package:core_api/src/model/captain_peak_bonus_dto_output.dart';
 export 'package:core_api/src/model/captain_peak_bonus_dto_output_active_inner.dart';
 export 'package:core_api/src/model/captain_peak_bonus_dto_output_active_inner_amount.dart';
@@ -811,6 +818,7 @@ export 'package:core_api/src/model/captain_performance_dto_output_violations_inn
 export 'package:core_api/src/model/captain_performance_dto_output_violations_inner_appeal.dart';
 export 'package:core_api/src/model/captain_pickup_request_dto.dart';
 export 'package:core_api/src/model/captain_problem_body_dto.dart';
+export 'package:core_api/src/model/captain_profile_dto_output.dart';
 export 'package:core_api/src/model/captain_ratings_dto_output.dart';
 export 'package:core_api/src/model/captain_ratings_dto_output_reasons_inner.dart';
 export 'package:core_api/src/model/captain_refresh_dto.dart';

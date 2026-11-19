@@ -1480,6 +1480,20 @@ export class ApplicationPipelineService {
     };
   }
 
+  // CA §12.1 (slice 2.36c): the neighbourhood of the captain's latest
+  // activated application, the zone's name; null for a captain the seed made.
+  async captainNeighbourhood(captainId: string): Promise<string | null> {
+    const [row] = await this.database.db
+      .select({ cityId: applications.cityId, zoneId: applications.zoneId })
+      .from(applications)
+      .where(eq(applications.captainId, captainId))
+      .orderBy(desc(applications.activatedAt))
+      .limit(1);
+    if (!row) return null;
+    const zone = (await this.geo.zones(row.cityId)).find((each) => each.id === row.zoneId);
+    return zone?.name ?? null;
+  }
+
   // AP §9.7.4 «سجل التغييرات» (slice 2.36a): every application that became
   // this captain, a rehire's included.
   async applicationIds(captainId: string): Promise<string[]> {

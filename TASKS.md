@@ -4,18 +4,18 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.36c, «ملفي» in the captain app (`docs/roadmap.md`, Phase 2; the last of 2.36's three pull requests, owner decision 2026-11-19). Planned, not started.
+Slice 2.36c, «ملفي» in the captain app (`docs/roadmap.md`, Phase 2; the last of 2.36's three pull requests, owner decision 2026-11-19). In progress.
 
 - **Roadmap line:** 2.36c «ملفي» in the captain app: the data and vehicle read-only, the pay table for the captain's vehicle and «احسب أجري» (CA §12.1, §12.5). The captain computes the pay for a sample distance.
 - **Specs:** CA §12.1 (name, phone, neighbourhood, vehicle type, plate, the FOX DROP ID number, read-only; changes through Support), CA §12.5 (the pay table for the captain's vehicle: base pay and its included km, the rate per extra km, the waiting rate, the minimum pay; «احسب أجري»; announced changes 7 days ahead; the peak windows), AP §9.12.5 (pay tables), docs/domain/04 (the pay of an order).
 - **Branch:** the cloud session's branch, from an up-to-date `main`.
 - **Already built (reuse):** the pay table and `orderPay`/`pay.ts` (captains), `GET /v1/captain/peak-bonus` and `PeakWindowsScreen`, «المستندات» and «العقد والعدة» (2.35a), the captain's account and phone (identity), the zones' names (geo).
-- **To ask the owner first:** what «رقم الهوية في FOX DROP» is (the captain's id shown short, or a number of its own); whether a table scheduled (announced) shows beside the one in force; whether «احسب أجري» takes the waiting minutes too.
+- **Owner decisions (2026-11-19):** «رقم الهوية في FOX DROP» is the captain's id shown short (`C-` and its last 8 hex digits: a UUIDv7's first ones are its time); an announced table shows beside the one in force with its start; «احسب أجري» takes the distance and the minutes waited, paid past `captain.waiting_threshold_min`.
 - **Plan:**
-  - [ ] The server: `GET /v1/captain/profile` (the data and vehicle) and `GET /v1/captain/pay-table` (the table in force for the captain's vehicle and the one announced), and the calculator's pure rule (failing test first: base, extra km rounded down, the minimum, waiting).
+  - [x] The server: `GET /v1/captain/profile` (the data and vehicle) and `GET /v1/captain/pay-table` (the table in force for the captain's vehicle and the one announced), and the calculator's pure rule (failing test first: base, extra km rounded down, the minimum, waiting).
   - [ ] «ملفي» in the captain app: the data read-only with «طلب تعديل» through Support, the pay table, «احسب أجري», the peak windows and the documents and contract moved under it.
   - [ ] Review, then hand over to 2.37.
-- **Stopped at:** 2.36b merged; 2.36c not started.
+- **Stopped at:** the server step committed; the app's «ملفي» next.
 
 ### Left from 2.36b (the cloud session's branch)
 

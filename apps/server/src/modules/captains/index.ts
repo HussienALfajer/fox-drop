@@ -18,6 +18,7 @@ import { CaptainAvailabilityController } from './captain-availability.controller
 import { CaptainNotesService } from './captain-notes.service.js';
 import { CaptainContractController } from './captain-contract.controller.js';
 import { CaptainDocumentsController } from './captain-documents.controller.js';
+import { CaptainPayTableController } from './captain-pay-table.controller.js';
 import { CaptainPeakBonusController } from './captain-peak-bonus.controller.js';
 import { CaptainsService } from './captains.service.js';
 import { LivePositions } from './live-positions.js';
@@ -46,6 +47,7 @@ import { ViolationsService } from './violations.service.js';
     CaptainApplicationController,
     CaptainAvailabilityController,
     CaptainPeakBonusController,
+    CaptainPayTableController,
     CaptainContractController,
     CaptainDocumentsController,
     AdminCaptainsController,
