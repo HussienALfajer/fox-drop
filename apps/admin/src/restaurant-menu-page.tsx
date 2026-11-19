@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { formatMoney } from './format.js';
 import { timeOf } from './peak-bonus.js';
 import { ImageField } from './restaurant-images-page.js';
+import { MenuImportSection } from './restaurant-menu-import-page.js';
 import {
   BulkAvailabilitySection,
   BulkPriceSection,
@@ -108,6 +109,9 @@ export function MenuStep(props: {
           )}
           <BulkAvailabilitySection restaurantId={props.restaurantId} menu={menu.data} />
         </>
+      )}
+      {editable && props.currency !== null && (
+        <MenuImportSection restaurantId={props.restaurantId} currency={props.currency} />
       )}
       <PriceLogSection restaurantId={props.restaurantId} timeZone={props.timeZone} />
     </section>
