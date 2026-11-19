@@ -82,9 +82,6 @@ Serializers _$serializers =
             AdminCaptainApplicationDtoOutputActivationKitItemsInner.serializer,
           )
           ..add(
-            AdminCaptainApplicationDtoOutputActivationMissingInner.serializer,
-          )
-          ..add(
             AdminCaptainApplicationDtoOutputActivationSuggestedCashLimit
                 .serializer,
           )
@@ -1900,17 +1897,6 @@ Serializers _$serializers =
             () =>
                 ListBuilder<
                   AdminCaptainApplicationDtoOutputActivationKitItemsInner
-                >(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, const [
-              const FullType(
-                AdminCaptainApplicationDtoOutputActivationMissingInner,
-              ),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminCaptainApplicationDtoOutputActivationMissingInner
                 >(),
           )
           ..addBuilderFactory(
@@ -4610,6 +4596,10 @@ Serializers _$serializers =
               const FullType(SettingListDtoOutputSettingsInnerEditRolesEnum),
             ]),
             () => ListBuilder<SettingListDtoOutputSettingsInnerEditRolesEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [const FullType(String)]),
+            () => ListBuilder<String>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),

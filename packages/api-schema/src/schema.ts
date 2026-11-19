@@ -10080,7 +10080,7 @@ export interface components {
                     amount: string;
                     currency: string;
                 } | null;
-                /** @description captain.custody_limit_suggested.<vehicle>. */
+                /** @description The setting captain.custody_limit_suggested of the vehicle. */
                 suggestedCashLimit: {
                     /** @description Minor units. */
                     amount: string;
@@ -10134,7 +10134,7 @@ export interface components {
                     currency: string;
                 } | null;
                 /** @description What «تفعيل» still waits for. */
-                missing: (string | ("kit" | "deposit" | "contract" | "cash_limit"))[];
+                missing: string[];
                 captainId: string | null;
                 activatedAt: string | null;
             };

@@ -23,8 +23,7 @@ class _$AdminCaptainApplicationDtoOutputActivation
   final AdminCaptainApplicationDtoOutputActivationSuggestedCashLimit?
   suggestedDeposit;
   @override
-  final BuiltList<AdminCaptainApplicationDtoOutputActivationMissingInner>
-  missing;
+  final BuiltList<String> missing;
   @override
   final String? captainId;
   @override
@@ -162,14 +161,9 @@ class AdminCaptainApplicationDtoOutputActivationBuilder
     suggestedDeposit,
   ) => _$this._suggestedDeposit = suggestedDeposit;
 
-  ListBuilder<AdminCaptainApplicationDtoOutputActivationMissingInner>? _missing;
-  ListBuilder<AdminCaptainApplicationDtoOutputActivationMissingInner>
-  get missing => _$this._missing ??=
-      ListBuilder<AdminCaptainApplicationDtoOutputActivationMissingInner>();
-  set missing(
-    ListBuilder<AdminCaptainApplicationDtoOutputActivationMissingInner>?
-    missing,
-  ) => _$this._missing = missing;
+  ListBuilder<String>? _missing;
+  ListBuilder<String> get missing => _$this._missing ??= ListBuilder<String>();
+  set missing(ListBuilder<String>? missing) => _$this._missing = missing;
 
   String? _captainId;
   String? get captainId => _$this._captainId;

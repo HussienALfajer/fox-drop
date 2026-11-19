@@ -7969,6 +7969,234 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'تعذّر الحفظ. حاول مرة أخرى.'**
   String get captainApplicationFailed;
+
+  /// K6, CA §12.2 (slice 2.35a): an expired required document blocks going online. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهت صلاحية {documents}. ارفع نسخة جديدة من «المستندات» لتعود للعمل.'**
+  String captainBlockDocumentExpired(String documents);
+
+  /// CA §12.2: the documents on «المزيد» (slice 2.35a, until the profile of 2.36).
+  ///
+  /// In ar, this message translates to:
+  /// **'المستندات'**
+  String get captainProfileDocuments;
+
+  /// CA §12.3–12.4: the contract, the kit and the deposit (slice 2.35a).
+  ///
+  /// In ar, this message translates to:
+  /// **'العقد والعدة'**
+  String get captainProfileContract;
+
+  /// CA §12.2: a document in force. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'ساري'**
+  String get captainDocumentValid;
+
+  /// CA §12.2: within captain.document_expiry_notice_days of its expiry. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'ينتهي قريباً'**
+  String get captainDocumentExpiring;
+
+  /// CA §12.2: expired. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'منتهي'**
+  String get captainDocumentExpired;
+
+  /// CA §12.2: «رفع نسخة جديدة» waiting for OPS. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'نسخة جديدة بانتظار التحقق'**
+  String get captainDocumentReplacementPending;
+
+  /// CA §12.2, §14 #27: the amber banner of a document expiring.
+  ///
+  /// In ar, this message translates to:
+  /// **'تنتهي صلاحية {document} في {date}'**
+  String captainDocumentExpiringBanner(String document, String date);
+
+  /// CA §12.2, K6: a document expired. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهت صلاحية {document}'**
+  String captainDocumentExpiredBanner(String document);
+
+  /// CA §12.3: the contract's phase.
+  ///
+  /// In ar, this message translates to:
+  /// **'المرحلة: {phase}'**
+  String captainContractPhase(String phase);
+
+  /// CA §12.3, AP §9.7.2: «فترة تجربة».
+  ///
+  /// In ar, this message translates to:
+  /// **'فترة تجربة'**
+  String get captainContractProbation;
+
+  /// CA §12.3, AP §9.7.2: «فترة التزام».
+  ///
+  /// In ar, this message translates to:
+  /// **'فترة التزام'**
+  String get captainContractCommitment;
+
+  /// CA §12.3, AP §9.7.2: «مفتوح».
+  ///
+  /// In ar, this message translates to:
+  /// **'مفتوح'**
+  String get captainContractOpen;
+
+  /// CA §12.3: the start date.
+  ///
+  /// In ar, this message translates to:
+  /// **'تاريخ البدء: {date}'**
+  String captainContractStart(String date);
+
+  /// CA §12.3: the probation end.
+  ///
+  /// In ar, this message translates to:
+  /// **'نهاية فترة التجربة: {date}'**
+  String captainContractProbationEnd(String date);
+
+  /// CA §12.3: the commitment end (as expected until the probation is confirmed).
+  ///
+  /// In ar, this message translates to:
+  /// **'نهاية فترة الالتزام: {date}'**
+  String captainContractCommitmentEnd(String date);
+
+  /// A captain without a recorded contract. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يوجد عقد مسجّل.'**
+  String get captainContractNone;
+
+  /// CA §12.3, C17: the early exit's explanation.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخروج المبكر'**
+  String get captainEarlyExitTitle;
+
+  /// CA §12.3, C17.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد غرامة مالية.'**
+  String get captainEarlyExitNoPenalty;
+
+  /// CA §12.3, C17.
+  ///
+  /// In ar, this message translates to:
+  /// **'يجب إعادة العدة، وإلا يُحتجز التأمين.'**
+  String get captainEarlyExitKit;
+
+  /// CA §12.3, C17.
+  ///
+  /// In ar, this message translates to:
+  /// **'يُسجَّل في ملفك «خروج مبكر»، وإعادة التوظيف تحتاج موافقة المالك.'**
+  String get captainEarlyExitFlag;
+
+  /// CA §12.3: ending the contract goes through Support.
+  ///
+  /// In ar, this message translates to:
+  /// **'لإنهاء العقد اطلب ذلك عبر «الدعم».'**
+  String get captainContractEndViaSupport;
+
+  /// CA §12.4.
+  ///
+  /// In ar, this message translates to:
+  /// **'العدة والتأمين'**
+  String get captainKitTitle;
+
+  /// CA §12.4: an item issued.
+  ///
+  /// In ar, this message translates to:
+  /// **'{label} × {quantity}'**
+  String captainKitLine(String label, String quantity);
+
+  /// CA §12.4: an item issued with its size.
+  ///
+  /// In ar, this message translates to:
+  /// **'{label} ({size}) × {quantity}'**
+  String captainKitLineSized(String label, String size, String quantity);
+
+  /// CA §12.4. The spec gives no wording.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم تُسلَّم عدة.'**
+  String get captainKitNone;
+
+  /// CA §12.4: the deposit and what is paid.
+  ///
+  /// In ar, this message translates to:
+  /// **'التأمين: {amount}، المدفوع: {paid}'**
+  String captainDepositLine(String amount, String paid);
+
+  /// CA §12.4: the instalment.
+  ///
+  /// In ar, this message translates to:
+  /// **'القسط الأسبوعي: {amount}، يُخصم كل خميس'**
+  String captainDepositInstalment(String amount);
+
+  /// CA §12.4: the refund.
+  ///
+  /// In ar, this message translates to:
+  /// **'يُعاد التأمين عند إنهاء العقد إذا أُعيدت العدة سليمة.'**
+  String get captainDepositRefund;
+
+  /// CA §5.4–5.5: the welcome tour's title, the status page's «مفعّل» words.
+  ///
+  /// In ar, this message translates to:
+  /// **'مرحباً بك في FOX DROP!'**
+  String get captainTourTitle;
+
+  /// CA §5.5 tour 1: going online. Our words, to confirm with the owner.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط «متصل» لتبدأ استقبال العروض، و«غير متصل» عندما تنتهي.'**
+  String get captainTourOnline;
+
+  /// CA §5.5 tour 2: an offer. Our words, to confirm with the owner.
+  ///
+  /// In ar, this message translates to:
+  /// **'يصلك العرض برنين: اقبله أو ارفضه قبل انتهاء وقته.'**
+  String get captainTourOffer;
+
+  /// CA §5.5 tour 3: an order. Our words, to confirm with the owner.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتبع خطوات الطلب من المطعم إلى الزبون، وسجّل كل خطوة في وقتها.'**
+  String get captainTourOrder;
+
+  /// CA §5.5 tour 4: custody. Our words, to confirm with the owner.
+  ///
+  /// In ar, this message translates to:
+  /// **'النقد الذي تحصّله عهدة عليك: سلّمه في المكتب كل يوم.'**
+  String get captainTourCustody;
+
+  /// CA §5.5 tour 5: earnings. Our words, to confirm with the owner.
+  ///
+  /// In ar, this message translates to:
+  /// **'أجرك يُجمع في «أرباحي» وتقبضه كل خميس.'**
+  String get captainTourEarnings;
+
+  /// The tour's next page.
+  ///
+  /// In ar, this message translates to:
+  /// **'التالي'**
+  String get captainTourNext;
+
+  /// CA §5.5: the activation's ask. Our words, to confirm with the owner.
+  ///
+  /// In ar, this message translates to:
+  /// **'قبل أن تبدأ: حدّد «أقصى مبلغ أحمله» و«العملات التي أحملها».'**
+  String get captainTourSettings;
+
+  /// The tour's last button. Our words.
+  ///
+  /// In ar, this message translates to:
+  /// **'ابدأ العمل'**
+  String get captainTourDone;
 }
 
 class _AppLocalizationsDelegate

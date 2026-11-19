@@ -21,7 +21,7 @@ Slice 2.35a, activation, the contract and the documents (`docs/roadmap.md`, Phas
   - [x] 7. Server: the contract's phases: the probation review task and alert, the confirmation, the commitment's automatic end, the pushes; the captain's contract and kit route.
   - [x] 8. Server: documents' expiry: the reminder push and the alert «مستند ينتهي», an expired required document blocks going online, the captain's documents with «رفع نسخة جديدة» and their review.
   - [x] 9. Panel: the actions at «بانتظار العدة» and «تفعيل», the contract and its phase, the kit and deposit, the documents' expiry, the desk's deposit payment.
-  - [ ] 10. Captain app: the welcome tour, the ask for «أقصى مبلغ أحمله» and «العملات التي أحملها» after activation, the profile's documents, contract and kit.
+  - [x] 10. Captain app: the welcome tour, the ask for «أقصى مبلغ أحمله» and «العملات التي أحملها» after activation, the profile's documents, contract and kit.
   - [ ] 11. Review, then the handover to 2.35b.
 - **Watch:** an applicant's `push_devices` row keeps `captain_id` null; after activation the captain's pushes target the captain, so the server rebinds the row at activation. Captain records hold no ID number or account, so the duplicate check finds captains by plate only; linking the captain to its application fills that gap (AP §9.7.1).
 - **Stopped at:** step 1 done.

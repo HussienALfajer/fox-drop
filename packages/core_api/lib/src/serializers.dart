@@ -59,7 +59,6 @@ import 'package:core_api/src/model/admin_captain_application_dto_output_activati
 import 'package:core_api/src/model/admin_captain_application_dto_output_activation_deposit.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output_activation_kit.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output_activation_kit_items_inner.dart';
-import 'package:core_api/src/model/admin_captain_application_dto_output_activation_missing_inner.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output_activation_suggested_cash_limit.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output_documents_inner.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output_duplicates_inner.dart';
@@ -1126,7 +1125,6 @@ part 'serializers.g.dart';
   AdminCaptainApplicationDtoOutputActivationDeposit,
   AdminCaptainApplicationDtoOutputActivationKit,
   AdminCaptainApplicationDtoOutputActivationKitItemsInner,
-  AdminCaptainApplicationDtoOutputActivationMissingInner,
   AdminCaptainApplicationDtoOutputActivationSuggestedCashLimit,
   AdminCaptainApplicationDtoOutputDocumentsInner,
   AdminCaptainApplicationDtoOutputDuplicatesInner,
@@ -3806,15 +3804,6 @@ Serializers serializers =
               FullType(AdminRatingsDtoOutputRatingsInner),
             ]),
             () => ListBuilder<AdminRatingsDtoOutputRatingsInner>(),
-          )
-          ..addBuilderFactory(
-            const FullType(BuiltList, [
-              FullType(AdminCaptainApplicationDtoOutputActivationMissingInner),
-            ]),
-            () =>
-                ListBuilder<
-                  AdminCaptainApplicationDtoOutputActivationMissingInner
-                >(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'api.dart';
 import 'auth.dart';
 import 'joining/application.dart';
+import 'profile/profile.dart';
 import 'router.dart';
 
 /// The installation's push (`packages/core_push`): `main` gives the one
@@ -64,8 +65,8 @@ final pushTokensProvider = Provider<PushTokens>((ref) {
 /// The route a push's data opens (CA §14): an offer or an order opens home,
 /// which shows the open offer or the active order, a receipt «عهدتي» and a
 /// weekly statement the statement over «أرباحي», an application's change its
-/// status page. The others (documents) come with their slices; until then
-/// such a tap only opens the app.
+/// status page, the activation home, a contract phase «العقد والعدة», a
+/// document «المستندات».
 String? pushTargetPath(Map<String, String> data) => switch (data['target']) {
   // CA §14 #23 (slice 2.16): home shows the peak window's line.
   'offer' || 'order' || 'peak_bonus' => '/',
@@ -80,6 +81,12 @@ String? pushTargetPath(Map<String, String> data) => switch (data['target']) {
   'ticket' => '/support',
   // CA §5.4 (slice 2.34b): a change of the application opens its page.
   'application' => '/application',
+  // Slice 2.35a: «مرحباً بك في FOX DROP!» opens home (the session is read
+  // again first), a contract phase «العقد والعدة», a document expiring or
+  // rejected «المستندات».
+  'home' => '/',
+  'contract' => '/contract',
+  'documents' => '/documents',
   _ => null,
 };
 
@@ -88,19 +95,34 @@ String? pushTargetPath(Map<String, String> data) => switch (data['target']) {
 final pushTapsProvider = Provider<void>((ref) {
   final push = ref.watch(pushProvider);
   final router = ref.watch(routerProvider);
+  // What a push changes is read again: the application, the session once
+  // activated (slice 2.35a: the app moves home), the contract, the
+  // documents.
+  void refresh(Map<String, String> data) {
+    switch (data['target']) {
+      case 'application':
+        ref.invalidate(applicationProvider);
+      case 'home':
+        ref.invalidate(applicationProvider);
+        ref.invalidate(captainSessionProvider);
+      case 'contract':
+        ref.invalidate(contractProvider);
+      case 'documents':
+        ref.invalidate(captainDocumentsProvider);
+    }
+  }
+
   void open(Map<String, String>? data) {
     final path = data == null ? null : pushTargetPath(data);
     if (path == null) return;
     // The page may already show the application: read it again.
-    if (data!['target'] == 'application') ref.invalidate(applicationProvider);
+    refresh(data!);
     router.go(path);
   }
 
   // CA §5.4: a change of the application while the app is open reads it
   // again, so the status page shows the new stage.
-  final received = push.received.listen((data) {
-    if (data['target'] == 'application') ref.invalidate(applicationProvider);
-  });
+  final received = push.received.listen(refresh);
   ref.onDispose(received.cancel);
   final taps = push.taps.listen(open);
   unawaited(

@@ -8,7 +8,7 @@ import 'package:built_value/serializer.dart';
 
 part 'admin_captain_application_dto_output_activation_suggested_cash_limit.g.dart';
 
-/// captain.custody_limit_suggested.<vehicle>.
+/// The setting captain.custody_limit_suggested of the vehicle.
 ///
 /// Properties:
 /// * [amount] - Minor units.

@@ -5,7 +5,6 @@
 // ignore_for_file: unused_element
 import 'package:core_api/src/model/admin_captain_application_dto_output_activation_kit.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output_activation_cash_limit.dart';
-import 'package:core_api/src/model/admin_captain_application_dto_output_activation_missing_inner.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output_activation_contract.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output_activation_deposit.dart';
@@ -56,7 +55,7 @@ abstract class AdminCaptainApplicationDtoOutputActivation
 
   /// What «تفعيل» still waits for.
   @BuiltValueField(wireName: r'missing')
-  BuiltList<AdminCaptainApplicationDtoOutputActivationMissingInner> get missing;
+  BuiltList<String> get missing;
 
   @BuiltValueField(wireName: r'captainId')
   String? get captainId;
@@ -150,9 +149,7 @@ class _$AdminCaptainApplicationDtoOutputActivationSerializer
     yield r'missing';
     yield serializers.serialize(
       object.missing,
-      specifiedType: const FullType(BuiltList, [
-        FullType(AdminCaptainApplicationDtoOutputActivationMissingInner),
-      ]),
+      specifiedType: const FullType(BuiltList, [FullType(String)]),
     );
     yield r'captainId';
     yield object.captainId == null
@@ -271,14 +268,10 @@ class _$AdminCaptainApplicationDtoOutputActivationSerializer
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(BuiltList, [
-                      FullType(
-                        AdminCaptainApplicationDtoOutputActivationMissingInner,
-                      ),
+                      FullType(String),
                     ]),
                   )
-                  as BuiltList<
-                    AdminCaptainApplicationDtoOutputActivationMissingInner
-                  >;
+                  as BuiltList<String>;
           result.missing.replace(valueDes);
           break;
         case r'captainId':

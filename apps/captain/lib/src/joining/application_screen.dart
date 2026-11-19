@@ -30,6 +30,13 @@ class _ApplicationScreenState extends ConsumerState<ApplicationScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final application = ref.watch(applicationProvider);
+    // CA §5.4 «مفعّل» (slice 2.35a): the account is a captain's now; the
+    // session's read moves the app home.
+    ref.listen(applicationProvider, (previous, next) {
+      if (next.value?.stage == ApplicationStage.active) {
+        ref.invalidate(captainSessionProvider);
+      }
+    });
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.captainApplicationTitle),
@@ -460,10 +467,23 @@ class _DocumentsStep extends StatelessWidget {
 /// One document's photos (CA §5.3): each checked for blur and darkness
 /// before it joins, the ID's two sides and number, the criminal record's
 /// issue date; «حفظ المستند» uploads and saves them.
+/// Saves a document's checked photos; throws an [ApplicationRefusal].
+typedef DocumentSave =
+    Future<void> Function(
+      DocumentKind kind,
+      List<DocumentPhoto> photos, {
+      String? number,
+      String? issueDate,
+    });
+
 class DocumentSheet extends ConsumerStatefulWidget {
-  const DocumentSheet({super.key, required this.kind});
+  const DocumentSheet({super.key, required this.kind, this.save});
 
   final DocumentKind kind;
+
+  /// The application's by default; a captain's «رفع نسخة جديدة» (CA §12.2,
+  /// slice 2.35a) gives its own.
+  final DocumentSave? save;
 
   @override
   ConsumerState<DocumentSheet> createState() => _DocumentSheetState();
@@ -587,7 +607,7 @@ class _DocumentSheetState extends ConsumerState<DocumentSheet>
                 ? null
                 : () async {
                     final saved = await run(
-                      () => controller.saveDocument(
+                      () => (widget.save ?? controller.saveDocument)(
                         _kind,
                         _photos,
                         number: _kind == DocumentKind.nationalId

@@ -32590,7 +32590,7 @@
                     "type": "null"
                   }
                 ],
-                "description": "captain.custody_limit_suggested.<vehicle>."
+                "description": "The setting captain.custody_limit_suggested of the vehicle."
               },
               "contract": {
                 "anyOf": [
@@ -32784,21 +32784,8 @@
               "missing": {
                 "type": "array",
                 "items": {
-                  "anyOf": [
-                    {
-                      "type": "string",
-                      "pattern": "^document:(national_id|personal_photo|civil_registry|criminal_record|vehicle_papers|driving_licence|signed_contract)$"
-                    },
-                    {
-                      "type": "string",
-                      "enum": [
-                        "kit",
-                        "deposit",
-                        "contract",
-                        "cash_limit"
-                      ]
-                    }
-                  ]
+                  "type": "string",
+                  "description": "document:KIND (its kind), or kit, deposit, contract or cash_limit."
                 },
                 "description": "What «تفعيل» still waits for."
               },

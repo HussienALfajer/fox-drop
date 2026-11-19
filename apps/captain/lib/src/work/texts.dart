@@ -1,5 +1,7 @@
 import 'package:core_l10n/core_l10n.dart';
 
+import '../joining/application.dart';
+import '../joining/texts.dart';
 import 'alerts.dart';
 import 'commands.dart';
 import 'door_payment.dart';
@@ -129,6 +131,14 @@ extension CaptainTexts on AppLocalizations {
                 text(block['reason']),
               ),
       'terms_not_accepted' => captainTermsPendingBanner,
+      // K6 (slice 2.35a): the expired required documents by name.
+      'document_expired' => captainBlockDocumentExpired(
+        [
+          for (final kind in (block['documents'] as List? ?? const []))
+            if (documentKindOf(kind) case final found?)
+              documentText(this, found),
+        ].join('، '),
+      ),
       'version_below_minimum' => captainBlockVersion(text(block['minVersion'])),
       'simulated_location' => captainStopMockLocation,
       'contract_ended' => captainContractEnded,

@@ -16,6 +16,8 @@ dependencies:
   core_platform: any
   core_push: any
   core_realtime: any
+  # The welcome tour's mark on the device (CA §5.5, slice 2.35a).
+  core_storage: any
   core_time: any
   dio: 5.11.1
   flutter:
@@ -34,7 +36,6 @@ dependencies:
   wakelock_plus: 1.7.0
 
 dev_dependencies:
-  core_storage: any
   flutter_lints: 6.0.0
   flutter_test:
     sdk: flutter

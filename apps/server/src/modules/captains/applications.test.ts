@@ -136,8 +136,7 @@ describe('the pipeline rules', () => {
   it('takes nothing on a draft, a rejected or an active application', () => {
     for (const stage of ['draft', 'rejected', 'active'] as const) {
       for (const action of [
-        'review_document',
-        'upload_document',
+        ...(stage === 'active' ? [] : (['review_document', 'upload_document'] as const)),
         'request_document',
         'note',
         'schedule_interview',
@@ -147,6 +146,14 @@ describe('the pipeline rules', () => {
         expect(pipelineSteps(action, stage)).toBeNull();
       }
     }
+  });
+
+  it('reviews and scans a captain’s documents and confirms the probation once active (slice 2.35a)', () => {
+    expect(pipelineSteps('review_document', 'active')).toEqual([]);
+    expect(pipelineSteps('upload_document', 'active')).toEqual([]);
+    expect(pipelineSteps('confirm_probation', 'active')).toEqual([]);
+    expect(pipelineSteps('confirm_probation', 'awaiting_kit')).toBeNull();
+    expect(pipelineSteps('activate', 'awaiting_kit')).toEqual(['active']);
   });
 
   it('lets the applicant apply again 30 days after a rejection (K11)', () => {

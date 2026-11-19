@@ -50,10 +50,11 @@ const money = z.object({
     .describe('Minor units.'),
   currency: z.string().regex(/^[A-Z]{3}$/u),
 });
-const activationMissing = z.union([
-  z.templateLiteral(['document:', documentKind]),
-  z.enum(['kit', 'deposit', 'contract', 'cash_limit']),
-]);
+// A document as `document:<kind>`, or one of the records (a plain string:
+// the Dart generator cannot build a union of a pattern and an enum).
+const activationMissing = z
+  .string()
+  .describe('document:KIND (its kind), or kit, deposit, contract or cash_limit.');
 
 class AdminCaptainApplicationsQueryDto extends createZodDto(
   z.object({ cityId: z.uuid(), stage: z.enum(boardStages).default('new') }),
@@ -179,7 +180,9 @@ class AdminCaptainApplicationDto extends createZodDto(
           })
           .nullable(),
         cashLimit: money.nullable(),
-        suggestedCashLimit: money.nullable().describe('captain.custody_limit_suggested.<vehicle>.'),
+        suggestedCashLimit: money
+          .nullable()
+          .describe('The setting captain.custody_limit_suggested of the vehicle.'),
         contract: z
           .object({
             signedOn: z.iso.date(),
