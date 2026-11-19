@@ -6781,6 +6781,330 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'أُلغي الطلب'**
   String get customerTimelineCancelled;
+
+  /// The menu tab and its button on the board (RA §6.1 #3, §9; slice 2.32a).
+  ///
+  /// In ar, this message translates to:
+  /// **'القائمة'**
+  String get merchantMenu;
+
+  /// The menu could not be read.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل القائمة.'**
+  String get merchantMenuFailed;
+
+  /// A menu without a category.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا أصناف في القائمة بعد.'**
+  String get merchantMenuEmpty;
+
+  /// A terminated restaurant's menu (RA §5.5).
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهى حساب مطعمك، والقائمة لم تعد متاحة.'**
+  String get merchantMenuTerminated;
+
+  /// A row switched on (RA §9.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'متوفر'**
+  String get merchantMenuAvailable;
+
+  /// A row switched off «حتى الغد» (RA §9.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'متوقف حتى الغد'**
+  String get merchantMenuOffTomorrow;
+
+  /// A row switched off «حتى أعيده» (RA §9.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'متوقف حتى أعيده'**
+  String get merchantMenuOffUntilBack;
+
+  /// An item customers cannot order because of its category, its window or a required group (RA §9.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'غير متوفر للزبائن'**
+  String get merchantMenuUnavailableToCustomers;
+
+  /// The sheet asking how long a switch off lasts (RA §9.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'إيقاف حتى متى؟'**
+  String get merchantMenuOffFor;
+
+  /// A hidden category or item (RA §9.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'مخفي عن الزبائن'**
+  String get merchantMenuHidden;
+
+  /// Hide a category or an item, owners (RA §9.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'إخفاء'**
+  String get merchantMenuHide;
+
+  /// Show a hidden category or item, owners (RA §9.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'إظهار'**
+  String get merchantMenuShow;
+
+  /// Move a category or an item up, owners (RA §9.2; until the design's drag).
+  ///
+  /// In ar, this message translates to:
+  /// **'تحريك للأعلى'**
+  String get merchantMenuMoveUp;
+
+  /// Move a category or an item down, owners (RA §9.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'تحريك للأسفل'**
+  String get merchantMenuMoveDown;
+
+  /// A category without a daily window (RA §9.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'متوفر طوال اليوم'**
+  String get merchantMenuWindowAllDay;
+
+  /// A category's daily window, times on the city's clock (RA §9.1).
+  ///
+  /// In ar, this message translates to:
+  /// **'متوفر من {from} إلى {to}'**
+  String merchantMenuWindowShown(String from, String to);
+
+  /// Edit a category's daily window, owners (RA §9.2).
+  ///
+  /// In ar, this message translates to:
+  /// **'فترة التوفر'**
+  String get merchantMenuSetWindow;
+
+  /// The window's start.
+  ///
+  /// In ar, this message translates to:
+  /// **'من'**
+  String get merchantMenuWindowFrom;
+
+  /// The window's end.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلى'**
+  String get merchantMenuWindowTo;
+
+  /// Remove a category's window.
+  ///
+  /// In ar, this message translates to:
+  /// **'طوال اليوم'**
+  String get merchantMenuWindowClear;
+
+  /// Edit an item's price or an option's delta, owners (RA §9.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل السعر'**
+  String get merchantMenuEditPrice;
+
+  /// The price-parity reminder on the price screen (RA §9.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'تذكير: سعر التطبيق يجب ألا يزيد على سعر المحل'**
+  String get merchantMenuParityReminder;
+
+  /// The item price field.
+  ///
+  /// In ar, this message translates to:
+  /// **'السعر'**
+  String get merchantMenuPrice;
+
+  /// The option's price delta field (RA §9.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'فرق السعر'**
+  String get merchantMenuPriceDelta;
+
+  /// A typed price that is not a valid amount (above 0 for an item, 0 or more for an option).
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل سعراً صحيحاً'**
+  String get merchantMenuInvalidPrice;
+
+  /// Close a menu sheet without saving.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلغاء'**
+  String get merchantMenuCancel;
+
+  /// Quick edit of every item and option (RA §9.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل سريع'**
+  String get merchantMenuQuickEdit;
+
+  /// Quick edit's search field (RA §9.6).
+  ///
+  /// In ar, this message translates to:
+  /// **'بحث بالاسم'**
+  String get merchantMenuSearch;
+
+  /// Quick edit's and the bulk change's filter: every category.
+  ///
+  /// In ar, this message translates to:
+  /// **'كل التصنيفات'**
+  String get merchantMenuAllCategories;
+
+  /// Quick edit without a matching row.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا نتائج.'**
+  String get merchantMenuNoMatch;
+
+  /// Quick edit: an option's line, with the first item using it.
+  ///
+  /// In ar, this message translates to:
+  /// **'خيار في {item}'**
+  String merchantMenuOptionOf(String item);
+
+  /// The bulk price change, owners (RA §9.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل جماعي للأسعار'**
+  String get merchantMenuBulk;
+
+  /// Bulk change by a percentage.
+  ///
+  /// In ar, this message translates to:
+  /// **'نسبة مئوية'**
+  String get merchantMenuBulkPercent;
+
+  /// Bulk change by a fixed amount.
+  ///
+  /// In ar, this message translates to:
+  /// **'مبلغ ثابت'**
+  String get merchantMenuBulkAmount;
+
+  /// Bulk change upwards.
+  ///
+  /// In ar, this message translates to:
+  /// **'رفع'**
+  String get merchantMenuBulkUp;
+
+  /// Bulk change downwards.
+  ///
+  /// In ar, this message translates to:
+  /// **'تخفيض'**
+  String get merchantMenuBulkDown;
+
+  /// The bulk change's percentage or amount.
+  ///
+  /// In ar, this message translates to:
+  /// **'القيمة'**
+  String get merchantMenuBulkValue;
+
+  /// Preview the bulk change's before and after (RA §9.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'معاينة قبل وبعد'**
+  String get merchantMenuBulkPreview;
+
+  /// Apply the previewed bulk change.
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد التعديل'**
+  String get merchantMenuBulkConfirm;
+
+  /// A bulk preview row's prices.
+  ///
+  /// In ar, this message translates to:
+  /// **'{before} ← {after}'**
+  String merchantMenuBulkRow(String before, String after);
+
+  /// A row the change would bring to 0 (refused).
+  ///
+  /// In ar, this message translates to:
+  /// **'يصل بالسعر إلى 0'**
+  String get merchantMenuBulkReachesZero;
+
+  /// The whole bulk change is refused while a price would reach 0.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يمكن تطبيق التعديل: بعض الأسعار ستصل إلى 0.'**
+  String get merchantMenuBulkRefused;
+
+  /// The base currency's rounding unit of the bulk change (RA §9.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'يُقرَّب كل سعر جديد إلى {unit}.'**
+  String merchantMenuBulkRounding(String unit);
+
+  /// The bulk change's answer.
+  ///
+  /// In ar, this message translates to:
+  /// **'عُدّلت أسعار {count} من الأصناف.'**
+  String merchantMenuBulkDone(int count);
+
+  /// The price log, owners (RA §9.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'سجل الأسعار'**
+  String get merchantMenuPriceLog;
+
+  /// An empty price log.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا تغييرات في الأسعار بعد.'**
+  String get merchantMenuPriceLogEmpty;
+
+  /// A price log line's old and new price.
+  ///
+  /// In ar, this message translates to:
+  /// **'{before} ← {after}'**
+  String merchantMenuPriceLogChange(String before, String after);
+
+  /// Who changed a price and when (RA §9.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'{name} · {time}'**
+  String merchantMenuPriceLogBy(String name, String time);
+
+  /// An admin's price change in the price log (RA §9.4).
+  ///
+  /// In ar, this message translates to:
+  /// **'FOX DROP'**
+  String get merchantMenuFoxDrop;
+
+  /// A restaurant user whose name is unknown.
+  ///
+  /// In ar, this message translates to:
+  /// **'مستخدم سابق'**
+  String get merchantMenuUnknownUser;
+
+  /// The customer preview, owners (RA §9.7).
+  ///
+  /// In ar, this message translates to:
+  /// **'معاينة كما يراها الزبون'**
+  String get merchantMenuCustomerPreview;
+
+  /// The preview's item off until tomorrow (CU §9.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'يتوفر غداً'**
+  String get merchantMenuPreviewTomorrow;
+
+  /// The preview's item outside its category window (CU §9.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'متوفر من {time}'**
+  String merchantMenuPreviewFrom(String time);
+
+  /// The preview's unavailable item (CU §9.3).
+  ///
+  /// In ar, this message translates to:
+  /// **'غير متوفر حالياً'**
+  String get merchantMenuPreviewUnavailable;
 }
 
 class _AppLocalizationsDelegate
