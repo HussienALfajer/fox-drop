@@ -144,6 +144,10 @@ const merchant: Entry[] = [
   ],
   ['cancelled_after_acceptance', '18', 'أوقف التحضير — أُلغي الطلب #{رقم}: {السبب}', 'ring', true],
   ['admin_price_change', '21', 'عدّلت FOX DROP سعر {الصنف}: {القديم} ← {الجديد}', 'chime'],
+  // AP §9.6.6 «One notification to the restaurant summarises the change»: a
+  // bulk change or an import (slice 2.31); the wording ours, to confirm with
+  // the owner.
+  ['admin_price_change_bulk', '21', 'عدّلت FOX DROP أسعار {العدد} صنفاً', 'chime'],
   ['menu_change_approved', '22', 'قُبل تعديلك على {الصنف}', 'silent'],
   ['menu_change_rejected', '22', 'رُفض تعديلك على {الصنف}: {السبب}', 'silent'],
   ['paused_by_operations', '23', 'أوقفت العمليات مطعمك مؤقتاً: {السبب}', 'chime'],

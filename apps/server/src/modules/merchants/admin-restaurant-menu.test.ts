@@ -8,9 +8,18 @@ import { createDatabase, type Database } from '../../database/database.js';
 import { startTestDatabase, type TestDatabase } from '../../database/test-database.js';
 import { createApiApp } from '../../http/create-api-app.js';
 import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
+import { DATABASE } from '../../database/database.module.js';
+import { NotificationTexts } from '../content/index.js';
 import { FxService } from '../fx/index.js';
+import { GeoService } from '../geo/index.js';
 import { ADMIN_SESSION_COOKIE, AdminSessionsService } from '../identity/index.js';
-import { MerchantsService } from './index.js';
+import {
+  AlertsService,
+  PushQueue,
+  type RealtimePublisher,
+  RestaurantStateRelay,
+} from '../notifications/index.js';
+import { MerchantsService, RestaurantStatusService } from './index.js';
 
 // The wizard's step 7 (AP §9.6.3, §9.6.6; slice 2.30b): the basic menu of a
 // draft or a restaurant in test mode, set by the ids the panel names.
@@ -726,5 +735,52 @@ describe('bulk changes (AP §9.6.6 «تعديل جماعي», «توفر جما�
     ).toMatchObject({ statusCode: 404, error: 'unknown_menu_row' });
     // Nothing switched on: the refusal rolls every row back.
     expect(await audits('menu.item.availability', a)).toBe(1);
+  });
+});
+
+describe("the owners' notice of an admin price change (D17, RA §16 #21)", () => {
+  it('pushes the owners the item with its old and new price, and keeps the values off the channel', async () => {
+    const id = await activeRestaurant();
+    const ops = await admin('OPS');
+    const meals = randomUUID();
+    const shawarma = randomUUID();
+    await ops('PUT', `/${id}/menu/categories/${meals}`, category('وجبات'));
+    await ops('PUT', `/${id}/menu/items/${shawarma}`, item(meals, 'شاورما'));
+    await ops(
+      'PUT',
+      `/${id}/menu/items/${shawarma}`,
+      item(meals, 'شاورما', { price: try_('15050') }),
+    );
+    const published: Record<string, unknown>[] = [];
+    const publisher = {
+      enabled: true,
+      broadcast: (_channels: string[], payload: Record<string, unknown>) => {
+        published.push(payload);
+        return Promise.resolve();
+      },
+    } as unknown as RealtimePublisher;
+    await new RestaurantStateRelay(
+      app.get(DATABASE),
+      app.get(RestaurantStatusService),
+      publisher,
+      app.get(PushQueue),
+      app.get(NotificationTexts),
+      app.get(AlertsService),
+      app.get(GeoService),
+      app.get(FxService),
+    ).drain(new Date());
+    const { rows } = await sql.query(
+      `SELECT template_key, body, owners_only FROM notifications.push_messages
+        WHERE restaurant_id = $1 ORDER BY id`,
+      [id],
+    );
+    expect(rows).toContainEqual({
+      template_key: 'merchant.admin_price_change',
+      body: 'عدّلت FOX DROP سعر شاورما: 120 ₺ ← 150.50 ₺',
+      owners_only: true,
+    });
+    expect(published).toContainEqual(
+      expect.objectContaining({ restaurantId: id, kind: 'price_change', values: {} }),
+    );
   });
 });

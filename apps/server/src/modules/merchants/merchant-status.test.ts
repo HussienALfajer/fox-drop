@@ -510,6 +510,7 @@ describe('state events and timers (RA §16 #24, #25, §18)', () => {
       app.get(NotificationTexts),
       app.get(AlertsService),
       app.get(GeoService),
+      app.get(FxService),
     );
     await relay.drain(new Date());
     published.length = 0;

@@ -897,6 +897,7 @@
           "outcome_changed_debited": "تغيير النتيجة مع قيد على المطعم",
           "cancelled_after_acceptance": "إلغاء بعد القبول",
           "admin_price_change": "تعديل الإدارة لسعر",
+          "admin_price_change_bulk": "تعديل الإدارة لأسعار عدة أصناف",
           "menu_change_approved": "قبول تعديل القائمة",
           "menu_change_rejected": "رفض تعديل القائمة",
           "paused_by_operations": "إيقاف العمليات للمطعم",
