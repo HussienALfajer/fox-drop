@@ -43,6 +43,9 @@ export {
   type GeoRefusal,
   GeoRefusedError,
   GeoService,
+  type City,
   type Office,
+  type VoteCell,
   type Zone,
+  type ZoneOutline,
 } from './geo.service.js';

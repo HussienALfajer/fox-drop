@@ -25,6 +25,9 @@ Serializers _$serializers =
           ..add(AdminAlertsDtoOutputAlertsInnerLocation.serializer)
           ..add(AdminAlertsDtoOutputAlertsInnerSeverityEnum.serializer)
           ..add(AdminAlertsDtoOutputAlertsInnerSubjectTypeEnum.serializer)
+          ..add(AdminAllCitiesDtoOutput.serializer)
+          ..add(AdminAllCitiesDtoOutputCitiesInner.serializer)
+          ..add(AdminAllCitiesDtoOutputCitiesInnerStatusEnum.serializer)
           ..add(AdminApproveCompensationDto.serializer)
           ..add(AdminApproveCompensationDtoValue.serializer)
           ..add(AdminApproveCompensationDtoValueKindEnum.serializer)
@@ -275,6 +278,9 @@ Serializers _$serializers =
           ..add(AdminChecklistDtoOutputItemsInnerStateEnum.serializer)
           ..add(AdminCitiesDtoOutput.serializer)
           ..add(AdminCitiesDtoOutputCitiesInner.serializer)
+          ..add(AdminCityDtoOutput.serializer)
+          ..add(AdminCityDtoOutputCurrenciesInner.serializer)
+          ..add(AdminCityDtoOutputOtherCurrenciesInner.serializer)
           ..add(AdminCityOfficeDtoOutput.serializer)
           ..add(AdminCityOfficeDtoOutputOffice.serializer)
           ..add(AdminCityOfficeDtoOutputOfficeHoursInner.serializer)
@@ -1066,7 +1072,11 @@ Serializers _$serializers =
           ..add(AdminRestaurantsDtoOutput.serializer)
           ..add(AdminRestaurantsDtoOutputRestaurantsInner.serializer)
           ..add(AdminResumeEmergencyStopDto.serializer)
+          ..add(AdminSaveZoneDto.serializer)
+          ..add(AdminSaveZoneDtoAreaInner.serializer)
           ..add(AdminSessionDtoOutput.serializer)
+          ..add(AdminSetBaseCurrencyDto.serializer)
+          ..add(AdminSetCityCurrencyDto.serializer)
           ..add(AdminSetCityOfficeDto.serializer)
           ..add(AdminSetCityOfficeDtoHoursInner.serializer)
           ..add(AdminSetCityOfficeDtoLocation.serializer)
@@ -1176,12 +1186,18 @@ Serializers _$serializers =
           ..add(AdminUpdateBannerDto.serializer)
           ..add(AdminUpdateBannerDtoTargetEnum.serializer)
           ..add(AdminUpdateCategoryDto.serializer)
+          ..add(AdminUpdateCityDto.serializer)
+          ..add(AdminUpdateCityDtoStatusEnum.serializer)
           ..add(AdminUpdateContactDto.serializer)
           ..add(AdminUpdateHomeSectionDto.serializer)
           ..add(AdminUpdateNotificationTextDto.serializer)
           ..add(AdminUploadDtoOutput.serializer)
           ..add(AdminWorkRulesDto.serializer)
           ..add(AdminWorkRulesDtoOutput.serializer)
+          ..add(AdminZonesDtoOutput.serializer)
+          ..add(AdminZonesDtoOutputVotesInner.serializer)
+          ..add(AdminZonesDtoOutputZonesInner.serializer)
+          ..add(AdminZonesDtoOutputZonesInnerAreaInner.serializer)
           ..add(BackupCodesDtoOutput.serializer)
           ..add(CaptainActiveOrderDtoOutput.serializer)
           ..add(CaptainActiveOrderDtoOutputCancelled.serializer)
@@ -1976,6 +1992,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminAllCitiesDtoOutputCitiesInner),
+            ]),
+            () => ListBuilder<AdminAllCitiesDtoOutputCitiesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminBannersDtoOutputBannersInner),
             ]),
             () => ListBuilder<AdminBannersDtoOutputBannersInner>(),
@@ -2233,6 +2255,18 @@ Serializers _$serializers =
               const FullType(AdminCitiesDtoOutputCitiesInner),
             ]),
             () => ListBuilder<AdminCitiesDtoOutputCitiesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCityDtoOutputCurrenciesInner),
+            ]),
+            () => ListBuilder<AdminCityDtoOutputCurrenciesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCityDtoOutputOtherCurrenciesInner),
+            ]),
+            () => ListBuilder<AdminCityDtoOutputOtherCurrenciesInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -3555,6 +3589,12 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminSaveZoneDtoAreaInner),
+            ]),
+            () => ListBuilder<AdminSaveZoneDtoAreaInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminSetCityOfficeDtoHoursInner),
             ]),
             () => ListBuilder<AdminSetCityOfficeDtoHoursInner>(),
@@ -3736,6 +3776,24 @@ Serializers _$serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, const [const FullType(String)]),
             () => ListBuilder<String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminZonesDtoOutputZonesInner),
+            ]),
+            () => ListBuilder<AdminZonesDtoOutputZonesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminZonesDtoOutputVotesInner),
+            ]),
+            () => ListBuilder<AdminZonesDtoOutputVotesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminZonesDtoOutputZonesInnerAreaInner),
+            ]),
+            () => ListBuilder<AdminZonesDtoOutputZonesInnerAreaInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

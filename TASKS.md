@@ -10,12 +10,12 @@ Slice 2.37c, the city, its zones and rules in the panel (`docs/roadmap.md`, Phas
 - **Specs:** AP §9.12.1, §9.12.2, §9.12.4, §9.12.6 (docs/product/v1/admin-panel/09-modules/12-zones-and-pricing.md), AP §6.2–6.3 (`zones.read`, `zones.manage`, the dispatch mode for OPS), AP §14 item 27, CU §18 item 6 (docs/product/v1/customer-app/18-open-items.md).
 - **Branch:** the cloud session's branch, from an up-to-date `main`.
 - **Already built (reuse):** geo's zones (`createZone`, `zones`, `zoneAt`) and cities, the office screen (2.17c), `PinMap` (MapLibre, 2.30a), the votes of CU §8.3 (2.28a), the settings routes (`PUT /v1/admin/settings/{key}`), the dispatch mode setting and dispatch module (2.15), the fee and pay screens' patterns (2.37a, 2.37b).
-- **Plan (to check against the spec first):**
-  - [ ] Server: the zones' routes (draw, edit outline and name, activate), the vote map's read, «المدن» edit of the existing city, the defaults and dispatch rules read and edit (OPS the mode only); tests first for the zone rules.
-  - [ ] Panel: the zones on the map with drawing and editing, the vote map, «المدن», the defaults and «قواعد التوزيع»; unit and Playwright tests.
+- **Owner decisions 2026-11-19:** the zones are drawn with our own vertex editing on MapLibre (no drawing library); the city's time zone may change at any time, orders or not; the neighbourhood names are typed on the screen (no seeded list).
+- **Plan:**
+  - [x] Server: `saveZone` (draw under the panel's id, edit outline, name and state), `zoneOutlines`, `voteMap`, `updateCity`, and the routes of «المدن» (the city, its currencies and base through fx) and the zones; the defaults and dispatch rules use the settings routes as they are (OPS sees and edits only `dispatch.mode`).
+  - [ ] Panel: «مناطق الخدمة» (the zones on the map with drawing and editing, the vote map), «المدن», «الإعدادات الافتراضية» and «قواعد التوزيع»; unit and Playwright tests.
   - [ ] Review (`reviewer`), fixes, then hand over to the next slice of the roadmap.
-- **Ask the owner first:** whether the panel's map may draw polygons with a MapLibre drawing library (a new dependency) or with our own vertex editing; whether changing the city's base currency or time zone from «المدن» is allowed once orders exist (fx locks the base after the first order); the neighbourhood names to seed, if the owner has a list.
-- **Stopped at:** 2.37b done (its pull request); 2.37c not started.
+- **Stopped at:** the server step done; the panel next.
 
 ### Left from 2.37b (the cloud session's branch)
 

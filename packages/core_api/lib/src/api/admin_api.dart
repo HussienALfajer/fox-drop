@@ -16,6 +16,7 @@ import 'package:core_api/src/model/admin_add_customer_note_dto.dart';
 import 'package:core_api/src/model/admin_add_restaurant_note_dto.dart';
 import 'package:core_api/src/model/admin_alert_dto_output.dart';
 import 'package:core_api/src/model/admin_alerts_dto_output.dart';
+import 'package:core_api/src/model/admin_all_cities_dto_output.dart';
 import 'package:core_api/src/model/admin_approve_compensation_dto.dart';
 import 'package:core_api/src/model/admin_assign_dto.dart';
 import 'package:core_api/src/model/admin_banner_city_dto.dart';
@@ -73,6 +74,7 @@ import 'package:core_api/src/model/admin_change_requests_dto_output.dart';
 import 'package:core_api/src/model/admin_change_time_dto.dart';
 import 'package:core_api/src/model/admin_checklist_dto_output.dart';
 import 'package:core_api/src/model/admin_cities_dto_output.dart';
+import 'package:core_api/src/model/admin_city_dto_output.dart';
 import 'package:core_api/src/model/admin_city_office_dto_output.dart';
 import 'package:core_api/src/model/admin_clear_customer_strikes_dto.dart';
 import 'package:core_api/src/model/admin_close_customer_account_dto.dart';
@@ -274,7 +276,10 @@ import 'package:core_api/src/model/admin_restaurant_termination_dto.dart';
 import 'package:core_api/src/model/admin_restaurant_visibility_dto.dart';
 import 'package:core_api/src/model/admin_restaurants_dto_output.dart';
 import 'package:core_api/src/model/admin_resume_emergency_stop_dto.dart';
+import 'package:core_api/src/model/admin_save_zone_dto.dart';
 import 'package:core_api/src/model/admin_session_dto_output.dart';
+import 'package:core_api/src/model/admin_set_base_currency_dto.dart';
+import 'package:core_api/src/model/admin_set_city_currency_dto.dart';
 import 'package:core_api/src/model/admin_set_city_office_dto.dart';
 import 'package:core_api/src/model/admin_set_customer_test_account_dto.dart';
 import 'package:core_api/src/model/admin_set_delivery_fee_dto.dart';
@@ -317,12 +322,14 @@ import 'package:core_api/src/model/admin_tickets_dto_output.dart';
 import 'package:core_api/src/model/admin_unblock_customer_dto.dart';
 import 'package:core_api/src/model/admin_update_banner_dto.dart';
 import 'package:core_api/src/model/admin_update_category_dto.dart';
+import 'package:core_api/src/model/admin_update_city_dto.dart';
 import 'package:core_api/src/model/admin_update_contact_dto.dart';
 import 'package:core_api/src/model/admin_update_home_section_dto.dart';
 import 'package:core_api/src/model/admin_update_notification_text_dto.dart';
 import 'package:core_api/src/model/admin_upload_dto_output.dart';
 import 'package:core_api/src/model/admin_work_rules_dto.dart';
 import 'package:core_api/src/model/admin_work_rules_dto_output.dart';
+import 'package:core_api/src/model/admin_zones_dto_output.dart';
 import 'package:core_api/src/model/backup_codes_dto_output.dart';
 import 'package:core_api/src/model/change_roles_dto.dart';
 import 'package:core_api/src/model/complete_setup_dto.dart';
@@ -6465,6 +6472,157 @@ class AdminApi {
     );
   }
 
+  /// adminCitiesAll
+  ///
+  ///
+  /// Parameters:
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminAllCitiesDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminAllCitiesDtoOutput>> adminCitiesAll({
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/cities/all';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminAllCitiesDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminAllCitiesDtoOutput),
+                )
+                as AdminAllCitiesDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminAllCitiesDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminCitiesCity
+  ///
+  ///
+  /// Parameters:
+  /// * [cityId]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminCityDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminCityDtoOutput>> adminCitiesCity({
+    required String cityId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/cities/{cityId}'.replaceAll(
+      '{'
+      r'cityId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        cityId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminCityDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminCityDtoOutput),
+                )
+                as AdminCityDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminCityDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// adminCitiesList
   ///
   ///
@@ -6616,6 +6774,338 @@ class AdminApi {
     );
   }
 
+  /// adminCitiesSaveZone
+  ///
+  ///
+  /// Parameters:
+  /// * [cityId]
+  /// * [zoneId]
+  /// * [adminSaveZoneDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminZonesDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminZonesDtoOutput>> adminCitiesSaveZone({
+    required String cityId,
+    required String zoneId,
+    required AdminSaveZoneDto adminSaveZoneDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/cities/{cityId}/zones/{zoneId}'
+        .replaceAll(
+          '{'
+          r'cityId'
+          '}',
+          encodeQueryParameter(
+            _serializers,
+            cityId,
+            const FullType(String),
+          ).toString(),
+        )
+        .replaceAll(
+          '{'
+          r'zoneId'
+          '}',
+          encodeQueryParameter(
+            _serializers,
+            zoneId,
+            const FullType(String),
+          ).toString(),
+        );
+    final _options = Options(
+      method: r'PUT',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminSaveZoneDto);
+      _bodyData = _serializers.serialize(
+        adminSaveZoneDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminZonesDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminZonesDtoOutput),
+                )
+                as AdminZonesDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminZonesDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminCitiesSetBaseCurrency
+  ///
+  ///
+  /// Parameters:
+  /// * [cityId]
+  /// * [adminSetBaseCurrencyDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminCityDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminCityDtoOutput>> adminCitiesSetBaseCurrency({
+    required String cityId,
+    required AdminSetBaseCurrencyDto adminSetBaseCurrencyDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/cities/{cityId}/base-currency'.replaceAll(
+      '{'
+      r'cityId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        cityId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'PUT',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminSetBaseCurrencyDto);
+      _bodyData = _serializers.serialize(
+        adminSetBaseCurrencyDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminCityDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminCityDtoOutput),
+                )
+                as AdminCityDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminCityDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminCitiesSetCurrency
+  ///
+  ///
+  /// Parameters:
+  /// * [cityId]
+  /// * [currency]
+  /// * [adminSetCityCurrencyDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminCityDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminCityDtoOutput>> adminCitiesSetCurrency({
+    required String cityId,
+    required String currency,
+    required AdminSetCityCurrencyDto adminSetCityCurrencyDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/cities/{cityId}/currencies/{currency}'
+        .replaceAll(
+          '{'
+          r'cityId'
+          '}',
+          encodeQueryParameter(
+            _serializers,
+            cityId,
+            const FullType(String),
+          ).toString(),
+        )
+        .replaceAll(
+          '{'
+          r'currency'
+          '}',
+          encodeQueryParameter(
+            _serializers,
+            currency,
+            const FullType(String),
+          ).toString(),
+        );
+    final _options = Options(
+      method: r'PUT',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminSetCityCurrencyDto);
+      _bodyData = _serializers.serialize(
+        adminSetCityCurrencyDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminCityDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminCityDtoOutput),
+                )
+                as AdminCityDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminCityDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// adminCitiesSetOffice
   ///
   ///
@@ -6707,6 +7197,189 @@ class AdminApi {
     }
 
     return Response<AdminCityOfficeDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminCitiesUpdateCity
+  ///
+  ///
+  /// Parameters:
+  /// * [cityId]
+  /// * [adminUpdateCityDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminCityDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminCityDtoOutput>> adminCitiesUpdateCity({
+    required String cityId,
+    required AdminUpdateCityDto adminUpdateCityDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/cities/{cityId}'.replaceAll(
+      '{'
+      r'cityId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        cityId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'PUT',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminUpdateCityDto);
+      _bodyData = _serializers.serialize(
+        adminUpdateCityDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminCityDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminCityDtoOutput),
+                )
+                as AdminCityDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminCityDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminCitiesZones
+  ///
+  ///
+  /// Parameters:
+  /// * [cityId]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminZonesDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminZonesDtoOutput>> adminCitiesZones({
+    required String cityId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/cities/{cityId}/zones'.replaceAll(
+      '{'
+      r'cityId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        cityId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminZonesDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminZonesDtoOutput),
+                )
+                as AdminZonesDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminZonesDtoOutput>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,
