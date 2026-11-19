@@ -276,6 +276,8 @@ export const captainChangeActions = [
   'captain.hand_in_grace',
   'captain.note',
   'captain.message',
+  'captain.violation',
+  'captain.violation_appeal',
   'captain_application.note',
   'captain_application.interview',
   'captain_application.training_passed',

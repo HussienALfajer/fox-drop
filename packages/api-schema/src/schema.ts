@@ -6980,6 +6980,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/captains/{captainId}/violations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCaptainViolationsList"];
+        put?: never;
+        post: operations["adminCaptainViolationsRecord"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/restaurant-list": {
         parameters: {
             query?: never;
@@ -9470,7 +9486,7 @@ export interface components {
         AdminReasonListsDto_Output: {
             lists: {
                 /** @enum {string} */
-                list: "merchant_rejection" | "merchant_problem" | "item_unavailable_note" | "merchant_ticket_type" | "captain_cannot_complete" | "captain_away" | "shortfall" | "food_after_failed" | "captain_ticket_type" | "captain_problem" | "customer_cancel" | "customer_problem" | "order_note" | "restaurant_rating_low" | "restaurant_rating_mid" | "restaurant_rating_high" | "captain_rating_low" | "captain_rating_mid" | "captain_rating_high" | "ops_cancel" | "reassignment" | "captain_suspension" | "customer_block" | "emergency_stop" | "compensation" | "kit_item" | "failed_outcome" | "system_cancellation";
+                list: "merchant_rejection" | "merchant_problem" | "item_unavailable_note" | "merchant_ticket_type" | "captain_cannot_complete" | "captain_away" | "shortfall" | "food_after_failed" | "captain_ticket_type" | "captain_problem" | "customer_cancel" | "customer_problem" | "order_note" | "restaurant_rating_low" | "restaurant_rating_mid" | "restaurant_rating_high" | "captain_rating_low" | "captain_rating_mid" | "captain_rating_high" | "ops_cancel" | "reassignment" | "captain_suspension" | "customer_block" | "emergency_stop" | "compensation" | "kit_item" | "captain_violation" | "captain_violation_severe" | "failed_outcome" | "system_cancellation";
                 apps: ("merchant" | "captain" | "customer")[];
                 /** @description Its reasons may carry «نص للزبون». */
                 customerText: boolean;
@@ -20050,6 +20066,81 @@ export interface components {
         AdminCaptainMessageSentDto_Output: {
             /** @constant */
             sent: true;
+        };
+        AdminCaptainViolationsDto_Output: {
+            /** @description Newest first. */
+            violations: {
+                /** Format: uuid */
+                id: string;
+                /** Format: date-time */
+                recordedAt: string;
+                typeCode: string;
+                typeLabel: string;
+                typeNote: string | null;
+                severe: boolean;
+                /** @enum {string} */
+                suggestedStep: "warning" | "suspension_1d" | "suspension_7d" | "termination";
+                /** @enum {string} */
+                step: "warning" | "suspension_1d" | "suspension_7d" | "termination";
+                orderId: string | null;
+                orderNumber: string | null;
+                reason: string;
+                suspendedUntil: string | null;
+                recordedByName: string | null;
+                /** @description The captain's «اعتراض»; an accepted one voids the violation. */
+                appeal: {
+                    /** Format: uuid */
+                    ticketId: string;
+                    /** Format: date-time */
+                    at: string;
+                    outcome: ("accepted" | "rejected") | null;
+                    decidedAt: string | null;
+                } | null;
+            }[];
+            /** @description The next step for a type not severe; a severe one is always termination. */
+            suggestion: {
+                /** @enum {string} */
+                step: "warning" | "suspension_1d" | "suspension_7d" | "termination";
+                windowDays: number;
+            };
+            types: {
+                regular: {
+                    code: string;
+                    label: string;
+                    /** @enum {string} */
+                    note: "none" | "optional" | "required";
+                }[];
+                severe: {
+                    code: string;
+                    label: string;
+                    /** @enum {string} */
+                    note: "none" | "optional" | "required";
+                }[];
+            };
+            /** @description The latest 50 status changes, newest first. */
+            suspensions: {
+                /** Format: date-time */
+                at: string;
+                /** @enum {string} */
+                status: "active" | "suspended" | "terminated";
+                until: string | null;
+                reason: string | null;
+                actorName: string | null;
+            }[];
+        };
+        AdminRecordViolationDto: {
+            /** @description The type is from the severe list. */
+            severe: boolean;
+            typeCode: string;
+            typeNote: string | null;
+            /**
+             * @description The step the admin confirms (the suggestion or another).
+             * @enum {string}
+             */
+            step: "warning" | "suspension_1d" | "suspension_7d" | "termination";
+            /** @description One of the captain's orders, or null. */
+            orderId: string | null;
+            reason: string;
         };
         AdminRestaurantListQueryDto: {
             /** Format: uuid */
@@ -31926,6 +32017,57 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminCaptainMessageSentDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainViolationsList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                captainId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainViolationsDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainViolationsRecord: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                captainId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRecordViolationDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainViolationsDto_Output"];
                 };
             };
         };

@@ -212,6 +212,32 @@ Serializers _$serializers =
           ..add(AdminCaptainProfileDtoOutputSuspension.serializer)
           ..add(AdminCaptainStatusDto.serializer)
           ..add(AdminCaptainStatusDtoStatusEnum.serializer)
+          ..add(AdminCaptainViolationsDtoOutput.serializer)
+          ..add(AdminCaptainViolationsDtoOutputSuggestion.serializer)
+          ..add(AdminCaptainViolationsDtoOutputSuggestionStepEnum.serializer)
+          ..add(AdminCaptainViolationsDtoOutputSuspensionsInner.serializer)
+          ..add(
+            AdminCaptainViolationsDtoOutputSuspensionsInnerStatusEnum
+                .serializer,
+          )
+          ..add(AdminCaptainViolationsDtoOutputTypes.serializer)
+          ..add(AdminCaptainViolationsDtoOutputTypesRegularInner.serializer)
+          ..add(
+            AdminCaptainViolationsDtoOutputTypesRegularInnerNoteEnum.serializer,
+          )
+          ..add(AdminCaptainViolationsDtoOutputViolationsInner.serializer)
+          ..add(AdminCaptainViolationsDtoOutputViolationsInnerAppeal.serializer)
+          ..add(
+            AdminCaptainViolationsDtoOutputViolationsInnerAppealOutcomeEnum
+                .serializer,
+          )
+          ..add(
+            AdminCaptainViolationsDtoOutputViolationsInnerStepEnum.serializer,
+          )
+          ..add(
+            AdminCaptainViolationsDtoOutputViolationsInnerSuggestedStepEnum
+                .serializer,
+          )
           ..add(AdminCategoriesDtoOutput.serializer)
           ..add(AdminCategoriesDtoOutputCategoriesInner.serializer)
           ..add(AdminCategoryDtoOutput.serializer)
@@ -864,6 +890,8 @@ Serializers _$serializers =
           ..add(AdminRecordDepositAnswerDtoOutputReceiptLinesInner.serializer)
           ..add(AdminRecordDepositAnswerDtoOutputReceiptTypeEnum.serializer)
           ..add(AdminRecordDepositDto.serializer)
+          ..add(AdminRecordViolationDto.serializer)
+          ..add(AdminRecordViolationDtoStepEnum.serializer)
           ..add(AdminRejectCompensationDto.serializer)
           ..add(AdminRejectDto.serializer)
           ..add(AdminRejectDtoItemsInner.serializer)
@@ -2080,6 +2108,33 @@ Serializers _$serializers =
               const FullType(AdminCaptainProfileDtoOutputCustodyBlocksEnum),
             ]),
             () => ListBuilder<AdminCaptainProfileDtoOutputCustodyBlocksEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCaptainViolationsDtoOutputTypesRegularInner),
+            ]),
+            () =>
+                ListBuilder<AdminCaptainViolationsDtoOutputTypesRegularInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCaptainViolationsDtoOutputTypesRegularInner),
+            ]),
+            () =>
+                ListBuilder<AdminCaptainViolationsDtoOutputTypesRegularInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCaptainViolationsDtoOutputViolationsInner),
+            ]),
+            () => ListBuilder<AdminCaptainViolationsDtoOutputViolationsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCaptainViolationsDtoOutputSuspensionsInner),
+            ]),
+            () =>
+                ListBuilder<AdminCaptainViolationsDtoOutputSuspensionsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

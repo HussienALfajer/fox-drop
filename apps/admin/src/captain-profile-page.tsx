@@ -31,6 +31,7 @@ import {
   useSetCaptainCashLimit,
   useSetCaptainStatus,
 } from './captain-profile.js';
+import { ViolationsSection } from './captain-violations-page.js';
 import { CASH_DESK } from './cash-desk.js';
 import { type City, citiesQuery } from './cities.js';
 import { zonedToUtc } from './emergency-stop.js';
@@ -682,7 +683,6 @@ function Suspensions(props: { captain: CaptainProfile; city: City; session: Admi
       ) : (
         <p>{t('captainProfile.status.notSuspended')}</p>
       )}
-      <p>{t('captainProfile.status.violationsLater')}</p>
       {canSuspend(session) && captain.status !== 'terminated' && (
         <form onSubmit={submit} aria-label={t('captainProfile.status.title')}>
           <h3>
@@ -718,6 +718,7 @@ function Suspensions(props: { captain: CaptainProfile; city: City; session: Admi
           )}
         </form>
       )}
+      <ViolationsSection captain={captain} city={city} session={session} />
     </section>
   );
 }

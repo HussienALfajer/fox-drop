@@ -23,6 +23,7 @@ import { CaptainsService } from './captains.service.js';
 import { LivePositions } from './live-positions.js';
 import { LocationPartitions } from './location-partitions.js';
 import { PeakBonusService } from './peak-bonus.service.js';
+import { ViolationsService } from './violations.service.js';
 
 // The captains module (architecture §4.2): the applications (slices 2.34a,
 // 2.34b), the captain record, its cash
@@ -58,16 +59,19 @@ import { PeakBonusService } from './peak-bonus.service.js';
     ApplicationsService,
     ApplicationPipelineService,
     CaptainNotesService,
+    ViolationsService,
   ],
   // ApplicationsService for notifications' listener, the pipeline for
   // identity's lookups (slice 2.34b), the notes for reporting's profile
-  // (slice 2.36a).
+  // (slice 2.36a), the violations for reporting's profile, support's appeal
+  // and notifications' push (slice 2.36b).
   exports: [
     CaptainsService,
     PeakBonusService,
     ApplicationsService,
     ApplicationPipelineService,
     CaptainNotesService,
+    ViolationsService,
   ],
 })
 export class CaptainsModule {}
@@ -142,3 +146,21 @@ export {
   CaptainNoteKeyReusedError,
   CaptainNotesService,
 } from './captain-notes.service.js';
+export {
+  type AppealOutcome,
+  appealOutcomes,
+  STEP_LABELS,
+  type ViolationStep,
+  violationSteps,
+} from './violations.js';
+export {
+  type NewViolation,
+  VIOLATION_LISTS,
+  VIOLATION_REASON_MAX,
+  type ViolationAdmin,
+  type ViolationRecorded,
+  type ViolationRefusal,
+  ViolationRefusedError,
+  type ViolationRow,
+  ViolationsService,
+} from './violations.service.js';

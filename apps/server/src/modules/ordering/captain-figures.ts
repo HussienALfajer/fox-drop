@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { desc, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { GeoService } from '../geo/index.js';
@@ -134,5 +134,15 @@ export class CaptainFiguresService {
       .where(eq(orders.captainId, captainId))
       .orderBy(desc(orders.placedAt), desc(orders.id))
       .limit(limit);
+  }
+
+  // AP §9.7.5 «تسجيل مخالفة» (slice 2.36b): the order's number when the
+  // captain holds or delivered it, null otherwise.
+  async captainOrderNumber(captainId: string, orderId: string): Promise<bigint | null> {
+    const [row] = await this.database.db
+      .select({ number: orders.number })
+      .from(orders)
+      .where(and(eq(orders.id, orderId), eq(orders.captainId, captainId)));
+    return row?.number ?? null;
   }
 }

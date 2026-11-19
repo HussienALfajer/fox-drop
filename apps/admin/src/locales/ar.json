@@ -799,6 +799,8 @@
       "emergency_stop": "الإيقاف الطارئ",
       "compensation": "تعويض الزبون",
       "kit_item": "عناصر العدة",
+      "captain_violation": "أنواع مخالفات الكباتن",
+      "captain_violation_severe": "مخالفات الكباتن الجسيمة",
       "failed_outcome": "نتائج الطلب الفاشل",
       "system_cancellation": "الإلغاء التلقائي"
     },
@@ -3965,7 +3967,6 @@
     "status": {
       "title": "الإيقاف وإعادة التفعيل",
       "notSuspended": "الكابتن غير موقوف.",
-      "violationsLater": "تسجيل المخالفات يأتي مع سلّم الانضباط.",
       "suspend": "إيقاف",
       "reactivate": "إعادة التفعيل",
       "until": "حتى (اتركه فارغاً: حتى إشعار آخر)",
@@ -3989,7 +3990,9 @@
           "hand_in_grace": "مهلة تسليم",
           "note": "ملاحظة",
           "message": "رسالة إلى الكابتن",
-          "rehire": "إعادة التعاقد"
+          "rehire": "إعادة التعاقد",
+          "violation": "تسجيل مخالفة",
+          "violation_appeal": "نتيجة اعتراض"
         },
         "captain_application": {
           "activate": "تفعيل",
@@ -4014,5 +4017,57 @@
       }
     },
     "ratesUnavailable": "لا يمكن قراءة عهدة الكابتن الآن: سعر صرف إحدى العملات غير متوفر."
+  },
+  "captainViolations": {
+    "title": "المخالفات",
+    "none": "لا مخالفات.",
+    "line": "{{time}}: {{type}} — {{step}}",
+    "severe": "(جسيمة)",
+    "suggestedWas": "اقترح النظام: {{step}}",
+    "order": "الطلب #{{number}}",
+    "suspendedUntil": "موقوف حتى {{time}}",
+    "reasonBy": "السبب: {{reason}} — {{name}}",
+    "appeal": {
+      "open": "اعتراض الكابتن بانتظار القرار.",
+      "accepted": "قُبل الاعتراض: المخالفة ملغاة.",
+      "rejected": "رُفض الاعتراض.",
+      "ticket": "فتح التذكرة"
+    },
+    "step": {
+      "label": "الخطوة",
+      "warning": "تنبيه",
+      "suspension_1d": "إيقاف يوم",
+      "suspension_7d": "إيقاف 7 أيام",
+      "termination": "إنهاء التعاقد"
+    },
+    "record": "تسجيل مخالفة",
+    "type": "نوع المخالفة",
+    "choose": "اختر",
+    "regular": "المخالفات",
+    "severeTypes": "مخالفات جسيمة (إنهاء فوري)",
+    "typeNote": "وصف المخالفة",
+    "suggestion": "يقترح النظام: {{step}} (المخالفات خلال {{days}} يوماً).",
+    "terminationExplain": "يبدأ إنهاء التعاقد ويبقى الكابتن موقوفاً حتى إغلاق الحساب.",
+    "orderLabel": "الطلب (اختياري)",
+    "noOrder": "بلا طلب",
+    "confirm": "تأكيد المخالفة",
+    "suspensions": "سجل الإيقافات",
+    "noSuspensions": "لا تغييرات في الحالة.",
+    "furtherNotice": "إشعار آخر",
+    "statusLine": {
+      "suspended": "{{time}}: إيقاف حتى {{until}} — {{reason}} — {{name}}",
+      "active": "{{time}}: إعادة تفعيل — {{reason}} — {{name}}",
+      "terminated": "{{time}}: إنهاء — {{reason}} — {{name}}"
+    },
+    "refusal": {
+      "unknownReason": "هذا النوع لم يعد متاحاً.",
+      "noteRequired": "اكتب وصف المخالفة.",
+      "noteNotAllowed": "هذا النوع لا يأخذ وصفاً.",
+      "unknownOrder": "الطلب ليس من طلبات هذا الكابتن.",
+      "terminated": "تعاقد الكابتن منتهٍ.",
+      "noContract": "لا عقد لهذا الكابتن لإنهائه.",
+      "alreadyTerminated": "يجري إنهاء تعاقد الكابتن من قبل.",
+      "offboarding": "يجري إنهاء تعاقد الكابتن، فلا يُوقف من جديد."
+    }
   }
 }

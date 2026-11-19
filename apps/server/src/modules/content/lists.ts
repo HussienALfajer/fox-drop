@@ -47,6 +47,11 @@ export const reasonLists = {
   // 2026-11-19, slice 2.35a). The captain app shows the items issued, with
   // their labels as issued.
   kit_item: { apps: [] },
+  // The violation types «تسجيل مخالفة» picks from (AP §9.7.5–9.7.6; owner
+  // decision 2026-11-19, slice 2.36b); the severe ones (theft, harassment,
+  // violence) apart, since the ladder terminates at once for them.
+  captain_violation: { apps: [] },
+  captain_violation_severe: { apps: [] },
   // Not chosen by anyone: the texts the customer sees for an order that
   // failed (AP §8.9) and for the automatic cancellation (AP §8.3).
   failed_outcome: { apps: [], customerText: true, closed: true },

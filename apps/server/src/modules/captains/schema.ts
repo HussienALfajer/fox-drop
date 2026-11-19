@@ -19,6 +19,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { vehicles } from '../settings/index.js';
 import { captainStatuses, lastOrderBy } from './availability.js';
+import { appealOutcomes, violationSteps } from './violations.js';
 
 // Architecture §4.2–4.3: the captains module owns the captain record, its
 // availability and the pay table. Cities belong to geo, the captain's sign-in
@@ -727,5 +728,79 @@ export const captainNotes = captains.table(
     uniqueIndex('notes_key').on(table.authorId, table.idempotencyKey),
     index('notes_captain').on(table.captainId, table.createdAt),
     check('notes_body', sql`length(${table.body}) BETWEEN 1 AND 500`),
+  ],
+);
+
+const stepValues = sql.raw(violationSteps.map((step) => `'${step}'`).join(', '));
+const outcomeValues = sql.raw(appealOutcomes.map((outcome) => `'${outcome}'`).join(', '));
+
+// AP §9.7.5–9.7.6, CA §11.3 (slice 2.36b): a violation recorded on a
+// captain, with its type from Content as chosen (`captain_violation`, or
+// `captain_violation_severe` for theft, harassment and violence), the step
+// the ladder suggested and the step the admin confirmed, the order if any,
+// and the suspension it set. The captain's «اعتراض» links its ticket
+// (support's id, a plain column); the ticket's resolution records the
+// outcome, an accepted one voiding the violation. The Idempotency-Key is
+// kept per admin, so a retry records none.
+export const violations = captains.table(
+  'violations',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`uuidv7()`),
+    cityId: uuid('city_id').notNull(),
+    captainId: uuid('captain_id')
+      .notNull()
+      .references(() => captainRecords.id),
+    typeCode: text('type_code').notNull(),
+    typeLabel: text('type_label').notNull(),
+    // «أخرى» with its text.
+    typeNote: text('type_note'),
+    severe: boolean('severe').notNull(),
+    suggestedStep: text('suggested_step', { enum: violationSteps }).notNull(),
+    step: text('step', { enum: violationSteps }).notNull(),
+    // Ordering's order and its number (plain columns).
+    orderId: uuid('order_id'),
+    orderNumber: bigint('order_number', { mode: 'bigint' }),
+    // The admin's reason, kept for the panel and the audit.
+    reason: text('reason').notNull(),
+    // The end of the suspension a «إيقاف» step set.
+    suspendedUntil: timestamp('suspended_until', { withTimezone: true }),
+    recordedBy: uuid('recorded_by').notNull(),
+    recordedAt: timestamp('recorded_at', { withTimezone: true }).notNull(),
+    idempotencyKey: text('idempotency_key').notNull(),
+    requestHash: text('request_hash').notNull(),
+    appealTicketId: uuid('appeal_ticket_id'),
+    appealedAt: timestamp('appealed_at', { withTimezone: true }),
+    appealOutcome: text('appeal_outcome', { enum: appealOutcomes }),
+    appealDecidedBy: uuid('appeal_decided_by'),
+    appealDecidedAt: timestamp('appeal_decided_at', { withTimezone: true }),
+  },
+  (table) => [
+    uniqueIndex('violations_key').on(table.recordedBy, table.idempotencyKey),
+    uniqueIndex('violations_appeal_ticket').on(table.appealTicketId),
+    index('violations_captain').on(table.captainId, table.recordedAt),
+    check('violations_step_values', sql`${table.step} IN (${stepValues})`),
+    check('violations_suggested_step_values', sql`${table.suggestedStep} IN (${stepValues})`),
+    check(
+      'violations_appeal_outcome_values',
+      sql`${table.appealOutcome} IN (${outcomeValues})`,
+    ),
+    check('violations_reason', sql`length(${table.reason}) BETWEEN 1 AND 500`),
+    check(
+      'violations_order',
+      sql`(${table.orderId} IS NULL) = (${table.orderNumber} IS NULL)`,
+    ),
+    check(
+      'violations_suspension',
+      sql`(${table.suspendedUntil} IS NOT NULL) = (${table.step} IN ('suspension_1d', 'suspension_7d'))`,
+    ),
+    check(
+      'violations_appeal',
+      sql`(${table.appealTicketId} IS NULL) = (${table.appealedAt} IS NULL)
+          AND (${table.appealOutcome} IS NULL OR ${table.appealTicketId} IS NOT NULL)
+          AND ((${table.appealOutcome} IS NULL) = (${table.appealDecidedBy} IS NULL))
+          AND ((${table.appealOutcome} IS NULL) = (${table.appealDecidedAt} IS NULL))`,
+    ),
   ],
 );

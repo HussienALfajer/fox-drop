@@ -116,6 +116,13 @@ import 'package:core_api/src/model/admin_captain_profile_dto_output_on_time.dart
 import 'package:core_api/src/model/admin_captain_profile_dto_output_rating.dart';
 import 'package:core_api/src/model/admin_captain_profile_dto_output_suspension.dart';
 import 'package:core_api/src/model/admin_captain_status_dto.dart';
+import 'package:core_api/src/model/admin_captain_violations_dto_output.dart';
+import 'package:core_api/src/model/admin_captain_violations_dto_output_suggestion.dart';
+import 'package:core_api/src/model/admin_captain_violations_dto_output_suspensions_inner.dart';
+import 'package:core_api/src/model/admin_captain_violations_dto_output_types.dart';
+import 'package:core_api/src/model/admin_captain_violations_dto_output_types_regular_inner.dart';
+import 'package:core_api/src/model/admin_captain_violations_dto_output_violations_inner.dart';
+import 'package:core_api/src/model/admin_captain_violations_dto_output_violations_inner_appeal.dart';
 import 'package:core_api/src/model/admin_categories_dto_output.dart';
 import 'package:core_api/src/model/admin_categories_dto_output_categories_inner.dart';
 import 'package:core_api/src/model/admin_category_dto_output.dart';
@@ -504,6 +511,7 @@ import 'package:core_api/src/model/admin_record_deposit_answer_dto_output_receip
 import 'package:core_api/src/model/admin_record_deposit_answer_dto_output_receipt_conversions_inner.dart';
 import 'package:core_api/src/model/admin_record_deposit_answer_dto_output_receipt_lines_inner.dart';
 import 'package:core_api/src/model/admin_record_deposit_dto.dart';
+import 'package:core_api/src/model/admin_record_violation_dto.dart';
 import 'package:core_api/src/model/admin_reject_compensation_dto.dart';
 import 'package:core_api/src/model/admin_reject_dto.dart';
 import 'package:core_api/src/model/admin_reject_dto_items_inner.dart';
@@ -1223,6 +1231,13 @@ part 'serializers.g.dart';
   AdminCaptainProfileDtoOutputRating,
   AdminCaptainProfileDtoOutputSuspension,
   AdminCaptainStatusDto,
+  AdminCaptainViolationsDtoOutput,
+  AdminCaptainViolationsDtoOutputSuggestion,
+  AdminCaptainViolationsDtoOutputSuspensionsInner,
+  AdminCaptainViolationsDtoOutputTypes,
+  AdminCaptainViolationsDtoOutputTypesRegularInner,
+  AdminCaptainViolationsDtoOutputViolationsInner,
+  AdminCaptainViolationsDtoOutputViolationsInnerAppeal,
   AdminCategoriesDtoOutput,
   AdminCategoriesDtoOutputCategoriesInner,
   AdminCategoryDtoOutput,
@@ -1611,6 +1626,7 @@ part 'serializers.g.dart';
   AdminRecordDepositAnswerDtoOutputReceiptConversionsInner,
   AdminRecordDepositAnswerDtoOutputReceiptLinesInner,
   AdminRecordDepositDto,
+  AdminRecordViolationDto,
   AdminRejectCompensationDto,
   AdminRejectDto,
   AdminRejectDtoItemsInner,
@@ -2791,6 +2807,13 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminCaptainViolationsDtoOutputSuspensionsInner),
+            ]),
+            () =>
+                ListBuilder<AdminCaptainViolationsDtoOutputSuspensionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(CustomerQuoteDtoOutputLinesInner),
             ]),
             () => ListBuilder<CustomerQuoteDtoOutputLinesInner>(),
@@ -3233,6 +3256,13 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminCaptainViolationsDtoOutputTypesRegularInner),
+            ]),
+            () =>
+                ListBuilder<AdminCaptainViolationsDtoOutputTypesRegularInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner),
             ]),
             () =>
@@ -3626,6 +3656,12 @@ Serializers serializers =
           ..addBuilderFactory(
             const FullType(BuiltList, [FullType(TeamUsersDtoOutputUsersInner)]),
             () => ListBuilder<TeamUsersDtoOutputUsersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminCaptainViolationsDtoOutputViolationsInner),
+            ]),
+            () => ListBuilder<AdminCaptainViolationsDtoOutputViolationsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

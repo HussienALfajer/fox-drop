@@ -174,13 +174,16 @@ export class ContentService {
   // reason an order kept by its code, and offers only the active ones.
   async reasonsOf(
     list: ReasonList,
-  ): Promise<{ code: string; label: string; active: boolean; captainFault: boolean | null }[]> {
+  ): Promise<
+    { code: string; label: string; active: boolean; captainFault: boolean | null; note: NoteMode }[]
+  > {
     return this.database.db
       .select({
         code: reasons.code,
         label: reasons.label,
         active: reasons.active,
         captainFault: reasons.captainFault,
+        note: reasons.note,
       })
       .from(reasons)
       .where(eq(reasons.list, list))

@@ -466,6 +466,8 @@ const routeAccess: Record<string, Access> = {
   'POST /v1/admin/captains/{captainId}/message': 'captains.manage',
   'POST /v1/admin/captains/{captainId}/status': 'captains.suspend',
   'PUT /v1/admin/captains/{captainId}/cash-limit': 'captains.cash_limit',
+  'GET /v1/admin/captains/{captainId}/violations': 'captains.read',
+  'POST /v1/admin/captains/{captainId}/violations': 'captains.manage',
   'GET /v1/admin/emergency-stop': 'session',
   'POST /v1/admin/emergency-stop': 'emergency_stop.toggle',
   'POST /v1/admin/emergency-stop/resume': 'emergency_stop.toggle',

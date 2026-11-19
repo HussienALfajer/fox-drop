@@ -1,5 +1,11 @@
 import { Injectable, type OnModuleInit } from '@nestjs/common';
-import { type AvailabilityChange, CaptainsService } from '../captains/index.js';
+import {
+  type AvailabilityChange,
+  CaptainsService,
+  STEP_LABELS,
+  type ViolationRecorded,
+  ViolationsService,
+} from '../captains/index.js';
 import { formatTime, NotificationTexts } from '../content/index.js';
 import { PlatformBroadcasts } from './platform-broadcasts.js';
 import { CAPTAIN_NOTICE_TTL_MS, PushQueue } from './push-queue.js';
@@ -15,12 +21,16 @@ import { CAPTAIN_NOTICE_TTL_MS, PushQueue } from './push-queue.js';
 export class CaptainAvailabilityNotices implements OnModuleInit {
   constructor(
     private readonly captains: CaptainsService,
+    private readonly violations: ViolationsService,
     private readonly texts: NotificationTexts,
     private readonly pushes: PushQueue,
     private readonly broadcasts: PlatformBroadcasts,
   ) {}
 
   onModuleInit(): void {
+    this.violations.onRecorded(async (tx, recorded) => {
+      await this.pushes.enqueue(tx, [await this.violationPush(tx, recorded)], recorded.at);
+    });
     this.captains.onAvailabilityChanged(async (tx, change) => {
       if (change.kind === 'forced_offline') {
         await this.pushes.enqueue(tx, [await this.forcedPush(tx, change)], change.at);
@@ -34,7 +44,11 @@ export class CaptainAvailabilityNotices implements OnModuleInit {
       if (change.kind === 'custody_warning') {
         await this.pushes.enqueue(tx, [await this.warningPush(tx, change)], change.at);
       }
-      if (change.kind === 'suspended' || change.kind === 'reactivated') {
+      // A violation's suspension is told by the violation's push (#25).
+      if (
+        (change.kind === 'suspended' && !change.byViolation) ||
+        change.kind === 'reactivated'
+      ) {
         await this.pushes.enqueue(tx, [await this.statusPush(tx, change)], change.at);
       }
       await this.broadcasts.enqueue(tx, {
@@ -132,6 +146,31 @@ export class CaptainAvailabilityNotices implements OnModuleInit {
       at: change.at,
       // A phone switched off still hears it when it comes back.
       expiresAt: new Date(change.at.getTime() + CAPTAIN_NOTICE_TTL_MS),
+    };
+  }
+
+  // AP §9.7.5, CA §11.3, §14 #25 (slice 2.36b): «سُجّلت عليك مخالفة:
+  // {النوع} — {النتيجة}», silent, once per violation; a tap opens «أدائي».
+  private async violationPush(
+    tx: Parameters<Parameters<CaptainsService['onAvailabilityChanged']>[0]>[0],
+    recorded: ViolationRecorded,
+  ) {
+    const templateKey = 'captain.violation';
+    const rendered = await this.texts.render(
+      templateKey,
+      { النوع: recorded.typeLabel, النتيجة: STEP_LABELS[recorded.step] },
+      tx,
+    );
+    return {
+      source: `captain:${templateKey}:${recorded.violationId}`,
+      recipient: { party: 'captain' as const, captainId: recorded.captainId },
+      templateKey,
+      body: rendered.body,
+      level: rendered.level,
+      priority: rendered.priority,
+      data: { target: 'performance' },
+      at: recorded.at,
+      expiresAt: new Date(recorded.at.getTime() + CAPTAIN_NOTICE_TTL_MS),
     };
   }
 

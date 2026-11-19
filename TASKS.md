@@ -4,7 +4,7 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.36b, performance, violations and appeals (`docs/roadmap.md`, Phase 2; the second of 2.36's three pull requests, owner decision 2026-11-19). Planned, not started.
+Slice 2.36b, performance, violations and appeals (`docs/roadmap.md`, Phase 2; the second of 2.36's three pull requests, owner decision 2026-11-19). In progress.
 
 - **Roadmap line:** 2.36b Performance, violations and appeals: «أدائي» in the captain app, the acceptance warning below 70% and the OPS review task below 50%, violations recorded with the ladder's suggested step within 90 days (a confirmed suspension step suspends for its days, a termination step starts «إنهاء التعاقد», severe types terminate), «اعتراض» opening a ticket with a text and an optional photo, its result on the violation (an accepted appeal voids it and lifts its suspension) (AP §9.7.5–9.7.6, CA §11). A captain appeals a violation and the panel sees it.
 - **Specs:** AP §9.7.5 («Record a violation»), §9.7.6 (acceptance thresholds, the conduct ladder, cancellations), CA §11.1–11.4 («أدائي», violations and «اعتراض», the work rules link), CA §14 #25 (violation push), #30 (appeal resolved), AP §9.1.3 (the review task), AP §9.9 (the ticket), Appendix B lists, `captain.acceptance_alert_pct`, `captain.acceptance_review_pct`, `captain.violation_window_days`.
@@ -12,12 +12,12 @@ Slice 2.36b, performance, violations and appeals (`docs/roadmap.md`, Phase 2; th
 - **Owner decisions 2026-11-19:** the violation types as a Content list, editable: «تأخير متكرر», «سوء معاملة الزبون», «طلب مبلغ أكثر من التطبيق», «عدم ارتداء الخوذة», «إهمال التغليف», «أخرى»; severe (immediate termination): «سرقة», «تحرش», «عنف». Confirming a «إيقاف يوم» or «إيقاف 7 أيام» step suspends the captain for its days; a «إنهاء التعاقد» step starts the offboarding. An accepted appeal voids the violation (it leaves the ladder's count) and lifts a suspension it caused. The new captain-app screens use the plain layout until the design system.
 - **Already built (reuse):** 2.36a's figures (`CaptainFiguresService`, dispatch's `acceptance` and `captainOffers`), the status change with its push, the offboarding (`ApplicationPipelineService.terminate`), the tickets and the captain's reports (support, 2.24c), the alerts machinery, `captain.violation` push template (#25).
 - **Plan:**
-  - [ ] Violations: the Content list, `captains.violations` (type, step, order, consequence, appeal state), the ladder rule (failing test first: the suggested step within the window, severe types, voided ones left out), the panel's «تسجيل مخالفة» in «المخالفات والإيقافات» with the suggestion and the history of suspensions, the push #25.
+  - [x] Violations: the Content list, `captains.violations` (type, step, order, consequence, appeal state), the ladder rule (failing test first: the suggested step within the window, severe types, voided ones left out), the panel's «تسجيل مخالفة» in «المخالفات والإيقافات» with the suggestion and the history of suspensions, the push #25.
   - [ ] The acceptance alert: the warning in the app below 70%, the OPS review task below 50% (AP §9.1.3), no automatic suspension.
   - [ ] «أدائي» in the captain app: the rate with the last 50 offers (time, restaurant, response), on time, cancellations, rating with reasons, online hours, the violations, the work rules link.
   - [ ] «اعتراض»: the captain's appeal opening a support ticket (text, optional photo), its status in Support, OPS recording the result on the violation (accepted voids it and lifts its suspension), the push #30.
   - [ ] Review, then hand over to 2.36c.
-- **Stopped at:** 2.36a merged; 2.36b not started.
+- **Stopped at:** step 1 (violations) done; next the acceptance alert.
 
 ### Left from 2.36a (the cloud session's branch)
 
