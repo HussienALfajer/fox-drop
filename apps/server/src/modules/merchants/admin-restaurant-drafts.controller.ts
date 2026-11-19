@@ -692,7 +692,10 @@ export class AdminRestaurantProfileController {
   private async answer(restaurantId: string) {
     const draft = await this.drafts.draft(restaurantId);
     if (draft === null) {
-      throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: 'unknown_restaurant' });
+      throw new NotFoundException({
+        statusCode: HttpStatus.NOT_FOUND,
+        error: 'unknown_restaurant',
+      });
     }
     return draftAsJson(draft, this.files);
   }

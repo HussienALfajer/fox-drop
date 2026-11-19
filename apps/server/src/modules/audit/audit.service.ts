@@ -71,10 +71,7 @@ export class AuditService {
 
   // AP §9.6.4 «سجل التغييرات» (slice 2.30d): the write events of these
   // targets of one type each, newest first, at most `limit`.
-  async history(
-    targets: { type: string; ids: string[] }[],
-    limit: number,
-  ): Promise<AuditEntry[]> {
+  async history(targets: { type: string; ids: string[] }[], limit: number): Promise<AuditEntry[]> {
     const wanted = targets.filter((target) => target.ids.length > 0);
     if (wanted.length === 0) return [];
     const rows = await this.database.db

@@ -108,9 +108,10 @@ async function restaurant(status: 'active' | 'test' | 'terminated' = 'active') {
 
 const kinds = async (id: string) =>
   (
-    await sql.query('SELECT kind FROM merchants.state_outbox WHERE restaurant_id = $1 ORDER BY id', [
-      id,
-    ])
+    await sql.query(
+      'SELECT kind FROM merchants.state_outbox WHERE restaurant_id = $1 ORDER BY id',
+      [id],
+    )
   ).rows.map((row) => row.kind);
 
 const operations = (opensAt: number) => ({
@@ -143,7 +144,11 @@ describe('the profile’s edits past the draft (AP §9.6.4)', () => {
     const hours = await ops('PUT', `${id}/profile/operations`, operations(600));
     expect(hours.statusCode).toBe(200);
     expect(hours.json().operations).toMatchObject({ defaultPrepMin: 25 });
-    expect(hours.json().operations.periods[0]).toEqual({ weekday: 0, opensAt: 600, closesAt: 1380 });
+    expect(hours.json().operations.periods[0]).toEqual({
+      weekday: 0,
+      opensAt: 600,
+      closesAt: 1380,
+    });
     expect(await kinds(id)).toEqual(['hours', 'order_settings']);
     // The same values again change nothing.
     await ops('PUT', `${id}/profile/operations`, operations(600));
@@ -326,7 +331,9 @@ describe('«ملاحظات» and «سجل التغييرات» (AP §9.6.4)', ()
     ]);
     expect(entries[0]).toMatchObject({ actorType: 'admin', account: 'مالك' });
     expect(entries[0].actorName).toMatch(/^Operator/);
-    const hours = entries[1].changes.find((change: { field: string }) => change.field === 'periods');
+    const hours = entries[1].changes.find(
+      (change: { field: string }) => change.field === 'periods',
+    );
     expect(JSON.parse(hours.after)[0]).toEqual({ weekday: 0, opensAt: 540, closesAt: 1380 });
     expect(entries.at(-1).action).toBe('restaurant.create');
   });

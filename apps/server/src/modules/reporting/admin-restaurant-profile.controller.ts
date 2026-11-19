@@ -90,7 +90,8 @@ class AdminRestaurantChangeLogDto extends createZodDto(
   }),
 ) {}
 
-const json = (value: unknown) => (value === null || value === undefined ? null : JSON.stringify(value));
+const json = (value: unknown) =>
+  value === null || value === undefined ? null : JSON.stringify(value);
 
 // AP §9.6.4 «ملاحظات» and «سجل التغييرات» (slice 2.30d): a restaurant's
 // internal notes, which every reader of restaurants adds (owner decision
@@ -187,7 +188,8 @@ export class AdminRestaurantProfileReadsController {
                 ? (users.get(entry.actor.id) ?? null)
                 : null,
         actorRole: entry.actor.role,
-        account: entry.target.type === 'merchant_account' ? (users.get(entry.target.id) ?? null) : null,
+        account:
+          entry.target.type === 'merchant_account' ? (users.get(entry.target.id) ?? null) : null,
         changes: Object.entries(entry.changes ?? {}).map(([field, change]) => ({
           field,
           before: json(change.before),
@@ -213,7 +215,10 @@ export class AdminRestaurantProfileReadsController {
 
   private async found(restaurantId: string): Promise<void> {
     if ((await this.merchants.cityAndStatus(restaurantId)) === null) {
-      throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: 'unknown_restaurant' });
+      throw new NotFoundException({
+        statusCode: HttpStatus.NOT_FOUND,
+        error: 'unknown_restaurant',
+      });
     }
   }
 }

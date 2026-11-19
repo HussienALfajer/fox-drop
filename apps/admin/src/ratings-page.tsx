@@ -54,9 +54,7 @@ export function RatingsPage() {
         <Link to="/">{t('common.home')}</Link>
       </p>
       <p>{t('ratings.explain')}</p>
-      {cities.isError || captains.isError ? (
-        <p role="alert">{t('common.failed')}</p>
-      ) : null}
+      {cities.isError || captains.isError ? <p role="alert">{t('common.failed')}</p> : null}
       {readsCaptains && captains.data && (
         <label>
           {t('ratings.captain')}

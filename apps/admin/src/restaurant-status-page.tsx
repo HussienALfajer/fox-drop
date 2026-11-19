@@ -35,7 +35,13 @@ const lengths = [
 // AP §9.6.5, slice 2.6b: a restaurant's state and the panel's actions on it,
 // with its account (slice 2.30c); the profile's «الحالة» tab (slice 2.30d).
 // Live over the city's channel. Unstyled until the design.
-export function RestaurantStatusSection({ restaurantId, city }: { restaurantId: string; city: City }) {
+export function RestaurantStatusSection({
+  restaurantId,
+  city,
+}: {
+  restaurantId: string;
+  city: City;
+}) {
   const { t } = useTranslation();
   const { session } = signedIn.useRouteContext();
   useOpsChannel(city.id);

@@ -1,7 +1,12 @@
 import type { ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { mediaUrl, type MediaWidth } from './media.js';
-import { IMAGE_TYPES, type ImageRefusal, type ImageTarget, useSetImage } from './restaurant-images.js';
+import {
+  IMAGE_TYPES,
+  type ImageRefusal,
+  type ImageTarget,
+  useSetImage,
+} from './restaurant-images.js';
 
 const refusalKeys = {
   type: 'images.refused.type',

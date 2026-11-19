@@ -163,8 +163,12 @@ export class RestaurantFiguresService {
           unanswered: sql<number>`count(*) FILTER (WHERE ${orders.cancelReason} = 'merchant_auto_cancel')::int`,
           ready: sql<number>`count(*) FILTER (WHERE ${orders.readyAt} IS NOT NULL AND ${orders.acceptedAt} IS NOT NULL)::int`,
           late: sql<number>`count(*) FILTER (WHERE ${orders.readyAt} > ${prepEnd})::int`,
-          actual: sql<number | null>`avg(extract(epoch FROM ${orders.readyAt} - ${orders.acceptedAt}) / 60) FILTER (WHERE ${orders.readyAt} IS NOT NULL AND ${orders.acceptedAt} IS NOT NULL)::float8`,
-          chosen: sql<number | null>`avg(${orders.prepMin}) FILTER (WHERE ${orders.readyAt} IS NOT NULL AND ${orders.acceptedAt} IS NOT NULL)::float8`,
+          actual: sql<
+            number | null
+          >`avg(extract(epoch FROM ${orders.readyAt} - ${orders.acceptedAt}) / 60) FILTER (WHERE ${orders.readyAt} IS NOT NULL AND ${orders.acceptedAt} IS NOT NULL)::float8`,
+          chosen: sql<
+            number | null
+          >`avg(${orders.prepMin}) FILTER (WHERE ${orders.readyAt} IS NOT NULL AND ${orders.acceptedAt} IS NOT NULL)::float8`,
         })
         .from(orders)
         .where(counted),
