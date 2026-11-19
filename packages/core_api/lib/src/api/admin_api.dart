@@ -34,10 +34,12 @@ import 'package:core_api/src/model/admin_captain_application_document_dto.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_application_interview_dto.dart';
 import 'package:core_api/src/model/admin_captain_application_kit_dto.dart';
+import 'package:core_api/src/model/admin_captain_application_kit_return_dto.dart';
 import 'package:core_api/src/model/admin_captain_application_note_dto.dart';
 import 'package:core_api/src/model/admin_captain_application_reject_dto.dart';
 import 'package:core_api/src/model/admin_captain_application_request_dto.dart';
 import 'package:core_api/src/model/admin_captain_application_review_dto.dart';
+import 'package:core_api/src/model/admin_captain_application_terminate_dto.dart';
 import 'package:core_api/src/model/admin_captain_applications_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_availability_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_balances_dto_output.dart';
@@ -85,6 +87,7 @@ import 'package:core_api/src/model/admin_customers_found_dto_output.dart';
 import 'package:core_api/src/model/admin_daily_report_dto_output.dart';
 import 'package:core_api/src/model/admin_daily_report_export_dto.dart';
 import 'package:core_api/src/model/admin_deposit_cash_limit_dto.dart';
+import 'package:core_api/src/model/admin_deposit_refunds_dto_output.dart';
 import 'package:core_api/src/model/admin_deposits_dto_output.dart';
 import 'package:core_api/src/model/admin_desk_captain_search_dto.dart';
 import 'package:core_api/src/model/admin_desk_captains_dto_output.dart';
@@ -257,6 +260,7 @@ import 'package:core_api/src/model/admin_set_exchange_rate_dto.dart';
 import 'package:core_api/src/model/admin_set_image_dto.dart';
 import 'package:core_api/src/model/admin_set_outcome_dto.dart';
 import 'package:core_api/src/model/admin_set_peak_bonus_dto.dart';
+import 'package:core_api/src/model/admin_settle_deposit_dto.dart';
 import 'package:core_api/src/model/admin_settle_dto.dart';
 import 'package:core_api/src/model/admin_settlement_dto_output.dart';
 import 'package:core_api/src/model/admin_settlement_preview_dto_output.dart';
@@ -1752,6 +1756,92 @@ class AdminApi {
     );
   }
 
+  /// adminCaptainApplicationsClose
+  ///
+  ///
+  /// Parameters:
+  /// * [applicationId]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminCaptainApplicationDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminCaptainApplicationDtoOutput>>
+  adminCaptainApplicationsClose({
+    required String applicationId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path =
+        r'/v1/admin/captain-applications/{applicationId}/offboarding/close'
+            .replaceAll(
+              '{'
+              r'applicationId'
+              '}',
+              encodeQueryParameter(
+                _serializers,
+                applicationId,
+                const FullType(String),
+              ).toString(),
+            );
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminCaptainApplicationDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(
+                    AdminCaptainApplicationDtoOutput,
+                  ),
+                )
+                as AdminCaptainApplicationDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminCaptainApplicationDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// adminCaptainApplicationsConfirmProbation
   ///
   ///
@@ -1889,6 +1979,114 @@ class AdminApi {
       const _type = FullType(AdminCaptainApplicationKitDto);
       _bodyData = _serializers.serialize(
         adminCaptainApplicationKitDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminCaptainApplicationDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(
+                    AdminCaptainApplicationDtoOutput,
+                  ),
+                )
+                as AdminCaptainApplicationDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminCaptainApplicationDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminCaptainApplicationsKitReturn
+  ///
+  ///
+  /// Parameters:
+  /// * [applicationId]
+  /// * [adminCaptainApplicationKitReturnDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminCaptainApplicationDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminCaptainApplicationDtoOutput>>
+  adminCaptainApplicationsKitReturn({
+    required String applicationId,
+    required AdminCaptainApplicationKitReturnDto
+    adminCaptainApplicationKitReturnDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path =
+        r'/v1/admin/captain-applications/{applicationId}/offboarding/kit'
+            .replaceAll(
+              '{'
+              r'applicationId'
+              '}',
+              encodeQueryParameter(
+                _serializers,
+                applicationId,
+                const FullType(String),
+              ).toString(),
+            );
+    final _options = Options(
+      method: r'PUT',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminCaptainApplicationKitReturnDto);
+      _bodyData = _serializers.serialize(
+        adminCaptainApplicationKitReturnDto,
         specifiedType: _type,
       );
     } catch (error, stackTrace) {
@@ -2520,6 +2718,113 @@ class AdminApi {
       const _type = FullType(AdminCaptainApplicationInterviewDto);
       _bodyData = _serializers.serialize(
         adminCaptainApplicationInterviewDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminCaptainApplicationDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(
+                    AdminCaptainApplicationDtoOutput,
+                  ),
+                )
+                as AdminCaptainApplicationDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminCaptainApplicationDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminCaptainApplicationsTerminate
+  ///
+  ///
+  /// Parameters:
+  /// * [applicationId]
+  /// * [adminCaptainApplicationTerminateDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminCaptainApplicationDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminCaptainApplicationDtoOutput>>
+  adminCaptainApplicationsTerminate({
+    required String applicationId,
+    required AdminCaptainApplicationTerminateDto
+    adminCaptainApplicationTerminateDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/captain-applications/{applicationId}/terminate'
+        .replaceAll(
+          '{'
+          r'applicationId'
+          '}',
+          encodeQueryParameter(
+            _serializers,
+            applicationId,
+            const FullType(String),
+          ).toString(),
+        );
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminCaptainApplicationTerminateDto);
+      _bodyData = _serializers.serialize(
+        adminCaptainApplicationTerminateDto,
         specifiedType: _type,
       );
     } catch (error, stackTrace) {
@@ -3681,6 +3986,87 @@ class AdminApi {
     );
   }
 
+  /// adminCashDeskDepositRefunds
+  ///
+  ///
+  /// Parameters:
+  /// * [cityId]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminDepositRefundsDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminDepositRefundsDtoOutput>> adminCashDeskDepositRefunds({
+    required String cityId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/cash-desk/deposit-refunds';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      r'cityId': encodeQueryParameter(
+        _serializers,
+        cityId,
+        const FullType(String),
+      ),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminDepositRefundsDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminDepositRefundsDtoOutput),
+                )
+                as AdminDepositRefundsDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminDepositRefundsDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// adminCashDeskFindCaptains
   ///
   ///
@@ -4587,6 +4973,105 @@ class AdminApi {
     }
 
     return Response<AdminSettlementDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminCashDeskSettleDeposit
+  ///
+  ///
+  /// Parameters:
+  /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
+  /// * [adminSettleDepositDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminRecordDepositAnswerDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminRecordDepositAnswerDtoOutput>>
+  adminCashDeskSettleDeposit({
+    required String idempotencyKey,
+    required AdminSettleDepositDto adminSettleDepositDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/cash-desk/deposit-refunds';
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminSettleDepositDto);
+      _bodyData = _serializers.serialize(
+        adminSettleDepositDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminRecordDepositAnswerDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(
+                    AdminRecordDepositAnswerDtoOutput,
+                  ),
+                )
+                as AdminRecordDepositAnswerDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminRecordDepositAnswerDtoOutput>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

@@ -73,9 +73,16 @@ describe('actionsOf', () => {
     expect(actions('waitlist')).toEqual([...documents, 'back_from_waitlist', 'reject'].sort());
   });
 
-  it('offers a captain’s documents and the probation once active (slice 2.35a)', () => {
+  it('offers a captain’s documents, the probation and the offboarding once active (slices 2.35a, 2.35b)', () => {
     expect(actions('active')).toEqual(
-      ['confirm_probation', 'review_document', 'upload_document'].sort(),
+      [
+        'close',
+        'confirm_probation',
+        'return_kit',
+        'review_document',
+        'terminate',
+        'upload_document',
+      ].sort(),
     );
   });
 

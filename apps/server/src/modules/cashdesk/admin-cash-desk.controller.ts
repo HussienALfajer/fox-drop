@@ -16,7 +16,12 @@ import { z } from 'zod';
 import { CurrentAdminSession, RequirePermission } from '../../http/access.js';
 import { Idempotent, IdempotencyKey } from '../../http/idempotency.js';
 import { AdminController } from '../../http/route-groups.js';
-import { CaptainsService, type Custody, type HandInGrace } from '../captains/index.js';
+import {
+  CaptainsService,
+  type Custody,
+  depositSettlements,
+  type HandInGrace,
+} from '../captains/index.js';
 import { type AdminSession, CaptainAccountsService } from '../identity/index.js';
 import {
   type BalanceRow,
@@ -375,6 +380,35 @@ class AdminDepositCashLimitDto extends createZodDto(
   }),
 ) {}
 
+class AdminDepositRefundsDto extends createZodDto(
+  z.object({
+    contracts: z.array(
+      z.object({
+        applicationId: z.uuid(),
+        captainId: z.uuid(),
+        fullName: z.string(),
+        terminatedAt: z.iso.datetime(),
+        earlyExit: z.boolean().describe('Ended in «فترة التزام»: «خروج مبكر».'),
+        kitReturned: z
+          .boolean()
+          .nullable()
+          .describe('The checklist’s step 1; null until OPS checked the kit.'),
+        held: money.describe('The deposit the platform holds, in the base.'),
+      }),
+    ),
+  }),
+) {}
+
+class AdminSettleDepositDto extends createZodDto(
+  z.object({
+    cityId: z.uuid(),
+    applicationId: z.uuid(),
+    settlement: z
+      .enum(depositSettlements)
+      .describe('refunded when the kit came back (cash, a receipt), withheld otherwise.'),
+  }),
+) {}
+
 class AdminRecordDepositAnswerDto extends createZodDto(
   z.object({ receipt: receiptBody.nullable().describe('None when nothing was paid now.') }),
 ) {}
@@ -481,6 +515,48 @@ export class AdminCashDeskController {
         suggestedCashLimit: moneyOf(each.suggestedCashLimit),
       })),
     };
+  }
+
+  // «التأمينات» at termination (AP §9.7.5 step 4, §9.10.3; slice 2.35b): the
+  // contracts being ended whose deposit is still held.
+  @Get('deposit-refunds')
+  @RequirePermission('cash_desk.record')
+  @ZodResponse({ status: 200, type: AdminDepositRefundsDto })
+  async depositRefunds(@Query() query: AdminDepositsQueryDto) {
+    const found = await this.deposits.toSettle(query.cityId);
+    return {
+      contracts: found.map((each) => ({
+        ...each,
+        terminatedAt: each.terminatedAt.toISOString(),
+        held: moneyOf(each.held)!,
+      })),
+    };
+  }
+
+  // The deposit refunded in cash with its receipt «استرداد التأمين», or
+  // withheld to the platform's revenue (no receipt: `receipt` null), as the
+  // kit's step says (C17). 404 unknown_party; 409 no_open_session (a refund
+  // without a drawer), drawer_short, not_terminated, contract_ended, kit_not_checked,
+  // deposit_settled (so a repeat with another key is refused),
+  // wrong_settlement, nothing_held, no_base_currency.
+  @Post('deposit-refunds')
+  @RequirePermission('cash_desk.record')
+  @Idempotent()
+  @ZodResponse({ status: 201, type: AdminRecordDepositAnswerDto })
+  settleDeposit(
+    @Body() body: AdminSettleDepositDto,
+    @IdempotencyKey() idempotencyKey: string,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    return refusalsAsHttp(async () => {
+      const receipt = await this.deposits.settle(
+        deskUser(session, request),
+        { ...body, idempotencyKey },
+        new Date(),
+      );
+      return { receipt: receipt && receiptBodyOf(receipt) };
+    });
   }
 
   // The deposit's plan and the cash paid now, with its receipt «تأمين

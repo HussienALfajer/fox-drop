@@ -51,6 +51,7 @@ const dayFigures = z.object({
   testCost: signedMinor,
   fxRounding: signedMinor.describe('+ a gain for the platform.'),
   adjustments: signedMinor.describe('+ a gain for the platform.'),
+  withheldDeposits: signedMinor.describe('Kit deposits withheld at termination, a revenue.'),
   margin: signedMinor,
   cash: z.array(
     z.object({
@@ -120,6 +121,7 @@ function figuresBody(figures: DayFigures) {
     testCost: text(f.testCost),
     fxRounding: text(f.fxRounding),
     adjustments: text(f.adjustments),
+    withheldDeposits: text(f.withheldDeposits),
     margin: text(f.margin),
     cash: f.cash.map(({ currency: code, ...amounts }) => ({ currency: code, ...all(amounts) })),
     restaurants: all(f.restaurants),

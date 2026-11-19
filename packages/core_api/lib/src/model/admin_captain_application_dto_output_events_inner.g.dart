@@ -50,6 +50,22 @@ _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_probationConfirmed =
     const AdminCaptainApplicationDtoOutputEventsInnerKindEnum._(
       'probationConfirmed',
     );
+const AdminCaptainApplicationDtoOutputEventsInnerKindEnum
+_$adminCaptainApplicationDtoOutputEventsInnerKindEnum_terminated =
+    const AdminCaptainApplicationDtoOutputEventsInnerKindEnum._('terminated');
+const AdminCaptainApplicationDtoOutputEventsInnerKindEnum
+_$adminCaptainApplicationDtoOutputEventsInnerKindEnum_kitReturned =
+    const AdminCaptainApplicationDtoOutputEventsInnerKindEnum._('kitReturned');
+const AdminCaptainApplicationDtoOutputEventsInnerKindEnum
+_$adminCaptainApplicationDtoOutputEventsInnerKindEnum_depositSettled =
+    const AdminCaptainApplicationDtoOutputEventsInnerKindEnum._(
+      'depositSettled',
+    );
+const AdminCaptainApplicationDtoOutputEventsInnerKindEnum
+_$adminCaptainApplicationDtoOutputEventsInnerKindEnum_contractEnded =
+    const AdminCaptainApplicationDtoOutputEventsInnerKindEnum._(
+      'contractEnded',
+    );
 
 AdminCaptainApplicationDtoOutputEventsInnerKindEnum
 _$adminCaptainApplicationDtoOutputEventsInnerKindEnumValueOf(String name) {
@@ -78,6 +94,14 @@ _$adminCaptainApplicationDtoOutputEventsInnerKindEnumValueOf(String name) {
       return _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_deposit;
     case 'probationConfirmed':
       return _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_probationConfirmed;
+    case 'terminated':
+      return _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_terminated;
+    case 'kitReturned':
+      return _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_kitReturned;
+    case 'depositSettled':
+      return _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_depositSettled;
+    case 'contractEnded':
+      return _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_contractEnded;
     default:
       throw ArgumentError(name);
   }
@@ -100,6 +124,10 @@ _$adminCaptainApplicationDtoOutputEventsInnerKindEnumValues =
       _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_contract,
       _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_deposit,
       _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_probationConfirmed,
+      _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_terminated,
+      _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_kitReturned,
+      _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_depositSettled,
+      _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_contractEnded,
     ]);
 
 const AdminCaptainApplicationDtoOutputEventsInnerStageEnum
@@ -313,6 +341,10 @@ class _$AdminCaptainApplicationDtoOutputEventsInnerKindEnumSerializer
     'contract': 'contract',
     'deposit': 'deposit',
     'probationConfirmed': 'probation_confirmed',
+    'terminated': 'terminated',
+    'kitReturned': 'kit_returned',
+    'depositSettled': 'deposit_settled',
+    'contractEnded': 'contract_ended',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'submitted': 'submitted',
@@ -327,6 +359,10 @@ class _$AdminCaptainApplicationDtoOutputEventsInnerKindEnumSerializer
     'contract': 'contract',
     'deposit': 'deposit',
     'probation_confirmed': 'probationConfirmed',
+    'terminated': 'terminated',
+    'kit_returned': 'kitReturned',
+    'deposit_settled': 'depositSettled',
+    'contract_ended': 'contractEnded',
   };
 
   @override

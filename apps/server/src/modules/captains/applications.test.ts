@@ -10,6 +10,9 @@ import {
   addMonths,
   contractDates,
   depositInstalmentDue,
+  depositSettlementOf,
+  earlyExit,
+  offboardingMissing,
   cityDay,
   criminalRecordExpiry,
   fileCountAllowed,
@@ -356,5 +359,52 @@ describe('the documents of a captain', () => {
       30,
     );
     expect(expiredRequired(states, 'bicycle')).toEqual(['criminal_record']);
+  });
+});
+
+// The offboarding checklist (AP §9.7.5, §9.7.2, C17; slice 2.35b).
+describe('the offboarding', () => {
+  const contract = { commitmentStartsOn: '2026-12-01', commitmentEndsOn: '2027-03-01' };
+
+  it('flags «خروج مبكر» only when the contract ends in «فترة التزام» (owner decision 2026-11-19)', () => {
+    expect(earlyExit(contract, '2026-11-30')).toBe(false);
+    expect(earlyExit(contract, '2026-12-01')).toBe(true);
+    expect(earlyExit(contract, '2027-02-28')).toBe(true);
+    expect(earlyExit(contract, '2027-03-01')).toBe(false);
+    expect(earlyExit({ commitmentStartsOn: null, commitmentEndsOn: null }, '2027-06-01')).toBe(
+      false,
+    );
+  });
+
+  it('refunds the deposit when the kit came back and withholds it otherwise (C17)', () => {
+    expect(depositSettlementOf(true)).toBe('refunded');
+    expect(depositSettlementOf(false)).toBe('withheld');
+  });
+
+  it("lists every step left before the account closes, in the checklist's order", () => {
+    expect(
+      offboardingMissing({
+        kitReturned: null,
+        custodyZero: false,
+        earningsZero: false,
+        depositHeld: 50000n,
+      }),
+    ).toEqual(['kit', 'custody', 'earnings', 'deposit']);
+    expect(
+      offboardingMissing({
+        kitReturned: false,
+        custodyZero: true,
+        earningsZero: true,
+        depositHeld: 0n,
+      }),
+    ).toEqual([]);
+    expect(
+      offboardingMissing({
+        kitReturned: true,
+        custodyZero: true,
+        earningsZero: false,
+        depositHeld: 1n,
+      }),
+    ).toEqual(['earnings', 'deposit']);
   });
 });

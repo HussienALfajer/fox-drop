@@ -17,6 +17,7 @@ part 'admin_captain_application_dto_output_duplicates_inner.g.dart';
 /// * [captainId]
 /// * [fullName]
 /// * [stage]
+/// * [earlyExit] - Its contract ended in «فترة التزام»: «خروج مبكر».
 @BuiltValue()
 abstract class AdminCaptainApplicationDtoOutputDuplicatesInner
     implements
@@ -40,6 +41,10 @@ abstract class AdminCaptainApplicationDtoOutputDuplicatesInner
   @BuiltValueField(wireName: r'stage')
   AdminCaptainApplicationDtoOutputDuplicatesInnerStageEnum? get stage;
   // enum stageEnum {  draft,  new,  under_review,  interview,  awaiting_kit,  active,  waitlist,  rejected,  };
+
+  /// Its contract ended in «فترة التزام»: «خروج مبكر».
+  @BuiltValueField(wireName: r'earlyExit')
+  bool get earlyExit;
 
   AdminCaptainApplicationDtoOutputDuplicatesInner._();
 
@@ -110,6 +115,11 @@ class _$AdminCaptainApplicationDtoOutputDuplicatesInnerSerializer
               AdminCaptainApplicationDtoOutputDuplicatesInnerStageEnum,
             ),
           );
+    yield r'earlyExit';
+    yield serializers.serialize(
+      object.earlyExit,
+      specifiedType: const FullType(bool),
+    );
   }
 
   @override
@@ -188,6 +198,15 @@ class _$AdminCaptainApplicationDtoOutputDuplicatesInnerSerializer
                   as AdminCaptainApplicationDtoOutputDuplicatesInnerStageEnum?;
           if (valueDes == null) continue;
           result.stage = valueDes;
+          break;
+        case r'earlyExit':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
+          result.earlyExit = valueDes;
           break;
         default:
           unhandled.add(key);

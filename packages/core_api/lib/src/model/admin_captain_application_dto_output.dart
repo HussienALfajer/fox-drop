@@ -3,8 +3,10 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/admin_captain_application_dto_output_offboarding.dart';
 import 'package:core_api/src/model/captain_application_dto_output_application_interview.dart';
 import 'package:core_api/src/model/date.dart';
+import 'package:core_api/src/model/admin_captain_application_dto_output_former_captain.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output_duplicates_inner.dart';
 import 'package:core_api/src/model/admin_captain_application_dto_output_activation.dart';
@@ -40,6 +42,8 @@ part 'admin_captain_application_dto_output.g.dart';
 /// * [duplicates] - Another applicant or captain with the same ID number, phone or plate.
 /// * [events]
 /// * [activation]
+/// * [offboarding]
+/// * [formerCaptain]
 @BuiltValue()
 abstract class AdminCaptainApplicationDtoOutput
     implements
@@ -114,6 +118,12 @@ abstract class AdminCaptainApplicationDtoOutput
 
   @BuiltValueField(wireName: r'activation')
   AdminCaptainApplicationDtoOutputActivation get activation;
+
+  @BuiltValueField(wireName: r'offboarding')
+  AdminCaptainApplicationDtoOutputOffboarding? get offboarding;
+
+  @BuiltValueField(wireName: r'formerCaptain')
+  AdminCaptainApplicationDtoOutputFormerCaptain? get formerCaptain;
 
   AdminCaptainApplicationDtoOutput._();
 
@@ -275,6 +285,24 @@ class _$AdminCaptainApplicationDtoOutputSerializer
       object.activation,
       specifiedType: const FullType(AdminCaptainApplicationDtoOutputActivation),
     );
+    yield r'offboarding';
+    yield object.offboarding == null
+        ? null
+        : serializers.serialize(
+            object.offboarding,
+            specifiedType: const FullType.nullable(
+              AdminCaptainApplicationDtoOutputOffboarding,
+            ),
+          );
+    yield r'formerCaptain';
+    yield object.formerCaptain == null
+        ? null
+        : serializers.serialize(
+            object.formerCaptain,
+            specifiedType: const FullType.nullable(
+              AdminCaptainApplicationDtoOutputFormerCaptain,
+            ),
+          );
   }
 
   @override
@@ -512,6 +540,30 @@ class _$AdminCaptainApplicationDtoOutputSerializer
                   )
                   as AdminCaptainApplicationDtoOutputActivation;
           result.activation.replace(valueDes);
+          break;
+        case r'offboarding':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminCaptainApplicationDtoOutputOffboarding,
+                    ),
+                  )
+                  as AdminCaptainApplicationDtoOutputOffboarding?;
+          if (valueDes == null) continue;
+          result.offboarding.replace(valueDes);
+          break;
+        case r'formerCaptain':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      AdminCaptainApplicationDtoOutputFormerCaptain,
+                    ),
+                  )
+                  as AdminCaptainApplicationDtoOutputFormerCaptain?;
+          if (valueDes == null) continue;
+          result.formerCaptain.replace(valueDes);
           break;
         default:
           unhandled.add(key);

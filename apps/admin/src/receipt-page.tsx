@@ -15,6 +15,7 @@ export const receiptTypeKeys = {
   captain_payout: 'cashDesk.receiptType.captain_payout',
   captain_earnings_collection: 'cashDesk.receiptType.captain_earnings_collection',
   captain_deposit: 'cashDesk.receiptType.captain_deposit',
+  captain_deposit_refund: 'cashDesk.receiptType.captain_deposit_refund',
 } as const satisfies Record<ReceiptType, string>;
 
 const paperClasses = { thermal: 'paper-thermal', a4: 'paper-a4' } as const satisfies Record<
@@ -106,7 +107,9 @@ function ReceiptView({
                   ? t('cashDesk.receipt.expectedEarnings')
                   : receipt.type === 'captain_deposit'
                     ? t('cashDesk.receipt.expectedDeposit')
-                    : t('cashDesk.receipt.expected')}
+                    : receipt.type === 'captain_deposit_refund'
+                      ? t('cashDesk.receipt.expectedDepositRefund')
+                      : t('cashDesk.receipt.expected')}
             </th>
             <th scope="col">
               {receipt.type === 'captain_hand_in' ||
@@ -122,7 +125,17 @@ function ReceiptView({
           {receipt.lines.map((line) => (
             <tr key={line.currency}>
               <th scope="row">{line.currency}</th>
-              <td>{formatMoney({ amount: line.expected, currency: line.currency })}</td>
+              <td>
+                {formatMoney({
+                  // The refund's line expects what the platform owed, below
+                  // zero from the captain's side: shown as the deposit held.
+                  amount:
+                    receipt.type === 'captain_deposit_refund'
+                      ? (-BigInt(line.expected)).toString()
+                      : line.expected,
+                  currency: line.currency,
+                })}
+              </td>
               <td>{formatMoney({ amount: line.amount, currency: line.currency })}</td>
               <td>{formatMoney({ amount: line.remaining, currency: line.currency })}</td>
             </tr>

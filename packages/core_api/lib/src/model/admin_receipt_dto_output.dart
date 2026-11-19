@@ -41,7 +41,7 @@ abstract class AdminReceiptDtoOutput
 
   @BuiltValueField(wireName: r'type')
   AdminReceiptDtoOutputTypeEnum get type;
-  // enum typeEnum {  captain_hand_in,  captain_reimbursement,  captain_payout,  captain_earnings_collection,  captain_deposit,  };
+  // enum typeEnum {  captain_hand_in,  captain_reimbursement,  captain_payout,  captain_earnings_collection,  captain_deposit,  captain_deposit_refund,  };
 
   @BuiltValueField(wireName: r'sessionId')
   String get sessionId;
@@ -359,6 +359,9 @@ class AdminReceiptDtoOutputTypeEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'captain_deposit')
   static const AdminReceiptDtoOutputTypeEnum captainDeposit =
       _$adminReceiptDtoOutputTypeEnum_captainDeposit;
+  @BuiltValueEnumConst(wireName: r'captain_deposit_refund')
+  static const AdminReceiptDtoOutputTypeEnum captainDepositRefund =
+      _$adminReceiptDtoOutputTypeEnum_captainDepositRefund;
 
   static Serializer<AdminReceiptDtoOutputTypeEnum> get serializer =>
       _$adminReceiptDtoOutputTypeEnumSerializer;

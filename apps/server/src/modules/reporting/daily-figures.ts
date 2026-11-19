@@ -64,6 +64,8 @@ export interface DailyFigures {
   // + a gain for the platform.
   fxRounding: bigint;
   adjustments: bigint;
+  // Kit deposits withheld at termination (C17, slice 2.35b), a revenue.
+  withheldDeposits: bigint;
   // Revenues less costs, every platform account of AP §8.11 but the cash
   // and the order clearing.
   margin: bigint;
@@ -98,6 +100,7 @@ const marginAccounts: readonly AccountPurpose[] = [
   'platform.test_cost',
   'platform.fx_rounding',
   'platform.adjustments',
+  'platform.revenue_deposits',
 ];
 
 export function dailyFigures(day: DayInput): DailyFigures {
@@ -147,6 +150,7 @@ export function dailyFigures(day: DayInput): DailyFigures {
     testCost: account('platform.test_cost'),
     fxRounding: -account('platform.fx_rounding'),
     adjustments: -account('platform.adjustments'),
+    withheldDeposits: -account('platform.revenue_deposits'),
     margin: -sum((row) => marginAccounts.includes(row.purpose)),
     cash: cashOf(day),
     restaurants: {

@@ -25,6 +25,11 @@ _$adminRecordDepositAnswerDtoOutputReceiptTypeEnum_captainEarningsCollection =
 const AdminRecordDepositAnswerDtoOutputReceiptTypeEnum
 _$adminRecordDepositAnswerDtoOutputReceiptTypeEnum_captainDeposit =
     const AdminRecordDepositAnswerDtoOutputReceiptTypeEnum._('captainDeposit');
+const AdminRecordDepositAnswerDtoOutputReceiptTypeEnum
+_$adminRecordDepositAnswerDtoOutputReceiptTypeEnum_captainDepositRefund =
+    const AdminRecordDepositAnswerDtoOutputReceiptTypeEnum._(
+      'captainDepositRefund',
+    );
 
 AdminRecordDepositAnswerDtoOutputReceiptTypeEnum
 _$adminRecordDepositAnswerDtoOutputReceiptTypeEnumValueOf(String name) {
@@ -39,6 +44,8 @@ _$adminRecordDepositAnswerDtoOutputReceiptTypeEnumValueOf(String name) {
       return _$adminRecordDepositAnswerDtoOutputReceiptTypeEnum_captainEarningsCollection;
     case 'captainDeposit':
       return _$adminRecordDepositAnswerDtoOutputReceiptTypeEnum_captainDeposit;
+    case 'captainDepositRefund':
+      return _$adminRecordDepositAnswerDtoOutputReceiptTypeEnum_captainDepositRefund;
     default:
       throw ArgumentError(name);
   }
@@ -54,6 +61,7 @@ _$adminRecordDepositAnswerDtoOutputReceiptTypeEnumValues =
       _$adminRecordDepositAnswerDtoOutputReceiptTypeEnum_captainPayout,
       _$adminRecordDepositAnswerDtoOutputReceiptTypeEnum_captainEarningsCollection,
       _$adminRecordDepositAnswerDtoOutputReceiptTypeEnum_captainDeposit,
+      _$adminRecordDepositAnswerDtoOutputReceiptTypeEnum_captainDepositRefund,
     ]);
 
 Serializer<AdminRecordDepositAnswerDtoOutputReceiptTypeEnum>
@@ -69,6 +77,7 @@ class _$AdminRecordDepositAnswerDtoOutputReceiptTypeEnumSerializer
     'captainPayout': 'captain_payout',
     'captainEarningsCollection': 'captain_earnings_collection',
     'captainDeposit': 'captain_deposit',
+    'captainDepositRefund': 'captain_deposit_refund',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'captain_hand_in': 'captainHandIn',
@@ -76,6 +85,7 @@ class _$AdminRecordDepositAnswerDtoOutputReceiptTypeEnumSerializer
     'captain_payout': 'captainPayout',
     'captain_earnings_collection': 'captainEarningsCollection',
     'captain_deposit': 'captainDeposit',
+    'captain_deposit_refund': 'captainDepositRefund',
   };
 
   @override

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, asc, desc, eq, inArray, isNull, ne, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNotNull, isNull, ne, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { TermsService } from '../content/index.js';
@@ -209,7 +209,9 @@ export class ApplicationsService {
     const [row] = await this.database.db
       .select()
       .from(applications)
-      .where(eq(applications.accountId, accountId))
+      // A contract ended (slice 2.35b) is history: a former captain starts
+      // a new application.
+      .where(and(eq(applications.accountId, accountId), isNull(applications.endedAt)))
       .orderBy(sql`${applications.stage} = 'rejected'`, desc(applications.createdAt))
       .limit(1);
     if (!row) return null;
@@ -316,9 +318,23 @@ export class ApplicationsService {
       if (draft) {
         await tx.update(applications).set(values).where(eq(applications.id, draft.id));
       } else {
-        await tx
-          .insert(applications)
-          .values({ ...values, accountId: applicant.accountId, stage: 'draft', createdAt: now });
+        // C17 (slice 2.35b): a former captain applies again on the same
+        // account; the application makes that captain again.
+        const [former] = await tx
+          .select({ captainId: applications.captainId })
+          .from(applications)
+          .where(
+            and(eq(applications.accountId, applicant.accountId), isNotNull(applications.endedAt)),
+          )
+          .orderBy(desc(applications.endedAt))
+          .limit(1);
+        await tx.insert(applications).values({
+          ...values,
+          accountId: applicant.accountId,
+          stage: 'draft',
+          createdAt: now,
+          formerCaptainId: former?.captainId ?? null,
+        });
       }
     });
     return (await this.application(applicant.accountId, now))!;
@@ -609,7 +625,7 @@ export class ApplicationsService {
     return { id: row.id, vehicle: row.vehicle };
   }
 
-  // The account's application not rejected, locked, at any stage.
+  // The account's application not rejected nor ended, locked, at any stage.
   private async locked(tx: Tx, accountId: string): Promise<LockedApplication>;
   private async locked(
     tx: Tx,
@@ -627,7 +643,13 @@ export class ApplicationsService {
     const [row] = await tx
       .select({ id: applications.id, stage: applications.stage, vehicle: applications.vehicle })
       .from(applications)
-      .where(and(eq(applications.accountId, accountId), ne(applications.stage, 'rejected')))
+      .where(
+        and(
+          eq(applications.accountId, accountId),
+          ne(applications.stage, 'rejected'),
+          isNull(applications.endedAt),
+        ),
+      )
       .for('update');
     if (!row) {
       if (options.orNone) return null;

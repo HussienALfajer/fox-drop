@@ -1,5 +1,19 @@
 import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
-import { and, desc, eq, gt, gte, inArray, isNull, lte, max, ne, or, sql } from 'drizzle-orm';
+import {
+  and,
+  desc,
+  eq,
+  gt,
+  gte,
+  inArray,
+  isNotNull,
+  isNull,
+  lte,
+  max,
+  ne,
+  or,
+  sql,
+} from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -40,6 +54,7 @@ import {
 } from './live-positions.js';
 import { checkPayRate, orderPay, type PayParts, type PayRate } from './pay.js';
 import {
+  applications,
   captainRecords,
   custodyWarnings,
   handInGraces,
@@ -74,7 +89,17 @@ export type CaptainsRefusal =
   | 'invalid_peak_bonus'
   | 'unknown_city'
   // AP §8.5.4: a grace lifts a closed_due block; none is due.
-  | 'nothing_due';
+  | 'nothing_due'
+  // AP §9.7.5 (slice 2.35b): no reactivation while the contract is being
+  // ended.
+  | 'offboarding_open';
+
+// A status change's work after its commit (`afterStatus`): the online
+// period it ended, if any.
+export interface StatusChanged {
+  cityId: string;
+  ended: string | null;
+}
 
 // A change the captains module refuses, with the reason the routes map to
 // their own answers; going online carries its blocks (CA §7.2).
@@ -776,6 +801,23 @@ export class CaptainsService implements OnModuleInit {
     change: CaptainChange & { until?: Date | null },
     now: Date,
   ): Promise<void> {
+    const changed = await this.database.db.transaction((tx) =>
+      this.setStatusIn(tx, captainId, status, change, now),
+    );
+    await this.afterStatus(captainId, changed, now);
+  }
+
+  // The status change in the caller's transaction (the offboarding's, slice
+  // 2.35b); the caller runs `afterStatus` once it commits. A captain whose
+  // contract is being ended stays suspended until its account closes
+  // (`offboarding_open`).
+  async setStatusIn(
+    tx: Tx,
+    captainId: string,
+    status: CaptainStatus,
+    change: CaptainChange & { until?: Date | null },
+    now: Date,
+  ): Promise<StatusChanged> {
     if (!hasReason(change)) {
       throw new CaptainsRefusedError('reason_required', `becoming ${status} needs a reason`);
     }
@@ -785,46 +827,65 @@ export class CaptainsService implements OnModuleInit {
     if (change.until != null && change.until <= now) {
       throw new CaptainsRefusedError('invalid_captain', 'a suspension ends after now');
     }
-    const { cityId, ended } = await this.database.db.transaction(async (tx) => {
-      const row = await this.lockCaptain(tx, captainId);
-      const current = captainOf(row, now).status;
-      if (!statusChanges[current].includes(status)) {
-        throw new CaptainsRefusedError(
-          'status_change_not_allowed',
-          `a ${current} captain cannot become ${status}`,
-        );
-      }
-      const until = change.until ?? null;
-      await tx
-        .update(captainRecords)
-        .set({
-          status,
-          suspensionReason: status === 'suspended' ? change.reason!.trim() : null,
-          suspendedUntil: until,
-          updatedAt: sql`now()`,
-        })
-        .where(eq(captainRecords.id, captainId));
-      const ended =
-        status === 'active'
-          ? await this.clearLastOrder(tx, captainId, 'suspended')
-          : await this.offlineOrLastOrder(tx, captainId, status, null, now);
-      await this.audit.recordWrite(
-        {
-          actor: change.actor,
-          context: change.context,
-          cityId: row.cityId,
-          action: 'captain.status',
-          target: { type: 'captain', id: captainId },
-          before: { status: current },
-          after: { status, ...(until === null ? {} : { suspendedUntil: until.toISOString() }) },
-          reason: change.reason ?? null,
-        },
-        tx,
+    const row = await this.lockCaptain(tx, captainId);
+    const current = captainOf(row, now).status;
+    if (!statusChanges[current].includes(status)) {
+      throw new CaptainsRefusedError(
+        'status_change_not_allowed',
+        `a ${current} captain cannot become ${status}`,
       );
-      return { cityId: row.cityId, ended };
-    });
-    if (ended !== null) {
-      await this.positions.remove(cityId, captainId, ended);
+    }
+    // AP §9.7.5: while the contract is being ended the captain stays
+    // suspended until «إغلاق الحساب» terminates it (a timed suspension would
+    // lift it by itself).
+    if (status !== 'terminated') {
+      const [open] = await tx
+        .select({ id: applications.id })
+        .from(applications)
+        .where(
+          and(
+            eq(applications.captainId, captainId),
+            isNotNull(applications.terminatedAt),
+            isNull(applications.endedAt),
+          ),
+        );
+      if (open) {
+        throw new CaptainsRefusedError('offboarding_open', 'the contract is being ended');
+      }
+    }
+    const until = change.until ?? null;
+    await tx
+      .update(captainRecords)
+      .set({
+        status,
+        suspensionReason: status === 'suspended' ? change.reason!.trim() : null,
+        suspendedUntil: until,
+        updatedAt: sql`now()`,
+      })
+      .where(eq(captainRecords.id, captainId));
+    const ended =
+      status === 'active'
+        ? await this.clearLastOrder(tx, captainId, 'suspended')
+        : await this.offlineOrLastOrder(tx, captainId, status, null, now);
+    await this.audit.recordWrite(
+      {
+        actor: change.actor,
+        context: change.context,
+        cityId: row.cityId,
+        action: 'captain.status',
+        target: { type: 'captain', id: captainId },
+        before: { status: current },
+        after: { status, ...(until === null ? {} : { suspendedUntil: until.toISOString() }) },
+        reason: change.reason ?? null,
+      },
+      tx,
+    );
+    return { cityId: row.cityId, ended };
+  }
+
+  async afterStatus(captainId: string, changed: StatusChanged, now: Date): Promise<void> {
+    if (changed.ended !== null) {
+      await this.positions.remove(changed.cityId, captainId, changed.ended);
       await this.wentOffline(captainId, now);
     }
   }

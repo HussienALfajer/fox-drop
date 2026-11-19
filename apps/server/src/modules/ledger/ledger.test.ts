@@ -108,6 +108,8 @@ describe('the catalogue', () => {
         'earn.payout',
         'earn.adjustment',
         'deposit.payment',
+        'deposit.refund',
+        'deposit.withhold',
         'merchant.commission',
         'merchant.discount_share',
         'merchant.credit',

@@ -31,6 +31,7 @@ part 'admin_daily_report_dto_output_previous_inner.g.dart';
 /// * [testCost]
 /// * [fxRounding] - + a gain for the platform.
 /// * [adjustments] - + a gain for the platform.
+/// * [withheldDeposits] - Kit deposits withheld at termination, a revenue.
 /// * [margin]
 /// * [cash]
 /// * [restaurants]
@@ -89,6 +90,10 @@ abstract class AdminDailyReportDtoOutputPreviousInner
   /// + a gain for the platform.
   @BuiltValueField(wireName: r'adjustments')
   String get adjustments;
+
+  /// Kit deposits withheld at termination, a revenue.
+  @BuiltValueField(wireName: r'withheldDeposits')
+  String get withheldDeposits;
 
   @BuiltValueField(wireName: r'margin')
   String get margin;
@@ -197,6 +202,11 @@ class _$AdminDailyReportDtoOutputPreviousInnerSerializer
     yield r'adjustments';
     yield serializers.serialize(
       object.adjustments,
+      specifiedType: const FullType(String),
+    );
+    yield r'withheldDeposits';
+    yield serializers.serialize(
+      object.withheldDeposits,
       specifiedType: const FullType(String),
     );
     yield r'margin';
@@ -374,6 +384,15 @@ class _$AdminDailyReportDtoOutputPreviousInnerSerializer
                   )
                   as String;
           result.adjustments = valueDes;
+          break;
+        case r'withheldDeposits':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
+          result.withheldDeposits = valueDes;
           break;
         case r'margin':
           final valueDes =

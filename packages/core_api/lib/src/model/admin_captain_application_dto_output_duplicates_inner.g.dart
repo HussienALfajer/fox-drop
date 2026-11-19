@@ -227,6 +227,8 @@ class _$AdminCaptainApplicationDtoOutputDuplicatesInner
   final String fullName;
   @override
   final AdminCaptainApplicationDtoOutputDuplicatesInnerStageEnum? stage;
+  @override
+  final bool earlyExit;
 
   factory _$AdminCaptainApplicationDtoOutputDuplicatesInner([
     void Function(AdminCaptainApplicationDtoOutputDuplicatesInnerBuilder)?
@@ -242,6 +244,7 @@ class _$AdminCaptainApplicationDtoOutputDuplicatesInner
     this.captainId,
     required this.fullName,
     this.stage,
+    required this.earlyExit,
   }) : super._();
   @override
   AdminCaptainApplicationDtoOutputDuplicatesInner rebuild(
@@ -261,7 +264,8 @@ class _$AdminCaptainApplicationDtoOutputDuplicatesInner
         applicationId == other.applicationId &&
         captainId == other.captainId &&
         fullName == other.fullName &&
-        stage == other.stage;
+        stage == other.stage &&
+        earlyExit == other.earlyExit;
   }
 
   @override
@@ -272,6 +276,7 @@ class _$AdminCaptainApplicationDtoOutputDuplicatesInner
     _$hash = $jc(_$hash, captainId.hashCode);
     _$hash = $jc(_$hash, fullName.hashCode);
     _$hash = $jc(_$hash, stage.hashCode);
+    _$hash = $jc(_$hash, earlyExit.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -285,7 +290,8 @@ class _$AdminCaptainApplicationDtoOutputDuplicatesInner
           ..add('applicationId', applicationId)
           ..add('captainId', captainId)
           ..add('fullName', fullName)
-          ..add('stage', stage))
+          ..add('stage', stage)
+          ..add('earlyExit', earlyExit))
         .toString();
   }
 }
@@ -323,6 +329,10 @@ class AdminCaptainApplicationDtoOutputDuplicatesInnerBuilder
   set stage(AdminCaptainApplicationDtoOutputDuplicatesInnerStageEnum? stage) =>
       _$this._stage = stage;
 
+  bool? _earlyExit;
+  bool? get earlyExit => _$this._earlyExit;
+  set earlyExit(bool? earlyExit) => _$this._earlyExit = earlyExit;
+
   AdminCaptainApplicationDtoOutputDuplicatesInnerBuilder() {
     AdminCaptainApplicationDtoOutputDuplicatesInner._defaults(this);
   }
@@ -335,6 +345,7 @@ class AdminCaptainApplicationDtoOutputDuplicatesInnerBuilder
       _captainId = $v.captainId;
       _fullName = $v.fullName;
       _stage = $v.stage;
+      _earlyExit = $v.earlyExit;
       _$v = null;
     }
     return this;
@@ -373,6 +384,11 @@ class AdminCaptainApplicationDtoOutputDuplicatesInnerBuilder
             'fullName',
           ),
           stage: stage,
+          earlyExit: BuiltValueNullFieldError.checkNotNull(
+            earlyExit,
+            r'AdminCaptainApplicationDtoOutputDuplicatesInner',
+            'earlyExit',
+          ),
         );
     replace(_$result);
     return _$result;

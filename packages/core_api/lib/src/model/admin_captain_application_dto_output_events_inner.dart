@@ -39,7 +39,7 @@ abstract class AdminCaptainApplicationDtoOutputEventsInner
 
   @BuiltValueField(wireName: r'kind')
   AdminCaptainApplicationDtoOutputEventsInnerKindEnum get kind;
-  // enum kindEnum {  submitted,  stage,  note,  document_review,  document_request,  document_upload,  interview,  kit,  cash_limit,  contract,  deposit,  probation_confirmed,  };
+  // enum kindEnum {  submitted,  stage,  note,  document_review,  document_request,  document_upload,  interview,  kit,  cash_limit,  contract,  deposit,  probation_confirmed,  terminated,  kit_returned,  deposit_settled,  contract_ended,  };
 
   @BuiltValueField(wireName: r'stage')
   AdminCaptainApplicationDtoOutputEventsInnerStageEnum get stage;
@@ -326,6 +326,20 @@ class AdminCaptainApplicationDtoOutputEventsInnerKindEnum extends EnumClass {
   static const AdminCaptainApplicationDtoOutputEventsInnerKindEnum
   probationConfirmed =
       _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_probationConfirmed;
+  @BuiltValueEnumConst(wireName: r'terminated')
+  static const AdminCaptainApplicationDtoOutputEventsInnerKindEnum terminated =
+      _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_terminated;
+  @BuiltValueEnumConst(wireName: r'kit_returned')
+  static const AdminCaptainApplicationDtoOutputEventsInnerKindEnum kitReturned =
+      _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_kitReturned;
+  @BuiltValueEnumConst(wireName: r'deposit_settled')
+  static const AdminCaptainApplicationDtoOutputEventsInnerKindEnum
+  depositSettled =
+      _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_depositSettled;
+  @BuiltValueEnumConst(wireName: r'contract_ended')
+  static const AdminCaptainApplicationDtoOutputEventsInnerKindEnum
+  contractEnded =
+      _$adminCaptainApplicationDtoOutputEventsInnerKindEnum_contractEnded;
 
   static Serializer<AdminCaptainApplicationDtoOutputEventsInnerKindEnum>
   get serializer =>

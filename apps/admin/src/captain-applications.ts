@@ -91,6 +91,10 @@ export const eventKindKeys = {
   contract: 'captainApplications.event.contract',
   deposit: 'captainApplications.event.deposit',
   probation_confirmed: 'captainApplications.event.probation_confirmed',
+  terminated: 'captainApplications.event.terminated',
+  kit_returned: 'captainApplications.event.kit_returned',
+  deposit_settled: 'captainApplications.event.deposit_settled',
+  contract_ended: 'captainApplications.event.contract_ended',
 } as const satisfies Record<ApplicationEvent['kind'], string>;
 
 export const duplicateFieldKeys = {
@@ -133,7 +137,11 @@ export type PipelineAction =
   | 'issue_kit'
   | 'record_contract'
   | 'activate'
-  | 'confirm_probation';
+  | 'confirm_probation'
+  // Slice 2.35b: «إنهاء التعاقد» and its checklist.
+  | 'terminate'
+  | 'return_kit'
+  | 'close';
 
 const OPEN: readonly Stage[] = ['new', 'under_review', 'interview', 'awaiting_kit', 'waitlist'];
 const FROM: Record<PipelineAction, readonly Stage[]> = {
@@ -150,6 +158,9 @@ const FROM: Record<PipelineAction, readonly Stage[]> = {
   record_contract: ['awaiting_kit'],
   activate: ['awaiting_kit'],
   confirm_probation: ['active'],
+  terminate: ['active'],
+  return_kit: ['active'],
+  close: ['active'],
 };
 
 // The actions the page shows: those the stage takes, and none without
@@ -250,6 +261,14 @@ export type ApplicationRefusal =
   | 'deposit_paid'
   | 'document_in_force'
   | 'captain_terminated'
+  // Slice 2.35b.
+  | 'already_terminated'
+  | 'not_terminated'
+  | 'contract_ended'
+  | 'deposit_settled'
+  | 'offboarding_incomplete'
+  | 'active_order'
+  | 'owner_approval_required'
   | 'type'
   | 'size'
   | 'not_image'
@@ -280,6 +299,13 @@ const serverRefusals: readonly string[] = [
   'deposit_paid',
   'document_in_force',
   'captain_terminated',
+  'already_terminated',
+  'not_terminated',
+  'contract_ended',
+  'deposit_settled',
+  'offboarding_incomplete',
+  'active_order',
+  'owner_approval_required',
 ] satisfies ApplicationRefusal[];
 
 type Answer = { data?: Application; error?: unknown; response: Response };
@@ -291,10 +317,16 @@ export function commandResult(answer: Answer): CommandResult {
   const status = answer.response.status;
   const error = answer.error as { error?: unknown; stage?: unknown; missing?: unknown } | undefined;
   const code = error?.error;
-  if ((status === 400 || status === 404 || status === 409) && typeof code === 'string') {
+  if (
+    (status === 400 || status === 403 || status === 404 || status === 409) &&
+    typeof code === 'string'
+  ) {
     if (serverRefusals.includes(code)) {
       const refusal = code as ApplicationRefusal;
-      if (refusal === 'activation_incomplete' && Array.isArray(error?.missing)) {
+      if (
+        (refusal === 'activation_incomplete' || refusal === 'offboarding_incomplete') &&
+        Array.isArray(error?.missing)
+      ) {
         return { status: 'refused', refusal, missing: error.missing as string[] };
       }
       return refusal === 'wrong_stage' && typeof error?.stage === 'string'

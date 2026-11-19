@@ -7,15 +7,20 @@ import {
   depositBodyOf,
   type DepositForm,
   type DepositProblem,
+  type DepositRefund,
   type DepositRefusal,
+  settlementOf,
+  type SettleRefusal,
   useAwaitingDeposits,
+  useDepositRefunds,
+  useSettleDeposit,
   useRecordDeposit,
   useSetCashLimit,
 } from './cash-desk-deposits.js';
 import { canSetCashLimit, cashLimitOf } from './captain-activation.js';
 import { useCurrentSession } from './cash-desk.js';
 import { chosenCity, citiesQuery } from './cities.js';
-import { decimalOf, formatMoney } from './format.js';
+import { decimalOf, formatDateTime, formatMoney } from './format.js';
 
 const route = getRouteApi('/signed-in/cash-desk/deposits');
 const signedIn = getRouteApi('/signed-in');
@@ -46,6 +51,7 @@ export function DepositsPage() {
   const { session } = signedIn.useRouteContext();
   const setsCashLimit = canSetCashLimit(session);
   const current = useCurrentSession(city?.id);
+  const refunds = useDepositRefunds(city?.id);
   return (
     <main>
       <h1>{t('deposits.title')}</h1>
@@ -74,7 +80,103 @@ export function DepositsPage() {
           ))}
         </>
       )}
+      <h2>{t('depositRefunds.title')}</h2>
+      {refunds.isError ? (
+        <p role="alert">{t('common.failed')}</p>
+      ) : !city || !refunds.data ? (
+        <p role="status">{t('status.loading')}</p>
+      ) : refunds.data.length === 0 ? (
+        <p>{t('depositRefunds.none')}</p>
+      ) : (
+        refunds.data.map((contract) => (
+          <RefundEntry
+            key={contract.applicationId}
+            contract={contract}
+            cityId={city.id}
+            cityCode={city.code}
+            timeZone={city.timeZone}
+          />
+        ))
+      )}
     </main>
+  );
+}
+
+const settleRefusalKeys = {
+  no_open_session: 'cashDesk.refusal.no_open_session',
+  drawer_short: 'cashDesk.refusal.drawer_short',
+  not_terminated: 'depositRefunds.refusal.not_terminated',
+  contract_ended: 'depositRefunds.refusal.contract_ended',
+  kit_not_checked: 'depositRefunds.refusal.kit_not_checked',
+  deposit_settled: 'depositRefunds.refusal.deposit_settled',
+  wrong_settlement: 'depositRefunds.refusal.wrong_settlement',
+  nothing_held: 'depositRefunds.refusal.nothing_held',
+  unknown_party: 'deposits.refusal.unknown_party',
+  no_base_currency: 'deposits.refusal.no_base_currency',
+} as const satisfies Record<SettleRefusal, string>;
+
+// A contract being ended (AP §9.7.5 step 4): the deposit held and what the
+// kit's step says; the refund needs the drawer, the withholding does not.
+function RefundEntry(props: {
+  contract: DepositRefund;
+  cityId: string;
+  cityCode: string;
+  timeZone: string;
+}) {
+  const { t } = useTranslation();
+  const { contract } = props;
+  const settlement = settlementOf(contract);
+  const settle = useSettleDeposit(props.cityId);
+  return (
+    <section aria-label={contract.fullName}>
+      <h3>
+        <Link
+          to="/captain-applications/$applicationId"
+          params={{ applicationId: contract.applicationId }}
+          search={{ city: props.cityCode }}
+        >
+          {contract.fullName}
+        </Link>
+      </h3>
+      <p>
+        {t('depositRefunds.line', {
+          day: formatDateTime(contract.terminatedAt, props.timeZone),
+          amount: formatMoney(contract.held),
+        })}{' '}
+        {contract.earlyExit && t('captainOffboarding.earlyExitFlag')}
+      </p>
+      {settlement === null ? (
+        <p>{t('depositRefunds.waitingKit')}</p>
+      ) : (
+        <button
+          type="button"
+          disabled={settle.isPending}
+          onClick={() => settle.mutate({ applicationId: contract.applicationId, settlement })}
+        >
+          {settlement === 'refunded'
+            ? t('depositRefunds.refund', { amount: formatMoney(contract.held) })
+            : t('depositRefunds.withhold', { amount: formatMoney(contract.held) })}
+        </button>
+      )}
+      {settle.isPending && <p role="status">{t('captainApplications.sending')}</p>}
+      {settle.isError && <p role="alert">{t('common.failed')}</p>}
+      {settle.data?.status === 'refused' && (
+        <p role="alert">{t(settleRefusalKeys[settle.data.refusal])}</p>
+      )}
+      {settle.data?.status === 'settled' && (
+        <p role="status">
+          {t('depositRefunds.settled')}{' '}
+          {settle.data.receipt && (
+            <Link
+              to="/cash-desk/receipts/$receiptId"
+              params={{ receiptId: settle.data.receipt.id }}
+            >
+              {t('deposits.receipt', { number: settle.data.receipt.number })}
+            </Link>
+          )}
+        </p>
+      )}
+    </section>
   );
 }
 

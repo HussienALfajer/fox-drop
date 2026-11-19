@@ -1281,7 +1281,8 @@
       "captain_deposit": "تأمين العدة",
       "merchant_settlement": "تسوية حساب المطعم",
       "merchant_payout": "صرف للمطعم",
-      "customer_dues_payment": "دفع مستحقات زبون"
+      "customer_dues_payment": "دفع مستحقات زبون",
+      "captain_deposit_refund": "استرداد التأمين"
     },
     "receipt": {
       "printThermal": "طباعة 80 مم",
@@ -1296,7 +1297,8 @@
       "conversion": "تحويل {{amount}} من العهدة إلى {{converted}} بسعر الصرف الحالي.",
       "expectedAfterConversion": "العهدة بعد التحويل",
       "expectedEarnings": "المستحقات",
-      "expectedDeposit": "المتبقي من التأمين"
+      "expectedDeposit": "المتبقي من التأمين",
+      "expectedDepositRefund": "التأمين المحفوظ"
     },
     "sessions": {
       "title": "جلسات الصندوق",
@@ -1681,6 +1683,7 @@
       "testCost": "كلفة الطلبات التجريبية",
       "fxRounding": "فروقات التقريب والصرف",
       "adjustments": "القيود التصحيحية",
+      "withheldDeposits": "تأمينات محتجزة",
       "margin": "هامش المنصة",
       "custodyCreated": "عهدة نشأت اليوم",
       "handedIn": "سُلّم اليوم",
@@ -3605,7 +3608,11 @@
       "cash_limit": "حدّد حد النقد",
       "contract": "سجّل العقد",
       "deposit": "سجّل التأمين",
-      "probation_confirmed": "أكّد فترة التجربة"
+      "probation_confirmed": "أكّد فترة التجربة",
+      "terminated": "أنهى التعاقد",
+      "kit_returned": "سجّل حالة العدة",
+      "deposit_settled": "سوّى التأمين",
+      "contract_ended": "أغلق الحساب"
     },
     "duplicate": {
       "id_number": "رقم الهوية",
@@ -3646,7 +3653,14 @@
       "already_confirmed": "أُكّدت فترة التجربة من قبل.",
       "deposit_paid": "دُفع جزء من التأمين: لا يُرفض الطلب قبل إعادته.",
       "document_in_force": "المستند مقبول وساري حتى ينتهي؛ عالج المشكلة بإيقاف الكابتن.",
-      "captain_terminated": "انتهى عقد هذا الكابتن."
+      "captain_terminated": "انتهى عقد هذا الكابتن.",
+      "already_terminated": "أُنهي التعاقد من قبل.",
+      "not_terminated": "لم يُنهَ التعاقد بعد.",
+      "contract_ended": "أُغلق حساب الكابتن من قبل.",
+      "deposit_settled": "سُوّي التأمين بحسب حالة العدة: لا تتغير بعده.",
+      "offboarding_incomplete": "لم تكتمل قائمة إنهاء التعاقد بعد.",
+      "active_order": "لدى الكابتن طلب نشط: انتظر حتى ينتهي.",
+      "owner_approval_required": "الكابتن عليه علامة «خروج مبكر»: يفعّله المالك فقط."
     }
   },
   "captainActivation": {
@@ -3704,6 +3718,59 @@
       "contractFiles": "اختر من صفحة إلى 6 صفحات."
     },
     "setCashLimitAtDesk": "تحديد حد النقد في الصندوق"
+  },
+  "captainOffboarding": {
+    "title": "إنهاء التعاقد",
+    "explain": "يُوقَف الكابتن فوراً (أو بعد طلبه النشط)، ثم تُستكمل القائمة: العدة، العهدة، المستحقات، التأمين، ثم إغلاق الحساب. الإنهاء في فترة الالتزام يضع علامة «خروج مبكر».",
+    "reason": "السبب",
+    "terminate": "إنهاء التعاقد",
+    "confirmTerminate": "تأكيد إنهاء التعاقد",
+    "terminatedLine": "أُنهي التعاقد في {{day}} بواسطة {{by}}: {{reason}}",
+    "earlyExit": "خروج مبكر: أُنهي التعاقد في فترة الالتزام. إعادة التوظيف بموافقة المالك.",
+    "earlyExitFlag": "(خروج مبكر)",
+    "formerCaptain": "كابتن سابق يتقدّم من جديد على الحساب نفسه.",
+    "formerCaptainEarlyExit": "كابتن سابق عليه علامة «خروج مبكر»: تفعيله بموافقة المالك.",
+    "step": {
+      "kit": "إعادة العدة",
+      "custody": "العهدة صفر بكل العملات",
+      "earnings": "تسوية المستحقات",
+      "deposit": "ردّ التأمين أو حجزه",
+      "close": "إغلاق الحساب"
+    },
+    "done": "مكتمل",
+    "open": "غير مكتمل",
+    "kitReturned": "أُعيدت بحالة جيدة",
+    "kitNotReturned": "لم تُعد: يُحجز التأمين",
+    "markReturned": "أُعيدت العدة",
+    "markNotReturned": "لم تُعد العدة",
+    "nothingHeld": "لا تأمين محفوظ",
+    "held": "محفوظ: {{amount}}",
+    "toDesk": "إلى «التأمينات» في الصندوق",
+    "settled": {
+      "refunded": "رُدّ نقداً",
+      "withheld": "حُجز"
+    },
+    "closedAt": "أُغلق في {{day}}",
+    "waitingFor": "ينتظر إغلاق الحساب:",
+    "close": "إغلاق الحساب",
+    "stepLabel": "{{step}}:"
+  },
+  "depositRefunds": {
+    "title": "ردّ التأمين عند إنهاء التعاقد",
+    "none": "لا تأمين ينتظر الردّ أو الحجز.",
+    "line": "أُنهي التعاقد في {{day}}، التأمين المحفوظ {{amount}}",
+    "waitingKit": "بانتظار تسجيل حالة العدة من العمليات.",
+    "refund": "ردّ {{amount}} نقداً وإصدار الإيصال",
+    "withhold": "حجز {{amount}} (لم تُعد العدة)",
+    "settled": "سُوّي التأمين.",
+    "refusal": {
+      "not_terminated": "لم يُنهَ تعاقد هذا الكابتن.",
+      "contract_ended": "أُغلق حساب الكابتن من قبل.",
+      "kit_not_checked": "سجّل العمليات حالة العدة أولاً.",
+      "deposit_settled": "سُوّي هذا التأمين من قبل.",
+      "wrong_settlement": "تغيّرت حالة العدة: راجع الصفحة.",
+      "nothing_held": "لا تأمين محفوظ لهذا الكابتن."
+    }
   },
   "deposits": {
     "title": "تأمين العدة",

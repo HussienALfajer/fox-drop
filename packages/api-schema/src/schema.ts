@@ -3396,6 +3396,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/captain-applications/{applicationId}/terminate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCaptainApplicationsTerminate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captain-applications/{applicationId}/offboarding/kit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminCaptainApplicationsKitReturn"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captain-applications/{applicationId}/offboarding/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminCaptainApplicationsClose"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/peak-bonus": {
         parameters: {
             query?: never;
@@ -6126,6 +6174,22 @@ export interface paths {
         get?: never;
         put: operations["adminCashDeskSetCashLimit"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cash-desk/deposit-refunds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCashDeskDepositRefunds"];
+        put?: never;
+        post: operations["adminCashDeskSettleDeposit"];
         delete?: never;
         options?: never;
         head?: never;
@@ -10047,6 +10111,8 @@ export interface components {
                 captainId: string | null;
                 fullName: string;
                 stage: ("draft" | "new" | "under_review" | "interview" | "awaiting_kit" | "active" | "waitlist" | "rejected") | null;
+                /** @description Its contract ended in «فترة التزام»: «خروج مبكر». */
+                earlyExit: boolean;
             }[];
             events: {
                 /** Format: uuid */
@@ -10056,7 +10122,7 @@ export interface components {
                 /** @description The admin; null for the applicant. */
                 actor: string | null;
                 /** @enum {string} */
-                kind: "submitted" | "stage" | "note" | "document_review" | "document_request" | "document_upload" | "interview" | "kit" | "cash_limit" | "contract" | "deposit" | "probation_confirmed";
+                kind: "submitted" | "stage" | "note" | "document_review" | "document_request" | "document_upload" | "interview" | "kit" | "cash_limit" | "contract" | "deposit" | "probation_confirmed" | "terminated" | "kit_returned" | "deposit_settled" | "contract_ended";
                 /** @enum {string} */
                 stage: "draft" | "new" | "under_review" | "interview" | "awaiting_kit" | "active" | "waitlist" | "rejected";
                 documentKind: ("national_id" | "personal_photo" | "civil_registry" | "criminal_record" | "vehicle_papers" | "driving_licence" | "signed_contract") | null;
@@ -10138,6 +10204,36 @@ export interface components {
                 captainId: string | null;
                 activatedAt: string | null;
             };
+            /** @description «إنهاء التعاقد» and its checklist (AP §9.7.5, slice 2.35b). */
+            offboarding: {
+                /** Format: date-time */
+                terminatedAt: string;
+                terminatedBy: string | null;
+                reason: string;
+                /** @description Ended in «فترة التزام»: the flag «خروج مبكر». */
+                earlyExit: boolean;
+                /** @description Step 1; null until checked. */
+                kitReturned: boolean | null;
+                /** @description Step 2: every custody currency at zero. */
+                custodyZero: boolean;
+                /** @description Step 3: the earnings settled. */
+                earningsZero: boolean;
+                /** @description Minor units in the city’s base still held. */
+                depositHeld: string;
+                /** @description Step 4, at the desk. */
+                depositSettled: ("refunded" | "withheld") | null;
+                /** @description What «إغلاق الحساب» waits for. */
+                missing: ("kit" | "custody" | "earnings" | "deposit")[];
+                /** @description Step 5: the account closed. */
+                endedAt: string | null;
+            } | null;
+            /** @description A former captain applying again on the same account. */
+            formerCaptain: {
+                /** Format: uuid */
+                captainId: string;
+                /** @description Flagged «خروج مبكر»: OWN activates (C17). */
+                earlyExit: boolean;
+            } | null;
         };
         AdminCaptainApplicationReviewDto: {
             /** @enum {string} */
@@ -10197,6 +10293,13 @@ export interface components {
             startsOn: string;
             /** @description The scan’s pages, from POST /v1/admin/uploads (captain_document). */
             uploadIds: string[];
+        };
+        AdminCaptainApplicationTerminateDto: {
+            reason: string;
+        };
+        AdminCaptainApplicationKitReturnDto: {
+            /** @description In good condition; false withholds the deposit. */
+            returned: boolean;
         };
         AdminPeakBonusDto_Output: {
             /** @description Null until the owner first saves it: off (D15). */
@@ -17761,17 +17864,36 @@ export interface components {
                 currency: string;
             };
         };
-        AdminRecordDepositDto: {
+        AdminDepositRefundsDto_Output: {
+            contracts: {
+                /** Format: uuid */
+                applicationId: string;
+                /** Format: uuid */
+                captainId: string;
+                fullName: string;
+                /** Format: date-time */
+                terminatedAt: string;
+                /** @description Ended in «فترة التزام»: «خروج مبكر». */
+                earlyExit: boolean;
+                /** @description The checklist’s step 1; null until OPS checked the kit. */
+                kitReturned: boolean | null;
+                /** @description The deposit the platform holds, in the base. */
+                held: {
+                    amount: string;
+                    currency: string;
+                };
+            }[];
+        };
+        AdminSettleDepositDto: {
             /** Format: uuid */
             cityId: string;
             /** Format: uuid */
             applicationId: string;
-            /** @description The deposit, in the city's base. */
-            amount: string;
-            /** @description Deducted each Thursday until paid; null for none. */
-            instalment: string | null;
-            /** @description The cash received now; 0 records the plan alone. */
-            paidNow: string;
+            /**
+             * @description refunded when the kit came back (cash, a receipt), withheld otherwise.
+             * @enum {string}
+             */
+            settlement: "refunded" | "withheld";
         };
         AdminRecordDepositAnswerDto_Output: {
             /** @description None when nothing was paid now. */
@@ -17783,7 +17905,7 @@ export interface components {
                 /** @description Such as AZ-2026-000123 (AP §4.8). */
                 number: string;
                 /** @enum {string} */
-                type: "captain_hand_in" | "captain_reimbursement" | "captain_payout" | "captain_earnings_collection" | "captain_deposit";
+                type: "captain_hand_in" | "captain_reimbursement" | "captain_payout" | "captain_earnings_collection" | "captain_deposit" | "captain_deposit_refund";
                 /** Format: uuid */
                 sessionId: string;
                 /** Format: uuid */
@@ -17809,6 +17931,18 @@ export interface components {
                     remaining: string;
                 }[];
             } | null;
+        };
+        AdminRecordDepositDto: {
+            /** Format: uuid */
+            cityId: string;
+            /** Format: uuid */
+            applicationId: string;
+            /** @description The deposit, in the city's base. */
+            amount: string;
+            /** @description Deducted each Thursday until paid; null for none. */
+            instalment: string | null;
+            /** @description The cash received now; 0 records the plan alone. */
+            paidNow: string;
         };
         AdminDeskCaptainSearchDto: {
             /** Format: uuid */
@@ -18132,7 +18266,7 @@ export interface components {
                 /** @description Such as AZ-2026-000123 (AP §4.8). */
                 number: string;
                 /** @enum {string} */
-                type: "captain_hand_in" | "captain_reimbursement" | "captain_payout" | "captain_earnings_collection" | "captain_deposit";
+                type: "captain_hand_in" | "captain_reimbursement" | "captain_payout" | "captain_earnings_collection" | "captain_deposit" | "captain_deposit_refund";
                 /** Format: uuid */
                 sessionId: string;
                 /** Format: uuid */
@@ -18357,7 +18491,7 @@ export interface components {
                 /** @description Such as AZ-2026-000123 (AP §4.8). */
                 number: string;
                 /** @enum {string} */
-                type: "captain_hand_in" | "captain_reimbursement" | "captain_payout" | "captain_earnings_collection" | "captain_deposit";
+                type: "captain_hand_in" | "captain_reimbursement" | "captain_payout" | "captain_earnings_collection" | "captain_deposit" | "captain_deposit_refund";
                 /** Format: uuid */
                 sessionId: string;
                 /** Format: uuid */
@@ -18418,7 +18552,7 @@ export interface components {
             /** @description Such as AZ-2026-000123 (AP §4.8). */
             number: string;
             /** @enum {string} */
-            type: "captain_hand_in" | "captain_reimbursement" | "captain_payout" | "captain_earnings_collection" | "captain_deposit";
+            type: "captain_hand_in" | "captain_reimbursement" | "captain_payout" | "captain_earnings_collection" | "captain_deposit" | "captain_deposit_refund";
             /** Format: uuid */
             sessionId: string;
             /** Format: uuid */
@@ -19712,6 +19846,8 @@ export interface components {
             fxRounding: string;
             /** @description + a gain for the platform. */
             adjustments: string;
+            /** @description Kit deposits withheld at termination, a revenue. */
+            withheldDeposits: string;
             margin: string;
             cash: {
                 currency: string;
@@ -19789,6 +19925,8 @@ export interface components {
                 fxRounding: string;
                 /** @description + a gain for the platform. */
                 adjustments: string;
+                /** @description Kit deposits withheld at termination, a revenue. */
+                withheldDeposits: string;
                 margin: string;
                 cash: {
                     currency: string;
@@ -25268,6 +25406,80 @@ export interface operations {
             };
         };
     };
+    adminCaptainApplicationsTerminate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCaptainApplicationTerminateDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainApplicationDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainApplicationsKitReturn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCaptainApplicationKitReturnDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainApplicationDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainApplicationsClose: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                applicationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainApplicationDto_Output"];
+                };
+            };
+        };
+    };
     adminPeakBonusState: {
         parameters: {
             query: {
@@ -29992,6 +30204,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminDepositsDto_Output"];
+                };
+            };
+        };
+    };
+    adminCashDeskDepositRefunds: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDepositRefundsDto_Output"];
+                };
+            };
+        };
+    };
+    adminCashDeskSettleDeposit: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminSettleDepositDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRecordDepositAnswerDto_Output"];
                 };
             };
         };

@@ -58,8 +58,11 @@ const review = (status: 'pending' | 'accepted') => ({
       captainId: '01900000-0000-7000-8000-0000000000f4',
       fullName: 'محمد سالم',
       stage: null,
+      earlyExit: false,
     },
   ],
+  offboarding: null,
+  formerCaptain: null,
   events: [
     {
       id: '01900000-0000-7000-8000-0000000000f5',

@@ -4,7 +4,7 @@
 
 Each captain has two separate accounts. Both are append-only ledgers, and their balances are always the sum of their entries.
 
-A third account, the kit deposit «التأمين» (base currency), holds what the captain has paid towards their deposit: in cash at the desk through `deposit.payment` (with its receipt «تأمين العدة», owner decision 2026-11-19), then through `earn.deposit_instalment` each Thursday. It is paid back at termination (§9.10.3, «التأمينات»). Owner decision 2026-11-05.
+A third account, the kit deposit «التأمين» (base currency), holds what the captain has paid towards their deposit: in cash at the desk through `deposit.payment` (with its receipt «تأمين العدة», owner decision 2026-11-19), then through `earn.deposit_instalment` each Thursday. It is paid back at termination (§9.10.3, «التأمينات»). Owner decision 2026-11-05. At termination (§9.7.5 step 4, C17; owner decisions 2026-11-19) the whole deposit held is either refunded in cash at the desk through `deposit.refund` (with its receipt «استرداد التأمين»), when the kit came back in good condition, or withheld through `deposit.withhold` to `platform.revenue_deposits` (§8.11), when it did not; there is no partial withholding in V1, and no instalment is taken once the contract is being ended.
 
 ## 8.5.1 Custody «العهدة النقدية» (per currency)
 

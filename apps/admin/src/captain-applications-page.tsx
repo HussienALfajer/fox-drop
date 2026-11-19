@@ -3,6 +3,8 @@ import { getRouteApi, Link } from '@tanstack/react-router';
 import { type FormEvent, lazy, type ReactNode, Suspense, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivationSection } from './captain-activation-page.js';
+import { OffboardingSection } from './captain-offboarding-page.js';
+import { offboardingActions } from './captain-offboarding.js';
 import {
   actionsOf,
   type Application,
@@ -176,7 +178,10 @@ function Review(props: {
   const { t } = useTranslation();
   const { application, timeZone } = props;
   const time = (at: string) => formatDateTime(at, timeZone);
-  const actions = actionsOf(props.session, application.stage);
+  const actions = offboardingActions(
+    actionsOf(props.session, application.stage),
+    application.offboarding,
+  );
   return (
     <>
       <section aria-label={t('captainApplications.data')}>
@@ -205,6 +210,13 @@ function Review(props: {
           </dd>
         </dl>
       </section>
+      {application.formerCaptain && (
+        <p role="alert">
+          {application.formerCaptain.earlyExit
+            ? t('captainOffboarding.formerCaptainEarlyExit')
+            : t('captainOffboarding.formerCaptain')}
+        </p>
+      )}
       {application.duplicates.length > 0 && (
         <section aria-label={t('captainApplications.duplicates')}>
           <p role="alert">{t('captainApplications.duplicates')}</p>
@@ -222,6 +234,7 @@ function Review(props: {
                         stage: t(stageKeys[duplicate.stage]),
                       })
                     : null}{' '}
+                {duplicate.earlyExit && t('captainOffboarding.earlyExitFlag')}{' '}
                 {duplicate.applicationId !== null && (
                   <Link
                     to="/captain-applications/$applicationId"
@@ -302,6 +315,13 @@ function Review(props: {
         actions={actions}
         today={new Intl.DateTimeFormat('en-CA', { timeZone }).format(serverNow())}
         cityCode={props.cityCode}
+      />
+      <OffboardingSection
+        application={application}
+        session={props.session}
+        actions={actions}
+        cityCode={props.cityCode}
+        timeZone={timeZone}
       />
       <StageActions application={application} actions={actions} />
       {actions.has('note') && <NoteSection applicationId={application.id} />}

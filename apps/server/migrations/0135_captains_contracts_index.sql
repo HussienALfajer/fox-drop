@@ -1,0 +1,1 @@
+CREATE INDEX "applications_captain_any" ON "captains"."applications" USING btree ("captain_id","activated_at" DESC NULLS LAST);

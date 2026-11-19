@@ -367,7 +367,7 @@ function ActivatePart(props: { application: Application; canActivate: boolean })
   );
 }
 
-function Status(props: {
+export function Status(props: {
   pending: boolean;
   failed: boolean;
   result: CommandResult | undefined;
