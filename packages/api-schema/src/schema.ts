@@ -5892,6 +5892,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/pay-tables": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminPayTablesScreen"];
+        put: operations["adminPayTablesPublish"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/pay-tables/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminPayTablesPreview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/captain/orders/{orderId}/route": {
         parameters: {
             query?: never;
@@ -17374,6 +17406,172 @@ export interface components {
             covers: boolean;
             /** @description The active zone at the point; null outside. */
             zoneName: string | null;
+        };
+        AdminPayTablesDto_Output: {
+            /** @description The amounts are typed in it; null while the city has none. */
+            baseCurrency: string | null;
+            /** @description captain.waiting_threshold_min */
+            waitingThresholdMin: number;
+            /** @description A change takes effect this many days after it is published. */
+            noticeDays: number;
+            /**
+             * Format: date-time
+             * @description The earliest start of a version published now: now for the first.
+             */
+            earliestStart: string;
+            /** @description The setting dispatch.max_distance_km of each vehicle, changed at once. */
+            maxDistanceKm: {
+                /** @enum {string} */
+                vehicle: "walking" | "bicycle" | "motorbike" | "car";
+                km: number;
+            }[];
+            /** @description Newest first, the latest 50. */
+            versions: {
+                /** Format: uuid */
+                id: string;
+                /**
+                 * @description in_force; announced: starts later; replaced: a later version with the same start took its place; ended.
+                 * @enum {string}
+                 */
+                state: "in_force" | "announced" | "replaced" | "ended";
+                currency: string;
+                /** Format: date-time */
+                effectiveFrom: string;
+                /** @description One per vehicle, in the catalogue order. */
+                rates: {
+                    /** @enum {string} */
+                    vehicle: "walking" | "bicycle" | "motorbike" | "car";
+                    /** @description Pays the first includedMetres. */
+                    basePay: string;
+                    /** @description The distance the base pay includes. */
+                    includedMetres: number;
+                    /** @description Per km past the included distance, pro rata by the metre. */
+                    perExtraKm: string;
+                    /** @description Per whole minute past captain.waiting_threshold_min. */
+                    waitingPerMinute: string;
+                    /** @description The order pay is raised to it. */
+                    minimumPay: string;
+                }[];
+                /** @description Null for the system or an unknown admin. */
+                editorName: string | null;
+                reason: string | null;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+        };
+        AdminPublishPayTableDto: {
+            /** Format: uuid */
+            cityId: string;
+            currency: string;
+            /** Format: date-time */
+            effectiveFrom: string;
+            /** @description One per vehicle. */
+            rates: {
+                /** @enum {string} */
+                vehicle: "walking" | "bicycle" | "motorbike" | "car";
+                /** @description Pays the first includedMetres. */
+                basePay: string;
+                /** @description The distance the base pay includes. */
+                includedMetres: number;
+                /** @description Per km past the included distance, pro rata by the metre. */
+                perExtraKm: string;
+                /** @description Per whole minute past captain.waiting_threshold_min. */
+                waitingPerMinute: string;
+                /** @description The order pay is raised to it. */
+                minimumPay: string;
+            }[];
+            reason: string;
+        };
+        AdminPayTablePreviewDto_Output: {
+            waitingThresholdMin: number;
+            /** @description By the version in force; null without one. */
+            inForce: {
+                base: {
+                    amount: string;
+                    currency: string;
+                };
+                distance: {
+                    amount: string;
+                    currency: string;
+                };
+                topUp: {
+                    amount: string;
+                    currency: string;
+                };
+                orderPay: {
+                    amount: string;
+                    currency: string;
+                };
+                waiting: {
+                    amount: string;
+                    currency: string;
+                };
+                /** @description The order pay and the waiting pay. */
+                total: {
+                    amount: string;
+                    currency: string;
+                };
+                /** Format: date-time */
+                effectiveFrom: string;
+            } | null;
+            /** @description By each version announced, soonest first. */
+            announced: {
+                base: {
+                    amount: string;
+                    currency: string;
+                };
+                distance: {
+                    amount: string;
+                    currency: string;
+                };
+                topUp: {
+                    amount: string;
+                    currency: string;
+                };
+                orderPay: {
+                    amount: string;
+                    currency: string;
+                };
+                waiting: {
+                    amount: string;
+                    currency: string;
+                };
+                /** @description The order pay and the waiting pay. */
+                total: {
+                    amount: string;
+                    currency: string;
+                };
+                /** Format: date-time */
+                effectiveFrom: string;
+            }[];
+            /** @description By the rate typed; null without one or without a base. */
+            draft: {
+                base: {
+                    amount: string;
+                    currency: string;
+                };
+                distance: {
+                    amount: string;
+                    currency: string;
+                };
+                topUp: {
+                    amount: string;
+                    currency: string;
+                };
+                orderPay: {
+                    amount: string;
+                    currency: string;
+                };
+                waiting: {
+                    amount: string;
+                    currency: string;
+                };
+                /** @description The order pay and the waiting pay. */
+                total: {
+                    amount: string;
+                    currency: string;
+                };
+            } | null;
         };
         CaptainOrderRouteDto_Output: {
             /** @enum {string} */
@@ -30660,6 +30858,83 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminDeliveryFeePreviewDto_Output"];
+                };
+            };
+        };
+    };
+    adminPayTablesScreen: {
+        parameters: {
+            query: {
+                cityId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPayTablesDto_Output"];
+                };
+            };
+        };
+    };
+    adminPayTablesPublish: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminPublishPayTableDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPayTablesDto_Output"];
+                };
+            };
+        };
+    };
+    adminPayTablesPreview: {
+        parameters: {
+            query: {
+                cityId: string;
+                vehicle: "walking" | "bicycle" | "motorbike" | "car";
+                metres: number;
+                /** @description Minutes waited at the restaurant; those past the threshold are paid. */
+                waitedMinutes?: number;
+                draftBasePay?: string;
+                draftIncludedMetres?: number;
+                draftPerExtraKm?: string;
+                draftWaitingPerMinute?: string;
+                draftMinimumPay?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPayTablePreviewDto_Output"];
                 };
             };
         };

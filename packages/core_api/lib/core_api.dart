@@ -475,6 +475,16 @@ export 'package:core_api/src/model/admin_outcome_preview_answer_dto_output_entri
 export 'package:core_api/src/model/admin_outcome_preview_answer_dto_output_entries_inner_party.dart';
 export 'package:core_api/src/model/admin_outcome_preview_answer_dto_output_loss.dart';
 export 'package:core_api/src/model/admin_outcome_preview_dto.dart';
+export 'package:core_api/src/model/admin_pay_table_preview_dto_output.dart';
+export 'package:core_api/src/model/admin_pay_table_preview_dto_output_announced_inner.dart';
+export 'package:core_api/src/model/admin_pay_table_preview_dto_output_draft.dart';
+export 'package:core_api/src/model/admin_pay_table_preview_dto_output_in_force.dart';
+export 'package:core_api/src/model/admin_pay_table_preview_dto_output_in_force_base.dart';
+export 'package:core_api/src/model/admin_pay_table_preview_dto_output_in_force_total.dart';
+export 'package:core_api/src/model/admin_pay_tables_dto_output.dart';
+export 'package:core_api/src/model/admin_pay_tables_dto_output_max_distance_km_inner.dart';
+export 'package:core_api/src/model/admin_pay_tables_dto_output_versions_inner.dart';
+export 'package:core_api/src/model/admin_pay_tables_dto_output_versions_inner_rates_inner.dart';
 export 'package:core_api/src/model/admin_peak_bonus_dto_output.dart';
 export 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force.dart';
 export 'package:core_api/src/model/admin_peak_bonus_dto_output_in_force_windows_inner.dart';
@@ -496,6 +506,8 @@ export 'package:core_api/src/model/admin_promo_code_report_dto_output_report.dar
 export 'package:core_api/src/model/admin_promo_codes_created_dto_output.dart';
 export 'package:core_api/src/model/admin_promo_codes_dto_output.dart';
 export 'package:core_api/src/model/admin_promo_codes_dto_output_codes_inner.dart';
+export 'package:core_api/src/model/admin_publish_pay_table_dto.dart';
+export 'package:core_api/src/model/admin_publish_pay_table_dto_rates_inner.dart';
 export 'package:core_api/src/model/admin_publish_terms_dto.dart';
 export 'package:core_api/src/model/admin_rated_captains_dto_output.dart';
 export 'package:core_api/src/model/admin_rated_captains_dto_output_captains_inner.dart';

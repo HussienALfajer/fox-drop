@@ -291,6 +291,32 @@ export interface PayTable {
   rates: Record<Vehicle, PayRate>;
 }
 
+// AP §9.12.5 (slice 2.37b): a version as the panel lists it. `in_force` is
+// the one in force; `announced` will be; `replaced` a later version with the
+// same start took its place before it started; `ended` it was in force once.
+export const payTableStates = ['in_force', 'announced', 'replaced', 'ended'] as const;
+export type PayTableState = (typeof payTableStates)[number];
+export interface PayTableVersion extends PayTable {
+  state: PayTableState;
+  editorId: string | null;
+  reason: string | null;
+  createdAt: Date;
+}
+
+// CA §14 #22: a version published to start after its publication, told in
+// the publishing transaction (onPayTableAnnounced).
+export interface PayTableAnnounced {
+  cityId: string;
+  tableId: string;
+  effectiveFrom: Date;
+  // The city's clock, for the date the push names.
+  timeZone: string;
+  // The city's active captains (activeCaptainIds), who hear it.
+  captainIds: string[];
+  at: Date;
+}
+type PayTableListener = (tx: Tx, announced: PayTableAnnounced) => Promise<void>;
+
 // A captain's cash now (AP §8.5.3–8.5.4), in the city's base currency.
 export interface Custody {
   // The positive custody positions, converted at current rates.
@@ -422,6 +448,8 @@ export class CaptainsService implements OnModuleInit {
   // Told in the transaction of a change the captain hears of
   // (onAvailabilityChanged).
   private readonly availabilityListeners: AvailabilityListener[] = [];
+  // Told in the transaction of a pay table announced (onPayTableAnnounced).
+  private readonly payTableListeners: PayTableListener[] = [];
   // Told of each new live position (onLivePosition).
   private readonly positionListeners: ((
     captainId: string,
@@ -501,6 +529,12 @@ export class CaptainsService implements OnModuleInit {
   // open app to read its state again, in the change's transaction (E4).
   onAvailabilityChanged(listener: AvailabilityListener): void {
     this.availabilityListeners.push(listener);
+  }
+
+  // CA §12.5, §14 #22 (slice 2.37b): notifications push the city's captains
+  // «جدول أجور جديد يبدأ في {التاريخ}» in the publishing transaction (E4).
+  onPayTableAnnounced(listener: PayTableListener): void {
+    this.payTableListeners.push(listener);
   }
 
   private async availabilityChanged(tx: Tx, change: AvailabilityChange): Promise<void> {
@@ -775,8 +809,12 @@ export class CaptainsService implements OnModuleInit {
 
   // CA §14 #23 (owner decision 2026-11-12): the city's active captains,
   // online or not: neither terminated nor in a suspension still running.
-  async activeCaptainIds(cityId: string, now: Date): Promise<string[]> {
-    const rows = await this.database.db
+  async activeCaptainIds(
+    cityId: string,
+    now: Date,
+    db: Tx | Database['db'] = this.database.db,
+  ): Promise<string[]> {
+    const rows = await db
       .select({ id: captainRecords.id })
       .from(captainRecords)
       .where(
@@ -1182,6 +1220,24 @@ export class CaptainsService implements OnModuleInit {
         .select({ count: sql<number>`count(*)::int` })
         .from(payTables)
         .where(eq(payTables.cityId, cityId))) as [{ count: number }];
+      // A repeat of the newest version at the same start answers it, so the
+      // panel's publishing needs no key (decided by us).
+      if (table.effectiveFrom !== undefined) {
+        const [newest] = await tx
+          .select()
+          .from(payTables)
+          .where(eq(payTables.cityId, cityId))
+          .orderBy(desc(payTables.id))
+          .limit(1);
+        if (
+          newest !== undefined &&
+          newest.currency === table.currency &&
+          newest.effectiveFrom.getTime() === table.effectiveFrom.getTime() &&
+          sameRates((await this.withRates(newest, tx)).rates, table.rates)
+        ) {
+          return newest.id;
+        }
+      }
       const earliest = count === 0 ? published : published + PAY_TABLE_NOTICE_MS;
       const effectiveFrom = table.effectiveFrom ?? new Date(earliest);
       if (effectiveFrom.getTime() < earliest) {
@@ -1225,8 +1281,58 @@ export class CaptainsService implements OnModuleInit {
         },
         tx,
       );
+      if (effectiveFrom.getTime() > published && this.payTableListeners.length > 0) {
+        const announced: PayTableAnnounced = {
+          cityId,
+          tableId: id,
+          effectiveFrom,
+          timeZone: (await this.geo.cityTimeZone(cityId, tx)) ?? 'UTC',
+          captainIds: await this.activeCaptainIds(cityId, new Date(published), tx),
+          at: new Date(published),
+        };
+        for (const listener of this.payTableListeners) await listener(tx, announced);
+      }
       return id;
     });
+  }
+
+  // AP §9.12.5 (slice 2.37b): the city's versions, newest first, the latest
+  // `limit`, each with its state at a moment.
+  async payTableVersions(cityId: string, at: Date, limit = 50): Promise<PayTableVersion[]> {
+    const [rows, current, announced] = await Promise.all([
+      this.database.db
+        .select()
+        .from(payTables)
+        .where(eq(payTables.cityId, cityId))
+        .orderBy(desc(payTables.id))
+        .limit(limit),
+      this.payTable(cityId, at),
+      this.announcedPayTables(cityId, at),
+    ]);
+    const announcedIds = new Set(announced.map((table) => table.id));
+    return Promise.all(
+      rows.map(async (row) => {
+        const state: PayTableState =
+          row.id === current?.id
+            ? 'in_force'
+            : announcedIds.has(row.id)
+              ? 'announced'
+              : rows.some(
+                    (other) =>
+                      other.id > row.id &&
+                      other.effectiveFrom.getTime() === row.effectiveFrom.getTime(),
+                  )
+                ? 'replaced'
+                : 'ended';
+        return {
+          ...(await this.withRates(row)),
+          state,
+          editorId: row.editorId,
+          reason: row.reason,
+          createdAt: row.createdAt,
+        };
+      }),
+    );
   }
 
   // The version in force at a moment: the latest start reached; of two with
@@ -1257,11 +1363,11 @@ export class CaptainsService implements OnModuleInit {
     return Promise.all(latest.map((table) => this.withRates(table)));
   }
 
-  private async withRates(table: typeof payTables.$inferSelect): Promise<PayTable> {
-    const rows = await this.database.db
-      .select()
-      .from(payRates)
-      .where(eq(payRates.tableId, table.id));
+  private async withRates(
+    table: typeof payTables.$inferSelect,
+    db: Tx | Database['db'] = this.database.db,
+  ): Promise<PayTable> {
+    const rows = await db.select().from(payRates).where(eq(payRates.tableId, table.id));
     const rates = Object.fromEntries(
       rows.map((row) => [
         row.vehicle,
@@ -2487,6 +2593,15 @@ function hasReason(change: CaptainChange): boolean {
 // The audit log keeps amounts as strings.
 function moneyOf(money: Money) {
   return { amount: money.amount.toString(), currency: money.currency };
+}
+
+function sameRates(a: Record<Vehicle, PayRate>, b: Record<Vehicle, PayRate>): boolean {
+  return vehicles.every(
+    (vehicle) =>
+      a[vehicle] !== undefined &&
+      b[vehicle] !== undefined &&
+      JSON.stringify(rateOf(a[vehicle])) === JSON.stringify(rateOf(b[vehicle])),
+  );
 }
 
 function rateOf(rate: PayRate) {

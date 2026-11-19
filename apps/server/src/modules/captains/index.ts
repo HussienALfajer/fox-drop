@@ -113,7 +113,7 @@ export {
   type PipelineIdentity,
   PipelineRefusedError,
 } from './application-pipeline.service.js';
-export { orderPay, type PayParts, type PayRate } from './pay.js';
+export { checkPayRate, orderPay, type PayParts, type PayRate, samplePay } from './pay.js';
 export { localClock, type PeakWindow } from './peak-bonus.js';
 export {
   type ActiveOrderLookup,
@@ -136,6 +136,10 @@ export {
   type Money,
   type NewCaptain,
   type PayTable,
+  type PayTableAnnounced,
+  type PayTableState,
+  payTableStates,
+  type PayTableVersion,
   type StatusChanged,
 } from './captains.service.js';
 export {

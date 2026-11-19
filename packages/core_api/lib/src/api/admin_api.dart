@@ -206,6 +206,8 @@ import 'package:core_api/src/model/admin_outcome_change_preview_answer_dto_outpu
 import 'package:core_api/src/model/admin_outcome_change_preview_dto.dart';
 import 'package:core_api/src/model/admin_outcome_preview_answer_dto_output.dart';
 import 'package:core_api/src/model/admin_outcome_preview_dto.dart';
+import 'package:core_api/src/model/admin_pay_table_preview_dto_output.dart';
+import 'package:core_api/src/model/admin_pay_tables_dto_output.dart';
 import 'package:core_api/src/model/admin_peak_bonus_dto_output.dart';
 import 'package:core_api/src/model/admin_picker_dto_output.dart';
 import 'package:core_api/src/model/admin_profile_basics_dto.dart';
@@ -214,6 +216,7 @@ import 'package:core_api/src/model/admin_promo_code_dto_output.dart';
 import 'package:core_api/src/model/admin_promo_code_report_dto_output.dart';
 import 'package:core_api/src/model/admin_promo_codes_created_dto_output.dart';
 import 'package:core_api/src/model/admin_promo_codes_dto_output.dart';
+import 'package:core_api/src/model/admin_publish_pay_table_dto.dart';
 import 'package:core_api/src/model/admin_publish_terms_dto.dart';
 import 'package:core_api/src/model/admin_rated_captains_dto_output.dart';
 import 'package:core_api/src/model/admin_ratings_dto_output.dart';
@@ -17095,6 +17098,321 @@ class AdminApi {
     }
 
     return Response<AdminOrderCardDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminPayTablesPreview
+  ///
+  ///
+  /// Parameters:
+  /// * [cityId]
+  /// * [vehicle]
+  /// * [metres]
+  /// * [waitedMinutes] - Minutes waited at the restaurant; those past the threshold are paid.
+  /// * [draftBasePay]
+  /// * [draftIncludedMetres]
+  /// * [draftPerExtraKm]
+  /// * [draftWaitingPerMinute]
+  /// * [draftMinimumPay]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminPayTablePreviewDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminPayTablePreviewDtoOutput>> adminPayTablesPreview({
+    required String cityId,
+    required String vehicle,
+    required int metres,
+    int? waitedMinutes,
+    String? draftBasePay,
+    int? draftIncludedMetres,
+    String? draftPerExtraKm,
+    String? draftWaitingPerMinute,
+    String? draftMinimumPay,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/pay-tables/preview';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      r'cityId': encodeQueryParameter(
+        _serializers,
+        cityId,
+        const FullType(String),
+      ),
+      r'vehicle': encodeQueryParameter(
+        _serializers,
+        vehicle,
+        const FullType(String),
+      ),
+      r'metres': encodeQueryParameter(
+        _serializers,
+        metres,
+        const FullType(int),
+      ),
+      if (waitedMinutes != null)
+        r'waitedMinutes': encodeQueryParameter(
+          _serializers,
+          waitedMinutes,
+          const FullType(int),
+        ),
+      if (draftBasePay != null)
+        r'draftBasePay': encodeQueryParameter(
+          _serializers,
+          draftBasePay,
+          const FullType(String),
+        ),
+      if (draftIncludedMetres != null)
+        r'draftIncludedMetres': encodeQueryParameter(
+          _serializers,
+          draftIncludedMetres,
+          const FullType(int),
+        ),
+      if (draftPerExtraKm != null)
+        r'draftPerExtraKm': encodeQueryParameter(
+          _serializers,
+          draftPerExtraKm,
+          const FullType(String),
+        ),
+      if (draftWaitingPerMinute != null)
+        r'draftWaitingPerMinute': encodeQueryParameter(
+          _serializers,
+          draftWaitingPerMinute,
+          const FullType(String),
+        ),
+      if (draftMinimumPay != null)
+        r'draftMinimumPay': encodeQueryParameter(
+          _serializers,
+          draftMinimumPay,
+          const FullType(String),
+        ),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminPayTablePreviewDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminPayTablePreviewDtoOutput),
+                )
+                as AdminPayTablePreviewDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminPayTablePreviewDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminPayTablesPublish
+  ///
+  ///
+  /// Parameters:
+  /// * [adminPublishPayTableDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminPayTablesDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminPayTablesDtoOutput>> adminPayTablesPublish({
+    required AdminPublishPayTableDto adminPublishPayTableDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/pay-tables';
+    final _options = Options(
+      method: r'PUT',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminPublishPayTableDto);
+      _bodyData = _serializers.serialize(
+        adminPublishPayTableDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminPayTablesDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminPayTablesDtoOutput),
+                )
+                as AdminPayTablesDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminPayTablesDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminPayTablesScreen
+  ///
+  ///
+  /// Parameters:
+  /// * [cityId]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminPayTablesDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminPayTablesDtoOutput>> adminPayTablesScreen({
+    required String cityId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/pay-tables';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      r'cityId': encodeQueryParameter(
+        _serializers,
+        cityId,
+        const FullType(String),
+      ),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminPayTablesDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminPayTablesDtoOutput),
+                )
+                as AdminPayTablesDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminPayTablesDtoOutput>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

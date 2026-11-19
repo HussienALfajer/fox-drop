@@ -156,6 +156,8 @@ void main() {
     expect(pushTargetPath({'target': 'contract'}), '/contract');
     expect(pushTargetPath({'target': 'documents'}), '/documents');
     expect(pushTargetPath({'target': 'application'}), '/application');
+    // Slice 2.37b: a new pay table announced opens «ملفي».
+    expect(pushTargetPath({'target': 'pay_table'}), '/profile');
     expect(pushTargetPath({'target': 'document'}), isNull);
     expect(pushTargetPath({}), isNull);
   });
