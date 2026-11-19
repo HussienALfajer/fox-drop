@@ -159,3 +159,60 @@ export function mapCentre(zones: Zone[], votes: VoteCell[]): Point | null {
   );
   return { latitude: sum.latitude / points.length, longitude: sum.longitude / points.length };
 }
+
+// The GeoJSON the sources take, typed here, so a wrong `type` fails the type
+// check (the panel's program has no GeoJSON types of its own).
+type Geometry =
+  | { type: 'Polygon'; coordinates: number[][][] }
+  | { type: 'Point'; coordinates: number[] }
+  | { type: 'LineString'; coordinates: number[][] };
+export interface Collection {
+  type: 'FeatureCollection';
+  features: { type: 'Feature'; properties: Record<string, unknown>; geometry: Geometry }[];
+}
+
+const ring = (corners: Point[]) => [
+  ...corners.map((point) => [point.longitude, point.latitude]),
+  [corners[0]!.longitude, corners[0]!.latitude],
+];
+
+export function zonesData(zones: Zone[], editingId: string | null): Collection {
+  return {
+    type: 'FeatureCollection',
+    features: zones
+      .filter((zone) => zone.id !== editingId && zone.area.length >= 3)
+      .map((zone) => ({
+        type: 'Feature',
+        properties: { name: zone.name, active: zone.active },
+        geometry: { type: 'Polygon', coordinates: [ring(zone.area)] },
+      })),
+  };
+}
+
+export function votesData(votes: VoteCell[]): Collection {
+  return {
+    type: 'FeatureCollection',
+    features: votes.map((cell) => ({
+      type: 'Feature',
+      properties: { votes: cell.votes },
+      geometry: { type: 'Point', coordinates: [cell.longitude, cell.latitude] },
+    })),
+  };
+}
+
+export function outlineData(corners: Point[]): Collection {
+  if (corners.length < 2) return { type: 'FeatureCollection', features: [] };
+  return {
+    type: 'FeatureCollection',
+    features: [
+      {
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'LineString',
+          coordinates: corners.length >= 3 ? ring(corners) : ring(corners).slice(0, -1),
+        },
+      },
+    ],
+  };
+}

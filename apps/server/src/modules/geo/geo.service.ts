@@ -48,6 +48,7 @@ export type GeoRefusal =
   | 'invalid_office'
   | 'invalid_city'
   | 'city_code_taken'
+  | 'last_active_city'
   | 'unknown_city';
 
 // A change or a fee geo refuses, with the reason the routes and the ordering
@@ -239,7 +240,27 @@ export class GeoService implements OnModuleInit {
           throw new GeoRefusedError('city_code_taken', `another city has the code ${after.code}`);
         }
       }
-      await tx.update(cities).set(after).where(eq(cities.id, cityId));
+      if (changed.includes('status') && after.status === 'inactive') {
+        // What an inactive city stops is the owner's to decide; until then
+        // the platform keeps one active city (decided by us).
+        const [other] = await tx
+          .select({ id: cities.id })
+          .from(cities)
+          .where(and(eq(cities.status, 'active'), ne(cities.id, cityId)))
+          .limit(1);
+        if (!other) {
+          throw new GeoRefusedError('last_active_city', 'the last active city stays active');
+        }
+      }
+      try {
+        await tx.update(cities).set(after).where(eq(cities.id, cityId));
+      } catch (error) {
+        // Another city took the code meanwhile.
+        if ((error as { cause?: { code?: string } }).cause?.code === '23505') {
+          throw new GeoRefusedError('city_code_taken', `another city has the code ${after.code}`);
+        }
+        throw error;
+      }
       await this.audit.recordWrite(
         {
           actor: change.actor,
@@ -492,16 +513,22 @@ export class GeoService implements OnModuleInit {
     return rows.map((row) => ({ ...row, area: cornersOf(row.area) }));
   }
 
-  // AP §9.12.2: the city's votes from outside the zones, counted by cells of
-  // a thousandth of a degree (about 100 m), the most voted first. The cells
-  // guide expansion without placing any one device's vote.
+  // AP §9.12.2: the city's votes from outside its active zones (a zone
+  // drawn over a vote later leaves it off), counted by cells of a thousandth
+  // of a degree (about 100 m), the most voted first.
   async voteMap(cityId: string): Promise<VoteCell[]> {
     const latitude = sql<string>`round(ST_Y(${zoneVotes.location})::numeric, 3)`;
     const longitude = sql<string>`round(ST_X(${zoneVotes.location})::numeric, 3)`;
     const rows = await this.database.db
       .select({ latitude, longitude, votes: sql<number>`count(*)::int` })
       .from(zoneVotes)
-      .where(eq(zoneVotes.cityId, cityId))
+      .where(
+        and(
+          eq(zoneVotes.cityId, cityId),
+          sql`NOT EXISTS (SELECT 1 FROM geo.zones covering WHERE covering.city_id = ${cityId}
+            AND covering.active AND ST_Covers(covering.area, ${zoneVotes.location}))`,
+        ),
+      )
       .groupBy(latitude, longitude)
       .orderBy(sql`count(*) DESC`, latitude, longitude);
     return rows.map((row) => ({
@@ -655,7 +682,7 @@ export class GeoService implements OnModuleInit {
           name: zones.name,
           active: zones.active,
           area: sql<string>`ST_AsGeoJSON(${zones.area}, 15)`,
-          sameArea: sql<boolean>`ST_Equals(${zones.area}, ${area})`,
+          sameArea: sql<boolean>`ST_OrderingEquals(${zones.area}, ${area})`,
         })
         .from(zones)
         .where(eq(zones.id, zoneId));

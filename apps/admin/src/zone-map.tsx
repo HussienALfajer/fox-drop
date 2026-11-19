@@ -5,58 +5,17 @@ import { useTranslation } from 'react-i18next';
 import { drawable, prepare } from './pin-map.js';
 import './pin-map.css';
 import { localStyle } from './restaurant-drafts.js';
-import type { Point, VoteCell, Zone } from './zones.js';
+import {
+  type Collection,
+  outlineData,
+  type Point,
+  type VoteCell,
+  votesData,
+  type Zone,
+  zonesData,
+} from './zones.js';
 
 const CITY_ZOOM = 13;
-
-// GeoJSON as a source takes it (maplibre-gl's own types).
-type Collection = Exclude<Parameters<GeoJSONSource['setData']>[0], string>;
-
-const ring = (corners: Point[]) => [
-  ...corners.map((point) => [point.longitude, point.latitude]),
-  [corners[0]!.longitude, corners[0]!.latitude],
-];
-
-function zonesData(zones: Zone[], editingId: string | null): Collection {
-  return {
-    type: 'Collection',
-    features: zones
-      .filter((zone) => zone.id !== editingId && zone.area.length >= 3)
-      .map((zone) => ({
-        type: 'Feature',
-        properties: { name: zone.name, active: zone.active },
-        geometry: { type: 'Polygon', coordinates: [ring(zone.area)] },
-      })),
-  };
-}
-
-function votesData(votes: VoteCell[]): Collection {
-  return {
-    type: 'Collection',
-    features: votes.map((cell) => ({
-      type: 'Feature',
-      properties: { votes: cell.votes },
-      geometry: { type: 'Point', coordinates: [cell.longitude, cell.latitude] },
-    })),
-  };
-}
-
-function outlineData(corners: Point[]): Collection {
-  if (corners.length < 2) return { type: 'Collection', features: [] };
-  return {
-    type: 'Collection',
-    features: [
-      {
-        type: 'Feature',
-        properties: {},
-        geometry: {
-          type: 'LineString',
-          coordinates: corners.length >= 3 ? ring(corners) : ring(corners).slice(0, -1),
-        },
-      },
-    ],
-  };
-}
 
 // AP §9.12.2 (slice 2.37c; owner decision 2026-11-19: our own corner
 // editing): the city's zones, the votes from outside them and, while one is
@@ -102,7 +61,7 @@ export function ZoneMap(props: {
     });
     created.on('error', () => setFailed(true));
     created.on('load', () => {
-      const empty: Collection = { type: 'Collection', features: [] };
+      const empty: Collection = { type: 'FeatureCollection', features: [] };
       created.addSource('zones', { type: 'geojson', data: empty });
       created.addSource('votes', { type: 'geojson', data: empty });
       created.addSource('outline', { type: 'geojson', data: empty });

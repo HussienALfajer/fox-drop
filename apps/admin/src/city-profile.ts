@@ -93,6 +93,7 @@ export type CityRefusal =
   | 'invalid_name'
   | 'invalid_city'
   | 'city_code_taken'
+  | 'last_active_city'
   | 'not_city_currency'
   | 'inactive_currency'
   | 'base_disabled'
@@ -104,6 +105,7 @@ const cityRefusals: readonly CityRefusal[] = [
   'invalid_name',
   'invalid_city',
   'city_code_taken',
+  'last_active_city',
   'not_city_currency',
   'inactive_currency',
   'base_disabled',

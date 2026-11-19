@@ -377,6 +377,30 @@ describe('GeoService.saveZone (AP §9.12.2: drawing and editing a zone)', () => 
     ]);
   });
 
+  it('writes and audits a new order of the same corners', async () => {
+    const cityId = await city();
+    const id = await geo.createZone(
+      cityId,
+      { name: 'order', area: square(36.6, 37.05), active: false },
+      change,
+    );
+    const [a, b, c, d] = square(36.6, 37.05) as [Point, Point, Point, Point];
+    await geo.saveZone(cityId, id, { name: 'order', area: [b, c, d, a], active: false }, change);
+    await expect(geo.zoneOutlines(cityId)).resolves.toEqual([
+      { id, name: 'order', active: false, area: [b, c, d, a] },
+    ]);
+  });
+
+  it('refuses taking another city code', async () => {
+    const one = await city();
+    const two = await city();
+    const other = (await geo.city(two))!;
+    await geo.updateCity(one, { ...(await geo.city(one))!, code: 'QZ' }, change);
+    await expect(geo.updateCity(two, { ...other, code: 'QZ' }, change)).rejects.toMatchObject({
+      refusal: 'city_code_taken',
+    });
+  });
+
   it('activates a zone with its new outline, refusing one that overlaps an active zone', async () => {
     const cityId = await city();
     await geo.createZone(cityId, { name: 'west', area: square(36.6, 37.05), active: true }, change);
@@ -448,6 +472,15 @@ describe('GeoService.voteMap (AP §9.12.2: votes from outside the zones)', () =>
       { latitude: 10.03, longitude: 10.01, votes: 1 },
     ]);
     await expect(geo.voteMap(await city())).resolves.toEqual([]);
+    // A zone drawn over a vote and activated leaves it off the map.
+    await geo.createZone(
+      cityId,
+      { name: 'covered', area: square(10.03, 10.01, 0.002), active: true },
+      change,
+    );
+    await expect(geo.voteMap(cityId)).resolves.toEqual([
+      { latitude: 10.02, longitude: 10, votes: 2 },
+    ]);
   });
 });
 
@@ -488,6 +521,22 @@ describe('GeoService.updateCity (AP §9.12.1 «المدن»)', () => {
         },
         reason: 'testing',
       },
+    ]);
+  });
+
+  it('refuses to deactivate the last active city', async () => {
+    const { rows } = await sql.query<{ id: string }>(
+      "SELECT id FROM geo.cities WHERE status = 'active'",
+    );
+    // Every other active city is made inactive by the application role's
+    // own update, so Azaz is the last.
+    const azaz = (await geo.cities()).find((each) => each.code === 'AZ')!;
+    await sql.query("UPDATE geo.cities SET status = 'inactive' WHERE id <> $1", [azaz.id]);
+    await expect(
+      geo.updateCity(azaz.id, { ...azaz, status: 'inactive' }, change),
+    ).rejects.toMatchObject({ refusal: 'last_active_city' });
+    await sql.query("UPDATE geo.cities SET status = 'active' WHERE id = ANY($1)", [
+      rows.map((row) => row.id),
     ]);
   });
 

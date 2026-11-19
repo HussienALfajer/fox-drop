@@ -5,6 +5,9 @@ import {
   mapCentre,
   movedCorner,
   newZoneForm,
+  outlineData,
+  votesData,
+  zonesData,
   voteCount,
   withoutLastCorner,
   zoneRequestOf,
@@ -72,5 +75,44 @@ describe('the map', () => {
     expect(mapCentre([], votes)).toEqual({ latitude: 10, longitude: 20 });
     expect(mapCentre([], [])).toBeNull();
     expect(voteCount([...votes, { latitude: 1, longitude: 1, votes: 2 }])).toBe(5);
+  });
+});
+
+describe('the map layers', () => {
+  it('draws the zones but the one edited, the votes and the outline as GeoJSON', () => {
+    const zone = { id: 'z', name: 'حي', active: true, area: square };
+    const zones = zonesData([zone, { ...zone, id: 'edited' }], 'edited');
+    expect(zones.type).toBe('FeatureCollection');
+    expect(zones.features).toEqual([
+      {
+        type: 'Feature',
+        properties: { name: 'حي', active: true },
+        geometry: {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [37.045, 36.595],
+              [37.055, 36.595],
+              [37.055, 36.605],
+              [37.045, 36.595],
+            ],
+          ],
+        },
+      },
+    ]);
+    expect(votesData([{ latitude: 10, longitude: 20, votes: 3 }]).features[0]).toEqual({
+      type: 'Feature',
+      properties: { votes: 3 },
+      geometry: { type: 'Point', coordinates: [20, 10] },
+    });
+    expect(outlineData(square.slice(0, 1)).features).toEqual([]);
+    expect(outlineData(square.slice(0, 2)).features[0]?.geometry).toEqual({
+      type: 'LineString',
+      coordinates: [
+        [37.045, 36.595],
+        [37.055, 36.595],
+      ],
+    });
+    expect(outlineData(square).features[0]?.geometry.coordinates).toHaveLength(4);
   });
 });

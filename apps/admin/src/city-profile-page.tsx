@@ -33,6 +33,7 @@ const refusalKeys = {
   invalid_name: 'cityProfile.refused.invalid_name',
   invalid_city: 'cityProfile.refused.invalid_city',
   city_code_taken: 'cityProfile.refused.city_code_taken',
+  last_active_city: 'cityProfile.refused.last_active_city',
   not_city_currency: 'cityProfile.refused.not_city_currency',
   inactive_currency: 'cityProfile.refused.inactive_currency',
   base_disabled: 'cityProfile.refused.base_disabled',

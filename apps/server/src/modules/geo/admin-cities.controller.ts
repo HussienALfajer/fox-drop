@@ -189,7 +189,8 @@ function refusal(error: unknown): unknown {
     if (
       error.refusal === 'zone_name_taken' ||
       error.refusal === 'zones_overlap' ||
-      error.refusal === 'city_code_taken'
+      error.refusal === 'city_code_taken' ||
+      error.refusal === 'last_active_city'
     ) {
       return new ConflictException({ statusCode: HttpStatus.CONFLICT, ...body });
     }

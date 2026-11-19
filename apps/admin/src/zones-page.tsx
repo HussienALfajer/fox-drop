@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { getRouteApi, Link } from '@tanstack/react-router';
-import { type FormEvent, lazy, Suspense, useState } from 'react';
+import { type FormEvent, lazy, Suspense, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { chosenCity, citiesQuery } from './cities.js';
-import { ZONES_MANAGE } from './office.js';
+import { useCityOffice, ZONES_MANAGE } from './office.js';
 import { can } from './session.js';
 import {
   type CityZones,
@@ -78,7 +78,16 @@ function ZonesView({ cityId, data }: { cityId: string; data: CityZones }) {
   const manage = can(session, ZONES_MANAGE);
   const save = useSaveZone(cityId);
   const [form, setForm] = useState<ZoneForm | null>(null);
-  const [centre] = useState(() => mapCentre(data.zones, data.votes));
+  // A city's first zone starts from its office's point (zones.read too).
+  const office = useCityOffice(cityId);
+  const centre = useMemo(
+    () => mapCentre(data.zones, data.votes) ?? office.data?.office?.location ?? null,
+    [data, office.data],
+  );
+  const edit = (next: ZoneForm) => {
+    save.reset();
+    setForm(next);
+  };
 
   const toggle = (zone: Zone) =>
     save.mutate({
@@ -113,7 +122,7 @@ function ZonesView({ cityId, data }: { cityId: string; data: CityZones }) {
                 {manage && form === null && (
                   <>
                     {' '}
-                    <button type="button" onClick={() => setForm(zoneFormOf(zone))}>
+                    <button type="button" onClick={() => edit(zoneFormOf(zone))}>
                       {t('zones.edit', { name: zone.name })}
                     </button>{' '}
                     <button type="button" disabled={save.isPending} onClick={() => toggle(zone)}>
@@ -126,7 +135,7 @@ function ZonesView({ cityId, data }: { cityId: string; data: CityZones }) {
           </ul>
         )}
         {manage && form === null && (
-          <button type="button" onClick={() => setForm(newZoneForm(crypto.randomUUID()))}>
+          <button type="button" onClick={() => edit(newZoneForm(crypto.randomUUID()))}>
             {t('zones.draw')}
           </button>
         )}
