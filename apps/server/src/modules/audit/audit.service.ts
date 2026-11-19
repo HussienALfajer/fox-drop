@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { and, desc, eq, gte, inArray, lt, notLike, or, type SQL } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, lt, notLike, or, type SQL, sql } from 'drizzle-orm';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
 import { type Changes, changedFields } from './changes.js';
@@ -50,8 +50,11 @@ export interface AuditEntry {
   reason: string | null;
 }
 
-// An event as «سجل التدقيق» shows it (AP §9.16): every field.
+// An event as «سجل التدقيق» shows it (AP §9.16): every field, and its time
+// to the microsecond as the database keeps it (a Date keeps milliseconds),
+// which the next page starts below.
 export interface AuditLogEvent extends AuditEntry {
+  position: string;
   kind: (typeof eventKinds)[number];
   cityId: string | null;
   ipAddress: string | null;
@@ -60,7 +63,7 @@ export interface AuditLogEvent extends AuditEntry {
 
 // The filters of «سجل التدقيق» (AP §9.16): each one left null matches all.
 // `from` is included and `to` excluded; `after` is the last event of the
-// page before, so the next page starts below it.
+// page before (its `position`), so the next page starts below it.
 export interface AuditLogFilter {
   actorType: (typeof actorTypes)[number] | null;
   actorId: string | null;
@@ -69,7 +72,7 @@ export interface AuditLogFilter {
   targetId: string | null;
   from: Date | null;
   to: Date | null;
-  after: { occurredAt: Date; id: string } | null;
+  after: { occurredAt: string; id: string } | null;
 }
 
 // The database or the open transaction of the write being audited, so the
@@ -166,16 +169,14 @@ export class AuditService {
     if (filter.after !== null) {
       const { occurredAt, id } = filter.after;
       conditions.push(
-        or(
-          lt(events.occurredAt, occurredAt),
-          and(eq(events.occurredAt, occurredAt), lt(events.id, id)),
-        )!,
+        sql`(${events.occurredAt}, ${events.id}) < (${occurredAt}::timestamptz, ${id}::uuid)`,
       );
     }
     const rows = await this.database.db
       .select({
         id: events.id,
         occurredAt: events.occurredAt,
+        position: sql<string>`to_char(${events.occurredAt} AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"')`,
         kind: events.kind,
         cityId: events.cityId,
         actorType: events.actorType,
@@ -196,6 +197,7 @@ export class AuditService {
     return rows.map((row) => ({
       id: row.id,
       occurredAt: row.occurredAt,
+      position: row.position,
       kind: row.kind,
       cityId: row.cityId,
       actor: { type: row.actorType, id: row.actorId, role: row.actorRole },

@@ -162,6 +162,20 @@ describe('generalFormOf and generalValueOf', () => {
     expect(generalValueOf(message, { kind: 'text', text: '' }, null)).toBeUndefined();
   });
 
+  it('shows a zero amount without its currency as 0, saved in the base currency', () => {
+    const tolerance = entry({
+      key: 'captain.remit_tolerance',
+      type: 'money',
+      default: { amountMinor: 0, currency: null },
+      value: { amountMinor: 0, currency: null },
+    });
+    expect(generalFormOf(tolerance, 'كامل')).toEqual({ kind: 'text', text: '0' });
+    expect(generalValueOf(tolerance, { kind: 'text', text: '0' }, 'TRY')).toEqual({
+      amountMinor: 0,
+      currency: 'TRY',
+    });
+  });
+
   it('offers no field for the one sign-in channel', () => {
     const channels = entry({
       key: 'otp.channel_order',

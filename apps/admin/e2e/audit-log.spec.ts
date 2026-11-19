@@ -63,6 +63,7 @@ test('shows the events with their diff and filters them', async ({ page }) => {
               kind: 'view',
               cityId: null,
               action: 'customer.phone.view',
+              actorName: null,
               targetType: 'customer',
               targetId: '01900000-0000-7000-8000-0000000000f1',
               changes: [],
@@ -112,6 +113,7 @@ test('shows the events with their diff and filters them', async ({ page }) => {
   const viewed = events.getByRole('row', { name: /إظهار رقم الزبون/ });
   await expect(viewed).toContainText('(عرض بيانات حساسة)');
   await expect(viewed).toContainText('المنصة كلها');
+  await expect(viewed).toContainText(`مستخدم إدارة ${ownerId}`);
   expect(asked.at(-1)?.get('cursor')).toBe(
     '2026-11-19T09:30:00.000Z_01900000-0000-7000-8000-0000000000e2',
   );
@@ -121,8 +123,9 @@ test('shows the events with their diff and filters them', async ({ page }) => {
     .getByRole('combobox', { name: 'المنفّذ', exact: true })
     .selectOption({ label: 'حسين' });
   await filters.getByRole('combobox', { name: 'الإجراء' }).selectOption({ label: 'تعديل إعداد' });
-  await filters.getByLabel('من يوم').fill('2026-11-01');
-  await filters.getByLabel('إلى يوم').fill('2026-11-19');
+  await filters.getByLabel('أو رمز هدف آخر').fill('pay_table');
+  await filters.getByLabel('من تاريخ').fill('2026-11-01');
+  await filters.getByLabel('إلى تاريخ').fill('2026-11-19');
   await filters.getByRole('button', { name: 'عرض' }).click();
   await expect(page).toHaveURL(/action=setting\.update/);
   await expect.poll(() => asked.at(-1)?.get('from')).toBe('2026-10-31T21:00:00.000Z');
@@ -130,6 +133,7 @@ test('shows the events with their diff and filters them', async ({ page }) => {
   expect(last.get('to')).toBe('2026-11-19T21:00:00.000Z');
   expect(last.get('actorId')).toBe(ownerId);
   expect(last.get('action')).toBe('setting.update');
+  expect(last.get('targetType')).toBe('pay_table');
   expect(last.get('cursor')).toBeNull();
 });
 

@@ -93,8 +93,19 @@ function Filters({ search }: { search: AuditLogSearch }) {
         </label>
       )}
       <label>
+        {t('auditLog.actorId')}
+        <input
+          value={form.actorId ?? ''}
+          dir="ltr"
+          onChange={(event) => set('actorId', event.target.value.trim())}
+        />
+      </label>
+      <label>
         {t('auditLog.action')}
-        <select value={form.action ?? ''} onChange={(event) => set('action', event.target.value)}>
+        <select
+          value={auditActionOf(form.action ?? '') ?? ''}
+          onChange={(event) => set('action', event.target.value)}
+        >
           <option value="">{t('auditLog.all')}</option>
           {auditActions.map((action) => (
             <option key={action} value={action}>
@@ -104,9 +115,17 @@ function Filters({ search }: { search: AuditLogSearch }) {
         </select>
       </label>
       <label>
+        {t('auditLog.actionCode')}
+        <input
+          value={auditActionOf(form.action ?? '') === null ? (form.action ?? '') : ''}
+          dir="ltr"
+          onChange={(event) => set('action', event.target.value.trim())}
+        />
+      </label>
+      <label>
         {t('auditLog.targetType')}
         <select
-          value={form.targetType ?? ''}
+          value={targetTypeOf(form.targetType ?? '') ?? ''}
           onChange={(event) => set('targetType', event.target.value)}
         >
           <option value="">{t('auditLog.all')}</option>
@@ -116,6 +135,14 @@ function Filters({ search }: { search: AuditLogSearch }) {
             </option>
           ))}
         </select>
+      </label>
+      <label>
+        {t('auditLog.targetCode')}
+        <input
+          value={targetTypeOf(form.targetType ?? '') === null ? (form.targetType ?? '') : ''}
+          dir="ltr"
+          onChange={(event) => set('targetType', event.target.value.trim())}
+        />
       </label>
       <label>
         {t('auditLog.targetId')}
@@ -196,11 +223,18 @@ function EventRow({ event, city, cities }: { event: AuditEvent; city: City; citi
   const target = targetTypeOf(event.targetType);
   const eventCity = cities.find((each) => each.id === event.cityId);
   const actorType: ActorType = event.actorType;
+  const flag = { on: t('auditLog.on'), off: t('auditLog.off') };
   return (
     <tr>
       <td>{formatDateTime(event.at, city.timeZone)}</td>
       <td>
         {event.actorName ?? t(`auditLog.actorTypes.${actorType}`)}
+        {event.actorName === null && event.actorId !== null && (
+          <>
+            {' '}
+            <code dir="ltr">{event.actorId}</code>
+          </>
+        )}
         {event.actorRole !== null && (
           <>
             {' '}
@@ -230,8 +264,8 @@ function EventRow({ event, city, cities }: { event: AuditEvent; city: City; citi
               <li key={change.field}>
                 {t('auditLog.fromTo', {
                   field: change.field,
-                  before: valueText(change.before) ?? t('auditLog.empty'),
-                  after: valueText(change.after) ?? t('auditLog.empty'),
+                  before: valueText(change.before, flag) ?? t('auditLog.empty'),
+                  after: valueText(change.after, flag) ?? t('auditLog.empty'),
                 })}
               </li>
             ))}

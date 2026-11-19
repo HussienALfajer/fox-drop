@@ -1,0 +1,2 @@
+CREATE INDEX "events_newest" ON "audit"."events" USING btree ("occurred_at" DESC NULLS LAST,"id" DESC NULLS LAST);--> statement-breakpoint
+CREATE INDEX "events_actor" ON "audit"."events" USING btree ("actor_id","occurred_at" DESC NULLS LAST);

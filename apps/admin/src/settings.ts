@@ -97,6 +97,11 @@ export function generalFormOf(entry: SettingEntry, fullWord: string): GeneralFor
     };
   }
   if (entry.type === 'text') return { kind: 'text', text: typeof value === 'string' ? value : '' };
+  // Zero needs no currency (`captain.remit_tolerance` by default).
+  const money = value as { amountMinor?: unknown; currency?: unknown } | null;
+  if (entry.type === 'money' && money?.amountMinor === 0 && money.currency === null) {
+    return { kind: 'text', text: '0' };
+  }
   return settingFormOf(entry);
 }
 

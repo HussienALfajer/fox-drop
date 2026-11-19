@@ -8,6 +8,7 @@ import { type SettingEntry, useCitySettings, weekdays } from './city-settings.js
 import { decimalOf } from './format.js';
 import {
   type GeneralForm,
+  type SettingCommandResult,
   generalFormOf,
   generalValueOf,
   groupEntries,
@@ -94,6 +95,10 @@ function GroupSettings({ city, entries }: { city: City; entries: SettingEntry[] 
   const { t } = useTranslation();
   const needsBase = entries.some((entry) => entry.type === 'money');
   const profile = useCityProfile(needsBase ? city.id : undefined);
+  // The command and each setting's last answer live above the cards, which
+  // start again with the value the save brings, so the answer outlives them.
+  const command = useSettingCommand(city.id);
+  const [results, setResults] = useState<Partial<Record<string, SettingCommandResult>>>({});
   if (entries.length === 0) return <p>{t('settings.empty')}</p>;
   const base = profile.data ? baseOf(profile.data) : null;
   return (
@@ -105,6 +110,9 @@ function GroupSettings({ city, entries }: { city: City; entries: SettingEntry[] 
             city={city}
             entry={entry}
             baseCurrency={base}
+            command={command}
+            result={results[entry.key]}
+            onResult={(result) => setResults((before) => ({ ...before, [entry.key]: result }))}
           />
         </li>
       ))}
@@ -116,13 +124,18 @@ function SettingCard({
   city,
   entry,
   baseCurrency,
+  command,
+  result,
+  onResult,
 }: {
   city: City;
   entry: SettingEntry;
   baseCurrency: string | null;
+  command: ReturnType<typeof useSettingCommand>;
+  result: SettingCommandResult | undefined;
+  onResult: (result: SettingCommandResult) => void;
 }) {
   const { t } = useTranslation();
-  const command = useSettingCommand(city.id);
   const [form, setForm] = useState<GeneralForm>(() => generalFormOf(entry, t('settings.fullWord')));
   const [reason, setReason] = useState('');
   const [problem, setProblem] = useState(false);
@@ -132,7 +145,9 @@ function SettingCard({
     event.preventDefault();
     const value = generalValueOf(entry, form, baseCurrency);
     setProblem(value === undefined);
-    if (value !== undefined) command.mutate({ kind: 'save', entry, value, reason });
+    if (value !== undefined) {
+      command.mutate({ kind: 'save', entry, value, reason }, { onSuccess: onResult });
+    }
   };
   const canReset = !entry.isDefault && !entry.beforeLaunch;
   return (
@@ -153,7 +168,7 @@ function SettingCard({
           ? t('settings.beforeLaunch')
           : t('settings.default', { value: valueWords(entry, entry.default) })}
       </p>
-      <SettingField entry={entry} form={form} onChange={setForm} />
+      <SettingField entry={entry} form={form} baseCurrency={baseCurrency} onChange={setForm} />
       {(entry.type === 'money' || entry.template === 'order.late_compensation_value') &&
         baseCurrency === null && <p>{t('settings.noBase')}</p>}
       {entry.reasonRequired && (
@@ -176,18 +191,20 @@ function SettingCard({
         <button
           type="button"
           disabled={command.isPending}
-          onClick={() => command.mutate({ kind: 'reset', entry, reason })}
+          onClick={() => command.mutate({ kind: 'reset', entry, reason }, { onSuccess: onResult })}
         >
           {t('settings.reset')}
         </button>
       )}
       {problem && <p role="alert">{t('settings.problem')}</p>}
-      {command.data?.status === 'saved' && <p role="status">{t('settings.saved')}</p>}
-      {command.data?.status === 'restored' && <p role="status">{t('settings.restored')}</p>}
-      {command.data?.status === 'refused' && (
-        <p role="alert">{t(`settings.refused.${command.data.refusal}`)}</p>
+      {result?.status === 'saved' && <p role="status">{t('settings.saved')}</p>}
+      {result?.status === 'restored' && <p role="status">{t('settings.restored')}</p>}
+      {result?.status === 'refused' && (
+        <p role="alert">{t(`settings.refused.${result.refusal}`)}</p>
       )}
-      {command.isError && <p role="alert">{t('common.failed')}</p>}
+      {command.isError && command.variables?.entry.key === entry.key && (
+        <p role="alert">{t('common.failed')}</p>
+      )}
     </form>
   );
 }
@@ -195,15 +212,24 @@ function SettingCard({
 function SettingField({
   entry,
   form,
+  baseCurrency,
   onChange,
 }: {
   entry: SettingEntry;
   form: GeneralForm;
+  baseCurrency: string | null;
   onChange: (form: GeneralForm) => void;
 }) {
   const { t } = useTranslation();
   const { choicesOf, unitWords } = useSettingWords();
-  const unit = unitWords(entry);
+  // An amount names its currency: a rounding unit its own, the rest the base.
+  const currency =
+    entry.type !== 'money'
+      ? null
+      : entry.template.startsWith('currency.')
+        ? entry.parameter
+        : baseCurrency;
+  const unit = currency ?? unitWords(entry);
   const valueLabel = unit === null ? t('settings.value') : t('settings.valueIn', { unit });
   switch (form.kind) {
     case 'fixed':
@@ -282,7 +308,9 @@ function SettingField({
             {t('settings.latePercent')}
           </label>
           <label>
-            {t('settings.value')}
+            {form.mode === 'percent'
+              ? t('settings.valueIn', { unit: t('settings.unit.percent') })
+              : valueLabel}
             <input
               value={form.text}
               dir="ltr"

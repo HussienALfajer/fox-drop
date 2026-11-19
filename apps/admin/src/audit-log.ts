@@ -2,6 +2,7 @@ import type { components, paths } from '@fox-drop/api-schema';
 import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 import { api } from './api.js';
 import { zonedToUtc } from './emergency-stop.js';
+import { decimalOf } from './format.js';
 import { type AdminSession, can } from './session.js';
 
 // AP §9.16 «سجل التدقيق» (slice 2.38a): OWN reads every write and sensitive
@@ -53,6 +54,15 @@ export const targetTypes = [
   'emergency_stop',
   'export',
   'otp_sender_number',
+  'banner',
+  'home_section',
+  'mass_push',
+  'menu_category',
+  'menu_item',
+  'menu_option_group',
+  'pay_table',
+  'peak_bonus',
+  'statement',
 ] as const;
 export type TargetType = (typeof targetTypes)[number];
 
@@ -167,6 +177,58 @@ export const auditActions = [
   'content.terms.publish',
   'export.create',
   'export.download',
+  'order.accept',
+  'order.acknowledge_cancellation',
+  'order.acknowledge_edit',
+  'order.answer_ping',
+  'order.arrive',
+  'order.arrive_at_customer',
+  'order.cancel',
+  'order.cannot_complete',
+  'order.change_outcome',
+  'order.change_time',
+  'order.close_item_report',
+  'order.collect_outcome',
+  'order.confirm_pickup_for_restaurant',
+  'order.deliver',
+  'order.dispute_pickup',
+  'order.edit',
+  'order.emergency',
+  'order.no_answer_wait',
+  'order.pickup_incomplete',
+  'order.ping_customer',
+  'order.ready',
+  'order.reassign',
+  'order.receive_handover',
+  'order.reject',
+  'order.report_item',
+  'order.report_no_answer',
+  'order.request_pickup',
+  'order.resolve_shortfall',
+  'order.set_outcome',
+  'order.withdraw_cannot_complete',
+  'order.withdraw_item_report',
+  'captain_application.activate',
+  'captain_application.back_from_waitlist',
+  'captain_application.cash_limit',
+  'captain_application.close',
+  'captain_application.contract',
+  'captain_application.deposit',
+  'captain_application.document_request',
+  'captain_application.document_review',
+  'captain_application.document_upload',
+  'captain_application.interview',
+  'captain_application.issue_kit',
+  'captain_application.kit_return',
+  'captain_application.note',
+  'captain_application.probation_confirmed',
+  'captain_application.reject',
+  'captain_application.terminate',
+  'captain_application.training_passed',
+  'captain_application.waitlist',
+  'merchant_account.phone_change',
+  'captain_account.phone_change',
+  'admin_account.totp_enrol',
 ] as const;
 export type AuditAction = (typeof auditActions)[number];
 
@@ -175,7 +237,7 @@ export function auditActionOf(action: string): AuditAction | null {
 }
 
 // The filters, kept in the page's search so a view of the log has its link.
-// Dates are business days on the chosen city's clock, `to` included.
+// Dates are calendar days on the chosen city's clock, `to` included.
 export interface AuditLogSearch {
   city?: string;
   actorType?: ActorType;
@@ -219,7 +281,8 @@ function nextDay(date: string): string {
 
 export type AuditLogQuery = NonNullable<paths['/v1/admin/audit-log']['get']['parameters']['query']>;
 
-// The query the server takes: each day's start on the city's clock.
+// The query the server takes: each calendar day's midnight on the city's
+// clock.
 export function auditLogQueryOf(search: AuditLogSearch, timeZone: string): AuditLogQuery {
   const from = search.from === undefined ? null : zonedToUtc(`${search.from}T00:00`, timeZone);
   const to = search.to === undefined ? null : zonedToUtc(`${nextDay(search.to)}T00:00`, timeZone);
@@ -264,13 +327,23 @@ export const auditActorsQuery = queryOptions({
   },
 });
 
-// A value of the diff as the log shows it: a text as written, a number or a
-// flag as it is, anything else as its JSON. Null is no value.
-export function valueText(json: string | null): string | null {
+// A value of the diff as the log shows it: a text as written, a number as
+// it is, a flag in words, an amount in major units with its currency,
+// anything else as its JSON. Null is no value.
+export function valueText(json: string | null, flag: { on: string; off: string }): string | null {
   if (json === null) return null;
   const value = JSON.parse(json) as unknown;
   if (value === null) return null;
   if (typeof value === 'string') return value;
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (typeof value === 'number') return String(value);
+  if (typeof value === 'boolean') return value ? flag.on : flag.off;
+  const money = value as { amountMinor?: unknown; currency?: unknown };
+  if (
+    typeof money.amountMinor === 'number' &&
+    typeof money.currency === 'string' &&
+    Object.keys(value as object).length === 2
+  ) {
+    return `${decimalOf(String(money.amountMinor), money.currency)} ${money.currency}`;
+  }
   return json;
 }

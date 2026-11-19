@@ -14,7 +14,8 @@ const dotted = z
   .string()
   .max(100)
   .regex(/^[a-z_]+(\.[a-z_]+)*$/);
-// The last event of a page: its time and id, `<ISO time>_<uuid>`.
+// The last event of a page: its time to the microsecond and id,
+// `<ISO time>_<uuid>`.
 const cursor = z
   .string()
   .max(80)
@@ -74,8 +75,8 @@ const json = (value: unknown) =>
 function afterOf(text: string | undefined) {
   if (text === undefined) return null;
   const split = text.lastIndexOf('_');
-  const occurredAt = new Date(text.slice(0, split));
-  if (Number.isNaN(occurredAt.getTime())) {
+  const occurredAt = text.slice(0, split);
+  if (Number.isNaN(new Date(occurredAt).getTime())) {
     throw new BadRequestException({ statusCode: HttpStatus.BAD_REQUEST, error: 'invalid_cursor' });
   }
   return { occurredAt, id: text.slice(split + 1) };
@@ -142,9 +143,7 @@ export class AdminAuditLogController {
         device: event.device,
       })),
       nextCursor:
-        found.length > AUDIT_LOG_PAGE && last !== undefined
-          ? `${last.occurredAt.toISOString()}_${last.id}`
-          : null,
+        found.length > AUDIT_LOG_PAGE && last !== undefined ? `${last.position}_${last.id}` : null,
     };
   }
 }

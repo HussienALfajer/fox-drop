@@ -981,6 +981,13 @@
       "when": 1795114107431,
       "tag": "0139_geo_restaurant_fee_rules",
       "breakpoints": true
+    },
+    {
+      "idx": 140,
+      "version": "7",
+      "when": 1795125721054,
+      "tag": "0140_audit_log_indexes",
+      "breakpoints": true
     }
   ]
 }

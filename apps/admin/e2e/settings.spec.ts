@@ -100,9 +100,9 @@ test('edits a setting of each group and restores a default', async ({ page }) =>
   await expect(timer.getByRole('button', { name: 'استعادة الافتراضي' })).toHaveCount(0);
   await timer.getByLabel('القيمة (دقيقة)').fill('12');
   await timer.getByRole('button', { name: 'حفظ' }).click();
-  await expect(page.getByRole('form', { name: 'هامش الوقت المتوقع' })).toContainText(
-    'القيمة الحالية: 12 دقيقة',
-  );
+  const saved = page.getByRole('form', { name: 'هامش الوقت المتوقع' });
+  await expect(saved).toContainText('القيمة الحالية: 12 دقيقة');
+  await expect(saved.getByRole('status')).toHaveText('حُفظ. يسري الآن.');
   expect(sent[0]).toEqual({
     url: '/v1/admin/settings/order.eta_buffer_min',
     body: { cityId, value: 12, reason: null },
@@ -116,9 +116,9 @@ test('edits a setting of each group and restores a default', async ({ page }) =>
   const lock = page.getByRole('form', { name: 'مدة القفل' });
   await expect(lock).toContainText('يخص كل المدن');
   await lock.getByRole('button', { name: 'استعادة الافتراضي' }).click();
-  await expect(page.getByRole('form', { name: 'مدة القفل' })).toContainText(
-    'القيمة الحالية: 15 دقيقة (القيمة الافتراضية)',
-  );
+  const restored = page.getByRole('form', { name: 'مدة القفل' });
+  await expect(restored).toContainText('القيمة الحالية: 15 دقيقة (القيمة الافتراضية)');
+  await expect(restored.getByRole('status')).toHaveText('استُعيدت القيمة الافتراضية.');
   expect(sent[1]).toEqual({
     url: '/v1/admin/settings/admin.lockout_min/reset',
     body: { cityId: null, reason: null },

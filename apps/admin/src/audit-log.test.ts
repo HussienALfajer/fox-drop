@@ -50,7 +50,7 @@ describe('auditLogSearchOf', () => {
 });
 
 describe('auditLogQueryOf', () => {
-  it('turns the business days into instants on the city clock, the last day included', () => {
+  it('turns the calendar days into instants on the city clock, the last day included', () => {
     expect(
       auditLogQueryOf(
         { from: '2026-11-01', to: '2026-11-19', action: 'setting.update' },
@@ -68,17 +68,19 @@ describe('auditLogQueryOf', () => {
 describe('the words of the log', () => {
   it('names the actions it knows and leaves the others to their code', () => {
     expect(auditActionOf('setting.update')).toBe('setting.update');
-    expect(auditActionOf('order.accept')).toBeNull();
+    expect(auditActionOf('order.accept')).toBe('order.accept');
+    expect(auditActionOf('order.timeout')).toBeNull();
   });
 
   it('shows a value of the diff as written', () => {
-    expect(valueText('12')).toBe('12');
-    expect(valueText('"زحام"')).toBe('زحام');
-    expect(valueText('true')).toBe('true');
-    expect(valueText('{"amountMinor":500,"currency":"TRY"}')).toBe(
-      '{"amountMinor":500,"currency":"TRY"}',
-    );
-    expect(valueText('null')).toBeNull();
-    expect(valueText(null)).toBeNull();
+    const flag = { on: 'مفعّل', off: 'متوقف' };
+    expect(valueText('12', flag)).toBe('12');
+    expect(valueText('"زحام"', flag)).toBe('زحام');
+    expect(valueText('true', flag)).toBe('مفعّل');
+    expect(valueText('false', flag)).toBe('متوقف');
+    expect(valueText('{"amountMinor":1500,"currency":"TRY"}', flag)).toBe('15.00 TRY');
+    expect(valueText('{"min":1,"max":4}', flag)).toBe('{"min":1,"max":4}');
+    expect(valueText('null', flag)).toBeNull();
+    expect(valueText(null, flag)).toBeNull();
   });
 });
