@@ -859,3 +859,41 @@ describe('«سجل الأسعار» and «سجل التغييرات» (AP §9.6.
     );
   });
 });
+
+describe('«معاينة كما يراها الزبون» (AP §9.6.6)', () => {
+  it('shows a draft menu as the restaurant page would, hidden rows left out', async () => {
+    const data = await admin('DATA');
+    const id = await draft(data);
+    const meals = randomUUID();
+    const secret = randomUUID();
+    const [shown, hidden, off] = [randomUUID(), randomUUID(), randomUUID()];
+    await data('PUT', `/${id}/menu/categories/${meals}`, category('وجبات'));
+    await data('PUT', `/${id}/menu/categories/${secret}`, category('سرية', { hidden: true }));
+    await data('PUT', `/${id}/menu/items/${shown}`, item(meals, 'شاورما'));
+    await data('PUT', `/${id}/menu/items/${hidden}`, item(meals, 'مخفي', { hidden: true }));
+    await data('PUT', `/${id}/menu/items/${off}`, item(meals, 'عصير'));
+    await data('PUT', `/${id}/menu/availability`, { type: 'item', id: off, available: false });
+    const preview = await data('GET', `/v1/admin/restaurants/${id}/menu/customer-preview`);
+    expect(preview.statusCode).toBe(200);
+    expect(preview.json()).toEqual({
+      menu: [
+        {
+          id: meals,
+          name: 'وجبات',
+          window: null,
+          items: [
+            expect.objectContaining({ id: shown, available: true, unavailableReason: null }),
+            expect.objectContaining({
+              id: off,
+              available: false,
+              unavailableReason: 'unavailable',
+            }),
+          ],
+        },
+      ],
+    });
+    expect(
+      (await data('GET', `/v1/admin/restaurants/${randomUUID()}/menu/customer-preview`)).json(),
+    ).toMatchObject({ statusCode: 404, error: 'unknown_restaurant' });
+  });
+});

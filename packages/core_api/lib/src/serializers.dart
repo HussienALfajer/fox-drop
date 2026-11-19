@@ -269,6 +269,9 @@ import 'package:core_api/src/model/admin_menu_money_output.dart';
 import 'package:core_api/src/model/admin_menu_option_dto.dart';
 import 'package:core_api/src/model/admin_menu_option_group_dto.dart';
 import 'package:core_api/src/model/admin_menu_option_order_dto.dart';
+import 'package:core_api/src/model/admin_menu_preview_dto_output.dart';
+import 'package:core_api/src/model/admin_menu_preview_dto_output_menu_inner.dart';
+import 'package:core_api/src/model/admin_menu_preview_dto_output_menu_inner_items_inner.dart';
 import 'package:core_api/src/model/admin_menu_switched_off_output.dart';
 import 'package:core_api/src/model/admin_menu_window.dart';
 import 'package:core_api/src/model/admin_menu_window_output.dart';
@@ -1228,6 +1231,9 @@ part 'serializers.g.dart';
   AdminMenuOptionDto,
   AdminMenuOptionGroupDto,
   AdminMenuOptionOrderDto,
+  AdminMenuPreviewDtoOutput,
+  AdminMenuPreviewDtoOutputMenuInner,
+  AdminMenuPreviewDtoOutputMenuInnerItemsInner,
   AdminMenuSwitchedOffOutput,
   AdminMenuWindow,
   AdminMenuWindowOutput,
@@ -2552,6 +2558,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminMenuPreviewDtoOutputMenuInner),
+            ]),
+            () => ListBuilder<AdminMenuPreviewDtoOutputMenuInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType.nullable(
                 AdminPeakBonusDtoOutputInForceWindowsInnerZonesInner,
               ),
@@ -3117,6 +3129,12 @@ Serializers serializers =
               FullType(AdminRestaurantChangeLogDtoOutputEntriesInner),
             ]),
             () => ListBuilder<AdminRestaurantChangeLogDtoOutputEntriesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminMenuPreviewDtoOutputMenuInnerItemsInner),
+            ]),
+            () => ListBuilder<AdminMenuPreviewDtoOutputMenuInnerItemsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

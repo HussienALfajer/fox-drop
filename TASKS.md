@@ -22,7 +22,7 @@ Slice 2.31, the panel's menu editor (`docs/roadmap.md`, Phase 2).
   - [x] 7. Panel, the editor: `restaurant-menu-page.tsx` edits past test mode (the server's `editable`), the price fields read-only without `menus.edit_prices`; the option groups (create, edit, options with deltas, link to many items, an item's groups); strings in the translation files; unit tests of the page's logic in `restaurant-menu.ts`.
   - [x] 8. Panel, «تعديل جماعي» with its before-and-after preview and confirm, bulk availability (select items, switch), «سجل الأسعار» as a view of the menu tab; tests.
   - [x] 9. Panel, «استيراد من Excel»: download the template, upload, the validation report (errors per row), the dry-run preview (added, changed, left alone), «تنفيذ الاستيراد»; a Playwright smoke of the flow with a fixture file.
-  - [ ] 10. Panel, «معاينة كما يراها الزبون»: the menu as the customer app reads it (the customers' menu route's shape, read for an admin, hidden and unpublished rows left out), read only.
+  - [x] 10. Panel, «معاينة كما يراها الزبون»: the menu as the customer app reads it (the customers' menu route's shape, read for an admin, hidden and unpublished rows left out), read only.
   - [ ] 11. The merchants and notifications `CLAUDE.md` (the new rules, routes and errors; «Not yet» updated), `reviewer` with AP §9.6.6, D17, RA §9.4, RA §16 #21, AP §6.3, then the handover to 2.32.
 - **Stopped at:** the plan is written (2026-11-19); nothing built. Next session: step 1.
 - **Before deploying to staging (to fill while building):** the migrations (the upload purpose; any state-outbox kind check) and the new routes; deploy the server (API and worker) before the panel.

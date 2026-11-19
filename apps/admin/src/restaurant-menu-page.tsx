@@ -5,6 +5,7 @@ import { formatMoney } from './format.js';
 import { timeOf } from './peak-bonus.js';
 import { ImageField } from './restaurant-images-page.js';
 import { MenuImportSection } from './restaurant-menu-import-page.js';
+import { MenuPreviewSection } from './restaurant-menu-preview-page.js';
 import {
   BulkAvailabilitySection,
   BulkPriceSection,
@@ -113,6 +114,7 @@ export function MenuStep(props: {
       {editable && props.currency !== null && (
         <MenuImportSection restaurantId={props.restaurantId} currency={props.currency} />
       )}
+      <MenuPreviewSection restaurantId={props.restaurantId} />
       <PriceLogSection restaurantId={props.restaurantId} timeZone={props.timeZone} />
     </section>
   );

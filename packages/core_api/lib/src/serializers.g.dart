@@ -381,6 +381,13 @@ Serializers _$serializers =
           ..add(AdminMenuOptionDto.serializer)
           ..add(AdminMenuOptionGroupDto.serializer)
           ..add(AdminMenuOptionOrderDto.serializer)
+          ..add(AdminMenuPreviewDtoOutput.serializer)
+          ..add(AdminMenuPreviewDtoOutputMenuInner.serializer)
+          ..add(AdminMenuPreviewDtoOutputMenuInnerItemsInner.serializer)
+          ..add(
+            AdminMenuPreviewDtoOutputMenuInnerItemsInnerUnavailableReasonEnum
+                .serializer,
+          )
           ..add(AdminMenuSwitchedOffOutput.serializer)
           ..add(AdminMenuWindow.serializer)
           ..add(AdminMenuWindowOutput.serializer)
@@ -2278,6 +2285,18 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminMenuPreviewDtoOutputMenuInner),
+            ]),
+            () => ListBuilder<AdminMenuPreviewDtoOutputMenuInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminMenuPreviewDtoOutputMenuInnerItemsInner),
+            ]),
+            () => ListBuilder<AdminMenuPreviewDtoOutputMenuInnerItemsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminMerchantStatementDtoOutputLinesInner),
             ]),
             () => ListBuilder<AdminMerchantStatementDtoOutputLinesInner>(),
@@ -3572,6 +3591,17 @@ Serializers _$serializers =
             () =>
                 ListBuilder<
                   CustomerRestaurantPageDtoOutputMenuInnerItemsInnerOptionGroupsInnerOptionsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                CustomerSearchDtoOutputItemsInnerOptionGroupsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  CustomerSearchDtoOutputItemsInnerOptionGroupsInner
                 >(),
           )
           ..addBuilderFactory(

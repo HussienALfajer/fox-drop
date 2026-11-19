@@ -440,6 +440,9 @@ const routeAccess: Record<string, Access> = {
   'GET /v1/admin/restaurants/{restaurantId}/notes': 'restaurants.read',
   'POST /v1/admin/restaurants/{restaurantId}/notes': 'restaurants.read',
   'GET /v1/admin/restaurants/{restaurantId}/change-log': 'restaurants.read',
+  'GET /v1/admin/restaurants/{restaurantId}/menu/customer-preview': {
+    anyOf: ['restaurants.read', 'restaurants.menus'],
+  },
   'GET /v1/admin/restaurants/{restaurantId}/menu/price-log': {
     anyOf: ['restaurants.read', 'restaurants.menus'],
   },

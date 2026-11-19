@@ -3044,6 +3044,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/restaurants/{restaurantId}/menu/customer-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminMenuPreviewPreview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/lost-demand": {
         parameters: {
             query?: never;
@@ -9507,6 +9523,61 @@ export interface components {
             stopId: string;
             /** @description The required reason. */
             note: string;
+        };
+        AdminMenuPreviewDto_Output: {
+            /** @description The restaurant page's menu (CU §9.3): hidden rows left out. */
+            menu: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                /** @description Minutes after midnight on the city clock; «متوفر من {الساعة}» outside it. */
+                window: {
+                    startsAt: number;
+                    endsAt: number;
+                } | null;
+                items: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                    description: string | null;
+                    /** @description Its key in public-media, shown through imgproxy (architecture §5.8); null without one. */
+                    photoKey: string | null;
+                    price: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    };
+                    /** @description «من {أقل سعر}» when a required group changes it. */
+                    fromPrice: {
+                        /** @description Integer minor units (AP §8.6). */
+                        amount: string;
+                        currency: string;
+                    } | null;
+                    available: boolean;
+                    /** @description «يتوفر غداً», «متوفر من {الساعة}» (its category window) or «غير متوفر حالياً». */
+                    unavailableReason: ("tomorrow" | "window" | "unavailable") | null;
+                    optionGroups: {
+                        /** Format: uuid */
+                        id: string;
+                        name: string;
+                        /** @description 0 is an add-on group; 1 or more is «إجباري». */
+                        minChoices: number;
+                        maxChoices: number;
+                        options: {
+                            /** Format: uuid */
+                            id: string;
+                            name: string;
+                            priceDelta: {
+                                /** @description Integer minor units (AP §8.6). */
+                                amount: string;
+                                currency: string;
+                            };
+                            /** @description Faded and not pickable when false. */
+                            available: boolean;
+                        }[];
+                    }[];
+                }[];
+            }[];
         };
         AdminLostDemandDto_Output: {
             /**
@@ -22809,6 +22880,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminCustomerDto_Output"];
+                };
+            };
+        };
+    };
+    adminMenuPreviewPreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                restaurantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMenuPreviewDto_Output"];
                 };
             };
         };

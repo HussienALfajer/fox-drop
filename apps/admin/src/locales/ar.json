@@ -3090,6 +3090,23 @@
         "upload_failed": "تعذّر رفع الملف."
       },
       "rowNumber": "{{row}}"
+    },
+    "preview": {
+      "title": "معاينة كما يراها الزبون",
+      "open": "عرض المعاينة",
+      "close": "إخفاء المعاينة",
+      "empty": "لا يرى الزبون أي صنف بعد.",
+      "item": "{{name}} · {{price}}",
+      "itemFrom": "{{name}} · من {{price}}",
+      "window": "متوفر من {{time}}",
+      "reason": {
+        "tomorrow": "يتوفر غداً",
+        "unavailable": "غير متوفر حالياً",
+        "window": "متوفر لاحقاً"
+      },
+      "required": "{{name}} (إجباري): {{options}}",
+      "optional": "{{name}} (اختياري): {{options}}",
+      "option": "{{name}} +{{delta}}"
     }
   },
   "activation": {

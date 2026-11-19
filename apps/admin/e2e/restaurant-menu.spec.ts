@@ -113,3 +113,45 @@ test('keeps the prices read only without menus.edit_prices past test mode', asyn
   await page.getByRole('button', { name: 'تعديل الصنف' }).first().click();
   await expect(page.getByLabel('السعر (TRY)')).toHaveAttribute('readonly', '');
 });
+
+test('shows the menu as the customer sees it', async ({ page }) => {
+  await fakeSession(page, ['restaurants.read', 'restaurants.menus']);
+  await fakeMenuRestaurant(page);
+  await page.route(`**/v1/admin/restaurant-drafts/${restaurantId}/menu`, (route) =>
+    route.fulfill({ json: menuOf(['12000', '9950']) }),
+  );
+  await page.route(`**/v1/admin/restaurants/${restaurantId}/menu/price-log`, (route) =>
+    route.fulfill({ json: { entries: [] } }),
+  );
+  await page.route(`**/v1/admin/restaurants/${restaurantId}/menu/customer-preview`, (route) =>
+    route.fulfill({
+      json: {
+        menu: [
+          {
+            id: meals,
+            name: 'وجبات',
+            window: null,
+            items: [
+              {
+                id: juice,
+                name: 'عصير',
+                description: null,
+                photoKey: null,
+                price: { amount: '9950', currency: 'TRY' },
+                fromPrice: null,
+                available: false,
+                unavailableReason: 'tomorrow',
+                optionGroups: [],
+              },
+            ],
+          },
+        ],
+      },
+    }),
+  );
+  await page.goto(`/restaurants/${restaurantId}?tab=menu`);
+  const preview = page.getByRole('region', { name: 'معاينة كما يراها الزبون' });
+  await preview.getByRole('button', { name: 'عرض المعاينة' }).click();
+  await expect(preview.getByText('يتوفر غداً')).toBeVisible();
+  await expect(preview.getByText(/عصير ·/)).toBeVisible();
+});
