@@ -101,6 +101,8 @@ import 'package:core_api/src/model/admin_customer_signed_out_dto_output.dart';
 import 'package:core_api/src/model/admin_customers_found_dto_output.dart';
 import 'package:core_api/src/model/admin_daily_report_dto_output.dart';
 import 'package:core_api/src/model/admin_daily_report_export_dto.dart';
+import 'package:core_api/src/model/admin_delivery_fee_preview_dto_output.dart';
+import 'package:core_api/src/model/admin_delivery_fees_dto_output.dart';
 import 'package:core_api/src/model/admin_deposit_cash_limit_dto.dart';
 import 'package:core_api/src/model/admin_deposit_refunds_dto_output.dart';
 import 'package:core_api/src/model/admin_deposits_dto_output.dart';
@@ -272,10 +274,12 @@ import 'package:core_api/src/model/admin_resume_emergency_stop_dto.dart';
 import 'package:core_api/src/model/admin_session_dto_output.dart';
 import 'package:core_api/src/model/admin_set_city_office_dto.dart';
 import 'package:core_api/src/model/admin_set_customer_test_account_dto.dart';
+import 'package:core_api/src/model/admin_set_delivery_fee_dto.dart';
 import 'package:core_api/src/model/admin_set_exchange_rate_dto.dart';
 import 'package:core_api/src/model/admin_set_image_dto.dart';
 import 'package:core_api/src/model/admin_set_outcome_dto.dart';
 import 'package:core_api/src/model/admin_set_peak_bonus_dto.dart';
+import 'package:core_api/src/model/admin_set_restaurant_delivery_fee_dto.dart';
 import 'package:core_api/src/model/admin_settle_deposit_dto.dart';
 import 'package:core_api/src/model/admin_settle_dto.dart';
 import 'package:core_api/src/model/admin_settlement_dto_output.dart';
@@ -10436,6 +10440,394 @@ class AdminApi {
     }
 
     return Response<AdminDailyReportDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminDeliveryFeesPreview
+  ///
+  ///
+  /// Parameters:
+  /// * [cityId]
+  /// * [restaurantId]
+  /// * [latitude]
+  /// * [longitude]
+  /// * [itemsValue] - Minor units of the base currency; 0 is the fee before any item.
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminDeliveryFeePreviewDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminDeliveryFeePreviewDtoOutput>> adminDeliveryFeesPreview({
+    required String cityId,
+    required String restaurantId,
+    required num latitude,
+    required num longitude,
+    String? itemsValue = '0',
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/delivery-fees/preview';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      r'cityId': encodeQueryParameter(
+        _serializers,
+        cityId,
+        const FullType(String),
+      ),
+      r'restaurantId': encodeQueryParameter(
+        _serializers,
+        restaurantId,
+        const FullType(String),
+      ),
+      r'latitude': encodeQueryParameter(
+        _serializers,
+        latitude,
+        const FullType(num),
+      ),
+      r'longitude': encodeQueryParameter(
+        _serializers,
+        longitude,
+        const FullType(num),
+      ),
+      if (itemsValue != null)
+        r'itemsValue': encodeQueryParameter(
+          _serializers,
+          itemsValue,
+          const FullType(String),
+        ),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminDeliveryFeePreviewDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(
+                    AdminDeliveryFeePreviewDtoOutput,
+                  ),
+                )
+                as AdminDeliveryFeePreviewDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminDeliveryFeePreviewDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminDeliveryFeesScreen
+  ///
+  ///
+  /// Parameters:
+  /// * [cityId]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminDeliveryFeesDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminDeliveryFeesDtoOutput>> adminDeliveryFeesScreen({
+    required String cityId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/delivery-fees';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      r'cityId': encodeQueryParameter(
+        _serializers,
+        cityId,
+        const FullType(String),
+      ),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminDeliveryFeesDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminDeliveryFeesDtoOutput),
+                )
+                as AdminDeliveryFeesDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminDeliveryFeesDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminDeliveryFeesSetCityRule
+  ///
+  ///
+  /// Parameters:
+  /// * [adminSetDeliveryFeeDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminDeliveryFeesDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminDeliveryFeesDtoOutput>> adminDeliveryFeesSetCityRule({
+    required AdminSetDeliveryFeeDto adminSetDeliveryFeeDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/delivery-fees';
+    final _options = Options(
+      method: r'PUT',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminSetDeliveryFeeDto);
+      _bodyData = _serializers.serialize(
+        adminSetDeliveryFeeDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminDeliveryFeesDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminDeliveryFeesDtoOutput),
+                )
+                as AdminDeliveryFeesDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminDeliveryFeesDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminDeliveryFeesSetRestaurantRule
+  ///
+  ///
+  /// Parameters:
+  /// * [restaurantId]
+  /// * [adminSetRestaurantDeliveryFeeDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminDeliveryFeesDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminDeliveryFeesDtoOutput>>
+  adminDeliveryFeesSetRestaurantRule({
+    required String restaurantId,
+    required AdminSetRestaurantDeliveryFeeDto adminSetRestaurantDeliveryFeeDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/delivery-fees/restaurants/{restaurantId}'
+        .replaceAll(
+          '{'
+          r'restaurantId'
+          '}',
+          encodeQueryParameter(
+            _serializers,
+            restaurantId,
+            const FullType(String),
+          ).toString(),
+        );
+    final _options = Options(
+      method: r'PUT',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminSetRestaurantDeliveryFeeDto);
+      _bodyData = _serializers.serialize(
+        adminSetRestaurantDeliveryFeeDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminDeliveryFeesDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(AdminDeliveryFeesDtoOutput),
+                )
+                as AdminDeliveryFeesDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminDeliveryFeesDtoOutput>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

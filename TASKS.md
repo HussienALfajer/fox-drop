@@ -4,15 +4,27 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.37, zones and pricing in the panel (`docs/roadmap.md`, Phase 2). Not started; it needs splitting first.
+Slice 2.37b, captain pay in the panel (`docs/roadmap.md`, Phase 2; 2.37 in three pull requests, owner decision 2026-11-19).
 
-- **Roadmap line:** 2.37 Zones and pricing in the panel: cities, zone outlines and names, the fee screen with its preview calculator, pay tables with their calculator, defaults, per-restaurant fee overrides, the vote map, the dispatch rules (AP §9.12). The owner changes a fee and previews it.
-- **Specs:** AP §9.12 (docs/product/v1/admin-panel/09-modules/12-zones-and-pricing.md), with its definition of done (AP §14), the open item on neighbourhood names (CU §18 item 6).
+- **Roadmap line:** 2.37b Captain pay: «أجور الكباتن» per vehicle (base pay with its first km, the rate per extra km, the waiting rate, the minimum, the maximum distance), a new table published to take effect 7 days later at the earliest, the captains' push announcing it, the preview calculator for a sample trip, linked with «مكافأة ساعة الذروة» (AP §9.12.5, CA §12.5). The owner publishes a new table and the captain's «ملفي» shows it with its start.
+- **Specs:** AP §9.12.5 (docs/product/v1/admin-panel/09-modules/12-zones-and-pricing.md), AP §6.3 (`pricing.edit_pay_tables`, OWN), AP §10 (what the panel pushes), CA §12.5, CA §14 (the push's row), AP §14 item 27.
 - **Branch:** the cloud session's branch, from an up-to-date `main`.
-- **First:** the line is larger than one pull request. Run the `slice-plan` skill and get the owner's approval of the split (2.37a, 2.37b, …) before building.
-- **Already built (reuse):** the zones and cities (geo), the delivery fee rules and their quote (ordering), the pay table versions with `setPayTable`, `payTable`, `announcedPayTables` and `samplePay` (captains, 2.36c), the peak bonus screen and routes (2.16), the dispatch mode and settings (dispatch, settings).
-- **Plan:** written once the split is approved.
-- **Stopped at:** 2.36c merged; 2.37 not started.
+- **Already built (reuse):** the pay table versions with `setPayTable`, `payTable`, `announcedPayTables`, `samplePay` and the captain's «ملفي» with «احسب أجري» (captains, 2.36c); the settings `dispatch.max_distance_km.<vehicle>` and `captain.waiting_threshold_min`; the peak bonus page and routes (2.16); the fee screen's patterns (`delivery-fees.ts`, `admin-delivery-fees.controller.ts`, 2.37a).
+- **Plan (to check against the spec first):**
+  - [ ] Server: the panel's routes for the pay table in force, the announced ones and their history, publishing a new one (`pricing.edit_pay_tables`, effective at least 7 days later), the preview for a sample trip, and the maximum distance per vehicle; the captains' push announcing a new table; tests first for the effective date.
+  - [ ] Panel: «أجور الكباتن» per vehicle with the calculator and the link to «مكافأة ساعة الذروة»; unit and Playwright tests.
+  - [ ] Review (`reviewer`), fixes, then hand over to 2.37c.
+- **Ask the owner first:** the push's wording (CA §14 may name it; else ours, to confirm), and whether the maximum distance per vehicle changes with the table's date or at once (it is a setting today).
+- **Stopped at:** 2.37a merged; 2.37b not started.
+
+### Left from 2.37a (the cloud session's branch)
+
+- **Before deploying to staging:** migration 0139 (expand only: the new tables `geo.restaurant_fee_rules` and `geo.restaurant_fee_bands`, insert only). New routes: `GET`/`PUT /v1/admin/delivery-fees`, `PUT /v1/admin/delivery-fees/restaurants/{restaurantId}`, `GET /v1/admin/delivery-fees/preview`. Deploy the server before the panel. No app needs a new build: the quote, the cards and the restaurant page price with a restaurant's own rule on the server.
+- **To check on staging (after the merge and the deploy):** 1. The home page › «رسوم التوصيل»: the rule in force and «سجل التغييرات». 2. «شرائح مسافة» with «حتى (كم)» 2 at 30 ₺ and the last band at 50 ₺, «حفظ الرسوم»: a new version is listed. 3. «حاسبة المعاينة»: a restaurant, a point on the map, «احسب الرسوم»: the fee, the distance «بالطريق», «بحسب رسوم المدينة» and the zone. 4. «تحديد رسوم خاصة لمطعم» with «ثابت» 25 ₺: the customer app shows 25 ₺ on that restaurant's card and in the quote, the others keep the city's; «إعادة … إلى رسوم المدينة» undoes it, and the restaurant's «سجل التغييرات» names «رسوم توصيل خاصة بالمطعم».
+- **Owner decisions 2026-11-19:** 2.37 in three pull requests; a restaurant's override is a whole rule of the city rule's shape replacing it for that restaurant alone, set by OWN; «المدن» edits the existing city only (2.37c).
+- **Decided by us (to confirm with the owner):** the rules are changed with `pricing.edit_pay_tables` (AP §6.3 «delivery fee rules»), read with `zones.read` (OWN, OPS, FIN); a band's edge typed in km to the metre; the reason optional; the history lists the latest 50 versions; the preview measures the trip for a flat rule too and says whether the restaurant covers the point; restaurants without a pin are not listed, and a terminated restaurant only while it keeps its own rule (it can only return to the city's, so it never blocks a base change); every label of the page but «رسوم التوصيل», «ثابت», «شرائح مسافة» and «حاسبة المعاينة».
+- **Not yet:** a restaurant's own rule is not shown in its profile (the fee screen lists it; its change log names it); the neighbourhoods' names (CU §18 item 6) with the zones of 2.37c.
+- **Not checked locally:** Turborepo does not run in the cloud container, so the parts ran one by one (see the pull request's test plan); the 13 server test files that need Garage (no IPv6 here) and the Flutter tests did not run here; CI runs them.
 
 ### Left from 2.36c (the cloud session's branch)
 

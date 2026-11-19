@@ -37,6 +37,8 @@ export {
 } from './distance.js';
 export {
   type DeliveryFee,
+  type FeeRule,
+  type FeeRuleVersion,
   type GeoChange,
   type GeoRefusal,
   GeoRefusedError,

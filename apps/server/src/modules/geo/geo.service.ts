@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
-import { and, asc, desc, eq, ne, type SQL, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, ne, type SQL, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE } from '../../database/database.module.js';
 import type { Database } from '../../database/database.js';
@@ -17,7 +17,17 @@ import {
   type RoadDistances,
   type Route,
 } from './distance.js';
-import { cities, feeBands, feeRules, officePeriods, offices, zones, zoneVotes } from './schema.js';
+import {
+  cities,
+  feeBands,
+  feeRules,
+  officePeriods,
+  offices,
+  restaurantFeeBands,
+  restaurantFeeRules,
+  zones,
+  zoneVotes,
+} from './schema.js';
 import {
   checkWeeklySchedule,
   currentPeriod,
@@ -70,9 +80,22 @@ export interface DeliveryFee {
   // The rule version it was priced with, and that rule's free-delivery
   // threshold (null without one).
   ruleId: string;
+  // Whether the rule is the city's or the restaurant's own (slice 2.37a).
+  scope: 'city' | 'restaurant';
   freeDeliveryFrom: bigint | null;
   // The distance of a distance-band rule; null for a flat one.
   distance: Distance | null;
+}
+
+// A fee rule version with its id.
+export type FeeRule = DeliveryFeeRule & { id: string };
+
+// A version as «رسوم التوصيل» lists it: who set it, why and when.
+export interface FeeRuleVersion {
+  rule: FeeRule;
+  editorId: string | null;
+  reason: string | null;
+  createdAt: Date;
 }
 
 // AP §9.12.1, CA C13: the city's office and its desk hours, with whether the
@@ -96,7 +119,7 @@ const FEE_VEHICLE: Vehicle = 'motorbike';
 export const VOTE_RADIUS_METRES = 500;
 export const VOTE_CITY_METRES = 50_000;
 
-type Executor = Pick<NodePgDatabase, 'select'>;
+type Executor = Pick<NodePgDatabase, 'select' | 'selectDistinctOn'>;
 
 // Cities (AP §9.12.1), distances (architecture §7.1), service zones and the
 // delivery fee (AP §9.12.2–9.12.3) for the other modules.
@@ -112,12 +135,20 @@ export class GeoService implements OnModuleInit {
     private readonly audit: AuditService,
   ) {}
 
-  // The fee rule is in the city's base currency (AP §8.6), so fx refuses a
-  // base change until the rule is in the new base.
+  // The fee rules, the city's and the restaurants' own, are in the city's
+  // base currency (AP §8.6), so fx refuses a base change until they are in
+  // the new base.
   onModuleInit(): void {
     this.fx.useCityAmounts(async (cityId, executor) => {
       const rule = await this.deliveryFeeRule(cityId, executor);
-      return rule === null ? [] : [{ key: 'delivery_fee_rule', currency: rule.currency }];
+      const own = await this.restaurantFeeRules(cityId, executor);
+      return [
+        ...(rule === null ? [] : [{ key: 'delivery_fee_rule', currency: rule.currency }]),
+        ...own.map(({ restaurantId, rule }) => ({
+          key: `restaurant_fee_rule:${restaurantId}`,
+          currency: rule.currency,
+        })),
+      ];
     });
   }
 
@@ -629,27 +660,68 @@ export class GeoService implements OnModuleInit {
   async deliveryFeeRule(
     cityId: string,
     executor: Executor = this.database.db,
-  ): Promise<(DeliveryFeeRule & { id: string }) | null> {
-    const [rule] = await executor
+  ): Promise<FeeRule | null> {
+    const [row] = await executor
       .select()
       .from(feeRules)
       .where(eq(feeRules.cityId, cityId))
       .orderBy(desc(feeRules.id))
       .limit(1);
-    if (!rule) return null;
-    const common = {
-      id: rule.id,
-      currency: rule.currency,
-      minimumFee: rule.minimumFee,
-      freeDeliveryFrom: rule.freeDeliveryFrom,
-    };
-    if (rule.kind === 'flat') return { ...common, kind: 'flat', flatFee: rule.flatFee! };
-    const bands = await executor
-      .select({ upToMetres: feeBands.upToMetres, fee: feeBands.fee })
-      .from(feeBands)
-      .where(eq(feeBands.ruleId, rule.id))
-      .orderBy(asc(feeBands.position));
-    return { ...common, kind: 'distance_bands', bands };
+    if (!row) return null;
+    return (await withBands([row], executor, 'city'))[0]!.rule;
+  }
+
+  // A restaurant's own rule in effect (slice 2.37a); null while it follows
+  // the city's rule.
+  async restaurantFeeRule(
+    cityId: string,
+    restaurantId: string,
+    executor: Executor = this.database.db,
+  ): Promise<FeeRule | null> {
+    const [row] = await executor
+      .select()
+      .from(restaurantFeeRules)
+      .where(
+        and(
+          eq(restaurantFeeRules.cityId, cityId),
+          eq(restaurantFeeRules.restaurantId, restaurantId),
+        ),
+      )
+      .orderBy(desc(restaurantFeeRules.id))
+      .limit(1);
+    if (!row || row.kind === 'city_rule') return null;
+    return (await withBands([row], executor, 'restaurant'))[0]!.rule;
+  }
+
+  // «رسوم التوصيل» (AP §9.12.3): the city's rule versions, newest first, at
+  // most `limit`.
+  async deliveryFeeVersions(cityId: string, limit = 50): Promise<FeeRuleVersion[]> {
+    const rows = await this.database.db
+      .select()
+      .from(feeRules)
+      .where(eq(feeRules.cityId, cityId))
+      .orderBy(desc(feeRules.id))
+      .limit(limit);
+    return withBands(rows, this.database.db, 'city');
+  }
+
+  // The restaurants of the city with a rule of their own in effect, each
+  // with its version.
+  async restaurantFeeRules(
+    cityId: string,
+    executor: Executor = this.database.db,
+  ): Promise<(FeeRuleVersion & { restaurantId: string })[]> {
+    const rows = await executor
+      .selectDistinctOn([restaurantFeeRules.restaurantId])
+      .from(restaurantFeeRules)
+      .where(eq(restaurantFeeRules.cityId, cityId))
+      .orderBy(restaurantFeeRules.restaurantId, desc(restaurantFeeRules.id));
+    const own = rows.filter((row) => row.kind !== 'city_rule');
+    const versions = await withBands(own, executor, 'restaurant');
+    return versions.map((version, index) => ({
+      ...version,
+      restaurantId: own[index]!.restaurantId,
+    }));
   }
 
   // A new version of the city's delivery fee rule, in effect at once, in the
@@ -659,75 +731,132 @@ export class GeoService implements OnModuleInit {
     rule: DeliveryFeeRule,
     change: GeoChange,
   ): Promise<string> {
-    const problem = checkDeliveryFeeRule(rule);
-    if (problem !== null) throw new GeoRefusedError('invalid_fee_rule', problem);
+    return (await this.addFeeRule(cityId, null, rule, change))!;
+  }
+
+  // A new version of a restaurant's own rule, in effect at once, replacing
+  // the city's for that restaurant alone (slice 2.37a, owner decision
+  // 2026-11-19); null returns it to the city's rule. The caller checks the
+  // restaurant is the city's. Answers the rule's id, or null when the
+  // restaurant follows the city's rule.
+  async setRestaurantFeeRule(
+    cityId: string,
+    restaurantId: string,
+    rule: DeliveryFeeRule | null,
+    change: GeoChange,
+  ): Promise<string | null> {
+    return this.addFeeRule(cityId, restaurantId, rule, change);
+  }
+
+  private async addFeeRule(
+    cityId: string,
+    restaurantId: string | null,
+    rule: DeliveryFeeRule | null,
+    change: GeoChange,
+  ): Promise<string | null> {
+    if (rule !== null) {
+      const problem = checkDeliveryFeeRule(rule);
+      if (problem !== null) throw new GeoRefusedError('invalid_fee_rule', problem);
+    }
 
     return this.database.db.transaction(async (tx) => {
-      // A base change takes the same lock, so it never passes this rule.
+      // A base change takes the same lock, so it never passes this rule; so
+      // do the other changes of the city's rules.
       await lockCityCurrencies(tx, cityId);
-      // The fee is charged in the base currency. Until the first order locks
-      // the base, the rule may be entered in another of the city's
-      // currencies, so the base can then change to it (AP §8.6, D25).
-      const base = await this.fx.baseCurrency(cityId, tx);
-      const allowed =
-        rule.currency === base ||
-        (!(await this.fx.baseLocked(cityId, tx)) &&
-          (await this.fx.cityCurrencies(cityId, tx)).some(
-            (entry) => entry.currency === rule.currency,
-          ));
-      if (!allowed) {
-        throw new GeoRefusedError(
-          'fee_not_in_base_currency',
-          `the delivery fee is in the city's base currency, ${base ?? 'not chosen yet'}`,
-        );
+      if (rule !== null) {
+        // The fee is charged in the base currency. Until the first order
+        // locks the base, the rule may be entered in another of the city's
+        // currencies, so the base can then change to it (AP §8.6, D25).
+        const base = await this.fx.baseCurrency(cityId, tx);
+        const allowed =
+          rule.currency === base ||
+          (!(await this.fx.baseLocked(cityId, tx)) &&
+            (await this.fx.cityCurrencies(cityId, tx)).some(
+              (entry) => entry.currency === rule.currency,
+            ));
+        if (!allowed) {
+          throw new GeoRefusedError(
+            'fee_not_in_base_currency',
+            `the delivery fee is in the city's base currency, ${base ?? 'not chosen yet'}`,
+          );
+        }
       }
-      const before = await this.deliveryFeeRule(cityId, tx);
+      const before =
+        restaurantId === null
+          ? await this.deliveryFeeRule(cityId, tx)
+          : await this.restaurantFeeRule(cityId, restaurantId, tx);
       // A change that changes nothing adds no version.
-      if (before !== null && sameRule(before, rule)) return before.id;
-      const [{ id }] = (await tx
-        .insert(feeRules)
-        .values({
-          cityId,
-          kind: rule.kind,
-          currency: rule.currency,
-          flatFee: rule.kind === 'flat' ? rule.flatFee : null,
-          minimumFee: rule.minimumFee,
-          freeDeliveryFrom: rule.freeDeliveryFrom,
-          editorId: change.actor.type === 'admin' ? change.actor.id : null,
-          reason: change.reason ?? null,
-        })
-        .returning({ id: feeRules.id })) as [{ id: string }];
-      if (rule.kind === 'distance_bands') {
-        await tx
-          .insert(feeBands)
-          .values(rule.bands.map((band, position) => ({ ruleId: id, position, ...band })));
+      if (before === null && rule === null) return null;
+      if (before !== null && rule !== null && sameRule(before, rule)) return before.id;
+      const values = {
+        cityId,
+        currency: rule?.currency ?? null,
+        flatFee: rule?.kind === 'flat' ? rule.flatFee : null,
+        minimumFee: rule?.minimumFee ?? null,
+        freeDeliveryFrom: rule?.freeDeliveryFrom ?? null,
+        editorId: change.actor.type === 'admin' ? change.actor.id : null,
+        reason: change.reason ?? null,
+      };
+      const bands = rule?.kind === 'distance_bands' ? rule.bands : [];
+      let id: string;
+      if (restaurantId === null) {
+        // The city's rule always has one.
+        [{ id }] = (await tx
+          .insert(feeRules)
+          .values({ ...values, kind: rule!.kind, currency: rule!.currency })
+          .returning({ id: feeRules.id })) as [{ id: string }];
+        if (bands.length > 0) {
+          await tx
+            .insert(feeBands)
+            .values(bands.map((band, position) => ({ ruleId: id, position, ...band })));
+        }
+      } else {
+        [{ id }] = (await tx
+          .insert(restaurantFeeRules)
+          .values({ ...values, restaurantId, kind: rule?.kind ?? 'city_rule' })
+          .returning({ id: restaurantFeeRules.id })) as [{ id: string }];
+        if (bands.length > 0) {
+          await tx
+            .insert(restaurantFeeBands)
+            .values(bands.map((band, position) => ({ ruleId: id, position, ...band })));
+        }
       }
       await this.audit.recordWrite(
         {
           actor: change.actor,
           context: change.context,
           cityId,
-          action: 'delivery_fee_rule.set',
-          target: { type: 'city', id: cityId },
+          action: restaurantId === null ? 'delivery_fee_rule.set' : 'restaurant_fee_rule.set',
+          target:
+            restaurantId === null
+              ? { type: 'city', id: cityId }
+              : { type: 'restaurant', id: restaurantId },
           before: before === null ? null : forAudit(before),
-          after: forAudit({ ...rule, id }),
+          after: rule === null ? { id, kind: 'city_rule' } : forAudit({ ...rule, id }),
           reason: change.reason ?? null,
         },
         tx,
       );
-      return id;
+      return rule === null ? null : id;
     });
   }
 
   // The fee a customer pays to have an order of this items value, in the
-  // base currency, carried from the restaurant to the point (AP §9.12.3).
-  // The items value is after the restaurant's item discounts, the value the
-  // commission is on (owner decision 2026-11-06; docs/domain/04).
+  // base currency, carried from the restaurant to the point (AP §9.12.3),
+  // by the restaurant's own rule or else the city's. The items value is
+  // after the restaurant's item discounts, the value the commission is on
+  // (owner decision 2026-11-06; docs/domain/04).
   async deliveryFee(
     cityId: string,
-    { from, to, itemsValue }: { from: Point; to: Point; itemsValue: bigint },
+    {
+      restaurantId,
+      from,
+      to,
+      itemsValue,
+    }: { restaurantId: string | null; from: Point; to: Point; itemsValue: bigint },
   ): Promise<DeliveryFee> {
-    const rule = await this.deliveryFeeRule(cityId);
+    const own = restaurantId === null ? null : await this.restaurantFeeRule(cityId, restaurantId);
+    const rule = own ?? (await this.deliveryFeeRule(cityId));
     if (rule === null) throw new GeoRefusedError('no_fee_rule', 'the city has no delivery fee yet');
     const base = await this.fx.baseCurrency(cityId);
     if (rule.currency !== base) {
@@ -746,10 +875,59 @@ export class GeoService implements OnModuleInit {
       currency: rule.currency,
       free,
       ruleId: rule.id,
+      scope: own === null ? 'city' : 'restaurant',
       freeDeliveryFrom: rule.freeDeliveryFrom,
       distance,
     };
   }
+}
+
+// Rule rows with their bands, in their order, in one query for the bands:
+// the city's from fee_bands, a restaurant's from restaurant_fee_bands.
+async function withBands(
+  rows: {
+    id: string;
+    kind: 'flat' | 'distance_bands' | 'city_rule';
+    currency: string | null;
+    flatFee: bigint | null;
+    minimumFee: bigint | null;
+    freeDeliveryFrom: bigint | null;
+    editorId: string | null;
+    reason: string | null;
+    createdAt: Date;
+  }[],
+  executor: Executor,
+  scope: 'city' | 'restaurant',
+): Promise<FeeRuleVersion[]> {
+  const banded = rows.filter((row) => row.kind === 'distance_bands').map((row) => row.id);
+  const table = scope === 'city' ? feeBands : restaurantFeeBands;
+  const bands =
+    banded.length === 0
+      ? []
+      : await executor
+          .select({ ruleId: table.ruleId, upToMetres: table.upToMetres, fee: table.fee })
+          .from(table)
+          .where(inArray(table.ruleId, banded))
+          .orderBy(asc(table.ruleId), asc(table.position));
+  return rows.map((row) => {
+    const common = {
+      id: row.id,
+      currency: row.currency!,
+      minimumFee: row.minimumFee,
+      freeDeliveryFrom: row.freeDeliveryFrom,
+    };
+    const rule: FeeRule =
+      row.kind === 'flat'
+        ? { ...common, kind: 'flat', flatFee: row.flatFee! }
+        : {
+            ...common,
+            kind: 'distance_bands',
+            bands: bands
+              .filter((band) => band.ruleId === row.id)
+              .map(({ upToMetres, fee }) => ({ upToMetres, fee })),
+          };
+    return { rule, editorId: row.editorId, reason: row.reason, createdAt: row.createdAt };
+  });
 }
 
 // Changes of one city's zones take turns, so the overlap check of one sees

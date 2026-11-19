@@ -331,6 +331,24 @@ describe('the restaurant list (CU §8.2)', () => {
     expect(restaurants[0].estimate).toEqual({ fromMin: 35, toMin: 45 });
   });
 
+  it("shows a restaurant's own fee rule on its card alone (AP §9.12.3)", async () => {
+    const geo = app.get(GeoService);
+    const own = { kind: 'flat', currency: 'TRY', flatFee: 2500n, minimumFee: null } as const;
+    await geo.setRestaurantFeeRule(azaz, busy, { ...own, freeDeliveryFrom: null }, change);
+    try {
+      const answer = await app.inject({
+        method: 'GET',
+        url: `/v1/customer/restaurants?${query(centre)}`,
+      });
+      const cards = answer.json().restaurants as { id: string; deliveryFee: unknown }[];
+      const fees = Object.fromEntries(cards.map((card) => [card.id, card.deliveryFee]));
+      expect(fees[busy]).toEqual({ fee: { amount: '2500', currency: 'TRY' }, free: false });
+      expect(fees[open]).toEqual({ fee: { amount: '4000', currency: 'TRY' }, free: false });
+    } finally {
+      await geo.setRestaurantFeeRule(azaz, busy, null, change);
+    }
+  });
+
   it('is empty outside every zone', async () => {
     const far = { latitude: 36.7, longitude: 37.3 };
     const answer = await app.inject({
@@ -407,6 +425,22 @@ describe('the restaurant page (CU §9.1–9.4)', () => {
       available: false,
       unavailableReason: 'window',
     });
+  });
+
+  it("shows the free-delivery threshold of the restaurant's own rule (AP §9.12.3)", async () => {
+    const geo = app.get(GeoService);
+    const own = { kind: 'flat', currency: 'TRY', flatFee: 2500n, minimumFee: null } as const;
+    await geo.setRestaurantFeeRule(azaz, open, { ...own, freeDeliveryFrom: 20_000n }, change);
+    try {
+      expect((await page(open)).json()).toMatchObject({
+        deliveryFee: { fee: { amount: '2500', currency: 'TRY' } },
+        freeDeliveryFrom: { amount: '20000', currency: 'TRY' },
+      });
+      await geo.setRestaurantFeeRule(azaz, open, { ...own, freeDeliveryFrom: null }, change);
+      expect((await page(open)).json().freeDeliveryFrom).toBeNull();
+    } finally {
+      await geo.setRestaurantFeeRule(azaz, open, null, change);
+    }
   });
 
   it('says when it does not deliver to the point', async () => {

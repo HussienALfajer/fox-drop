@@ -204,6 +204,7 @@ export const changeActions = [
   'merchant_account.create',
   'merchant_account.remove',
   'merchant_devices.sign_out',
+  'restaurant_fee_rule.set',
 ] as const;
 export type ChangeAction = (typeof changeActions)[number];
 

@@ -16351,6 +16351,202 @@
         ]
       }
     },
+    "/v1/admin/delivery-fees": {
+      "get": {
+        "operationId": "adminDeliveryFeesScreen",
+        "parameters": [
+          {
+            "name": "cityId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDeliveryFeesDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      },
+      "put": {
+        "operationId": "adminDeliveryFeesSetCityRule",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminSetDeliveryFeeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDeliveryFeesDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/delivery-fees/restaurants/{restaurantId}": {
+      "put": {
+        "operationId": "adminDeliveryFeesSetRestaurantRule",
+        "parameters": [
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminSetRestaurantDeliveryFeeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDeliveryFeesDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/delivery-fees/preview": {
+      "get": {
+        "operationId": "adminDeliveryFeesPreview",
+        "parameters": [
+          {
+            "name": "cityId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "restaurantId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "latitude",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": -90,
+              "maximum": 90,
+              "type": "number"
+            }
+          },
+          {
+            "name": "longitude",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": -180,
+              "maximum": 180,
+              "type": "number"
+            }
+          },
+          {
+            "name": "itemsValue",
+            "required": false,
+            "in": "query",
+            "description": "Minor units of the base currency; 0 is the fee before any item.",
+            "schema": {
+              "pattern": "^\\d{1,18}$",
+              "default": "0",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDeliveryFeePreviewDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/captain/orders/{orderId}/route": {
       "get": {
         "operationId": "captainOrderRouteRoute",
@@ -62872,6 +63068,711 @@
         },
         "required": [
           "orders"
+        ],
+        "additionalProperties": false
+      },
+      "AdminDeliveryFeesDto_Output": {
+        "type": "object",
+        "properties": {
+          "baseCurrency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The amounts are typed in it; null while the city has none."
+          },
+          "distanceMethod": {
+            "type": "string",
+            "enum": [
+              "road",
+              "straight_line"
+            ],
+            "description": "pricing.distance_method: how a distance-band fee is measured."
+          },
+          "versions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "rule": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "flat",
+                        "distance_bands"
+                      ]
+                    },
+                    "flatFee": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^\\d{1,18}$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The fee of a flat rule; null for distance bands."
+                    },
+                    "currency": {
+                      "type": "string",
+                      "pattern": "^[A-Z]{3}$"
+                    },
+                    "minimumFee": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^\\d{1,18}$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "A lower fee is raised to it; null for none."
+                    },
+                    "freeDeliveryFrom": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^\\d{1,18}$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "An items value from which delivery is free; null for none."
+                    },
+                    "bands": {
+                      "anyOf": [
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "upToMetres": {
+                                "anyOf": [
+                                  {
+                                    "type": "integer",
+                                    "exclusiveMinimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "description": "The band's upper edge in metres, included; null for the last band."
+                              },
+                              "fee": {
+                                "type": "string",
+                                "pattern": "^\\d{1,18}$"
+                              }
+                            },
+                            "required": [
+                              "upToMetres",
+                              "fee"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Null for a flat rule."
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "kind",
+                    "flatFee",
+                    "currency",
+                    "minimumFee",
+                    "freeDeliveryFrom",
+                    "bands"
+                  ],
+                  "additionalProperties": false
+                },
+                "editorName": {
+                  "description": "Null for the system or an unknown admin.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "rule",
+                "editorName",
+                "reason",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            },
+            "description": "The city's rule, newest first (the first is in effect), the latest 50."
+          },
+          "restaurants": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "nameAr": {
+                  "type": "string"
+                },
+                "location": {
+                  "type": "object",
+                  "properties": {
+                    "latitude": {
+                      "type": "number",
+                      "minimum": -90,
+                      "maximum": 90
+                    },
+                    "longitude": {
+                      "type": "number",
+                      "minimum": -180,
+                      "maximum": 180
+                    }
+                  },
+                  "required": [
+                    "latitude",
+                    "longitude"
+                  ],
+                  "additionalProperties": false
+                },
+                "ownRule": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "rule": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "flat",
+                                "distance_bands"
+                              ]
+                            },
+                            "flatFee": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^\\d{1,18}$"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "description": "The fee of a flat rule; null for distance bands."
+                            },
+                            "currency": {
+                              "type": "string",
+                              "pattern": "^[A-Z]{3}$"
+                            },
+                            "minimumFee": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^\\d{1,18}$"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "description": "A lower fee is raised to it; null for none."
+                            },
+                            "freeDeliveryFrom": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "pattern": "^\\d{1,18}$"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "description": "An items value from which delivery is free; null for none."
+                            },
+                            "bands": {
+                              "anyOf": [
+                                {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "upToMetres": {
+                                        "anyOf": [
+                                          {
+                                            "type": "integer",
+                                            "exclusiveMinimum": 0,
+                                            "maximum": 9007199254740991
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ],
+                                        "description": "The band's upper edge in metres, included; null for the last band."
+                                      },
+                                      "fee": {
+                                        "type": "string",
+                                        "pattern": "^\\d{1,18}$"
+                                      }
+                                    },
+                                    "required": [
+                                      "upToMetres",
+                                      "fee"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "description": "Null for a flat rule."
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "kind",
+                            "flatFee",
+                            "currency",
+                            "minimumFee",
+                            "freeDeliveryFrom",
+                            "bands"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "editorName": {
+                          "description": "Null for the system or an unknown admin.",
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "reason": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        }
+                      },
+                      "required": [
+                        "rule",
+                        "editorName",
+                        "reason",
+                        "createdAt"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Its own rule in effect; null: the city's."
+                }
+              },
+              "required": [
+                "id",
+                "nameAr",
+                "location",
+                "ownRule"
+              ],
+              "additionalProperties": false
+            },
+            "description": "The restaurants with a pin, not terminated (or terminated with their own rule), by name."
+          }
+        },
+        "required": [
+          "baseCurrency",
+          "distanceMethod",
+          "versions",
+          "restaurants"
+        ],
+        "additionalProperties": false
+      },
+      "AdminSetDeliveryFeeDto": {
+        "type": "object",
+        "properties": {
+          "cityId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "rule": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "flat",
+                  "distance_bands"
+                ]
+              },
+              "flatFee": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^\\d{1,18}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "The fee of a flat rule; null for distance bands."
+              },
+              "currency": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              "minimumFee": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^\\d{1,18}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "A lower fee is raised to it; null for none."
+              },
+              "freeDeliveryFrom": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^\\d{1,18}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "An items value from which delivery is free; null for none."
+              },
+              "bands": {
+                "anyOf": [
+                  {
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "upToMetres": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "exclusiveMinimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "The band's upper edge in metres, included; null for the last band."
+                        },
+                        "fee": {
+                          "type": "string",
+                          "pattern": "^\\d{1,18}$"
+                        }
+                      },
+                      "required": [
+                        "upToMetres",
+                        "fee"
+                      ]
+                    }
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "The bands in order, the last without an edge; null for a flat rule."
+              }
+            },
+            "required": [
+              "kind",
+              "flatFee",
+              "currency",
+              "minimumFee",
+              "freeDeliveryFrom",
+              "bands"
+            ]
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "cityId",
+          "rule",
+          "reason"
+        ]
+      },
+      "AdminSetRestaurantDeliveryFeeDto": {
+        "type": "object",
+        "properties": {
+          "cityId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "rule": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "flat",
+                      "distance_bands"
+                    ]
+                  },
+                  "flatFee": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^\\d{1,18}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The fee of a flat rule; null for distance bands."
+                  },
+                  "currency": {
+                    "type": "string",
+                    "pattern": "^[A-Z]{3}$"
+                  },
+                  "minimumFee": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^\\d{1,18}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "A lower fee is raised to it; null for none."
+                  },
+                  "freeDeliveryFrom": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^\\d{1,18}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "An items value from which delivery is free; null for none."
+                  },
+                  "bands": {
+                    "anyOf": [
+                      {
+                        "minItems": 1,
+                        "maxItems": 20,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "upToMetres": {
+                              "anyOf": [
+                                {
+                                  "type": "integer",
+                                  "exclusiveMinimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "description": "The band's upper edge in metres, included; null for the last band."
+                            },
+                            "fee": {
+                              "type": "string",
+                              "pattern": "^\\d{1,18}$"
+                            }
+                          },
+                          "required": [
+                            "upToMetres",
+                            "fee"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "The bands in order, the last without an edge; null for a flat rule."
+                  }
+                },
+                "required": [
+                  "kind",
+                  "flatFee",
+                  "currency",
+                  "minimumFee",
+                  "freeDeliveryFrom",
+                  "bands"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Null returns the restaurant to the city's rule."
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "cityId",
+          "rule",
+          "reason"
+        ]
+      },
+      "AdminDeliveryFeePreviewDto_Output": {
+        "type": "object",
+        "properties": {
+          "fee": {
+            "type": "string",
+            "pattern": "^\\d{1,18}$"
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "free": {
+            "type": "boolean",
+            "description": "The free-delivery threshold reached."
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "city",
+              "restaurant"
+            ],
+            "description": "The city's rule or the restaurant's own."
+          },
+          "ruleId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "freeDeliveryFrom": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{1,18}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "distance": {
+            "type": "object",
+            "properties": {
+              "metres": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "method": {
+                "type": "string",
+                "enum": [
+                  "road",
+                  "straight_x1.3"
+                ]
+              }
+            },
+            "required": [
+              "metres",
+              "method"
+            ],
+            "additionalProperties": false,
+            "description": "The motorbike's distance from the restaurant, as a band fee measures it."
+          },
+          "covers": {
+            "type": "boolean",
+            "description": "Whether the restaurant delivers to the point (CU §8)."
+          },
+          "zoneName": {
+            "description": "The active zone at the point; null outside.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "fee",
+          "currency",
+          "free",
+          "scope",
+          "ruleId",
+          "freeDeliveryFrom",
+          "distance",
+          "covers",
+          "zoneName"
         ],
         "additionalProperties": false
       },

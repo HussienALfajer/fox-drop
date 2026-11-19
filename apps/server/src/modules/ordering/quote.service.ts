@@ -317,7 +317,13 @@ export class QuoteService {
     });
     const itemsValue = lines.reduce((sum, line) => sum + (line.lineTotal ?? 0n), 0n);
 
-    const fee = await this.deliveryFee(cityId, restaurant.location, point, itemsValue);
+    const fee = await this.deliveryFee(
+      cityId,
+      restaurant.id,
+      restaurant.location,
+      point,
+      itemsValue,
+    );
     if (fee === null) problem('delivery_unpriced');
     if ((await this.captains.payTable(cityId, now)) === null) problem('captain_pay_unset');
     // The free-delivery threshold of the rule the fee was priced with.
@@ -506,6 +512,7 @@ export class QuoteService {
   // base currency.
   private async deliveryFee(
     cityId: string,
+    restaurantId: string,
     from: Point,
     to: Point,
     itemsValue: bigint,
@@ -518,6 +525,7 @@ export class QuoteService {
   } | null> {
     try {
       const { fee, free, freeDeliveryFrom, distance, ruleId } = await this.geo.deliveryFee(cityId, {
+        restaurantId,
         from,
         to,
         itemsValue,

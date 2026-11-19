@@ -223,6 +223,15 @@ import 'package:core_api/src/model/admin_daily_report_dto_output_orders.dart';
 import 'package:core_api/src/model/admin_daily_report_dto_output_previous_inner.dart';
 import 'package:core_api/src/model/admin_daily_report_dto_output_restaurants.dart';
 import 'package:core_api/src/model/admin_daily_report_export_dto.dart';
+import 'package:core_api/src/model/admin_delivery_fee_preview_dto_output.dart';
+import 'package:core_api/src/model/admin_delivery_fee_preview_dto_output_distance.dart';
+import 'package:core_api/src/model/admin_delivery_fees_dto_output.dart';
+import 'package:core_api/src/model/admin_delivery_fees_dto_output_restaurants_inner.dart';
+import 'package:core_api/src/model/admin_delivery_fees_dto_output_restaurants_inner_location.dart';
+import 'package:core_api/src/model/admin_delivery_fees_dto_output_restaurants_inner_own_rule.dart';
+import 'package:core_api/src/model/admin_delivery_fees_dto_output_versions_inner.dart';
+import 'package:core_api/src/model/admin_delivery_fees_dto_output_versions_inner_rule.dart';
+import 'package:core_api/src/model/admin_delivery_fees_dto_output_versions_inner_rule_bands_inner.dart';
 import 'package:core_api/src/model/admin_deposit_cash_limit_dto.dart';
 import 'package:core_api/src/model/admin_deposit_cash_limit_dto_cash_limit.dart';
 import 'package:core_api/src/model/admin_deposit_refunds_dto_output.dart';
@@ -588,11 +597,16 @@ import 'package:core_api/src/model/admin_set_city_office_dto.dart';
 import 'package:core_api/src/model/admin_set_city_office_dto_hours_inner.dart';
 import 'package:core_api/src/model/admin_set_city_office_dto_location.dart';
 import 'package:core_api/src/model/admin_set_customer_test_account_dto.dart';
+import 'package:core_api/src/model/admin_set_delivery_fee_dto.dart';
+import 'package:core_api/src/model/admin_set_delivery_fee_dto_rule.dart';
+import 'package:core_api/src/model/admin_set_delivery_fee_dto_rule_bands_inner.dart';
 import 'package:core_api/src/model/admin_set_exchange_rate_dto.dart';
 import 'package:core_api/src/model/admin_set_image_dto.dart';
 import 'package:core_api/src/model/admin_set_outcome_dto.dart';
 import 'package:core_api/src/model/admin_set_peak_bonus_dto.dart';
 import 'package:core_api/src/model/admin_set_peak_bonus_dto_windows_inner.dart';
+import 'package:core_api/src/model/admin_set_restaurant_delivery_fee_dto.dart';
+import 'package:core_api/src/model/admin_set_restaurant_delivery_fee_dto_rule.dart';
 import 'package:core_api/src/model/admin_settle_deposit_dto.dart';
 import 'package:core_api/src/model/admin_settle_dto.dart';
 import 'package:core_api/src/model/admin_settle_dto_custody_inner.dart';
@@ -1354,6 +1368,15 @@ part 'serializers.g.dart';
   AdminDailyReportDtoOutputPreviousInner,
   AdminDailyReportDtoOutputRestaurants,
   AdminDailyReportExportDto,
+  AdminDeliveryFeePreviewDtoOutput,
+  AdminDeliveryFeePreviewDtoOutputDistance,
+  AdminDeliveryFeesDtoOutput,
+  AdminDeliveryFeesDtoOutputRestaurantsInner,
+  AdminDeliveryFeesDtoOutputRestaurantsInnerLocation,
+  AdminDeliveryFeesDtoOutputRestaurantsInnerOwnRule,
+  AdminDeliveryFeesDtoOutputVersionsInner,
+  AdminDeliveryFeesDtoOutputVersionsInnerRule,
+  AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner,
   AdminDepositCashLimitDto,
   AdminDepositCashLimitDtoCashLimit,
   AdminDepositRefundsDtoOutput,
@@ -1719,11 +1742,16 @@ part 'serializers.g.dart';
   AdminSetCityOfficeDtoHoursInner,
   AdminSetCityOfficeDtoLocation,
   AdminSetCustomerTestAccountDto,
+  AdminSetDeliveryFeeDto,
+  AdminSetDeliveryFeeDtoRule,
+  AdminSetDeliveryFeeDtoRuleBandsInner,
   AdminSetExchangeRateDto,
   AdminSetImageDto,
   AdminSetOutcomeDto,
   AdminSetPeakBonusDto,
   AdminSetPeakBonusDtoWindowsInner,
+  AdminSetRestaurantDeliveryFeeDto,
+  AdminSetRestaurantDeliveryFeeDtoRule,
   AdminSettleDepositDto,
   AdminSettleDto,
   AdminSettleDtoCustodyInner,
@@ -2464,6 +2492,12 @@ Serializers serializers =
                 ListBuilder<
                   AdminCaptainApplicationsDtoOutputApplicationsInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminDeliveryFeesDtoOutputVersionsInner),
+            ]),
+            () => ListBuilder<AdminDeliveryFeesDtoOutputVersionsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -3357,6 +3391,15 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminBoardDtoOutputOrdersInner),
             ]),
             () => ListBuilder<AdminBoardDtoOutputOrdersInner>(),
@@ -3516,6 +3559,12 @@ Serializers serializers =
                 ListBuilder<
                   CustomerActiveOrdersDtoOutputOrdersInnerRedeliveriesInner
                 >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminSetDeliveryFeeDtoRuleBandsInner),
+            ]),
+            () => ListBuilder<AdminSetDeliveryFeeDtoRuleBandsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -4072,6 +4121,12 @@ Serializers serializers =
               FullType(CaptainCustodyDtoOutputReceiptsInnerLinesInner),
             ]),
             () => ListBuilder<CaptainCustodyDtoOutputReceiptsInnerLinesInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(AdminDeliveryFeesDtoOutputRestaurantsInner),
+            ]),
+            () => ListBuilder<AdminDeliveryFeesDtoOutputRestaurantsInner>(),
           )
           ..add(const OneOfSerializer())
           ..add(const AnyOfSerializer())

@@ -385,6 +385,21 @@ Serializers _$serializers =
           ..add(AdminDailyReportDtoOutputPreviousInner.serializer)
           ..add(AdminDailyReportDtoOutputRestaurants.serializer)
           ..add(AdminDailyReportExportDto.serializer)
+          ..add(AdminDeliveryFeePreviewDtoOutput.serializer)
+          ..add(AdminDeliveryFeePreviewDtoOutputDistance.serializer)
+          ..add(AdminDeliveryFeePreviewDtoOutputDistanceMethodEnum.serializer)
+          ..add(AdminDeliveryFeePreviewDtoOutputScopeEnum.serializer)
+          ..add(AdminDeliveryFeesDtoOutput.serializer)
+          ..add(AdminDeliveryFeesDtoOutputDistanceMethodEnum.serializer)
+          ..add(AdminDeliveryFeesDtoOutputRestaurantsInner.serializer)
+          ..add(AdminDeliveryFeesDtoOutputRestaurantsInnerLocation.serializer)
+          ..add(AdminDeliveryFeesDtoOutputRestaurantsInnerOwnRule.serializer)
+          ..add(AdminDeliveryFeesDtoOutputVersionsInner.serializer)
+          ..add(AdminDeliveryFeesDtoOutputVersionsInnerRule.serializer)
+          ..add(
+            AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner.serializer,
+          )
+          ..add(AdminDeliveryFeesDtoOutputVersionsInnerRuleKindEnum.serializer)
           ..add(AdminDepositCashLimitDto.serializer)
           ..add(AdminDepositCashLimitDtoCashLimit.serializer)
           ..add(AdminDepositRefundsDtoOutput.serializer)
@@ -1037,6 +1052,10 @@ Serializers _$serializers =
           ..add(AdminSetCityOfficeDtoHoursInner.serializer)
           ..add(AdminSetCityOfficeDtoLocation.serializer)
           ..add(AdminSetCustomerTestAccountDto.serializer)
+          ..add(AdminSetDeliveryFeeDto.serializer)
+          ..add(AdminSetDeliveryFeeDtoRule.serializer)
+          ..add(AdminSetDeliveryFeeDtoRuleBandsInner.serializer)
+          ..add(AdminSetDeliveryFeeDtoRuleKindEnum.serializer)
           ..add(AdminSetExchangeRateDto.serializer)
           ..add(AdminSetExchangeRateDtoDirectionEnum.serializer)
           ..add(AdminSetImageDto.serializer)
@@ -1046,6 +1065,9 @@ Serializers _$serializers =
           ..add(AdminSetOutcomeDtoResponsibleEnum.serializer)
           ..add(AdminSetPeakBonusDto.serializer)
           ..add(AdminSetPeakBonusDtoWindowsInner.serializer)
+          ..add(AdminSetRestaurantDeliveryFeeDto.serializer)
+          ..add(AdminSetRestaurantDeliveryFeeDtoRule.serializer)
+          ..add(AdminSetRestaurantDeliveryFeeDtoRuleKindEnum.serializer)
           ..add(AdminSettleDepositDto.serializer)
           ..add(AdminSettleDepositDtoSettlementEnum.serializer)
           ..add(AdminSettleDto.serializer)
@@ -2446,6 +2468,29 @@ Serializers _$serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
+              const FullType(AdminDeliveryFeesDtoOutputVersionsInner),
+            ]),
+            () => ListBuilder<AdminDeliveryFeesDtoOutputVersionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminDeliveryFeesDtoOutputRestaurantsInner),
+            ]),
+            () => ListBuilder<AdminDeliveryFeesDtoOutputRestaurantsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(
+                AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner,
+              ),
+            ]),
+            () =>
+                ListBuilder<
+                  AdminDeliveryFeesDtoOutputVersionsInnerRuleBandsInner
+                >(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
               const FullType(AdminDepositRefundsDtoOutputContractsInner),
             ]),
             () => ListBuilder<AdminDepositRefundsDtoOutputContractsInner>(),
@@ -3464,6 +3509,18 @@ Serializers _$serializers =
               const FullType(AdminSetCityOfficeDtoHoursInner),
             ]),
             () => ListBuilder<AdminSetCityOfficeDtoHoursInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminSetDeliveryFeeDtoRuleBandsInner),
+            ]),
+            () => ListBuilder<AdminSetDeliveryFeeDtoRuleBandsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminSetDeliveryFeeDtoRuleBandsInner),
+            ]),
+            () => ListBuilder<AdminSetDeliveryFeeDtoRuleBandsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

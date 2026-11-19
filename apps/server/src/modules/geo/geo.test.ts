@@ -7,7 +7,14 @@ import { startTestValkey, type TestValkey } from '../../valkey/test-valkey.js';
 import { type FxChange, FxRefusedError, FxService } from '../fx/index.js';
 import { SettingsService } from '../settings/index.js';
 import { ROAD_DISTANCES, type RoadDistances } from './distance.js';
-import { type GeoChange, GeoModule, GeoRefusedError, GeoService, type Point } from './index.js';
+import {
+  type DeliveryFeeRule,
+  type GeoChange,
+  GeoModule,
+  GeoRefusedError,
+  GeoService,
+  type Point,
+} from './index.js';
 
 // GeoService's distances, zones and delivery fees on a fresh database and
 // Valkey, with a fake routing service in place of OSRM (architecture §7.1,
@@ -160,7 +167,10 @@ async function city(): Promise<string> {
   cities += 1;
   const { rows } = await sql.query<{ id: string }>(
     'INSERT INTO geo.cities (code, name) VALUES ($1, $2) RETURNING id',
-    [`G${String.fromCharCode(64 + cities)}`, `test city ${cities}`],
+    [
+      `G${String.fromCharCode(65 + Math.floor(cities / 26))}${String.fromCharCode(65 + (cities % 26))}`,
+      `test city ${cities}`,
+    ],
   );
   const cityId = rows[0]!.id;
   await fx.setCityCurrency(cityId, { currency: 'TRY', displayOrder: 1, enabled: true }, fxSystem);
@@ -326,11 +336,14 @@ describe('GeoService.deliveryFee (AP §9.12.3)', () => {
     const cityId = await city();
     const ruleId = await geo.setDeliveryFeeRule(cityId, flat, change);
     calls.length = 0;
-    await expect(geo.deliveryFee(cityId, { from, to, itemsValue: 20_000n })).resolves.toEqual({
+    await expect(
+      geo.deliveryFee(cityId, { restaurantId: null, from, to, itemsValue: 20_000n }),
+    ).resolves.toEqual({
       fee: 4000n,
       currency: 'TRY',
       free: false,
       ruleId,
+      scope: 'city',
       freeDeliveryFrom: null,
       distance: null,
     });
@@ -355,17 +368,17 @@ describe('GeoService.deliveryFee (AP §9.12.3)', () => {
       change,
     );
     calls.length = 0;
-    await expect(geo.deliveryFee(cityId, { from, to, itemsValue: 20_000n })).resolves.toMatchObject(
-      {
-        fee: 3000n,
-        free: false,
-        distance: { metres: 1500, method: 'road' },
-      },
-    );
+    await expect(
+      geo.deliveryFee(cityId, { restaurantId: null, from, to, itemsValue: 20_000n }),
+    ).resolves.toMatchObject({
+      fee: 3000n,
+      free: false,
+      distance: { metres: 1500, method: 'road' },
+    });
     expect(calls).toEqual([[from, to, 'motorbike']]);
-    await expect(geo.deliveryFee(cityId, { from, to, itemsValue: 50_000n })).resolves.toMatchObject(
-      { fee: 0n, free: true },
-    );
+    await expect(
+      geo.deliveryFee(cityId, { restaurantId: null, from, to, itemsValue: 50_000n }),
+    ).resolves.toMatchObject({ fee: 0n, free: true });
   });
 
   it('uses the newest rule; a change is a new version', async () => {
@@ -376,7 +389,9 @@ describe('GeoService.deliveryFee (AP §9.12.3)', () => {
       id: newer,
       flatFee: 4500n,
     });
-    await expect(geo.deliveryFee(cityId, { from, to, itemsValue: 1n })).resolves.toMatchObject({
+    await expect(
+      geo.deliveryFee(cityId, { restaurantId: null, from, to, itemsValue: 1n }),
+    ).resolves.toMatchObject({
       fee: 4500n,
       ruleId: newer,
     });
@@ -405,7 +420,9 @@ describe('GeoService.deliveryFee (AP §9.12.3)', () => {
       change,
     );
     calls.length = 0;
-    await expect(geo.deliveryFee(cityId, { from, to, itemsValue: 1n })).resolves.toMatchObject({
+    await expect(
+      geo.deliveryFee(cityId, { restaurantId: null, from, to, itemsValue: 1n }),
+    ).resolves.toMatchObject({
       fee: 3500n,
       distance: { method: 'straight_x1.3' },
     });
@@ -427,7 +444,9 @@ describe('GeoService.deliveryFee (AP §9.12.3)', () => {
   it('refuses a fee while the city has no rule', async () => {
     const cityId = await city();
     await expect(geo.deliveryFeeRule(cityId)).resolves.toBeNull();
-    await expect(geo.deliveryFee(cityId, { from, to, itemsValue: 1n })).rejects.toMatchObject({
+    await expect(
+      geo.deliveryFee(cityId, { restaurantId: null, from, to, itemsValue: 1n }),
+    ).rejects.toMatchObject({
       refusal: 'no_fee_rule',
     });
   });
@@ -461,11 +480,15 @@ describe('GeoService.deliveryFee (AP §9.12.3)', () => {
     );
     await geo.setDeliveryFeeRule(cityId, { ...flat, currency: 'USD', flatFee: 100n }, change);
     // Until the base follows, no fee is charged in another currency.
-    await expect(geo.deliveryFee(cityId, { from, to, itemsValue: 1n })).rejects.toMatchObject({
+    await expect(
+      geo.deliveryFee(cityId, { restaurantId: null, from, to, itemsValue: 1n }),
+    ).rejects.toMatchObject({
       refusal: 'fee_not_in_base_currency',
     });
     await fx.setBaseCurrency(cityId, 'USD', fxSystem);
-    await expect(geo.deliveryFee(cityId, { from, to, itemsValue: 1n })).resolves.toMatchObject({
+    await expect(
+      geo.deliveryFee(cityId, { restaurantId: null, from, to, itemsValue: 1n }),
+    ).resolves.toMatchObject({
       fee: 100n,
       currency: 'USD',
     });
@@ -489,6 +512,125 @@ describe('GeoService.deliveryFee (AP §9.12.3)', () => {
       .catch((error: unknown) => error);
     expect(refused).toBeInstanceOf(FxRefusedError);
     expect(refused).toMatchObject({ refusal: 'amounts_in_other_currency' });
+  });
+});
+
+describe("GeoService.setRestaurantFeeRule (AP §9.12.3: a restaurant's own rule)", () => {
+  const cityRule = {
+    kind: 'flat',
+    currency: 'TRY',
+    flatFee: 4000n,
+    minimumFee: null,
+    freeDeliveryFrom: null,
+  } as const;
+  const ownRule: DeliveryFeeRule = {
+    kind: 'distance_bands',
+    currency: 'TRY',
+    bands: [
+      { upToMetres: 1000, fee: 1500n },
+      { upToMetres: null, fee: 2500n },
+    ],
+    minimumFee: 2000n,
+    freeDeliveryFrom: 30_000n,
+  };
+  const restaurant = '0190f3a0-0000-7000-8000-00000000f001';
+  const other = '0190f3a0-0000-7000-8000-00000000f002';
+
+  it("replaces the city's rule for that restaurant alone", async () => {
+    const cityId = await city();
+    const cityRuleId = await geo.setDeliveryFeeRule(cityId, cityRule, change);
+    const ownId = await geo.setRestaurantFeeRule(cityId, restaurant, ownRule, change);
+    await settings.update('pricing.distance_method', {}, 'road', system);
+    // 1500 m: the second band, 2500.
+    await expect(
+      geo.deliveryFee(cityId, { restaurantId: restaurant, from, to, itemsValue: 1n }),
+    ).resolves.toMatchObject({ fee: 2500n, ruleId: ownId, scope: 'restaurant' });
+    await expect(
+      geo.deliveryFee(cityId, { restaurantId: restaurant, from, to, itemsValue: 30_000n }),
+    ).resolves.toMatchObject({ fee: 0n, free: true, freeDeliveryFrom: 30_000n });
+    await expect(
+      geo.deliveryFee(cityId, { restaurantId: other, from, to, itemsValue: 1n }),
+    ).resolves.toMatchObject({ fee: 4000n, ruleId: cityRuleId, scope: 'city' });
+  });
+
+  it('prices a restaurant with its own rule while the city has none', async () => {
+    const cityId = await city();
+    await geo.setRestaurantFeeRule(cityId, restaurant, cityRule, change);
+    await expect(
+      geo.deliveryFee(cityId, { restaurantId: restaurant, from, to, itemsValue: 1n }),
+    ).resolves.toMatchObject({ fee: 4000n, scope: 'restaurant' });
+    await expect(
+      geo.deliveryFee(cityId, { restaurantId: other, from, to, itemsValue: 1n }),
+    ).rejects.toMatchObject({ refusal: 'no_fee_rule' });
+  });
+
+  it("returns the restaurant to the city's rule, each change a version, audited", async () => {
+    const cityId = await city();
+    const cityRuleId = await geo.setDeliveryFeeRule(cityId, cityRule, change);
+    // Following the city already, null adds nothing.
+    await expect(geo.setRestaurantFeeRule(cityId, restaurant, null, change)).resolves.toBeNull();
+    const ownId = await geo.setRestaurantFeeRule(cityId, restaurant, ownRule, change);
+    // The same rule again adds nothing.
+    await expect(
+      geo.setRestaurantFeeRule(cityId, restaurant, { ...ownRule }, change),
+    ).resolves.toBe(ownId);
+    await expect(geo.restaurantFeeRules(cityId)).resolves.toEqual([
+      expect.objectContaining({
+        restaurantId: restaurant,
+        rule: expect.objectContaining({ id: ownId, kind: 'distance_bands', minimumFee: 2000n }),
+        editorId: change.actor.id,
+      }),
+    ]);
+    await expect(geo.setRestaurantFeeRule(cityId, restaurant, null, change)).resolves.toBeNull();
+    await expect(geo.restaurantFeeRules(cityId)).resolves.toEqual([]);
+    await expect(
+      geo.deliveryFee(cityId, { restaurantId: restaurant, from, to, itemsValue: 1n }),
+    ).resolves.toMatchObject({ ruleId: cityRuleId, scope: 'city' });
+    const { rows } = await sql.query(
+      "SELECT target_type, target_id, changes->'kind'->>'after' AS kind FROM audit.events WHERE city_id = $1 AND action = 'restaurant_fee_rule.set' ORDER BY id",
+      [cityId],
+    );
+    expect(rows).toEqual([
+      { target_type: 'restaurant', target_id: restaurant, kind: 'distance_bands' },
+      { target_type: 'restaurant', target_id: restaurant, kind: 'city_rule' },
+    ]);
+  });
+
+  it("keeps the city's rule apart from the restaurants' in its versions", async () => {
+    const cityId = await city();
+    const first = await geo.setDeliveryFeeRule(cityId, cityRule, change);
+    await geo.setRestaurantFeeRule(cityId, restaurant, ownRule, change);
+    const second = await geo.setDeliveryFeeRule(cityId, { ...cityRule, flatFee: 4500n }, change);
+    await expect(geo.deliveryFeeRule(cityId)).resolves.toMatchObject({ id: second });
+    const versions = await geo.deliveryFeeVersions(cityId);
+    expect(versions.map((version) => version.rule.id)).toEqual([second, first]);
+    expect(versions[0]).toMatchObject({ editorId: change.actor.id, createdAt: expect.any(Date) });
+  });
+
+  it('refuses a rule outside the base currency or malformed', async () => {
+    const cityId = await city();
+    await expect(
+      geo.setRestaurantFeeRule(cityId, restaurant, { ...cityRule, currency: 'USD' }, change),
+    ).rejects.toMatchObject({ refusal: 'fee_not_in_base_currency' });
+    await expect(
+      geo.setRestaurantFeeRule(cityId, restaurant, { ...ownRule, bands: [] }, change),
+    ).rejects.toMatchObject({ refusal: 'invalid_fee_rule' });
+  });
+
+  it("keeps the base currency while a restaurant's rule is in it (AP §8.6)", async () => {
+    const cityId = await city();
+    await fx.setCityCurrency(
+      cityId,
+      { currency: 'USD', displayOrder: 2, enabled: false },
+      fxSystem,
+    );
+    await geo.setDeliveryFeeRule(cityId, { ...cityRule, currency: 'USD', flatFee: 100n }, change);
+    await geo.setRestaurantFeeRule(cityId, restaurant, cityRule, change);
+    await expect(fx.setBaseCurrency(cityId, 'USD', fxSystem)).rejects.toMatchObject({
+      refusal: 'amounts_in_other_currency',
+    });
+    await geo.setRestaurantFeeRule(cityId, restaurant, null, change);
+    await expect(fx.setBaseCurrency(cityId, 'USD', fxSystem)).resolves.toBeUndefined();
   });
 });
 

@@ -447,7 +447,8 @@ export class BrowsingService {
     const [card, deliversHere, rule, menu] = await Promise.all([
       this.card(restaurant, point, now, names),
       this.merchants.covers(id, point),
-      this.geo.deliveryFeeRule(restaurant.cityId),
+      // The restaurant's own rule, else the city's: the one the fee uses.
+      this.feeRuleOf(restaurant.cityId, id),
       this.merchants.menu(id, now),
     ]);
     if (rank(card.state) === null) return null;
@@ -486,7 +487,7 @@ export class BrowsingService {
       this.merchants.storefrontState(restaurant.id, now),
       this.settings.get('order.eta_speed_kmh', { cityId }),
       this.settings.get('order.eta_buffer_min', { cityId }),
-      this.fee(cityId, restaurant.location, point),
+      this.fee(cityId, restaurant.id, restaurant.location, point),
     ]);
     // A distance-band fee measured the same trip already.
     const distance =
@@ -515,12 +516,20 @@ export class BrowsingService {
     return { card, metres: distance.metres };
   }
 
+  private async feeRuleOf(cityId: string, restaurantId: string) {
+    return (
+      (await this.geo.restaurantFeeRule(cityId, restaurantId)) ??
+      (await this.geo.deliveryFeeRule(cityId))
+    );
+  }
+
   // The card shows the fee before any item (CU §8.2), so a free-delivery
   // threshold does not apply yet. Null while the city has no fee rule in its
   // base currency.
-  private async fee(cityId: string, from: Point, to: Point) {
+  private async fee(cityId: string, restaurantId: string, from: Point, to: Point) {
     try {
       const { fee, currency, free, distance } = await this.geo.deliveryFee(cityId, {
+        restaurantId,
         from,
         to,
         itemsValue: 0n,
