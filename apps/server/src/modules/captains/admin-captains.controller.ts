@@ -206,7 +206,7 @@ export class AdminCaptainsController {
   // AP §9.7.5 «Change the cash limit» (OWN, FIN: captains.cash_limit): the
   // new value in the city's base, effective at once, with a reason. It sets
   // a value, so no Idempotency-Key. 404 unknown_captain; 400 invalid_captain
-  // (zero), not_in_base_currency.
+  // (zero), not_in_base_currency; 409 captain_terminated.
   @Put(':captainId/cash-limit')
   @RequirePermission('captains.cash_limit')
   @ZodResponse({ status: 200, type: AdminCaptainActionDoneDto })
@@ -306,7 +306,8 @@ function refused(error: unknown): unknown {
   if (
     error.refusal === 'nothing_due' ||
     error.refusal === 'status_change_not_allowed' ||
-    error.refusal === 'offboarding_open'
+    error.refusal === 'offboarding_open' ||
+    error.refusal === 'captain_terminated'
   ) {
     return new ConflictException({ statusCode: HttpStatus.CONFLICT, error: error.refusal });
   }

@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getRouteApi, Link } from '@tanstack/react-router';
 import { type FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { actionsOf, applicationQuery } from './captain-applications.js';
+import { actionsOf, applicationQuery, canSeeApplications } from './captain-applications.js';
 import { CAPTAINS_MANAGE } from './captain-device.js';
 import { ReleaseDevice } from './captain-device-page.js';
 import { acceptancePercent } from './captain-list.js';
@@ -26,6 +26,7 @@ import {
   MESSAGE_MAX,
   textOf,
   useAddCaptainNote,
+  useCaptainPhone,
   useMessageCaptain,
   useSetCaptainCashLimit,
   useSetCaptainStatus,
@@ -55,11 +56,18 @@ export function CaptainProfilePage() {
   const tab: CaptainTab = search.tab ?? 'overview';
   const cities = useQuery(citiesQuery);
   const profile = useQuery(captainProfileQuery(captainId));
-  const city = cities.data?.find((each) => each.id === profile.data?.cityId);
+  const read = profile.data;
+  const city =
+    typeof read === 'object' && read !== null
+      ? cities.data?.find((each) => each.id === read.cityId)
+      : undefined;
   if (profile.isError || cities.isError) return <p role="alert">{t('common.failed')}</p>;
-  if (profile.data === null) return <p role="alert">{t('captainProfile.unknown')}</p>;
-  if (!profile.data || !city) return <p role="status">{t('status.loading')}</p>;
-  const captain = profile.data;
+  if (read === null) return <p role="alert">{t('captainProfile.unknown')}</p>;
+  if (read === 'rates_unavailable') {
+    return <p role="alert">{t('captainProfile.ratesUnavailable')}</p>;
+  }
+  if (!read || !city) return <p role="status">{t('status.loading')}</p>;
+  const captain = read;
   return (
     <main>
       <h1>{captain.name}</h1>
@@ -121,7 +129,7 @@ function Tab(props: {
     case 'overview':
       return <Overview captain={captain} session={session} />;
     case 'data':
-      return <Data captain={captain} city={city} />;
+      return <Data captain={captain} city={city} session={session} />;
     case 'app':
       return <App captain={captain} city={city} session={session} />;
     case 'contract':
@@ -144,6 +152,8 @@ function Tab(props: {
       return <ChangeLog captain={captain} city={city} />;
   }
 }
+
+const listFormat = new Intl.ListFormat('ar-u-nu-latn', { type: 'unit' });
 
 // Online hours to one decimal (a duration, not money).
 const hoursFormat = new Intl.NumberFormat('ar-u-nu-latn', { maximumFractionDigits: 1 });
@@ -259,8 +269,11 @@ function MessageForm({ captainId }: { captainId: string }) {
   );
 }
 
-function FileLink({ captain, city }: { captain: CaptainProfile; city: City }) {
+// The file is the application's page, captains.read's (not FIN's).
+function FileLink(props: { captain: CaptainProfile; city: City; session: AdminSession }) {
   const { t } = useTranslation();
+  const { captain, city } = props;
+  if (!canSeeApplications(props.session)) return null;
   if (captain.applicationId === null) return <p>{t('captainProfile.noFile')}</p>;
   return (
     <p>
@@ -275,20 +288,29 @@ function FileLink({ captain, city }: { captain: CaptainProfile; city: City }) {
   );
 }
 
-function Data({ captain, city }: { captain: CaptainProfile; city: City }) {
+function Data(props: { captain: CaptainProfile; city: City; session: AdminSession }) {
   const { t } = useTranslation();
+  const { captain, city, session } = props;
+  const phone = useCaptainPhone(captain.id);
   return (
     <section aria-label={t('captainProfile.tab.data')}>
       <dl>
         <dt>{t('captainProfile.data.phone')}</dt>
-        <dd dir="ltr">{captain.phone ?? '—'}</dd>
+        <dd dir="ltr">{phone.data ?? captain.maskedPhone ?? '—'}</dd>
         <dt>{t('captainProfile.data.vehicle')}</dt>
         <dd>{t(vehicleKey(captain.vehicle))}</dd>
         <dt>{t('captainProfile.data.plate')}</dt>
         <dd dir="ltr">{captain.plateNumber ?? '—'}</dd>
       </dl>
+      {canMessage(session) && captain.maskedPhone !== null && phone.data === undefined && (
+        // captains.manage calls the captain; each read is audited.
+        <button type="button" disabled={phone.isPending} onClick={() => phone.mutate()}>
+          {t('captainProfile.data.showPhone')}
+        </button>
+      )}
+      {phone.isError && <p role="alert">{t('common.failed')}</p>}
       <p>{t('captainProfile.data.explain')}</p>
-      <FileLink captain={captain} city={city} />
+      <FileLink captain={captain} city={city} session={session} />
     </section>
   );
 }
@@ -309,7 +331,7 @@ function App(props: { captain: CaptainProfile; city: City; session: AdminSession
               : t('captainProfile.app.notAnswered')}
         </dd>
         <dt>{t('captainProfile.app.carried')}</dt>
-        <dd>{app.carriedCurrencies.join('، ')}</dd>
+        <dd>{listFormat.format(app.carriedCurrencies)}</dd>
         <dt>{t('captainProfile.app.expiredInRow')}</dt>
         <dd>{app.expiredInRow}</dd>
       </dl>
@@ -328,7 +350,7 @@ function Contract(props: { captain: CaptainProfile; city: City; session: AdminSe
   const { captain, city, session } = props;
   const application = useQuery({
     ...applicationQuery(captain.applicationId ?? ''),
-    enabled: captain.applicationId !== null,
+    enabled: captain.applicationId !== null && canSeeApplications(session),
   });
   return (
     <section aria-label={t('captainProfile.tab.contract')}>
@@ -339,8 +361,9 @@ function Contract(props: { captain: CaptainProfile; city: City; session: AdminSe
               phase: t(`captainList.phase.${captain.contractPhase}`),
             })}
       </p>
-      <FileLink captain={captain} city={city} />
+      <FileLink captain={captain} city={city} session={session} />
       {captain.applicationId !== null &&
+        canSeeApplications(session) &&
         (application.isError ? (
           <p role="alert">{t('common.failed')}</p>
         ) : application.data === undefined ? (

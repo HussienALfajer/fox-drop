@@ -48,15 +48,17 @@ export const canGrantGrace = (session: AdminSession | null | undefined) =>
 
 const profileKey = (captainId: string) => ['captain-profile', captainId] as const;
 
-// Null for an unknown captain (404 unknown_captain).
+// Null for an unknown captain (404 unknown_captain); 'rates_unavailable'
+// while a currency the captain holds has no rate (409).
 export const captainProfileQuery = (captainId: string) =>
   queryOptions({
     queryKey: profileKey(captainId),
-    queryFn: async (): Promise<CaptainProfile | null> => {
+    queryFn: async (): Promise<CaptainProfile | 'rates_unavailable' | null> => {
       const { data, response } = await api.GET('/v1/admin/captains/{captainId}/profile', {
         params: { path: { captainId } },
       });
       if (response.status === 404) return null;
+      if (response.status === 409) return 'rates_unavailable';
       if (!data) throw new Error('The captain profile read failed.');
       return data;
     },
@@ -85,6 +87,20 @@ export const captainOffersQuery = (captainId: string) =>
       return data.offers;
     },
   });
+
+// The number in full (captains.manage), each read audited as a view: asked
+// by «إظهار الرقم» only, never kept.
+export function useCaptainPhone(captainId: string) {
+  return useMutation({
+    mutationFn: async (): Promise<string | null> => {
+      const { data } = await api.GET('/v1/admin/captains/{captainId}/phone', {
+        params: { path: { captainId } },
+      });
+      if (!data) throw new Error('The number read failed.');
+      return data.phone;
+    },
+  });
+}
 
 const changeLogKey = (captainId: string) => ['captain-change-log', captainId] as const;
 
@@ -253,26 +269,31 @@ export function cashLimitMinor(text: string, currency: string): string | null {
 // The change log's actions by their Arabic labels; another reads «تغيير».
 export const captainChangeActions = [
   'captain.create',
+  'captain.rehire',
   'captain.status',
   'captain.custody_limit',
   'captain.force_offline',
   'captain.hand_in_grace',
   'captain.note',
   'captain.message',
-  'captain_application.activate',
+  'captain_application.note',
+  'captain_application.interview',
+  'captain_application.training_passed',
+  'captain_application.waitlist',
+  'captain_application.back_from_waitlist',
+  'captain_application.reject',
+  'captain_application.document_review',
+  'captain_application.document_upload',
+  'captain_application.document_request',
   'captain_application.issue_kit',
   'captain_application.cash_limit',
   'captain_application.contract',
   'captain_application.deposit',
+  'captain_application.activate',
   'captain_application.probation_confirmed',
-  'captain_application.document_review',
-  'captain_application.document_upload',
-  'captain_application.document_request',
   'captain_application.terminate',
   'captain_application.kit_return',
   'captain_application.close',
-  'captain_application.deposit_refunded',
-  'captain_application.deposit_withheld',
 ] as const;
 export type CaptainChangeAction = (typeof captainChangeActions)[number];
 

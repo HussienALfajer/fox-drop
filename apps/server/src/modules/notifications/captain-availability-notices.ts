@@ -2,7 +2,7 @@ import { Injectable, type OnModuleInit } from '@nestjs/common';
 import { type AvailabilityChange, CaptainsService } from '../captains/index.js';
 import { formatTime, NotificationTexts } from '../content/index.js';
 import { PlatformBroadcasts } from './platform-broadcasts.js';
-import { PushQueue } from './push-queue.js';
+import { CAPTAIN_NOTICE_TTL_MS, PushQueue } from './push-queue.js';
 
 // CA §7.6, §14 #26, AP §10 (slice 2.13a): in the transaction of a change of
 // the captain's availability, the captain's push with operations' reason
@@ -130,6 +130,8 @@ export class CaptainAvailabilityNotices implements OnModuleInit {
       priority: rendered.priority,
       data: { type: 'captain.availability' },
       at: change.at,
+      // A phone switched off still hears it when it comes back.
+      expiresAt: new Date(change.at.getTime() + CAPTAIN_NOTICE_TTL_MS),
     };
   }
 

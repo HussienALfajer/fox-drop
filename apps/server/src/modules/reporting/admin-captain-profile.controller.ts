@@ -13,6 +13,7 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import type { FastifyRequest } from 'fastify';
+import { sql } from 'drizzle-orm';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
 import { DATABASE } from '../../database/database.module.js';
@@ -34,17 +35,23 @@ import {
 import { EarningsService, type EarningsWindow } from '../cashdesk/index.js';
 import { NotificationTexts } from '../content/index.js';
 import { DispatchService } from '../dispatch/index.js';
+import { FxRefusedError } from '../fx/index.js';
 import { GeoService } from '../geo/index.js';
 import {
   type AdminSession,
   AdminSessionsService,
   CaptainAccountsService,
 } from '../identity/index.js';
-import { PushQueue } from '../notifications/index.js';
+import { CAPTAIN_NOTICE_TTL_MS, PushQueue } from '../notifications/index.js';
 import { CaptainFiguresService, OrdersService } from '../ordering/index.js';
 import { SettingsService } from '../settings/index.js';
 import { CHANGE_LOG_LIMIT } from './admin-restaurant-profile.controller.js';
-import { CaptainListService, listedCaptainStatuses, listedStatus } from './captain-list.service.js';
+import {
+  CaptainListService,
+  expiredInRow,
+  listedCaptainStatuses,
+  listedStatus,
+} from './captain-list.service.js';
 
 // «الطلبات» and «سجل العروض» show as many, newest first (decided by us).
 export const CAPTAIN_ORDERS_LIMIT = 50;
@@ -125,10 +132,7 @@ class AdminCaptainProfileDto extends createZodDto(
     id: z.uuid(),
     cityId: z.uuid(),
     name: z.string(),
-    phone: z
-      .string()
-      .nullable()
-      .describe('In full for captains.manage (each view audited), masked otherwise.'),
+    maskedPhone: z.string().nullable().describe('In full from …/phone (captains.manage).'),
     vehicle: z.string(),
     plateNumber: z.string().nullable(),
     status,
@@ -226,6 +230,8 @@ class AdminCaptainOrdersDto extends createZodDto(
       .describe(`The latest ${CAPTAIN_ORDERS_LIMIT}, newest first.`),
   }),
 ) {}
+
+class AdminCaptainPhoneDto extends createZodDto(z.object({ phone: z.string().nullable() })) {}
 
 class AdminCaptainNotesDto extends createZodDto(
   z.object({
@@ -365,15 +371,11 @@ export class AdminCaptainProfileController {
     private readonly pushes: PushQueue,
   ) {}
 
-  // «نظرة عامة» and «التطبيق». 404 unknown_captain.
+  // «نظرة عامة» and «التطبيق». 404 unknown_captain; 409 rates_unavailable.
   @Get(':captainId/profile')
   @RequireAnyPermission('captains.read', 'captains.money')
   @ZodResponse({ status: 200, type: AdminCaptainProfileDto })
-  async profile(
-    @Param() params: AdminCaptainProfileParamsDto,
-    @CurrentAdminSession() session: AdminSession,
-    @Req() request: FastifyRequest,
-  ) {
+  async profile(@Param() params: AdminCaptainProfileParamsDto) {
     const now = new Date();
     const captain = await this.found(params.captainId, now);
     const { cityId } = captain;
@@ -388,25 +390,21 @@ export class AdminCaptainProfileController {
         this.accounts.phone(captain.id),
         this.captains.carriedCurrencies(captain.id),
         this.captains.maxPickup(captain.id),
-      ]);
+      ]).catch((error: unknown) => {
+        // The cash cannot be read while a currency held has no rate or the
+        // city no base (the list leaves such a captain out).
+        if (error instanceof FxRefusedError) {
+          throw new ConflictException({
+            statusCode: HttpStatus.CONFLICT,
+            error: 'rates_unavailable',
+          });
+        }
+        throw error;
+      });
     const [acceptance, latest] = await Promise.all([
       this.dispatch.acceptance([captain.id], window),
       this.dispatch.captainOffers(captain.id, window),
     ]);
-    const answered = latest.filter(
-      (offer) => offer.status !== 'open' && offer.status !== 'withdrawn',
-    );
-    const firstNotExpired = answered.findIndex((offer) => offer.status !== 'expired');
-    const full = phone !== null && session.permissions.includes('captains.manage');
-    if (full) {
-      await this.audit.recordView({
-        actor: { type: 'admin', id: session.accountId, role: session.roles.join(',') },
-        context: requestContext(request),
-        cityId,
-        action: 'captain.phone_view',
-        target: { type: 'captain', id: captain.id },
-      });
-    }
     const file = files.get(captain.id) ?? null;
     const own = figures.get(captain.id)!;
     const suspended = state?.availability.state === 'suspended' ? state.availability : null;
@@ -414,7 +412,7 @@ export class AdminCaptainProfileController {
       id: captain.id,
       cityId,
       name: captain.name,
-      phone: phone === null ? null : full ? phone : maskedPhone(phone),
+      maskedPhone: phone === null ? null : maskedPhone(phone),
       vehicle: captain.vehicle,
       plateNumber: captain.plateNumber,
       status: listedStatus(balance!, state?.availability.state ?? null),
@@ -455,9 +453,35 @@ export class AdminCaptainProfileController {
         maxPickup: maxPickup.limit === null ? null : moneyOf(maxPickup.limit),
         maxPickupAnswered: maxPickup.answered,
         carriedCurrencies: carried.carried,
-        expiredInRow: firstNotExpired === -1 ? answered.length : firstNotExpired,
+        expiredInRow: expiredInRow(latest),
       },
     };
+  }
+
+  // «البيانات» (AP §9.7.4): the sign-in number in full, for captains.manage
+  // (who calls the captain), audited as a view each time it is asked
+  // (`captain.phone_view`, AP §14), as the applications'; null without an
+  // account. 404 unknown_captain.
+  @Get(':captainId/phone')
+  @RequirePermission('captains.manage')
+  @ZodResponse({ status: 200, type: AdminCaptainPhoneDto })
+  async phone(
+    @Param() params: AdminCaptainProfileParamsDto,
+    @CurrentAdminSession() session: AdminSession,
+    @Req() request: FastifyRequest,
+  ) {
+    const captain = await this.found(params.captainId, new Date());
+    const phone = await this.accounts.phone(captain.id);
+    if (phone !== null) {
+      await this.audit.recordView({
+        actor: { type: 'admin', id: session.accountId, role: session.roles.join(',') },
+        context: requestContext(request),
+        cityId: captain.cityId,
+        action: 'captain.phone_view',
+        target: { type: 'captain', id: captain.id },
+      });
+    }
+    return { phone };
   }
 
   // «الطلبات» (AP §9.7.4): the captain's latest orders. 404 unknown_captain.
@@ -597,9 +621,11 @@ export class AdminCaptainProfileController {
   }
 
   // AP §9.7.5 «Message or push», CA §14 #24: the text as typed, with the
-  // chime, audited without the text (it may hold a number). The
-  // Idempotency-Key names the push (per admin), so a retry queues none. 404
-  // unknown_captain; 409 captain_terminated.
+  // chime, kept CAPTAIN_NOTICE_TTL_MS for a phone switched off, audited
+  // without the text (it may hold a number). The Idempotency-Key names the
+  // push (per admin): a repeat answers the first and queues none, another
+  // text is 422 idempotency_key_reused. 404 unknown_captain; 409
+  // captain_terminated.
   @Post(':captainId/message')
   @RequirePermission('captains.manage')
   @Idempotent()
@@ -618,13 +644,25 @@ export class AdminCaptainProfileController {
       throw new ConflictException({ statusCode: HttpStatus.CONFLICT, error: 'captain_terminated' });
     }
     const templateKey = 'captain.message';
+    const source = `captain:${templateKey}:${session.accountId}:${idempotencyKey}`;
     await this.database.db.transaction(async (tx) => {
+      // A repeat of the key waits for the first, then answers it; another
+      // text with the key is refused (architecture §5.3).
+      await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtextextended(${source}, 0))`);
       const rendered = await this.texts.render(templateKey, { الرسالة: body.text }, tx);
+      const queued = await this.pushes.queuedBody(tx, source);
+      if (queued !== null) {
+        if (queued === rendered.body) return;
+        throw new UnprocessableEntityException({
+          statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+          error: 'idempotency_key_reused',
+        });
+      }
       await this.pushes.enqueue(
         tx,
         [
           {
-            source: `captain:${templateKey}:${session.accountId}:${idempotencyKey}`,
+            source,
             recipient: { party: 'captain', captainId: captain.id },
             templateKey,
             body: rendered.body,
@@ -632,6 +670,8 @@ export class AdminCaptainProfileController {
             priority: rendered.priority,
             data: { type: 'captain.message' },
             at: now,
+            // A message waits for a phone switched off (CA §14 #24).
+            expiresAt: new Date(now.getTime() + CAPTAIN_NOTICE_TTL_MS),
           },
         ],
         now,

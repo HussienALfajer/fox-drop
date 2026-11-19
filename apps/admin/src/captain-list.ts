@@ -101,7 +101,7 @@ const phaseOrder = { probation: 0, commitment: 1, open: 2 } as const;
 
 // The value a column sorts by: a number, or a text for the name; a captain
 // without one (no rating, no offer, no contract) sorts last either way.
-function keyOf(captain: ListedCaptain, column: SortColumn): number | string | null {
+function keyOf(captain: ListedCaptain, column: SortColumn): bigint | number | string | null {
   switch (column) {
     case 'name':
       return captain.name;
@@ -110,9 +110,9 @@ function keyOf(captain: ListedCaptain, column: SortColumn): number | string | nu
     case 'phase':
       return captain.contractPhase === null ? null : phaseOrder[captain.contractPhase];
     case 'custody':
-      return Number(captain.custody.usage.amount);
+      return BigInt(captain.custody.usage.amount);
     case 'earnings':
-      return Number(captain.earnings.amount);
+      return BigInt(captain.earnings.amount);
     case 'ordersToday':
       return captain.ordersToday;
     case 'acceptance':
@@ -138,10 +138,15 @@ export function sortCaptains(
       if (a.key === null || b.key === null) {
         return a.key === b.key ? a.index - b.index : a.key === null ? 1 : -1;
       }
+      // Money compares as bigint minor units, never as a float.
       const order =
         typeof a.key === 'string' && typeof b.key === 'string'
           ? collator.compare(a.key, b.key)
-          : (a.key as number) - (b.key as number);
+          : a.key < b.key
+            ? -1
+            : a.key > b.key
+              ? 1
+              : 0;
       return order === 0 ? a.index - b.index : sign * order;
     })
     .map((each) => each.captain);

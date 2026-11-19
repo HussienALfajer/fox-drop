@@ -19281,6 +19281,43 @@
         ]
       }
     },
+    "/v1/admin/captains/{captainId}/phone": {
+      "get": {
+        "operationId": "adminCaptainProfilePhone",
+        "parameters": [
+          {
+            "name": "captainId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCaptainPhoneDto_Output"
+                }
+              }
+            },
+            "headers": {
+              "Server-Time": {
+                "$ref": "#/components/headers/Server-Time"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/v1/admin/captains/{captainId}/orders": {
       "get": {
         "operationId": "adminCaptainProfileLatestOrders",
@@ -74586,8 +74623,8 @@
           "name": {
             "type": "string"
           },
-          "phone": {
-            "description": "In full for captains.manage (each view audited), masked otherwise.",
+          "maskedPhone": {
+            "description": "In full from …/phone (captains.manage).",
             "type": [
               "string",
               "null"
@@ -75073,7 +75110,7 @@
           "id",
           "cityId",
           "name",
-          "phone",
+          "maskedPhone",
           "vehicle",
           "plateNumber",
           "status",
@@ -75089,6 +75126,21 @@
           "acceptance",
           "rating",
           "app"
+        ],
+        "additionalProperties": false
+      },
+      "AdminCaptainPhoneDto_Output": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "phone"
         ],
         "additionalProperties": false
       },

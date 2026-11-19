@@ -113,6 +113,16 @@ export class CaptainListService {
   }
 }
 
+// AP §9.7.4 «التطبيق»: of the newest offers, the answered ones (accepted,
+// declined, expired) that expired in a row from the newest.
+export function expiredInRow(newestFirst: readonly { status: string }[]): number {
+  const answered = newestFirst.filter(
+    (offer) => offer.status !== 'open' && offer.status !== 'withdrawn',
+  );
+  const first = answered.findIndex((offer) => offer.status !== 'expired');
+  return first === -1 ? answered.length : first;
+}
+
 // AP §9.7.3: a suspension first, then an order, then a hand-in block.
 export function listedStatus(
   balance: Pick<CaptainBalance, 'status' | 'blocks'>,

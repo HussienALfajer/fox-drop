@@ -195,6 +195,7 @@ Serializers _$serializers =
           ..add(AdminCaptainOffersDtoOutputOffersInnerKindEnum.serializer)
           ..add(AdminCaptainOffersDtoOutputOffersInnerStatusEnum.serializer)
           ..add(AdminCaptainOrdersDtoOutput.serializer)
+          ..add(AdminCaptainPhoneDtoOutput.serializer)
           ..add(AdminCaptainProfileDtoOutput.serializer)
           ..add(AdminCaptainProfileDtoOutputApp.serializer)
           ..add(AdminCaptainProfileDtoOutputContractPhaseEnum.serializer)

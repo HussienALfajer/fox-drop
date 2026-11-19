@@ -34,7 +34,7 @@ const profile = {
   id: richId,
   cityId,
   name: 'أحمد الكابتن',
-  phone: '+963944000123',
+  maskedPhone: '+963 ••• 123',
   vehicle: 'motorbike',
   plateNumber: '12345',
   status: 'online',

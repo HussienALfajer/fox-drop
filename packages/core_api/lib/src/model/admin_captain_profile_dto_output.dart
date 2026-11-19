@@ -22,7 +22,7 @@ part 'admin_captain_profile_dto_output.g.dart';
 /// * [id]
 /// * [cityId]
 /// * [name]
-/// * [phone] - In full for captains.manage (each view audited), masked otherwise.
+/// * [maskedPhone] - In full from …/phone (captains.manage).
 /// * [vehicle]
 /// * [plateNumber]
 /// * [status]
@@ -54,9 +54,9 @@ abstract class AdminCaptainProfileDtoOutput
   @BuiltValueField(wireName: r'name')
   String get name;
 
-  /// In full for captains.manage (each view audited), masked otherwise.
-  @BuiltValueField(wireName: r'phone')
-  String? get phone;
+  /// In full from …/phone (captains.manage).
+  @BuiltValueField(wireName: r'maskedPhone')
+  String? get maskedPhone;
 
   @BuiltValueField(wireName: r'vehicle')
   String get vehicle;
@@ -152,11 +152,11 @@ class _$AdminCaptainProfileDtoOutputSerializer
       object.name,
       specifiedType: const FullType(String),
     );
-    yield r'phone';
-    yield object.phone == null
+    yield r'maskedPhone';
+    yield object.maskedPhone == null
         ? null
         : serializers.serialize(
-            object.phone,
+            object.maskedPhone,
             specifiedType: const FullType.nullable(String),
           );
     yield r'vehicle';
@@ -308,7 +308,7 @@ class _$AdminCaptainProfileDtoOutputSerializer
                   as String;
           result.name = valueDes;
           break;
-        case r'phone':
+        case r'maskedPhone':
           final valueDes =
               serializers.deserialize(
                     value,
@@ -316,7 +316,7 @@ class _$AdminCaptainProfileDtoOutputSerializer
                   )
                   as String?;
           if (valueDes == null) continue;
-          result.phone = valueDes;
+          result.maskedPhone = valueDes;
           break;
         case r'vehicle':
           final valueDes =

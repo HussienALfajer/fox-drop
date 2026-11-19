@@ -92,7 +92,9 @@ export type CaptainsRefusal =
   | 'nothing_due'
   // AP §9.7.5 (slice 2.35b): no reactivation while the contract is being
   // ended.
-  | 'offboarding_open';
+  | 'offboarding_open'
+  // AP §9.7.5 (slice 2.36a): a terminated captain's cash limit stays.
+  | 'captain_terminated';
 
 // A status change's work after its commit (`afterStatus`): the online
 // period it ended, if any.
@@ -1090,6 +1092,9 @@ export class CaptainsService implements OnModuleInit {
     checkLimit(limit);
     await this.database.db.transaction(async (tx) => {
       const row = await this.lockCaptain(tx, captainId);
+      if (row.status === 'terminated') {
+        throw new CaptainsRefusedError('captain_terminated', 'the captain is terminated');
+      }
       await this.checkBaseCurrency(tx, row.cityId, limit.currency);
       await tx
         .update(captainRecords)

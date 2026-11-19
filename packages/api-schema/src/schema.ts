@@ -6884,6 +6884,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/captains/{captainId}/phone": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCaptainProfilePhone"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/captains/{captainId}/orders": {
         parameters: {
             query?: never;
@@ -19856,8 +19872,8 @@ export interface components {
             /** Format: uuid */
             cityId: string;
             name: string;
-            /** @description In full for captains.manage (each view audited), masked otherwise. */
-            phone: string | null;
+            /** @description In full from …/phone (captains.manage). */
+            maskedPhone: string | null;
             vehicle: string;
             plateNumber: string | null;
             /** @enum {string} */
@@ -19950,6 +19966,9 @@ export interface components {
                 /** @description The latest answered offers that expired in a row. */
                 expiredInRow: number;
             };
+        };
+        AdminCaptainPhoneDto_Output: {
+            phone: string | null;
         };
         AdminCaptainOrdersDto_Output: {
             /** @description The latest 50, newest first. */
@@ -31739,6 +31758,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminCaptainProfileDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainProfilePhone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                captainId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainPhoneDto_Output"];
                 };
             };
         };

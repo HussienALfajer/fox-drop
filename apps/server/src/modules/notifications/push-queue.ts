@@ -10,6 +10,10 @@ import { pushMessages } from './schema.js';
 // about an order's step is no use later (architecture §8.1).
 export const PUSH_TTL_SECONDS = 600;
 
+// CA §14 #24, #26 (slice 2.36a): a message from operations and a suspension
+// or reactivation keep a day for a phone switched off (decided by us).
+export const CAPTAIN_NOTICE_TTL_MS = 24 * 3_600_000;
+
 // CU §13 «الإشعارات»: the pushes of the last 30 days (fixed).
 export const INBOX_DAYS = 30;
 const INBOX_MAX = 200;
@@ -76,6 +80,17 @@ export class PushQueue {
 
   // AP §9.11.4: a scheduled mass push cancelled before its time; its pushes
   // not sent are given up, so the relay never takes them.
+  // The body of the push a source queued, or null (slice 2.36a: a command
+  // whose Idempotency-Key names its push answers a repeat from it).
+  async queuedBody(executor: Pick<Database['db'], 'select'>, source: string) {
+    const [row] = await executor
+      .select({ body: pushMessages.body })
+      .from(pushMessages)
+      .where(eq(pushMessages.source, source))
+      .limit(1);
+    return row?.body ?? null;
+  }
+
   async cancelCampaign(executor: Updater, campaignId: string, now: Date): Promise<void> {
     await executor
       .update(pushMessages)

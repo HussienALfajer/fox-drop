@@ -1493,7 +1493,7 @@ export class ApplicationPipelineService {
   // AP §9.7.3 (slice 2.36a): each activated captain of the city's file, its
   // latest activated application (the page holding the contract, kit,
   // deposit, documents and the offboarding) and the contract's phase now
-  // (null before the contract is recorded). A captain the seed made has none.
+  // (null before the contract is recorded and once it ended). A captain the seed made has none.
   async captainFiles(
     cityId: string,
     now: Date,
@@ -1509,7 +1509,11 @@ export class ApplicationPipelineService {
         row.captainId!,
         {
           applicationId: row.id,
-          phase: row.contractSignedOn === null ? null : contractPhase(row, today),
+          // An ended contract has no phase (AP §9.7.5 step 5).
+          phase:
+            row.contractSignedOn === null || row.endedAt !== null
+              ? null
+              : contractPhase(row, today),
         },
       ]),
     );

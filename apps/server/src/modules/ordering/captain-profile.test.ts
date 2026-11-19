@@ -66,17 +66,18 @@ describe('the captain list and profile (AP §9.7.3–9.7.4)', () => {
       earnings: { currency: 'TRY', month: { orders: 1 } },
       app: { maxPickup: null, carriedCurrencies: ['TRY'], expiredInRow: 0 },
     });
-    // OPS manages captains: the number in full, audited as a view.
-    expect(profile.json().phone).toMatch(/^\+9639\d{8}$/);
+    // The profile masks the number; OPS asks for it in full, audited.
+    expect(profile.json().maskedPhone).toMatch(/^\+963 ••• \d{3}$/);
+    const full = await ops.get(`/v1/admin/captains/${captainId}/phone`);
+    expect(full.json().phone).toMatch(/^\+9639\d{8}$/);
     const views = await sql.query(
       "SELECT count(*)::int AS n FROM audit.events WHERE action = 'captain.phone_view' AND target_id = $1",
       [captainId],
     );
     expect(views.rows[0].n).toBe(1);
     const fin = await admin(['FIN']);
-    const masked = await fin.get(`/v1/admin/captains/${captainId}/profile`);
-    expect(masked.statusCode).toBe(200);
-    expect(masked.json().phone).toMatch(/^\+963 ••• \d{3}$/);
+    expect((await fin.get(`/v1/admin/captains/${captainId}/profile`)).statusCode).toBe(200);
+    expect((await fin.get(`/v1/admin/captains/${captainId}/phone`)).statusCode).toBe(403);
 
     const latest = await ops.get(`/v1/admin/captains/${captainId}/orders`);
     expect(latest.statusCode).toBe(200);
@@ -185,6 +186,17 @@ describe('the captain actions (AP §9.7.5)', () => {
     expect((await send()).statusCode).toBe(200);
     expect((await send()).statusCode).toBe(200);
     expect(await pushes(captainId, 'captain.message')).toEqual(['مرّ على المكتب اليوم']);
+    const otherText = await ops.post(
+      `/v1/admin/captains/${captainId}/message`,
+      { text: 'نص آخر' },
+      key,
+    );
+    expect(otherText.statusCode).toBe(422);
+    const audited = await sql.query(
+      "SELECT count(*)::int AS n FROM audit.events WHERE action = 'captain.message' AND target_id = $1",
+      [captainId],
+    );
+    expect(audited.rows[0].n).toBe(1);
 
     const sup = await admin(['SUP']);
     expect(
@@ -216,5 +228,64 @@ describe('the captain actions (AP §9.7.5)', () => {
     expect(notes).toHaveLength(1);
     expect(notes[0]).toMatchObject({ body: 'يفضّل العمل مساءً' });
     expect(notes[0].authorName).toMatch(/^Operator /);
+  });
+});
+
+// AP §9.7.6, CA §11.1 (slice 2.36a): the acceptance rate over the last
+// captain.acceptance_window_offers answered; a withdrawn offer is no answer.
+describe('the acceptance rate in the profile', () => {
+  it('counts the last 50 answered offers and the expired in a row', async () => {
+    const door = await orderAtDoor();
+    const { captainId } = door.captain;
+    // Newest first: 2 withdrawn, 2 expired, 1 declined, 45 accepted, then 5
+    // declined of which 2 fall in the window.
+    const statuses = [
+      ...Array<string>(2).fill('withdrawn'),
+      ...Array<string>(2).fill('expired'),
+      'declined',
+      ...Array<string>(45).fill('accepted'),
+      ...Array<string>(5).fill('declined'),
+    ];
+    for (const [index, status] of statuses.entries()) {
+      await sql.query(
+        `INSERT INTO dispatch.offers (city_id, order_id, order_placed_at, captain_id, kind,
+           offered_by, offered_at, expires_at, status, responded_at, pickup_metres)
+         SELECT city_id, id, placed_at, $2, 'auto', NULL,
+                now() - make_interval(mins => $3), now() - make_interval(mins => $3) + interval '45 seconds',
+                $4, now() - make_interval(mins => $3) + interval '10 seconds', 100
+           FROM ordering.orders WHERE id = $1`,
+        [door.order.id, captainId, 100 + index, status],
+      );
+    }
+    const ops = await admin(['OPS']);
+    const profile = (await ops.get(`/v1/admin/captains/${captainId}/profile`)).json();
+    expect(profile.acceptance).toEqual({ accepted: 45, answered: 50 });
+    expect(profile.app.expiredInRow).toBe(2);
+    const offers = (await ops.get(`/v1/admin/captains/${captainId}/offers`)).json().offers;
+    expect(offers).toHaveLength(statuses.length);
+    expect(offers[0]).toMatchObject({ status: 'withdrawn', responseSeconds: 10 });
+  });
+});
+
+describe('a terminated captain', () => {
+  it('takes no message and no new cash limit', async () => {
+    const door = await orderAtDoor();
+    const { captainId } = door.captain;
+    await sql.query("UPDATE captains.captains SET status = 'terminated' WHERE id = $1", [
+      captainId,
+    ]);
+    const ops = await admin(['OPS']);
+    const message = await ops.post(`/v1/admin/captains/${captainId}/message`, { text: 'x' });
+    expect(message.statusCode).toBe(409);
+    expect(message.json().error).toBe('captain_terminated');
+    const fin = await admin(['FIN']);
+    const limit = await app.inject({
+      method: 'PUT',
+      url: `/v1/admin/captains/${captainId}/cash-limit`,
+      cookies: fin.cookies,
+      payload: { amount: '500000', currency: 'TRY', reason: 'x' },
+    });
+    expect(limit.statusCode).toBe(409);
+    expect(limit.json().error).toBe('captain_terminated');
   });
 });

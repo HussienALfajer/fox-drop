@@ -5,7 +5,7 @@ export function folded(text: string): string {
     .toLowerCase()
     .normalize('NFKD')
     .replace(/[ً-ٰٟ̀-ͯ]/g, '')
-    .replace(/[ً-ٰٟ̀-ͯ]/g, '')
+    .replace(/[أإآٱ]/g, 'ا')
     .replace(/ة/g, 'ه')
     .replace(/ى/g, 'ي');
 }

@@ -188,7 +188,7 @@ class _$AdminCaptainProfileDtoOutput extends AdminCaptainProfileDtoOutput {
   @override
   final String name;
   @override
-  final String? phone;
+  final String? maskedPhone;
   @override
   final String vehicle;
   @override
@@ -228,7 +228,7 @@ class _$AdminCaptainProfileDtoOutput extends AdminCaptainProfileDtoOutput {
     required this.id,
     required this.cityId,
     required this.name,
-    this.phone,
+    this.maskedPhone,
     required this.vehicle,
     this.plateNumber,
     required this.status,
@@ -261,7 +261,7 @@ class _$AdminCaptainProfileDtoOutput extends AdminCaptainProfileDtoOutput {
         id == other.id &&
         cityId == other.cityId &&
         name == other.name &&
-        phone == other.phone &&
+        maskedPhone == other.maskedPhone &&
         vehicle == other.vehicle &&
         plateNumber == other.plateNumber &&
         status == other.status &&
@@ -285,7 +285,7 @@ class _$AdminCaptainProfileDtoOutput extends AdminCaptainProfileDtoOutput {
     _$hash = $jc(_$hash, id.hashCode);
     _$hash = $jc(_$hash, cityId.hashCode);
     _$hash = $jc(_$hash, name.hashCode);
-    _$hash = $jc(_$hash, phone.hashCode);
+    _$hash = $jc(_$hash, maskedPhone.hashCode);
     _$hash = $jc(_$hash, vehicle.hashCode);
     _$hash = $jc(_$hash, plateNumber.hashCode);
     _$hash = $jc(_$hash, status.hashCode);
@@ -311,7 +311,7 @@ class _$AdminCaptainProfileDtoOutput extends AdminCaptainProfileDtoOutput {
           ..add('id', id)
           ..add('cityId', cityId)
           ..add('name', name)
-          ..add('phone', phone)
+          ..add('maskedPhone', maskedPhone)
           ..add('vehicle', vehicle)
           ..add('plateNumber', plateNumber)
           ..add('status', status)
@@ -351,9 +351,9 @@ class AdminCaptainProfileDtoOutputBuilder
   String? get name => _$this._name;
   set name(String? name) => _$this._name = name;
 
-  String? _phone;
-  String? get phone => _$this._phone;
-  set phone(String? phone) => _$this._phone = phone;
+  String? _maskedPhone;
+  String? get maskedPhone => _$this._maskedPhone;
+  set maskedPhone(String? maskedPhone) => _$this._maskedPhone = maskedPhone;
 
   String? _vehicle;
   String? get vehicle => _$this._vehicle;
@@ -446,7 +446,7 @@ class AdminCaptainProfileDtoOutputBuilder
       _id = $v.id;
       _cityId = $v.cityId;
       _name = $v.name;
-      _phone = $v.phone;
+      _maskedPhone = $v.maskedPhone;
       _vehicle = $v.vehicle;
       _plateNumber = $v.plateNumber;
       _status = $v.status;
@@ -501,7 +501,7 @@ class AdminCaptainProfileDtoOutputBuilder
               r'AdminCaptainProfileDtoOutput',
               'name',
             ),
-            phone: phone,
+            maskedPhone: maskedPhone,
             vehicle: BuiltValueNullFieldError.checkNotNull(
               vehicle,
               r'AdminCaptainProfileDtoOutput',

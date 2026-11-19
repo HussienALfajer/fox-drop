@@ -103,6 +103,7 @@ import 'package:core_api/src/model/admin_captain_notes_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_offers_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_offers_dto_output_offers_inner.dart';
 import 'package:core_api/src/model/admin_captain_orders_dto_output.dart';
+import 'package:core_api/src/model/admin_captain_phone_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_profile_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_profile_dto_output_app.dart';
 import 'package:core_api/src/model/admin_captain_profile_dto_output_custody.dart';
@@ -1209,6 +1210,7 @@ part 'serializers.g.dart';
   AdminCaptainOffersDtoOutput,
   AdminCaptainOffersDtoOutputOffersInner,
   AdminCaptainOrdersDtoOutput,
+  AdminCaptainPhoneDtoOutput,
   AdminCaptainProfileDtoOutput,
   AdminCaptainProfileDtoOutputApp,
   AdminCaptainProfileDtoOutputCustody,
