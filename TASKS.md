@@ -4,20 +4,21 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.30d, the profile (`docs/roadmap.md`, Phase 2; owner decision 2026-11-18: 2.30c in two slices).
+Slice 2.31, the panel's menu editor (`docs/roadmap.md`, Phase 2).
 
-- **Roadmap line:** 2.30d The profile: the tabs (overview for today, 7 and 30 days, data, location, hours and accounts editable past the draft with the devices, orders, statement, ratings moved from 2.26c, contract and documents, notes, change log), replacing «الصور», «حالة المطاعم» and «تصنيفات المطعم» (AP §9.6.4, AP §6.3 `restaurants.owner_accounts`, RA §5.5). The owner opens a restaurant from the list, edits its hours and reads the change in its log.
-- **Specs:** AP §9.6.4; AP §6.3 (`restaurants.owner_accounts`); RA §5.5; RA §14 (devices); AP §9.10.5 (statement); AP §14 (audit of views).
+- **Roadmap line:** 2.31 The panel's menu editor: option groups, bulk price change with preview, Excel import with validation and dry run, the price log, owners notified of admin price changes (AP §9.6.6). The owner imports a menu from Excel.
+- **Specs:** AP §9.6.6 (menu editor); AP §6.2–6.3 (`restaurants.menus`, `menus.edit_prices`); D17 (the owners told of an admin's price change); RA §9 (menu rules the restaurant app reads); AP §5.9 (Excel).
 - **Branch:** the cloud session's branch.
-- **Already built (reuse, do not rebuild):** «المطاعم» and the account actions (2.30c: `POST /v1/admin/restaurant-list`, `GET /v1/admin/restaurants/{id}/account` and its commands, `RestaurantAccountSection`); the wizard's steps and their services (2.30a, 2.30b: draft-only saves); the status routes and «حالة المطاعم» (2.6b); «الصور» and «تصنيفات المطعم» (2.5, 2.27a); the panel's ratings (2.26c); «كشوف المطاعم» (2.19g); the accounts routes (2.30a, draft-only); `RestaurantFiguresService` (2.30c) for the overview's counts.
-- **Owner decisions 2026-11-18:** one slice (not split); past the draft the profile edits the data (names, categories, description, logo, cover), the location (pin, address, number, owner's name) and the operations (hours, prep time, minimum order, coverage), never for a terminated restaurant; the commission only through «تغيير العمولة», the contract read-only; every reader of restaurants (`restaurants.read`) adds a note, never edited or removed.
-- **Plan** (one step per commit):
-  - [x] 1. Server: the overview's figures for today, 7 and 30 days (`GET /v1/admin/restaurants/{id}/overview`).
-  - [x] 2. Server: the edits past the draft for data, location and operations (`PUT /v1/admin/restaurants/{id}/profile/*`), audited, the devices told of new hours.
-  - [x] 3. Server: accounts past the draft (add and remove, a removed user signed out), the devices list and their force sign-out.
-  - [x] 4. Server: the notes (a new table) and the change log over the audit log; the restaurant's orders.
-  - [x] 5. Panel: the profile `/restaurants/$restaurantId` with its tabs, replacing «حالة المطاعم», «الصور» and «تصنيفات المطعم», the restaurant ratings moved in.
-  - [ ] 6. Review, module notes and the handover.
+- **Already built (reuse, do not rebuild):** the wizard's step 7 (2.30b: `MenuEditorService`, categories and items in a draft or test mode, `menu_locked` past it, `restaurant-menu-page.tsx`), the profile's «القائمة» tab that shows it with the photos (2.30d), `merchants.price_changes` («سجل الأسعار», never written yet), option groups in the schema (`addOptionGroup`), the Excel exports' worker (2.19g) and `ExportButton`.
+- **Plan:** to write at the start of the session as a checklist, one step per commit, after asking the owner whether 2.31 is one slice or two (the import alone is large).
+- **To ask the owner:** the split; the Excel template's columns for option groups; whether a price change past test mode needs `menus.edit_prices` (AP §6.3) besides `restaurants.menus`.
+
+### Left from 2.30d (the cloud session's branch)
+
+- **Before deploying to staging:** migrations 0119 (expand only: two more app session end reasons, `account_removed` and `signed_out_by_operations`) and 0120 (expand only: the table `merchants.restaurant_notes`, and the index `events_target` on `audit.events`, built on every partition while the log is small). New routes: `GET /v1/admin/restaurants/{id}/overview`, `GET …/orders`, `PUT …/profile/basics`, `PUT …/profile/location`, `PUT …/profile/operations`, `GET …/devices`, `POST …/devices/sign-out`, `GET` and `POST …/notes`, `GET …/change-log`; `POST …/accounts` and `…/accounts/{accountId}/remove` now work past the draft. The panel lost `/restaurant-status`, `/images` and `/restaurant-categories` (deploy the server before the panel). No provision step.
+- **To check on staging (after the merge and the deploy):** in the panel as OWN, «المطاعم» → a restaurant: «نظرة عامة» for today, 7 and 30 days; «الأوقات»: change Saturday's opening, «حفظ»; the restaurant app reads its new hours; «سجل التغييرات» shows «تعديل الأوقات والتشغيل» by you with «الأوقات تغيّرت». «الحسابات»: add a cashier, sign them in on a phone, see the device «مسجّل الدخول», «تسجيل خروج الجهاز» with a reason (the phone returns to sign-in), then «حذف» the cashier (signed out at once). «ملاحظات»: add one. «الحالة والحساب»: the former «حالة المطاعم». «القائمة»: an item photo on an active restaurant.
+- **Decided by us (to confirm with the owner):** the late rate counts an order ready after its prep time chosen (after any change), an order picked up before «جاهز» by its pickup; the sales are the items value of the delivered orders; «الطلبات» shows the latest 50 (the order history with filters is 2.40); «الكشف المالي» is a link to «كشوف المطاعم» for this month (`restaurants.statements`); the change log shows the latest 200 changes of the restaurant and its users, without the menu's; edits past the draft use OWN's and OPS's `restaurants.manage` (AP §6.2 «Edit, except commission»); the device sign-out uses `restaurants.owner_accounts`; a device's «آخر ظهور» is its session's last refresh (every 15 minutes) until presence (2.42).
+- **Not yet:** the ring setting, presence and the device check on the devices tab (2.42); the menu's changes and the price log in «سجل التغييرات» (2.31); DATA (`restaurants.menus` without `restaurants.read`) can no longer reach an active restaurant's item photos, which «الصور» allowed: the profile needs `restaurants.read` (2.31's editor, or ask the owner); the server's `GET`/`PUT /v1/admin/restaurants/{id}/categories` and `GET …/images` are no longer called by the panel (remove in a later slice once no app uses them); paging of the orders and the change log.
 
 ### Left from 2.30c (the cloud session's branch)
 
