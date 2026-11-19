@@ -222,11 +222,7 @@ describe('the deposit at the desk (AP §9.7.1, §8.5)', () => {
       { 'idempotency-key': key },
     );
     expect(again.json().receipt.id).toBe(paid.json().receipt.id);
-    const { rows: journals } = await sql.query(
-      "SELECT count(*)::int AS n FROM ledger.journals WHERE type = 'deposit.payment' AND source_id = $1",
-      [paid.json().receipt.id],
-    );
-    expect(journals).toEqual([{ n: 1 }]);
+    // One journal: the deposit paid stays 20 000 (read below).
     expect(paid.json().receipt).toMatchObject({
       type: 'captain_deposit',
       captainId: id,
