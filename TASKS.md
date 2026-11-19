@@ -4,18 +4,23 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.33, staff and devices (`docs/roadmap.md`, Phase 2).
+Slice 2.34, captain application (`docs/roadmap.md`, Phase 2).
 
-- **Roadmap line:** 2.33 Staff and devices: owners add and remove cashiers, rename and sign out devices, the panel adds owners (RA §14, AP §9.6.4). A removed cashier is signed out at once.
-- **Specs:** RA §14 (staff and devices), RA §5.1–5.4 (accounts, sign-in and roles), RA §6 (who does what), RA §18 (the commands), AP §9.6.4 «الحسابات».
+- **Roadmap line:** 2.34 Captain application: the form in the captain app, documents with quality checks, status updates and document requests, rejection with re-apply after 30 days, the waitlist, the panel's pipeline with duplicate detection and its alert (CA §5, AP §9.7.1). A new number applies and the application appears in the panel.
+- **Specs:** CA §5 (joining), CA §4.9 (sign-in), CA §15 (server commands), CA Appendix B, AP §9.7.1 (the applications' pipeline), AP §6 (who may review), the identity module's captain sign-in (a new number's code, CA §5.1).
 - **Branch:** the cloud session's branch.
-- **Already built (reuse, do not rebuild):** identity's restaurant accounts (`MerchantAccountsService.addAccount`, the panel's «الحسابات» add and remove, slices 2.30a and 2.30d, `restaurants.owner_accounts`), the devices tab and «تسجيل خروج الجهاز» in the panel (2.30d), `merchants.devices` with `nameDevice` (a cashier names a device the first time only; renaming is an owner's, `device_rename_not_allowed`), the restaurant app's settings screen (`lib/src/settings/`, owners only, slice 2.14b).
-- **Owner decisions 2026-11-19:** «الموظفون» and «الأجهزة» are two rows at the top of the owners' «الإعدادات»; no cashier limit (RA §5.1 «any number»); a removed cashier's device, or a device an owner signs out, goes straight back to sign-in (no reason screen; a removed cashier who tries again sees «هذا الرقم غير مسجّل…»).
-- **Plan** (one step per commit):
-  - [x] Server: the owners' routes `GET`/`POST /v1/merchant/staff`, `POST …/staff/{accountId}/remove` (cashiers only), `GET /v1/merchant/devices`, `PUT …/devices/{deviceId}/name`, `POST …/devices/{deviceId}/sign-out` (the end reason `signed_out_by_owner`, migration 0125); a cashier gets `403 owner_only`, a terminated restaurant `403 restaurant_terminated`; audited; the tests; the regenerated clients.
-  - [x] Restaurant app: «الموظفون» (list, «إضافة كاشير», «حذف» with a confirmation, owners read-only with «لإضافة مالك أو إزالته تواصل مع FOX DROP») and «الأجهزة» (list, «إعادة تسمية», «تسجيل خروج الجهاز» with a confirmation) from «الإعدادات»; the strings; the widget tests.
-  - [ ] `reviewer`, fixes, hand over to 2.34.
-- **Stopped at:** 2.33 started.
+- **Already built (reuse, do not rebuild):** identity's captain accounts and sign-in (`captain-accounts.service.ts`; the code request answers alike for every number and sends only to a captain who may sign in: «The joining slice sends codes to new numbers for the application form», identity `CLAUDE.md`), the captains module, files' uploads (`POST /v1/<app>/uploads/...`, the report photo's pattern), the panel's alerts (`notifications`).
+- **To ask the owner first:** how a new number gets its code without opening the sign-in's guard to every number (architecture §8.3.3 sends codes to real users only); the documents and their quality checks if CA §5 leaves any open; the size of the waitlist and who lifts it; whether the slice splits in two (the app's form, then the panel's pipeline).
+- **Plan:** to write as a checklist once the spec sections are read (one step per commit).
+- **Stopped at:** 2.33 done; 2.34 not started.
+
+### Left from 2.33 (the cloud session's branch)
+
+- **Before deploying to staging:** migration 0125 (expand only: the session end reason `signed_out_by_owner` in the `CHECK` of `identity.app_sessions`, added `NOT VALID` then validated, and the partial indexes `app_sessions_merchant_account` and `app_sessions_merchant_device`, built without `CONCURRENTLY`: they block writes to `app_sessions` while they build, seconds at staging's size). New routes: `GET`/`POST /v1/merchant/staff`, `POST /v1/merchant/staff/{accountId}/remove`, `GET /v1/merchant/devices`, `PUT /v1/merchant/devices/{deviceId}/name`, `POST /v1/merchant/devices/{deviceId}/sign-out`: deploy the server before the restaurant app.
+- **To check on staging (after the merge and the deploy):** on the restaurant app as an owner, «الإعدادات» → «الموظفون»: the owners show with «لإضافة مالك أو إزالته تواصل مع FOX DROP» and no button; «إضافة كاشير» with a name and a second phone's number; sign that phone in («كاشير 1»); «الأجهزة» shows it «مسجّل الدخول»; «إعادة تسمية» to «تابلت المطبخ»; «تسجيل خروج الجهاز»: the phone returns to sign-in and the cashier stays in «الموظفون»; sign in again, then «حذف» the cashier: the phone returns to sign-in at once, and signing in again says «هذا الرقم غير مسجّل لدى أي مطعم في FOX DROP». In the panel, «سجل التغييرات» shows the add, the removal and the rename.
+- **Owner decisions 2026-11-19:** «الموظفون» and «الأجهزة» are two rows at the top of the owners' «الإعدادات»; no cashier limit; a removed or signed-out device goes straight back to sign-in.
+- **Decided by us (to confirm with the owner):** the four commands take no `Idempotency-Key` (RA §18 asks one of every command): the add answers a repeat with the account made, the removal and the sign-out name their target, the rename sets a value; so a removal retried after a lost answer reads «لم يُحفظ التغيير» though it was done (the list read again shows it). Owners see their staff's numbers in full, not audited as a view (the panel audits its own). An owner signs out other devices only; this device's sign-out stays with «هذا الجهاز» (RA §14.3).
+- **Not yet:** the devices' ring setting, presence («connected now»), device check and the no-receiving-device banner (2.42); «هذا الجهاز» and the restaurant's info in «الإعدادات» (RA §14.3); the portal's staff and devices (2.45).
 
 ### Left from 2.32b (the cloud session's branch)
 
