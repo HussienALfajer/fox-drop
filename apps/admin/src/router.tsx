@@ -34,6 +34,7 @@ import { CustomerProfilePage, CustomerReceiptPage, CustomersPage } from './custo
 import { MANUAL_ADJUSTMENT } from './manual-entries.js';
 import { ManualEntriesPage } from './manual-entries-page.js';
 import { CashDeskPage, CashDeskSessionsPage } from './cash-desk-page.js';
+import { DepositsPage } from './cash-desk-deposits-page.js';
 import { ZONES_READ } from './peak-bonus.js';
 import { PeakBonusPage } from './peak-bonus-page.js';
 import { CompensationApprovalsPage } from './compensation-approvals-page.js';
@@ -626,6 +627,18 @@ const receiptRoute = createRoute({
   component: ReceiptPage,
 });
 
+// AP §9.7.1 «تأمين العدة» (slice 2.35a): the deposits of the applications
+// at «بانتظار العدة» (cash_desk.record).
+const depositsRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/cash-desk/deposits',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, CASH_DESK)) throw redirect({ to: '/' });
+  },
+  component: DepositsPage,
+});
+
 // AP §9.10.3 «تصفية الخميس» (slice 2.18a): the list, one captain's
 // settlement and the weekly statement to print (cash_desk.record).
 const settlementsRoute = createRoute({
@@ -751,6 +764,7 @@ const routeTree = rootRoute.addChildren([
     customerReceiptRoute,
     receiptRoute,
     settlementsRoute,
+    depositsRoute,
     settleCaptainRoute,
     statementRoute,
     restaurantSettlementsRoute,

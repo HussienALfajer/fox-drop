@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getRouteApi, Link } from '@tanstack/react-router';
 import { type FormEvent, lazy, type ReactNode, Suspense, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ActivationSection } from './captain-activation-page.js';
 import {
   actionsOf,
   type Application,
@@ -157,6 +158,7 @@ export function CaptainApplicationPage() {
           application={application.data}
           timeZone={city.timeZone}
           cityId={city.id}
+          cityCode={city.code}
           session={session}
         />
       )}
@@ -168,6 +170,7 @@ function Review(props: {
   application: Application;
   timeZone: string;
   cityId: string;
+  cityCode: string;
   session: AdminSession;
 }) {
   const { t } = useTranslation();
@@ -293,6 +296,13 @@ function Review(props: {
           <InterviewSection application={application} timeZone={timeZone} cityId={props.cityId} />
         )}
       </section>
+      <ActivationSection
+        application={application}
+        session={props.session}
+        actions={actions}
+        today={new Intl.DateTimeFormat('en-CA', { timeZone }).format(serverNow())}
+        cityCode={props.cityCode}
+      />
       <StageActions application={application} actions={actions} />
       {actions.has('note') && <NoteSection applicationId={application.id} />}
       <section aria-label={t('captainApplications.history')}>

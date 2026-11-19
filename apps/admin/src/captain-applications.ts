@@ -13,9 +13,11 @@ import { type AdminSession, can } from './session.js';
 // AP §9.7.1 «طلبات الانضمام» (slice 2.34b): captains.read reads the board
 // and the review page; every action takes captains.manage (OWN, OPS).
 export const CAPTAINS_READ = 'captains.read';
+export const CAPTAINS_CASH_LIMIT = 'captains.cash_limit';
 
 export function canSeeApplications(session: AdminSession | null | undefined): boolean {
-  return can(session, CAPTAINS_READ);
+  // FIN reads the page for the cash limit (slice 2.35a).
+  return can(session, CAPTAINS_READ) || can(session, CAPTAINS_CASH_LIMIT);
 }
 
 export type Board = components['schemas']['AdminCaptainApplicationsDto_Output'];
@@ -127,12 +129,17 @@ export type PipelineAction =
   | 'training_passed'
   | 'reject'
   | 'waitlist'
-  | 'back_from_waitlist';
+  | 'back_from_waitlist'
+  // Slice 2.35a.
+  | 'issue_kit'
+  | 'record_contract'
+  | 'activate'
+  | 'confirm_probation';
 
 const OPEN: readonly Stage[] = ['new', 'under_review', 'interview', 'awaiting_kit', 'waitlist'];
 const FROM: Record<PipelineAction, readonly Stage[]> = {
-  review_document: OPEN,
-  upload_document: OPEN,
+  review_document: [...OPEN, 'active'],
+  upload_document: [...OPEN, 'active'],
   request_document: OPEN,
   note: OPEN,
   schedule_interview: ['new', 'under_review', 'interview'],
@@ -140,6 +147,10 @@ const FROM: Record<PipelineAction, readonly Stage[]> = {
   reject: OPEN,
   waitlist: ['new', 'under_review', 'interview', 'awaiting_kit'],
   back_from_waitlist: ['waitlist'],
+  issue_kit: ['awaiting_kit'],
+  record_contract: ['awaiting_kit'],
+  activate: ['awaiting_kit'],
+  confirm_probation: ['active'],
 };
 
 // The actions the page shows: those the stage takes, and none without
@@ -232,6 +243,12 @@ export type ApplicationRefusal =
   | 'issue_date_required'
   | 'issue_date_in_future'
   | 'document_expired'
+  | 'invalid_kit'
+  | 'invalid_cash_limit'
+  | 'not_in_base_currency'
+  | 'invalid_contract'
+  | 'activation_incomplete'
+  | 'already_confirmed'
   | 'type'
   | 'size'
   | 'not_image'
@@ -239,7 +256,7 @@ export type ApplicationRefusal =
 
 export type CommandResult =
   | { status: 'done'; application: Application }
-  | { status: 'refused'; refusal: ApplicationRefusal; stage?: Stage };
+  | { status: 'refused'; refusal: ApplicationRefusal; stage?: Stage; missing?: string[] };
 
 const serverRefusals: readonly string[] = [
   'unknown_application',
@@ -254,6 +271,12 @@ const serverRefusals: readonly string[] = [
   'issue_date_required',
   'issue_date_in_future',
   'document_expired',
+  'invalid_kit',
+  'invalid_cash_limit',
+  'not_in_base_currency',
+  'invalid_contract',
+  'activation_incomplete',
+  'already_confirmed',
 ] satisfies ApplicationRefusal[];
 
 type Answer = { data?: Application; error?: unknown; response: Response };
@@ -263,11 +286,14 @@ type Answer = { data?: Application; error?: unknown; response: Response };
 export function commandResult(answer: Answer): CommandResult {
   if (answer.data) return { status: 'done', application: answer.data };
   const status = answer.response.status;
-  const error = answer.error as { error?: unknown; stage?: unknown } | undefined;
+  const error = answer.error as { error?: unknown; stage?: unknown; missing?: unknown } | undefined;
   const code = error?.error;
   if ((status === 400 || status === 404 || status === 409) && typeof code === 'string') {
     if (serverRefusals.includes(code)) {
       const refusal = code as ApplicationRefusal;
+      if (refusal === 'activation_incomplete' && Array.isArray(error?.missing)) {
+        return { status: 'refused', refusal, missing: error.missing as string[] };
+      }
       return refusal === 'wrong_stage' && typeof error?.stage === 'string'
         ? { status: 'refused', refusal, stage: error.stage as Stage }
         : { status: 'refused', refusal };
@@ -411,7 +437,7 @@ async function send(applicationId: string, command: Command): Promise<Answer> {
   }
 }
 
-function useAnswered(applicationId: string) {
+export function useAnswered(applicationId: string) {
   const queryClient = useQueryClient();
   return {
     onSuccess: (result: CommandResult) => {

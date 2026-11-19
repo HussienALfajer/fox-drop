@@ -144,3 +144,92 @@ test('is not offered without captains.read', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   await expect(page.getByRole('link', { name: 'طلبات الانضمام' })).toHaveCount(0);
 });
+
+// «بانتظار العدة» and «تفعيل» (slice 2.35a; AP §9.7.1): the kit issued from
+// the list, what the activation waits for, and «تفعيل» once nothing is left.
+test('issues the kit and activates once every record is in', async ({ page }) => {
+  await fakeSession(page, ['captains.read', 'captains.manage', 'content.read']);
+  await page.route('**/v1/admin/cities', (route) =>
+    route.fulfill({
+      json: { cities: [{ id: cityId, code: 'AZ', name: 'أعزاز', timeZone: 'Asia/Damascus' }] },
+    }),
+  );
+  await page.route('**/v1/admin/content/reasons', (route) =>
+    route.fulfill({
+      json: {
+        lists: [
+          {
+            list: 'kit_item',
+            reasons: [
+              { code: 'thermal_bag', label: 'حقيبة حرارية', active: true },
+              { code: 'vest', label: 'سترة', active: true },
+            ],
+          },
+        ],
+      },
+    }),
+  );
+  const activation = (kit: boolean) => ({
+    kit: kit
+      ? {
+          items: [{ code: 'vest', label: 'سترة', size: 'L', quantity: 1 }],
+          issuedAt: '2026-11-19T08:00:00.000Z',
+        }
+      : null,
+    cashLimit: { amount: '40000', currency: 'TRY' },
+    suggestedCashLimit: null,
+    contract: {
+      signedOn: '2026-11-19',
+      startsOn: '2026-11-19',
+      probationDays: 30,
+      commitmentMonths: 3,
+      probationEndsOn: '2026-12-19',
+      commitmentStartsOn: '2026-12-19',
+      commitmentEndsOn: '2027-03-19',
+      probationConfirmedOn: null,
+      phase: 'probation',
+      review: 'none',
+    },
+    deposit: {
+      amount: { amount: '50000', currency: 'TRY' },
+      instalment: { amount: '10000', currency: 'TRY' },
+      paid: '0',
+      recorded: true,
+    },
+    suggestedDeposit: null,
+    missing: kit ? [] : ['kit'],
+    captainId: null,
+    activatedAt: null,
+  });
+  let kitBody: unknown = null;
+  let activated = false;
+  const awaiting = (kit: boolean) => ({
+    ...review('accepted'),
+    stage: 'awaiting_kit',
+    activation: activation(kit),
+  });
+  await page.route(`**/v1/admin/captain-applications/${applicationId}`, (route) =>
+    route.fulfill({ json: awaiting(kitBody !== null) }),
+  );
+  await page.route(`**/v1/admin/captain-applications/${applicationId}/kit`, async (route) => {
+    kitBody = route.request().postDataJSON();
+    await route.fulfill({ json: awaiting(true) });
+  });
+  await page.route(`**/v1/admin/captain-applications/${applicationId}/activate`, async (route) => {
+    activated = true;
+    await route.fulfill({ json: { ...awaiting(true), stage: 'active' } });
+  });
+  await page.goto(`/captain-applications/${applicationId}?city=AZ`);
+
+  const section = page.getByRole('region', { name: 'العدة والعقد والتفعيل' });
+  await expect(section.getByText('ينتظر التفعيل:')).toBeVisible();
+  await expect(section.getByRole('button', { name: 'تفعيل' })).toBeDisabled();
+  const form = section.getByRole('form', { name: 'تسليم العدة' });
+  await form.getByRole('checkbox', { name: 'سترة' }).check();
+  await form.getByRole('group').nth(1).getByLabel('المقاس').fill('L');
+  await form.getByRole('button', { name: 'تسليم العدة' }).click();
+  await expect(section.getByText('سترة × 1 — المقاس: L')).toBeVisible();
+  expect(kitBody).toEqual({ items: [{ code: 'vest', size: 'L', quantity: 1 }] });
+  await section.getByRole('button', { name: 'تفعيل' }).click();
+  await expect.poll(() => activated).toBe(true);
+});
