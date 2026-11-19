@@ -91,7 +91,7 @@ function GroupLinks({ group }: { group: SettingGroup }) {
   return null;
 }
 
-function GroupSettings({ city, entries }: { city: City; entries: SettingEntry[] }) {
+export function GroupSettings({ city, entries }: { city: City; entries: SettingEntry[] }) {
   const { t } = useTranslation();
   const needsBase = entries.some((entry) => entry.type === 'money');
   const profile = useCityProfile(needsBase ? city.id : undefined);

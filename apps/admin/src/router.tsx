@@ -94,6 +94,8 @@ import { canSeeRatings, ratingsSearch } from './ratings.js';
 import { can, sessionQuery } from './session.js';
 import { SetupPage } from './setup-page.js';
 import { SignInPage } from './sign-in-page.js';
+import { ADMIN_TEAM } from './team.js';
+import { TeamPage } from './team-page.js';
 
 function NotFound() {
   const { t } = useTranslation();
@@ -886,6 +888,17 @@ const restaurantStatementsRoute = createRoute({
   component: RestaurantStatementsPage,
 });
 
+// AP §9.15 «فريق الإدارة» (slice 2.38b): OWN only (admin_team.manage).
+const teamRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/team',
+  validateSearch: citySearch,
+  beforeLoad: ({ context }) => {
+    if (!can(context.session, ADMIN_TEAM)) throw redirect({ to: '/' });
+  },
+  component: TeamPage,
+});
+
 const routeTree = rootRoute.addChildren([
   setupRoute,
   signInRoute,
@@ -910,6 +923,7 @@ const routeTree = rootRoute.addChildren([
     settingsRoute,
     otpSendersRoute,
     auditLogRoute,
+    teamRoute,
     menuChangesRoute,
     menuChangeRoute,
     officeRoute,

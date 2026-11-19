@@ -14,8 +14,8 @@ Slice 2.38b, the admin team and the layout (`docs/roadmap.md`, Phase 2; 2.38 spl
 
 ### Plan
 
-- [ ] Panel: «فريق الإدارة» (`/team`): the users with AP §9.15's columns and actions, «مستخدم جديد» with its setup link, the role matrix with the caps.
-- [ ] Server: the global search (`GET` or `POST /v1/admin/search`): an order number, a restaurant name, a captain name or phone, a ticket number, a customer phone for OWN, OPS and SUP only, masked numbers (AP §7.2, §9.5).
+- [x] Panel: «فريق الإدارة» (`/team`): the users with AP §9.15's columns and actions, «مستخدم جديد» with its setup link, the role matrix with the caps.
+- [x] Server: the global search (`GET` or `POST /v1/admin/search`): an order number, a restaurant name, a captain name or phone, a ticket number, a customer phone for OWN, OPS and SUP only, masked numbers (AP §7.2, §9.5); with `GET /v1/admin/settings/dispatch-mode` for the top bar.
 - [ ] Panel: the layout: the side menu of AP §7.1 by permission, the top bar (city selector kept in the search, platform status, dispatch mode, the search, the bell, the approvals badge for OWN, the user menu with sign-out).
 - [ ] Review, fixes, hand over to 2.39.
 
