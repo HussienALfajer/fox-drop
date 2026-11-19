@@ -10,6 +10,7 @@ import { MerchantsModule } from '../merchants/index.js';
 import { SettingsModule } from '../settings/index.js';
 import { AdminAlertsController } from './alerts.controller.js';
 import { CaptainAvailabilityNotices } from './captain-availability-notices.js';
+import { LargePriceChangeAlerts } from './large-price-change-alerts.js';
 import { AlertsService } from './alerts.service.js';
 import { AlertsRelay, AlertsRelayWorker } from './alerts-relay.js';
 import { AlertsSweep, AlertsSweepWorker } from './alerts-sweep.js';
@@ -79,6 +80,7 @@ import {
     PlatformBroadcasts,
     AppChangeBroadcasts,
     CaptainAvailabilityNotices,
+    LargePriceChangeAlerts,
   ],
   exports: [RealtimeAccess, RealtimePublisher, AlertsService, PushQueue, PlatformBroadcasts],
 })

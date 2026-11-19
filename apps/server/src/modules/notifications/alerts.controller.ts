@@ -33,6 +33,12 @@ class AdminAlertDto extends createZodDto(
     orderNumber: z.string().nullable().describe('For an alert about an order.'),
     captainName: z.string().nullable().describe('For an alert about a captain.'),
     restaurantName: z.string().nullable().describe('For an alert about a restaurant.'),
+    restaurantId: z
+      .uuid()
+      .nullable()
+      .describe(
+        '«تغيير أسعار كبير» (AP §9.1.3, slice 2.32a): the restaurant, for «فتح سجل الأسعار»; null for the others.',
+      ),
     currency: z
       .string()
       .nullable()
@@ -118,6 +124,7 @@ export class AdminAlertsController {
       orderNumber: alert.details.orderNumber ?? null,
       captainName: alert.details.captainName ?? null,
       restaurantName: alert.details.restaurantName ?? null,
+      restaurantId: alert.details.restaurantId ?? null,
       currency: alert.details.currency ?? null,
       ticketNumber: alert.details.ticketNumber ?? null,
       statementId: alert.details.statementId ?? null,

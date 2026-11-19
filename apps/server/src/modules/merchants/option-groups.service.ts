@@ -158,6 +158,7 @@ export class OptionGroupsService {
         await tx
           .insert(optionGroups)
           .values({ id: groupId, restaurantId, published: true, ...after });
+        await this.editor.menuChanged(tx, restaurantId, row.cityId);
         await this.record(tx, change, row.cityId, 'menu.option_group.create', groupId, null, {
           restaurantId,
           ...after,
@@ -178,6 +179,7 @@ export class OptionGroupsService {
         .update(optionGroups)
         .set({ ...after, updatedAt: sql`now()` })
         .where(eq(optionGroups.id, groupId));
+      await this.editor.menuChanged(tx, restaurantId, row.cityId);
       await this.record(tx, change, row.cityId, 'menu.option_group.update', groupId, was, after);
     });
   }
@@ -243,6 +245,7 @@ export class OptionGroupsService {
         await tx
           .insert(options)
           .values({ id: optionId, groupId, position: count, published: true, ...values });
+        await this.editor.menuChanged(tx, restaurantId, row.cityId);
         await this.record(
           tx,
           change,
@@ -277,6 +280,7 @@ export class OptionGroupsService {
           updatedAt: sql`now()`,
         })
         .where(eq(options.id, optionId));
+      await this.editor.menuChanged(tx, restaurantId, row.cityId);
       await this.record(tx, change, row.cityId, 'menu.option.update', optionId, was, after);
       if (deltaChanged) {
         await this.editor.logPrices(
@@ -323,6 +327,7 @@ export class OptionGroupsService {
           .set({ position, updatedAt: sql`now()` })
           .where(eq(options.id, id));
       }
+      await this.editor.menuChanged(tx, restaurantId, row.cityId);
       await this.record(tx, change, row.cityId, 'menu.option.order', groupId, null, {
         optionIds,
       });
@@ -369,6 +374,7 @@ export class OptionGroupsService {
             and(eq(itemOptionGroups.groupId, groupId), inArray(itemOptionGroups.itemId, removed)),
           );
       }
+      await this.editor.menuChanged(tx, restaurantId, row.cityId);
       await this.record(tx, change, row.cityId, 'menu.option_group.items', groupId, null, {
         added,
         removed,
@@ -421,6 +427,7 @@ export class OptionGroupsService {
             and(eq(itemOptionGroups.itemId, itemId), inArray(itemOptionGroups.groupId, unlinked)),
           );
       }
+      await this.editor.menuChanged(tx, restaurantId, row.cityId);
       await this.record(
         tx,
         change,

@@ -4118,4 +4118,188 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get customerTimelineCancelled => 'أُلغي الطلب';
+
+  @override
+  String get merchantMenu => 'القائمة';
+
+  @override
+  String get merchantMenuFailed => 'تعذّر تحميل القائمة.';
+
+  @override
+  String get merchantMenuEmpty => 'لا أصناف في القائمة بعد.';
+
+  @override
+  String get merchantMenuTerminated =>
+      'انتهى حساب مطعمك، والقائمة لم تعد متاحة.';
+
+  @override
+  String get merchantMenuAvailable => 'متوفر';
+
+  @override
+  String get merchantMenuOffTomorrow => 'متوقف حتى الغد';
+
+  @override
+  String get merchantMenuOffUntilBack => 'متوقف حتى أعيده';
+
+  @override
+  String get merchantMenuUnavailableToCustomers => 'غير متوفر للزبائن';
+
+  @override
+  String get merchantMenuOffFor => 'إيقاف حتى متى؟';
+
+  @override
+  String get merchantMenuHidden => 'مخفي عن الزبائن';
+
+  @override
+  String get merchantMenuHide => 'إخفاء';
+
+  @override
+  String get merchantMenuShow => 'إظهار';
+
+  @override
+  String get merchantMenuMoveUp => 'تحريك للأعلى';
+
+  @override
+  String get merchantMenuMoveDown => 'تحريك للأسفل';
+
+  @override
+  String get merchantMenuWindowAllDay => 'متوفر طوال اليوم';
+
+  @override
+  String merchantMenuWindowShown(String from, String to) {
+    return 'متوفر من $from إلى $to';
+  }
+
+  @override
+  String get merchantMenuSetWindow => 'فترة التوفر';
+
+  @override
+  String get merchantMenuWindowFrom => 'من';
+
+  @override
+  String get merchantMenuWindowTo => 'إلى';
+
+  @override
+  String get merchantMenuWindowClear => 'طوال اليوم';
+
+  @override
+  String get merchantMenuEditPrice => 'تعديل السعر';
+
+  @override
+  String get merchantMenuParityReminder =>
+      'تذكير: سعر التطبيق يجب ألا يزيد على سعر المحل';
+
+  @override
+  String get merchantMenuPrice => 'السعر';
+
+  @override
+  String get merchantMenuPriceDelta => 'فرق السعر';
+
+  @override
+  String get merchantMenuInvalidPrice => 'أدخل سعراً صحيحاً';
+
+  @override
+  String get merchantMenuCancel => 'إلغاء';
+
+  @override
+  String get merchantMenuQuickEdit => 'تعديل سريع';
+
+  @override
+  String get merchantMenuSearch => 'بحث بالاسم';
+
+  @override
+  String get merchantMenuAllCategories => 'كل التصنيفات';
+
+  @override
+  String get merchantMenuNoMatch => 'لا نتائج.';
+
+  @override
+  String merchantMenuOptionOf(String item) {
+    return 'خيار في $item';
+  }
+
+  @override
+  String get merchantMenuBulk => 'تعديل جماعي للأسعار';
+
+  @override
+  String get merchantMenuBulkPercent => 'نسبة مئوية';
+
+  @override
+  String get merchantMenuBulkAmount => 'مبلغ ثابت';
+
+  @override
+  String get merchantMenuBulkUp => 'رفع';
+
+  @override
+  String get merchantMenuBulkDown => 'تخفيض';
+
+  @override
+  String get merchantMenuBulkValue => 'القيمة';
+
+  @override
+  String get merchantMenuBulkPreview => 'معاينة قبل وبعد';
+
+  @override
+  String get merchantMenuBulkConfirm => 'تأكيد التعديل';
+
+  @override
+  String merchantMenuBulkRow(String before, String after) {
+    return '$before ← $after';
+  }
+
+  @override
+  String get merchantMenuBulkReachesZero => 'يصل بالسعر إلى 0';
+
+  @override
+  String get merchantMenuBulkRefused =>
+      'لا يمكن تطبيق التعديل: بعض الأسعار ستصل إلى 0.';
+
+  @override
+  String merchantMenuBulkRounding(String unit) {
+    return 'يُقرَّب كل سعر جديد إلى $unit.';
+  }
+
+  @override
+  String merchantMenuBulkDone(int count) {
+    return 'عُدّلت أسعار $count من الأصناف.';
+  }
+
+  @override
+  String get merchantMenuPriceLog => 'سجل الأسعار';
+
+  @override
+  String get merchantMenuPriceLogEmpty => 'لا تغييرات في الأسعار بعد.';
+
+  @override
+  String merchantMenuPriceLogChange(String before, String after) {
+    return '$before ← $after';
+  }
+
+  @override
+  String merchantMenuPriceLogBy(String name, String time) {
+    return '$name · $time';
+  }
+
+  @override
+  String get merchantMenuFoxDrop => 'FOX DROP';
+
+  @override
+  String get merchantMenuUnknownUser => 'مستخدم سابق';
+
+  @override
+  String get merchantMenuCustomerPreview => 'معاينة كما يراها الزبون';
+
+  @override
+  String get merchantMenuPreviewTomorrow => 'يتوفر غداً';
+
+  @override
+  String merchantMenuPreviewFrom(String time) {
+    return 'متوفر من $time';
+  }
+
+  @override
+  String get merchantMenuPreviewUnavailable => 'غير متوفر حالياً';
+
+  @override
+  String get merchantMenuInvalidWindow => 'اختر وقتين مختلفين لفترة التوفر.';
 }

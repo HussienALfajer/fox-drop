@@ -70,6 +70,9 @@ const AdminAlertDtoOutputCodeEnum _$adminAlertDtoOutputCodeEnum_urgentTicket =
 const AdminAlertDtoOutputCodeEnum
 _$adminAlertDtoOutputCodeEnum_urgentDisputeTicket =
     const AdminAlertDtoOutputCodeEnum._('urgentDisputeTicket');
+const AdminAlertDtoOutputCodeEnum
+_$adminAlertDtoOutputCodeEnum_largePriceChange =
+    const AdminAlertDtoOutputCodeEnum._('largePriceChange');
 
 AdminAlertDtoOutputCodeEnum _$adminAlertDtoOutputCodeEnumValueOf(String name) {
   switch (name) {
@@ -121,6 +124,8 @@ AdminAlertDtoOutputCodeEnum _$adminAlertDtoOutputCodeEnumValueOf(String name) {
       return _$adminAlertDtoOutputCodeEnum_urgentTicket;
     case 'urgentDisputeTicket':
       return _$adminAlertDtoOutputCodeEnum_urgentDisputeTicket;
+    case 'largePriceChange':
+      return _$adminAlertDtoOutputCodeEnum_largePriceChange;
     default:
       throw ArgumentError(name);
   }
@@ -153,6 +158,7 @@ _$adminAlertDtoOutputCodeEnumValues =
       _$adminAlertDtoOutputCodeEnum_compensationApproval,
       _$adminAlertDtoOutputCodeEnum_urgentTicket,
       _$adminAlertDtoOutputCodeEnum_urgentDisputeTicket,
+      _$adminAlertDtoOutputCodeEnum_largePriceChange,
     ]);
 
 const AdminAlertDtoOutputSeverityEnum
@@ -214,6 +220,9 @@ _$adminAlertDtoOutputSubjectTypeEnum_compensation =
 const AdminAlertDtoOutputSubjectTypeEnum
 _$adminAlertDtoOutputSubjectTypeEnum_ticket =
     const AdminAlertDtoOutputSubjectTypeEnum._('ticket');
+const AdminAlertDtoOutputSubjectTypeEnum
+_$adminAlertDtoOutputSubjectTypeEnum_priceChange =
+    const AdminAlertDtoOutputSubjectTypeEnum._('priceChange');
 
 AdminAlertDtoOutputSubjectTypeEnum _$adminAlertDtoOutputSubjectTypeEnumValueOf(
   String name,
@@ -235,6 +244,8 @@ AdminAlertDtoOutputSubjectTypeEnum _$adminAlertDtoOutputSubjectTypeEnumValueOf(
       return _$adminAlertDtoOutputSubjectTypeEnum_compensation;
     case 'ticket':
       return _$adminAlertDtoOutputSubjectTypeEnum_ticket;
+    case 'priceChange':
+      return _$adminAlertDtoOutputSubjectTypeEnum_priceChange;
     default:
       throw ArgumentError(name);
   }
@@ -252,6 +263,7 @@ _$adminAlertDtoOutputSubjectTypeEnumValues =
         _$adminAlertDtoOutputSubjectTypeEnum_currency,
         _$adminAlertDtoOutputSubjectTypeEnum_compensation,
         _$adminAlertDtoOutputSubjectTypeEnum_ticket,
+        _$adminAlertDtoOutputSubjectTypeEnum_priceChange,
       ],
     );
 
@@ -292,6 +304,7 @@ class _$AdminAlertDtoOutputCodeEnumSerializer
     'compensationApproval': 'compensation_approval',
     'urgentTicket': 'urgent_ticket',
     'urgentDisputeTicket': 'urgent_dispute_ticket',
+    'largePriceChange': 'large_price_change',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'restaurant_not_accepted': 'restaurantNotAccepted',
@@ -318,6 +331,7 @@ class _$AdminAlertDtoOutputCodeEnumSerializer
     'compensation_approval': 'compensationApproval',
     'urgent_ticket': 'urgentTicket',
     'urgent_dispute_ticket': 'urgentDisputeTicket',
+    'large_price_change': 'largePriceChange',
   };
 
   @override
@@ -388,6 +402,7 @@ class _$AdminAlertDtoOutputSubjectTypeEnumSerializer
     'currency': 'currency',
     'compensation': 'compensation',
     'ticket': 'ticket',
+    'priceChange': 'price_change',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'order': 'order',
@@ -398,6 +413,7 @@ class _$AdminAlertDtoOutputSubjectTypeEnumSerializer
     'currency': 'currency',
     'compensation': 'compensation',
     'ticket': 'ticket',
+    'price_change': 'priceChange',
   };
 
   @override
@@ -440,6 +456,8 @@ class _$AdminAlertDtoOutput extends AdminAlertDtoOutput {
   @override
   final String? restaurantName;
   @override
+  final String? restaurantId;
+  @override
   final String? currency;
   @override
   final String? ticketNumber;
@@ -467,6 +485,7 @@ class _$AdminAlertDtoOutput extends AdminAlertDtoOutput {
     this.orderNumber,
     this.captainName,
     this.restaurantName,
+    this.restaurantId,
     this.currency,
     this.ticketNumber,
     this.statementId,
@@ -496,6 +515,7 @@ class _$AdminAlertDtoOutput extends AdminAlertDtoOutput {
         orderNumber == other.orderNumber &&
         captainName == other.captainName &&
         restaurantName == other.restaurantName &&
+        restaurantId == other.restaurantId &&
         currency == other.currency &&
         ticketNumber == other.ticketNumber &&
         statementId == other.statementId &&
@@ -516,6 +536,7 @@ class _$AdminAlertDtoOutput extends AdminAlertDtoOutput {
     _$hash = $jc(_$hash, orderNumber.hashCode);
     _$hash = $jc(_$hash, captainName.hashCode);
     _$hash = $jc(_$hash, restaurantName.hashCode);
+    _$hash = $jc(_$hash, restaurantId.hashCode);
     _$hash = $jc(_$hash, currency.hashCode);
     _$hash = $jc(_$hash, ticketNumber.hashCode);
     _$hash = $jc(_$hash, statementId.hashCode);
@@ -538,6 +559,7 @@ class _$AdminAlertDtoOutput extends AdminAlertDtoOutput {
           ..add('orderNumber', orderNumber)
           ..add('captainName', captainName)
           ..add('restaurantName', restaurantName)
+          ..add('restaurantId', restaurantId)
           ..add('currency', currency)
           ..add('ticketNumber', ticketNumber)
           ..add('statementId', statementId)
@@ -588,6 +610,10 @@ class AdminAlertDtoOutputBuilder
   set restaurantName(String? restaurantName) =>
       _$this._restaurantName = restaurantName;
 
+  String? _restaurantId;
+  String? get restaurantId => _$this._restaurantId;
+  set restaurantId(String? restaurantId) => _$this._restaurantId = restaurantId;
+
   String? _currency;
   String? get currency => _$this._currency;
   set currency(String? currency) => _$this._currency = currency;
@@ -637,6 +663,7 @@ class AdminAlertDtoOutputBuilder
       _orderNumber = $v.orderNumber;
       _captainName = $v.captainName;
       _restaurantName = $v.restaurantName;
+      _restaurantId = $v.restaurantId;
       _currency = $v.currency;
       _ticketNumber = $v.ticketNumber;
       _statementId = $v.statementId;
@@ -696,6 +723,7 @@ class AdminAlertDtoOutputBuilder
             orderNumber: orderNumber,
             captainName: captainName,
             restaurantName: restaurantName,
+            restaurantId: restaurantId,
             currency: currency,
             ticketNumber: ticketNumber,
             statementId: statementId,

@@ -11,6 +11,11 @@ import 'board/board_screen.dart';
 import 'board/order_screen.dart';
 import 'device.dart';
 import 'device_name_screen.dart';
+import 'menu/bulk_price_screen.dart';
+import 'menu/menu_screen.dart';
+import 'menu/preview_screen.dart';
+import 'menu/price_log_screen.dart';
+import 'menu/quick_edit_screen.dart';
 import 'not_found_screen.dart';
 import 'platform.dart';
 import 'ratings/ratings_screen.dart';
@@ -62,6 +67,31 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/status-and-hours',
         builder: (context, state) => const HoursScreen(),
+      ),
+      // RA §6.1 #3, §9 (slice 2.32a): «القائمة» for owners and cashiers
+      // (availability only); the bulk change, the price log and the preview
+      // are the owners' (a cashier's call is 403 owner_only).
+      GoRoute(
+        path: '/menu',
+        builder: (context, state) => const MenuScreen(),
+        routes: [
+          GoRoute(
+            path: 'quick-edit',
+            builder: (context, state) => const QuickEditScreen(),
+          ),
+          GoRoute(
+            path: 'bulk-price',
+            builder: (context, state) => const BulkPriceScreen(),
+          ),
+          GoRoute(
+            path: 'price-log',
+            builder: (context, state) => const PriceLogScreen(),
+          ),
+          GoRoute(
+            path: 'preview',
+            builder: (context, state) => const PreviewScreen(),
+          ),
+        ],
       ),
       // RA §15: «الدعم», for owners and cashiers; «إبلاغ عن مشكلة» over it.
       GoRoute(

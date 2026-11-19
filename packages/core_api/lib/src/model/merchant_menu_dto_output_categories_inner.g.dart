@@ -19,6 +19,8 @@ class _$MerchantMenuDtoOutputCategoriesInner
   @override
   final MerchantMenuDtoOutputCategoriesInnerSwitchedOff? switchedOff;
   @override
+  final MerchantMenuDtoOutputCategoriesInnerWindow? window;
+  @override
   final BuiltList<MerchantMenuDtoOutputCategoriesInnerItemsInner> items;
 
   factory _$MerchantMenuDtoOutputCategoriesInner([
@@ -32,6 +34,7 @@ class _$MerchantMenuDtoOutputCategoriesInner
     required this.hidden,
     required this.available,
     this.switchedOff,
+    this.window,
     required this.items,
   }) : super._();
   @override
@@ -52,6 +55,7 @@ class _$MerchantMenuDtoOutputCategoriesInner
         hidden == other.hidden &&
         available == other.available &&
         switchedOff == other.switchedOff &&
+        window == other.window &&
         items == other.items;
   }
 
@@ -63,6 +67,7 @@ class _$MerchantMenuDtoOutputCategoriesInner
     _$hash = $jc(_$hash, hidden.hashCode);
     _$hash = $jc(_$hash, available.hashCode);
     _$hash = $jc(_$hash, switchedOff.hashCode);
+    _$hash = $jc(_$hash, window.hashCode);
     _$hash = $jc(_$hash, items.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -76,6 +81,7 @@ class _$MerchantMenuDtoOutputCategoriesInner
           ..add('hidden', hidden)
           ..add('available', available)
           ..add('switchedOff', switchedOff)
+          ..add('window', window)
           ..add('items', items))
         .toString();
   }
@@ -113,6 +119,12 @@ class MerchantMenuDtoOutputCategoriesInnerBuilder
     MerchantMenuDtoOutputCategoriesInnerSwitchedOffBuilder? switchedOff,
   ) => _$this._switchedOff = switchedOff;
 
+  MerchantMenuDtoOutputCategoriesInnerWindowBuilder? _window;
+  MerchantMenuDtoOutputCategoriesInnerWindowBuilder get window =>
+      _$this._window ??= MerchantMenuDtoOutputCategoriesInnerWindowBuilder();
+  set window(MerchantMenuDtoOutputCategoriesInnerWindowBuilder? window) =>
+      _$this._window = window;
+
   ListBuilder<MerchantMenuDtoOutputCategoriesInnerItemsInner>? _items;
   ListBuilder<MerchantMenuDtoOutputCategoriesInnerItemsInner> get items =>
       _$this._items ??=
@@ -133,6 +145,7 @@ class MerchantMenuDtoOutputCategoriesInnerBuilder
       _hidden = $v.hidden;
       _available = $v.available;
       _switchedOff = $v.switchedOff?.toBuilder();
+      _window = $v.window?.toBuilder();
       _items = $v.items.toBuilder();
       _$v = null;
     }
@@ -181,6 +194,7 @@ class MerchantMenuDtoOutputCategoriesInnerBuilder
               'available',
             ),
             switchedOff: _switchedOff?.build(),
+            window: _window?.build(),
             items: items.build(),
           );
     } catch (_) {
@@ -188,6 +202,8 @@ class MerchantMenuDtoOutputCategoriesInnerBuilder
       try {
         _$failedField = 'switchedOff';
         _switchedOff?.build();
+        _$failedField = 'window';
+        _window?.build();
         _$failedField = 'items';
         items.build();
       } catch (e) {

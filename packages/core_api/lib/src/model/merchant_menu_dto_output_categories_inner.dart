@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_window.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_items_inner.dart';
 import 'package:core_api/src/model/merchant_menu_dto_output_categories_inner_switched_off.dart';
@@ -19,6 +20,7 @@ part 'merchant_menu_dto_output_categories_inner.g.dart';
 /// * [hidden]
 /// * [available]
 /// * [switchedOff]
+/// * [window]
 /// * [items]
 @BuiltValue()
 abstract class MerchantMenuDtoOutputCategoriesInner
@@ -41,6 +43,9 @@ abstract class MerchantMenuDtoOutputCategoriesInner
 
   @BuiltValueField(wireName: r'switchedOff')
   MerchantMenuDtoOutputCategoriesInnerSwitchedOff? get switchedOff;
+
+  @BuiltValueField(wireName: r'window')
+  MerchantMenuDtoOutputCategoriesInnerWindow? get window;
 
   @BuiltValueField(wireName: r'items')
   BuiltList<MerchantMenuDtoOutputCategoriesInnerItemsInner> get items;
@@ -102,6 +107,15 @@ class _$MerchantMenuDtoOutputCategoriesInnerSerializer
             object.switchedOff,
             specifiedType: const FullType.nullable(
               MerchantMenuDtoOutputCategoriesInnerSwitchedOff,
+            ),
+          );
+    yield r'window';
+    yield object.window == null
+        ? null
+        : serializers.serialize(
+            object.window,
+            specifiedType: const FullType.nullable(
+              MerchantMenuDtoOutputCategoriesInnerWindow,
             ),
           );
     yield r'items';
@@ -185,6 +199,18 @@ class _$MerchantMenuDtoOutputCategoriesInnerSerializer
                   as MerchantMenuDtoOutputCategoriesInnerSwitchedOff?;
           if (valueDes == null) continue;
           result.switchedOff.replace(valueDes);
+          break;
+        case r'window':
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType.nullable(
+                      MerchantMenuDtoOutputCategoriesInnerWindow,
+                    ),
+                  )
+                  as MerchantMenuDtoOutputCategoriesInnerWindow?;
+          if (valueDes == null) continue;
+          result.window.replace(valueDes);
           break;
         case r'items':
           final valueDes =

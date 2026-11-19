@@ -249,8 +249,11 @@ export class AdminRestaurantProfileReadsController {
       ],
       CHANGE_LOG_LIMIT,
       // The daily switches of availability would push the changes AP §9.6.4
-      // names (prices, commission, hours, state) out of the log.
+      // names (prices, commission, hours, state) out of the log; the
+      // restaurant's own stay, with its user's name (AP §9.6.6 «Restaurant
+      // edits», slice 2.32a).
       '.availability',
+      'merchant',
     );
     const admins = await this.admins.names(
       entries.flatMap((entry) =>
