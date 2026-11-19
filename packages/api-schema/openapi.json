@@ -20510,7 +20510,7 @@
                               "type": "string",
                               "enum": [
                                 "created",
-                                "name",
+                                "rename",
                                 "description",
                                 "photo",
                                 "choices",
@@ -20699,7 +20699,7 @@
                         "type": "string",
                         "enum": [
                           "created",
-                          "name",
+                          "rename",
                           "description",
                           "photo",
                           "choices",
@@ -20979,7 +20979,7 @@
                               "type": "string",
                               "enum": [
                                 "created",
-                                "name",
+                                "rename",
                                 "description",
                                 "photo",
                                 "choices",
@@ -21162,7 +21162,7 @@
                         "type": "string",
                         "enum": [
                           "created",
-                          "name",
+                          "rename",
                           "description",
                           "photo",
                           "choices",
@@ -25630,7 +25630,7 @@
             "type": "string",
             "enum": [
               "created",
-              "name",
+              "rename",
               "description",
               "photo",
               "choices",
@@ -25925,7 +25925,7 @@
             "type": "string",
             "enum": [
               "created",
-              "name",
+              "rename",
               "description",
               "photo",
               "choices",

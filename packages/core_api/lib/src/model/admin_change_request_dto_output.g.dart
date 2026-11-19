@@ -50,8 +50,8 @@ const AdminChangeRequestDtoOutputFieldEnum
 _$adminChangeRequestDtoOutputFieldEnum_created =
     const AdminChangeRequestDtoOutputFieldEnum._('created');
 const AdminChangeRequestDtoOutputFieldEnum
-_$adminChangeRequestDtoOutputFieldEnum_name =
-    const AdminChangeRequestDtoOutputFieldEnum._('name');
+_$adminChangeRequestDtoOutputFieldEnum_rename =
+    const AdminChangeRequestDtoOutputFieldEnum._('rename');
 const AdminChangeRequestDtoOutputFieldEnum
 _$adminChangeRequestDtoOutputFieldEnum_description =
     const AdminChangeRequestDtoOutputFieldEnum._('description');
@@ -70,8 +70,8 @@ _$adminChangeRequestDtoOutputFieldEnumValueOf(String name) {
   switch (name) {
     case 'created':
       return _$adminChangeRequestDtoOutputFieldEnum_created;
-    case 'name':
-      return _$adminChangeRequestDtoOutputFieldEnum_name;
+    case 'rename':
+      return _$adminChangeRequestDtoOutputFieldEnum_rename;
     case 'description':
       return _$adminChangeRequestDtoOutputFieldEnum_description;
     case 'photo':
@@ -90,7 +90,7 @@ _$adminChangeRequestDtoOutputFieldEnumValues =
     BuiltSet<AdminChangeRequestDtoOutputFieldEnum>(
       const <AdminChangeRequestDtoOutputFieldEnum>[
         _$adminChangeRequestDtoOutputFieldEnum_created,
-        _$adminChangeRequestDtoOutputFieldEnum_name,
+        _$adminChangeRequestDtoOutputFieldEnum_rename,
         _$adminChangeRequestDtoOutputFieldEnum_description,
         _$adminChangeRequestDtoOutputFieldEnum_photo,
         _$adminChangeRequestDtoOutputFieldEnum_choices,
@@ -191,7 +191,7 @@ class _$AdminChangeRequestDtoOutputFieldEnumSerializer
     implements PrimitiveSerializer<AdminChangeRequestDtoOutputFieldEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'created': 'created',
-    'name': 'name',
+    'rename': 'rename',
     'description': 'description',
     'photo': 'photo',
     'choices': 'choices',
@@ -199,7 +199,7 @@ class _$AdminChangeRequestDtoOutputFieldEnumSerializer
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'created': 'created',
-    'name': 'name',
+    'rename': 'rename',
     'description': 'description',
     'photo': 'photo',
     'choices': 'choices',

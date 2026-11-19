@@ -356,7 +356,9 @@ describe("a published row's text (RA §9.5)", () => {
     expect(renamed.statusCode).toBe(200);
     const item = renamed.json().categories[0].items[0];
     expect(item.name).toBe('شاورما');
-    expect(item.pending).toEqual([expect.objectContaining({ field: 'name', name: 'شاورما دجاج' })]);
+    expect(item.pending).toEqual([
+      expect.objectContaining({ field: 'rename', name: 'شاورما دجاج' }),
+    ]);
     await r.owner('PUT', `/requests/items/${r.shawarma}/text`, {
       name: 'شاورما عربي',
       description: 'مع ثوم',
@@ -364,7 +366,7 @@ describe("a published row's text (RA §9.5)", () => {
     const requests = await queued(r.id);
     expect(requests.map((each: { field: string }) => each.field).sort()).toEqual([
       'description',
-      'name',
+      'rename',
     ]);
     expect(await customerNames(r.id)).toEqual([{ name: 'وجبات', items: ['شاورما', 'فلافل'] }]);
     // The published name again withdraws the name's request.
@@ -462,7 +464,7 @@ describe('option groups (RA §9.2)', () => {
       requests
         .map((each: { targetType: string; field: string }) => `${each.targetType}.${each.field}`)
         .sort(),
-    ).toEqual(['option.created', 'option.name', 'option_group.items']);
+    ).toEqual(['option.created', 'option.rename', 'option_group.items']);
     // A delta changes through «تعديل السعر», never through a request.
     expect(
       (

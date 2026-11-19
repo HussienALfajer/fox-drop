@@ -560,7 +560,7 @@ export const changeRequests = merchants.table(
       .references(() => restaurants.id),
     targetType: text('target_type', { enum: changeRequestTargets }).notNull(),
     targetId: uuid('target_id').notNull(),
-    // Such as created, name, description, photo, choices or groups.
+    // created, rename, description, photo, choices or items (slice 2.32b).
     field: text('field').notNull(),
     pendingValue: jsonb('pending_value').notNull(),
     status: text('status', { enum: changeRequestStatuses }).notNull().default('pending'),

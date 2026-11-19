@@ -25,7 +25,7 @@ const view = (over: object) =>
     restaurantName: 'مطعم',
     targetType: 'item',
     targetId: 'i',
-    field: 'name',
+    field: 'rename',
     targetName: 'شاورما',
     createdAt: '2026-11-19T08:00:00Z',
     status: 'pending',
@@ -78,7 +78,7 @@ describe('the review of the menu change requests', () => {
     });
     expect(
       approvalOf(
-        { targetType: 'item', field: 'name' },
+        { targetType: 'item', field: 'rename' },
         { name: ' شاورما عربي ', description: 'x' },
       ),
     ).toEqual({ kind: 'approve', name: 'شاورما عربي' });

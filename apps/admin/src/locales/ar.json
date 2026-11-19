@@ -3422,17 +3422,17 @@
     "late": "(متأخر)",
     "kind": {
       "category.created": "تصنيف جديد",
-      "category.name": "اسم تصنيف",
+      "category.rename": "اسم تصنيف",
       "item.created": "صنف جديد",
-      "item.name": "اسم صنف",
+      "item.rename": "اسم صنف",
       "item.description": "وصف صنف",
       "item.photo": "صورة صنف",
       "option_group.created": "مجموعة خيارات جديدة",
-      "option_group.name": "اسم مجموعة خيارات",
+      "option_group.rename": "اسم مجموعة خيارات",
       "option_group.choices": "اختيارات مجموعة (إلزامي، الحد الأدنى والأقصى)",
       "option_group.items": "ربط مجموعة بأصناف",
       "option.created": "خيار جديد",
-      "option.name": "اسم خيار"
+      "option.rename": "اسم خيار"
     },
     "viewTitle": "طلب تعديل القائمة",
     "back": "العودة إلى طلبات تعديل القائمة",

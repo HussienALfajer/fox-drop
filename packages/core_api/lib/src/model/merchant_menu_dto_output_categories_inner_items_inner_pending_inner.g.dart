@@ -12,9 +12,9 @@ _$merchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum_created =
       'created',
     );
 const MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum
-_$merchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum_name =
+_$merchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum_rename =
     const MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum._(
-      'name',
+      'rename',
     );
 const MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum
 _$merchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum_description =
@@ -44,8 +44,8 @@ _$merchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnumValueOf(
   switch (name) {
     case 'created':
       return _$merchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum_created;
-    case 'name':
-      return _$merchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum_name;
+    case 'rename':
+      return _$merchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum_rename;
     case 'description':
       return _$merchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum_description;
     case 'photo':
@@ -69,7 +69,7 @@ _$merchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnumValues =
       MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum
     >[
       _$merchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum_created,
-      _$merchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum_name,
+      _$merchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum_rename,
       _$merchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum_description,
       _$merchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum_photo,
       _$merchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum_choices,
@@ -87,7 +87,7 @@ class _$MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnumSeria
         > {
   static const Map<String, Object> _toWire = const <String, Object>{
     'created': 'created',
-    'name': 'name',
+    'rename': 'rename',
     'description': 'description',
     'photo': 'photo',
     'choices': 'choices',
@@ -95,7 +95,7 @@ class _$MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnumSeria
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'created': 'created',
-    'name': 'name',
+    'rename': 'rename',
     'description': 'description',
     'photo': 'photo',
     'choices': 'choices',

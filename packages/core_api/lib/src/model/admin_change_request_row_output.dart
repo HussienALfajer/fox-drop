@@ -43,7 +43,7 @@ abstract class AdminChangeRequestRowOutput
   /// `created`: a new row; otherwise the field the restaurant asks to change.
   @BuiltValueField(wireName: r'field')
   AdminChangeRequestRowOutputFieldEnum get field;
-  // enum fieldEnum {  created,  name,  description,  photo,  choices,  items,  };
+  // enum fieldEnum {  created,  rename,  description,  photo,  choices,  items,  };
 
   /// The row's name as the restaurant knows it.
   @BuiltValueField(wireName: r'targetName')
@@ -285,9 +285,9 @@ class AdminChangeRequestRowOutputFieldEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'created')
   static const AdminChangeRequestRowOutputFieldEnum created =
       _$adminChangeRequestRowOutputFieldEnum_created;
-  @BuiltValueEnumConst(wireName: r'name')
-  static const AdminChangeRequestRowOutputFieldEnum name =
-      _$adminChangeRequestRowOutputFieldEnum_name;
+  @BuiltValueEnumConst(wireName: r'rename')
+  static const AdminChangeRequestRowOutputFieldEnum rename =
+      _$adminChangeRequestRowOutputFieldEnum_rename;
   @BuiltValueEnumConst(wireName: r'description')
   static const AdminChangeRequestRowOutputFieldEnum description =
       _$adminChangeRequestRowOutputFieldEnum_description;

@@ -43,17 +43,17 @@ export const menuChangeQuery = (requestId: string) =>
 // know has no label (never shown in English).
 const kindKeys = {
   'category.created': 'menuChanges.kind.category.created',
-  'category.name': 'menuChanges.kind.category.name',
+  'category.rename': 'menuChanges.kind.category.rename',
   'item.created': 'menuChanges.kind.item.created',
-  'item.name': 'menuChanges.kind.item.name',
+  'item.rename': 'menuChanges.kind.item.rename',
   'item.description': 'menuChanges.kind.item.description',
   'item.photo': 'menuChanges.kind.item.photo',
   'option_group.created': 'menuChanges.kind.option_group.created',
-  'option_group.name': 'menuChanges.kind.option_group.name',
+  'option_group.rename': 'menuChanges.kind.option_group.rename',
   'option_group.choices': 'menuChanges.kind.option_group.choices',
   'option_group.items': 'menuChanges.kind.option_group.items',
   'option.created': 'menuChanges.kind.option.created',
-  'option.name': 'menuChanges.kind.option.name',
+  'option.rename': 'menuChanges.kind.option.rename',
 } as const;
 
 export type KindKey = (typeof kindKeys)[keyof typeof kindKeys];
@@ -76,7 +76,7 @@ export function correctable(change: Pick<QueuedChange, 'targetType' | 'field'>):
   description: boolean;
 } {
   return {
-    name: change.field === 'created' || change.field === 'name',
+    name: change.field === 'created' || change.field === 'rename',
     description:
       change.field === 'description' ||
       (change.field === 'created' && change.targetType === 'item'),
@@ -101,7 +101,7 @@ export function itemAfter(
   const name =
     fix.name && correction.name.trim() !== ''
       ? correction.name.trim()
-      : view.field === 'created' || view.field === 'name'
+      : view.field === 'created' || view.field === 'rename'
         ? after.name
         : (base?.name ?? null);
   const description = fix.description

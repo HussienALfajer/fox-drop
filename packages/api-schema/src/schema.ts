@@ -7089,7 +7089,7 @@ export interface components {
                          * @description `created`: a new row, unseen by customers until approved; otherwise the field asked.
                          * @enum {string}
                          */
-                        field: "created" | "name" | "description" | "photo" | "choices" | "items";
+                        field: "created" | "rename" | "description" | "photo" | "choices" | "items";
                         /** Format: date-time */
                         createdAt: string;
                         name: string | null;
@@ -7119,7 +7119,7 @@ export interface components {
                      * @description `created`: a new row, unseen by customers until approved; otherwise the field asked.
                      * @enum {string}
                      */
-                    field: "created" | "name" | "description" | "photo" | "choices" | "items";
+                    field: "created" | "rename" | "description" | "photo" | "choices" | "items";
                     /** Format: date-time */
                     createdAt: string;
                     name: string | null;
@@ -7171,7 +7171,7 @@ export interface components {
                          * @description `created`: a new row, unseen by customers until approved; otherwise the field asked.
                          * @enum {string}
                          */
-                        field: "created" | "name" | "description" | "photo" | "choices" | "items";
+                        field: "created" | "rename" | "description" | "photo" | "choices" | "items";
                         /** Format: date-time */
                         createdAt: string;
                         name: string | null;
@@ -7201,7 +7201,7 @@ export interface components {
                      * @description `created`: a new row, unseen by customers until approved; otherwise the field asked.
                      * @enum {string}
                      */
-                    field: "created" | "name" | "description" | "photo" | "choices" | "items";
+                    field: "created" | "rename" | "description" | "photo" | "choices" | "items";
                     /** Format: date-time */
                     createdAt: string;
                     name: string | null;
@@ -8195,7 +8195,7 @@ export interface components {
              * @description `created`: a new row; otherwise the field the restaurant asks to change.
              * @enum {string}
              */
-            field: "created" | "name" | "description" | "photo" | "choices" | "items";
+            field: "created" | "rename" | "description" | "photo" | "choices" | "items";
             /** @description The row's name as the restaurant knows it. */
             targetName: string;
             /**
@@ -8258,7 +8258,7 @@ export interface components {
              * @description `created`: a new row; otherwise the field the restaurant asks to change.
              * @enum {string}
              */
-            field: "created" | "name" | "description" | "photo" | "choices" | "items";
+            field: "created" | "rename" | "description" | "photo" | "choices" | "items";
             /** @description The row's name as the restaurant knows it. */
             targetName: string;
             /**

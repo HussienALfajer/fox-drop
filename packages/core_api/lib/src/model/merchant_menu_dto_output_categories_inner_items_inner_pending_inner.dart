@@ -40,7 +40,7 @@ abstract class MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInner
   /// `created`: a new row, unseen by customers until approved; otherwise the field asked.
   @BuiltValueField(wireName: r'field')
   MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum get field;
-  // enum fieldEnum {  created,  name,  description,  photo,  choices,  items,  };
+  // enum fieldEnum {  created,  rename,  description,  photo,  choices,  items,  };
 
   @BuiltValueField(wireName: r'createdAt')
   DateTime get createdAt;
@@ -416,10 +416,10 @@ class MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum
   static const MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum
   created =
       _$merchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum_created;
-  @BuiltValueEnumConst(wireName: r'name')
+  @BuiltValueEnumConst(wireName: r'rename')
   static const MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum
-  name =
-      _$merchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum_name;
+  rename =
+      _$merchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum_rename;
   @BuiltValueEnumConst(wireName: r'description')
   static const MerchantMenuDtoOutputCategoriesInnerItemsInnerPendingInnerFieldEnum
   description =

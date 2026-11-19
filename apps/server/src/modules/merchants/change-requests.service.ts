@@ -36,7 +36,7 @@ export type ChangeTargetType = (typeof changeRequestTargets)[number];
 // row, unpublished until approved; the others a field of a published row.
 export const changeFields = [
   'created',
-  'name',
+  'rename',
   'description',
   'photo',
   'choices',
@@ -238,7 +238,7 @@ export class ChangeRequestsService {
         row.cityId,
         restaurantId,
         target,
-        'name',
+        'rename',
         before.name === text,
         {
           name: text,
@@ -361,7 +361,7 @@ export class ChangeRequestsService {
         row.cityId,
         restaurantId,
         target,
-        'name',
+        'rename',
         before.name === name,
         {
           name,
@@ -586,7 +586,7 @@ export class ChangeRequestsService {
             row.cityId,
             restaurantId,
             optionTarget,
-            'name',
+            'rename',
             was.name === option.name,
             { name: option.name },
             change,
@@ -627,7 +627,7 @@ export class ChangeRequestsService {
         row.cityId,
         restaurantId,
         target,
-        'name',
+        'rename',
         before.name === name,
         {
           name,
@@ -954,7 +954,7 @@ export class ChangeRequestsService {
   // Only a request's text, and only where it asks one, may be corrected.
   private corrected(request: RequestRow, correction: Correction): Stored {
     const out: Stored = {};
-    const named = request.field === 'created' || request.field === 'name';
+    const named = request.field === 'created' || request.field === 'rename';
     const described =
       request.field === 'description' ||
       (request.field === 'created' && request.targetType === 'item');
@@ -990,7 +990,7 @@ export class ChangeRequestsService {
           })
           .where(eq(categories.id, id));
         return;
-      case 'category.name':
+      case 'category.rename':
         await tx
           .update(categories)
           .set({ name: value.name!, updatedAt: sql`now()` })
@@ -1021,7 +1021,7 @@ export class ChangeRequestsService {
           .where(eq(items.id, id));
         return;
       }
-      case 'item.name':
+      case 'item.rename':
         await tx
           .update(items)
           .set({ name: value.name!, updatedAt: sql`now()` })
@@ -1054,7 +1054,7 @@ export class ChangeRequestsService {
           await this.liveItems(tx, request.restaurantId, value.itemIds ?? []),
         );
         return;
-      case 'option_group.name':
+      case 'option_group.rename':
         await tx
           .update(optionGroups)
           .set({ name: value.name!, updatedAt: sql`now()` })
@@ -1109,7 +1109,7 @@ export class ChangeRequestsService {
           .where(eq(options.id, id));
         return;
       }
-      case 'option.name':
+      case 'option.rename':
         await tx
           .update(options)
           .set({ name: value.name!, updatedAt: sql`now()` })
@@ -1365,7 +1365,7 @@ export class ChangeRequestsService {
         if (request.field === 'created') return null;
         const [row] = await db.select().from(items).where(eq(items.id, id));
         if (!row) return null;
-        if (request.field === 'name') return values({ name: row.name });
+        if (request.field === 'rename') return values({ name: row.name });
         if (request.field === 'description') return values({ description: row.description });
         return values({ photoKey: row.photoKey });
       }
@@ -1373,7 +1373,7 @@ export class ChangeRequestsService {
         if (request.field === 'created') return null;
         const [row] = await db.select().from(optionGroups).where(eq(optionGroups.id, id));
         if (!row) return null;
-        if (request.field === 'name') return values({ name: row.name });
+        if (request.field === 'rename') return values({ name: row.name });
         if (request.field === 'choices') {
           return values({ minChoices: row.minChoices, maxChoices: row.maxChoices });
         }
