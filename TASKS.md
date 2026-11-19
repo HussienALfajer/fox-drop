@@ -4,20 +4,29 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.35b, offboarding and termination (`docs/roadmap.md`, Phase 2). In progress.
+Slice 2.36, captain management and performance (`docs/roadmap.md`, Phase 2). Planned, not started.
 
-- **Roadmap line:** 2.35b Offboarding and termination: «إنهاء التعاقد» with its checklist (kit returned, custody zero, earnings settled, the deposit refunded or withheld, the account closed), early exit and the flag «خروج مبكر», a former captain applying again on the same account with OWN's approval (AP §9.7.2, §9.7.5, C17). The owner terminates a captain in the commitment period and the captain is flagged «خروج مبكر».
-- **Specs:** AP §9.7.5, §9.7.2, §9.7.1 (re-applying, the duplicate check, `captains.activate_early_exit`), §9.10.3 «التأمينات», §8.5.5 (off-cycle payout), CA §12.3–12.4, C17, D24.
-- **Branch:** `claude/slice-2-35b-n4agfb` (the cloud session's branch).
-- **Owner decisions 2026-11-19:** one pull request; the deposit is refunded in cash at the desk («التأمينات», in the base, with a receipt «استرداد التأمين»); a deposit withheld goes whole to the platform's revenue (no partial withholding in V1); ending the contract at the probation review is no early exit (the flag only in «فترة التزام»).
-- **Decided by us (to confirm with the owner):** «إنهاء التعاقد» starts the checklist and suspends the captain until further notice with its reason (offline at once, last-order mode with an order), so custody and earnings stop moving while the app still shows them; step 5 «إغلاق الحساب» makes the captain `terminated`, ends its sessions and returns the sign-in account to an applicant's, so the same number applies again on the same account; the offboarding lives on the contract (the activated application); a captain without one (the seed's) cannot be terminated from the panel; no deposit instalment is taken once the contract is ended; a rehired captain keeps its captain id (its ledger accounts and history); a flagged account's activation needs OWN (`captains.activate_early_exit`) each time.
-- **Plan:**
-  - [ ] Server: the offboarding on the contract (migration: the columns, the event kinds, the open-account and captain indexes past an ended contract), terminate, kit returned, close, the checklist; a former captain's new application, the flag in the duplicate check, the rehire activation (OWN for a flagged captain); identity ends the sessions and frees the account; tests first.
-  - [ ] Ledger and desk: `deposit.refund` (cash, receipt «استرداد التأمين») and `deposit.withhold` (to the platform's revenue), the desk's «التأمينات» list and action; no instalment after termination; tests.
-  - [ ] Routes, the OpenAPI contract and the generated clients; the route table.
-  - [ ] Panel: «إنهاء التعاقد» and the checklist on the application page, the flag, the desk's refunds (unstyled, the design stop).
-  - [ ] Docs (`CLAUDE.md` of each module), review, handover to the next slice.
-- **Stopped at:** step 1.
+- **Roadmap line:** 2.36 Captain management and performance: the captain list, profile and actions, the acceptance rate over the last 50 offers, the on-time rate, violations and appeals, the acceptance-rate alert, the profile in the app with the pay table calculator (AP §9.7.3–9.7.6, CA §11, §12). A captain appeals a violation and the panel sees it.
+- **Specs:** AP §9.7.3 (the list), §9.7.4 (the profile's tabs), §9.7.5 (the actions: suspend, reactivate, force offline, release the device, the cash limit, the grace, a message, a violation, «إنهاء التعاقد» moving from the application's page), §9.7.6 (acceptance, conduct ladder, cancellations, automatic offline), CA §11 («أدائي», the violations and «اعتراض»), CA §12 (the profile, the pay table and «احسب أجري»), AP §6.
+- **Branch:** to create from an up-to-date `main` (`feat/captain-management`, or the cloud session's branch).
+- **Already built (reuse, do not rebuild):** `CaptainsService.setStatus`/`setStatusIn` (suspension with an end, reactivation; refused while a contract is being ended), `forceOffline`, the device release, the cash limit, the grace, the ratings pages (2.26c, moving into the profile), the offers log (2.15c), the reassignments' `captain_fault` and the handovers' fault (the captain's cancellations), the application's page as the captain file (2.34b–2.35b: the contract, kit, deposit, documents and the offboarding), the alerts machinery.
+- **To ask the owner first:** the split into pull requests (run the `slice-plan` skill: this line is several pull requests), and the design stop for any new screen in the captain app (the profile, «أدائي»); the open questions left by 2.35b (below).
+- **Plan:** to write as a checklist once the split is approved (one step per commit).
+- **Stopped at:** 2.35b merged; 2.36 not started.
+
+### Left from 2.35b (the cloud session's branch)
+
+- **Before deploying to staging:** migrations 0133 (expand only: nullable columns and two checks on `captains.applications`, the event kinds, the partial unique indexes `applications_open_account` and `applications_captain` rebuilt to leave an ended contract out), 0134 (the receipt type `captain_deposit_refund`, the journal types `deposit.refund` and `deposit.withhold`, the account purpose `platform.revenue_deposits`; checks rebuilt `NOT VALID` then validated: short locks on `cashdesk.receipts`, `ledger.accounts`, `ledger.journals`) and 0135 (an index on `captains.applications`). Deploy the server before the panel: the panel's daily report reads `withheldDeposits`.
+- **To check on staging (after the merge and the deploy):**
+  1. An activated captain whose probation is confirmed and past («فترة التزام»): on its application's page, «إنهاء التعاقد» with a reason, then «تأكيد إنهاء التعاقد»: the page shows «خروج مبكر» and the checklist; the captain's app shows the suspension.
+  2. «أُعيدت العدة»; at «الصندوق» › «التأمينات», «ردّ … نقداً وإصدار الإيصال» with the drawer open: the receipt «استرداد التأمين».
+  3. Back on the page, «إغلاق الحساب»: the captain's app signs out.
+  4. «انضم ككابتن» with the same number: a new application; its page says «كابتن سابق عليه علامة «خروج مبكر»»; «تفعيل» by OPS is refused, by the owner it works.
+- **Owner decisions 2026-11-19:** one pull request; the deposit refunded in cash at the desk with the receipt «استرداد التأمين»; a deposit withheld goes whole to the platform's revenue (no partial withholding); ending at the probation review is no early exit.
+- **Decided by us (to confirm with the owner):** «إنهاء التعاقد» suspends the captain until «إغلاق الحساب» (no reactivation meanwhile); «إغلاق الحساب» terminates the captain and returns its sign-in account to an applicant's, so the same number applies again; the flag follows the person (the account or the ID number); a rehired captain keeps its id, ledger accounts and history; OWN approves a flagged captain each time; no deposit instalment once the contract is being ended; a captain the seed made cannot be terminated from the panel; the daily report's new line «تأمينات محتجزة» (AP §9.10.1 does not list it); the words «إنهاء التعاقد», «إغلاق الحساب», «استرداد التأمين», «تأمينات محتجزة» and the checklist's labels.
+- **To ask the owner:** a captain owing earnings (a negative balance under `carry_forward`) cannot be closed until a manual correction or a collection: should the desk collect it at termination whatever the policy, or net it against the deposit?
+- **Not yet:** the captain app showing the items returned and the deposit refunded or withheld (CA §12.4; the app shows the suspension's reason and the receipt's push); the captain list and profile (2.36), where «إنهاء التعاقد» moves.
+- **Not checked locally:** Turborepo does not run in the cloud container (an exec format error), so its parts ran one by one: the server's tests (211 files), the panel's type check, lint, unit and Playwright tests, Dart analyze and the Dart tests. The Garage tests ran with a temporary IPv4 bind of `infra/storage/garage.toml`, not committed. The Flutter tests did not run here; CI runs them.
 
 ### Left from 2.35a (`feat/captain-activation`)
 
