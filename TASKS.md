@@ -4,16 +4,27 @@ The handover note between sessions: the current task, its branch, its plan, and 
 
 ## Current task
 
-Slice 2.35, activation and the contract (`docs/roadmap.md`, Phase 2). Planned, not started.
+Slice 2.35a, activation, the contract and the documents (`docs/roadmap.md`, Phase 2). 2.35b (offboarding and termination, early exit, re-applying) follows.
 
-- **Roadmap line:** 2.35 Activation and the contract: documents and their expiry, the contract (D24), kit and deposit, the cash limit and maximum pickup amount at activation, the welcome tour, probation and document tasks, early exit and a former captain flagged «خروج مبكر» applying again on the same account with OWN's approval (C17, owner decision 2026-11-19), offboarding and termination (AP §9.7.2, §9.7.5, CA §12, C17, C18). The owner activates an applicant who becomes a captain.
-- **Specs:** AP §9.7.1 (the actions «تسليم العدة», the deposit, the cash limit, the contract, «تفعيل» and its conditions), AP §9.7.2 (the contract, its phases and dates), AP §9.7.4 («البيانات والمستندات», `captain.document_expiry_notice_days`), AP §9.7.5 (offboarding, suspension, termination), AP §8.5 (the deposit and its instalments on Thursdays, the ledger), AP §9.1.3 (the alerts «نهاية فترة تجربة» and «مستند ينتهي»), AP §6.2–6.3 (`captains.activate_early_exit` OWN, the deposit FIN and OWN), CA §5.5 (activation: the welcome tour, the device check, «أقصى مبلغ أحمله» and «العملات التي أحملها»), CA §12, CA §14 #27–#28, C17, C18, D24.
-- **Branch:** to name when the slice starts (`feat/captain-activation`).
-- **Already built (reuse, do not rebuild):** 2.34a's and 2.34b's applications, documents, requests, history, the pipeline's `act` (`application-pipeline.service.ts`, `pipelineSteps` in `applications.ts`: add the activation's actions there), the applicant's account (`captain_accounts` with no captain; activation fills `captain_id` and `city_id`), `CaptainsService.createCaptain`, the cash limit (`captains.cash_limit`), «أقصى مبلغ أحمله» (2.15a), the applicant's push recipient (`{ party: 'applicant', accountId }`).
-- **Watch:** an applicant's `push_devices` row keeps `captain_id` null; after activation the captain's pushes target the captain, so the app must register its token again (or the server rebind the row) at activation. Captain records hold no ID number or account, so the duplicate check finds captains by plate only; linking the captain to its application fills that gap (AP §9.7.1). The «خروج مبكر» flag shows in the duplicate check (C17).
-- **To ask the owner first:** the split into pull requests (the slice is large: activation and the contract, then documents' expiry and probation, then offboarding and termination?); the kit's items and sizes list and the deposit's amount and instalments (settings?); whether the contract's scan uses the same office-scan route.
-- **Plan:** to write as a checklist once the split is approved (one step per commit).
-- **Stopped at:** 2.34b merged; 2.35 not started.
+- **Roadmap line:** 2.35a Activation, the contract and the documents (see `docs/roadmap.md`). The owner activates an applicant who becomes a captain.
+- **Specs:** AP §9.7.1 (the actions at «بانتظار العدة» and «تفعيل»), §9.7.2 (the contract, its phases and the probation review), §9.7.4 («البيانات والمستندات», `captain.document_expiry_notice_days`), §8.5.5 (instalments posted on Thursdays), §9.1.3 (the alerts «نهاية فترة تجربة» and «مستند ينتهي»), §6.2–6.3 (the deposit FIN and OWN), CA §5.5, §12.2–12.4, §14, C18, D24, K6.
+- **Branch:** `feat/captain-activation`.
+- **Owner decisions 2026-11-19:** two pull requests (2.35a, 2.35b); the deposit's amount is a setting `captain.kit_deposit_amount` offered as the default, FIN records what is paid now and the weekly instalment deducted each Thursday until it is paid; the kit's items are a list the owner edits in the panel; the contract's scan is the document «العقد الموقّع» uploaded the office's way, with the signing and start dates in «تسجيل العقد».
+- **Decided by us (to confirm):** the kit list is a content list (`kit_item`, «حقيبة حرارية» · «سترة»), the size typed at issue; a new captain's id is its application's id, so the deposit paid at the desk before activation is already the captain's account; the panel's captain file for this slice is the application's page (the captain list and profile are 2.36).
+- **Plan (one step per commit):**
+  - [x] 1. Docs: the split, the owner's decisions in the specs (Appendix A `captain.kit_deposit_amount`, Appendix B the kit list), this plan.
+  - [ ] 2. Server: the kit list and the setting `captain.kit_deposit_amount`.
+  - [ ] 3. Server: the records at «بانتظار العدة»: «تسليم العدة», the cash limit, «تسجيل العقد» with the signed contract and its dates, the deposit's plan (migration).
+  - [ ] 4. Server: the deposit paid at the cash desk with its receipt (`deposit.payment`) and push.
+  - [ ] 5. Server: «تفعيل»: its conditions, the captain made from the application, the account linked, the push device rebound, the push.
+  - [ ] 6. Server: the Thursday settlement posts the deposit's instalments.
+  - [ ] 7. Server: the contract's phases: the probation review task and alert, the confirmation, the commitment's automatic end, the pushes; the captain's contract and kit route.
+  - [ ] 8. Server: documents' expiry: the reminder push and the alert «مستند ينتهي», an expired required document blocks going online, the captain's documents with «رفع نسخة جديدة» and their review.
+  - [ ] 9. Panel: the actions at «بانتظار العدة» and «تفعيل», the contract and its phase, the kit and deposit, the documents' expiry, the desk's deposit payment.
+  - [ ] 10. Captain app: the welcome tour, the ask for «أقصى مبلغ أحمله» and «العملات التي أحملها» after activation, the profile's documents, contract and kit.
+  - [ ] 11. Review, then the handover to 2.35b.
+- **Watch:** an applicant's `push_devices` row keeps `captain_id` null; after activation the captain's pushes target the captain, so the server rebinds the row at activation. Captain records hold no ID number or account, so the duplicate check finds captains by plate only; linking the captain to its application fills that gap (AP §9.7.1).
+- **Stopped at:** step 1 done.
 
 ### Left from 2.34b (`feat/captain-application-pipeline`)
 
