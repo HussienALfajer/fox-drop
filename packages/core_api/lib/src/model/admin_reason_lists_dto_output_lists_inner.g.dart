@@ -87,6 +87,14 @@ const AdminReasonListsDtoOutputListsInnerListEnum
 _$adminReasonListsDtoOutputListsInnerListEnum_kitItem =
     const AdminReasonListsDtoOutputListsInnerListEnum._('kitItem');
 const AdminReasonListsDtoOutputListsInnerListEnum
+_$adminReasonListsDtoOutputListsInnerListEnum_captainViolation =
+    const AdminReasonListsDtoOutputListsInnerListEnum._('captainViolation');
+const AdminReasonListsDtoOutputListsInnerListEnum
+_$adminReasonListsDtoOutputListsInnerListEnum_captainViolationSevere =
+    const AdminReasonListsDtoOutputListsInnerListEnum._(
+      'captainViolationSevere',
+    );
+const AdminReasonListsDtoOutputListsInnerListEnum
 _$adminReasonListsDtoOutputListsInnerListEnum_failedOutcome =
     const AdminReasonListsDtoOutputListsInnerListEnum._('failedOutcome');
 const AdminReasonListsDtoOutputListsInnerListEnum
@@ -148,6 +156,10 @@ _$adminReasonListsDtoOutputListsInnerListEnumValueOf(String name) {
       return _$adminReasonListsDtoOutputListsInnerListEnum_compensation;
     case 'kitItem':
       return _$adminReasonListsDtoOutputListsInnerListEnum_kitItem;
+    case 'captainViolation':
+      return _$adminReasonListsDtoOutputListsInnerListEnum_captainViolation;
+    case 'captainViolationSevere':
+      return _$adminReasonListsDtoOutputListsInnerListEnum_captainViolationSevere;
     case 'failedOutcome':
       return _$adminReasonListsDtoOutputListsInnerListEnum_failedOutcome;
     case 'systemCancellation':
@@ -187,6 +199,8 @@ _$adminReasonListsDtoOutputListsInnerListEnumValues =
         _$adminReasonListsDtoOutputListsInnerListEnum_emergencyStop,
         _$adminReasonListsDtoOutputListsInnerListEnum_compensation,
         _$adminReasonListsDtoOutputListsInnerListEnum_kitItem,
+        _$adminReasonListsDtoOutputListsInnerListEnum_captainViolation,
+        _$adminReasonListsDtoOutputListsInnerListEnum_captainViolationSevere,
         _$adminReasonListsDtoOutputListsInnerListEnum_failedOutcome,
         _$adminReasonListsDtoOutputListsInnerListEnum_systemCancellation,
       ],
@@ -263,6 +277,8 @@ class _$AdminReasonListsDtoOutputListsInnerListEnumSerializer
     'emergencyStop': 'emergency_stop',
     'compensation': 'compensation',
     'kitItem': 'kit_item',
+    'captainViolation': 'captain_violation',
+    'captainViolationSevere': 'captain_violation_severe',
     'failedOutcome': 'failed_outcome',
     'systemCancellation': 'system_cancellation',
   };
@@ -293,6 +309,8 @@ class _$AdminReasonListsDtoOutputListsInnerListEnumSerializer
     'emergency_stop': 'emergencyStop',
     'compensation': 'compensation',
     'kit_item': 'kitItem',
+    'captain_violation': 'captainViolation',
+    'captain_violation_severe': 'captainViolationSevere',
     'failed_outcome': 'failedOutcome',
     'system_cancellation': 'systemCancellation',
   };

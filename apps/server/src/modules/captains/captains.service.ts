@@ -184,6 +184,9 @@ export type AvailabilityChange =
       cityId: string;
       reason: string;
       until: Date | null;
+      // A violation's step set it (slice 2.36b): its own push (CA §14 #25)
+      // tells the captain, so #26 is not sent too.
+      byViolation: boolean;
       at: Date;
     }
   | { kind: 'reactivated'; captainId: string; cityId: string; at: Date };
@@ -793,6 +796,15 @@ export class CaptainsService implements OnModuleInit {
       .where(eq(captainRecords.cityId, cityId));
   }
 
+  // AP §9.7.6 (slice 2.36b): the city's captains not terminated, by name,
+  // for the acceptance review.
+  async reviewable(cityId: string): Promise<{ id: string; name: string }[]> {
+    return this.database.db
+      .select({ id: captainRecords.id, name: captainRecords.name })
+      .from(captainRecords)
+      .where(and(eq(captainRecords.cityId, cityId), ne(captainRecords.status, 'terminated')));
+  }
+
   // The captains' names by id, in one read (AP §9.10.7's list).
   async names(captainIds: readonly string[]): Promise<Map<string, string>> {
     if (captainIds.length === 0) return new Map();
@@ -829,7 +841,7 @@ export class CaptainsService implements OnModuleInit {
     tx: Tx,
     captainId: string,
     status: CaptainStatus,
-    change: CaptainChange & { until?: Date | null },
+    change: CaptainChange & { until?: Date | null; byViolation?: boolean },
     now: Date,
   ): Promise<StatusChanged> {
     if (!hasReason(change)) {
@@ -888,6 +900,7 @@ export class CaptainsService implements OnModuleInit {
         cityId: row.cityId,
         reason: change.reason!.trim(),
         until,
+        byViolation: change.byViolation === true,
         at: now,
       });
     } else if (status === 'active') {

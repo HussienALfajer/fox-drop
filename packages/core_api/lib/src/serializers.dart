@@ -116,6 +116,13 @@ import 'package:core_api/src/model/admin_captain_profile_dto_output_on_time.dart
 import 'package:core_api/src/model/admin_captain_profile_dto_output_rating.dart';
 import 'package:core_api/src/model/admin_captain_profile_dto_output_suspension.dart';
 import 'package:core_api/src/model/admin_captain_status_dto.dart';
+import 'package:core_api/src/model/admin_captain_violations_dto_output.dart';
+import 'package:core_api/src/model/admin_captain_violations_dto_output_suggestion.dart';
+import 'package:core_api/src/model/admin_captain_violations_dto_output_suspensions_inner.dart';
+import 'package:core_api/src/model/admin_captain_violations_dto_output_types.dart';
+import 'package:core_api/src/model/admin_captain_violations_dto_output_types_regular_inner.dart';
+import 'package:core_api/src/model/admin_captain_violations_dto_output_violations_inner.dart';
+import 'package:core_api/src/model/admin_captain_violations_dto_output_violations_inner_appeal.dart';
 import 'package:core_api/src/model/admin_categories_dto_output.dart';
 import 'package:core_api/src/model/admin_categories_dto_output_categories_inner.dart';
 import 'package:core_api/src/model/admin_category_dto_output.dart';
@@ -504,6 +511,7 @@ import 'package:core_api/src/model/admin_record_deposit_answer_dto_output_receip
 import 'package:core_api/src/model/admin_record_deposit_answer_dto_output_receipt_conversions_inner.dart';
 import 'package:core_api/src/model/admin_record_deposit_answer_dto_output_receipt_lines_inner.dart';
 import 'package:core_api/src/model/admin_record_deposit_dto.dart';
+import 'package:core_api/src/model/admin_record_violation_dto.dart';
 import 'package:core_api/src/model/admin_reject_compensation_dto.dart';
 import 'package:core_api/src/model/admin_reject_dto.dart';
 import 'package:core_api/src/model/admin_reject_dto_items_inner.dart';
@@ -688,6 +696,8 @@ import 'package:core_api/src/model/captain_active_order_dto_output_order_radii.d
 import 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant_location.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output_withdrawn.dart';
+import 'package:core_api/src/model/captain_appeal_body_dto.dart';
+import 'package:core_api/src/model/captain_appeal_ticket_dto_output.dart';
 import 'package:core_api/src/model/captain_application_document_dto.dart';
 import 'package:core_api/src/model/captain_application_dto_output.dart';
 import 'package:core_api/src/model/captain_application_dto_output_application.dart';
@@ -792,6 +802,12 @@ import 'package:core_api/src/model/captain_peak_bonus_dto_output_active_inner_am
 import 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner.dart';
 import 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_amount.dart';
 import 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_zones_inner.dart';
+import 'package:core_api/src/model/captain_performance_dto_output.dart';
+import 'package:core_api/src/model/captain_performance_dto_output_acceptance.dart';
+import 'package:core_api/src/model/captain_performance_dto_output_acceptance_offers_inner.dart';
+import 'package:core_api/src/model/captain_performance_dto_output_online.dart';
+import 'package:core_api/src/model/captain_performance_dto_output_violations_inner.dart';
+import 'package:core_api/src/model/captain_performance_dto_output_violations_inner_appeal.dart';
 import 'package:core_api/src/model/captain_pickup_request_dto.dart';
 import 'package:core_api/src/model/captain_problem_body_dto.dart';
 import 'package:core_api/src/model/captain_ratings_dto_output.dart';
@@ -1223,6 +1239,13 @@ part 'serializers.g.dart';
   AdminCaptainProfileDtoOutputRating,
   AdminCaptainProfileDtoOutputSuspension,
   AdminCaptainStatusDto,
+  AdminCaptainViolationsDtoOutput,
+  AdminCaptainViolationsDtoOutputSuggestion,
+  AdminCaptainViolationsDtoOutputSuspensionsInner,
+  AdminCaptainViolationsDtoOutputTypes,
+  AdminCaptainViolationsDtoOutputTypesRegularInner,
+  AdminCaptainViolationsDtoOutputViolationsInner,
+  AdminCaptainViolationsDtoOutputViolationsInnerAppeal,
   AdminCategoriesDtoOutput,
   AdminCategoriesDtoOutputCategoriesInner,
   AdminCategoryDtoOutput,
@@ -1611,6 +1634,7 @@ part 'serializers.g.dart';
   AdminRecordDepositAnswerDtoOutputReceiptConversionsInner,
   AdminRecordDepositAnswerDtoOutputReceiptLinesInner,
   AdminRecordDepositDto,
+  AdminRecordViolationDto,
   AdminRejectCompensationDto,
   AdminRejectDto,
   AdminRejectDtoItemsInner,
@@ -1795,6 +1819,8 @@ part 'serializers.g.dart';
   CaptainActiveOrderDtoOutputOrderRestaurant,
   CaptainActiveOrderDtoOutputOrderRestaurantLocation,
   CaptainActiveOrderDtoOutputWithdrawn,
+  CaptainAppealBodyDto,
+  CaptainAppealTicketDtoOutput,
   CaptainApplicationDocumentDto,
   CaptainApplicationDtoOutput,
   CaptainApplicationDtoOutputApplication,
@@ -1899,6 +1925,12 @@ part 'serializers.g.dart';
   CaptainPeakBonusDtoOutputWindowsInner,
   CaptainPeakBonusDtoOutputWindowsInnerAmount,
   CaptainPeakBonusDtoOutputWindowsInnerZonesInner,
+  CaptainPerformanceDtoOutput,
+  CaptainPerformanceDtoOutputAcceptance,
+  CaptainPerformanceDtoOutputAcceptanceOffersInner,
+  CaptainPerformanceDtoOutputOnline,
+  CaptainPerformanceDtoOutputViolationsInner,
+  CaptainPerformanceDtoOutputViolationsInnerAppeal,
   CaptainPickupRequestDto,
   CaptainProblemBodyDto,
   CaptainRatingsDtoOutput,
@@ -2791,6 +2823,13 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminCaptainViolationsDtoOutputSuspensionsInner),
+            ]),
+            () =>
+                ListBuilder<AdminCaptainViolationsDtoOutputSuspensionsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(CustomerQuoteDtoOutputLinesInner),
             ]),
             () => ListBuilder<CustomerQuoteDtoOutputLinesInner>(),
@@ -3233,6 +3272,13 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminCaptainViolationsDtoOutputTypesRegularInner),
+            ]),
+            () =>
+                ListBuilder<AdminCaptainViolationsDtoOutputTypesRegularInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(AdminCaptainChangeLogDtoOutputEntriesInnerChangesInner),
             ]),
             () =>
@@ -3273,6 +3319,13 @@ Serializers serializers =
           ..addBuilderFactory(
             const FullType(BuiltMap, [FullType(String), FullType(String)]),
             () => MapBuilder<String, String>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CaptainPerformanceDtoOutputAcceptanceOffersInner),
+            ]),
+            () =>
+                ListBuilder<CaptainPerformanceDtoOutputAcceptanceOffersInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
@@ -3629,6 +3682,12 @@ Serializers serializers =
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [
+              FullType(AdminCaptainViolationsDtoOutputViolationsInner),
+            ]),
+            () => ListBuilder<AdminCaptainViolationsDtoOutputViolationsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
               FullType(
                 AdminCurrentDrawerSessionDtoOutputSessionCurrenciesInner,
               ),
@@ -3667,6 +3726,12 @@ Serializers serializers =
               FullType(AdminRatedCaptainsDtoOutputCaptainsInner),
             ]),
             () => ListBuilder<AdminRatedCaptainsDtoOutputCaptainsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, [
+              FullType(CaptainPerformanceDtoOutputViolationsInner),
+            ]),
+            () => ListBuilder<CaptainPerformanceDtoOutputViolationsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, [

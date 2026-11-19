@@ -1662,13 +1662,31 @@ export class ApplicationPipelineService {
     reason: string,
     now = new Date(),
   ): Promise<void> {
-    const trimmed = reason.trim();
-    if (trimmed === '') throw new PipelineRefusedError('reason_required');
     const { cityId } = await this.row(applicationId);
     const timeZone = (await this.geo.cityTimeZone(cityId)) ?? 'UTC';
+    const { captainId, changed } = await this.database.db.transaction((tx) =>
+      this.terminateIn(tx, applicationId, admin, reason, timeZone, now),
+    );
+    await this.captains.afterStatus(captainId, changed, now);
+  }
+
+  // «إنهاء التعاقد» in the caller's transaction (a violation's termination
+  // step, slice 2.36b), the city's time zone read before it; the caller
+  // runs `afterStatus` once it commits.
+  async terminateIn(
+    tx: Tx,
+    applicationId: string,
+    admin: PipelineAdmin,
+    reason: string,
+    timeZone: string,
+    now: Date,
+    byViolation = false,
+  ): Promise<{ captainId: string; changed: StatusChanged }> {
+    const trimmed = reason.trim();
+    if (trimmed === '') throw new PipelineRefusedError('reason_required');
     let changed: StatusChanged | null = null;
     let captainId = '';
-    await this.act(applicationId, admin, 'terminate', now, async (tx, row) => {
+    await this.actIn(tx, applicationId, admin, 'terminate', now, timeZone, async (tx, row) => {
       if (row.terminatedAt !== null) throw new PipelineRefusedError('already_terminated');
       captainId = row.captainId!;
       const [captain] = await tx
@@ -1681,7 +1699,7 @@ export class ApplicationPipelineService {
         tx,
         captainId,
         'suspended',
-        { actor: admin.actor, context: admin.context, reason: trimmed, until: null },
+        { actor: admin.actor, context: admin.context, reason: trimmed, until: null, byViolation },
         now,
       );
       return {
@@ -1697,7 +1715,23 @@ export class ApplicationPipelineService {
         reason: trimmed,
       };
     });
-    if (changed !== null) await this.captains.afterStatus(captainId, changed, now);
+    return { captainId, changed: changed! };
+  }
+
+  // The contract in force of a captain (its latest activated application
+  // not ended), or null for a captain the seed made (slice 2.36b).
+  async contractOf(tx: Tx, captainId: string): Promise<string | null> {
+    const [row] = await tx
+      .select({ id: applications.id })
+      .from(applications)
+      .where(
+        and(
+          eq(applications.captainId, captainId),
+          isNotNull(applications.activatedAt),
+          isNull(applications.endedAt),
+        ),
+      );
+    return row?.id ?? null;
   }
 
   // The checklist's step 1 (OPS, OWN): the kit came back in good condition

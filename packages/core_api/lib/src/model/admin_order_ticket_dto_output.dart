@@ -17,7 +17,7 @@ part 'admin_order_ticket_dto_output.g.dart';
 /// Properties:
 /// * [id]
 /// * [number] - Shown as `T-{number}` (AP §4.8).
-/// * [source_] - Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem so far.
+/// * [source_] - Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem, captain_appeal so far.
 /// * [party]
 /// * [partyId]
 /// * [partyName]
@@ -50,7 +50,7 @@ abstract class AdminOrderTicketDtoOutput
   @BuiltValueField(wireName: r'number')
   String get number;
 
-  /// Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem so far.
+  /// Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem, captain_appeal so far.
   @BuiltValueField(wireName: r'source')
   String get source_;
 
@@ -77,7 +77,7 @@ abstract class AdminOrderTicketDtoOutput
   /// Which resolutions it takes (AP §9.9.3): general, price_difference, pickup_dispute.
   @BuiltValueField(wireName: r'kind')
   AdminOrderTicketDtoOutputKindEnum get kind;
-  // enum kindEnum {  general,  price_difference,  pickup_dispute,  };
+  // enum kindEnum {  general,  price_difference,  pickup_dispute,  appeal,  };
 
   /// «سعر مختلف عن المحل»: the restaurant.
   @BuiltValueField(wireName: r'restaurantId')
@@ -621,6 +621,9 @@ class AdminOrderTicketDtoOutputKindEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'pickup_dispute')
   static const AdminOrderTicketDtoOutputKindEnum pickupDispute =
       _$adminOrderTicketDtoOutputKindEnum_pickupDispute;
+  @BuiltValueEnumConst(wireName: r'appeal')
+  static const AdminOrderTicketDtoOutputKindEnum appeal =
+      _$adminOrderTicketDtoOutputKindEnum_appeal;
 
   static Serializer<AdminOrderTicketDtoOutputKindEnum> get serializer =>
       _$adminOrderTicketDtoOutputKindEnumSerializer;

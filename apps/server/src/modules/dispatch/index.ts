@@ -17,9 +17,11 @@ import { AuditModule } from '../audit/index.js';
 import { CaptainsModule } from '../captains/index.js';
 import { GeoModule, GeoService } from '../geo/index.js';
 import { MerchantsModule } from '../merchants/index.js';
+import { NotificationsWorkerModule } from '../notifications/index.js';
 import { OrderAssignmentsModule } from '../ordering/index.js';
 import { SettingsModule } from '../settings/index.js';
 import { AdminDispatchController, CaptainOffersController } from './dispatch.controller.js';
+import { AcceptanceReviews, AcceptanceReviewsWorker } from './acceptance-reviews.js';
 import { DispatchService, type OfferExpiryJob } from './dispatch.service.js';
 
 const imports = [
@@ -72,7 +74,12 @@ export class OfferTimersWorker implements OnModuleInit {
   }
 }
 
-@Module({ imports, providers: [DispatchService, OfferTimersWorker] })
+// The worker also runs the acceptance review (AP §9.7.6, slice 2.36b), which
+// raises operations' alert.
+@Module({
+  imports: [...imports, NotificationsWorkerModule],
+  providers: [DispatchService, OfferTimersWorker, AcceptanceReviews, AcceptanceReviewsWorker],
+})
 export class DispatchWorkerModule {}
 
 // How often the dispatcher passes over each city it leads: the next offer
@@ -192,6 +199,7 @@ export class AutoDispatcher implements OnApplicationBootstrap, OnModuleDestroy {
 @Module({ imports, providers: [DispatchService, AutoDispatcher] })
 export class DispatcherModule {}
 
+export { AcceptanceReviews, acceptanceRate, rateBelow } from './acceptance-reviews.js';
 export {
   type CaptainOffer,
   type CaptainOfferLogRow,

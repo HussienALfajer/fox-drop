@@ -1,3 +1,4 @@
+import { canSeeCaptains } from './captain-list.js';
 import { useQuery } from '@tanstack/react-query';
 import { getRouteApi, Link } from '@tanstack/react-router';
 import { useState } from 'react';
@@ -168,6 +169,9 @@ function AlertLine({ alert, city }: { alert: AdminAlert; city: City }) {
       : null;
   // AP §9.1.3 «طلب انضمام كابتن» (slice 2.34b): «فتح طلب الانضمام».
   const applicationId = canSeeApplications(session) ? applicationOfAlert(alert) : null;
+  // AP §9.1.3 «مراجعة نسبة القبول» (slice 2.36b): «فتح ملف الكابتن».
+  const reviewedCaptain =
+    alert.code === 'acceptance_review' && canSeeCaptains(session) ? alert.subjectId : null;
   // AP §9.1.3 «تغيير أسعار كبير» (slice 2.32a): «فتح سجل الأسعار».
   const priceLogOf = can(session, RESTAURANTS_READ) ? priceChangeRestaurantOf(alert) : null;
   return (
@@ -227,6 +231,15 @@ function AlertLine({ alert, city }: { alert: AdminAlert; city: City }) {
             : alert.code === 'document_expiring'
               ? t('alerts.openDocuments')
               : t('alerts.openContract')}
+        </Link>
+      )}
+      {reviewedCaptain && (
+        <Link
+          to="/captains/$captainId"
+          params={{ captainId: reviewedCaptain }}
+          search={{ city: city.code, tab: 'offers' }}
+        >
+          {t('alerts.openCaptain')}
         </Link>
       )}
       {ticketId && (

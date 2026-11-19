@@ -50,6 +50,9 @@ _$adminTicketPageDtoOutputKindEnum_priceDifference =
 const AdminTicketPageDtoOutputKindEnum
 _$adminTicketPageDtoOutputKindEnum_pickupDispute =
     const AdminTicketPageDtoOutputKindEnum._('pickupDispute');
+const AdminTicketPageDtoOutputKindEnum
+_$adminTicketPageDtoOutputKindEnum_appeal =
+    const AdminTicketPageDtoOutputKindEnum._('appeal');
 
 AdminTicketPageDtoOutputKindEnum _$adminTicketPageDtoOutputKindEnumValueOf(
   String name,
@@ -61,6 +64,8 @@ AdminTicketPageDtoOutputKindEnum _$adminTicketPageDtoOutputKindEnumValueOf(
       return _$adminTicketPageDtoOutputKindEnum_priceDifference;
     case 'pickupDispute':
       return _$adminTicketPageDtoOutputKindEnum_pickupDispute;
+    case 'appeal':
+      return _$adminTicketPageDtoOutputKindEnum_appeal;
     default:
       throw ArgumentError(name);
   }
@@ -73,6 +78,7 @@ _$adminTicketPageDtoOutputKindEnumValues =
         _$adminTicketPageDtoOutputKindEnum_general,
         _$adminTicketPageDtoOutputKindEnum_priceDifference,
         _$adminTicketPageDtoOutputKindEnum_pickupDispute,
+        _$adminTicketPageDtoOutputKindEnum_appeal,
       ],
     );
 
@@ -174,11 +180,13 @@ class _$AdminTicketPageDtoOutputKindEnumSerializer
     'general': 'general',
     'priceDifference': 'price_difference',
     'pickupDispute': 'pickup_dispute',
+    'appeal': 'appeal',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'general': 'general',
     'price_difference': 'priceDifference',
     'pickup_dispute': 'pickupDispute',
+    'appeal': 'appeal',
   };
 
   @override

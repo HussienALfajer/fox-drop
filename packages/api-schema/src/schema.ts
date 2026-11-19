@@ -6052,6 +6052,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/captain/violations/{violationId}/appeal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["captainAppealsAppeal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/orders/{orderId}/captains": {
         parameters: {
             query?: never;
@@ -6974,6 +6990,38 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["adminCaptainProfileMessage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/captains/{captainId}/violations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminCaptainViolationsList"];
+        put?: never;
+        post: operations["adminCaptainViolationsRecord"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captain/performance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["captainPerformanceRead"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -9470,7 +9518,7 @@ export interface components {
         AdminReasonListsDto_Output: {
             lists: {
                 /** @enum {string} */
-                list: "merchant_rejection" | "merchant_problem" | "item_unavailable_note" | "merchant_ticket_type" | "captain_cannot_complete" | "captain_away" | "shortfall" | "food_after_failed" | "captain_ticket_type" | "captain_problem" | "customer_cancel" | "customer_problem" | "order_note" | "restaurant_rating_low" | "restaurant_rating_mid" | "restaurant_rating_high" | "captain_rating_low" | "captain_rating_mid" | "captain_rating_high" | "ops_cancel" | "reassignment" | "captain_suspension" | "customer_block" | "emergency_stop" | "compensation" | "kit_item" | "failed_outcome" | "system_cancellation";
+                list: "merchant_rejection" | "merchant_problem" | "item_unavailable_note" | "merchant_ticket_type" | "captain_cannot_complete" | "captain_away" | "shortfall" | "food_after_failed" | "captain_ticket_type" | "captain_problem" | "customer_cancel" | "customer_problem" | "order_note" | "restaurant_rating_low" | "restaurant_rating_mid" | "restaurant_rating_high" | "captain_rating_low" | "captain_rating_mid" | "captain_rating_high" | "ops_cancel" | "reassignment" | "captain_suspension" | "customer_block" | "emergency_stop" | "compensation" | "kit_item" | "captain_violation" | "captain_violation_severe" | "failed_outcome" | "system_cancellation";
                 apps: ("merchant" | "captain" | "customer")[];
                 /** @description Its reasons may carry «نص للزبون». */
                 customerText: boolean;
@@ -12510,7 +12558,7 @@ export interface components {
                  * @description The rule of AP §9.1.3.
                  * @enum {string}
                  */
-                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket" | "urgent_dispute_ticket" | "large_price_change" | "captain_application" | "probation_ending" | "probation_overdue" | "document_expiring";
+                code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket" | "urgent_dispute_ticket" | "large_price_change" | "captain_application" | "probation_ending" | "probation_overdue" | "document_expiring" | "acceptance_review";
                 /**
                  * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
                  * @enum {string}
@@ -12563,7 +12611,7 @@ export interface components {
              * @description The rule of AP §9.1.3.
              * @enum {string}
              */
-            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket" | "urgent_dispute_ticket" | "large_price_change" | "captain_application" | "probation_ending" | "probation_overdue" | "document_expiring";
+            code: "restaurant_not_accepted" | "no_captain" | "no_captain_after_ready" | "captain_gps_lost" | "pickup_disputed" | "prep_late" | "captain_waiting" | "delivery_late" | "collection_shortfall" | "captain_cash_limit" | "codes_cannot_send" | "code_number_stopped" | "away_from_address" | "item_unavailable" | "edit_unacknowledged" | "captain_cannot_complete" | "captain_emergency" | "customer_not_answering" | "restaurant_auto_paused" | "restaurant_settlement_overdue" | "rate_stale" | "compensation_approval" | "urgent_ticket" | "urgent_dispute_ticket" | "large_price_change" | "captain_application" | "probation_ending" | "probation_overdue" | "document_expiring" | "acceptance_review";
             /**
              * @description critical repeats its sound until acknowledged, warning plays once, information is silent (AP §7.3).
              * @enum {string}
@@ -15802,7 +15850,7 @@ export interface components {
                 id: string;
                 /** @description Shown as `T-{number}` (AP §4.8). */
                 number: string;
-                /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem so far. */
+                /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem, captain_appeal so far. */
                 source: string;
                 /** @enum {string} */
                 party: "customer" | "restaurant" | "captain";
@@ -15817,7 +15865,7 @@ export interface components {
                  * @description Which resolutions it takes (AP §9.9.3): general, price_difference, pickup_dispute.
                  * @enum {string}
                  */
-                kind: "general" | "price_difference" | "pickup_dispute";
+                kind: "general" | "price_difference" | "pickup_dispute" | "appeal";
                 /** @description «سعر مختلف عن المحل»: the restaurant. */
                 restaurantId: string | null;
                 restaurantName: string | null;
@@ -15846,7 +15894,7 @@ export interface components {
                 /** @description «محلولة» */
                 resolution: {
                     /** @enum {string} */
-                    code: "none_explained" | "compensation_code" | "free_redelivery" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
+                    code: "none_explained" | "compensation_code" | "free_redelivery" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct" | "appeal_accepted" | "appeal_rejected";
                     responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
                     /** @description Sent to the ticket's party. */
                     message: string;
@@ -15894,7 +15942,7 @@ export interface components {
             id: string;
             /** @description Shown as `T-{number}` (AP §4.8). */
             number: string;
-            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem so far. */
+            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem, captain_appeal so far. */
             source: string;
             /** @enum {string} */
             party: "customer" | "restaurant" | "captain";
@@ -15909,7 +15957,7 @@ export interface components {
              * @description Which resolutions it takes (AP §9.9.3): general, price_difference, pickup_dispute.
              * @enum {string}
              */
-            kind: "general" | "price_difference" | "pickup_dispute";
+            kind: "general" | "price_difference" | "pickup_dispute" | "appeal";
             /** @description «سعر مختلف عن المحل»: the restaurant. */
             restaurantId: string | null;
             restaurantName: string | null;
@@ -15938,7 +15986,7 @@ export interface components {
             /** @description «محلولة» */
             resolution: {
                 /** @enum {string} */
-                code: "none_explained" | "compensation_code" | "free_redelivery" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
+                code: "none_explained" | "compensation_code" | "free_redelivery" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct" | "appeal_accepted" | "appeal_rejected";
                 responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
                 /** @description Sent to the ticket's party. */
                 message: string;
@@ -17084,7 +17132,7 @@ export interface components {
                 id: string;
                 /** @description Shown as `T-{number}` (AP §4.8). */
                 number: string;
-                /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem so far. */
+                /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem, captain_appeal so far. */
                 source: string;
                 /** @enum {string} */
                 party: "customer" | "restaurant" | "captain";
@@ -17099,7 +17147,7 @@ export interface components {
                  * @description Which resolutions it takes (AP §9.9.3): general, price_difference, pickup_dispute.
                  * @enum {string}
                  */
-                kind: "general" | "price_difference" | "pickup_dispute";
+                kind: "general" | "price_difference" | "pickup_dispute" | "appeal";
                 /** @description «سعر مختلف عن المحل»: the restaurant. */
                 restaurantId: string | null;
                 restaurantName: string | null;
@@ -17128,7 +17176,7 @@ export interface components {
                 /** @description «محلولة» */
                 resolution: {
                     /** @enum {string} */
-                    code: "none_explained" | "compensation_code" | "free_redelivery" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
+                    code: "none_explained" | "compensation_code" | "free_redelivery" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct" | "appeal_accepted" | "appeal_rejected";
                     responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
                     /** @description Sent to the ticket's party. */
                     message: string;
@@ -17218,7 +17266,7 @@ export interface components {
             id: string;
             /** @description Shown as `T-{number}` (AP §4.8). */
             number: string;
-            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem so far. */
+            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem, captain_appeal so far. */
             source: string;
             /** @enum {string} */
             party: "customer" | "restaurant" | "captain";
@@ -17233,7 +17281,7 @@ export interface components {
              * @description Which resolutions it takes (AP §9.9.3): general, price_difference, pickup_dispute.
              * @enum {string}
              */
-            kind: "general" | "price_difference" | "pickup_dispute";
+            kind: "general" | "price_difference" | "pickup_dispute" | "appeal";
             /** @description «سعر مختلف عن المحل»: the restaurant. */
             restaurantId: string | null;
             restaurantName: string | null;
@@ -17262,7 +17310,7 @@ export interface components {
             /** @description «محلولة» */
             resolution: {
                 /** @enum {string} */
-                code: "none_explained" | "compensation_code" | "free_redelivery" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
+                code: "none_explained" | "compensation_code" | "free_redelivery" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct" | "appeal_accepted" | "appeal_rejected";
                 responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
                 /** @description Sent to the ticket's party. */
                 message: string;
@@ -17302,7 +17350,7 @@ export interface components {
             id: string;
             /** @description Shown as `T-{number}` (AP §4.8). */
             number: string;
-            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem so far. */
+            /** @description Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem, captain_appeal so far. */
             source: string;
             /** @enum {string} */
             party: "customer" | "restaurant" | "captain";
@@ -17317,7 +17365,7 @@ export interface components {
              * @description Which resolutions it takes (AP §9.9.3): general, price_difference, pickup_dispute.
              * @enum {string}
              */
-            kind: "general" | "price_difference" | "pickup_dispute";
+            kind: "general" | "price_difference" | "pickup_dispute" | "appeal";
             /** @description «سعر مختلف عن المحل»: the restaurant. */
             restaurantId: string | null;
             restaurantName: string | null;
@@ -17346,7 +17394,7 @@ export interface components {
             /** @description «محلولة» */
             resolution: {
                 /** @enum {string} */
-                code: "none_explained" | "compensation_code" | "free_redelivery" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
+                code: "none_explained" | "compensation_code" | "free_redelivery" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct" | "appeal_accepted" | "appeal_rejected";
                 responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
                 /** @description Sent to the ticket's party. */
                 message: string;
@@ -17592,7 +17640,7 @@ export interface components {
              * @description From the ticket kind's (AP §9.9.3).
              * @enum {string}
              */
-            resolution: "none_explained" | "compensation_code" | "free_redelivery" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct";
+            resolution: "none_explained" | "compensation_code" | "free_redelivery" | "price_corrected" | "price_correct" | "captain_paid" | "accounts_corrected" | "payment_correct" | "appeal_accepted" | "appeal_rejected";
             /** @description Required for a general ticket; none for a price difference or a pickup dispute. */
             responsible: ("restaurant" | "captain" | "customer" | "platform") | null;
             /** @description Sent to the ticket's party. */
@@ -17724,6 +17772,42 @@ export interface components {
                 message: string | null;
                 resolvedAt: string | null;
             }[];
+        };
+        CaptainAppealBodyDto: {
+            /** @description Why the captain appeals. */
+            text: string;
+            /** @description One photo at most, from POST /v1/captain/uploads/report-photo once uploaded. */
+            photoUploadId: string | null;
+        };
+        CaptainAppealTicketDto_Output: {
+            ticket: {
+                /** Format: uuid */
+                id: string;
+                /** @description Shown as `T-{number}`. */
+                number: string;
+                typeLabel: string;
+                orderId: string | null;
+                orderNumber: string | null;
+                /** @description The note sent. */
+                description: string;
+                /**
+                 * @description AP Appendix C: «جديدة», «قيد المعالجة», «بانتظار رد», «محلولة», «مغلقة».
+                 * @enum {string}
+                 */
+                status: "new" | "in_progress" | "waiting" | "resolved" | "closed";
+                /** Format: date-time */
+                openedAt: string;
+                /**
+                 * @description Who opened it: the captain, or the panel.
+                 * @enum {string}
+                 */
+                openedBy: "me" | "operations";
+                /** @description «سنرد عليك خلال {المدة}»: the ticket's timer from its opening. */
+                replyWithinMinutes: number;
+                /** @description The resolution message, once resolved. */
+                message: string | null;
+                resolvedAt: string | null;
+            };
         };
         AdminPickerDto_Output: {
             /** @description «تعيين» reaches the captain as an offer (dispatch.manual_assign_requires_accept), the only way to send one greyed out only for «المبلغ أكبر مما يحمله» (CA §8.4, K2). */
@@ -20050,6 +20134,135 @@ export interface components {
         AdminCaptainMessageSentDto_Output: {
             /** @constant */
             sent: true;
+        };
+        AdminCaptainViolationsDto_Output: {
+            /** @description Newest first. */
+            violations: {
+                /** Format: uuid */
+                id: string;
+                /** Format: date-time */
+                recordedAt: string;
+                typeCode: string;
+                typeLabel: string;
+                typeNote: string | null;
+                severe: boolean;
+                /** @enum {string} */
+                suggestedStep: "warning" | "suspension_1d" | "suspension_7d" | "termination";
+                /** @enum {string} */
+                step: "warning" | "suspension_1d" | "suspension_7d" | "termination";
+                orderId: string | null;
+                orderNumber: string | null;
+                reason: string;
+                suspendedUntil: string | null;
+                recordedByName: string | null;
+                /** @description The captain's «اعتراض»; an accepted one voids the violation. */
+                appeal: {
+                    /** Format: uuid */
+                    ticketId: string;
+                    /** Format: date-time */
+                    at: string;
+                    outcome: ("accepted" | "rejected") | null;
+                    decidedAt: string | null;
+                } | null;
+            }[];
+            /** @description The next step for a type not severe; a severe one is always termination. */
+            suggestion: {
+                /** @enum {string} */
+                step: "warning" | "suspension_1d" | "suspension_7d" | "termination";
+                windowDays: number;
+            };
+            types: {
+                regular: {
+                    code: string;
+                    label: string;
+                    /** @enum {string} */
+                    note: "none" | "optional" | "required";
+                }[];
+                severe: {
+                    code: string;
+                    label: string;
+                    /** @enum {string} */
+                    note: "none" | "optional" | "required";
+                }[];
+            };
+            /** @description The latest 50 status changes, newest first. */
+            suspensions: {
+                /** Format: date-time */
+                at: string;
+                /** @enum {string} */
+                status: "active" | "suspended" | "terminated";
+                until: string | null;
+                reason: string | null;
+                actorName: string | null;
+            }[];
+        };
+        AdminRecordViolationDto: {
+            /** @description The type is from the severe list. */
+            severe: boolean;
+            typeCode: string;
+            typeNote: string | null;
+            /**
+             * @description The step the admin confirms (the suggestion or another).
+             * @enum {string}
+             */
+            step: "warning" | "suspension_1d" | "suspension_7d" | "termination";
+            /** @description One of the captain's orders, or null. */
+            orderId: string | null;
+            reason: string;
+        };
+        CaptainPerformanceDto_Output: {
+            acceptance: {
+                /** @description Whole percent; null without an answered offer. */
+                rate: number | null;
+                accepted: number;
+                answered: number;
+                /** @description captain.acceptance_window_offers */
+                windowOffers: number;
+                /** @description Below captain.acceptance_alert_pct: the app warns. */
+                warn: boolean;
+                alertPct: number;
+                /** @description The answered offers counted, newest first. */
+                offers: {
+                    /** Format: date-time */
+                    offeredAt: string;
+                    restaurantName: string | null;
+                    /** @enum {string} */
+                    response: "accepted" | "declined" | "expired";
+                }[];
+            };
+            /** @description Of the last 50 delivered: those at or before the promised time. */
+            onTime: {
+                onTime: number;
+                counted: number;
+            };
+            /** @description Captain cancellations within the window. */
+            cancellations: number;
+            /** @description captain.violation_window_days */
+            windowDays: number;
+            online: {
+                todayMinutes: number;
+                /** @description The payout week. */
+                weekMinutes: number;
+            };
+            /** @description Newest first. */
+            violations: {
+                /** Format: uuid */
+                id: string;
+                /** Format: date-time */
+                recordedAt: string;
+                /** @description The type as chosen, with the text of «أخرى». */
+                type: string;
+                /** @enum {string} */
+                step: "warning" | "suspension_1d" | "suspension_7d" | "termination";
+                orderNumber: string | null;
+                suspendedUntil: string | null;
+                /** @description «اعتراض»; an accepted one voids the violation. */
+                appeal: {
+                    /** Format: uuid */
+                    ticketId: string;
+                    outcome: ("accepted" | "rejected") | null;
+                } | null;
+            }[];
         };
         AdminRestaurantListQueryDto: {
             /** Format: uuid */
@@ -30057,7 +30270,7 @@ export interface operations {
                 status?: "new" | "in_progress" | "waiting" | "resolved" | "closed";
                 typeCode?: string;
                 assigneeId?: string;
-                source?: "manual" | "pickup_dispute" | "customer_report" | "price_report" | "merchant_report" | "order_problem" | "captain_report" | "captain_problem";
+                source?: "manual" | "pickup_dispute" | "customer_report" | "price_report" | "merchant_report" | "order_problem" | "captain_report" | "captain_problem" | "captain_appeal";
                 /** @description «تجاوز المهلة»: only the tickets whose SLA timer is breached. */
                 breached?: "true" | "false";
             };
@@ -30403,6 +30616,35 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CustomerPriceReportDto_Output"];
+                };
+            };
+        };
+    };
+    captainAppealsAppeal: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                violationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptainAppealBodyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainAppealTicketDto_Output"];
                 };
             };
         };
@@ -31926,6 +32168,77 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminCaptainMessageSentDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainViolationsList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                captainId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainViolationsDto_Output"];
+                };
+            };
+        };
+    };
+    adminCaptainViolationsRecord: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description One per command, sent again with each retry: 16 to 128 letters, digits, - or _. */
+                "Idempotency-Key": string;
+            };
+            path: {
+                captainId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminRecordViolationDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCaptainViolationsDto_Output"];
+                };
+            };
+        };
+    };
+    captainPerformanceRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    "Server-Time": components["headers"]["Server-Time"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptainPerformanceDto_Output"];
                 };
             };
         };

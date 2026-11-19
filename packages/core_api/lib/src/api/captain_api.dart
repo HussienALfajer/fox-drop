@@ -10,6 +10,8 @@ import 'package:dio/dio.dart';
 
 import 'package:core_api/src/api_util.dart';
 import 'package:core_api/src/model/captain_active_order_dto_output.dart';
+import 'package:core_api/src/model/captain_appeal_body_dto.dart';
+import 'package:core_api/src/model/captain_appeal_ticket_dto_output.dart';
 import 'package:core_api/src/model/captain_application_document_dto.dart';
 import 'package:core_api/src/model/captain_application_dto_output.dart';
 import 'package:core_api/src/model/captain_application_personal_dto.dart';
@@ -43,6 +45,7 @@ import 'package:core_api/src/model/captain_order_dto_output.dart';
 import 'package:core_api/src/model/captain_order_route_dto_output.dart';
 import 'package:core_api/src/model/captain_outcome_payment_dto.dart';
 import 'package:core_api/src/model/captain_peak_bonus_dto_output.dart';
+import 'package:core_api/src/model/captain_performance_dto_output.dart';
 import 'package:core_api/src/model/captain_pickup_request_dto.dart';
 import 'package:core_api/src/model/captain_problem_body_dto.dart';
 import 'package:core_api/src/model/captain_ratings_dto_output.dart';
@@ -78,6 +81,113 @@ class CaptainApi {
   final Serializers _serializers;
 
   const CaptainApi(this._dio, this._serializers);
+
+  /// captainAppealsAppeal
+  ///
+  ///
+  /// Parameters:
+  /// * [violationId]
+  /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
+  /// * [captainAppealBodyDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [CaptainAppealTicketDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<CaptainAppealTicketDtoOutput>> captainAppealsAppeal({
+    required String violationId,
+    required String idempotencyKey,
+    required CaptainAppealBodyDto captainAppealBodyDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/captain/violations/{violationId}/appeal'.replaceAll(
+      '{'
+      r'violationId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        violationId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(CaptainAppealBodyDto);
+      _bodyData = _serializers.serialize(
+        captainAppealBodyDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    CaptainAppealTicketDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CaptainAppealTicketDtoOutput),
+                )
+                as CaptainAppealTicketDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<CaptainAppealTicketDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
 
   /// captainApplicationDocument
   ///
@@ -4477,6 +4587,76 @@ class CaptainApi {
     }
 
     return Response<CaptainPeakBonusDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// captainPerformanceRead
+  ///
+  ///
+  /// Parameters:
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [CaptainPerformanceDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<CaptainPerformanceDtoOutput>> captainPerformanceRead({
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/captain/performance';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    CaptainPerformanceDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CaptainPerformanceDtoOutput),
+                )
+                as CaptainPerformanceDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<CaptainPerformanceDtoOutput>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

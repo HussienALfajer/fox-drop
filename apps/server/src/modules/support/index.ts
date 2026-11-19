@@ -13,7 +13,10 @@ import { MerchantsModule } from '../merchants/index.js';
 import { NotificationsModule, NotificationsWorkerModule } from '../notifications/index.js';
 import { SettingsModule } from '../settings/index.js';
 import { AdminTicketsController } from './admin-tickets.controller.js';
-import { CaptainReportsController } from './captain-reports.controller.js';
+import {
+  CaptainAppealsController,
+  CaptainReportsController,
+} from './captain-reports.controller.js';
 import { CustomerPriceReportsController } from './customer-price-reports.controller.js';
 import { MerchantReportsController } from './merchant-reports.controller.js';
 import { SupportService } from './support.service.js';
@@ -43,6 +46,7 @@ import { TicketSync } from './ticket-sync.js';
     CustomerPriceReportsController,
     MerchantReportsController,
     CaptainReportsController,
+    CaptainAppealsController,
   ],
   providers: [SupportService, TicketSync],
   exports: [SupportService, TicketSync],

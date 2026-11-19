@@ -67,6 +67,7 @@ export const ticketSourceKeys = {
   order_problem: 'tickets.source.orderProblem',
   captain_report: 'tickets.source.captainReport',
   captain_problem: 'tickets.source.captainProblem',
+  captain_appeal: 'tickets.source.captainAppeal',
 } as const;
 
 // RA §15 (slice 2.24b): what «طلب تعديل بيانات» asks to change.
@@ -125,6 +126,8 @@ export const resolutionKeys = {
   captain_paid: 'tickets.resolution.captainPaid',
   accounts_corrected: 'tickets.resolution.accountsCorrected',
   payment_correct: 'tickets.resolution.paymentCorrect',
+  appeal_accepted: 'tickets.resolution.appealAccepted',
+  appeal_rejected: 'tickets.resolution.appealRejected',
 } as const satisfies Record<TicketResolution, string>;
 
 export const responsibleKeys = {
@@ -148,6 +151,10 @@ export function resolutionChoices(kind: TicketKind): TicketResolution[] {
       return ['price_corrected', 'price_correct'];
     case 'pickup_dispute':
       return ['captain_paid', 'accounts_corrected', 'payment_correct'];
+    // CA §11.3, AP §9.7.5 (slice 2.36b): the appeal's decision, recorded on
+    // its violation.
+    case 'appeal':
+      return ['appeal_accepted', 'appeal_rejected'];
   }
 }
 
@@ -242,21 +249,31 @@ export function moneyPreviewQuery(
 }
 
 // AP §9.9.3: the responsible party is asked for every ticket but a price
-// difference.
-export const needsResponsible = (kind: TicketKind): boolean => kind !== 'price_difference';
+// difference and an appeal (slice 2.36b).
+export const needsResponsible = (kind: TicketKind): boolean =>
+  kind !== 'price_difference' && kind !== 'appeal';
+
+// AP §9.7.5: an appeal is decided by OWN and OPS, as the violation.
+const CAPTAINS_MANAGE = 'captains.manage';
 
 // Who may resolve the ticket (AP §6.3): a pickup dispute with its own
-// permission, every other with support.manage.
+// permission, an appeal with captains.manage, every other with
+// support.manage.
 export function canResolve(
   session: AdminSession | null | undefined,
   ticket: Pick<Ticket, 'kind' | 'status'>,
 ): boolean {
   if (!isOpenTicket(ticket.status)) return false;
+  if (ticket.kind === 'appeal') return can(session, CAPTAINS_MANAGE);
   return can(session, ticket.kind === 'pickup_dispute' ? RESOLVE_PICKUP_DISPUTE : SUPPORT_MANAGE);
 }
 
-// «إغلاق»: whoever may resolve the ticket (AP §6.3).
-export const canCloseTicket = canResolve;
+// «إغلاق»: whoever may resolve the ticket (AP §6.3); an appeal takes its
+// decision instead.
+export const canCloseTicket = (
+  session: AdminSession | null | undefined,
+  ticket: Pick<Ticket, 'kind' | 'status'>,
+): boolean => ticket.kind !== 'appeal' && canResolve(session, ticket);
 
 // «تصحيح في الحسابات»: the amounts typed per currency in major units, as
 // lines in minor units; an empty field or a zero is left out; null when one

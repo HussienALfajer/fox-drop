@@ -102,6 +102,29 @@ Map<String, Object?> officeJson({bool open = true}) => {
 
 /// `GET /v1/captain/settings/max-pickup-amount` (CA §10.5, K2).
 /// `GET /v1/captain/contract` (slice 2.35a): [phase] null for no contract.
+/// CA §11 «أدائي» as the server answers it (slice 2.36b).
+Map<String, Object?> performanceJson({
+  int? rate,
+  bool warn = false,
+  List<Map<String, Object?>> offers = const [],
+  List<Map<String, Object?>> violations = const [],
+}) => {
+  'acceptance': {
+    'rate': rate,
+    'accepted': rate == null ? 0 : 2,
+    'answered': rate == null ? 0 : 3,
+    'windowOffers': 50,
+    'warn': warn,
+    'alertPct': 70,
+    'offers': offers,
+  },
+  'onTime': {'onTime': 4, 'counted': 5},
+  'cancellations': 1,
+  'windowDays': 90,
+  'online': {'todayMinutes': 90, 'weekMinutes': 600},
+  'violations': violations,
+};
+
 Map<String, Object?> contractJson(String? phase) => {
   'contract': phase == null
       ? null
@@ -621,6 +644,12 @@ class TestApp {
     if (!server.routes.containsKey('/v1/captain/documents')) {
       server.on('/v1/captain/documents', [
         const FakeAnswer(200, {'documents': <Object?>[]}),
+      ]);
+    }
+    // CA §11 (slice 2.36b): no warning unless a test says otherwise.
+    if (!server.routes.containsKey('/v1/captain/performance')) {
+      server.on('/v1/captain/performance', [
+        FakeAnswer(200, performanceJson()),
       ]);
     }
     server.on('/v1/captain/content', [FakeAnswer(200, contentJson())]);

@@ -58,6 +58,7 @@ import 'package:core_api/src/model/admin_captain_orders_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_phone_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_profile_dto_output.dart';
 import 'package:core_api/src/model/admin_captain_status_dto.dart';
+import 'package:core_api/src/model/admin_captain_violations_dto_output.dart';
 import 'package:core_api/src/model/admin_categories_dto_output.dart';
 import 'package:core_api/src/model/admin_category_dto_output.dart';
 import 'package:core_api/src/model/admin_category_image_dto.dart';
@@ -225,6 +226,7 @@ import 'package:core_api/src/model/admin_record_arrival_dto.dart';
 import 'package:core_api/src/model/admin_record_delivery_dto.dart';
 import 'package:core_api/src/model/admin_record_deposit_answer_dto_output.dart';
 import 'package:core_api/src/model/admin_record_deposit_dto.dart';
+import 'package:core_api/src/model/admin_record_violation_dto.dart';
 import 'package:core_api/src/model/admin_reject_compensation_dto.dart';
 import 'package:core_api/src/model/admin_reject_dto.dart';
 import 'package:core_api/src/model/admin_release_device_dto.dart';
@@ -3970,6 +3972,199 @@ class AdminApi {
     }
 
     return Response<AdminCaptainProfileDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminCaptainViolationsList
+  ///
+  ///
+  /// Parameters:
+  /// * [captainId]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminCaptainViolationsDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminCaptainViolationsDtoOutput>> adminCaptainViolationsList({
+    required String captainId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/captains/{captainId}/violations'.replaceAll(
+      '{'
+      r'captainId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        captainId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{...?headers},
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminCaptainViolationsDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(
+                    AdminCaptainViolationsDtoOutput,
+                  ),
+                )
+                as AdminCaptainViolationsDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminCaptainViolationsDtoOutput>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// adminCaptainViolationsRecord
+  ///
+  ///
+  /// Parameters:
+  /// * [captainId]
+  /// * [idempotencyKey] - One per command, sent again with each retry: 16 to 128 letters, digits, - or _.
+  /// * [adminRecordViolationDto]
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AdminCaptainViolationsDtoOutput] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AdminCaptainViolationsDtoOutput>>
+  adminCaptainViolationsRecord({
+    required String captainId,
+    required String idempotencyKey,
+    required AdminRecordViolationDto adminRecordViolationDto,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/admin/captains/{captainId}/violations'.replaceAll(
+      '{'
+      r'captainId'
+      '}',
+      encodeQueryParameter(
+        _serializers,
+        captainId,
+        const FullType(String),
+      ).toString(),
+    );
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{'secure': <Map<String, String>>[], ...?extra},
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(AdminRecordViolationDto);
+      _bodyData = _serializers.serialize(
+        adminRecordViolationDto,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _options.compose(_dio.options, _path),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AdminCaptainViolationsDtoOutput? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(
+                    AdminCaptainViolationsDtoOutput,
+                  ),
+                )
+                as AdminCaptainViolationsDtoOutput;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AdminCaptainViolationsDtoOutput>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

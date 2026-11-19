@@ -17,7 +17,7 @@ part 'admin_order_tickets_dto_output_tickets_inner.g.dart';
 /// Properties:
 /// * [id]
 /// * [number] - Shown as `T-{number}` (AP §4.8).
-/// * [source_] - Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem so far.
+/// * [source_] - Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem, captain_appeal so far.
 /// * [party]
 /// * [partyId]
 /// * [partyName]
@@ -53,7 +53,7 @@ abstract class AdminOrderTicketsDtoOutputTicketsInner
   @BuiltValueField(wireName: r'number')
   String get number;
 
-  /// Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem so far.
+  /// Where the ticket came from (AP §9.9.1): manual, pickup_dispute, customer_report, price_report, merchant_report, order_problem, captain_report, captain_problem, captain_appeal so far.
   @BuiltValueField(wireName: r'source')
   String get source_;
 
@@ -80,7 +80,7 @@ abstract class AdminOrderTicketsDtoOutputTicketsInner
   /// Which resolutions it takes (AP §9.9.3): general, price_difference, pickup_dispute.
   @BuiltValueField(wireName: r'kind')
   AdminOrderTicketsDtoOutputTicketsInnerKindEnum get kind;
-  // enum kindEnum {  general,  price_difference,  pickup_dispute,  };
+  // enum kindEnum {  general,  price_difference,  pickup_dispute,  appeal,  };
 
   /// «سعر مختلف عن المحل»: the restaurant.
   @BuiltValueField(wireName: r'restaurantId')
@@ -631,6 +631,9 @@ class AdminOrderTicketsDtoOutputTicketsInnerKindEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'pickup_dispute')
   static const AdminOrderTicketsDtoOutputTicketsInnerKindEnum pickupDispute =
       _$adminOrderTicketsDtoOutputTicketsInnerKindEnum_pickupDispute;
+  @BuiltValueEnumConst(wireName: r'appeal')
+  static const AdminOrderTicketsDtoOutputTicketsInnerKindEnum appeal =
+      _$adminOrderTicketsDtoOutputTicketsInnerKindEnum_appeal;
 
   static Serializer<AdminOrderTicketsDtoOutputTicketsInnerKindEnum>
   get serializer => _$adminOrderTicketsDtoOutputTicketsInnerKindEnumSerializer;

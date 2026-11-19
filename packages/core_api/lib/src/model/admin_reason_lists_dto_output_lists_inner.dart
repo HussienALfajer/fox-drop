@@ -28,7 +28,7 @@ abstract class AdminReasonListsDtoOutputListsInner
         > {
   @BuiltValueField(wireName: r'list')
   AdminReasonListsDtoOutputListsInnerListEnum get list;
-  // enum listEnum {  merchant_rejection,  merchant_problem,  item_unavailable_note,  merchant_ticket_type,  captain_cannot_complete,  captain_away,  shortfall,  food_after_failed,  captain_ticket_type,  captain_problem,  customer_cancel,  customer_problem,  order_note,  restaurant_rating_low,  restaurant_rating_mid,  restaurant_rating_high,  captain_rating_low,  captain_rating_mid,  captain_rating_high,  ops_cancel,  reassignment,  captain_suspension,  customer_block,  emergency_stop,  compensation,  kit_item,  failed_outcome,  system_cancellation,  };
+  // enum listEnum {  merchant_rejection,  merchant_problem,  item_unavailable_note,  merchant_ticket_type,  captain_cannot_complete,  captain_away,  shortfall,  food_after_failed,  captain_ticket_type,  captain_problem,  customer_cancel,  customer_problem,  order_note,  restaurant_rating_low,  restaurant_rating_mid,  restaurant_rating_high,  captain_rating_low,  captain_rating_mid,  captain_rating_high,  ops_cancel,  reassignment,  captain_suspension,  customer_block,  emergency_stop,  compensation,  kit_item,  captain_violation,  captain_violation_severe,  failed_outcome,  system_cancellation,  };
 
   @BuiltValueField(wireName: r'apps')
   BuiltList<AdminReasonListsDtoOutputListsInnerAppsEnum> get apps;
@@ -312,6 +312,13 @@ class AdminReasonListsDtoOutputListsInnerListEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'kit_item')
   static const AdminReasonListsDtoOutputListsInnerListEnum kitItem =
       _$adminReasonListsDtoOutputListsInnerListEnum_kitItem;
+  @BuiltValueEnumConst(wireName: r'captain_violation')
+  static const AdminReasonListsDtoOutputListsInnerListEnum captainViolation =
+      _$adminReasonListsDtoOutputListsInnerListEnum_captainViolation;
+  @BuiltValueEnumConst(wireName: r'captain_violation_severe')
+  static const AdminReasonListsDtoOutputListsInnerListEnum
+  captainViolationSevere =
+      _$adminReasonListsDtoOutputListsInnerListEnum_captainViolationSevere;
   @BuiltValueEnumConst(wireName: r'failed_outcome')
   static const AdminReasonListsDtoOutputListsInnerListEnum failedOutcome =
       _$adminReasonListsDtoOutputListsInnerListEnum_failedOutcome;

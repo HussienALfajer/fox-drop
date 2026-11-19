@@ -514,6 +514,7 @@ export async function answered<T>(run: () => Promise<T>): Promise<T> {
       case 'unknown_party':
       case 'unknown_restaurant':
       case 'unknown_order':
+      case 'unknown_violation':
         throw new NotFoundException({ statusCode: HttpStatus.NOT_FOUND, error: error.refusal });
       case 'forbidden':
         throw new ForbiddenException({ statusCode: HttpStatus.FORBIDDEN, error: error.refusal });

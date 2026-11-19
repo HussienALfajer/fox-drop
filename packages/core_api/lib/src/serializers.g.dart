@@ -212,6 +212,32 @@ Serializers _$serializers =
           ..add(AdminCaptainProfileDtoOutputSuspension.serializer)
           ..add(AdminCaptainStatusDto.serializer)
           ..add(AdminCaptainStatusDtoStatusEnum.serializer)
+          ..add(AdminCaptainViolationsDtoOutput.serializer)
+          ..add(AdminCaptainViolationsDtoOutputSuggestion.serializer)
+          ..add(AdminCaptainViolationsDtoOutputSuggestionStepEnum.serializer)
+          ..add(AdminCaptainViolationsDtoOutputSuspensionsInner.serializer)
+          ..add(
+            AdminCaptainViolationsDtoOutputSuspensionsInnerStatusEnum
+                .serializer,
+          )
+          ..add(AdminCaptainViolationsDtoOutputTypes.serializer)
+          ..add(AdminCaptainViolationsDtoOutputTypesRegularInner.serializer)
+          ..add(
+            AdminCaptainViolationsDtoOutputTypesRegularInnerNoteEnum.serializer,
+          )
+          ..add(AdminCaptainViolationsDtoOutputViolationsInner.serializer)
+          ..add(AdminCaptainViolationsDtoOutputViolationsInnerAppeal.serializer)
+          ..add(
+            AdminCaptainViolationsDtoOutputViolationsInnerAppealOutcomeEnum
+                .serializer,
+          )
+          ..add(
+            AdminCaptainViolationsDtoOutputViolationsInnerStepEnum.serializer,
+          )
+          ..add(
+            AdminCaptainViolationsDtoOutputViolationsInnerSuggestedStepEnum
+                .serializer,
+          )
           ..add(AdminCategoriesDtoOutput.serializer)
           ..add(AdminCategoriesDtoOutputCategoriesInner.serializer)
           ..add(AdminCategoryDtoOutput.serializer)
@@ -864,6 +890,8 @@ Serializers _$serializers =
           ..add(AdminRecordDepositAnswerDtoOutputReceiptLinesInner.serializer)
           ..add(AdminRecordDepositAnswerDtoOutputReceiptTypeEnum.serializer)
           ..add(AdminRecordDepositDto.serializer)
+          ..add(AdminRecordViolationDto.serializer)
+          ..add(AdminRecordViolationDtoStepEnum.serializer)
           ..add(AdminRejectCompensationDto.serializer)
           ..add(AdminRejectDto.serializer)
           ..add(AdminRejectDtoItemsInner.serializer)
@@ -1170,6 +1198,8 @@ Serializers _$serializers =
           ..add(CaptainActiveOrderDtoOutputOrderStatusEnum.serializer)
           ..add(CaptainActiveOrderDtoOutputWithdrawn.serializer)
           ..add(CaptainActiveOrderDtoOutputWithdrawnCashEnum.serializer)
+          ..add(CaptainAppealBodyDto.serializer)
+          ..add(CaptainAppealTicketDtoOutput.serializer)
           ..add(CaptainApplicationDocumentDto.serializer)
           ..add(CaptainApplicationDtoOutput.serializer)
           ..add(CaptainApplicationDtoOutputApplication.serializer)
@@ -1318,6 +1348,21 @@ Serializers _$serializers =
           ..add(CaptainPeakBonusDtoOutputWindowsInner.serializer)
           ..add(CaptainPeakBonusDtoOutputWindowsInnerAmount.serializer)
           ..add(CaptainPeakBonusDtoOutputWindowsInnerZonesInner.serializer)
+          ..add(CaptainPerformanceDtoOutput.serializer)
+          ..add(CaptainPerformanceDtoOutputAcceptance.serializer)
+          ..add(CaptainPerformanceDtoOutputAcceptanceOffersInner.serializer)
+          ..add(
+            CaptainPerformanceDtoOutputAcceptanceOffersInnerResponseEnum
+                .serializer,
+          )
+          ..add(CaptainPerformanceDtoOutputOnline.serializer)
+          ..add(CaptainPerformanceDtoOutputViolationsInner.serializer)
+          ..add(CaptainPerformanceDtoOutputViolationsInnerAppeal.serializer)
+          ..add(
+            CaptainPerformanceDtoOutputViolationsInnerAppealOutcomeEnum
+                .serializer,
+          )
+          ..add(CaptainPerformanceDtoOutputViolationsInnerStepEnum.serializer)
           ..add(CaptainPickupRequestDto.serializer)
           ..add(CaptainProblemBodyDto.serializer)
           ..add(CaptainRatingsDtoOutput.serializer)
@@ -2080,6 +2125,33 @@ Serializers _$serializers =
               const FullType(AdminCaptainProfileDtoOutputCustodyBlocksEnum),
             ]),
             () => ListBuilder<AdminCaptainProfileDtoOutputCustodyBlocksEnum>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCaptainViolationsDtoOutputTypesRegularInner),
+            ]),
+            () =>
+                ListBuilder<AdminCaptainViolationsDtoOutputTypesRegularInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCaptainViolationsDtoOutputTypesRegularInner),
+            ]),
+            () =>
+                ListBuilder<AdminCaptainViolationsDtoOutputTypesRegularInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCaptainViolationsDtoOutputViolationsInner),
+            ]),
+            () => ListBuilder<AdminCaptainViolationsDtoOutputViolationsInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(AdminCaptainViolationsDtoOutputSuspensionsInner),
+            ]),
+            () =>
+                ListBuilder<AdminCaptainViolationsDtoOutputSuspensionsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [
@@ -3837,6 +3909,19 @@ Serializers _$serializers =
               const FullType(CustomerRestaurantPageDtoOutputMenuInner),
             ]),
             () => ListBuilder<CustomerRestaurantPageDtoOutputMenuInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPerformanceDtoOutputAcceptanceOffersInner),
+            ]),
+            () =>
+                ListBuilder<CaptainPerformanceDtoOutputAcceptanceOffersInner>(),
+          )
+          ..addBuilderFactory(
+            const FullType(BuiltList, const [
+              const FullType(CaptainPerformanceDtoOutputViolationsInner),
+            ]),
+            () => ListBuilder<CaptainPerformanceDtoOutputViolationsInner>(),
           )
           ..addBuilderFactory(
             const FullType(BuiltList, const [

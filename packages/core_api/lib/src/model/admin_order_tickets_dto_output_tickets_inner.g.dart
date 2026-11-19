@@ -49,6 +49,9 @@ _$adminOrderTicketsDtoOutputTicketsInnerKindEnum_priceDifference =
 const AdminOrderTicketsDtoOutputTicketsInnerKindEnum
 _$adminOrderTicketsDtoOutputTicketsInnerKindEnum_pickupDispute =
     const AdminOrderTicketsDtoOutputTicketsInnerKindEnum._('pickupDispute');
+const AdminOrderTicketsDtoOutputTicketsInnerKindEnum
+_$adminOrderTicketsDtoOutputTicketsInnerKindEnum_appeal =
+    const AdminOrderTicketsDtoOutputTicketsInnerKindEnum._('appeal');
 
 AdminOrderTicketsDtoOutputTicketsInnerKindEnum
 _$adminOrderTicketsDtoOutputTicketsInnerKindEnumValueOf(String name) {
@@ -59,6 +62,8 @@ _$adminOrderTicketsDtoOutputTicketsInnerKindEnumValueOf(String name) {
       return _$adminOrderTicketsDtoOutputTicketsInnerKindEnum_priceDifference;
     case 'pickupDispute':
       return _$adminOrderTicketsDtoOutputTicketsInnerKindEnum_pickupDispute;
+    case 'appeal':
+      return _$adminOrderTicketsDtoOutputTicketsInnerKindEnum_appeal;
     default:
       throw ArgumentError(name);
   }
@@ -71,6 +76,7 @@ _$adminOrderTicketsDtoOutputTicketsInnerKindEnumValues =
         _$adminOrderTicketsDtoOutputTicketsInnerKindEnum_general,
         _$adminOrderTicketsDtoOutputTicketsInnerKindEnum_priceDifference,
         _$adminOrderTicketsDtoOutputTicketsInnerKindEnum_pickupDispute,
+        _$adminOrderTicketsDtoOutputTicketsInnerKindEnum_appeal,
       ],
     );
 
@@ -175,11 +181,13 @@ class _$AdminOrderTicketsDtoOutputTicketsInnerKindEnumSerializer
     'general': 'general',
     'priceDifference': 'price_difference',
     'pickupDispute': 'pickup_dispute',
+    'appeal': 'appeal',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'general': 'general',
     'price_difference': 'priceDifference',
     'pickup_dispute': 'pickupDispute',
+    'appeal': 'appeal',
   };
 
   @override

@@ -117,6 +117,13 @@ export 'package:core_api/src/model/admin_captain_profile_dto_output_on_time.dart
 export 'package:core_api/src/model/admin_captain_profile_dto_output_rating.dart';
 export 'package:core_api/src/model/admin_captain_profile_dto_output_suspension.dart';
 export 'package:core_api/src/model/admin_captain_status_dto.dart';
+export 'package:core_api/src/model/admin_captain_violations_dto_output.dart';
+export 'package:core_api/src/model/admin_captain_violations_dto_output_suggestion.dart';
+export 'package:core_api/src/model/admin_captain_violations_dto_output_suspensions_inner.dart';
+export 'package:core_api/src/model/admin_captain_violations_dto_output_types.dart';
+export 'package:core_api/src/model/admin_captain_violations_dto_output_types_regular_inner.dart';
+export 'package:core_api/src/model/admin_captain_violations_dto_output_violations_inner.dart';
+export 'package:core_api/src/model/admin_captain_violations_dto_output_violations_inner_appeal.dart';
 export 'package:core_api/src/model/admin_categories_dto_output.dart';
 export 'package:core_api/src/model/admin_categories_dto_output_categories_inner.dart';
 export 'package:core_api/src/model/admin_category_dto_output.dart';
@@ -505,6 +512,7 @@ export 'package:core_api/src/model/admin_record_deposit_answer_dto_output_receip
 export 'package:core_api/src/model/admin_record_deposit_answer_dto_output_receipt_conversions_inner.dart';
 export 'package:core_api/src/model/admin_record_deposit_answer_dto_output_receipt_lines_inner.dart';
 export 'package:core_api/src/model/admin_record_deposit_dto.dart';
+export 'package:core_api/src/model/admin_record_violation_dto.dart';
 export 'package:core_api/src/model/admin_reject_compensation_dto.dart';
 export 'package:core_api/src/model/admin_reject_dto.dart';
 export 'package:core_api/src/model/admin_reject_dto_items_inner.dart';
@@ -689,6 +697,8 @@ export 'package:core_api/src/model/captain_active_order_dto_output_order_radii.d
 export 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_order_restaurant_location.dart';
 export 'package:core_api/src/model/captain_active_order_dto_output_withdrawn.dart';
+export 'package:core_api/src/model/captain_appeal_body_dto.dart';
+export 'package:core_api/src/model/captain_appeal_ticket_dto_output.dart';
 export 'package:core_api/src/model/captain_application_document_dto.dart';
 export 'package:core_api/src/model/captain_application_dto_output.dart';
 export 'package:core_api/src/model/captain_application_dto_output_application.dart';
@@ -793,6 +803,12 @@ export 'package:core_api/src/model/captain_peak_bonus_dto_output_active_inner_am
 export 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner.dart';
 export 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_amount.dart';
 export 'package:core_api/src/model/captain_peak_bonus_dto_output_windows_inner_zones_inner.dart';
+export 'package:core_api/src/model/captain_performance_dto_output.dart';
+export 'package:core_api/src/model/captain_performance_dto_output_acceptance.dart';
+export 'package:core_api/src/model/captain_performance_dto_output_acceptance_offers_inner.dart';
+export 'package:core_api/src/model/captain_performance_dto_output_online.dart';
+export 'package:core_api/src/model/captain_performance_dto_output_violations_inner.dart';
+export 'package:core_api/src/model/captain_performance_dto_output_violations_inner_appeal.dart';
 export 'package:core_api/src/model/captain_pickup_request_dto.dart';
 export 'package:core_api/src/model/captain_problem_body_dto.dart';
 export 'package:core_api/src/model/captain_ratings_dto_output.dart';
