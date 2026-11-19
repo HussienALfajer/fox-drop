@@ -45,6 +45,8 @@ import { canSeeBanners } from './banners.js';
 import { BannersPage } from './banners-page.js';
 import { canSeeMassPushes } from './mass-pushes.js';
 import { MassPushesPage } from './mass-pushes-page.js';
+import { auditLogSearchOf, canReadAuditLog } from './audit-log.js';
+import { AuditLogPage } from './audit-log-page.js';
 import { canSeeLostDemand } from './lost-demand.js';
 import { LostDemandPage } from './lost-demand-page.js';
 import { MenuChangeRequestPage, MenuChangeRequestsPage } from './menu-change-requests-page.js';
@@ -244,6 +246,18 @@ const appSettingsRoute = createRoute({
     if (!can(context.session, SETTINGS_READ)) throw redirect({ to: '/' });
   },
   component: AppSettingsPage,
+});
+
+// AP §9.16 «سجل التدقيق» (slice 2.38a): OWN (audit_log.read, checked by the
+// server too); the filters in the search.
+const auditLogRoute = createRoute({
+  getParentRoute: () => signedInRoute,
+  path: '/audit-log',
+  validateSearch: auditLogSearchOf,
+  beforeLoad: ({ context }) => {
+    if (!canReadAuditLog(context.session)) throw redirect({ to: '/' });
+  },
+  component: AuditLogPage,
 });
 
 // AP §9.13 «التصنيفات» (slice 2.27a): OWN, OPS (reads) and DATA.
@@ -864,6 +878,7 @@ const routeTree = rootRoute.addChildren([
     bannersRoute,
     massPushesRoute,
     lostDemandRoute,
+    auditLogRoute,
     menuChangesRoute,
     menuChangeRoute,
     officeRoute,
